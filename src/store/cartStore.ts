@@ -1,0 +1,205 @@
+/**
+ * cartStore - Week 3.
+ *
+ * Derives the cart shape from the active Property and exposes:
+ *   - per-line totals in the line item's native currency AND in USD
+ *   - subtotals in MUR, USD, EUR, GBP (using the live FX snapshot)
+ *   - a per-room breakdown so the cart page can group items by room
+ *
+ * Quantity edits live on a separate "qtyOverride" map kept inside this
+ * store. When you bump the quantity from 2 -> 3 we don't conjure a third
+ * placed instance on the canvas - we just remember that the cart wants
+ * 3 of that product. Removing a line wipes ALL placed instances of that
+ * product across all rooms (and zeros the override).
+ *
+ * Week 4 will tie shipping + tax to the buyer's region. Until then both
+ * are surfaced as disclaimers on the cart page.
+ */
+
+import { useMemo } from 'react';
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { usePropertyStore } from './propertyStore';
+import type { Property } from './propertyStore';
+import { useCurrencyStore } from './currencyStore';
+import { getProductById } from '../data/products';
+import type { Product, Currency } from '../data/products.schema';
+import { type FxSnapshot, FALLBACK_RATES_USD, convert } from '../lib/fx';
+
+/** Static fallback retained for tests that don't want to load the FX module. */
+export const MUR_PER_USD = FALLBACK_RATES_USD.MUR;
+
+export interface CartLine {
+  productId: string;
+  product: Product;
+  /** Number of units the cart will order. Defaults to the placed count. */
+  quantity: number;
+  /** Number actually placed on the canvas - informational. */
+  placedCount: number;
+  unitPrice: number;
+  unitCurrency: Currency;
+  /** Unit price converted into the active display currency. */
+  unitPriceDisplay: number;
+  /** Line total (quantity * unit) in the active display currency. */
+  lineTotalDisplay: number;
+  /** Per-room breakdown: roomId -> instance count. */
+  perRoom: Array<{ roomId: string; roomName: string; count: number }>;
+}
+
+export interface CartTotals {
+  lines: CartLine[];
+  uniqueProductCount: number;
+  totalItemCount: number;
+  /** Subtotal in the active display currency. */
+  subtotal: number;
+  /** Same subtotal expressed in each supported currency. */
+  subtotalByCurrency: Record<Currency, number>;
+  /** Active display currency at the time of derivation. */
+  currency: Currency;
+}
+
+interface CartMutationsState {
+  /** productId -> user-chosen quantity (overrides placedCount when set). */
+  qtyOverrides: Record<string, number>;
+  /** Products the user explicitly removed from the cart on the CartPage. */
+  removedProductIds: string[];
+
+  setQuantity: (productId: string, qty: number) => void;
+  removeProduct: (productId: string) => void;
+  /** Wipe ALL overrides + removals - fresh cart. */
+  resetCart: () => void;
+}
+
+export const useCartMutations = create<CartMutationsState>()(
+  persist(
+    (set) => ({
+      qtyOverrides: {},
+      removedProductIds: [],
+
+      setQuantity: (productId, qty) =>
+        set((s) => {
+          const safe = Math.max(0, Math.floor(qty));
+          if (safe === 0) {
+            const next = { ...s.qtyOverrides };
+            delete next[productId];
+            return {
+              qtyOverrides: next,
+              removedProductIds: s.removedProductIds.includes(productId)
+                ? s.removedProductIds
+                : [...s.removedProductIds, productId],
+            };
+          }
+          return {
+            qtyOverrides: { ...s.qtyOverrides, [productId]: safe },
+            removedProductIds: s.removedProductIds.filter((id) => id !== productId),
+          };
+        }),
+
+      removeProduct: (productId) =>
+        set((s) => {
+          const next = { ...s.qtyOverrides };
+          delete next[productId];
+          return {
+            qtyOverrides: next,
+            removedProductIds: s.removedProductIds.includes(productId)
+              ? s.removedProductIds
+              : [...s.removedProductIds, productId],
+          };
+        }),
+
+      resetCart: () => set(() => ({ qtyOverrides: {}, removedProductIds: [] })),
+    }),
+    {
+      name: 'ppw_cart_mutations_v1',
+      storage: createJSONStorage(() => localStorage),
+    },
+  ),
+);
+
+/**
+ * Pure derivation - used by tests.
+ */
+export function deriveCart(
+  property: Property,
+  mutations: Pick<CartMutationsState, 'qtyOverrides' | 'removedProductIds'>,
+  fx: FxSnapshot,
+  displayCurrency: Currency,
+): CartTotals {
+  const placedCounts = new Map<string, number>();
+  const perRoom = new Map<string, Array<{ roomId: string; roomName: string; count: number }>>();
+
+  for (const room of property.rooms) {
+    const counts = new Map<string, number>();
+    for (const item of room.placedItems) {
+      counts.set(item.productId, (counts.get(item.productId) ?? 0) + 1);
+    }
+    for (const [productId, count] of counts.entries()) {
+      placedCounts.set(productId, (placedCounts.get(productId) ?? 0) + count);
+      const list = perRoom.get(productId) ?? [];
+      list.push({ roomId: room.id, roomName: room.name, count });
+      perRoom.set(productId, list);
+    }
+  }
+
+  const removed = new Set(mutations.removedProductIds);
+  const lines: CartLine[] = [];
+
+  for (const [productId, placedCount] of placedCounts.entries()) {
+    if (removed.has(productId)) continue;
+    const product = getProductById(productId);
+    if (!product) continue;
+    const quantity = mutations.qtyOverrides[productId] ?? placedCount;
+    if (quantity === 0) continue;
+
+    const unitPriceDisplay = convert(
+      product.price.value,
+      product.price.currency,
+      displayCurrency,
+      fx,
+    );
+    lines.push({
+      productId,
+      product,
+      quantity,
+      placedCount,
+      unitPrice: product.price.value,
+      unitCurrency: product.price.currency,
+      unitPriceDisplay,
+      lineTotalDisplay: unitPriceDisplay * quantity,
+      perRoom: perRoom.get(productId) ?? [],
+    });
+  }
+
+  lines.sort((a, b) => b.lineTotalDisplay - a.lineTotalDisplay);
+
+  const subtotal = lines.reduce((acc, l) => acc + l.lineTotalDisplay, 0);
+  const totalItemCount = lines.reduce((acc, l) => acc + l.quantity, 0);
+
+  const subtotalByCurrency: Record<Currency, number> = {
+    MUR: convert(subtotal, displayCurrency, 'MUR', fx),
+    USD: convert(subtotal, displayCurrency, 'USD', fx),
+    EUR: convert(subtotal, displayCurrency, 'EUR', fx),
+    GBP: convert(subtotal, displayCurrency, 'GBP', fx),
+  };
+
+  return {
+    lines,
+    uniqueProductCount: lines.length,
+    totalItemCount,
+    subtotal,
+    subtotalByCurrency,
+    currency: displayCurrency,
+  };
+}
+
+export function useCart(): CartTotals {
+  const property = usePropertyStore((s) => s.property);
+  const fx = useCurrencyStore((s) => s.fx);
+  const currency = useCurrencyStore((s) => s.currency);
+  const qtyOverrides = useCartMutations((s) => s.qtyOverrides);
+  const removedProductIds = useCartMutations((s) => s.removedProductIds);
+  return useMemo(
+    () => deriveCart(property, { qtyOverrides, removedProductIds }, fx, currency),
+    [property, qtyOverrides, removedProductIds, fx, currency],
+  );
+}

@@ -1,0 +1,235 @@
+/**
+ * ProductPalette — left sidebar (desktop) / collapsible bottom sheet
+ * (mobile, < 768 px) listing all products from the catalog as draggable
+ * cards.
+ *
+ * Week 2 additions:
+ *   - Region <select> (Mauritius default, persisted to localStorage)
+ *   - Responsive 768 px breakpoint (Tailwind classes only)
+ */
+
+import { useEffect, useMemo, useState } from 'react';
+import {
+  CATEGORY_LABELS,
+  REGION_GROUPS,
+  filterByRegion,
+  getAllProducts,
+  getCategories,
+  searchProducts,
+  thumbnailFor,
+} from '../data/products';
+import type { RegionGroup } from '../data/products';
+import type { Product, ProductCategory } from '../data/products.schema';
+
+const DRAG_MIME = 'application/x-ppw-product-id';
+const REGION_LS_KEY = 'ppw_region_filter_v1';
+const DEFAULT_REGION: RegionGroup = 'Mauritius';
+
+function formatPrice(p: Product): string {
+  const { value, currency } = p.price;
+  const formatted = value.toLocaleString('en-MU', { maximumFractionDigits: 0 });
+  return `${formatted} ${currency}`;
+}
+
+function formatFootprint(p: Product): string {
+  const { length, width, height } = p.dimensions_cm;
+  return `${length}×${width}×${height} cm`;
+}
+
+function readRegionLs(): RegionGroup {
+  try {
+    const v = localStorage.getItem(REGION_LS_KEY);
+    if (v && (REGION_GROUPS as string[]).includes(v)) return v as RegionGroup;
+  } catch {
+    // ignore
+  }
+  return DEFAULT_REGION;
+}
+
+export function ProductPalette() {
+  const [query, setQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState<ProductCategory | 'all'>('all');
+  const [region, setRegion] = useState<RegionGroup>(() => readRegionLs());
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(REGION_LS_KEY, region);
+    } catch {
+      // ignore
+    }
+  }, [region]);
+
+  const categories = useMemo(() => getCategories(), []);
+  const filtered = useMemo(() => {
+    let base = query ? searchProducts(query) : getAllProducts();
+    base = filterByRegion(base, region);
+    if (activeCategory !== 'all') {
+      base = base.filter((p) => p.category === activeCategory);
+    }
+    return base;
+  }, [query, activeCategory, region]);
+
+  function handleDragStart(e: React.DragEvent<HTMLDivElement>, product: Product) {
+    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData(DRAG_MIME, product.id);
+    e.dataTransfer.setData('text/plain', product.id);
+  }
+
+  const body = (
+    <>
+      <div className="border-b border-ppw-stone px-4 py-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-ppw-slate">Catalog</h2>
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            className="md:hidden rounded-md border border-ppw-stone bg-white px-2 py-0.5 text-xs text-ppw-slate"
+            aria-label="Close catalog"
+          >
+            Close
+          </button>
+        </div>
+        <p className="mt-0.5 text-[11px] text-ppw-slate">
+          {filtered.length} of {getAllProducts().length} products · ships to {region}
+        </p>
+        <input
+          type="search"
+          value={query}
+          placeholder="Search products…"
+          onChange={(e) => setQuery(e.target.value)}
+          className="mt-3 w-full rounded-md border border-ppw-stone bg-ppw-sand px-2.5 py-1.5 text-sm placeholder:text-ppw-slate/70 focus:border-ppw-teal focus:outline-none focus:ring-1 focus:ring-ppw-teal"
+        />
+        <label className="mt-2 block text-[10px] uppercase tracking-wide text-ppw-slate">
+          Delivery region
+        </label>
+        <select
+          value={region}
+          onChange={(e) => setRegion(e.target.value as RegionGroup)}
+          className="mt-1 w-full rounded-md border border-ppw-stone bg-white px-2 py-1.5 text-sm text-ppw-ink focus:border-ppw-teal focus:outline-none focus:ring-1 focus:ring-ppw-teal"
+        >
+          {REGION_GROUPS.map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5 border-b border-ppw-stone px-3 py-2.5">
+        <CategoryChip
+          label="All"
+          active={activeCategory === 'all'}
+          onClick={() => setActiveCategory('all')}
+        />
+        {categories.map((c) => (
+          <CategoryChip
+            key={c}
+            label={CATEGORY_LABELS[c]}
+            active={activeCategory === c}
+            onClick={() => setActiveCategory(c)}
+          />
+        ))}
+      </div>
+
+      <div className="scroll-pane flex-1 overflow-y-auto px-3 py-3">
+        {filtered.length === 0 ? (
+          <p className="px-1 py-6 text-center text-xs text-ppw-slate">
+            No products match — try changing the region or category filter.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-2.5">
+            {filtered.map((p) => (
+              <li key={p.id}>
+                <div
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, p)}
+                  className="group flex cursor-grab gap-3 rounded-lg border border-ppw-stone bg-white p-2.5 transition hover:border-ppw-teal hover:shadow-sm active:cursor-grabbing"
+                  data-product-id={p.id}
+                  data-category={p.category}
+                >
+                  <div
+                    className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-ppw-sand"
+                    dangerouslySetInnerHTML={{ __html: thumbnailFor(p.category) }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-ppw-ink">{p.name}</p>
+                    <p className="mt-0.5 text-[11px] uppercase tracking-wide text-ppw-slate">
+                      {CATEGORY_LABELS[p.category]}
+                    </p>
+                    <div className="mt-1 flex items-baseline justify-between gap-2">
+                      <span className="text-xs font-semibold text-ppw-teal">
+                        {formatPrice(p)}
+                      </span>
+                      <span className="truncate text-[10px] text-ppw-slate">
+                        {formatFootprint(p)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="border-t border-ppw-stone bg-ppw-sand px-3 py-2 text-[10px] leading-snug text-ppw-slate">
+        Drag a card onto the canvas. Click a placed item to edit. Region filter is remembered.
+      </div>
+    </>
+  );
+
+  return (
+    <>
+      <aside className="hidden md:flex h-full w-72 flex-col border-r border-ppw-stone bg-white">
+        {body}
+      </aside>
+
+      <button
+        type="button"
+        onClick={() => setMobileOpen(true)}
+        className={`md:hidden fixed bottom-4 left-4 z-30 rounded-full bg-ppw-teal px-4 py-2.5 text-sm font-semibold text-white shadow-lg ${
+          mobileOpen ? 'hidden' : ''
+        }`}
+      >
+        Catalog ({filtered.length})
+      </button>
+
+      {mobileOpen && (
+        <>
+          <div
+            className="md:hidden fixed inset-0 z-40 bg-black/30"
+            onClick={() => setMobileOpen(false)}
+          />
+          <aside className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex h-[80vh] flex-col rounded-t-2xl border-t border-ppw-stone bg-white shadow-2xl">
+            {body}
+          </aside>
+        </>
+      )}
+    </>
+  );
+}
+
+function CategoryChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 transition ${
+        active
+          ? 'bg-ppw-teal text-white ring-ppw-teal'
+          : 'bg-white text-ppw-slate ring-ppw-stone hover:bg-ppw-mist'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
