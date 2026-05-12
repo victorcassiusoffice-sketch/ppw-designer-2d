@@ -24,6 +24,7 @@ import {
   useCheckoutStore,
   validateCheckoutForm,
   hasErrors,
+  type CheckoutFormValues,
   type ValidationErrors,
 } from '../store/checkoutStore';
 import { useOrdersStore, type Order, type OrderLine } from '../store/ordersStore';
@@ -38,6 +39,64 @@ import { COUNTRY_OPTIONS } from '../lib/region';
 import { CATEGORY_LABELS, getProductById } from '../data/products';
 import { saveLastOrderSnapshot, type LastOrderSnapshot, type RoomSnapshot } from '../lib/orderSnapshot';
 import { renderRoomSvg, svgToPngDataUrl } from '../lib/floorPlanSvg';
+
+/**
+ * Field — module-scope on purpose.
+ *
+ * Previously defined inside CheckoutPage, which caused React to treat it as
+ * a NEW component on every parent render. Every keystroke updated the
+ * checkout store → re-rendered CheckoutPage → produced a fresh `Field`
+ * function reference → React unmounted and remounted each <input>, which
+ * blew away focus. The form became unusable (one character per click).
+ *
+ * Hoisting to module scope keeps the reference stable, so React reconciles
+ * the existing <input> instead of remounting it, and focus is preserved.
+ */
+interface FieldProps {
+  label: string;
+  name: keyof CheckoutFormValues;
+  form: CheckoutFormValues;
+  setField: <K extends keyof CheckoutFormValues>(field: K, value: CheckoutFormValues[K]) => void;
+  errors: ValidationErrors;
+  type?: string;
+  autoComplete?: string;
+  placeholder?: string;
+  required?: boolean;
+}
+
+function Field({
+  label,
+  name,
+  form,
+  setField,
+  errors,
+  type = 'text',
+  autoComplete,
+  placeholder,
+  required = true,
+}: FieldProps) {
+  const id = `field-${name}`;
+  const errMsg = errors[name as keyof ValidationErrors];
+  return (
+    <div>
+      <label htmlFor={id} className="block text-[11px] font-semibold uppercase tracking-wide text-ppw-slate">
+        {label} {required && <span className="text-ppw-coral">*</span>}
+      </label>
+      <input
+        id={id}
+        type={type}
+        value={form[name]}
+        onChange={(e) => setField(name, e.target.value)}
+        autoComplete={autoComplete}
+        placeholder={placeholder}
+        className={`mt-1 w-full rounded-md border bg-white px-2.5 py-2 text-sm focus:outline-none ${
+          errMsg ? 'border-ppw-coral focus:border-ppw-coral' : 'border-ppw-stone focus:border-ppw-teal'
+        }`}
+      />
+      {errMsg && <p className="mt-1 text-[11px] text-ppw-coral">{errMsg}</p>}
+    </div>
+  );
+}
 
 export default function CheckoutPage() {
   const cart = useCart();
@@ -211,44 +270,6 @@ export default function CheckoutPage() {
     setServerMessage(result.message ?? 'Checkout failed. Please try again.');
   }
 
-  function Field({
-    label,
-    name,
-    type = 'text',
-    autoComplete,
-    placeholder,
-    required = true,
-  }: {
-    label: string;
-    name: keyof typeof form;
-    type?: string;
-    autoComplete?: string;
-    placeholder?: string;
-    required?: boolean;
-  }) {
-    const id = `field-${name}`;
-    const errMsg = errors[name as keyof ValidationErrors];
-    return (
-      <div>
-        <label htmlFor={id} className="block text-[11px] font-semibold uppercase tracking-wide text-ppw-slate">
-          {label} {required && <span className="text-ppw-coral">*</span>}
-        </label>
-        <input
-          id={id}
-          type={type}
-          value={form[name] as string}
-          onChange={(e) => setField(name, e.target.value)}
-          autoComplete={autoComplete}
-          placeholder={placeholder}
-          className={`mt-1 w-full rounded-md border bg-white px-2.5 py-2 text-sm focus:outline-none ${
-            errMsg ? 'border-ppw-coral focus:border-ppw-coral' : 'border-ppw-stone focus:border-ppw-teal'
-          }`}
-        />
-        {errMsg && <p className="mt-1 text-[11px] text-ppw-coral">{errMsg}</p>}
-      </div>
-    );
-  }
-
   return (
     <div className="flex min-h-screen flex-col bg-ppw-sand text-ppw-ink">
       <CartPageHeader />
@@ -265,9 +286,9 @@ export default function CheckoutPage() {
           <section className="rounded-lg border border-ppw-stone bg-white p-4">
             <p className="text-sm font-bold">Contact</p>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <Field label="Full name" name="name" autoComplete="name" />
-              <Field label="Email" name="email" type="email" autoComplete="email" />
-              <Field label="Phone" name="phone" type="tel" autoComplete="tel" placeholder="+230 5 123 4567" />
+              <Field form={form} setField={setField} errors={errors} label="Full name" name="name" autoComplete="name" />
+              <Field form={form} setField={setField} errors={errors} label="Email" name="email" type="email" autoComplete="email" />
+              <Field form={form} setField={setField} errors={errors} label="Phone" name="phone" type="tel" autoComplete="tel" placeholder="+230 5 123 4567" />
             </div>
           </section>
 
@@ -275,18 +296,21 @@ export default function CheckoutPage() {
             <p className="text-sm font-bold">Delivery address</p>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <div className="md:col-span-2">
-                <Field label="Address line 1" name="addressLine1" autoComplete="address-line1" />
+                <Field form={form} setField={setField} errors={errors} label="Address line 1" name="addressLine1" autoComplete="address-line1" />
               </div>
               <div className="md:col-span-2">
                 <Field
+                  form={form}
+                  setField={setField}
+                  errors={errors}
                   label="Address line 2 (optional)"
                   name="addressLine2"
                   autoComplete="address-line2"
                   required={false}
                 />
               </div>
-              <Field label="City" name="city" autoComplete="address-level2" />
-              <Field label="Postcode" name="postcode" autoComplete="postal-code" />
+              <Field form={form} setField={setField} errors={errors} label="City" name="city" autoComplete="address-level2" />
+              <Field form={form} setField={setField} errors={errors} label="Postcode" name="postcode" autoComplete="postal-code" />
               <div>
                 <label
                   htmlFor="field-country"
