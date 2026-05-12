@@ -263,3 +263,73 @@ cd ~/Documents/PPW-Code/ppw-designer-2d
 git push origin main
 ```
 Vercel will auto-deploy on push. After the new build is live, re-run the smoke test: the checkout page should render the **teal "Stripe Test Mode"** banner, the browser console should show `[stripe-init] { hasKey: true, keyPrefix: 'pk_test' }`, and submitting the cart should redirect to a `https://checkout.stripe.com/...` session URL.
+
+---
+
+## Hotfix 4: plan PDF floor plan + Draw mode polygon room
+
+**Reported by Vic** after first live order was placed via the deployed Stripe Checkout. Two unrelated regressions surfaced in the same smoke test:
+
+1. **Plan PDF floor plan looks broken.** The room page showed the title bar ("Room 1: Main Room") and the product table fine, but the floor plan box in the middle was mostly empty white with a tiny illegible blob in the centre. Customers couldn't see where their furniture would sit.
+2. **Draw mode is dead.** Clicking the "Draw" toggle in the TopBar visibly switched the canvas (cursor crosshair, draggable off, placed items hidden) but no HUD appeared, the perimeter / area / name input were nowhere on screen, and the polygon-draw workflow couldn't proceed.
+
+### Bug 1 - Floor plan root cause
+
+`src/lib/floorPlanSvg.ts:renderRoomSvg` was computing a unit-confused `scale` value. The polygon's metre bounds were pre-multiplied by `pxPerMetre` (=100) into `roomWpx` / `roomHpx`, then `scale` was derived as `Math.min((widthPx - margin*2) / roomWpx, ..., pxPerMetre)`. The first two ratios produce a **dimensionless** px/px ratio (e.g. ~1.36 for a 5x4 m room on a 800x540 canvas) but the third cap is `pxPerMetre` (100), so `Math.min(1.36, 0.84, 100) = 0.84`. The same `scale` was then used as the px-per-metre factor when rendering vertices (`v.x * scale + offsetX`) and product rectangles (`(length_cm/100) * scale`). Result: a 5x4 m room rendered as roughly 4-7 px wide centred in a 800x540 canvas - the "tiny blob" Vic saw. Worse, the PNG was then stretched by jsPDF into a 182 mm x 80 mm box (~2.27:1 aspect ratio vs the source 1.48:1), squashing whatever marker survived.
+
+### Bug 1 - Fix
+
+Rewrote `src/lib/floorPlanSvg.ts` around a single `pxPerM` value derived directly as `Math.min(availWpx / roomWm, availHpx / roomHm, 220)` (units: px/m, capped to avoid tiny rooms exploding). Everything - polygon vertices, grid, product rectangles, axis ticks, scale bar - now uses this one factor. Also added:
+- **Thick wall outline** (`stroke-width="6"` ink + 1 px slate inner, matches the Konva canvas walls).
+- **Each placed product rendered as a colour-filled rectangle** scaled to its real cm footprint, rotated around its centre, with the product name and `L x W cm` dimensions labelled inside.
+- **Axis ticks every 1 m** along the bottom + left margins, labelled "0 m", "1 m", ...
+- **Wall length labels** in white-on-ink pills pushed outward from the polygon centroid (so they sit off-wall rather than on top of the stroke).
+- **Scale bar** in the bottom-left margin: a 1 m reference rule with caption.
+- **North arrow** in the top-right corner.
+- **Room caption** in the top-left: room name + bounding-box dimensions + item count.
+
+Bumped the default SVG canvas from 800x540 -> 1100x780 (~1.41:1, crisp at the ~180 mm A4 width jsPDF reserves) and patched `src/lib/planPdf.ts` so the image box height derives from `maxW / (1100/780)` instead of a hard-coded 80 mm.
+
+Updated `src/pages/CheckoutPage.tsx` to pass the product name into the SVG so the rectangle label reads "Pro Massage Table" rather than blank.
+
+Added `src/lib/__tests__/floorPlanSvg.test.ts` (9 tests) covering: non-empty output, polygon spread across the canvas (the exact regression that made it a blob - asserts > 700 px wide / > 550 px tall for a 5x4 m room), product name + dim label, wall length labels, scale bar caption, North arrow, XML escape, triangle room, custom canvas size.
+
+### Bug 2 - Draw mode root cause
+
+`src/components/RoomDrawMode.tsx` returned a React fragment from `<Stage>` that contained two children: a `<Layer />` (Konva node, fine) **and** `<DrawHUD />` which renders a plain DOM `<div>` with `<input>`/`<button>` children. react-konva's host config only knows Konva node types - any unknown tag (including `div`, `input`, `label`, etc.) hits `Core.default[type]` undefined, the reconciler logs `Konva has no node with the type div. Group will be used instead.` and silently substitutes an empty Konva.Group. So:
+- The HUD never reached the DOM at all - no name input, no Undo/Cancel buttons, no perimeter / area / vertex counter.
+- The console was flooded with the "no node with type ..." error every render, one per DOM tag inside the HUD subtree.
+- The user could in theory still click on canvas to drop vertices (the Konva-side click handler was attached), but with no visual HUD feedback and no Cancel/Commit affordance the feature was unusable.
+
+### Bug 2 - Fix
+
+Lifted `DrawHUD` out of the Konva tree via `react-dom`'s `createPortal`. The HUD now portals into the `containerRef.current` (the RoomCanvas wrapper div, which already sits `position: relative`), so it overlays the Stage in the DOM without becoming a Stage child. To handle the ref-after-mount edge case, the portal target is tracked in `useState` and refreshed by a `useEffect` that fires on enable/disable. The Konva-side `<Layer>` (vertex dots, segment labels, hover crosshair, close indicator) is unchanged - that part was already correct.
+
+### Files touched
+
+- `src/lib/floorPlanSvg.ts` - rewritten (px-per-metre scale + walls + product labels + ticks + scale bar + North arrow).
+- `src/lib/planPdf.ts` - room-page floor plan box uses derived height matching the SVG aspect; comment / wording cleanup.
+- `src/pages/CheckoutPage.tsx` - passes `productName` into `renderRoomSvg`.
+- `src/components/RoomDrawMode.tsx` - imports `createPortal`, HUD portals into the RoomCanvas container, target tracked via `useState` + `useEffect`. Removed the dead `DomOverlay` shim.
+- `src/lib/__tests__/floorPlanSvg.test.ts` - new (9 tests, +102 lines).
+
+### Verification
+
+- `npx tsc --noEmit` - clean (exit 0).
+- `npm test` - **176/176 pass across 13 test files** (was 167 across 12 - +9 floorPlanSvg tests).
+- `npx vite build` - succeeds (991.35 kB JS / 21.11 kB CSS, same pre-existing chunk-size warning).
+
+### Phase 2 polish note - Stripe FX fee
+
+During the Phase 1 live smoke test Vic noticed Stripe Checkout adds a **3.75% FX conversion fee** when the customer's card currency differs from the merchant's settlement currency. Resolution: enable **Adaptive Pricing** on the Stripe Dashboard (Settings -> Payments -> Adaptive Pricing) so each session is presented to the customer in their card's currency and Stripe absorbs the conversion. No code change required - this is a Stripe-side toggle. Added here as a Phase 2 polish item so it doesn't get lost.
+
+### Commit (local only, per REBIRTH-11.3 - Vic pushes manually)
+
+- Message: `fix: improve plan PDF floor plan rendering + Draw mode polygon room`
+
+### Push command for Vic
+
+```
+cd ~/Documents/PPW-Code/ppw-designer-2d
+git push origin main
+```

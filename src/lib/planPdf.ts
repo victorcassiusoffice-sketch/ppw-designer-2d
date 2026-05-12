@@ -1,16 +1,16 @@
 /**
- * Plan PDF generator — client-side jsPDF.
+ * Plan PDF generator - client-side jsPDF.
  *
  * Renders a multi-page PDF that the customer can download from
  * /order/success and the install team can print on the day.
  *
  * Layout:
  *   - Page 1: Cover (text "Peak Performance Wellness" logo + order meta)
- *   - Page 2+: One per room — name, floor plan image (if available),
+ *   - Page 2+: One per room - name, floor plan image (if available),
  *              and a table of products placed in that room.
- *   - Final page: Summary — grand total + footer with next steps.
+ *   - Final page: Summary - grand total + footer with next steps.
  *
- * NO commission percentages anywhere — this is customer-facing.
+ * NO commission percentages anywhere - this is customer-facing.
  *
  * `generatePlanPdf` is pure-ish: it takes an `OrderPdfInput` and
  * returns a Blob. The caller is responsible for triggering download.
@@ -20,7 +20,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { Currency } from '../data/products.schema';
 
-/** Input shape — kept independent of zustand stores so this fn is testable. */
+/** Input shape - kept independent of zustand stores so this fn is testable. */
 export interface OrderPdfInput {
   orderId: string;
   date: number;
@@ -33,13 +33,13 @@ export interface OrderPdfInput {
     rooms: Array<{
       id: string;
       name: string;
-      /** Optional PNG/JPEG data URL of the floor plan (from Konva stage.toDataURL()). */
+      /** Optional PNG/JPEG data URL of the floor plan (from floorPlanSvg). */
       floorPlanDataUrl?: string;
       products: Array<{
         sku: string;
         name: string;
         quantity: number;
-        dimensions: string; // e.g. "220 × 100 × 90 cm"
+        dimensions: string;
         unitPriceDisplay: number;
         lineTotalDisplay: number;
       }>;
@@ -56,8 +56,8 @@ const PPW_STONE: [number, number, number] = [229, 225, 216];
 const CURRENCY_PREFIX: Record<Currency, string> = {
   MUR: 'Rs ',
   USD: '$',
-  EUR: '€',
-  GBP: '£',
+  EUR: 'EUR ',
+  GBP: 'GBP ',
 };
 
 function fmt(value: number, currency: Currency): string {
@@ -79,7 +79,6 @@ function formatDate(ts: number): string {
 }
 
 function drawHeader(doc: jsPDF, title: string): void {
-  // Brand strip
   doc.setFillColor(...PPW_TEAL);
   doc.rect(0, 0, doc.internal.pageSize.getWidth(), 24, 'F');
   doc.setTextColor(255, 255, 255);
@@ -88,7 +87,7 @@ function drawHeader(doc: jsPDF, title: string): void {
   doc.text('PEAK PERFORMANCE WELLNESS', 14, 11);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  doc.text('Tamarin · Mauritius · ppwellness.co', 14, 17);
+  doc.text('Tamarin . Mauritius . ppwellness.co', 14, 17);
   doc.setTextColor(...PPW_INK);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
@@ -105,7 +104,7 @@ function drawFooter(doc: jsPDF): void {
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.text(
-    'Questions: victor@ppwellness.co · Next steps will arrive by email within 24h · Terms: ppwellness.co/terms',
+    'Questions: victor@ppwellness.co . Next steps will arrive by email within 24h . Terms: ppwellness.co/terms',
     14,
     h - 12,
   );
@@ -115,10 +114,8 @@ function drawFooter(doc: jsPDF): void {
 function drawCover(doc: jsPDF, input: OrderPdfInput): void {
   const w = doc.internal.pageSize.getWidth();
   const h = doc.internal.pageSize.getHeight();
-  // Sand backdrop
   doc.setFillColor(...PPW_SAND);
   doc.rect(0, 0, w, h, 'F');
-  // Teal top band
   doc.setFillColor(...PPW_TEAL);
   doc.rect(0, 0, w, 70, 'F');
 
@@ -131,7 +128,6 @@ function drawCover(doc: jsPDF, input: OrderPdfInput): void {
   doc.setFontSize(11);
   doc.text('Wellness Room Plan', w / 2, 55, { align: 'center' });
 
-  // Order meta block
   doc.setTextColor(...PPW_INK);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(18);
@@ -154,7 +150,6 @@ function drawCover(doc: jsPDF, input: OrderPdfInput): void {
   doc.text(String(input.property.rooms.length), 110, metaY + 16);
   doc.text(fmt(input.total, input.currency), 110, metaY + 24);
 
-  // Spacer line
   doc.setDrawColor(...PPW_TEAL);
   doc.setLineWidth(0.6);
   doc.line(w / 2 - 40, h - 50, w / 2 + 40, h - 50);
@@ -166,19 +161,26 @@ function drawCover(doc: jsPDF, input: OrderPdfInput): void {
   });
 }
 
-function drawRoomPage(doc: jsPDF, room: OrderPdfInput['property']['rooms'][number], roomIndex: number, currency: Currency): void {
+function drawRoomPage(
+  doc: jsPDF,
+  room: OrderPdfInput['property']['rooms'][number],
+  roomIndex: number,
+  currency: Currency,
+): void {
   drawHeader(doc, `Room ${roomIndex + 1}: ${room.name}`);
 
-  let y = 44;
+  let y = 42;
   if (room.floorPlanDataUrl) {
     try {
-      // Image — fit into ~120mm × 80mm box.
+      // Hotfix 4: jsPDF used to stretch the floor plan to a fixed 80mm
+      // height which squashed the SVG's native 1.41:1 aspect ratio.
+      // We now derive height from the (raster) source aspect so the
+      // room outline + product rectangles render to scale.
       const maxW = doc.internal.pageSize.getWidth() - 28;
-      const maxH = 80;
+      const maxH = maxW / (1100 / 780);
       doc.addImage(room.floorPlanDataUrl, 'PNG', 14, y, maxW, maxH, undefined, 'FAST');
       y += maxH + 6;
     } catch {
-      // jsPDF throws on malformed data URLs — fall through silently.
       doc.setFont('helvetica', 'italic');
       doc.setTextColor(...PPW_SLATE);
       doc.setFontSize(9);
@@ -189,7 +191,7 @@ function drawRoomPage(doc: jsPDF, room: OrderPdfInput['property']['rooms'][numbe
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(...PPW_SLATE);
     doc.setFontSize(9);
-    doc.text('Floor plan rendered separately — see designer URL.', 14, y + 6);
+    doc.text('Floor plan rendered separately - see designer URL.', 14, y + 6);
     y += 12;
   }
 
@@ -247,7 +249,6 @@ function drawSummaryPage(doc: jsPDF, input: OrderPdfInput): void {
     margin: { left: 14, right: 14 },
   });
 
-  // jsPDF autotable exposes the cursor on the doc — peek where it landed.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const lastY = ((doc as any).lastAutoTable?.finalY ?? y + 40) + 10;
 
@@ -265,7 +266,6 @@ function drawSummaryPage(doc: jsPDF, input: OrderPdfInput): void {
   });
   y += 10;
 
-  // Next steps box
   doc.setFillColor(...PPW_SAND);
   doc.roundedRect(14, y, doc.internal.pageSize.getWidth() - 28, 38, 2, 2, 'F');
   doc.setFont('helvetica', 'bold');
@@ -279,7 +279,7 @@ function drawSummaryPage(doc: jsPDF, input: OrderPdfInput): void {
     '1. The PPW install team will email you within 24 hours.',
     '2. We confirm shipping for your region and lock a delivery window.',
     '3. Once your products land in country, we schedule the install.',
-    '4. We bring this PDF on install day — please keep it accessible.',
+    '4. We bring this PDF on install day - please keep it accessible.',
   ];
   steps.forEach((s, i) => doc.text(s, 18, y + 14 + i * 5));
 
@@ -308,6 +308,5 @@ export function triggerPdfDownload(blob: Blob, filename: string): void {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  // Free the object URL after the click — small delay keeps Safari happy.
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

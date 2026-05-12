@@ -1,5 +1,6 @@
 /**
- * CheckoutPage - Week 3, extended Week 4a, Hotfix 2 (Week 4b).
+ * CheckoutPage - Week 3, extended Week 4a, Hotfix 2 (Week 4b),
+ * floor-plan rendering tightened in Hotfix 4 (Week 4b).
  *
  * Collects customer info, validates, then either:
  *   - if Stripe is configured: hits the Vercel function at
@@ -41,18 +42,6 @@ import { CATEGORY_LABELS, getProductById } from '../data/products';
 import { saveLastOrderSnapshot, type LastOrderSnapshot, type RoomSnapshot } from '../lib/orderSnapshot';
 import { renderRoomSvg, svgToPngDataUrl } from '../lib/floorPlanSvg';
 
-/**
- * Field - module-scope on purpose.
- *
- * Previously defined inside CheckoutPage, which caused React to treat it as
- * a NEW component on every parent render. Every keystroke updated the
- * checkout store -> re-rendered CheckoutPage -> produced a fresh `Field`
- * function reference -> React unmounted and remounted each <input>, which
- * blew away focus. The form became unusable (one character per click).
- *
- * Hoisting to module scope keeps the reference stable, so React reconciles
- * the existing <input> instead of remounting it, and focus is preserved.
- */
 interface FieldProps {
   label: string;
   name: keyof CheckoutFormValues;
@@ -134,11 +123,6 @@ export default function CheckoutPage() {
     );
   }
 
-  /**
-   * Snapshot the current property to localStorage so /order/success can
-   * generate the plan PDF after the Stripe redirect (which tears down
-   * the React tree).
-   */
   async function captureOrderSnapshot(order: Order): Promise<void> {
     const rooms: RoomSnapshot[] = await Promise.all(
       property.rooms.map(async (r) => {
@@ -163,6 +147,7 @@ export default function CheckoutPage() {
           })
           .filter((x): x is NonNullable<typeof x> => x !== null);
 
+        // Hotfix 4: pass productName so the floor plan labels each rect.
         const svg = renderRoomSvg({
           name: r.name,
           polygon: r.polygon,
@@ -170,6 +155,7 @@ export default function CheckoutPage() {
             const p = getProductById(it.productId);
             return {
               productId: it.productId,
+              productName: p?.name,
               x: it.x,
               y: it.y,
               length_cm: p?.dimensions_cm.length ?? 50,
@@ -238,7 +224,6 @@ export default function CheckoutPage() {
     };
     saveOrder(order);
 
-    // Capture a per-room snapshot so /order/success can render the plan PDF.
     await captureOrderSnapshot(order);
 
     if (!isStripeConfigured()) {

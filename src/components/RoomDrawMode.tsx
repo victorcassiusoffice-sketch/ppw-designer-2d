@@ -1,5 +1,5 @@
 /**
- * RoomDrawMode — Week 2.5 polygon room editor.
+ * RoomDrawMode - Week 2.5 polygon room editor, rewired in Week 4b Hotfix 4.
  *
  * Renders inside the RoomCanvas overlay when the parent has switched to
  * "Draw mode". The user clicks/taps on the canvas to drop polygon
@@ -9,15 +9,21 @@
  *
  * - Cmd/Ctrl + Z undoes the last vertex while drawing.
  * - Esc cancels the draw (clears the in-progress polygon).
- * - Total perimeter (m) and area (m²) are shown live in the HUD.
+ * - Total perimeter (m) and area (m^2) are shown live in the HUD.
  * - The user can rename the room inline before committing.
  *
- * The component is a controlled overlay: it owns the in-progress vertex
- * list and notifies the parent (RoomCanvas) via callbacks. It does NOT
- * mutate the property store itself; the parent commits on close.
+ * Hotfix 4 fix: the DrawHUD (a DOM <div> with inputs/buttons) was
+ * previously rendered inline as a Stage child. react-konva treats any
+ * non-Konva tag as an unknown node ("Konva has no node with the type
+ * div"), so the HUD never reached the DOM. The user couldn't see the
+ * name input, perimeter/area readout, undo button, or cancel button -
+ * Draw mode looked totally broken. We now `createPortal` the HUD into
+ * the RoomCanvas container div, OUTSIDE the Stage tree, so it overlays
+ * the canvas correctly while still consuming the same local state.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Layer, Line, Circle, Text, Group, Rect } from 'react-konva';
 import type Konva from 'konva';
 import {
@@ -34,21 +40,13 @@ const CLOSE_THRESHOLD_M = 0.4;
 const GRID_STEP_M = 0.5;
 
 export interface RoomDrawModeProps {
-  /** Whether draw mode is active. When false, this component is a no-op. */
   enabled: boolean;
-  /** Konva Stage reference — used to grab pointer position. */
   stageRef: React.RefObject<Konva.Stage>;
-  /** Container bounding rect — needed for screenToRoom math. */
   containerRef: React.RefObject<HTMLDivElement>;
-  /** Current viewport transform on the Konva Stage. */
   viewport: Viewport;
-  /** Pixels per metre. */
   pxPerMetre: number;
-  /** Callback fired once the polygon closes (≥ 3 vertices). */
   onCommit: (polygon: Polygon, name: string) => void;
-  /** Callback fired when the user hits Esc (clears in-progress state). */
   onCancel: () => void;
-  /** Default room name shown in the HUD input. */
   initialName?: string;
 }
 
@@ -67,6 +65,14 @@ export function RoomDrawMode({
   const [name, setName] = useState(initialName);
   const verticesRef = useRef(vertices);
   verticesRef.current = vertices;
+
+  // The HUD portals into containerRef.current, which is null on the
+  // first render. We track it in state so the portal mounts as soon as
+  // the parent's ref is attached.
+  const [hudTarget, setHudTarget] = useState<HTMLDivElement | null>(null);
+  useEffect(() => {
+    setHudTarget(containerRef.current);
+  }, [containerRef, enabled]);
 
   // Reset state whenever draw mode toggles on.
   useEffect(() => {
@@ -106,9 +112,6 @@ export function RoomDrawMode({
     }
 
     function handleClickOrTap(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
-      // Only react to clicks on empty canvas — let the placed-item layer
-      // handle clicks on items, etc. In Draw mode there shouldn't be
-      // anything else interactable but defensive checks don't hurt.
       const evt = e.evt as MouseEvent | TouchEvent;
       let clientX: number;
       let clientY: number;
@@ -151,7 +154,6 @@ export function RoomDrawMode({
   useEffect(() => {
     if (!enabled) return;
     function onKey(e: KeyboardEvent) {
-      // Don't intercept when the user is typing in the name input.
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
         return;
@@ -183,7 +185,6 @@ export function RoomDrawMode({
         lengthM: distance(vertices[i], vertices[i + 1]),
       });
     }
-    // Live preview segment to the cursor.
     if (hover && vertices.length > 0) {
       const last = vertices[vertices.length - 1];
       segs.push({ from: last, to: hover, lengthM: distance(last, hover) });
@@ -214,7 +215,6 @@ export function RoomDrawMode({
   return (
     <>
       <Layer listening={false}>
-        {/* Filled preview polygon (faint) once 3+ vertices */}
         {previewPolygon.length >= 3 && (
           <Line
             points={previewPolygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre])}
@@ -226,7 +226,6 @@ export function RoomDrawMode({
           />
         )}
 
-        {/* Drawn segments + length labels */}
         {segments.map((s, i) => {
           const isPreview = i === segments.length - 1 && hover && i >= vertices.length - 1;
           const mid: Vertex = {
@@ -266,7 +265,6 @@ export function RoomDrawMode({
           );
         })}
 
-        {/* Vertex dots */}
         {vertices.map((v, i) => (
           <Group key={`v-${i}`}>
             <Circle
@@ -277,7 +275,6 @@ export function RoomDrawMode({
               stroke="#FFFFFF"
               strokeWidth={2}
             />
-            {/* "drag-to-move" handle on the most recent vertex */}
             {i === vertices.length - 1 && vertices.length >= 1 && (
               <Circle
                 x={v.x * pxPerMetre}
@@ -291,7 +288,6 @@ export function RoomDrawMode({
           </Group>
         ))}
 
-        {/* Close indicator on the first vertex */}
         {closeCandidate && vertices.length >= 3 && (
           <Circle
             x={vertices[0].x * pxPerMetre}
@@ -303,7 +299,6 @@ export function RoomDrawMode({
           />
         )}
 
-        {/* Hover cursor crosshair */}
         {hover && (
           <Circle
             x={hover.x * pxPerMetre}
@@ -315,8 +310,8 @@ export function RoomDrawMode({
         )}
       </Layer>
 
-      {/* HUD — name input, undo, cancel, perimeter+area */}
       <DrawHUD
+        portalTarget={hudTarget}
         verticesCount={vertices.length}
         name={name}
         setName={setName}
@@ -334,11 +329,12 @@ export function RoomDrawMode({
 }
 
 // ---------------------------------------------------------------------------
-// HUD — DOM overlay, rendered via React Portal-equivalent (just absolute
-// positioning inside RoomCanvas). Lives OUTSIDE the Konva Layer.
+// DrawHUD - DOM overlay. MUST render OUTSIDE the Konva <Stage> via portal -
+// see file header.
 // ---------------------------------------------------------------------------
 
 function DrawHUD({
+  portalTarget,
   verticesCount,
   name,
   setName,
@@ -347,6 +343,7 @@ function DrawHUD({
   onUndo,
   onCancel,
 }: {
+  portalTarget: HTMLDivElement | null;
   verticesCount: number;
   name: string;
   setName: (n: string) => void;
@@ -355,15 +352,16 @@ function DrawHUD({
   onUndo: () => void;
   onCancel: () => void;
 }) {
-  return (
-    <DomOverlay>
+  if (!portalTarget) return null;
+  return createPortal(
+    (
       <div className="pointer-events-auto absolute left-1/2 top-3 z-30 flex w-[min(92vw,520px)] -translate-x-1/2 flex-col gap-2 rounded-lg border border-ppw-teal bg-white p-3 text-xs shadow-xl ring-1 ring-ppw-teal/40">
         <div className="flex items-center justify-between gap-2">
           <span className="rounded-md bg-ppw-teal px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
             Draw mode
           </span>
           <span className="text-[10px] text-ppw-slate">
-            Click to drop vertices · close near the first one
+            Click to drop vertices &middot; close near the first one
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -379,7 +377,7 @@ function DrawHUD({
           <div className="flex gap-4 text-[11px] text-ppw-slate">
             <span><b className="text-ppw-ink">{verticesCount}</b> vertices</span>
             <span>perim <b className="text-ppw-ink">{perimeterM.toFixed(2)} m</b></span>
-            <span>area <b className="text-ppw-ink">{areaM2.toFixed(2)} m²</b></span>
+            <span>area <b className="text-ppw-ink">{areaM2.toFixed(2)} m&sup2;</b></span>
           </div>
           <div className="flex gap-1.5">
             <button
@@ -402,15 +400,7 @@ function DrawHUD({
           </div>
         </div>
       </div>
-    </DomOverlay>
+    ),
+    portalTarget,
   );
-}
-
-/**
- * Tiny helper — renders a fragment whose absolute-positioned children
- * end up overlaid on the canvas. We don't use a real React Portal
- * because RoomCanvas already has a `position:relative` root.
- */
-function DomOverlay({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
 }
