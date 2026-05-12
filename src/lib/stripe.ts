@@ -1,5 +1,5 @@
 /**
- * Stripe scaffold - Week 3, extended Week 4a.
+ * Stripe scaffold - Week 3, extended Week 4a, Hotfix 2 (Week 4b).
  *
  * MVP behaviour:
  *   1. Read `VITE_STRIPE_PUBLISHABLE_KEY` from `import.meta.env`.
@@ -21,9 +21,24 @@ import type { CheckoutFormValues } from '../store/checkoutStore';
 
 const PUBLISHABLE_KEY_ENV = 'VITE_STRIPE_PUBLISHABLE_KEY';
 
-/** Read the publishable key from Vite's import.meta.env. */
+/**
+ * Read the publishable key from Vite's `import.meta.env`.
+ *
+ * IMPORTANT: Vite statically replaces `import.meta.env.VITE_*` at *build
+ * time*, but only for direct property access (`import.meta.env.VITE_X`).
+ * Dynamic bracket-lookup with a variable key (`env[name]`) relies on the
+ * runtime env object Vite emits - which is also fine in practice but is
+ * more fragile across bundler versions. Hotfix 2 (Week 4b) adds a direct
+ * static read first so the inlined string is always picked up.
+ */
 export function getPublishableKey(): string | undefined {
   try {
+    // Direct static access - Vite inlines the literal at build time.
+    const direct = (import.meta as unknown as {
+      env?: { VITE_STRIPE_PUBLISHABLE_KEY?: string };
+    })?.env?.VITE_STRIPE_PUBLISHABLE_KEY;
+    if (typeof direct === 'string' && direct.trim().length > 0) return direct.trim();
+    // Fallback: dynamic lookup via the runtime env object.
     const env = (import.meta as unknown as { env?: Record<string, string> })?.env;
     const key = env?.[PUBLISHABLE_KEY_ENV];
     if (typeof key === 'string' && key.trim().length > 0) return key.trim();
@@ -35,6 +50,17 @@ export function getPublishableKey(): string | undefined {
 
 export function isStripeConfigured(): boolean {
   return Boolean(getPublishableKey());
+}
+
+/**
+ * True when Stripe is configured AND the publishable key is a *test*-mode
+ * key (prefix `pk_test_`). Drives the customer-facing test-mode banner on
+ * the checkout page so prospects clearly see "no real money will be
+ * charged" instead of being puzzled by a missing-Stripe fallback note.
+ */
+export function isStripeTestMode(): boolean {
+  const key = getPublishableKey();
+  return typeof key === 'string' && key.startsWith('pk_test_');
 }
 
 let _stripePromise: ReturnType<typeof loadStripe> | null = null;

@@ -44,3 +44,7 @@ pnpm-debug.log*
 
 # Screenshots from local dev (keep committed week markers)
 screenshots/scratch/
+
+# Sandbox scratch files (cannot be deleted from inside the VM)
+.bashtest.txt
+.synctest

@@ -14,14 +14,22 @@
 html,
 body,
 #root {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
   padding: 0;
 }
 
-body {
-  overflow: hidden;
-}
+/*
+ * Hotfix 2 (Week 4b): the global `body { overflow: hidden }` was removed
+ * so checkout / cart / orders / success / cancelled / pending pages can
+ * scroll naturally when their content exceeds the viewport.
+ *
+ * The Designer route (`/` and `/designer`) still scroll-locks its own
+ * shell via `<div class="h-screen w-screen overflow-hidden">` in App.tsx
+ * (the Konva canvas + product palette + details panel each scroll inside
+ * their own pane). All other pages use `min-h-screen` and let the window
+ * scroll, including on mobile.
+ */
 
 /* Konva stage container — prevent text selection on drag */
 .konva-stage,

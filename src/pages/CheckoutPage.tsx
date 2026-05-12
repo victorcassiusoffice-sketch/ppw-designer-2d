@@ -1,5 +1,5 @@
 /**
- * CheckoutPage - Week 3, extended Week 4a.
+ * CheckoutPage - Week 3, extended Week 4a, Hotfix 2 (Week 4b).
  *
  * Collects customer info, validates, then either:
  *   - if Stripe is configured: hits the Vercel function at
@@ -31,6 +31,7 @@ import { useOrdersStore, type Order, type OrderLine } from '../store/ordersStore
 import {
   buildCheckoutPayload,
   isStripeConfigured,
+  isStripeTestMode,
   makeOrderId,
   startStripeCheckout,
 } from '../lib/stripe';
@@ -41,12 +42,12 @@ import { saveLastOrderSnapshot, type LastOrderSnapshot, type RoomSnapshot } from
 import { renderRoomSvg, svgToPngDataUrl } from '../lib/floorPlanSvg';
 
 /**
- * Field — module-scope on purpose.
+ * Field - module-scope on purpose.
  *
  * Previously defined inside CheckoutPage, which caused React to treat it as
  * a NEW component on every parent render. Every keystroke updated the
- * checkout store → re-rendered CheckoutPage → produced a fresh `Field`
- * function reference → React unmounted and remounted each <input>, which
+ * checkout store -> re-rendered CheckoutPage -> produced a fresh `Field`
+ * function reference -> React unmounted and remounted each <input>, which
  * blew away focus. The form became unusable (one character per click).
  *
  * Hoisting to module scope keeps the reference stable, so React reconciles
@@ -407,10 +408,18 @@ export default function CheckoutPage() {
                 {formatCurrency(cart.subtotal, currency)}
               </span>
             </div>
+            {isStripeTestMode() && (
+              <p className="mt-3 rounded-md border border-ppw-teal/40 bg-ppw-teal/10 p-2 text-[10px] leading-snug text-ppw-ink">
+                <b>Stripe Test Mode</b> - this is a test order, no real money
+                will be charged. Use card <b>4242 4242 4242 4242</b>, any future
+                expiry date, and any 3-digit CVC.
+              </p>
+            )}
             {!isStripeConfigured() && (
-              <p className="mt-3 rounded-md bg-ppw-sand p-2 text-[10px] text-ppw-slate">
-                <b>Test mode:</b> Stripe is not live yet. Your order will be recorded
-                locally and Vic will contact you within 24h to finalise payment.
+              <p className="mt-3 rounded-md bg-ppw-sand p-2 text-[10px] leading-snug text-ppw-slate">
+                <b>Manual handover:</b> your order will be recorded and Vic
+                will contact you within 24 hours to confirm details and
+                arrange payment + installation.
               </p>
             )}
           </div>

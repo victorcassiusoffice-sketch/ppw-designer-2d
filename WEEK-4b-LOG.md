@@ -142,3 +142,49 @@ Cowork cannot do 1, 4, or 5 — they require Stripe Dashboard / registrar logins
 - `npx vite build` — succeeds (987.5 kB JS / 21.08 kB CSS, same chunk-size warning as before, no new errors).
 
 **Commit (local only, per REBIRTH-11.3 — Vic pushes manually):** `fix: preserve input focus on checkout form (one-char-per-click bug)`
+
+---
+
+## Hotfix 2: page scroll + country default + test-mode copy
+
+**Reported by Vic** during a second smoke test of `https://ppw-designer-2d.vercel.app/checkout`:
+
+1. The checkout page **couldn't be scrolled** by mouse-wheel or scrollbar. Vic could Tab through the inputs, but the form was taller than the viewport and the lower sections (delivery address, country, place-order button) were unreachable.
+2. The **Country select defaulted to United Kingdom (GB)** instead of Mauritius, even though the Currency switcher had already detected Mauritius.
+3. The customer-facing copy under the order summary said *"Test mode: Stripe is not live yet. Your order will be recorded locally..."* — which reads to a real prospect like the system is unfinished. The publishable key IS set in Vercel, but if it ever fails to reach the bundle the fallback message looks broken.
+
+### Root causes
+
+1. **Scroll lock.** `src/index.css` had a *global* `body { overflow: hidden }` plus `html, body, #root { height: 100% }`. The Designer (`/`, `/designer`) needs that fixed-height shell so the Konva canvas and product palette can each scroll inside their own pane. The checkout / cart / orders / success / cancelled / pending pages all use `min-h-screen` — so they grew taller than the viewport, but the global body overflow lock prevented the window from scrolling. Result: form content past the fold was unreachable on every non-Designer route.
+2. **Country default.** `initialForm()` in `src/store/checkoutStore.ts` was calling `detectRegion()` from `src/lib/region.ts`. On Vic's browser, locale `en-GB` parsed to `GB`, so the form initialised with `country: 'GB'`. The Currency switcher uses the same detector but with a Mauritius fallback via `currencyForCountry`, which is why MUR was picked correctly while the form's Country dropdown went to GB.
+3. **Stripe copy.** The `<p>Test mode: Stripe is not live yet…</p>` block in `src/pages/CheckoutPage.tsx` was a fallback that only rendered when `isStripeConfigured()` returned `false`. The check itself is correct, but its dynamic env lookup (`env[PUBLISHABLE_KEY_ENV]`) is more fragile than direct static access (`import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY`) — Vite only guarantees inlining for direct dotted accesses. Even with the check fixed, the copy itself was unhelpful: a real prospect should see a clear test-mode banner ("no real money will be charged, use card 4242 …"), and the fallback should sound like an intentional manual-handover path, not like the site is broken.
+
+### Fix
+
+- **`src/index.css`** — removed the global `body { overflow: hidden }`. Changed `html, body, #root` from `height: 100%` to `min-height: 100%` so non-Designer pages can grow taller than the viewport and let the window scroll. The Designer route still scroll-locks via its own root `<div class="h-screen w-screen overflow-hidden">` in `src/App.tsx`, so the Konva canvas + palette + details panel still behave correctly. Mobile bottom-sheet behaviour in the ProductPalette is unaffected — that pattern is scoped to the Designer, not global CSS.
+- **`src/store/checkoutStore.ts`** — `initialForm()` no longer calls `detectRegion()`; the Country field always starts on Mauritius (`'MU'`) since that is PPW's home market and the shipping default. Users outside Mauritius will pick from the dropdown explicitly. Persistence key bumped from `ppw_checkout_v1` → `ppw_checkout_v2` so cached `country: 'GB'` (etc.) in `sessionStorage` gets cleared on next load. `detectRegion`/`COUNTRY_OPTIONS` imports dropped (the dropdown still imports `COUNTRY_OPTIONS` directly in `CheckoutPage.tsx`).
+- **`src/lib/stripe.ts`** — `getPublishableKey()` now tries direct static access (`import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY`) first so Vite can inline the literal at build time, then falls back to the dynamic lookup it used to do. Added `isStripeTestMode()` which returns true when the publishable key starts with `pk_test_`.
+- **`src/pages/CheckoutPage.tsx`** — replaced the single "Stripe is not live yet" block with two clear states:
+  - **Test mode banner** (`isStripeTestMode()` is true): teal-tinted, reads *"Stripe Test Mode — this is a test order, no real money will be charged. Use card 4242 4242 4242 4242, any future expiry date, and any 3-digit CVC."* This is what Vic and real prospects see during smoke-testing.
+  - **Manual handover banner** (`!isStripeConfigured()`): sand-tinted, reads *"Manual handover: your order will be recorded and Vic will contact you within 24 hours to confirm details and arrange payment + installation."* This only renders if the publishable key fails to reach the bundle — much less alarming than "not live yet."
+
+### Files touched
+- `src/index.css`
+- `src/store/checkoutStore.ts`
+- `src/lib/stripe.ts`
+- `src/pages/CheckoutPage.tsx`
+- `.gitignore` (added `.bashtest.txt` / `.synctest` — sandbox scratch files the VM cannot unlink)
+
+### Verification
+- `npx tsc --noEmit` — clean (exit 0).
+- `npm test` — **167/167 pass across 12 test files** (same suite count as Hotfix 1).
+- `npx vite build` — succeeds (988.04 kB JS / 21.11 kB CSS, same chunk-size warning as before; the in-place `dist/` rebuild hit a Windows `EPERM` from a stale lock, ran cleanly when pointed at a temp outDir — code is clean, deploy artifact builds end-to-end).
+
+### Commit (local only, per REBIRTH-11.3 — Vic pushes manually)
+- Message: `fix: page scroll on checkout, default country to Mauritius, clarify test-mode copy`
+
+### Push command for Vic
+```
+cd ~/Documents/PPW-Code/ppw-designer-2d
+git push origin main
+```

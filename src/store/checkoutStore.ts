@@ -1,14 +1,14 @@
 /**
- * checkoutStore — Week 3.
+ * checkoutStore — Week 3, updated Hotfix 2 (Week 4b).
  *
  * Holds the customer info form between navigations. Backed by
  * sessionStorage so a refresh doesn't wipe what the user typed.
- * Persistence: `ppw_checkout_v1`.
+ * Persistence: `ppw_checkout_v2` (bumped from v1 in Hotfix 2 so cached
+ * `country: 'GB'`-style locale guesses get cleared on next load).
  */
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { detectRegion, COUNTRY_OPTIONS } from '../lib/region';
 
 export interface CheckoutFormValues {
   name: string;
@@ -40,10 +40,15 @@ interface CheckoutState {
   resetForm: () => void;
 }
 
+/**
+ * The Checkout form's Country field always defaults to Mauritius — PPW's
+ * home market. The Currency switcher still uses browser locale detection,
+ * but the Country here is the shipping address and should not flip to
+ * e.g. `GB` just because the browser locale is `en-GB`. Users in other
+ * markets will change it explicitly from the dropdown.
+ */
 function initialForm(): CheckoutFormValues {
-  const detected = detectRegion();
-  const country = COUNTRY_OPTIONS.some((c) => c.code === detected) ? detected : 'MU';
-  return { ...EMPTY_FORM, country };
+  return { ...EMPTY_FORM };
 }
 
 export const useCheckoutStore = create<CheckoutState>()(
@@ -55,7 +60,7 @@ export const useCheckoutStore = create<CheckoutState>()(
       resetForm: () => set({ form: initialForm() }),
     }),
     {
-      name: 'ppw_checkout_v1',
+      name: 'ppw_checkout_v2',
       storage: createJSONStorage(() =>
         typeof sessionStorage !== 'undefined' ? sessionStorage : localStorage,
       ),
