@@ -1,5 +1,5 @@
 /**
- * Stripe scaffold - Week 3, extended Week 4a, Hotfix 2 (Week 4b).
+ * Stripe scaffold - Week 3, extended Week 4a, Hotfix 3 (Week 4b).
  *
  * MVP behaviour:
  *   1. Read `VITE_STRIPE_PUBLISHABLE_KEY` from `import.meta.env`.
@@ -19,32 +19,51 @@ import type { Currency } from '../data/products.schema';
 import type { CartTotals } from '../store/cartStore';
 import type { CheckoutFormValues } from '../store/checkoutStore';
 
-const PUBLISHABLE_KEY_ENV = 'VITE_STRIPE_PUBLISHABLE_KEY';
-
 /**
  * Read the publishable key from Vite's `import.meta.env`.
  *
  * IMPORTANT: Vite statically replaces `import.meta.env.VITE_*` at *build
- * time*, but only for direct property access (`import.meta.env.VITE_X`).
- * Dynamic bracket-lookup with a variable key (`env[name]`) relies on the
- * runtime env object Vite emits - which is also fine in practice but is
- * more fragile across bundler versions. Hotfix 2 (Week 4b) adds a direct
- * static read first so the inlined string is always picked up.
+ * time*, but ONLY when the source contains the literal token
+ * `import.meta.env.VITE_X` exactly. Any wrapping cast, optional chain on
+ * `import.meta`, or dynamic bracket lookup hides the token from Vite's
+ * scanner and the value is NOT inlined into the production bundle -
+ * leaving it `undefined` at runtime even when the env var is set in
+ * Vercel.
+ *
+ * Hotfix 3 (Week 4b): The previous implementation cast `import.meta`
+ * with `as unknown as {...}` to silence a TS error and used a string
+ * variable for the second-pass lookup. Both patterns prevented Vite
+ * from inlining the literal, so the deployed bundle on Vercel contained
+ * zero occurrences of `pk_test_` and `isStripeConfigured()` always
+ * returned false in production. The fix below uses ONLY direct dotted
+ * access on `import.meta.env`, which Vite recognises and replaces with
+ * the string literal at build time.
  */
+
+// Module-load capture: this exact token is what Vite scans for and
+// replaces with the string literal at build time. Reading it once here
+// also gives us a stable diagnostic to log into the browser console.
+export const PUBLISHABLE_KEY: string | undefined =
+  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+
+// Diagnostic: visible in the browser console on first load. Lets us
+// confirm from production whether the build-time inlining actually
+// reached the deployed bundle (Hotfix 3 verification probe).
+// eslint-disable-next-line no-console
+console.log('[stripe-init]', {
+  hasKey: typeof PUBLISHABLE_KEY === 'string' && PUBLISHABLE_KEY.length > 0,
+  keyPrefix:
+    typeof PUBLISHABLE_KEY === 'string' ? PUBLISHABLE_KEY.slice(0, 7) : null,
+});
+
 export function getPublishableKey(): string | undefined {
-  try {
-    // Direct static access - Vite inlines the literal at build time.
-    const direct = (import.meta as unknown as {
-      env?: { VITE_STRIPE_PUBLISHABLE_KEY?: string };
-    })?.env?.VITE_STRIPE_PUBLISHABLE_KEY;
-    if (typeof direct === 'string' && direct.trim().length > 0) return direct.trim();
-    // Fallback: dynamic lookup via the runtime env object.
-    const env = (import.meta as unknown as { env?: Record<string, string> })?.env;
-    const key = env?.[PUBLISHABLE_KEY_ENV];
-    if (typeof key === 'string' && key.trim().length > 0) return key.trim();
-  } catch {
-    /* ignore */
-  }
+  // Direct dotted access - Vite inlines the literal at build time.
+  // Read at call time (not from the module-load const) so that test
+  // stubs via `vi.stubEnv('VITE_STRIPE_PUBLISHABLE_KEY', '')` take
+  // effect; in production this is a string-literal replacement and the
+  // env object lookup is gone entirely.
+  const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+  if (typeof key === 'string' && key.trim().length > 0) return key.trim();
   return undefined;
 }
 

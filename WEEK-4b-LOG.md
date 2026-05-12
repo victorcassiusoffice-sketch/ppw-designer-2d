@@ -188,3 +188,78 @@ Cowork cannot do 1, 4, or 5 — they require Stripe Dashboard / registrar logins
 cd ~/Documents/PPW-Code/ppw-designer-2d
 git push origin main
 ```
+
+---
+
+## Hotfix 3: VITE_STRIPE_PUBLISHABLE_KEY not inlined in production bundle
+
+**Reported by smoke test** against `https://ppw-designer-2d.vercel.app/`:
+
+- Checkout page rendered the **"Manual handover"** banner (the `!isStripeConfigured()` fallback) instead of the **"Stripe Test Mode"** banner, even though all four env vars were correctly set in Vercel Project Settings (Production + Preview scopes).
+- Submitting the cart routed to `/order/pending` instead of redirecting to Stripe Checkout.
+- Grepping the deployed bundle confirmed root cause: `https://ppw-designer-2d.vercel.app/assets/index-Cgg8mR9S.js` contained **zero** occurrences of `pk_test_`. Vite had not statically inlined the publishable key at build time.
+
+### Root cause
+
+The Hotfix 2 implementation of `getPublishableKey()` in `src/lib/stripe.ts` accessed the env var via a TypeScript cast:
+
+```ts
+const direct = (import.meta as unknown as {
+  env?: { VITE_STRIPE_PUBLISHABLE_KEY?: string };
+})?.env?.VITE_STRIPE_PUBLISHABLE_KEY;
+```
+
+Vite's static-replacement pass scans the source for the **literal token** `import.meta.env.VITE_X` (dotted, un-wrapped). The cast `(import.meta as unknown as {...})?.env?.VITE_STRIPE_PUBLISHABLE_KEY` hides the token from the scanner — the source no longer contains `import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY` as a contiguous expression, so Vite emits a runtime property lookup against the env object instead. In production builds the runtime env object only contains the special keys Vite adds (`MODE`, `BASE_URL`, `DEV`, `PROD`, `SSR`) — `VITE_*` vars are *not* attached at runtime, they're inlined as string literals at every call site. With no inlining and no runtime entry, the lookup returns `undefined`.
+
+The dynamic-bracket fallback (`env?.[PUBLISHABLE_KEY_ENV]` with `PUBLISHABLE_KEY_ENV = 'VITE_STRIPE_PUBLISHABLE_KEY'`) had the same problem for the same reason — the variable hid the literal from the scanner.
+
+The TS error the cast was silencing existed because `vite/client`'s `ImportMetaEnv` interface doesn't type custom `VITE_*` keys by default. Removing the cast leaves a clean direct read; `vite/client` types `ImportMetaEnv` with an index signature, so `import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY` type-checks without help.
+
+### Fix
+
+`src/lib/stripe.ts` rewritten so every env-var read uses **direct dotted access** on `import.meta.env`:
+
+1. Module-level capture at the top of the file:
+   ```ts
+   export const PUBLISHABLE_KEY: string | undefined =
+     import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+   ```
+   Exported so other modules can import it. This is the canonical token Vite inlines at build time.
+
+2. Diagnostic `console.log('[stripe-init]', { hasKey, keyPrefix })` next to the capture, so the production browser console will surface whether the inlining actually reached the deployed bundle on next deploy.
+
+3. `getPublishableKey()` now reads the env var directly at call time (also direct dotted access, no cast):
+   ```ts
+   const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+   ```
+   Call-time read keeps the existing Vitest `vi.stubEnv(...)` tests working — in production this is a string-literal replacement, in tests it's the stubbable env object.
+
+The fallback bracket-lookup branch was removed (it could never work in production for the reasons above).
+
+`vite.config.ts` reviewed — no `envPrefix` override, no plugin stripping VITE_ vars, no `define` clobber. Vite picks up `.env.local` normally. No config change needed.
+
+No other client-side file reads `VITE_STRIPE_PUBLISHABLE_KEY` (grepped `src/`). `RESEND_API_KEY` is server-only — only referenced in `api/` (Vercel functions, Node runtime, `process.env`) — never imported into the client bundle.
+
+### Files touched
+- `src/lib/stripe.ts` (full rewrite of the env-read section + diagnostic log)
+- `WEEK-4b-LOG.md` (this entry)
+
+### Verification
+- `npx tsc --noEmit` — clean (exit 0).
+- `npm test` — **167/167 pass across 12 test files**. Stripe suite prints `[stripe-init] { hasKey: true, keyPrefix: 'pk_test' }` from the diagnostic log — confirms the module-load capture is working in the Vitest env.
+- `npx vite build --outDir <tmpdir>` — succeeds (988.06 kB JS / 21.11 kB CSS).
+- **Bundle grep (the key verification):**
+  ```
+  grep -o "pk_test_[a-zA-Z0-9]\{20,\}" <tmpdir>/assets/*.js
+  ```
+  Returns **2 occurrences** of the full `pk_test_51TVx3mKAIwndBLJV...` publishable key embedded as a string literal in the production JS — one for the module-load const, one inlined into `getPublishableKey()`. Before Hotfix 3 this grep returned zero matches against the same `.env.local` source.
+
+### Commit (local only, per REBIRTH-11.3 — Vic pushes manually)
+- Message: `fix: ensure Vite statically inlines VITE_STRIPE_PUBLISHABLE_KEY (was dynamic access)`
+
+### Push command for Vic
+```
+cd ~/Documents/PPW-Code/ppw-designer-2d
+git push origin main
+```
+Vercel will auto-deploy on push. After the new build is live, re-run the smoke test: the checkout page should render the **teal "Stripe Test Mode"** banner, the browser console should show `[stripe-init] { hasKey: true, keyPrefix: 'pk_test' }`, and submitting the cart should redirect to a `https://checkout.stripe.com/...` session URL.
