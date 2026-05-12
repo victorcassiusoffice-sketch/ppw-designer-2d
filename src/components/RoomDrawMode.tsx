@@ -1,11 +1,14 @@
 /**
  * RoomDrawMode - Week 2.5 polygon room editor, comprehensively rewired
- * in Week 4b Hotfix 5.
+ * in Week 4b Hotfix 5. Week 4b Hotfix 7 wired the Close button + Enter
+ * key into a single "always-add-a-new-room" commit path so Vic can
+ * actually add multiple rooms via Draw mode.
  *
  * The user clicks/taps on the canvas to drop polygon vertices; vertices
  * snap to the 0.5 m grid. Once a candidate vertex lands within 0.4 m of
- * the first vertex (or the user presses Enter with >=3 vertices), the
- * polygon closes and is committed as the new active-room polygon.
+ * the first vertex (or the user presses Enter / clicks Close with >=3
+ * vertices), the polygon closes and is committed as a NEW Room in the
+ * active Property. The new room becomes active.
  *
  *  - Cmd/Ctrl + Z undoes the last vertex while drawing.
  *  - Esc cancels the draw.
@@ -13,42 +16,9 @@
  *  - Total perimeter (m) and area (m^2) are shown live in the HUD.
  *  - The user can rename the room inline before committing.
  *
- * --- Hotfix 5 architecture change (CRITICAL) ---
- *
- * Hotfix 4 tried to "portal the HUD out of the Stage" by rendering
- *
- *     <Stage>
- *       <RoomDrawMode>
- *         <Layer/>           // Konva node - fine
- *         <DrawHUD>          // returns createPortal(<div>...</div>, host)
- *       </RoomDrawMode>
- *     </Stage>
- *
- * Problem: react-konva is the host renderer for the Stage subtree. A
- * React portal nested inside that subtree is STILL processed by the
- * same renderer for its inner children. So the inner <div> hits
- * `Core.default['div'] === undefined`, falls back to a Konva.Group,
- * then react-konva's `appendChildToContainer(parentInstance.add(child))`
- * tries to call `.add()` on the DOM container div - which has no such
- * method. This either silently corrupts the Konva tree (no vertex
- * placement, no HUD) or throws during commit (Rect -> Draw white
- * screen).
- *
- * Real fix: split the component in two and render them as SIBLINGS of
- * the Stage, never as descendants of Stage:
- *
- *     <div ref={containerRef}>
- *       <Stage>
- *         <RoomDrawLayer .../>   // Konva-only, child of Stage
- *       </Stage>
- *       <RoomDrawHUD .../>       // DOM-only, sibling of Stage
- *     </div>
- *
- * Shared state (vertices / hover / name) lives in the parent
- * (`RoomCanvas`) and is passed in as props.
- *
- * Console-log breadcrumbs `[draw-mode]` are wired through every
- * critical step; they stay in until Designer Phase 1 is stable.
+ * Console-log breadcrumbs `[draw-mode]` (state changes) and
+ * `[draw-close]` (every branch point in the commit path) stay in
+ * until Designer Phase 1 is stable.
  */
 
 import { useCallback, useEffect, useMemo, useRef } from 'react';
@@ -63,6 +33,20 @@ import {
   snapToGrid,
 } from '../lib/geometry';
 import type { Polygon, Vertex, Viewport } from '../lib/geometry';
+import { useToastStore, type ToastKind } from '../store/toastStore';
+
+/**
+ * Tiny helper used by the global-keydown handler — the handler is wired
+ * once in a useEffect and pulls the current push function from the
+ * singleton store at call time so it stays stale-closure proof.
+ */
+function pushDrawToast(message: string, kind: ToastKind = 'info'): void {
+  try {
+    useToastStore.getState().push(message, kind);
+  } catch {
+    // Toast store optional in some test envs - never throw out of a key handler.
+  }
+}
 
 export const CLOSE_THRESHOLD_M = 0.4;
 export const GRID_STEP_M = 0.5;
@@ -181,11 +165,21 @@ export function RoomDrawLayer({
       if (isClosingPolygon(current, p, CLOSE_THRESHOLD_M)) {
         if (current.length >= 3) {
           console.log(DBG, 'close via click', { vertices: current.length });
+          console.log('[draw-close]', {
+            reason: 'click-first-vertex',
+            vertices: current.length,
+            success: null,
+          });
           onCommitRef.current(current, nameRef.current.trim() || 'New Room');
           setVerticesRef.current([]);
           setHoverRef.current(null);
         } else {
           console.log(DBG, 'close gesture ignored, < 3 vertices');
+          console.log('[draw-close]', {
+            reason: 'click-first-vertex-too-few-vertices',
+            vertices: current.length,
+            success: false,
+          });
         }
         return;
       }
@@ -212,9 +206,9 @@ export function RoomDrawLayer({
     if (!enabled) return;
     function onKey(e: KeyboardEvent) {
       const target = e.target as HTMLElement | null;
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
-        return;
-      }
+      const inTextField =
+        !!target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA');
+
       if (e.key === 'Escape') {
         e.preventDefault();
         console.log(DBG, 'keydown Escape -> cancel');
@@ -224,16 +218,37 @@ export function RoomDrawLayer({
         return;
       }
       if (e.key === 'Enter') {
+        // Hotfix 7: Enter MUST close the polygon even when focus is in
+        // the HUD's room-name input. The pre-Hotfix-7 guard bailed out
+        // here whenever the input had focus, which is the most common
+        // state right before the user finishes drawing (they tab over
+        // to rename the room, then hit Enter to close).
         const current = verticesRef.current;
+        e.preventDefault();
         if (current.length >= 3) {
-          e.preventDefault();
           console.log(DBG, 'keydown Enter -> close', { vertices: current.length });
+          console.log('[draw-close]', {
+            reason: 'enter-key',
+            vertices: current.length,
+            success: null,
+          });
+          if (inTextField && target && typeof target.blur === 'function') {
+            target.blur();
+          }
           onCommitRef.current(current, nameRef.current.trim() || 'New Room');
           setVerticesRef.current([]);
           setHoverRef.current(null);
         } else {
-          console.log(DBG, 'Enter ignored, < 3 vertices', { vertices: current.length });
+          console.log('[draw-close]', {
+            reason: 'enter-key-too-few-vertices',
+            vertices: current.length,
+            success: false,
+          });
+          pushDrawToast('Need at least 3 walls.', 'warn');
         }
+        return;
+      }
+      if (inTextField) {
         return;
       }
       if ((e.metaKey || e.ctrlKey) && (e.key === 'z' || e.key === 'Z')) {
@@ -384,7 +399,7 @@ export function RoomDrawLayer({
 
 // ---------------------------------------------------------------------------
 // RoomDrawHUD - DOM-only. MUST be rendered as a SIBLING of <Stage>,
-// never inside it. (See file header for the why.)
+// never inside it.
 // ---------------------------------------------------------------------------
 
 export interface RoomDrawHUDProps {
@@ -426,10 +441,19 @@ export function RoomDrawHUD({
 
   const handleClose = useCallback(() => {
     if (vertices.length < 3) {
-      console.log(DBG, 'HUD close ignored, < 3 vertices');
+      console.log('[draw-close]', {
+        reason: 'hud-close-button-too-few-vertices',
+        vertices: vertices.length,
+        success: false,
+      });
+      pushDrawToast('Need at least 3 walls.', 'warn');
       return;
     }
-    console.log(DBG, 'HUD close click', { vertices: vertices.length });
+    console.log('[draw-close]', {
+      reason: 'hud-close-button',
+      vertices: vertices.length,
+      success: null,
+    });
     onCommit(vertices, name.trim() || 'New Room');
     setVertices([]);
     setHover(null);
@@ -488,7 +512,11 @@ export function RoomDrawHUD({
             onClick={handleClose}
             disabled={vertices.length < 3}
             className="rounded-md border border-ppw-teal bg-ppw-teal px-2 py-1 text-[11px] font-medium text-white hover:bg-ppw-teal/90 disabled:cursor-not-allowed disabled:opacity-50"
-            title="Close polygon (Enter)"
+            title={
+              vertices.length < 3
+                ? 'Need at least 3 walls'
+                : 'Close polygon and commit as new room (Enter)'
+            }
             data-testid="room-draw-close"
           >
             Close

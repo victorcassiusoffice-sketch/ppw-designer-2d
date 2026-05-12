@@ -501,3 +501,72 @@ Currency formatting uses a small in-module helper `formatCurrencyPdf` instead of
 cd ~/Documents/PPW-Code/ppw-designer-2d
 git push origin main
 ```
+
+---
+
+## Hotfix 7: Draw-mode Close + Enter actually commit a new room
+
+**Reported by Vic** after Hotfix 5/6 deploy. Symptoms:
+
+- In Draw mode, vertices placed fine, but clicking **Close** or pressing **Enter** did nothing visible - no new room appeared in the room list.
+- Only **Cancel** appeared to work (because it just discarded the in-progress polygon).
+- Net effect: user could not add a second room via the "Add room -> Draw polygon" flow.
+
+### Root cause (one line)
+
+`RoomCanvas.handleDrawCommit` had a conditional that **overwrote the active room's polygon** with the drawn polygon whenever the active room had zero placed items, instead of always adding a NEW room - so the second "Add room -> Draw" attempt silently replaced the empty active room's shape and never grew the rooms list.
+
+The bug branch:
+
+```ts
+if (ar && ar.placedItems.length === 0) {
+  setRoomPolygon(ar.id, newPolygon);   // <-- overwrites instead of adding
+} else {
+  const id = addRoom({ name, polygon: newPolygon });
+  ...
+}
+```
+
+The Close button and Enter key were both correctly wired into this commit path. They both ran. They just hit the overwrite branch instead of the add-room branch, so the rooms list never grew and Vic saw "nothing happened".
+
+### Fix
+
+`src/components/RoomCanvas.tsx` - `handleDrawCommit` rewritten so every Close / Enter / click-first-vertex commit goes through `usePropertyStore.getState().addRoom(...)`. The overwrite branch is gone entirely. Added:
+
+- **`[draw-close]` diagnostics** at every branch point (`guard-too-few-vertices`, `commit-start`, `commit-success`, `commit-error`).
+- **Try/catch around `addRoom`** with a user-facing toast on the error path (previously a silent throw would have killed the commit with no UI feedback).
+- **`pushToast` on the < 3 vertices guard** so a caller that bypasses the disabled-button UI (e.g. Enter pressed too early) gets feedback.
+- **Defensive `setActiveRoom(id)`** after `addRoom` - `addRoom` already sets it, but the explicit call locks the contract in.
+
+`src/components/RoomDrawMode.tsx` - the close handlers updated to match the new commit contract:
+
+- **HUD `handleClose`** emits `[draw-close]` with `reason: 'hud-close-button'` (or `'hud-close-button-too-few-vertices'` on the disabled-state guard), and shows a toast on the guard path.
+- **Layer `onKey` Enter handler** no longer early-returns when focus is in an INPUT/TEXTAREA. The pre-Hotfix-7 guard bailed out at the top of `onKey` whenever the target was an input, which is exactly the state right before the user finishes drawing (they tab over to rename the room, then hit Enter to close). Enter now blurs the input, fires `[draw-close] reason: 'enter-key'`, and commits.
+- **Click-first-vertex close** also emits `[draw-close] reason: 'click-first-vertex'` so all three close gestures share one tag.
+- **Close button `title`** is now context-aware: `"Need at least 3 walls"` when disabled, `"Close polygon and commit as new room (Enter)"` when enabled.
+- **Draw-mode-enter reset** in RoomCanvas now defaults `drawName` to `'New Room'` rather than the active room's name (which was misleading now that Draw mode always adds a NEW room).
+
+### Files touched
+
+- `src/components/RoomCanvas.tsx` - `handleDrawCommit` rewritten; `setRoomPolygon` import removed; `drawName` default switched to `'New Room'`.
+- `src/components/RoomDrawMode.tsx` - Enter handler rewired so it works in inputs; HUD `handleClose` and click-first-vertex handler both emit `[draw-close]`; Close button tooltip is context-aware; toast on too-few-vertices guards.
+- `src/components/__tests__/RoomDrawMode.test.ts` - **+11 tests**. New `RoomDrawMode - close-commit (Hotfix 7)` describe block exercises the propertyStore boundary directly (Close click adds new room, Enter does same as Close, < 3 vertices rejects, Cancel adds nothing, second Close from empty active room still adds a new room - pins the exact bug Vic reported). Two new source-inspection describes pin the `disabled={vertices.length < 3}` button state, the `Need at least 3 walls` tooltip, the `[draw-close]` reason tags, and the always-`addRoom`-never-`setRoomPolygon` invariant inside `handleDrawCommit`.
+- `WEEK-4b-LOG.md` - this entry.
+
+### Verification
+
+- `npx tsc --noEmit` - clean (exit 0).
+- `npm test` - **218 / 218 pass across 15 test files** (was 207 / 207 - **+11 new tests**).
+- `npx vite build` - clean (999.18 kB JS / 21.34 kB CSS; in-place `dist/` rebuild hit the same pre-existing Windows EPERM that earlier hotfixes saw, ran cleanly when pointed at a temp `outDir`).
+- Test count delta: **207 -> 218 (+11)**.
+
+### Commit (local only, per REBIRTH-11.3 - Vic pushes manually)
+
+- Message: `fix(draw-mode): wire Close button + Enter key to commit polygon as new room`
+
+### Push command for Vic
+
+```
+cd ~/Documents/PPW-Code/ppw-designer-2d
+git push origin main
+```

@@ -13,6 +13,11 @@
  * lifted here so the Konva-side RoomDrawLayer (Stage child) and the
  * DOM-side RoomDrawHUD (Stage sibling) can share it without ever
  * forcing react-konva to reconcile DOM nodes inside the Konva tree.
+ *
+ * Hotfix 7 (Week 4b): handleDrawCommit ALWAYS adds a new room. The
+ * pre-Hotfix-7 conditional that overwrote the active room's polygon
+ * when it had no placed items silently swallowed the "Add room ->
+ * Draw" flow on the second attempt. See [draw-close] diagnostics.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -62,7 +67,6 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
   const updateItem = useDesignStore((s) => s.updateItem);
 
   const activeRoom = usePropertyStore(selectActiveRoom);
-  const setRoomPolygon = usePropertyStore((s) => s.setRoomPolygon);
   const addRoom = usePropertyStore((s) => s.addRoom);
 
   const pushToast = useToastStore((s) => s.push);
@@ -86,7 +90,10 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
       console.log('[draw-mode]', 'enter Draw mode, reset local state');
       setDrawVertices([]);
       setDrawHover(null);
-      setDrawName(activeRoom?.name ?? 'New Room');
+      // Default the name to a fresh "New Room" rather than the active
+      // room's name (Hotfix 7: Draw mode always adds a NEW room, so
+      // reusing the active room's name was misleading).
+      setDrawName('New Room');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drawMode]);
@@ -209,27 +216,64 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
 
   const handleDrawCommit = useCallback(
     (newPolygon: Polygon, name: string) => {
-      console.log('[draw-mode]', 'commit', {
+      // Hotfix 7: Draw mode ALWAYS adds a new room. The pre-Hotfix-7
+      // behaviour overwrote the active room's polygon when it had no
+      // placed items, which silently swallowed the second "Add room ->
+      // Draw" attempt (the new polygon replaced the empty active room
+      // instead of being committed as a new room). Net effect: user
+      // couldn't add a second room via Draw mode. Now: every Close /
+      // Enter commit produces a new Room in the Property and the new
+      // room becomes active.
+      if (newPolygon.length < 3) {
+        console.log('[draw-close]', {
+          reason: 'guard-too-few-vertices',
+          vertices: newPolygon.length,
+          success: false,
+        });
+        pushToast('Need at least 3 walls to close the room.', 'warn');
+        return;
+      }
+      console.log('[draw-close]', {
+        reason: 'commit-start',
         vertices: newPolygon.length,
         name,
-        area: polygonArea(newPolygon),
+        success: null,
       });
-      const ar = activeRoom;
-      if (ar && ar.placedItems.length === 0) {
-        setRoomPolygon(ar.id, newPolygon);
-        if (name && name !== ar.name) {
-          usePropertyStore.getState().renameRoom(ar.id, name);
-        }
-        pushToast(`Room shape set (${polygonArea(newPolygon).toFixed(2)} m2)`, 'success');
-      } else {
+      try {
         const id = addRoom({ name, polygon: newPolygon });
+        // addRoom already sets activeRoomId to the new room (see
+        // propertyStore.addRoom), but call setActiveRoom defensively in
+        // case that contract ever changes.
         usePropertyStore.getState().setActiveRoom(id);
-        pushToast(`New room "${name}" created`, 'success');
+        pushToast(
+          `New room "${name}" created (${polygonArea(newPolygon).toFixed(2)} m2)`,
+          'success',
+        );
+        console.log('[draw-close]', {
+          reason: 'commit-success',
+          vertices: newPolygon.length,
+          roomId: id,
+          success: true,
+        });
+      } catch (err) {
+        console.error('[draw-close]', {
+          reason: 'commit-error',
+          vertices: newPolygon.length,
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        pushToast('Could not add room. See console for details.', 'error');
+        return;
       }
       if (onDrawComplete) onDrawComplete();
     },
-    [activeRoom, setRoomPolygon, addRoom, pushToast, onDrawComplete],
+    [addRoom, pushToast, onDrawComplete],
   );
+
+  // `activeRoom` is no longer used by handleDrawCommit (Hotfix 7 - Draw
+  // mode always adds a new room). Keep the destructured binding live
+  // for any future read access.
+  void activeRoom;
 
   const handleDrawCancel = useCallback(() => {
     console.log('[draw-mode]', 'cancel');
