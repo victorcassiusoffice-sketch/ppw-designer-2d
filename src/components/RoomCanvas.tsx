@@ -4,12 +4,18 @@
  *     the rectangle from W1/W2).
  *   - Drag-drop landing from ProductPalette - bounds check now uses
  *     `isRectInsidePolygon` so concave rooms reject correctly.
- *   - Draw mode overlay (RoomDrawMode) wires into the same Stage so
- *     vertices snap to the same 0.5 m grid the placed items use.
+ *   - Draw mode overlay (RoomDrawLayer + RoomDrawHUD) wires into the
+ *     same Stage so vertices snap to the same 0.5 m grid the placed
+ *     items use.
  *   - Pan / zoom / reset (carried from W1/2).
+ *
+ * Hotfix 5 (Week 4b): draw-mode state (vertices / hover / name) is
+ * lifted here so the Konva-side RoomDrawLayer (Stage child) and the
+ * DOM-side RoomDrawHUD (Stage sibling) can share it without ever
+ * forcing react-konva to reconcile DOM nodes inside the Konva tree.
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Stage, Layer, Line, Group, Text, Circle, Rect } from 'react-konva';
 import type Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
@@ -27,8 +33,8 @@ import {
   snapToGrid,
   validatePlacement,
 } from '../lib/geometry';
-import type { PlacedRect, Polygon, Viewport } from '../lib/geometry';
-import { RoomDrawMode } from './RoomDrawMode';
+import type { PlacedRect, Polygon, Vertex, Viewport } from '../lib/geometry';
+import { RoomDrawLayer, RoomDrawHUD } from './RoomDrawMode';
 
 const DRAG_MIME = 'application/x-ppw-product-id';
 const PAN_BTN: number = 0;
@@ -68,6 +74,22 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
     instanceId: null,
     moved: false,
   });
+
+  // ---- Draw mode shared state (lifted from RoomDrawMode in Hotfix 5)
+  const [drawVertices, setDrawVertices] = useState<Polygon>([]);
+  const [drawHover, setDrawHover] = useState<Vertex | null>(null);
+  const [drawName, setDrawName] = useState('New Room');
+
+  // Reset draw state every time we toggle into Draw mode.
+  useEffect(() => {
+    if (drawMode) {
+      console.log('[draw-mode]', 'enter Draw mode, reset local state');
+      setDrawVertices([]);
+      setDrawHover(null);
+      setDrawName(activeRoom?.name ?? 'New Room');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawMode]);
 
   const bounds = useMemo(() => polygonBounds(polygon), [polygon]);
   const roomWpx = (bounds.maxX - bounds.minX) * pxPerMetre;
@@ -185,25 +207,34 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
     addItem({ productId: product.id, x: snappedX, y: snappedY, rotation: 0 });
   }
 
-  function handleDrawCommit(newPolygon: Polygon, name: string) {
-    const ar = activeRoom;
-    if (ar && ar.placedItems.length === 0) {
-      setRoomPolygon(ar.id, newPolygon);
-      if (name && name !== ar.name) {
-        usePropertyStore.getState().renameRoom(ar.id, name);
+  const handleDrawCommit = useCallback(
+    (newPolygon: Polygon, name: string) => {
+      console.log('[draw-mode]', 'commit', {
+        vertices: newPolygon.length,
+        name,
+        area: polygonArea(newPolygon),
+      });
+      const ar = activeRoom;
+      if (ar && ar.placedItems.length === 0) {
+        setRoomPolygon(ar.id, newPolygon);
+        if (name && name !== ar.name) {
+          usePropertyStore.getState().renameRoom(ar.id, name);
+        }
+        pushToast(`Room shape set (${polygonArea(newPolygon).toFixed(2)} m2)`, 'success');
+      } else {
+        const id = addRoom({ name, polygon: newPolygon });
+        usePropertyStore.getState().setActiveRoom(id);
+        pushToast(`New room "${name}" created`, 'success');
       }
-      pushToast(`Room shape set (${polygonArea(newPolygon).toFixed(2)} m2)`, 'success');
-    } else {
-      const id = addRoom({ name, polygon: newPolygon });
-      usePropertyStore.getState().setActiveRoom(id);
-      pushToast(`New room "${name}" created`, 'success');
-    }
-    if (onDrawComplete) onDrawComplete();
-  }
+      if (onDrawComplete) onDrawComplete();
+    },
+    [activeRoom, setRoomPolygon, addRoom, pushToast, onDrawComplete],
+  );
 
-  function handleDrawCancel() {
+  const handleDrawCancel = useCallback(() => {
+    console.log('[draw-mode]', 'cancel');
     if (onDrawComplete) onDrawComplete();
-  }
+  }, [onDrawComplete]);
 
   const gridLines = useMemo(() => {
     const out: { points: number[]; key: string; major: boolean }[] = [];
@@ -467,22 +498,38 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
           })}
         </Layer>
 
-        <RoomDrawMode
+        <RoomDrawLayer
           enabled={drawMode}
           stageRef={stageRef}
           containerRef={containerRef}
           viewport={viewport}
           pxPerMetre={pxPerMetre}
+          vertices={drawVertices}
+          setVertices={setDrawVertices}
+          hover={drawHover}
+          setHover={setDrawHover}
+          name={drawName}
           onCommit={handleDrawCommit}
           onCancel={handleDrawCancel}
-          initialName={activeRoom?.name ?? 'New Room'}
         />
       </Stage>
+
+      <RoomDrawHUD
+        enabled={drawMode}
+        vertices={drawVertices}
+        setVertices={setDrawVertices}
+        hover={drawHover}
+        setHover={setDrawHover}
+        name={drawName}
+        setName={setDrawName}
+        onCommit={handleDrawCommit}
+        onCancel={handleDrawCancel}
+      />
 
       <div className="pointer-events-none absolute bottom-3 left-3 max-w-xs rounded-md bg-white/85 px-3 py-2 text-[11px] leading-snug text-ppw-slate shadow-sm ring-1 ring-ppw-stone">
         {drawMode ? (
           <>
-            <span className="font-semibold text-ppw-ink">Draw mode:</span> click to place wall vertices - click first vertex to close - <kbd>Ctrl+Z</kbd> undo - <kbd>Esc</kbd> cancel.
+            <span className="font-semibold text-ppw-ink">Draw mode:</span> click to place wall vertices - click first vertex or press <kbd>Enter</kbd> to close - <kbd>Ctrl+Z</kbd> undo - <kbd>Esc</kbd> cancel.
           </>
         ) : (
           <>
