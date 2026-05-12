@@ -7,7 +7,7 @@
  * Week 4a: on mount we:
  *   1. Find the matching order in `ordersStore` (localStorage).
  *   2. Read the room-by-room snapshot stashed by CheckoutPage.
- *   3. Generate the plan PDF (jsPDF).
+ *   3. Generate the plan PDF (jsPDF, fully vector since Hotfix 5).
  *   4. Trigger an auto-download AND surface a "Download again" button.
  */
 
@@ -174,25 +174,57 @@ function buildPdfInput(
   order: NonNullable<ReturnType<typeof useOrdersStore.getState>['orders'][number]>,
   snap: LastOrderSnapshot | null,
 ) {
+  // Preferred path: snapshot carries polygon + placedItems geometry so
+  // the PDF can vector-render the floor plan.
   if (snap && snap.orderId === order.id && snap.rooms.length > 0) {
     return {
       orderId: snap.orderId,
       date: snap.date,
       customerName: snap.customerName,
       customerEmail: snap.customerEmail,
+      customerAddress: snap.customerAddress,
       currency: snap.currency,
       total: snap.total,
+      shipping: snap.shipping,
       property: {
         name: snap.propertyName,
         rooms: snap.rooms.map((r) => ({
           id: r.id,
           name: r.name,
-          floorPlanDataUrl: r.floorPlanDataUrl,
-          products: r.products,
+          polygon: r.polygon ?? [
+            { x: 0, y: 0 },
+            { x: 5, y: 0 },
+            { x: 5, y: 4 },
+            { x: 0, y: 4 },
+          ],
+          placedItems: (r.placedItems ?? []).map((it) => ({
+            xM: it.xM,
+            yM: it.yM,
+            lengthM: it.lengthM,
+            widthM: it.widthM,
+            rotation: it.rotation,
+            productId: it.productId,
+            productName: it.productName,
+            category: it.category,
+            dimensionsLabel: it.dimensionsLabel,
+            sku: it.sku,
+          })),
+          products: r.products.map((p) => ({
+            sku: p.sku,
+            name: p.name,
+            quantity: p.quantity,
+            dimensions: p.dimensions,
+            supplier: p.supplier,
+            unitPriceDisplay: p.unitPriceDisplay,
+            lineTotalDisplay: p.lineTotalDisplay,
+          })),
         })),
       },
     };
   }
+
+  // Fallback path: no snapshot. Build a single placeholder room from
+  // the order lines so the PDF still ships something useful.
   const products = order.lines.map((l) => ({
     sku: l.productId,
     name: l.name,
@@ -201,16 +233,39 @@ function buildPdfInput(
     unitPriceDisplay: l.unitPriceDisplay,
     lineTotalDisplay: l.lineTotalDisplay,
   }));
+  const addressParts = [
+    order.customer.addressLine1,
+    order.customer.addressLine2,
+    order.customer.city,
+    order.customer.postcode,
+    order.customer.country,
+  ]
+    .map((s) => (s ?? '').trim())
+    .filter(Boolean);
   return {
     orderId: order.id,
     date: order.timestamp,
     customerName: order.customer.name,
     customerEmail: order.customer.email,
+    customerAddress: addressParts.join(', '),
     currency: order.currency,
     total: order.total,
     property: {
       name: order.property?.name ?? 'Wellness Property',
-      rooms: [{ id: 'all', name: 'All rooms', products }],
+      rooms: [
+        {
+          id: 'all',
+          name: 'All rooms',
+          polygon: [
+            { x: 0, y: 0 },
+            { x: 5, y: 0 },
+            { x: 5, y: 4 },
+            { x: 0, y: 4 },
+          ],
+          placedItems: [],
+          products,
+        },
+      ],
     },
   };
 }

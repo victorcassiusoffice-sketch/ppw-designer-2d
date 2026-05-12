@@ -1,6 +1,6 @@
 /**
  * CheckoutPage - Week 3, extended Week 4a, Hotfix 2 (Week 4b),
- * floor-plan rendering tightened in Hotfix 4 (Week 4b).
+ * floor-plan rendering rebuilt as vectors in Hotfix 5 (Week 4b).
  *
  * Collects customer info, validates, then either:
  *   - if Stripe is configured: hits the Vercel function at
@@ -9,7 +9,7 @@
  *     which surfaces a mailto: prefill so Vic can finalise manually.
  *
  * Week 4a addition: BEFORE redirecting we capture a per-room snapshot
- * (polygon + placed items + floor plan PNG) into localStorage so the
+ * (polygon + placed-item geometry) into localStorage so the
  * post-redirect /order/success page can build the plan PDF.
  *
  * Form state is persisted in sessionStorage by `checkoutStore`.
@@ -39,8 +39,12 @@ import {
 import { formatCurrency } from '../lib/currency';
 import { COUNTRY_OPTIONS } from '../lib/region';
 import { CATEGORY_LABELS, getProductById } from '../data/products';
-import { saveLastOrderSnapshot, type LastOrderSnapshot, type RoomSnapshot } from '../lib/orderSnapshot';
-import { renderRoomSvg, svgToPngDataUrl } from '../lib/floorPlanSvg';
+import {
+  saveLastOrderSnapshot,
+  type LastOrderSnapshot,
+  type RoomSnapshot,
+  type SnapshotPlacedItem,
+} from '../lib/orderSnapshot';
 
 interface FieldProps {
   label: string;
@@ -123,63 +127,77 @@ export default function CheckoutPage() {
     );
   }
 
-  async function captureOrderSnapshot(order: Order): Promise<void> {
-    const rooms: RoomSnapshot[] = await Promise.all(
-      property.rooms.map(async (r) => {
-        const counts = new Map<string, number>();
-        for (const item of r.placedItems) {
-          counts.set(item.productId, (counts.get(item.productId) ?? 0) + 1);
-        }
-        const products = Array.from(counts.entries())
-          .map(([productId, count]) => {
-            const p = getProductById(productId);
-            if (!p) return null;
-            const line = cart.lines.find((l) => l.productId === productId);
-            const unitPriceDisplay = line?.unitPriceDisplay ?? p.price.value;
-            return {
-              sku: p.sku,
-              name: p.name,
-              quantity: count,
-              dimensions: `${p.dimensions_cm.length} x ${p.dimensions_cm.width} x ${p.dimensions_cm.height} cm`,
-              unitPriceDisplay,
-              lineTotalDisplay: unitPriceDisplay * count,
-            };
-          })
-          .filter((x): x is NonNullable<typeof x> => x !== null);
+  function captureOrderSnapshot(order: Order): void {
+    // Hotfix 5: the floor plan is rendered as pure vectors at PDF time
+    // (see src/lib/planPdf.ts). We stash polygon + placedItem geometry
+    // here so the success page can hand it straight to jsPDF without
+    // any canvas / raster step.
+    const rooms: RoomSnapshot[] = property.rooms.map((r) => {
+      const counts = new Map<string, number>();
+      for (const item of r.placedItems) {
+        counts.set(item.productId, (counts.get(item.productId) ?? 0) + 1);
+      }
+      const products = Array.from(counts.entries())
+        .map(([productId, count]) => {
+          const p = getProductById(productId);
+          if (!p) return null;
+          const line = cart.lines.find((l) => l.productId === productId);
+          const unitPriceDisplay = line?.unitPriceDisplay ?? p.price.value;
+          return {
+            sku: p.sku,
+            name: p.name,
+            quantity: count,
+            dimensions: `${p.dimensions_cm.length} x ${p.dimensions_cm.width} x ${p.dimensions_cm.height} cm`,
+            supplier: p.supplier,
+            unitPriceDisplay,
+            lineTotalDisplay: unitPriceDisplay * count,
+          };
+        })
+        .filter((x): x is NonNullable<typeof x> => x !== null);
 
-        // Hotfix 4: pass productName so the floor plan labels each rect.
-        const svg = renderRoomSvg({
-          name: r.name,
-          polygon: r.polygon,
-          placedItems: r.placedItems.map((it) => {
-            const p = getProductById(it.productId);
-            return {
-              productId: it.productId,
-              productName: p?.name,
-              x: it.x,
-              y: it.y,
-              length_cm: p?.dimensions_cm.length ?? 50,
-              width_cm: p?.dimensions_cm.width ?? 50,
-              rotation: it.rotation,
-            };
-          }),
-        });
-        let floorPlanDataUrl: string | undefined;
-        try {
-          const png = await svgToPngDataUrl(svg);
-          if (png) floorPlanDataUrl = png;
-        } catch {
-          /* fall through - PDF will omit the floor plan */
-        }
-        return { id: r.id, name: r.name, floorPlanDataUrl, products };
-      }),
-    );
+      const placedItems: SnapshotPlacedItem[] = r.placedItems.map((it) => {
+        const p = getProductById(it.productId);
+        const lengthCm = p?.dimensions_cm.length ?? 50;
+        const widthCm = p?.dimensions_cm.width ?? 50;
+        return {
+          productId: it.productId,
+          productName: p?.name ?? it.productId,
+          category: p?.category,
+          sku: p?.sku ?? it.productId,
+          dimensionsLabel: `${Math.round(lengthCm)} x ${Math.round(widthCm)} cm`,
+          xM: it.x,
+          yM: it.y,
+          lengthM: lengthCm / 100,
+          widthM: widthCm / 100,
+          rotation: it.rotation,
+        };
+      });
+
+      return {
+        id: r.id,
+        name: r.name,
+        polygon: r.polygon.map((v) => ({ x: v.x, y: v.y })),
+        placedItems,
+        products,
+      };
+    });
+
+    const addressParts = [
+      order.customer.addressLine1,
+      order.customer.addressLine2,
+      order.customer.city,
+      order.customer.postcode,
+      order.customer.country,
+    ]
+      .map((s) => (s ?? '').trim())
+      .filter(Boolean);
 
     const snap: LastOrderSnapshot = {
       orderId: order.id,
       date: order.timestamp,
       customerName: order.customer.name,
       customerEmail: order.customer.email,
+      customerAddress: addressParts.join(', '),
       currency: order.currency,
       total: order.total,
       propertyName: property.name,
@@ -224,7 +242,7 @@ export default function CheckoutPage() {
     };
     saveOrder(order);
 
-    await captureOrderSnapshot(order);
+    captureOrderSnapshot(order);
 
     if (!isStripeConfigured()) {
       navigate(`/order/pending?id=${encodeURIComponent(orderId)}`);

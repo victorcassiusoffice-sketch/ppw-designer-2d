@@ -52,6 +52,27 @@ declare module 'jspdf' {
       style?: 'S' | 'F' | 'DF' | 'FD',
     ): jsPDF;
     line(x1: number, y1: number, x2: number, y2: number): jsPDF;
+    lines(
+      lines: number[][],
+      x: number,
+      y: number,
+      scale?: [number, number],
+      style?: 'S' | 'F' | 'DF' | 'FD',
+      closed?: boolean,
+    ): jsPDF;
+    circle(x: number, y: number, r: number, style?: 'S' | 'F' | 'DF' | 'FD'): jsPDF;
+    triangle(
+      x1: number,
+      y1: number,
+      x2: number,
+      y2: number,
+      x3: number,
+      y3: number,
+      style?: 'S' | 'F' | 'DF' | 'FD',
+    ): jsPDF;
+    setLineCap(cap: 'butt' | 'round' | 'square' | 0 | 1 | 2): jsPDF;
+    setLineJoin(join: 'miter' | 'round' | 'bevel' | 0 | 1 | 2): jsPDF;
+    getTextWidth(text: string): number;
     addImage(
       imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array,
       format: string,
