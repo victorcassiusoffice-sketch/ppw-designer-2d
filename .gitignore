@@ -48,3 +48,6 @@ screenshots/scratch/
 # Sandbox scratch files (cannot be deleted from inside the VM)
 .bashtest.txt
 .synctest
+
+.vercel
+.env*.local

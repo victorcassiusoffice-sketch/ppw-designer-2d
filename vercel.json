@@ -11,6 +11,26 @@
     "api/stripe-webhook.ts": {
       "runtime": "@vercel/node@3.2.29",
       "maxDuration": 10
+    },
+    "api/merchants/signup.ts": {
+      "runtime": "@vercel/node@3.2.29",
+      "maxDuration": 15
+    },
+    "api/stripe-connect/webhook.ts": {
+      "runtime": "@vercel/node@3.2.29",
+      "maxDuration": 15
+    },
+    "api/admin/merchants/list.ts": {
+      "runtime": "@vercel/node@3.2.29",
+      "maxDuration": 10
+    },
+    "api/admin/merchants/approve.ts": {
+      "runtime": "@vercel/node@3.2.29",
+      "maxDuration": 10
+    },
+    "api/admin/merchants/reject.ts": {
+      "runtime": "@vercel/node@3.2.29",
+      "maxDuration": 10
     }
   },
   "rewrites": [

@@ -1,7 +1,7 @@
 # Decisions Pending - WRD Konva 2D MVP
 
 **Owner:** Vic.
-**Last refresh:** 2026-05-11 (post-Week-4a reconciliation — Resend locked, all Phase 1 tech choices closed).
+**Last refresh:** 2026-05-12 00:11 MUT (post-Week-4b overnight deploy — Vercel LIVE, Stripe Checkout end-to-end verified by curl, webhook + DNS pending Vic morning).
 
 ---
 
@@ -23,9 +23,19 @@ Implementation evidence: `WEEK-2.5-LOG.md`, `MIGRATION-NOTES.md`.
 
 ---
 
-## Still open
+## Decided 2026-05-11/12 (Week 4b overnight autonomous deploy)
 
-**All Phase 1 tech choices locked. Remaining pending: Week 4b cutover (Vercel deploy + DNS + 4 env vars + Stripe webhook + Resend domain verify).**
+- ~~**Vercel project creation**~~ — DONE. Project `victor-ppw/ppw-designer-2d` live at https://ppw-designer-2d.vercel.app/.
+- ~~**Node version pin**~~ — Project Settings → Node.js 22.x (was defaulting to 24.x and breaking the build).
+- ~~**Env vars (3 of 4)**~~ — `VITE_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `RESEND_API_KEY` all pasted into Vercel and confirmed reaching runtime (curl returned a real `cs_test_…` Checkout URL).
+- ~~**Payload contract verification**~~ — `/api/create-checkout-session` validated end-to-end against `api/lib/orderTypes.ts`. Canonical field is `cart[].unitAmount` in smallest currency unit. Stripe round-trip confirmed at 2026-05-12 00:10 MUT.
+
+## Still open — Vic morning Week 4b
+
+- **`STRIPE_WEBHOOK_SECRET`** — Vic registers the webhook at `dashboard.stripe.com/test/webhooks` and pastes `whsec_…` into Vercel env. Cowork blocked: Stripe Dashboard creds not held. **See `MORNING-STEPS-VIC.md` Steps A–C.**
+- **DNS CNAME for `designer.ppwellness.co`** — Vic adds the CNAME at the registrar that hosts `ppwellness.co`. Cowork blocked: registrar creds not held. **See Step D.**
+- **Resend domain verification for `ppwellness.co`** — Vic pastes 3 DNS records (SPF/DKIM/DMARC). Cowork blocked: same registrar. **See Step E.**
+- **End-to-end smoke test on live URL** — Vic runs once webhook + (optionally) DNS are in. **See Step F.**
 
 ---
 
@@ -40,7 +50,7 @@ Implementation evidence: `WEEK-2.5-LOG.md`, `MIGRATION-NOTES.md`.
 
 ## Other PPW-wide open items relevant to this build
 
-- **PAT-used-without-asking ruling (REBIRTH 11.3)** - gates whether Cowork can `git push` the Konva work to GitHub. Currently held: all commits stay local until Vic rules. Week 4b deploy needs a push - blocked on this.
+- **PAT-used-without-asking ruling (REBIRTH 11.3)** - Vic authorised a one-off push at 2026-05-11 23:22 MUT specifically for the Week 4b Vercel cutover (commit `358e73c`). Default rule still holds: all future commits stay local until Vic rules. Future deploys will re-prompt.
 - **`/space-designer-pro.html` mobile breakpoint fix** - single CSS block, ~30 min. Independent of this MVP but on the same domain.
 - **Cat 1 blast send Y/N** - Vic's call at end of Week 4 once the live URL passes curl-verify.
 
