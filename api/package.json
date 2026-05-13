@@ -1,4 +1,0 @@
-{
-  "//": "Forces the api/ subtree to compile as CommonJS even though the root package.json declares type:module. Without this, Vercel's @vercel/node@3.2.29 emits the api lambdas as ESM, and Node's strict ESM resolution rejects every extensionless relative import (./lib/email, ../db/merchantStore, ...), crashing each function on cold-start with ERR_MODULE_NOT_FOUND / FUNCTION_INVOCATION_FAILED. Keeping the api lambdas as CJS lets the long-standing extensionless import style keep working without rewriting every relative import in the tree.",
-  "type": "commonjs"
-}
