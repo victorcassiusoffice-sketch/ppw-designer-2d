@@ -10,8 +10,8 @@
  */
 
 import { and, eq, inArray } from 'drizzle-orm';
-import { getDb, type Db } from './client';
-import { merchants, type Merchant, type MerchantStatus, type NewMerchant } from './schema';
+import { getDb, type Db } from './client.js';
+import { merchants, type Merchant, type MerchantStatus, type NewMerchant } from './schema.js';
 
 export interface MerchantStore {
   insert(input: NewMerchant): Promise<Merchant>;

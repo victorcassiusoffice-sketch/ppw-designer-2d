@@ -18,8 +18,8 @@
  */
 
 import { verifyToken } from '@clerk/backend';
-import type { MerchantStore } from '../db/merchantStore';
-import { getDb, schema } from '../db/client';
+import type { MerchantStore } from '../db/merchantStore.js';
+import { getDb, schema } from '../db/client.js';
 import { eq } from 'drizzle-orm';
 
 export const VIC_EMAIL_ALLOWLIST = new Set(['victorcassius.office@gmail.com', 'victor@ppwellness.co']);

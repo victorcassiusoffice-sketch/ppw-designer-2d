@@ -25,7 +25,7 @@ import {
   renderMerchantSignupAcknowledged,
   renderMerchantSignupAlertToVic,
   type MerchantEmailData,
-} from './email-templates';
+} from './email-templates.js';
 
 type ResendClient = {
   emails: {

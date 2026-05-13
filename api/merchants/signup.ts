@@ -19,13 +19,13 @@
  * merchant portal will use a fuller shape behind Clerk auth.
  */
 
-import { drizzleMerchantStore } from '../db/merchantStore';
-import { getStripe, isStripeConnectAvailable } from '../lib/stripeConnect';
+import { drizzleMerchantStore } from '../db/merchantStore.js';
+import { getStripe, isStripeConnectAvailable } from '../lib/stripeConnect.js';
 import {
   liveEmailTransport,
   processMerchantSignup,
   type SignupOutcome,
-} from '../lib/merchantSignup';
+} from '../lib/merchantSignup.js';
 
 const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:5173',

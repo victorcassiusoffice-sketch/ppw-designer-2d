@@ -21,20 +21,20 @@
  */
 
 import { z } from 'zod';
-import type { Merchant } from '../db/schema';
-import type { MerchantStore } from '../db/merchantStore';
-import { uniqueSlug } from './slug';
+import type { Merchant } from '../db/schema.js';
+import type { MerchantStore } from '../db/merchantStore.js';
+import { uniqueSlug } from './slug.js';
 import {
   createExpressAccount,
   createOnboardingLink,
   isStripeConnectAvailable,
   type StripeAccountsClient,
-} from './stripeConnect';
+} from './stripeConnect.js';
 import {
   emailMerchantSignupAcknowledged,
   emailVicNewSignup,
   type SendResult,
-} from './merchantEmails';
+} from './merchantEmails.js';
 
 export const PRODUCT_CATEGORIES = [
   'ice_baths',

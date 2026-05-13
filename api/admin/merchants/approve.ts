@@ -6,9 +6,9 @@
  * (or earlier KYC states) and fires the welcome email.
  */
 
-import { drizzleMerchantStore } from '../../db/merchantStore';
-import { authoriseAdminWithLive } from '../../lib/adminAuth';
-import { approveMerchant } from '../../lib/adminMerchantActions';
+import { drizzleMerchantStore } from '../../db/merchantStore.js';
+import { authoriseAdminWithLive } from '../../lib/adminAuth.js';
+import { approveMerchant } from '../../lib/adminMerchantActions.js';
 
 interface MinimalReq {
   method?: string;

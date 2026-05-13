@@ -15,9 +15,9 @@
  */
 
 import Stripe from 'stripe';
-import { drizzleMerchantStore } from '../db/merchantStore';
-import { STRIPE_API_VERSION, getConnectWebhookSecret } from '../lib/stripeConnect';
-import { handleAccountUpdated } from '../lib/stripeConnectWebhook';
+import { drizzleMerchantStore } from '../db/merchantStore.js';
+import { STRIPE_API_VERSION, getConnectWebhookSecret } from '../lib/stripeConnect.js';
+import { handleAccountUpdated } from '../lib/stripeConnectWebhook.js';
 
 // Disable Vercel JSON parser — needed for signature verification.
 export const config = {

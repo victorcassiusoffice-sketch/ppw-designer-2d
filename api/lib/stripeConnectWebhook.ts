@@ -17,9 +17,9 @@
  */
 
 import type Stripe from 'stripe';
-import type { MerchantStatus } from '../db/schema';
-import type { MerchantStore } from '../db/merchantStore';
-import { emailVicKycComplete, type SendResult } from './merchantEmails';
+import type { MerchantStatus } from '../db/schema.js';
+import type { MerchantStore } from '../db/merchantStore.js';
+import { emailVicKycComplete, type SendResult } from './merchantEmails.js';
 
 export type StripeConnectEventOutcome =
   | { ok: true; kind: 'ignored'; reason: string }

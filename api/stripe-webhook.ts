@@ -32,8 +32,8 @@ import {
   sendOrderConfirmation,
   sendOrderAlertToVic,
   sendPaymentFailedAlertToVic,
-} from './lib/email';
-import type { OrderSummary, CustomerInfo, Currency } from './lib/orderTypes';
+} from './lib/email.js';
+import type { OrderSummary, CustomerInfo, Currency } from './lib/orderTypes.js';
 
 // IMPORTANT — disables Vercel's default JSON body parser so we get the
 // raw bytes Stripe signed.

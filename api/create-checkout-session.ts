@@ -25,7 +25,7 @@ import type {
   CustomerInfo,
   PropertySnapshot,
   Currency,
-} from './lib/orderTypes';
+} from './lib/orderTypes.js';
 
 // Pin Stripe API version — bumping should be a deliberate edit.
 const STRIPE_API_VERSION = '2025-02-24.acacia' as const;

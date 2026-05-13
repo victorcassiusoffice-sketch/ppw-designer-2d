@@ -5,9 +5,9 @@
  * Phase 1 stub — rejects a merchant and emails them the reason.
  */
 
-import { drizzleMerchantStore } from '../../db/merchantStore';
-import { authoriseAdminWithLive } from '../../lib/adminAuth';
-import { rejectMerchant } from '../../lib/adminMerchantActions';
+import { drizzleMerchantStore } from '../../db/merchantStore.js';
+import { authoriseAdminWithLive } from '../../lib/adminAuth.js';
+import { rejectMerchant } from '../../lib/adminMerchantActions.js';
 
 interface MinimalReq {
   method?: string;

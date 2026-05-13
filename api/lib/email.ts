@@ -16,7 +16,7 @@
 // Importing it at top crashed the Vercel @vercel/node@3.2.29 lambda at cold start
 // (FUNCTION_INVOCATION_FAILED) — ESM/CJS interop bug. Deferring keeps the function
 // module loadable even when Resend would have crashed.
-import type { OrderSummary, CustomerInfo, Currency } from './orderTypes';
+import type { OrderSummary, CustomerInfo, Currency } from './orderTypes.js';
 
 type ResendClient = {
   emails: {

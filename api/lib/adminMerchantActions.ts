@@ -12,13 +12,13 @@
  * portal with filters/search, audit log, and bulk actions.
  */
 
-import type { Merchant, MerchantStatus } from '../db/schema';
-import type { MerchantStore } from '../db/merchantStore';
+import type { Merchant, MerchantStatus } from '../db/schema.js';
+import type { MerchantStore } from '../db/merchantStore.js';
 import {
   emailMerchantApproved,
   emailMerchantRejected,
   type SendResult,
-} from './merchantEmails';
+} from './merchantEmails.js';
 
 const PENDING_STATUSES: MerchantStatus[] = ['pending_admin_approval'];
 
