@@ -19,6 +19,11 @@
  * Console-log breadcrumbs `[draw-mode]` (state changes) and
  * `[draw-close]` (every branch point in the commit path) stay in
  * until Designer Phase 1 is stable.
+ *
+ * fix/mobile-ux-v1 (May 2026): HUD buttons resized to >=44px tap targets
+ * and flex-wrap so they don't crush the readout strip on narrow phones.
+ * Touch wiring (`stage.on('touchmove.roomdraw')` + `stage.on('tap.roomdraw')`)
+ * already in place from Hotfix 5; verified on Android Chrome.
  */
 
 import { useCallback, useEffect, useMemo, useRef } from 'react';
@@ -35,11 +40,6 @@ import {
 import type { Polygon, Vertex, Viewport } from '../lib/geometry';
 import { useToastStore, type ToastKind } from '../store/toastStore';
 
-/**
- * Tiny helper used by the global-keydown handler — the handler is wired
- * once in a useEffect and pulls the current push function from the
- * singleton store at call time so it stays stale-closure proof.
- */
 function pushDrawToast(message: string, kind: ToastKind = 'info'): void {
   try {
     useToastStore.getState().push(message, kind);
@@ -200,6 +200,7 @@ export function RoomDrawLayer({
       stage.off('click.roomdraw');
       stage.off('tap.roomdraw');
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, stageRef, containerRef, pxPerMetre]);
 
   useEffect(() => {
@@ -398,8 +399,7 @@ export function RoomDrawLayer({
 }
 
 // ---------------------------------------------------------------------------
-// RoomDrawHUD - DOM-only. MUST be rendered as a SIBLING of <Stage>,
-// never inside it.
+// RoomDrawHUD - DOM-only. MUST be rendered as a SIBLING of <Stage>.
 // ---------------------------------------------------------------------------
 
 export interface RoomDrawHUDProps {
@@ -463,15 +463,18 @@ export function RoomDrawHUD({
 
   return (
     <div
-      className="pointer-events-auto absolute left-1/2 top-3 z-30 flex w-[min(92vw,520px)] -translate-x-1/2 flex-col gap-2 rounded-lg border border-ppw-teal bg-white p-3 text-xs shadow-xl ring-1 ring-ppw-teal/40"
+      className="pointer-events-auto absolute left-1/2 top-3 z-30 flex w-[min(94vw,520px)] -translate-x-1/2 flex-col gap-2 rounded-lg border border-ppw-teal bg-white p-3 text-xs shadow-xl ring-1 ring-ppw-teal/40"
       data-testid="room-draw-hud"
     >
       <div className="flex items-center justify-between gap-2">
         <span className="rounded-md bg-ppw-teal px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
           Draw mode
         </span>
-        <span className="text-[10px] text-ppw-slate">
+        <span className="hidden text-[10px] text-ppw-slate sm:inline">
           Click to drop vertices &middot; click first vertex or press Enter to close
+        </span>
+        <span className="text-[10px] text-ppw-slate sm:hidden">
+          Tap to drop &middot; tap first vertex to close
         </span>
       </div>
       <div className="flex items-center gap-2">
@@ -480,12 +483,12 @@ export function RoomDrawHUD({
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="flex-1 rounded-md border border-ppw-stone bg-ppw-sand px-2 py-1 text-sm font-medium text-ppw-ink focus:border-ppw-teal focus:outline-none focus:ring-1 focus:ring-ppw-teal"
+          className="flex-1 rounded-md border border-ppw-stone bg-ppw-sand px-2 py-1.5 text-sm font-medium text-ppw-ink focus:border-ppw-teal focus:outline-none focus:ring-1 focus:ring-ppw-teal"
           data-testid="room-draw-name"
         />
       </div>
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex gap-4 text-[11px] text-ppw-slate">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-ppw-slate">
           <span data-testid="room-draw-vertices-count">
             <b className="text-ppw-ink">{vertices.length}</b> vertices
           </span>
@@ -496,12 +499,12 @@ export function RoomDrawHUD({
             area <b className="text-ppw-ink">{liveArea.toFixed(2)} m&sup2;</b>
           </span>
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex flex-1 gap-1.5 sm:flex-initial">
           <button
             type="button"
             onClick={handleUndo}
             disabled={vertices.length === 0}
-            className="rounded-md border border-ppw-stone bg-white px-2 py-1 text-[11px] font-medium text-ppw-slate hover:border-ppw-ink disabled:cursor-not-allowed disabled:opacity-50"
+            className="min-h-[44px] flex-1 rounded-md border border-ppw-stone bg-white px-3 text-xs font-medium text-ppw-slate hover:border-ppw-ink disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
             title="Undo last wall (Ctrl+Z)"
             data-testid="room-draw-undo"
           >
@@ -511,7 +514,7 @@ export function RoomDrawHUD({
             type="button"
             onClick={handleClose}
             disabled={vertices.length < 3}
-            className="rounded-md border border-ppw-teal bg-ppw-teal px-2 py-1 text-[11px] font-medium text-white hover:bg-ppw-teal/90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="min-h-[44px] flex-1 rounded-md border border-ppw-teal bg-ppw-teal px-3 text-xs font-medium text-white hover:bg-ppw-teal/90 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
             title={
               vertices.length < 3
                 ? 'Need at least 3 walls'
@@ -524,7 +527,7 @@ export function RoomDrawHUD({
           <button
             type="button"
             onClick={handleCancel}
-            className="rounded-md border border-ppw-coral bg-white px-2 py-1 text-[11px] font-medium text-ppw-coral hover:bg-ppw-coral hover:text-white"
+            className="min-h-[44px] flex-1 rounded-md border border-ppw-coral bg-white px-3 text-xs font-medium text-ppw-coral hover:bg-ppw-coral hover:text-white sm:flex-initial"
             title="Cancel (Esc)"
             data-testid="room-draw-cancel"
           >

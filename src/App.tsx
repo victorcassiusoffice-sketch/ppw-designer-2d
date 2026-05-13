@@ -14,6 +14,13 @@
  * so a render-time crash inside the Konva tree does not unmount the
  * whole app. The boundary's Reset callback also clears draw mode so
  * Vic can recover with one click.
+ *
+ * fix/mobile-ux-v1 (May 2026): lifted roomsMenuOpen / catalogOpen /
+ * pendingProductId here so TopBar can host the Rooms trigger inline
+ * (kills the absolute-positioned overlap with the currency picker) and
+ * Catalog can be opened from the TopBar overflow menu. The pending
+ * product id powers the tap-to-place fallback (HTML5 DnD doesn't work
+ * from a bottom-sheet to the canvas on touch devices).
  */
 
 import { useState } from 'react';
@@ -35,18 +42,38 @@ export default function App() {
 
   const [drawMode, setDrawMode] = useState(false);
   const [addRoomOpen, setAddRoomOpen] = useState(false);
+  const [roomsMenuOpen, setRoomsMenuOpen] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const [pendingProductId, setPendingProductId] = useState<string | null>(null);
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-ppw-sand text-ppw-ink">
-      <TopBar drawMode={drawMode} setDrawMode={setDrawMode} />
+      <TopBar
+        drawMode={drawMode}
+        setDrawMode={setDrawMode}
+        roomsMenuOpen={roomsMenuOpen}
+        setRoomsMenuOpen={setRoomsMenuOpen}
+        onOpenCatalog={() => setCatalogOpen(true)}
+      />
       <main className="flex flex-1 overflow-hidden">
-        <RoomList onRequestAddRoom={() => setAddRoomOpen(true)} />
-        <ProductPalette />
+        <RoomList
+          onRequestAddRoom={() => setAddRoomOpen(true)}
+          mobileOpen={roomsMenuOpen}
+          setMobileOpen={setRoomsMenuOpen}
+        />
+        <ProductPalette
+          mobileOpen={catalogOpen}
+          setMobileOpen={setCatalogOpen}
+          pendingProductId={pendingProductId}
+          setPendingProductId={setPendingProductId}
+        />
         <section className="relative flex-1 overflow-hidden">
           <CanvasErrorBoundary onReset={() => setDrawMode(false)}>
             <RoomCanvas
               drawMode={drawMode}
               onDrawComplete={() => setDrawMode(false)}
+              pendingProductId={pendingProductId}
+              setPendingProductId={setPendingProductId}
             />
           </CanvasErrorBoundary>
         </section>

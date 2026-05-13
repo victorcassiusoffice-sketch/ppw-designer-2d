@@ -7,6 +7,13 @@
  *
  * Desktop (≥ 768 px): vertical column to the left of ProductPalette.
  * Mobile (< 768 px):    collapses to a dropdown above the canvas.
+ *
+ * fix/mobile-ux-v1 (May 2026): the mobile trigger button used to live
+ * here as an absolute `left-2 top-2 z-30` element. That overlapped the
+ * TopBar currency picker on small viewports. The trigger now lives
+ * INSIDE TopBar; this component receives `mobileOpen`/`setMobileOpen`
+ * via props from App.tsx so the drawer overlay still renders here.
+ * Falls back to local state if the props are absent (backwards compat).
  */
 
 import { useState } from 'react';
@@ -17,9 +24,16 @@ import { useToastStore } from '../store/toastStore';
 export interface RoomListProps {
   /** Called when the user clicks "+ Add room" — parent opens the chooser. */
   onRequestAddRoom: () => void;
+  /** Mobile UX (fix/mobile-ux-v1): drawer open state lifted to App.tsx. */
+  mobileOpen?: boolean;
+  setMobileOpen?: (v: boolean) => void;
 }
 
-export function RoomList({ onRequestAddRoom }: RoomListProps) {
+export function RoomList({
+  onRequestAddRoom,
+  mobileOpen: mobileOpenProp,
+  setMobileOpen: setMobileOpenProp,
+}: RoomListProps) {
   const property = usePropertyStore((s) => s.property);
   const setActiveRoom = usePropertyStore((s) => s.setActiveRoom);
   const removeRoom = usePropertyStore((s) => s.removeRoom);
@@ -33,7 +47,9 @@ export function RoomList({ onRequestAddRoom }: RoomListProps) {
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [editingProperty, setEditingProperty] = useState(false);
   const [propertyDraft, setPropertyDraft] = useState(property.name);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpenLocal, setMobileOpenLocal] = useState(false);
+  const mobileOpen = mobileOpenProp ?? mobileOpenLocal;
+  const setMobileOpen = setMobileOpenProp ?? setMobileOpenLocal;
 
   function startRename(id: string, current: string) {
     setEditingId(id);
@@ -171,7 +187,7 @@ export function RoomList({ onRequestAddRoom }: RoomListProps) {
                       <button
                         type="button"
                         onClick={() => startRename(room.id, room.name)}
-                        className="rounded-md border border-ppw-stone bg-white px-1.5 py-0.5 text-[10px] text-ppw-slate hover:border-ppw-teal hover:text-ppw-teal"
+                        className="min-h-[32px] min-w-[32px] rounded-md border border-ppw-stone bg-white px-1.5 text-[10px] text-ppw-slate hover:border-ppw-teal hover:text-ppw-teal"
                         title="Rename room"
                       >
                         ✎
@@ -179,7 +195,7 @@ export function RoomList({ onRequestAddRoom }: RoomListProps) {
                       <button
                         type="button"
                         onClick={() => setConfirmingDeleteId(room.id)}
-                        className="rounded-md border border-ppw-stone bg-white px-1.5 py-0.5 text-[10px] text-ppw-slate hover:border-ppw-coral hover:text-ppw-coral"
+                        className="min-h-[32px] min-w-[32px] rounded-md border border-ppw-stone bg-white px-1.5 text-[10px] text-ppw-slate hover:border-ppw-coral hover:text-ppw-coral"
                         title="Delete room"
                       >
                         ×
@@ -195,14 +211,14 @@ export function RoomList({ onRequestAddRoom }: RoomListProps) {
                       <button
                         type="button"
                         onClick={() => handleDelete(room.id, room.name)}
-                        className="flex-1 rounded-md bg-ppw-coral px-2 py-1 text-[11px] font-semibold text-white hover:bg-ppw-coral/90"
+                        className="min-h-[36px] flex-1 rounded-md bg-ppw-coral px-2 text-[11px] font-semibold text-white hover:bg-ppw-coral/90"
                       >
                         Delete
                       </button>
                       <button
                         type="button"
                         onClick={() => setConfirmingDeleteId(null)}
-                        className="flex-1 rounded-md border border-ppw-stone bg-white px-2 py-1 text-[11px] font-semibold text-ppw-slate hover:border-ppw-ink"
+                        className="min-h-[36px] flex-1 rounded-md border border-ppw-stone bg-white px-2 text-[11px] font-semibold text-ppw-slate hover:border-ppw-ink"
                       >
                         Cancel
                       </button>
@@ -220,7 +236,7 @@ export function RoomList({ onRequestAddRoom }: RoomListProps) {
             onRequestAddRoom();
             setMobileOpen(false);
           }}
-          className="mt-3 w-full rounded-md border-2 border-dashed border-ppw-stone bg-white px-3 py-2 text-xs font-semibold text-ppw-slate hover:border-ppw-teal hover:text-ppw-teal"
+          className="mt-3 min-h-[44px] w-full rounded-md border-2 border-dashed border-ppw-stone bg-white px-3 text-xs font-semibold text-ppw-slate hover:border-ppw-teal hover:text-ppw-teal"
           title="Add a new room (rectangle quick mode or draw polygon)"
         >
           + Add room
@@ -233,23 +249,18 @@ export function RoomList({ onRequestAddRoom }: RoomListProps) {
     </>
   );
 
-  const activeRoom = property.rooms.find((r) => r.id === property.activeRoomId);
-
   return (
     <>
       <aside className="hidden md:flex h-full w-56 flex-col border-r border-ppw-stone bg-white">
         {body}
       </aside>
 
-      {/* Mobile dropdown trigger */}
-      <button
-        type="button"
-        onClick={() => setMobileOpen((v) => !v)}
-        className="md:hidden absolute left-2 top-2 z-30 rounded-md border border-ppw-stone bg-white/95 px-2.5 py-1 text-xs font-medium text-ppw-ink shadow-sm hover:border-ppw-teal"
-      >
-        Rooms ({property.rooms.length})
-        <span className="ml-1 text-ppw-slate">· {activeRoom?.name ?? '—'}</span>
-      </button>
+      {/*
+        fix/mobile-ux-v1: the standalone absolute Rooms trigger button
+        is GONE — it overlapped the TopBar's currency picker on small
+        viewports. The TopBar now hosts the inline trigger and tells us
+        when to open via the `mobileOpen` prop.
+      */}
 
       {mobileOpen && (
         <>

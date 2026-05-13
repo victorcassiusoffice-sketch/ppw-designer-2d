@@ -6,6 +6,18 @@
  * Week 2 additions:
  *   - Region <select> (Mauritius default, persisted to localStorage)
  *   - Responsive 768 px breakpoint (Tailwind classes only)
+ *
+ * fix/mobile-ux-v1 (May 2026):
+ *   - `mobileOpen`/`setMobileOpen` lifted to App.tsx so TopBar's
+ *     hamburger menu can open the Catalog directly.
+ *   - "Place on floor" button (mobile-only) on each product card. Taps
+ *     arm `pendingProductId` (lifted to App.tsx) and close the bottom
+ *     sheet so the user can see the floor; the next tap on the canvas
+ *     drops the product there. HTML5 drag-and-drop doesn't bridge a
+ *     bottom-sheet → canvas on touch devices, so this is the only path
+ *     that actually places products on Android/iOS Chrome.
+ *   - Safe-area-inset on the floating Catalog bubble + bottom-sheet
+ *     padding so the Android nav bar doesn't clip them.
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -46,11 +58,27 @@ function readRegionLs(): RegionGroup {
   return DEFAULT_REGION;
 }
 
-export function ProductPalette() {
+export interface ProductPaletteProps {
+  /** Mobile UX (fix/mobile-ux-v1): drawer state lifted to App.tsx. */
+  mobileOpen?: boolean;
+  setMobileOpen?: (v: boolean) => void;
+  /** Tap-to-place fallback for touch devices. */
+  pendingProductId?: string | null;
+  setPendingProductId?: (id: string | null) => void;
+}
+
+export function ProductPalette({
+  mobileOpen: mobileOpenProp,
+  setMobileOpen: setMobileOpenProp,
+  pendingProductId,
+  setPendingProductId,
+}: ProductPaletteProps = {}) {
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<ProductCategory | 'all'>('all');
   const [region, setRegion] = useState<RegionGroup>(() => readRegionLs());
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpenLocal, setMobileOpenLocal] = useState(false);
+  const mobileOpen = mobileOpenProp ?? mobileOpenLocal;
+  const setMobileOpen = setMobileOpenProp ?? setMobileOpenLocal;
 
   useEffect(() => {
     try {
@@ -84,7 +112,7 @@ export function ProductPalette() {
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="md:hidden rounded-md border border-ppw-stone bg-white px-2 py-0.5 text-xs text-ppw-slate"
+            className="md:hidden min-h-[36px] rounded-md border border-ppw-stone bg-white px-2.5 text-xs text-ppw-slate"
             aria-label="Close catalog"
           >
             Close
@@ -98,7 +126,7 @@ export function ProductPalette() {
           value={query}
           placeholder="Search products…"
           onChange={(e) => setQuery(e.target.value)}
-          className="mt-3 w-full rounded-md border border-ppw-stone bg-ppw-sand px-2.5 py-1.5 text-sm placeholder:text-ppw-slate/70 focus:border-ppw-teal focus:outline-none focus:ring-1 focus:ring-ppw-teal"
+          className="mt-3 w-full rounded-md border border-ppw-stone bg-ppw-sand px-2.5 py-2 text-sm placeholder:text-ppw-slate/70 focus:border-ppw-teal focus:outline-none focus:ring-1 focus:ring-ppw-teal"
         />
         <label className="mt-2 block text-[10px] uppercase tracking-wide text-ppw-slate">
           Delivery region
@@ -106,7 +134,7 @@ export function ProductPalette() {
         <select
           value={region}
           onChange={(e) => setRegion(e.target.value as RegionGroup)}
-          className="mt-1 w-full rounded-md border border-ppw-stone bg-white px-2 py-1.5 text-sm text-ppw-ink focus:border-ppw-teal focus:outline-none focus:ring-1 focus:ring-ppw-teal"
+          className="mt-1 w-full rounded-md border border-ppw-stone bg-white px-2 py-2 text-sm text-ppw-ink focus:border-ppw-teal focus:outline-none focus:ring-1 focus:ring-ppw-teal"
         >
           {REGION_GROUPS.map((r) => (
             <option key={r} value={r}>
@@ -139,42 +167,68 @@ export function ProductPalette() {
           </p>
         ) : (
           <ul className="flex flex-col gap-2.5">
-            {filtered.map((p) => (
-              <li key={p.id}>
-                <div
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, p)}
-                  className="group flex cursor-grab gap-3 rounded-lg border border-ppw-stone bg-white p-2.5 transition hover:border-ppw-teal hover:shadow-sm active:cursor-grabbing"
-                  data-product-id={p.id}
-                  data-category={p.category}
-                >
+            {filtered.map((p) => {
+              const isPending = pendingProductId === p.id;
+              return (
+                <li key={p.id}>
                   <div
-                    className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-ppw-sand"
-                    dangerouslySetInnerHTML={{ __html: thumbnailFor(p.category) }}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-ppw-ink">{p.name}</p>
-                    <p className="mt-0.5 text-[11px] uppercase tracking-wide text-ppw-slate">
-                      {CATEGORY_LABELS[p.category]}
-                    </p>
-                    <div className="mt-1 flex items-baseline justify-between gap-2">
-                      <span className="text-xs font-semibold text-ppw-teal">
-                        {formatPrice(p)}
-                      </span>
-                      <span className="truncate text-[10px] text-ppw-slate">
-                        {formatFootprint(p)}
-                      </span>
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, p)}
+                    className={`group flex cursor-grab gap-3 rounded-lg border bg-white p-2.5 transition hover:border-ppw-teal hover:shadow-sm active:cursor-grabbing ${
+                      isPending ? 'border-ppw-teal ring-2 ring-ppw-teal/40' : 'border-ppw-stone'
+                    }`}
+                    data-product-id={p.id}
+                    data-category={p.category}
+                  >
+                    <div
+                      className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-ppw-sand"
+                      dangerouslySetInnerHTML={{ __html: thumbnailFor(p.category) }}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-ppw-ink">{p.name}</p>
+                      <p className="mt-0.5 text-[11px] uppercase tracking-wide text-ppw-slate">
+                        {CATEGORY_LABELS[p.category]}
+                      </p>
+                      <div className="mt-1 flex items-baseline justify-between gap-2">
+                        <span className="text-xs font-semibold text-ppw-teal">
+                          {formatPrice(p)}
+                        </span>
+                        <span className="truncate text-[10px] text-ppw-slate">
+                          {formatFootprint(p)}
+                        </span>
+                      </div>
+                      {setPendingProductId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (isPending) {
+                              setPendingProductId(null);
+                            } else {
+                              setPendingProductId(p.id);
+                              setMobileOpen(false);
+                            }
+                          }}
+                          className={`mt-2 min-h-[40px] w-full rounded-md border px-3 text-xs font-semibold transition md:hidden ${
+                            isPending
+                              ? 'border-ppw-coral bg-white text-ppw-coral hover:bg-ppw-coral hover:text-white'
+                              : 'border-ppw-teal bg-ppw-teal text-white hover:bg-ppw-teal/90'
+                          }`}
+                          aria-pressed={isPending}
+                        >
+                          {isPending ? 'Cancel' : 'Place on floor'}
+                        </button>
+                      )}
                     </div>
                   </div>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
 
       <div className="border-t border-ppw-stone bg-ppw-sand px-3 py-2 text-[10px] leading-snug text-ppw-slate">
-        Drag a card onto the canvas. Click a placed item to edit. Region filter is remembered.
+        Drag a card onto the canvas (or tap "Place on floor" on mobile). Click a placed item to edit. Region filter is remembered.
       </div>
     </>
   );
@@ -188,9 +242,10 @@ export function ProductPalette() {
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className={`md:hidden fixed bottom-4 left-4 z-30 rounded-full bg-ppw-teal px-4 py-2.5 text-sm font-semibold text-white shadow-lg ${
+        className={`md:hidden fixed left-4 z-30 min-h-[44px] rounded-full bg-ppw-teal px-4 py-2.5 text-sm font-semibold text-white shadow-lg ${
           mobileOpen ? 'hidden' : ''
         }`}
+        style={{ bottom: 'max(1rem, env(safe-area-inset-bottom))' }}
       >
         Catalog ({filtered.length})
       </button>
@@ -201,7 +256,10 @@ export function ProductPalette() {
             className="md:hidden fixed inset-0 z-40 bg-black/30"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex h-[80vh] flex-col rounded-t-2xl border-t border-ppw-stone bg-white shadow-2xl">
+          <aside
+            className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex h-[80vh] flex-col rounded-t-2xl border-t border-ppw-stone bg-white shadow-2xl"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+          >
             {body}
           </aside>
         </>
@@ -223,7 +281,7 @@ function CategoryChip({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 transition ${
+      className={`min-h-[32px] rounded-full px-2.5 text-[11px] font-medium ring-1 transition ${
         active
           ? 'bg-ppw-teal text-white ring-ppw-teal'
           : 'bg-white text-ppw-slate ring-ppw-stone hover:bg-ppw-mist'
