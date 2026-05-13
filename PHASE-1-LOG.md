@@ -220,4 +220,42 @@ Vercel will auto-deploy. Before the next live test:
 3. Visit `https://designer.ppwellness.co/suppliers` and submit a real test signup. Confirm the row appears in Neon and you receive both emails.
 4. Visit `https://designer.ppwellness.co/admin/merchants`, sign in with Clerk, approve the test merchant, and confirm the approval email lands.
 
+---
+
+## 2026-05-13 evening — Lambda crash RESOLVED (post-cutover)
+
+The OMS Phase 1 commit deployed clean, but every api lambda except `create-checkout-session` returned `FUNCTION_INVOCATION_FAILED` on every invocation. Pre-existing `/api/stripe-webhook` was crashing too — i.e. a Vercel-side change, not our code.
+
+### Root cause
+
+Vercel's build pipeline now emits the api lambdas as **strict ESM** (TypeScript `import`/`export` is preserved in the bundled JS, treated as ESM by Node because the root `package.json` has `"type": "module"`). Node's strict ESM resolver **requires explicit `.js` extensions** on every relative import. Our `from '../db/merchantStore'` style imports — which Hotfix 7 happily ran — fail with `ERR_MODULE_NOT_FOUND` under the new emit mode.
+
+The earlier `api/package.json` with `{"type": "commonjs"}` (commit `27e7c1f`) made it worse: Vercel still emitted ESM-syntax JS, but Node now treated it as CJS → "Failed to load ES module".
+
+### Fix path executed
+
+| Step | Commit | Result |
+|---|---|---|
+| 1. Clear Vercel build cache (dashboard → Redeploy with cache UNCHECKED) | — | Same crash. |
+| 2. Drop `@vercel/node@3.2.29` runtime pin | `9492506` | Same crash. |
+| 3. Fetch verbatim runtime stack via Vercel UI logs | — | Found `ERR_MODULE_NOT_FOUND: Cannot find module '/var/task/api/db/merchantStore'`. Diagnosis confirmed. |
+| 4. Revert the api/package.json CJS pin | `c28cec9` | Error returned to `ERR_MODULE_NOT_FOUND` — fixable. |
+| **4b. Add `.js` extensions to all 36 relative imports across 15 api/*.ts files** | `9538652` | **FIXED.** Deploy `dpl_68LMYmTaaG8KWsr1VGC9ZUivHyq2` READY. |
+
+### Smoke verification (commit `9538652` live)
+
+```
+POST /api/merchants/signup      → 200  {"kind":"manual_followup","merchant":{"id":1,"slug":"s4b","status":"awaiting_kyc"}, ...}
+POST /api/stripe-webhook        → 400  {"error":"Missing signature."}             (handler reached, sig-check rejects empty body — correct)
+POST /api/stripe-connect/webhook → 500  {"error":"Connect webhook receiver not configured."}  (MU-gate off; not a crash)
+Neon row id=1, status=awaiting_kyc, created 2026-05-13T18:14:23Z — verified via Neon MCP.
+```
+
+### Cleanup followups
+
+- Re-run `npm test` from the laptop to confirm the 285 unit tests still pass after the .js-extension rewrite (Vitest 2.x should resolve `.js` → `.ts` automatically via `moduleResolution: "node"`, but verify).
+- Delete the smoke-test merchant row when convenient: `DELETE FROM merchants WHERE slug = 's4b';` (1 row).
+- The `/api/stripe-connect/webhook` 500 will go away once `STRIPE_WEBHOOK_SECRET_CONNECT` is set + `STRIPE_MU_SUPPORTED=true` is flipped (post A.4 resolution).
+- `vercel.json` no longer pins `@vercel/node` to a specific version (commit `9492506`). Vercel uses its current default. If a future regression hits, that's the first knob to pin back.
+
 This closes the OMS Phase 1 Week 1 Definition of Done.
