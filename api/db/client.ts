@@ -24,13 +24,23 @@ export type Db = NeonHttpDatabase<typeof schema>;
 let _db: Db | null = null;
 
 /**
- * Get (or lazily build) the Drizzle client. Throws if DATABASE_URL is
- * missing — endpoints should catch this and return a 500 without
+ * Get (or lazily build) the Drizzle client. Throws if no Neon URL is
+ * configured — endpoints should catch this and return a 500 without
  * leaking which env var is unset.
+ *
+ * Env var resolution order (first non-empty wins):
+ *   1. DATABASE_URL          (explicit override, older Neon integration)
+ *   2. POSTGRES_URL          (newer Vercel-Neon integration, pooled)
+ *   3. POSTGRES_DATABASE_URL (Vercel-Neon legacy alias, pooled)
+ *   4. POSTGRES_PRISMA_URL   (Prisma-flavoured alias, pooled)
  */
 export function getDb(): Db {
   if (_db) return _db;
-  const url = process.env.DATABASE_URL;
+  const url =
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_DATABASE_URL ||
+    process.env.POSTGRES_PRISMA_URL;
   if (!url || url.trim().length === 0) {
     throw new Error('DATABASE_URL is not configured');
   }
