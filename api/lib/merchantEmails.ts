@@ -12,7 +12,12 @@
  * links once the marketing flow exists.
  */
 
-import { Resend } from 'resend';
+// NOTE: Resend SDK is intentionally imported via dynamic `await import('resend')`
+// inside `send()` rather than at the top of the module. Importing at top-level
+// crashed the Vercel @vercel/node@3.2.29 lambda on cold start (FUNCTION_INVOCATION_FAILED)
+// — likely an ESM/CJS interop issue with the current runtime + Resend 4.8. Moving
+// the import inside the async function defers the load until the path is actually hit,
+// which lets the function module itself load cleanly.
 import {
   renderMerchantApproved,
   renderMerchantKycCompleteAlertToVic,
@@ -21,6 +26,18 @@ import {
   renderMerchantSignupAlertToVic,
   type MerchantEmailData,
 } from './email-templates';
+
+type ResendClient = {
+  emails: {
+    send(args: {
+      from: string;
+      to: string;
+      subject: string;
+      html: string;
+      replyTo?: string;
+    }): Promise<{ data: { id: string } | null; error: { message: string } | null }>;
+  };
+};
 
 export const VIC_EMAIL = 'victor@ppwellness.co';
 export const FROM_EMAIL = 'Peak Performance Wellness Marketplace <victor@ppwellness.co>';
@@ -32,12 +49,16 @@ export interface SendResult {
   error?: string;
 }
 
-let _resend: Resend | null = null;
+let _resend: ResendClient | null = null;
 
-function getResend(): Resend | null {
+async function getResend(): Promise<ResendClient | null> {
   const key = process.env.RESEND_API_KEY;
   if (!key || key.trim().length === 0) return null;
-  if (!_resend) _resend = new Resend(key);
+  if (!_resend) {
+    const mod = await import('resend');
+    const Ctor = (mod as { Resend: new (apiKey: string) => ResendClient }).Resend;
+    _resend = new Ctor(key);
+  }
   return _resend;
 }
 
@@ -54,7 +75,7 @@ interface SendArgs {
 }
 
 async function send(args: SendArgs): Promise<SendResult> {
-  const client = getResend();
+  const client = await getResend();
   if (!client) {
     // Local dev: log instead of send so the whole flow stays functional
     // without a Resend account.

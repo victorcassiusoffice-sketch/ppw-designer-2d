@@ -12,8 +12,23 @@
  * actually send. See VERCEL-DEPLOY-GUIDE.md.
  */
 
-import { Resend } from 'resend';
+// NOTE: Resend SDK is dynamic-imported inside `getResend()` (lower in file).
+// Importing it at top crashed the Vercel @vercel/node@3.2.29 lambda at cold start
+// (FUNCTION_INVOCATION_FAILED) — ESM/CJS interop bug. Deferring keeps the function
+// module loadable even when Resend would have crashed.
 import type { OrderSummary, CustomerInfo, Currency } from './orderTypes';
+
+type ResendClient = {
+  emails: {
+    send(args: {
+      from: string;
+      to: string;
+      subject: string;
+      html: string;
+      replyTo?: string;
+    }): Promise<{ data: { id: string } | null; error: { message: string } | null }>;
+  };
+};
 
 const VIC_EMAIL = 'victor@ppwellness.co';
 const FROM_EMAIL = 'Peak Performance Wellness <victor@ppwellness.co>';
@@ -27,11 +42,15 @@ export interface SendResult {
   error?: string;
 }
 
-let _resend: Resend | null = null;
-function getResend(): Resend | null {
+let _resend: ResendClient | null = null;
+async function getResend(): Promise<ResendClient | null> {
   const key = process.env.RESEND_API_KEY;
   if (!key || key.trim().length === 0) return null;
-  if (!_resend) _resend = new Resend(key);
+  if (!_resend) {
+    const mod = await import('resend');
+    const Ctor = (mod as { Resend: new (apiKey: string) => ResendClient }).Resend;
+    _resend = new Ctor(key);
+  }
   return _resend;
 }
 
@@ -185,7 +204,7 @@ async function send(args: {
   /** Optional reply-to override. */
   replyTo?: string;
 }): Promise<SendResult> {
-  const client = getResend();
+  const client = await getResend();
   if (!client) {
     // Local dev: log instead of send.
     // eslint-disable-next-line no-console
