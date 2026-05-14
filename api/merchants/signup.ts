@@ -26,6 +26,8 @@ import {
   processMerchantSignup,
   type SignupOutcome,
 } from '../lib/merchantSignup.js';
+import { merchantSignupLimiter, getClientIp } from '../lib/rateLimit.js';
+import { withSentry } from '../lib/sentry.js';
 
 const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:5173',
@@ -90,7 +92,7 @@ function publicMerchantView(outcome: SignupOutcome): Record<string, unknown> | n
   };
 }
 
-export default async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
+async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
   const origin = typeof req.headers.origin === 'string' ? req.headers.origin : undefined;
   const cors = corsHeaders(origin);
   for (const [k, v] of Object.entries(cors)) res.setHeader(k, v);
@@ -102,6 +104,19 @@ export default async function handler(req: MinimalReq, res: MinimalRes): Promise
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST, OPTIONS');
     res.status(405).end();
+    return;
+  }
+
+  // Rate limit: 3 signups / IP / 10 min. Sliding window via Upstash KV.
+  // Per OMS §1.11. Limiter degrades open if KV creds are absent.
+  const ip = getClientIp(req);
+  const verdict = await merchantSignupLimiter.check(ip);
+  if (!verdict.success) {
+    res.setHeader('Retry-After', String(verdict.retryAfterSec));
+    res.setHeader('X-RateLimit-Limit', String(verdict.limit));
+    res.setHeader('X-RateLimit-Remaining', String(verdict.remaining));
+    res.status(429);
+    res.json({ error: 'Too many signup attempts. Please try again later.' });
     return;
   }
 
@@ -168,3 +183,5 @@ export default async function handler(req: MinimalReq, res: MinimalRes): Promise
     completeUrl: outcome.completeUrl,
   });
 }
+
+export default withSentry(handler);

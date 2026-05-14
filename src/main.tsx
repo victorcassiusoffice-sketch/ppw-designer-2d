@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
 import App from './App';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -14,6 +15,23 @@ import AdminLayout from './pages/AdminLayout';
 import AdminMerchantsPage from './pages/AdminMerchantsPage';
 import { bootstrapFx } from './store/currencyStore';
 import './index.css';
+
+// Sentry — wired browser-side. DSN is intentionally a Vite-public
+// env var (it's safe to ship publicly per Sentry's docs). If absent
+// the SDK is a no-op so local dev stays clean.
+const sentryDsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
+if (sentryDsn) {
+  Sentry.init({
+    dsn: sentryDsn,
+    environment: (import.meta.env.VITE_VERCEL_ENV as string | undefined) ?? import.meta.env.MODE,
+    release: import.meta.env.VITE_VERCEL_GIT_COMMIT_SHA as string | undefined,
+    // Free-tier safe defaults — no perf tracing, no session replay.
+    tracesSampleRate: 0,
+    replaysSessionSampleRate: 0,
+    replaysOnErrorSampleRate: 0,
+    sendDefaultPii: false,
+  });
+}
 
 // Fire-and-forget FX bootstrap - refreshes the live rate snapshot if
 // the cached one is stale.
