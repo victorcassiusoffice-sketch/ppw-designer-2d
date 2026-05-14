@@ -382,15 +382,17 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
             </Group>
           )}
 
-          <Text
-            x={bounds.minX * pxPerMetre + 6}
-            y={bounds.minY * pxPerMetre + 6}
-            text={`0,0 - ${(bounds.maxX - bounds.minX).toFixed(1)} x ${(bounds.maxY - bounds.minY).toFixed(1)} m bbox`}
-            fontSize={12}
-            fontFamily="Inter, sans-serif"
-            fill="#3B4A52"
-            listening={false}
-          />
+          {import.meta.env.DEV && (
+            <Text
+              x={bounds.minX * pxPerMetre + 6}
+              y={bounds.minY * pxPerMetre + 6}
+              text={`0,0 - ${(bounds.maxX - bounds.minX).toFixed(1)} x ${(bounds.maxY - bounds.minY).toFixed(1)} m bbox`}
+              fontSize={12}
+              fontFamily="Inter, sans-serif"
+              fill="#3B4A52"
+              listening={false}
+            />
+          )}
         </Layer>
 
         <Layer>
