@@ -34,6 +34,10 @@ import {
   integer,
   uniqueIndex,
   index,
+  bigint,
+  bigserial,
+  jsonb,
+  boolean,
 } from 'drizzle-orm/pg-core';
 
 export const merchantStatusEnum = pgEnum('merchant_status', [
@@ -129,3 +133,142 @@ export type NewMerchantDocument = typeof merchantDocuments.$inferInsert;
 
 export type Admin = typeof admins.$inferSelect;
 export type NewAdmin = typeof admins.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────
+// OMS Phase 2 — admin portal additions.
+//
+// payout_queue: rows scheduled for batch payout to merchants. Phase 4
+// will wire the actual disbursement worker; Phase 2 ships the table +
+// admin viewer.
+//
+// audit_log: every admin-initiated mutation gets a row. Used for the
+// admin activity feed and forensic queries.
+// ─────────────────────────────────────────────────────────────────────
+
+
+export const payoutStatusEnum = pgEnum('payout_status', [
+  'queued',
+  'processing',
+  'sent',
+  'failed',
+]);
+
+export const paymentRailEnum = pgEnum('payment_rail', [
+  'stripe',
+  'paypal',
+  'mips',
+  'mcb_juice',
+  'bank_transfer',
+]);
+
+export const payoutQueue = pgTable(
+  'payout_queue',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    merchantId: bigint('merchant_id', { mode: 'number' })
+      .notNull()
+      .references(() => merchants.id, { onDelete: 'cascade' }),
+    amountMinor: integer('amount_minor').notNull(),
+    currency: varchar('currency', { length: 3 }).notNull(),
+    rail: paymentRailEnum('rail').notNull(),
+    status: payoutStatusEnum('status').notNull().default('queued'),
+    scheduledFor: timestamp('scheduled_for', { withTimezone: true }).notNull(),
+    processedAt: timestamp('processed_at', { withTimezone: true }),
+    externalPayoutId: varchar('external_payout_id', { length: 120 }),
+    note: text('note'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    statusIdx: index('payout_queue_status_idx').on(t.status, t.scheduledFor),
+    merchantIdx: index('payout_queue_merchant_idx').on(t.merchantId),
+  }),
+);
+
+export const auditLog = pgTable(
+  'audit_log',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    actorEmail: varchar('actor_email', { length: 320 }).notNull(),
+    action: varchar('action', { length: 120 }).notNull(),
+    targetType: varchar('target_type', { length: 80 }).notNull(),
+    targetId: varchar('target_id', { length: 120 }).notNull(),
+    reason: text('reason'),
+    payload: jsonb('payload'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    actorIdx: index('audit_log_actor_idx').on(t.actorEmail, t.createdAt),
+    targetIdx: index('audit_log_target_idx').on(t.targetType, t.targetId),
+  }),
+);
+
+export type PayoutQueueRow = typeof payoutQueue.$inferSelect;
+export type NewPayoutQueueRow = typeof payoutQueue.$inferInsert;
+export type PayoutStatus = PayoutQueueRow['status'];
+export type PaymentRail = PayoutQueueRow['rail'];
+
+export type AuditLogRow = typeof auditLog.$inferSelect;
+export type NewAuditLogRow = typeof auditLog.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────
+// OMS Phase 1.5 — payment rails + webhook idempotency.
+//
+// orders: multi-rail order ledger (PayPal, Stripe, MIPS, MCB Juice, etc.)
+// webhook_events: dedupe table for idempotent webhook processing
+// ─────────────────────────────────────────────────────────────────────
+
+export const paymentStatusEnum = pgEnum('payment_status', [
+  'pending',
+  'authorised',
+  'captured',
+  'failed',
+  'refunded',
+  'partially_refunded',
+]);
+
+export const orders = pgTable(
+  'orders',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    ppwOrderId: varchar('ppw_order_id', { length: 120 }).notNull().unique(),
+    customerEmail: varchar('customer_email', { length: 320 }).notNull(),
+    currency: varchar('currency', { length: 3 }).notNull(),
+    totalMinor: integer('total_minor').notNull(),
+    paymentRail: paymentRailEnum('payment_rail').notNull(),
+    paymentRailOrderId: varchar('payment_rail_order_id', { length: 120 }),
+    paymentStatus: paymentStatusEnum('payment_status').notNull().default('pending'),
+    rawPayload: jsonb('raw_payload'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    customerEmailIdx: index('orders_customer_email_idx').on(t.customerEmail),
+    paymentRailIdx: index('orders_payment_rail_idx').on(t.paymentRail, t.paymentStatus),
+  }),
+);
+
+export const webhookEvents = pgTable(
+  'webhook_events',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    source: varchar('source', { length: 40 }).notNull(),
+    eventId: varchar('event_id', { length: 120 }).notNull(),
+    eventType: varchar('event_type', { length: 120 }).notNull(),
+    receivedAt: timestamp('received_at', { withTimezone: true }).notNull().defaultNow(),
+    processed: boolean('processed').notNull().default(false),
+    processingError: text('processing_error'),
+    payload: jsonb('payload').notNull(),
+  },
+  (t) => ({
+    sourceEventUnique: uniqueIndex('webhook_events_source_event_unique').on(t.source, t.eventId),
+    unprocessedIdx: index('webhook_events_unprocessed_idx').on(t.processed, t.receivedAt),
+  }),
+);
+
+export type Order = typeof orders.$inferSelect;
+export type NewOrder = typeof orders.$inferInsert;
+export type PaymentStatus = Order['paymentStatus'];
+
+export type WebhookEvent = typeof webhookEvents.$inferSelect;
+export type NewWebhookEvent = typeof webhookEvents.$inferInsert;

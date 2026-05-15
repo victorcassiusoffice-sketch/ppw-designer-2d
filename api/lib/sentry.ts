@@ -65,9 +65,13 @@ export function captureMessage(msg: string, level: Sentry.SeverityLevel = 'info'
  * before propagating. The wrapper deliberately re-throws so Vercel
  * preserves the 500 status + the stack trace in its own logs.
  */
-type MinimalReq = { method?: string; url?: string; headers: Record<string, string | string[] | undefined> };
+type MinimalReq = { method?: string; url?: string; headers: Record<string, string | string[] | undefined>; body?: unknown };
 type MinimalRes = { setHeader(name: string, value: string): void; status(code: number): MinimalRes; end(payload?: string): void; json(body: unknown): void };
 type Handler<Q extends MinimalReq, S extends MinimalRes> = (req: Q, res: S) => Promise<void> | void;
+
+// Export aliases for PayPal lambdas that import MinReq/MinRes
+export type MinReq = MinimalReq;
+export type MinRes = MinimalRes;
 
 export function withSentry<Q extends MinimalReq, S extends MinimalRes>(handler: Handler<Q, S>): Handler<Q, S> {
   return async (req, res) => {
