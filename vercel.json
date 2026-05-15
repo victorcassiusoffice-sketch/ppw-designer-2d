@@ -4,29 +4,19 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "functions": {
-    "api/create-checkout-session.ts": {
-      "maxDuration": 10
-    },
-    "api/stripe-webhook.ts": {
-      "maxDuration": 10
-    },
-    "api/merchants/signup.ts": {
-      "maxDuration": 15
-    },
-    "api/stripe-connect/webhook.ts": {
-      "maxDuration": 15
-    },
-    "api/admin/merchants/list.ts": {
-      "maxDuration": 10
-    },
-    "api/admin/merchants/approve.ts": {
-      "maxDuration": 10
-    },
-    "api/admin/merchants/reject.ts": {
-      "maxDuration": 10
-    }
+    "api/create-checkout-session.ts": { "maxDuration": 10 },
+    "api/stripe-webhook.ts": { "maxDuration": 10 },
+    "api/merchants/signup.ts": { "maxDuration": 15 },
+    "api/stripe-connect/webhook.ts": { "maxDuration": 15 },
+    "api/admin/[...slug].ts": { "maxDuration": 15 },
+    "api/paypal/[action].ts": { "maxDuration": 15 },
+    "api/products.ts": { "maxDuration": 10 },
+    "api/healthcheck.ts": { "maxDuration": 5 }
   },
   "rewrites": [
+    { "source": "/api/createPaypalOrder", "destination": "/api/paypal/createOrder" },
+    { "source": "/api/capturePaypalOrder", "destination": "/api/paypal/captureOrder" },
+    { "source": "/api/paypal-webhook", "destination": "/api/paypal/webhook" },
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

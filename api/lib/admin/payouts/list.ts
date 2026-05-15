@@ -14,9 +14,9 @@
  * explanatory message instead of treating it as an error.
  */
 
-import { drizzleMerchantStore } from '../../db/merchantStore.js';
-import { authoriseAdminWithLive } from '../../lib/adminAuth.js';
-import { getDb, schema } from '../../db/client.js';
+import { drizzleMerchantStore } from '../../../db/merchantStore.js';
+import { authoriseAdminWithLive } from '../../adminAuth.js';
+import { getDb, schema } from '../../../db/client.js';
 import { and, desc, eq, sql, type SQL } from 'drizzle-orm';
 
 interface MinimalReq {

@@ -9,9 +9,9 @@
  * Phase 2 will add: filters by status, search, pagination, audit log.
  */
 
-import { drizzleMerchantStore } from '../../db/merchantStore.js';
-import { authoriseAdminWithLive } from '../../lib/adminAuth.js';
-import { listPendingMerchants } from '../../lib/adminMerchantActions.js';
+import { drizzleMerchantStore } from '../../../db/merchantStore.js';
+import { authoriseAdminWithLive } from '../../adminAuth.js';
+import { listPendingMerchants } from '../../adminMerchantActions.js';
 
 interface MinimalReq {
   method?: string;

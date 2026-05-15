@@ -1,0 +1,105 @@
+/**
+ * Catch-all admin router — single Vercel function for /api/admin/*.
+ *
+ * Vercel Hobby tier caps at 12 serverless functions per deployment.
+ * Phase 1+1B+1.5+2+3 generates 19 functions if every endpoint is its
+ * own file. This dispatcher consolidates 10 admin endpoints into one.
+ *
+ * Routes handled (forwarded to handlers in api/lib/admin/*):
+ *   GET    /api/admin/merchants                → merchants/list
+ *   GET    /api/admin/merchants/:slug          → merchants/detail
+ *   POST   /api/admin/merchants/:slug/approve  → merchants/approve
+ *   POST   /api/admin/merchants/:slug/reject   → merchants/reject
+ *   GET    /api/admin/orders                   → orders/list
+ *   GET    /api/admin/payouts                  → payouts/list
+ *   GET    /api/admin/products                 → products/list
+ *   POST/PATCH/DELETE /api/admin/products      → products/write
+ *   GET    /api/admin/suppliers                → suppliers/list
+ *   POST/PATCH/DELETE /api/admin/suppliers     → suppliers/write
+ */
+
+import merchantsList from '../lib/admin/merchants/list.js';
+import merchantsDetail from '../lib/admin/merchants/detail.js';
+import merchantsApprove from '../lib/admin/merchants/approve.js';
+import merchantsReject from '../lib/admin/merchants/reject.js';
+import ordersList from '../lib/admin/orders/list.js';
+import payoutsList from '../lib/admin/payouts/list.js';
+import productsList from '../lib/admin/products/list.js';
+import productsWrite from '../lib/admin/products/write.js';
+import suppliersList from '../lib/admin/suppliers/list.js';
+import suppliersWrite from '../lib/admin/suppliers/write.js';
+
+interface MinimalReq {
+  method?: string;
+  url?: string;
+  headers: Record<string, string | string[] | undefined>;
+  query?: Record<string, string | string[] | undefined>;
+  body?: unknown;
+}
+interface MinimalRes {
+  setHeader(name: string, value: string): void;
+  status(code: number): MinimalRes;
+  end(payload?: string): void;
+  json(body: unknown): void;
+}
+
+function getSlugSegments(req: MinimalReq): string[] {
+  const q = req.query ?? {};
+  const raw = q['slug'];
+  if (Array.isArray(raw)) return raw.filter((s): s is string => typeof s === 'string');
+  if (typeof raw === 'string') return [raw];
+  // Fallback: parse url
+  if (req.url) {
+    const path = req.url.split('?')[0] ?? '';
+    const parts = path.split('/').filter(Boolean);
+    // expect ['api','admin', ...rest]
+    return parts.slice(2);
+  }
+  return [];
+}
+
+export default async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
+  const segments = getSlugSegments(req);
+  const [resource, ...rest] = segments;
+
+  // Inject the merchant slug into req.query for the merchants/detail
+  // handler (which expects req.query.slug), and similarly for approve/reject.
+  if (resource === 'merchants') {
+    if (rest.length === 0) {
+      return merchantsList(req as never, res as never);
+    }
+    const merchantSlug = rest[0];
+    req.query = { ...(req.query ?? {}), slug: merchantSlug };
+    if (rest.length === 1) {
+      return merchantsDetail(req as never, res as never);
+    }
+    if (rest[1] === 'approve') {
+      return merchantsApprove(req as never, res as never);
+    }
+    if (rest[1] === 'reject') {
+      return merchantsReject(req as never, res as never);
+    }
+    res.status(404).json({ error: `unknown merchants action: ${rest[1]}` });
+    return;
+  }
+
+  if (resource === 'orders') {
+    return ordersList(req as never, res as never);
+  }
+
+  if (resource === 'payouts') {
+    return payoutsList(req as never, res as never);
+  }
+
+  if (resource === 'products') {
+    if (req.method === 'GET') return productsList(req as never, res as never);
+    return productsWrite(req as never, res as never);
+  }
+
+  if (resource === 'suppliers') {
+    if (req.method === 'GET') return suppliersList(req as never, res as never);
+    return suppliersWrite(req as never, res as never);
+  }
+
+  res.status(404).json({ error: `unknown admin resource: ${resource ?? '(empty)'}` });
+}

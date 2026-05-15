@@ -8,7 +8,7 @@ import {
   validatePaypalRequest,
   buildPaypalOrderBody,
   toPaypalAmount,
-} from '../createPaypalOrder';
+} from '../lib/paypal/createOrder';
 import { _resetPaypalTokenCacheForTests } from '../lib/paypalClient';
 
 function makeValidRequest() {
@@ -48,7 +48,7 @@ describe('validatePaypalRequest', () => {
     const r = makeValidRequest(); (r as { currency: string }).currency = 'ZZZ';
     expect(validatePaypalRequest(r).ok).toBe(false);
   });
-  it('rejects non-http success URL', () => {
+  it('rejects non-http successstring | URL', () => {
     const r = makeValidRequest(); r.successUrl = 'javascript:alert(1)';
     expect(validatePaypalRequest(r).ok).toBe(false);
   });
@@ -129,7 +129,7 @@ describe('processPaypalOrderRequest', () => {
   });
 
   it('happy path returns approvalUrl + paypalOrderId', async () => {
-    const fakeFetch = vi.fn(async (url: RequestInfo | URL) => {
+    const fakeFetch = vi.fn(async (url: string |string | URL) => {
       const u = String(url);
       if (u.endsWith('/v1/oauth2/token')) {
         return new Response(JSON.stringify({ access_token: 'tok-123', expires_in: 3600 }), {
@@ -161,7 +161,7 @@ describe('processPaypalOrderRequest', () => {
   });
 
   it('returns 500 when PayPal returns no approve link', async () => {
-    const fakeFetch = vi.fn(async (url: RequestInfo | URL) => {
+    const fakeFetch = vi.fn(async (url: string |string | URL) => {
       const u = String(url);
       if (u.endsWith('/v1/oauth2/token')) {
         return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }), {
@@ -179,7 +179,7 @@ describe('processPaypalOrderRequest', () => {
   });
 
   it('sanitises PayPal API errors to a short message', async () => {
-    const fakeFetch = vi.fn(async (url: RequestInfo | URL) => {
+    const fakeFetch = vi.fn(async (url: string |string | URL) => {
       const u = String(url);
       if (u.endsWith('/v1/oauth2/token')) {
         return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }), {

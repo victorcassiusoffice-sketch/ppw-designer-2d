@@ -11,7 +11,7 @@ import {
   extractHeaders,
   applyEventToOrder,
   type PaypalEvent,
-} from '../paypal-webhook';
+} from '../lib/paypal/webhook';
 
 // Mock the dedupe + db modules so the dispatch core can run without a real DB.
 vi.mock('../lib/webhookDedupe', () => ({

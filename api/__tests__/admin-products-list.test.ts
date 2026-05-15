@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { parseAdminProductFilters } from '../admin/products/list';
+import { parseAdminProductFilters } from '../lib/admin/products/list';
 
 describe('parseAdminProductFilters', () => {
   it('defaults', () => {
@@ -34,7 +34,7 @@ describe('parseAdminProductFilters', () => {
 
 describe('GET /api/admin/products handler', () => {
   it('returns 405 for non-GET', async () => {
-    const mod = await import('../admin/products/list');
+    const mod = await import('../lib/admin/products/list');
     const handler = mod.default;
     let status = 0;
     let ended = false;
@@ -50,7 +50,7 @@ describe('GET /api/admin/products handler', () => {
   });
 
   it('returns 401 without Bearer token', async () => {
-    const mod = await import('../admin/products/list');
+    const mod = await import('../lib/admin/products/list');
     const handler = mod.default;
     let status = 0;
     let body: unknown = null;

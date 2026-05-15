@@ -17,14 +17,14 @@
  * observability lands) so logs carry a handler tag.
  */
 
-import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
-import { readPaypalEnv, paypalFetch } from './lib/paypalClient.js';
+import { withSentry, type MinReq, type MinRes } from '../sentry.js';
+import { readPaypalEnv, paypalFetch } from '../paypalClient.js';
 import type {
   CartLineItemPayload,
   CustomerInfo,
   PropertySnapshot,
   Currency,
-} from './lib/orderTypes.js';
+} from '../orderTypes.js';
 
 const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:5173',

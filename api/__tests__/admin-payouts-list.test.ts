@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { parsePayoutFilters } from '../admin/payouts/list';
+import { parsePayoutFilters } from '../lib/admin/payouts/list';
 
 describe('parsePayoutFilters', () => {
   it('defaults', () => {
@@ -26,7 +26,7 @@ describe('parsePayoutFilters', () => {
 
 describe('GET /api/admin/payouts — handler shape', () => {
   it('returns 405 for non-GET', async () => {
-    const mod = await import('../admin/payouts/list');
+    const mod = await import('../lib/admin/payouts/list');
     const handler = mod.default;
     let status = 0;
     const res = {
@@ -43,7 +43,7 @@ describe('GET /api/admin/payouts — handler shape', () => {
   });
 
   it('returns 401 without a Bearer token', async () => {
-    const mod = await import('../admin/payouts/list');
+    const mod = await import('../lib/admin/payouts/list');
     const handler = mod.default;
     let status = 0;
     const res = {
@@ -101,7 +101,7 @@ describe('fetchPayoutsPage — empty fixture (schema-missing)', () => {
         },
       },
     }));
-    const { fetchPayoutsPage } = await import('../admin/payouts/list');
+    const { fetchPayoutsPage } = await import('../lib/admin/payouts/list');
     const out = await fetchPayoutsPage({
       page: 1,
       perPage: 25,

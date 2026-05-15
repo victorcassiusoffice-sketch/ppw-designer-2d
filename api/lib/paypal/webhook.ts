@@ -30,10 +30,10 @@
  * tests target it directly without faking the Node Readable.
  */
 
-import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
-import { readPaypalEnv, paypalFetch } from './lib/paypalClient.js';
-import { recordWebhookEvent } from './lib/webhookDedupe.js';
-import { getDb } from './db/client.js';
+import { withSentry, type MinReq, type MinRes } from '../sentry.js';
+import { readPaypalEnv, paypalFetch } from '../paypalClient.js';
+import { recordWebhookEvent } from '../webhookDedupe.js';
+import { getDb } from '../../db/client.js';
 import { sql } from 'drizzle-orm';
 
 // IMPORTANT - PayPal's signature scheme requires the raw bytes. We

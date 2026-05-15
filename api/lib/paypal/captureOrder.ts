@@ -19,10 +19,10 @@
  * is the "happy-path" UI accelerator.
  */
 
-import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
-import { readPaypalEnv, paypalFetch } from './lib/paypalClient.js';
-import { getDb } from './db/client.js';
-import { orders } from './db/schema.js';
+import { withSentry, type MinReq, type MinRes } from '../sentry.js';
+import { readPaypalEnv, paypalFetch } from '../paypalClient.js';
+import { getDb } from '../../db/client.js';
+import { orders } from '../../db/schema.js';
 import { sql } from 'drizzle-orm';
 
 const ALLOWED_ORIGINS = new Set([

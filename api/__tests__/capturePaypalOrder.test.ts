@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   processCaptureRequest,
   validateCaptureRequest,
-} from '../capturePaypalOrder';
+} from '../lib/paypal/captureOrder';
 import { _resetPaypalTokenCacheForTests } from '../lib/paypalClient';
 
 describe('validateCaptureRequest', () => {
@@ -53,7 +53,7 @@ describe('processCaptureRequest', () => {
   });
 
   it('happy path - COMPLETED status, recorder invoked', async () => {
-    const fakeFetch = vi.fn(async (url: RequestInfo | URL) => {
+    const fakeFetch = vi.fn(async (url: string |string | URL) => {
       const u = String(url);
       if (u.endsWith('/v1/oauth2/token')) {
         return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }), {
@@ -93,7 +93,7 @@ describe('processCaptureRequest', () => {
   });
 
   it('returns 500 when capture status is not COMPLETED', async () => {
-    const fakeFetch = vi.fn(async (url: RequestInfo | URL) => {
+    const fakeFetch = vi.fn(async (url: string |string | URL) => {
       const u = String(url);
       if (u.endsWith('/v1/oauth2/token')) {
         return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }), {
@@ -115,7 +115,7 @@ describe('processCaptureRequest', () => {
   });
 
   it('recorder failure does not break the 200', async () => {
-    const fakeFetch = vi.fn(async (url: RequestInfo | URL) => {
+    const fakeFetch = vi.fn(async (url: string |string | URL) => {
       const u = String(url);
       if (u.endsWith('/v1/oauth2/token')) {
         return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }), {

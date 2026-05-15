@@ -20,9 +20,9 @@
  * Auth: same Bearer-token gate as the merchant endpoints.
  */
 
-import { drizzleMerchantStore } from '../../db/merchantStore.js';
-import { authoriseAdminWithLive } from '../../lib/adminAuth.js';
-import { getDb } from '../../db/client.js';
+import { drizzleMerchantStore } from '../../../db/merchantStore.js';
+import { authoriseAdminWithLive } from '../../adminAuth.js';
+import { getDb } from '../../../db/client.js';
 import { sql } from 'drizzle-orm';
 
 interface MinimalReq {

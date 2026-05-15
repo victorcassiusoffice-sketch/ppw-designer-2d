@@ -22,9 +22,9 @@
  * handler still works when STRIPE_SECRET_KEY is unset in preview.
  */
 
-import { drizzleMerchantStore } from '../../db/merchantStore.js';
-import { authoriseAdminWithLive } from '../../lib/adminAuth.js';
-import { getDb, schema } from '../../db/client.js';
+import { drizzleMerchantStore } from '../../../db/merchantStore.js';
+import { authoriseAdminWithLive } from '../../adminAuth.js';
+import { getDb, schema } from '../../../db/client.js';
 import { eq } from 'drizzle-orm';
 
 interface MinimalReq {

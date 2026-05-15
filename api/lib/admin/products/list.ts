@@ -1,18 +1,20 @@
 /**
- * GET /api/admin/suppliers
+ * GET /api/admin/products
  *
- * Admin-gated supplier list with optional filters.
+ * Admin-gated product listing. Returns ALL products including draft +
+ * archived, with optional filters. Joins on merchants for display name.
  *
  * Query params:
- *   - status     : supplier_status filter
+ *   - status     : product_status filter
+ *   - category   : optional
  *   - merchantId : optional numeric
  *   - limit      : default 50, max 200
  *   - offset     : default 0
  */
 
-import { drizzleMerchantStore } from '../../db/merchantStore.js';
-import { authoriseAdminWithLive } from '../../lib/adminAuth.js';
-import { getDb, schema } from '../../db/client.js';
+import { drizzleMerchantStore } from '../../../db/merchantStore.js';
+import { authoriseAdminWithLive } from '../../adminAuth.js';
+import { getDb, schema } from '../../../db/client.js';
 import { and, eq, sql } from 'drizzle-orm';
 
 interface MinimalReq {
@@ -46,76 +48,82 @@ function pickInt(
   return Math.min(max, Math.max(0, Math.floor(n)));
 }
 
-export interface AdminSupplierFilters {
+export interface AdminProductFilters {
   status: string | null;
+  category: string | null;
   merchantId: number | null;
   limit: number;
   offset: number;
 }
 
-export function parseAdminSupplierFilters(
+export function parseAdminProductFilters(
   q: Record<string, string | string[] | undefined>,
-): AdminSupplierFilters {
+): AdminProductFilters {
   const merchantIdRaw = pickStr(q, 'merchantId');
-  const merchantId = merchantIdRaw && /^\d+$/.test(merchantIdRaw) ? Number(merchantIdRaw) : null;
+  const merchantId =
+    merchantIdRaw && /^\d+$/.test(merchantIdRaw) ? Number(merchantIdRaw) : null;
   return {
     status: pickStr(q, 'status'),
+    category: pickStr(q, 'category'),
     merchantId,
     limit: pickInt(q, 'limit', 50, 200) || 50,
     offset: pickInt(q, 'offset', 0, 1_000_000),
   };
 }
 
-export interface AdminSuppliersListResult {
+export interface AdminProductsListResult {
   items: Array<Record<string, unknown>>;
   total: number;
-  filters: AdminSupplierFilters;
+  filters: AdminProductFilters;
   schemaMissing: boolean;
 }
 
-export async function fetchAdminSuppliers(
-  filters: AdminSupplierFilters,
-): Promise<AdminSuppliersListResult> {
+export async function fetchAdminProducts(
+  filters: AdminProductFilters,
+): Promise<AdminProductsListResult> {
   const db = getDb();
   const conds = [] as Array<ReturnType<typeof eq>>;
   if (filters.status) {
-    conds.push(eq(schema.suppliers.status, filters.status as 'pending' | 'active' | 'suspended'));
+    conds.push(eq(schema.products.status, filters.status as 'draft' | 'active' | 'archived' | 'out_of_stock'));
   }
-  if (filters.merchantId !== null) conds.push(eq(schema.suppliers.merchantId, filters.merchantId));
+  if (filters.category) conds.push(eq(schema.products.category, filters.category));
+  if (filters.merchantId !== null) conds.push(eq(schema.products.merchantId, filters.merchantId));
   const whereClause = conds.length ? and(...conds) : undefined;
 
   try {
     const items = await db
       .select({
-        id: schema.suppliers.id,
-        merchantId: schema.suppliers.merchantId,
+        id: schema.products.id,
+        merchantId: schema.products.merchantId,
         merchantBrandName: schema.merchants.brandName,
-        name: schema.suppliers.name,
-        contactEmail: schema.suppliers.contactEmail,
-        contactPhone: schema.suppliers.contactPhone,
-        country: schema.suppliers.country,
-        status: schema.suppliers.status,
-        notes: schema.suppliers.notes,
-        createdAt: schema.suppliers.createdAt,
-        updatedAt: schema.suppliers.updatedAt,
+        sku: schema.products.sku,
+        name: schema.products.name,
+        category: schema.products.category,
+        status: schema.products.status,
+        priceMinor: schema.products.priceMinor,
+        currency: schema.products.currency,
+        imageUrl: schema.products.imageUrl,
+        region: schema.products.region,
+        createdAt: schema.products.createdAt,
+        updatedAt: schema.products.updatedAt,
       })
-      .from(schema.suppliers)
-      .leftJoin(schema.merchants, eq(schema.merchants.id, schema.suppliers.merchantId))
+      .from(schema.products)
+      .leftJoin(schema.merchants, eq(schema.merchants.id, schema.products.merchantId))
       .where(whereClause as never)
-      .orderBy(sql`suppliers.created_at DESC`)
+      .orderBy(sql`products.created_at DESC`)
       .limit(filters.limit)
       .offset(filters.offset);
 
     const countRes = await db
       .select({ c: sql<number>`COUNT(*)::int` })
-      .from(schema.suppliers)
+      .from(schema.products)
       .where(whereClause as never);
     const total = countRes[0]?.c ?? 0;
 
     return { items, total, filters, schemaMissing: false };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (/relation .*suppliers.* does not exist|42P01|undefined_table/i.test(msg)) {
+    if (/relation .*products.* does not exist|42P01|undefined_table/i.test(msg)) {
       return { items: [], total: 0, filters, schemaMissing: true };
     }
     throw err;
@@ -149,17 +157,18 @@ export default async function handler(req: MinimalReq, res: MinimalRes): Promise
     return;
   }
 
-  const filters = parseAdminSupplierFilters(req.query ?? {});
+  const filters = parseAdminProductFilters(req.query ?? {});
   try {
-    const result = await fetchAdminSuppliers(filters);
-    if (result.schemaMissing) res.setHeader('X-Schema-Missing', 'suppliers');
+    const result = await fetchAdminProducts(filters);
+    if (result.schemaMissing) res.setHeader('X-Schema-Missing', 'products');
     res.status(200);
     res.json({
       admin: { email: auth.admin.email, role: auth.admin.role },
       ...result,
     });
   } catch (err) {
+    const msg = err instanceof Error ? err.message : 'admin products query failed';
     res.status(500);
-    res.json({ error: err instanceof Error ? err.message : 'admin suppliers query failed' });
+    res.json({ error: msg });
   }
 }

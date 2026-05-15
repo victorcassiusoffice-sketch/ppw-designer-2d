@@ -6,10 +6,10 @@
  * DELETE /api/admin/suppliers?id=N                     → 200 (suspended)
  */
 
-import { drizzleMerchantStore } from '../../db/merchantStore.js';
-import { authoriseAdminWithLive } from '../../lib/adminAuth.js';
-import { drizzleAuditWriter } from '../../lib/auditLog.js';
-import { getDb, schema } from '../../db/client.js';
+import { drizzleMerchantStore } from '../../../db/merchantStore.js';
+import { authoriseAdminWithLive } from '../../adminAuth.js';
+import { drizzleAuditWriter } from '../../auditLog.js';
+import { getDb, schema } from '../../../db/client.js';
 import { eq } from 'drizzle-orm';
 
 interface MinimalReq {
