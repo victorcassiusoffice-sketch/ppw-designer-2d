@@ -68,6 +68,36 @@ render-path change).
 
 ---
 
+## 2026-05-16 — V3.1 Driver tick 2 (M1.D.6 Konva MVP lock)
+
+Doc-only tick — no code change, no deploy. Created
+`06-Roadmap/v3.1/wrd_build_path.md` in PPW-Second-Brain with the
+canonical Konva-MVP stable-lock row:
+
+| Field | Value |
+|---|---|
+| Stable lock date | 2026-05-16 |
+| Lock commit | `26c144c` |
+| Lock deploy | `dpl_B5NpeszMicXGYtXQHNacwiz7dxev` |
+| Stability-gate items | 11/11 `[x]` (catalog wired, image-mapped boxes, Cmd/Ctrl+D, 3D toggle, mobile banner, polygon walls, save/load Vitest, visual regression Playwright, coach-mark, test baseline 533+, multi-room model A) |
+
+What this unlocks: M2.C (Construction Designer Babylon Phase 2 build),
+M6.C-related Babylon work, Phase 3 AI evaluator on builds. All still
+pending explicit Vic Y to commence — the lock just removes the
+"unstable Konva MVP" gate.
+
+V3.1-PLAN.md M1.D.6 ticked `[x]`. State summary: items shipped this
+tick — 1 doc (`wrd_build_path.md`). Items blocked unchanged (still
+M1.C.6 + M1.C.7 Vic-gated, plus the Vic-decision queue). Lambda count
+12/12, test count 541/541. Next-item-to-pick: **CA.8 — Accessibility
+baseline + axe-core in the test suite** (Cross-A; touches admin/page
+markup but additive, no Konva render-path change). After CA.8 the
+next would be **M1.D.5 — Cognitive Load census via the
+`designer-cognitive-load-specialist.md` workflow** (specialist agent
+run; research-only, no commit).
+
+---
+
 
 This file lives in the repo root and tracks the Wave 1-5 autonomous run
 that picks up from `c0c120c` (the end-of-tick-5 baseline in the 2nd-Brain
