@@ -1,0 +1,38 @@
+# OMS Wave 4.9 — secret-leak scanner config.
+#
+# Detects common API-key/secret patterns. Run via `gitleaks detect` in
+# pre-commit (see .github/workflows/secrets-scan.yml for the CI variant).
+# Free, local. Closes the lesson from the tick-5 GH PAT leak history.
+
+[extend]
+# Inherit the gitleaks default ruleset for common providers (AWS, Stripe,
+# OpenAI, GitHub, etc.) — we layer our project-specific allow/deny on top.
+useDefault = true
+
+[allowlist]
+description = "Allowlist for PPW false positives"
+paths = [
+  # Lockfiles can contain integrity hashes that trip naive heuristics.
+  '''package-lock\.json''',
+  # Migrations and historical .bat scripts are evidence-of-design, not
+  # secrets-at-rest — Vic's actual env values live only in Vercel.
+  '''api/db/migrations/.*\.sql''',
+]
+regexes = [
+  # Test stripe placeholder keys (sk_test_***)
+  '''sk_test_[A-Za-z0-9]+''',
+  # PayPal sandbox client id pattern
+  '''A[A-Za-z0-9_-]{60,80}=sandbox''',
+]
+
+[[rules]]
+id = "ppw-resend-key"
+description = "Resend API key (custom rule — RESEND_API_KEY is opaque)"
+regex = '''re_[A-Za-z0-9]{20,}'''
+tags = ["secret", "resend"]
+
+[[rules]]
+id = "ppw-clerk-secret"
+description = "Clerk live secret (sk_live_) — never commit"
+regex = '''sk_live_[A-Za-z0-9]{20,}'''
+tags = ["secret", "clerk"]
