@@ -26,10 +26,12 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Stage, Layer, Line, Group, Text, Circle, Rect } from 'react-konva';
+import { Stage, Layer, Line, Group, Text, Circle, Rect, Image as KonvaImage } from 'react-konva';
+import { useImageCache } from '../hooks/useImageCache';
 import type Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
 import { usePropertyStore, selectActiveRoom } from '../store/propertyStore';
+import type { PlacedItem } from '../store/propertyStore';
 import { useToastStore } from '../store/toastStore';
 import { CATEGORY_FILL, CATEGORY_LABELS, getProductById } from '../data/products';
 import {
@@ -524,75 +526,24 @@ export function RoomCanvas({
             const colors = CATEGORY_FILL[product.category];
             const isSelected = item.instanceId === selectedInstanceId;
             return (
-              <Group
+              <PlacedItemGroup
                 key={item.instanceId}
-                x={item.x * pxPerMetre}
-                y={item.y * pxPerMetre}
-                draggable
-                onMouseEnter={(e) => { const stage = e.target.getStage(); if (stage) stage.container().style.cursor = 'grab'; }}
-                onMouseLeave={(e) => { const stage = e.target.getStage(); if (stage) stage.container().style.cursor = ''; }}
-                onMouseDown={(e) => { e.cancelBubble = true; selectItem(item.instanceId); }}
-                onTap={(e) => {
-                  e.cancelBubble = true;
-                  if (itemDragRef.current.instanceId === item.instanceId && itemDragRef.current.moved) {
-                    itemDragRef.current = { instanceId: null, moved: false };
-                    return;
-                  }
-                  selectItem(item.instanceId);
-                }}
-                onDragStart={(e) => {
-                  e.cancelBubble = true;
-                  itemDragRef.current = { instanceId: item.instanceId, moved: false };
-                  selectItem(item.instanceId);
-                  const stage = e.target.getStage();
-                  if (stage) stage.container().style.cursor = 'grabbing';
-                }}
-                onDragMove={(e) => { e.cancelBubble = true; itemDragRef.current.moved = true; }}
-                onDragEnd={(e) => {
-                  e.cancelBubble = true;
-                  const stage = e.target.getStage();
-                  if (stage) stage.container().style.cursor = 'grab';
-                  const newXm = e.target.x() / pxPerMetre;
-                  const newYm = e.target.y() / pxPerMetre;
-                  const others = placedItems
-                    .map((it) => {
-                      const p = getProductById(it.productId);
-                      if (!p) return null;
-                      const ofp = { lengthM: cmToM(p.dimensions_cm.length), widthM: cmToM(p.dimensions_cm.width) };
-                      const r = rotatedFootprint(ofp, it.rotation);
-                      return { x: it.x, y: it.y, w: r.w, h: r.h, instanceId: it.instanceId };
-                    })
-                    .filter((r): r is PlacedRect & { instanceId: string } => r !== null);
-                  const resolved = resolveDragTarget({
-                    candidateX: newXm,
-                    candidateY: newYm,
-                    w,
-                    h,
-                    others,
-                    room: polygon,
-                    ignoreInstanceId: item.instanceId,
-                  });
-                  if (resolved.ok) {
-                    updateItem(item.instanceId, { x: resolved.x, y: resolved.y });
-                    e.target.position({ x: resolved.x * pxPerMetre, y: resolved.y * pxPerMetre });
-                  } else {
-                    e.target.position({ x: item.x * pxPerMetre, y: item.y * pxPerMetre });
-                    pushToast(resolved.reason === 'collision' ? "Item won't fit there." : 'Out of room bounds.', 'warn');
-                  }
-                }}
-              >
-                <Rect width={wPx} height={hPx} fill={colors.fill} opacity={0.55} stroke={isSelected ? '#06B6D4' : colors.stroke} strokeWidth={isSelected ? 2.5 : 1} cornerRadius={3} />
-                <Text x={4} y={4} width={Math.max(wPx - 8, 20)} text={product.name} fontSize={Math.min(12, Math.max(8, wPx / 14))} fontFamily="Inter, sans-serif" fill="#0E1B1F" listening={false} ellipsis wrap="word" />
-                <Text x={4} y={hPx - 14} text={CATEGORY_LABELS[product.category]} fontSize={9} fontFamily="Inter, sans-serif" fill="#3B4A52" listening={false} />
-                {isSelected && (
-                  <>
-                    <Circle x={0} y={0} radius={4} fill="#06B6D4" />
-                    <Circle x={wPx} y={0} radius={4} fill="#06B6D4" />
-                    <Circle x={0} y={hPx} radius={4} fill="#06B6D4" />
-                    <Circle x={wPx} y={hPx} radius={4} fill="#06B6D4" />
-                  </>
-                )}
-              </Group>
+                item={item}
+                product={product}
+                wPx={wPx}
+                hPx={hPx}
+                w={w}
+                h={h}
+                colors={colors}
+                isSelected={isSelected}
+                pxPerMetre={pxPerMetre}
+                polygon={polygon}
+                placedItems={placedItems}
+                selectItem={selectItem}
+                updateItem={updateItem}
+                pushToast={pushToast}
+                itemDragRef={itemDragRef}
+              />
             );
           })}
         </Layer>
@@ -640,6 +591,192 @@ export function RoomCanvas({
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * OMS Wave 2.2 — image-mapped scaled box.
+ *
+ * Renders the placed item as a Konva Image (scaled to the item's
+ * footprint) when the product has an image URL; falls back to the
+ * coloured rect + label when the image is missing, still loading, or
+ * the asset failed to load. The image cache (`useImageCache`) is
+ * module-level so concurrent placements share asset loads.
+ */
+interface PlacedItemGroupProps {
+  item: PlacedItem;
+  product: ReturnType<typeof getProductById> & object;
+  wPx: number;
+  hPx: number;
+  w: number;
+  h: number;
+  colors: { fill: string; stroke: string };
+  isSelected: boolean;
+  pxPerMetre: number;
+  polygon: Polygon;
+  placedItems: PlacedItem[];
+  selectItem: (id: string) => void;
+  updateItem: (id: string, patch: Partial<PlacedItem>) => void;
+  pushToast: (msg: string, level?: 'warn' | 'info' | 'error') => void;
+  itemDragRef: React.MutableRefObject<{ instanceId: string | null; moved: boolean }>;
+}
+
+function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
+  const {
+    item,
+    product,
+    wPx,
+    hPx,
+    w,
+    h,
+    colors,
+    isSelected,
+    pxPerMetre,
+    polygon,
+    placedItems,
+    selectItem,
+    updateItem,
+    pushToast,
+    itemDragRef,
+  } = props;
+  const image = useImageCache(product.image_url || null);
+  return (
+    <Group
+      x={item.x * pxPerMetre}
+      y={item.y * pxPerMetre}
+      draggable
+      onMouseEnter={(e) => {
+        const stage = e.target.getStage();
+        if (stage) stage.container().style.cursor = 'grab';
+      }}
+      onMouseLeave={(e) => {
+        const stage = e.target.getStage();
+        if (stage) stage.container().style.cursor = '';
+      }}
+      onMouseDown={(e) => {
+        e.cancelBubble = true;
+        selectItem(item.instanceId);
+      }}
+      onTap={(e) => {
+        e.cancelBubble = true;
+        if (
+          itemDragRef.current.instanceId === item.instanceId &&
+          itemDragRef.current.moved
+        ) {
+          itemDragRef.current = { instanceId: null, moved: false };
+          return;
+        }
+        selectItem(item.instanceId);
+      }}
+      onDragStart={(e) => {
+        e.cancelBubble = true;
+        itemDragRef.current = { instanceId: item.instanceId, moved: false };
+        selectItem(item.instanceId);
+        const stage = e.target.getStage();
+        if (stage) stage.container().style.cursor = 'grabbing';
+      }}
+      onDragMove={(e) => {
+        e.cancelBubble = true;
+        itemDragRef.current.moved = true;
+      }}
+      onDragEnd={(e) => {
+        e.cancelBubble = true;
+        const stage = e.target.getStage();
+        if (stage) stage.container().style.cursor = 'grab';
+        const newXm = e.target.x() / pxPerMetre;
+        const newYm = e.target.y() / pxPerMetre;
+        const others = placedItems
+          .map((it) => {
+            const p = getProductById(it.productId);
+            if (!p) return null;
+            const ofp = {
+              lengthM: cmToM(p.dimensions_cm.length),
+              widthM: cmToM(p.dimensions_cm.width),
+            };
+            const r = rotatedFootprint(ofp, it.rotation);
+            return { x: it.x, y: it.y, w: r.w, h: r.h, instanceId: it.instanceId };
+          })
+          .filter((r): r is PlacedRect & { instanceId: string } => r !== null);
+        const resolved = resolveDragTarget({
+          candidateX: newXm,
+          candidateY: newYm,
+          w,
+          h,
+          others,
+          room: polygon,
+          ignoreInstanceId: item.instanceId,
+        });
+        if (resolved.ok) {
+          updateItem(item.instanceId, { x: resolved.x, y: resolved.y });
+          e.target.position({
+            x: resolved.x * pxPerMetre,
+            y: resolved.y * pxPerMetre,
+          });
+        } else {
+          e.target.position({
+            x: item.x * pxPerMetre,
+            y: item.y * pxPerMetre,
+          });
+          pushToast(
+            resolved.reason === 'collision' ? "Item won't fit there." : 'Out of room bounds.',
+            'warn',
+          );
+        }
+      }}
+    >
+      {image ? (
+        <KonvaImage image={image} width={wPx} height={hPx} opacity={0.95} />
+      ) : (
+        <Rect
+          width={wPx}
+          height={hPx}
+          fill={colors.fill}
+          opacity={0.55}
+          stroke={isSelected ? '#06B6D4' : colors.stroke}
+          strokeWidth={isSelected ? 2.5 : 1}
+          cornerRadius={3}
+        />
+      )}
+      {image && isSelected && (
+        <Rect
+          width={wPx}
+          height={hPx}
+          fill="transparent"
+          stroke="#06B6D4"
+          strokeWidth={2.5}
+          cornerRadius={3}
+        />
+      )}
+      <Text
+        x={4}
+        y={4}
+        width={Math.max(wPx - 8, 20)}
+        text={product.name}
+        fontSize={Math.min(12, Math.max(8, wPx / 14))}
+        fontFamily="Inter, sans-serif"
+        fill="#0E1B1F"
+        listening={false}
+        ellipsis
+        wrap="word"
+      />
+      <Text
+        x={4}
+        y={hPx - 14}
+        text={CATEGORY_LABELS[product.category]}
+        fontSize={9}
+        fontFamily="Inter, sans-serif"
+        fill="#3B4A52"
+        listening={false}
+      />
+      {isSelected && (
+        <>
+          <Circle x={0} y={0} radius={4} fill="#06B6D4" />
+          <Circle x={wPx} y={0} radius={4} fill="#06B6D4" />
+          <Circle x={0} y={hPx} radius={4} fill="#06B6D4" />
+          <Circle x={wPx} y={hPx} radius={4} fill="#06B6D4" />
+        </>
+      )}
+    </Group>
   );
 }
 

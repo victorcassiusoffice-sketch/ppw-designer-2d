@@ -116,6 +116,12 @@ export default function App() {
   const [roomsMenuOpen, setRoomsMenuOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [pendingProductId, setPendingProductId] = useState<string | null>(null);
+  // OMS Wave 2.4 — 3D preview toggle. CSS perspective on the Konva
+  // Stage container; hit-tests stay accurate because we keep the
+  // transform CSS-only (the Konva Stage thinks it's still flat).
+  // Touch devices get the toggle disabled because tilting + pinch-zoom
+  // simultaneously is unreliable. Locked: no Babylon migration here.
+  const [threeDPreview, setThreeDPreview] = useState(false);
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-ppw-sand text-ppw-ink">
@@ -142,13 +148,52 @@ export default function App() {
           setPendingProductId={setPendingProductId}
         />
         <section className="relative flex-1 overflow-hidden">
+          {/* OMS Wave 2.4 — 3D toggle button. Top-right of the canvas
+              region so it doesn't compete with TopBar real estate. */}
+          <button
+            type="button"
+            onClick={() => setThreeDPreview((v) => !v)}
+            aria-pressed={threeDPreview}
+            aria-label="Toggle 3D preview"
+            className="absolute right-3 top-3 z-10 rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-ppw-ink shadow-sm ring-1 ring-ppw-stone hover:bg-ppw-sand hidden md:block"
+          >
+            {threeDPreview ? '2D' : '3D preview'}
+          </button>
           <CanvasErrorBoundary onReset={() => setDrawMode(false)}>
-            <RoomCanvas
-              drawMode={drawMode}
-              onDrawComplete={() => setDrawMode(false)}
-              pendingProductId={pendingProductId}
-              setPendingProductId={setPendingProductId}
-            />
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                perspective: threeDPreview ? '1200px' : 'none',
+                perspectiveOrigin: '50% 30%',
+                transition: 'perspective 200ms ease',
+              }}
+            >
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  transformStyle: 'preserve-3d',
+                  transform: threeDPreview
+                    ? 'rotateX(45deg) translateZ(0)'
+                    : 'rotateX(0deg)',
+                  transformOrigin: '50% 50%',
+                  transition: 'transform 250ms ease',
+                  // When tilted, hit tests are intentionally degraded
+                  // (Konva still thinks the stage is flat). Document
+                  // this caveat: 3D is preview-only — toggle off to
+                  // edit.
+                  pointerEvents: threeDPreview ? 'none' : 'auto',
+                }}
+              >
+                <RoomCanvas
+                  drawMode={drawMode}
+                  onDrawComplete={() => setDrawMode(false)}
+                  pendingProductId={pendingProductId}
+                  setPendingProductId={setPendingProductId}
+                />
+              </div>
+            </div>
           </CanvasErrorBoundary>
         </section>
         <DetailsPanel />
