@@ -19,6 +19,7 @@ import OrdersListPage from './pages/admin/OrdersListPage';
 import PayoutsListPage from './pages/admin/PayoutsListPage';
 import ProductsListPage from './pages/admin/ProductsListPage';
 import SuppliersListPage from './pages/admin/SuppliersListPage';
+import DashboardPage from './pages/admin/DashboardPage';
 import PublicProductsPage from './pages/PublicProductsPage';
 import { bootstrapFx } from './store/currencyStore';
 import './index.css';
@@ -99,6 +100,14 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             element={
               <RequireAdmin>
                 <SuppliersListPage />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="dashboard"
+            element={
+              <RequireAdmin>
+                <DashboardPage />
               </RequireAdmin>
             }
           />

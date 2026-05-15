@@ -28,6 +28,7 @@ import { handler as productsList } from './lib/admin/products/list.js';
 import { handler as productsWrite } from './lib/admin/products/write.js';
 import { handler as suppliersList } from './lib/admin/suppliers/list.js';
 import { handler as suppliersWrite } from './lib/admin/suppliers/write.js';
+import { handler as statsHandler } from './lib/admin/stats.js';
 
 interface MinimalReq {
   method?: string;
@@ -99,6 +100,10 @@ export default async function handler(req: MinimalReq, res: MinimalRes): Promise
   if (resource === 'suppliers') {
     if (req.method === 'GET') return suppliersList(req as never, res as never);
     return suppliersWrite(req as never, res as never);
+  }
+
+  if (resource === 'stats' || resource === 'dashboard') {
+    return statsHandler(req as never, res as never);
   }
 
   res.status(404).json({ error: `unknown admin resource: ${resource ?? '(empty)'}` });

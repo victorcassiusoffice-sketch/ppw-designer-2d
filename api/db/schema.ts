@@ -429,3 +429,40 @@ export const orderItems = pgTable(
 
 export type OrderItem = typeof orderItems.$inferSelect;
 export type NewOrderItem = typeof orderItems.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────
+// OMS Phase 5 — order fulfilment events.
+// ─────────────────────────────────────────────────────────────────────
+
+export const orderEventTypeEnum = pgEnum('order_event_type', [
+  'confirmed',
+  'shipped',
+  'in_transit',
+  'delivered',
+  'returned',
+  'failed',
+]);
+
+export const orderItemEvents = pgTable(
+  'order_item_events',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    orderItemId: bigint('order_item_id', { mode: 'number' })
+      .notNull()
+      .references(() => orderItems.id, { onDelete: 'cascade' }),
+    eventType: orderEventTypeEnum('event_type').notNull(),
+    trackingNumber: varchar('tracking_number', { length: 120 }),
+    carrier: varchar('carrier', { length: 80 }),
+    note: text('note'),
+    payload: jsonb('payload'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    itemIdx: index('order_item_events_item_idx').on(t.orderItemId, t.createdAt),
+    typeIdx: index('order_item_events_type_idx').on(t.eventType),
+  }),
+);
+
+export type OrderItemEvent = typeof orderItemEvents.$inferSelect;
+export type NewOrderItemEvent = typeof orderItemEvents.$inferInsert;
+export type OrderEventType = OrderItemEvent['eventType'];
