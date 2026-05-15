@@ -10,6 +10,18 @@
  *   - Mode toggle (Rectangle / Draw) for the canvas.
  *   - L/W inputs only edit the active room AND only when polygon is rectangular.
  *   - Save/Load v2 - properties (multi-room) saved under `ppw_properties_v2`.
+ *
+ * fix/mobile-ux-v1 (May 2026):
+ *   - Right-cluster Save/Load/Help/Cart/Grid hidden on mobile behind a
+ *     hamburger overflow menu (the screenshot Vic sent showed all those
+ *     buttons wrapping and overflowing on a ~390px viewport).
+ *   - Rect/Draw mode toggle is now ALSO visible on mobile (was hidden
+ *     md:flex — the reason Vic couldn't enter Draw mode on his phone).
+ *   - The RoomList mobile trigger used to be an absolute-positioned
+ *     button rendered by RoomList itself; it overlapped the currency
+ *     picker. It now lives inline as the left-side button in this bar
+ *     and toggles `roomsMenuOpen` (lifted to App.tsx).
+ *   - All tap targets ≥40px on mobile.
  */
 
 import { useState } from 'react';
@@ -24,9 +36,20 @@ import { CurrencySwitcher } from './CurrencySwitcher';
 export interface TopBarProps {
   drawMode: boolean;
   setDrawMode: (v: boolean) => void;
+  /** Mobile UX (fix/mobile-ux-v1) — Rooms drawer state lifted to App. */
+  roomsMenuOpen?: boolean;
+  setRoomsMenuOpen?: (v: boolean) => void;
+  /** Mobile UX (fix/mobile-ux-v1) — opens the Catalog bottom sheet. */
+  onOpenCatalog?: () => void;
 }
 
-export function TopBar({ drawMode, setDrawMode }: TopBarProps) {
+export function TopBar({
+  drawMode,
+  setDrawMode,
+  roomsMenuOpen = false,
+  setRoomsMenuOpen,
+  onOpenCatalog,
+}: TopBarProps) {
   const room = useDesignStore((s) => s.roomDimensions);
   const setRoom = useDesignStore((s) => s.setRoomDimensions);
   const showGrid = useDesignStore((s) => s.showGrid);
@@ -54,6 +77,8 @@ export function TopBar({ drawMode, setDrawMode }: TopBarProps) {
   const [confirmingNew, setConfirmingNew] = useState(false);
   const [editingProperty, setEditingProperty] = useState(false);
   const [propertyDraft, setPropertyDraft] = useState(property.name);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const activeRoom = property.rooms.find((r) => r.id === property.activeRoomId);
 
   const savedList = Object.values(designs)
     .filter((d) => d.id !== '__draft__')
@@ -103,15 +128,17 @@ export function TopBar({ drawMode, setDrawMode }: TopBarProps) {
   }
 
   return (
-    <header className="relative z-20 flex h-14 shrink-0 items-center justify-between border-b border-ppw-stone bg-white px-3 md:px-4">
-      <div className="flex items-center gap-2.5 min-w-0">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-ppw-teal">
+    <header className="relative z-20 flex h-14 shrink-0 items-center justify-between border-b border-ppw-stone bg-white px-2 md:px-4 gap-2">
+      <div className="flex items-center gap-2 min-w-0 flex-1 md:flex-initial">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-ppw-teal">
           <svg viewBox="0 0 24 24" className="h-5 w-5 text-white" aria-hidden="true">
             <path d="M5 18 L12 5 L19 18 Z" fill="currentColor" />
             <circle cx="12" cy="14" r="1.6" fill="#0F766E" />
           </svg>
         </div>
-        <div className="leading-tight min-w-0">
+
+        {/* Desktop: title + property rename. Hidden on mobile to save room. */}
+        <div className="hidden md:block leading-tight min-w-0">
           <p className="truncate text-sm font-semibold text-ppw-ink">Wellness Room Designer</p>
           {editingProperty ? (
             <input
@@ -127,7 +154,7 @@ export function TopBar({ drawMode, setDrawMode }: TopBarProps) {
                   setEditingProperty(false);
                 }
               }}
-              className="hidden md:block w-44 rounded-sm border-b border-ppw-teal bg-transparent text-[11px] text-ppw-slate focus:outline-none"
+              className="block w-44 rounded-sm border-b border-ppw-teal bg-transparent text-[11px] text-ppw-slate focus:outline-none"
             />
           ) : (
             <button
@@ -136,13 +163,33 @@ export function TopBar({ drawMode, setDrawMode }: TopBarProps) {
                 setPropertyDraft(property.name);
                 setEditingProperty(true);
               }}
-              className="hidden md:block truncate text-[11px] text-ppw-slate hover:text-ppw-teal"
+              className="block truncate text-[11px] text-ppw-slate hover:text-ppw-teal"
               title="Rename property"
             >
               {property.name} - {property.rooms.length} room{property.rooms.length === 1 ? '' : 's'}
             </button>
           )}
         </div>
+
+        {/* Mobile Rooms trigger (replaces RoomList's old absolute-positioned button). */}
+        <button
+          type="button"
+          onClick={() => setRoomsMenuOpen && setRoomsMenuOpen(!roomsMenuOpen)}
+          className="md:hidden flex min-h-[40px] min-w-0 flex-1 items-center gap-1 truncate rounded-md border border-ppw-stone bg-white px-2.5 text-left text-xs font-medium text-ppw-ink hover:border-ppw-teal"
+          aria-label="Open rooms list"
+          aria-expanded={roomsMenuOpen}
+        >
+          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 shrink-0 text-ppw-slate" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M2 3h12v3H2zM2 7h12v3H2zM2 11h12v2H2z"
+            />
+          </svg>
+          <span className="truncate">
+            <span className="font-semibold">{activeRoom?.name ?? property.name}</span>
+            <span className="ml-1 text-ppw-slate">· {property.rooms.length}</span>
+          </span>
+        </button>
       </div>
 
       <div className="flex items-center gap-2 md:gap-2 text-xs">
@@ -182,20 +229,23 @@ export function TopBar({ drawMode, setDrawMode }: TopBarProps) {
           )}
         </div>
 
-        <div className="hidden md:flex overflow-hidden rounded-md border border-ppw-stone bg-white">
+        {/* Rect / Draw mode toggle — visible on BOTH mobile and desktop. */}
+        <div className="flex overflow-hidden rounded-md border border-ppw-stone bg-white">
           <button
             type="button"
             onClick={() => setDrawMode(false)}
-            className={`px-2.5 py-1 text-xs font-medium ${!drawMode ? 'bg-ppw-teal text-white' : 'text-ppw-slate hover:text-ppw-teal'}`}
+            className={`min-h-[40px] px-3 text-xs font-medium ${!drawMode ? 'bg-ppw-teal text-white' : 'text-ppw-slate hover:text-ppw-teal'}`}
             title="Rectangle / place-items mode"
+            aria-pressed={!drawMode}
           >
             Rect
           </button>
           <button
             type="button"
             onClick={() => setDrawMode(true)}
-            className={`px-2.5 py-1 text-xs font-medium ${drawMode ? 'bg-ppw-teal text-white' : 'text-ppw-slate hover:text-ppw-teal'}`}
+            className={`min-h-[40px] px-3 text-xs font-medium ${drawMode ? 'bg-ppw-teal text-white' : 'text-ppw-slate hover:text-ppw-teal'}`}
             title="Draw polygon room"
+            aria-pressed={drawMode}
           >
             Draw
           </button>
@@ -210,11 +260,13 @@ export function TopBar({ drawMode, setDrawMode }: TopBarProps) {
           Grid 0.5 m
         </button>
 
-        <CurrencySwitcher compact />
+        <div className="hidden sm:block">
+          <CurrencySwitcher compact />
+        </div>
 
         <Link
           to="/cart"
-          className="hidden sm:flex items-center gap-1.5 rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs hover:border-ppw-teal"
+          className="hidden md:flex items-center gap-1.5 rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs hover:border-ppw-teal"
           title={`Cart: ${cart.uniqueProductCount} unique products`}
         >
           <span className="text-ppw-slate">Cart</span>
@@ -226,7 +278,7 @@ export function TopBar({ drawMode, setDrawMode }: TopBarProps) {
         <button
           type="button"
           onClick={handleNew}
-          className="rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs font-medium text-ppw-slate hover:border-ppw-teal"
+          className="hidden md:inline-block rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs font-medium text-ppw-slate hover:border-ppw-teal"
           title="New property"
         >
           New
@@ -235,7 +287,7 @@ export function TopBar({ drawMode, setDrawMode }: TopBarProps) {
         <button
           type="button"
           onClick={handleSaveAs}
-          className="rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs font-medium text-ppw-slate hover:border-ppw-teal"
+          className="hidden md:inline-block rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs font-medium text-ppw-slate hover:border-ppw-teal"
           title="Save the current property under a name"
         >
           Save as...
@@ -244,7 +296,7 @@ export function TopBar({ drawMode, setDrawMode }: TopBarProps) {
         <button
           type="button"
           onClick={() => setShowLoad((v) => !v)}
-          className="rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs font-medium text-ppw-slate hover:border-ppw-teal"
+          className="hidden md:inline-block rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs font-medium text-ppw-slate hover:border-ppw-teal"
           title="Load a saved property"
         >
           Load ({savedList.length})
@@ -253,21 +305,129 @@ export function TopBar({ drawMode, setDrawMode }: TopBarProps) {
         <button
           type="button"
           onClick={() => setShowHelp((v) => !v)}
-          className="flex h-7 w-7 items-center justify-center rounded-full border border-ppw-stone bg-white text-sm font-bold text-ppw-slate hover:border-ppw-teal hover:text-ppw-teal"
+          className="hidden md:flex h-7 w-7 items-center justify-center rounded-full border border-ppw-stone bg-white text-sm font-bold text-ppw-slate hover:border-ppw-teal hover:text-ppw-teal"
           title="Help"
           aria-label="Help"
         >
           ?
         </button>
+
+        {/* Mobile hamburger — overflow menu for buttons that don't fit on a ~390px viewport. */}
+        <button
+          type="button"
+          onClick={() => setShowMobileMenu((v) => !v)}
+          className="md:hidden flex h-10 w-10 items-center justify-center rounded-md border border-ppw-stone bg-white text-ppw-slate hover:border-ppw-teal"
+          aria-label="Open menu"
+          aria-expanded={showMobileMenu}
+        >
+          <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
+            <path fill="currentColor" d="M2 4h12v1.5H2zM2 7.25h12v1.5H2zM2 10.5h12v1.5H2z" />
+          </svg>
+        </button>
       </div>
 
+      {/* Mobile overflow menu (drawer below the TopBar). */}
+      {showMobileMenu && (
+        <>
+          <div
+            className="md:hidden fixed inset-0 z-30 bg-black/30"
+            onClick={() => setShowMobileMenu(false)}
+            aria-hidden="true"
+          />
+          <div className="md:hidden absolute right-2 top-full z-40 mt-1 w-64 rounded-lg border border-ppw-stone bg-white p-2 shadow-2xl">
+            <div className="flex flex-col gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  if (onOpenCatalog) onOpenCatalog();
+                  setShowMobileMenu(false);
+                }}
+                className="flex min-h-[44px] items-center justify-between rounded-md border border-ppw-stone bg-white px-3 text-sm font-medium text-ppw-ink hover:border-ppw-teal"
+              >
+                <span>Catalog</span>
+                <span className="text-[10px] text-ppw-slate">products</span>
+              </button>
+              <Link
+                to="/cart"
+                onClick={() => setShowMobileMenu(false)}
+                className="flex min-h-[44px] items-center justify-between rounded-md border border-ppw-stone bg-white px-3 text-sm font-medium text-ppw-ink hover:border-ppw-teal"
+              >
+                <span>Cart</span>
+                <span className="rounded-full bg-ppw-teal px-2 py-[1px] text-[10px] font-bold text-white">
+                  {cart.uniqueProductCount}
+                </span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  toggleGrid();
+                  setShowMobileMenu(false);
+                }}
+                className={`flex min-h-[44px] items-center justify-between rounded-md border px-3 text-sm font-medium hover:border-ppw-teal ${
+                  showGrid
+                    ? 'border-ppw-teal bg-ppw-teal text-white'
+                    : 'border-ppw-stone bg-white text-ppw-ink'
+                }`}
+              >
+                <span>Grid 0.5 m</span>
+                <span className="text-[10px] opacity-80">{showGrid ? 'on' : 'off'}</span>
+              </button>
+              <div className="flex items-center justify-between rounded-md border border-ppw-stone bg-white px-3 py-1.5">
+                <span className="text-[10px] uppercase tracking-wide text-ppw-slate">Currency</span>
+                <CurrencySwitcher compact />
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  handleNew();
+                  setShowMobileMenu(false);
+                }}
+                className="min-h-[44px] rounded-md border border-ppw-stone bg-white px-3 text-left text-sm font-medium text-ppw-ink hover:border-ppw-teal"
+              >
+                New property
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleSaveAs();
+                  setShowMobileMenu(false);
+                }}
+                className="min-h-[44px] rounded-md border border-ppw-stone bg-white px-3 text-left text-sm font-medium text-ppw-ink hover:border-ppw-teal"
+              >
+                Save as...
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMobileMenu(false);
+                  setShowLoad((v) => !v);
+                }}
+                className="min-h-[44px] rounded-md border border-ppw-stone bg-white px-3 text-left text-sm font-medium text-ppw-ink hover:border-ppw-teal"
+              >
+                Load ({savedList.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMobileMenu(false);
+                  setShowHelp((v) => !v);
+                }}
+                className="min-h-[44px] rounded-md border border-ppw-stone bg-white px-3 text-left text-sm font-medium text-ppw-ink hover:border-ppw-teal"
+              >
+                Help
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
       {showHelp && (
-        <div className="absolute right-4 top-full mt-1 w-80 rounded-lg border border-ppw-stone bg-white p-4 text-xs leading-snug text-ppw-slate shadow-lg">
+        <div className="absolute right-2 top-full z-40 mt-1 w-[min(20rem,calc(100vw-1rem))] rounded-lg border border-ppw-stone bg-white p-4 text-xs leading-snug text-ppw-slate shadow-lg">
           <p className="mb-1 font-semibold text-ppw-ink">Quick start</p>
           <ol className="ml-4 list-decimal space-y-1">
             <li>Set room L x W (top bar), or switch to <em>Draw</em> mode to sketch a polygon.</li>
-            <li>Drag a product from the left palette onto the canvas.</li>
-            <li>Scroll-wheel zoom; drag empty floor to pan.</li>
+            <li>Drag a product from the left palette onto the canvas (or tap "Place on floor" on mobile).</li>
+            <li>Scroll-wheel zoom or pinch-zoom; drag empty floor to pan.</li>
             <li>Click a placed item to edit on the right.</li>
             <li>Use the room list to switch rooms within this property.</li>
             <li><em>Save as...</em> stores the whole property (all rooms + items).</li>
@@ -279,7 +439,7 @@ export function TopBar({ drawMode, setDrawMode }: TopBarProps) {
       )}
 
       {showLoad && (
-        <div className="absolute right-4 top-full mt-1 w-80 max-h-96 overflow-y-auto rounded-lg border border-ppw-stone bg-white p-3 text-xs shadow-lg">
+        <div className="absolute right-2 top-full z-40 mt-1 w-[min(20rem,calc(100vw-1rem))] max-h-[70vh] overflow-y-auto rounded-lg border border-ppw-stone bg-white p-3 text-xs shadow-lg">
           <p className="font-semibold text-ppw-ink mb-2">Saved properties</p>
           {savedList.length === 0 ? (
             <p className="text-ppw-slate py-2">No saved properties yet. Use <em>Save as...</em></p>

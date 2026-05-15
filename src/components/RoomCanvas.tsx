@@ -18,6 +18,11 @@
  * pre-Hotfix-7 conditional that overwrote the active room's polygon
  * when it had no placed items silently swallowed the "Add room ->
  * Draw" flow on the second attempt. See [draw-close] diagnostics.
+ *
+ * fix/mobile-ux-v1 (May 2026): added touch event support — pinch-zoom,
+ * tap-to-deselect on empty Stage, and tap-to-place fallback for the
+ * Catalog bottom-sheet (HTML5 DnD doesn't translate to touch). Tip
+ * strip is desktop-only on mobile (clipped by Android nav otherwise).
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -51,9 +56,16 @@ const MAX_SCALE = 3;
 export interface RoomCanvasProps {
   drawMode?: boolean;
   onDrawComplete?: () => void;
+  pendingProductId?: string | null;
+  setPendingProductId?: (id: string | null) => void;
 }
 
-export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps) {
+export function RoomCanvas({
+  drawMode = false,
+  onDrawComplete,
+  pendingProductId,
+  setPendingProductId,
+}: RoomCanvasProps) {
   const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -79,20 +91,15 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
     moved: false,
   });
 
-  // ---- Draw mode shared state (lifted from RoomDrawMode in Hotfix 5)
   const [drawVertices, setDrawVertices] = useState<Polygon>([]);
   const [drawHover, setDrawHover] = useState<Vertex | null>(null);
   const [drawName, setDrawName] = useState('New Room');
 
-  // Reset draw state every time we toggle into Draw mode.
   useEffect(() => {
     if (drawMode) {
       console.log('[draw-mode]', 'enter Draw mode, reset local state');
       setDrawVertices([]);
       setDrawHover(null);
-      // Default the name to a fresh "New Room" rather than the active
-      // room's name (Hotfix 7: Draw mode always adds a NEW room, so
-      // reusing the active room's name was misleading).
       setDrawName('New Room');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -152,6 +159,135 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
     });
   }
 
+  // Mobile UX (fix/mobile-ux-v1): two-finger pinch zoom.
+  const pinchRef = useRef<{
+    active: boolean;
+    startDist: number;
+    startScale: number;
+    centerStage: { x: number; y: number };
+    centerWorld: { x: number; y: number };
+  } | null>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    function dist(a: Touch, b: Touch): number {
+      const dx = a.clientX - b.clientX;
+      const dy = a.clientY - b.clientY;
+      return Math.hypot(dx, dy);
+    }
+
+    function midpoint(a: Touch, b: Touch): { x: number; y: number } {
+      return { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 };
+    }
+
+    function onTouchStart(e: TouchEvent) {
+      if (e.touches.length !== 2) return;
+      const stage = stageRef.current;
+      if (!stage) return;
+      try {
+        stage.stopDrag();
+      } catch {
+        /* no-op */
+      }
+      const rect = container!.getBoundingClientRect();
+      const mid = midpoint(e.touches[0], e.touches[1]);
+      const stageX = mid.x - rect.left;
+      const stageY = mid.y - rect.top;
+      pinchRef.current = {
+        active: true,
+        startDist: dist(e.touches[0], e.touches[1]),
+        startScale: viewport.scale,
+        centerStage: { x: stageX, y: stageY },
+        centerWorld: {
+          x: (stageX - viewport.x) / viewport.scale,
+          y: (stageY - viewport.y) / viewport.scale,
+        },
+      };
+      e.preventDefault();
+    }
+
+    function onTouchMove(e: TouchEvent) {
+      if (!pinchRef.current?.active || e.touches.length !== 2) return;
+      const { startDist, startScale, centerStage, centerWorld } = pinchRef.current;
+      const d = dist(e.touches[0], e.touches[1]);
+      if (startDist <= 0) return;
+      let newScale = startScale * (d / startDist);
+      newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+      setViewport({
+        x: centerStage.x - centerWorld.x * newScale,
+        y: centerStage.y - centerWorld.y * newScale,
+        scale: newScale,
+      });
+      e.preventDefault();
+    }
+
+    function onTouchEnd(e: TouchEvent) {
+      if (e.touches.length < 2 && pinchRef.current?.active) {
+        pinchRef.current = null;
+      }
+    }
+
+    container.addEventListener('touchstart', onTouchStart, { passive: false });
+    container.addEventListener('touchmove', onTouchMove, { passive: false });
+    container.addEventListener('touchend', onTouchEnd);
+    container.addEventListener('touchcancel', onTouchEnd);
+    return () => {
+      container.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('touchmove', onTouchMove);
+      container.removeEventListener('touchend', onTouchEnd);
+      container.removeEventListener('touchcancel', onTouchEnd);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewport.scale, viewport.x, viewport.y]);
+
+  // Mobile UX (fix/mobile-ux-v1): tap-to-place from the Catalog.
+  const placeProductAt = useCallback(
+    (clientX: number, clientY: number, productId: string) => {
+      const product = getProductById(productId);
+      if (!product) {
+        pushToast(`Unknown product: ${productId}`, 'error');
+        return;
+      }
+      const container = containerRef.current;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      const { xM, yM } = screenToRoom(
+        clientX,
+        clientY,
+        { left: rect.left, top: rect.top },
+        viewport,
+        pxPerMetre,
+      );
+      const fp = {
+        lengthM: cmToM(product.dimensions_cm.length),
+        widthM: cmToM(product.dimensions_cm.width),
+      };
+      const { w, h } = rotatedFootprint(fp, 0);
+      const snappedX = snapToGrid(xM - w / 2, 0.5);
+      const snappedY = snapToGrid(yM - h / 2, 0.5);
+      const candidate: PlacedRect = { x: snappedX, y: snappedY, w, h };
+      const others = placedItems
+        .map((it) => {
+          const p = getProductById(it.productId);
+          if (!p) return null;
+          const ofp = { lengthM: cmToM(p.dimensions_cm.length), widthM: cmToM(p.dimensions_cm.width) };
+          const r = rotatedFootprint(ofp, it.rotation);
+          return { x: it.x, y: it.y, w: r.w, h: r.h, instanceId: it.instanceId };
+        })
+        .filter((r): r is PlacedRect & { instanceId: string } => r !== null);
+      const result = validatePlacement(candidate, others, polygon);
+      if (!result.ok) {
+        pushToast("Item won't fit here.", 'warn');
+        return;
+      }
+      addItem({ productId: product.id, x: snappedX, y: snappedY, rotation: 0 });
+      pushToast(`Placed "${product.name}"`, 'success');
+    },
+    [viewport, pxPerMetre, placedItems, polygon, addItem, pushToast],
+  );
+
   function resetView() {
     setViewport(INITIAL_VIEWPORT);
   }
@@ -171,47 +307,7 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
     setDragOver(false);
     const productId = e.dataTransfer.getData(DRAG_MIME) || e.dataTransfer.getData('text/plain');
     if (!productId) return;
-    const product = getProductById(productId);
-    if (!product) {
-      pushToast(`Unknown product: ${productId}`, 'error');
-      return;
-    }
-    const container = containerRef.current;
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    const { xM, yM } = screenToRoom(
-      e.clientX,
-      e.clientY,
-      { left: rect.left, top: rect.top },
-      viewport,
-      pxPerMetre,
-    );
-
-    const fp = {
-      lengthM: cmToM(product.dimensions_cm.length),
-      widthM: cmToM(product.dimensions_cm.width),
-    };
-    const { w, h } = rotatedFootprint(fp, 0);
-    const snappedX = snapToGrid(xM - w / 2, 0.5);
-    const snappedY = snapToGrid(yM - h / 2, 0.5);
-    const candidate: PlacedRect = { x: snappedX, y: snappedY, w, h };
-
-    const others = placedItems
-      .map((it) => {
-        const p = getProductById(it.productId);
-        if (!p) return null;
-        const ofp = { lengthM: cmToM(p.dimensions_cm.length), widthM: cmToM(p.dimensions_cm.width) };
-        const r = rotatedFootprint(ofp, it.rotation);
-        return { x: it.x, y: it.y, w: r.w, h: r.h, instanceId: it.instanceId };
-      })
-      .filter((r): r is PlacedRect & { instanceId: string } => r !== null);
-
-    const result = validatePlacement(candidate, others, polygon);
-    if (!result.ok) {
-      pushToast("Item won't fit here.", 'warn');
-      return;
-    }
-    addItem({ productId: product.id, x: snappedX, y: snappedY, rotation: 0 });
+    placeProductAt(e.clientX, e.clientY, productId);
   }
 
   const handleDrawCommit = useCallback(
@@ -241,9 +337,6 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
       });
       try {
         const id = addRoom({ name, polygon: newPolygon });
-        // addRoom already sets activeRoomId to the new room (see
-        // propertyStore.addRoom), but call setActiveRoom defensively in
-        // case that contract ever changes.
         usePropertyStore.getState().setActiveRoom(id);
         pushToast(
           `New room "${name}" created (${polygonArea(newPolygon).toFixed(2)} m2)`,
@@ -270,9 +363,6 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
     [addRoom, pushToast, onDrawComplete],
   );
 
-  // `activeRoom` is no longer used by handleDrawCommit (Hotfix 7 - Draw
-  // mode always adds a new room). Keep the destructured binding live
-  // for any future read access.
   void activeRoom;
 
   const handleDrawCancel = useCallback(() => {
@@ -315,7 +405,7 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
         <button
           type="button"
           onClick={resetView}
-          className="pointer-events-auto rounded-md bg-white/90 px-3 py-1.5 text-xs font-medium text-ppw-ink shadow-sm ring-1 ring-ppw-stone hover:bg-white"
+          className="pointer-events-auto min-h-[40px] rounded-md bg-white/90 px-3 text-xs font-medium text-ppw-ink shadow-sm ring-1 ring-ppw-stone hover:bg-white"
           title="Reset pan/zoom"
         >
           Reset view
@@ -324,6 +414,27 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
           {area.toFixed(2)} m2 - {perimeter.toFixed(2)} m - {Math.round(viewport.scale * 100)}%
         </div>
       </div>
+
+      {pendingProductId && !drawMode && (() => {
+        const pendingProduct = getProductById(pendingProductId);
+        return (
+          <div className="pointer-events-auto absolute left-1/2 top-3 z-20 flex w-[min(92vw,420px)] -translate-x-1/2 items-center justify-between gap-2 rounded-lg border border-ppw-teal bg-white px-3 py-2 text-xs shadow-xl ring-1 ring-ppw-teal/40">
+            <div className="min-w-0">
+              <p className="font-semibold text-ppw-ink truncate">
+                Tap the floor to place &ldquo;{pendingProduct?.name ?? 'product'}&rdquo;
+              </p>
+              <p className="text-[10px] text-ppw-slate">Or hit Cancel.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPendingProductId && setPendingProductId(null)}
+              className="shrink-0 min-h-[36px] rounded-md border border-ppw-coral bg-white px-3 text-[11px] font-semibold text-ppw-coral hover:bg-ppw-coral hover:text-white"
+            >
+              Cancel
+            </button>
+          </div>
+        );
+      })()}
 
       <Stage
         ref={stageRef}
@@ -346,25 +457,34 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
             selectItem(null);
           }
         }}
+        onTap={(e) => {
+          if (drawMode) return;
+          if (e.target !== e.target.getStage()) return;
+          if (pendingProductId && setPendingProductId) {
+            const touch = (e.evt as TouchEvent).changedTouches?.[0];
+            if (touch) {
+              placeProductAt(touch.clientX, touch.clientY, pendingProductId);
+              setPendingProductId(null);
+              return;
+            }
+          }
+          selectItem(null);
+        }}
+        onClick={(e) => {
+          if (drawMode) return;
+          if (e.target !== e.target.getStage()) return;
+          if (pendingProductId && setPendingProductId) {
+            placeProductAt(e.evt.clientX, e.evt.clientY, pendingProductId);
+            setPendingProductId(null);
+          }
+        }}
         className="konva-stage"
       >
         <Layer listening>
           {polygon.length >= 3 && (
             <Group listening={false}>
-              <Line
-                points={polygonPoints}
-                closed
-                fill="#FAF7F1"
-                stroke="#0E1B1F"
-                strokeWidth={6}
-                lineJoin="miter"
-              />
-              <Line
-                points={polygonPoints}
-                closed
-                stroke="#3B4A52"
-                strokeWidth={1}
-              />
+              <Line points={polygonPoints} closed fill="#FAF7F1" stroke="#0E1B1F" strokeWidth={6} lineJoin="miter" />
+              <Line points={polygonPoints} closed stroke="#3B4A52" strokeWidth={1} />
             </Group>
           )}
 
@@ -397,10 +517,7 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
           {!drawMode && placedItems.map((item) => {
             const product = getProductById(item.productId);
             if (!product) return null;
-            const fp = {
-              lengthM: cmToM(product.dimensions_cm.length),
-              widthM: cmToM(product.dimensions_cm.width),
-            };
+            const fp = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
             const { w, h } = rotatedFootprint(fp, item.rotation);
             const wPx = w * pxPerMetre;
             const hPx = h * pxPerMetre;
@@ -412,24 +529,12 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
                 x={item.x * pxPerMetre}
                 y={item.y * pxPerMetre}
                 draggable
-                onMouseEnter={(e) => {
-                  const stage = e.target.getStage();
-                  if (stage) stage.container().style.cursor = 'grab';
-                }}
-                onMouseLeave={(e) => {
-                  const stage = e.target.getStage();
-                  if (stage) stage.container().style.cursor = '';
-                }}
-                onMouseDown={(e) => {
-                  e.cancelBubble = true;
-                  selectItem(item.instanceId);
-                }}
+                onMouseEnter={(e) => { const stage = e.target.getStage(); if (stage) stage.container().style.cursor = 'grab'; }}
+                onMouseLeave={(e) => { const stage = e.target.getStage(); if (stage) stage.container().style.cursor = ''; }}
+                onMouseDown={(e) => { e.cancelBubble = true; selectItem(item.instanceId); }}
                 onTap={(e) => {
                   e.cancelBubble = true;
-                  if (
-                    itemDragRef.current.instanceId === item.instanceId &&
-                    itemDragRef.current.moved
-                  ) {
+                  if (itemDragRef.current.instanceId === item.instanceId && itemDragRef.current.moved) {
                     itemDragRef.current = { instanceId: null, moved: false };
                     return;
                   }
@@ -442,10 +547,7 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
                   const stage = e.target.getStage();
                   if (stage) stage.container().style.cursor = 'grabbing';
                 }}
-                onDragMove={(e) => {
-                  e.cancelBubble = true;
-                  itemDragRef.current.moved = true;
-                }}
+                onDragMove={(e) => { e.cancelBubble = true; itemDragRef.current.moved = true; }}
                 onDragEnd={(e) => {
                   e.cancelBubble = true;
                   const stage = e.target.getStage();
@@ -456,18 +558,9 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
                     .map((it) => {
                       const p = getProductById(it.productId);
                       if (!p) return null;
-                      const ofp = {
-                        lengthM: cmToM(p.dimensions_cm.length),
-                        widthM: cmToM(p.dimensions_cm.width),
-                      };
+                      const ofp = { lengthM: cmToM(p.dimensions_cm.length), widthM: cmToM(p.dimensions_cm.width) };
                       const r = rotatedFootprint(ofp, it.rotation);
-                      return {
-                        x: it.x,
-                        y: it.y,
-                        w: r.w,
-                        h: r.h,
-                        instanceId: it.instanceId,
-                      };
+                      return { x: it.x, y: it.y, w: r.w, h: r.h, instanceId: it.instanceId };
                     })
                     .filter((r): r is PlacedRect & { instanceId: string } => r !== null);
                   const resolved = resolveDragTarget({
@@ -481,54 +574,16 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
                   });
                   if (resolved.ok) {
                     updateItem(item.instanceId, { x: resolved.x, y: resolved.y });
-                    e.target.position({
-                      x: resolved.x * pxPerMetre,
-                      y: resolved.y * pxPerMetre,
-                    });
+                    e.target.position({ x: resolved.x * pxPerMetre, y: resolved.y * pxPerMetre });
                   } else {
-                    e.target.position({
-                      x: item.x * pxPerMetre,
-                      y: item.y * pxPerMetre,
-                    });
-                    pushToast(
-                      resolved.reason === 'collision'
-                        ? "Item won't fit there."
-                        : 'Out of room bounds.',
-                      'warn',
-                    );
+                    e.target.position({ x: item.x * pxPerMetre, y: item.y * pxPerMetre });
+                    pushToast(resolved.reason === 'collision' ? "Item won't fit there." : 'Out of room bounds.', 'warn');
                   }
                 }}
               >
-                <Rect
-                  width={wPx}
-                  height={hPx}
-                  fill={colors.fill}
-                  opacity={0.55}
-                  stroke={isSelected ? '#06B6D4' : colors.stroke}
-                  strokeWidth={isSelected ? 2.5 : 1}
-                  cornerRadius={3}
-                />
-                <Text
-                  x={4}
-                  y={4}
-                  width={Math.max(wPx - 8, 20)}
-                  text={product.name}
-                  fontSize={Math.min(12, Math.max(8, wPx / 14))}
-                  fontFamily="Inter, sans-serif"
-                  fill="#0E1B1F"
-                  listening={false}
-                  ellipsis
-                  wrap="word"
-                />
-                <Text
-                  x={4}
-                  y={hPx - 14}
-                  text={CATEGORY_LABELS[product.category]}
-                  fontSize={9}
-                  fontFamily="Inter, sans-serif"
-                  fill="#3B4A52"
-                  listening={false}
-                />
+                <Rect width={wPx} height={hPx} fill={colors.fill} opacity={0.55} stroke={isSelected ? '#06B6D4' : colors.stroke} strokeWidth={isSelected ? 2.5 : 1} cornerRadius={3} />
+                <Text x={4} y={4} width={Math.max(wPx - 8, 20)} text={product.name} fontSize={Math.min(12, Math.max(8, wPx / 14))} fontFamily="Inter, sans-serif" fill="#0E1B1F" listening={false} ellipsis wrap="word" />
+                <Text x={4} y={hPx - 14} text={CATEGORY_LABELS[product.category]} fontSize={9} fontFamily="Inter, sans-serif" fill="#3B4A52" listening={false} />
                 {isSelected && (
                   <>
                     <Circle x={0} y={0} radius={4} fill="#06B6D4" />
@@ -570,7 +625,10 @@ export function RoomCanvas({ drawMode = false, onDrawComplete }: RoomCanvasProps
         onCancel={handleDrawCancel}
       />
 
-      <div className="pointer-events-none absolute bottom-3 left-3 max-w-xs rounded-md bg-white/85 px-3 py-2 text-[11px] leading-snug text-ppw-slate shadow-sm ring-1 ring-ppw-stone">
+      <div
+        className="pointer-events-none absolute left-3 max-w-xs rounded-md bg-white/85 px-3 py-2 text-[11px] leading-snug text-ppw-slate shadow-sm ring-1 ring-ppw-stone hidden md:block"
+        style={{ bottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+      >
         {drawMode ? (
           <>
             <span className="font-semibold text-ppw-ink">Draw mode:</span> click to place wall vertices - click first vertex or press <kbd>Enter</kbd> to close - <kbd>Ctrl+Z</kbd> undo - <kbd>Esc</kbd> cancel.
