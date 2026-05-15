@@ -34,6 +34,7 @@ describe('merchants schema', () => {
       'status',
       'stripeConnectAccountId',
       'updatedAt',
+      'webhookSecret',
       'website',
     ].sort();
     expect(cols).toEqual(expected);

@@ -23,6 +23,14 @@ export default defineConfig({
             authToken: process.env.SENTRY_AUTH_TOKEN,
             sourcemaps: { assets: ['./dist/**/*.{js,map}'] },
             telemetry: false,
+            // OMS Wave 1.10 — tag deploys with the Vercel commit SHA so
+            // error frames link back to the exact build.
+            release: {
+              name:
+                process.env.VERCEL_GIT_COMMIT_SHA ??
+                process.env.SENTRY_RELEASE ??
+                undefined,
+            },
           }),
         ]
       : []),

@@ -12,6 +12,7 @@
  * portal with filters/search, audit log, and bulk actions.
  */
 
+import { randomBytes } from 'crypto';
 import type { Merchant, MerchantStatus } from '../db/schema.js';
 import type { MerchantStore } from '../db/merchantStore.js';
 import {
@@ -44,6 +45,10 @@ export async function approveMerchant(
     store: MerchantStore;
     emailMerchant?: (args: Parameters<typeof emailMerchantApproved>[0]) => Promise<SendResult>;
     merchantPortalUrl?: string;
+    /** OMS Wave 1.7 — base URL used to build the per-merchant agent URL. */
+    publicBaseUrl?: string;
+    /** OMS Wave 1.7 — fire-and-forget hook to insert the agent_sessions row. */
+    spawnAgentSession?: (merchant: Merchant) => Promise<void>;
   },
 ): Promise<ApproveOutcome> {
   const target = await deps.store.findById(merchantId);
@@ -65,13 +70,37 @@ export async function approveMerchant(
   });
   if (!updated) return { ok: false, status: 500, error: 'Approve write failed.' };
 
+  // OMS Wave 1.7 — provision the HMAC webhook secret for the merchant
+  // if one doesn't exist yet. 32 bytes of randomness → 64 hex chars.
+  let withSecret: Merchant = updated;
+  if (!updated.webhookSecret) {
+    const secret = randomBytes(32).toString('hex');
+    const setResult = await deps.store.setWebhookSecret(merchantId, secret);
+    if (setResult) withSecret = setResult;
+  }
+
+  // OMS Wave 1.7 — auto-spawn an integration agent session. Failure is
+  // logged in audit but doesn't roll back the approval.
+  let agentSpawnError: string | null = null;
+  if (deps.spawnAgentSession) {
+    try {
+      await deps.spawnAgentSession(withSecret);
+    } catch (err) {
+      agentSpawnError = err instanceof Error ? err.message : 'agent spawn failed';
+    }
+  }
+
+  const baseUrl = (deps.publicBaseUrl ?? process.env.PUBLIC_BASE_URL ?? '').replace(/\/$/, '');
+  const agentUrl = baseUrl ? `${baseUrl}/merchant/${withSecret.slug}/agent` : undefined;
+
   const send = deps.emailMerchant ?? emailMerchantApproved;
   const emailResult = await send({
-    businessName: updated.businessName,
-    contactName: updated.contactName,
-    contactEmail: updated.contactEmail,
+    businessName: withSecret.businessName,
+    contactName: withSecret.contactName,
+    contactEmail: withSecret.contactEmail,
     adminUrl: '',
     merchantPortalUrl: deps.merchantPortalUrl,
+    agentUrl,
   });
 
   // Audit trail — fire-and-await but never let a failure surface as a
@@ -81,17 +110,19 @@ export async function approveMerchant(
     admin.email,
     'merchant.approve',
     'merchant',
-    String(updated.id),
+    String(withSecret.id),
     null,
     {
-      slug: updated.slug,
+      slug: withSecret.slug,
       previousStatus: target.status,
-      newStatus: updated.status,
+      newStatus: withSecret.status,
       emailSent: emailResult.ok,
+      webhookSecretProvisioned: !!withSecret.webhookSecret,
+      agentSpawnError,
     },
   );
 
-  return { ok: true, merchant: updated, emailResult };
+  return { ok: true, merchant: withSecret, emailResult };
 }
 
 export type RejectOutcome =

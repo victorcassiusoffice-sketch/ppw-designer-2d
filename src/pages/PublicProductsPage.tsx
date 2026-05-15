@@ -10,7 +10,8 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
+import { useMarketplaceCart } from '../store/marketplaceCartStore';
 
 interface PublicProduct {
   id: number;
@@ -45,6 +46,9 @@ export default function PublicProductsPage(): JSX.Element {
   const [data, setData] = useState<ProductListResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const addToCart = useMarketplaceCart((s) => s.addItem);
+  const cartItems = useMarketplaceCart((s) => s.items);
+  const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
 
   const category = params.get('category') ?? '';
   const region = params.get('region') ?? '';
@@ -96,9 +100,25 @@ export default function PublicProductsPage(): JSX.Element {
 
   return (
     <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
-      <header style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 28, margin: 0 }}>Marketplace</h1>
-        <p style={{ color: '#6b7280' }}>Browse products from approved Peak Performance Wellness suppliers.</p>
+      <header style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h1 style={{ fontSize: 28, margin: 0 }}>Marketplace</h1>
+          <p style={{ color: '#6b7280' }}>Browse products from approved Peak Performance Wellness suppliers.</p>
+        </div>
+        <Link
+          to="/marketplace/cart"
+          style={{
+            padding: '8px 14px',
+            background: '#0a0a0a',
+            color: 'white',
+            borderRadius: 6,
+            textDecoration: 'none',
+            fontSize: 14,
+            fontWeight: 600,
+          }}
+        >
+          Cart{cartCount > 0 ? ` (${cartCount})` : ''}
+        </Link>
       </header>
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
@@ -144,7 +164,34 @@ export default function PublicProductsPage(): JSX.Element {
                 <div style={{ padding: 12 }}>
                   <h3 style={{ fontSize: 16, margin: '0 0 4px' }}>{p.name}</h3>
                   <p style={{ fontSize: 12, color: '#6b7280', margin: '0 0 8px' }}>{p.category}</p>
-                  <p style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>{formatPrice(p.priceMinor, p.currency)}</p>
+                  <p style={{ fontSize: 18, fontWeight: 600, margin: '0 0 8px' }}>{formatPrice(p.priceMinor, p.currency)}</p>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      addToCart({
+                        productId: p.id,
+                        sku: p.sku,
+                        name: p.name,
+                        category: p.category,
+                        unitPriceMinor: p.priceMinor,
+                        currency: p.currency,
+                        imageUrl: p.imageUrl,
+                      })
+                    }
+                    style={{
+                      width: '100%',
+                      padding: '6px 10px',
+                      background: '#0a0a0a',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: 4,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Add to cart
+                  </button>
                 </div>
               </article>
             ))}

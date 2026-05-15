@@ -26,6 +26,8 @@ export interface MerchantStore {
     extras?: Partial<Pick<Merchant, 'approvedAt' | 'approvedBy' | 'rejectedAt' | 'rejectedReason' | 'notes'>>,
   ): Promise<Merchant | null>;
   attachStripeAccount(id: number, stripeAccountId: string): Promise<Merchant | null>;
+  /** OMS Wave 1.7 — provisions the HMAC secret used by the order-update webhook. */
+  setWebhookSecret(id: number, secret: string): Promise<Merchant | null>;
 }
 
 /**
@@ -87,6 +89,14 @@ export function drizzleMerchantStore(db: Db = getDb()): MerchantStore {
         .returning();
       return rows[0] ?? null;
     },
+    async setWebhookSecret(id, secret) {
+      const rows = await db
+        .update(merchants)
+        .set({ webhookSecret: secret })
+        .where(eq(merchants.id, id))
+        .returning();
+      return rows[0] ?? null;
+    },
   };
 }
 
@@ -123,6 +133,7 @@ export function createInMemoryMerchantStore(): MerchantStore & {
         estimatedMonthlyVolume: input.estimatedMonthlyVolume ?? null,
         referralNotes: input.referralNotes ?? null,
         stripeConnectAccountId: input.stripeConnectAccountId ?? null,
+        webhookSecret: input.webhookSecret ?? null,
         status: input.status ?? 'pending_signup',
         notes: input.notes ?? null,
         createdAt: now,
@@ -164,6 +175,12 @@ export function createInMemoryMerchantStore(): MerchantStore & {
       const idx = rows.findIndex((r) => r.id === id);
       if (idx < 0) return null;
       rows[idx] = { ...rows[idx], stripeConnectAccountId: stripeAccountId, updatedAt: new Date() };
+      return clone(rows[idx]);
+    },
+    async setWebhookSecret(id, secret) {
+      const idx = rows.findIndex((r) => r.id === id);
+      if (idx < 0) return null;
+      rows[idx] = { ...rows[idx], webhookSecret: secret, updatedAt: new Date() };
       return clone(rows[idx]);
     },
     __dump() {

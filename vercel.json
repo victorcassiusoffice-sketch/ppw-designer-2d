@@ -13,14 +13,26 @@
     "api/products.ts": { "maxDuration": 10 },
     "api/cart-quote.ts": { "maxDuration": 10 },
     "api/agent-chat.ts": { "maxDuration": 30 },
-    "api/healthcheck.ts": { "maxDuration": 5 }
+    "api/healthcheck.ts": { "maxDuration": 5 },
+    "api/orders.ts": { "maxDuration": 15 },
+    "api/cron-router.ts": { "maxDuration": 60 }
   },
+  "crons": [
+    {
+      "path": "/api/cron/escalate-orders",
+      "schedule": "0 */4 * * *"
+    }
+  ],
   "rewrites": [
     { "source": "/api/createPaypalOrder", "destination": "/api/paypal-router" },
     { "source": "/api/capturePaypalOrder", "destination": "/api/paypal-router" },
     { "source": "/api/paypal-webhook", "destination": "/api/paypal-router" },
     { "source": "/api/paypal/(.*)", "destination": "/api/paypal-router" },
     { "source": "/api/admin/(.*)", "destination": "/api/admin-router" },
+    { "source": "/api/orders/(.*)", "destination": "/api/orders" },
+    { "source": "/api/merchants/:slug/order-update", "destination": "/api/orders" },
+    { "source": "/api/merchants/:slug/agent-session", "destination": "/api/orders" },
+    { "source": "/api/cron/(.*)", "destination": "/api/cron-router" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

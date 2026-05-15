@@ -20,6 +20,8 @@ export interface MerchantEmailData {
   rejectionReason?: string;
   /** Optional onboarding/profile URL sent to merchants on approval. */
   merchantPortalUrl?: string;
+  /** OMS Wave 1.7 — merchant integration agent URL, sent on approval. */
+  agentUrl?: string;
 }
 
 function escapeHtml(s: string): string {
@@ -132,10 +134,18 @@ export function renderMerchantApproved(data: MerchantEmailData): { subject: stri
   const portalLine = data.merchantPortalUrl
     ? `<p>Your merchant portal is live at <a href="${escapeHtml(data.merchantPortalUrl)}" style="color:#1f4a4a;">${escapeHtml(data.merchantPortalUrl)}</a>.</p>`
     : '<p>Vic will be in touch with the next steps on connecting your inventory.</p>';
+  const agentLine = data.agentUrl
+    ? `<p style="margin:14px 0;background:#eff6ff;padding:12px;border-radius:6px;">
+        <strong>Talk to the integration agent:</strong>
+        <a href="${escapeHtml(data.agentUrl)}" style="color:#1f4a4a;">${escapeHtml(data.agentUrl)}</a><br/>
+        <span style="font-size:12px;color:#5a6566;">The agent will walk you through choosing an integration tier and getting your first products live.</span>
+      </p>`
+    : '';
   const html = shell(`
     <p style="font-size:17px;margin:0 0 12px;">Welcome, ${escapeHtml(data.contactName)}.</p>
     <p><strong>${escapeHtml(data.businessName)}</strong> is now live in the Peak Performance Wellness Marketplace.</p>
     ${portalLine}
+    ${agentLine}
     <p style="background:#f4efe3;padding:12px;border-radius:6px;margin-top:18px;font-size:13px;">
       <strong>What's next:</strong><br/>
       • Vic will follow up to confirm integration tier (Shopify connector, custom backend, or lite portal).<br/>

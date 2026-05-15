@@ -9,6 +9,7 @@
 import { drizzleMerchantStore } from '../../../db/merchantStore.js';
 import { authoriseAdminWithLive } from '../../adminAuth.js';
 import { approveMerchant } from '../../adminMerchantActions.js';
+import { getDb, schema } from '../../../db/client.js';
 
 interface MinimalReq {
   method?: string;
@@ -83,6 +84,13 @@ export async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
     {
       store,
       merchantPortalUrl: process.env.MERCHANT_PORTAL_URL,
+      publicBaseUrl: process.env.PUBLIC_BASE_URL,
+      spawnAgentSession: async (merchant) => {
+        const db = getDb();
+        await db
+          .insert(schema.agentSessions)
+          .values({ merchantId: merchant.id, topic: 'onboarding', status: 'active' });
+      },
     },
   );
 

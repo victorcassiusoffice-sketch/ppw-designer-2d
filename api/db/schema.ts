@@ -75,6 +75,8 @@ export const merchants = pgTable(
     estimatedMonthlyVolume: varchar('estimated_monthly_volume', { length: 80 }),
     referralNotes: text('referral_notes'),
     stripeConnectAccountId: varchar('stripe_connect_account_id', { length: 80 }),
+    /** OMS Wave 1.4 — HMAC shared secret for /api/merchants/:slug/order-update. Null until Vic approves. */
+    webhookSecret: varchar('webhook_secret', { length: 64 }),
     status: merchantStatusEnum('status').notNull().default('pending_signup'),
     notes: text('notes'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -466,3 +468,63 @@ export const orderItemEvents = pgTable(
 export type OrderItemEvent = typeof orderItemEvents.$inferSelect;
 export type NewOrderItemEvent = typeof orderItemEvents.$inferInsert;
 export type OrderEventType = OrderItemEvent['eventType'];
+
+// ─────────────────────────────────────────────────────────────────────
+// OMS Wave 1.5 — Merchant Integration Agent session persistence.
+//
+// Stores per-session running cost so the admin dashboard can track
+// $50/mo OpenRouter cap per oms_merchant_agent_stack.md.
+// Cost stored in micro-dollars (1e-6 USD) to dodge float drift.
+// ─────────────────────────────────────────────────────────────────────
+
+export const agentModelEnum = pgEnum('agent_model', ['gemini-flash', 'claude-sonnet']);
+
+export const agentSessions = pgTable(
+  'agent_sessions',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    merchantId: bigint('merchant_id', { mode: 'number' })
+      .notNull()
+      .references(() => merchants.id, { onDelete: 'cascade' }),
+    topic: varchar('topic', { length: 200 }).notNull().default('onboarding'),
+    status: varchar('status', { length: 40 }).notNull().default('active'),
+    totalCostMicroUsd: bigint('total_cost_micro_usd', { mode: 'number' }).notNull().default(0),
+    geminiCostMicroUsd: bigint('gemini_cost_micro_usd', { mode: 'number' }).notNull().default(0),
+    sonnetCostMicroUsd: bigint('sonnet_cost_micro_usd', { mode: 'number' }).notNull().default(0),
+    totalInputTokens: bigint('total_input_tokens', { mode: 'number' }).notNull().default(0),
+    totalOutputTokens: bigint('total_output_tokens', { mode: 'number' }).notNull().default(0),
+    messageCount: integer('message_count').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    merchantIdx: index('agent_sessions_merchant_idx').on(t.merchantId, t.createdAt),
+    statusIdx: index('agent_sessions_status_idx').on(t.status),
+  }),
+);
+
+export const agentMessages = pgTable(
+  'agent_messages',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    sessionId: bigint('session_id', { mode: 'number' })
+      .notNull()
+      .references(() => agentSessions.id, { onDelete: 'cascade' }),
+    role: varchar('role', { length: 20 }).notNull(),
+    content: text('content').notNull(),
+    modelUsed: agentModelEnum('model_used'),
+    inputTokens: integer('input_tokens'),
+    outputTokens: integer('output_tokens'),
+    costMicroUsd: bigint('cost_micro_usd', { mode: 'number' }),
+    fallbackReason: text('fallback_reason'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    sessionIdx: index('agent_messages_session_idx').on(t.sessionId, t.createdAt),
+  }),
+);
+
+export type AgentSession = typeof agentSessions.$inferSelect;
+export type NewAgentSession = typeof agentSessions.$inferInsert;
+export type AgentMessage = typeof agentMessages.$inferSelect;
+export type NewAgentMessage = typeof agentMessages.$inferInsert;

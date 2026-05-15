@@ -21,8 +21,71 @@ interface DashboardData {
   orders: StatBucket;
   payouts: StatBucket;
   revenue: { totalMinor: number; byCurrency: Record<string, number> };
+  timeSeries?: {
+    ordersPerDay30d: Array<{ date: string; count: number }>;
+    revenuePerDay30d: Array<{ date: string; currency: string; totalMinor: number }>;
+    signupsPerWeek12w: Array<{ weekStart: string; count: number }>;
+  };
   generatedAt: string;
   schemaMissing: string[];
+}
+
+/**
+ * Vanilla SVG sparkline. Series is an array of numbers; takes
+ * width/height/colour. Renders an x-axis baseline and a polyline.
+ * No deps, < 1 KB after gzip.
+ */
+function Sparkline({
+  series,
+  width = 240,
+  height = 60,
+  color = '#2563eb',
+  ariaLabel,
+}: {
+  series: number[];
+  width?: number;
+  height?: number;
+  color?: string;
+  ariaLabel?: string;
+}): JSX.Element {
+  if (series.length === 0) {
+    return (
+      <div style={{ height, color: '#9ca3af', fontSize: 11, display: 'flex', alignItems: 'center' }}>
+        no data
+      </div>
+    );
+  }
+  const max = Math.max(1, ...series);
+  const min = 0;
+  const range = max - min || 1;
+  const step = series.length > 1 ? width / (series.length - 1) : width;
+  const points = series
+    .map((v, i) => {
+      const x = i * step;
+      const y = height - ((v - min) / range) * (height - 6) - 3;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(' ');
+  const lastX = (series.length - 1) * step;
+  const lastY = height - ((series[series.length - 1]! - min) / range) * (height - 6) - 3;
+  return (
+    <svg
+      width={width}
+      height={height}
+      role="img"
+      aria-label={ariaLabel}
+      style={{ display: 'block' }}
+    >
+      <polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinejoin="round"
+      />
+      <circle cx={lastX} cy={lastY} r={2.5} fill={color} />
+    </svg>
+  );
 }
 
 function StatusBreakdown({ bucket }: { bucket: StatBucket }) {
@@ -126,6 +189,49 @@ export default function DashboardPage(): JSX.Element {
               </ul>
             </Card>
           </div>
+          {data.timeSeries && (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: 16,
+                marginBottom: 24,
+              }}
+            >
+              <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, background: 'white' }}>
+                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}>
+                  Orders / day (last 30d)
+                </div>
+                <Sparkline
+                  ariaLabel="Orders per day, last 30 days"
+                  series={data.timeSeries.ordersPerDay30d.map((d) => d.count)}
+                />
+                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>
+                  {data.timeSeries.ordersPerDay30d.length} day{data.timeSeries.ordersPerDay30d.length === 1 ? '' : 's'} with orders
+                </div>
+              </div>
+              <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, background: 'white' }}>
+                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}>
+                  Revenue / day (captured, last 30d)
+                </div>
+                <Sparkline
+                  ariaLabel="Revenue per day, last 30 days"
+                  series={data.timeSeries.revenuePerDay30d.map((d) => d.totalMinor / 100)}
+                  color="#16a34a"
+                />
+              </div>
+              <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, background: 'white' }}>
+                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}>
+                  Signups / week (last 12w)
+                </div>
+                <Sparkline
+                  ariaLabel="Signups per week, last 12 weeks"
+                  series={data.timeSeries.signupsPerWeek12w.map((d) => d.count)}
+                  color="#7c3aed"
+                />
+              </div>
+            </div>
+          )}
           <p style={{ color: '#9ca3af', fontSize: 12 }}>
             Generated at {new Date(data.generatedAt).toLocaleString()}
           </p>

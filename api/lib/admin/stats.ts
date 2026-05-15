@@ -31,6 +31,12 @@ export interface DashboardStats {
   orders: { total: number; byStatus: Record<string, number> };
   payouts: { total: number; byStatus: Record<string, number> };
   revenue: { totalMinor: number; byCurrency: Record<string, number> };
+  /** OMS Wave 1.8 — sparkline data: ISO date → count (or minor). */
+  timeSeries: {
+    ordersPerDay30d: Array<{ date: string; count: number }>;
+    revenuePerDay30d: Array<{ date: string; currency: string; totalMinor: number }>;
+    signupsPerWeek12w: Array<{ weekStart: string; count: number }>;
+  };
   generatedAt: string;
   schemaMissing: string[];
 }
@@ -143,6 +149,57 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
     }
   }
 
+  // OMS Wave 1.8 — sparkline series.
+  const timeSeries: DashboardStats['timeSeries'] = {
+    ordersPerDay30d: [],
+    revenuePerDay30d: [],
+    signupsPerWeek12w: [],
+  };
+  try {
+    const rows = (await db.execute(
+      sql`SELECT to_char(date_trunc('day', created_at), 'YYYY-MM-DD') AS date, COUNT(*)::int AS count
+          FROM orders
+          WHERE created_at >= now() - interval '30 days'
+          GROUP BY 1 ORDER BY 1`,
+    )) as unknown as { rows?: Array<{ date: string; count: number }> } | Array<{ date: string; count: number }>;
+    timeSeries.ordersPerDay30d = Array.isArray(rows) ? rows : rows.rows ?? [];
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : '';
+    if (!/relation .* does not exist|42P01/i.test(msg)) throw err;
+  }
+  try {
+    const rows = (await db.execute(
+      sql`SELECT to_char(date_trunc('day', created_at), 'YYYY-MM-DD') AS date,
+                 currency,
+                 COALESCE(SUM(total_minor),0)::int AS "totalMinor"
+          FROM orders
+          WHERE created_at >= now() - interval '30 days'
+            AND payment_status = 'captured'
+          GROUP BY 1, 2 ORDER BY 1`,
+    )) as unknown as
+      | { rows?: Array<{ date: string; currency: string; totalMinor: number }> }
+      | Array<{ date: string; currency: string; totalMinor: number }>;
+    timeSeries.revenuePerDay30d = Array.isArray(rows) ? rows : rows.rows ?? [];
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : '';
+    if (!/relation .* does not exist|42P01/i.test(msg)) throw err;
+  }
+  try {
+    const rows = (await db.execute(
+      sql`SELECT to_char(date_trunc('week', created_at), 'YYYY-MM-DD') AS "weekStart",
+                 COUNT(*)::int AS count
+          FROM merchants
+          WHERE created_at >= now() - interval '84 days'
+          GROUP BY 1 ORDER BY 1`,
+    )) as unknown as
+      | { rows?: Array<{ weekStart: string; count: number }> }
+      | Array<{ weekStart: string; count: number }>;
+    timeSeries.signupsPerWeek12w = Array.isArray(rows) ? rows : rows.rows ?? [];
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : '';
+    if (!/relation .* does not exist|42P01/i.test(msg)) throw err;
+  }
+
   return {
     merchants,
     products,
@@ -150,6 +207,7 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
     orders,
     payouts,
     revenue,
+    timeSeries,
     generatedAt: new Date().toISOString(),
     schemaMissing,
   };

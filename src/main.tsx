@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
 import App from './App';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -21,12 +22,34 @@ import ProductsListPage from './pages/admin/ProductsListPage';
 import SuppliersListPage from './pages/admin/SuppliersListPage';
 import DashboardPage from './pages/admin/DashboardPage';
 import PublicProductsPage from './pages/PublicProductsPage';
+import MarketplaceCartPage from './pages/MarketplaceCartPage';
+import MarketplaceCheckoutPage from './pages/MarketplaceCheckoutPage';
+import OrderTrackPage from './pages/OrderTrackPage';
+import MerchantAgentPage from './pages/MerchantAgentPage';
 import { bootstrapFx } from './store/currencyStore';
 import './index.css';
 
 // Fire-and-forget FX bootstrap - refreshes the live rate snapshot if
 // the cached one is stale.
 bootstrapFx();
+
+// OMS Wave 1B / Wave 1.10 — Sentry browser init, gated on the DSN env.
+// Release-tagged with the Vercel commit SHA so source-maps map back.
+// Free-tier-safe: traces + replays off.
+if (import.meta.env.VITE_SENTRY_DSN) {
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN as string,
+    environment:
+      (import.meta.env.VITE_SENTRY_ENVIRONMENT as string | undefined) ??
+      (import.meta.env.MODE as string),
+    release:
+      (import.meta.env.VITE_SENTRY_RELEASE as string | undefined) ??
+      (import.meta.env.VITE_VERCEL_GIT_COMMIT_SHA as string | undefined),
+    tracesSampleRate: 0,
+    replaysSessionSampleRate: 0,
+    replaysOnErrorSampleRate: 0,
+  });
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -48,6 +71,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 
         {/* OMS Phase 3 - Public storefront product listing */}
         <Route path="/products" element={<PublicProductsPage />} />
+
+        {/* OMS Wave 1 - Marketplace checkout flow */}
+        <Route path="/marketplace/cart" element={<MarketplaceCartPage />} />
+        <Route path="/marketplace/checkout" element={<MarketplaceCheckoutPage />} />
+        <Route path="/order/track/:orderRef" element={<OrderTrackPage />} />
+        <Route path="/merchant/:slug/agent" element={<MerchantAgentPage />} />
 
         {/* OMS Phase 1 - Admin merchants stub (Clerk-protected) */}
         {/* OMS Phase 2 - Full admin portal: merchants list/detail, orders, payouts */}

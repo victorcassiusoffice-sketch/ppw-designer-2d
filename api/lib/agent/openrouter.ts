@@ -126,3 +126,30 @@ You help merchants connect their product catalog to the Peak Performance Wellnes
 Be concise, friendly, and concrete. Always confirm what the merchant needs before proposing API integrations.
 If the merchant asks about pricing, payouts, or legal terms, escalate to Vic (admin@ppwellness.co) — do not improvise.
 The integration tiers are: Tier 1 (Shopify/WooCommerce plugin), Tier 2 (custom API), Tier 3 (manual portal upload).`;
+
+/**
+ * OpenRouter / model pricing per 1M tokens, in micro-USD (1e-6 USD).
+ *
+ * Gemini Flash 2.0 free tier: zero cost via OpenRouter's `:free` variant.
+ * Claude 3.5 Sonnet: $3 input / $15 output per 1M tokens. Source:
+ * https://openrouter.ai/anthropic/claude-3.5-sonnet (as of 2026-05).
+ *
+ * Stored as micro-USD per token (≡ price-per-1M-tokens / 1_000_000 * 1e6
+ * = price-per-1M-tokens). So Claude input = 3 micro-USD per token.
+ */
+export const MODEL_PRICING_MICRO_USD_PER_TOKEN: Record<
+  AgentModel,
+  { input: number; output: number }
+> = {
+  'gemini-flash': { input: 0, output: 0 },
+  'claude-sonnet': { input: 3, output: 15 },
+};
+
+export function estimateCostMicroUsd(
+  model: AgentModel,
+  promptTokens: number,
+  completionTokens: number,
+): number {
+  const p = MODEL_PRICING_MICRO_USD_PER_TOKEN[model];
+  return promptTokens * p.input + completionTokens * p.output;
+}

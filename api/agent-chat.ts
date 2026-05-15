@@ -18,16 +18,72 @@ import {
   readOpenRouterEnv,
   openRouterChat,
   pickModel,
+  estimateCostMicroUsd,
   MERCHANT_AGENT_SYSTEM_PROMPT,
   type ChatMessage,
   type AgentModel,
 } from './lib/agent/openrouter.js';
+import { eq, sql } from 'drizzle-orm';
+import { getDb, schema } from './db/client.js';
 
 const MAX_MESSAGES = 30;
 const MAX_MESSAGE_CHARS = 4000;
 
 interface ChatReq extends MinReq {
   body?: unknown;
+}
+
+/**
+ * Best-effort persistence of a chat turn to agent_sessions +
+ * agent_messages. Silent on schema-missing or any other DB failure —
+ * the agent endpoint must keep working even when persistence breaks.
+ */
+async function persistTurn(args: {
+  sessionId: number;
+  userMessage: string;
+  assistantContent: string;
+  modelUsed: AgentModel;
+  promptTokens: number;
+  completionTokens: number;
+  fallbackReason?: string;
+}): Promise<void> {
+  try {
+    const db = getDb();
+    const cost = estimateCostMicroUsd(args.modelUsed, args.promptTokens, args.completionTokens);
+    await db.insert(schema.agentMessages).values([
+      { sessionId: args.sessionId, role: 'user', content: args.userMessage },
+      {
+        sessionId: args.sessionId,
+        role: 'assistant',
+        content: args.assistantContent,
+        modelUsed: args.modelUsed,
+        inputTokens: args.promptTokens,
+        outputTokens: args.completionTokens,
+        costMicroUsd: cost,
+        fallbackReason: args.fallbackReason ?? null,
+      },
+    ]);
+    await db
+      .update(schema.agentSessions)
+      .set({
+        totalCostMicroUsd: sql`${schema.agentSessions.totalCostMicroUsd} + ${cost}`,
+        geminiCostMicroUsd:
+          args.modelUsed === 'gemini-flash'
+            ? sql`${schema.agentSessions.geminiCostMicroUsd} + ${cost}`
+            : schema.agentSessions.geminiCostMicroUsd,
+        sonnetCostMicroUsd:
+          args.modelUsed === 'claude-sonnet'
+            ? sql`${schema.agentSessions.sonnetCostMicroUsd} + ${cost}`
+            : schema.agentSessions.sonnetCostMicroUsd,
+        totalInputTokens: sql`${schema.agentSessions.totalInputTokens} + ${args.promptTokens}`,
+        totalOutputTokens: sql`${schema.agentSessions.totalOutputTokens} + ${args.completionTokens}`,
+        messageCount: sql`${schema.agentSessions.messageCount} + 2`,
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.agentSessions.id, args.sessionId));
+  } catch {
+    // Persistence is best-effort; the proxy must respond regardless.
+  }
 }
 
 async function readJson(req: ChatReq): Promise<unknown> {
@@ -45,9 +101,11 @@ async function readJson(req: ChatReq): Promise<unknown> {
 
 export function validateChatRequest(
   payload: unknown,
-): { ok: true; messages: ChatMessage[]; model?: AgentModel } | { ok: false; error: string } {
+):
+  | { ok: true; messages: ChatMessage[]; model?: AgentModel; sessionId?: number }
+  | { ok: false; error: string } {
   if (!payload || typeof payload !== 'object') return { ok: false, error: 'Invalid body.' };
-  const p = payload as { messages?: unknown; model?: unknown };
+  const p = payload as { messages?: unknown; model?: unknown; sessionId?: unknown };
   if (!Array.isArray(p.messages) || p.messages.length === 0) {
     return { ok: false, error: 'messages array required.' };
   }
@@ -76,7 +134,14 @@ export function validateChatRequest(
     }
     model = p.model;
   }
-  return { ok: true, messages, model };
+  let sessionId: number | undefined;
+  if (p.sessionId !== undefined) {
+    if (typeof p.sessionId !== 'number' || !Number.isInteger(p.sessionId) || p.sessionId <= 0) {
+      return { ok: false, error: 'sessionId must be a positive integer.' };
+    }
+    sessionId = p.sessionId;
+  }
+  return { ok: true, messages, model, sessionId };
 }
 
 async function rawHandler(req: ChatReq, res: MinRes): Promise<void> {
@@ -115,8 +180,20 @@ async function rawHandler(req: ChatReq, res: MinRes): Promise<void> {
 
   const model = v.model ?? pickModel(messages);
 
+  const lastUser = [...messages].reverse().find((m) => m.role === 'user')?.content ?? '';
+
   try {
     const result = await openRouterChat(cfg, { messages, model });
+    if (v.sessionId !== undefined) {
+      await persistTurn({
+        sessionId: v.sessionId,
+        userMessage: lastUser,
+        assistantContent: result.content,
+        modelUsed: model,
+        promptTokens: result.usage.promptTokens,
+        completionTokens: result.usage.completionTokens,
+      });
+    }
     res.status(200);
     res.json({
       content: result.content,
@@ -130,6 +207,17 @@ async function rawHandler(req: ChatReq, res: MinRes): Promise<void> {
     if (model === 'gemini-flash') {
       try {
         const fallback = await openRouterChat(cfg, { messages, model: 'claude-sonnet' });
+        if (v.sessionId !== undefined) {
+          await persistTurn({
+            sessionId: v.sessionId,
+            userMessage: lastUser,
+            assistantContent: fallback.content,
+            modelUsed: 'claude-sonnet',
+            promptTokens: fallback.usage.promptTokens,
+            completionTokens: fallback.usage.completionTokens,
+            fallbackReason: msg,
+          });
+        }
         res.setHeader('X-Agent-Fallback', 'gemini→claude');
         res.status(200);
         res.json({
