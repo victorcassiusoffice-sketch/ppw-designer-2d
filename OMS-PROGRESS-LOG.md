@@ -68,6 +68,31 @@ render-path change).
 
 ---
 
+## 2026-05-16 — V3.1 Driver tick 3 (M1.D.5 Cognitive Load census)
+
+Doc-only tick — no code change. Created
+`06-Roadmap/ux-digests/designer/cognitive-load-census-2026-05-16.md`
+running the four SOPs from `01-Staff/designer-cognitive-load-specialist.md`
+against live commit `26c144c`.
+
+**Verdict: NOT BULKY · PASS.** ~38–44 visible elements desktop (≤50
+threshold); 8/9 chunks on TopBar at Miller ceiling; 5/5 CTAs on
+selected-item state at Hick edge; every audited element scored ≥3/4
+on Norman gulf-of-execution. No P1 findings.
+
+P2 watch items (next PR touching the relevant surface):
+- TopBar Save/Load/Help/New cluster MUST stay visually grouped (one
+  chunk) — otherwise it splits to 4 and the TopBar overruns Miller.
+- DetailsPanel Delete should be visually deprioritised vs
+  Rotate/Duplicate so the 5-CTA cluster stays inside Hick.
+
+V3.1-PLAN.md M1.D.5 ticked `[x]`. State summary: items shipped this
+tick — 1 doc (cognitive load census). Items blocked unchanged.
+Lambda count 12/12, test count 541/541. Next-item-to-pick: **CA.8 —
+Accessibility baseline + axe-core in the test suite**.
+
+---
+
 ## 2026-05-16 — V3.1 Driver tick 2 (M1.D.6 Konva MVP lock)
 
 Doc-only tick — no code change, no deploy. Created
