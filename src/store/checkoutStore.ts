@@ -1,10 +1,16 @@
 /**
- * checkoutStore — Week 3, updated Hotfix 2 (Week 4b).
+ * checkoutStore — Week 3, updated Hotfix 2 (Week 4b), extended Phase 1.5.
  *
- * Holds the customer info form between navigations. Backed by
- * sessionStorage so a refresh doesn't wipe what the user typed.
- * Persistence: `ppw_checkout_v2` (bumped from v1 in Hotfix 2 so cached
- * `country: 'GB'`-style locale guesses get cleared on next load).
+ * Holds the customer info form between navigations + the selected
+ * payment rail. Backed by sessionStorage so a refresh doesn't wipe
+ * what the user typed.
+ *
+ * Persistence keys:
+ *   - v1 (Week 3)              : original schema
+ *   - v2 (Hotfix 2, Week 4b)   : bumped to drop stale country='GB' guesses
+ *   - v3 (Phase 1.5, PayPal)   : adds selectedRail; bumping the key wipes
+ *                                older sessions so the field always
+ *                                materialises with the new default.
  */
 
 import { create } from 'zustand';
@@ -22,6 +28,9 @@ export interface CheckoutFormValues {
   notes: string;
 }
 
+/** Which payment rail the customer has selected. */
+export type PaymentRail = 'stripe' | 'paypal';
+
 export const EMPTY_FORM: CheckoutFormValues = {
   name: '',
   email: '',
@@ -36,7 +45,9 @@ export const EMPTY_FORM: CheckoutFormValues = {
 
 interface CheckoutState {
   form: CheckoutFormValues;
+  selectedRail: PaymentRail;
   setField: <K extends keyof CheckoutFormValues>(field: K, value: CheckoutFormValues[K]) => void;
+  setSelectedRail: (rail: PaymentRail) => void;
   resetForm: () => void;
 }
 
@@ -55,12 +66,14 @@ export const useCheckoutStore = create<CheckoutState>()(
   persist(
     (set) => ({
       form: initialForm(),
+      selectedRail: 'stripe',
       setField: (field, value) =>
         set((s) => ({ form: { ...s.form, [field]: value } })),
-      resetForm: () => set({ form: initialForm() }),
+      setSelectedRail: (rail) => set({ selectedRail: rail }),
+      resetForm: () => set({ form: initialForm(), selectedRail: 'stripe' }),
     }),
     {
-      name: 'ppw_checkout_v2',
+      name: 'ppw_checkout_v3',
       storage: createJSONStorage(() =>
         typeof sessionStorage !== 'undefined' ? sessionStorage : localStorage,
       ),
