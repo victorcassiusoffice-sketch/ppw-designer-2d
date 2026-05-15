@@ -23,7 +23,7 @@
  * from a bottom-sheet to the canvas on touch devices).
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TopBar } from './components/TopBar';
 import { ProductPalette } from './components/ProductPalette';
 import { RoomCanvas } from './components/RoomCanvas';
@@ -35,6 +35,77 @@ import { AddRoomChooser } from './components/AddRoomChooser';
 import { CanvasErrorBoundary } from './components/CanvasErrorBoundary';
 import { useKeyboardShortcuts } from './lib/useKeyboardShortcuts';
 import { useAutoSave } from './lib/useAutoSave';
+
+/**
+ * OMS Wave 2.5 — desktop-first hero banner.
+ *
+ * Marketing line per `wrd_build_path.md`:
+ * "Best experienced on a laptop. Mobile preview supported; for full
+ * design work use desktop."
+ *
+ * Shows only on touch + narrow viewports. Dismissable via the close
+ * button (persists to localStorage so we don't keep nagging).
+ */
+function MobilePreviewBanner(): JSX.Element | null {
+  const [dismissed, setDismissed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    return window.localStorage.getItem('ppw_mobile_banner_dismissed_v1') === '1';
+  });
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const check = () => {
+      const touch = window.matchMedia('(pointer: coarse)').matches;
+      const narrow = window.matchMedia('(max-width: 768px)').matches;
+      setIsMobile(touch && narrow);
+    };
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  if (dismissed || !isMobile) return null;
+  return (
+    <div
+      role="status"
+      style={{
+        background: '#1f4a4a',
+        color: 'white',
+        padding: '6px 12px',
+        fontSize: 12,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 8,
+      }}
+    >
+      <span>
+        <strong>Mobile preview mode</strong> — best experienced on a laptop. For full design
+        work, use desktop.
+      </span>
+      <button
+        type="button"
+        aria-label="Dismiss banner"
+        onClick={() => {
+          window.localStorage.setItem('ppw_mobile_banner_dismissed_v1', '1');
+          setDismissed(true);
+        }}
+        style={{
+          background: 'transparent',
+          color: 'white',
+          border: '1px solid rgba(255,255,255,0.4)',
+          borderRadius: 4,
+          padding: '2px 8px',
+          cursor: 'pointer',
+          fontSize: 12,
+        }}
+      >
+        Dismiss
+      </button>
+    </div>
+  );
+}
 
 export default function App() {
   useKeyboardShortcuts();
@@ -48,6 +119,9 @@ export default function App() {
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-ppw-sand text-ppw-ink">
+      {/* OMS Wave 2.5 — desktop-first hero banner. Visible on touch
+          devices only; localStorage flag dismissal so it doesn't nag. */}
+      <MobilePreviewBanner />
       <TopBar
         drawMode={drawMode}
         setDrawMode={setDrawMode}

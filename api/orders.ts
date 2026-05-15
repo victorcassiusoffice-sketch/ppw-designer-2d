@@ -1,16 +1,25 @@
 /**
- * Catch-all orders router — single Vercel function for /api/orders/*
- * and /api/merchants/:id/order-update.
+ * Catch-all orders router — single Vercel function for /api/orders/*,
+ * /api/merchants/:id/(order-update|agent-session), /api/designs/*,
+ * and /api/leads.
  *
- * Wave 1.3 (customer tracking) + Wave 1.4 (merchant webhook). One
- * lambda covers both surfaces — vercel.json rewrites both URL shapes
- * to this file.
+ * Wave 1.3 (customer tracking), Wave 1.4 (merchant webhook),
+ * Wave 1.6 (agent session lookup), Wave 2.6 (save/load designs),
+ * Wave 2.7 (lead capture). One lambda covers all five surfaces —
+ * vercel.json rewrites every URL shape to this file. Folded together
+ * to stay under the Vercel Hobby 12-fn cap.
  *
  * Routes handled (resolved by URL parse, since query.slug is only
  * populated when Vercel does the rewrite via vercel.json):
  *   GET    /api/orders/:ref                  → order detail (orders + order_items + latest events)
  *   GET    /api/orders/:ref/status           → polled status only (cheap)
  *   POST   /api/merchants/:slug/order-update → merchant fulfilment webhook (HMAC-verified)
+ *   GET    /api/merchants/:slug/agent-session→ active session + last 50 messages
+ *   GET    /api/designs?userId=…             → list designs for a user
+ *   POST   /api/designs                      → create design
+ *   GET    /api/designs/:id                  → read design
+ *   PUT    /api/designs/:id                  → update design
+ *   POST   /api/leads                        → submit lead-capture form
  */
 
 import { eq, desc, inArray } from 'drizzle-orm';
@@ -498,6 +507,235 @@ async function handleMerchantAgentSession(merchantSlug: string, res: MinRes): Pr
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// W2.6 — Designs CRUD.
+// ─────────────────────────────────────────────────────────────────────
+
+interface DesignPayload {
+  userId?: string;
+  customerEmail?: string;
+  name?: string;
+  property: unknown;
+  cart?: unknown;
+  status?: string;
+}
+
+function validateDesignPayload(
+  raw: unknown,
+): { ok: true; data: DesignPayload } | { ok: false; error: string } {
+  if (!raw || typeof raw !== 'object') return { ok: false, error: 'Invalid body.' };
+  const p = raw as Partial<DesignPayload>;
+  if (!p.property || typeof p.property !== 'object') {
+    return { ok: false, error: 'property required (room layout snapshot).' };
+  }
+  if (p.userId !== undefined && typeof p.userId !== 'string') {
+    return { ok: false, error: 'userId must be a string.' };
+  }
+  if (p.customerEmail !== undefined && typeof p.customerEmail !== 'string') {
+    return { ok: false, error: 'customerEmail must be a string.' };
+  }
+  if (!p.userId && !p.customerEmail) {
+    return { ok: false, error: 'Either userId or customerEmail required.' };
+  }
+  return {
+    ok: true,
+    data: {
+      userId: p.userId,
+      customerEmail: p.customerEmail,
+      name: typeof p.name === 'string' ? p.name : undefined,
+      property: p.property,
+      cart: p.cart,
+      status: typeof p.status === 'string' ? p.status : undefined,
+    },
+  };
+}
+
+async function handleDesigns(
+  segments: string[],
+  req: RouterReq,
+  res: MinRes,
+): Promise<void> {
+  const db = getDb();
+  const designId = segments[0] ? parseInt(segments[0], 10) : NaN;
+
+  if (req.method === 'GET') {
+    if (!isNaN(designId)) {
+      // GET /api/designs/:id
+      const rows = await db
+        .select()
+        .from(schema.designs)
+        .where(eq(schema.designs.id, designId))
+        .limit(1);
+      const design = rows[0];
+      if (!design) {
+        res.status(404);
+        res.json({ error: 'Design not found.' });
+        return;
+      }
+      res.status(200);
+      res.json({ design });
+      return;
+    }
+    // GET /api/designs?userId=... | ?email=...
+    const url = req.url ?? '';
+    const q = new URL(url, 'http://x').searchParams;
+    const userId = q.get('userId');
+    const email = q.get('email');
+    if (!userId && !email) {
+      res.status(400);
+      res.json({ error: 'userId or email required.' });
+      return;
+    }
+    const rows = await db
+      .select()
+      .from(schema.designs)
+      .where(userId ? eq(schema.designs.userId, userId) : eq(schema.designs.customerEmail, email!))
+      .orderBy(desc(schema.designs.createdAt))
+      .limit(50);
+    res.status(200);
+    res.json({ designs: rows });
+    return;
+  }
+
+  const body =
+    typeof req.body === 'string'
+      ? JSON.parse(req.body || '{}')
+      : Buffer.isBuffer(req.body)
+        ? JSON.parse(req.body.toString('utf8') || '{}')
+        : (req.body ?? {});
+
+  if (req.method === 'POST' && isNaN(designId)) {
+    const v = validateDesignPayload(body);
+    if (!v.ok) {
+      res.status(400);
+      res.json({ error: v.error });
+      return;
+    }
+    const inserted = await db
+      .insert(schema.designs)
+      .values({
+        userId: v.data.userId ?? null,
+        customerEmail: v.data.customerEmail ?? null,
+        name: v.data.name ?? 'Untitled design',
+        property: v.data.property as object,
+        cart: (v.data.cart as object | undefined) ?? null,
+        status: v.data.status ?? 'draft',
+      })
+      .returning();
+    res.status(201);
+    res.json({ design: inserted[0] });
+    return;
+  }
+
+  if (req.method === 'PUT' && !isNaN(designId)) {
+    const v = validateDesignPayload(body);
+    if (!v.ok) {
+      res.status(400);
+      res.json({ error: v.error });
+      return;
+    }
+    const updated = await db
+      .update(schema.designs)
+      .set({
+        name: v.data.name ?? 'Untitled design',
+        property: v.data.property as object,
+        cart: (v.data.cart as object | undefined) ?? null,
+        status: v.data.status ?? 'draft',
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.designs.id, designId))
+      .returning();
+    if (updated.length === 0) {
+      res.status(404);
+      res.json({ error: 'Design not found.' });
+      return;
+    }
+    res.status(200);
+    res.json({ design: updated[0] });
+    return;
+  }
+
+  res.setHeader('Allow', 'GET, POST, PUT, OPTIONS');
+  res.status(405).end();
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// W2.7 — Lead capture.
+// ─────────────────────────────────────────────────────────────────────
+
+interface LeadPayload {
+  customerEmail: string;
+  customerName?: string;
+  customerPhone?: string;
+  designId?: number;
+  property?: unknown;
+  cartQuote?: unknown;
+  message?: string;
+  source?: string;
+}
+
+function validateLeadPayload(
+  raw: unknown,
+): { ok: true; data: LeadPayload } | { ok: false; error: string } {
+  if (!raw || typeof raw !== 'object') return { ok: false, error: 'Invalid body.' };
+  const p = raw as Partial<LeadPayload>;
+  if (typeof p.customerEmail !== 'string' || !p.customerEmail.includes('@')) {
+    return { ok: false, error: 'customerEmail required.' };
+  }
+  if (p.customerEmail.length > 320) {
+    return { ok: false, error: 'customerEmail too long.' };
+  }
+  return {
+    ok: true,
+    data: {
+      customerEmail: p.customerEmail.toLowerCase(),
+      customerName: typeof p.customerName === 'string' ? p.customerName : undefined,
+      customerPhone: typeof p.customerPhone === 'string' ? p.customerPhone : undefined,
+      designId: typeof p.designId === 'number' ? p.designId : undefined,
+      property: p.property,
+      cartQuote: p.cartQuote,
+      message: typeof p.message === 'string' ? p.message : undefined,
+      source: typeof p.source === 'string' ? p.source : undefined,
+    },
+  };
+}
+
+async function handleLeads(req: RouterReq, res: MinRes): Promise<void> {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST, OPTIONS');
+    res.status(405).end();
+    return;
+  }
+  const body =
+    typeof req.body === 'string'
+      ? JSON.parse(req.body || '{}')
+      : Buffer.isBuffer(req.body)
+        ? JSON.parse(req.body.toString('utf8') || '{}')
+        : (req.body ?? {});
+  const v = validateLeadPayload(body);
+  if (!v.ok) {
+    res.status(400);
+    res.json({ error: v.error });
+    return;
+  }
+  const db = getDb();
+  const inserted = await db
+    .insert(schema.leads)
+    .values({
+      customerEmail: v.data.customerEmail,
+      customerName: v.data.customerName ?? null,
+      customerPhone: v.data.customerPhone ?? null,
+      designId: v.data.designId ?? null,
+      property: (v.data.property as object | undefined) ?? null,
+      cartQuote: (v.data.cartQuote as object | undefined) ?? null,
+      message: v.data.message ?? null,
+      source: v.data.source ?? 'designer',
+    })
+    .returning();
+  res.status(201);
+  res.json({ lead: inserted[0] });
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // Dispatcher.
 // ─────────────────────────────────────────────────────────────────────
 
@@ -529,6 +767,38 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'order lookup failed';
+      res.status(500);
+      res.json({ error: msg });
+    }
+    return;
+  }
+
+  if (resource === 'designs') {
+    try {
+      await handleDesigns(segments, req, res);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'design op failed';
+      if (/relation .*designs.* does not exist|42P01/i.test(msg)) {
+        res.status(503);
+        res.json({ error: 'Designs table not migrated.' });
+        return;
+      }
+      res.status(500);
+      res.json({ error: msg });
+    }
+    return;
+  }
+
+  if (resource === 'leads') {
+    try {
+      await handleLeads(req, res);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'lead capture failed';
+      if (/relation .*leads.* does not exist|42P01/i.test(msg)) {
+        res.status(503);
+        res.json({ error: 'Leads table not migrated.' });
+        return;
+      }
       res.status(500);
       res.json({ error: msg });
     }

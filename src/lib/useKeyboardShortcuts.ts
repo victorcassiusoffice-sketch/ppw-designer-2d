@@ -1,10 +1,12 @@
 /**
  * useKeyboardShortcuts — global keys for placed-item manipulation.
- *   R           rotate 90° CW
- *   Shift+R     rotate 90° CCW
- *   D           duplicate
- *   Delete/Bksp delete
- *   Esc         deselect
+ *   R                rotate 90° CW
+ *   Shift+R          rotate 90° CCW
+ *   D                duplicate
+ *   Ctrl/Cmd+D       duplicate (OMS Wave 2.3 — override the browser
+ *                    bookmark default)
+ *   Delete/Bksp      delete
+ *   Esc              deselect
  *
  * Ignored when the user is typing in an input/textarea/contenteditable
  * (so the room-dim inputs and search box still work normally).
@@ -42,6 +44,8 @@ export function useKeyboardShortcuts(): void {
         case 'd':
         case 'D':
           if (!hasSelection) return;
+          // OMS Wave 2.3 — Ctrl/Cmd+D should override the browser's
+          // bookmark shortcut. Bare D also works (back-compat).
           e.preventDefault();
           duplicateSelected();
           break;

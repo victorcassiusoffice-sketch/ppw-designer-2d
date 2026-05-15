@@ -528,3 +528,54 @@ export type AgentSession = typeof agentSessions.$inferSelect;
 export type NewAgentSession = typeof agentSessions.$inferInsert;
 export type AgentMessage = typeof agentMessages.$inferSelect;
 export type NewAgentMessage = typeof agentMessages.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────
+// OMS Wave 2.6 + 2.7 — Designer save/load + lead capture.
+// ─────────────────────────────────────────────────────────────────────
+
+export const designs = pgTable(
+  'designs',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    userId: varchar('user_id', { length: 80 }),
+    customerEmail: varchar('customer_email', { length: 320 }),
+    name: varchar('name', { length: 200 }).notNull().default('Untitled design'),
+    property: jsonb('property').notNull(),
+    cart: jsonb('cart'),
+    status: varchar('status', { length: 40 }).notNull().default('draft'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    userIdx: index('designs_user_idx').on(t.userId, t.createdAt),
+    emailIdx: index('designs_email_idx').on(t.customerEmail, t.createdAt),
+  }),
+);
+
+export const leads = pgTable(
+  'leads',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    customerEmail: varchar('customer_email', { length: 320 }).notNull(),
+    customerName: varchar('customer_name', { length: 200 }),
+    customerPhone: varchar('customer_phone', { length: 40 }),
+    designId: bigint('design_id', { mode: 'number' }).references(() => designs.id, {
+      onDelete: 'set null',
+    }),
+    property: jsonb('property'),
+    cartQuote: jsonb('cart_quote'),
+    message: text('message'),
+    source: varchar('source', { length: 80 }).notNull().default('designer'),
+    status: varchar('status', { length: 40 }).notNull().default('new'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    emailIdx: index('leads_email_idx').on(t.customerEmail, t.createdAt),
+    statusIdx: index('leads_status_idx').on(t.status, t.createdAt),
+  }),
+);
+
+export type Design = typeof designs.$inferSelect;
+export type NewDesign = typeof designs.$inferInsert;
+export type Lead = typeof leads.$inferSelect;
+export type NewLead = typeof leads.$inferInsert;
