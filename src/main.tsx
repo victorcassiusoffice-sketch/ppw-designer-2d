@@ -21,6 +21,7 @@ import PayoutsListPage from './pages/admin/PayoutsListPage';
 import ProductsListPage from './pages/admin/ProductsListPage';
 import SuppliersListPage from './pages/admin/SuppliersListPage';
 import DashboardPage from './pages/admin/DashboardPage';
+import AuditLogPage from './pages/admin/AuditLogPage';
 import PublicProductsPage from './pages/PublicProductsPage';
 import MarketplaceCartPage from './pages/MarketplaceCartPage';
 import MarketplaceCheckoutPage from './pages/MarketplaceCheckoutPage';
@@ -137,6 +138,14 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             element={
               <RequireAdmin>
                 <DashboardPage />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="audit-log"
+            element={
+              <RequireAdmin>
+                <AuditLogPage />
               </RequireAdmin>
             }
           />
