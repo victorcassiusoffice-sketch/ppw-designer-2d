@@ -17,6 +17,9 @@ import MerchantsListPage from './pages/admin/MerchantsListPage';
 import MerchantDetailPage from './pages/admin/MerchantDetailPage';
 import OrdersListPage from './pages/admin/OrdersListPage';
 import PayoutsListPage from './pages/admin/PayoutsListPage';
+import ProductsListPage from './pages/admin/ProductsListPage';
+import SuppliersListPage from './pages/admin/SuppliersListPage';
+import PublicProductsPage from './pages/PublicProductsPage';
 import { bootstrapFx } from './store/currencyStore';
 import './index.css';
 
@@ -41,6 +44,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/suppliers" element={<SuppliersPage />} />
         <Route path="/merchants" element={<SuppliersPage />} />
         <Route path="/suppliers/signup/complete" element={<SuppliersSignupCompletePage />} />
+
+        {/* OMS Phase 3 - Public storefront product listing */}
+        <Route path="/products" element={<PublicProductsPage />} />
 
         {/* OMS Phase 1 - Admin merchants stub (Clerk-protected) */}
         {/* OMS Phase 2 - Full admin portal: merchants list/detail, orders, payouts */}
@@ -77,6 +83,22 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             element={
               <RequireAdmin>
                 <PayoutsListPage />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="products"
+            element={
+              <RequireAdmin>
+                <ProductsListPage />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="suppliers"
+            element={
+              <RequireAdmin>
+                <SuppliersListPage />
               </RequireAdmin>
             }
           />
