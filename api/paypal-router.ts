@@ -9,9 +9,9 @@
  *   /api/paypal-webhook     → /api/paypal/webhook
  */
 
-import { handler as createOrderHandler } from '../lib/paypal/createOrder.js';
-import { handler as captureOrderHandler } from '../lib/paypal/captureOrder.js';
-import { handler as webhookHandler } from '../lib/paypal/webhook.js';
+import { handler as createOrderHandler } from './lib/paypal/createOrder.js';
+import { handler as captureOrderHandler } from './lib/paypal/captureOrder.js';
+import { handler as webhookHandler } from './lib/paypal/webhook.js';
 
 interface MinimalReq {
   method?: string;
@@ -28,16 +28,18 @@ interface MinimalRes {
 }
 
 function getAction(req: MinimalReq): string | null {
+  if (req.url) {
+    const path = req.url.split('?')[0] ?? '';
+    if (path === '/api/createPaypalOrder') return 'createOrder';
+    if (path === '/api/capturePaypalOrder') return 'captureOrder';
+    if (path === '/api/paypal-webhook') return 'webhook';
+    const parts = path.split('/').filter(Boolean);
+    if (parts[1] === 'paypal' && parts[2]) return parts[2];
+  }
   const q = req.query ?? {};
   const raw = q['action'];
   const v = Array.isArray(raw) ? raw[0] : raw;
   if (typeof v === 'string' && v) return v;
-  if (req.url) {
-    const path = req.url.split('?')[0] ?? '';
-    const parts = path.split('/').filter(Boolean);
-    // expect ['api','paypal', action]
-    return parts[2] ?? null;
-  }
   return null;
 }
 

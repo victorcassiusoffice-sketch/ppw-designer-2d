@@ -8,16 +8,17 @@
     "api/stripe-webhook.ts": { "maxDuration": 10 },
     "api/merchants/signup.ts": { "maxDuration": 15 },
     "api/stripe-connect/webhook.ts": { "maxDuration": 15 },
-    "api/admin/[...slug].ts": { "maxDuration": 15 },
-    "api/paypal/[action].ts": { "maxDuration": 15 },
+    "api/admin-router.ts": { "maxDuration": 15 },
+    "api/paypal-router.ts": { "maxDuration": 15 },
     "api/products.ts": { "maxDuration": 10 },
     "api/healthcheck.ts": { "maxDuration": 5 }
   },
   "rewrites": [
-    { "source": "/api/createPaypalOrder", "destination": "/api/paypal/createOrder" },
-    { "source": "/api/capturePaypalOrder", "destination": "/api/paypal/captureOrder" },
-    { "source": "/api/paypal-webhook", "destination": "/api/paypal/webhook" },
-    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/api/createPaypalOrder", "destination": "/api/paypal-router" },
+    { "source": "/api/capturePaypalOrder", "destination": "/api/paypal-router" },
+    { "source": "/api/paypal-webhook", "destination": "/api/paypal-router" },
+    { "source": "/api/paypal/(.*)", "destination": "/api/paypal-router" },
+    { "source": "/api/admin/(.*)", "destination": "/api/admin-router" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
