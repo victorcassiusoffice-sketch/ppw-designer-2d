@@ -386,3 +386,46 @@ export type ProductStatus = Product['status'];
 
 export type SupplierProduct = typeof supplierProducts.$inferSelect;
 export type NewSupplierProduct = typeof supplierProducts.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────
+// OMS Phase 4 — marketplace order_items.
+//
+// Per-supplier line items for orders. Customer pays the orders.total_minor
+// via PayPal Standard (or future MIPS/MCB Juice/PayPal Marketplaces);
+// each order_items row tracks the per-merchant + per-supplier slice for
+// payout disbursement.
+// ─────────────────────────────────────────────────────────────────────
+
+export const orderItems = pgTable(
+  'order_items',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    orderId: bigint('order_id', { mode: 'number' })
+      .notNull()
+      .references(() => orders.id, { onDelete: 'cascade' }),
+    merchantId: bigint('merchant_id', { mode: 'number' })
+      .notNull()
+      .references(() => merchants.id, { onDelete: 'restrict' }),
+    supplierId: bigint('supplier_id', { mode: 'number' }).references(() => suppliers.id, { onDelete: 'set null' }),
+    productId: bigint('product_id', { mode: 'number' }).references(() => products.id, { onDelete: 'set null' }),
+    sku: varchar('sku', { length: 80 }).notNull(),
+    name: varchar('name', { length: 200 }).notNull(),
+    quantity: integer('quantity').notNull(),
+    unitPriceMinor: integer('unit_price_minor').notNull(),
+    lineTotalMinor: integer('line_total_minor').notNull(),
+    currency: varchar('currency', { length: 3 }).notNull(),
+    payoutStatus: payoutStatusEnum('payout_status').notNull().default('queued'),
+    payoutId: bigint('payout_id', { mode: 'number' }).references(() => payoutQueue.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    orderIdx: index('order_items_order_idx').on(t.orderId),
+    merchantStatusIdx: index('order_items_merchant_idx').on(t.merchantId, t.payoutStatus),
+    supplierIdx: index('order_items_supplier_idx').on(t.supplierId),
+    payoutIdx: index('order_items_payout_idx').on(t.payoutId),
+  }),
+);
+
+export type OrderItem = typeof orderItems.$inferSelect;
+export type NewOrderItem = typeof orderItems.$inferInsert;

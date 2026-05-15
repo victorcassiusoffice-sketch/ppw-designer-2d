@@ -11,6 +11,7 @@
     "api/admin-router.ts": { "maxDuration": 15 },
     "api/paypal-router.ts": { "maxDuration": 15 },
     "api/products.ts": { "maxDuration": 10 },
+    "api/cart-quote.ts": { "maxDuration": 10 },
     "api/healthcheck.ts": { "maxDuration": 5 }
   },
   "rewrites": [
