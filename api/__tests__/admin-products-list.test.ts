@@ -35,7 +35,7 @@ describe('parseAdminProductFilters', () => {
 describe('GET /api/admin/products handler', () => {
   it('returns 405 for non-GET', async () => {
     const mod = await import('../lib/admin/products/list');
-    const handler = mod.default;
+    const handler = mod.handler;
     let status = 0;
     let ended = false;
     const res = {
@@ -51,7 +51,7 @@ describe('GET /api/admin/products handler', () => {
 
   it('returns 401 without Bearer token', async () => {
     const mod = await import('../lib/admin/products/list');
-    const handler = mod.default;
+    const handler = mod.handler;
     let status = 0;
     let body: unknown = null;
     const res = {

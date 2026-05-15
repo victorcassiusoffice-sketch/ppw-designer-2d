@@ -42,7 +42,7 @@ async function readJson(req: MinimalReq): Promise<unknown> {
   return null;
 }
 
-export default async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
+export async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
   if (req.method === 'OPTIONS') {
     res.status(204).end();
     return;

@@ -27,7 +27,7 @@ describe('parsePayoutFilters', () => {
 describe('GET /api/admin/payouts — handler shape', () => {
   it('returns 405 for non-GET', async () => {
     const mod = await import('../lib/admin/payouts/list');
-    const handler = mod.default;
+    const handler = mod.handler;
     let status = 0;
     const res = {
       setHeader: vi.fn(),
@@ -44,7 +44,7 @@ describe('GET /api/admin/payouts — handler shape', () => {
 
   it('returns 401 without a Bearer token', async () => {
     const mod = await import('../lib/admin/payouts/list');
-    const handler = mod.default;
+    const handler = mod.handler;
     let status = 0;
     const res = {
       setHeader: vi.fn(),

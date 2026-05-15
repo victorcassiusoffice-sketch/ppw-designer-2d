@@ -18,16 +18,16 @@
  *   POST/PATCH/DELETE /api/admin/suppliers     → suppliers/write
  */
 
-import merchantsList from '../lib/admin/merchants/list.js';
-import merchantsDetail from '../lib/admin/merchants/detail.js';
-import merchantsApprove from '../lib/admin/merchants/approve.js';
-import merchantsReject from '../lib/admin/merchants/reject.js';
-import ordersList from '../lib/admin/orders/list.js';
-import payoutsList from '../lib/admin/payouts/list.js';
-import productsList from '../lib/admin/products/list.js';
-import productsWrite from '../lib/admin/products/write.js';
-import suppliersList from '../lib/admin/suppliers/list.js';
-import suppliersWrite from '../lib/admin/suppliers/write.js';
+import { handler as merchantsList } from '../lib/admin/merchants/list.js';
+import { handler as merchantsDetail } from '../lib/admin/merchants/detail.js';
+import { handler as merchantsApprove } from '../lib/admin/merchants/approve.js';
+import { handler as merchantsReject } from '../lib/admin/merchants/reject.js';
+import { handler as ordersList } from '../lib/admin/orders/list.js';
+import { handler as payoutsList } from '../lib/admin/payouts/list.js';
+import { handler as productsList } from '../lib/admin/products/list.js';
+import { handler as productsWrite } from '../lib/admin/products/write.js';
+import { handler as suppliersList } from '../lib/admin/suppliers/list.js';
+import { handler as suppliersWrite } from '../lib/admin/suppliers/write.js';
 
 interface MinimalReq {
   method?: string;

@@ -24,7 +24,7 @@ interface MinimalRes {
   json(body: unknown): void;
 }
 
-export default async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
+export async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
   if (req.method === 'OPTIONS') {
     res.status(204).end();
     return;

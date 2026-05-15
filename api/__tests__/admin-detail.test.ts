@@ -55,7 +55,7 @@ describe('admin/merchants/detail — auth gate', () => {
   it('returns 401 when Authorization header is missing', async () => {
     // Import handler lazily so we can swap the auth helper first.
     const mod = await import('../lib/admin/merchants/detail');
-    const handler = mod.default;
+    const handler = mod.handler;
 
     const calls: Array<{ status: number; body: unknown }> = [];
     let lastStatus = 0;
@@ -92,7 +92,7 @@ describe('admin/merchants/detail — auth gate', () => {
 
   it('returns 405 for non-GET', async () => {
     const mod = await import('../lib/admin/merchants/detail');
-    const handler = mod.default;
+    const handler = mod.handler;
     const allowSpy = vi.fn();
     let lastStatus = 0;
     let ended = false;

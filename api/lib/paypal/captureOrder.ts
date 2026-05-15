@@ -204,5 +204,5 @@ async function rawHandler(req: MinReq, res: MinRes): Promise<void> {
   res.json({ error: result.error });
 }
 
-const handler = withSentry(rawHandler);
-export default handler;
+export const handler = withSentry(rawHandler);
+

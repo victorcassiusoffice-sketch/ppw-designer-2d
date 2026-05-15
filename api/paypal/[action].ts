@@ -9,9 +9,9 @@
  *   /api/paypal-webhook     → /api/paypal/webhook
  */
 
-import createOrderHandler from '../lib/paypal/createOrder.js';
-import captureOrderHandler from '../lib/paypal/captureOrder.js';
-import webhookHandler from '../lib/paypal/webhook.js';
+import { handler as createOrderHandler } from '../lib/paypal/createOrder.js';
+import { handler as captureOrderHandler } from '../lib/paypal/captureOrder.js';
+import { handler as webhookHandler } from '../lib/paypal/webhook.js';
 
 interface MinimalReq {
   method?: string;

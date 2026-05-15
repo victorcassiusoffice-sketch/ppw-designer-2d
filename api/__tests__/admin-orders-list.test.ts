@@ -46,7 +46,7 @@ describe('parseOrdersFilters', () => {
 describe('GET /api/admin/orders — handler shape', () => {
   it('returns 405 for non-GET', async () => {
     const mod = await import('../lib/admin/orders/list');
-    const handler = mod.default;
+    const handler = mod.handler;
     let status = 0;
     let ended = false;
     const res = {
@@ -67,7 +67,7 @@ describe('GET /api/admin/orders — handler shape', () => {
 
   it('returns 401 without a Bearer token', async () => {
     const mod = await import('../lib/admin/orders/list');
-    const handler = mod.default;
+    const handler = mod.handler;
     let status = 0;
     let body: unknown = null;
     const res = {

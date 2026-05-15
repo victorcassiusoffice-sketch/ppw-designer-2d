@@ -82,7 +82,7 @@ describe('admin suppliers validateUpdate', () => {
 describe('admin suppliers handler gates', () => {
   it('list returns 405 for non-GET', async () => {
     const mod = await import('../lib/admin/suppliers/list');
-    const handler = mod.default;
+    const handler = mod.handler;
     let status = 0;
     let ended = false;
     const res = {
@@ -98,7 +98,7 @@ describe('admin suppliers handler gates', () => {
 
   it('write returns 405 for GET', async () => {
     const mod = await import('../lib/admin/suppliers/write');
-    const handler = mod.default;
+    const handler = mod.handler;
     let status = 0;
     let ended = false;
     const res = {
@@ -114,7 +114,7 @@ describe('admin suppliers handler gates', () => {
 
   it('list returns 401 without Bearer', async () => {
     const mod = await import('../lib/admin/suppliers/list');
-    const handler = mod.default;
+    const handler = mod.handler;
     let status = 0;
     const res = {
       setHeader: vi.fn(),
@@ -139,7 +139,7 @@ describe('admin suppliers handler gates', () => {
 
   it('write returns 401 without Bearer for POST', async () => {
     const mod = await import('../lib/admin/suppliers/write');
-    const handler = mod.default;
+    const handler = mod.handler;
     let status = 0;
     const res = {
       setHeader: vi.fn(),
