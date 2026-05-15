@@ -25,6 +25,7 @@
 
 import { useState, useEffect } from 'react';
 import { TopBar } from './components/TopBar';
+import { CoachMark, useDarkMode } from './components/uxKit';
 import { ProductPalette } from './components/ProductPalette';
 import { RoomCanvas } from './components/RoomCanvas';
 import { DetailsPanel } from './components/DetailsPanel';
@@ -110,6 +111,9 @@ function MobilePreviewBanner(): JSX.Element | null {
 export default function App() {
   useKeyboardShortcuts();
   useAutoSave();
+  // OMS Wave 3.7 — dark mode opt-in. localStorage flag flips
+  // `<html class="dark">` so Tailwind dark: variants apply globally.
+  const [darkMode, toggleDark] = useDarkMode();
 
   const [drawMode, setDrawMode] = useState(false);
   const [addRoomOpen, setAddRoomOpen] = useState(false);
@@ -205,6 +209,38 @@ export default function App() {
         onRequestDrawMode={() => setDrawMode(true)}
       />
       <ToastProvider />
+      {/* OMS Wave 3.5 — 3-step coach mark, localStorage dismissal. */}
+      <CoachMark
+        flagKey="ppw_designer_coach_v1"
+        steps={[
+          { title: 'Set your room dims', body: 'Use the toolbar above to set length/width, or click Draw room to sketch a custom polygon.' },
+          { title: 'Drag products in', body: 'Open the catalog from the top bar, then drag (or tap then tap) items into your room.' },
+          { title: 'Save & request a quote', body: 'Click Save to keep your design. Use Request quote to send the layout to the PPW team.' },
+        ]}
+      />
+      {/* OMS Wave 3.7 — small dark mode toggle pinned bottom-left. */}
+      <button
+        type="button"
+        onClick={toggleDark}
+        aria-label="Toggle dark mode"
+        aria-pressed={darkMode}
+        title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        style={{
+          position: 'fixed',
+          bottom: 12,
+          right: 12,
+          padding: '6px 10px',
+          background: 'white',
+          border: '1px solid #d1d5db',
+          borderRadius: 999,
+          fontSize: 11,
+          cursor: 'pointer',
+          opacity: 0.8,
+          zIndex: 50,
+        }}
+      >
+        {darkMode ? '☀️ light' : '🌙 dark'}
+      </button>
     </div>
   );
 }
