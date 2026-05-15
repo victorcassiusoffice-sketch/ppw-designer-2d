@@ -36,6 +36,11 @@ import {
   makeOrderId,
   startStripeCheckout,
 } from '../lib/stripe';
+import {
+  buildPaypalCheckoutPayload,
+  isPaypalEnabled,
+  startPaypalCheckout,
+} from '../lib/paypal';
 import { formatCurrency } from '../lib/currency';
 import { COUNTRY_OPTIONS } from '../lib/region';
 import { CATEGORY_LABELS, getProductById } from '../data/products';
@@ -98,6 +103,8 @@ export default function CheckoutPage() {
   const currency = useCurrencyStore((s) => s.currency);
   const form = useCheckoutStore((s) => s.form);
   const setField = useCheckoutStore((s) => s.setField);
+  const selectedRail = useCheckoutStore((s) => s.selectedRail);
+  const setSelectedRail = useCheckoutStore((s) => s.setSelectedRail);
   const saveOrder = useOrdersStore((s) => s.saveOrder);
   const navigate = useNavigate();
 
@@ -244,6 +251,39 @@ export default function CheckoutPage() {
 
     captureOrderSnapshot(order);
 
+    const propertySnap = {
+      id: property.id,
+      name: property.name,
+      rooms: property.rooms.map((r) => ({
+        id: r.id,
+        name: r.name,
+        itemCount: r.placedItems.length,
+      })),
+    };
+
+    if (selectedRail === 'paypal') {
+      if (!isPaypalEnabled()) {
+        navigate(`/order/pending?id=${encodeURIComponent(orderId)}`);
+        return;
+      }
+      const paypalPayload = buildPaypalCheckoutPayload({
+        cart,
+        customer: form,
+        origin: window.location.origin,
+        orderId,
+        property: propertySnap,
+      });
+      const paypalResult = await startPaypalCheckout(paypalPayload);
+      setSubmitting(false);
+      if (paypalResult.status === 'redirected') return;
+      if (paypalResult.status === 'pending') {
+        navigate(`/order/pending?id=${encodeURIComponent(orderId)}`);
+        return;
+      }
+      setServerMessage(paypalResult.message ?? 'Checkout failed. Please try again.');
+      return;
+    }
+
     if (!isStripeConfigured()) {
       navigate(`/order/pending?id=${encodeURIComponent(orderId)}`);
       return;
@@ -254,15 +294,7 @@ export default function CheckoutPage() {
       customer: form,
       origin: window.location.origin,
       orderId,
-      property: {
-        id: property.id,
-        name: property.name,
-        rooms: property.rooms.map((r) => ({
-          id: r.id,
-          name: r.name,
-          itemCount: r.placedItems.length,
-        })),
-      },
+      property: propertySnap,
     });
     const result = await startStripeCheckout(payload);
     setSubmitting(false);
@@ -353,6 +385,36 @@ export default function CheckoutPage() {
               placeholder="Access codes, lift hours, preferred install times, anything else we should know."
               className="mt-2 w-full rounded-md border border-ppw-stone bg-white px-2.5 py-2 text-sm focus:border-ppw-teal focus:outline-none"
             />
+          </section>
+
+          <section className="rounded-lg border border-ppw-stone bg-white p-4">
+            <p className="text-sm font-bold">Payment method</p>
+            <div className="mt-3 space-y-2">
+              <label className="flex cursor-pointer items-center gap-2 rounded-md border border-ppw-stone p-2.5 text-sm hover:border-ppw-teal">
+                <input
+                  type="radio"
+                  name="payment-rail"
+                  value="stripe"
+                  checked={selectedRail === 'stripe'}
+                  onChange={() => setSelectedRail('stripe')}
+                  className="h-4 w-4 accent-ppw-teal"
+                />
+                <span>Pay by card (Stripe)</span>
+              </label>
+              {isPaypalEnabled() && (
+                <label className="flex cursor-pointer items-center gap-2 rounded-md border border-ppw-stone p-2.5 text-sm hover:border-ppw-teal">
+                  <input
+                    type="radio"
+                    name="payment-rail"
+                    value="paypal"
+                    checked={selectedRail === 'paypal'}
+                    onChange={() => setSelectedRail('paypal')}
+                    className="h-4 w-4 accent-ppw-teal"
+                  />
+                  <span>Pay with PayPal</span>
+                </label>
+              )}
+            </div>
           </section>
 
           {serverMessage && (

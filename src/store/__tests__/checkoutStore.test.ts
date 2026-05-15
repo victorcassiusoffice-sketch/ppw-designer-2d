@@ -75,3 +75,29 @@ describe('validateCheckoutForm — phone regex', () => {
     expect(validateCheckoutForm(full({ phone: '123' })).phone).toBeDefined();
   });
 });
+
+describe('useCheckoutStore — selectedRail (Phase 1.5)', () => {
+  it('defaults to stripe', async () => {
+    const mod = await import('../checkoutStore');
+    // Reset to a known state (fresh store instance per process, but
+    // sessionStorage may have v3 persisted from a previous test - we
+    // explicitly set back to stripe before reading).
+    mod.useCheckoutStore.getState().setSelectedRail('stripe');
+    expect(mod.useCheckoutStore.getState().selectedRail).toBe('stripe');
+  });
+
+  it('setSelectedRail switches between stripe and paypal', async () => {
+    const mod = await import('../checkoutStore');
+    mod.useCheckoutStore.getState().setSelectedRail('paypal');
+    expect(mod.useCheckoutStore.getState().selectedRail).toBe('paypal');
+    mod.useCheckoutStore.getState().setSelectedRail('stripe');
+    expect(mod.useCheckoutStore.getState().selectedRail).toBe('stripe');
+  });
+
+  it('resetForm restores selectedRail to stripe', async () => {
+    const mod = await import('../checkoutStore');
+    mod.useCheckoutStore.getState().setSelectedRail('paypal');
+    mod.useCheckoutStore.getState().resetForm();
+    expect(mod.useCheckoutStore.getState().selectedRail).toBe('stripe');
+  });
+});
