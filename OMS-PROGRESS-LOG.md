@@ -1,5 +1,74 @@
 # OMS Progress Log — local repo mirror
 
+---
+
+## 2026-05-16 — V3.1 Driver tick 1 (reconciliation + M1.D.1)
+
+Driver: Claude Opus 4.7 1M (Cowork session), /goal autonomous mode.
+Branch HEAD before this tick: `01e1d9d`. After: `26c144c`.
+
+### What shipped
+
+- **Plan reconciliation** — `V3.1-PLAN.md` audited against the live repo
+  on 2026-05-16. 40 autonomous micros ticked `[x]` from the OMS v2
+  close-out (M1.A + M1.B + most M1.C + most M1.D + M8.A.1 + all
+  Cross-A + most Cross-B + most Cross-C). 5 autonomous micros remain
+  open: M1.C.6 (UI uses localStorage; API wire-through Vic-gated),
+  M1.C.7 (Request-Quote button Vic-gated), M1.D.1 (now shipped — see
+  below), M1.D.6 (Konva MVP lock entry), CA.8 (axe-core harness).
+- **Cron schedule fix** — `vercel.json` cron from `0 */4 * * *` to
+  `0 9 * * *` to honour Vercel Hobby's daily-cron-only constraint.
+  Commit `07c3b7e`. The 4h cadence was authored in OMS Wave 1.9 before
+  the Hobby restriction was understood.
+- **M1.D.1 — designsStore save/load round-trip Vitest** — new
+  `src/store/__tests__/designsStore.test.ts` with 8 invariants over
+  `useDesignsStore`. Test count 533 → 541 (+8). Stability gate for the
+  Konva MVP lock (M1.D.6) is now met. Commit `26c144c`.
+- **Designer-surface items surfaced to Vic** — M1.C.6 (wire
+  `designsStore` to `/api/designs`) and M1.C.7 (Request-Quote button)
+  appended to `VIC-DECISIONS-QUEUE.md` as decision `V3.1-A`. Both
+  touch the live Designer surface; per the /goal block, "any item in
+  M1.C" requires explicit Vic-Y. Driver moved past them per workflow
+  step 6 ("never block on Vic-decisions inside a tick").
+
+### Validation
+
+- `npm test` → **541/541 green** (8 new designsStore tests; baseline
+  +8, no regressions).
+- `npx tsc --noEmit` (root) ✓ clean.
+- `npx tsc --noEmit -p api/tsconfig.json` ✓ clean.
+- `npx vite build` ✓ clean, 1.19 MB JS (364 KB gzip).
+
+### Deploy
+
+- `npx vercel deploy --prod --yes` → deployment
+  `dpl_B5NpeszMicXGYtXQHNacwiz7dxev` ready 2026-05-15 20:48 UTC,
+  target = production.
+- Smoke: `GET https://designer.ppwellness.co/api/healthcheck` → 200,
+  body `{"ok":true,"commit":"26c144c477dc30d17e1207fed998195636f1b283"}`.
+  Production alias now serving the new commit + the daily cron
+  schedule.
+- Lambda count unchanged at **12** (Hobby cap). Function manifest in
+  `vercel.json` untouched.
+
+### Reconciliation tick state summary
+
+Items shipped this tick: 1 code (M1.D.1) + 1 infra fix (daily cron) +
+40 ticked-as-already-done in plan reconciliation. Items blocked
+(awaiting Vic): M1.C.6, M1.C.7 (Designer-surface Vic-gate); M1.E.1-3
+(cron enable clicks); M2.A.1-2, M3.B.1-4, M3.D.1, M5.A.1-2, M6.A.1-3
+(decisions); CB.4 (security baseline doc); CB.7 (Sentry dashboard
+alert routing). Lambda count: 12/12. Test count: 541/541 green.
+Next-item-to-pick: **M1.D.6 — write `wrd_build_path.md` "Konva MVP
+stable lock" row** (a doc-only write in the Second-Brain;
+no-Designer-surface; unlocks M2.C Babylon work). After M1.D.6, the
+next open autonomous item is **CA.8 — accessibility baseline +
+axe-core in the test suite** (touches admin pages but additive — no
+render-path change).
+
+---
+
+
 This file lives in the repo root and tracks the Wave 1-5 autonomous run
 that picks up from `c0c120c` (the end-of-tick-5 baseline in the 2nd-Brain
 canonical log).
