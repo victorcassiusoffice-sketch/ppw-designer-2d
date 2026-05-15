@@ -19,6 +19,7 @@ import {
   emailMerchantRejected,
   type SendResult,
 } from './merchantEmails.js';
+import { recordAudit } from './auditLog.js';
 
 const PENDING_STATUSES: MerchantStatus[] = ['pending_admin_approval'];
 
@@ -72,6 +73,24 @@ export async function approveMerchant(
     adminUrl: '',
     merchantPortalUrl: deps.merchantPortalUrl,
   });
+
+  // Audit trail — fire-and-await but never let a failure surface as a
+  // user-visible error. recordAudit returns { ok: false } on insert
+  // failure; the merchant is already approved either way.
+  await recordAudit(
+    admin.email,
+    'merchant.approve',
+    'merchant',
+    String(updated.id),
+    null,
+    {
+      slug: updated.slug,
+      previousStatus: target.status,
+      newStatus: updated.status,
+      emailSent: emailResult.ok,
+    },
+  );
+
   return { ok: true, merchant: updated, emailResult };
 }
 
@@ -88,7 +107,6 @@ export async function rejectMerchant(
     emailMerchant?: (args: Parameters<typeof emailMerchantRejected>[0]) => Promise<SendResult>;
   },
 ): Promise<RejectOutcome> {
-  void admin;
   const trimmed = (reason ?? '').trim();
   if (trimmed.length < 5) {
     return { ok: false, status: 400, error: 'A rejection reason is required (5+ chars).' };
@@ -117,5 +135,20 @@ export async function rejectMerchant(
     adminUrl: '',
     rejectionReason: trimmed,
   });
+
+  await recordAudit(
+    admin.email,
+    'merchant.reject',
+    'merchant',
+    String(updated.id),
+    trimmed,
+    {
+      slug: updated.slug,
+      previousStatus: target.status,
+      newStatus: updated.status,
+      emailSent: emailResult.ok,
+    },
+  );
+
   return { ok: true, merchant: updated, emailResult };
 }

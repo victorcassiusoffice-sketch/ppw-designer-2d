@@ -21,8 +21,17 @@ import { verifyToken } from '@clerk/backend';
 import type { MerchantStore } from '../db/merchantStore.js';
 import { getDb, schema } from '../db/client.js';
 import { eq } from 'drizzle-orm';
+import {
+  ADMIN_EMAIL_ALLOWLIST_SET,
+  isAllowlistedAdminEmail,
+} from './adminAllowlist.js';
 
-export const VIC_EMAIL_ALLOWLIST = new Set(['victorcassius.office@gmail.com', 'victor@ppwellness.co']);
+/**
+ * Re-export kept for backwards compatibility with the Phase 1 tests
+ * that asserted on `VIC_EMAIL_ALLOWLIST` directly. New code should
+ * call `isAllowlistedAdminEmail()` from `./adminAllowlist.js`.
+ */
+export const VIC_EMAIL_ALLOWLIST: ReadonlySet<string> = ADMIN_EMAIL_ALLOWLIST_SET;
 
 export interface AuthorisedAdmin {
   clerkUserId: string;
@@ -81,7 +90,7 @@ export async function authoriseAdminRequest(
   }
 
   const email = (claims.email ?? '').toLowerCase();
-  if (email && VIC_EMAIL_ALLOWLIST.has(email)) {
+  if (isAllowlistedAdminEmail(email)) {
     return {
       ok: true,
       admin: {
