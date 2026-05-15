@@ -272,3 +272,117 @@ export type PaymentStatus = Order['paymentStatus'];
 
 export type WebhookEvent = typeof webhookEvents.$inferSelect;
 export type NewWebhookEvent = typeof webhookEvents.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────
+// OMS Phase 3 — product catalog + suppliers.
+//
+// products: per-merchant catalog rows. Stored in metric units so that
+//   future phases (Phase 8 designer) can place them on the canvas.
+// suppliers: fulfilment-side records under each merchant. 1:N for now;
+//   Phase 4 may flatten to N:M when dropship lands.
+// supplier_products: m:n linking — which supplier fulfils which product
+//   at what cost + lead time.
+// ─────────────────────────────────────────────────────────────────────
+
+export const productStatusEnum = pgEnum('product_status', [
+  'draft',
+  'active',
+  'archived',
+  'out_of_stock',
+]);
+
+export const supplierStatusEnum = pgEnum('supplier_status', [
+  'pending',
+  'active',
+  'suspended',
+]);
+
+export const suppliers = pgTable(
+  'suppliers',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    merchantId: bigint('merchant_id', { mode: 'number' })
+      .notNull()
+      .references(() => merchants.id, { onDelete: 'cascade' }),
+    name: varchar('name', { length: 200 }).notNull(),
+    contactEmail: varchar('contact_email', { length: 320 }).notNull(),
+    contactPhone: varchar('contact_phone', { length: 40 }),
+    country: varchar('country', { length: 2 }).notNull(),
+    status: supplierStatusEnum('status').notNull().default('pending'),
+    notes: text('notes'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    merchantNameUnique: uniqueIndex('suppliers_merchant_name_idx').on(t.merchantId, t.name),
+    merchantIdx: index('suppliers_merchant_idx').on(t.merchantId),
+  }),
+);
+
+export const products = pgTable(
+  'products',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    merchantId: bigint('merchant_id', { mode: 'number' })
+      .notNull()
+      .references(() => merchants.id, { onDelete: 'cascade' }),
+    sku: varchar('sku', { length: 80 }).notNull(),
+    name: varchar('name', { length: 200 }).notNull(),
+    category: varchar('category', { length: 80 }).notNull(),
+    description: text('description'),
+    widthMm: integer('width_mm'),
+    depthMm: integer('depth_mm'),
+    heightMm: integer('height_mm'),
+    weightG: integer('weight_g'),
+    priceMinor: integer('price_minor').notNull(),
+    currency: varchar('currency', { length: 3 }).notNull(),
+    imageUrl: varchar('image_url', { length: 500 }),
+    status: productStatusEnum('status').notNull().default('draft'),
+    region: varchar('region', { length: 40 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    merchantSkuUnique: uniqueIndex('products_merchant_sku_idx').on(t.merchantId, t.sku),
+    merchantStatusIdx: index('products_merchant_status_idx').on(t.merchantId, t.status),
+    categoryStatusIdx: index('products_category_status_idx').on(t.category, t.status),
+  }),
+);
+
+export const supplierProducts = pgTable(
+  'supplier_products',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    supplierId: bigint('supplier_id', { mode: 'number' })
+      .notNull()
+      .references(() => suppliers.id, { onDelete: 'cascade' }),
+    productId: bigint('product_id', { mode: 'number' })
+      .notNull()
+      .references(() => products.id, { onDelete: 'cascade' }),
+    supplierSku: varchar('supplier_sku', { length: 80 }),
+    costMinor: integer('cost_minor').notNull(),
+    costCurrency: varchar('cost_currency', { length: 3 }).notNull(),
+    leadTimeDays: integer('lead_time_days').notNull().default(7),
+    primarySupplier: boolean('primary_supplier').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    supplierProductUnique: uniqueIndex('supplier_products_supplier_product_idx').on(
+      t.supplierId,
+      t.productId,
+    ),
+    productIdx: index('supplier_products_product_idx').on(t.productId),
+  }),
+);
+
+export type Supplier = typeof suppliers.$inferSelect;
+export type NewSupplier = typeof suppliers.$inferInsert;
+export type SupplierStatus = Supplier['status'];
+
+export type Product = typeof products.$inferSelect;
+export type NewProduct = typeof products.$inferInsert;
+export type ProductStatus = Product['status'];
+
+export type SupplierProduct = typeof supplierProducts.$inferSelect;
+export type NewSupplierProduct = typeof supplierProducts.$inferInsert;
