@@ -32,6 +32,16 @@ async function run(): Promise<void> {
     console.error('DATABASE_URL is not set. Pull it from Vercel env vars or .env.local.');
     process.exit(1);
   }
+  // OMS Wave 5.8 — refuse to touch prod unless explicitly authorised.
+  // The prod endpoint hostname for ppw-marketplace contains
+  // `raspy-butterfly-74927202` as a substring.
+  if (url.includes('raspy-butterfly-74927202') && process.env.ALLOW_PROD_MIGRATIONS !== '1') {
+    console.error(
+      '[safety] DATABASE_URL appears to point at the production branch.\n' +
+        '         Set ALLOW_PROD_MIGRATIONS=1 to override (intentional only).',
+    );
+    process.exit(2);
+  }
   const sql = neon(url);
   const files = readdirSync(MIG_DIR)
     .filter((f) => f.endsWith('.sql'))
