@@ -1,0 +1,56 @@
+# V4 W0.D.17 (partial) — Quality gates CI workflow.
+#
+# Closes:
+#   • CA.8 layer 4 / W0.A.7 — wire axe-core into PR CI gating.
+#   • W0.D.7 schema-mirror — Vitest parity check runs in CI.
+#
+# Wired today (3 of 11 gates from V4-UNIFIED-PLAN.md Quality-gates §):
+#   1. typecheck (root + api)
+#   8. vitest (includes axe-core layers 1+2+3 + schema-mirror)
+#   9. axe-core on multiple surfaces (subset; layer 4 = "wired in CI")
+#
+# TODO once their upstream micros land:
+#   2. schema-mirror as a dedicated step is redundant today because the
+#      Vitest suite already covers it; promote when other CI steps shrink
+#      the suite.
+#   3. Phase-A scan          (W0.D.14 — script doesn't exist yet)
+#   4. cohort:lint           (W0.E.3 — table + script don't exist yet)
+#   5. manifest-verify       (W0.D.18 — manifest doesn't exist yet)
+#   6. eco-badge hash verify (W0.D.13 — lockfile doesn't exist yet)
+#   7. strict-mode-escape budget (W1.D.9 — registry doesn't exist yet)
+#  10. Lighthouse CI         (already lives in lighthouse.yml — keep separate)
+#  11. Playwright E2E        (W0.D.6 — runner not scaffolded yet)
+
+name: Quality gates
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  typecheck:
+    name: Typecheck (root + api)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx tsc --noEmit -p api/tsconfig.json
+
+  test:
+    name: Vitest (axe-core + schema-mirror + 590+ tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test
