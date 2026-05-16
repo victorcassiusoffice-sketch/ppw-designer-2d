@@ -2,6 +2,67 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 15 (Track C W0.D.14 partial — Phase A sub-templates)
+
+Track C doc tick — closes the SPLIT sub-template portion of W0.D.14
+per V4-QA-1 recommendation. Script portion (`scripts/check-phase-a.ts`)
+deferred until cross-repo path resolution is designed (script lives
+in PPW-Code, plan + evidence files live in PPW-Second-Brain).
+
+### What shipped (doc-only, no commit needed — second-brain)
+
+- `PPW-Second-Brain/06-Roadmap/user-testing/phase-a/CUSTOMER-JOURNEY.md`
+  (new) — customer-side sub-template. 11-step checklist (entry,
+  render budget, primary action, confirmation, email, follow-up
+  surface, error / Sentry / 4xx + console, voice-of-PPW copy);
+  device-matrix tracking (desktop 1440 / mobile 390 / tablet 768);
+  outcome + driver notes.
+- `PPW-Second-Brain/06-Roadmap/user-testing/phase-a/MERCHANT-JOURNEY.md`
+  (new) — merchant-side sub-template. 12-step checklist (entry,
+  slug-gated magic-link discipline, agent extraction, idempotency,
+  visibility, soft-delete recoverability, confirmation, error
+  signals, voice copy, rate-limit + cost-circuit-breaker hygiene);
+  merchant-identity tracking; outcome + driver notes.
+- The existing combined `TEMPLATE.md` stays as the authoritative
+  reference for micros where one side is trivially N/A.
+- Hybrid micros (cart-while-designing, magic-link checkout + DSAR
+  delete) require BOTH files saved as `<micro-id>.customer.md` +
+  `<micro-id>.merchant.md` per V4-QA-1.
+
+### Validation
+
+Doc-only tick — no code change, no test/build/deploy. PPW-Second-Brain
+is not a git repo so no commit there. No PPW-Code commit.
+
+- Test count remains **598/598**.
+- Lambda 12/12.
+
+### Tick 15 state summary
+
+Items shipped: 2 Phase A sub-templates (~90 lines each). V4-UNIFIED-PLAN
+W0.D.14 marked `[~]` partial (sub-template portion closed, script
+portion explicitly deferred with rationale).
+
+Wave 0.D progress: 2 of 23 shipped (W0.D.4 + W0.D.7) + 1 partial
+(W0.D.17 3-of-11 gates) + 1 partial (W0.D.14 sub-templates).
+
+Lambda 12/12. Test count **598/598**. Live commit `ce617a1` from
+tick 13.
+
+Next-item-to-pick (per A→B→C→D rotation, after this Track C tick):
+- **Track D next**: still Vic-blocked.
+- **Track A next**: M3.A.1 admin CSV product import. Substantial
+  enough to warrant a focused 2-3-tick effort. Defer to a fresh
+  session.
+- **Track B next**: QW#6 — mirror designer-mobile-ux-specialist.md
+  + app-mobile-ux-specialist.md from FRESH into live B + add row
+  to _Roster.md.
+- **Track C next** (after this): W0.D.6 (Playwright E2E scaffold —
+  substantial runner setup) OR W0.D.14 SCRIPT portion (needs
+  cross-repo design decision first — surface as V-decision).
+
+---
+
 ## 2026-05-17 — V4 Driver tick 14 (Track B QW#5 WRD phase docs mirror)
 
 Track B doc tick — fills the missing pair in live B's `01-Staff/wrd/`
