@@ -2,6 +2,82 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 13 (Track A CA.8 layer 4 / W0.D.17 partial)
+
+Track A CI tick — closes CA.8 layer 4 (axe-core wired into PR CI
+gating) by landing the W0.D.17 `quality-gates.yml` workflow with 3
+of its 11 planned gates active. The 3 active gates are the only
+ones with shipped upstream micros; the remaining 8 are documented
+as TODOs pinned to their owning micros.
+
+### What shipped (commit `ce617a1`)
+
+- `.github/workflows/quality-gates.yml` (new) — triggers on PR to
+  main + push to main (mirrors lighthouse.yml + secrets-scan.yml
+  patterns).
+  - Job 1 `typecheck` — `npx tsc --noEmit` (root) + `npx tsc
+    --noEmit -p api/tsconfig.json` (api).
+  - Job 2 `test` — `npm ci` + `npm test`. Vitest is the umbrella
+    for: axe-core layers 1 + 2 + 3 (uxKit primitives + customer
+    pages + admin pages with Clerk stub) AND the W0.D.7
+    schema-mirror parity check AND all other 598 tests.
+- Workflow header documents the 8 remaining W0.D.17 gates with
+  inline TODOs pinned to their upstream micros (W0.D.14 Phase-A
+  scan, W0.E.3 cohort:lint, W0.D.18 manifest-verify, W0.D.13
+  eco-badge hash, W1.D.9 strict-mode-escape budget, W0.D.6
+  Playwright). Lighthouse stays in its dedicated `lighthouse.yml`
+  rather than duplicating.
+
+### Validation
+
+- No code change. CI workflow file only.
+- `npm test` still **598/598 green** locally (tick 12 baseline).
+- `npx tsc --noEmit` (root + api) ✓ clean.
+- The workflow itself is YAML-only — first execution will run on
+  the next GitHub push.
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → deployment ready 2026-05-17
+  01:03 UTC, target = production.
+- Smoke: `GET https://designer.ppwellness.co/api/healthcheck` → 200
+  `{commit: ce617a176a3193bee56dea0b4ab437e5408d752d, …}`.
+- Lambda count unchanged at **12/12**. No `vercel.json` edit.
+
+### Phase A applicability
+
+CI workflow is **infra**, not customer/merchant-facing. Phase A
+not required.
+
+### Tick 13 state summary
+
+Items shipped: 1 CI workflow file (56 lines including TODOs).
+V4-UNIFIED-PLAN W0.A.7 ticked `[x]` (CA.8 layer 4 closed). W0.D.17
+remains `[ ]` (8 of 11 gates still need their upstream micros).
+V3.1-PLAN.md CA.8 row updates to `[x]` overall (all 4 layers done)
+on the next reconciliation pass.
+
+Wave 0.D foundations progress: 2 of 23 shipped (W0.D.4 + W0.D.7) +
+1 partial (W0.D.17 27% in). Cross-A CA.8 fully `[x]`.
+
+Lambda 12/12. Test count **598/598**. Live commit
+`ce617a176a3193bee56dea0b4ab437e5408d752d`.
+
+Next-item-to-pick (per A→B→C→D rotation, after this Track A tick):
+- **Track B next**: QW#5 — mirror WRD phase docs
+  (`PPWellness-Brain-FRESH/01-Staff/wrd/PHASE-{0-COMPLETE,1-STATUS}.md`)
+  into live B `01-Staff/wrd/`. Doc-only mirror.
+- **Track C next**: W0.D.1 (schema_migrations tracking table per
+  ME §03.5) crosses into V4-ME-2-blocked territory — best deferred.
+  W0.D.6 Playwright scaffold is the cheaper unblocked Track-C
+  pick. Or write `registry-budget.test.ts` (subset of W0.D.15)
+  which is independent of the 14 per-handler test files.
+- **Track D next**: still Vic-blocked across the board.
+- **Track A next** (after this): M3.A.1 (admin CSV product import)
+  — substantial, would need a focused multi-tick effort.
+
+---
+
 ## 2026-05-17 — V4 Driver tick 12 (Track C W0.D.7 schema-mirror CI gate)
 
 Track C code tick — second Wave 0.D foundation primitive shipped
