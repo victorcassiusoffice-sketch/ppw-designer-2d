@@ -13,8 +13,8 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: [
-      'src/**/__tests__/**/*.test.ts',
-      'src/**/*.test.ts',
+      'src/**/__tests__/**/*.test.{ts,tsx}',
+      'src/**/*.test.{ts,tsx}',
       'api/**/__tests__/**/*.test.ts',
     ],
   },
