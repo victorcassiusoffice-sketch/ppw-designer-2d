@@ -68,6 +68,69 @@ render-path change).
 
 ---
 
+## 2026-05-16 — V3.1 Driver tick 6 (Track A queue sweep + Track B QW#2)
+
+Dual-track tick continuing the brand-FRESH alternation.
+
+### Track A — Vic-decisions queue sweep (no code)
+
+Per the goal: "CB.4 (security baseline doc), CB.7 alert routing (if
+Vic-actionable, queue it)" + "ppwellness.co edits — surface to
+VIC-DECISIONS-QUEUE for Dispatch to handle". The next-numbered
+Track-A items (CB.4, CB.7) and the entire brand-FRESH Vic-decision
+slate (V-1..V-9, willpower.html, PAT relocation) were all Vic-gated;
+surfacing them in one sweep so Dispatch can handle in a single pass.
+
+VIC-DECISIONS-QUEUE.md additions:
+- **V3.1-C** willpower.html truncated meta (HostGator workflow,
+  out-of-scope for this repo).
+- **V3.1-D** `.cowork-secrets/` PAT relocate + rotate (Vic-only —
+  driver explicitly NOT touching).
+- **V3.1-E** Sentry alert routing (Vic dashboard config; closes CB.7
+  pending Vic action).
+- **V3.1-F** CB.4 P0 remediation closure (blocked on Vic baseline
+  doc).
+- **V3.1-G** Brand-FRESH V-1, V-4..V-9 surfaced verbatim (irreversible
+  deletes / renames / 5-verticals brand lock).
+
+V3.1-PLAN.md CB.7 stays `[~]` partial (release tagging shipped;
+alert routing Vic-action). CB.4 stays `[ ]` (Vic-blocked).
+
+### Track B — QW#2 mirror `feedback_no_false_victory_designer.md` SOP
+
+- Source: `Claude\Projects\PPWELLNESS - Website and Brand\PPWellness-Brain-FRESH\agent\memory\feedback_no_false_victory_designer.md`
+- Target: `PPW-Second-Brain\01-Staff\SOPs\no-false-victory-designer.md`
+- Provenance frontmatter + driver applicability notes section
+  distinguishing the HostGator `/space-designer.html#designer` scope
+  (where this rule originated) from the Vercel `designer.ppwellness.co/designer`
+  scope (where the spirit applies: verified live-smoke evidence,
+  test output in OMS log, strip-don't-stub).
+- INTEGRATION-PLAN.md row #2 ticked ✅.
+
+### Tick 6 state summary
+
+Items shipped this tick: 1 queue sweep (5 Vic-decisions surfaced) +
+1 SOP mirror.
+
+Items blocked: same as tick 5 — M1.E.1–3 Vic-admin (relayed enabled);
+CB.4 + CB.7 now formally Vic-queued; V3.1-A closed; V3.1-B App-unpark
+still Dispatch-coordinated; V3.1-C..G new this tick. M2 + M5 PARKED
+per Vic.
+
+Lambda count 12/12. Test count **565/565** (unchanged from tick 5 —
+no code change this tick).
+
+Next-item-to-pick:
+- **Track A next**: pick a code-side micro that's NOT Vic-gated.
+  Candidates: CA.8 layer-2 (full-page render coverage; needs Router
+  + Clerk test stubs) or `M3.A.1` (admin CSV product import).
+  Substantial. Possibly defer to a focused tick.
+- **Track B next**: QW#3 — mirror `reference_canonical_logo.md` into
+  `01-Staff/brand/canonical-logo.md`. After: QW#4 _BUS.md merge (live
+  B already has a _BUS.md — diff first), QW#5 WRD phase docs.
+
+---
+
 ## 2026-05-16 — V3.1 Driver tick 5 (Track A CA.8 + Track B QW#1)
 
 Dual-track tick after Vic relayed brand-FRESH audit + locked sequence.

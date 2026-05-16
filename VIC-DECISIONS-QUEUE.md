@@ -1,5 +1,67 @@
 # VIC-DECISIONS-QUEUE
 
+## Status: 2026-05-16 (afternoon) — V3.1 Driver brand-FRESH queue sweep
+
+### Open decisions surfaced this tick (autonomous-pending Vic Y/N)
+
+These are the Vic-gated items the brand-FRESH audit (`06-Roadmap/brand-fresh-audit/`) flagged. The V3.1 Driver mirrors the autonomous-safe items (Track B) but cannot move on these without Vic-Y; surfacing here so a single Dispatch-side sweep can clear them.
+
+#### V3.1-C — willpower.html truncated meta tags (audit FLAG S-2 / V-3) — **HOSTGATOR WORKFLOW**
+
+**State:** Live on `https://ppwellness.co/explained/willpower.html`. Every social share renders broken preview text `"Willpower isn"` (mid-word). Damages perception of professionalism on every share.
+
+**Exact strings** (from FRESH file lines):
+- `<meta property="og:description" content="Willpower isn">`
+- `<meta name="twitter:description" content="Willpower isn">`
+- Schema.org JSON-LD `"description": "Willpower isn"`
+
+**Suggested replacement copy** (audit-recommended): *"Willpower isn't a virtue — it's an autonomic balance. The science of decision energy, deep-fascia regulation, and how to stack protocols so the right choice becomes the default."*
+
+**Workflow:** This is a HostGator content fix. **NOT** the V3.1 driver's repo. Dispatch should pick this up via the `ppw-hostgator-deploy` skill workflow. Out of scope for `ppw-designer-2d`.
+
+#### V3.1-D — `.cowork-secrets/reference_github_pat.md` plaintext PAT (audit FLAG S-1 / V-2) — **VIC-ONLY RELOCATE + ROTATE**
+
+**State:** GitHub fine-grained PAT stored in plaintext at `PPWellness-Brain-FRESH\.cowork-secrets\reference_github_pat.md`. Folder is gitignored (verified by audit), file is NOT git-tracked. Risk vectors per audit:
+1. A `.gitignore` edit that drops the `.cowork-secrets/` line leaks the PAT on next `git add -A`.
+2. Any process that walks the brain folder reads the file.
+3. The brain folder is in an active git working tree.
+
+**Decision needed:** keep where it is with gitignore-pinning safeguard, OR move outside the git working tree (e.g. `%APPDATA%\Cowork\secrets\`) + rotate.
+
+**Driver scope:** the V3.1 Driver explicitly does **not** touch `.cowork-secrets/` per the goal directive. Vic-only relocate + rotate.
+
+#### V3.1-E — Sentry alert routing (V3.1-PLAN CB.7) — **VIC SENTRY DASHBOARD CONFIG**
+
+**State:** Sentry SDK + release tagging are live in code (W1.10 / commit `da96e7f` + `26c144c` confirmed prod commit-tagged). What's open is **alert routing** in the Sentry org dashboard:
+- Route P0 events (`is:unresolved level:error count():>10 in 5m`) to Vic's email (Resend free-tier already sending from `mailto:info@ppwellness.co`).
+- Route P1 events (count():>50 in 1h) to a digest channel.
+
+**Workflow:** Sentry dashboard config — no code change. Vic-only action in the Sentry org console (or Vic delegates to Dispatch with read-only access). Driver staying out.
+
+#### V3.1-F — CB.4 Security P0 remediation closure verification — **NEEDS BASELINE DOC**
+
+**State:** Blocked on Vic's `local_d00061bc` baseline doc per V3.1-PLAN. Without it, the driver can't verify closure. P0s already shipped per DISPATCH-HANDOFF (`140d840` commit history confirms `fix(security): P0 fixes - sentry export aliases + jspdf upgrade + schema`). The closure step is a doc reconciliation.
+
+**Workflow:** Vic to surface the baseline doc location (or paste into Dispatch); driver then ticks CB.4.
+
+#### V3.1-G — Brand-FRESH audit Vic-decisions V-1..V-9 (audit `INTEGRATION-PLAN.md`)
+
+The brand-FRESH audit surfaces 17 Vic-decisions (V-1..V-17). The autonomous-safe ones (Quick wins 1–25) are running on the Track B side of the driver loop. The Vic-gated ones below need Y/N before driver proceeds:
+
+- **V-1** Three-brain split resolution (declare FRESH canonical, merge 36 NOSUFFIX-only files into FRESH, archive `_PPWellness-Brain-BACKUP-2026-04-22/` + `PPWellness-Brain/`). HARD STOP — irreversible deletes proposed.
+- **V-4** Delete `public_html/_test*` (5 files) + `app-waitlist/index.html.broken_p0` after `WebFetch` confirms not live. Irreversible.
+- **V-5** Delete `website/assets/ai-generated/raw/Claude Setup (2).exe` (7 M installer). Irreversible.
+- **V-6** Delete `marketing-os/weekly-imports/2099-W01/` + `INGEST_ERROR_2099-W01.md` per their own README. Irreversible.
+- **V-7** Rename `_backups-pre-affiliate-2026-05-10/` → `_DO-NOT-DEPLOY_backups-pre-affiliate-2026-05-10/`. Reputation + regulatory exposure if mis-deployed.
+- **V-8** Rename `website/assets/ai-generated/raw/Anit-Aging Protocol.pdf` → `Anti-Aging Protocol.pdf`.
+- **V-9** Adopt FRESH `06-Roadmap/space-designer-v2-proposal.md` 5-verticals lock (Office · Construction · Drivers · Healthcare · Hospitality, equal weight) as canonical Designer brand framing for V3.1 copy.
+
+The full list of 17 Vic-decisions (incl. V-10..V-17 about Wellness Institute / LMS / hospitality hero / blog posts / IG linktree / strategic docs / scheduled-tasks reconciliation / skills archive) is at `06-Roadmap/brand-fresh-audit/INTEGRATION-PLAN.md` §Vic-decisions.
+
+**Workflow:** Vic Y/N per row. Most are out-of-scope file ops (HostGator, FRESH brain folder, etc.) — driver doesn't action them; Dispatch coordinates.
+
+---
+
 ## Status: 2026-05-16 — Vic decisions relayed via Dispatch
 
 ### CLOSED / ANSWERED
