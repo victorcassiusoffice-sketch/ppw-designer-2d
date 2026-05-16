@@ -68,6 +68,62 @@ render-path change).
 
 ---
 
+## 2026-05-16 — V3.1 Driver tick 5 (Track A CA.8 + Track B QW#1)
+
+Dual-track tick after Vic relayed brand-FRESH audit + locked sequence.
+
+### Track A — CA.8 axe-core baseline (commit `87c3590`)
+
+- `src/components/__tests__/a11y.test.tsx` — 7 tests against the
+  uxKit primitives (`EmptyState` ±action, `ErrorBanner`, `SkeletonRow`,
+  `SkeletonGrid`, `InlineFieldError`, combined surface).
+- Rule set: `aria-*`, `button-name`, `image-alt`, `label`,
+  `landmark-one-main`, `link-name`, `role-img-alt`. Color-contrast is
+  intentionally OUT (lives in Lighthouse CI / CC.7).
+- `vitest.config.ts` `include` glob extended to `.test.{ts,tsx}`.
+- `axe-core@4.11.4` + `jsdom@29.1.1` added as dev deps. Free OSS;
+  no service spend.
+- Test count 558 → 565. tsc + vite build clean.
+- Deploy `dpl_2J*…` (commit `87c3590`) ready 2026-05-16 09:27 UTC;
+  healthcheck 200. Test-only change so no functional smoke.
+- V3.1-PLAN.md CA.8 marked `[~]` — full-page coverage + PR CI gating
+  is the next CA.8 layer.
+
+### Track B — QW#1 mirror `feedback_mobile_first_primary.md` SOP
+
+- Source: `Claude\Projects\PPWELLNESS - Website and Brand\PPWellness-Brain-FRESH\agent\memory\feedback_mobile_first_primary.md`
+- Target: `PPW-Second-Brain\01-Staff\SOPs\mobile-first-primary.md` (new
+  `SOPs/` subfolder). Verbatim FRESH content + frontmatter `mirrored_from`/
+  `mirrored_on`/`mirrored_by` provenance + a "Driver applicability
+  notes (V3.1 Driver)" section so the Vercel-Designer scope vs
+  HostGator/Fascia-App scope is unambiguous.
+- INTEGRATION-PLAN.md row #1 ticked ✅ with the mirror date + driver.
+- Doc-only Track-B op; no deploy needed.
+
+### Tick 5 state summary
+
+Items shipped this tick: 1 code + 1 doc.
+- CA.8 jsdom-axe baseline (commit `87c3590`, deploy live on
+  designer.ppwellness.co).
+- INTEGRATION-PLAN QW#1 mirror (PPW-Second-Brain doc).
+
+Items blocked: M1.C.6/7 already closed last tick; M1.E.1–3 Vic-admin
+crons (now relayed as enabled per Vic 2026-05-16 — pending Dispatch
+confirmation); M2/M5/M6 PARKED per Vic 2026-05-16; CB.4 Vic baseline
+doc.
+
+Lambda count 12/12. Test count **565/565** green.
+
+Next-item-to-pick:
+- **Track A next**: CB.7 alert routing (mostly Sentry dashboard
+  config — likely surface to VIC-DECISIONS-QUEUE as Vic-action) OR
+  fold CA.8 layer 2 (full-page render coverage) once a Router/Clerk
+  test stub is in place. CB.1 (TS strict audit) is also still open.
+- **Track B next**: QW#2 — mirror `feedback_no_false_victory_designer.md`
+  into `01-Staff/SOPs/no-false-victory-designer.md`.
+
+---
+
 ## 2026-05-16 — V3.1 Driver tick 4 (M1.C.6 + M1.C.7 — Vic Y on V3.1-A)
 
 Vic relayed Y on both M1.C.6 (Save → /api/designs + /my-designs page)
