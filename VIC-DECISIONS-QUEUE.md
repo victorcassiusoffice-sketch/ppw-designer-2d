@@ -21,11 +21,24 @@ The Fascia App is already half-built. Project App note + change-list lives at `C
 
 ### Sequence locked by Vic 2026-05-16
 
-1. **NOW:** M1.C.6 + M1.C.7 (Designer Save→API + Request Quote)
+1. **NOW:** M1.C.6 + M1.C.7 (Designer Save→API + Request Quote) — ✅ **SHIPPED 2026-05-16 commit `c173c40` / deploy `dpl_EHf7sAGZX966ZJ5EyEmxnFQkzMfH`**
 2. **AFTER M1.C.6/7 ships:** App unpark per `09-Fascia-App\00-RELAY-PLAN.md` + change-list
 3. **AFTER App ships:** revisit Construction Designer (M2) + Wellness Institute (M5)
 
 In parallel: crons enabled (autonomous weekly monitoring), CA.8 a11y baseline as next autonomous micro.
+
+#### V3.1-B — App unpark needs Dispatch-side coordination (not V3.1 driver work)
+
+After reading `PPW-Second-Brain/09-Fascia-App/00-RELAY-PLAN.md` (the only file in that folder), the App-unpark sequence is fundamentally a Dispatch/Cowork coordination workflow, NOT code work in the `ppw-designer-2d` repo:
+
+- **Vic action A:** Approve folder grant for Dispatch to read the Orchestrator's outputs folder (`C:\Users\Victor\AppData\Roaming\Claude\local-agent-mode-sessions\…\outputs\`).
+- **Vic action B:** Open the Orchestrator chat (`local_f99d44bf-…`), ask it to list every Sub-Chat brief written so far, paste reply to Dispatch.
+- **Dispatch action C:** Match each Sub-Chat brief to one of the 8 `01-Staff/app-*-specialist.md` role MDs, spawn them as Dispatch tasks.
+- **Dispatch action D:** Bridge loop goes live — Orchestrator ↔ Dispatch ↔ specialists.
+
+The Fascia App itself lives at `github.com/victorcassiusoffice-sketch/ppw-fascia-app` (a separate repo from `ppw-designer-2d`). The V3.1 driver running in `ppw-designer-2d` has no commit path into that repo and no access to the Orchestrator's outputs folder.
+
+**Driver recommendation:** stay on the parallel autonomous track (CA.8 axe-core baseline) while Vic + Dispatch handle the App-unpark coordination. The driver will pick App work back up only if a code-side change is needed in `ppw-designer-2d` for the bridge.
 
 ---
 
