@@ -68,6 +68,78 @@ render-path change).
 
 ---
 
+## 2026-05-16 — V3.1 Driver tick 4 (M1.C.6 + M1.C.7 — Vic Y on V3.1-A)
+
+Vic relayed Y on both M1.C.6 (Save → /api/designs + /my-designs page)
+and M1.C.7 (Request Quote button → /api/leads). Driver implemented
+both in a single commit since they share the email-based identity
+helper. Designer surface change scoped to TopBar buttons + new page;
+**zero** Konva render / input-handler / mobile-gesture change.
+
+### What shipped (commit `c173c40`)
+
+- `src/lib/customerIdentity.ts` — email cache + light validation +
+  `promptForCustomerEmail()` for first-time entry. localStorage key
+  `ppw_customer_email_v1`. No Clerk dep — Clerk currently only wraps
+  `/admin`, and extending it to `/designer` is a larger scaffold
+  change than this MVP needed. Anonymous-friendly by design.
+- `src/lib/designsApi.ts` — typed `saveDesignToApi`, `listDesignsByEmail`,
+  `getDesignById`, `submitLead`. Throws normalised messages on 4xx/5xx.
+- `src/pages/MyDesignsPage.tsx` — `/my-designs` route. Inline email
+  form when no cache; lists by email; "Load" hydrates `propertyStore`
+  via `loadProperty()` then navigates to `/designer`. Uses `uxKit`
+  EmptyState + ErrorBanner + SkeletonRow.
+- `src/components/TopBar.tsx`:
+  - **Save as...** now fires a fire-and-forget POST to `/api/designs`
+    when an email is already cached (toast "Synced to cloud." or
+    error). First-time savers reach the API via Request Quote or
+    /my-designs.
+  - New **Request quote** button (desktop right cluster + mobile
+    overflow). Prompts for email if not cached + optional message.
+    Submits with current `Property` + cart-quote totals + source
+    `designer`. Toast on success / failure.
+  - **My designs (cloud)** link added to the Load drawer header and
+    the mobile overflow menu.
+- `src/main.tsx` — `/my-designs` route registered.
+- Tests: `customerIdentity.test.ts` (10 invariants on email
+  validation) + `designsApi.test.ts` (7 invariants — POST/GET/error
+  paths stubbed via `vi.fn(fetch)`).
+
+### Validation
+
+- `npm test` → **558/558 green** (+17 from baseline 541).
+- `npx tsc --noEmit` (root + api) ✓ clean.
+- `npx vite build` ✓ clean, 1.20 MB JS / 365.87 kB gzip.
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → `dpl_EHf7sAGZX966ZJ5EyEmxnFQkzMfH`
+  ready 2026-05-16 08:18 UTC, target = production.
+- Production smoke (`https://designer.ppwellness.co`):
+  - `GET /api/healthcheck` → 200 `{commit: c173c40…}`.
+  - `POST /api/leads` with smoke email → `{lead: {id: 1, source: "designer-smoke", …}}`.
+  - `POST /api/designs` with smoke property → `{design: {id: 1, customerEmail: "smoke-test+v31@…", …}}`.
+  - `GET /api/designs?email=smoke-test+v31@…` → `{designs: [{id: 1, …}]}`.
+- Migration 0009 confirmed applied to prod Neon (`designs` + `leads`
+  tables both writable).
+
+### Tick 4 state summary
+
+Items shipped: 2 (M1.C.6 + M1.C.7) — closes the Vic-gated V3.1-A
+decision and the OMS Wave 2 long tail. **M1.C macro now COMPLETE
+(9/9).** Items blocked: M1.E.1–3 stay `[?]` (Vic admin); M2.A.1–2
++ M5.A.1–2 + M6.A.1–3 PARKED per Vic 2026-05-16 sequence; M2.B.1
+also touches a Vic-approved JSON (surface to queue if reached); CB.4
+needs Vic baseline doc. Lambda count 12/12, test count **558/558**.
+**Next-item-to-pick per Vic-locked sequence**: App unpark per
+`PPW-Second-Brain/09-Fascia-App/00-RELAY-PLAN.md` — the Fascia App
+is half-built and the change-list lives in the RELAY-PLAN doc. After
+App ships: revisit M2 Construction + M5 Institute. **Parallel
+autonomous track:** CA.8 — accessibility baseline + axe-core in test
+suite.
+
+---
+
 ## 2026-05-16 — V3.1 Driver tick 3 (M1.D.5 Cognitive Load census)
 
 Doc-only tick — no code change. Created
