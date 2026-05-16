@@ -2,6 +2,100 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 12 (Track C W0.D.7 schema-mirror CI gate)
+
+Track C code tick — second Wave 0.D foundation primitive shipped
+(W0.D.4 was first in tick 9). Closes the migration/Drizzle drift
+mode that bit the OMS team twice during the PayPal slice
+deployment.
+
+### What shipped (commit `025a0c8`)
+
+- `scripts/check-schema-mirror.ts` (new) — programmatic API
+  (`loadSqlTables`, `loadDrizzleTables`, `diffSchemas`) plus a CLI
+  entry that prints `schema-mirror: OK (N tables)` on parity and a
+  concrete delta + exit 1 on mismatch.
+  - SQL side: scans `api/db/migrations/*.sql` for `CREATE TABLE
+    [IF NOT EXISTS] <name>` (handles quoted + unquoted names).
+  - Drizzle side: scans `api/db/schema.ts` for the first string
+    argument of every `pgTable('<name>', ...)` call.
+  - Names compared case-insensitive after lowercasing both sets.
+  - Column-level diffing deliberately out of scope for the first
+    cut — documented in the script header as follow-up; table-set
+    parity catches >80% of real drift.
+- `api/__tests__/schema-mirror.test.ts` (new) — 5 tests:
+  - 1 integration: full parity assertion against the actual repo
+    files; provides a friendly delta message in the failure path.
+  - 4 unit tests for `diffSchemas()` covering identical sets,
+    SQL-only drift, Drizzle-only drift, and fully disjoint sets.
+- Runs every PR via `npm test`; will also wire into W0.D.17
+  `quality-gates.yml` once that workflow lands (defence in depth).
+- CLI smoke: `npx tsx scripts/check-schema-mirror.ts` →
+  `schema-mirror: OK (16 tables)`. tsx fetched transiently by
+  `npx` (same pattern as `scripts/migrate.ts`); no new devDep.
+
+### Validation
+
+- `npm test` → **598/598 green** (+5 from tick 10's 593; zero
+  regressions).
+- `npx tsc --noEmit` (root) ✓ clean.
+- `npx tsc --noEmit -p api/tsconfig.json` ✓ clean.
+- `npx vite build` ✓ clean, 1.20 MB JS / 365.87 kB gzip (unchanged
+  bundle — script + test are dev-only).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → deployment ready 2026-05-17
+  00:59 UTC, target = production.
+- Smoke: `GET https://designer.ppwellness.co/api/healthcheck` → 200
+  `{commit: 025a0c81684a185b862197094ed6f45c4a5a667b, …}`. Alias
+  serving the new commit.
+- Lambda count unchanged at **12/12**. No `vercel.json` edit.
+
+### Phase A applicability
+
+W0.D.7 is a **CI gate** with no customer/merchant-facing surface
+(script + Vitest test only). Phase A not required (backend-exempt
+per master /goal). When schema drift fires the test, the fix lives
+in a developer-facing PR comment, never reaches any customer flow.
+
+### Tick 12 state summary
+
+Items shipped: 1 script (130 lines) + 1 test file (60 lines, +5
+tests). V4-UNIFIED-PLAN W0.D.7 ticked `[x]`. No new V-decisions
+surfaced.
+
+Wave 0.D foundations progress: 2 of 23 shipped (W0.D.4 + W0.D.7).
+V4-AU-1 + V4-ME-2 still HOT in V-DECISIONS-BATCH (Vic-blocking
+Wave 0.5.B endpoint work + the rest of the W0.D Tailwind/migration
+chain).
+
+Lambda 12/12. Test count **598/598**. Live commit
+`025a0c81684a185b862197094ed6f45c4a5a667b`.
+
+Next-item-to-pick (per A→B→C→D rotation, after this Track C tick):
+- **Track D next**: still blocked (M9.A.1/.A.2 customer-facing →
+  Phase A; M9.A.3 → wait for W0.D.22 voice/copy bank; M9.B.* →
+  Wave 0.5.B sequencing requires V4-AU-1+V4-ME-2). Skip per
+  master /goal "Never block on Vic inside a tick".
+- **Track A next**: CA.8 layer 4 (folds into W0.D.17
+  quality-gates.yml — substantial CI workflow file; defer to wait
+  for additional CI-step inputs to accumulate).
+- **Track B next**: QW#5 — mirror WRD phase docs
+  (`PPWellness-Brain-FRESH/01-Staff/wrd/PHASE-{0-COMPLETE,1-STATUS}.md`)
+  into live B `01-Staff/wrd/`. Doc-only mirror.
+- **Track C next** (after this): W0.D.6 (Playwright E2E scaffold)
+  OR W0.D.1 (schema_migrations tracking table per ME §03.5 —
+  requires migration 0010 write per ME §03.1+3+4 refinements).
+  W0.D.6 is heavier (new runner setup); W0.D.1 is autonomous but
+  requires a `0010_schema_migrations.sql` write which crosses into
+  V4-ME-2-blocked territory. The cleanest Track-C-next move is
+  **W0.D.15 partial** — write the `registry-budget.test.ts`
+  budget assertion mentioned in the cron registry spec (independent
+  of the 14 per-handler test files).
+
+---
+
 ## 2026-05-17 — V4 Driver tick 11 (Track B QW#4 _BUS.md FRESH backfill)
 
 Track B doc tick — closes the trickiest brand-FRESH mirror (live B
