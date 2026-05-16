@@ -2,6 +2,81 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 16 (Track B QW#6 mobile-UX specialist mirrors)
+
+Track B doc tick — completes the mobile-UX specialist pair in live
+B (designer counterpart already mirrored from a prior session; app
+counterpart was the missing half). Plus two Roster rows.
+
+### What shipped (doc-only, no commit needed — second-brain)
+
+- `PPW-Second-Brain/01-Staff/app-mobile-ux-specialist.md` (new) —
+  full FRESH content (SOP-VETO-GATE for `ppw-fascia-app`, AP1–AP5
+  app-specific anti-patterns layered on top of the shared A1–A10
+  from `feedback_mobile_first_primary.md`). Provenance frontmatter
+  + driver applicability section noting the M6 App PARKED state
+  (specialist is inert-until-unpark per Wave 2.A.1 Vic cue gate).
+- `PPW-Second-Brain/01-Staff/_Roster.md` extended with 2 rows:
+  Designer-Mobile-UX-Specialist (active 2026-05-10) and
+  App-Mobile-UX-Specialist (inert-until-unpark, M6 PARKED).
+- `INTEGRATION-PLAN.md` row #6 ticked ✅ with tick attribution.
+
+### Validation
+
+Doc-only tick — no code change, no test/build/deploy.
+
+- Test count remains **598/598**.
+- Lambda 12/12.
+
+### Tick 16 state summary
+
+Items shipped: 1 mobile-UX specialist mirror (~50 lines incl. driver
+notes) + 2 Roster rows + 1 INTEGRATION-PLAN row tick.
+
+Brand-FRESH audit progress: 6 of 25 quick-win rows ticked
+(#1+2+3+4+5+6). 19 quick-wins still open + 17 Vic-decisions
+(V-1..V-17) still pending Vic Y on the BATCH.
+
+Lambda 12/12. Test count **598/598**. Live commit `ce617a1`.
+
+### Session-wide summary (ticks 8 → 16, 9 ticks shipped)
+
+V4 Driver this session closed:
+- **W0.D.4** (withApi HOF + 20 unit tests) — commit `7ed8618`
+- **W0.A.6 / CA.8 layer 3** (admin pages axe-core + Clerk stub) —
+  commit `708da37`
+- **W0.D.7** (schema-mirror CI gate + 5 unit tests) — commit `025a0c8`
+- **W0.A.7 / CA.8 layer 4** (.github/workflows/quality-gates.yml) —
+  commit `ce617a1`
+- **W0.D.14 partial** (Phase A SPLIT sub-templates; script deferred
+  with rationale)
+- **W0.D.17 partial** (3 of 11 CI gates wired)
+- **Brand-FRESH QW#3, QW#4, QW#5, QW#6** (4 mirrors with provenance
+  + driver applicability notes)
+
+Tests: 568 → **598** (+30). Lambdas: 12/12 unchanged. Live commit
+moved through 7ed8618 → 708da37 → 025a0c8 → ce617a1 (current). All
+deploys smoked green on `designer.ppwellness.co/api/healthcheck`.
+
+No new V-decisions surfaced — all blockers reside in the existing
+V4-VIC-DECISIONS-BATCH.md (V4-AU-1 + V4-ME-2 are the two HOT items
+gating Wave 0.5.B). M9 closure (locked sequence priority 1) remains
+Vic-blocked at the customer-facing surface (M9.A.1/.A.2 needs Phase
+A scaffolds + Vic walkthrough) and Wave-0.5.B endpoint surface
+(M9.B.* gated on V4-AU-1+V4-ME-2 first-PR sequencing).
+
+Next-pick (across tracks):
+- **Track D** still blocked across the board.
+- **Track A** next = M3.A.1 admin CSV product import (substantial,
+  fresh session).
+- **Track B** next = QW#7 (functional-health-specialist.md + its
+  regression file).
+- **Track C** next = W0.D.6 Playwright E2E scaffold (substantial)
+  or W0.D.14 script portion (needs cross-repo design V-decision
+  first).
+
+---
+
 ## 2026-05-17 — V4 Driver tick 15 (Track C W0.D.14 partial — Phase A sub-templates)
 
 Track C doc tick — closes the SPLIT sub-template portion of W0.D.14
