@@ -2,6 +2,61 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 14 (Track B QW#5 WRD phase docs mirror)
+
+Track B doc tick — fills the missing pair in live B's `01-Staff/wrd/`
+directory (live B already had the 9 role docs from earlier mirrors;
+the phase status docs were absent).
+
+### What shipped (doc-only, no commit needed — second-brain)
+
+- `PPW-Second-Brain/01-Staff/wrd/PHASE-0-COMPLETE.md` (new) —
+  127-line WRD Phase 0 repo provisioning report (commit
+  `25f8b07a`, 25 files pushed via GitHub Trees API, all hard-stops
+  preserved). Frontmatter extended with mirror provenance.
+- `PPW-Second-Brain/01-Staff/wrd/PHASE-1-STATUS.md` (new) —
+  95-line WRD Phase 1 vertical-slice status (Babylon scene live,
+  mobile-first gate passing at 390×844, commit `bedc4d19`).
+  Frontmatter extended with mirror provenance.
+- `INTEGRATION-PLAN.md` row #5 ticked ✅ with tick attribution.
+
+### Validation
+
+Doc-only tick — no code change, no test/build/deploy. PPW-Second-Brain
+is not a git repo so no commit there.
+
+- Test count remains **598/598**.
+- Lambda 12/12.
+
+### Tick 14 state summary
+
+Items shipped: 2 WRD phase status docs (222 lines total) + 1
+INTEGRATION-PLAN row tick. No new V-decisions surfaced.
+
+Brand-FRESH audit progress: 5 of 25 quick-win rows ticked
+(QW#1+2+3+4+5; #1+2 from prior ticks 5+6, #3 from tick 8, #4 from
+tick 11, #5 from this tick). 20 quick-wins still open + 17
+Vic-decisions (V-1..V-17) still pending Vic Y on the BATCH.
+
+Lambda 12/12. Test count **598/598**. Live commit `ce617a1` from
+tick 13.
+
+Next-item-to-pick (per A→B→C→D rotation, after this Track B tick):
+- **Track C next**: lowest open Wave 0.D. W0.D.6 (Playwright
+  scaffold) needs runner setup — defer. W0.D.1 + W0.D.2 cross
+  into V4-ME-2-blocked territory — defer. W0.D.20 + W0.D.21 +
+  W0.D.22 + W0.D.23 all blocked on W0.D.19 (token canon, which is
+  V4-AU-1-blocked). **W0.D.15 partial** (`registry-budget.test.ts`
+  cron budget assertion) is the cleanest unblocked Track-C pick —
+  asserts the 14-handler total wall-clock < 50s mocked via
+  `vi.useFakeTimers()`.
+- **Track D next**: still Vic-blocked.
+- **Track A next**: M3.A.1 admin CSV product import. Substantial.
+- **Track B next**: QW#6 — mirror `01-Staff/{app,designer}-mobile-ux-specialist.md`
+  into live B + add row to `_Roster.md`.
+
+---
+
 ## 2026-05-17 — V4 Driver tick 13 (Track A CA.8 layer 4 / W0.D.17 partial)
 
 Track A CI tick — closes CA.8 layer 4 (axe-core wired into PR CI
