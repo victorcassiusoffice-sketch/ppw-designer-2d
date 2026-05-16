@@ -24,6 +24,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router-dom';
 import axe from 'axe-core';
 import {
   EmptyState,
@@ -32,6 +33,9 @@ import {
   SkeletonGrid,
   SkeletonRow,
 } from '../uxKit';
+import MyDesignsPage from '../../pages/MyDesignsPage';
+import MarketplaceCartPage from '../../pages/MarketplaceCartPage';
+import OrderTrackPage from '../../pages/OrderTrackPage';
 
 async function runAxe(html: string): Promise<axe.AxeResults> {
   document.documentElement.lang = 'en';
@@ -120,6 +124,48 @@ describe('CA.8 — uxKit a11y baseline (axe-core)', () => {
       renderToStaticMarkup(<SkeletonGrid rows={2} />) +
       renderToStaticMarkup(<ErrorBanner error="x" />) +
       renderToStaticMarkup(<EmptyState title="x" message="y" />);
+    const results = await runAxe(html);
+    expect(formatViolations(results)).toBe('(none)');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// CA.8 layer 2 — full-page coverage.
+//
+// Renders the customer-facing pages that ship without Clerk gating
+// (MyDesignsPage, MarketplaceCartPage, OrderTrackPage) inside a
+// MemoryRouter so `useNavigate` / `Link` / `useParams` resolve. We use
+// `renderToStaticMarkup` which is SSR-style — `useEffect` does NOT
+// fire — so the initial render path (loading / empty / form) is what
+// axe inspects. That's exactly the surface customers see before any
+// data loads.
+//
+// Admin pages (`/admin/*`) are deliberately deferred — they require a
+// stubbed `ClerkProvider` + `useUser` mock that's bigger than this
+// layer warrants. Next CA.8 layer to add.
+// ─────────────────────────────────────────────────────────────────────
+
+function renderWithRouter(element: React.ReactElement, path = '/'): string {
+  return renderToStaticMarkup(
+    <MemoryRouter initialEntries={[path]}>{element}</MemoryRouter>,
+  );
+}
+
+describe('CA.8 — full-page a11y coverage (axe-core)', () => {
+  it('MyDesignsPage (no cached email — prompt form) passes axe', async () => {
+    const html = renderWithRouter(<MyDesignsPage />, '/my-designs');
+    const results = await runAxe(html);
+    expect(formatViolations(results)).toBe('(none)');
+  });
+
+  it('MarketplaceCartPage (empty cart initial state) passes axe', async () => {
+    const html = renderWithRouter(<MarketplaceCartPage />, '/marketplace/cart');
+    const results = await runAxe(html);
+    expect(formatViolations(results)).toBe('(none)');
+  });
+
+  it('OrderTrackPage (loading initial state) passes axe', async () => {
+    const html = renderWithRouter(<OrderTrackPage />, '/order/track/ABC123');
     const results = await runAxe(html);
     expect(formatViolations(results)).toBe('(none)');
   });
