@@ -2,6 +2,128 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 21 (Track D M9.A.3 customer email templates)
+
+Track D **finally** ships — the tick-19 BATCH reconciliation
+revealed Track D was never as blocked as the prior ticks claimed.
+M9.A.3 is backend-exempt per master /goal (no customer-facing
+surface in this commit; just the rendering library + tests).
+Wires together V4-AU-1 (canonical palette) + V3.1-I (hybrid voice)
+which were both already closed.
+
+### What shipped (commit `29e0b1b`)
+
+- `api/lib/email/templates.ts` (NEW, 220 lines) — 4 customer-loop
+  template functions:
+  - `renderDesignSaved(data)` — M9.A.1 trigger; "Your wellness
+    room design — <design-name>"; optional cart summary line.
+  - `renderOrderConfirmed(data)` — M9.A.2 trigger; per-merchant
+    breakdown table + tracking-page button.
+  - `renderMerchantOnboard(data)` — net-new merchant welcome;
+    presents both portal URL + agent URL.
+  - `renderOrderShipped(data)` — fulfilment event; carrier +
+    tracking-number monospace block + optional ETA line.
+  - All four use a shared `shell(inner, scienceSnippet)` that
+    composes brand header + body + P.S. science-snippet footer.
+- Canonical brand palette per V4-AU-1 CLOSED: gold `#C0A67E` +
+  gold-deep `#987C4E` + ink `#1C1C20` + dark `#0E0E10` + cream
+  `#F5EFE6`. Hybrid voice per V3.1-I CLOSED.
+- Lives in NEW `api/lib/email/` subdirectory so the existing
+  `api/lib/email-templates.ts` (5 merchant lifecycle templates,
+  pre-canon on clinic teal `#1f4a4a`) stays as-is. That file is
+  queued for canonical-palette rebind under W0.D.19 / M9.B
+  follow-ups. Splitting prevents one failed rebind from blocking
+  this customer-loop ship.
+- `api/__tests__/email-customer-templates.test.ts` (NEW, 24 tests):
+  - Per-template: subject correctness, dynamic-field embedding,
+    optional-line presence/absence, escapeHtml on user-controlled
+    fields.
+  - Shared brand discipline: every template includes the wordmark
+    + a P.S. science-snippet + a complete HTML document.
+  - Canonical-palette assertion: `#C0A67E` present, `#1f4a4a`
+    (legacy clinic teal) absent — fails CI on accidental drift.
+
+### Validation
+
+- `npm test` → **648/648 green** (+24 from tick 20's 624; zero
+  regressions).
+- `npx tsc --noEmit` (root + api) ✓ clean.
+- `npx vite build` ✓ clean (templates are api-side, no bundle
+  delta).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → deployment ready 2026-05-17
+  01:31 UTC, target = production.
+- Smoke: `GET https://designer.ppwellness.co/api/healthcheck` → 200
+  `{commit: 29e0b1bbeee1f67bfbf623e77343d1fdcf194220, …}`.
+- Lambda **12/12** unchanged. No `vercel.json` edit.
+
+### Phase A applicability
+
+M9.A.3 is **backend-exempt** per master /goal exemption ("Backend /
+infra / docs / cron-enable EXEMPT via `<!-- phase-a-exempt -->`
+marker"). No customer-facing surface ships in this commit — only
+the rendering library. Phase A gate fires on M9.A.1 + M9.A.2 when
+those wire `renderDesignSaved` + `renderOrderConfirmed` into the
+`/api/designs` and PayPal capture-success paths respectively.
+
+### Tick 21 state summary
+
+Items shipped: 1 template library + 1 test file (411 lines incl.
+tests + 24 new tests). M9.A.3 ticked `[x]` in V4-UNIFIED-PLAN.md.
+
+**M9 progress: 1 of 11 micros shipped (M9.A.3).** M9.A.1 + M9.A.2
+now have their template engine ready — both need a Phase A
+walkthrough scaffold before they can tick `[x]`. M9.B.* + M9.C.*
+unchanged.
+
+Wave 0.D + V4 Track D progress through tick 21:
+- Wave 0.D: 4 of 23 shipped + 1 partial (W0.D.17).
+- M9.A: 1 of 3 shipped (M9.A.3); M9.A.1 + M9.A.2 await Phase A.
+- M9.B: 0 of 5 shipped (Phase A scaffold needed for B.1 + B.5;
+  B.2/3/4 backend-exempt but need a merchants-router multi-tick
+  fold first).
+- M9.C: 0 of 3 (Vic-only PayPal flip).
+
+Lambda 12/12. Test count **648/648**. Live commit `29e0b1b`. 10
+PPW-Code commits live this session: 7ed8618 → 708da37 → 025a0c8 →
+ce617a1 → 4a47825 → 3508cf5 → 29e0b1b (current), plus interleaved
+OMS doc commits.
+
+### Session cumulative through tick 21 (14 ticks)
+
+Closed micros: **W0.D.1 + W0.D.4 + W0.D.7 + W0.D.14 + W0.A.6 +
+W0.A.7 + M1.E.4 + M9.A.3 = 8**. Plus W0.D.17 partial. Brand-FRESH
+QW#3/4/5/6 = 4 quick-wins ticked.
+
+Tests: **568 → 648** (+80). 10 PPW-Code commits live. All deploys
+smoked green on `designer.ppwellness.co/api/healthcheck`.
+
+V-decisions surfaced this session: **V4-QA-2** (cross-repo Phase
+A wiring; recommended default option A — mirror plans into
+PPW-Code at PR time).
+V-decisions recognised (BATCH ⇄ QUEUE reconciliation): **8 prior
+V4 closures** moved out of HOT/WARM (V4-AU-1, V4-ME-1, V4-ME-2,
+V4-QA-1, V4-IH-2, V4-CQ-1, V4-CQ-2, V4-DA-1).
+
+Wave 0.5.B endpoint work + W0.D Tailwind/migration chain is now
+GENUINELY UNBLOCKED. The driver no longer needs to claim Track D
+is "Vic-blocked across the board" — that was a stale read.
+
+Next-pick (when work resumes):
+- **Track A**: M3.A.1 admin CSV product import (substantial,
+  fresh-session) OR continue W0.D foundations.
+- **Track B**: QW#7 functional-health-specialist mirror.
+- **Track C**: W0.D.19 (`@ppw/ui/tokens.css` canonical token canon
+  — UNBLOCKED by V4-AU-1) OR W0.D.5 (`@ppw/ui` workspace
+  extraction — UNBLOCKED by V4-CQ-1). W0.D.5 is structural
+  (touches build config + import paths), best as fresh session.
+- **Track D**: M9.A.1 + M9.A.2 need Phase A scaffolds for Vic;
+  surface to VIC-DECISIONS-QUEUE for next sync.
+
+---
+
 ## 2026-05-17 — V4 Driver tick 20 (Track C W0.D.1 schema_migrations tracking)
 
 Track C code tick — first ship to consume the V4 BATCH reconciliation
