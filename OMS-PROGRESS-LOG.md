@@ -2,6 +2,66 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 11 (Track B QW#4 _BUS.md FRESH backfill)
+
+Track B doc tick — closes the trickiest brand-FRESH mirror (live B
+already had a `_BUS.md`). Format mismatch resolved by labelled
+subsection rather than top-of-file merge.
+
+### What shipped (doc-only, no commit yet — second-brain)
+
+- `PPW-Second-Brain/01-Staff/_BUS.md` extended with a new
+  `## SIGNALS — backfill from FRESH bus (mirrored 2026-05-17 by V4
+  Driver, INTEGRATION-PLAN QW#4)` section inserted between the
+  existing SIGNALS top-50 (chronological empire-wide bus, code-block
+  format) and the STANDING DEPENDENCIES section. The 10 FRESH
+  signals (Code/Brand/WRD/Mobile-UX, 2026-05-08 → 2026-05-11) are
+  preserved verbatim inside a single code block in FRESH's
+  pipe-separated table format so chronology + attribution survive
+  intact. Dedup-checked via grep on three distinctive substrings
+  (`mobile-first fix LIVE`, `WRD-PHASE-1-VERTICAL-SLICE-SHIPPED`,
+  `LOGO-CANONICAL-LOCKED`) — none of the 10 entries were already in
+  live B.
+- Backfill rationale paragraph appended explaining the format
+  divergence (FRESH was Code-team-only table log; live B is empire
+  pub/sub in code-block style) and noting the FRESH source file
+  remains intact pending V-1 three-brain merge ratification.
+- `INTEGRATION-PLAN.md` row #4 ticked ✅ with tick attribution.
+
+### Validation
+
+Doc-only tick — no code change, no test/build/deploy. The
+PPW-Second-Brain directory is NOT a git repo so no commit.
+
+- Test count remains **593/593** (last code tick: 10, commit
+  `708da37`).
+- Lambda count remains 12/12.
+
+### Tick 11 state summary
+
+Items shipped: 1 _BUS.md backfill (~20 lines added) + 1
+INTEGRATION-PLAN row tick. No new V-decisions surfaced. No code or
+deploy change.
+
+Lambda 12/12. Test count **593/593**. Live commit `708da37`.
+
+Next-item-to-pick (per A→B→C→D rotation, after this Track B tick):
+- **Track C next**: W0.D.7 (schema-mirror CI gate —
+  `scripts/check-schema-mirror.ts` diffs SQL migrations vs Drizzle
+  `pgTable(...)` definitions). Lower friction than W0.D.6
+  Playwright scaffold (no runner setup) and unblocked.
+- **Track D next**: still blocked (M9.A.1/.A.2 customer-facing →
+  Phase A; M9.A.3 → wait for W0.D.22; M9.B.* → Wave 0.5.B
+  sequencing requires V4-AU-1+V4-ME-2).
+- **Track A next**: CA.8 layer 4 (folds into W0.D.17
+  quality-gates.yml — substantial CI workflow file; defer until
+  W0.D.7 schema-mirror exists so the workflow can compose both).
+- **Track B next** (after this): QW#5 — mirror WRD phase docs
+  (`01-Staff/wrd/PHASE-{0-COMPLETE,1-STATUS}.md`) into live B
+  `01-Staff/wrd/`.
+
+---
+
 ## 2026-05-17 — V4 Driver tick 10 (Track A CA.8 layer 3 admin axe-core)
 
 Track A code tick — closes the long-deferred admin-pages axe-core
