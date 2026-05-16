@@ -1,6 +1,35 @@
 # VIC-DECISIONS-QUEUE
 
-## Status: 2026-05-16 — V3.1 Driver reconciliation tick
+## Status: 2026-05-16 — Vic decisions relayed via Dispatch
+
+### CLOSED / ANSWERED
+
+#### V3.1-A — **Y on both M1.C.6 + M1.C.7** (Vic 2026-05-16)
+Proceed with Save→API (cloud save + `/my-designs` listing) AND Request Quote button. Driver: implement both, ship, smoke, tick `[x]` in V3.1-PLAN.md, update OMS-PROGRESS-LOG.md.
+
+#### Cron enables (M1.E.1-3 + M3.B.1-4) — **Y, enable all 7** (Vic 2026-05-16)
+Enable all 7 scheduled cron tasks (3 weekly security audits + 4 ops cycles: distributor, deal pipeline, product research, commission tracker). Free tier, autonomous weekly monitoring. Dispatch handling the enables via `mcp__scheduled-tasks__update_scheduled_task`.
+
+#### M2.A.1-2 — **PARK** Construction Designer (Vic 2026-05-16)
+Defer until M1.C.6 + M1.C.7 ship AND App unpark completes. Don't start a new product line until current product is fully customer-facing.
+
+#### M5.A.1-2 — **PARK** Wellness Institute LMS + filming (Vic 2026-05-16)
+Defer until M1.C.6 + M1.C.7 ship AND App unpark completes. Same reason as M2.
+
+#### M6.A.1-3 — **SCHEDULED AFTER Designer M1.C.6 + M1.C.7** (Vic 2026-05-16)
+The Fascia App is already half-built. Project App note + change-list lives at `C:\Users\Victor\Documents\PPW-Second-Brain\09-Fascia-App\00-RELAY-PLAN.md`. Unpark AFTER M1.C.6 + M1.C.7 close out. Sequence: Designer wire-through → App unpark → then revisit Construction + Institute.
+
+### Sequence locked by Vic 2026-05-16
+
+1. **NOW:** M1.C.6 + M1.C.7 (Designer Save→API + Request Quote)
+2. **AFTER M1.C.6/7 ships:** App unpark per `09-Fascia-App\00-RELAY-PLAN.md` + change-list
+3. **AFTER App ships:** revisit Construction Designer (M2) + Wellness Institute (M5)
+
+In parallel: crons enabled (autonomous weekly monitoring), CA.8 a11y baseline as next autonomous micro.
+
+---
+
+## Status: 2026-05-16 — V3.1 Driver reconciliation tick (ARCHIVE — superseded by decisions above)
 
 ### Open decisions (V3.1 driver)
 

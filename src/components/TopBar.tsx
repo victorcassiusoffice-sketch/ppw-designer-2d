@@ -32,6 +32,11 @@ import { useDesignsStore } from '../store/designsStore';
 import { useToastStore } from '../store/toastStore';
 import { useCart } from '../store/cartStore';
 import { CurrencySwitcher } from './CurrencySwitcher';
+import {
+  getCachedCustomerEmail,
+  promptForCustomerEmail,
+} from '../lib/customerIdentity';
+import { saveDesignToApi, submitLead } from '../lib/designsApi';
 
 export interface TopBarProps {
   drawMode: boolean;
@@ -89,9 +94,69 @@ export function TopBar({
       currentId && designs[currentId] ? designs[currentId].name : property.name || 'Untitled Property';
     const name = window.prompt('Save property as...', defaultName);
     if (!name || !name.trim()) return;
-    const id = savePropertyAs(name.trim(), property);
-    pushToast(`Saved "${name.trim()}"`, 'success');
+    const trimmed = name.trim();
+    const id = savePropertyAs(trimmed, property);
     setCurrent(id);
+    pushToast(`Saved "${trimmed}"`, 'success');
+
+    // M1.C.6 — cloud-save sync. Only fire if we already have a cached
+    // customer email so the Save UX stays one-prompt for new users.
+    // First-time cloud-savers reach the API via Request Quote or the
+    // dedicated "My Designs" page (both of which prompt for email).
+    const email = getCachedCustomerEmail();
+    if (email) {
+      saveDesignToApi({
+        customerEmail: email,
+        name: trimmed,
+        property,
+        status: 'draft',
+      }).then(
+        () => pushToast('Synced to cloud.', 'info'),
+        (err) => {
+          const msg = err instanceof Error ? err.message : 'Cloud sync failed.';
+          pushToast(msg, 'error');
+        },
+      );
+    }
+  }
+
+  // M1.C.7 — Request Quote. Captures the active Property + cart-quote
+  // totals and POSTs to /api/leads. Prompts for email + optional
+  // message on first use; reuses the cached email afterwards.
+  const [submittingQuote, setSubmittingQuote] = useState(false);
+  async function handleRequestQuote() {
+    if (submittingQuote) return;
+    const email =
+      getCachedCustomerEmail() ??
+      promptForCustomerEmail("Enter your email so we can send the quote");
+    if (!email) return;
+    const message =
+      window.prompt(
+        'Any notes for the PPW team? (optional — press Enter to skip)',
+        '',
+      ) ?? '';
+
+    setSubmittingQuote(true);
+    try {
+      await submitLead({
+        customerEmail: email,
+        property,
+        cartQuote: {
+          uniqueProductCount: cart.uniqueProductCount,
+          totalItemCount: cart.totalItemCount,
+          subtotal: cart.subtotal,
+          subtotalByCurrency: cart.subtotalByCurrency,
+        },
+        message: message.trim() || undefined,
+        source: 'designer',
+      });
+      pushToast('Quote request sent — PPW will email you soon.', 'success');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Quote submit failed.';
+      pushToast(msg, 'error');
+    } finally {
+      setSubmittingQuote(false);
+    }
   }
 
   function handleLoad(id: string) {
@@ -288,7 +353,7 @@ export function TopBar({
           type="button"
           onClick={handleSaveAs}
           className="hidden md:inline-block rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs font-medium text-ppw-slate hover:border-ppw-teal"
-          title="Save the current property under a name"
+          title="Save the current property under a name (syncs to cloud once you've entered an email)"
         >
           Save as...
         </button>
@@ -300,6 +365,17 @@ export function TopBar({
           title="Load a saved property"
         >
           Load ({savedList.length})
+        </button>
+
+        {/* M1.C.7 — Request Quote. Primary lead CTA on the Designer. */}
+        <button
+          type="button"
+          onClick={handleRequestQuote}
+          disabled={submittingQuote}
+          className="hidden md:inline-block rounded-md bg-ppw-coral px-2.5 py-1 text-xs font-semibold text-white shadow-sm hover:bg-ppw-coral/90 disabled:opacity-60"
+          title="Send the current property + cart to the PPW team for a quote"
+        >
+          {submittingQuote ? 'Sending…' : 'Request quote'}
         </button>
 
         <button
@@ -406,6 +482,24 @@ export function TopBar({
               >
                 Load ({savedList.length})
               </button>
+              <Link
+                to="/my-designs"
+                onClick={() => setShowMobileMenu(false)}
+                className="flex min-h-[44px] items-center rounded-md border border-ppw-stone bg-white px-3 text-sm font-medium text-ppw-ink hover:border-ppw-teal"
+              >
+                My designs (cloud)
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMobileMenu(false);
+                  void handleRequestQuote();
+                }}
+                disabled={submittingQuote}
+                className="min-h-[44px] rounded-md bg-ppw-coral px-3 text-left text-sm font-semibold text-white shadow-sm hover:bg-ppw-coral/90 disabled:opacity-60"
+              >
+                {submittingQuote ? 'Sending…' : 'Request quote'}
+              </button>
               <button
                 type="button"
                 onClick={() => {
@@ -440,7 +534,16 @@ export function TopBar({
 
       {showLoad && (
         <div className="absolute right-2 top-full z-40 mt-1 w-[min(20rem,calc(100vw-1rem))] max-h-[70vh] overflow-y-auto rounded-lg border border-ppw-stone bg-white p-3 text-xs shadow-lg">
-          <p className="font-semibold text-ppw-ink mb-2">Saved properties</p>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="font-semibold text-ppw-ink">Saved properties</p>
+            <Link
+              to="/my-designs"
+              onClick={() => setShowLoad(false)}
+              className="text-[11px] font-medium text-ppw-teal hover:underline"
+            >
+              My designs (cloud)
+            </Link>
+          </div>
           {savedList.length === 0 ? (
             <p className="text-ppw-slate py-2">No saved properties yet. Use <em>Save as...</em></p>
           ) : (

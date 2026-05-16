@@ -27,6 +27,7 @@ import MarketplaceCartPage from './pages/MarketplaceCartPage';
 import MarketplaceCheckoutPage from './pages/MarketplaceCheckoutPage';
 import OrderTrackPage from './pages/OrderTrackPage';
 import MerchantAgentPage from './pages/MerchantAgentPage';
+import MyDesignsPage from './pages/MyDesignsPage';
 import { bootstrapFx } from './store/currencyStore';
 import './index.css';
 
@@ -78,6 +79,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/marketplace/checkout" element={<MarketplaceCheckoutPage />} />
         <Route path="/order/track/:orderRef" element={<OrderTrackPage />} />
         <Route path="/merchant/:slug/agent" element={<MerchantAgentPage />} />
+
+        {/* V3.1 M1.C.6 — cloud-save listing page (email-keyed). */}
+        <Route path="/my-designs" element={<MyDesignsPage />} />
 
         {/* OMS Phase 1 - Admin merchants stub (Clerk-protected) */}
         {/* OMS Phase 2 - Full admin portal: merchants list/detail, orders, payouts */}
