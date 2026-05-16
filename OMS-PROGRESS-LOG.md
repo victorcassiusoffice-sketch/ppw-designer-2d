@@ -2,6 +2,166 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 9 (Track C W0.D.4 withApi HOF)
+
+Track C code tick — first Wave 0.D foundation primitive shipped per
+the V4 unified plan (CQ §05.1). Composable HOF that bundles Sentry +
+admin auth + Zod + idempotency + rate-limit behind one wrapper with a
+uniform error shape. Opt-in roll-out per V4-CQ-2 (CLOSED) — existing
+handlers untouched.
+
+### What shipped (commit `7ed8618`)
+
+- `api/lib/withApi.ts` (new) — `withApi<TBody>(options, handler)` HOF.
+  - Pipeline order: method gate → rate limit → admin auth →
+    idempotency (replay/conflict) → Zod schema → handler.
+  - Uniform error body `{ ok: false, code, message, requestId,
+    details? }` across every failure path; `x-request-id` header set
+    on every response.
+  - Idempotency wraps `res.json` to capture status+payload; persists
+    to KV after handler success; storage failures warn but never
+    block the caller. Replay short-circuits BEFORE Zod (same key →
+    same response, body-change-proof).
+  - Rate-limit fires before auth so abusive callers don't pay for
+    token verification (asserted by composition-order test).
+- `api/__tests__/withApi.test.ts` (new) — 20 unit tests across 6
+  describe blocks: request-id/handler basics, method gate (×2), rate
+  limit (×3 incl. `Math.max(1, …)` Retry-After invariant), admin
+  auth (×4 covering missing-deps / no-token / wrong-email /
+  allowlist-success against `victor@ppwellness.co`), Zod (×2),
+  idempotency (×6 covering replay/conflict/fresh+store/GET-skip/
+  no-header-skip/store-failure-non-blocking), composition order
+  (×2). All injectable — no Clerk / KV / Sentry network calls.
+
+### Validation
+
+- `npm test` → **588/588 green** (+20 from tick 7's 568; zero
+  regressions across the existing 568).
+- `npx tsc --noEmit` (root) ✓ clean.
+- `npx tsc --noEmit -p api/tsconfig.json` ✓ clean.
+- `npx vite build` ✓ clean, 1.20 MB JS / 365.87 kB gzip (unchanged
+  bundle — HOF is api-side only).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → deployment
+  `dpl_GQ5nh5VFBAX9RjPUz5QUsFFwrYjF` (preview) then re-issued post-
+  commit → `dpl_…e6p56alud…` (production) ready 2026-05-17 00:44 UTC.
+- Smoke: `GET https://designer.ppwellness.co/api/healthcheck` → 200
+  `{commit: 7ed86180029345a7c7a26b813dcdf66a8615b353, …}`. Production
+  alias now serves the new commit.
+- Lambda count unchanged at **12/12** (HOF is a library — adds no new
+  endpoint). Cron registry unchanged. No vercel.json edit.
+
+### Phase A applicability
+
+W0.D.4 is a **backend library** with no customer/merchant-facing
+surface. Phase A gate not required (master /goal explicit exemption
+for "backend / infra / docs / cron-enable" micros). When a customer-
+facing endpoint eventually opts into `withApi`, the Phase A gate
+fires on that endpoint's owning micro, not on this HOF.
+
+### Tick 9 state summary
+
+Items shipped: 1 HOF lib (706 lines incl. tests) + 1 commit.
+V4-UNIFIED-PLAN.md W0.D.4 ready to tick `[ ] → [x]` (no Vic-Y needed
+— backend exempt + opt-in roll-out per V4-CQ-2 CLOSED). Items blocked
+unchanged from tick 8.
+
+Lambda 12/12. Test count **588/588**. Live commit
+`7ed86180029345a7c7a26b813dcdf66a8615b353`.
+
+Next-item-to-pick (per A→B→C→D rotation, after this Track C tick):
+- **Track D next**: lowest open M9 closure micro. M9.A.1
+  (`POST /api/designs` triggers Resend email) is customer-facing →
+  needs Phase A scaffold first. M9.A.3 (shared `email/templates.ts`)
+  is backend-exempt but should wait for the voice/copy bank
+  (W0.D.22). **M9.B.2 / .B.3 / .B.4** (GET / PATCH / DELETE merchant
+  products) are backend-exempt but depend on M9.B.1 agent intent
+  landing first. The cleanest Track D move is to scope **M9.B.2** as
+  the read-only complement (no agent-intent dependency for a GET).
+  Investigate first.
+- **Track A next**: CA.8 layer 3 (admin pages axe-core with Clerk
+  provider stub). Substantial.
+- **Track B next**: QW#4 — diff FRESH `_BUS.md` against live B
+  `_BUS.md` then mirror the deploy-live entries.
+- **Track C next** (after this one): W0.D.6 (Playwright E2E scaffold
+  — one happy-path test), W0.D.10 (`<JobStatePill>` primitive, but
+  blocked on W0.D.5 `@ppw/ui` workspace which V4-CQ-1 unblocks),
+  W0.D.21 (`<EcoBadge>`, same blocker). The Track-C next-pick with
+  no upstream blockers is **W0.D.7 (schema-mirror CI gate)** or
+  **W0.D.6 (Playwright scaffold)**.
+
+---
+
+## 2026-05-17 — V4 Driver tick 8 (Track B QW#3 canonical-logo mirror)
+
+Track B doc tick — continues the brand-FRESH alternation per the
+A→B→C→D rotation. Last tick (tick 7, commit `2c89d91`) was Track A
+CA.8 layer 2; rotation lands on Track B next.
+
+### What shipped (doc-only, no commit yet)
+
+- `PPW-Second-Brain/01-Staff/brand/canonical-logo.md` written (new
+  `01-Staff/brand/` subdir created in pass).
+  - Full content from FRESH `agent/memory/reference_canonical_logo.md`
+    (LOCKED 2026-05-11 R5 mark — DNA helix gold-on-near-black).
+  - Provenance frontmatter (`mirrored_from`, `mirrored_on`,
+    `mirrored_by`) matching the convention set by tick 5 + 6 SOPs.
+  - V4 cross-walk notes section appended:
+    - V4-AU-1 + W0.D.19 token-name authority (5 canonical
+      `--gold`/`--gold-deep`/`--dark`/`--cream`/`--ink` names; no
+      synonym invention in `@ppw/ui/tokens.css`).
+    - W0.D.23 lockup-map carry-forward (12 wordmark lockups feed the
+      `<Logo surface="…" />` 8-surface picker; no Runway burn).
+    - Asset path scope reminder (`PPWellness-Assets/04-Brand/…` lives
+      in the brain folder, NOT in `PPW-Code\ppw-designer-2d`;
+      consumers copy into `public/brand/` or import from `@ppw/ui`
+      post-W0.D.5).
+    - Re-litigation guard mapped to V4 lane (logo-redesign
+      suggestions surface as V-decision in `VIC-DECISIONS-QUEUE.md`).
+- `INTEGRATION-PLAN.md` row #3 ticked ✅ with tick attribution.
+
+### Validation
+
+Doc-only tick — no code change, no test/build/deploy.
+
+- Test count remains **568/568** (last code tick: 7, commit `2c89d91`).
+- Lambda count remains 12/12 (no `vercel.json` change).
+
+### Tick 8 state summary
+
+Items shipped: 1 brand reference mirror + 1 INTEGRATION-PLAN row tick.
+Items blocked: unchanged from tick 7 (M1.E.1-3 Vic cron enables;
+M1.C.6 / M1.C.7 Designer-surface; CB.4 + CB.7 Vic-action;
+V3.1-G brand-FRESH V-decisions; M9.C PayPal live-flip Vic-only;
+V4-AU-1 + V4-ME-2 Vic batch; 18 other open V-decisions in
+V4-VIC-DECISIONS-BATCH.md). No new V-decisions surfaced this tick.
+
+Next-item-to-pick (per A→B→C→D rotation):
+- **Track C next**: lowest open Wave 0.D micro that's autonomous-safe
+  with V4-AU-1 + V4-ME-2 still V-gated. Goal master names **W0.D.4
+  (`api/lib/withApi.ts` HOF)** as the if-AU-1+ME-2-closed pick, but
+  with those still open the next safe Track-C item is either
+  **W0.D.10 (`<JobStatePill>` 4-state primitive)** — blocked on
+  W0.D.5 `@ppw/ui` workspace which is V4-CQ-1-CLOSED therefore
+  unblocked, or **W0.D.21 (`<EcoBadge>` 4-tier)** — same
+  `@ppw/ui` dependency. Both are primitive-add tasks that fold into
+  the workspace without endpoint/lambda touches. **W0.D.6 Playwright
+  E2E scaffold** is also a candidate (no token dependency).
+- **Track D next**: lowest open M9 closure micro is M9.A.3 (shared
+  `api/lib/email/templates.ts` + Vitest) — backend-exempt from Phase
+  A, but it requires Resend-template content decisions that touch
+  customer-facing copy. Better to wait on the email-template body
+  spec ratification (post-W0.D.22 voice/copy bank). Defer to a later
+  Track D tick.
+- **Track A next**: CA.8 layer 3 (admin pages axe-core with Clerk
+  provider stub). Substantial.
+- **Track B next**: QW#4 — merge FRESH `_BUS.md` into live B
+  `_BUS.md` (diff first per the INTEGRATION-PLAN note).
+
+---
+
 ## 2026-05-16 — V3.1 Driver tick 1 (reconciliation + M1.D.1)
 
 Driver: Claude Opus 4.7 1M (Cowork session), /goal autonomous mode.
