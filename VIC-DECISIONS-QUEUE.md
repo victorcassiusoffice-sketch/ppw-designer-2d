@@ -1,5 +1,35 @@
 # VIC-DECISIONS-QUEUE
 
+## Status: 2026-05-16 (evening) — Designer-closure gaps surfaced from Vic user-journey check
+
+These three decisions came out of Vic's 2026-05-16 user-journey check and the M9 macro added to V3.1-PLAN.md. Driver implements the autonomous-safe items on Track C (M9.A + M9.B); these decisions only need Vic-Y on tone, schema, and external timing.
+
+#### V3.1-H — PayPal live mode flip: timing? (M9.C.1)
+
+**State:** Designer is on PayPal sandbox. Real customers cannot pay real money. PayPal live-mode flip requires Vic to flip the app to Live in the PayPal Developer dashboard + business profile + tax docs + 2-6 week PayPal app review.
+
+**Decision needed:** Vic Y on queueing the application NOW vs deferring until ≥1 real-money order request. Recommendation: **queue the application now**. PayPal review takes weeks anyway; sandbox keeps working in parallel; no money is spent in queueing. M9.C.2 (rotate keys + flip env) waits until PayPal confirms approval.
+
+**Driver scope:** Vic-only HARD-STOP (touches money rail + external platform). Driver does not action; surfaces here only.
+
+#### V3.1-I — Email template tone: formal vs warm? (M9.A.1 + M9.A.2)
+
+**State:** Two new customer emails proposed under M9.A — design-saved confirmation + order-confirmation. Need a tone decision before templates ship at `api/lib/email/templates.ts`.
+
+**Decision needed:** Vic Y/N on warm-and-direct tone vs formal-corporate tone. Recommendation: **warm**. Example design-saved opener: *"Hey [name], your wellness room is saved. We'll be here when you're ready to bring it to life."* Example order-confirmation opener: *"Hey [name], your order is in. Here's what's coming and when."* Aligns with Vic's communication style (direct, no fluff) and PPW brand voice (science-grounded, customer-respecting).
+
+**Driver scope:** Driver implements with the warm default and surfaces the templates for Vic Y before first send. Reversible (one edit + redeploy).
+
+#### V3.1-J — Merchant self-service product upload schema: minimum required fields? (M9.B.1)
+
+**State:** Agent intent `add_product` extracts product details via Gemini structured output. Schema needs locked minimum required fields before the structured-output JSON schema can be coded.
+
+**Decision needed:** Vic Y on the recommended minimum required fields. Recommendation: **required = name, price_mur, stock_qty, photo_url, description**. **Optional = dimensions_mm, weight_kg, category, region, sku, lead_time_days**. Matches existing `products` table columns + agent UX (merchant pastes description, agent extracts, confirms). Reversible — schema can be relaxed if merchants flag friction.
+
+**Driver scope:** Driver implements the recommended schema and ships M9.B.1-5 on Track C. Vic Y/N only affects the structured-output JSON schema and the agent's "I need these to add a product" reply.
+
+---
+
 ## Status: 2026-05-16 (afternoon) — V3.1 Driver brand-FRESH queue sweep
 
 ### Open decisions surfaced this tick (autonomous-pending Vic Y/N)
@@ -65,6 +95,64 @@ The full list of 17 Vic-decisions (incl. V-10..V-17 about Wellness Institute / L
 ## Status: 2026-05-16 — Vic decisions relayed via Dispatch
 
 ### CLOSED / ANSWERED
+
+### NEW — surfaced 2026-05-17 by V4 Driver (tick 19)
+
+#### V4-QA-2 — Where does `scripts/check-phase-a.ts` find its plan files?
+
+**Surfaced by:** V4 Driver tick 17 close-out (W0.D.14 full close).
+**Context:** Script (`scripts/check-phase-a.ts`) lives in `PPW-Code` and is wired into `.github/workflows/quality-gates.yml`. Plan files (`V4-UNIFIED-PLAN.md`, `V3.1-PLAN.md`, `OMS-V4-OUTLINE.md`) and evidence files (`06-Roadmap/user-testing/phase-a/<micro-id>.md`) live in `PPW-Second-Brain`. The script accepts paths via `--plans` / `--evidence` OR env vars `PPW_PLAN_FILES` / `PPW_PHASE_A_EVIDENCE`. CI currently has no way to reach the second-brain folder — script exits 0 with "no plan files configured" on the no-args path.
+
+**Options:**
+- **(A) Mirror plan + evidence files into PPW-Code at PR time** — workflow step `gh repo clone` of second-brain (private), then run script with the cloned paths. Pro: CI enforces parity. Con: requires a PAT or GitHub App with second-brain read access stored as a secret.
+- **(B) Pre-push git hook on PPW-Second-Brain** — script runs locally on Vic's machine before any commit-to-brain that ticks `[x]`. Pro: zero CI surface. Con: defeated by web-edit / non-hooked clones.
+- **(C) Script runs only locally (dev pre-push) plus a separate workflow that re-publishes plans into PPW-Code on a schedule** — combines (B) with a stale-by-≤24h CI snapshot. Pro: CI enforces AND local catches before push. Con: most moving parts.
+
+**Recommended default:** **A — mirror at PR time** (cleanest CI coverage; PAT cost is small one-time setup).
+**Vic-action ETA:** 60 sec to pick option + (if A) 5 min to mint a read-only PAT scoped to the second-brain repo.
+**Unblocks:** W0.D.14 CI gate (script + sub-templates already shipped; just needs the workflow plumbing to actually run on real plans every PR).
+
+---
+
+#### V4-AU-1 — **CLOSED: Retire clinic Tailwind palette, rebind to canonical brand palette NOW** (Vic 2026-05-16)
+Tailwind config rebound to canonical brand colours: gold `#C0A67E`, ink `#0E0E10`, cream `#F5EFE6`. Every surface going forward signals the utopia aesthetic instead of generic SaaS.
+
+#### V4-ME-2 — **CLOSED: Split migration 0010 into 0010 + 0011 + 0012 + 0013** (Vic 2026-05-16)
+Migration Engineer's split approach approved. Smaller migrations = contained blast radius on rollback. Catalog-filters / supplier-rating-backfill / soft-delete-columns / agent-queue-extension each get their own file.
+
+#### V4-ME-1 — **CLOSED: `schema_migrations` tracking table NOW** (Vic 2026-05-16)
+Migration tracking table lands in the first new migration. Closes Phase 1→2 debt before any non-idempotent migration ships.
+
+#### V4-QA-1 — **CLOSED: Split user-testing TEMPLATE.md into MERCHANT-JOURNEY.md + CUSTOMER-JOURNEY.md** (Vic 2026-05-16)
+QA Coverage's split approved. Clearer scope per template, fewer N/A rows, faster Phase A walkthroughs.
+
+#### V4-IH-2 — **CLOSED: Agent-chat daily cost circuit-breaker = $5/day hard-abort** (Vic 2026-05-16)
+KV-backed daily counter on OpenRouter spend. Trips at $5/day, returns "service paused until midnight" response. ~$150/mo headroom; easy to raise once real usage is known.
+
+#### V4-CQ-1 — **CLOSED: `@ppw/ui` topology = PNPM workspace** (Vic 2026-05-16)
+PNPM monorepo workspace per Code Quality recommendation. `packages/ui/` + `packages/designer/` structure. Extract `uxKit.tsx` (260 LOC) into `@ppw/ui` while cheap; pre-empts Wave 2 App PWA fork.
+
+#### V4-CQ-2 — **CLOSED: `withApi` migration = opt-in over 4 weeks then CI gate** (Vic 2026-05-16)
+Opt-in adoption of `api/lib/withApi.ts` HOF across endpoints over 4 weeks, then CI gate enforces it on new endpoints. Avoids big-bang regression risk.
+
+#### V3.1-I — **CLOSED: Email template tone = hybrid warm + formal + quirky** (Vic 2026-05-16)
+3 sample drafts created in Vic's Gmail Drafts folder (design-saved, order-confirmation, merchant-onboarding) with sample data + internal template notes. Voice: hybrid warm + formal + quirky, science-snippet P.S. line on each. Vic reviews + iterates before Resend templates ship in M9.A.3.
+
+#### V4-DA-1 — **CLOSED: Eco-cert taxonomy = ENUM** (Vic 2026-05-16)
+Recommend Data Architect's preferred enum: `none / self_declared / third_party / certified`. Lands in migration `0010_catalog_filters.sql`. Numeric 0-100 deferred.
+
+#### V3.1-E — **CLOSED: Sentry alert routing LIVE** (2026-05-16)
+Two new alert rules created on `ppwellness/javascript-react` project via Sentry API + token from `junk files\sntryu.txt`:
+- Issue alert (id `595209`) "New issue — ppw-designer-2d" — fires on first-seen events, emails IssueOwners + ActiveMembers fallthrough, 30 min anti-flood.
+- Metric alert (id `22435`) "Error rate spike — ppw-designer-2d" — fires when count() of error|fatal events > 20 in 5 min window, emails #ppwellness team.
+- Pre-existing rule "Send a notification for high priority issues" (id `586538`) untouched — keeps firing on high-priority issues.
+Total: 3 active alerts. Sentry environments are empty (no events tagged production yet) — first env will auto-create on first event ingest. Smoke recommended: hit `https://designer.ppwellness.co/api/healthcheck?testsentry=1` to seed the production environment.
+
+#### V3.1-C — **CLOSED: willpower.html meta fix LIVE** (2026-05-16, commit `fdbce3c`)
+Truncated og:/twitter:/schema descriptions on `https://www.ppwellness.co/explained/willpower.html` restored to full text. Pushed via GitHub Contents API → HostGator deploy endpoint → verified live. Social shares now render full preview.
+
+#### V3.1-D — **CLOSED: PAT relocate + rotate** (Vic 2026-05-16)
+Plaintext "PPW Cowork autonomous deploy" PAT deleted on GitHub + duplicate file `PPWellness-Brain-FRESH\.cowork-secrets\reference_github_pat.md` deleted locally. Active PAT "Claude Dispatch git push" regenerated with 4 repos in scope (PPWellness-Brain + ppw-fascia-app + ppw-room-designer + ppw-designer-2d), Contents R+W. `junk files\github-pat.txt` updated.
 
 #### V3.1-A — **Y on both M1.C.6 + M1.C.7** (Vic 2026-05-16)
 Proceed with Save→API (cloud save + `/my-designs` listing) AND Request Quote button. Driver: implement both, ship, smoke, tick `[x]` in V3.1-PLAN.md, update OMS-PROGRESS-LOG.md.

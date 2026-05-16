@@ -2,6 +2,83 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 19 (Track A meta — V4 BATCH reconciliation + V4-QA-2 surfaced)
+
+Critical state-of-the-world correction. While composing tick 18's
+agenda I cross-checked `VIC-DECISIONS-QUEUE.md` against the master
+/goal directive's "20 open V-decisions" count — they don't match.
+QUEUE has **8 V-decisions CLOSED on 2026-05-16** that
+`V4-VIC-DECISIONS-BATCH.md` still presents in HOT/WARM as open:
+
+- V4-AU-1 (Tailwind palette rebind) — CLOSED
+- V4-ME-1 (schema_migrations tracking) — CLOSED
+- V4-ME-2 (split migration 0010) — CLOSED
+- V4-QA-1 (Phase A template split) — CLOSED
+- V4-IH-2 (agent-chat $5/day circuit-breaker) — CLOSED
+- V4-CQ-1 (PNPM workspace) — CLOSED (already known)
+- V4-CQ-2 (withApi opt-in over 4 weeks) — CLOSED
+- V4-DA-1 (eco-cert ENUM) — CLOSED
+
+**Consequence:** Wave 0.5.B endpoint work + the W0.D Tailwind/
+migration chain are UNBLOCKED. The first-PR sequence gate is MET.
+Multiple "blocked on Vic" notes in tick logs 9–18 are stale — Vic
+already cleared them on 2026-05-16, two days before this session
+started.
+
+### What shipped
+
+- `PPW-Second-Brain/06-Roadmap/v4/V4-VIC-DECISIONS-BATCH.md` header
+  rewritten with corrected counts (24 surfaced − 13 closed = 11
+  open) + added a RECENTLY CLOSED table at the top of the document
+  listing all 8 newly-recognised closures with their downstream
+  unblocks. The HOT/WARM/COLD sections below now visually show the
+  closed items as historical framing (cross-referenced to QUEUE)
+  rather than action items.
+- `PPW-Code/VIC-DECISIONS-QUEUE.md` extended with V4-QA-2 surfaced
+  as a new V-decision (cross-repo Phase A enforcement: option A
+  mirror plans into PPW-Code at PR time is recommended default).
+
+### Validation
+
+- Doc-only tick — no code change, no test/build/deploy.
+- Test count remains **624/624**.
+- Lambda 12/12.
+
+### Tick 19 state summary
+
+Items shipped: 2 docs reconciled. 1 V-decision surfaced (V4-QA-2).
+Recognises 8 prior closures as actually-closed (no plan changes
+required to V4-UNIFIED-PLAN.md since those V-decisions live in
+BATCH/QUEUE, not in plan ticks; downstream unblocked micros stay
+`[ ]` in plan until shipped).
+
+### Implications for next-pick
+
+The locked-sequence + first-PR-sequence gates are now MET:
+- **W0.D.1 (`schema_migrations` tracking table)** is now safe to
+  ship per V4-ME-1 closure.
+- **W0.D.2 (migration 0010 body)** unblocked per V4-ME-2.
+- **W0.D.19 (`@ppw/ui/tokens.css`)** unblocked per V4-AU-1 — this
+  cascades through W0.D.20 (FasciaMeshDivider), W0.D.21 (EcoBadge),
+  W0.D.22 (type scale + voice/copy bank).
+- **W0.D.5 (`@ppw/ui` PNPM workspace extraction)** has long been
+  unblocked per V4-CQ-1 — that was the "wrong" blocking claim in
+  prior tick logs.
+- **Wave 0.5.B endpoint work** (M9.B.2 GET /merchants/:slug/products,
+  M9.B.3 PATCH, M9.B.4 DELETE) unblocked from the V-decision gate
+  side. Still gated by Phase A scaffold for M9.B.1 + M9.B.5
+  (customer-facing surfaces).
+
+Driver's next-pick should be **W0.D.5 `@ppw/ui` workspace extraction
+OR W0.D.1 schema_migrations table** depending on which has lower
+blast radius for a fresh session. W0.D.5 is structural (touches
+build config + import paths) — better fresh session. W0.D.1 is a
+tight migration + script patch — safe in this session.
+
+Lambda 12/12. Test count **624/624**. Live commit `4a47825`.
+
+---
+
 ## 2026-05-17 — V4 Driver tick 18 (Track A M1.E.4 BoD agenda 2026-05-29)
 
 Track A doc tick — closes the long-aged M1.E.4 (Board of Directors
