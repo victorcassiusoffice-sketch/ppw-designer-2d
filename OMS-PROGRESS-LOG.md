@@ -68,6 +68,53 @@ render-path change).
 
 ---
 
+## 2026-05-16 — V3.1 Driver tick 7 (Track A CA.8 layer 2)
+
+Track A code tick — extends the axe-core baseline from uxKit
+primitives (layer 1, tick 5) to full customer-facing pages (layer 2).
+
+### What shipped (commit `2c89d91`)
+
+- `src/components/__tests__/a11y.test.tsx` extended with 3 full-page
+  tests inside `<MemoryRouter>`:
+  - `MyDesignsPage` (no-cached-email prompt-form state)
+  - `MarketplaceCartPage` (empty cart initial state)
+  - `OrderTrackPage` (loading initial state)
+- Uses `renderToStaticMarkup` (SSR-style) so `useEffect` does NOT
+  fire — axe inspects the exact pre-fetch initial UI customers see.
+- React Router's `useLayoutEffect` SSR warning is loud but harmless;
+  axe still validates rendered DOM cleanly.
+
+### Validation
+
+- `npm test` → **568/568 green** (+3 from layer 1's 565).
+- `npx tsc --noEmit` (root + api) ✓ clean.
+- `npx vite build` ✓ clean, 1.20 MB JS / 365.87 kB gzip.
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → deployment ready 2026-05-16
+  12:46 UTC, target = production.
+- Smoke: `GET https://designer.ppwellness.co/api/healthcheck` → 200
+  `{commit: 2c89d91…}`.
+
+### Tick 7 state summary
+
+Items shipped: 1 (CA.8 layer 2, +3 a11y tests). V3.1-PLAN CA.8 still
+`[~]` partial — layer 3 (admin pages with ClerkProvider stub) and
+layer 4 (PR CI gating) remain open under the same micro.
+
+Lambda 12/12. Test count **568/568**. Items blocked unchanged.
+
+Next-item-to-pick (per alternation):
+- **Track B next**: QW#3 — mirror `reference_canonical_logo.md`
+  from FRESH into `01-Staff/brand/canonical-logo.md`.
+- **Track A after**: CA.8 layer 3 (admin pages w/ Clerk stub) OR
+  start `M3.A.1` admin CSV product import (substantial; would need
+  a focused tick — admin-router catchall already exists).
+
+---
+
 ## 2026-05-16 — V3.1 Driver tick 6 (Track A queue sweep + Track B QW#2)
 
 Dual-track tick continuing the brand-FRESH alternation.
