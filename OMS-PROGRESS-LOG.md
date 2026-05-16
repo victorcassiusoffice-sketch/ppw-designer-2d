@@ -2,6 +2,94 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 17 (Track C W0.D.14 script — full close)
+
+Track C code tick — closes W0.D.14 fully by landing the script
+portion that tick 15 deferred. Cross-repo concern resolved as a
+library + CLI shape: the parser/checker is pure and testable; the
+CLI accepts paths via `--plans` / `--evidence` or env vars, so the
+CI wiring question (mirror plans into PPW-Code vs read from
+second-brain vs pre-push hook) becomes a workflow-file decision
+separable from the library itself.
+
+### What shipped (commit `4a47825`)
+
+- `scripts/check-phase-a.ts` (new, 305 lines) — Phase A gate
+  enforcement library + CLI.
+  - `PHASE_A_PATTERNS` — 12 micro-ID prefix regexes mirroring
+    V4-UNIFIED-PLAN.md §Phase A gate (M1.B/M1.C/M9.A/M9.B/M4.A/
+    M4.B/W0.5.A/W0.5.B/W2/W4.B/W4.G/W5).
+  - `parsePlanLines(content)` — handles both V4-style (`[x] **MID**`)
+    and V3.1-style (`[x] MID`) ticks with 1-based line numbers +
+    `<!-- phase-a-exempt -->` marker detection.
+  - `isPhaseABound(id)` + `findPhaseAViolations(entries, resolver)`
+    — pure, no fs.
+  - `fsEvidenceResolver(root)` — checks `<MID>.md` plus
+    `.customer.md` and `.merchant.md` for hybrid splits per V4-QA-1.
+  - CLI: `--plans a,b --evidence dir` (or `PPW_PLAN_FILES` /
+    `PPW_PHASE_A_EVIDENCE` env). No-args path is CI-safe — exits 0
+    with "no plan files configured; skipping" so the workflow can
+    wire it now and add plan-file resolution later.
+- `api/__tests__/check-phase-a.test.ts` (new) — 26 unit tests:
+  - 15× table-driven `isPhaseABound` coverage (bound + unbound IDs).
+  - 5× `parsePlanLines` covering V4 + V3.1 styles + exempt marker
+    + non-matching lines + 1-based line numbers.
+  - 5× `findPhaseAViolations` covering all 5 outcome branches.
+  - 1× sanity check on `PHASE_A_PATTERNS` size.
+- CLI smoke: `npx tsx scripts/check-phase-a.ts --plans
+  …/V4-UNIFIED-PLAN.md --evidence …/06-Roadmap/user-testing/phase-a`
+  → `check-phase-a: OK (1 plan file(s) scanned, 0 violations)`.
+  Confirmed every current V4 `[x]` tick either falls outside the
+  binding patterns or has evidence.
+
+### Validation
+
+- `npm test` → **624/624 green** (+26 from tick 16's 598; zero
+  regressions).
+- `npx tsc --noEmit` (root + api) ✓ clean.
+- `npx vite build` ✓ clean, 1.20 MB JS / 365.87 kB gzip
+  (unchanged — script + test are dev-only).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → deployment ready 2026-05-17
+  01:15 UTC, target = production.
+- Smoke: `GET https://designer.ppwellness.co/api/healthcheck` → 200
+  `{commit: 4a47825ab13ed514f6fb75f162ba9d1c315c7846, …}`.
+- Lambda 12/12 unchanged.
+
+### Phase A applicability
+
+W0.D.14 itself is **infra** (a script + test, not a customer/
+merchant surface). Phase A not required.
+
+### Tick 17 state summary
+
+Items shipped: 1 script + 1 test file (435 lines incl. tests). 26
+new tests. W0.D.14 ticked fully `[x]` in V4-UNIFIED-PLAN.md
+(sub-templates from tick 15 + script from this tick).
+
+Wave 0.D foundations: **3 of 23 shipped** (W0.D.4 + W0.D.7 +
+W0.D.14) + 1 partial (W0.D.17 3-of-11 gates). 6 PPW-Code commits
+live: 7ed8618 → 708da37 → 025a0c8 → ce617a1 → 4a47825 (current),
+plus interleaved OMS doc commits.
+
+Lambda 12/12. Test count **624/624**. Live commit `4a47825`.
+
+Next-pick (per A→B→C→D rotation, after this Track C tick):
+- **Track D**: still Vic-blocked across the board (M9.A.*
+  customer-facing needs Phase A scaffolds; M9.B.* gated on Wave
+  0.5.B first-PR sequencing requiring V4-AU-1+V4-ME-2; M9.C.*
+  Vic-only PayPal flip).
+- **Track A**: M3.A.1 admin CSV product import (substantial, fresh
+  session). Or write the missing `_BoD` agenda monthly file
+  (M1.E.4 trivial doc tick).
+- **Track B**: QW#7 — mirror functional-health-specialist.md
+  (Code/Web SOP) + regression file into live B.
+- **Track C** (after this): W0.D.6 Playwright scaffold (heavier).
+
+---
+
 ## 2026-05-17 — V4 Driver tick 16 (Track B QW#6 mobile-UX specialist mirrors)
 
 Track B doc tick — completes the mobile-UX specialist pair in live
