@@ -2,6 +2,106 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 20 (Track C W0.D.1 schema_migrations tracking)
+
+Track C code tick — first ship to consume the V4 BATCH reconciliation
+from tick 19. W0.D.1 was previously "blocked on V4-ME-1" but the
+QUEUE actually had V4-ME-1 CLOSED on 2026-05-16, so this work was
+safe all along. **Fourth Wave 0.D foundation shipped** (after
+W0.D.4 / W0.D.7 / W0.D.14).
+
+### What shipped (commit `3508cf5`)
+
+- `api/db/migrations/0000_schema_migrations.sql` (new) — 3-column
+  tracker table (`version VARCHAR(40) PK / applied_at TIMESTAMPTZ /
+  checksum VARCHAR(64)`). Numbered `0000` so it sorts
+  lexically-first on every fresh DB; uses `CREATE TABLE IF NOT
+  EXISTS` so re-runs (incl. BACKFILL path) are safe.
+- `scripts/migrate.ts` (rewrite) — every run:
+  1. Bootstraps the tracker table (apply `0000_schema_migrations.sql`
+     unconditionally; idempotent via IF NOT EXISTS).
+  2. Records the tracker file's own row (ON CONFLICT DO NOTHING).
+  3. Reads `schema_migrations` into a Set<version>.
+  4. For each .sql file (skipping the tracker): if version already
+     present → skip + log; else apply SQL + INSERT row. On apply
+     failure the row is NOT inserted (re-run retries safely).
+  - `BACKFILL_EXISTING=1` env var: insert tracking rows WITHOUT
+    executing the SQL. Use exactly once on the prod DB that
+    pre-dates the tracker. Documented in script header.
+- `api/db/schema.ts` extended with `export const schemaMigrations =
+  pgTable('schema_migrations', { … })` so the W0.D.7 schema-mirror
+  parity check stays green (now 17 tables). The Drizzle entry is
+  metadata — the table is owned + written by `migrate.ts`, not by
+  application code.
+
+### Validation
+
+- `npm test` → **624/624 green** (schema-mirror integration test
+  now asserts 17 tables in sync, was 16; zero regressions).
+- `npx tsc --noEmit` (root + api) ✓ clean.
+- `npx vite build` ✓ clean.
+- CLI smoke: `npx tsx scripts/check-schema-mirror.ts` →
+  `schema-mirror: OK (17 tables)`.
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → deployment ready 2026-05-17
+  01:26 UTC, target = production.
+- Smoke: `GET https://designer.ppwellness.co/api/healthcheck` → 200
+  `{commit: 3508cf523a6bba6d66266f050972818cff2dcac0, …}`.
+- Lambda **12/12** unchanged. No `vercel.json` edit. No production
+  DB migration executed by this commit — Vic runs the actual
+  `npx tsx scripts/migrate.ts` against prod when ready (script
+  change ships independently of an apply; backfill is a 1-shot
+  operator action).
+
+### Phase A applicability
+
+W0.D.1 is **infra** (DB + script). Phase A not required.
+
+### Vic-action follow-up (NOT blocking driver)
+
+Once Vic is ready to flip the prod DB to the tracker pattern, run:
+
+```bash
+DATABASE_URL=postgres://… BACKFILL_EXISTING=1 npx tsx scripts/migrate.ts
+```
+
+This will populate `schema_migrations` rows for 0000+0001..0009
+without re-executing their SQL (which would no-op anyway because
+of IF NOT EXISTS guards, but the script saves the redundant work).
+Subsequent runs without BACKFILL_EXISTING will skip these and only
+apply new files. Not added to VIC-DECISIONS-QUEUE because it's a
+one-line ops action, not a decision.
+
+### Tick 20 state summary
+
+Items shipped: 1 migration file + 1 script rewrite + 1 Drizzle
+entry (143 lines added, 25 removed). W0.D.1 ticked `[x]`.
+
+Wave 0.D foundations: **4 of 23 shipped** (W0.D.1 + W0.D.4 +
+W0.D.7 + W0.D.14) + 1 partial (W0.D.17 3-of-11 gates). 9 PPW-Code
+commits live this session: 7ed8618 → 708da37 → 025a0c8 → ce617a1 →
+4a47825 → 3508cf5 (current), plus interleaved OMS doc commits.
+
+Lambda 12/12. Test count **624/624**. Live commit `3508cf5`.
+
+### Session cumulative through tick 20 (13 ticks)
+
+Closed micros: **W0.D.1 + W0.D.4 + W0.D.7 + W0.D.14 + W0.A.6 +
+W0.A.7 + M1.E.4 = 7**. Plus W0.D.17 partial.
+Brand-FRESH integration: QW#3/4/5/6 = 4 quick-wins ticked.
+V-decision recognised: 8 prior V4 closures (BATCH ⇄ QUEUE reconcile).
+V-decision surfaced: V4-QA-2.
+Tests: **568 → 624** (+56). 9 PPW-Code commits live.
+
+Next-pick (Track B = QW#7, Track C = W0.D.5 fresh session, Track A
+= M3.A.1 substantial, Track D = M9.A.3 backend-exempt now genuinely
+unblocked OR M9.B.2 backend-exempt GET endpoint now unblocked
+post-reconciliation).
+
+---
+
 ## 2026-05-17 — V4 Driver tick 19 (Track A meta — V4 BATCH reconciliation + V4-QA-2 surfaced)
 
 Critical state-of-the-world correction. While composing tick 18's
