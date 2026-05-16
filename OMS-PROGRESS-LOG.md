@@ -2,6 +2,75 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 18 (Track A M1.E.4 BoD agenda 2026-05-29)
+
+Track A doc tick — closes the long-aged M1.E.4 (Board of Directors
+monthly meeting agenda) by posting a `BOARD-AGENDA-2026-05-29`
+signal at the top of live B `_BUS.md`. Last-Friday cadence per
+`_BOARD-OF-DIRECTORS.md` §governance.
+
+### What shipped (doc-only, no commit needed — second-brain)
+
+- `PPW-Second-Brain/01-Staff/_BUS.md` extended with a new top-of-
+  SIGNALS bus entry framed as the May 29 2026 Board agenda. 8
+  standing questions instantiated this month against:
+  - V4-AU-1 still HOT 12+ days (Chimero veto risk on M9 surfaces
+    shipping pre-canon).
+  - Cross-repo Phase A enforcement (PPW-Code script vs
+    PPW-Second-Brain plans) — needs V4-QA-2 V-decision.
+  - W0.D.6 Playwright scaffold not yet shipped (Zhuo product-
+    leadership Q on E2E rigour).
+  - App PARKED 2026-05-14 (Fogg behaviour-design Q on Day-2
+    retention without App).
+  - M9.C PayPal live-flip Vic-only multi-week external (Norman
+    feedback Q on customer state-visibility during the transition).
+  Pre-read pointers list this session's OMS log ticks 8–17 (5
+  micros closed) so the Board reviews real evidence, not abstract
+  velocity claims.
+- `V4-UNIFIED-PLAN.md` M1.E.4 ticked `[x]` with cadence pointer
+  (next agenda due 2026-06-26).
+
+### Validation
+
+Doc-only tick — no code change, no test/build/deploy.
+
+- Test count remains **624/624**.
+- Lambda 12/12.
+
+### Tick 18 state summary
+
+Items shipped: 1 BoD agenda bus signal + 1 V4-UNIFIED-PLAN tick.
+Surfaces a new V-decision candidate (V4-QA-2 cross-repo Phase A
+wiring) for the BATCH on the next Vic sync.
+
+Lambda 12/12. Test count **624/624**. Live commit `4a47825`.
+
+### Session-wide cumulative (ticks 8 → 18, **11 ticks shipped**)
+
+Closed micros: **W0.D.4 + W0.A.6 (CA.8 layer 3) + W0.D.7 + W0.A.7
+(CA.8 layer 4) + W0.D.14 + M1.E.4 = 6**. Plus W0.D.17 partial
+(3/11 gates wired). Brand-FRESH QW#3/4/5/6 ticked. Tests **568 →
+624** (+56). 7 PPW-Code commits live (latest `4a47825`). All deploys
+smoked green.
+
+Next-pick candidates (when work resumes):
+- **Track B** = QW#7 functional-health-specialist mirror.
+- **Track C** = W0.D.6 Playwright scaffold (heavier — fresh session
+  better).
+- **Track D** = still Vic-blocked across the board.
+- **Track A** = M3.A.1 admin CSV import (substantial fresh session).
+
+Surfaced V-decision candidate (not yet in BATCH): **V4-QA-2 —
+where does `scripts/check-phase-a.ts` find its plan files?**
+Options: (a) CI mirrors plan files from PPW-Second-Brain into
+PPW-Code at PR time via a workflow step; (b) script reads directly
+from a sibling-clone of PPW-Second-Brain (dev-machine only, CI
+skips); (c) pre-push git hook on PPW-Second-Brain. Recommend (a)
+for CI coverage. Flag for Vic on next sync via VIC-DECISIONS-QUEUE
+addition (TBD next session).
+
+---
+
 ## 2026-05-17 — V4 Driver tick 17 (Track C W0.D.14 script — full close)
 
 Track C code tick — closes W0.D.14 fully by landing the script
