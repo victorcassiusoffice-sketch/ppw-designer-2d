@@ -579,3 +579,12 @@ export type Design = typeof designs.$inferSelect;
 export type NewDesign = typeof designs.$inferInsert;
 export type Lead = typeof leads.$inferSelect;
 export type NewLead = typeof leads.$inferInsert;
+
+// V4 W0.D.1 — migration tracking table (ME §03.5 / V4-ME-1 CLOSED 2026-05-16).
+// Drizzle entry kept for the schema-mirror parity check; the table itself is
+// owned + populated by scripts/migrate.ts, not by application code.
+export const schemaMigrations = pgTable('schema_migrations', {
+  version: varchar('version', { length: 40 }).primaryKey(),
+  appliedAt: timestamp('applied_at', { withTimezone: true }).notNull().defaultNow(),
+  checksum: varchar('checksum', { length: 64 }).notNull(),
+});

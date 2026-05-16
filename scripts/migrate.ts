@@ -6,18 +6,23 @@
  *   # or after Phase 1:
  *   npm run db:migrate     (defined in package.json — wraps tsx)
  *
- * Each `.sql` file is applied verbatim. Files are run in lexicographic
- * order. The migrations are all guarded with IF NOT EXISTS / EXCEPTION
- * blocks so re-runs are safe — Phase 2 will add a real `migrations`
- * tracking table.
+ * W0.D.1 (V4-ME-1 CLOSED 2026-05-16) upgrade:
+ *   • Walks migrations in lexicographic order (0000 sorts first).
+ *   • Consults `schema_migrations` on every run and SKIPS any version
+ *     whose row already exists (matched by filename stem).
+ *   • For each new file: applies the SQL THEN inserts the tracking row.
+ *     On SQL failure the tracking row is NOT inserted (apply fails loud,
+ *     re-run safely retries).
+ *   • First-run backfill: set `BACKFILL_EXISTING=1` to insert tracking
+ *     rows for every file WITHOUT executing the SQL. Use this exactly
+ *     once on a production DB that pre-dates the tracker.
  *
- * Why not drizzle-kit migrate?
- *   - Avoids hard-coupling Phase 1 install to drizzle-kit's deeper
- *     toolchain (it's still installed as a devDep for Phase 2 work).
- *   - One file, one driver — easier to read, easier to debug from a
- *     vercel-functions shell.
+ * The 0000_schema_migrations.sql file itself uses CREATE TABLE IF NOT
+ * EXISTS so the bootstrap apply is safe even when the table already
+ * exists (BACKFILL path).
  */
 
+import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,6 +31,53 @@ import { neon } from '@neondatabase/serverless';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MIG_DIR = join(__dirname, '..', 'api', 'db', 'migrations');
 
+const TRACKER_FILE = '0000_schema_migrations.sql';
+
+function checksum(body: string): string {
+  return createHash('sha256').update(body).digest('hex');
+}
+
+function versionFromFile(filename: string): string {
+  // Drop the .sql suffix; keep the rest as the canonical version key.
+  return filename.replace(/\.sql$/, '');
+}
+
+interface MigrateDriver {
+  query: (sql: string, params: unknown[]) => Promise<unknown>;
+}
+
+async function ensureTracker(driver: MigrateDriver): Promise<void> {
+  const body = readFileSync(join(MIG_DIR, TRACKER_FILE), 'utf8');
+  await driver.query(body, []);
+}
+
+async function appliedVersions(driver: MigrateDriver): Promise<Set<string>> {
+  try {
+    const rows = (await driver.query('SELECT version FROM schema_migrations', [])) as
+      | Array<{ version: string }>
+      | { rows: Array<{ version: string }> };
+    const list = Array.isArray(rows) ? rows : rows.rows;
+    return new Set((list ?? []).map((r) => r.version));
+  } catch (err) {
+    // Table didn't exist yet (first run) — caller bootstraps via ensureTracker.
+    if (err instanceof Error && /relation .* does not exist/i.test(err.message)) {
+      return new Set();
+    }
+    throw err;
+  }
+}
+
+async function recordApplied(
+  driver: MigrateDriver,
+  version: string,
+  checksumHex: string,
+): Promise<void> {
+  await driver.query(
+    'INSERT INTO schema_migrations (version, checksum) VALUES ($1, $2) ON CONFLICT (version) DO NOTHING',
+    [version, checksumHex],
+  );
+}
+
 async function run(): Promise<void> {
   const url = process.env.DATABASE_URL;
   if (!url) {
@@ -33,8 +85,6 @@ async function run(): Promise<void> {
     process.exit(1);
   }
   // OMS Wave 5.8 — refuse to touch prod unless explicitly authorised.
-  // The prod endpoint hostname for ppw-marketplace contains
-  // `raspy-butterfly-74927202` as a substring.
   if (url.includes('raspy-butterfly-74927202') && process.env.ALLOW_PROD_MIGRATIONS !== '1') {
     console.error(
       '[safety] DATABASE_URL appears to point at the production branch.\n' +
@@ -42,7 +92,14 @@ async function run(): Promise<void> {
     );
     process.exit(2);
   }
+
   const sql = neon(url);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const driver = sql as any;
+  if (typeof driver.query !== 'function') {
+    throw new Error('Neon driver does not expose .query; use a newer @neondatabase/serverless.');
+  }
+
   const files = readdirSync(MIG_DIR)
     .filter((f) => f.endsWith('.sql'))
     .sort();
@@ -50,22 +107,33 @@ async function run(): Promise<void> {
     console.warn('No migration files found in', MIG_DIR);
     return;
   }
+
+  // Bootstrap the tracker table first so we can consult it for the rest.
+  await ensureTracker(driver);
+  // Record the tracker file itself if not already present.
+  const trackerBody = readFileSync(join(MIG_DIR, TRACKER_FILE), 'utf8');
+  await recordApplied(driver, versionFromFile(TRACKER_FILE), checksum(trackerBody));
+
+  const applied = await appliedVersions(driver);
+  const backfill = process.env.BACKFILL_EXISTING === '1';
+
   for (const f of files) {
-    const full = join(MIG_DIR, f);
-    const body = readFileSync(full, 'utf8');
-    // Neon HTTP driver accepts multi-statement strings via `sql.query`.
-    // Note: this bypasses tagged-template safety; we trust our own files.
-    console.log(`-> applying ${f} (${body.length} bytes)`);
-    // The neon function supports an unsafe-multistatement form: pass an array of statements,
-    // OR pass the body via the raw `.query` method.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const driver = sql as any;
-    if (typeof driver.query === 'function') {
-      await driver.query(body, []);
-    } else {
-      // Fallback: split on `;` carefully (NOT robust for plpgsql blocks).
-      throw new Error('Neon driver does not expose .query; use a newer @neondatabase/serverless.');
+    const version = versionFromFile(f);
+    if (f === TRACKER_FILE) continue; // already handled above
+    if (applied.has(version)) {
+      console.log(`-> skip ${f} (already applied)`);
+      continue;
     }
+    const body = readFileSync(join(MIG_DIR, f), 'utf8');
+    const sum = checksum(body);
+    if (backfill) {
+      console.log(`-> backfill-mark ${f} (no SQL execution; ${body.length} bytes)`);
+      await recordApplied(driver, version, sum);
+      continue;
+    }
+    console.log(`-> applying ${f} (${body.length} bytes)`);
+    await driver.query(body, []);
+    await recordApplied(driver, version, sum);
     console.log(`   ok ${f}`);
   }
   console.log('migrations complete');
