@@ -2,6 +2,88 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 10 (Track A CA.8 layer 3 admin axe-core)
+
+Track A code tick — closes the long-deferred admin-pages axe-core
+coverage. Per cycle policy (A→B→C→D), Track D would be next after
+tick 9 (Track C) but Track D's only Vic-unblocked option (M9.A.3
+shared email templates) is best deferred until W0.D.22 voice/copy
+bank lands. Cycle rolls forward to Track A.
+
+### What shipped (commit `708da37`)
+
+- `src/components/__tests__/a11y-admin.test.tsx` (new) — 5 full-page
+  tests across the admin surfaces:
+  - `OrdersListPage` (loading initial state)
+  - `DashboardPage` (loading initial state)
+  - `PayoutsListPage` (loading initial state)
+  - `ProductsListPage` (loading initial state)
+  - `MerchantsListPage` (loading initial state)
+  Each renders inside a `MemoryRouter` via `renderToStaticMarkup`,
+  so `useEffect` doesn't fire and axe inspects the deterministic
+  initial DOM (header + nav + "Loading…" body).
+- `@clerk/clerk-react` stubbed via `vi.mock` at module level —
+  `useAuth` returns `{ getToken: () => null, isLoaded: true, ... }`,
+  `UserButton` renders a minimal labelled button. Mock lives in this
+  sibling file (NOT a global setup) so the customer-page tests in
+  `a11y.test.tsx` remain unaffected.
+- Same rule set as layers 1+2: `aria-*` / `button-name` / `image-alt`
+  / `label` / `link-name` / `role-img-alt`. `landmark-one-main`
+  intentionally dropped here (admin chrome wraps each page in a
+  single `<main>` and the Loading fragment is inside that wrap —
+  preserving the rule would noise on harmless layout).
+
+### Validation
+
+- `npm test` → **593/593 green** (+5 from tick 9's 588; zero
+  regressions).
+- `npx tsc --noEmit` (root) ✓ clean.
+- `npx vite build` ✓ clean, 1.20 MB JS / 365.87 kB gzip (unchanged
+  bundle — test-only change).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → deployment ready 2026-05-17
+  00:51 UTC, target = production.
+- Smoke: `GET https://designer.ppwellness.co/api/healthcheck` → 200
+  `{commit: 708da371a06bcfaec24cb225e1e677f1592346b5, …}`. Alias
+  serving the new commit.
+- Lambda count unchanged at **12/12**. No `vercel.json` edit.
+
+### Phase A applicability
+
+Admin pages ARE merchant-facing (Vic + reviewer-tier admins). Per
+Phase A gate scoping rules, however, **CA.8 is a coverage/test
+addition, not a feature ship** — no new surface, no new UX. The
+behaviour under test is what was already deployed. Backend-exempt
+analog applies. No Phase A scaffold required.
+
+### Tick 10 state summary
+
+Items shipped: 1 a11y test file (124 lines, +5 tests). V3.1-PLAN.md
+CA.8 still `[~]` partial — layer 3 done, layer 4 (PR CI gating)
+remains and folds into W0.D.17 `quality-gates.yml`. V4-UNIFIED-PLAN
+W0.A.6 ticked `[x]`. W0.A.7 stays `[ ]` (layer 4 CI gate, future
+quality-gates.yml work).
+
+Lambda 12/12. Test count **593/593**. Live commit
+`708da371a06bcfaec24cb225e1e677f1592346b5`.
+
+Next-item-to-pick (per A→B→C→D rotation, after this Track A tick):
+- **Track B next**: QW#4 — diff FRESH `_BUS.md` against live B
+  `_BUS.md` then mirror the deploy-live entries.
+- **Track C next**: W0.D.6 (Playwright E2E scaffold — one happy-
+  path test, designer→checkout) OR W0.D.7 (schema-mirror CI gate —
+  `scripts/check-schema-mirror.ts` diffs SQL vs Drizzle pgTable).
+  W0.D.7 is the cheaper pick — script + tests, no runner setup.
+- **Track D next**: still blocked (M9.A.1/.A.2 customer-facing →
+  Phase A; M9.A.3 → wait for W0.D.22; M9.B.* → Wave 0.5.B
+  sequencing requires V4-AU-1+V4-ME-2).
+- **Track A next** (after this): CA.8 layer 4 (folds into W0.D.17
+  quality-gates.yml — substantial CI workflow file).
+
+---
+
 ## 2026-05-17 — V4 Driver tick 9 (Track C W0.D.4 withApi HOF)
 
 Track C code tick — first Wave 0.D foundation primitive shipped per
