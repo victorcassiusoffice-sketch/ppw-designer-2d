@@ -2,6 +2,126 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 24 (Track D M9.B.2 merchant-scoped product listing)
+
+Cycle A→B→C→D round 3 closes Track D. M9.B.2 (`GET /api/merchants/
+:slug/products`) lands as a public-catalog slice — backend-exempt
+from Phase A (M9.B.5 self-service page is where Phase A gates).
+The plan calls for folding into "merchants-router" but that router
+doesn't exist (the 12-lambda Hobby cap is full per `vercel.json`),
+so this ship folds into the existing `/api/products` endpoint via
+a Vercel rewrite. Net new lambdas: **0**.
+
+### What shipped (commit `8bab602`)
+
+- `vercel.json` — added rewrite
+  `/api/merchants/:slug/products` → `/api/products`. Vercel passes
+  the `:slug` path parameter through as a `slug` query param
+  (matches the pattern of the existing
+  `/api/merchants/:slug/order-update` → `/api/orders` and
+  `/api/merchants/:slug/agent-session` → `/api/orders` rewrites).
+- `api/products.ts`:
+  - `ProductFilters` extended with `merchantSlug: string | null`;
+    `parseProductFilters` reads from `?slug=` (trims whitespace,
+    first-value on array — matches the pattern already used by
+    `category` / `region`).
+  - `ProductListResult` extended with optional `merchantNotFound:
+    boolean`.
+  - `fetchActiveProducts` resolves slug → merchant.id via a single
+    `SELECT LIMIT 1` against `merchants` table, then adds
+    `eq(products.merchantId, …)` to the existing predicate chain.
+    Unknown slug → 200 with empty list + `merchantNotFound: true`
+    (no 404 — consumer chooses how to render empty vs not-found;
+    M9.B.5 page will read the flag).
+  - Schema-missing detector regex extended to also catch
+    `relation .*merchants.* does not exist` so a fresh-DB smoke
+    against `/api/merchants/:slug/products` returns
+    `schemaMissing: true` instead of 500.
+  - Status filter intentionally stays `active` only. M9.B.5
+    merchant self-service page will need a separate `?status=`
+    override (to see draft / archived / out_of_stock products).
+    Deferred to that micro to keep M9.B.2 narrow + the public
+    catalog semantics unchanged.
+- `api/__tests__/products.test.ts` — +3 parse cases (slug
+  extract, whitespace-trim + empty-string rejection, array
+  first-value pick). Existing handler tests unchanged.
+
+### Validation
+
+- `npm test` → **684/684 green** (+3 from tick 23's 681; zero
+  regressions).
+- `npx tsc --noEmit` (root + `api/tsconfig.json`) ✓ clean.
+- `npx vite build` ✓ clean (3.57s).
+
+### Deploy + smoke (M9.B.2 has a NEW user-facing URL, so smoke
+goes beyond `/api/healthcheck`)
+
+- `npx vercel deploy --prod --yes` → ready 2026-05-17 08:15 UTC.
+- Smoke A: `GET /api/healthcheck` → 200
+  `{commit: 8bab60254d98bc468b763354eb95ae7e524f92d1, …}`.
+- Smoke B: `GET /api/merchants/nonexistent-test-slug/products` →
+  200 `{"products":[],"total":0,"limit":24,"offset":0,
+  "schemaMissing":false,"merchantNotFound":true}`. The rewrite +
+  handler chain works end-to-end on prod.
+- Lambda **12/12** unchanged. `vercel.json` rewrite added but no
+  new function entry.
+
+### Phase A applicability
+
+M9.B.2 is a backend listing endpoint (no UI surface ships in this
+commit). The Phase-A binding pattern list (`M9.B.*` included)
+DOES apply on paper, but per the goal-master backend-exempt rule
+(`<!-- phase-a-exempt -->` marker for backend/infra/docs/cron-
+enable), this micro's AC explicitly says **backend-exempt**. The
+Phase A gate fires on M9.B.5 (the `/merchant/:slug/products`
+PAGE), which consumes this endpoint.
+
+### Tick 24 state summary
+
+Items shipped: 1 vercel.json rewrite + 1 handler extension +
+1 test extension = 53 insertions / 5 deletions. M9.B.2 ticked
+`[x]` in V4-UNIFIED-PLAN.md (+ W0.5.B.2 mirror downgraded to
+`[~]` partial since its other half — TL §01.1 cross-merchant
+`/api/merchants/_catalog/products` filter surface per W0.5.B.7
+— is still open).
+
+**M9 progress: 2 of 11 micros shipped (M9.A.3 + M9.B.2).**
+M9.A.1 + M9.A.2 still need Phase A scaffold (Vic). M9.B.1 needs
+agent-chat lockdown (W1.D.6) + Phase A scaffold. M9.B.3 + M9.B.4
++ M9.B.5 remain open.
+
+Wave 0.D foundations: 5 of 23 shipped + 1 partial (unchanged
+from tick 23 since this tick is Track D not Track C).
+
+Lambda 12/12. Test count **684/684**. Live commit `8bab602`. 13
+PPW-Code commits live this session.
+
+### Session cumulative through tick 24 (17 ticks)
+
+Closed micros: **W0.D.1 + W0.D.3 + W0.D.4 + W0.D.7 + W0.D.14 +
+W0.A.6 + W0.A.7 + M1.E.4 + M9.A.3 + M9.B.2 + M3.A.1 = 11**.
+Plus W0.D.17 partial + W0.5.B.2 partial.
+
+Tests: **568 → 684** (+116). 13 PPW-Code commits live. All
+deploys smoked green.
+
+V-decisions surfaced this session: V4-QA-2 + V4-OPS-1 candidate.
+
+Next-pick (cycle resumes at Track A for tick 25 — round 4):
+- **Track A**: M3.A.2 (CSV preview/rollback polish — incremental
+  atop tick 22) OR M4.A.1 (leads-table migration; Phase A
+  binding — merchant-facing).
+- **Track B**: STILL BLOCKED on V4-OPS-1 (FRESH source missing).
+- **Track C**: W0.D.5 (`@ppw/ui` PNPM workspace, structural) OR
+  W0.D.2 (migration 0010 catalog filters body, consumes W0.D.3
+  drill from tick 23 — natural next as it puts the rollback
+  pattern to first use).
+- **Track D**: M9.B.3 + M9.B.4 (PATCH/DELETE under same /api/
+  merchants/:slug/products rewrite pattern — easy incremental
+  next round of D).
+
+---
+
 ## 2026-05-17 — V4 Driver tick 23 (Track C W0.D.3 rollback drill + migrate.ts filter)
 
 Cycle A→B→C→D round 3: tick 22 Track A → Track B is **BLOCKED**
