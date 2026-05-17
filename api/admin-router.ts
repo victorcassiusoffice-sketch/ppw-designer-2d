@@ -14,6 +14,7 @@
  *   GET    /api/admin/payouts                  → payouts/list
  *   GET    /api/admin/products                 → products/list
  *   POST/PATCH/DELETE /api/admin/products      → products/write
+ *   POST   /api/admin/products/import-csv      → products/importCsv (M3.A.1)
  *   GET    /api/admin/suppliers                → suppliers/list
  *   POST/PATCH/DELETE /api/admin/suppliers     → suppliers/write
  */
@@ -26,6 +27,7 @@ import { handler as ordersList } from './lib/admin/orders/list.js';
 import { handler as payoutsList } from './lib/admin/payouts/list.js';
 import { handler as productsList } from './lib/admin/products/list.js';
 import { handler as productsWrite } from './lib/admin/products/write.js';
+import { handler as productsImportCsv } from './lib/admin/products/importCsv.js';
 import { handler as suppliersList } from './lib/admin/suppliers/list.js';
 import { handler as suppliersWrite } from './lib/admin/suppliers/write.js';
 import { handler as statsHandler } from './lib/admin/stats.js';
@@ -94,6 +96,9 @@ export default async function handler(req: MinimalReq, res: MinimalRes): Promise
   }
 
   if (resource === 'products') {
+    if (rest[0] === 'import-csv') {
+      return productsImportCsv(req as never, res as never);
+    }
     if (req.method === 'GET') return productsList(req as never, res as never);
     return productsWrite(req as never, res as never);
   }

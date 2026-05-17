@@ -48,6 +48,11 @@ vi.mock('../lib/admin/products/write.js', () => ({
     res.status(200).json({ marker: 'products:write' });
   }),
 }));
+vi.mock('../lib/admin/products/importCsv.js', () => ({
+  handler: vi.fn(async (_req: unknown, res: { status: (c: number) => { json: (b: unknown) => void } }) => {
+    res.status(200).json({ marker: 'products:import-csv' });
+  }),
+}));
 vi.mock('../lib/admin/suppliers/list.js', () => ({
   handler: vi.fn(async (_req: unknown, res: { status: (c: number) => { json: (b: unknown) => void } }) => {
     res.status(200).json({ marker: 'suppliers:list' });
@@ -116,6 +121,7 @@ describe('admin-router dispatch', () => {
     { url: '/api/admin/payouts', method: 'GET', marker: 'payouts:list' },
     { url: '/api/admin/products', method: 'GET', marker: 'products:list' },
     { url: '/api/admin/products', method: 'POST', marker: 'products:write' },
+    { url: '/api/admin/products/import-csv', method: 'POST', marker: 'products:import-csv' },
     { url: '/api/admin/suppliers', method: 'GET', marker: 'suppliers:list' },
     { url: '/api/admin/suppliers', method: 'PATCH', marker: 'suppliers:write' },
     { url: '/api/admin/stats', method: 'GET', marker: 'stats' },
