@@ -2,6 +2,137 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 27 (M9.A.send.1-4 Resend wrapper + dedup + budget + audit)
+
+**Stop-hook correction**. The hook flagged that the prior session
+never read the live-readiness artifacts the goal explicitly named
+(`06-Roadmap/live-readiness/`). Reading them surfaced
+`LIVE-READINESS-PUNCH-LIST.md` — a pre-fab 22-row decomposition
+that explicitly lists **M9.A.send.1-4 (Resend wrapper) as
+drivable-now pick #1** because it unblocks M9.A.1 + M9.A.2 (both
+were Phase-A-binding wires waiting on a wrapper that didn't
+exist). Pivoted tick 27 from the menu-of-options I had offered
+to this canonical first-pick.
+
+### What shipped (commit `904dded`)
+
+- `api/lib/email/dedupKey.ts` (NEW, M9.A.send.2): pure
+  `computeDedupKey(template, recipient, payload)` → 32-char hex
+  SHA256. Recursive stable JSON stringify (sorted object keys at
+  every nesting level), recipient lowercased before hashing for
+  canonical email comparison. Zero I/O, zero env reads.
+- `api/lib/email/send.ts` (NEW, M9.A.send.1 + .3 + .4):
+  `sendEmail({to, subject, html, template, payload, merchantId,
+  dedupKey?})` →
+    1. Compute dedup-key (if not provided)
+    2. KV GET `email:dedup:<key>` → cached id → return
+       `{ok:true, code:'dedup_hit', id: cached}` without
+       calling Resend (NO audit row written either)
+    3. KV INCR `email:budget:<merchantId|"system">:<UTC-date>`
+       with 86400s EXPIRE on first increment of the day. Over
+       `BUDGET_LIMIT_PER_DAY=100` → return `{ok:false,
+       code:'rate_limit'}` + `email.failed` audit row
+    4. Resend send with 3× exponential backoff
+       (100ms / 200ms / 400ms). Transient errors only (`/timeout
+       |network|EAI_AGAIN|ETIMEDOUT|ECONNRESET|503|502|504|
+       rate.?limit/i`) retry; non-transient fail fast
+    5. Audit `email.sent` on success or `email.failed` on final
+       failure. Payload REDACTS the HTML body — logs only
+       template / to / dedupKey / merchantId / first 5
+       payload-keys / attempts. Audit insert failure NEVER flips
+       a successful send to failed.
+  Degrades to dry-run log when `RESEND_API_KEY` absent (matches
+  existing `merchantEmails.ts` pattern). Degrades open on KV
+  outage (allows the send) matching `rateLimit.ts` fail-open
+  posture — KV down must NOT silence customer emails.
+  Constants exported: `BUDGET_LIMIT_PER_DAY=100`,
+  `DEDUP_TTL_SECONDS=604800`, `MAX_SEND_ATTEMPTS=3`. Test hooks
+  `_resetForTests` + `_setForTests({resend, redis})` for
+  dependency injection.
+- `api/__tests__/lib/email/dedupKey.test.ts` (NEW, 7 tests).
+- `api/__tests__/lib/email/send.test.ts` (NEW, 13 tests):
+  dry-run fallback, clean send + audit, dedup-cache hit returns
+  first id, budget over limit returns rate_limit + email.failed,
+  per-merchant budget isolation, first-increment EXPIRE = 86400,
+  transient retry-then-succeed, no retry on non-transient,
+  3-retry failure + email.failed audit, explicit dedupKey
+  override, audit HTML-body redaction, throw-as-transient retry,
+  audit-write failure doesn't flip success.
+
+### Validation
+
+- `npm test` → **736/736 green** (+20 from tick 26's 716; one
+  brief detour: `noUncheckedIndexedAccess` required typing the
+  `vi.fn` mock as `vi.fn<(entry: AuditEntry) => Promise<…>>` so
+  `mock.calls[0][0]` narrowed correctly; factored into a
+  `firstAuditEntry()` helper for readability).
+- `npx tsc --noEmit` (root + `api/tsconfig.json`) ✓ clean.
+- `npx vite build` ✓ clean (4.46s).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → ready 2026-05-17 10:42 UTC.
+- Smoke: `GET /api/healthcheck` → 200
+  `{commit: 904dded15ee4a1e932ec16c73227af2a5cc4e8bf, …}`.
+- Lambda **12/12** unchanged (library; no new endpoint).
+
+### Phase A applicability
+
+M9.A.send.1-4 are a backend library — **backend-exempt** from
+Phase A per goal-master inline-marker exemption rule. The next
+ticks (M9.A.1 + M9.A.2) that wire this wrapper into customer-
+facing surfaces ARE Phase-A-binding.
+
+### Tick 27 state summary
+
+Items shipped: 1 dedupKey helper + 1 send wrapper + 2 test files
+= 681 insertions across 4 new files. M9.A.send.1-4 ticked
+`[x]` in LIVE-READINESS-PUNCH-LIST.md (4 rows).
+
+**Live-readiness progress: 4 of 22 autonomous-safe rows shipped
+through this work** (M9.A.send.1, .2, .3, .4). Remaining
+autonomous-safe = 16. Vic-gated = 2 (M9.C.1 + M9.C.2 HARD STOPs).
+
+Wave 0.D foundations: unchanged at 7 of 23 shipped + 1 partial
+(this tick is a live-readiness micro, not a Wave 0.D one — they
+have separate IDs but converging end-state).
+
+Lambda 12/12. Test count **736/736**. Live commit `904dded`. 18
+PPW-Code commits live this session.
+
+### Session cumulative through tick 27 (20 ticks)
+
+Closed micros (V4-UNIFIED-PLAN side):
+**W0.D.1 + W0.D.2 + W0.D.3 + W0.D.4 + W0.D.7 + W0.D.9 + W0.D.14
++ W0.A.6 + W0.A.7 + M1.E.4 + M9.A.3 + M9.B.2 + M3.A.1 = 13**.
+Plus W0.D.17 partial + W0.5.B.2 partial.
+
+Closed micros (live-readiness side, this tick):
+**M9.A.send.1 + M9.A.send.2 + M9.A.send.3 + M9.A.send.4 = 4**.
+
+Tests: **568 → 736** (+168). 18 PPW-Code commits live. All
+deploys smoked green.
+
+V-decisions: V4-QA-2 + V4-OPS-1 candidate.
+
+### Next-pick (live-readiness §Drivable-now ordering)
+
+Per the punch list's recommended sequence, after M9.A.send.1-4:
+- **#2 M9.A.1 wire into POST /api/designs** — 8-line addition;
+  customer-journey Phase A scaffold needed (`M9.A.1.customer.md`).
+  Could land the wire NOW + surface scaffold to Vic.
+- **#3 PolA.4 GET /api/merchants/_catalog/products** — endpoint
+  precedes UI; required for PolA.1/2/3 + M9.B.5 page; backend-
+  exempt; consumes the 0010 composite index from tick 25.
+- **#4 M9.B.2/3/4 merchants-router catchall fold** — M9.B.2 already
+  shipped in tick 24 (via /api/products fold instead of
+  merchants-router since the latter doesn't exist); M9.B.3 + .4
+  are easy follow-ons (PATCH + DELETE soft-delete via retired_at).
+- **#5 M9.A.2 PayPal capture-success email** — customer-facing but
+  sandbox-only; needs Phase A scaffold + M9.A.send (now ready).
+
+---
+
 ## 2026-05-17 — V4 Driver tick 26 (Track C W0.D.9 supplier_rating watermark backfill)
 
 Tick 25 → tick 26: stays on Track C to land the natural follow-on
