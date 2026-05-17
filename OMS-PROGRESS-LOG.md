@@ -2,6 +2,154 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 23 (Track C W0.D.3 rollback drill + migrate.ts filter)
+
+Cycle A→B→C→D round 3: tick 22 Track A → Track B is **BLOCKED**
+(PPWellness-Brain-FRESH source directory no longer exists locally
+under `C:\Users\Victor\Documents\` — only `PPW-Second-Brain` + the
+unrelated `PPWELLNESS` partnership folder remain; the prior QW#3-6
+mirrors happened during a window when FRESH still existed, but the
+remaining QW#7-13 + #15 + #17 + #20 + #21 source paths are now
+unreachable from this machine). Skipping Track B per the goal-master
+"never block on Vic inside a tick" rule and surfacing the finding
+to VIC-DECISIONS-QUEUE — Vic needs to decide whether to restore
+FRESH from a remote backup, re-derive the missing files from a
+different source, or retire the Track B QW backlog entirely.
+
+Advanced to Track C. Per the goal-master priority order (W0.D.4,
+W0.D.7, W0.D.14, W0.D.17, W0.D.19, W0.D.21, W0.D.10), the next
+W0.D.19 (tokens canon) is heavy and gates on W0.D.5 workspace
+extraction. **W0.D.3** (the priority-list-omitted but
+lexicographically-next Wave 0.D foundation) closes today as a
+small contained ship that unblocks W0.D.2 (catalog filters body)
+and prevents the next driver from having to invent the rollback
+drill from scratch.
+
+### What shipped (commit `3cd4656`)
+
+- `PPW-Second-Brain/06-Roadmap/v4/NEON-BRANCH-WORKFLOW.md` (NEW,
+  doc-only) — the 4-step branch-then-prod drill with concrete
+  Neon dashboard naming convention (`migration-test-v4-<NNNN>`),
+  the 3-query smoke template (schema parity / index parity /
+  data integrity), and the rollback invocation (`psql -f`, NOT
+  `migrate.ts`). Section on "when to skip the drill" so
+  additive/empty-table cases don't pay the ceremony tax. Cross-
+  links W0.D.1 + W0.D.7 + ME §03.2/03.3 + V4-ME-1/2.
+- `api/db/migrations/_template_rollback.sql` (NEW) — the
+  copy-template for `<NNNN>_<slug>_rollback.sql` siblings. 6
+  commented sections in the canonical drop order (indexes →
+  constraints → views → columns → tables → ENUMs), plus the
+  post-rollback `DELETE FROM schema_migrations …` bookkeeping
+  snippet so a clean drill leaves a fresh re-apply surface.
+- `scripts/migrate.ts` — extracted `isApplicableMigration(fn)`
+  pure filter that excludes (a) underscore-prefixed templates
+  and (b) `*_rollback.sql` siblings. Top-level `run()` now
+  guarded behind a CLI-invocation check (compares
+  `fileURLToPath(import.meta.url)` against `process.argv[1]`) so
+  the W0.D.3 test can import the filter without triggering a
+  `process.exit` during Vitest collect.
+- `api/__tests__/migrate-file-filter.test.ts` (NEW, 7 tests) —
+  forward / tracker accepted; rollback siblings / `_`-templates
+  / non-.sql / `_rollback.sql` edge case all rejected.
+
+### Why W0.D.3 over the priority-list next (W0.D.19)
+
+W0.D.19 (`@ppw/ui/tokens.css` canon + Tailwind rebind across ~30
+files) is the canonical Track C priority next-pick, BUT:
+- It depends on W0.D.5 (`@ppw/ui` PNPM workspace) which has not
+  shipped — the priority list assumes the workspace exists.
+- It's a ~30-file diff with Tailwind config + every consuming
+  surface; per prior tick guidance "structural, best as fresh
+  session".
+- Tick 23 picks the lower-blast-radius W0.D.3 that genuinely
+  unblocks W0.D.2's drill requirement.
+
+W0.D.19 (or W0.D.5 first) remains the right Track C pick for the
+next fresh-session driver.
+
+### Validation
+
+- `npm test` → **681/681 green** (+7 from tick 22's 674; the 7
+  new tests are `migrate-file-filter`).
+- `npx tsc --noEmit` (root + `api/tsconfig.json`) ✓ clean.
+- `npx vite build` ✓ clean (3.60s).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → ready 2026-05-17 08:08 UTC.
+- Smoke: `GET /api/healthcheck` → 200
+  `{commit: 3cd4656d7e2f07a7e849de9f1a48dd7284467035, …}`.
+- Lambda **12/12** unchanged. No `vercel.json` edit.
+
+### Phase A applicability
+
+W0.D.3 = infra + docs (Neon workflow, migrate.ts filter, SQL
+template). **Backend-exempt** from Phase A per the goal-master
+inline-marker exemption rule. No scaffold required.
+
+### Track B blocker — surfaced for VIC-DECISIONS-QUEUE
+
+`C:\Users\Victor\Documents\PPWellness-Brain-FRESH\` no longer
+exists on this machine. The INTEGRATION-PLAN.md (in
+`PPW-Second-Brain/06-Roadmap/brand-fresh-audit/`) still lists
+quick-wins QW#7-#25 sourced from that path. Without FRESH:
+- QW#7 (functional-health-specialist mirror) — source gone
+- QW#8 (lighthouse-audit-2026-05-05) — source gone
+- QW#9-#13 + #15 + #17 + #20 + #21 — source gone
+- QW#14 (space-designer imagery manifest — sourced from
+  `public_html/assets/space-designer/`) — likely also gone, need
+  to verify before next Track B attempt
+
+This isn't a "tick this and move on" issue — it requires Vic to
+decide on the source-of-truth question (restore from backup? OK
+to retire Track B entirely?). Logged as a new V-decision
+candidate at the bottom of this entry; driver does NOT
+auto-promote because the recovery answer is Vic's to make.
+
+### Tick 23 state summary
+
+Items shipped: 1 doc (second-brain) + 1 SQL template + 1 script
+refactor + 1 test file = 153 insertions / 7 deletions in code
++ ~165-line doc. W0.D.3 ticked `[x]` in V4-UNIFIED-PLAN.md.
+
+Wave 0.D foundations: **5 of 23 shipped** (W0.D.1 + W0.D.3 +
+W0.D.4 + W0.D.7 + W0.D.14) + 1 partial (W0.D.17). 12 PPW-Code
+commits live this session: 7ed8618 → 708da37 → 025a0c8 →
+ce617a1 → 4a47825 → 3508cf5 → 29e0b1b → 411b3a6 → 3cd4656
+(current), plus interleaved OMS doc commits.
+
+Lambda 12/12. Test count **681/681**. Live commit `3cd4656`.
+
+### Session cumulative through tick 23 (16 ticks)
+
+Closed micros: **W0.D.1 + W0.D.3 + W0.D.4 + W0.D.7 + W0.D.14 +
+W0.A.6 + W0.A.7 + M1.E.4 + M9.A.3 + M3.A.1 = 10**. Plus
+W0.D.17 partial. Brand-FRESH QW#3/4/5/6 = 4 quick-wins ticked.
+
+Tests: **568 → 681** (+113). 12 PPW-Code commits live. All
+deploys smoked green on `designer.ppwellness.co/api/healthcheck`.
+
+V-decisions surfaced this session: V4-QA-2 (cross-repo Phase A);
+**V4-OPS-1 candidate** — Track B FRESH-source recovery question
+(needs Vic Y on remediation path; see tick 23 above).
+V-decisions recognised: 8 prior V4 closures (unchanged).
+
+Next-pick (cycle resumes at Track D for tick 24):
+- **Track D**: M9.B.2 backend-exempt GET `/api/merchants/:slug/
+  products` (newly unblocked post-V4 BATCH reconciliation; folds
+  into merchants-router) OR M9.A.1+A.2 if Phase A scaffolds
+  arrive from Vic.
+- **Track A** (after one more round): M3.A.2 preview+rollback
+  polish (now genuinely incremental atop tick 22), OR M4.A.1
+  leads-table migration (Phase A binding — merchant-facing).
+- **Track B**: BLOCKED until Vic resolves FRESH source-of-truth
+  question — see V4-OPS-1 candidate.
+- **Track C**: W0.D.5 (`@ppw/ui` PNPM workspace, structural,
+  fresh session) OR W0.D.2 (migration 0010 catalog filters,
+  consumes W0.D.3 drill).
+
+---
+
 ## 2026-05-17 — V4 Driver tick 22 (Track A M3.A.1 admin CSV product import)
 
 Cycle A→B→C→D wraps round 2; tick 21 (Track D M9.A.3) → this tick

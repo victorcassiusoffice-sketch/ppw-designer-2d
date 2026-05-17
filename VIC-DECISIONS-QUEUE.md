@@ -1,5 +1,42 @@
 # VIC-DECISIONS-QUEUE
 
+## Status: 2026-05-17 (V4 Driver tick 23) — Track B FRESH-source disappeared
+
+#### V4-OPS-1 — `PPWellness-Brain-FRESH/` no longer on this machine; Track B QW#7-#25 are SOURCE-MISSING
+
+**State:** The V4 driver attempted Track B QW#7 (mirror
+`01-Staff/functional-health-specialist.md` from FRESH into live B
+per `06-Roadmap/brand-fresh-audit/INTEGRATION-PLAN.md`). The source
+directory `C:\Users\Victor\Documents\PPWellness-Brain-FRESH\` does
+not exist locally. Only `PPW-Second-Brain` (live B) + the unrelated
+`PPWELLNESS` partnership folder remain. The QW#3-#6 mirrors that
+shipped earlier on 2026-05-17 happened during a window when FRESH
+still existed; the remaining QW#7-#25 source files
+(`functional-health-specialist`, `lighthouse-audit-2026-05-05`,
+content-distribution × 5, product-empire × 2, space-designer × 2,
+pending-decisions, asset-maximisation, etc.) are unreachable.
+
+**Decision needed:** pick one path:
+1. **Restore FRESH from a remote backup** (OneDrive / external
+   drive / GitHub) — driver can then finish Track B mechanically.
+2. **Re-derive missing files from a different surviving source**
+   (live B + git history + Vic memory) — slower but doesn't need
+   the missing brain.
+3. **Retire Track B's QW backlog entirely** — accept that the
+   2026-05-16 brand-FRESH audit's "mirror these 19 items" plan is
+   stale; mark QW#7-#25 as superseded in INTEGRATION-PLAN.md.
+
+**Driver scope:** Vic-only decision (involves either an external
+restore action OR a scope retire). Track B is **BLOCKED** until
+resolved. Driver continues cycling A→C→D and skips B.
+
+**Recommendation:** **Option 1** if a recent FRESH backup exists
+(faster + zero data loss); **Option 3** otherwise (the items are
+mirror chores, not load-bearing infrastructure — letting them go
+is cheap relative to re-deriving 19 files by hand).
+
+---
+
 ## Status: 2026-05-16 (evening) — Designer-closure gaps surfaced from Vic user-journey check
 
 These three decisions came out of Vic's 2026-05-16 user-journey check and the M9 macro added to V3.1-PLAN.md. Driver implements the autonomous-safe items on Track C (M9.A + M9.B); these decisions only need Vic-Y on tone, schema, and external timing.
@@ -113,6 +150,15 @@ The full list of 17 Vic-decisions (incl. V-10..V-17 about Wellness Institute / L
 **Unblocks:** W0.D.14 CI gate (script + sub-templates already shipped; just needs the workflow plumbing to actually run on real plans every PR).
 
 ---
+
+#### V4-TL-2 — **CLOSED: Cart-while-designing = floating drawer over Konva (Sims-style)** (Vic 2026-05-17)
+Mini-cart pill rests on canvas; right-edge drawer slides over Konva on tap/click. No Konva render/input/gesture touched. UX Audit's design wins. Polish B unblocked.
+
+#### V4-UX-1 — **CLOSED: Drag-to-canvas = auto-add + 5-sec undo (Sims-style)** (Vic 2026-05-17)
+Dragging a product onto the canvas auto-adds to cart with a 5-second undo toast. Sims-natural flow. UX Audit's design wins.
+
+#### V3.1-J — **CLOSED: Merchant minimum product fields** (Vic 2026-05-17)
+Required: `name` + `price_mur` + `stock_qty` + `photo_url` + `description`. Optional: `dimensions_mm` + `weight_kg` + `category` + `eco_cert_level`. Schema lands in migration 0010 catalog filters. Agent's `add_product` intent enforces required + nudges optional.
 
 #### V4-AU-1 — **CLOSED: Retire clinic Tailwind palette, rebind to canonical brand palette NOW** (Vic 2026-05-16)
 Tailwind config rebound to canonical brand colours: gold `#C0A67E`, ink `#0E0E10`, cream `#F5EFE6`. Every surface going forward signals the utopia aesthetic instead of generic SaaS.
