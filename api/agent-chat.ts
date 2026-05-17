@@ -23,6 +23,8 @@ import {
   type ChatMessage,
   type AgentModel,
 } from './lib/agent/openrouter.js';
+import { applyAgentChatLockdown } from './lib/agent/lockdown.js';
+import { getClientIp } from './lib/rateLimit.js';
 import { eq, sql } from 'drizzle-orm';
 import { getDb, schema } from './db/client.js';
 
@@ -181,6 +183,29 @@ async function rawHandler(req: ChatReq, res: MinRes): Promise<void> {
   const model = v.model ?? pickModel(messages);
 
   const lastUser = [...messages].reverse().find((m) => m.role === 'user')?.content ?? '';
+
+  // V4 W1.D.6 — 3-part lockdown BEFORE any OpenRouter call.
+  // Pessimistic cost ceiling: 4000 input + 2000 output tokens × Sonnet rate
+  // (the most expensive model in our fallback chain). Real call typically
+  // costs ~10-20% of this — over-reservation just makes us refuse one
+  // extra call on the boundary.
+  const pessimisticCostMicroUsd = estimateCostMicroUsd('claude-sonnet', 4000, 2000);
+  const lockdown = await applyAgentChatLockdown({
+    ip: getClientIp(req),
+    messages,
+    estimatedNextCostMicroUsd: pessimisticCostMicroUsd,
+  });
+  if (!lockdown.ok) {
+    const status =
+      lockdown.code === 'prompt_injection'
+        ? 400
+        : lockdown.code === 'rate_limit'
+          ? 429
+          : 503;
+    res.status(status);
+    res.json({ error: lockdown.error, code: lockdown.code });
+    return;
+  }
 
   try {
     const result = await openRouterChat(cfg, { messages, model });

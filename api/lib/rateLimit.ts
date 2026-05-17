@@ -25,7 +25,7 @@
 import { Redis } from '@upstash/redis';
 import { Ratelimit } from '@upstash/ratelimit';
 
-type Verdict = {
+export type Verdict = {
   success: boolean;
   remaining: number;
   retryAfterSec: number;
