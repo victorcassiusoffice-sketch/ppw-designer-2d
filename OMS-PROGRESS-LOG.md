@@ -2,6 +2,140 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 22 (Track A M3.A.1 admin CSV product import)
+
+Cycle A→B→C→D wraps round 2; tick 21 (Track D M9.A.3) → this tick
+re-opens Track A. CA.8 layers 3+4 already shipped (W0.A.6 + W0.A.7),
+so the lowest open `[ ]` in Track A is V3.1 M3.A.1 — admin product
+CSV import. Folds under `admin-router` (12/12 cap respected) and
+is **backend-exempt** from Phase A.
+
+### What shipped (commit `411b3a6`)
+
+- `api/lib/admin/products/importCsv.ts` (NEW, 313 lines):
+  - `parseProductCsv(text)` — tiny hand-rolled CSV parser
+    (header-shape validation, blank-line tolerance, quoted-field
+    + escaped-quote support, CRLF tolerance). Zero new deps.
+  - `productCsvRowSchema` (Zod) — string-coerced per-row gate
+    over the 8 canonical columns
+    (`merchant_id,sku,name,category,price_minor,currency,
+    dimensions_mm,image_url`).
+  - `csvRowToCreatePayload(row)` — snake_case → camelCase
+    transform + `dimensions_mm` (`WxDxH`) → `widthMm/depthMm/
+    heightMm` expansion.
+  - `validateCsvRows(rows)` — runs Zod → transform → reuses
+    `validateCreate` from `products/write.ts` so every CSV-borne
+    row passes through the SAME shape gate as the single-row POST.
+    Returns a discriminated union `{ok: true, payload} | {ok: false, error}`.
+  - `handler` — POST-only. Auth via `authoriseAdminWithLive`.
+    `?preview=1` returns parsed+validated rows without DB write.
+    Commit mode inserts each ok row with per-row `audit_log`
+    write under action `products.import_csv` (continue-on-failure;
+    returns 207 multi-status if any row errors). All-or-nothing
+    transactional rollback is M3.A.2's job and was intentionally
+    kept out to keep this commit narrowly M3.A.1.
+- `api/admin-router.ts` — wired `/api/admin/products/import-csv`
+  resource branch (`resource === 'products' && rest[0] === 'import-csv'`).
+  Comment header table updated.
+- `api/__tests__/admin-products-import-csv.test.ts` (NEW, 26 unit
+  tests): parser header/cell/quote/CRLF coverage; per-column Zod
+  accept/reject (empty merchant_id, non-numeric, negative price,
+  2-letter currency, malformed dims, non-http image); transform
+  snake→camel + dimensions expand; row-number indexing (rows
+  start at 2 because header is row 1); continue-past-bad-row.
+- `api/__tests__/admin-router.test.ts` — +1 dispatch row asserting
+  `POST /api/admin/products/import-csv → products:import-csv`.
+
+### Spec deviation (called out in V3.1-PLAN tick)
+
+V3.1-PLAN's M3.A.1 spec mentions a 6-column CSV
+`(name, slug, sku, dimensions_mm, image_url, merchant_id)`. The
+products table doesn't have a `slug` column AND requires
+`category`/`price_minor`/`currency` (NOT NULL). Going with the
+spec verbatim would mean silent default-injection (e.g.,
+`category='general'`, `price_minor=0`) — that's a worse failure
+mode than asking the CSV to carry the real columns. Upgraded the
+canonical header to 8 cols matching schema reality. Spec's
+intent (admin pastes CSV → products land in catalog) is fully met.
+
+### Validation
+
+- `npm test` → **674/674 green** (+26 from tick 21's 648; zero
+  regressions).
+- `npx tsc --noEmit` (root + `api/tsconfig.json`) ✓ clean.
+- `npx vite build` ✓ clean (3.70s; no bundle-size delta since the
+  handler is api-side).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → deployment ready 2026-05-17
+  07:58 UTC, target = production, alias `designer.ppwellness.co`.
+- Smoke: `GET https://designer.ppwellness.co/api/healthcheck` → 200
+  `{commit: 411b3a654a74e4decab432ab1ef9bd1dc536b37d, …}`.
+- Lambda **12/12** unchanged. No `vercel.json` edit (folded into
+  existing `admin-router`).
+
+### Phase A applicability
+
+M3.A.1 is an admin endpoint (admin-router, admin auth gate). The
+goal-master's Phase-A binding pattern list is
+`M1.B.* / M1.C.* / M9.A.* / M9.B.* / M4.A.* / M4.B.* / W0.5.A.* /
+W0.5.B.* / W2.* / W4.B.* / W4.G.* / W5.*` plus Cross-A customer/
+merchant rows. M3.A is NOT on that list → **backend-exempt**.
+No Phase A scaffold needed.
+
+### Vic-action follow-up (NOT blocking driver)
+
+- M3.A.2 (preview+transactional rollback polish), M3.A.3
+  (suppliers CSV mirror), M3.A.4 (`/admin/help/import` doc) still
+  open in V3.1-PLAN — staged for future Track A picks.
+- The Cross-A.1 row in V4-UNIFIED-PLAN.md bundles M3.A.1-4 + the
+  help doc into ONE V4 micro; it stays `[ ]` until all four V3.1
+  sub-items close. Driver does not auto-promote it.
+
+### Tick 22 state summary
+
+Items shipped: 1 new handler + 1 router edit + 2 test files = 4
+files / 643 insertions. M3.A.1 ticked `[x]` in V3.1-PLAN.md.
+
+**V3.1 M3.A progress: 1 of 4 micros shipped (M3.A.1).** Cross-A.1
+in V4-UNIFIED-PLAN remains `[ ]` (bundle gate — needs M3.A.2-4 +
+suppliers mirror + help doc).
+
+Wave 0.D unchanged (still 4 shipped + W0.D.17 partial). M9 unchanged
+(still 1 of 11 — M9.A.3 shipped). M1.E.4 + W0.A.6/7 unchanged.
+
+Lambda 12/12. Test count **674/674**. Live commit `411b3a6`. 11
+PPW-Code commits live this session: 7ed8618 → 708da37 → 025a0c8 →
+ce617a1 → 4a47825 → 3508cf5 → 29e0b1b → 411b3a6 (current), plus
+interleaved OMS doc commits (bf81204 etc.).
+
+### Session cumulative through tick 22 (15 ticks)
+
+Closed micros: **W0.D.1 + W0.D.4 + W0.D.7 + W0.D.14 + W0.A.6 +
+W0.A.7 + M1.E.4 + M9.A.3 + M3.A.1 = 9**. Plus W0.D.17 partial.
+Brand-FRESH QW#3/4/5/6 = 4 quick-wins ticked.
+
+Tests: **568 → 674** (+106). 11 PPW-Code commits live. All deploys
+smoked green on `designer.ppwellness.co/api/healthcheck`.
+
+V-decisions surfaced this session: V4-QA-2 (unchanged).
+V-decisions recognised (BATCH ⇄ QUEUE): 8 prior V4 closures
+(unchanged).
+
+Next-pick (Cycle resumes at Track B for tick 23):
+- **Track B**: QW#7 functional-health-specialist mirror.
+- **Track C**: W0.D.19 (`@ppw/ui/tokens.css` token canon) or
+  W0.D.5 (`@ppw/ui` workspace extraction — better fresh session).
+- **Track D**: M9.A.1/A.2 need Phase A scaffolds (Vic), OR
+  M9.B.2/3/4 backend-exempt GET/PATCH/DELETE under
+  merchants-router.
+- **Track A** (after one full round): M3.A.2 preview+rollback
+  polish (now genuinely incremental atop tick 22), OR
+  M4.A.1 leads-table migration (Phase A binding — merchant-facing).
+
+---
+
 ## 2026-05-17 — V4 Driver tick 21 (Track D M9.A.3 customer email templates)
 
 Track D **finally** ships — the tick-19 BATCH reconciliation
