@@ -46,6 +46,13 @@ export interface TopBarProps {
   setRoomsMenuOpen?: (v: boolean) => void;
   /** Mobile UX (fix/mobile-ux-v1) — opens the Catalog bottom sheet. */
   onOpenCatalog?: () => void;
+  /**
+   * Polish B / V4-AU-1 conflict resolution: the 3D-preview toggle
+   * migrates from the canvas top-right slot (now reserved for the
+   * MiniCartPill) into the TopBar overflow menu.
+   */
+  threeDPreview?: boolean;
+  setThreeDPreview?: (v: boolean) => void;
 }
 
 export function TopBar({
@@ -54,6 +61,8 @@ export function TopBar({
   roomsMenuOpen = false,
   setRoomsMenuOpen,
   onOpenCatalog,
+  threeDPreview = false,
+  setThreeDPreview,
 }: TopBarProps) {
   const room = useDesignStore((s) => s.roomDimensions);
   const setRoom = useDesignStore((s) => s.setRoomDimensions);
@@ -325,6 +334,21 @@ export function TopBar({
           Grid 0.5 m
         </button>
 
+        {/* Polish B / V4-AU-1: 3D preview toggle relocated from canvas
+            top-right (cart pill now owns that slot) into TopBar. */}
+        {setThreeDPreview && (
+          <button
+            type="button"
+            onClick={() => setThreeDPreview(!threeDPreview)}
+            aria-pressed={threeDPreview}
+            aria-label="Toggle 3D preview"
+            title="Toggle 3D preview"
+            className={`hidden md:inline-block rounded-md border px-2.5 py-1 text-xs font-medium transition ${threeDPreview ? 'border-ppw-teal bg-ppw-teal text-white' : 'border-ppw-stone bg-white text-ppw-slate hover:border-ppw-teal'}`}
+          >
+            {threeDPreview ? '2D' : '3D preview'}
+          </button>
+        )}
+
         <div className="hidden sm:block">
           <CurrencySwitcher compact />
         </div>
@@ -448,6 +472,24 @@ export function TopBar({
                 <span>Grid 0.5 m</span>
                 <span className="text-[10px] opacity-80">{showGrid ? 'on' : 'off'}</span>
               </button>
+              {setThreeDPreview && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setThreeDPreview(!threeDPreview);
+                    setShowMobileMenu(false);
+                  }}
+                  aria-pressed={threeDPreview}
+                  className={`flex min-h-[44px] items-center justify-between rounded-md border px-3 text-sm font-medium hover:border-ppw-teal ${
+                    threeDPreview
+                      ? 'border-ppw-teal bg-ppw-teal text-white'
+                      : 'border-ppw-stone bg-white text-ppw-ink'
+                  }`}
+                >
+                  <span>3D preview</span>
+                  <span className="text-[10px] opacity-80">{threeDPreview ? 'on' : 'off'}</span>
+                </button>
+              )}
               <div className="flex items-center justify-between rounded-md border border-ppw-stone bg-white px-3 py-1.5">
                 <span className="text-[10px] uppercase tracking-wide text-ppw-slate">Currency</span>
                 <CurrencySwitcher compact />

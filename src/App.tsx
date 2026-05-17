@@ -32,6 +32,8 @@ import { DetailsPanel } from './components/DetailsPanel';
 import { ToastProvider } from './components/ToastProvider';
 import { RoomList } from './components/RoomList';
 import { CartStrip } from './components/CartStrip';
+import { MiniCartPill } from './components/cart/MiniCartPill';
+import { CartDrawer } from './components/cart/CartDrawer';
 import { AddRoomChooser } from './components/AddRoomChooser';
 import { CanvasErrorBoundary } from './components/CanvasErrorBoundary';
 import { useKeyboardShortcuts } from './lib/useKeyboardShortcuts';
@@ -138,6 +140,8 @@ export default function App() {
         roomsMenuOpen={roomsMenuOpen}
         setRoomsMenuOpen={setRoomsMenuOpen}
         onOpenCatalog={() => setCatalogOpen(true)}
+        threeDPreview={threeDPreview}
+        setThreeDPreview={setThreeDPreview}
       />
       <main className="flex flex-1 overflow-hidden">
         <RoomList
@@ -152,17 +156,10 @@ export default function App() {
           setPendingProductId={setPendingProductId}
         />
         <section className="relative flex-1 overflow-hidden">
-          {/* OMS Wave 2.4 — 3D toggle button. Top-right of the canvas
-              region so it doesn't compete with TopBar real estate. */}
-          <button
-            type="button"
-            onClick={() => setThreeDPreview((v) => !v)}
-            aria-pressed={threeDPreview}
-            aria-label="Toggle 3D preview"
-            className="absolute right-3 top-3 z-10 rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-ppw-ink shadow-sm ring-1 ring-ppw-stone hover:bg-ppw-sand hidden md:block"
-          >
-            {threeDPreview ? '2D' : '3D preview'}
-          </button>
+          {/* Polish B (V4 Driver tick 35): MiniCartPill owns the canvas
+              top-right slot. The 3D toggle migrated to TopBar overflow
+              per V4-AU-1 conflict resolution. */}
+          <MiniCartPill />
           <CanvasErrorBoundary onReset={() => setDrawMode(false)}>
             <div
               style={{
@@ -203,6 +200,7 @@ export default function App() {
         <DetailsPanel />
       </main>
       <CartStrip />
+      <CartDrawer />
       <AddRoomChooser
         open={addRoomOpen}
         onClose={() => setAddRoomOpen(false)}

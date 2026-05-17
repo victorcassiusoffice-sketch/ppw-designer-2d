@@ -2,6 +2,10 @@
  * ToastProvider — renders a stack of transient messages bottom-centre.
  * Reads from `toastStore`, schedules its own `setTimeout` per toast for
  * auto-dismiss. Zero external deps.
+ *
+ * PolB.3 (V4 Driver tick 35): toasts can carry an optional `action`
+ * (e.g. Undo). When present, the CTA renders inline; clicking the
+ * action fires `onClick` then dismisses the toast.
  */
 import { useEffect } from 'react';
 import { useToastStore } from '../store/toastStore';
@@ -18,7 +22,6 @@ export function ToastProvider() {
   const toasts = useToastStore((s) => s.toasts);
   const dismiss = useToastStore((s) => s.dismiss);
 
-  // For every toast in the queue, schedule a one-shot dismiss timer.
   useEffect(() => {
     const timers = toasts.map((t) => window.setTimeout(() => dismiss(t.id), t.ttlMs));
     return () => {
@@ -37,10 +40,28 @@ export function ToastProvider() {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`pointer-events-auto rounded-md px-4 py-2 text-sm font-medium shadow-lg ring-1 ring-black/10 ${KIND_CLASSES[t.kind]}`}
-          onClick={() => dismiss(t.id)}
+          className={`pointer-events-auto flex items-center gap-3 rounded-md px-4 py-2 text-sm font-medium shadow-lg ring-1 ring-black/10 ${KIND_CLASSES[t.kind]}`}
+          data-testid="toast"
         >
-          {t.message}
+          <span
+            className="flex-1 cursor-pointer"
+            onClick={() => dismiss(t.id)}
+          >
+            {t.message}
+          </span>
+          {t.action && (
+            <button
+              type="button"
+              onClick={() => {
+                t.action!.onClick();
+                dismiss(t.id);
+              }}
+              className="rounded-sm bg-white/15 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide ring-1 ring-white/30 hover:bg-white/25"
+              data-testid="toast-action"
+            >
+              {t.action.label}
+            </button>
+          )}
         </div>
       ))}
     </div>

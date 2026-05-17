@@ -77,6 +77,7 @@ export function RoomCanvas({
   const placedItems = useDesignStore((s) => s.placedItems);
   const selectedInstanceId = useDesignStore((s) => s.selectedInstanceId);
   const addItem = useDesignStore((s) => s.addItem);
+  const removeItem = useDesignStore((s) => s.removeItem);
   const selectItem = useDesignStore((s) => s.selectItem);
   const updateItem = useDesignStore((s) => s.updateItem);
 
@@ -284,10 +285,25 @@ export function RoomCanvas({
         pushToast("Item won't fit here.", 'warn');
         return;
       }
-      addItem({ productId: product.id, x: snappedX, y: snappedY, rotation: 0 });
-      pushToast(`Placed "${product.name}"`, 'success');
+      // PolB.3 (V4 Driver tick 35): drag-to-canvas auto-adds to cart
+      // (cart derives from placedItems). Toast surfaces the auto-add
+      // with a 5-second Undo CTA per V4-UX-1 Vic-Y. Konva input
+      // handlers unchanged; only the toast call evolved.
+      const instanceId = addItem({
+        productId: product.id,
+        x: snappedX,
+        y: snappedY,
+        rotation: 0,
+      });
+      pushToast(`Added "${product.name}" to cart`, 'success', {
+        ttlMs: 5000,
+        action: {
+          label: 'Undo',
+          onClick: () => removeItem(instanceId),
+        },
+      });
     },
-    [viewport, pxPerMetre, placedItems, polygon, addItem, pushToast],
+    [viewport, pxPerMetre, placedItems, polygon, addItem, removeItem, pushToast],
   );
 
   function resetView() {
