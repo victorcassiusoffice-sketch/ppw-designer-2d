@@ -354,6 +354,8 @@ export const products = pgTable(
     inStockQty: integer('in_stock_qty').notNull().default(0),
     retiredAt: timestamp('retired_at', { withTimezone: true }),
     supplierRating: integer('supplier_rating'),
+    // V4 W0.D.9 — supplier_rating refresh watermark (refresh-supplier-rating cron).
+    supplierRatingRefreshedAt: timestamp('supplier_rating_refreshed_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

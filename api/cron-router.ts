@@ -8,7 +8,8 @@
  * use the query string).
  *
  * Routes:
- *   GET /api/cron/escalate-orders   → flag stuck order_items
+ *   GET /api/cron/escalate-orders          → flag stuck order_items
+ *   GET /api/cron/refresh-supplier-rating  → W0.D.9 watermark backfill
  *
  * Future cron jobs (dep audit, KV cleanups, etc.) fold into this same
  * file to stay under the Vercel Hobby 12-fn cap.
@@ -19,6 +20,7 @@ import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
 import { getDb } from './db/client.js';
 import { recordAudit } from './lib/auditLog.js';
 import { emailMerchantApproved } from './lib/merchantEmails.js';
+import { refreshSupplierRatingBatch } from './lib/cron/refreshSupplierRating.js';
 
 interface RouterReq extends MinReq {
   body?: unknown;
@@ -176,8 +178,49 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
     return;
   }
 
+  if (action === 'refresh-supplier-rating') {
+    try {
+      await handleRefreshSupplierRating(res);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'refresh-supplier-rating failed';
+      res.status(500);
+      res.json({ error: msg });
+    }
+    return;
+  }
+
   res.status(404);
   res.json({ error: `unknown cron action: ${action ?? '(empty)'}` });
+}
+
+async function handleRefreshSupplierRating(res: MinRes): Promise<void> {
+  let result;
+  try {
+    result = await refreshSupplierRatingBatch();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/relation .* does not exist|column .* does not exist|42P01|42703/i.test(msg)) {
+      res.status(503);
+      res.json({ ok: false, error: 'products/merchants schema not migrated.' });
+      return;
+    }
+    res.status(500);
+    res.json({ ok: false, error: msg });
+    return;
+  }
+  // Silent on green when nothing to do; audit row only when something changed.
+  if (result.updated > 0 || result.errors > 0) {
+    await recordAudit(
+      'system:cron',
+      'products.refresh_supplier_rating',
+      'products',
+      String(result.updated),
+      null,
+      { ...result } as Record<string, unknown>,
+    );
+  }
+  res.status(200);
+  res.json({ ok: true, ...result });
 }
 
 export default withSentry(rawHandler);
