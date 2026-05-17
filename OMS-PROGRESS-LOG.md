@@ -2,6 +2,131 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 28 (M9.A.1 design-saved email wire + Phase A scaffold)
+
+Punch-list pick #2. M9.A.send wrapper (tick 27) now has its first
+consumer wired in: POST `/api/designs` fires the design-saved email
+after a successful insert when `customerEmail` is captured.
+
+### What shipped (commit `ce9cb19`)
+
+- `api/lib/email/dispatch.ts` (NEW):
+  - `deriveGreetingName(email)` — pure helper that turns the
+    email-prefix into a friendly first-name proxy (`vic@x.com`
+    → `Vic`, `@x.com` → `there` fallback).
+  - `dispatchDesignSavedEmail(design)` — wraps `renderDesignSaved`
+    + `sendEmail` with the per-trigger payload contract. Returns
+    `{fired, send?, skippedReason?, error?}` discriminated result.
+    NEVER re-throws — every caller is a success-path that must
+    succeed regardless of email outcome (a saved design is the
+    authoritative outcome; the email is a courtesy).
+- `api/orders.ts`: 8-line wire after the existing
+  `.insert(schema.designs).values(...).returning()` call.
+  `await dispatchDesignSavedEmail({id, name, customerEmail})`
+  keeps the Vercel lambda alive until Resend responds (typically
+  <500ms) but the wire is try-implicit via the helper's never-
+  re-throws contract — the response still proceeds to 201 +
+  `{design}` body regardless of email outcome. If the helper
+  catches internally, logs via `console.error`.
+- `api/__tests__/lib/email/dispatch.test.ts` (NEW, 10 tests):
+  deriveGreetingName edge cases (empty, dots, capitalisation
+  idempotency) + dispatchDesignSavedEmail null/whitespace skip,
+  happy path (correct template + payload + URL + greeting name +
+  subject), bigint id coercion, sendEmail throw → caller_caught
+  + no re-throw, sendEmail `{ok:false}` → fired:true + passthrough.
+
+### Validation
+
+- `npm test` → **746/746 green** (+10).
+- `npx tsc --noEmit` (root + `api/tsconfig.json`) ✓ clean.
+- `npx vite build` ✓ clean (4.18s).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → ready 2026-05-17 10:49 UTC.
+- Smoke: `GET /api/healthcheck` → 200
+  `{commit: ce9cb196f6c6a0b9fb2387612d3330a312b6b325, …}`.
+- Lambda **12/12** unchanged.
+
+### Phase A — SCAFFOLD SEEDED, AWAITING VIC WALKTHROUGH
+
+Per the goal-master Phase A gate (BINDING on customer/merchant-
+facing micros) + `scripts/check-phase-a.ts` (shipped W0.D.14 tick
+17), M9.A.1 stays `[~]` partial in V4-UNIFIED-PLAN until Vic
+completes the journey checklist.
+
+Scaffold file: `PPW-Second-Brain/06-Roadmap/user-testing/phase-a/
+M9.A.1.customer.md` — populated with the 14-step customer journey
+checklist + dedup + budget + audit-row verification points + Vic-
+specific testing notes (how to test the dry-run path, how to
+force a re-send by clearing the KV dedup key, how to clear the
+budget bucket).
+
+**Vic-action follow-up (NOT blocking driver):**
+1. Visit `https://designer.ppwellness.co/designer`
+2. Place an object on the canvas
+3. Save the design with an email captured (e.g. your own)
+4. Verify the email arrives in ≤2 min with the right subject +
+   palette + science-snippet P.S.
+5. Re-save the SAME design with the SAME email → no second
+   email (dedup cache hit)
+6. Save a design WITHOUT email → 201, no email row
+7. Fill the Outcome section of `M9.A.1.customer.md` with verdict +
+   one screenshot per device matrix tested
+8. Once verdict = PASS or PASS-WITH-NOTES, driver flips M9.A.1
+   `[~]` → `[x]` in V4-UNIFIED-PLAN
+
+### Phase A applicability
+
+M9.A.1 is the FIRST customer-facing micro this session to surface
+the Phase A gate semantics in practice. Backend-exempt micros
+(W0.D.1/2/3/4/7/9/14, M3.A.1, W0.A.6/7, M9.A.send.1-4) all ticked
+[x] without scaffolds. This one waits.
+
+### Tick 28 state summary
+
+Items shipped: 1 dispatch helper + 1 orders.ts wire (8 lines) +
+1 test file (10 tests) + 1 Phase A scaffold = 205 insertions
+across 3 code files + 1 second-brain doc. M9.A.1 marked `[~]`
+partial in V4-UNIFIED-PLAN (NOT `[x]` — Phase A gate intact).
+
+Live-readiness progress: **5 of 22 autonomous-safe rows shipped
+via punch-list-aligned work** (M9.A.send.1, .2, .3, .4 from tick
+27 + M9.A.1 wire from tick 28 — though M9.A.1 itself is partial
+pending Vic).
+
+Lambda 12/12. Test count **746/746**. Live commit `ce9cb19`. 19
+PPW-Code commits live this session.
+
+### Session cumulative through tick 28 (21 ticks)
+
+Closed micros (V4-UNIFIED-PLAN side): unchanged at **13** (M9.A.1
+is `[~]` not `[x]`).
+Closed micros (live-readiness side): **5** (M9.A.send.1-4 + the
+M9.A.1 wire half).
+Pending Vic-actions: 3 (W0.D.3 drill apply for 0010, drill apply
+for 0011, M9.A.1 Phase A walkthrough).
+
+Tests: **568 → 746** (+178). 19 PPW-Code commits live. All
+deploys smoked green.
+
+V-decisions: V4-QA-2 + V4-OPS-1 candidate.
+
+### Next-pick (live-readiness §Drivable-now)
+
+- **#3 PolA.4** GET /api/merchants/_catalog/products — backend-
+  exempt; consumes the W0.D.2 composite index from tick 25;
+  precedes the PolA.1/2/3 UI work + the M9.B.5 page.
+- **#4 M9.B.3 + M9.B.4** — PATCH + DELETE soft-delete via
+  retired_at column (now genuinely cleaner post-tick 25);
+  backend-exempt; folds into existing /api/products via rewrite
+  pattern from tick 24.
+- **#5 M9.A.2** PayPal capture-success email — customer-facing,
+  needs its own Phase A scaffold; depends on M9.A.send (ready)
+  + existing PayPal capture handler.
+
+---
+
 ## 2026-05-17 — V4 Driver tick 27 (M9.A.send.1-4 Resend wrapper + dedup + budget + audit)
 
 **Stop-hook correction**. The hook flagged that the prior session
