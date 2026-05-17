@@ -52,7 +52,8 @@
 
 import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
 import { getDb, schema } from './db/client.js';
-import { and, eq, gte, gt, lte, sql, inArray, type SQL } from 'drizzle-orm';
+import { and, eq, gte, gt, isNull, lte, sql, inArray, type SQL } from 'drizzle-orm';
+import { drizzleAuditWriter } from './lib/auditLog.js';
 
 type ProductsReq = MinReq & { query?: Record<string, string | string[] | undefined> };
 
@@ -211,7 +212,8 @@ function buildOrderBy(sort: SortOption): SQL {
 
 export async function fetchActiveProducts(filters: ProductFilters): Promise<ProductListResult> {
   const db = getDb();
-  const conds = [eq(schema.products.status, 'active')];
+  // V4 M9.B.4 — exclude soft-deleted products everywhere (retired_at IS NULL).
+  const conds = [eq(schema.products.status, 'active'), isNull(schema.products.retiredAt)];
   if (filters.category) conds.push(eq(schema.products.category, filters.category));
   if (filters.region) conds.push(eq(schema.products.region, filters.region));
   if (filters.priceMin !== null) conds.push(gte(schema.products.priceMinor, filters.priceMin));
@@ -359,18 +361,130 @@ export async function fetchCatalogFacets(filters: ProductFilters): Promise<Catal
   return { eco_cert_counts, price_buckets: bucketCounts };
 }
 
+/**
+ * V4 M9.B.4 — soft-delete a merchant's product.
+ * Returns:
+ *   { ok: true,  status: 204 }                     — soft-deleted
+ *   { ok: false, status: 400, error }              — bad id / missing slug
+ *   { ok: false, status: 403, error: 'forbidden' } — product belongs to a different merchant
+ *   { ok: false, status: 404, error: 'not_found' } — no such product OR already retired
+ *   { ok: false, status: 503, error }              — schema not migrated yet
+ */
+export interface SoftDeleteResult {
+  ok: boolean;
+  status: number;
+  error?: string;
+  retiredAt?: Date;
+}
+
+export async function softDeleteProduct(slug: string, productId: number): Promise<SoftDeleteResult> {
+  if (!slug || !Number.isFinite(productId) || productId <= 0) {
+    return { ok: false, status: 400, error: 'slug + positive integer id required' };
+  }
+  const db = getDb();
+  try {
+    const merchantRows = await db
+      .select({ id: schema.merchants.id })
+      .from(schema.merchants)
+      .where(eq(schema.merchants.slug, slug))
+      .limit(1);
+    const merchant = merchantRows[0];
+    if (!merchant) {
+      return { ok: false, status: 404, error: 'merchant_not_found' };
+    }
+    const merchantId = Number(merchant.id);
+
+    const existing = await db
+      .select({
+        id: schema.products.id,
+        merchantId: schema.products.merchantId,
+        retiredAt: schema.products.retiredAt,
+      })
+      .from(schema.products)
+      .where(eq(schema.products.id, productId))
+      .limit(1);
+    const product = existing[0];
+    if (!product) {
+      return { ok: false, status: 404, error: 'product_not_found' };
+    }
+    if (Number(product.merchantId) !== merchantId) {
+      return { ok: false, status: 403, error: 'forbidden' };
+    }
+    if (product.retiredAt) {
+      // Idempotent — already soft-deleted; surface 204 not 404 so retried
+      // operator scripts stay clean.
+      return { ok: true, status: 204, retiredAt: product.retiredAt };
+    }
+
+    const now = new Date();
+    await db
+      .update(schema.products)
+      .set({ retiredAt: now, updatedAt: now })
+      .where(and(eq(schema.products.id, productId), eq(schema.products.merchantId, merchantId)));
+
+    try {
+      const audit = drizzleAuditWriter();
+      await audit.record({
+        actorEmail: `merchant:${slug}`,
+        action: 'products.soft_delete',
+        targetType: 'product',
+        targetId: String(productId),
+        payload: { merchantId, slug },
+      });
+    } catch {
+      // Audit failure must not change the delete verdict.
+    }
+    return { ok: true, status: 204, retiredAt: now };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/relation .*(products|merchants).* does not exist|column .* does not exist|42P01|42703/i.test(msg)) {
+      return { ok: false, status: 503, error: 'schema_missing' };
+    }
+    throw err;
+  }
+}
+
 async function handler(req: ProductsReq, res: MinRes): Promise<void> {
   if (req.method === 'OPTIONS') {
     res.status(204).end();
     return;
   }
+
+  const q = req.query ?? {};
+  const slugRaw = q['slug'];
+  const slug = Array.isArray(slugRaw) ? slugRaw[0] : slugRaw;
+  const idRaw = q['id'];
+  const idStr = Array.isArray(idRaw) ? idRaw[0] : idRaw;
+
+  // V4 M9.B.4 — DELETE soft-delete via retired_at.
+  if (req.method === 'DELETE') {
+    if (typeof slug !== 'string' || !slug.trim()) {
+      res.status(400);
+      res.json({ error: 'slug query param required' });
+      return;
+    }
+    if (typeof idStr !== 'string' || !/^\d+$/.test(idStr)) {
+      res.status(400);
+      res.json({ error: 'numeric id query param required' });
+      return;
+    }
+    const result = await softDeleteProduct(slug.trim(), Number(idStr));
+    if (result.ok) {
+      res.status(204).end();
+      return;
+    }
+    res.status(result.status);
+    res.json({ error: result.error });
+    return;
+  }
+
   if (req.method !== 'GET') {
-    res.setHeader('Allow', 'GET, OPTIONS');
+    res.setHeader('Allow', 'GET, DELETE, OPTIONS');
     res.status(405).end();
     return;
   }
 
-  const filters = parseProductFilters(req.query ?? {});
+  const filters = parseProductFilters(q);
 
   try {
     const result = await fetchActiveProducts(filters);

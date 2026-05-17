@@ -45,6 +45,7 @@
     { "source": "/api/merchants/:slug/order-update", "destination": "/api/orders" },
     { "source": "/api/merchants/:slug/agent-session", "destination": "/api/orders" },
     { "source": "/api/merchants/_catalog/products", "destination": "/api/products" },
+    { "source": "/api/merchants/:slug/products/:id", "destination": "/api/products" },
     { "source": "/api/merchants/:slug/products", "destination": "/api/products" },
     { "source": "/api/designs", "destination": "/api/orders" },
     { "source": "/api/designs/(.*)", "destination": "/api/orders" },
