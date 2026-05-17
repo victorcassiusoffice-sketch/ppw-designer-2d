@@ -27,6 +27,7 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
 import { getDb, schema } from './db/client.js';
 import { aggregateOrderStatus, isValidTransition, type OrderEventType } from './lib/order-status.js';
+import { dispatchDesignSavedEmail } from './lib/email/dispatch.js';
 import { Redis } from '@upstash/redis';
 
 interface RouterReq extends MinReq {
@@ -621,8 +622,23 @@ async function handleDesigns(
         status: v.data.status ?? 'draft',
       })
       .returning();
+    const design = inserted[0];
+    // M9.A.1 — fire design-saved email if customer captured. Helper is
+    // try/catch-wrapped + never re-throws; await keeps the Vercel lambda
+    // alive until Resend responds (typically <500ms).
+    if (design) {
+      const dispatch = await dispatchDesignSavedEmail({
+        id: design.id,
+        name: design.name,
+        customerEmail: design.customerEmail ?? null,
+      });
+      if (dispatch.skippedReason === 'caller_caught') {
+        // eslint-disable-next-line no-console
+        console.error('[M9.A.1 design-saved-email] caught:', dispatch.error);
+      }
+    }
     res.status(201);
-    res.json({ design: inserted[0] });
+    res.json({ design });
     return;
   }
 
