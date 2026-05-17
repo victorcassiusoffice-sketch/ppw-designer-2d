@@ -2,6 +2,134 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 32 (M9.A.2 PayPal order-confirmed email wire + Phase A scaffold)
+
+Punch-list pick #5. Mirrors tick 28's M9.A.1 pattern: helper in
+dispatch.ts + best-effort wire + Phase A scaffold for Vic.
+**802-test milestone crossed.**
+
+### What shipped (commit `f8a1d82`)
+
+- `api/lib/email/dispatch.ts`:
+  - `dispatchOrderConfirmedEmail(order)` helper. Same {fired,
+    send?, skippedReason?, error?} discriminated result as the
+    design-saved sibling; never re-throws. Skips when
+    customerEmail is null/whitespace. Currency-aware total
+    conversion: USD/EUR cents-style → /100 for whole-MUR
+    display; MUR passed verbatim (no subunit in the wire
+    format). Customer-name resolution chain: explicit
+    `customerName` (PayPal payer.name.given_name) →
+    deriveGreetingName(email) → "there" fallback. Per-merchant
+    breakdown defaults to a single placeholder row when none
+    supplied — V2 will JOIN order_items for real grouping.
+    Tracking URL encodeURIComponent'd to handle special chars
+    in ppwOrderId safely.
+- `api/lib/paypal/captureOrder.ts`:
+  - `PaypalCaptureResponse` type extended with payer.email_address
+    + payer.name.given_name (real PayPal response shape).
+  - `processCaptureRequest` fires the helper AFTER recorder
+    succeeds, extracting `customer_email` from
+    `capture.payer.email_address` + greeting name from
+    `capture.payer.name.given_name`. Wrapped in try/catch so
+    email failure never changes the captured status.
+- `api/__tests__/lib/email/dispatch.test.ts` — +11 cases:
+  null/whitespace skip, happy path template + payload, USD-cents
+  → MUR whole conversion, MUR verbatim, explicit customerName,
+  email-prefix fallback, single-merchant placeholder, multi-
+  merchant passthrough, sendEmail throw → caller_caught (no
+  re-throw), tracking URL encodeURIComponent.
+
+### Validation
+
+- `npm test` → **802/802 green** (+11 from tick 31's 791;
+  **crossed 800-test milestone**).
+- `npx tsc --noEmit` (root + `api/tsconfig.json`) ✓ clean.
+- `npx vite build` ✓ clean (4.20s).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → ready 2026-05-17 11:13 UTC.
+- Smoke: `GET /api/healthcheck` → 200
+  `{commit: f8a1d82745dd50de57adf3dded29f19f6dd76fe2, …}`.
+- Lambda **12/12** unchanged.
+
+### Phase A — SCAFFOLD SEEDED, AWAITING VIC WALKTHROUGH
+
+Phase A scaffold at `PPW-Second-Brain/06-Roadmap/user-testing/
+phase-a/M9.A.2.customer.md`. 14-step customer journey checklist
++ PayPal sandbox testing notes + V1-stub multi-merchant
+disclosure + dedup forcing recipe + budget-bucket clear recipe.
+
+Vic-action follow-up:
+1. Visit `https://designer.ppwellness.co/marketplace/checkout`
+2. Add a cart item, complete a PayPal sandbox 1¢ approval
+3. Verify the order-confirmed email arrives at the PayPal
+   payer's email_address with correct subject + canonical
+   palette + science-snippet P.S.
+4. Re-run capture with same paypalOrderId → idempotent (no
+   second email; dedup cache hit)
+5. Fill the Outcome section with verdict + screenshots per
+   device matrix
+6. Driver flips M9.A.2 `[~]` → `[x]` post-PASS
+
+### Tick 32 state summary
+
+Items shipped: 1 helper extension + 1 paypal-router wire +
+11 helper tests + 1 Phase A scaffold = 258 insertions across 3
+code files + 1 second-brain doc. M9.A.2 marked `[~]` partial in
+V4-UNIFIED-PLAN (Phase A gate intact).
+
+**M9 progress: 4 of 11 micros fully shipped + 2 wires Phase-A-
+pending** (M9.A.3 + M9.B.2 + M9.B.3 + M9.B.4 fully done; M9.A.1
++ M9.A.2 [~] partial pending Vic).
+
+Wave 0.D unchanged at 7 of 23 shipped + 1 partial.
+
+Lambda 12/12. Test count **802/802**. Live commit `f8a1d82`. 26
+PPW-Code commits live this session.
+
+### Session cumulative through tick 32 (25 ticks)
+
+Closed micros (V4-UNIFIED-PLAN fully ticked): **15** unchanged
+(M9.A.2 is `[~]` not `[x]`).
+Closed micros (live-readiness side): **8** (M9.A.send.1-4 +
+PolA.4 + M9.B.4 + M9.B.3 + M9.A.1 wire half + M9.A.2 wire half).
+Pending Vic-actions: **4** (W0.D.3 drill apply for 0010 + 0011,
+M9.A.1 Phase A walkthrough, M9.A.2 Phase A walkthrough).
+
+Tests: **568 → 802** (+234). 26 PPW-Code commits live.
+
+V-decisions: V4-QA-2 + V4-OPS-1 candidate.
+
+### Next-pick (live-readiness §Drivable-now)
+
+Remaining drivable-now Track D:
+- **M9.A.recon.1** — daily reconciliation cron at 05:40 slot
+  that catches paid orders without an email row + re-enqueues
+  via send wrapper. Backend-exempt. Needs W0.D.8 dispatcher
+  refactor for the actual cron schedule but the handler can
+  ship standalone.
+- **W1.D.6** agent-chat 3-part lockdown (rate-limit + cost
+  circuit-breaker + system-prompt rejection) — MUST ship
+  BEFORE M9.B.1 agent intent per the punch list dependency
+  chain. Backend-exempt.
+
+Remaining drivable-now Track C:
+- **W0.D.5** `@ppw/ui` PNPM workspace extraction — structural,
+  fresh-session preferable.
+- **W0.D.19** tokens canon — depends on W0.D.5 workspace.
+- **W0.D.8** unified daily cron dispatcher — wires
+  refresh-supplier-rating (tick 26) + email-send-reconcile (the
+  M9.A.recon.1 above when it ships) into the single
+  `0 5 * * *` Vercel cron invocation.
+
+Remaining drivable-now Polish A (UI-heavy):
+- **PolA.1** filter sidebar (desktop) — customer-journey Phase A.
+- **PolA.2** mobile bottom-sheet — customer-journey Phase A.
+- **PolA.3** active-filter chip row — piggybacks on PolA.1.
+
+---
+
 ## 2026-05-17 — V4 Driver tick 31 (M9.B.3 PATCH Zod-validated partial update)
 
 Punch-list pick #4 second half (M9.B.4 half shipped tick 30). Closes
