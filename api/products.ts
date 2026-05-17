@@ -1,9 +1,11 @@
 /**
- * GET /api/products
+ * GET /api/products  +  GET /api/merchants/:slug/products  (V4 M9.B.2)
  *
  * Public product listing endpoint. Returns paginated `status='active'`
- * products with optional category + region filters. Used by the new
- * Phase 3 storefront `/products` page.
+ * products with optional category + region + merchant-slug filters.
+ * Used by the Phase 3 storefront `/products` page AND (via the
+ * `/api/merchants/:slug/products` rewrite) by the M9.B.5 merchant
+ * self-service page.
  *
  * Phase 8 will eventually wire the Designer Catalog to read from this
  * same endpoint — for now the Designer keeps its hardcoded demo data
@@ -12,11 +14,19 @@
  * Query params:
  *   - category   : optional filter
  *   - region     : optional filter
+ *   - slug       : optional merchant slug filter (passed by Vercel
+ *                  rewrite for the merchants-scoped URL; safe to use
+ *                  directly too)
  *   - limit      : default 24, max 100
  *   - offset     : default 0
  *
  * Response (200):
- *   { products: ProductSummary[], total: number, limit: number, offset: number }
+ *   { products: ProductSummary[], total: number, limit: number,
+ *     offset: number, schemaMissing: boolean, merchantNotFound?: boolean }
+ *
+ * Unknown merchant slug → 200 with empty list + `merchantNotFound: true`
+ * (no 404; consumer surfaces the empty state). M9.B.2 stays backend-
+ * exempt from Phase A — the M9.B.5 merchant page is where Phase A binds.
  */
 
 import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
@@ -63,6 +73,7 @@ function pickInt(
 export interface ProductFilters {
   category: string | null;
   region: string | null;
+  merchantSlug: string | null;
   limit: number;
   offset: number;
 }
@@ -73,6 +84,7 @@ export function parseProductFilters(
   return {
     category: pickStr(q, 'category'),
     region: pickStr(q, 'region'),
+    merchantSlug: pickStr(q, 'slug'),
     limit: pickInt(q, 'limit', 24, 100) || 24,
     offset: pickInt(q, 'offset', 0, 100000),
   };
@@ -84,6 +96,7 @@ export interface ProductListResult {
   limit: number;
   offset: number;
   schemaMissing: boolean;
+  merchantNotFound?: boolean;
 }
 
 export async function fetchActiveProducts(filters: ProductFilters): Promise<ProductListResult> {
@@ -93,6 +106,26 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
   if (filters.region) conds.push(eq(schema.products.region, filters.region));
 
   try {
+    if (filters.merchantSlug) {
+      const merchantRows = await db
+        .select({ id: schema.merchants.id })
+        .from(schema.merchants)
+        .where(eq(schema.merchants.slug, filters.merchantSlug))
+        .limit(1);
+      const merchantRow = merchantRows[0];
+      if (!merchantRow) {
+        return {
+          products: [],
+          total: 0,
+          limit: filters.limit,
+          offset: filters.offset,
+          schemaMissing: false,
+          merchantNotFound: true,
+        };
+      }
+      conds.push(eq(schema.products.merchantId, Number(merchantRow.id)));
+    }
+
     const rows = await db
       .select({
         id: schema.products.id,
@@ -130,7 +163,7 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (/relation .*products.* does not exist|42P01|undefined_table/i.test(msg)) {
+    if (/relation .*(products|merchants).* does not exist|42P01|undefined_table/i.test(msg)) {
       return {
         products: [],
         total: 0,

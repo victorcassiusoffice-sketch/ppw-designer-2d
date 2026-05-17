@@ -6,6 +6,7 @@ describe('parseProductFilters', () => {
     expect(parseProductFilters({})).toEqual({
       category: null,
       region: null,
+      merchantSlug: null,
       limit: 24,
       offset: 0,
     });
@@ -20,6 +21,19 @@ describe('parseProductFilters', () => {
       category: 'ice_baths',
       region: 'MU',
     });
+  });
+
+  it('extracts merchant slug from the slug query param (M9.B.2 rewrite)', () => {
+    expect(parseProductFilters({ slug: 'acme-ergo' }).merchantSlug).toBe('acme-ergo');
+  });
+
+  it('trims whitespace + ignores empty merchant slug', () => {
+    expect(parseProductFilters({ slug: '   ' }).merchantSlug).toBeNull();
+    expect(parseProductFilters({ slug: '  zen-saunas  ' }).merchantSlug).toBe('zen-saunas');
+  });
+
+  it('takes the first value for array slug (Vercel may duplicate on rewrite)', () => {
+    expect(parseProductFilters({ slug: ['acme', 'other'] }).merchantSlug).toBe('acme');
   });
 
   it('rejects non-numeric limit → default', () => {
