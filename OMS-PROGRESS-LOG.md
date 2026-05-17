@@ -2,6 +2,150 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 35 (Polish B — mini-cart over Konva, PolB.1+.2+.3)
+
+Per VIC-DECISIONS-QUEUE.md **PRIORITY BUMP — Polish B ahead of
+M9.B.1** (Vic 2026-05-17): Sims-feel cart-while-designing surface
+lands BEFORE merchant CRUD because customer-facing Sims-like feel
+is the single biggest perceived gap during current self-testing.
+V4-TL-2 + V4-UX-1 both CLOSED 2026-05-17 (Vic Y on floating drawer
+over Konva + drag-to-canvas auto-add + 5-sec undo).
+
+### What shipped (commit `e410527`)
+
+- `src/components/cart/MiniCartPill.tsx` (NEW) — CSS-absolute
+  top-right canvas overlay (`absolute right-3 top-3 z-20`). Wrapper
+  is `pointer-events-none` so Konva pan/pinch-zoom still reaches
+  the Stage; pill itself is `pointer-events-auto`. Hidden when
+  `cart.totalItemCount === 0` (clean-canvas first impression).
+  Renders unique-product count badge + total in active display
+  currency. Brand canon: gold `#C0A67E` accent, ink `#0E0E10` body,
+  cream `#F5EFE6` text. Tap toggles CartDrawer.
+- `src/components/cart/CartDrawer.tsx` (NEW) — right-edge 380px
+  slide-in (`fixed right-0 top-0 z-50 h-full w-[min(380px,100vw)]`).
+  Per-merchant grouping uses `product.supplier`; products without a
+  supplier roll up under "Peak Performance Wellness Marketplace"
+  (V1 fallback bucket — V2 multi-merchant JOIN waits for M9.B.1 to
+  populate real merchant SKUs). Marketplace fee = 7% hard-coded
+  (constant `MARKETPLACE_FEE_PCT`); subtotal + fee + total rendered
+  in cream-on-white footer. ESC + backdrop click + × button all
+  close. Checkout CTA disabled when empty, navigates to
+  `/marketplace/checkout` when not. Honors
+  `env(safe-area-inset-bottom)`.
+- `src/store/cartUIStore.ts` (NEW) — tiny Zustand store for drawer
+  open/close (`isDrawerOpen` + `open` + `close` + `toggle`). Kept
+  separate from cartStore so toggling the drawer doesn't re-derive
+  the cart or trigger Konva-side re-render.
+- `src/components/RoomCanvas.tsx` (MOD) — `placeProductAt()` now
+  captures the returned `instanceId` from `addItem` and pushes a
+  5-second toast `"Added \"<product>\" to cart"` with an Undo CTA
+  whose `onClick` calls `removeItem(instanceId)`. Konva render +
+  input handlers UNCHANGED (per Konva STABLE LOCK 2026-05-16 +
+  V4-TL-2 closure note); only the post-placement toast call evolved.
+  The `removeItem` action was newly destructured from `useDesignStore`.
+- `src/store/toastStore.ts` (MOD) — `push()` now accepts EITHER a
+  number (back-compat: `push(msg, kind, ttlMs)`) OR an options
+  object `{ ttlMs?, action? }`. New `ToastAction { label, onClick }`
+  type lets a toast carry an inline CTA. Default `ttlMs` stays 2400.
+- `src/components/ToastProvider.tsx` (MOD) — renders the optional
+  action as a `<button>` inside the toast pill. Clicking the action
+  fires `onClick` then dismisses. The toast text still
+  click-to-dismisses as before.
+- `src/components/TopBar.tsx` + `src/App.tsx` (MOD) — 3D-preview
+  toggle migrated from the canvas absolute-positioned top-right
+  slot (`absolute right-3 top-3 z-10`) into the TopBar (desktop
+  button cluster + mobile overflow menu) per V4-AU-1 conflict-
+  resolution row: "3D toggle migrates to TopBar overflow — cart-pill
+  needs canvas-plane top-right slot." `MiniCartPill` now owns that
+  slot; `CartDrawer` mounts at App layout root alongside the existing
+  CartStrip (untouched — legacy bottom-strip cart UX still works).
+
+### Test pack (+12 tests)
+
+- `src/store/__tests__/toastStore.test.ts` (NEW, 7 tests): base
+  behaviour preserved (`push` shape / numeric ttl back-compat /
+  dismiss / clear); options-object form (ttl + action / ttl
+  fallback / onClick not invoked at push time).
+- `src/store/__tests__/cartUIStore.test.ts` (NEW, 4 tests): starts
+  closed / `open()` / `close()` / `toggle()`.
+- `src/__tests__/cart/mini-cart.test.tsx` (NEW, 6 tests):
+  hidden-when-empty / visible-with-items / unique-count badge /
+  aria-expanded sync with drawer state / Konva-untouched assertion
+  (no `<canvas>` or `konvajs-content` in pill output) / brand canon
+  palette hex codes present.
+- `src/__tests__/cart/cart-drawer.test.tsx` (NEW, 11 tests):
+  visibility (closed renders ''/open renders dialog/empty state),
+  totals + 7% fee + total testids present, checkout CTA disabled
+  when empty + enabled when items, per-merchant grouping (supplier
+  name + group testid + product line testid), Konva-untouched +
+  brand canon, total-via-rendered-HTML smoke.
+- `src/__tests__/cart/auto-add.test.tsx` (NEW, 4 tests): toast
+  carries 5000 ms ttl + Undo action / Undo removes the just-added
+  instance / dismissing without Undo keeps item placed / multiple
+  Undos remain independent.
+
+**Test infra detail:** tests use `react-dom/client` `createRoot` +
+`flushSync` (NOT `renderToStaticMarkup`) because Zustand's
+`useSyncExternalStore` SSR path returns the INITIAL snapshot, not
+the live store state — discovered while debugging an early "addItem
+doesn't reflect in render" failure. Client-rendering into a detached
+jsdom node sidesteps the SSR snapshot.
+`globalThis.IS_REACT_ACT_ENVIRONMENT = true` silences the React 18
+"act(...) not configured" warning.
+
+### Validation
+
+- `npm test` → **868/868 green** (+12 from tick 34's 856).
+- `npx tsc --noEmit` ✓ clean.
+- `npx vite build` ✓ clean (4.13s, 604 modules, bundle 1.2 MB
+  pre-gzip / 367 KB gzipped — unchanged from tick 34, mini-cart
+  + drawer add ~5 KB delta).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → `dpl_CbVZLpysjqsbwKZqkzwmLEhJUGpt`
+  ready 2026-05-17 16:00 UTC.
+- Aliased `https://designer.ppwellness.co`.
+- Smoke `GET /api/healthcheck` → 200
+  `{ok:true, env:"production", commit:"e4105279be04c1636144ec8229bb238d5e78bfd1", timestamp:"2026-05-17T16:00:13.251Z"}`.
+- Lambda count **12/12** unchanged (no new endpoints; pure
+  client-side UI work).
+
+### Phase A applicability
+
+PolB.1 is a **hybrid customer + merchant** surface — Phase A
+scaffolds seeded at
+`PPW-Second-Brain/06-Roadmap/user-testing/phase-a/PolB.1.customer.md`
++ `PolB.1.merchant.md` with full journey checklists (MiniCartPill
+visibility/interaction; CartDrawer slide-in + grouping + fee math +
+ESC/backdrop close; PolB.3 auto-add + Undo behaviour; Konva-untouched
+assertion). PolB.2 + PolB.3 piggyback on the PolB.1 record per
+LIVE-READINESS-PUNCH-LIST.md.
+
+**Awaiting Vic walkthrough.** Both scaffolds carry an empty
+"Verdict" + "Screenshot" section ready for Vic in-browser screencaps
+on the desktop + 390-mobile matrix.
+
+### M9.A.1 + M9.A.2 status (carry-forward from prior ticks)
+
+Per the goal directive: M9.A.1 is **PASS-WITH-NOTES** (logged
+2026-05-17, scaffold complete, awaiting only Vic inbox confirmation
+of the test-design email); M9.A.2 is **PARTIAL** (capture-side
+email gates on Vic's $1 real-money Live PayPal test). Polish B
+ships independently of both — the UX polish does not depend on
+either email tick flipping `[x]`.
+
+### Sequencing
+
+PolB.1+.2+.3 close the customer-facing Sims-feel gap that the
+2026-05-17 Vic-decision queue flagged as the highest perceived gap.
+**M9.B.1 (agent `add_product` intent) is now the next autonomous
+pick on Track D** — its hard prerequisite W1.D.6 lockdown shipped
+in tick 34, and PolB's UX win means the merchant CRUD work no
+longer trails the Sims-feel gap.
+
+---
+
 ## 2026-05-17 — V4 Driver tick 34 (W1.D.6 agent-chat 3-part lockdown)
 
 Per IH §04.1 + V4-IH-2 CLOSED. **Hard prerequisite of M9.B.1** —
