@@ -2,6 +2,111 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 33 (M9.A.recon.1 email-send reconciliation cron)
+
+Closes the M9.A.dq-reconcile Meso of LIVE-READINESS-PUNCH-LIST.
+Catches any paid orders from last 24h that have NO matching
+audit_log email.sent row and re-enqueues via the M9.A.send
+wrapper. Folds into existing cron-router; no new lambda.
+
+### What shipped (commit `e013dfb`)
+
+- `api/lib/cron/reconcileEmailSends.ts` (NEW):
+  - `RECONCILE_WINDOW_HOURS = 24`, `RECONCILE_LIMIT = 200`
+    (matches V4-UNIFIED-PLAN cron-registry budget).
+  - `findOrdersMissingConfirmEmail()` — LEFT JOIN orders ⨝
+    audit_log WHERE audit.id IS NULL, correlating by
+    `audit_log.payload->>'ppwOrderId' = orders.ppw_order_id`
+    AND `audit_log.payload->>'template' = 'order-confirmed'`.
+    Ordered by oldest-first; 200-row cap per tick.
+  - `extractPayerEmail(row)` — pure helper. Falls back from
+    `orders.customer_email` (currently written as empty string
+    by recordCapturedOrder) to `raw_payload.payer.email_address`
+    (PayPal payload preserved on the orders row as the
+    authoritative source).
+  - `reconcileEmailSendsBatch()` — per stale row, calls
+    dispatchOrderConfirmedEmail (re-fire). Counts {scanned,
+    reEnqueued, dedupHits, errors, sampleOrderIds}.
+    **dedup_hit counted SEPARATELY** — means the email actually
+    did go out (audit just missed); separating this gives a
+    useful signal for diagnosing audit-write reliability vs
+    email-send reliability.
+- `api/cron-router.ts`: new `email-send-reconcile` action with
+  the same CRON_SECRET gate. Silent-on-green audit (audit row
+  only when reEnqueued > 0 OR errors > 0). 503 schema-missing
+  detector for the orders/audit_log dependency chain.
+- `api/__tests__/reconcile-email-sends.test.ts` (NEW, 13 tests):
+  constants (24h / 200), extractPayerEmail (4 paths:
+  customerEmail / raw_payload fallback / null both / null raw),
+  reconcileEmailSendsBatch zero on empty, no-contact-info skip
+  with no error count, happy re-enqueue, dedup_hit counted
+  separately, caller_caught → error, send.ok=false → error,
+  sampleOrderIds capped at 5.
+
+### Validation
+
+- `npm test` → **815/815 green** (+13 from tick 32's 802).
+- `npx tsc --noEmit` (root + `api/tsconfig.json`) ✓ clean (one
+  brief detour: unused `schema` import + drizzle
+  NeonHttpQueryResult → CapturedOrderRow cast needed `as
+  unknown` bridge).
+- `npx vite build` ✓ clean (4.19s).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → ready 2026-05-17 11:19 UTC.
+- Smoke A: `GET /api/healthcheck` → 200
+  `{commit: e013dfbac1753a4478c0a19b28a519ea88705c56, …}`.
+- Smoke B: `GET /api/cron/email-send-reconcile` (no auth) →
+  **401** confirming the CRON_SECRET gate covers the new action.
+- Lambda **12/12** unchanged.
+
+### Phase A applicability
+
+M9.A.recon.1 is a backend cron — **backend-exempt** from Phase A.
+
+### Tick 33 state summary
+
+Items shipped: 1 cron handler library + 1 cron-router action +
+1 test file = 361 insertions across 3 files. M9.A.recon.1 (the
+M9.A.dq-reconcile Meso) closed via live-readiness side.
+
+**M9.A Meso complete** (send-layer .1-4 + design-saved wire +
+order-confirm wire + reconciliation cron all shipped); M9.A.1
++ M9.A.2 stay `[~]` partial pending Vic Phase A walkthroughs.
+
+Lambda 12/12. Test count **815/815**. Live commit `e013dfb`.
+28 PPW-Code commits live this session.
+
+### Session cumulative through tick 33 (26 ticks)
+
+Closed micros (V4-UNIFIED-PLAN fully ticked): **15** unchanged
+(M9.A.1 + M9.A.2 still [~] partial).
+Closed micros (live-readiness side): **9** (M9.A.send.1-4 +
+PolA.4 + M9.B.4 + M9.B.3 + M9.A.recon.1 + M9.A.1 wire half +
+M9.A.2 wire half).
+Pending Vic-actions: **4** (W0.D.3 drill apply for 0010 + 0011,
+M9.A.1 + M9.A.2 Phase A walkthroughs).
+
+Tests: **568 → 815** (+247). 28 PPW-Code commits live.
+
+V-decisions: V4-QA-2 + V4-OPS-1 candidate.
+
+### Next-pick (live-readiness §Drivable-now)
+
+- **W1.D.6** agent-chat 3-part lockdown (rate-limit + cost
+  circuit-breaker + system-prompt rejection) — MUST ship BEFORE
+  M9.B.1 agent intent per the punch list dependency chain.
+  Backend-exempt.
+- **W0.D.8** unified daily cron dispatcher — would actually
+  schedule refresh-supplier-rating (tick 26) +
+  email-send-reconcile (tick 33) at 05:10 / 05:40 inside the
+  single `0 5 * * *` Vercel cron invocation. Removes the
+  manual-curl requirement for both new crons.
+- **PolA.1/2/3** filter sidebar UI — customer-journey Phase A.
+
+---
+
 ## 2026-05-17 — V4 Driver tick 32 (M9.A.2 PayPal order-confirmed email wire + Phase A scaffold)
 
 Punch-list pick #5. Mirrors tick 28's M9.A.1 pattern: helper in
