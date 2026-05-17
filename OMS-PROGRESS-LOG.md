@@ -2,6 +2,114 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 31 (M9.B.3 PATCH Zod-validated partial update)
+
+Punch-list pick #4 second half (M9.B.4 half shipped tick 30). Closes
+the merchant CRUD surface for products apart from POST (which goes
+through M9.B.1 agent intent). Shares rewrite + owner-check pattern
+with M9.B.4.
+
+### What shipped (commit `de9f355`)
+
+- `api/products.ts`:
+  - `productPatchSchema` (Zod, `.strict()`) — exported body schema
+    with 8 merchant-editable fields all optional. SKU + merchantId
+    + status + retired_at + supplier_rating + supplier_rating_
+    refreshed_at + createdAt + updatedAt **rejected** by strict
+    mode (any of them in the body → 400, not silently ignored).
+    Currency auto-uppercased via Zod transform. Empty imageUrl
+    transformed to null (clears the image). imageUrl must be
+    valid URL when non-empty. ecoCertLevel restricted to the
+    4-tier enum from W0.D.2 / V4-DA-1.
+  - `patchProduct(slug, productId, rawBody)` pure helper
+    returning discriminated `PatchProductResult { ok, status,
+    error?, product? }`. Validates input → Zod-validates body
+    → slug→merchant.id → product owner check (403 forbidden) →
+    not-retired check (409 product_retired) → UPDATE products
+    SET …fields, updatedAt=now() RETURNING the canonical 6-field
+    subset. Audit row under `products.patch` with `fieldsChanged`
+    list; audit failure never changes the verdict.
+  - Handler PATCH branch: parses JSON body (handles string +
+    Buffer + parsed-object shapes; returns 400 on JSON parse
+    error), dispatches helper, surfaces the discriminated result
+    as HTTP status + body.
+  - 405 Allow header now lists `GET, PATCH, DELETE, OPTIONS`.
+- `api/__tests__/products-patch.test.ts` (NEW, 22 tests):
+  productPatchSchema accept/reject per field (name, currency
+  uppercase, neg/fractional priceMinor reject, sku/status/
+  merchantId/supplierRating reject by .strict(), eco enum
+  accept/reject, empty→null imageUrl, non-URL reject).
+  patchProduct: 400 on empty slug / non-positive id / empty
+  body / Zod-invalid body; 404 merchant_not_found; 404
+  product_not_found; 403 forbidden; 409 product_retired;
+  200 happy path with returned subset; 503 schema_missing.
+
+### Validation
+
+- `npm test` → **791/791 green** (+22 from tick 30's 769).
+- `npx tsc --noEmit` (root + `api/tsconfig.json`) ✓ clean.
+- `npx vite build` ✓ clean (4.33s).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → ready 2026-05-17 11:06 UTC.
+- Smoke A: `GET /api/healthcheck` → 200
+  `{commit: de9f355b288f5051a63d09763aa6f971d0a0f3f7, …}`.
+- Smoke B: `curl -X PATCH
+  https://designer.ppwellness.co/api/merchants/ghost/products/1
+  -H "content-type: application/json" -d '{"name":"x"}'` → **404**
+  (correct merchant_not_found path through the rewrite +
+  handler).
+- Lambda **12/12** unchanged.
+
+### Phase A applicability
+
+M9.B.3 is a backend endpoint (no UI surface ships in this commit
+— the M9.B.5 merchant page consumes it). **Backend-exempt** from
+Phase A per goal-master inline-marker exemption rule.
+
+### Tick 31 state summary
+
+Items shipped: 1 Zod schema export + 1 patch helper + 1 handler
+branch + 1 test file = 437 insertions across 2 files. M9.B.3
+ticked `[x]` in V4-UNIFIED-PLAN.md.
+
+**M9 progress: 4 of 11 micros shipped** (M9.A.3 + M9.B.2 + M9.B.3 +
+M9.B.4). Plus M9.A.1 partial pending Vic Phase A.
+
+Wave 0.D foundations: unchanged at 7 of 23 shipped + 1 partial.
+
+Lambda 12/12. Test count **791/791**. Live commit `de9f355`. 24
+PPW-Code commits live this session.
+
+### Session cumulative through tick 31 (24 ticks)
+
+Closed micros (V4-UNIFIED-PLAN fully ticked): **15** (added
+M9.B.3 this tick).
+Closed micros (live-readiness side, partially overlapping):
+PolA.4 + M9.A.send.1-4 + M9.B.4 + M9.B.3 + half of M9.A.1 = 8.
+Pending Vic-actions: 3 (W0.D.3 drill apply for 0010 + 0011,
+M9.A.1 Phase A walkthrough).
+
+Tests: **568 → 791** (+223). 24 PPW-Code commits live.
+
+V-decisions: V4-QA-2 + V4-OPS-1 candidate.
+
+### Next-pick (live-readiness §Drivable-now)
+
+The merchants-router product CRUD is now complete (GET list,
+GET by slug, PATCH, DELETE — only POST/agent path missing per
+M9.B.1). Remaining drivable-now:
+- **#5 M9.A.2** PayPal capture-success email. Customer-facing,
+  needs its own Phase A scaffold. Depends on M9.A.send (ready
+  since tick 27) + the existing PayPal capture handler in
+  `api/paypal-router.ts`.
+- **#7 PolA.1/2/3** filter sidebar + mobile sheet + chips —
+  UI-heavy; pre-fabbed copy in LIVE-READINESS-CONTENT.md;
+  customer-journey Phase A binding on PolA.1.
+
+---
+
 ## 2026-05-17 — V4 Driver tick 30 (M9.B.4 DELETE soft-delete via retired_at)
 
 Punch-list pick #4 (M9.B.4 half — PATCH M9.B.3 deferred). Consumes
