@@ -2,6 +2,133 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 29 (PolA.4 catalog filter endpoint)
+
+Punch-list pick #3. Catalog filter + sort + facets endpoint at the
+reserved `_catalog` namespace; precedes the PolA.1-3 sidebar +
+bottom-sheet + chip UI work. Folds into existing /api/products via
+Vercel rewrite (merchants-router doesn't exist; 12-lambda Hobby cap
+is full). Net new lambdas: **0**.
+
+### What shipped (commit `69259ed`)
+
+- `vercel.json` — new rewrite
+  `/api/merchants/_catalog/products → /api/products` placed BEFORE
+  the existing generic `:slug/products` rewrite for specificity.
+  The V4-DA-2 slug regex `^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$`
+  (tick 25 W0.D.2) already guarantees `_catalog` can never collide
+  with a real merchant slug.
+- `api/products.ts` substantially extended:
+  - `ECO_CERT_LEVELS` + `SORT_OPTIONS` const arrays exported (single
+    source of truth for the UI side once PolA.1 lands).
+  - `parseEcoCerts(q)` — single value / comma-separated / repeated
+    array / unknown-drop / dedup; 6 cases covered.
+  - `parseSort(q)` — `price_asc / price_desc / rating_desc /
+    newest`; defaults to newest; unknown values default to newest.
+  - `parseProductFilters` extended with priceMin/priceMax (positive
+    int or null), ecoCerts, inStockOnly (truthy variants accepted),
+    ratingMin (clamped 1-5), sort, includeFacets — all backwards-
+    compatible.
+  - `fetchActiveProducts` extended with `gte/lte` price predicates,
+    `inArray` eco-tier filter, `gt(inStockQty, 0)`, `gte(supplier
+    Rating, N)`. Sort dispatched via `buildOrderBy()`. Schema-
+    missing regex extended to catch `column .* does not exist`
+    so a fresh-DB smoke against the new columns degrades to
+    `schemaMissing:true` cleanly (relevant until tick 25 +
+    tick 26 migrations apply on prod via the W0.D.3 drill).
+  - `fetchCatalogFacets(filters)` opt-in via `?include_facets=1`.
+    Returns `{eco_cert_counts, price_buckets}`. 1 GROUP BY for
+    eco-tier counts + 5 parallel COUNTs for default price buckets
+    (0-1k / 1k-5k / 5k-20k / 20k-100k / 100k+ in MUR minor).
+    Comment notes the facet-equal-filters single-select drill-down
+    trade-off + alternative call-twice strategy.
+- `api/__tests__/products.test.ts` — +15 cases: default-filters
+  shape includes 6 new fields, price_min/max + drop-non-numeric,
+  in_stock truthy variants (1/true/on), rating_min clamp 1-5,
+  include_facets toggle, parseEcoCerts (6 cases), parseSort
+  (default + each option + unknown).
+
+### Skipped (called out)
+
+- `days_max` filter param skipped: no `delivery_days` column on
+  products today. `supplier_products.leadTimeDays` exists but per
+  supplier-product link, not per product. Gap noted for a future
+  migration tick (would need an aggregate column on products OR a
+  JOIN-side derived value).
+
+### Validation
+
+- `npm test` → **761/761 green** (+15 from tick 28's 746).
+- `npx tsc --noEmit` (root + `api/tsconfig.json`) ✓ clean.
+- `npx vite build` ✓ clean (4.94s).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → ready 2026-05-17 10:55 UTC.
+- Smoke A: `GET /api/healthcheck` → 200
+  `{commit: 69259ed40449886c65cd122c70ebaceb70843536, …}`.
+- Smoke B: `GET /api/merchants/_catalog/products?sort=price_asc&
+  limit=2` → 200
+  `{"products":[],"total":0,"limit":2,"offset":0,
+  "schemaMissing":false}`. Rewrite + filter + sort chain works
+  end-to-end. (Empty results = either 0 active products in prod
+  OR the W0.D.2 migration hasn't applied yet — the second only
+  matters when an eco_cert/rating filter is set, which would then
+  return schemaMissing:true.)
+- Lambda **12/12** unchanged.
+
+### Phase A applicability
+
+PolA.4 is a backend endpoint — **backend-exempt** from Phase A
+per goal-master inline-marker exemption rule. The Phase A gate
+will fire on PolA.1 (filter sidebar), PolA.2 (mobile bottom-
+sheet), and PolA.3 (active-filter chips) — the UI consumers of
+this endpoint.
+
+### Tick 29 state summary
+
+Items shipped: 1 rewrite + handler extensions + 1 test file
+extension = 302 insertions / 20 deletions. PolA.4 ticked `[x]`
+in LIVE-READINESS-PUNCH-LIST.md.
+
+Live-readiness progress: **6 of 22 autonomous-safe rows shipped**
+(M9.A.send.1-4 from tick 27 + PolA.4 from tick 29 — M9.A.1 wire
+from tick 28 stays partial pending Vic Phase A).
+
+Lambda 12/12. Test count **761/761**. Live commit `69259ed`. 20
+PPW-Code commits live this session.
+
+### Session cumulative through tick 29 (22 ticks)
+
+Closed micros (V4-UNIFIED-PLAN side, fully ticked):
+**13** unchanged + W0.5.B.2 nudged closer to full close (PolA.4
+consumes the catalog filter columns from tick 25 — W0.5.B.2 still
+`[~]` partial since the customer-side UI consumers haven't shipped
+yet, but the endpoint is now there).
+
+Closed micros (live-readiness side): **6**
+(M9.A.send.1 + .2 + .3 + .4 + PolA.4 + M9.A.1 wire half-shipped).
+
+Pending Vic-actions: 3 (W0.D.3 drill apply for 0010, drill apply
+for 0011, M9.A.1 Phase A walkthrough).
+
+Tests: **568 → 761** (+193). 20 PPW-Code commits live. All
+deploys smoked green.
+
+V-decisions: V4-QA-2 + V4-OPS-1 candidate.
+
+### Next-pick (live-readiness §Drivable-now)
+
+- **#4 M9.B.3 + M9.B.4** — PATCH + DELETE soft-delete via
+  retired_at column (clean atop tick 25); backend-exempt; folds
+  into /api/products via rewrite + body slug parse. The DELETE
+  is the natural sister of W0.D.2's retired_at column.
+- **#5 M9.A.2** PayPal capture-success email — customer-facing,
+  needs its own Phase A scaffold; depends on M9.A.send + existing
+  paypal-router handler.
+
+---
+
 ## 2026-05-17 — V4 Driver tick 28 (M9.A.1 design-saved email wire + Phase A scaffold)
 
 Punch-list pick #2. M9.A.send wrapper (tick 27) now has its first
