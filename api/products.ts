@@ -50,6 +50,8 @@
  * are where Phase A binds.
  */
 
+import { z } from 'zod';
+
 import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
 import { getDb, schema } from './db/client.js';
 import { and, eq, gte, gt, isNull, lte, sql, inArray, type SQL } from 'drizzle-orm';
@@ -362,6 +364,162 @@ export async function fetchCatalogFacets(filters: ProductFilters): Promise<Catal
 }
 
 /**
+ * V4 M9.B.3 — merchant-editable PATCH schema. Every field optional;
+ * at least ONE must be present (else 400 no_fields). SKU + merchantId
+ * + status + retired_at + supplier_rating + supplier_rating_refreshed_at
+ * + createdAt + updatedAt are intentionally NOT editable here:
+ *   - sku is immutable; merchants delete + recreate
+ *   - merchantId would let a slug bridge to another merchant's product
+ *   - status changes go through DELETE (retire) or admin path
+ *   - retired_at goes through DELETE
+ *   - supplier_rating + refreshed_at are computed by W0.D.9 cron
+ *   - createdAt / updatedAt are system-managed
+ */
+export const productPatchSchema = z
+  .object({
+    name: z.string().trim().min(1).max(200).optional(),
+    description: z.string().trim().max(5000).nullable().optional(),
+    priceMinor: z.number().int().nonnegative().optional(),
+    currency: z
+      .string()
+      .trim()
+      .length(3)
+      .transform((s) => s.toUpperCase())
+      .optional(),
+    imageUrl: z
+      .string()
+      .trim()
+      .url()
+      .max(500)
+      .nullable()
+      .optional()
+      .or(z.literal('').transform(() => null)),
+    inStockQty: z.number().int().nonnegative().optional(),
+    ecoCertLevel: z.enum(ECO_CERT_LEVELS).optional(),
+    category: z.string().trim().min(1).max(80).optional(),
+  })
+  .strict();
+
+export type ProductPatchPayload = z.infer<typeof productPatchSchema>;
+
+export interface PatchProductResult {
+  ok: boolean;
+  status: number;
+  error?: string;
+  product?: {
+    id: number;
+    name: string;
+    priceMinor: number;
+    currency: string;
+    inStockQty: number;
+    ecoCertLevel: string;
+  };
+}
+
+export async function patchProduct(
+  slug: string,
+  productId: number,
+  rawBody: unknown,
+): Promise<PatchProductResult> {
+  if (!slug || !Number.isFinite(productId) || productId <= 0) {
+    return { ok: false, status: 400, error: 'slug + positive integer id required' };
+  }
+  const parsed = productPatchSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    const msg = parsed.error.issues
+      .map((iss) => `${iss.path.join('.') || 'body'}: ${iss.message}`)
+      .join('; ');
+    return { ok: false, status: 400, error: msg };
+  }
+  const fields = parsed.data;
+  if (Object.keys(fields).length === 0) {
+    return { ok: false, status: 400, error: 'no_fields' };
+  }
+  const db = getDb();
+  try {
+    const merchantRows = await db
+      .select({ id: schema.merchants.id })
+      .from(schema.merchants)
+      .where(eq(schema.merchants.slug, slug))
+      .limit(1);
+    const merchant = merchantRows[0];
+    if (!merchant) {
+      return { ok: false, status: 404, error: 'merchant_not_found' };
+    }
+    const merchantId = Number(merchant.id);
+
+    const existing = await db
+      .select({
+        id: schema.products.id,
+        merchantId: schema.products.merchantId,
+        retiredAt: schema.products.retiredAt,
+      })
+      .from(schema.products)
+      .where(eq(schema.products.id, productId))
+      .limit(1);
+    const product = existing[0];
+    if (!product) {
+      return { ok: false, status: 404, error: 'product_not_found' };
+    }
+    if (Number(product.merchantId) !== merchantId) {
+      return { ok: false, status: 403, error: 'forbidden' };
+    }
+    if (product.retiredAt) {
+      return { ok: false, status: 409, error: 'product_retired' };
+    }
+
+    const updated = await db
+      .update(schema.products)
+      .set({ ...fields, updatedAt: new Date() })
+      .where(and(eq(schema.products.id, productId), eq(schema.products.merchantId, merchantId)))
+      .returning({
+        id: schema.products.id,
+        name: schema.products.name,
+        priceMinor: schema.products.priceMinor,
+        currency: schema.products.currency,
+        inStockQty: schema.products.inStockQty,
+        ecoCertLevel: schema.products.ecoCertLevel,
+      });
+    const row = updated[0];
+    if (!row) {
+      return { ok: false, status: 404, error: 'product_not_found_post_update' };
+    }
+
+    try {
+      const audit = drizzleAuditWriter();
+      await audit.record({
+        actorEmail: `merchant:${slug}`,
+        action: 'products.patch',
+        targetType: 'product',
+        targetId: String(productId),
+        payload: { merchantId, slug, fieldsChanged: Object.keys(fields) },
+      });
+    } catch {
+      // Audit failure must not change the PATCH verdict.
+    }
+
+    return {
+      ok: true,
+      status: 200,
+      product: {
+        id: Number(row.id),
+        name: row.name,
+        priceMinor: row.priceMinor,
+        currency: row.currency,
+        inStockQty: row.inStockQty,
+        ecoCertLevel: row.ecoCertLevel,
+      },
+    };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/relation .*(products|merchants).* does not exist|column .* does not exist|42P01|42703/i.test(msg)) {
+      return { ok: false, status: 503, error: 'schema_missing' };
+    }
+    throw err;
+  }
+}
+
+/**
  * V4 M9.B.4 — soft-delete a merchant's product.
  * Returns:
  *   { ok: true,  status: 204 }                     — soft-deleted
@@ -456,6 +614,44 @@ async function handler(req: ProductsReq, res: MinRes): Promise<void> {
   const idRaw = q['id'];
   const idStr = Array.isArray(idRaw) ? idRaw[0] : idRaw;
 
+  // V4 M9.B.3 — PATCH Zod-validated partial update.
+  if (req.method === 'PATCH') {
+    if (typeof slug !== 'string' || !slug.trim()) {
+      res.status(400);
+      res.json({ error: 'slug query param required' });
+      return;
+    }
+    if (typeof idStr !== 'string' || !/^\d+$/.test(idStr)) {
+      res.status(400);
+      res.json({ error: 'numeric id query param required' });
+      return;
+    }
+    const body =
+      typeof req.body === 'string'
+        ? (() => {
+            try {
+              return JSON.parse(req.body || '{}');
+            } catch {
+              return null;
+            }
+          })()
+        : (req.body ?? {});
+    if (body === null) {
+      res.status(400);
+      res.json({ error: 'invalid JSON body' });
+      return;
+    }
+    const result = await patchProduct(slug.trim(), Number(idStr), body);
+    if (result.ok) {
+      res.status(result.status);
+      res.json({ product: result.product });
+      return;
+    }
+    res.status(result.status);
+    res.json({ error: result.error });
+    return;
+  }
+
   // V4 M9.B.4 — DELETE soft-delete via retired_at.
   if (req.method === 'DELETE') {
     if (typeof slug !== 'string' || !slug.trim()) {
@@ -479,7 +675,7 @@ async function handler(req: ProductsReq, res: MinRes): Promise<void> {
   }
 
   if (req.method !== 'GET') {
-    res.setHeader('Allow', 'GET, DELETE, OPTIONS');
+    res.setHeader('Allow', 'GET, PATCH, DELETE, OPTIONS');
     res.status(405).end();
     return;
   }
