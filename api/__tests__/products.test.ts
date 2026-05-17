@@ -1,5 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
-import { parseProductFilters } from '../products';
+import {
+  parseProductFilters,
+  parseEcoCerts,
+  parseSort,
+  ECO_CERT_LEVELS,
+  SORT_OPTIONS,
+} from '../products';
 
 describe('parseProductFilters', () => {
   it('defaults to limit=24 offset=0 no filters', () => {
@@ -7,6 +13,13 @@ describe('parseProductFilters', () => {
       category: null,
       region: null,
       merchantSlug: null,
+      priceMin: null,
+      priceMax: null,
+      ecoCerts: [],
+      inStockOnly: false,
+      ratingMin: null,
+      sort: 'newest',
+      includeFacets: false,
       limit: 24,
       offset: 0,
     });
@@ -46,6 +59,91 @@ describe('parseProductFilters', () => {
 
   it('caps offset to 100000', () => {
     expect(parseProductFilters({ offset: '999999' }).offset).toBe(100000);
+  });
+
+  describe('PolA.4 catalog filter params', () => {
+    it('parses price_min + price_max as positive integers', () => {
+      const r = parseProductFilters({ price_min: '100', price_max: '5000' });
+      expect(r.priceMin).toBe(100);
+      expect(r.priceMax).toBe(5000);
+    });
+
+    it('drops non-numeric price_min/price_max to null', () => {
+      const r = parseProductFilters({ price_min: 'abc' });
+      expect(r.priceMin).toBeNull();
+    });
+
+    it('treats in_stock=1 / true / on as truthy', () => {
+      expect(parseProductFilters({ in_stock: '1' }).inStockOnly).toBe(true);
+      expect(parseProductFilters({ in_stock: 'true' }).inStockOnly).toBe(true);
+      expect(parseProductFilters({ in_stock: 'on' }).inStockOnly).toBe(true);
+      expect(parseProductFilters({ in_stock: '0' }).inStockOnly).toBe(false);
+      expect(parseProductFilters({ in_stock: 'yes' }).inStockOnly).toBe(false);
+    });
+
+    it('clamps rating_min to 1-5', () => {
+      expect(parseProductFilters({ rating_min: '0' }).ratingMin).toBe(1);
+      expect(parseProductFilters({ rating_min: '3' }).ratingMin).toBe(3);
+      expect(parseProductFilters({ rating_min: '9' }).ratingMin).toBe(5);
+    });
+
+    it('parses include_facets=1 → true', () => {
+      expect(parseProductFilters({ include_facets: '1' }).includeFacets).toBe(true);
+      expect(parseProductFilters({}).includeFacets).toBe(false);
+    });
+  });
+});
+
+describe('parseEcoCerts', () => {
+  it('accepts a single tier string', () => {
+    expect(parseEcoCerts({ eco_cert: 'verified-certified' })).toEqual(['verified-certified']);
+  });
+
+  it('accepts comma-separated multi-select', () => {
+    const r = parseEcoCerts({ eco_cert: 'self-declared,verified-certified' });
+    expect(r).toEqual(expect.arrayContaining(['self-declared', 'verified-certified']));
+    expect(r).toHaveLength(2);
+  });
+
+  it('accepts repeated query param array', () => {
+    const r = parseEcoCerts({ eco_cert: ['none', 'self-declared'] });
+    expect(r).toEqual(expect.arrayContaining(['none', 'self-declared']));
+  });
+
+  it('drops unknown tier values silently', () => {
+    expect(parseEcoCerts({ eco_cert: 'verified-certified,fake-tier' })).toEqual(['verified-certified']);
+  });
+
+  it('deduplicates tiers', () => {
+    expect(parseEcoCerts({ eco_cert: 'none,none,self-declared' })).toEqual(
+      expect.arrayContaining(['none', 'self-declared']),
+    );
+    expect(parseEcoCerts({ eco_cert: 'none,none,self-declared' })).toHaveLength(2);
+  });
+
+  it('returns [] for missing param', () => {
+    expect(parseEcoCerts({})).toEqual([]);
+  });
+
+  it('exports all 4 canonical tiers', () => {
+    expect(ECO_CERT_LEVELS).toEqual(['none', 'self-declared', 'third-party-claimed', 'verified-certified']);
+  });
+});
+
+describe('parseSort', () => {
+  it('returns "newest" by default', () => {
+    expect(parseSort({})).toBe('newest');
+  });
+
+  it('accepts each canonical sort option', () => {
+    for (const opt of SORT_OPTIONS) {
+      expect(parseSort({ sort: opt })).toBe(opt);
+    }
+  });
+
+  it('rejects unknown sort values → defaults to "newest"', () => {
+    expect(parseSort({ sort: 'invalid' })).toBe('newest');
+    expect(parseSort({ sort: 'price_random' })).toBe('newest');
   });
 });
 
