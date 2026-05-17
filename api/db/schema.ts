@@ -293,6 +293,14 @@ export const productStatusEnum = pgEnum('product_status', [
   'out_of_stock',
 ]);
 
+// V4 W0.D.2 — eco-cert tier ENUM (V4-DA-1 CLOSED).
+export const ecoCertLevelEnum = pgEnum('eco_cert_level', [
+  'none',
+  'self-declared',
+  'third-party-claimed',
+  'verified-certified',
+]);
+
 export const supplierStatusEnum = pgEnum('supplier_status', [
   'pending',
   'active',
@@ -341,6 +349,11 @@ export const products = pgTable(
     imageUrl: varchar('image_url', { length: 500 }),
     status: productStatusEnum('status').notNull().default('draft'),
     region: varchar('region', { length: 40 }),
+    // V4 W0.D.2 — catalog-filter columns (DA §02 + ME §03 refinements).
+    ecoCertLevel: ecoCertLevelEnum('eco_cert_level').notNull().default('none'),
+    inStockQty: integer('in_stock_qty').notNull().default(0),
+    retiredAt: timestamp('retired_at', { withTimezone: true }),
+    supplierRating: integer('supplier_rating'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -348,6 +361,15 @@ export const products = pgTable(
     merchantSkuUnique: uniqueIndex('products_merchant_sku_idx').on(t.merchantId, t.sku),
     merchantStatusIdx: index('products_merchant_status_idx').on(t.merchantId, t.status),
     categoryStatusIdx: index('products_category_status_idx').on(t.category, t.status),
+    // V4 W0.D.2 — composite partial catalog-filter index (full DESC NULLS LAST +
+    // WHERE predicate lives in the SQL migration; Drizzle entry here exists for
+    // type inference + the W0.D.7 schema-mirror metadata path).
+    catalogFilterIdx: index('products_catalog_filter_idx').on(
+      t.status,
+      t.ecoCertLevel,
+      t.supplierRating,
+      t.priceMinor,
+    ),
   }),
 );
 
