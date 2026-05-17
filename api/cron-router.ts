@@ -10,6 +10,7 @@
  * Routes:
  *   GET /api/cron/escalate-orders          → flag stuck order_items
  *   GET /api/cron/refresh-supplier-rating  → W0.D.9 watermark backfill
+ *   GET /api/cron/email-send-reconcile     → M9.A.recon.1 catch missed sends
  *
  * Future cron jobs (dep audit, KV cleanups, etc.) fold into this same
  * file to stay under the Vercel Hobby 12-fn cap.
@@ -21,6 +22,7 @@ import { getDb } from './db/client.js';
 import { recordAudit } from './lib/auditLog.js';
 import { emailMerchantApproved } from './lib/merchantEmails.js';
 import { refreshSupplierRatingBatch } from './lib/cron/refreshSupplierRating.js';
+import { reconcileEmailSendsBatch } from './lib/cron/reconcileEmailSends.js';
 
 interface RouterReq extends MinReq {
   body?: unknown;
@@ -189,8 +191,49 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
     return;
   }
 
+  if (action === 'email-send-reconcile') {
+    try {
+      await handleEmailSendReconcile(res);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'email-send-reconcile failed';
+      res.status(500);
+      res.json({ error: msg });
+    }
+    return;
+  }
+
   res.status(404);
   res.json({ error: `unknown cron action: ${action ?? '(empty)'}` });
+}
+
+async function handleEmailSendReconcile(res: MinRes): Promise<void> {
+  let result;
+  try {
+    result = await reconcileEmailSendsBatch();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/relation .*(orders|audit_log).* does not exist|42P01/i.test(msg)) {
+      res.status(503);
+      res.json({ ok: false, error: 'orders/audit_log schema not migrated.' });
+      return;
+    }
+    res.status(500);
+    res.json({ ok: false, error: msg });
+    return;
+  }
+  // Silent on green — audit only when something happened.
+  if (result.reEnqueued > 0 || result.errors > 0) {
+    await recordAudit(
+      'system:cron',
+      'email.send_reconcile',
+      'email',
+      String(result.reEnqueued),
+      null,
+      { ...result } as Record<string, unknown>,
+    );
+  }
+  res.status(200);
+  res.json({ ok: true, ...result });
 }
 
 async function handleRefreshSupplierRating(res: MinRes): Promise<void> {
