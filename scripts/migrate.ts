@@ -42,6 +42,25 @@ function versionFromFile(filename: string): string {
   return filename.replace(/\.sql$/, '');
 }
 
+/**
+ * V4 W0.D.3 — file-filter helper that excludes rollback siblings and
+ * underscore-prefixed templates from auto-apply. Pure for unit-test.
+ *
+ *   `0010_catalog_filters.sql`             → applied
+ *   `0010_catalog_filters_rollback.sql`    → SKIPPED (operator-invoked via psql)
+ *   `_template_rollback.sql`               → SKIPPED (template, not a migration)
+ *   `0000_schema_migrations.sql`           → applied (tracker bootstrap)
+ *
+ * See `PPW-Second-Brain/06-Roadmap/v4/NEON-BRANCH-WORKFLOW.md` for the
+ * rollback drill that consumes the skipped files.
+ */
+export function isApplicableMigration(filename: string): boolean {
+  if (!filename.endsWith('.sql')) return false;
+  if (filename.startsWith('_')) return false;
+  if (filename.endsWith('_rollback.sql')) return false;
+  return true;
+}
+
 interface MigrateDriver {
   query: (sql: string, params: unknown[]) => Promise<unknown>;
 }
@@ -100,9 +119,7 @@ async function run(): Promise<void> {
     throw new Error('Neon driver does not expose .query; use a newer @neondatabase/serverless.');
   }
 
-  const files = readdirSync(MIG_DIR)
-    .filter((f) => f.endsWith('.sql'))
-    .sort();
+  const files = readdirSync(MIG_DIR).filter(isApplicableMigration).sort();
   if (files.length === 0) {
     console.warn('No migration files found in', MIG_DIR);
     return;
@@ -139,7 +156,22 @@ async function run(): Promise<void> {
   console.log('migrations complete');
 }
 
-run().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Only auto-run when invoked as a CLI script. When imported (e.g. by the
+// W0.D.3 file-filter unit test) the top-level side effect would otherwise
+// call process.exit during test collection. Compare resolved paths so the
+// guard works on both Windows + POSIX.
+const invokedDirectly = (() => {
+  const arg = process.argv[1];
+  if (!arg) return false;
+  try {
+    return fileURLToPath(import.meta.url) === arg;
+  } catch {
+    return false;
+  }
+})();
+if (invokedDirectly) {
+  run().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
