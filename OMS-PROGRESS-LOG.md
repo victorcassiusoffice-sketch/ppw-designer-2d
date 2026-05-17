@@ -2,6 +2,119 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 30 (M9.B.4 DELETE soft-delete via retired_at)
+
+Punch-list pick #4 (M9.B.4 half — PATCH M9.B.3 deferred). Consumes
+the retired_at column shipped in tick 25 W0.D.2. Folds into
+/api/products via Vercel rewrite. Net new lambdas: 0.
+
+### What shipped (commit `b4ef43c`)
+
+- `vercel.json` — new rewrite
+  `/api/merchants/:slug/products/:id` → `/api/products` placed
+  BEFORE the existing no-id sibling so the more-specific path
+  wins. Vercel passes `:slug` + `:id` through as `?slug=&id=`.
+- `api/products.ts`:
+  - `softDeleteProduct(slug, productId)` pure helper returning
+    `SoftDeleteResult { ok, status, error?, retiredAt? }`.
+    Verifies slug → merchant.id; verifies product.merchant_id
+    matches (403 forbidden on mismatch); UPDATE products SET
+    retired_at = NOW() if not already retired. **Idempotent**:
+    already-retired product returns 204 with the existing
+    retiredAt so retried operator scripts stay clean.
+  - Audit log row written under `action='products.soft_delete',
+    actor='merchant:<slug>', target_id=<productId>`. Audit
+    failure does NOT change the delete verdict.
+  - Handler extended with DELETE branch: validates slug + numeric
+    id from query params, dispatches softDeleteProduct, returns
+    204 / 400 / 403 / 404 / 503 accordingly.
+  - `fetchActiveProducts` gains `isNull(retiredAt)` predicate in
+    the base chain so soft-deleted products NEVER appear in
+    listings (sister change to M9.B.4's contract; honours the
+    same predicate the W0.D.2 composite catalog-filter index
+    uses).
+  - 405 Allow header updated to include DELETE.
+- `api/__tests__/products-soft-delete.test.ts` (NEW, 8 tests):
+  bad input (empty slug, non-positive id) → 400; merchant-not-
+  found → 404 merchant_not_found; product-not-found → 404
+  product_not_found; product owned by different merchant → 403
+  forbidden; already-retired → 204 idempotent with existing
+  retiredAt; live product soft-deleted → 204 + new Date; schema-
+  missing → 503 schema_missing.
+
+  Mocks ./db/client.js + ./lib/auditLog.js. Mock chains drizzle's
+  `.select().from().where().limit()` / `.update().set().where()`
+  pattern just enough to stub out the four state transitions;
+  actual SQL text isn't asserted (smoke covers that).
+
+### Validation
+
+- `npm test` → **769/769 green** (+8 from tick 29's 761).
+- `npx tsc --noEmit` (root + `api/tsconfig.json`) ✓ clean.
+- `npx vite build` ✓ clean (4.36s).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → ready 2026-05-17 11:01 UTC.
+- Smoke A: `GET /api/healthcheck` → 200
+  `{commit: b4ef43c0e6fc84549feeb6835a8cf7a5c09ca85c, …}`.
+- Smoke B: `curl -X DELETE
+  https://designer.ppwellness.co/api/merchants/nonexistent-merchant/
+  products/1` → **404** (correct merchant_not_found path).
+  Rewrite + DELETE + softDeleteProduct chain works end-to-end.
+- Lambda **12/12** unchanged.
+
+### Phase A applicability
+
+M9.B.4 is a backend endpoint (no UI surface ships in this commit
+— the M9.B.5 merchant page consumes it). **Backend-exempt** from
+Phase A per goal-master inline-marker exemption rule.
+
+### Tick 30 state summary
+
+Items shipped: 1 rewrite + handler extension (DELETE branch +
+isNull predicate) + 1 helper + 1 test file = 295 insertions /
+4 deletions across 3 files. M9.B.4 ticked `[x]` in
+V4-UNIFIED-PLAN.md.
+
+**M9 progress: 3 of 11 micros shipped** (M9.A.3 + M9.B.2 + M9.B.4).
+Plus M9.A.1 partial pending Vic Phase A.
+
+Wave 0.D foundations: unchanged at 7 of 23 shipped + 1 partial.
+
+Lambda 12/12. Test count **769/769**. Live commit `b4ef43c`. 22
+PPW-Code commits live this session.
+
+### Session cumulative through tick 30 (23 ticks)
+
+Closed micros (V4-UNIFIED-PLAN fully ticked): **14** (added
+M9.B.4 this tick).
+Closed micros (live-readiness side): **7** (M9.A.send.1-4 + PolA.4
++ M9.B.4 + M9.A.1 wire half-shipped).
+Pending Vic-actions: 3 (W0.D.3 drill apply for 0010 + 0011, M9.A.1
+Phase A walkthrough).
+
+Tests: **568 → 769** (+201, milestone — first session crossing +200
+tests in a single day).
+
+V-decisions: V4-QA-2 + V4-OPS-1 candidate.
+
+### Next-pick (live-readiness §Drivable-now)
+
+- **#4 M9.B.3** — PATCH /api/merchants/:slug/products/:id with
+  Zod-validated partial update. Same rewrite + same helper
+  pattern as M9.B.4 with validation gate for body fields.
+  Backend-exempt.
+- **#5 M9.A.2** — PayPal capture-success email. Customer-facing,
+  needs its own Phase A scaffold. Depends on M9.A.send (ready
+  since tick 27) + the existing paypal-router capture handler.
+- **#7 PolA.1/2/3** — filter sidebar + mobile bottom-sheet +
+  active-filter chip row. UI-heavy; pre-fabbed copy in
+  LIVE-READINESS-CONTENT.md. Customer-journey Phase A binding
+  on PolA.1 (the others piggyback).
+
+---
+
 ## 2026-05-17 — V4 Driver tick 29 (PolA.4 catalog filter endpoint)
 
 Punch-list pick #3. Catalog filter + sort + facets endpoint at the
