@@ -14,7 +14,7 @@
  * unit-testable without spinning up the full handler.
  */
 
-import { renderDesignSaved } from './templates.js';
+import { renderDesignSaved, renderOrderConfirmed } from './templates.js';
 import { sendEmail, type SendResult } from './send.js';
 
 export interface DesignLike {
@@ -51,6 +51,74 @@ export interface DispatchResult {
  * caught + returned as `{fired: false, skippedReason: 'caller_caught',
  * error}` — caller decides whether to log or ignore.
  */
+export interface OrderLike {
+  ppwOrderId: string;
+  customerEmail: string | null;
+  totalMinor: number;
+  currency: string;
+  /**
+   * Optional per-merchant breakdown. M9.A.2 V1 ships with a single
+   * placeholder row when this is omitted (the multi-merchant
+   * order_items JOIN is a V2 enhancement once order_items
+   * population stabilises).
+   */
+  merchantBreakdown?: Array<{ merchantName: string; itemCount: number; subtotalMur: number }>;
+  /** Optional explicit greeting name; defaults to email-prefix proxy. */
+  customerName?: string;
+}
+
+/**
+ * M9.A.2 — fire the order-confirmed email after a successful PayPal
+ * capture. Returns the same DispatchResult shape as the design-saved
+ * dispatcher; never re-throws. The PayPal capture itself is the
+ * authoritative outcome — the email is a courtesy.
+ */
+export async function dispatchOrderConfirmedEmail(order: OrderLike): Promise<DispatchResult> {
+  if (!order.customerEmail || order.customerEmail.trim().length === 0) {
+    return { fired: false, skippedReason: 'no_customer_email' };
+  }
+  try {
+    const totalMur = order.currency === 'MUR' ? order.totalMinor : Math.round(order.totalMinor / 100);
+    const breakdown =
+      order.merchantBreakdown && order.merchantBreakdown.length > 0
+        ? order.merchantBreakdown
+        : [
+            {
+              merchantName: 'Peak Performance Wellness Marketplace',
+              itemCount: 1,
+              subtotalMur: totalMur,
+            },
+          ];
+    const tpl = renderOrderConfirmed({
+      customerName: order.customerName ?? deriveGreetingName(order.customerEmail),
+      orderRef: order.ppwOrderId,
+      totalMur,
+      currency: order.currency,
+      trackingUrl: `https://designer.ppwellness.co/order/track/${encodeURIComponent(order.ppwOrderId)}`,
+      merchantBreakdown: breakdown,
+    });
+    const send = await sendEmail({
+      to: order.customerEmail,
+      subject: tpl.subject,
+      html: tpl.html,
+      template: 'order-confirmed',
+      payload: {
+        ppwOrderId: order.ppwOrderId,
+        totalMinor: order.totalMinor,
+        currency: order.currency,
+        merchantCount: breakdown.length,
+      },
+    });
+    return { fired: true, send };
+  } catch (err) {
+    return {
+      fired: false,
+      skippedReason: 'caller_caught',
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
 export async function dispatchDesignSavedEmail(design: DesignLike): Promise<DispatchResult> {
   if (!design.customerEmail || design.customerEmail.trim().length === 0) {
     return { fired: false, skippedReason: 'no_customer_email' };

@@ -24,6 +24,7 @@ import { readPaypalEnv, paypalFetch } from '../paypalClient.js';
 import { getDb } from '../../db/client.js';
 import { orders } from '../../db/schema.js';
 import { sql } from 'drizzle-orm';
+import { dispatchOrderConfirmedEmail } from '../email/dispatch.js';
 
 const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:5173',
@@ -80,6 +81,10 @@ export function validateCaptureRequest(
 interface PaypalCaptureResponse {
   id?: string;
   status?: string;
+  payer?: {
+    email_address?: string;
+    name?: { given_name?: string; surname?: string };
+  };
   purchase_units?: Array<{
     payments?: {
       captures?: Array<{
@@ -165,6 +170,35 @@ export async function processCaptureRequest(
     }
     // Recorder failures are non-fatal - the webhook will reconcile.
     await recorder(v.data.ppwOrderId, v.data.paypalOrderId, json);
+    // M9.A.2 — order-confirmed email. Best-effort; capture is the
+    // authoritative outcome and the email is a courtesy. The dispatch
+    // helper itself never re-throws, but we still defensively wrap
+    // here in case the import path breaks.
+    try {
+      const cap = json.purchase_units?.[0]?.payments?.captures?.[0];
+      const amountStr = cap?.amount?.value ?? '0';
+      const currency = cap?.amount?.currency_code ?? 'USD';
+      const totalMinor = Math.round(parseFloat(amountStr) * (currency === 'MUR' ? 1 : 100));
+      const customerEmail = json.payer?.email_address ?? null;
+      const givenName = json.payer?.name?.given_name?.trim();
+      const dispatch = await dispatchOrderConfirmedEmail({
+        ppwOrderId: v.data.ppwOrderId,
+        customerEmail,
+        totalMinor,
+        currency,
+        customerName: givenName && givenName.length > 0 ? givenName : undefined,
+      });
+      if (dispatch.skippedReason === 'caller_caught') {
+        // eslint-disable-next-line no-console
+        console.error('[M9.A.2 order-confirmed-email] caught:', dispatch.error);
+      }
+    } catch (emailErr) {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[M9.A.2 order-confirmed-email] unexpected:',
+        emailErr instanceof Error ? emailErr.message : String(emailErr),
+      );
+    }
     return { status: 200, ok: true, paymentStatus: 'captured' };
   } catch (err) {
     const message = err instanceof Error ? err.message.slice(0, 200) : 'Capture failed.';
