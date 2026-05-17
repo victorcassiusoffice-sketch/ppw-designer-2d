@@ -2,6 +2,138 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 26 (Track C W0.D.9 supplier_rating watermark backfill)
+
+Tick 25 → tick 26: stays on Track C to land the natural follow-on
+of W0.D.2. The supplier_rating column landed in 25; W0.D.9 ships
+the watermark + backfill cron that fills it. After enough refresh
+cycles, the W0.D.2 NOT VALID CHECK constraint can be VALIDATED
+(separate small tick).
+
+### What shipped (commit `4592756`)
+
+- `api/db/migrations/0011_supplier_rating_backfill.sql` (NEW):
+  `ALTER TABLE products ADD COLUMN IF NOT EXISTS
+  supplier_rating_refreshed_at TIMESTAMPTZ` + partial watermark
+  index `products_supplier_rating_watermark_idx ON products
+  (supplier_rating_refreshed_at NULLS FIRST) WHERE retired_at IS
+  NULL`. The index design supports `ORDER BY watermark NULLS
+  FIRST LIMIT 1000` as an index walk that stops at the 7-day
+  cutoff. No literal BEGIN/COMMIT per ME §03.1.
+- `api/db/migrations/0011_supplier_rating_backfill_rollback.sql`
+  (NEW): DROP INDEX → DROP COLUMN with IF EXISTS guards +
+  schema_migrations bookkeeping snippet (W0.D.3 template).
+- `api/db/schema.ts`: mirrors `supplierRatingRefreshedAt`
+  timestamp column on products.
+- `api/lib/cron/refreshSupplierRating.ts` (NEW):
+  - `computeRatingForMerchantStatus(status)` pure deterministic
+    v1 algorithm — approved=3, kyc_complete + pending_admin_
+    approval=2, awaiting_kyc=1, pending_signup + rejected +
+    suspended=NULL, unknown=NULL (future-proof).
+  - `refreshSupplierRatingBatch()` SELECTs up to 1000 stale
+    products + their merchants, computes ratings, groups product
+    IDs by rating value, batches one UPDATE per distinct rating
+    (typically ~4 round-trips per tick regardless of batch
+    size). Returns scanned/updated/errors + sample product IDs.
+  - Constants `BACKFILL_LIMIT = 1000` + `REFRESH_INTERVAL_DAYS
+    = 7` match the V4-UNIFIED-PLAN cron-registry spec.
+- `api/cron-router.ts`: new `refresh-supplier-rating` action.
+  Same auth gate as escalate-orders. Schema-missing detector
+  returns 503 cleanly (catches both `relation … does not exist`
+  AND `column … does not exist` for the pre-migration window).
+  Silent-on-green: audit row only when `updated > 0 || errors >
+  0`.
+- `api/__tests__/refresh-supplier-rating.test.ts` (NEW, 16
+  tests): every merchant status → rating mapping + bounds (NULL
+  or 1-5) + unknown status defaults to NULL + constants match
+  spec + migration content (no BEGIN/COMMIT, ADD COLUMN IF NOT
+  EXISTS, index NULLS FIRST + partial WHERE) + rollback ordering
+  (index before column) + schema_migrations bookkeeping comment.
+
+### Validation
+
+- `npm test` → **716/716 green** (+16 from tick 25's 700; zero
+  regressions).
+- `npx tsc --noEmit` (root + `api/tsconfig.json`) ✓ clean (one
+  brief detour: `recordAudit` typed payload needed a
+  `Record<string, unknown>` cast on the BackfillResult shape).
+- `npx vite build` ✓ clean (3.67s).
+- `npx tsx scripts/check-schema-mirror.ts` → "OK (17 tables)"
+  (column addition, no new tables).
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → ready 2026-05-17 09:09 UTC.
+- Smoke A: `GET /api/healthcheck` → 200
+  `{commit: 45927568b325350a6a48b8faeab3fa92aa089a26, …}`.
+- Smoke B: `GET /api/cron/refresh-supplier-rating` (no auth) →
+  **401** confirming the existing CRON_SECRET gate covers the new
+  action. With auth + before migration 0011 applies, would
+  return 503 schema-missing.
+- Lambda **12/12** unchanged (handler folded into cron-router).
+
+### Vic-action follow-up (NOT blocking driver)
+
+1. Apply migrations 0010 + 0011 via the W0.D.3 drill — separate
+   branches or one combined branch
+   (`migration-test-v4-0010-0011`).
+2. After 0011 applies, call
+   `curl -H "Authorization: Bearer <CRON_SECRET>"
+   https://designer.ppwellness.co/api/cron/refresh-supplier-rating`
+   to backfill the first 1000 products. Expect a few seconds of
+   wall time. Re-run until `scanned: 0` (all products refreshed
+   within the 7-day window).
+3. Once all products have a non-NULL supplier_rating (or
+   confirmed-NULL from a no-positive-signal merchant), follow-up
+   tick can VALIDATE the W0.D.2 `products_supplier_rating_bounds`
+   NOT VALID constraint.
+4. Once W0.D.8 lands the unified daily dispatcher, this handler
+   runs at 05:10 UTC inside the single `0 5 * * *` Vercel cron
+   invocation — no manual curl needed.
+
+### Phase A applicability
+
+W0.D.9 is infra (migration + cron handler). **Backend-exempt**
+from Phase A per goal-master inline-marker exemption rule.
+
+### Tick 26 state summary
+
+Items shipped: 1 migration + 1 rollback + 1 Drizzle mirror line
++ 1 cron handler library + 1 cron-router action + 1 test file =
+335 insertions across 6 files. W0.D.9 ticked `[x]` in
+V4-UNIFIED-PLAN.md.
+
+Wave 0.D foundations: **7 of 23 shipped** (W0.D.1 + W0.D.2 +
+W0.D.3 + W0.D.4 + W0.D.7 + W0.D.9 + W0.D.14) + 1 partial
+(W0.D.17). 16 PPW-Code commits live this session.
+
+Lambda 12/12. Test count **716/716**. Live commit `4592756`.
+
+### Session cumulative through tick 26 (19 ticks)
+
+Closed micros: **W0.D.1 + W0.D.2 + W0.D.3 + W0.D.4 + W0.D.7 +
+W0.D.9 + W0.D.14 + W0.A.6 + W0.A.7 + M1.E.4 + M9.A.3 + M9.B.2 +
+M3.A.1 = 13**. Plus W0.D.17 partial + W0.5.B.2 partial.
+
+Tests: **568 → 716** (+148). 16 PPW-Code commits live. All
+deploys smoked green.
+
+V-decisions: V4-QA-2 + V4-OPS-1 candidate (both unchanged).
+
+Next-pick (rotate to Track D for tick 27, then A for 28):
+- **Track D**: M9.B.4 (DELETE soft-delete via the retired_at
+  column shipped in tick 25 — naturally cleaner now; backend-
+  exempt) OR M9.B.3 (PATCH soft-edit; backend-exempt).
+- **Track A**: M3.A.2 (CSV preview/rollback polish), M3.A.3
+  (suppliers CSV mirror).
+- **Track B**: STILL BLOCKED on V4-OPS-1.
+- **Track C** (after one more round): W0.D.5 workspace, W0.D.19
+  tokens, or W0.D.8 unified daily dispatcher (which would
+  schedule W0.D.9's refresh-supplier-rating + the existing
+  escalate-orders at 05:00 and 05:10 respectively).
+
+---
+
 ## 2026-05-17 — V4 Driver tick 25 (Track C W0.D.2 migration 0010 catalog filters)
 
 Vic-picked Track C item — the FIRST migration to consume the W0.D.3
