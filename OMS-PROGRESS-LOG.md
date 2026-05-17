@@ -2,6 +2,166 @@
 
 ---
 
+## 2026-05-17 — V4 Driver tick 25 (Track C W0.D.2 migration 0010 catalog filters)
+
+Vic-picked Track C item — the FIRST migration to consume the W0.D.3
+branch-then-prod drill from tick 23. W0.D.2 ships the catalog filter
+foundation that powers M9.B.5 merchant page + W0.5.B.7 customer
+catalog sidebar. Migration applies on Vic's command via the drill;
+this commit lands the SQL + rollback + Drizzle mirror + tests as
+code.
+
+### What shipped (commit `31a802f`)
+
+- `api/db/migrations/0010_catalog_filters.sql` (NEW, 95 lines):
+  - `eco_cert_level` ENUM 4-tier (`none / self-declared /
+    third-party-claimed / verified-certified`) per V4-DA-1 CLOSED.
+    Wrapped in `DO $$ IF NOT EXISTS … END $$` for re-run safety.
+  - 4 additive products columns via `ADD COLUMN IF NOT EXISTS`:
+    `eco_cert_level NOT NULL DEFAULT 'none'`, `in_stock_qty INTEGER
+    NOT NULL DEFAULT 0`, `retired_at TIMESTAMPTZ` (soft-delete per
+    DA §02.3), `supplier_rating INTEGER` (denormalised from
+    merchants for index efficiency; W0.D.9 backfill watermark).
+  - `products_supplier_rating_bounds` CHECK (1-5 or NULL) added
+    `NOT VALID` so pre-existing NULL rows don't scan. W0.D.9 will
+    VALIDATE once backfill completes.
+  - Composite partial index
+    `products_catalog_filter_idx ON products (status,
+    eco_cert_level, supplier_rating DESC NULLS LAST, price_minor)
+    WHERE in_stock_qty > 0 AND retired_at IS NULL` per DA §02.1.
+    B-tree equality precedes range; predicates moved into the
+    WHERE so the index stays tight.
+  - `merchants_slug_kebab_ck` CHECK
+    `slug ~ '^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$'` added `NOT VALID`
+    per V4-DA-2 + ME §03.4 (~12 stale test merchants with non-
+    conformant slugs need cleanup before VALIDATE — follow-up).
+  - `customer_identities` VIEW via `CREATE OR REPLACE` per DA §02.2 +
+    ME §03.3 — defers V4-TL-1 customers-table indefinitely by
+    surfacing email-keyed identity from orders (email,
+    first_seen_at, last_seen_at, order_count, total_spent_minor,
+    preferred_currency via `MODE() WITHIN GROUP`).
+  - **NO literal BEGIN/COMMIT** per ME §03.1 — Neon HTTP driver
+    auto-wraps each statement.
+
+- `api/db/migrations/0010_catalog_filters_rollback.sql` (NEW, 30
+  lines): operator-invoked via `psql -f` per W0.D.3 drill; not
+  auto-applied (scripts/migrate.ts `isApplicableMigration` filter
+  from tick 23 excludes `*_rollback.sql`). Drops VIEW first, then
+  CONSTRAINTs, then INDEX, then 4 COLUMNs in reverse-add order,
+  then the ENUM type. Documents the post-rollback
+  `DELETE FROM schema_migrations WHERE version = '0010_catalog_filters'`
+  bookkeeping.
+
+- `api/db/schema.ts` mirrors:
+  - `ecoCertLevelEnum` pgEnum addition
+  - 4 products column entries (`ecoCertLevel` notNull default,
+    `inStockQty` notNull default, `retiredAt` nullable,
+    `supplierRating` nullable)
+  - `catalogFilterIdx` Drizzle index entry (columns only —
+    the SQL migration owns the DESC NULLS LAST + WHERE partial
+    semantics; Drizzle entry is metadata for type inference +
+    schema-mirror parity)
+
+- `api/__tests__/migration-0010-catalog-filters.test.ts` (NEW,
+  16 unit tests): assert no literal BEGIN/COMMIT, ENUM creation
+  + 4 tiers + IF NOT EXISTS guard, 4 ADD COLUMN IF NOT EXISTS
+  rows, NOT NULL + DEFAULT correctness, supplier_rating CHECK
+  NOT VALID, composite index column order + WHERE predicate,
+  slug kebab regex CHECK NOT VALID, customer_identities VIEW
+  CREATE OR REPLACE + GROUP BY, no customers TABLE creation,
+  rollback ordering (VIEW first, ENUM last), every column drop,
+  every constraint drop, schema_migrations bookkeeping comment.
+
+### Validation
+
+- `npm test` → **700/700 green** (+16 from tick 24's 684 — the
+  16 new tests are migration-0010 content + rollback shape).
+  Test count milestone crossed.
+- `npx tsc --noEmit` (root + `api/tsconfig.json`) ✓ clean.
+- `npx vite build` ✓ clean (3.62s).
+- `npx tsx scripts/check-schema-mirror.ts` → "schema-mirror: OK
+  (17 tables)" — 0010 adds an ENUM + 4 columns + 1 index +
+  1 VIEW; zero new tables, so the table-set parity gate is
+  trivially green.
+
+### Deploy + smoke
+
+- `npx vercel deploy --prod --yes` → ready 2026-05-17 08:35 UTC.
+- Smoke: `GET /api/healthcheck` → 200
+  `{commit: 31a802fdf955eb51d63f2b957d7ee8ddc69fff70, …}`.
+- Lambda **12/12** unchanged. No `vercel.json` edit.
+- **Migration NOT YET APPLIED to prod DB** — this commit ships the
+  SQL + Drizzle mirror as CODE. Vic runs the actual apply via the
+  W0.D.3 drill (`migration-test-v4-0010` Neon branch → smoke →
+  prod). Until then, queries that reference the new columns will
+  fall through the schema-missing detector in `/api/products` and
+  return `schemaMissing: true`.
+
+### Vic-action follow-up (NOT blocking driver)
+
+1. Create Neon branch `migration-test-v4-0010` from `main` HEAD.
+2. `DATABASE_URL=<branch-url> npx tsx scripts/migrate.ts` —
+   should log `-> applying 0010_catalog_filters.sql (~3.7 KB)`
+   then `ok 0010_catalog_filters.sql` and a schema_migrations
+   row insert.
+3. Run the 3-query smoke template from NEON-BRANCH-WORKFLOW.md
+   §3 (schema parity / index parity via EXPLAIN / data integrity
+   row counts).
+4. If green: delete branch, run same command against prod (with
+   `ALLOW_PROD_MIGRATIONS=1` env to clear the migrate.ts
+   production-guard).
+5. If red: invoke
+   `psql -f api/db/migrations/0010_catalog_filters_rollback.sql`
+   on the branch, fix forward, retry.
+
+### Phase A applicability
+
+W0.D.2 is a DB migration (schema only). **Backend-exempt** from
+Phase A per goal-master inline-marker exemption rule. M9.B.5 will
+consume the columns + index from a Phase-A-gated merchant page.
+
+### Tick 25 state summary
+
+Items shipped: 1 migration + 1 rollback sibling + 1 Drizzle
+mirror update + 1 test file = 291 insertions across 4 files.
+W0.D.2 ticked `[x]` in V4-UNIFIED-PLAN.md.
+
+Wave 0.D foundations: **6 of 23 shipped** (W0.D.1 + W0.D.2 +
+W0.D.3 + W0.D.4 + W0.D.7 + W0.D.14) + 1 partial (W0.D.17). 14
+PPW-Code commits live this session.
+
+Lambda 12/12. Test count **700/700** (milestone). Live commit
+`31a802f`.
+
+### Session cumulative through tick 25 (18 ticks)
+
+Closed micros: **W0.D.1 + W0.D.2 + W0.D.3 + W0.D.4 + W0.D.7 +
+W0.D.14 + W0.A.6 + W0.A.7 + M1.E.4 + M9.A.3 + M9.B.2 + M3.A.1
+= 12**. Plus W0.D.17 partial + W0.5.B.2 partial.
+
+Tests: **568 → 700** (+132, milestone). 14 PPW-Code commits
+live. All deploys smoked green.
+
+V-decisions: V4-QA-2 + V4-OPS-1 candidate (both unchanged).
+
+Next-pick (cycle resumes at Track D for tick 26 — but the
+"locked sequence" within Track C suggests staying on C briefly
+to land W0.D.9 supplier_rating backfill which now has the
+column to fill — natural follow-on; alternatively rotate
+properly to D = M9.B.3 PATCH endpoint):
+- **Track A**: M3.A.2 (CSV preview/rollback polish), M3.A.3
+  (suppliers CSV), or M4.A.1 (leads-table migration, Phase A
+  binding).
+- **Track B**: STILL BLOCKED on V4-OPS-1.
+- **Track C**: W0.D.9 supplier_rating backfill watermark
+  (now-unblocked by tick 25 column), W0.D.5 workspace, or
+  W0.D.19 tokens canon.
+- **Track D**: M9.B.3 (PATCH soft-edit endpoint, backend-exempt)
+  or M9.B.4 (DELETE soft-delete, backend-exempt; M9.B.4 will be
+  CLEANER atop W0.D.2 retired_at column shipped just now).
+
+---
+
 ## 2026-05-17 — V4 Driver tick 24 (Track D M9.B.2 merchant-scoped product listing)
 
 Cycle A→B→C→D round 3 closes Track D. M9.B.2 (`GET /api/merchants/
