@@ -21,19 +21,23 @@ export function StatusCard({ stats }: StatusCardProps): JSX.Element {
       role="status"
       aria-label="Room statistics"
       style={{
+        // PCF-2 (K1 meeting fix) — moved from top-left (was buried
+        // under RoomList sidebar) to mid-top-right inside the canvas
+        // viewport, ~80 px below the TopBar so it doesn't fight with
+        // the MiniCartPill.
         position: 'fixed',
-        top: 16,
-        left: 16,
+        top: 88,
+        right: 16,
         zIndex: 700,
-        background: 'rgba(245, 239, 230, 0.92)',
-        border: `1px solid ${PALETTE.gold}`,
-        borderRadius: 8,
-        padding: '10px 14px',
+        background: 'rgba(245, 239, 230, 0.95)',
+        border: `2px solid ${PALETTE.gold}`,
+        borderRadius: 10,
+        padding: '12px 16px',
         color: PALETTE.ink,
         fontSize: 12,
-        boxShadow: '0 2px 8px rgba(14,14,16,0.15)',
+        boxShadow: '0 4px 12px rgba(14,14,16,0.18)',
         display: 'flex',
-        gap: 16,
+        gap: 18,
       }}
     >
       <Kpi label="Room value" value={`Rs ${stats.totalValueMur.toLocaleString('en-MU')}`} />

@@ -13,14 +13,16 @@
  * so totalValueMur = 0 is correct here.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { HelpLauncherIcon, HelpOverlay } from './HelpOverlay';
 import { StatusCard } from './StatusCard';
 import { ModeStrip } from './ModeStrip';
+import { V4Banner } from './V4Banner';
 import { isGamingV1Active } from './gamingV1Flag';
 import { useDesignStore } from '../store/designStore';
 import { computeRoomStats } from './useRoomStats';
 import { useDesignerMode } from './useDesignerMode';
+import { fetchApiProducts } from '../data/apiCatalogAdapter';
 
 export function GamingLayer1Surfaces(): JSX.Element | null {
   // Always call hooks unconditionally; gate the render at the bottom.
@@ -29,6 +31,19 @@ export function GamingLayer1Surfaces(): JSX.Element | null {
   const roomDimensions = useDesignStore((s) => s.roomDimensions);
   const [mode, setMode] = useDesignerMode('move');
   const [helpOpen, setHelpOpen] = useState(false);
+
+  // PCF-2 — surface merchant SKU count in the V4 banner so Vic can
+  // verify the K1 catalog wiring at a glance.
+  const [merchantSkuCount, setMerchantSkuCount] = useState<number>(0);
+  useEffect(() => {
+    let cancelled = false;
+    fetchApiProducts().then((rows) => {
+      if (!cancelled) setMerchantSkuCount(rows.length);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const stats = useMemo(() => {
     return computeRoomStats({
@@ -42,6 +57,7 @@ export function GamingLayer1Surfaces(): JSX.Element | null {
 
   return (
     <>
+      <V4Banner merchantProductCount={merchantSkuCount} />
       <StatusCard stats={stats} />
       <ModeStrip
         active={mode}

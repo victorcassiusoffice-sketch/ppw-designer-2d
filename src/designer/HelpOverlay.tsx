@@ -127,19 +127,25 @@ export function HelpLauncherIcon({ onOpen }: { onOpen: () => void }): JSX.Elemen
       onClick={onOpen}
       aria-label="Open keyboard shortcuts help"
       style={{
+        // PCF-2 — moved below StatusCard + ModeStrip cluster so the
+        // top-right MiniCartPill keeps its slot. Top-right column:
+        //   88 px : StatusCard
+        //   152 px: ModeStrip
+        //   204 px: this Help button
         position: 'fixed',
-        top: 16,
+        top: 204,
         right: 16,
-        width: 32,
-        height: 32,
+        width: 36,
+        height: 36,
         borderRadius: '50%',
         background: '#F5EFE6',
-        border: '1px solid #C0A67E',
+        border: '2px solid #C0A67E',
         cursor: 'pointer',
-        fontSize: 14,
-        fontWeight: 600,
+        fontSize: 16,
+        fontWeight: 700,
         color: '#0E0E10',
         zIndex: 700,
+        boxShadow: '0 4px 12px rgba(14,14,16,0.18)',
       }}
     >
       ?
