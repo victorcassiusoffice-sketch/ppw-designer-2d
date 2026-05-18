@@ -60,6 +60,11 @@ export const CATEGORY_LABELS: Record<ProductCategory, string> = {
   'ergo-chair': 'Ergo Chair',
   plant: 'Plant',
   'eco-office-kit': 'Eco Office Kit',
+  // PCF-1 (K1) — merchant-API category labels.
+  massage: 'Massage',
+  sauna: 'Sauna',
+  fitness: 'Fitness',
+  other: 'Other',
 };
 
 /**
@@ -109,6 +114,12 @@ export const CATEGORY_FILL: Record<ProductCategory, { fill: string; stroke: stri
   'ergo-chair':     { fill: '#94A3B8', stroke: '#0E1B1F' },
   plant:            { fill: '#84A98C', stroke: '#3A5A40' },
   'eco-office-kit': { fill: '#D4B896', stroke: '#7C5E3C' },
+  // PCF-1 — V4-AU-1 gold tint for merchant-supplied SKUs so they're
+  // visually distinct from the bundled DEMO seeds.
+  massage:          { fill: '#E9DCC2', stroke: '#C0A67E' },
+  sauna:            { fill: '#DAA060', stroke: '#7A4F1F' },
+  fitness:          { fill: '#C0C0C0', stroke: '#404040' },
+  other:            { fill: '#F5EFE6', stroke: '#C0A67E' },
 };
 
 /**
@@ -151,6 +162,32 @@ export function thumbnailFor(category: ProductCategory): string {
         <rect x="51" y="34" width="3" height="18" fill="#3B4A52"/>
         <rect x="22" y="14" width="20" height="14" rx="1" fill="#0E1B1F" stroke="#3B4A52" stroke-width="2"/>
         <rect x="20" y="22" width="24" height="6" rx="1" fill="#84A98C"/>
+      </svg>`;
+    // PCF-1 (K1) — V4-AU-1 gold thumbs for merchant-API categories.
+    case 'massage':
+      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="14" y="20" width="36" height="24" rx="6" fill="#E9DCC2" stroke="#C0A67E" stroke-width="2"/>
+        <rect x="20" y="14" width="24" height="10" rx="3" fill="#C0A67E"/>
+        <rect x="22" y="44" width="20" height="8" rx="2" fill="#C0A67E"/>
+      </svg>`;
+    case 'sauna':
+      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="10" y="12" width="44" height="44" rx="6" fill="#DAA060" stroke="#7A4F1F" stroke-width="2"/>
+        <rect x="20" y="22" width="24" height="4" rx="1" fill="#7A4F1F" opacity="0.6"/>
+        <rect x="20" y="30" width="24" height="4" rx="1" fill="#7A4F1F" opacity="0.6"/>
+        <rect x="20" y="38" width="24" height="4" rx="1" fill="#7A4F1F" opacity="0.6"/>
+      </svg>`;
+    case 'fitness':
+      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="10" y="26" width="44" height="14" rx="3" fill="#C0C0C0" stroke="#404040" stroke-width="2"/>
+        <circle cx="18" cy="33" r="4" fill="#404040"/>
+        <circle cx="46" cy="33" r="4" fill="#404040"/>
+        <rect x="22" y="18" width="20" height="6" rx="1" fill="#0E0E10"/>
+      </svg>`;
+    case 'other':
+      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="12" y="12" width="40" height="40" rx="4" fill="#F5EFE6" stroke="#C0A67E" stroke-width="2"/>
+        <text x="32" y="40" text-anchor="middle" font-family="sans-serif" font-size="22" fill="#C0A67E">★</text>
       </svg>`;
   }
 }

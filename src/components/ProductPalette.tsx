@@ -27,9 +27,9 @@ import {
   filterByRegion,
   getAllProducts,
   getCategories,
-  searchProducts,
   thumbnailFor,
 } from '../data/products';
+import { fetchApiProducts } from '../data/apiCatalogAdapter';
 import type { RegionGroup } from '../data/products';
 import type { Product, ProductCategory } from '../data/products.schema';
 
@@ -80,6 +80,20 @@ export function ProductPalette({
   const mobileOpen = mobileOpenProp ?? mobileOpenLocal;
   const setMobileOpen = setMobileOpenProp ?? setMobileOpenLocal;
 
+  // PCF-1 (K1 meeting 2026-05-19) — fetch merchant-supplied products
+  // from /api/products on mount and blend with the bundled seeds.
+  // Empty array = degrade-silently to bundled-only.
+  const [apiProducts, setApiProducts] = useState<Product[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    fetchApiProducts().then((rows) => {
+      if (!cancelled) setApiProducts(rows);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     try {
       localStorage.setItem(REGION_LS_KEY, region);
@@ -88,15 +102,41 @@ export function ProductPalette({
     }
   }, [region]);
 
-  const categories = useMemo(() => getCategories(), []);
+  const allProducts = useMemo(() => {
+    // Merchant products first so they're the top of the catalog grid —
+    // K1 demo path: open catalog, see Matrix/NordicTrack-style items
+    // immediately above the bundled wellness seeds.
+    return [...apiProducts, ...getAllProducts()];
+  }, [apiProducts]);
+
+  function searchAll(q: string): Product[] {
+    const needle = q.trim().toLowerCase();
+    if (!needle) return allProducts;
+    return allProducts.filter((p) => {
+      return (
+        p.name.toLowerCase().includes(needle)
+        || p.sku.toLowerCase().includes(needle)
+        || p.category.toLowerCase().includes(needle)
+        || p.supplier.toLowerCase().includes(needle)
+        || (p.notes ?? '').toLowerCase().includes(needle)
+      );
+    });
+  }
+
+  const categories = useMemo(() => {
+    const set = new Set<ProductCategory>(getCategories());
+    for (const p of apiProducts) set.add(p.category);
+    return [...set];
+  }, [apiProducts]);
   const filtered = useMemo(() => {
-    let base = query ? searchProducts(query) : getAllProducts();
+    let base = query ? searchAll(query) : allProducts;
     base = filterByRegion(base, region);
     if (activeCategory !== 'all') {
       base = base.filter((p) => p.category === activeCategory);
     }
     return base;
-  }, [query, activeCategory, region]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, activeCategory, region, allProducts]);
 
   function handleDragStart(e: React.DragEvent<HTMLDivElement>, product: Product) {
     e.dataTransfer.effectAllowed = 'copy';
@@ -119,7 +159,7 @@ export function ProductPalette({
           </button>
         </div>
         <p className="mt-0.5 text-[11px] text-ppw-slate">
-          {filtered.length} of {getAllProducts().length} products · ships to {region}
+          {filtered.length} of {allProducts.length} products · ships to {region}
         </p>
         <input
           type="search"

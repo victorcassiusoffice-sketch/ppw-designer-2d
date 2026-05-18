@@ -31,7 +31,13 @@ export type ProductCategory =
   | 'sleep-pod'
   | 'ergo-chair'
   | 'plant'
-  | 'eco-office-kit';
+  | 'eco-office-kit'
+  // PCF-1 (K1 meeting 2026-05-19) — categories surfaced from merchant API.
+  // Sourced from migration 0004 product_status / agent category enums.
+  | 'massage'
+  | 'sauna'
+  | 'fitness'
+  | 'other';
 
 export type DesignerStatus = 'Not Started' | 'In Progress' | 'Blocked' | 'Done';
 
