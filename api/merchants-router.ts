@@ -25,6 +25,7 @@ import {
   generateReferencePagePdf,
   REFERENCE_PAGE_HEADERS,
 } from './lib/capture/referencePage.js';
+import { handler as signUploadHandler } from './lib/capture/signUpload.js';
 import { withSentry } from './lib/sentry.js';
 
 interface MinimalReq {
@@ -87,6 +88,17 @@ async function rootHandler(req: MinimalReq, res: MinimalRes): Promise<void> {
   // POST /api/merchants/signup
   if (segments[0] === 'merchants' && segments[1] === 'signup') {
     return signupHandler(req, res);
+  }
+
+  // POST /api/merchants/:slug/capture/sign-upload
+  if (
+    segments[0] === 'merchants'
+    && typeof segments[1] === 'string'
+    && segments[2] === 'capture'
+    && segments[3] === 'sign-upload'
+  ) {
+    const slug = segments[1];
+    return signUploadHandler(slug, req, res);
   }
 
   res.status(404).json({
