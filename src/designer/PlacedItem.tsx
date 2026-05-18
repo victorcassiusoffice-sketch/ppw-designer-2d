@@ -15,7 +15,11 @@
 
 import { useEffect, useState } from 'react';
 import { Ellipse, Group, Image as KonvaImage } from 'react-konva';
+import type Konva from 'konva';
 import { cropRect, shadowGeometry, type PlacedItemModel } from './placedItemMath';
+
+const HOVER_LIFT_SCALE = 1.02;
+const HOVER_TRANSITION_MS = 60;
 
 export interface PlacedItemProps {
   /** Stable id (PlacedItemSchema.id from MASTER-BUILD-PLAN §1). */
@@ -59,10 +63,25 @@ export function PlacedItem(props: PlacedItemProps): JSX.Element | null {
   // Group so render order is shadow → image. GL1.04b draws the
   // shadow at a Y BELOW the photo, so render order doesn't matter
   // visually, but we keep the same Group structure for consistency.
+  function setHoverScale(node: Konva.Node | null, scale: number): void {
+    if (!node) return;
+    node.to({ scaleX: scale, scaleY: scale, duration: HOVER_TRANSITION_MS / 1000 });
+  }
+
   return (
     <Group
       onClick={() => onSelect?.(id)}
       onTap={() => onSelect?.(id)}
+      onMouseEnter={(e) => {
+        setHoverScale(e.target.getParent(), HOVER_LIFT_SCALE);
+        const stage = e.target.getStage();
+        if (stage) stage.container().style.cursor = 'grab';
+      }}
+      onMouseLeave={(e) => {
+        setHoverScale(e.target.getParent(), 1);
+        const stage = e.target.getStage();
+        if (stage) stage.container().style.cursor = 'default';
+      }}
     >
       <Ellipse
         x={shadow.centreXPx + shadow.offsetXPx}
