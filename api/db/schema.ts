@@ -366,6 +366,9 @@ export const products = pgTable(
       () => productCaptureScaleLocks.scaleLockId,
       { onDelete: 'set null' },
     ),
+    // Sims-Parity DT-26 — per-SKU hero-glTF flag. V8=NO so default
+    // stays FALSE forever until external 3D artist spend unblocks.
+    useGltf: boolean('use_gltf').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
