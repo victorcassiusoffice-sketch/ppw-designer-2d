@@ -42,6 +42,12 @@ import { useAutoSave } from './lib/useAutoSave';
 // mounted on top of the existing Konva render-core. Konva stable-lock 26c144c
 // untouched; classic UI surfaces via `?ui=classic`.
 import { GamingLayer1Surfaces } from './designer/GamingLayer1Surfaces';
+// Sims-Parity DT-21 — Babylon Phase 2 (V7=YES 2026-05-19). Lazy-loaded
+// so the marketing-route bundle stays under the 250 KB delta gate.
+// Mounted only when `?engine=babylon` is on the URL.
+import { lazy, Suspense } from 'react';
+import { isBabylonActive } from './designer/babylon/engineFlag';
+const BabylonRoomLazy = lazy(() => import('./designer/babylon/BabylonRoom'));
 
 /**
  * OMS Wave 2.5 — desktop-first hero banner.
@@ -132,6 +138,9 @@ export default function App() {
   // Touch devices get the toggle disabled because tilting + pinch-zoom
   // simultaneously is unreliable. Locked: no Babylon migration here.
   const [threeDPreview, setThreeDPreview] = useState(false);
+  // DT-21 — Babylon engine flag captured at mount; URL change requires
+  // a hard refresh to switch (matches the ?ui=classic semantics).
+  const babylonActive = isBabylonActive();
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-ppw-sand text-ppw-ink">
@@ -191,12 +200,28 @@ export default function App() {
                   pointerEvents: threeDPreview ? 'none' : 'auto',
                 }}
               >
-                <RoomCanvas
-                  drawMode={drawMode}
-                  onDrawComplete={() => setDrawMode(false)}
-                  pendingProductId={pendingProductId}
-                  setPendingProductId={setPendingProductId}
-                />
+                {babylonActive ? (
+                  <Suspense
+                    fallback={
+                      <div style={{
+                        width: '100%', height: '100%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: '#0E0E10', color: '#F5EFE6', fontSize: 13,
+                      }}>
+                        Loading Babylon 3D engine…
+                      </div>
+                    }
+                  >
+                    <BabylonRoomLazy />
+                  </Suspense>
+                ) : (
+                  <RoomCanvas
+                    drawMode={drawMode}
+                    onDrawComplete={() => setDrawMode(false)}
+                    pendingProductId={pendingProductId}
+                    setPendingProductId={setPendingProductId}
+                  />
+                )}
               </div>
             </div>
           </CanvasErrorBoundary>
