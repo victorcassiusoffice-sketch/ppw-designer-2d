@@ -21,6 +21,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CameraStage, type CapturedFrame } from './CameraStage';
 import { CornerCalibration } from './CornerCalibration';
 import { DimensionForm } from './DimensionForm';
+import { ReviewSubmit } from './ReviewSubmit';
 import type { ScaleFromMarkerOutput } from '../../lib/capture/scaleFromMarker';
 
 export interface DimensionResult {
@@ -34,8 +35,11 @@ const STEP_ORDER: CaptureStep[] = ['prepare', 'camera', 'calibrate', 'dimensions
 
 export interface CaptureModalProps {
   merchantSlug: string;
+  merchantId: number;
   /** Called when the modal closes for any reason. */
   onClose: () => void;
+  /** Called when a scale-lock has been minted server-side. */
+  onComplete?: (scaleLockId: string) => void;
   /** Initial step — defaults to 'prepare'. Useful for tests. */
   initialStep?: CaptureStep;
   /** Optional test stream for the CameraStage. */
@@ -179,14 +183,30 @@ export function CaptureModal(props: CaptureModalProps): JSX.Element {
           />
         )}
 
-        {step === 'review' && (
+        {step === 'review' && frontFrame && frameUrl && calibration && dimensions && (
+          <ReviewSubmit
+            merchantSlug={props.merchantSlug}
+            merchantId={props.merchantId}
+            frontFrame={frontFrame}
+            frontFrameUrl={frameUrl}
+            calibration={calibration}
+            dimensions={dimensions}
+            onComplete={(scaleLockId) => {
+              props.onComplete?.(scaleLockId);
+              props.onClose();
+            }}
+            onBack={() => setStep('side-back')}
+            onCancel={props.onClose}
+          />
+        )}
+        {step === 'review' && (!frontFrame || !calibration || !dimensions) && (
           <Panel
-            title="Review + submit (DT-08 incoming)"
-            body="Review and POST /calibrate arrives in DT-08."
-            primaryLabel="Done"
-            onPrimary={props.onClose}
-            secondaryLabel="Back"
-            onSecondary={() => setStep('side-back')}
+            title="Missing capture data"
+            body="Return to an earlier step."
+            primaryLabel="Restart"
+            onPrimary={() => setStep('prepare')}
+            secondaryLabel="Cancel"
+            onSecondary={props.onClose}
           />
         )}
       </div>
