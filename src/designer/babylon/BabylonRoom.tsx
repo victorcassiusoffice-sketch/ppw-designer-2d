@@ -12,7 +12,7 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { Engine } from '@babylonjs/core';
+import { Engine, PointerEventTypes } from '@babylonjs/core';
 import { buildBabylonScene } from './Scene';
 import { buildArcRotateCamera } from './Camera';
 import {
@@ -20,6 +20,7 @@ import {
   buildWhiteWallMaterial,
 } from './Materials';
 import { buildProceduralProductBox } from './ProceduralProductBox';
+import { createSelectionController } from './Selection';
 import { fetchApiProducts } from '../../data/apiCatalogAdapter';
 
 export interface BabylonRoomProps {
@@ -57,6 +58,25 @@ export function BabylonRoom(props: BabylonRoomProps): JSX.Element {
       });
 
     buildArcRotateCamera(built.scene, canvas);
+
+    // DT-23 — selection + rotate gizmo + delete keystroke.
+    const selection = createSelectionController(built.scene);
+    const pointerObserver = built.scene.onPointerObservable.add((info) => {
+      if (info.type !== PointerEventTypes.POINTERPICK) return;
+      const picked = info.pickInfo?.pickedMesh;
+      if (picked && picked.name.startsWith('product-')) {
+        selection.attachToMesh(picked);
+      } else {
+        selection.attachToMesh(null);
+      }
+    });
+    function onKey(e: KeyboardEvent): void {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selection.getSelected()) {
+        e.preventDefault();
+        selection.disposeSelected();
+      }
+    }
+    window.addEventListener('keydown', onKey);
 
     engine.runRenderLoop(() => {
       built.scene.render();
@@ -99,6 +119,9 @@ export function BabylonRoom(props: BabylonRoomProps): JSX.Element {
     return () => {
       cancelled = true;
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('keydown', onKey);
+      if (pointerObserver) built.scene.onPointerObservable.remove(pointerObserver);
+      selection.dispose();
       engine.stopRenderLoop();
       built.scene.dispose();
       engine.dispose();
