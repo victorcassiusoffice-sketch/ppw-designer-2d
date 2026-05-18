@@ -4,19 +4,22 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { isGamingV1Active, GAMING_V1_QUERY_KEY, GAMING_V1_QUERY_VALUE } from '../gamingV1Flag';
 
-describe('gamingV1Flag', () => {
+describe('gamingV1Flag — V4 default-ON', () => {
   beforeEach(() => {
     try { if (typeof localStorage !== 'undefined') localStorage.clear(); } catch {}
   });
 
-  it('flag is OFF by default', () => {
-    expect(isGamingV1Active('')).toBe(false);
+  it('flag is ON by default (V4 Vic action 2026-05-18)', () => {
+    expect(isGamingV1Active('')).toBe(true);
   });
-  it('flag is ON when ?ui=gaming-v1 present', () => {
+  it('flag stays ON when ?ui=gaming-v1 explicit', () => {
     expect(isGamingV1Active('?ui=gaming-v1')).toBe(true);
   });
-  it('flag is OFF for other ui values', () => {
+  it('flag is OFF when ?ui=classic explicit', () => {
     expect(isGamingV1Active('?ui=classic')).toBe(false);
+  });
+  it('flag is ON for unrelated ui values (defaults to on)', () => {
+    expect(isGamingV1Active('?ui=other')).toBe(true);
   });
   it('exports the query key + value constants', () => {
     expect(GAMING_V1_QUERY_KEY).toBe('ui');

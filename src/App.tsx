@@ -38,6 +38,10 @@ import { AddRoomChooser } from './components/AddRoomChooser';
 import { CanvasErrorBoundary } from './components/CanvasErrorBoundary';
 import { useKeyboardShortcuts } from './lib/useKeyboardShortcuts';
 import { useAutoSave } from './lib/useAutoSave';
+// Sims-Parity Gaming Layer 1 (V4 default-ON 2026-05-18) — additive overlays
+// mounted on top of the existing Konva render-core. Konva stable-lock 26c144c
+// untouched; classic UI surfaces via `?ui=classic`.
+import { GamingLayer1Surfaces } from './designer/GamingLayer1Surfaces';
 
 /**
  * OMS Wave 2.5 — desktop-first hero banner.
@@ -207,6 +211,10 @@ export default function App() {
         onRequestDrawMode={() => setDrawMode(true)}
       />
       <ToastProvider />
+      {/* Sims-Parity Gaming Layer 1 (V4 default-ON) — additive DT-11..DT-18
+          polish surfaces (StatusCard / ModeStrip / Help). Renders null when
+          ?ui=classic is set. */}
+      <GamingLayer1Surfaces />
       {/* OMS Wave 3.5 — 3-step coach mark, localStorage dismissal. */}
       <CoachMark
         flagKey="ppw_designer_coach_v1"
