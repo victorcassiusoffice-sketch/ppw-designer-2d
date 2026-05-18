@@ -6,7 +6,7 @@
   "functions": {
     "api/create-checkout-session.ts": { "maxDuration": 10 },
     "api/stripe-webhook.ts": { "maxDuration": 10 },
-    "api/merchants/signup.ts": { "maxDuration": 15 },
+    "api/merchants-router.ts": { "maxDuration": 15 },
     "api/stripe-connect/webhook.ts": { "maxDuration": 15 },
     "api/admin-router.ts": { "maxDuration": 15 },
     "api/paypal-router.ts": { "maxDuration": 15 },
@@ -41,6 +41,8 @@
     { "source": "/api/paypal-webhook", "destination": "/api/paypal-router" },
     { "source": "/api/paypal/(.*)", "destination": "/api/paypal-router" },
     { "source": "/api/admin/(.*)", "destination": "/api/admin-router" },
+    { "source": "/api/merchants/signup", "destination": "/api/merchants-router" },
+    { "source": "/api/capture/reference-page.pdf", "destination": "/api/merchants-router" },
     { "source": "/api/orders/(.*)", "destination": "/api/orders" },
     { "source": "/api/merchants/:slug/order-update", "destination": "/api/orders" },
     { "source": "/api/merchants/:slug/agent-session", "destination": "/api/orders" },

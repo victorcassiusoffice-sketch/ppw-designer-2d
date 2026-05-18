@@ -1,33 +1,31 @@
 /**
- * POST /api/merchants/signup
+ * Merchant signup handler — extracted from the deprecated lambda at
+ * `api/merchants/signup.ts` into the library layer so the Sims-Parity
+ * DT-02 `merchants-router.ts` catchall can dispatch to it while staying
+ * inside the Hobby 12-fn cap.
  *
- * Public endpoint hit by the /suppliers form. Validates the payload,
- * inserts a merchant row, optionally kicks off Stripe Connect Express
- * onboarding, and emails both Vic and the merchant.
+ * Behaviour is preserved verbatim from the prior lambda:
+ *   • CORS allow-list (designer.ppwellness.co + preview + localhost).
+ *   • OPTIONS preflight handled at 204.
+ *   • Non-POST → 405.
+ *   • Sliding-window rate limit (3 / IP / 10 min) via Upstash KV.
+ *   • Body parsing identical (object | string | Buffer).
+ *   • Stripe Connect branch — onboarding URL if available else manual.
+ *   • Two response shapes (stripe_onboarding | manual_followup).
  *
- * Response shapes (200):
- *   { kind: 'stripe_onboarding', merchant: {...}, onboardingUrl: string }
- *   { kind: 'manual_followup',  merchant: {...}, completeUrl: string }
- *
- * Errors:
- *   400 { error, issues? }   validation
- *   409 { error }            duplicate contact email
- *   500 { error }            DB or unexpected
- *
- * Phase 1 keeps the response merchant shape lean (id, slug, status)
- * to avoid leaking internal fields to the public form. Phase 2's
- * merchant portal will use a fuller shape behind Clerk auth.
+ * Tests live at `api/__tests__/merchantSignup.test.ts` and exercise
+ * the underlying `processMerchantSignup` pure-fn. The HTTP wrapper
+ * here is exercised end-to-end by the merchants-router dispatch test.
  */
 
-import { drizzleMerchantStore } from '../db/merchantStore.js';
-import { getStripe, isStripeConnectAvailable } from '../lib/stripeConnect.js';
+import { drizzleMerchantStore } from '../../db/merchantStore.js';
+import { getStripe, isStripeConnectAvailable } from '../stripeConnect.js';
 import {
   liveEmailTransport,
   processMerchantSignup,
   type SignupOutcome,
-} from '../lib/merchantSignup.js';
-import { merchantSignupLimiter, getClientIp } from '../lib/rateLimit.js';
-import { withSentry } from '../lib/sentry.js';
+} from '../merchantSignup.js';
+import { merchantSignupLimiter, getClientIp } from '../rateLimit.js';
 
 const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:5173',
@@ -80,7 +78,6 @@ async function readJsonBody(req: MinimalReq): Promise<unknown> {
   return null;
 }
 
-/** Sanitised merchant view for the public response. */
 function publicMerchantView(outcome: SignupOutcome): Record<string, unknown> | null {
   if (!outcome.ok) return null;
   const m = outcome.merchant;
@@ -92,7 +89,7 @@ function publicMerchantView(outcome: SignupOutcome): Record<string, unknown> | n
   };
 }
 
-async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
+export async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
   const origin = typeof req.headers.origin === 'string' ? req.headers.origin : undefined;
   const cors = corsHeaders(origin);
   for (const [k, v] of Object.entries(cors)) res.setHeader(k, v);
@@ -107,8 +104,6 @@ async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
     return;
   }
 
-  // Rate limit: 3 signups / IP / 10 min. Sliding window via Upstash KV.
-  // Per OMS §1.11. Limiter degrades open if KV creds are absent.
   const ip = getClientIp(req);
   const verdict = await merchantSignupLimiter.check(ip);
   if (!verdict.success) {
@@ -183,5 +178,3 @@ async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
     completeUrl: outcome.completeUrl,
   });
 }
-
-export default withSentry(handler);
