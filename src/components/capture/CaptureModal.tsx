@@ -20,7 +20,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CameraStage, type CapturedFrame } from './CameraStage';
 import { CornerCalibration } from './CornerCalibration';
+import { DimensionForm } from './DimensionForm';
 import type { ScaleFromMarkerOutput } from '../../lib/capture/scaleFromMarker';
+
+export interface DimensionResult {
+  dimensionsMm: { width: number; depth: number; height: number };
+  typedVsMeasured: { deltaPct: number; flagged: boolean; overrideReason?: string };
+}
 
 export type CaptureStep = 'prepare' | 'camera' | 'calibrate' | 'dimensions' | 'side-back' | 'review';
 
@@ -40,6 +46,7 @@ export function CaptureModal(props: CaptureModalProps): JSX.Element {
   const [step, setStep] = useState<CaptureStep>(props.initialStep ?? 'prepare');
   const [frontFrame, setFrontFrame] = useState<CapturedFrame | null>(null);
   const [calibration, setCalibration] = useState<ScaleFromMarkerOutput | null>(null);
+  const [dimensions, setDimensions] = useState<DimensionResult | null>(null);
 
   // Build + revoke object URL for the captured photo.
   const frameUrl = useMemo(() => {
@@ -145,17 +152,19 @@ export function CaptureModal(props: CaptureModalProps): JSX.Element {
         )}
 
         {step === 'dimensions' && (
-          <Panel
-            title="Dimensions (DT-07 incoming)"
-            body={
-              calibration
-                ? `pixels/mm = ${calibration.pixelsPerMm.toFixed(3)}, RMS = ${calibration.rmsCalibrationError.toFixed(2)} px. W×D×H form arrives in DT-07.`
-                : 'W×D×H form arrives in DT-07.'
-            }
-            primaryLabel="Next"
-            onPrimary={advance}
-            secondaryLabel="Back"
-            onSecondary={() => setStep('calibrate')}
+          <DimensionForm
+            measuredWidthMm={calibration && calibration.silhouette_bbox_px.width > 0
+              ? calibration.silhouette_bbox_px.width / Math.max(calibration.pixelsPerMm, 0.0001)
+              : undefined}
+            initial={dimensions ? {
+              width: dimensions.dimensionsMm.width,
+              depth: dimensions.dimensionsMm.depth,
+              height: dimensions.dimensionsMm.height,
+              unit: 'mm',
+            } : undefined}
+            onConfirm={(out) => { setDimensions(out); advance(); }}
+            onBack={() => setStep('calibrate')}
+            onRetake={() => setStep('camera')}
           />
         )}
 
