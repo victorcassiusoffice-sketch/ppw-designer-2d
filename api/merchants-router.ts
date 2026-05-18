@@ -23,7 +23,9 @@ import { Buffer } from 'node:buffer';
 import { handler as signupHandler } from './lib/merchants/signup.js';
 import {
   generateReferencePagePdf,
+  generateReferencePageV2Pdf,
   REFERENCE_PAGE_HEADERS,
+  REFERENCE_PAGE_V2_HEADERS,
 } from './lib/capture/referencePage.js';
 import { handler as signUploadHandler } from './lib/capture/signUpload.js';
 import { handler as calibrateHandler } from './lib/capture/calibrateHandler.js';
@@ -73,6 +75,21 @@ async function referencePageGet(_req: MinimalReq, res: MinimalRes): Promise<void
   }
 }
 
+async function referencePageV2Get(_req: MinimalReq, res: MinimalRes): Promise<void> {
+  const bytes = generateReferencePageV2Pdf();
+  const buf = Buffer.from(bytes);
+  res.setHeader('Content-Type', REFERENCE_PAGE_V2_HEADERS.contentType);
+  res.setHeader('Cache-Control', REFERENCE_PAGE_V2_HEADERS.cacheControl);
+  res.setHeader('Content-Disposition', REFERENCE_PAGE_V2_HEADERS.contentDisposition);
+  res.setHeader('Content-Length', String(buf.length));
+  res.status(200);
+  if (typeof res.send === 'function') {
+    res.send(buf);
+  } else {
+    res.end(buf);
+  }
+}
+
 async function rootHandler(req: MinimalReq, res: MinimalRes): Promise<void> {
   const segments = pathSegments(req.url);
 
@@ -84,6 +101,16 @@ async function rootHandler(req: MinimalReq, res: MinimalRes): Promise<void> {
       return;
     }
     return referencePageGet(req, res);
+  }
+
+  // GET /api/capture/reference-page-v2.pdf (DT-20 ArUco variant)
+  if (segments[0] === 'capture' && segments[1] === 'reference-page-v2.pdf') {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      res.setHeader('Allow', 'GET, HEAD');
+      res.status(405).end();
+      return;
+    }
+    return referencePageV2Get(req, res);
   }
 
   // POST /api/merchants/signup
