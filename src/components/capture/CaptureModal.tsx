@@ -1,0 +1,240 @@
+/**
+ * Sims-Parity DT-05 — CaptureModal scaffold.
+ *
+ * Six-step state machine harness that downstream DTs hang their own
+ * step implementations on:
+ *
+ *   1. prepare      — DT-02 PDF print instructions
+ *   2. camera       — DT-05 CameraStage (this DT)
+ *   3. calibrate    — DT-06 CornerCalibration
+ *   4. dimensions   — DT-07 DimensionForm
+ *   5. side+back    — DT-08 optional second/third shots
+ *   6. review       — DT-08 ReviewSubmit → POST /calibrate
+ *
+ * The modal renders the Camera step today + step-strip nav. Step
+ * 3-6 render placeholder panels until their owning DTs land. The
+ * top-level state machine is fully wired so each step can move
+ * forward by emitting its data.
+ */
+
+import { useState } from 'react';
+import { CameraStage, type CapturedFrame } from './CameraStage';
+
+export type CaptureStep = 'prepare' | 'camera' | 'calibrate' | 'dimensions' | 'side-back' | 'review';
+
+const STEP_ORDER: CaptureStep[] = ['prepare', 'camera', 'calibrate', 'dimensions', 'side-back', 'review'];
+
+export interface CaptureModalProps {
+  merchantSlug: string;
+  /** Called when the modal closes for any reason. */
+  onClose: () => void;
+  /** Initial step — defaults to 'prepare'. Useful for tests. */
+  initialStep?: CaptureStep;
+  /** Optional test stream for the CameraStage. */
+  __testStream?: MediaStream;
+}
+
+export function CaptureModal(props: CaptureModalProps): JSX.Element {
+  const [step, setStep] = useState<CaptureStep>(props.initialStep ?? 'prepare');
+  const [frontFrame, setFrontFrame] = useState<CapturedFrame | null>(null);
+
+  function advance(): void {
+    const idx = STEP_ORDER.indexOf(step);
+    if (idx < STEP_ORDER.length - 1) setStep(STEP_ORDER[idx + 1]);
+  }
+
+  return (
+    <div
+      role="dialog"
+      aria-modal
+      aria-label="Capture product photo"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(14, 14, 16, 0.85)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+      }}
+    >
+      <div
+        style={{
+          background: '#F5EFE6',
+          width: '100%',
+          maxWidth: 720,
+          padding: 24,
+          borderRadius: 12,
+          color: '#0E0E10',
+        }}
+      >
+        <StepStrip current={step} />
+
+        {step === 'prepare' && (
+          <Panel
+            title="Print the A4 reference page"
+            body="Download and print the PDF at 100% scale. Lay it flat next to your product."
+            primaryLabel="I've printed it"
+            onPrimary={advance}
+            secondaryLabel="Cancel"
+            onSecondary={props.onClose}
+            extra={
+              <a
+                href="/api/capture/reference-page.pdf"
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: '#C0A67E', textDecoration: 'underline' }}
+              >
+                Open reference PDF (new tab)
+              </a>
+            }
+          />
+        )}
+
+        {step === 'camera' && (
+          <CameraStage
+            onCapture={(frame) => {
+              setFrontFrame(frame);
+              advance();
+            }}
+            onCancel={props.onClose}
+            __testStream={props.__testStream}
+          />
+        )}
+
+        {step === 'calibrate' && (
+          <Panel
+            title="Calibrate corners (DT-06 incoming)"
+            body={
+              frontFrame
+                ? `Captured frame: ${frontFrame.widthPx}×${frontFrame.heightPx}px, blur=${frontFrame.blur.variance.toFixed(1)} (${frontFrame.blur.sharp ? 'sharp' : 'blurry'}). Corner-tap calibration arrives in DT-06.`
+                : 'Awaiting a captured frame.'
+            }
+            primaryLabel="Next"
+            onPrimary={advance}
+            secondaryLabel="Retake"
+            onSecondary={() => setStep('camera')}
+          />
+        )}
+
+        {step === 'dimensions' && (
+          <Panel
+            title="Dimensions (DT-07 incoming)"
+            body="W×D×H form arrives in DT-07."
+            primaryLabel="Next"
+            onPrimary={advance}
+            secondaryLabel="Back"
+            onSecondary={() => setStep('calibrate')}
+          />
+        )}
+
+        {step === 'side-back' && (
+          <Panel
+            title="Side / back photos (DT-08 incoming, optional)"
+            body="Optional photos arrive in DT-08."
+            primaryLabel="Skip"
+            onPrimary={advance}
+            secondaryLabel="Back"
+            onSecondary={() => setStep('dimensions')}
+          />
+        )}
+
+        {step === 'review' && (
+          <Panel
+            title="Review + submit (DT-08 incoming)"
+            body="Review and POST /calibrate arrives in DT-08."
+            primaryLabel="Done"
+            onPrimary={props.onClose}
+            secondaryLabel="Back"
+            onSecondary={() => setStep('side-back')}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StepStrip({ current }: { current: CaptureStep }): JSX.Element {
+  return (
+    <ol
+      aria-label="Capture progress"
+      style={{
+        display: 'flex',
+        gap: 8,
+        padding: 0,
+        margin: '0 0 24px',
+        listStyle: 'none',
+        fontSize: 11,
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+      }}
+    >
+      {STEP_ORDER.map((s) => (
+        <li
+          key={s}
+          aria-current={s === current ? 'step' : undefined}
+          style={{
+            flex: 1,
+            padding: '6px 10px',
+            borderRadius: 4,
+            background: s === current ? '#C0A67E' : 'transparent',
+            color: s === current ? '#0E0E10' : 'rgba(14,14,16,0.5)',
+            border: `1px solid ${s === current ? '#C0A67E' : 'rgba(14,14,16,0.15)'}`,
+            textAlign: 'center',
+          }}
+        >
+          {s}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function Panel({
+  title, body, primaryLabel, onPrimary, secondaryLabel, onSecondary, extra,
+}: {
+  title: string;
+  body: string;
+  primaryLabel: string;
+  onPrimary: () => void;
+  secondaryLabel: string;
+  onSecondary: () => void;
+  extra?: React.ReactNode;
+}): JSX.Element {
+  return (
+    <div>
+      <h2 style={{ margin: '0 0 8px', fontSize: 22 }}>{title}</h2>
+      <p style={{ margin: '0 0 16px', fontSize: 14, color: 'rgba(14,14,16,0.7)' }}>{body}</p>
+      {extra && <div style={{ marginBottom: 16 }}>{extra}</div>}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+        <button
+          type="button"
+          onClick={onSecondary}
+          style={{
+            background: 'transparent',
+            border: '1px solid #0E0E10',
+            padding: '8px 14px',
+            borderRadius: 6,
+            cursor: 'pointer',
+          }}
+        >
+          {secondaryLabel}
+        </button>
+        <button
+          type="button"
+          onClick={onPrimary}
+          style={{
+            background: '#C0A67E',
+            color: '#0E0E10',
+            border: '1px solid #C0A67E',
+            padding: '8px 14px',
+            borderRadius: 6,
+            cursor: 'pointer',
+          }}
+        >
+          {primaryLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
