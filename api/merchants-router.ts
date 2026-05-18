@@ -26,6 +26,7 @@ import {
   REFERENCE_PAGE_HEADERS,
 } from './lib/capture/referencePage.js';
 import { handler as signUploadHandler } from './lib/capture/signUpload.js';
+import { handler as calibrateHandler } from './lib/capture/calibrateHandler.js';
 import { withSentry } from './lib/sentry.js';
 
 interface MinimalReq {
@@ -99,6 +100,17 @@ async function rootHandler(req: MinimalReq, res: MinimalRes): Promise<void> {
   ) {
     const slug = segments[1];
     return signUploadHandler(slug, req, res);
+  }
+
+  // POST /api/merchants/:slug/capture/calibrate
+  if (
+    segments[0] === 'merchants'
+    && typeof segments[1] === 'string'
+    && segments[2] === 'capture'
+    && segments[3] === 'calibrate'
+  ) {
+    const slug = segments[1];
+    return calibrateHandler(slug, req, res);
   }
 
   res.status(404).json({

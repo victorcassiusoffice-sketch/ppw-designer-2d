@@ -43,6 +43,7 @@
     { "source": "/api/admin/(.*)", "destination": "/api/admin-router" },
     { "source": "/api/merchants/signup", "destination": "/api/merchants-router" },
     { "source": "/api/merchants/:slug/capture/sign-upload", "destination": "/api/merchants-router" },
+    { "source": "/api/merchants/:slug/capture/calibrate", "destination": "/api/merchants-router" },
     { "source": "/api/capture/reference-page.pdf", "destination": "/api/merchants-router" },
     { "source": "/api/orders/(.*)", "destination": "/api/orders" },
     { "source": "/api/merchants/:slug/order-update", "destination": "/api/orders" },
