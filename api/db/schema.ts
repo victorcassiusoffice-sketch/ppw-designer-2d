@@ -38,7 +38,10 @@ import {
   bigserial,
   jsonb,
   boolean,
+  numeric,
+  uuid,
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 export const merchantStatusEnum = pgEnum('merchant_status', [
   'pending_signup',
@@ -356,6 +359,13 @@ export const products = pgTable(
     supplierRating: integer('supplier_rating'),
     // V4 W0.D.9 — supplier_rating refresh watermark (refresh-supplier-rating cron).
     supplierRatingRefreshedAt: timestamp('supplier_rating_refreshed_at', { withTimezone: true }),
+    // Sims-Parity DT-01 — Konva GL1.04 vs GL1.04b shadow-path gate.
+    photoAlphaClean: boolean('photo_alpha_clean').notNull().default(false),
+    // Sims-Parity DT-01 — FK to active capture audit row. NULL = legacy / pre-capture.
+    captureScaleLockId: uuid('capture_scale_lock_id').references(
+      () => productCaptureScaleLocks.scaleLockId,
+      { onDelete: 'set null' },
+    ),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -372,8 +382,55 @@ export const products = pgTable(
       t.supplierRating,
       t.priceMinor,
     ),
+    captureScaleLockIdx: index('products_capture_scale_lock_idx').on(t.captureScaleLockId),
   }),
 );
+
+// ─────────────────────────────────────────────────────────────────────
+// Sims-Parity DT-01 — capture scale-lock audit table (migration 0024).
+//
+// One row per accepted phone-capture session. Anchors a HMAC-signed
+// pixels-per-mm + RMS error + path tag for every merchant product photo.
+// The row is never hard-deleted; VC-2 lifecycle is invalidated_at +
+// invalidation_reason set on dim-edit without re-capture (DT-09).
+//
+// silhouette_bbox_px is stored JSONB-nullable so DT-11 GL1.01b crop can
+// read it via the products → scale-lock FK without denormalising.
+// Shape: { x: int, y: int, width: int, height: int } (pixels).
+// ─────────────────────────────────────────────────────────────────────
+
+export const capturePathEnum = pgEnum('capture_path', [
+  'a4-corner-tap',
+  'aruco',
+  'webxr-plane',
+]);
+
+export const productCaptureScaleLocks = pgTable(
+  'product_capture_scale_locks',
+  {
+    scaleLockId: uuid('scale_lock_id').primaryKey().default(sql`gen_random_uuid()`),
+    merchantId: bigint('merchant_id', { mode: 'number' })
+      .notNull()
+      .references(() => merchants.id, { onDelete: 'cascade' }),
+    path: capturePathEnum('path').notNull(),
+    pixelsPerMm: numeric('pixels_per_mm', { precision: 10, scale: 4 }).notNull(),
+    rmsCalibrationError: numeric('rms_calibration_error', { precision: 10, scale: 4 }).notNull(),
+    hmacSignature: varchar('hmac_signature', { length: 128 }).notNull(),
+    silhouetteBboxPx: jsonb('silhouette_bbox_px'),
+    capturedAt: timestamp('captured_at', { withTimezone: true }).notNull(),
+    invalidatedAt: timestamp('invalidated_at', { withTimezone: true }),
+    invalidationReason: varchar('invalidation_reason', { length: 80 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    merchantIdx: index('pcsl_merchant_idx').on(t.merchantId, t.createdAt),
+    activeIdx: index('pcsl_active_idx').on(t.merchantId),
+  }),
+);
+
+export type ProductCaptureScaleLock = typeof productCaptureScaleLocks.$inferSelect;
+export type NewProductCaptureScaleLock = typeof productCaptureScaleLocks.$inferInsert;
+export type CapturePath = ProductCaptureScaleLock['path'];
 
 export const supplierProducts = pgTable(
   'supplier_products',
