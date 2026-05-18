@@ -18,6 +18,7 @@ import { HelpLauncherIcon, HelpOverlay } from './HelpOverlay';
 import { StatusCard } from './StatusCard';
 import { ModeStrip } from './ModeStrip';
 import { V4Banner } from './V4Banner';
+import { EngineToggle } from './babylon/EngineToggle';
 import { isGamingV1Active } from './gamingV1Flag';
 import { useDesignStore } from '../store/designStore';
 import { computeRoomStats } from './useRoomStats';
@@ -70,6 +71,8 @@ export function GamingLayer1Surfaces(): JSX.Element | null {
       />
       <HelpLauncherIcon onOpen={() => setHelpOpen(true)} />
       <HelpOverlay open={helpOpen} onClose={() => setHelpOpen(false)} />
+      {/* DT-27 — engine side-by-side toggle. Hard-refreshes on flip. */}
+      <EngineToggle />
     </>
   );
 }
