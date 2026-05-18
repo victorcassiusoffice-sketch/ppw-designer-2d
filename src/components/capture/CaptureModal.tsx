@@ -17,8 +17,10 @@
  * forward by emitting its data.
  */
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CameraStage, type CapturedFrame } from './CameraStage';
+import { CornerCalibration } from './CornerCalibration';
+import type { ScaleFromMarkerOutput } from '../../lib/capture/scaleFromMarker';
 
 export type CaptureStep = 'prepare' | 'camera' | 'calibrate' | 'dimensions' | 'side-back' | 'review';
 
@@ -37,6 +39,16 @@ export interface CaptureModalProps {
 export function CaptureModal(props: CaptureModalProps): JSX.Element {
   const [step, setStep] = useState<CaptureStep>(props.initialStep ?? 'prepare');
   const [frontFrame, setFrontFrame] = useState<CapturedFrame | null>(null);
+  const [calibration, setCalibration] = useState<ScaleFromMarkerOutput | null>(null);
+
+  // Build + revoke object URL for the captured photo.
+  const frameUrl = useMemo(() => {
+    if (!frontFrame) return null;
+    return URL.createObjectURL(frontFrame.blob);
+  }, [frontFrame]);
+  useEffect(() => () => {
+    if (frameUrl) URL.revokeObjectURL(frameUrl);
+  }, [frameUrl]);
 
   function advance(): void {
     const idx = STEP_ORDER.indexOf(step);
@@ -102,25 +114,44 @@ export function CaptureModal(props: CaptureModalProps): JSX.Element {
           />
         )}
 
-        {step === 'calibrate' && (
+        {step === 'calibrate' && frontFrame && frameUrl && (
+          <div>
+            <p style={{ margin: '0 0 12px', fontSize: 13, color: 'rgba(14,14,16,0.7)' }}>
+              Drag each gold pin to a corner of the printed A4 reference page.
+              Captured at {frontFrame.widthPx}×{frontFrame.heightPx} · blur variance
+              {' '}{frontFrame.blur.variance.toFixed(0)} ({frontFrame.blur.sharp ? 'sharp' : 'blurry — retake?'}).
+            </p>
+            <CornerCalibration
+              imageSrc={frameUrl}
+              imageWidthPx={frontFrame.widthPx}
+              imageHeightPx={frontFrame.heightPx}
+              onRetake={() => setStep('camera')}
+              onConfirm={(result) => {
+                setCalibration(result);
+                advance();
+              }}
+            />
+          </div>
+        )}
+        {step === 'calibrate' && (!frontFrame || !frameUrl) && (
           <Panel
-            title="Calibrate corners (DT-06 incoming)"
-            body={
-              frontFrame
-                ? `Captured frame: ${frontFrame.widthPx}×${frontFrame.heightPx}px, blur=${frontFrame.blur.variance.toFixed(1)} (${frontFrame.blur.sharp ? 'sharp' : 'blurry'}). Corner-tap calibration arrives in DT-06.`
-                : 'Awaiting a captured frame.'
-            }
-            primaryLabel="Next"
-            onPrimary={advance}
-            secondaryLabel="Retake"
-            onSecondary={() => setStep('camera')}
+            title="Awaiting a captured frame"
+            body="Return to the camera step."
+            primaryLabel="Back to camera"
+            onPrimary={() => setStep('camera')}
+            secondaryLabel="Cancel"
+            onSecondary={props.onClose}
           />
         )}
 
         {step === 'dimensions' && (
           <Panel
             title="Dimensions (DT-07 incoming)"
-            body="W×D×H form arrives in DT-07."
+            body={
+              calibration
+                ? `pixels/mm = ${calibration.pixelsPerMm.toFixed(3)}, RMS = ${calibration.rmsCalibrationError.toFixed(2)} px. W×D×H form arrives in DT-07.`
+                : 'W×D×H form arrives in DT-07.'
+            }
             primaryLabel="Next"
             onPrimary={advance}
             secondaryLabel="Back"
