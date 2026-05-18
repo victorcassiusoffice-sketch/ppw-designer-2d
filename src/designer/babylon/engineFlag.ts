@@ -2,20 +2,26 @@
  * Sims-Parity DT-21 — Babylon engine query-string gate.
  *
  * Visit `?engine=babylon` → BabylonRoom mounts in place of the Konva
- * RoomCanvas. Visit `?engine=konva` (or no param) → Konva path.
+ * RoomCanvas. Visit `?engine=konva` (or no param) → Konva path
+ * (today; DT-28 will swap the default-no-param branch to Babylon
+ * once the 14-day Sentry soak completes).
  *
- * Default is OFF — Konva remains the production default until DT-28
- * (Konva sunset) flips this. V7=YES unblocks the surface; V8=NO
- * means procedural meshes only (no hero-glTF), but that's a DT-22+
- * concern.
+ * DT-28 (L2.14) wired the `getDefaultEngine()` helper. Explicit
+ * ?engine= values still override the default in either direction —
+ * the rollback path stays open even after the default flips.
  */
+
+import { getDefaultEngine } from './defaultEngine';
 
 export function isBabylonActive(searchString: string = ''): boolean {
   try {
     const params = new URLSearchParams(
       searchString || (typeof window !== 'undefined' ? window.location.search : ''),
     );
-    return params.get('engine') === 'babylon';
+    const explicit = params.get('engine');
+    if (explicit === 'babylon') return true;
+    if (explicit === 'konva') return false;
+    return getDefaultEngine() === 'babylon';
   } catch {
     return false;
   }
