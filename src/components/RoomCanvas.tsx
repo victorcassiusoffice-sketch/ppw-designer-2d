@@ -435,11 +435,12 @@ export function RoomCanvas({
 
       {pendingProductId && !drawMode && (() => {
         const pendingProduct = getProductById(pendingProductId);
+        if (!pendingProduct) return null;
         return (
           <div className="pointer-events-auto absolute left-1/2 top-3 z-20 flex w-[min(92vw,420px)] -translate-x-1/2 items-center justify-between gap-2 rounded-lg border border-ppw-teal bg-white px-3 py-2 text-xs shadow-xl ring-1 ring-ppw-teal/40">
             <div className="min-w-0">
               <p className="font-semibold text-ppw-ink truncate">
-                Tap the floor to place &ldquo;{pendingProduct?.name ?? 'product'}&rdquo;
+                Tap the floor to place &ldquo;{pendingProduct.name}&rdquo;
               </p>
               <p className="text-[10px] text-ppw-slate">Or hit Cancel.</p>
             </div>

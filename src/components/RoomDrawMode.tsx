@@ -103,7 +103,6 @@ export function RoomDrawLayer({
 
   useEffect(() => {
     if (!enabled) {
-      console.log(DBG, 'layer effect: disabled, skipping wire');
       return;
     }
     const stage = stageRef.current;

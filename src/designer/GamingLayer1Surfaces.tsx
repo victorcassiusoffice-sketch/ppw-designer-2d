@@ -17,13 +17,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { HelpLauncherIcon, HelpOverlay } from './HelpOverlay';
 import { StatusCard } from './StatusCard';
 import { ModeStrip } from './ModeStrip';
-import { V4Banner } from './V4Banner';
 import { EngineToggle } from './babylon/EngineToggle';
 import { isGamingV1Active } from './gamingV1Flag';
 import { useDesignStore } from '../store/designStore';
 import { computeRoomStats } from './useRoomStats';
 import { useDesignerMode } from './useDesignerMode';
-import { fetchApiProducts } from '../data/apiCatalogAdapter';
 
 export function GamingLayer1Surfaces(): JSX.Element | null {
   // Always call hooks unconditionally; gate the render at the bottom.
@@ -33,17 +31,18 @@ export function GamingLayer1Surfaces(): JSX.Element | null {
   const [mode, setMode] = useDesignerMode('move');
   const [helpOpen, setHelpOpen] = useState(false);
 
-  // PCF-2 — surface merchant SKU count in the V4 banner so Vic can
-  // verify the K1 catalog wiring at a glance.
-  const [merchantSkuCount, setMerchantSkuCount] = useState<number>(0);
+  // M1.4: clear any stale `gaming_v1='0'` localStorage left over from
+  // pre-flip dev sessions. V4 is permanently default-on per Vic 2026-05-19,
+  // so this is the only piece of the (now-removed) V4Banner worth keeping.
   useEffect(() => {
-    let cancelled = false;
-    fetchApiProducts().then((rows) => {
-      if (!cancelled) setMerchantSkuCount(rows.length);
-    });
-    return () => {
-      cancelled = true;
-    };
+    try {
+      if (typeof localStorage === 'undefined') return;
+      if (localStorage.getItem('gaming_v1') === '0') {
+        localStorage.removeItem('gaming_v1');
+      }
+    } catch {
+      // ignore
+    }
   }, []);
 
   const stats = useMemo(() => {
@@ -58,7 +57,6 @@ export function GamingLayer1Surfaces(): JSX.Element | null {
 
   return (
     <>
-      <V4Banner merchantProductCount={merchantSkuCount} />
       <StatusCard stats={stats} />
       <ModeStrip
         active={mode}
