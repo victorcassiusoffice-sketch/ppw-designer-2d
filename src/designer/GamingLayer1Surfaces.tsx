@@ -21,7 +21,8 @@ import { EngineToggle } from './babylon/EngineToggle';
 import { isGamingV1Active } from './gamingV1Flag';
 import { useDesignStore } from '../store/designStore';
 import { computeRoomStats } from './useRoomStats';
-import { useDesignerMode } from './useDesignerMode';
+import { useDesignerMode, type DesignerMode } from './useDesignerMode';
+import { useWallStore } from '../store/wallStore';
 
 export function GamingLayer1Surfaces(): JSX.Element | null {
   // Always call hooks unconditionally; gate the render at the bottom.
@@ -29,7 +30,31 @@ export function GamingLayer1Surfaces(): JSX.Element | null {
   const placedItems = useDesignStore((s) => s.placedItems);
   const roomDimensions = useDesignStore((s) => s.roomDimensions);
   const [mode, setMode] = useDesignerMode('move');
+  const setWallDraw = useWallStore((s) => s.setDraw);
+  const wallDrawPhase = useWallStore((s) => s.draw.phase);
   const [helpOpen, setHelpOpen] = useState(false);
+
+  // M2: bridge ModeStrip selection ↔ wallStore FSM. Selecting Wall on
+  // the strip arms the next-click anchor drop; selecting any other mode
+  // returns the FSM to idle so the layer unwires its Stage listeners.
+  function handleModeChange(next: DesignerMode): void {
+    setMode(next);
+    if (next === 'wall') {
+      setWallDraw({ phase: 'armed' });
+    } else if (wallDrawPhase !== 'idle') {
+      setWallDraw({ phase: 'idle' });
+    }
+  }
+
+  // Reverse-bridge: if the WallDrawLayer / HUD takes the FSM to 'idle'
+  // (right-click, Done button, Esc twice), reflect that in the strip
+  // so the active-button outline matches the live phase.
+  useEffect(() => {
+    if (wallDrawPhase === 'idle' && mode === 'wall') {
+      setMode('move');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wallDrawPhase]);
 
   // M1.4: clear any stale `gaming_v1='0'` localStorage left over from
   // pre-flip dev sessions. V4 is permanently default-on per Vic 2026-05-19,
@@ -60,7 +85,7 @@ export function GamingLayer1Surfaces(): JSX.Element | null {
       <StatusCard stats={stats} />
       <ModeStrip
         active={mode}
-        onChange={setMode}
+        onChange={handleModeChange}
         onPaintStubToast={() => {
           // Coach-mark friendly toast — keep silent for now; future
           // wire into ToastProvider when Paint mode lands.

@@ -47,6 +47,8 @@ import {
 } from '../lib/geometry';
 import type { PlacedRect, Polygon, Vertex, Viewport } from '../lib/geometry';
 import { RoomDrawLayer, RoomDrawHUD } from './RoomDrawMode';
+import { WallDrawLayer, WallDrawHUD } from '../designer/WallDrawMode';
+import { useWallStore } from '../store/wallStore';
 
 // M1.5: HTML5 DragEvent path retired (silently fails on `.konva-stage`
 // per K1 audit). DRAG_MIME stays in ProductPalette for legacy unit
@@ -109,6 +111,13 @@ export function RoomCanvas({
   const [drawVertices, setDrawVertices] = useState<Polygon>([]);
   const [drawHover, setDrawHover] = useState<Vertex | null>(null);
   const [drawName, setDrawName] = useState('New Room');
+
+  // M2: wall draw mode FSM phase comes from wallStore. Layer + HUD are
+  // visible whenever the phase is not 'idle'. While wall mode is active
+  // we suppress the placement-FSM Stage drag and pointer/click handlers
+  // so the two tools don't fight over the same cursor.
+  const wallDrawPhase = useWallStore((s) => s.draw.phase);
+  const wallDrawEnabled = wallDrawPhase !== 'idle';
 
   useEffect(() => {
     if (drawMode) {
@@ -543,9 +552,11 @@ export function RoomCanvas({
         y={viewport.y}
         scaleX={viewport.scale}
         scaleY={viewport.scale}
-        // M1.5: disable Stage pan-drag while armed so pointer-move
-        // updates the ghost instead of panning the viewport.
-        draggable={!drawMode && !pendingProductId}
+        // M1.5: disable Stage pan-drag while armed (placement-FSM) so
+        // pointer-move updates the ghost instead of panning.
+        // M2: also disable during wall mode so clicks land on the
+        // wall-draw layer instead of dragging the canvas.
+        draggable={!drawMode && !pendingProductId && !wallDrawEnabled}
         onDragMove={(e) => {
           if (e.target === e.target.getStage()) {
             setViewport((v) => ({ ...v, x: e.target.x(), y: e.target.y() }));
@@ -562,6 +573,7 @@ export function RoomCanvas({
           // M1.5 pointer-FSM: while armed, track snapped pointer position
           // and update the ghost preview every frame.
           if (drawMode) return;
+          if (wallDrawEnabled) return; // M2: wall layer owns pointer-move
           if (!pendingProductId) {
             if (dragGhost) setDragGhost(null);
             return;
@@ -582,6 +594,7 @@ export function RoomCanvas({
         }}
         onTap={(e) => {
           if (drawMode) return;
+          if (wallDrawEnabled) return; // M2: wall layer owns tap
           if (e.target !== e.target.getStage()) return;
           if (pendingProductId && setPendingProductId) {
             const touch = (e.evt as TouchEvent).changedTouches?.[0];
@@ -597,6 +610,7 @@ export function RoomCanvas({
         }}
         onClick={(e) => {
           if (drawMode) return;
+          if (wallDrawEnabled) return; // M2: wall layer owns click
           if (e.target !== e.target.getStage()) return;
           if (pendingProductId && setPendingProductId) {
             placeProductAt(e.evt.clientX, e.evt.clientY, pendingProductId);
@@ -721,6 +735,17 @@ export function RoomCanvas({
           onCommit={handleDrawCommit}
           onCancel={handleDrawCancel}
         />
+
+        {/* M2 — Sims-style wall tool. Visible whenever wallStore phase
+            is not 'idle' (driven by the ModeStrip's Wall button). Mounts
+            as a Stage child so it shares viewport + pxPerMetre. */}
+        <WallDrawLayer
+          enabled={wallDrawEnabled && !drawMode}
+          stageRef={stageRef}
+          containerRef={containerRef}
+          viewport={viewport}
+          pxPerMetre={pxPerMetre}
+        />
       </Stage>
 
       <RoomDrawHUD
@@ -734,6 +759,8 @@ export function RoomCanvas({
         onCommit={handleDrawCommit}
         onCancel={handleDrawCancel}
       />
+
+      <WallDrawHUD enabled={wallDrawEnabled && !drawMode} />
 
       <div
         className="pointer-events-none absolute left-3 max-w-xs rounded-md bg-white/85 px-3 py-2 text-[11px] leading-snug text-ppw-slate shadow-sm ring-1 ring-ppw-stone hidden md:block"

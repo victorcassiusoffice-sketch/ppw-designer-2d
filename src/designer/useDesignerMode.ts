@@ -1,14 +1,14 @@
 /**
  * Sims-Parity DT-15 — designer mode state.
  *
- * Four modes: Move | Buy | Paint (V-GAME-2 stub) | Inspect.
+ * Five modes: Move | Buy | Wall (M2 — per protocol-03-walls.md) | Paint (V-GAME-2 stub) | Inspect.
  * Pure-fn helpers for cursor styles + a small useState hook for
  * components that don't need a store.
  */
 
 import { useState } from 'react';
 
-export const DESIGNER_MODES = ['move', 'buy', 'paint', 'inspect'] as const;
+export const DESIGNER_MODES = ['move', 'buy', 'wall', 'paint', 'inspect'] as const;
 export type DesignerMode = (typeof DESIGNER_MODES)[number];
 
 export function cursorForMode(mode: DesignerMode): string {
@@ -17,6 +17,8 @@ export function cursorForMode(mode: DesignerMode): string {
       return 'move';
     case 'buy':
       return 'pointer';
+    case 'wall':
+      return 'crosshair';
     case 'paint':
       return 'not-allowed'; // stub — no-op
     case 'inspect':
@@ -30,6 +32,8 @@ export function labelForMode(mode: DesignerMode): string {
       return 'Move';
     case 'buy':
       return 'Buy';
+    case 'wall':
+      return 'Wall';
     case 'paint':
       return 'Paint';
     case 'inspect':

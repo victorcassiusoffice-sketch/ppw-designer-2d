@@ -25,8 +25,11 @@ describe('DT-15 / computeRoomStats', () => {
 });
 
 describe('DT-15 / cursorForMode + labelForMode', () => {
-  it('exposes all 4 modes per spec (V-GAME-2: Paint stub)', () => {
-    expect(DESIGNER_MODES).toEqual(['move', 'buy', 'paint', 'inspect']);
+  it('exposes all 5 modes per spec (V-GAME-2: Paint stub; M2: Wall added)', () => {
+    expect(DESIGNER_MODES).toEqual(['move', 'buy', 'wall', 'paint', 'inspect']);
+  });
+  it('wall cursor is crosshair (M2)', () => {
+    expect(cursorForMode('wall')).toBe('crosshair');
   });
   it('paint cursor is not-allowed (stub)', () => {
     expect(cursorForMode('paint')).toBe('not-allowed');
@@ -36,6 +39,7 @@ describe('DT-15 / cursorForMode + labelForMode', () => {
   });
   it('labels are sentence case', () => {
     expect(labelForMode('move')).toBe('Move');
+    expect(labelForMode('wall')).toBe('Wall');
     expect(labelForMode('paint')).toBe('Paint');
   });
 });

@@ -1,0 +1,343 @@
+/**
+ * Sims-Parity M2 — wall draw layer + HUD.
+ *
+ * Two-click polyline FSM (per `ppw-gaming-walls.md`). The Layer mounts
+ * as a direct child of the existing Konva <Stage> and the HUD mounts
+ * as a DOM sibling — the same shape `RoomDrawMode.tsx` uses for the
+ * closed-polygon room editor. Wall mode and Room-draw mode are
+ * exclusive (the mode strip enforces this).
+ *
+ * Coordinate system: `wallStore` stores endpoints in millimetres. The
+ * Konva render layer converts to pixels via `mm / 1000 * pxPerMetre`.
+ * Mouse events arrive in stage-local pixels and round-trip through
+ * `screenToRoom` (metres) → `* 1000` → snap to 500 mm.
+ *
+ * Tagged namespace `.walldraw` on Stage events so this layer can wire
+ * and unwire cleanly without clobbering the room-draw listeners.
+ */
+
+import { useEffect, useMemo, useRef } from 'react';
+import { Layer, Line, Circle, Group } from 'react-konva';
+import type Konva from 'konva';
+import { screenToRoom } from '../lib/geometry';
+import type { Viewport } from '../lib/geometry';
+import {
+  useWallStore,
+  snapToWallEndpointOrGrid,
+  DEFAULT_THICKNESS_MM,
+  DEFAULT_HEIGHT_MM,
+  detectClosedRoomVertices,
+  polygonAreaM2,
+  type WallSegment,
+} from '../store/wallStore';
+import { useToastStore } from '../store/toastStore';
+
+const DBG = '[wall-draw]';
+
+export interface WallDrawLayerProps {
+  enabled: boolean;
+  stageRef: React.RefObject<Konva.Stage>;
+  containerRef: React.RefObject<HTMLDivElement>;
+  viewport: Viewport;
+  pxPerMetre: number;
+}
+
+export function WallDrawLayer({
+  enabled,
+  stageRef,
+  containerRef,
+  viewport,
+  pxPerMetre,
+}: WallDrawLayerProps): JSX.Element | null {
+  const walls = useWallStore((s) => s.walls);
+  const draw = useWallStore((s) => s.draw);
+  const addWall = useWallStore((s) => s.addWall);
+  const setDraw = useWallStore((s) => s.setDraw);
+  const wallsRef = useRef(walls);
+  wallsRef.current = walls;
+  const drawRef = useRef(draw);
+  drawRef.current = draw;
+  const viewportRef = useRef(viewport);
+  viewportRef.current = viewport;
+  const cursorRef = useRef<{ x_mm: number; y_mm: number } | null>(null);
+  const cursorLineRef = useRef<Konva.Line | null>(null);
+
+  // Stage event wiring: only while enabled. Tagged namespace `.walldraw`.
+  useEffect(() => {
+    if (!enabled) return;
+    const stage = stageRef.current;
+    const container = containerRef.current;
+    if (!stage || !container) return;
+
+    function clientToMm(clientX: number, clientY: number): { x_mm: number; y_mm: number } | null {
+      const rect = container!.getBoundingClientRect();
+      const { xM, yM } = screenToRoom(
+        clientX,
+        clientY,
+        { left: rect.left, top: rect.top },
+        viewportRef.current,
+        pxPerMetre,
+      );
+      return { x_mm: xM * 1000, y_mm: yM * 1000 };
+    }
+
+    function readClient(evt: MouseEvent | TouchEvent): { x: number; y: number } | null {
+      if ('changedTouches' in evt && evt.changedTouches && evt.changedTouches[0]) {
+        return { x: evt.changedTouches[0].clientX, y: evt.changedTouches[0].clientY };
+      }
+      if ('touches' in evt && evt.touches && evt.touches[0]) {
+        return { x: evt.touches[0].clientX, y: evt.touches[0].clientY };
+      }
+      const m = evt as MouseEvent;
+      if (typeof m.clientX === 'number' && typeof m.clientY === 'number') {
+        return { x: m.clientX, y: m.clientY };
+      }
+      return null;
+    }
+
+    function snapPoint(point: { x_mm: number; y_mm: number }): { x_mm: number; y_mm: number } {
+      const out = snapToWallEndpointOrGrid(point, wallsRef.current);
+      return { x_mm: out.x_mm, y_mm: out.y_mm };
+    }
+
+    function handleMove(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>): void {
+      const c = readClient(e.evt as MouseEvent | TouchEvent);
+      if (!c) return;
+      const raw = clientToMm(c.x, c.y);
+      if (!raw) return;
+      cursorRef.current = snapPoint(raw);
+      const node = cursorLineRef.current;
+      if (node && drawRef.current.phase === 'drawing') {
+        const anchor = drawRef.current.anchor;
+        const cur = cursorRef.current;
+        node.points([
+          (anchor.x_mm / 1000) * pxPerMetre,
+          (anchor.y_mm / 1000) * pxPerMetre,
+          (cur.x_mm / 1000) * pxPerMetre,
+          (cur.y_mm / 1000) * pxPerMetre,
+        ]);
+        node.getLayer()?.batchDraw();
+      }
+    }
+
+    function handleClickOrTap(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>): void {
+      const c = readClient(e.evt as MouseEvent | TouchEvent);
+      if (!c) return;
+      const raw = clientToMm(c.x, c.y);
+      if (!raw) return;
+      const snapped = snapPoint(raw);
+      const current = drawRef.current;
+      if (current.phase === 'idle') return; // mode-strip not engaged
+      if (current.phase === 'armed') {
+        console.log(DBG, 'anchor', snapped);
+        setDraw({ phase: 'drawing', anchor: snapped });
+        cursorRef.current = snapped;
+        return;
+      }
+      // current.phase === 'drawing'
+      const anchor = current.anchor;
+      if (anchor.x_mm === snapped.x_mm && anchor.y_mm === snapped.y_mm) {
+        // Zero-length click: ignore (Sims-style).
+        return;
+      }
+      const segment: Omit<WallSegment, 'id'> = {
+        start: anchor,
+        end: snapped,
+        thickness_mm: DEFAULT_THICKNESS_MM,
+        height_mm: DEFAULT_HEIGHT_MM,
+        type: 'full',
+      };
+      addWall(segment);
+      console.log(DBG, 'commit', segment);
+      // If the just-clicked endpoint coincides with an existing wall
+      // endpoint, the polygon has likely just closed — drop the pen
+      // (Sims behavior). The HUD recomputes the room polygon via
+      // detectClosedRoomVertices on the next render.
+      const closes = wallsRef.current.some((w) =>
+        (w.start.x_mm === snapped.x_mm && w.start.y_mm === snapped.y_mm) ||
+        (w.end.x_mm === snapped.x_mm && w.end.y_mm === snapped.y_mm)
+      );
+      if (closes) {
+        setDraw({ phase: 'idle' });
+      } else {
+        // Chain: next anchor is the just-clicked endpoint.
+        setDraw({ phase: 'drawing', anchor: snapped });
+      }
+    }
+
+    function handleContextMenu(e: Konva.KonvaEventObject<MouseEvent>): void {
+      // Right-click exits drawing without committing the in-flight segment.
+      e.evt.preventDefault();
+      console.log(DBG, 'right-click → exit');
+      setDraw({ phase: 'idle' });
+    }
+
+    stage.on('mousemove.walldraw', handleMove);
+    stage.on('touchmove.walldraw', handleMove);
+    stage.on('click.walldraw', handleClickOrTap);
+    stage.on('tap.walldraw', handleClickOrTap);
+    stage.on('contextmenu.walldraw', handleContextMenu);
+
+    return () => {
+      stage.off('mousemove.walldraw');
+      stage.off('touchmove.walldraw');
+      stage.off('click.walldraw');
+      stage.off('tap.walldraw');
+      stage.off('contextmenu.walldraw');
+    };
+  }, [enabled, stageRef, containerRef, pxPerMetre, addWall, setDraw]);
+
+  // Keyboard: Esc cancels (back to armed). Ctrl+Z undoes the last
+  // committed wall. Enter closes via cursor-on-start handled in click.
+  useEffect(() => {
+    if (!enabled) return;
+    function onKey(e: KeyboardEvent): void {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (drawRef.current.phase === 'drawing') {
+          setDraw({ phase: 'armed' });
+        } else {
+          setDraw({ phase: 'idle' });
+        }
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault();
+        useWallStore.getState().undoLast();
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [enabled, setDraw]);
+
+  if (!enabled) return null;
+
+  return (
+    <Layer listening={false}>
+      {walls.map((w) => (
+        <Line
+          key={w.id}
+          points={[
+            (w.start.x_mm / 1000) * pxPerMetre,
+            (w.start.y_mm / 1000) * pxPerMetre,
+            (w.end.x_mm / 1000) * pxPerMetre,
+            (w.end.y_mm / 1000) * pxPerMetre,
+          ]}
+          stroke="#232C3B"
+          strokeWidth={Math.max(3, (w.thickness_mm / 1000) * pxPerMetre)}
+          lineCap="round"
+        />
+      ))}
+      {draw.phase === 'drawing' && (
+        <Group>
+          <Line
+            ref={cursorLineRef}
+            points={[
+              (draw.anchor.x_mm / 1000) * pxPerMetre,
+              (draw.anchor.y_mm / 1000) * pxPerMetre,
+              (draw.anchor.x_mm / 1000) * pxPerMetre,
+              (draw.anchor.y_mm / 1000) * pxPerMetre,
+            ]}
+            stroke="#FFBB58"
+            strokeWidth={4}
+            dash={[8, 8]}
+          />
+          <Circle
+            x={(draw.anchor.x_mm / 1000) * pxPerMetre}
+            y={(draw.anchor.y_mm / 1000) * pxPerMetre}
+            radius={6}
+            fill="#FFBB58"
+            stroke="#232C3B"
+            strokeWidth={1.5}
+          />
+        </Group>
+      )}
+    </Layer>
+  );
+}
+
+// ----------------------------------------------------------------------
+// DOM HUD — wall count, room area, undo, exit. Mounts as a sibling of
+// <Stage>, never inside it.
+// ----------------------------------------------------------------------
+
+export interface WallDrawHUDProps {
+  enabled: boolean;
+}
+
+export function WallDrawHUD({ enabled }: WallDrawHUDProps): JSX.Element | null {
+  const walls = useWallStore((s) => s.walls);
+  const draw = useWallStore((s) => s.draw);
+  const setDraw = useWallStore((s) => s.setDraw);
+  const undoLast = useWallStore((s) => s.undoLast);
+  const pushToast = useToastStore((s) => s.push);
+
+  const closedRoom = useMemo(() => detectClosedRoomVertices(walls), [walls]);
+  const areaM2 = useMemo(() => (closedRoom ? polygonAreaM2(closedRoom) : 0), [closedRoom]);
+
+  if (!enabled) return null;
+
+  const tip = (() => {
+    if (draw.phase === 'armed') return 'Click on the floor to drop the first wall point.';
+    if (draw.phase === 'drawing') return 'Click again to drop the next wall. Esc to lift the pen.';
+    return 'Walls saved.';
+  })();
+
+  return (
+    <div
+      className="pointer-events-auto absolute left-1/2 top-3 z-30 flex w-[min(94vw,520px)] -translate-x-1/2 flex-col gap-2 rounded-lg bg-white p-3 text-xs shadow-xl"
+      style={{ border: '1px solid #FFBB58', boxShadow: '0 4px 14px rgba(14,14,16,0.18)' }}
+      data-testid="wall-draw-hud"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span
+          className="rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+          style={{ background: '#FFBB58', color: '#0E1B1F' }}
+        >
+          Wall mode
+        </span>
+        <span className="text-[10px] text-ppw-slate">
+          Snap 50 cm · Esc to cancel · Right-click to lift
+        </span>
+      </div>
+      <p className="text-[11px] text-ppw-slate">{tip}</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-ppw-slate">
+          <span>
+            walls <b className="text-ppw-ink" data-testid="wall-count">{walls.length}</b>
+          </span>
+          <span data-testid="room-area">
+            {closedRoom
+              ? <>room <b className="text-ppw-ink">{areaM2.toFixed(2)} m²</b></>
+              : <span className="opacity-60">no closed room yet</span>
+            }
+          </span>
+        </div>
+        <div className="flex flex-1 gap-1.5 sm:flex-initial">
+          <button
+            type="button"
+            onClick={() => {
+              undoLast();
+              pushToast('Removed last wall.', 'info');
+            }}
+            disabled={walls.length === 0}
+            className="min-h-[44px] flex-1 rounded-md border border-ppw-stone bg-white px-3 text-xs font-medium text-ppw-slate hover:border-ppw-ink disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
+            data-testid="wall-undo"
+          >
+            Undo
+          </button>
+          <button
+            type="button"
+            onClick={() => setDraw({ phase: 'idle' })}
+            className="min-h-[44px] flex-1 rounded-md border border-ppw-coral bg-white px-3 text-xs font-medium text-ppw-coral hover:bg-ppw-coral hover:text-white sm:flex-initial"
+            data-testid="wall-exit"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
