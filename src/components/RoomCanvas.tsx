@@ -48,7 +48,9 @@ import {
 import type { PlacedRect, Polygon, Vertex, Viewport } from '../lib/geometry';
 import { RoomDrawLayer, RoomDrawHUD } from './RoomDrawMode';
 
-const DRAG_MIME = 'application/x-ppw-product-id';
+// M1.5: HTML5 DragEvent path retired (silently fails on `.konva-stage`
+// per K1 audit). DRAG_MIME stays in ProductPalette for legacy unit
+// tests that still exercise DataTransfer payloads.
 const PAN_BTN: number = 0;
 
 const INITIAL_VIEWPORT: Viewport = { x: 0, y: 0, scale: 1 };
@@ -88,11 +90,21 @@ export function RoomCanvas({
 
   const [viewport, setViewport] = useState<Viewport>(INITIAL_VIEWPORT);
   const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
-  const [dragOver, setDragOver] = useState(false);
   const itemDragRef = useRef<{ instanceId: string | null; moved: boolean }>({
     instanceId: null,
     moved: false,
   });
+
+  // M1.5 pointer-FSM ghost-preview state. When `pendingProductId` is
+  // set (armed by a click on a catalog card), the Stage's pointer-move
+  // updates this ghost so the user sees where the item will land. The
+  // green/red fill reflects validatePlacement against the current room
+  // polygon + already-placed items.
+  const [dragGhost, setDragGhost] = useState<
+    | { xM: number; yM: number; rotation: number; valid: boolean }
+    | null
+  >(null);
+  const [ghostRotation, setGhostRotation] = useState(0);
 
   const [drawVertices, setDrawVertices] = useState<Polygon>([]);
   const [drawHover, setDrawHover] = useState<Vertex | null>(null);
@@ -107,6 +119,39 @@ export function RoomCanvas({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drawMode]);
+
+  // M1.5 pointer-FSM: reset ghost state when the armed product changes or
+  // clears. Keeps the preview in sync with whichever product the catalog
+  // last armed, and avoids a stale ghost lingering after a commit/cancel.
+  useEffect(() => {
+    if (!pendingProductId) {
+      setDragGhost(null);
+      setGhostRotation(0);
+    }
+  }, [pendingProductId]);
+
+  // M1.5 pointer-FSM: R rotates the armed product by 45°, Shift+R goes
+  // the other way, Esc cancels the armed placement. Mirrors the Sims
+  // `.` / `,` rotate keys remapped to PPW's existing R-key convention.
+  useEffect(() => {
+    if (!pendingProductId) return;
+    function onKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (setPendingProductId) setPendingProductId(null);
+        return;
+      }
+      if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        const delta = e.shiftKey ? -45 : 45;
+        setGhostRotation((r) => (((r + delta) % 360) + 360) % 360);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [pendingProductId, setPendingProductId]);
 
   const bounds = useMemo(() => polygonBounds(polygon), [polygon]);
   const roomWpx = (bounds.maxX - bounds.minX) * pxPerMetre;
@@ -245,7 +290,11 @@ export function RoomCanvas({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewport.scale, viewport.x, viewport.y]);
 
-  // Mobile UX (fix/mobile-ux-v1): tap-to-place from the Catalog.
+  // M1.5 pointer-FSM commit path. Snaps to the 0.5 m grid, validates
+  // against the room polygon + existing placed items, and commits with
+  // whatever rotation the ghost preview was showing (R / Shift+R during
+  // armed phase). PolB.3: drag-to-canvas auto-adds to cart with a
+  // 5-second Undo toast per V4-UX-1 Vic-Y.
   const placeProductAt = useCallback(
     (clientX: number, clientY: number, productId: string) => {
       const product = getProductById(productId);
@@ -267,7 +316,7 @@ export function RoomCanvas({
         lengthM: cmToM(product.dimensions_cm.length),
         widthM: cmToM(product.dimensions_cm.width),
       };
-      const { w, h } = rotatedFootprint(fp, 0);
+      const { w, h } = rotatedFootprint(fp, ghostRotation);
       const snappedX = snapToGrid(xM - w / 2, 0.5);
       const snappedY = snapToGrid(yM - h / 2, 0.5);
       const candidate: PlacedRect = { x: snappedX, y: snappedY, w, h };
@@ -285,15 +334,11 @@ export function RoomCanvas({
         pushToast("Item won't fit here.", 'warn');
         return;
       }
-      // PolB.3 (V4 Driver tick 35): drag-to-canvas auto-adds to cart
-      // (cart derives from placedItems). Toast surfaces the auto-add
-      // with a 5-second Undo CTA per V4-UX-1 Vic-Y. Konva input
-      // handlers unchanged; only the toast call evolved.
       const instanceId = addItem({
         productId: product.id,
         x: snappedX,
         y: snappedY,
-        rotation: 0,
+        rotation: ghostRotation,
       });
       pushToast(`Added "${product.name}" to cart`, 'success', {
         ttlMs: 5000,
@@ -303,30 +348,58 @@ export function RoomCanvas({
         },
       });
     },
-    [viewport, pxPerMetre, placedItems, polygon, addItem, removeItem, pushToast],
+    [viewport, pxPerMetre, ghostRotation, placedItems, polygon, addItem, removeItem, pushToast],
   );
 
   function resetView() {
     setViewport(INITIAL_VIEWPORT);
   }
 
-  function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
-    if (drawMode) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-    if (!dragOver) setDragOver(true);
-  }
-  function handleDragLeave(_e: React.DragEvent<HTMLDivElement>) {
-    setDragOver(false);
-  }
-  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
-    if (drawMode) return;
-    e.preventDefault();
-    setDragOver(false);
-    const productId = e.dataTransfer.getData(DRAG_MIME) || e.dataTransfer.getData('text/plain');
-    if (!productId) return;
-    placeProductAt(e.clientX, e.clientY, productId);
-  }
+  // M1.5: HTML5 DragEvent path removed. The K1 audit proved it silently
+  // no-ops on `.konva-stage`. Placement now flows through the pointer-FSM
+  // (catalog click → arm pendingProductId → ghost preview → click commit).
+  // `DRAG_MIME` is retained at module scope for unit tests that still
+  // exercise DataTransfer payloads; nothing on the canvas listens to it.
+
+  // M1.5: compute ghost preview state for the armed pointer-FSM phase.
+  // Pure function-ish (reads viewport/placedItems/polygon/ghostRotation
+  // from closure). Used by onPointerMove and the onClick/onTap commit
+  // path so both branches see the same snap + validity result.
+  const computeGhost = useCallback(
+    (clientX: number, clientY: number, productId: string) => {
+      const product = getProductById(productId);
+      const container = containerRef.current;
+      if (!product || !container) return null;
+      const rect = container.getBoundingClientRect();
+      const { xM, yM } = screenToRoom(
+        clientX,
+        clientY,
+        { left: rect.left, top: rect.top },
+        viewport,
+        pxPerMetre,
+      );
+      const fp = {
+        lengthM: cmToM(product.dimensions_cm.length),
+        widthM: cmToM(product.dimensions_cm.width),
+      };
+      const { w, h } = rotatedFootprint(fp, ghostRotation);
+      const snappedX = snapToGrid(xM - w / 2, 0.5);
+      const snappedY = snapToGrid(yM - h / 2, 0.5);
+      const candidate: PlacedRect = { x: snappedX, y: snappedY, w, h };
+      const others = placedItems
+        .map((it) => {
+          const p = getProductById(it.productId);
+          if (!p) return null;
+          const ofp = { lengthM: cmToM(p.dimensions_cm.length), widthM: cmToM(p.dimensions_cm.width) };
+          const r = rotatedFootprint(ofp, it.rotation);
+          return { x: it.x, y: it.y, w: r.w, h: r.h };
+        })
+        .filter((r): r is PlacedRect => r !== null);
+      const result = validatePlacement(candidate, others, polygon);
+      return { xM: snappedX, yM: snappedY, rotation: ghostRotation, valid: result.ok, w, h };
+    },
+    [viewport, pxPerMetre, ghostRotation, placedItems, polygon],
+  );
 
   const handleDrawCommit = useCallback(
     (newPolygon: Polygon, name: string) => {
@@ -413,11 +486,9 @@ export function RoomCanvas({
     <div
       ref={containerRef}
       className={`relative h-full w-full bg-ppw-mist transition-colors ${
-        dragOver ? 'bg-ppw-teal/10 ring-2 ring-inset ring-ppw-teal' : ''
-      } ${drawMode ? 'cursor-crosshair' : ''}`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
+        pendingProductId && !drawMode ? 'bg-ppw-teal/5 ring-2 ring-inset ring-ppw-teal/40' : ''
+      } ${drawMode ? 'cursor-crosshair' : ''} ${pendingProductId && !drawMode ? 'cursor-crosshair' : ''}`}
+      data-armed={pendingProductId ? 'true' : 'false'}
     >
       <div className="pointer-events-none absolute right-4 top-4 z-10 flex flex-col items-end gap-2">
         <button
@@ -430,6 +501,15 @@ export function RoomCanvas({
         </button>
         <div className="pointer-events-none rounded-md bg-ppw-ink/80 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
           {area.toFixed(2)} m2 - {perimeter.toFixed(2)} m - {Math.round(viewport.scale * 100)}%
+        </div>
+        {/* M1.5 E2E hook: visible counter so Playwright can assert that
+            a placement actually committed. Updates from designStore via
+            placedItems selector — independent of the cart UI. */}
+        <div
+          className="pointer-events-none rounded-md bg-ppw-teal/90 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm"
+          data-testid="items-placed"
+        >
+          {placedItems.length}
         </div>
       </div>
 
@@ -463,7 +543,9 @@ export function RoomCanvas({
         y={viewport.y}
         scaleX={viewport.scale}
         scaleY={viewport.scale}
-        draggable={!drawMode}
+        // M1.5: disable Stage pan-drag while armed so pointer-move
+        // updates the ghost instead of panning the viewport.
+        draggable={!drawMode && !pendingProductId}
         onDragMove={(e) => {
           if (e.target === e.target.getStage()) {
             setViewport((v) => ({ ...v, x: e.target.x(), y: e.target.y() }));
@@ -476,6 +558,28 @@ export function RoomCanvas({
             selectItem(null);
           }
         }}
+        onPointerMove={(e) => {
+          // M1.5 pointer-FSM: while armed, track snapped pointer position
+          // and update the ghost preview every frame.
+          if (drawMode) return;
+          if (!pendingProductId) {
+            if (dragGhost) setDragGhost(null);
+            return;
+          }
+          const evt = e.evt as PointerEvent;
+          if (typeof evt.clientX !== 'number') return;
+          const next = computeGhost(evt.clientX, evt.clientY, pendingProductId);
+          if (next) {
+            setDragGhost({ xM: next.xM, yM: next.yM, rotation: next.rotation, valid: next.valid });
+          }
+        }}
+        onContextMenu={(e) => {
+          // M1.5: right-click cancels the armed placement, Sims-style.
+          if (pendingProductId && setPendingProductId) {
+            e.evt.preventDefault();
+            setPendingProductId(null);
+          }
+        }}
         onTap={(e) => {
           if (drawMode) return;
           if (e.target !== e.target.getStage()) return;
@@ -484,6 +588,8 @@ export function RoomCanvas({
             if (touch) {
               placeProductAt(touch.clientX, touch.clientY, pendingProductId);
               setPendingProductId(null);
+              setDragGhost(null);
+              setGhostRotation(0);
               return;
             }
           }
@@ -495,6 +601,8 @@ export function RoomCanvas({
           if (pendingProductId && setPendingProductId) {
             placeProductAt(e.evt.clientX, e.evt.clientY, pendingProductId);
             setPendingProductId(null);
+            setDragGhost(null);
+            setGhostRotation(0);
           }
         }}
         className="konva-stage"
@@ -564,6 +672,40 @@ export function RoomCanvas({
             );
           })}
         </Layer>
+
+        {/* M1.5 ghost-preview Layer. Renders only while the pointer-FSM
+            is in armed/dragging phase (pendingProductId set + dragGhost
+            populated by onPointerMove). Green = valid drop, red = blocked. */}
+        {!drawMode && pendingProductId && dragGhost && (() => {
+          const product = getProductById(pendingProductId);
+          if (!product) return null;
+          const fp = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
+          const { w, h } = rotatedFootprint(fp, dragGhost.rotation);
+          const wPx = w * pxPerMetre;
+          const hPx = h * pxPerMetre;
+          return (
+            <Layer listening={false}>
+              <Rect
+                x={dragGhost.xM * pxPerMetre}
+                y={dragGhost.yM * pxPerMetre}
+                width={wPx}
+                height={hPx}
+                fill={dragGhost.valid ? 'rgba(255,187,88,0.35)' : 'rgba(220,40,40,0.45)'}
+                stroke={dragGhost.valid ? '#FFBB58' : '#DC2828'}
+                strokeWidth={2}
+                dash={[6, 4]}
+              />
+              <Text
+                x={dragGhost.xM * pxPerMetre + 6}
+                y={dragGhost.yM * pxPerMetre + 6}
+                text={product.name}
+                fontSize={11}
+                fontFamily="Inter, sans-serif"
+                fill="#232C3B"
+              />
+            </Layer>
+          );
+        })()}
 
         <RoomDrawLayer
           enabled={drawMode}

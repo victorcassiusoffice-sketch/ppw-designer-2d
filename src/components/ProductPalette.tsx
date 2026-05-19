@@ -138,6 +138,12 @@ export function ProductPalette({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, activeCategory, region, allProducts]);
 
+  // M1.5: kept for legacy DataTransfer consumers (e.g. external DnD
+  // tests). The primary placement path is now the pointer-FSM: clicking
+  // a card arms `pendingProductId`, the canvas shows a ghost preview,
+  // and the next click on the floor commits. HTML5 DragEvent silently
+  // no-ops on `.konva-stage` per the K1 audit, so the FSM is the only
+  // path that actually places items on production Chrome.
   function handleDragStart(e: React.DragEvent<HTMLDivElement>, product: Product) {
     e.dataTransfer.effectAllowed = 'copy';
     e.dataTransfer.setData(DRAG_MIME, product.id);
@@ -212,13 +218,43 @@ export function ProductPalette({
               return (
                 <li key={p.id}>
                   <div
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={isPending}
+                    aria-label={`Place ${p.name} — ${isPending ? 'armed, click on the floor to drop' : 'click to arm placement'}`}
                     draggable
                     onDragStart={(e) => handleDragStart(e, p)}
-                    className={`group flex cursor-grab gap-3 rounded-lg border bg-white p-2.5 transition hover:border-ppw-teal hover:shadow-sm active:cursor-grabbing ${
+                    onPointerDown={(e) => {
+                      // M1.5 pointer-FSM: clicking a card arms placement
+                      // (sets pendingProductId). Subsequent pointer
+                      // events on the Stage track the ghost preview and
+                      // commit on click. Re-arming toggles off.
+                      if (!setPendingProductId) return;
+                      if (e.button !== 0) return;
+                      if (isPending) {
+                        setPendingProductId(null);
+                      } else {
+                        setPendingProductId(p.id);
+                        setMobileOpen(false);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (!setPendingProductId) return;
+                      if (e.key !== 'Enter' && e.key !== ' ') return;
+                      e.preventDefault();
+                      if (isPending) {
+                        setPendingProductId(null);
+                      } else {
+                        setPendingProductId(p.id);
+                        setMobileOpen(false);
+                      }
+                    }}
+                    className={`group flex cursor-pointer gap-3 rounded-lg border bg-white p-2.5 transition hover:border-ppw-teal hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-ppw-teal active:bg-ppw-mist ${
                       isPending ? 'border-ppw-teal ring-2 ring-ppw-teal/40' : 'border-ppw-stone'
                     }`}
                     data-product-id={p.id}
                     data-category={p.category}
+                    data-armed={isPending ? 'true' : 'false'}
                   >
                     <div
                       className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-ppw-sand"
