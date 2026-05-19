@@ -11,9 +11,12 @@
 
 export type AgentModel = 'gemini-flash' | 'claude-sonnet';
 
+// M4 (RELENTLESS_GOAL 2026-05-19): live model slugs.
+// Primary = Gemini Flash 2.5 free tier (per Vic's $200/mo cap policy —
+// "free tier first"). Fallback = Claude Sonnet 4.6 for hard tasks.
 export const MODEL_SLUGS: Record<AgentModel, string> = {
-  'gemini-flash': 'google/gemini-2.0-flash-exp:free',
-  'claude-sonnet': 'anthropic/claude-3.5-sonnet',
+  'gemini-flash': 'google/gemini-2.5-flash:free',
+  'claude-sonnet': 'anthropic/claude-sonnet-4-6',
 };
 
 const OPENROUTER_BASE = 'https://openrouter.ai/api/v1';
@@ -130,9 +133,9 @@ The integration tiers are: Tier 1 (Shopify/WooCommerce plugin), Tier 2 (custom A
 /**
  * OpenRouter / model pricing per 1M tokens, in micro-USD (1e-6 USD).
  *
- * Gemini Flash 2.0 free tier: zero cost via OpenRouter's `:free` variant.
- * Claude 3.5 Sonnet: $3 input / $15 output per 1M tokens. Source:
- * https://openrouter.ai/anthropic/claude-3.5-sonnet (as of 2026-05).
+ * Gemini Flash 2.5 free tier: zero cost via OpenRouter's `:free` variant.
+ * Claude Sonnet 4.6: $3 input / $15 output per 1M tokens (carried from
+ * the 3.5 generation; the 4.x family kept the same Sonnet price band).
  *
  * Stored as micro-USD per token (≡ price-per-1M-tokens / 1_000_000 * 1e6
  * = price-per-1M-tokens). So Claude input = 3 micro-USD per token.

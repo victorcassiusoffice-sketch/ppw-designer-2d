@@ -20,6 +20,7 @@ import {
   pickModel,
   estimateCostMicroUsd,
   MERCHANT_AGENT_SYSTEM_PROMPT,
+  MODEL_SLUGS,
   type ChatMessage,
   type AgentModel,
 } from './lib/agent/openrouter.js';
@@ -146,13 +147,52 @@ export function validateChatRequest(
   return { ok: true, messages, model, sessionId };
 }
 
+/**
+ * M4 (RELENTLESS_GOAL 2026-05-19): GET cold-start health probe. Returns
+ * the configured model slugs + whether OPENROUTER_API_KEY is wired,
+ * without burning an LLM call. Used by uptime monitors + the merchant
+ * dashboard's "agent ready?" indicator.
+ */
+export function buildAgentHealthBody(env: { configured: boolean; error?: string }): {
+  ok: boolean;
+  service: string;
+  models: Record<string, string>;
+  openrouterConfigured: boolean;
+  error?: string;
+} {
+  return {
+    ok: env.configured,
+    service: 'ppw-merchant-agent',
+    models: { ...MODEL_SLUGS },
+    openrouterConfigured: env.configured,
+    ...(env.error ? { error: env.error } : {}),
+  };
+}
+
 async function rawHandler(req: ChatReq, res: MinRes): Promise<void> {
   if (req.method === 'OPTIONS') {
     res.status(204).end();
     return;
   }
+  if (req.method === 'GET') {
+    // Health probe (M4). Never fires an LLM call.
+    let env: { configured: boolean; error?: string };
+    try {
+      readOpenRouterEnv();
+      env = { configured: true };
+    } catch (err) {
+      env = {
+        configured: false,
+        error: err instanceof Error ? err.message : 'OpenRouter not configured',
+      };
+    }
+    const body = buildAgentHealthBody(env);
+    res.status(env.configured ? 200 : 503);
+    res.json(body);
+    return;
+  }
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST, OPTIONS');
+    res.setHeader('Allow', 'GET, POST, OPTIONS');
     res.status(405).end();
     return;
   }

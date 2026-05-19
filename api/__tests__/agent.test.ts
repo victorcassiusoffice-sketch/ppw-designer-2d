@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { pickModel, MODEL_SLUGS, openRouterChat } from '../lib/agent/openrouter';
-import { validateChatRequest } from '../agent-chat';
+import { validateChatRequest, buildAgentHealthBody } from '../agent-chat';
 
 describe('pickModel', () => {
   it('picks gemini-flash for short conversational input', () => {
@@ -30,11 +30,35 @@ describe('pickModel', () => {
 });
 
 describe('MODEL_SLUGS', () => {
-  it('exposes Gemini Flash 2.0 free slug', () => {
-    expect(MODEL_SLUGS['gemini-flash']).toBe('google/gemini-2.0-flash-exp:free');
+  it('exposes Gemini Flash 2.5 free slug (M4 RELENTLESS_GOAL 2026-05-19)', () => {
+    expect(MODEL_SLUGS['gemini-flash']).toBe('google/gemini-2.5-flash:free');
   });
-  it('exposes Claude 3.5 Sonnet slug', () => {
-    expect(MODEL_SLUGS['claude-sonnet']).toBe('anthropic/claude-3.5-sonnet');
+  it('exposes Claude Sonnet 4.6 slug (M4 RELENTLESS_GOAL 2026-05-19)', () => {
+    expect(MODEL_SLUGS['claude-sonnet']).toBe('anthropic/claude-sonnet-4-6');
+  });
+});
+
+describe('buildAgentHealthBody (M4 GET /api/agent-chat)', () => {
+  it('returns ok:true + both model slugs when OpenRouter is configured', () => {
+    const body = buildAgentHealthBody({ configured: true });
+    expect(body.ok).toBe(true);
+    expect(body.service).toBe('ppw-merchant-agent');
+    expect(body.openrouterConfigured).toBe(true);
+    expect(body.models['gemini-flash']).toBe('google/gemini-2.5-flash:free');
+    expect(body.models['claude-sonnet']).toBe('anthropic/claude-sonnet-4-6');
+    expect(body.error).toBeUndefined();
+  });
+
+  it('returns ok:false + error reason when env is missing', () => {
+    const body = buildAgentHealthBody({
+      configured: false,
+      error: 'OpenRouter not configured (OPENROUTER_API_KEY missing)',
+    });
+    expect(body.ok).toBe(false);
+    expect(body.openrouterConfigured).toBe(false);
+    expect(body.error).toMatch(/OPENROUTER_API_KEY missing/);
+    // Slugs still surface so dashboards can render the intended config.
+    expect(body.models['gemini-flash']).toBe('google/gemini-2.5-flash:free');
   });
 });
 
@@ -88,7 +112,7 @@ describe('openRouterChat', () => {
       return new Response(
         JSON.stringify({
           choices: [{ message: { content: 'Hello!' } }],
-          model: 'google/gemini-2.0-flash-exp:free',
+          model: 'google/gemini-2.5-flash:free',
           usage: { prompt_tokens: 10, completion_tokens: 2, total_tokens: 12 },
         }),
         { status: 200, headers: { 'Content-Type': 'application/json' } },
@@ -101,7 +125,7 @@ describe('openRouterChat', () => {
     );
     expect(capturedUrl).toBe('https://openrouter.ai/api/v1/chat/completions');
     expect(capturedBody).toMatchObject({
-      model: 'google/gemini-2.0-flash-exp:free',
+      model: 'google/gemini-2.5-flash:free',
       messages: [{ role: 'user', content: 'hi' }],
     });
     expect(result.content).toBe('Hello!');
