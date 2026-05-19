@@ -27,6 +27,7 @@ import MarketplaceCartPage from './pages/MarketplaceCartPage';
 import MarketplaceCheckoutPage from './pages/MarketplaceCheckoutPage';
 import OrderTrackPage from './pages/OrderTrackPage';
 import MerchantAgentPage from './pages/MerchantAgentPage';
+import MerchantDashboardPage from './pages/MerchantDashboardPage';
 import MyDesignsPage from './pages/MyDesignsPage';
 import { bootstrapFx } from './store/currencyStore';
 import './index.css';
@@ -78,6 +79,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/marketplace/cart" element={<MarketplaceCartPage />} />
         <Route path="/marketplace/checkout" element={<MarketplaceCheckoutPage />} />
         <Route path="/order/track/:orderRef" element={<OrderTrackPage />} />
+        <Route path="/merchant/:slug" element={<MerchantDashboardPage />} />
         <Route path="/merchant/:slug/agent" element={<MerchantAgentPage />} />
 
         {/* V3.1 M1.C.6 — cloud-save listing page (email-keyed). */}
