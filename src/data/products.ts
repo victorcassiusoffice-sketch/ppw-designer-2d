@@ -8,6 +8,7 @@
  */
 
 import catalogJson from './products.json';
+import { getApiProductFromCache } from './apiCatalogAdapter';
 import type {
   Product,
   ProductCatalog,
@@ -26,7 +27,9 @@ export function getAllProducts(): Product[] {
 }
 
 export function getProductById(id: string): Product | undefined {
-  return catalog.products.find((p) => p.id === id);
+  const bundled = catalog.products.find((p) => p.id === id);
+  if (bundled) return bundled;
+  return getApiProductFromCache(id);
 }
 
 export function getProductsByCategory(category: ProductCategory): Product[] {

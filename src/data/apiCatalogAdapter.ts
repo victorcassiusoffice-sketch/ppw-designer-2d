@@ -120,6 +120,24 @@ export function apiProductToProduct(api: ApiProductSummary): Product {
 }
 
 /**
+ * Module-level cache of API-fetched products keyed by their `m-<dbId>`
+ * pseudo-slug. Phase-0 fix: the FSM stores `pendingProductId` from the
+ * card's `data-product-id`, which is the namespaced API id for merchant
+ * rows. Without this cache, `getProductById` (which only reads bundled
+ * JSON) returns null and placement is rejected with "Unknown product".
+ *
+ * The cache is monotonic-growing — newer calls overwrite older entries
+ * by id, never delete. That matches the Designer's "fetch once on mount,
+ * stay live for the session" model in ProductPalette.
+ */
+const _apiProductsCache: Map<string, Product> = new Map();
+
+/** Read-only accessor for the API products cache, used by `getProductById`. */
+export function getApiProductFromCache(id: string): Product | undefined {
+  return _apiProductsCache.get(id);
+}
+
+/**
  * Fetch `/api/products` and adapt rows to the bundled `Product` shape.
  * Returns an empty list on any failure (network, schema-missing, etc.)
  * so the Designer Catalog degrades gracefully to bundled seeds only.
@@ -133,7 +151,9 @@ export async function fetchApiProducts(
     if (!res.ok) return [];
     const json = (await res.json()) as ApiProductsResponse;
     if (!json.products || json.schemaMissing) return [];
-    return json.products.map(apiProductToProduct);
+    const adapted = json.products.map(apiProductToProduct);
+    for (const p of adapted) _apiProductsCache.set(p.id, p);
+    return adapted;
   } catch {
     return [];
   }
