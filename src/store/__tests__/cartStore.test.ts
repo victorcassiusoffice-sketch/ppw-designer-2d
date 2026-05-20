@@ -1,5 +1,16 @@
 /**
  * cartStore - Week 3 unit tests (regression of Week 2.5 + new FX path).
+ *
+ * M6 (2026-05-20): retargeted from the retired demo seed
+ * (plunge-all-in / sansevieria / tamarin-areca-palm) to the K1-Sport
+ * seed shipped in `src/data/products.json` v2.0.0-k1-seed. Three K1
+ * SKUs anchor the cross-product math:
+ *   • k1-nordictrack-2450      → MUR 150,000 (treadmill)
+ *   • k1-schwinn-700ic         → MUR  29,000 (indoor bike, mid-tier)
+ *   • k1-bench-adjustable-fid  → MUR  11,000 (bench, entry-tier)
+ * All three are MUR-priced (the K1 catalogue is Mauritius-domestic),
+ * which keeps the FX conversion test deterministic against the
+ * fallback rate map.
  */
 import { describe, it, expect } from 'vitest';
 import { nanoid } from 'nanoid';
@@ -15,6 +26,13 @@ const STUB_FX: FxSnapshot = {
 };
 
 const EMPTY_MUT = { qtyOverrides: {}, removedProductIds: [] };
+
+const NT2450_ID = 'k1-nordictrack-2450';
+const NT2450_MUR = 150_000;
+const SCHWINN_ID = 'k1-schwinn-700ic';
+const SCHWINN_MUR = 29_000;
+const BENCH_ID = 'k1-bench-adjustable-fid';
+const BENCH_MUR = 11_000;
 
 function makeProperty(roomItems: Array<Array<{ productId: string }>>): Property {
   const rooms = roomItems.map((items, i) => ({
@@ -50,14 +68,14 @@ describe('deriveCart - empty / edge cases', () => {
 
   it('skips items whose productId is missing from the catalog', () => {
     const cart = deriveCart(
-      makeProperty([[{ productId: 'does-not-exist' }, { productId: 'plunge-all-in' }]]),
+      makeProperty([[{ productId: 'does-not-exist' }, { productId: NT2450_ID }]]),
       EMPTY_MUT,
       STUB_FX,
       'MUR',
     );
     expect(cart.uniqueProductCount).toBe(1);
     expect(cart.totalItemCount).toBe(1);
-    expect(cart.lines[0].productId).toBe('plunge-all-in');
+    expect(cart.lines[0].productId).toBe(NT2450_ID);
   });
 
   it('handles a property with zero rooms gracefully', () => {
@@ -76,28 +94,28 @@ describe('deriveCart - aggregation across rooms', () => {
   it('groups duplicates of the same product across rooms', () => {
     const cart = deriveCart(
       makeProperty([
-        [{ productId: 'sansevieria-trifasciata-90cm' }, { productId: 'sansevieria-trifasciata-90cm' }],
-        [{ productId: 'sansevieria-trifasciata-90cm' }],
+        [{ productId: BENCH_ID }, { productId: BENCH_ID }],
+        [{ productId: BENCH_ID }],
       ]),
       EMPTY_MUT,
       STUB_FX,
       'MUR',
     );
     expect(cart.lines).toHaveLength(1);
-    expect(cart.lines[0].productId).toBe('sansevieria-trifasciata-90cm');
+    expect(cart.lines[0].productId).toBe(BENCH_ID);
     expect(cart.lines[0].quantity).toBe(3);
     expect(cart.lines[0].placedCount).toBe(3);
     expect(cart.totalItemCount).toBe(3);
-    expect(cart.subtotal).toBeCloseTo(2550, 4);
-    expect(cart.subtotalByCurrency.MUR).toBeCloseTo(2550, 4);
-    expect(cart.subtotalByCurrency.USD).toBeCloseTo(2550 / 45, 4);
+    expect(cart.subtotal).toBeCloseTo(BENCH_MUR * 3, 4);
+    expect(cart.subtotalByCurrency.MUR).toBeCloseTo(BENCH_MUR * 3, 4);
+    expect(cart.subtotalByCurrency.USD).toBeCloseTo((BENCH_MUR * 3) / MUR_PER_USD, 4);
   });
 
   it('records per-room breakdown', () => {
     const cart = deriveCart(
       makeProperty([
-        [{ productId: 'sansevieria-trifasciata-90cm' }, { productId: 'sansevieria-trifasciata-90cm' }],
-        [{ productId: 'sansevieria-trifasciata-90cm' }],
+        [{ productId: BENCH_ID }, { productId: BENCH_ID }],
+        [{ productId: BENCH_ID }],
       ]),
       EMPTY_MUT,
       STUB_FX,
@@ -111,8 +129,8 @@ describe('deriveCart - aggregation across rooms', () => {
   it('handles a mix of products and currencies', () => {
     const cart = deriveCart(
       makeProperty([
-        [{ productId: 'plunge-all-in' }],
-        [{ productId: 'sansevieria-trifasciata-90cm' }, { productId: 'tamarin-areca-palm-180cm' }],
+        [{ productId: NT2450_ID }],
+        [{ productId: BENCH_ID }, { productId: SCHWINN_ID }],
       ]),
       EMPTY_MUT,
       STUB_FX,
@@ -120,7 +138,7 @@ describe('deriveCart - aggregation across rooms', () => {
     );
     expect(cart.uniqueProductCount).toBe(3);
     expect(cart.totalItemCount).toBe(3);
-    const expectedMUR = 4990 * MUR_PER_USD + 850 + 2400;
+    const expectedMUR = NT2450_MUR + BENCH_MUR + SCHWINN_MUR;
     expect(cart.subtotal).toBeCloseTo(expectedMUR, 0);
     expect(cart.subtotalByCurrency.USD).toBeCloseTo(expectedMUR / MUR_PER_USD, 0);
   });
@@ -128,60 +146,62 @@ describe('deriveCart - aggregation across rooms', () => {
   it('sorts lines by display-currency total descending', () => {
     const cart = deriveCart(
       makeProperty([
-        [{ productId: 'sansevieria-trifasciata-90cm' }, { productId: 'plunge-all-in' }],
+        [{ productId: BENCH_ID }, { productId: NT2450_ID }],
       ]),
       EMPTY_MUT,
       STUB_FX,
       'USD',
     );
-    expect(cart.lines[0].productId).toBe('plunge-all-in');
-    expect(cart.lines[1].productId).toBe('sansevieria-trifasciata-90cm');
+    expect(cart.lines[0].productId).toBe(NT2450_ID);
+    expect(cart.lines[1].productId).toBe(BENCH_ID);
   });
 });
 
 describe('deriveCart - currency switching', () => {
   it('displays subtotal in the chosen currency', () => {
-    const property = makeProperty([[{ productId: 'plunge-all-in' }]]);
+    const property = makeProperty([[{ productId: NT2450_ID }]]);
     const inUsd = deriveCart(property, EMPTY_MUT, STUB_FX, 'USD');
     const inMur = deriveCart(property, EMPTY_MUT, STUB_FX, 'MUR');
-    expect(inUsd.subtotal).toBeCloseTo(4990, 4);
-    expect(inMur.subtotal).toBeCloseTo(4990 * 45, 4);
+    expect(inMur.subtotal).toBeCloseTo(NT2450_MUR, 4);
+    expect(inUsd.subtotal).toBeCloseTo(NT2450_MUR / MUR_PER_USD, 4);
   });
 
   it('cross-currency subtotals match', () => {
-    const property = makeProperty([[{ productId: 'plunge-all-in' }]]);
+    const property = makeProperty([[{ productId: NT2450_ID }]]);
     const c = deriveCart(property, EMPTY_MUT, STUB_FX, 'EUR');
-    expect(c.subtotal).toBeCloseTo(4990 * 0.92, 4);
-    expect(c.subtotalByCurrency.USD).toBeCloseTo(4990, 4);
+    // NT2450 source = MUR. Convert MUR → USD → EUR via FALLBACK_RATES_USD.
+    const inUsd = NT2450_MUR / MUR_PER_USD;
+    expect(c.subtotal).toBeCloseTo(inUsd * 0.92, 4);
+    expect(c.subtotalByCurrency.USD).toBeCloseTo(inUsd, 4);
   });
 });
 
 describe('deriveCart - cart mutations', () => {
   it('qty override overrides placed count', () => {
-    const property = makeProperty([[{ productId: 'plunge-all-in' }]]);
+    const property = makeProperty([[{ productId: NT2450_ID }]]);
     const cart = deriveCart(
       property,
-      { qtyOverrides: { 'plunge-all-in': 2 }, removedProductIds: [] },
+      { qtyOverrides: { [NT2450_ID]: 2 }, removedProductIds: [] },
       STUB_FX,
-      'USD',
+      'MUR',
     );
     expect(cart.lines[0].quantity).toBe(2);
     expect(cart.lines[0].placedCount).toBe(1);
-    expect(cart.subtotal).toBeCloseTo(4990 * 2, 4);
+    expect(cart.subtotal).toBeCloseTo(NT2450_MUR * 2, 4);
   });
 
   it('removedProductIds drops the line', () => {
     const property = makeProperty([
-      [{ productId: 'plunge-all-in' }, { productId: 'sansevieria-trifasciata-90cm' }],
+      [{ productId: NT2450_ID }, { productId: BENCH_ID }],
     ]);
     const cart = deriveCart(
       property,
-      { qtyOverrides: {}, removedProductIds: ['plunge-all-in'] },
+      { qtyOverrides: {}, removedProductIds: [NT2450_ID] },
       STUB_FX,
       'MUR',
     );
     expect(cart.lines).toHaveLength(1);
-    expect(cart.lines[0].productId).toBe('sansevieria-trifasciata-90cm');
+    expect(cart.lines[0].productId).toBe(BENCH_ID);
   });
 });
 

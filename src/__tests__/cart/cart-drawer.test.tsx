@@ -194,7 +194,7 @@ describe('CartDrawer — Konva-untouched + brand canon', () => {
 
 describe('CartDrawer — pure totals via rendered HTML', () => {
   it('renders non-empty subtotal + fee + total lines when cart has items', () => {
-    const product = getProductById('plunge-all-in') ?? getAllProducts()[0];
+    const product = getProductById('k1-nordictrack-2450') ?? getAllProducts()[0];
     usePropertyStore.getState().addItem({
       productId: product.id,
       x: 0,
