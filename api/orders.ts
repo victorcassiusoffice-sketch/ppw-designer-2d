@@ -28,6 +28,14 @@ import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
 import { getDb, schema } from './db/client.js';
 import { aggregateOrderStatus, isValidTransition, type OrderEventType } from './lib/order-status.js';
 import { dispatchDesignSavedEmail } from './lib/email/dispatch.js';
+import { sendEmail } from './lib/email/send.js';
+import { drizzleMerchantStore } from './db/merchantStore.js';
+import {
+  signMerchantSession,
+  buildMagicLinkUrl,
+  DEFAULT_TTL_MS,
+  readMerchantSessionSecret,
+} from './lib/merchantSession.js';
 import { Redis } from '@upstash/redis';
 
 interface RouterReq extends MinReq {
@@ -550,6 +558,158 @@ function validateDesignPayload(
   };
 }
 
+// ---------------------------------------------------------------------
+// M5.b — merchant magic-link sign-in.
+//
+// Closes the public-by-slug gap surfaced in macro-5-complete. The merchant
+// types their contact email into the dashboard sign-in form; if it
+// matches the slug's `merchants.contact_email`, we email a one-click link
+// containing a 30-day HMAC-signed session token. Visiting the link sets
+// the token in localStorage and the React `RequireMerchant` guard
+// re-renders the protected route. Token verification is purely
+// HMAC-based — no DB lookup per request, no server-side session table.
+//
+// The endpoint always responds 200 (no merchant-existence leak). The
+// "did it actually send" signal lands in the audit_log row that
+// `sendEmail` writes.
+// ---------------------------------------------------------------------
+
+type ParsedMagicLinkBody =
+  | { ok: true; email: string }
+  | { ok: false; error: string };
+
+export function parseMagicLinkBody(body: unknown): ParsedMagicLinkBody {
+  if (!body || typeof body !== 'object') return { ok: false, error: 'JSON body required.' };
+  const b = body as Record<string, unknown>;
+  if (typeof b.email !== 'string') return { ok: false, error: 'email field required.' };
+  const email = b.email.trim().toLowerCase();
+  if (!email || !email.includes('@')) return { ok: false, error: 'invalid email.' };
+  if (email.length > 254) return { ok: false, error: 'email too long.' };
+  return { ok: true, email };
+}
+
+export function buildMagicLinkEmail(args: {
+  slug: string;
+  link: string;
+  expiryDays: number;
+}): { subject: string; html: string } {
+  const safeSlug = String(args.slug).replace(/[<>]/g, '');
+  const subject = `Sign in to your ${safeSlug} dashboard`;
+  const html = `
+<!DOCTYPE html>
+<html><body style="font-family:Inter,Helvetica,Arial,sans-serif;background:#232C3B;color:#F5EBD7;margin:0;padding:0;">
+  <table width="100%" style="background:#232C3B;padding:32px 16px;"><tr><td align="center">
+    <table width="540" style="background:#1A2230;border:1px solid rgba(245,235,215,0.14);border-radius:10px;padding:32px;">
+      <tr><td>
+        <h1 style="font-family:'EB Garamond',Georgia,serif;font-weight:500;color:#F5EBD7;margin:0 0 16px;">Sign in to your dashboard</h1>
+        <p style="color:#A8B0BD;margin:0 0 24px;">Click the button below to open the ${safeSlug} merchant dashboard. The link expires in ${args.expiryDays} days. If you didn't request this, you can ignore the email.</p>
+        <p style="margin:0 0 24px;">
+          <a href="${args.link}" style="display:inline-block;padding:12px 24px;background:#FFBB58;color:#1A2230;text-decoration:none;font-weight:600;border-radius:6px;font-family:Inter,sans-serif;">Open dashboard</a>
+        </p>
+        <p style="color:#A8B0BD;font-size:12px;margin:0;">Or paste this URL into your browser:<br><span style="word-break:break-all;color:#F5EBD7;">${args.link}</span></p>
+      </td></tr>
+    </table>
+    <p style="color:#A8B0BD;font-size:11px;margin-top:24px;">Peak Performance Wellness · designer.ppwellness.co</p>
+  </td></tr></table>
+</body></html>`.trim();
+  return { subject, html };
+}
+
+function originFromReq(req: RouterReq): string {
+  const fromEnv = (process.env.PPW_PUBLIC_ORIGIN ?? '').trim();
+  if (fromEnv) return fromEnv.replace(/\/$/, '');
+  const host = req.headers?.host;
+  if (typeof host === 'string' && host) {
+    const proto = host.startsWith('localhost') || host.startsWith('127.') ? 'http' : 'https';
+    return `${proto}://${host}`;
+  }
+  return 'https://designer.ppwellness.co';
+}
+
+async function readJsonBody(req: RouterReq): Promise<unknown> {
+  const b = req.body;
+  if (b === undefined || b === null) return {};
+  if (typeof b === 'object' && !Buffer.isBuffer(b)) return b;
+  if (typeof b === 'string') {
+    try { return JSON.parse(b); } catch { return null; }
+  }
+  if (Buffer.isBuffer(b)) {
+    try { return JSON.parse(b.toString('utf8')); } catch { return null; }
+  }
+  return null;
+}
+
+async function handleMerchantMagicLink(slug: string, req: RouterReq, res: MinRes): Promise<void> {
+  const body = await readJsonBody(req);
+  const parsed = parseMagicLinkBody(body);
+  if (!parsed.ok) {
+    res.status(400);
+    res.json({ error: parsed.error });
+    return;
+  }
+  // Response-neutral OK message so the caller can't probe the merchant
+  // directory or contact-email mapping.
+  const NEUTRAL_BODY = {
+    ok: true,
+    message: 'If that email matches a registered merchant, a sign-in link has been emailed.',
+  };
+
+  // Resolve secret early so an unconfigured prod env fails fast on the
+  // attempt (audit row written) rather than silently swallowing.
+  let secret: string;
+  try {
+    secret = readMerchantSessionSecret();
+  } catch (err) {
+    console.error('[merchant-magic-link]', err);
+    res.status(503);
+    res.json({ error: 'merchant sign-in temporarily unavailable' });
+    return;
+  }
+
+  const store = drizzleMerchantStore();
+  let merchant;
+  try {
+    merchant = await store.findBySlug(slug);
+  } catch (err) {
+    console.error('[merchant-magic-link] findBySlug', err);
+    // Don't leak DB outage details — still respond neutrally.
+    res.status(200);
+    res.json(NEUTRAL_BODY);
+    return;
+  }
+  if (!merchant) {
+    res.status(200);
+    res.json(NEUTRAL_BODY);
+    return;
+  }
+  const expectedEmail = merchant.contactEmail.trim().toLowerCase();
+  if (expectedEmail !== parsed.email) {
+    res.status(200);
+    res.json(NEUTRAL_BODY);
+    return;
+  }
+
+  const exp = Date.now() + DEFAULT_TTL_MS;
+  const token = signMerchantSession({ slug, email: expectedEmail, exp }, secret);
+  const origin = originFromReq(req);
+  const link = buildMagicLinkUrl({ origin, slug, token });
+  const expiryDays = Math.round(DEFAULT_TTL_MS / (24 * 60 * 60 * 1000));
+  const { subject, html } = buildMagicLinkEmail({ slug, link, expiryDays });
+
+  await sendEmail({
+    to: expectedEmail,
+    subject,
+    html,
+    template: 'merchant-magic-link',
+    merchantId: merchant.id,
+    payload: { slug, exp },
+    dedupKey: `merchant-magic-link:${slug}:${exp}`,
+  });
+
+  res.status(200);
+  res.json(NEUTRAL_BODY);
+}
+
 async function handleDesigns(
   segments: string[],
   req: RouterReq,
@@ -858,6 +1018,28 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
         await handleMerchantAgentSession(slug, res);
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'agent session lookup failed';
+        res.status(500);
+        res.json({ error: msg });
+      }
+      return;
+    }
+
+    // M5.b — POST /api/merchants/:slug/magic-link
+    // Body: { email }. Always returns 200 with a generic body so we
+    // don't leak whether a merchant slug or email is in the directory.
+    // If the email matches the merchant's contactEmail, we issue a
+    // 30-day signed session token and email it as a one-click magic
+    // link to /merchant/:slug?session=<token>.
+    if (action === 'magic-link') {
+      if (req.method !== 'POST') {
+        res.setHeader('Allow', 'POST, OPTIONS');
+        res.status(405).end();
+        return;
+      }
+      try {
+        await handleMerchantMagicLink(slug, req, res);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'magic-link send failed';
         res.status(500);
         res.json({ error: msg });
       }
