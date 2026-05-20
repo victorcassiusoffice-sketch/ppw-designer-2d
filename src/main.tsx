@@ -28,6 +28,7 @@ import MarketplaceCheckoutPage from './pages/MarketplaceCheckoutPage';
 import OrderTrackPage from './pages/OrderTrackPage';
 import MerchantAgentPage from './pages/MerchantAgentPage';
 import MerchantDashboardPage from './pages/MerchantDashboardPage';
+import MerchantOnboardingPage from './pages/MerchantOnboardingPage';
 import RequireMerchant from './components/RequireMerchant';
 import MyDesignsPage from './pages/MyDesignsPage';
 import { bootstrapFx } from './store/currencyStore';
@@ -80,6 +81,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/marketplace/cart" element={<MarketplaceCartPage />} />
         <Route path="/marketplace/checkout" element={<MarketplaceCheckoutPage />} />
         <Route path="/order/track/:orderRef" element={<OrderTrackPage />} />
+        <Route path="/merchants/onboard" element={<MerchantOnboardingPage />} />
+        <Route path="/merchants/onboard/:slug" element={<MerchantOnboardingPage />} />
         <Route
           path="/merchant/:slug"
           element={

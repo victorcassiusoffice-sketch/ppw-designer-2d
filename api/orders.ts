@@ -36,6 +36,12 @@ import {
   DEFAULT_TTL_MS,
   readMerchantSessionSecret,
 } from './lib/merchantSession.js';
+import {
+  drizzleReferralStore,
+  mintRefCode,
+  type ReferralStore,
+  type ListReferralsFilter,
+} from './db/referralStore.js';
 import { Redis } from '@upstash/redis';
 
 interface RouterReq extends MinReq {
@@ -710,6 +716,355 @@ async function handleMerchantMagicLink(slug: string, req: RouterReq, res: MinRes
   res.json(NEUTRAL_BODY);
 }
 
+// ---------------------------------------------------------------------
+// M7 — Pattern C attribution + reconciliation (RELENTLESS_GOAL 2026-05-19).
+//
+// `/api/k1/redirect`           GET   — log + 302 to merchant storefront
+// `/api/commission/reconcile`  GET   — admin-gated CSV export
+//
+// Pure helpers are exported so the unit tests can drive them without
+// spinning up the full request/response pipeline.
+// ---------------------------------------------------------------------
+
+/**
+ * Merchant-slug → outbound base URL. M7 pilots K1-Sport only. The map
+ * is the smallest viable directory; future Pattern C merchants register
+ * here (or, for a richer rollout, get promoted to a DB-backed lookup).
+ */
+export const REFERRAL_OUTBOUND_BASE: Record<string, string> = {
+  'k1-sport': 'https://www.k1-sport.com/shop-online',
+};
+
+const ALLOWED_CURRENCIES = new Set(['MUR', 'USD', 'EUR', 'GBP']);
+
+export interface RedirectQuery {
+  slug: string;
+  productId?: string;
+  productSku?: string;
+  productName?: string;
+  productPriceMinor?: number;
+  productCurrency?: string;
+  designId?: string;
+  sessionId?: string;
+}
+
+export type RedirectValidation =
+  | { ok: true; query: RedirectQuery; baseUrl: string }
+  | { ok: false; status: number; error: string };
+
+function pickFirst(v: string | string[] | undefined): string | undefined {
+  if (Array.isArray(v)) return v[0];
+  return v;
+}
+
+export function validateRedirectQuery(
+  query: Record<string, string | string[] | undefined> | undefined,
+): RedirectValidation {
+  const slug = (pickFirst(query?.slug) ?? '').trim().toLowerCase();
+  if (!slug) return { ok: false, status: 400, error: 'slug required.' };
+  if (slug.length > 120) return { ok: false, status: 400, error: 'slug too long.' };
+  const baseUrl = REFERRAL_OUTBOUND_BASE[slug];
+  if (!baseUrl) {
+    return { ok: false, status: 404, error: `unknown merchant slug: ${slug}` };
+  }
+  const productId = pickFirst(query?.productId)?.slice(0, 120);
+  const productSku = pickFirst(query?.productSku)?.slice(0, 120);
+  const productName = pickFirst(query?.productName)?.slice(0, 255);
+  const designId = pickFirst(query?.designId)?.slice(0, 80);
+  const sessionId = pickFirst(query?.sessionId)?.slice(0, 80);
+  const priceRaw = pickFirst(query?.productPriceMinor);
+  let productPriceMinor: number | undefined;
+  if (priceRaw !== undefined && priceRaw !== '') {
+    const n = Number(priceRaw);
+    if (!Number.isFinite(n) || n < 0 || n > 1_000_000_000) {
+      return { ok: false, status: 400, error: 'productPriceMinor must be a non-negative integer in minor units.' };
+    }
+    productPriceMinor = Math.round(n);
+  }
+  const currencyRaw = pickFirst(query?.productCurrency)?.trim().toUpperCase();
+  let productCurrency: string | undefined;
+  if (currencyRaw) {
+    if (!ALLOWED_CURRENCIES.has(currencyRaw)) {
+      return { ok: false, status: 400, error: `unknown productCurrency: ${currencyRaw}` };
+    }
+    productCurrency = currencyRaw;
+  }
+  return {
+    ok: true,
+    baseUrl,
+    query: {
+      slug,
+      productId,
+      productSku,
+      productName,
+      productPriceMinor,
+      productCurrency,
+      designId,
+      sessionId,
+    },
+  };
+}
+
+export interface BuildOutboundUrlArgs {
+  baseUrl: string;
+  refCode: string;
+  campaign?: string;
+}
+
+export function buildOutboundUrl(args: BuildOutboundUrlArgs): string {
+  const url = new URL(args.baseUrl);
+  url.searchParams.set('ref', args.refCode);
+  url.searchParams.set('utm_source', 'ppw-designer');
+  url.searchParams.set('utm_medium', 'referral');
+  url.searchParams.set('utm_campaign', args.campaign ?? 'k1-pilot');
+  return url.toString();
+}
+
+export interface ProcessRedirectArgs {
+  query: Record<string, string | string[] | undefined> | undefined;
+  userAgent?: string | null;
+  ipHash?: string | null;
+  store: ReferralStore;
+}
+
+export type ProcessRedirectResult =
+  | { ok: true; outboundUrl: string; refCode: string }
+  | { ok: false; status: number; error: string };
+
+export async function processRedirect(args: ProcessRedirectArgs): Promise<ProcessRedirectResult> {
+  const v = validateRedirectQuery(args.query);
+  if (!v.ok) return v;
+  const refCode = mintRefCode({
+    merchantSlug: v.query.slug,
+    designId: v.query.designId ?? null,
+  });
+  const outboundUrl = buildOutboundUrl({ baseUrl: v.baseUrl, refCode });
+  try {
+    await args.store.insert({
+      refCode,
+      designId: v.query.designId ?? null,
+      sessionId: v.query.sessionId ?? null,
+      merchantSlug: v.query.slug,
+      productId: v.query.productId ?? null,
+      productSku: v.query.productSku ?? null,
+      productName: v.query.productName ?? null,
+      productPriceMinor: v.query.productPriceMinor ?? null,
+      productCurrency: v.query.productCurrency ?? null,
+      outboundUrl,
+      ipHash: args.ipHash ?? null,
+      userAgent: args.userAgent ?? null,
+      utmSource: 'ppw-designer',
+      utmMedium: 'referral',
+      utmCampaign: 'k1-pilot',
+    });
+  } catch (err) {
+    // Attribution insert failure must NOT break the customer journey —
+    // we'd rather route the customer to K1 with an unrecorded click
+    // than dead-end them. Sentry surfaces the lost attribution
+    // separately via withSentry.
+    console.warn('[k1-redirect] attribution insert failed', err);
+  }
+  return { ok: true, outboundUrl, refCode };
+}
+
+async function handleK1Redirect(req: RouterReq, res: MinRes): Promise<void> {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET, OPTIONS');
+    res.status(405).end();
+    return;
+  }
+  const ua = req.headers?.['user-agent'];
+  const userAgent = typeof ua === 'string' ? ua.slice(0, 255) : Array.isArray(ua) ? ua[0]?.slice(0, 255) ?? null : null;
+  const result = await processRedirect({
+    query: req.query,
+    userAgent,
+    ipHash: null,
+    store: drizzleReferralStore(),
+  });
+  if (!result.ok) {
+    res.status(result.status);
+    res.json({ error: result.error });
+    return;
+  }
+  res.setHeader('Location', result.outboundUrl);
+  res.setHeader('X-PPW-Ref-Code', result.refCode);
+  res.status(302).end();
+}
+
+// ---------------------------------------------------------------------
+// Commission CSV reconcile (admin-gated).
+// ---------------------------------------------------------------------
+
+export interface ReconcileCsvRow {
+  ref_code: string;
+  created_at: string;
+  merchant_slug: string;
+  design_id: string;
+  session_id: string;
+  product_id: string;
+  product_sku: string;
+  product_name: string;
+  product_price_minor: string;
+  product_currency: string;
+  outbound_url: string;
+  utm_source: string;
+  utm_medium: string;
+  utm_campaign: string;
+}
+
+function csvEscape(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  const s = String(value);
+  if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')) {
+    return `"${s.replace(/"/g, '""')}"`;
+  }
+  return s;
+}
+
+export function buildReconcileCsv(rows: ReconcileCsvRow[]): string {
+  const header = [
+    'ref_code',
+    'created_at',
+    'merchant_slug',
+    'design_id',
+    'session_id',
+    'product_id',
+    'product_sku',
+    'product_name',
+    'product_price_minor',
+    'product_currency',
+    'outbound_url',
+    'utm_source',
+    'utm_medium',
+    'utm_campaign',
+  ];
+  const lines = [header.join(',')];
+  for (const r of rows) {
+    lines.push(header.map((h) => csvEscape((r as Record<string, unknown>)[h])).join(','));
+  }
+  return lines.join('\r\n') + '\r\n';
+}
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+export interface ParsedReconcileQuery {
+  ok: true;
+  filter: ListReferralsFilter;
+  filename: string;
+}
+
+export type ReconcileQueryResult =
+  | ParsedReconcileQuery
+  | { ok: false; status: number; error: string };
+
+export function parseReconcileQuery(
+  query: Record<string, string | string[] | undefined> | undefined,
+): ReconcileQueryResult {
+  const fromRaw = pickFirst(query?.from);
+  const toRaw = pickFirst(query?.to);
+  const merchantRaw = pickFirst(query?.merchant);
+  const fromDate = fromRaw && ISO_DATE.test(fromRaw) ? fromRaw : undefined;
+  const toDate = toRaw && ISO_DATE.test(toRaw) ? toRaw : undefined;
+  if (fromRaw && !fromDate) return { ok: false, status: 400, error: 'from must be YYYY-MM-DD.' };
+  if (toRaw && !toDate) return { ok: false, status: 400, error: 'to must be YYYY-MM-DD.' };
+  if (fromDate && toDate && fromDate > toDate) {
+    return { ok: false, status: 400, error: 'from must be ≤ to.' };
+  }
+  const merchantSlug = merchantRaw?.trim().toLowerCase().slice(0, 120) || undefined;
+  const parts: string[] = ['ppw-referrals'];
+  if (merchantSlug) parts.push(merchantSlug);
+  if (fromDate) parts.push(fromDate);
+  if (toDate) parts.push(toDate);
+  const filename = `${parts.join('_')}.csv`;
+  return {
+    ok: true,
+    filename,
+    filter: {
+      merchantSlug,
+      fromDate,
+      toDate,
+      limit: 10_000,
+    },
+  };
+}
+
+export function referralRowToCsvRow(r: {
+  refCode: string;
+  createdAt: Date;
+  merchantSlug: string;
+  designId: string | null;
+  sessionId: string | null;
+  productId: string | null;
+  productSku: string | null;
+  productName: string | null;
+  productPriceMinor: number | null;
+  productCurrency: string | null;
+  outboundUrl: string;
+  utmSource: string | null;
+  utmMedium: string | null;
+  utmCampaign: string | null;
+}): ReconcileCsvRow {
+  return {
+    ref_code: r.refCode,
+    created_at: r.createdAt.toISOString(),
+    merchant_slug: r.merchantSlug,
+    design_id: r.designId ?? '',
+    session_id: r.sessionId ?? '',
+    product_id: r.productId ?? '',
+    product_sku: r.productSku ?? '',
+    product_name: r.productName ?? '',
+    product_price_minor: r.productPriceMinor === null || r.productPriceMinor === undefined ? '' : String(r.productPriceMinor),
+    product_currency: r.productCurrency ?? '',
+    outbound_url: r.outboundUrl,
+    utm_source: r.utmSource ?? '',
+    utm_medium: r.utmMedium ?? '',
+    utm_campaign: r.utmCampaign ?? '',
+  };
+}
+
+async function handleCommissionReconcile(req: RouterReq, res: MinRes): Promise<void> {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET, OPTIONS');
+    res.status(405).end();
+    return;
+  }
+  // Admin gate — only signed-in Vic / admin role can pull the CSV.
+  // Defers to the existing adminAuth helper that powers /api/admin/*.
+  const { authoriseAdminWithLive } = await import('./lib/adminAuth.js');
+  const auth = await authoriseAdminWithLive(req.headers ?? {}, drizzleMerchantStore());
+  if (!auth.ok) {
+    res.status(auth.status ?? 401);
+    res.json({ error: auth.error ?? 'Unauthorized' });
+    return;
+  }
+  const parsed = parseReconcileQuery(req.query);
+  if (!parsed.ok) {
+    res.status(parsed.status);
+    res.json({ error: parsed.error });
+    return;
+  }
+  const store = drizzleReferralStore();
+  let rows;
+  try {
+    rows = await store.list(parsed.filter);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'reconcile list failed';
+    res.status(500);
+    res.json({ error: msg });
+    return;
+  }
+  const csv = buildReconcileCsv(rows.map(referralRowToCsvRow));
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="${parsed.filename}"`);
+  res.setHeader('Cache-Control', 'no-store');
+  res.status(200);
+  if (typeof (res as { send?: (b: string) => void }).send === 'function') {
+    (res as { send: (b: string) => void }).send(csv);
+  } else {
+    res.end(csv);
+  }
+}
+
 async function handleDesigns(
   segments: string[],
   req: RouterReq,
@@ -1048,6 +1403,40 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
 
     res.status(404);
     res.json({ error: `unknown merchants action: ${action ?? '(empty)'}` });
+    return;
+  }
+
+  // M7 — Pattern C attribution outbound. GET /api/k1/redirect.
+  if (resource === 'k1') {
+    if (segments[0] === 'redirect') {
+      try {
+        await handleK1Redirect(req, res);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'k1 redirect failed';
+        res.status(500);
+        res.json({ error: msg });
+      }
+      return;
+    }
+    res.status(404);
+    res.json({ error: `unknown k1 action: ${segments[0] ?? '(empty)'}` });
+    return;
+  }
+
+  // M7 — Pattern C monthly reconciliation CSV (admin-gated).
+  if (resource === 'commission') {
+    if (segments[0] === 'reconcile') {
+      try {
+        await handleCommissionReconcile(req, res);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'commission reconcile failed';
+        res.status(500);
+        res.json({ error: msg });
+      }
+      return;
+    }
+    res.status(404);
+    res.json({ error: `unknown commission action: ${segments[0] ?? '(empty)'}` });
     return;
   }
 

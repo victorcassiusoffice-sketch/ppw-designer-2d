@@ -664,6 +664,41 @@ export type NewDesign = typeof designs.$inferInsert;
 export type Lead = typeof leads.$inferSelect;
 export type NewLead = typeof leads.$inferInsert;
 
+// M7 (RELENTLESS_GOAL 2026-05-19) — Pattern C attribution layer.
+// One row per outbound click from the designer to a merchant's
+// external storefront. The product_* + price_* columns are
+// intentionally denormalised — the referral row is self-contained for
+// monthly reconciliation even if the catalogue entry later changes.
+export const designerReferrals = pgTable(
+  'designer_referrals',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    refCode: varchar('ref_code', { length: 80 }).notNull().unique(),
+    designId: varchar('design_id', { length: 80 }),
+    sessionId: varchar('session_id', { length: 80 }),
+    merchantSlug: varchar('merchant_slug', { length: 120 }).notNull(),
+    productId: varchar('product_id', { length: 120 }),
+    productSku: varchar('product_sku', { length: 120 }),
+    productName: varchar('product_name', { length: 255 }),
+    productPriceMinor: integer('product_price_minor'),
+    productCurrency: varchar('product_currency', { length: 8 }),
+    outboundUrl: text('outbound_url').notNull(),
+    ipHash: varchar('ip_hash', { length: 80 }),
+    userAgent: varchar('user_agent', { length: 255 }),
+    utmSource: varchar('utm_source', { length: 80 }),
+    utmMedium: varchar('utm_medium', { length: 80 }),
+    utmCampaign: varchar('utm_campaign', { length: 80 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    merchantCreatedIdx: index('designer_referrals_merchant_created_idx').on(t.merchantSlug, t.createdAt),
+    designIdx: index('designer_referrals_design_idx').on(t.designId),
+  }),
+);
+
+export type DesignerReferral = typeof designerReferrals.$inferSelect;
+export type NewDesignerReferral = typeof designerReferrals.$inferInsert;
+
 // V4 W0.D.1 — migration tracking table (ME §03.5 / V4-ME-1 CLOSED 2026-05-16).
 // Drizzle entry kept for the schema-mirror parity check; the table itself is
 // owned + populated by scripts/migrate.ts, not by application code.
