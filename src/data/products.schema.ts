@@ -96,6 +96,15 @@ export interface Product {
    * layer is ready when the assets land.
    */
   mesh_url?: string;
+  /**
+   * Tweak 02 / 03 (Phase C) — Sustainability eco-bar v1 filter. When
+   * `true` the product passes the eco-only catalog filter (paints +
+   * flooring + panels are eco-only by brief mandate; furniture +
+   * cardio gear are eco-tagged once Sustainability Dept charter is
+   * signed off). `undefined` is treated as `false` by the filter so
+   * a missing flag never sneaks into the eco-only view.
+   */
+  eco_certified?: boolean;
 }
 
 export interface ProductCatalog {

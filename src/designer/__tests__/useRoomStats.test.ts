@@ -25,14 +25,17 @@ describe('DT-15 / computeRoomStats', () => {
 });
 
 describe('DT-15 / cursorForMode + labelForMode', () => {
-  it('exposes all 5 modes per spec (V-GAME-2: Paint stub; M2: Wall added)', () => {
-    expect(DESIGNER_MODES).toEqual(['move', 'buy', 'wall', 'paint', 'inspect']);
+  it('exposes all 6 modes per spec (Tweak 02 adds Floor between Wall and Paint)', () => {
+    expect(DESIGNER_MODES).toEqual(['move', 'wall', 'floor', 'paint', 'inspect', 'buy']);
   });
   it('wall cursor is crosshair (M2)', () => {
     expect(cursorForMode('wall')).toBe('crosshair');
   });
-  it('paint cursor is not-allowed (stub)', () => {
-    expect(cursorForMode('paint')).toBe('not-allowed');
+  it('floor cursor is crosshair (Tweak 02 — paint-zone gesture)', () => {
+    expect(cursorForMode('floor')).toBe('crosshair');
+  });
+  it('paint cursor is crosshair (Tweak 03 — promoted from stub)', () => {
+    expect(cursorForMode('paint')).toBe('crosshair');
   });
   it('inspect cursor is help', () => {
     expect(cursorForMode('inspect')).toBe('help');
@@ -40,6 +43,7 @@ describe('DT-15 / cursorForMode + labelForMode', () => {
   it('labels are sentence case', () => {
     expect(labelForMode('move')).toBe('Move');
     expect(labelForMode('wall')).toBe('Wall');
+    expect(labelForMode('floor')).toBe('Floor');
     expect(labelForMode('paint')).toBe('Paint');
   });
 });

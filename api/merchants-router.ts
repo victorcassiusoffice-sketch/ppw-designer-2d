@@ -29,6 +29,7 @@ import {
 } from './lib/capture/referencePage.js';
 import { handler as signUploadHandler } from './lib/capture/signUpload.js';
 import { handler as calibrateHandler } from './lib/capture/calibrateHandler.js';
+import { calcDispatch } from './lib/calc/paintCalcHandler.js';
 import { withSentry } from './lib/sentry.js';
 
 interface MinimalReq {
@@ -138,6 +139,14 @@ async function rootHandler(req: MinimalReq, res: MinimalRes): Promise<void> {
   ) {
     const slug = segments[1];
     return calibrateHandler(slug, req, res);
+  }
+
+  // POST /api/calc/:type — Tweak 03 (Phase C) paint calculator + future
+  // flooring / panel calc routes. Folded into merchants-router per
+  // `06-Roadmap/skills/vercel_catchall_folding.md` so the lambda count
+  // stays at 11/12.
+  if (segments[0] === 'calc' && typeof segments[1] === 'string') {
+    return calcDispatch(segments[1], req, res);
   }
 
   res.status(404).json({

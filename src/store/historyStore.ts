@@ -34,6 +34,9 @@
 import { create } from 'zustand';
 import { usePropertyStore, type Property } from './propertyStore';
 import { useWallStore, type WallSegment } from './wallStore';
+import { useFloorZoneStore, type FloorZone } from './floorZoneStore';
+import { useWallTreatmentStore } from './wallTreatmentStore';
+import type { WallTreatment } from './wallTreatmentStore';
 import { useToastStore } from './toastStore';
 
 export const HISTORY_LIMIT = 50;
@@ -44,6 +47,10 @@ export const DEFAULT_COALESCE_MS = 250;
 export interface Snapshot {
   property: Property;
   walls: WallSegment[];
+  /** Tweak 02 — floor zones (in-memory mirror of Neon `placed_floor_zones`). */
+  floorZones: FloorZone[];
+  /** Tweak 03 — paint + panel treatments keyed by wall id. */
+  wallTreatments: Record<string, Partial<Record<'paint' | 'panel', WallTreatment>>>;
   /** Optional human-readable label for the action that produced this snapshot. */
   label?: string;
 }
@@ -78,14 +85,18 @@ export function takeSnapshot(label?: string): Snapshot {
   return {
     property: clone(usePropertyStore.getState().property),
     walls: clone(useWallStore.getState().walls),
+    floorZones: clone(useFloorZoneStore.getState().zones),
+    wallTreatments: clone(useWallTreatmentStore.getState().treatments),
     label,
   };
 }
 
 function snapshotsEqual(a: Snapshot, b: Snapshot): boolean {
-  // Property + walls are pure data — JSON.stringify identity is exact.
+  // Pure-data payloads — JSON identity is exact for our object shapes.
   if (JSON.stringify(a.property) !== JSON.stringify(b.property)) return false;
   if (JSON.stringify(a.walls) !== JSON.stringify(b.walls)) return false;
+  if (JSON.stringify(a.floorZones) !== JSON.stringify(b.floorZones)) return false;
+  if (JSON.stringify(a.wallTreatments) !== JSON.stringify(b.wallTreatments)) return false;
   return true;
 }
 
@@ -205,6 +216,8 @@ function applySnapshotInternal(snap: Snapshot): void {
       selectedInstanceId: null,
     });
     useWallStore.getState().replace(clone(snap.walls));
+    useFloorZoneStore.getState().replace(clone(snap.floorZones ?? []));
+    useWallTreatmentStore.getState().replace(clone(snap.wallTreatments ?? {}));
     lastSeenSnapshot = takeSnapshot();
   } finally {
     suppressRecording = false;
@@ -291,6 +304,15 @@ export function installHistorySubscriptions(
   );
   unsubscribers.push(
     useWallStore.subscribe(() => onPotentialChange()),
+  );
+  // Phase C — floor zones + wall treatments join the same atomic
+  // history so a paint-flood or floor-zone-paint is undoable from day
+  // one alongside place/move/draw-wall.
+  unsubscribers.push(
+    useFloorZoneStore.subscribe(() => onPotentialChange()),
+  );
+  unsubscribers.push(
+    useWallTreatmentStore.subscribe(() => onPotentialChange()),
   );
 
   if (typeof window !== 'undefined') {
