@@ -20,7 +20,7 @@
  *     padding so the Android nav bar doesn't clip them.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   CATEGORY_LABELS,
   REGION_GROUPS,
@@ -30,8 +30,16 @@ import {
   thumbnailFor,
 } from '../data/products';
 import { fetchApiProducts } from '../data/apiCatalogAdapter';
+import { DetailCard } from '../designer/DetailCard';
 import type { RegionGroup } from '../data/products';
 import type { Product, ProductCategory } from '../data/products.schema';
+
+// P0-ζ — Sims-style floating hover card state for catalog cards.
+interface HoverState {
+  product: Product;
+  anchorXPx: number;
+  anchorYPx: number;
+}
 
 const DRAG_MIME = 'application/x-ppw-product-id';
 const REGION_LS_KEY = 'ppw_region_filter_v1';
@@ -79,6 +87,27 @@ export function ProductPalette({
   const [mobileOpenLocal, setMobileOpenLocal] = useState(false);
   const mobileOpen = mobileOpenProp ?? mobileOpenLocal;
   const setMobileOpen = setMobileOpenProp ?? setMobileOpenLocal;
+  // P0-ζ — Sims-style floating hover card (only on devices with a real
+  // pointer; touch devices skip it because the catalog is a bottom-sheet
+  // and the floating overlay would block the place-on-floor tap).
+  const [hover, setHover] = useState<HoverState | null>(null);
+  const hoverDismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function armHover(product: Product, rect: DOMRect): void {
+    if (hoverDismissTimer.current) {
+      clearTimeout(hoverDismissTimer.current);
+      hoverDismissTimer.current = null;
+    }
+    if (window.matchMedia?.('(pointer: coarse)').matches) return; // skip on touch
+    setHover({
+      product,
+      anchorXPx: rect.left + rect.width / 2,
+      anchorYPx: rect.top + rect.height / 2,
+    });
+  }
+  function disarmHover(): void {
+    if (hoverDismissTimer.current) clearTimeout(hoverDismissTimer.current);
+    hoverDismissTimer.current = setTimeout(() => setHover(null), 80);
+  }
 
   // PCF-1 (K1 meeting 2026-05-19) — fetch merchant-supplied products
   // from /api/products on mount and blend with the bundled seeds.
@@ -255,6 +284,10 @@ export function ProductPalette({
                     data-product-id={p.id}
                     data-category={p.category}
                     data-armed={isPending ? 'true' : 'false'}
+                    onPointerEnter={(e) => armHover(p, (e.currentTarget as HTMLElement).getBoundingClientRect())}
+                    onPointerLeave={disarmHover}
+                    onFocus={(e) => armHover(p, (e.currentTarget as HTMLElement).getBoundingClientRect())}
+                    onBlur={disarmHover}
                   >
                     <div
                       className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-ppw-sand"
@@ -339,6 +372,41 @@ export function ProductPalette({
             {body}
           </aside>
         </>
+      )}
+      {hover && (
+        <div
+          data-testid="product-hover-card"
+          onPointerEnter={() => {
+            if (hoverDismissTimer.current) clearTimeout(hoverDismissTimer.current);
+          }}
+          onPointerLeave={disarmHover}
+        >
+          <DetailCard
+            anchorXPx={hover.anchorXPx}
+            anchorYPx={hover.anchorYPx}
+            canvasWidthPx={typeof window !== 'undefined' ? window.innerWidth : 1280}
+            canvasHeightPx={typeof window !== 'undefined' ? window.innerHeight : 720}
+            thumbUrl={hover.product.image_url || `data:image/svg+xml;utf8,${encodeURIComponent(thumbnailFor(hover.product.category))}`}
+            name={hover.product.name}
+            priceMur={Math.round(hover.product.price?.value ?? 0)}
+            description={`${hover.product.dimensions_cm.length}×${hover.product.dimensions_cm.width}×${hover.product.dimensions_cm.height} cm · ${hover.product.supplier}`}
+            actions={
+              setPendingProductId
+                ? [
+                    {
+                      id: 'place',
+                      label: 'Place on floor',
+                      onClick: () => {
+                        setPendingProductId(hover.product.id);
+                        setHover(null);
+                      },
+                    },
+                  ]
+                : []
+            }
+            onDismiss={() => setHover(null)}
+          />
+        </div>
       )}
     </>
   );
