@@ -49,14 +49,16 @@ export function WallDrawLayer({
   viewport,
   pxPerMetre,
 }: WallDrawLayerProps): JSX.Element | null {
+  // Subscribe to walls + draw so the React-Konva render reflects state, but
+  // always read the CURRENT zustand state inside click/move handlers via
+  // `useWallStore.getState()`. React re-renders are async — two rapid CDP
+  // clicks dispatched in the same JS turn can both run before React commits,
+  // which leaves any render-time snapshot stale and causes the FSM to
+  // mis-route (clicks meant to commit walls re-arm the anchor instead).
   const walls = useWallStore((s) => s.walls);
   const draw = useWallStore((s) => s.draw);
   const addWall = useWallStore((s) => s.addWall);
   const setDraw = useWallStore((s) => s.setDraw);
-  const wallsRef = useRef(walls);
-  wallsRef.current = walls;
-  const drawRef = useRef(draw);
-  drawRef.current = draw;
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
   const cursorRef = useRef<{ x_mm: number; y_mm: number } | null>(null);
@@ -96,7 +98,7 @@ export function WallDrawLayer({
     }
 
     function snapPoint(point: { x_mm: number; y_mm: number }): { x_mm: number; y_mm: number } {
-      const out = snapToWallEndpointOrGrid(point, wallsRef.current);
+      const out = snapToWallEndpointOrGrid(point, useWallStore.getState().walls);
       return { x_mm: out.x_mm, y_mm: out.y_mm };
     }
 
@@ -107,8 +109,9 @@ export function WallDrawLayer({
       if (!raw) return;
       cursorRef.current = snapPoint(raw);
       const node = cursorLineRef.current;
-      if (node && drawRef.current.phase === 'drawing') {
-        const anchor = drawRef.current.anchor;
+      const liveDraw = useWallStore.getState().draw;
+      if (node && liveDraw.phase === 'drawing') {
+        const anchor = liveDraw.anchor;
         const cur = cursorRef.current;
         node.points([
           (anchor.x_mm / 1000) * pxPerMetre,
@@ -126,7 +129,7 @@ export function WallDrawLayer({
       const raw = clientToMm(c.x, c.y);
       if (!raw) return;
       const snapped = snapPoint(raw);
-      const current = drawRef.current;
+      const current = useWallStore.getState().draw;
       if (current.phase === 'idle') return; // mode-strip not engaged
       if (current.phase === 'armed') {
         console.log(DBG, 'anchor', snapped);
@@ -140,6 +143,14 @@ export function WallDrawLayer({
         // Zero-length click: ignore (Sims-style).
         return;
       }
+      // Pre-add closure check: does `snapped` coincide with an existing
+      // wall endpoint? Read live (not stale ref) so behavior is the same
+      // when clicks fire back-to-back in the same React turn.
+      const wallsBeforeAdd = useWallStore.getState().walls;
+      const closes = wallsBeforeAdd.some((w) =>
+        (w.start.x_mm === snapped.x_mm && w.start.y_mm === snapped.y_mm) ||
+        (w.end.x_mm === snapped.x_mm && w.end.y_mm === snapped.y_mm)
+      );
       const segment: Omit<WallSegment, 'id'> = {
         start: anchor,
         end: snapped,
@@ -149,14 +160,6 @@ export function WallDrawLayer({
       };
       addWall(segment);
       console.log(DBG, 'commit', segment);
-      // If the just-clicked endpoint coincides with an existing wall
-      // endpoint, the polygon has likely just closed — drop the pen
-      // (Sims behavior). The HUD recomputes the room polygon via
-      // detectClosedRoomVertices on the next render.
-      const closes = wallsRef.current.some((w) =>
-        (w.start.x_mm === snapped.x_mm && w.start.y_mm === snapped.y_mm) ||
-        (w.end.x_mm === snapped.x_mm && w.end.y_mm === snapped.y_mm)
-      );
       if (closes) {
         setDraw({ phase: 'idle' });
       } else {
@@ -196,7 +199,7 @@ export function WallDrawLayer({
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return;
       if (e.key === 'Escape') {
         e.preventDefault();
-        if (drawRef.current.phase === 'drawing') {
+        if (useWallStore.getState().draw.phase === 'drawing') {
           setDraw({ phase: 'armed' });
         } else {
           setDraw({ phase: 'idle' });
