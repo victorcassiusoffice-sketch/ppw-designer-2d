@@ -22,11 +22,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  CATEGORY_LABELS,
   REGION_GROUPS,
   filterByRegion,
   getAllProducts,
-  getCategories,
   thumbnailFor,
 } from '../data/products';
 import { fetchApiProducts } from '../data/apiCatalogAdapter';
@@ -44,6 +42,60 @@ interface HoverState {
 const DRAG_MIME = 'application/x-ppw-product-id';
 const REGION_LS_KEY = 'ppw_region_filter_v1';
 const DEFAULT_REGION: RegionGroup = 'Mauritius';
+
+// Tweak 05 (Phase A) — macro category tabs (Furniture · Cardio · Recovery
+// · Sauna · Flooring · Walls · Decor). The granular `ProductCategory`
+// enum stays the per-product source of truth; this mapping groups them
+// into the Sims-style tabs Vic asked for. Flooring + Walls are
+// placeholders here so the tabs show — they populate when Tweaks 02/03
+// add the supporting catalog entries.
+type MacroCategory =
+  | 'all'
+  | 'furniture'
+  | 'cardio'
+  | 'recovery'
+  | 'sauna'
+  | 'flooring'
+  | 'walls'
+  | 'decor';
+
+const MACRO_CATEGORY_ORDER: MacroCategory[] = [
+  'all',
+  'furniture',
+  'cardio',
+  'recovery',
+  'sauna',
+  'flooring',
+  'walls',
+  'decor',
+];
+
+const MACRO_CATEGORY_LABEL: Record<MacroCategory, string> = {
+  all: 'All',
+  furniture: 'Furniture',
+  cardio: 'Cardio',
+  recovery: 'Recovery',
+  sauna: 'Sauna',
+  flooring: 'Flooring',
+  walls: 'Walls',
+  decor: 'Decor',
+};
+
+const PRODUCT_TO_MACRO: Record<ProductCategory, MacroCategory> = {
+  'ergo-chair': 'furniture',
+  'eco-office-kit': 'furniture',
+  fitness: 'cardio',
+  'ice-bath': 'recovery',
+  massage: 'recovery',
+  'sleep-pod': 'recovery',
+  sauna: 'sauna',
+  plant: 'decor',
+  other: 'decor',
+};
+
+function macroOf(p: Product): MacroCategory {
+  return PRODUCT_TO_MACRO[p.category] ?? 'decor';
+}
 
 function formatPrice(p: Product): string {
   const { value, currency } = p.price;
@@ -82,7 +134,10 @@ export function ProductPalette({
   setPendingProductId,
 }: ProductPaletteProps = {}) {
   const [query, setQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<ProductCategory | 'all'>('all');
+  // Tweak 05 (Phase A): activeCategory is now a macro group, not a raw
+  // ProductCategory. The legacy CategoryChip strip is replaced with the
+  // tab bar across the top.
+  const [activeCategory, setActiveCategory] = useState<MacroCategory>('all');
   const [region, setRegion] = useState<RegionGroup>(() => readRegionLs());
   const [mobileOpenLocal, setMobileOpenLocal] = useState(false);
   const mobileOpen = mobileOpenProp ?? mobileOpenLocal;
@@ -152,16 +207,14 @@ export function ProductPalette({
     });
   }
 
-  const categories = useMemo(() => {
-    const set = new Set<ProductCategory>(getCategories());
-    for (const p of apiProducts) set.add(p.category);
-    return [...set];
-  }, [apiProducts]);
+  // Macro tabs render the full `MACRO_CATEGORY_ORDER` whether or not
+  // products exist in each (Flooring + Walls are intentionally
+  // visible-but-empty until Tweaks 02/03 land).
   const filtered = useMemo(() => {
     let base = query ? searchAll(query) : allProducts;
     base = filterByRegion(base, region);
     if (activeCategory !== 'all') {
-      base = base.filter((p) => p.category === activeCategory);
+      base = base.filter((p) => macroOf(p) === activeCategory);
     }
     return base;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -219,18 +272,22 @@ export function ProductPalette({
         </select>
       </div>
 
-      <div className="flex flex-wrap gap-1.5 border-b border-ppw-stone px-3 py-2.5">
-        <CategoryChip
-          label="All"
-          active={activeCategory === 'all'}
-          onClick={() => setActiveCategory('all')}
-        />
-        {categories.map((c) => (
+      {/* Tweak 05 (Phase A) — category tab bar. Replaces the legacy
+          CategoryChip strip. Tabs reflect Sims-style macro groups
+          (Furniture · Cardio · Recovery · Sauna · Flooring · Walls ·
+          Decor). Horizontally scrollable on narrow viewports so all
+          seven fit on a 320 px drawer without wrapping. */}
+      <div
+        role="tablist"
+        aria-label="Product category"
+        className="flex gap-1 overflow-x-auto border-b border-ppw-stone px-2 py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {MACRO_CATEGORY_ORDER.map((mc) => (
           <CategoryChip
-            key={c}
-            label={CATEGORY_LABELS[c]}
-            active={activeCategory === c}
-            onClick={() => setActiveCategory(c)}
+            key={mc}
+            label={MACRO_CATEGORY_LABEL[mc]}
+            active={activeCategory === mc}
+            onClick={() => setActiveCategory(mc)}
           />
         ))}
       </div>
@@ -241,7 +298,19 @@ export function ProductPalette({
             No products match — try changing the region or category filter.
           </p>
         ) : (
-          <ul className="flex flex-col gap-2.5">
+          /* Tweak 05 (Phase A) — Sims-style tile grid. 96×96 desktop /
+             80×80 mobile, ≥4 columns at 320 px drawer width. The
+             previous list cards (name + price below the thumb) move
+             into the hover DetailCard so the grid stays dense. The
+             "Place on floor" button is collapsed into a single tap —
+             the existing pointer-down FSM still arms `pendingProductId`
+             and closes the mobile sheet. */
+          <ul
+            className="grid gap-1.5"
+            style={{
+              gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
+            }}
+          >
             {filtered.map((p) => {
               const isPending = pendingProductId === p.id;
               return (
@@ -250,14 +319,11 @@ export function ProductPalette({
                     role="button"
                     tabIndex={0}
                     aria-pressed={isPending}
-                    aria-label={`Place ${p.name} — ${isPending ? 'armed, click on the floor to drop' : 'click to arm placement'}`}
+                    aria-label={`Place ${p.name} — ${formatPrice(p)} — ${isPending ? 'armed, click on the floor to drop' : 'click to arm placement'}`}
+                    title={`${p.name} · ${formatPrice(p)} · ${formatFootprint(p)}`}
                     draggable
                     onDragStart={(e) => handleDragStart(e, p)}
                     onPointerDown={(e) => {
-                      // M1.5 pointer-FSM: clicking a card arms placement
-                      // (sets pendingProductId). Subsequent pointer
-                      // events on the Stage track the ghost preview and
-                      // commit on click. Re-arming toggles off.
                       if (!setPendingProductId) return;
                       if (e.button !== 0) return;
                       if (isPending) {
@@ -278,56 +344,26 @@ export function ProductPalette({
                         setMobileOpen(false);
                       }
                     }}
-                    className={`group flex cursor-pointer gap-3 rounded-lg border bg-white p-2.5 transition hover:border-ppw-teal hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-ppw-teal active:bg-ppw-mist ${
+                    className={`group flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-md border bg-white p-1 transition hover:border-ppw-teal hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-ppw-teal active:bg-ppw-mist ${
                       isPending ? 'border-ppw-teal ring-2 ring-ppw-teal/40' : 'border-ppw-stone'
                     }`}
                     data-product-id={p.id}
                     data-category={p.category}
+                    data-macro={macroOf(p)}
                     data-armed={isPending ? 'true' : 'false'}
                     onPointerEnter={(e) => armHover(p, (e.currentTarget as HTMLElement).getBoundingClientRect())}
                     onPointerLeave={disarmHover}
                     onFocus={(e) => armHover(p, (e.currentTarget as HTMLElement).getBoundingClientRect())}
                     onBlur={disarmHover}
+                    style={{ minHeight: 80 }}
                   >
                     <div
-                      className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-ppw-sand"
+                      className="flex h-12 w-12 shrink-0 items-center justify-center"
                       dangerouslySetInnerHTML={{ __html: thumbnailFor(p.category) }}
                     />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-ppw-ink">{p.name}</p>
-                      <p className="mt-0.5 text-[11px] uppercase tracking-wide text-ppw-slate">
-                        {CATEGORY_LABELS[p.category]}
-                      </p>
-                      <div className="mt-1 flex items-baseline justify-between gap-2">
-                        <span className="text-xs font-semibold text-ppw-teal">
-                          {formatPrice(p)}
-                        </span>
-                        <span className="truncate text-[10px] text-ppw-slate">
-                          {formatFootprint(p)}
-                        </span>
-                      </div>
-                      {setPendingProductId && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (isPending) {
-                              setPendingProductId(null);
-                            } else {
-                              setPendingProductId(p.id);
-                              setMobileOpen(false);
-                            }
-                          }}
-                          className={`mt-2 min-h-[40px] w-full rounded-md border px-3 text-xs font-semibold transition md:hidden ${
-                            isPending
-                              ? 'border-ppw-coral bg-white text-ppw-coral hover:bg-ppw-coral hover:text-white'
-                              : 'border-ppw-teal bg-ppw-teal text-white hover:bg-ppw-teal/90'
-                          }`}
-                          aria-pressed={isPending}
-                        >
-                          {isPending ? 'Cancel' : 'Place on floor'}
-                        </button>
-                      )}
-                    </div>
+                    <p className="line-clamp-2 px-1 text-center text-[10px] leading-tight text-ppw-slate">
+                      {p.name}
+                    </p>
                   </div>
                 </li>
               );

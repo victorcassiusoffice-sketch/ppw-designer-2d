@@ -31,6 +31,7 @@ import {
   type WallSegment,
 } from '../store/wallStore';
 import { useToastStore } from '../store/toastStore';
+import { useHistoryStore } from '../store/historyStore';
 
 const DBG = '[wall-draw]';
 
@@ -191,7 +192,13 @@ export function WallDrawLayer({
   }, [enabled, stageRef, containerRef, pxPerMetre, addWall, setDraw]);
 
   // Keyboard: Esc cancels (back to armed). Ctrl+Z undoes the last
-  // committed wall. Enter closes via cursor-on-start handled in click.
+  // committed wall via the unified history stack (Tweak 07 / Phase A.0).
+  // Enter closes via cursor-on-start handled in click.
+  //
+  // The Ctrl/Cmd+Z handler runs in CAPTURE phase + stopImmediatePropagation
+  // so the global useKeyboardShortcuts handler (bubble) doesn't fire and
+  // double-undo. Both routes converge on historyStore.undo() so the
+  // semantics are identical regardless of mode.
   useEffect(() => {
     if (!enabled) return;
     function onKey(e: KeyboardEvent): void {
@@ -208,11 +215,16 @@ export function WallDrawLayer({
       }
       if ((e.metaKey || e.ctrlKey) && (e.key === 'z' || e.key === 'Z')) {
         e.preventDefault();
-        useWallStore.getState().undoLast();
+        e.stopImmediatePropagation();
+        if (e.shiftKey) {
+          useHistoryStore.getState().redo();
+        } else {
+          useHistoryStore.getState().undo();
+        }
       }
     }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
   }, [enabled, setDraw]);
 
   if (!enabled) return null;

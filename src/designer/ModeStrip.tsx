@@ -13,6 +13,11 @@ export interface ModeStripProps {
   active: DesignerMode;
   onChange: (mode: DesignerMode) => void;
   onPaintStubToast?: () => void;
+  /**
+   * Tweak 04 (Phase A) — invoked when the user clicks the "Clear" affordance
+   * baked into the strip. Hosting layer owns the confirm-modal UX.
+   */
+  onClearClick?: () => void;
 }
 
 const PALETTE = {
@@ -54,6 +59,9 @@ export function ModeStrip(props: ModeStripProps): JSX.Element {
                 props.onPaintStubToast?.();
                 return;
               }
+              // Tweak 04 (Phase A): re-clicking the active mode still
+              // fires onChange so the host can reset in-flight state
+              // (un-committed polylines).
               props.onChange(m);
             }}
             style={{
@@ -73,6 +81,30 @@ export function ModeStrip(props: ModeStripProps): JSX.Element {
           </button>
         );
       })}
+      {props.onClearClick && (
+        <button
+          type="button"
+          onClick={props.onClearClick}
+          aria-label="Clear active layer"
+          title="Clear walls / placed items in the active layer (Ctrl+Z restores)"
+          data-testid="mode-strip-clear"
+          style={{
+            padding: '6px 10px',
+            borderRadius: 999,
+            border: '1px solid #C73030',
+            background: 'transparent',
+            color: '#C73030',
+            fontSize: 11,
+            fontWeight: 600,
+            cursor: 'pointer',
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            marginLeft: 4,
+          }}
+        >
+          Clear
+        </button>
+      )}
     </div>
   );
 }

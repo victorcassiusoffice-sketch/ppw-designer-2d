@@ -252,13 +252,18 @@ export function RoomDrawLayer({
         return;
       }
       if ((e.metaKey || e.ctrlKey) && (e.key === 'z' || e.key === 'Z')) {
+        // Tweak 07 / Phase A.0 coordination: only intercept Ctrl+Z while
+        // there are in-flight vertices to pop. Otherwise let the global
+        // useKeyboardShortcuts handler route to the unified history stack.
+        if (verticesRef.current.length === 0) return;
         e.preventDefault();
+        e.stopImmediatePropagation();
         console.log(DBG, 'keydown Ctrl/Cmd+Z -> undo');
         setVerticesRef.current((v) => v.slice(0, -1));
       }
     }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
   }, [enabled]);
 
   const segments = useMemo(() => {

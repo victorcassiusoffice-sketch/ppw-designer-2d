@@ -177,12 +177,14 @@ export default function App() {
   const [roomsMenuOpen, setRoomsMenuOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [pendingProductId, setPendingProductId] = useState<string | null>(null);
-  // OMS Wave 2.4 — 3D preview toggle. CSS perspective on the Konva
-  // Stage container; hit-tests stay accurate because we keep the
-  // transform CSS-only (the Konva Stage thinks it's still flat).
-  // Touch devices get the toggle disabled because tilting + pinch-zoom
-  // simultaneously is unreliable. Locked: no Babylon migration here.
-  const [threeDPreview, setThreeDPreview] = useState(false);
+  // Tweak 06 (Phase A) — the OMS Wave 2.4 top-of-screen CSS-perspective
+  // 3D preview was removed per Vic's 2026-05-21 designer test (Note 6:
+  // "3D Preview at the top is pointless. 2D can work but better to show
+  // images of the products."). The TopBar prop is left undefined so its
+  // toggle is hidden; the canvas wrapper below no longer applies the
+  // perspective transform. ProductPalette's Sims-style hover DetailCard
+  // (P0-ζ) replaces the "show what you're placing" need. Babylon 3D is
+  // a separate path via ?engine=babylon and stays untouched.
   // DT-21 — Babylon engine flag captured at mount; URL change requires
   // a hard refresh to switch (matches the ?ui=classic semantics).
   const babylonActive = isBabylonActive();
@@ -198,8 +200,6 @@ export default function App() {
         roomsMenuOpen={roomsMenuOpen}
         setRoomsMenuOpen={setRoomsMenuOpen}
         onOpenCatalog={() => setCatalogOpen(true)}
-        threeDPreview={threeDPreview}
-        setThreeDPreview={setThreeDPreview}
       />
       <main className="flex flex-1 overflow-hidden">
         <RoomList
@@ -219,32 +219,8 @@ export default function App() {
               per V4-AU-1 conflict resolution. */}
           <MiniCartPill />
           <CanvasErrorBoundary onReset={() => setDrawMode(false)}>
-            <div
-              style={{
-                width: '100%',
-                height: '100%',
-                perspective: threeDPreview ? '1200px' : 'none',
-                perspectiveOrigin: '50% 30%',
-                transition: 'perspective 200ms ease',
-              }}
-            >
-              <div
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  transformStyle: 'preserve-3d',
-                  transform: threeDPreview
-                    ? 'rotateX(45deg) translateZ(0)'
-                    : 'rotateX(0deg)',
-                  transformOrigin: '50% 50%',
-                  transition: 'transform 250ms ease',
-                  // When tilted, hit tests are intentionally degraded
-                  // (Konva still thinks the stage is flat). Document
-                  // this caveat: 3D is preview-only — toggle off to
-                  // edit.
-                  pointerEvents: threeDPreview ? 'none' : 'auto',
-                }}
-              >
+            <div style={{ width: '100%', height: '100%' }}>
+              <div style={{ width: '100%', height: '100%' }}>
                 {babylonActive ? (
                   <Suspense
                     fallback={
