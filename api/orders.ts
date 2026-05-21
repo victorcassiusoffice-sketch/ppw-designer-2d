@@ -120,24 +120,33 @@ interface FxRates {
 let _fxCache: FxRates | null = null;
 const FX_TTL_MS = 24 * 60 * 60 * 1000;
 
+// Approximate MUR-per-foreign-unit fallbacks. Used when the live FX feed is
+// down or returns a payload without the expected `rates` map (exchangerate.host
+// became access-key-gated in 2025 for some queries; we fall through cleanly).
+const FX_FALLBACK_MUR: { USD: number; GBP: number; EUR: number } = { USD: 46, GBP: 58, EUR: 50 };
+
 async function fetchFxToMur(): Promise<FxRates> {
   if (_fxCache && Date.now() - _fxCache.fetched < FX_TTL_MS) return _fxCache;
+  const rates: FxRates = {
+    USD: FX_FALLBACK_MUR.USD,
+    GBP: FX_FALLBACK_MUR.GBP,
+    EUR: FX_FALLBACK_MUR.EUR,
+    fetched: Date.now(),
+  };
   try {
-    // exchangerate.host (free) — we want X to MUR. Base=MUR returns "1 MUR = N foreign";
-    // so MUR-per-foreign = 1 / rate.
     const r = await fetch('https://api.exchangerate.host/latest?base=MUR&symbols=USD,GBP,EUR');
-    if (!r.ok) throw new Error(`fx ${r.status}`);
-    const j = (await r.json()) as { rates?: Record<string, number> };
-    const rates: FxRates = { fetched: Date.now() };
-    if (j.rates?.USD) rates.USD = 1 / j.rates.USD;
-    if (j.rates?.GBP) rates.GBP = 1 / j.rates.GBP;
-    if (j.rates?.EUR) rates.EUR = 1 / j.rates.EUR;
-    _fxCache = rates;
-    return rates;
+    if (r.ok) {
+      const j = (await r.json()) as { rates?: Record<string, number> };
+      // Base=MUR returns "1 MUR = N foreign"; invert to get MUR-per-foreign.
+      if (j.rates?.USD && j.rates.USD > 0) rates.USD = 1 / j.rates.USD;
+      if (j.rates?.GBP && j.rates.GBP > 0) rates.GBP = 1 / j.rates.GBP;
+      if (j.rates?.EUR && j.rates.EUR > 0) rates.EUR = 1 / j.rates.EUR;
+    }
   } catch {
-    // Fallback rates if the FX service is down — approximate, well-known.
-    return { USD: 46, GBP: 58, EUR: 50, fetched: Date.now() };
+    /* fall through to fallback rates already populated above */
   }
+  _fxCache = rates;
+  return rates;
 }
 
 function toMUR(entry: SubscriptionEntry, fx: FxRates): number {
