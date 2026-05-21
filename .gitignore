@@ -45,6 +45,9 @@ pnpm-debug.log*
 # Screenshots from local dev (keep committed week markers)
 screenshots/scratch/
 
+# Puppeteer screenshot-loop captures (Mammoth Upgrade P1.3 — never commit)
+temporary screenshots/
+
 # Sandbox scratch files (cannot be deleted from inside the VM)
 .bashtest.txt
 .synctest
