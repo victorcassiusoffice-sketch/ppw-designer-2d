@@ -1,7 +1,8 @@
 /**
  * useKeyboardShortcuts — global keys for placed-item manipulation.
- *   R                rotate 90° CW
- *   Shift+R          rotate 90° CCW
+ *   R                rotate 90° CW (Sims build-mode parity)
+ *   Shift+R          rotate 15° CW (Tweak 01 — fine step on the 15° snap)
+ *   Alt+R            rotate 90° CCW (mirror of R)
  *   D                duplicate
  *   Ctrl/Cmd+D       duplicate (OMS Wave 2.3 — override the browser
  *                    bookmark default)
@@ -20,6 +21,8 @@ import {
   duplicateSelected,
   deleteSelected,
   deselect,
+  ROTATION_STEP_COARSE_DEG,
+  ROTATION_STEP_FINE_DEG,
 } from './placementActions';
 import { useDesignStore } from '../store/designStore';
 import { useHistoryStore } from '../store/historyStore';
@@ -54,11 +57,24 @@ export function useKeyboardShortcuts(): void {
 
       switch (e.key) {
         case 'r':
-        case 'R':
+        case 'R': {
           if (!hasSelection) return;
           e.preventDefault();
-          rotateSelected(e.shiftKey ? -90 : 90);
+          // Tweak 01 (Phase B): R = 90° CW, Shift+R = 15° CW (fine
+          // step matching the brief's 15° snap default), Alt+R = 90°
+          // CCW. The legacy Shift+R as -90° is retired — the global
+          // historyStore.undo() is the inverse, and the Konva
+          // Transformer rotate-handle drag (RoomCanvas follow-up)
+          // takes free-rotate gestures.
+          if (e.altKey) {
+            rotateSelected(-ROTATION_STEP_COARSE_DEG);
+          } else if (e.shiftKey) {
+            rotateSelected(ROTATION_STEP_FINE_DEG);
+          } else {
+            rotateSelected(ROTATION_STEP_COARSE_DEG);
+          }
           break;
+        }
         case 'd':
         case 'D':
           if (!hasSelection) return;

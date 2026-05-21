@@ -81,6 +81,21 @@ export interface Product {
   notes: string;
   /** Source URL — provenance for the dimensions / price. */
   source_url?: string;
+  /**
+   * Tweak 01 (Phase B) — top-down PNG (`/public/products/k1/<sku>.png`
+   * convention, transparent 1:1 512×512 per the brief). Optional; when
+   * absent the grey-box thumbnail fallback renders. Asset bake is a
+   * Media Dept job — see `media-dept/top-down-product-image-prompt-rd-2026-05-21.md`.
+   */
+  topdown_image_url?: string;
+  /**
+   * Tweak 06 (Phase B) — scalable 3D asset (glTF 2.0 / `.glb`). Babylon
+   * lazy-loads via SceneLoader.AppendAsync when present; falls back to
+   * procedural textured box. Generation is Vic-money-gated (Image
+   * Blaster + Fal.ai); ship the column-shape now so the persistence
+   * layer is ready when the assets land.
+   */
+  mesh_url?: string;
 }
 
 export interface ProductCatalog {

@@ -194,3 +194,29 @@ export function thumbnailFor(category: ProductCategory): string {
       </svg>`;
   }
 }
+
+/**
+ * Tweak 01 / Tweak 06 (Phase B) — resolve the best image URL for a
+ * product. Preference order:
+ *   1. `topdown_image_url`     — bespoke top-down PNG from the Media
+ *                                Dept Image Blaster pipeline. Used by
+ *                                both the catalog tile + the Konva
+ *                                render so a rotated item visibly
+ *                                turns the image, not just its bounding
+ *                                box.
+ *   2. `image_url`             — merchant-supplied catalog photo. Not
+ *                                top-down so it'll look off when
+ *                                rendered at small scale, but better
+ *                                than the SVG primitive.
+ *   3. SVG thumbnail fallback  — `thumbnailFor(category)` wrapped in a
+ *                                `data:` URI so it can be set as an
+ *                                <img> src or Konva.Image source.
+ *
+ * The K1 convention is `/public/products/k1/<sku>.png` — populate
+ * `topdown_image_url` to that path once the asset bake lands.
+ */
+export function productImageUrl(p: Product): string {
+  if (p.topdown_image_url) return p.topdown_image_url;
+  if (p.image_url) return p.image_url;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(thumbnailFor(p.category))}`;
+}

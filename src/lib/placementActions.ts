@@ -9,6 +9,7 @@
  */
 import { useDesignStore } from '../store/designStore';
 import { useToastStore } from '../store/toastStore';
+import { useHistoryStore } from '../store/historyStore';
 import { getProductById } from '../data/products';
 import {
   cmToM,
@@ -17,6 +18,16 @@ import {
 } from './geometry';
 import type { PlacedRect } from './geometry';
 import type { PlacedItem } from '../store/designStore';
+
+/**
+ * Tweak 01 (Phase B) — rotation step in degrees. R-key cycles at 90°
+ * (matches Sims build-mode); Shift+R steps at 15° (per Tweak 01 §2
+ * "snaps to 15° increments, with Shift held → free rotate"). The
+ * brief's "free rotate" via Konva Transformer drag-handle is a
+ * separate add on top of this discrete step.
+ */
+export const ROTATION_STEP_COARSE_DEG = 90;
+export const ROTATION_STEP_FINE_DEG = 15;
 
 function buildOthers(items: PlacedItem[], ignoreId?: string) {
   return items
@@ -30,8 +41,18 @@ function buildOthers(items: PlacedItem[], ignoreId?: string) {
     .filter((r): r is PlacedRect & { instanceId: string } => r !== null && r.instanceId !== ignoreId);
 }
 
-/** Rotate the currently-selected item by ±90° if validation passes. */
-export function rotateSelected(deltaDeg: 90 | -90): void {
+/**
+ * Rotate the currently-selected item by `deltaDeg` if validation passes.
+ *
+ * Tweak 01 (Phase B): accepts any signed delta (was `90 | -90`). The
+ * R-key handler uses 90 / -90; Shift+R uses 15 / -15; future Konva
+ * Transformer free-drag will call with arbitrary values pre-snapped to
+ * the 15° grid.
+ *
+ * Tweak 07 hook: labels the resulting history frame "rotate" so the
+ * undo toast reads "Undid: rotate" instead of the generic default.
+ */
+export function rotateSelected(deltaDeg: number): void {
   const state = useDesignStore.getState();
   const id = state.selectedInstanceId;
   if (!id) return;
@@ -49,6 +70,9 @@ export function rotateSelected(deltaDeg: 90 | -90): void {
     useToastStore.getState().push("Item won't fit here.", 'warn');
     return;
   }
+  // Snapshot the prior state explicitly so the upcoming updateItem
+  // triggers a labelled history frame instead of the unlabelled default.
+  useHistoryStore.getState().recordSnapshot('rotate');
   state.updateItem(id, { rotation: newRotation });
 }
 

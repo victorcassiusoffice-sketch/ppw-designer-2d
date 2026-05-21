@@ -25,6 +25,7 @@ import {
   REGION_GROUPS,
   filterByRegion,
   getAllProducts,
+  productImageUrl,
   thumbnailFor,
 } from '../data/products';
 import { fetchApiProducts } from '../data/apiCatalogAdapter';
@@ -422,7 +423,7 @@ export function ProductPalette({
             anchorYPx={hover.anchorYPx}
             canvasWidthPx={typeof window !== 'undefined' ? window.innerWidth : 1280}
             canvasHeightPx={typeof window !== 'undefined' ? window.innerHeight : 720}
-            thumbUrl={hover.product.image_url || `data:image/svg+xml;utf8,${encodeURIComponent(thumbnailFor(hover.product.category))}`}
+            thumbUrl={productImageUrl(hover.product)}
             name={hover.product.name}
             priceMur={Math.round(hover.product.price?.value ?? 0)}
             description={`${hover.product.dimensions_cm.length}×${hover.product.dimensions_cm.width}×${hover.product.dimensions_cm.height} cm · ${hover.product.supplier}`}
