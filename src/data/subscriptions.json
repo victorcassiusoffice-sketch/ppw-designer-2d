@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "owner": "vic",
+  "updated_at": "2026-05-21T00:00:00Z",
+  "business": [
+    { "name": "Claude (Anthropic)", "amount": 200, "currency": "USD" },
+    { "name": "OpenArt AI", "amount": 20, "currency": "USD" },
+    { "name": "Calendly", "amount": 0, "currency": "USD", "note": "free tier" },
+    { "name": "HostGator", "amount": 0, "currency": "USD", "note": "verify" },
+    { "name": "Google Workspace", "amount": 0, "currency": "USD", "note": "verify" },
+    { "name": "Microsoft 365", "amount": 8.49, "currency": "GBP" },
+    { "name": "Canva (if business use)", "amount": 15, "currency": "USD" },
+    { "name": "Pixel Dojo (if business use)", "amount": 25, "currency": "GBP" }
+  ],
+  "personal": [
+    { "name": "CapCut", "amount": 6.39, "currency": "GBP" },
+    { "name": "Gym Tamarin", "amount": 3000, "currency": "MUR" },
+    { "name": "Syndic fees", "amount": 4200, "currency": "MUR" },
+    { "name": "BJJ", "amount": 2400, "currency": "MUR" },
+    { "name": "UFC Fight Pass", "amount": 20, "currency": "USD" },
+    { "name": "Amazon Prime", "amount": 0, "currency": "USD", "status": "Vic-to-cancel" },
+    { "name": "RunwayML personal", "amount": 15, "currency": "USD", "status": "Vic-to-cancel" }
+  ]
+}

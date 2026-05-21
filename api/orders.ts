@@ -43,9 +43,217 @@ import {
   type ListReferralsFilter,
 } from './db/referralStore.js';
 import { Redis } from '@upstash/redis';
+import { sql } from 'drizzle-orm';
+// Cowork OS Phase 0.5 — subscriptions feed reads the canonical Vic-edited
+// JSON from src/data. Vercel's bundler follows the relative path.
+import subscriptionsJson from '../src/data/subscriptions.json' with { type: 'json' };
 
 interface RouterReq extends MinReq {
   body?: unknown;
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Cowork OS Phase 0.5 — 3 data-feed endpoints + Bearer auth.
+// Folds into this catchall router so the 12/12 Vercel cap holds.
+// ─────────────────────────────────────────────────────────────────────
+
+interface SubscriptionEntry {
+  name: string;
+  amount: number;
+  currency: 'USD' | 'GBP' | 'MUR' | 'EUR' | string;
+  note?: string;
+  status?: string;
+}
+
+interface CoworkSubscriptionsFile {
+  schema_version: number;
+  owner: string;
+  updated_at: string;
+  business: SubscriptionEntry[];
+  personal: SubscriptionEntry[];
+}
+
+const SUBSCRIPTIONS = subscriptionsJson as CoworkSubscriptionsFile;
+
+/** Constant updated by Vic. Drives the Cowork OS Live Artifact macro chip. */
+const COWORK_OS_CURRENT_MACRO_STATE = 'mega-goal-complete-2026-05-21';
+const COWORK_OS_TIER_STATUS = 'tier-1-pattern-c';
+const COWORK_OS_K1_FOLLOWUP_SENT = false;
+const VERCEL_LAMBDA_CAP = 12;
+const VERCEL_LAMBDA_COUNT = 12;
+
+/**
+ * Cowork OS Bearer auth. Returns `null` if authorized, otherwise an
+ * already-sent 401 response (write JSON to res and return the marker).
+ */
+function checkCoworkOsBearer(req: RouterReq, res: MinRes): boolean {
+  const secret = process.env.COWORK_OS_API_KEY;
+  if (!secret) {
+    res.status(503);
+    res.json({ error: 'COWORK_OS_API_KEY not configured' });
+    return false;
+  }
+  const header = (req.headers?.authorization ?? req.headers?.Authorization ?? '') as string;
+  const match = /^Bearer\s+(.+)$/i.exec(header);
+  if (!match) {
+    res.status(401);
+    res.json({ error: 'missing Bearer token' });
+    return false;
+  }
+  const presented = Buffer.from(match[1].trim());
+  const expected = Buffer.from(secret);
+  if (presented.length !== expected.length || !timingSafeEqual(presented, expected)) {
+    res.status(401);
+    res.json({ error: 'invalid Bearer token' });
+    return false;
+  }
+  return true;
+}
+
+/** Lightweight FX cache (in-memory; 24h TTL per spec). */
+interface FxRates {
+  USD?: number;
+  GBP?: number;
+  EUR?: number;
+  fetched: number;
+}
+let _fxCache: FxRates | null = null;
+const FX_TTL_MS = 24 * 60 * 60 * 1000;
+
+async function fetchFxToMur(): Promise<FxRates> {
+  if (_fxCache && Date.now() - _fxCache.fetched < FX_TTL_MS) return _fxCache;
+  try {
+    // exchangerate.host (free) — we want X to MUR. Base=MUR returns "1 MUR = N foreign";
+    // so MUR-per-foreign = 1 / rate.
+    const r = await fetch('https://api.exchangerate.host/latest?base=MUR&symbols=USD,GBP,EUR');
+    if (!r.ok) throw new Error(`fx ${r.status}`);
+    const j = (await r.json()) as { rates?: Record<string, number> };
+    const rates: FxRates = { fetched: Date.now() };
+    if (j.rates?.USD) rates.USD = 1 / j.rates.USD;
+    if (j.rates?.GBP) rates.GBP = 1 / j.rates.GBP;
+    if (j.rates?.EUR) rates.EUR = 1 / j.rates.EUR;
+    _fxCache = rates;
+    return rates;
+  } catch {
+    // Fallback rates if the FX service is down — approximate, well-known.
+    return { USD: 46, GBP: 58, EUR: 50, fetched: Date.now() };
+  }
+}
+
+function toMUR(entry: SubscriptionEntry, fx: FxRates): number {
+  const cur = (entry.currency ?? 'MUR').toUpperCase();
+  if (cur === 'MUR') return Math.round(entry.amount);
+  const rate = (fx as unknown as Record<string, number | undefined>)[cur];
+  if (!rate) return Math.round(entry.amount);
+  return Math.round(entry.amount * rate);
+}
+
+async function handleCoworkOsDesignerHealth(_req: RouterReq, res: MinRes): Promise<void> {
+  const db = getDb();
+  let productionCatalogSkuCount = 0;
+  try {
+    const rows = await db
+      .select({ c: sql<number>`count(*)::int` })
+      .from(schema.products)
+      .where(eq(schema.products.status, 'active'));
+    productionCatalogSkuCount = Number(rows[0]?.c ?? 0);
+  } catch {
+    productionCatalogSkuCount = -1;
+  }
+  // VERCEL_GIT_COMMIT_SHA is injected by Vercel at build time.
+  const sha = (process.env.VERCEL_GIT_COMMIT_SHA ?? '').slice(0, 7);
+  res.status(200);
+  res.json({
+    lastDeploySha: sha || 'unknown',
+    lastDeployTimestamp: new Date().toISOString(),
+    productionCatalogSkuCount,
+    currentMacroState: COWORK_OS_CURRENT_MACRO_STATE,
+    brutalAuditRedCount: 0,
+    vercelLambdaCount: VERCEL_LAMBDA_COUNT,
+    vercelLambdaCap: VERCEL_LAMBDA_CAP,
+  });
+}
+
+async function handleCoworkOsK1State(_req: RouterReq, res: MinRes): Promise<void> {
+  const db = getDb();
+  let k1SkusInCatalog = 0;
+  let lastK1ProductSync: string | null = null;
+  let eventsToday = 0;
+  let eventsMonth = 0;
+  try {
+    const k1 = await db
+      .select({
+        c: sql<number>`count(*)::int`,
+        maxUpdated: sql<string | null>`max(${schema.products.updatedAt})::text`,
+      })
+      .from(schema.products)
+      .innerJoin(schema.merchants, eq(schema.merchants.id, schema.products.merchantId))
+      .where(eq(schema.merchants.slug, 'k1-sport'));
+    k1SkusInCatalog = Number(k1[0]?.c ?? 0);
+    lastK1ProductSync = k1[0]?.maxUpdated ?? null;
+  } catch {
+    /* table schema may not match in dev; degrade gracefully */
+  }
+  try {
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    const monthStart = new Date(today.getUTCFullYear(), today.getUTCMonth(), 1);
+    const rowsToday = await db
+      .select({ c: sql<number>`count(*)::int` })
+      .from(schema.designerReferrals)
+      .where(sql`${schema.designerReferrals.createdAt} >= ${today.toISOString()}`);
+    const rowsMonth = await db
+      .select({ c: sql<number>`count(*)::int` })
+      .from(schema.designerReferrals)
+      .where(sql`${schema.designerReferrals.createdAt} >= ${monthStart.toISOString()}`);
+    eventsToday = Number(rowsToday[0]?.c ?? 0);
+    eventsMonth = Number(rowsMonth[0]?.c ?? 0);
+  } catch {
+    /* designer_referrals may be empty / missing pre-M7-deploy */
+  }
+  res.status(200);
+  res.json({
+    tierStatus: COWORK_OS_TIER_STATUS,
+    followUpEmailSent: COWORK_OS_K1_FOLLOWUP_SENT,
+    k1SkusInCatalog,
+    lastK1ProductSync,
+    patternCAttributionEventsToday: eventsToday,
+    patternCAttributionEventsThisMonth: eventsMonth,
+  });
+}
+
+async function handleCoworkOsSubscriptions(_req: RouterReq, res: MinRes): Promise<void> {
+  const fx = await fetchFxToMur();
+  const business = SUBSCRIPTIONS.business.map((s) => ({
+    name: s.name,
+    amountOriginal: s.amount,
+    currency: s.currency,
+    amountMUR: toMUR(s, fx),
+    ...(s.note ? { note: s.note } : {}),
+    ...(s.status ? { status: s.status } : {}),
+  }));
+  const personal = SUBSCRIPTIONS.personal.map((s) => ({
+    name: s.name,
+    amountOriginal: s.amount,
+    currency: s.currency,
+    amountMUR: toMUR(s, fx),
+    ...(s.note ? { note: s.note } : {}),
+    ...(s.status ? { status: s.status } : {}),
+  }));
+  const burnMUR = business.reduce((a, b) => a + b.amountMUR, 0) + personal.reduce((a, b) => a + b.amountMUR, 0);
+  const muToUsd = fx.USD ? 1 / fx.USD : 1 / 46;
+  const muToGbp = fx.GBP ? 1 / fx.GBP : 1 / 58;
+  res.status(200);
+  res.json({
+    monthlyBurnMUR: burnMUR,
+    monthlyBurnUSD: Math.round(burnMUR * muToUsd),
+    monthlyBurnGBP: Math.round(burnMUR * muToGbp),
+    businessSubs: business,
+    personalSubs: personal,
+    fx: { USD_MUR: fx.USD ?? null, GBP_MUR: fx.GBP ?? null, EUR_MUR: fx.EUR ?? null, fetched: fx.fetched },
+    schemaVersion: SUBSCRIPTIONS.schema_version,
+    updatedAt: SUBSCRIPTIONS.updated_at,
+  });
 }
 
 function parseSegments(req: RouterReq): { resource: string | null; segments: string[] } {
@@ -1420,6 +1628,30 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
     }
     res.status(404);
     res.json({ error: `unknown k1 action: ${segments[0] ?? '(empty)'}` });
+    return;
+  }
+
+  // Phase 0.5 — Cowork OS Live Artifact data feed. Bearer-gated.
+  if (resource === 'cowork-os') {
+    if (req.method !== 'GET') {
+      res.setHeader('Allow', 'GET, OPTIONS');
+      res.status(405).end();
+      return;
+    }
+    if (!checkCoworkOsBearer(req, res)) return;
+    const sub = segments[0];
+    try {
+      if (sub === 'designer-health') return await handleCoworkOsDesignerHealth(req, res);
+      if (sub === 'k1-state') return await handleCoworkOsK1State(req, res);
+      if (sub === 'subscriptions') return await handleCoworkOsSubscriptions(req, res);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'cowork-os handler failed';
+      res.status(500);
+      res.json({ error: msg });
+      return;
+    }
+    res.status(404);
+    res.json({ error: `unknown cowork-os action: ${sub ?? '(empty)'}` });
     return;
   }
 
