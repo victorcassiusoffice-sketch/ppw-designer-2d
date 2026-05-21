@@ -110,13 +110,19 @@ test('e) M3 — place 1 item in 2D, switch to BABYLON → 1 product mesh', async
   await page.screenshot({ path: path.join(SHOT_DIR, 'e-m3-babylon.png'), fullPage: true });
 });
 
-test('f) M2 — Wall mode reads 4 walls from store, persists across reload', async ({ page }) => {
-  // M2's draw FSM is wired through Konva Stage events + zustand state. CDP-driven
-  // rapid clicks race the FSM phase transitions (the layer's `wallsRef` snapshot
-  // can lag the actual addWall by one paint), so click-by-click testing is flaky
-  // in Playwright even though manual draw works. We verify the *durable* M2
-  // contract here: the wallStore persists 4-wall fixtures to localStorage,
-  // hydrates on load, and the HUD wall-count + room polygon reflect them.
+test('f) M2 — wallStore persists 4 walls, HUD displays count + room area on reload', async ({ page }) => {
+  // CDP rapid-click 5-point polyline produces non-deterministic wall counts
+  // because react-konva's first event listener attaches a paint cycle after
+  // the WALL mode-strip click commits — and intermittent "lost" clicks
+  // afterwards (probe9 saw clicks 1 + 3 silently dropped while click 4
+  // committed). The wall-store-internal phase race is fixed in commit
+  // df8dc05 (`useWallStore.getState()` reads in handlers, no stale refs),
+  // but the react-konva listener-attach race persists for synthetic clicks.
+  //
+  // Acceptance therefore verifies the durable M2 contract — wallStore
+  // persists 4 walls to localStorage, hydrates on load, HUD shows count=4
+  // + room-area > 0 (polygon reconstruction), survives reload. Manual
+  // click-driven draw works for human-paced input in production.
   const fourWalls = [
     { id: 'w1', start: { x_mm: 0, y_mm: 0 }, end: { x_mm: 4000, y_mm: 0 }, thickness_mm: 100, height_mm: 2700, type: 'full' },
     { id: 'w2', start: { x_mm: 4000, y_mm: 0 }, end: { x_mm: 4000, y_mm: 3000 }, thickness_mm: 100, height_mm: 2700, type: 'full' },
@@ -130,7 +136,6 @@ test('f) M2 — Wall mode reads 4 walls from store, persists across reload', asy
   await page.goto('/');
   await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
 
-  // Engage Wall mode so the HUD renders the count testid.
   await page.getByRole('button', { name: /^Wall$/ }).click();
   await expect(page.locator('[data-testid="wall-draw-hud"]')).toBeVisible({ timeout: 10_000 });
   await expect(page.locator('[data-testid="wall-count"]')).toHaveText('4');
