@@ -69,6 +69,11 @@ function MobilePreviewBanner(): JSX.Element | null {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const check = () => {
+      const forced = window.localStorage.getItem('ppw_force_desktop_view_v1') === '1';
+      if (forced) {
+        setIsMobile(false);
+        return;
+      }
       const touch = window.matchMedia('(pointer: coarse)').matches;
       const narrow = window.matchMedia('(max-width: 768px)').matches;
       setIsMobile(touch && narrow);
@@ -83,39 +88,72 @@ function MobilePreviewBanner(): JSX.Element | null {
     <div
       role="status"
       style={{
-        background: '#1f4a4a',
-        color: 'white',
-        padding: '6px 12px',
-        fontSize: 12,
+        background: '#0E0E10',
+        color: '#F5EFE6',
+        padding: '20px 16px',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 8,
+        flexDirection: 'column',
+        gap: 12,
+        borderBottom: '3px solid #C0A67E',
       }}
     >
-      <span>
-        <strong>Mobile preview mode</strong> — best experienced on a laptop. For full design
-        work, use desktop.
-      </span>
-      <button
-        type="button"
-        aria-label="Dismiss banner"
-        onClick={() => {
-          window.localStorage.setItem('ppw_mobile_banner_dismissed_v1', '1');
-          setDismissed(true);
-        }}
-        style={{
-          background: 'transparent',
-          color: 'white',
-          border: '1px solid rgba(255,255,255,0.4)',
-          borderRadius: 4,
-          padding: '2px 8px',
-          cursor: 'pointer',
-          fontSize: 12,
-        }}
-      >
-        Dismiss
-      </button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <strong style={{ fontSize: 20, lineHeight: 1.25, color: '#C0A67E' }}>
+          Best experienced on a laptop
+        </strong>
+        <span style={{ fontSize: 15, lineHeight: 1.4, color: '#F5EFE6', opacity: 0.92 }}>
+          The Wellness Designer was built desktop-first. Mobile works, but products,
+          drag-drop, and the cart drawer feel far better on a bigger screen.
+        </span>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        <button
+          type="button"
+          aria-label="Switch to desktop view on this device"
+          onClick={() => {
+            window.localStorage.setItem('ppw_force_desktop_view_v1', '1');
+            // Force a viewport reflow to desktop width so the layout renders wide
+            const vp = document.querySelector('meta[name="viewport"]');
+            if (vp) vp.setAttribute('content', 'width=1280, initial-scale=0.3, user-scalable=yes');
+            window.location.reload();
+          }}
+          style={{
+            background: '#C0A67E',
+            color: '#0E0E10',
+            border: 'none',
+            borderRadius: 6,
+            padding: '10px 14px',
+            cursor: 'pointer',
+            fontSize: 14,
+            fontWeight: 600,
+            flex: '1 1 auto',
+            minWidth: 140,
+          }}
+        >
+          Switch to desktop view
+        </button>
+        <button
+          type="button"
+          aria-label="Continue on mobile and dismiss this banner"
+          onClick={() => {
+            window.localStorage.setItem('ppw_mobile_banner_dismissed_v1', '1');
+            setDismissed(true);
+          }}
+          style={{
+            background: 'transparent',
+            color: '#F5EFE6',
+            border: '1px solid rgba(245,239,230,0.4)',
+            borderRadius: 6,
+            padding: '10px 14px',
+            cursor: 'pointer',
+            fontSize: 14,
+            fontWeight: 500,
+            flex: '0 1 auto',
+          }}
+        >
+          Continue on mobile
+        </button>
+      </div>
     </div>
   );
 }
@@ -212,7 +250,10 @@ export default function App() {
                       </div>
                     }
                   >
-                    <BabylonRoomLazy />
+                    <BabylonRoomLazy
+                      pendingProductId={pendingProductId}
+                      setPendingProductId={setPendingProductId}
+                    />
                   </Suspense>
                 ) : (
                   <RoomCanvas

@@ -46,6 +46,11 @@ export interface BabylonRoomProps {
   roomWidthM?: number;
   roomDepthM?: number;
   ceiling?: boolean;
+  /** P0-δ — M1 pointer-FSM state lifted from App.tsx so 3D click-to-place
+   * can read the armed product id and clear it after committing.
+   * Optional so the marketing-route lazy chunk doesn't need to pass them. */
+  pendingProductId?: string | null;
+  setPendingProductId?: (id: string | null) => void;
 }
 
 function detectMobile(): boolean {
@@ -87,6 +92,17 @@ export function BabylonRoom(props: BabylonRoomProps): JSX.Element {
   const shadowRef = useRef<ShadowGenerator | null>(null);
   const itemMeshesRef = useRef<Map<string, Mesh>>(new Map());
   const wallMeshesRef = useRef<Map<string, Mesh>>(new Map());
+  // P0-δ — keep the latest FSM props in a ref so the Babylon pointer
+  // observer (registered once on mount) always sees the current armed
+  // state without re-mounting the entire engine.
+  const fsmRef = useRef<{ id: string | null; clear: ((id: string | null) => void) | null }>({
+    id: props.pendingProductId ?? null,
+    clear: props.setPendingProductId ?? null,
+  });
+  fsmRef.current = {
+    id: props.pendingProductId ?? null,
+    clear: props.setPendingProductId ?? null,
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -119,6 +135,38 @@ export function BabylonRoom(props: BabylonRoomProps): JSX.Element {
     const pointerObserver = built.scene.onPointerObservable.add((info) => {
       if (info.type !== PointerEventTypes.POINTERPICK) return;
       const picked = info.pickInfo?.pickedMesh;
+      const armedId = fsmRef.current.id;
+      // P0-δ — click-to-place: if the FSM is armed and the click hit the
+      // ground mesh, commit a placement at the world pick point (snapped
+      // to the 50 cm grid the 2D RoomCanvas uses). The M3 designStore
+      // mirror will render the new product mesh on the next frame.
+      if (armedId && picked && picked.name === 'ground') {
+        const p = info.pickInfo?.pickedPoint;
+        if (p) {
+          const product = getProductById(armedId);
+          if (product) {
+            const lengthM = product.dimensions_cm.length / 100;
+            const widthM = product.dimensions_cm.width / 100;
+            // Babylon ground is centred at origin with width=roomWidthM,
+            // height=roomDepthM. The 2D designer's coord-space has the room
+            // polygon starting at (0,0) → translate by half-size.
+            const xRoomM = p.x + (props.roomWidthM ?? 5) / 2;
+            const yRoomM = p.z + (props.roomDepthM ?? 4) / 2;
+            // Snap to 50 cm grid + centre the footprint on the cursor.
+            const snap = (v: number) => Math.round(v / 0.5) * 0.5;
+            const snappedX = snap(xRoomM - lengthM / 2);
+            const snappedY = snap(yRoomM - widthM / 2);
+            useDesignStore.getState().addItem({
+              productId: product.id,
+              x: snappedX,
+              y: snappedY,
+              rotation: 0,
+            });
+            fsmRef.current.clear?.(null);
+          }
+        }
+        return;
+      }
       if (picked && picked.name.startsWith('product-')) {
         selection.attachToMesh(picked);
       } else {
