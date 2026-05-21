@@ -38,6 +38,7 @@ import { AddRoomChooser } from './components/AddRoomChooser';
 import { CanvasErrorBoundary } from './components/CanvasErrorBoundary';
 import { useKeyboardShortcuts } from './lib/useKeyboardShortcuts';
 import { useAutoSave } from './lib/useAutoSave';
+import { installHistorySubscriptions } from './store/historyStore';
 // Sims-Parity Gaming Layer 1 (V4 default-ON 2026-05-18) — additive overlays
 // mounted on top of the existing Konva render-core. Konva stable-lock 26c144c
 // untouched; classic UI surfaces via `?ui=classic`.
@@ -161,6 +162,12 @@ function MobilePreviewBanner(): JSX.Element | null {
 export default function App() {
   useKeyboardShortcuts();
   useAutoSave();
+  // Tweak 07 / Phase A.0 — install undo subscriptions once. The hook
+  // returns its own teardown, but App is mounted once at the root so we
+  // don't bother re-running the effect (idempotent inside the store).
+  useEffect(() => {
+    return installHistorySubscriptions();
+  }, []);
   // OMS Wave 3.7 — dark mode opt-in. localStorage flag flips
   // `<html class="dark">` so Tailwind dark: variants apply globally.
   const [darkMode, toggleDark] = useDarkMode();

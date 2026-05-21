@@ -7,9 +7,12 @@
  *                    bookmark default)
  *   Delete/Bksp      delete
  *   Esc              deselect
+ *   Ctrl/Cmd+Z       undo last action (Tweak 07 — Phase A.0)
+ *   Ctrl/Cmd+Shift+Z redo (Tweak 07 — Phase A.0)
  *
  * Ignored when the user is typing in an input/textarea/contenteditable
- * (so the room-dim inputs and search box still work normally).
+ * (so the room-dim inputs and search box still work normally, AND so
+ * the browser's native text-undo keeps working inside inputs).
  */
 import { useEffect } from 'react';
 import {
@@ -19,6 +22,7 @@ import {
   deselect,
 } from './placementActions';
 import { useDesignStore } from '../store/designStore';
+import { useHistoryStore } from '../store/historyStore';
 
 function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -33,6 +37,20 @@ export function useKeyboardShortcuts(): void {
     function onKey(e: KeyboardEvent) {
       if (isTypingTarget(e.target)) return;
       const hasSelection = !!useDesignStore.getState().selectedInstanceId;
+
+      // Tweak 07 (Phase A.0) — undo / redo. Checked BEFORE the per-key
+      // switch so Ctrl/Cmd+Z always wins regardless of key case, and so
+      // browser tab-undo / form-undo doesn't intercept them outside of
+      // typing targets (handled above).
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault();
+        if (e.shiftKey) {
+          useHistoryStore.getState().redo();
+        } else {
+          useHistoryStore.getState().undo();
+        }
+        return;
+      }
 
       switch (e.key) {
         case 'r':

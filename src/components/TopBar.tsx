@@ -30,6 +30,7 @@ import { useDesignStore, isActiveRoomRectangle } from '../store/designStore';
 import { usePropertyStore } from '../store/propertyStore';
 import { useDesignsStore } from '../store/designsStore';
 import { useToastStore } from '../store/toastStore';
+import { useHistoryStore } from '../store/historyStore';
 import { useCart } from '../store/cartStore';
 import { CurrencySwitcher } from './CurrencySwitcher';
 import {
@@ -85,6 +86,28 @@ export function TopBar({
 
   const cart = useCart();
   const activeRoomIsRect = isActiveRoomRectangle();
+
+  // Tweak 07 (Phase A.0) — undo/redo wiring. Subscribe via state shape
+  // so disabled-states track the stack length.
+  const pastLength = useHistoryStore((s) => s.past.length);
+  const futureLength = useHistoryStore((s) => s.future.length);
+  const undo = useHistoryStore((s) => s.undo);
+  const redo = useHistoryStore((s) => s.redo);
+  // Mobile Safari long-press confirm — Tweak 07 §7. A first tap arms;
+  // a second tap within 1500ms fires. Desktop fires immediately.
+  const [mobileUndoArmed, setMobileUndoArmed] = useState(false);
+  const isCoarsePointer =
+    typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
+  function handleUndoClick() {
+    if (isCoarsePointer && !mobileUndoArmed) {
+      setMobileUndoArmed(true);
+      pushToast('Tap Undo again to confirm', 'info', 1500);
+      window.setTimeout(() => setMobileUndoArmed(false), 1500);
+      return;
+    }
+    setMobileUndoArmed(false);
+    undo();
+  }
 
   const [showHelp, setShowHelp] = useState(false);
   const [showLoad, setShowLoad] = useState(false);
@@ -322,6 +345,52 @@ export function TopBar({
             aria-pressed={drawMode}
           >
             Draw
+          </button>
+        </div>
+
+        {/* Tweak 07 (Phase A.0) — UNDO / REDO buttons. Visible on both
+            mobile and desktop. The undo button arms-then-fires on
+            coarse-pointer devices per §7 (long-press confirm). */}
+        <div className="flex overflow-hidden rounded-md border border-ppw-stone bg-white">
+          <button
+            type="button"
+            onClick={handleUndoClick}
+            disabled={pastLength === 0}
+            aria-label={mobileUndoArmed ? 'Tap to confirm undo' : 'Undo (Ctrl+Z)'}
+            title={mobileUndoArmed ? 'Tap again to confirm' : 'Undo (Ctrl+Z)'}
+            className={`min-h-[40px] px-2.5 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed ${
+              mobileUndoArmed ? 'bg-ppw-coral text-white' : 'text-ppw-slate hover:text-ppw-teal'
+            }`}
+          >
+            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3 7h7a3 3 0 010 6H7M3 7l3-3M3 7l3 3"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={redo}
+            disabled={futureLength === 0}
+            aria-label="Redo (Ctrl+Shift+Z)"
+            title="Redo (Ctrl+Shift+Z)"
+            className="min-h-[40px] border-l border-ppw-stone px-2.5 text-xs font-medium text-ppw-slate hover:text-ppw-teal disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13 7H6a3 3 0 000 6h3M13 7l-3-3M13 7l-3 3"
+              />
+            </svg>
           </button>
         </div>
 
