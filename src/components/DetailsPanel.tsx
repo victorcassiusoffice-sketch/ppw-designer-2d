@@ -11,7 +11,7 @@
  *     becomes a slide-up modal that only appears when an item is selected.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDesignStore } from '../store/designStore';
 import { CATEGORY_LABELS, getProductById } from '../data/products';
 import {
@@ -20,6 +20,52 @@ import {
   deleteSelected,
   deselect,
 } from '../lib/placementActions';
+
+/**
+ * P0-ε — Pattern C attribution: stable per-browser sessionId so the
+ * outbound `/api/k1/redirect` can reconstruct which design generated
+ * the click during monthly commission reconciliation.
+ */
+const SESSION_LS_KEY = 'ppw_designer_session_v1';
+function getOrMintSessionId(): string {
+  if (typeof window === 'undefined') return 'ssr';
+  try {
+    const existing = window.localStorage.getItem(SESSION_LS_KEY);
+    if (existing) return existing;
+    const next = `s-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    window.localStorage.setItem(SESSION_LS_KEY, next);
+    return next;
+  } catch {
+    return `s-${Date.now().toString(36)}`;
+  }
+}
+
+/**
+ * P0-ε — Build the outbound URL. Routes through `/api/k1/redirect`
+ * (M7 commission attribution) so the server logs the click before
+ * 302-ing to k1-sport.com — `ref=ppw&design=<sessionId>&sku=<sku>`
+ * propagates per the Pattern C spec.
+ */
+function buildBuyUrl(args: {
+  productId: string;
+  productSku: string;
+  productName: string;
+  productPriceMinor: number;
+  productCurrency: string;
+  designId: string;
+}): string {
+  const q = new URLSearchParams({
+    slug: 'k1-sport',
+    productId: args.productId,
+    productSku: args.productSku,
+    productName: args.productName,
+    productPriceMinor: String(args.productPriceMinor),
+    productCurrency: args.productCurrency,
+    designId: args.designId,
+    sessionId: args.designId,
+  });
+  return `/api/k1/redirect?${q.toString()}`;
+}
 
 export function DetailsPanel() {
   const placedItems = useDesignStore((s) => s.placedItems);
@@ -31,6 +77,11 @@ export function DetailsPanel() {
   const selectedProduct = selected ? getProductById(selected.productId) : undefined;
 
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const sessionId = useMemo(getOrMintSessionId, []);
+  // P0-ε — Pattern C BUY routes K1-* SKUs to the merchant storefront via the
+  // M7 /api/k1/redirect attribution endpoint. Other merchants get the
+  // generic source_url path (rendered below as the "Source" link).
+  const isK1Product = !!selectedProduct?.sku?.startsWith('K1-');
 
   useEffect(() => {
     setConfirmingDelete(false);
@@ -100,6 +151,26 @@ export function DetailsPanel() {
               value={selectedProduct.notes}
               multiline
             />
+
+            {isK1Product && (
+              <a
+                data-testid="buy-from-k1-sport"
+                href={buildBuyUrl({
+                  productId: selectedProduct.id,
+                  productSku: selectedProduct.sku,
+                  productName: selectedProduct.name,
+                  productPriceMinor: Math.round((selectedProduct.price?.value ?? 0) * 100),
+                  productCurrency: selectedProduct.price?.currency ?? 'MUR',
+                  designId: sessionId,
+                })}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block rounded-md bg-ppw-coral px-3 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-ppw-coral/90"
+                style={{ background: '#FFBB58', color: '#232C3B' }}
+              >
+                Buy from K1-Sport →
+              </a>
+            )}
 
             <div className="rounded-md border border-ppw-stone bg-ppw-sand px-3 py-3">
               <p className="text-[10px] uppercase tracking-wide text-ppw-slate mb-2">Controls</p>
