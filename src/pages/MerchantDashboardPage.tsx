@@ -173,7 +173,7 @@ function Header({ slug }: { slug: string }): JSX.Element {
         </div>
         <nav style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           <Link
-            to={`/merchant/${encodeURIComponent(slug)}/agent`}
+            to={`/merchant/${encodeURIComponent(slug)}/products/new`}
             data-testid="merchant-dashboard-add-product"
             style={{
               display: 'inline-block',
@@ -189,6 +189,25 @@ function Header({ slug }: { slug: string }): JSX.Element {
             }}
           >
             + Add product
+          </Link>
+          <Link
+            to={`/merchant/${encodeURIComponent(slug)}/agent`}
+            data-testid="merchant-dashboard-agent"
+            style={{
+              display: 'inline-block',
+              padding: '8px 16px',
+              borderRadius: 6,
+              background: 'transparent',
+              color: BRAND.gold,
+              border: `1px solid ${BRAND.gold}`,
+              fontFamily: BRAND.sans,
+              fontWeight: 600,
+              fontSize: 13,
+              textDecoration: 'none',
+              letterSpacing: '0.02em',
+            }}
+          >
+            Open agent
           </Link>
         </nav>
       </div>

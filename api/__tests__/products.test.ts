@@ -148,7 +148,7 @@ describe('parseSort', () => {
 });
 
 describe('GET /api/products handler', () => {
-  it('returns 405 for non-GET', async () => {
+  it('returns 405 for unsupported methods (PUT is not handled; POST/PATCH/DELETE/GET all are)', async () => {
     const mod = await import('../products');
     const handler = mod.default;
     let status = 0;
@@ -162,7 +162,7 @@ describe('GET /api/products handler', () => {
       end() { ended = true; },
       json: vi.fn(),
     };
-    await handler({ method: 'POST', headers: {} } as never, res as never);
+    await handler({ method: 'PUT', headers: {} } as never, res as never);
     expect(status).toBe(405);
     expect(ended).toBe(true);
   });

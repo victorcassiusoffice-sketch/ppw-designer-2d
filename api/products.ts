@@ -56,6 +56,7 @@ import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
 import { getDb, schema } from './db/client.js';
 import { and, eq, gte, gt, isNull, lte, sql, inArray, type SQL } from 'drizzle-orm';
 import { drizzleAuditWriter } from './lib/auditLog.js';
+import { verifyMerchantSession } from './lib/merchantSession.js';
 
 type ProductsReq = MinReq & { query?: Record<string, string | string[] | undefined> };
 
@@ -364,6 +365,227 @@ export async function fetchCatalogFacets(filters: ProductFilters): Promise<Catal
 }
 
 /**
+ * Wellness-Designer-App chain (c) part 2 — merchant-self-service CREATE
+ * schema. Every required column has a required field; widthMm/depthMm/
+ * heightMm/weightG/imageUrl/description/region are optional. SKU is
+ * auto-generated from `<slug>-<random8>` if absent (merchants shouldn't
+ * have to invent SKUs).
+ *
+ * The form on /merchant/:slug/products/new posts here with the blobKey
+ * URL returned by the part-1 upload-image endpoint (or omits imageUrl
+ * if the merchant chose no image).
+ */
+export const productCreateSchema = z
+  .object({
+    name: z.string().trim().min(1).max(200),
+    category: z.string().trim().min(1).max(80),
+    priceMinor: z.number().int().nonnegative(),
+    currency: z
+      .string()
+      .trim()
+      .length(3)
+      .transform((s) => s.toUpperCase()),
+    description: z.string().trim().max(5000).optional().nullable(),
+    widthMm: z.number().int().nonnegative().optional().nullable(),
+    depthMm: z.number().int().nonnegative().optional().nullable(),
+    heightMm: z.number().int().nonnegative().optional().nullable(),
+    weightG: z.number().int().nonnegative().optional().nullable(),
+    imageUrl: z
+      .string()
+      .trim()
+      .url()
+      .max(500)
+      .optional()
+      .nullable()
+      .or(z.literal('').transform(() => null)),
+    ecoCertLevel: z.enum(ECO_CERT_LEVELS).optional(),
+    region: z.string().trim().max(40).optional().nullable(),
+    sku: z
+      .string()
+      .trim()
+      .min(2)
+      .max(80)
+      .regex(/^[A-Za-z0-9._-]+$/)
+      .optional(),
+    inStockQty: z.number().int().nonnegative().optional(),
+  })
+  .strict();
+
+export type ProductCreatePayload = z.infer<typeof productCreateSchema>;
+
+export interface CreateProductResult {
+  ok: boolean;
+  status: number;
+  error?: string;
+  product?: {
+    id: number;
+    sku: string;
+    name: string;
+    category: string;
+    priceMinor: number;
+    currency: string;
+    imageUrl: string | null;
+    ecoCertLevel: string;
+  };
+}
+
+/**
+ * Generate a SKU when the merchant didn't supply one. Format:
+ * `<SLUG-UPPER>-<8-hex>`. Uniqueness is enforced by the
+ * `products_merchant_sku_idx` unique index at the DB layer.
+ */
+function generateSku(slug: string): string {
+  const uuid = globalThis.crypto.randomUUID();
+  const hex = uuid.replace(/-/g, '').slice(0, 8).toUpperCase();
+  const slugPart = slug.toUpperCase().slice(0, 20);
+  return `${slugPart}-${hex}`;
+}
+
+export async function createMerchantProduct(
+  slug: string,
+  rawBody: unknown,
+): Promise<CreateProductResult> {
+  if (!slug) {
+    return { ok: false, status: 400, error: 'slug required' };
+  }
+  const parsed = productCreateSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    const msg = parsed.error.issues
+      .map((iss) => `${iss.path.join('.') || 'body'}: ${iss.message}`)
+      .join('; ');
+    return { ok: false, status: 400, error: msg };
+  }
+  const fields = parsed.data;
+
+  const db = getDb();
+  try {
+    const merchantRows = await db
+      .select({ id: schema.merchants.id })
+      .from(schema.merchants)
+      .where(eq(schema.merchants.slug, slug))
+      .limit(1);
+    const merchant = merchantRows[0];
+    if (!merchant) {
+      return { ok: false, status: 404, error: 'merchant_not_found' };
+    }
+    const merchantId = Number(merchant.id);
+
+    const sku = fields.sku ?? generateSku(slug);
+
+    const inserted = await db
+      .insert(schema.products)
+      .values({
+        merchantId,
+        sku,
+        name: fields.name,
+        category: fields.category,
+        description: fields.description ?? null,
+        widthMm: fields.widthMm ?? null,
+        depthMm: fields.depthMm ?? null,
+        heightMm: fields.heightMm ?? null,
+        weightG: fields.weightG ?? null,
+        priceMinor: fields.priceMinor,
+        currency: fields.currency,
+        imageUrl: fields.imageUrl ?? null,
+        ecoCertLevel: fields.ecoCertLevel ?? 'none',
+        region: fields.region ?? null,
+        inStockQty: fields.inStockQty ?? 0,
+        status: 'active',
+      })
+      .returning({
+        id: schema.products.id,
+        sku: schema.products.sku,
+        name: schema.products.name,
+        category: schema.products.category,
+        priceMinor: schema.products.priceMinor,
+        currency: schema.products.currency,
+        imageUrl: schema.products.imageUrl,
+        ecoCertLevel: schema.products.ecoCertLevel,
+      });
+    const row = inserted[0];
+    if (!row) {
+      return { ok: false, status: 500, error: 'insert_returned_no_row' };
+    }
+
+    try {
+      const audit = drizzleAuditWriter();
+      await audit.record({
+        actorEmail: `merchant:${slug}`,
+        action: 'products.create',
+        targetType: 'product',
+        targetId: String(row.id),
+        payload: { merchantId, slug, sku },
+      });
+    } catch {
+      // Audit failure must not change the CREATE verdict.
+    }
+
+    return {
+      ok: true,
+      status: 201,
+      product: {
+        id: Number(row.id),
+        sku: row.sku,
+        name: row.name,
+        category: row.category,
+        priceMinor: row.priceMinor,
+        currency: row.currency,
+        imageUrl: row.imageUrl,
+        ecoCertLevel: row.ecoCertLevel,
+      },
+    };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/duplicate key value|products_merchant_sku_idx|23505/i.test(msg)) {
+      return { ok: false, status: 409, error: 'sku_conflict' };
+    }
+    if (/relation .*(products|merchants).* does not exist|column .* does not exist|42P01|42703/i.test(msg)) {
+      return { ok: false, status: 503, error: 'schema_missing' };
+    }
+    throw err;
+  }
+}
+
+/**
+ * Helper — extract + verify the merchant magic-link session bearer
+ * token from an HTTP request. Returns the verified payload on success;
+ * an HTTP-shaped error response on failure.
+ */
+export interface SessionAuthOk {
+  ok: true;
+  email: string;
+}
+export interface SessionAuthErr {
+  ok: false;
+  status: 401 | 403;
+  error: 'missing_session' | 'invalid_session' | 'slug_mismatch';
+}
+
+export function authoriseMerchantSession(
+  headers: Record<string, string | string[] | undefined> | undefined,
+  slug: string,
+): SessionAuthOk | SessionAuthErr {
+  const raw = headers?.authorization ?? headers?.Authorization;
+  const header = Array.isArray(raw) ? raw[0] : raw;
+  if (!header || typeof header !== 'string') {
+    return { ok: false, status: 401, error: 'missing_session' };
+  }
+  const match = /^Bearer\s+(.+)$/i.exec(header);
+  if (!match) {
+    return { ok: false, status: 401, error: 'missing_session' };
+  }
+  const token = match[1].trim();
+  const result = verifyMerchantSession(token, slug);
+  if (!result.ok) {
+    if (result.reason === 'slug_mismatch') {
+      return { ok: false, status: 403, error: 'slug_mismatch' };
+    }
+    return { ok: false, status: 401, error: 'invalid_session' };
+  }
+  return { ok: true, email: result.payload.email };
+}
+
+/**
  * V4 M9.B.3 — merchant-editable PATCH schema. Every field optional;
  * at least ONE must be present (else 400 no_fields). SKU + merchantId
  * + status + retired_at + supplier_rating + supplier_rating_refreshed_at
@@ -614,6 +836,46 @@ async function handler(req: ProductsReq, res: MinRes): Promise<void> {
   const idRaw = q['id'];
   const idStr = Array.isArray(idRaw) ? idRaw[0] : idRaw;
 
+  // Wellness-Designer-App (c) part 2 — POST creates a merchant product.
+  // Magic-link session-gated via Authorization: Bearer <merchant-session>.
+  if (req.method === 'POST') {
+    if (typeof slug !== 'string' || !slug.trim()) {
+      res.status(400);
+      res.json({ error: 'slug query param required' });
+      return;
+    }
+    const auth = authoriseMerchantSession(req.headers, slug.trim());
+    if (!auth.ok) {
+      res.status(auth.status);
+      res.json({ error: auth.error });
+      return;
+    }
+    const body =
+      typeof req.body === 'string'
+        ? (() => {
+            try {
+              return JSON.parse(req.body || '{}');
+            } catch {
+              return null;
+            }
+          })()
+        : (req.body ?? {});
+    if (body === null) {
+      res.status(400);
+      res.json({ error: 'invalid JSON body' });
+      return;
+    }
+    const result = await createMerchantProduct(slug.trim(), body);
+    if (result.ok) {
+      res.status(result.status);
+      res.json({ product: result.product });
+      return;
+    }
+    res.status(result.status);
+    res.json({ error: result.error });
+    return;
+  }
+
   // V4 M9.B.3 — PATCH Zod-validated partial update.
   if (req.method === 'PATCH') {
     if (typeof slug !== 'string' || !slug.trim()) {
@@ -675,7 +937,7 @@ async function handler(req: ProductsReq, res: MinRes): Promise<void> {
   }
 
   if (req.method !== 'GET') {
-    res.setHeader('Allow', 'GET, PATCH, DELETE, OPTIONS');
+    res.setHeader('Allow', 'GET, POST, PATCH, DELETE, OPTIONS');
     res.status(405).end();
     return;
   }

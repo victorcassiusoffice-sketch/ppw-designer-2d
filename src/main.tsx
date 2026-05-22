@@ -29,6 +29,7 @@ import OrderTrackPage from './pages/OrderTrackPage';
 import MerchantAgentPage from './pages/MerchantAgentPage';
 import MerchantDashboardPage from './pages/MerchantDashboardPage';
 import MerchantOnboardingPage from './pages/MerchantOnboardingPage';
+import MerchantAddProductPage from './pages/MerchantAddProductPage';
 import RequireMerchant from './components/RequireMerchant';
 import MyDesignsPage from './pages/MyDesignsPage';
 import { bootstrapFx } from './store/currencyStore';
@@ -96,6 +97,14 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           element={
             <RequireMerchant>
               <MerchantAgentPage />
+            </RequireMerchant>
+          }
+        />
+        <Route
+          path="/merchant/:slug/products/new"
+          element={
+            <RequireMerchant>
+              <MerchantAddProductPage />
             </RequireMerchant>
           }
         />
