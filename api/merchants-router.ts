@@ -29,6 +29,7 @@ import {
 } from './lib/capture/referencePage.js';
 import { handler as signUploadHandler } from './lib/capture/signUpload.js';
 import { handler as calibrateHandler } from './lib/capture/calibrateHandler.js';
+import { handler as uploadProductImageHandler } from './lib/merchants/uploadProductImage.js';
 import { calcDispatch } from './lib/calc/paintCalcHandler.js';
 import { withSentry } from './lib/sentry.js';
 
@@ -139,6 +140,20 @@ async function rootHandler(req: MinimalReq, res: MinimalRes): Promise<void> {
   ) {
     const slug = segments[1];
     return calibrateHandler(slug, req, res);
+  }
+
+  // POST /api/merchants/:slug/products/upload-image — Wellness-Designer-App
+  // chain deliverable (c). Mints a 60-second Vercel Blob client token so
+  // the merchant Add-Product form can PUT a PNG/JPG (≤5 MiB) directly to
+  // Blob. Folded here to hold the 12/12 lambda cap.
+  if (
+    segments[0] === 'merchants'
+    && typeof segments[1] === 'string'
+    && segments[2] === 'products'
+    && segments[3] === 'upload-image'
+  ) {
+    const slug = segments[1];
+    return uploadProductImageHandler(slug, req, res);
   }
 
   // POST /api/calc/:type — Tweak 03 (Phase C) paint calculator + future

@@ -44,6 +44,7 @@
     { "source": "/api/merchants/signup", "destination": "/api/merchants-router" },
     { "source": "/api/merchants/:slug/capture/sign-upload", "destination": "/api/merchants-router" },
     { "source": "/api/merchants/:slug/capture/calibrate", "destination": "/api/merchants-router" },
+    { "source": "/api/merchants/:slug/products/upload-image", "destination": "/api/merchants-router" },
     { "source": "/api/capture/reference-page.pdf", "destination": "/api/merchants-router" },
     { "source": "/api/capture/reference-page-v2.pdf", "destination": "/api/merchants-router" },
     { "source": "/api/calc/(.*)", "destination": "/api/merchants-router" },
