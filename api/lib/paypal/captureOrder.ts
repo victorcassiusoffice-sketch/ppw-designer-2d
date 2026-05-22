@@ -30,6 +30,7 @@ import {
   deriveGreetingName,
 } from '../email/dispatch.js';
 import { fetchMerchantNotifyRowsForOrder } from '../email/merchantOrderLookup.js';
+import { recordPayoutsForOrder } from '../payouts/recordPayoutsForOrder.js';
 
 const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:5173',
@@ -229,6 +230,26 @@ export async function processCaptureRequest(
         console.error(
           '[wellness-designer-app (g) merchant-order-confirmed-email] lookup failed:',
           merchantErr instanceof Error ? merchantErr.message : String(merchantErr),
+        );
+      }
+
+      // Wellness-Designer-App (f) — payout_queue 5% / 95% split. No-op
+      // when order_items is empty (current sandbox state); auto-fires
+      // once order_items population lands. Failures are non-fatal.
+      try {
+        const summary = await recordPayoutsForOrder(v.data.ppwOrderId);
+        if (!summary.ok) {
+          // eslint-disable-next-line no-console
+          console.error(
+            '[wellness-designer-app (f) payout-record] failed:',
+            summary.error ?? summary.skippedReason,
+          );
+        }
+      } catch (payoutErr) {
+        // eslint-disable-next-line no-console
+        console.error(
+          '[wellness-designer-app (f) payout-record] unexpected:',
+          payoutErr instanceof Error ? payoutErr.message : String(payoutErr),
         );
       }
     } catch (emailErr) {
