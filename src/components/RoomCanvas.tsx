@@ -46,10 +46,13 @@ import {
   validatePlacement,
 } from '../lib/geometry';
 import type { PlacedRect, Polygon, Vertex, Viewport } from '../lib/geometry';
-import { RoomDrawLayer, RoomDrawHUD } from './RoomDrawMode';
+import { RoomDrawLayer } from './RoomDrawMode';
 import { WallDrawLayer, WallDrawHUD } from '../designer/WallDrawMode';
 import { useWallStore } from '../store/wallStore';
 import { useHistoryStore } from '../store/historyStore';
+// Batch 3 Fix 3.2 — vertices live in a tiny shared store so the
+// RoomList sidebar can render the live counters next to the room.
+import { useDrawProgressStore } from '../store/drawProgressStore';
 
 // M1.5: HTML5 DragEvent path retired (silently fails on `.konva-stage`
 // per K1 audit). DRAG_MIME stays in ProductPalette for legacy unit
@@ -109,7 +112,12 @@ export function RoomCanvas({
   >(null);
   const [ghostRotation, setGhostRotation] = useState(0);
 
-  const [drawVertices, setDrawVertices] = useState<Polygon>([]);
+  // Batch 3 Fix 3.2 — vertices now live in `useDrawProgressStore` so
+  // RoomList sidebar can subscribe to the same source of truth for the
+  // live counters. The setter API matches the prior React useState
+  // signature (accepts value or updater fn).
+  const drawVertices = useDrawProgressStore((s) => s.vertices);
+  const setDrawVertices = useDrawProgressStore((s) => s.setVertices);
   const [drawHover, setDrawHover] = useState<Vertex | null>(null);
   const [drawName, setDrawName] = useState('New Room');
 
@@ -125,11 +133,11 @@ export function RoomCanvas({
       console.log('[draw-mode]', 'enter Draw mode, reset local state');
       setDrawVertices([]);
       setDrawHover(null);
-      // Fix 2.4 (Vic 2026-05-22): auto-name "Room N" — the user renames
-      // in the left sidebar after close. The HUD no longer has a name
-      // input (visual clutter; Vic crossed it out in the screenshot).
-      const next = usePropertyStore.getState().property.rooms.length + 1;
-      setDrawName(`Room ${next}`);
+      // Batch 3 Fix 3.1 — after Vic's `setDrawMode` wrapper clears all
+      // rooms' items + walls + zones, the property still holds one
+      // empty-active-room placeholder. Auto-name "Room 1" since the
+      // user is starting fresh; rename inline in the sidebar after.
+      setDrawName('Room 1');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drawMode]);
@@ -442,7 +450,18 @@ export function RoomCanvas({
       });
       try {
         const id = addRoom({ name, polygon: newPolygon });
-        usePropertyStore.getState().setActiveRoom(id);
+        const ps = usePropertyStore.getState();
+        ps.setActiveRoom(id);
+        // Batch 3 Fix 3.1 — drop the pre-DRAW rooms so the new polygon
+        // is the only canvas content. The history transaction wrapper
+        // around setDrawMode keeps these mutations in the same undo
+        // frame as the entry-clear, so one Ctrl+Z restores everything.
+        const otherIds = ps.property.rooms
+          .filter((r) => r.id !== id)
+          .map((r) => r.id);
+        for (const otherId of otherIds) {
+          usePropertyStore.getState().removeRoom(otherId);
+        }
         pushToast(
           `New room "${name}" created (${polygonArea(newPolygon).toFixed(2)} m2)`,
           'success',
@@ -451,6 +470,7 @@ export function RoomCanvas({
           reason: 'commit-success',
           vertices: newPolygon.length,
           roomId: id,
+          dropped: otherIds.length,
           success: true,
         });
       } catch (err) {
@@ -472,7 +492,12 @@ export function RoomCanvas({
 
   const handleDrawCancel = useCallback(() => {
     console.log('[draw-mode]', 'cancel');
+    // Batch 3 Fix 3.1 — Esc / Cancel restores the pre-DRAW canvas. The
+    // setDrawMode wrapper opened a history transaction on entry; we end
+    // it here and immediately invoke undo() to pop that snapshot and
+    // apply it, so the user goes back to where they were before DRAW.
     if (onDrawComplete) onDrawComplete();
+    useHistoryStore.getState().undo();
   }, [onDrawComplete]);
 
   const gridLines = useMemo(() => {
@@ -753,17 +778,10 @@ export function RoomCanvas({
         />
       </Stage>
 
-      <RoomDrawHUD
-        enabled={drawMode}
-        vertices={drawVertices}
-        setVertices={setDrawVertices}
-        hover={drawHover}
-        setHover={setDrawHover}
-        name={drawName}
-        setName={setDrawName}
-        onCommit={handleDrawCommit}
-        onCancel={handleDrawCancel}
-      />
+      {/* Batch 3 Fix 3.2 — the floating RoomDrawHUD panel was removed.
+          Vertex / perim / area counters now live in the LEFT RoomList
+          sidebar (active room row). Keyboard remains the only commit
+          path: Enter close · Esc cancel · Ctrl+Z undo last vertex. */}
 
       <WallDrawHUD enabled={wallDrawEnabled && !drawMode} />
 

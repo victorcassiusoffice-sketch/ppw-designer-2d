@@ -23,7 +23,7 @@
  * from a bottom-sheet to the canvas on touch devices).
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { TopBar } from './components/TopBar';
 import { CoachMark, useDarkMode } from './components/uxKit';
 import { ProductPalette } from './components/ProductPalette';
@@ -38,7 +38,18 @@ import { AddRoomChooser } from './components/AddRoomChooser';
 import { CanvasErrorBoundary } from './components/CanvasErrorBoundary';
 import { useKeyboardShortcuts } from './lib/useKeyboardShortcuts';
 import { useAutoSave } from './lib/useAutoSave';
-import { installHistorySubscriptions } from './store/historyStore';
+import {
+  beginDrawTransaction,
+  endDrawTransaction,
+  installHistorySubscriptions,
+} from './store/historyStore';
+// Batch 3 Fix 3.1 — DRAW button click destroys the canvas atomically so
+// the user gets a fresh slate to draw into; Ctrl+Z restores everything.
+import { usePropertyStore } from './store/propertyStore';
+import { useWallStore } from './store/wallStore';
+import { useFloorZoneStore } from './store/floorZoneStore';
+import { useWallTreatmentStore } from './store/wallTreatmentStore';
+import { useDrawProgressStore } from './store/drawProgressStore';
 // Sims-Parity Gaming Layer 1 (V4 default-ON 2026-05-18) — additive overlays
 // mounted on top of the existing Konva render-core. Konva stable-lock 26c144c
 // untouched; classic UI surfaces via `?ui=classic`.
@@ -172,7 +183,31 @@ export default function App() {
   // `<html class="dark">` so Tailwind dark: variants apply globally.
   const [darkMode, toggleDark] = useDarkMode();
 
-  const [drawMode, setDrawMode] = useState(false);
+  const [drawMode, setDrawModeRaw] = useState(false);
+  // Batch 3 Fix 3.1 — wrapped setDrawMode that, on entry, snapshots the
+  // canvas into a single undo frame then wipes items / walls / zones /
+  // wall treatments so the user draws onto an empty stage. On exit it
+  // closes the history transaction. The downstream RoomDrawLayer +
+  // RoomList consume `drawMode` exactly as before.
+  const setDrawMode = useCallback((next: boolean) => {
+    if (next) {
+      beginDrawTransaction('draw new room');
+      // Mass-clear all stores that contribute visible canvas state.
+      usePropertyStore.getState().clearActiveRoomItems();
+      useWallStore.getState().clearWalls();
+      useFloorZoneStore.getState().clearZones();
+      useWallTreatmentStore.getState().clearTreatments();
+      const dp = useDrawProgressStore.getState();
+      dp.setEnabled(true);
+      dp.setVertices([]);
+    } else {
+      const dp = useDrawProgressStore.getState();
+      dp.setEnabled(false);
+      dp.setVertices([]);
+      endDrawTransaction();
+    }
+    setDrawModeRaw(next);
+  }, []);
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [roomsMenuOpen, setRoomsMenuOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
