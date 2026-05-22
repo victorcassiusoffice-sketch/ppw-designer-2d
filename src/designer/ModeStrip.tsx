@@ -32,11 +32,14 @@ export function ModeStrip(props: ModeStripProps): JSX.Element {
       role="toolbar"
       aria-label="Designer mode"
       style={{
-        // PCF-2 — repositioned to top-right of canvas, just below the
-        // StatusCard (was bottom-left where it overlapped CartStrip).
+        // Fix 2.5 (Vic 2026-05-22) — the right-side floating banner
+        // overlapped the canvas. Mode strip now sits bottom-center over
+        // the canvas, above CartStrip (CartStrip is bottom:0; strip sits
+        // ~76px above it so the gold pill clears the cart bar).
         position: 'fixed',
-        top: 152,
-        right: 16,
+        bottom: 76,
+        left: '50%',
+        transform: 'translateX(-50%)',
         zIndex: 700,
         background: 'rgba(245, 239, 230, 0.95)',
         border: `2px solid ${PALETTE.gold}`,

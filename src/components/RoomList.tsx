@@ -20,6 +20,47 @@ import { useState } from 'react';
 import { usePropertyStore } from '../store/propertyStore';
 import { polygonArea } from '../lib/geometry';
 import { useToastStore } from '../store/toastStore';
+// Fix 2.5 + 2.6 (Vic 2026-05-22): ROOM VALUE chip relocated from
+// floating right-side StatusCard into per-row stats. Sum item prices
+// + flooring contribution from the global floor-zone store (active
+// room receives all zones today since zones aren't yet roomId-scoped).
+import { getProductById } from '../data/products';
+import { useFloorZoneStore, type FloorZone } from '../store/floorZoneStore';
+import { findFlooringById } from '../data/paintPalette';
+import type { PlacedItem } from '../store/propertyStore';
+
+/**
+ * Sum the MUR value of items + (active-room only) floor zones.
+ * Floor zones aren't yet roomId-scoped — until they are, only the
+ * active room sees the zone total so we don't double-count.
+ */
+function computeRoomValueMur(
+  items: PlacedItem[],
+  zones: FloorZone[],
+  isActive: boolean,
+): number {
+  let total = 0;
+  for (const it of items) {
+    const p = getProductById(it.productId);
+    if (p && p.price.currency === 'MUR') total += p.price.value;
+  }
+  if (isActive) {
+    for (const z of zones) {
+      const mat = findFlooringById(z.material_id);
+      if (!mat) continue;
+      // Polygon vertices are in mm — shoelace area is mm² ÷ 1e6 → m².
+      let s = 0;
+      for (let i = 0; i < z.polygon.length; i++) {
+        const a = z.polygon[i];
+        const b = z.polygon[(i + 1) % z.polygon.length];
+        s += a.x_mm * b.y_mm - b.x_mm * a.y_mm;
+      }
+      const areaM2 = Math.abs(s) / 2 / 1_000_000;
+      total += areaM2 * mat.price_per_m2_mur;
+    }
+  }
+  return Math.round(total);
+}
 
 export interface RoomListProps {
   /** Called when the user clicks "+ Add room" — parent opens the chooser. */
@@ -39,6 +80,7 @@ export function RoomList({
   const removeRoom = usePropertyStore((s) => s.removeRoom);
   const renameRoom = usePropertyStore((s) => s.renameRoom);
   const renameProperty = usePropertyStore((s) => s.renameProperty);
+  const floorZones = useFloorZoneStore((s) => s.zones);
 
   const pushToast = useToastStore((s) => s.push);
 
@@ -179,6 +221,9 @@ export function RoomList({
                       </p>
                       <p className="mt-0.5 text-[10px] text-ppw-slate">
                         {area.toFixed(2)} m² · {items} item{items === 1 ? '' : 's'}
+                      </p>
+                      <p className="mt-0.5 text-[10px] font-medium text-ppw-teal">
+                        Room value Rs {computeRoomValueMur(room.placedItems, floorZones, isActive).toLocaleString('en-MU')}
                       </p>
                     </button>
                   )}

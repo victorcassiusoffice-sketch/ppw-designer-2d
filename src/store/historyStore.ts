@@ -37,7 +37,6 @@ import { useWallStore, type WallSegment } from './wallStore';
 import { useFloorZoneStore, type FloorZone } from './floorZoneStore';
 import { useWallTreatmentStore } from './wallTreatmentStore';
 import type { WallTreatment } from './wallTreatmentStore';
-import { useToastStore } from './toastStore';
 
 export const HISTORY_LIMIT = 50;
 export const SESSION_PERSIST_LIMIT = 10;
@@ -145,7 +144,9 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     set((s) => ({ past: newPast, future: [...s.future, currentSnap] }));
     applySnapshotInternal(target);
     writeSessionFrames(newPast);
-    useToastStore.getState().push(`Undid: ${target.label ?? 'last action'}`, 'info');
+    // Fix 2.3 (Vic 2026-05-22): undo is silent — no toast. The Ctrl+Z
+    // hotkey is its own feedback; the stack of toasts during fast
+    // repeated undos was visual spam.
   },
 
   redo: () => {
@@ -158,7 +159,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     set((s) => ({ past: [...s.past, currentSnap], future: newFuture }));
     applySnapshotInternal(target);
     writeSessionFrames(get().past);
-    useToastStore.getState().push(`Redid: ${target.label ?? 'last action'}`, 'info');
+    // Fix 2.3 (Vic 2026-05-22): redo is silent for parity with undo.
   },
 
   recordSnapshot: (label) => {

@@ -125,7 +125,11 @@ export function RoomCanvas({
       console.log('[draw-mode]', 'enter Draw mode, reset local state');
       setDrawVertices([]);
       setDrawHover(null);
-      setDrawName('New Room');
+      // Fix 2.4 (Vic 2026-05-22): auto-name "Room N" — the user renames
+      // in the left sidebar after close. The HUD no longer has a name
+      // input (visual clutter; Vic crossed it out in the screenshot).
+      const next = usePropertyStore.getState().property.rooms.length + 1;
+      setDrawName(`Room ${next}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drawMode]);
@@ -827,6 +831,13 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
     itemDragRef,
   } = props;
   const image = useImageCache(product.image_url || null);
+  // Fix 2.1 (Vic 2026-05-22) — render the product art at its TRUE
+  // unrotated footprint and apply Konva rotation visually, so the
+  // user sees the box turn smoothly as the rotate handle drags.
+  // The outer Group still positions by AABB top-left so the existing
+  // collision / drag math stays untouched.
+  const unrotatedWPx = cmToM(product.dimensions_cm.length) * pxPerMetre;
+  const unrotatedHPx = cmToM(product.dimensions_cm.width) * pxPerMetre;
   return (
     <Group
       x={item.x * pxPerMetre}
@@ -911,50 +922,63 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         }
       }}
     >
-      {image ? (
-        <KonvaImage image={image} width={wPx} height={hPx} opacity={0.95} />
-      ) : (
-        <Rect
-          width={wPx}
-          height={hPx}
-          fill={colors.fill}
-          opacity={0.55}
-          stroke={isSelected ? '#06B6D4' : colors.stroke}
-          strokeWidth={isSelected ? 2.5 : 1}
-          cornerRadius={3}
-        />
-      )}
-      {image && isSelected && (
-        <Rect
-          width={wPx}
-          height={hPx}
-          fill="transparent"
-          stroke="#06B6D4"
-          strokeWidth={2.5}
-          cornerRadius={3}
-        />
-      )}
-      <Text
-        x={4}
-        y={4}
-        width={Math.max(wPx - 8, 20)}
-        text={product.name}
-        fontSize={Math.min(12, Math.max(8, wPx / 14))}
-        fontFamily="Inter, sans-serif"
-        fill="#0E1B1F"
+      {/* Inner Group rotates the art around the AABB centre. Konva
+          applies rotation around offsetX/offsetY relative to the inner
+          group origin, so we centre offsets to the unrotated size and
+          place the group at the AABB centre. */}
+      <Group
+        x={wPx / 2}
+        y={hPx / 2}
+        rotation={item.rotation}
+        offsetX={unrotatedWPx / 2}
+        offsetY={unrotatedHPx / 2}
         listening={false}
-        ellipsis
-        wrap="word"
-      />
-      <Text
-        x={4}
-        y={hPx - 14}
-        text={CATEGORY_LABELS[product.category]}
-        fontSize={9}
-        fontFamily="Inter, sans-serif"
-        fill="#3B4A52"
-        listening={false}
-      />
+      >
+        {image ? (
+          <KonvaImage image={image} width={unrotatedWPx} height={unrotatedHPx} opacity={0.95} />
+        ) : (
+          <Rect
+            width={unrotatedWPx}
+            height={unrotatedHPx}
+            fill={colors.fill}
+            opacity={0.55}
+            stroke={isSelected ? '#06B6D4' : colors.stroke}
+            strokeWidth={isSelected ? 2.5 : 1}
+            cornerRadius={3}
+          />
+        )}
+        {image && isSelected && (
+          <Rect
+            width={unrotatedWPx}
+            height={unrotatedHPx}
+            fill="transparent"
+            stroke="#06B6D4"
+            strokeWidth={2.5}
+            cornerRadius={3}
+          />
+        )}
+        <Text
+          x={4}
+          y={4}
+          width={Math.max(unrotatedWPx - 8, 20)}
+          text={product.name}
+          fontSize={Math.min(12, Math.max(8, unrotatedWPx / 14))}
+          fontFamily="Inter, sans-serif"
+          fill="#0E1B1F"
+          listening={false}
+          ellipsis
+          wrap="word"
+        />
+        <Text
+          x={4}
+          y={unrotatedHPx - 14}
+          text={CATEGORY_LABELS[product.category]}
+          fontSize={9}
+          fontFamily="Inter, sans-serif"
+          fill="#3B4A52"
+          listening={false}
+        />
+      </Group>
       {isSelected && (
         <>
           <Circle x={0} y={0} radius={4} fill="#06B6D4" />
