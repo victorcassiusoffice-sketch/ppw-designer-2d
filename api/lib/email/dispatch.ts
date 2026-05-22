@@ -14,7 +14,11 @@
  * unit-testable without spinning up the full handler.
  */
 
-import { renderDesignSaved, renderOrderConfirmed } from './templates.js';
+import {
+  renderDesignSaved,
+  renderOrderConfirmed,
+  renderMerchantOrderConfirmed,
+} from './templates.js';
 import { sendEmail, type SendResult } from './send.js';
 
 export interface DesignLike {
@@ -107,6 +111,84 @@ export async function dispatchOrderConfirmedEmail(order: OrderLike): Promise<Dis
         totalMinor: order.totalMinor,
         currency: order.currency,
         merchantCount: breakdown.length,
+      },
+    });
+    return { fired: true, send };
+  } catch (err) {
+    return {
+      fired: false,
+      skippedReason: 'caller_caught',
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
+/**
+ * Wellness-Designer-App (g) — merchant-side order-confirmed dispatch.
+ *
+ * Given a fully-loaded per-merchant breakdown row, fires ONE email to
+ * that merchant's contact_email. Caller is responsible for the DB JOIN
+ * that produces these rows (typically: orders ⨝ order_items ⨝ merchants
+ * by ppwOrderId). Mirrors the customer-side dispatch contract —
+ * never re-throws; capture/order success is the authoritative outcome.
+ */
+export interface MerchantOrderLine {
+  sku: string;
+  name: string;
+  quantity: number;
+  lineTotalMinor: number;
+}
+
+export interface MerchantNotifyRow {
+  merchantName: string;
+  contactName: string;
+  contactEmail: string;
+  lines: MerchantOrderLine[];
+  subtotalMinor: number;
+}
+
+export async function dispatchMerchantOrderConfirmedEmail(args: {
+  row: MerchantNotifyRow;
+  orderRef: string;
+  customerGreetingName: string;
+  currency: string;
+  dashboardOrigin?: string;
+}): Promise<DispatchResult> {
+  const { row, orderRef, customerGreetingName, currency } = args;
+  if (!row.contactEmail || row.contactEmail.trim().length === 0) {
+    return { fired: false, skippedReason: 'no_customer_email' };
+  }
+  if (row.lines.length === 0) {
+    return { fired: false, skippedReason: 'caller_caught', error: 'no_lines' };
+  }
+  try {
+    const dashboardOrigin = args.dashboardOrigin ?? 'https://designer.ppwellness.co';
+    const slug = row.merchantName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    const dashboardUrl = `${dashboardOrigin}/merchant/${encodeURIComponent(slug || 'merchant')}`;
+    const tpl = renderMerchantOrderConfirmed({
+      merchantName: row.merchantName,
+      contactName: row.contactName,
+      orderRef,
+      customerGreetingName,
+      currency,
+      lines: row.lines,
+      subtotalMinor: row.subtotalMinor,
+      dashboardUrl,
+    });
+    const send = await sendEmail({
+      to: row.contactEmail,
+      subject: tpl.subject,
+      html: tpl.html,
+      template: 'merchant-order-confirmed',
+      payload: {
+        orderRef,
+        merchantName: row.merchantName,
+        lineCount: row.lines.length,
+        subtotalMinor: row.subtotalMinor,
+        currency,
       },
     });
     return { fired: true, send };

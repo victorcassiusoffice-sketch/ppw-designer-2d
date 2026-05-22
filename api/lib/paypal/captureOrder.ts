@@ -24,7 +24,12 @@ import { readPaypalEnv, paypalFetch } from '../paypalClient.js';
 import { getDb } from '../../db/client.js';
 import { orders } from '../../db/schema.js';
 import { sql } from 'drizzle-orm';
-import { dispatchOrderConfirmedEmail } from '../email/dispatch.js';
+import {
+  dispatchOrderConfirmedEmail,
+  dispatchMerchantOrderConfirmedEmail,
+  deriveGreetingName,
+} from '../email/dispatch.js';
+import { fetchMerchantNotifyRowsForOrder } from '../email/merchantOrderLookup.js';
 
 const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:5173',
@@ -191,6 +196,40 @@ export async function processCaptureRequest(
       if (dispatch.skippedReason === 'caller_caught') {
         // eslint-disable-next-line no-console
         console.error('[M9.A.2 order-confirmed-email] caught:', dispatch.error);
+      }
+
+      // Wellness-Designer-App (g) — merchant-side dispatch. Per unique
+      // merchant in the order, fire a separate Resend email. Lookup
+      // failures are non-fatal — capture is the authoritative outcome.
+      try {
+        const merchantRows = await fetchMerchantNotifyRowsForOrder(v.data.ppwOrderId);
+        const customerGreetingName =
+          givenName && givenName.length > 0
+            ? givenName
+            : customerEmail
+              ? deriveGreetingName(customerEmail)
+              : 'a customer';
+        for (const row of merchantRows) {
+          const merchantDispatch = await dispatchMerchantOrderConfirmedEmail({
+            row,
+            orderRef: v.data.ppwOrderId,
+            customerGreetingName,
+            currency,
+          });
+          if (merchantDispatch.skippedReason === 'caller_caught') {
+            // eslint-disable-next-line no-console
+            console.error(
+              '[wellness-designer-app (g) merchant-order-confirmed-email] caught:',
+              merchantDispatch.error,
+            );
+          }
+        }
+      } catch (merchantErr) {
+        // eslint-disable-next-line no-console
+        console.error(
+          '[wellness-designer-app (g) merchant-order-confirmed-email] lookup failed:',
+          merchantErr instanceof Error ? merchantErr.message : String(merchantErr),
+        );
       }
     } catch (emailErr) {
       // eslint-disable-next-line no-console
