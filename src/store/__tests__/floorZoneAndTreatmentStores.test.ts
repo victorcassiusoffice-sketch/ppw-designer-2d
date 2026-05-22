@@ -48,7 +48,7 @@ describe('floorZoneStore — basic actions', () => {
         { x_mm: 2000, y_mm: 1500 },
         { x_mm: 0, y_mm: 1500 },
       ],
-      material_id: 'rubber-gym-mat',
+      material_id: 'k1-rubber-interlock',
     });
     expect(useFloorZoneStore.getState().zones).toHaveLength(1);
     useFloorZoneStore.getState().removeZone(id);
@@ -57,8 +57,8 @@ describe('floorZoneStore — basic actions', () => {
 
   it('clearZones wipes all', () => {
     const fs = useFloorZoneStore.getState();
-    fs.addZone({ polygon: [{ x_mm: 0, y_mm: 0 }], material_id: 'engineered-wood' });
-    fs.addZone({ polygon: [{ x_mm: 0, y_mm: 0 }], material_id: 'polished-concrete' });
+    fs.addZone({ polygon: [{ x_mm: 0, y_mm: 0 }], material_id: 'k1-eva-combat-mat' });
+    fs.addZone({ polygon: [{ x_mm: 0, y_mm: 0 }], material_id: 'k1-epdm-roll-6mm' });
     expect(useFloorZoneStore.getState().zones).toHaveLength(2);
     useFloorZoneStore.getState().clearZones();
     expect(useFloorZoneStore.getState().zones).toHaveLength(0);
@@ -67,7 +67,7 @@ describe('floorZoneStore — basic actions', () => {
   it('persists to localStorage', () => {
     useFloorZoneStore.getState().addZone({
       polygon: [{ x_mm: 0, y_mm: 0 }],
-      material_id: 'fake-grass-turf',
+      material_id: 'k1-outdoor-rubber-tile',
     });
     const raw = localStorage.getItem(FLOOR_ZONES_LS_KEY);
     expect(raw).not.toBeNull();
@@ -102,7 +102,7 @@ describe('historyStore — Phase C stores feed unified snapshot', () => {
   it('records a floor zone add as one undoable frame', () => {
     useFloorZoneStore.getState().addZone({
       polygon: [{ x_mm: 0, y_mm: 0 }],
-      material_id: 'rubber-gym-mat',
+      material_id: 'k1-rubber-interlock',
     });
     expect(useFloorZoneStore.getState().zones).toHaveLength(1);
     useHistoryStore.getState().undo();
@@ -125,7 +125,7 @@ describe('historyStore — Phase C stores feed unified snapshot', () => {
     ps.addItem({ productId: 'mat', x: 1, y: 1, rotation: 0 });
     useFloorZoneStore.getState().addZone({
       polygon: [{ x_mm: 0, y_mm: 0 }],
-      material_id: 'rubber-gym-mat',
+      material_id: 'k1-rubber-interlock',
     });
     useWallTreatmentStore.getState().setTreatment({
       wall_id: 'w4',
