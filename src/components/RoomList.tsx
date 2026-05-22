@@ -16,9 +16,9 @@
  * Falls back to local state if the props are absent (backwards compat).
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { usePropertyStore } from '../store/propertyStore';
-import { polygonArea } from '../lib/geometry';
+import { polygonArea, polygonPerimeter } from '../lib/geometry';
 import { useToastStore } from '../store/toastStore';
 // Fix 2.5 + 2.6 (Vic 2026-05-22): ROOM VALUE chip relocated from
 // floating right-side StatusCard into per-row stats. Sum item prices
@@ -28,6 +28,9 @@ import { getProductById } from '../data/products';
 import { useFloorZoneStore, type FloorZone } from '../store/floorZoneStore';
 import { findFlooringById } from '../data/paintPalette';
 import type { PlacedItem } from '../store/propertyStore';
+// Batch 3 Fix 3.2 — live draw-mode counters (vertex / perim / area)
+// piggy-back the active-room row instead of the deleted floating HUD.
+import { useDrawProgressStore } from '../store/drawProgressStore';
 
 /**
  * Sum the MUR value of items + (active-room only) floor zones.
@@ -81,6 +84,13 @@ export function RoomList({
   const renameRoom = usePropertyStore((s) => s.renameRoom);
   const renameProperty = usePropertyStore((s) => s.renameProperty);
   const floorZones = useFloorZoneStore((s) => s.zones);
+  // Batch 3 Fix 3.2 — vertex / perim / area counters under the active
+  // room while the user is in draw mode. Reads the shared draw-progress
+  // store so RoomCanvas remains the owner of the mutation surface.
+  const drawEnabled = useDrawProgressStore((s) => s.enabled);
+  const drawVertices = useDrawProgressStore((s) => s.vertices);
+  const drawPerim = useMemo(() => polygonPerimeter(drawVertices), [drawVertices]);
+  const drawArea = useMemo(() => polygonArea(drawVertices), [drawVertices]);
 
   const pushToast = useToastStore((s) => s.push);
 
@@ -225,6 +235,21 @@ export function RoomList({
                       <p className="mt-0.5 text-[10px] font-medium text-ppw-teal">
                         Room value Rs {computeRoomValueMur(room.placedItems, floorZones, isActive).toLocaleString('en-MU')}
                       </p>
+                      {isActive && drawEnabled && (
+                        <p
+                          className="mt-1 rounded-sm border border-ppw-teal/40 bg-ppw-teal/10 px-1.5 py-0.5 text-[10px] font-medium leading-tight text-ppw-teal"
+                          data-testid="room-draw-live-counters"
+                        >
+                          <span>{drawVertices.length} vert</span>
+                          {' · '}
+                          <span>perim {drawPerim.toFixed(2)} m</span>
+                          {' · '}
+                          <span>area {drawArea.toFixed(2)} m²</span>
+                          <span className="ml-1 text-[9px] uppercase tracking-wide text-ppw-slate">
+                            Enter to close · Esc cancel
+                          </span>
+                        </p>
+                      )}
                     </button>
                   )}
                   {!isEditing && (

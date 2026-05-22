@@ -333,6 +333,52 @@ function uninstallHistorySubscriptions(): void {
 }
 
 // ---------------------------------------------------------------------------
+// Batch 3 Fix 3.1 — atomic draw-mode transaction.
+//
+// Clicking DRAW destroys the canvas (placedItems, walls, zones, treatments)
+// so the user gets a clean slate to draw on. Vic wants a single Ctrl+Z to
+// restore the pre-DRAW state regardless of whether the user committed a
+// new polygon or cancelled. We achieve that with a transactional pattern:
+//
+//   1. beginDrawTransaction() pushes ONE snapshot of the current state
+//      onto `past`, then flips `suppressRecording` so the immediate
+//      clear-of-everything + the subsequent commit / cancel mutations
+//      don't generate additional undo frames.
+//   2. endDrawTransaction() unflips suppression and resyncs the
+//      `lastSeenSnapshot` baseline so post-draw mutations record normally.
+//
+// On commit: addRoom + remove-old-rooms run inside the transaction;
+//            endDrawTransaction afterwards. Ctrl+Z restores pre-DRAW.
+// On cancel: endDrawTransaction then `undo()` — pops the pre-DRAW frame
+//            and applies it, returning the canvas to where it was.
+// ---------------------------------------------------------------------------
+
+let inDrawTransaction = false;
+
+export function beginDrawTransaction(label = 'draw new room'): void {
+  flushPendingPush();
+  const snap = takeSnapshot(label);
+  useHistoryStore.setState((s) => ({
+    past: capPast([...s.past, snap]),
+    future: [],
+  }));
+  writeSessionFrames(useHistoryStore.getState().past);
+  suppressRecording = true;
+  inDrawTransaction = true;
+}
+
+export function endDrawTransaction(): void {
+  if (!inDrawTransaction) return;
+  inDrawTransaction = false;
+  suppressRecording = false;
+  lastSeenSnapshot = takeSnapshot();
+}
+
+export function isDrawTransactionActive(): boolean {
+  return inDrawTransaction;
+}
+
+// ---------------------------------------------------------------------------
 // Test-only exports — internal harness for unit tests.
 // ---------------------------------------------------------------------------
 
