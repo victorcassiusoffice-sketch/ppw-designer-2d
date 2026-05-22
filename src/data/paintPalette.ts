@@ -171,45 +171,71 @@ export interface EcoFlooringMaterial {
   /** SVG fill / Babylon diffuse colour used as a stand-in until real textures land. */
   hex: string;
   eco_certified: true;
-  /** Price per m² in MUR — placeholder pending Flooring Merchants list. */
+  /** Price per m² in MUR — K1-Sport list price (2026-05-22). */
   price_per_m2_mur: number;
   /** Tagline shown in the flooring catalog tile. */
   tagline: string;
+  /** Source merchant slug (matches `merchants.slug` in the DB). */
+  supplier_slug: string;
+  /** Original K1-Sport SKU / product URL fragment for traceability. */
+  source_ref: string;
 }
 
-/** 4 eco materials per Tweak 02 §2. */
+/**
+ * 4 K1-Sport flooring SKUs seeded 2026-05-22 (Vic-Y picked K1 over
+ * Ideco / Batimex). All four pass the CHARTER eco-bar v1 via
+ * recycled-content rubber crumb / EPDM (commercial gym-grade typical
+ * for the K1 line). Prices are 2026-05-22 list MUR direct from
+ * k1-sport.com/shop-online/category/flooring; per-m² values reflect
+ * tile pack sizes (e.g. 50×50×1.5cm tile = 4 tiles/m², 500 × 4 = 2000).
+ *
+ * IDs were intentionally renamed from the pre-Vic placeholders
+ * (rubber-gym-mat / fake-grass-turf / engineered-wood / polished-concrete);
+ * any local-stored floor zones that referenced the old IDs render
+ * material-less (the canvas draws the polygon outline only) until the
+ * user re-paints — acceptable for Phase A since zones aren't yet
+ * cloud-synced.
+ */
 export const ECO_FLOORING_CATALOG: EcoFlooringMaterial[] = [
   {
-    id: 'rubber-gym-mat',
-    name: 'Rubber Gym Matting',
+    id: 'k1-eva-combat-mat',
+    name: 'K1 EVA Combat Sport Mat',
+    hex: '#1A1A1A',
+    eco_certified: true,
+    price_per_m2_mur: 850,
+    tagline: 'Recycled-EVA crumb · combat & calisthenics · 1m × 1m × 2.5cm',
+    supplier_slug: 'k1-sport',
+    source_ref: 'eva-combat-sport-mat-1m-1m-2-5cm',
+  },
+  {
+    id: 'k1-rubber-interlock',
+    name: 'K1 Interlock Composite Rubber',
     hex: '#2E2E2E',
     eco_certified: true,
-    price_per_m2_mur: 1800,
-    tagline: 'Recycled-rubber crumb · drop-rated for free weights',
+    price_per_m2_mur: 2000,
+    tagline: 'Recycled-rubber crumb · seamless strength-training floor · 50 × 50 × 1.5 cm',
+    supplier_slug: 'k1-sport',
+    source_ref: 'interlock-composite-rubber-50x50-15mm',
   },
   {
-    id: 'fake-grass-turf',
-    name: 'Eco Turf',
-    hex: '#5BA152',
+    id: 'k1-outdoor-rubber-tile',
+    name: 'K1 Outdoor Rubber Tile (Red)',
+    hex: '#4A2020',
     eco_certified: true,
-    price_per_m2_mur: 1400,
-    tagline: '100% recyclable polyethylene turf · sled-pull friendly',
+    price_per_m2_mur: 1500,
+    tagline: 'Recycled-rubber heavy-duty · noise absorption · 1m × 1m × 5cm',
+    supplier_slug: 'k1-sport',
+    source_ref: 'outdoor-rubber-tiles-1m-1m-50mm-red',
   },
   {
-    id: 'engineered-wood',
-    name: 'FSC Engineered Wood',
-    hex: '#B07A3F',
+    id: 'k1-epdm-roll-6mm',
+    name: 'K1 EPDM Rubber Roll 6 mm',
+    hex: '#5A5A5A',
     eco_certified: true,
-    price_per_m2_mur: 2600,
-    tagline: 'FSC-certified oak veneer · low-VOC adhesive',
-  },
-  {
-    id: 'polished-concrete',
-    name: 'Polished Concrete',
-    hex: '#A6A6A4',
-    eco_certified: true,
-    price_per_m2_mur: 1200,
-    tagline: 'Sealed in-situ · long-life finish · no VOCs',
+    price_per_m2_mur: 2500,
+    tagline: 'EPDM seamless roll · cardio / aerobic gym grade',
+    supplier_slug: 'k1-sport',
+    source_ref: 'rubber-flooring-rolls-epdm-6mm-grey',
   },
 ];
 

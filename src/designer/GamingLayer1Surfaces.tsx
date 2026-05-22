@@ -13,14 +13,12 @@
  * so totalValueMur = 0 is correct here.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { HelpLauncherIcon, HelpOverlay } from './HelpOverlay';
-import { StatusCard } from './StatusCard';
 import { ModeStrip } from './ModeStrip';
 import { EngineToggle } from './babylon/EngineToggle';
 import { isGamingV1Active } from './gamingV1Flag';
 import { useDesignStore } from '../store/designStore';
-import { computeRoomStats } from './useRoomStats';
 import { useDesignerMode, type DesignerMode } from './useDesignerMode';
 import { useWallStore } from '../store/wallStore';
 import { useToastStore } from '../store/toastStore';
@@ -28,8 +26,6 @@ import { useToastStore } from '../store/toastStore';
 export function GamingLayer1Surfaces(): JSX.Element | null {
   // Always call hooks unconditionally; gate the render at the bottom.
   const active = isGamingV1Active();
-  const placedItems = useDesignStore((s) => s.placedItems);
-  const roomDimensions = useDesignStore((s) => s.roomDimensions);
   const [mode, setMode] = useDesignerMode('move');
   const setWallDraw = useWallStore((s) => s.setDraw);
   const wallDrawPhase = useWallStore((s) => s.draw.phase);
@@ -97,19 +93,15 @@ export function GamingLayer1Surfaces(): JSX.Element | null {
     }
   }, []);
 
-  const stats = useMemo(() => {
-    return computeRoomStats({
-      items: placedItems.map((p) => ({ productId: p.productId, priceMur: 0 })),
-      roomWidthMm: Math.round(roomDimensions.lengthM * 1000),
-      roomDepthMm: Math.round(roomDimensions.widthM * 1000),
-    });
-  }, [placedItems, roomDimensions.lengthM, roomDimensions.widthM]);
-
   if (!active) return null;
+
+  // Fix 2.5 (Vic 2026-05-22): StatusCard was a floating right-side card
+  // with ROOM VALUE / ITEMS / FLOOR AREA. Vic crossed it out — those
+  // metrics now live inline in the left RoomList sidebar (per-room).
+  // ModeStrip stays as the mode picker but repositions to bottom-center.
 
   return (
     <>
-      <StatusCard stats={stats} />
       <ModeStrip
         active={mode}
         onChange={handleModeChange}

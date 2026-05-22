@@ -424,7 +424,6 @@ export function RoomDrawHUD({
   setVertices,
   setHover,
   name,
-  setName,
   onCommit,
   onCancel,
 }: RoomDrawHUDProps) {
@@ -481,16 +480,10 @@ export function RoomDrawHUD({
           Tap to drop &middot; tap first vertex to close
         </span>
       </div>
-      <div className="flex items-center gap-2">
-        <label className="text-[10px] uppercase tracking-wide text-ppw-slate">Room</label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="flex-1 rounded-md border border-ppw-stone bg-ppw-sand px-2 py-1.5 text-sm font-medium text-ppw-ink focus:border-ppw-teal focus:outline-none focus:ring-1 focus:ring-ppw-teal"
-          data-testid="room-draw-name"
-        />
-      </div>
+      {/* Fix 2.4 (Vic 2026-05-22): the ROOM name input was removed from
+          the HUD — auto-named "Room N", renamed inline from the left
+          sidebar after close. The HUD now shows only vertex/perim/area
+          counters + instruction + action buttons. */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-ppw-slate">
           <span data-testid="room-draw-vertices-count">

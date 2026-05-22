@@ -50,6 +50,7 @@ import subscriptionsJson from '../src/data/subscriptions.json' with { type: 'jso
 
 interface RouterReq extends MinReq {
   body?: unknown;
+  query?: Record<string, string | string[] | undefined>;
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -1157,7 +1158,7 @@ export function buildReconcileCsv(rows: ReconcileCsvRow[]): string {
   ];
   const lines = [header.join(',')];
   for (const r of rows) {
-    lines.push(header.map((h) => csvEscape((r as Record<string, unknown>)[h])).join(','));
+    lines.push(header.map((h) => csvEscape((r as unknown as Record<string, unknown>)[h])).join(','));
   }
   return lines.join('\r\n') + '\r\n';
 }
@@ -1275,8 +1276,8 @@ async function handleCommissionReconcile(req: RouterReq, res: MinRes): Promise<v
   res.setHeader('Content-Disposition', `attachment; filename="${parsed.filename}"`);
   res.setHeader('Cache-Control', 'no-store');
   res.status(200);
-  if (typeof (res as { send?: (b: string) => void }).send === 'function') {
-    (res as { send: (b: string) => void }).send(csv);
+  if (typeof (res as unknown as { send?: (b: string) => void }).send === 'function') {
+    (res as unknown as { send: (b: string) => void }).send(csv);
   } else {
     res.end(csv);
   }
