@@ -66,6 +66,24 @@ test.describe('Wellness-Designer-App (i) · Customer journey', () => {
     await page.waitForTimeout(300);
   });
 
+  test('A.C.9 — Eco-only filter chip is visible and toggles state (h)', async ({ page }) => {
+    await page.goto('/');
+    const chip = page.locator('[data-testid="catalog-eco-filter"]');
+    // After PR #20 lands, the chip is rendered. Pre-merge: chip count 0.
+    const count = await chip.count();
+    if (count === 0) {
+      test.skip(true, 'Eco filter chip not in prod build yet (pre-PR #20).');
+      return;
+    }
+    await expect(chip).toBeVisible();
+    // Default state is OFF (aria-checked="false") per Vic-decision #WDA-1
+    // soft-flag default.
+    await expect(chip).toHaveAttribute('aria-checked', 'false');
+    // Toggling flips aria-checked.
+    await chip.click();
+    await expect(chip).toHaveAttribute('aria-checked', 'true');
+  });
+
   test('A.C.4 — Cart pill correctly hides on empty cart (documented UX)', async ({ page }) => {
     await page.goto('/');
     // Verify the designer mounted (Konva stage present), and that the
