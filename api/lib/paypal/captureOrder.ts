@@ -32,6 +32,7 @@ import {
 import { fetchMerchantNotifyRowsForOrder } from '../email/merchantOrderLookup.js';
 import { recordPayoutsForOrder } from '../payouts/recordPayoutsForOrder.js';
 import { recordOrderItemsForOrder } from '../payouts/recordOrderItemsForOrder.js';
+import { recordReferralsForOrder } from '../payouts/recordReferralsForOrder.js';
 
 const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:5173',
@@ -278,6 +279,27 @@ export async function processCaptureRequest(
         console.error(
           '[wellness-designer-app (f) payout-record] unexpected:',
           payoutErr instanceof Error ? payoutErr.message : String(payoutErr),
+        );
+      }
+
+      // Wellness-Designer-App (f) closure — designer_referrals rows for
+      // inbound Pattern-B cart purchases (one row per order line).
+      // Idempotent via deterministic refCode + DB unique constraint.
+      // Non-fatal — capture is the authoritative outcome.
+      try {
+        const refSummary = await recordReferralsForOrder(v.data.ppwOrderId);
+        if (!refSummary.ok) {
+          // eslint-disable-next-line no-console
+          console.error(
+            '[wellness-designer-app (f) referral-record] failed:',
+            refSummary.error ?? refSummary.skippedReason,
+          );
+        }
+      } catch (refErr) {
+        // eslint-disable-next-line no-console
+        console.error(
+          '[wellness-designer-app (f) referral-record] unexpected:',
+          refErr instanceof Error ? refErr.message : String(refErr),
         );
       }
     } catch (emailErr) {
