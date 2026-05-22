@@ -67,6 +67,10 @@ export const CATEGORY_LABELS: Record<ProductCategory, string> = {
   massage: 'Massage',
   sauna: 'Sauna',
   fitness: 'Fitness',
+  // Wellness-Designer-App (e/h) — Tweak 05 macro-category alignment.
+  flooring: 'Flooring',
+  walls: 'Walls',
+  decor: 'Decor',
   other: 'Other',
 };
 
@@ -122,6 +126,11 @@ export const CATEGORY_FILL: Record<ProductCategory, { fill: string; stroke: stri
   massage:          { fill: '#E9DCC2', stroke: '#C0A67E' },
   sauna:            { fill: '#DAA060', stroke: '#7A4F1F' },
   fitness:          { fill: '#C0C0C0', stroke: '#404040' },
+  // Wellness-Designer-App (e/h) — Tweak 05 macro fills. Warm earth
+  // tones for flooring; cool grey-blue for walls; sage for decor.
+  flooring:         { fill: '#D7C3A0', stroke: '#7C5E3C' },
+  walls:            { fill: '#C8D0D8', stroke: '#3B4A52' },
+  decor:            { fill: '#B6C8B0', stroke: '#5A7A60' },
   other:            { fill: '#F5EFE6', stroke: '#C0A67E' },
 };
 
@@ -186,6 +195,28 @@ export function thumbnailFor(category: ProductCategory): string {
         <circle cx="18" cy="33" r="4" fill="#404040"/>
         <circle cx="46" cy="33" r="4" fill="#404040"/>
         <rect x="22" y="18" width="20" height="6" rx="1" fill="#0E0E10"/>
+      </svg>`;
+    case 'flooring':
+      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="8" y="8" width="48" height="48" rx="2" fill="#D7C3A0" stroke="#7C5E3C" stroke-width="2"/>
+        <line x1="8" y1="20" x2="56" y2="20" stroke="#7C5E3C" stroke-width="1.2" opacity="0.5"/>
+        <line x1="8" y1="32" x2="56" y2="32" stroke="#7C5E3C" stroke-width="1.2" opacity="0.5"/>
+        <line x1="8" y1="44" x2="56" y2="44" stroke="#7C5E3C" stroke-width="1.2" opacity="0.5"/>
+        <line x1="20" y1="8" x2="20" y2="56" stroke="#7C5E3C" stroke-width="1.2" opacity="0.3"/>
+        <line x1="32" y1="8" x2="32" y2="56" stroke="#7C5E3C" stroke-width="1.2" opacity="0.3"/>
+        <line x1="44" y1="8" x2="44" y2="56" stroke="#7C5E3C" stroke-width="1.2" opacity="0.3"/>
+      </svg>`;
+    case 'walls':
+      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="6" y="10" width="52" height="44" fill="#C8D0D8" stroke="#3B4A52" stroke-width="2"/>
+        <rect x="12" y="16" width="10" height="14" fill="none" stroke="#3B4A52" stroke-width="1.2" opacity="0.5"/>
+        <rect x="26" y="16" width="10" height="14" fill="none" stroke="#3B4A52" stroke-width="1.2" opacity="0.5"/>
+        <rect x="40" y="16" width="10" height="14" fill="none" stroke="#3B4A52" stroke-width="1.2" opacity="0.5"/>
+      </svg>`;
+    case 'decor':
+      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="32" cy="32" r="20" fill="#B6C8B0" stroke="#5A7A60" stroke-width="2"/>
+        <path d="M32 14 L36 28 L50 28 L38 36 L42 50 L32 42 L22 50 L26 36 L14 28 L28 28 Z" fill="#5A7A60" opacity="0.4"/>
       </svg>`;
     case 'other':
       return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
