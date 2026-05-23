@@ -41,7 +41,7 @@ export async function fetchMerchantNotifyRowsForOrder(
   const itemRows = await db
     .select({
       merchantId: schema.orderItems.merchantId,
-      merchantName: schema.merchants.name,
+      merchantName: schema.merchants.businessName,
       merchantContactName: schema.merchants.contactName,
       merchantContactEmail: schema.merchants.contactEmail,
       sku: schema.orderItems.sku,
