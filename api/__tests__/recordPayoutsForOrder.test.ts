@@ -29,7 +29,7 @@ vi.mock('../db/client.js', () => {
     limit(_n: number) {
       return Promise.resolve(builder._orderLookup);
     },
-    then(this: typeof builder, resolve: (v: unknown[]) => void) {
+    then(resolve: (v: unknown[]) => void) {
       resolve(builder._itemRows);
       return undefined;
     },

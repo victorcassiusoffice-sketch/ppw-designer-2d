@@ -30,7 +30,7 @@ vi.mock('../db/client.js', () => {
       return Promise.resolve(builder._orderLookup);
     },
     // After innerJoin + where, the await resolves the orderItems thenable
-    then(this: typeof builder, resolve: (v: unknown[]) => void) {
+    then(resolve: (v: unknown[]) => void) {
       resolve(builder._itemRows);
       return undefined;
     },
@@ -52,7 +52,7 @@ vi.mock('../db/client.js', () => {
       merchants: {
         _name: 'merchants',
         id: {},
-        name: {},
+        businessName: {},
         contactName: {},
         contactEmail: {},
       },

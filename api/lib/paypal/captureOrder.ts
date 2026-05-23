@@ -31,7 +31,7 @@ import {
 } from '../email/dispatch.js';
 import { fetchMerchantNotifyRowsForOrder } from '../email/merchantOrderLookup.js';
 import { recordPayoutsForOrder } from '../payouts/recordPayoutsForOrder.js';
-import { recordOrderItemsForOrder } from '../payouts/recordOrderItemsForOrder.js';
+import { recordOrderItemsForOrder, type PaypalCaptureItem } from '../payouts/recordOrderItemsForOrder.js';
 import { recordReferralsForOrder } from '../payouts/recordReferralsForOrder.js';
 
 const ALLOWED_ORIGINS = new Set([
@@ -94,6 +94,9 @@ interface PaypalCaptureResponse {
     name?: { given_name?: string; surname?: string };
   };
   purchase_units?: Array<{
+    // PayPal echoes the items[] array we sent at create-order time when it
+    // returns the capture response — recordOrderItemsForOrder reads them.
+    items?: PaypalCaptureItem[];
     payments?: {
       captures?: Array<{
         id?: string;
