@@ -108,11 +108,17 @@ describe('MerchantDashboardPage (M5)', () => {
     expect(html).toContain('PPW Merchant');
     expect(html).toContain('demo-supplier-cn');
     expect(html).toContain('+ Add product');
-    // The CTA links to the existing M4 agent surface.
+    // Wellness-Designer-App (c) part 2 — CTA now routes to the new self-
+    // service form. The conversational agent surface stays available via
+    // the "Open agent" secondary CTA.
     const addProductLink = container.querySelector(
       '[data-testid="merchant-dashboard-add-product"]',
     ) as HTMLAnchorElement | null;
-    expect(addProductLink?.getAttribute('href')).toBe('/merchant/demo-supplier-cn/agent');
+    expect(addProductLink?.getAttribute('href')).toBe('/merchant/demo-supplier-cn/products/new');
+    const agentLink = container.querySelector(
+      '[data-testid="merchant-dashboard-agent"]',
+    ) as HTMLAnchorElement | null;
+    expect(agentLink?.getAttribute('href')).toBe('/merchant/demo-supplier-cn/agent');
   });
 
   it('renders the product grid when /api/merchants/:slug/products returns rows', async () => {
