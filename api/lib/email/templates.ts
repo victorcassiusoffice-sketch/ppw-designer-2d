@@ -173,6 +173,63 @@ export function renderMerchantOnboard(data: MerchantOnboardData): { subject: str
   return { subject, html };
 }
 
+/**
+ * Wellness-Designer-App (g) — merchant-side order-confirmed template.
+ *
+ * Sent to a merchant's contact_email when one of their products is
+ * purchased through PPW. The merchant sees: which customer (email-prefix
+ * proxy, not full email — privacy-respecting), which of their SKUs sold,
+ * the per-line subtotal, and the dashboard link to inspect the order.
+ */
+export interface MerchantOrderConfirmedData {
+  merchantName: string;
+  contactName: string;
+  orderRef: string;
+  customerGreetingName: string;
+  currency: string;
+  /** Lines belonging to this merchant only. */
+  lines: Array<{
+    sku: string;
+    name: string;
+    quantity: number;
+    lineTotalMinor: number;
+  }>;
+  /** subtotalMinor of all this merchant's lines (sum of line_total_minor). */
+  subtotalMinor: number;
+  dashboardUrl: string;
+}
+
+export function renderMerchantOrderConfirmed(
+  data: MerchantOrderConfirmedData,
+): { subject: string; html: string } {
+  const subject = `New PPW order — ${data.orderRef}`;
+  const fmt = (minor: number, currency: string): string =>
+    `${escapeHtml(currency)} ${(currency === 'MUR' ? minor : minor / 100).toLocaleString('en-GB', { maximumFractionDigits: 2 })}`;
+  const rows = data.lines
+    .map(
+      (l) =>
+        `<tr><td style="padding:6px 0;color:${PALETTE.ink};"><strong>${escapeHtml(l.sku)}</strong> · ${escapeHtml(l.name)}</td><td style="padding:6px 0;color:${PALETTE.ink};text-align:right;">${l.quantity}× · ${fmt(l.lineTotalMinor, data.currency)}</td></tr>`,
+    )
+    .join('');
+  const html = shell(
+    `
+    <p style="font-size:17px;margin:0 0 12px;color:${PALETTE.ink};">${escapeHtml(data.contactName)},</p>
+    <p>You have a new order on the Peak Performance Wellness Marketplace from <strong>${escapeHtml(data.customerGreetingName)}</strong>. Order reference: <strong>${escapeHtml(data.orderRef)}</strong>.</p>
+    <table style="width:100%;border-collapse:collapse;margin-top:14px;font-size:14px;">
+      <thead><tr><th style="text-align:left;padding:6px 0;border-bottom:1px solid ${PALETTE.gold};color:${PALETTE.goldDeep};">Your lines</th><th style="text-align:right;padding:6px 0;border-bottom:1px solid ${PALETTE.gold};color:${PALETTE.goldDeep};">Qty / total</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr><td style="padding:10px 0 0;color:${PALETTE.goldDeep};font-weight:600;">Subtotal (your portion)</td><td style="padding:10px 0 0;color:${PALETTE.goldDeep};font-weight:600;text-align:right;">${fmt(data.subtotalMinor, data.currency)}</td></tr></tfoot>
+    </table>
+    <p style="margin-top:18px;">PPW's 5% platform commission is settled on the monthly reconciliation cycle. The customer will track this order from their own dashboard; you don't need to email them directly unless something material changes.</p>
+    <p style="margin-top:20px;text-align:center;">
+      <a href="${escapeHtml(data.dashboardUrl)}" style="display:inline-block;background:${PALETTE.gold};color:${PALETTE.dark};padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;letter-spacing:0.3px;">Open merchant dashboard</a>
+    </p>
+    `,
+    "Each new order is a feedback signal on which products your local nervous-system audience actually wants. Treat the dashboard's ranking as a research dataset, not just a ledger.",
+  );
+  return { subject, html };
+}
+
 export interface OrderShippedData {
   customerName: string;
   orderRef: string;
