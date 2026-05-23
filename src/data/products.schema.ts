@@ -37,6 +37,13 @@ export type ProductCategory =
   | 'massage'
   | 'sauna'
   | 'fitness'
+  // Wellness-Designer-App (e) — engineering plumbing for the Flooring
+  // macro tab. Products tagged 'flooring' (via merchant signup or seed)
+  // land in the Flooring tab via PRODUCT_TO_MACRO. Data side is
+  // Vic-decision #WDA-5 gated — schema is ready when SKUs arrive.
+  | 'flooring'
+  | 'walls'
+  | 'decor'
   | 'other';
 
 export type DesignerStatus = 'Not Started' | 'In Progress' | 'Blocked' | 'Done';

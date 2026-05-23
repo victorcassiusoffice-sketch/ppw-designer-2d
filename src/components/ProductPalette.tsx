@@ -91,6 +91,13 @@ const PRODUCT_TO_MACRO: Record<ProductCategory, MacroCategory> = {
   'sleep-pod': 'recovery',
   sauna: 'sauna',
   plant: 'decor',
+  // Wellness-Designer-App (e) — engineering-side plumbing.
+  // Products with ProductCategory 'flooring' / 'walls' / 'decor' now
+  // route to the matching macro tab. Data side (which products?)
+  // pends Vic-decision #WDA-5.
+  flooring: 'flooring',
+  walls: 'walls',
+  decor: 'decor',
   other: 'decor',
 };
 
