@@ -31,6 +31,7 @@ import {
 } from '../email/dispatch.js';
 import { fetchMerchantNotifyRowsForOrder } from '../email/merchantOrderLookup.js';
 import { recordPayoutsForOrder } from '../payouts/recordPayoutsForOrder.js';
+import { recordOrderItemsForOrder } from '../payouts/recordOrderItemsForOrder.js';
 
 const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:5173',
@@ -176,6 +177,33 @@ export async function processCaptureRequest(
     }
     // Recorder failures are non-fatal - the webhook will reconcile.
     await recorder(v.data.ppwOrderId, v.data.paypalOrderId, json);
+
+    // Wellness-Designer-App (f) part 2 — populate order_items from the
+    // capture's purchase_units[].items[] so the payout + merchant-email
+    // pipelines have data to operate on. Non-fatal; capture authoritative.
+    try {
+      const itemsSummary = await recordOrderItemsForOrder(v.data.ppwOrderId, json);
+      if (!itemsSummary.ok) {
+        // eslint-disable-next-line no-console
+        console.error(
+          '[wellness-designer-app (f) order-items-record] failed:',
+          itemsSummary.error ?? itemsSummary.skippedReason,
+        );
+      } else if (itemsSummary.skippedSkus && itemsSummary.skippedSkus.length > 0) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          '[wellness-designer-app (f) order-items-record] SKUs not in catalog:',
+          itemsSummary.skippedSkus.join(', '),
+        );
+      }
+    } catch (itemsErr) {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[wellness-designer-app (f) order-items-record] unexpected:',
+        itemsErr instanceof Error ? itemsErr.message : String(itemsErr),
+      );
+    }
+
     // M9.A.2 — order-confirmed email. Best-effort; capture is the
     // authoritative outcome and the email is a courtesy. The dispatch
     // helper itself never re-throws, but we still defensively wrap
