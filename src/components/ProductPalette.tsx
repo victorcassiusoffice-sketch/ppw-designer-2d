@@ -140,6 +140,14 @@ export function ProductPalette({
   // tab bar across the top.
   const [activeCategory, setActiveCategory] = useState<MacroCategory>('all');
   const [region, setRegion] = useState<RegionGroup>(() => readRegionLs());
+  // Wellness-Designer-App (h) — eco-only catalog filter chip.
+  // Default OFF (soft-flag) per chain Vic-Y #WDA-1 ("hard-filter vs
+  // soft-flag" — soft is the safe shipping default until Vic flips and
+  // products are eco-tagged). When ON, hides products whose
+  // `eco_certified !== true`. Once Sustainability charter signs off K1
+  // SKUs + Vic flips #WDA-1 to hard-filter, change `useState(false)` to
+  // `useState(true)` (one-line flip).
+  const [ecoOnly, setEcoOnly] = useState(false);
   const [mobileOpenLocal, setMobileOpenLocal] = useState(false);
   const mobileOpen = mobileOpenProp ?? mobileOpenLocal;
   const setMobileOpen = setMobileOpenProp ?? setMobileOpenLocal;
@@ -217,9 +225,15 @@ export function ProductPalette({
     if (activeCategory !== 'all') {
       base = base.filter((p) => macroOf(p) === activeCategory);
     }
+    // Wellness-Designer-App (h) — eco-only hard-filter when chip is ON.
+    // Undefined eco_certified is treated as `false` per the schema
+    // comment ("missing flag never sneaks into the eco-only view").
+    if (ecoOnly) {
+      base = base.filter((p) => p.eco_certified === true);
+    }
     return base;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, activeCategory, region, allProducts]);
+  }, [query, activeCategory, region, ecoOnly, allProducts]);
 
   // M1.5: kept for legacy DataTransfer consumers (e.g. external DnD
   // tests). The primary placement path is now the pointer-FSM: clicking
@@ -257,6 +271,33 @@ export function ProductPalette({
           onChange={(e) => setQuery(e.target.value)}
           className="mt-3 w-full rounded-md border border-ppw-stone bg-ppw-sand px-2.5 py-2 text-sm placeholder:text-ppw-slate/70 focus:border-ppw-teal focus:outline-none focus:ring-1 focus:ring-ppw-teal"
         />
+        {/* Wellness-Designer-App (h) — eco-only filter chip. Default OFF
+            (soft-flag) per Vic-decision #WDA-1; flip to default ON when
+            Vic confirms hard-filter mode + Sustainability charter has
+            tagged K1 SKUs. */}
+        <div className="mt-2 flex items-center gap-2">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={ecoOnly}
+            onClick={() => setEcoOnly((v) => !v)}
+            data-testid="catalog-eco-filter"
+            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition ${
+              ecoOnly
+                ? 'border-emerald-700 bg-emerald-100 text-emerald-900'
+                : 'border-ppw-stone bg-white text-ppw-slate hover:border-emerald-500/50'
+            }`}
+            title="Show only products that pass the eco-certified filter"
+          >
+            <span aria-hidden="true">{ecoOnly ? '✓' : '○'}</span>
+            <span>Eco-only</span>
+          </button>
+          {ecoOnly && (
+            <span className="text-[10px] text-ppw-slate">
+              {filtered.length === 0 ? 'No eco-tagged products yet' : ''}
+            </span>
+          )}
+        </div>
         <label className="mt-2 block text-[10px] uppercase tracking-wide text-ppw-slate">
           Delivery region
         </label>
