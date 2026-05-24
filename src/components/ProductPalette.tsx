@@ -127,17 +127,16 @@ function readRegionLs(): RegionGroup {
 }
 
 export interface ProductPaletteProps {
-  /** Mobile UX (fix/mobile-ux-v1): drawer state lifted to App.tsx. */
-  mobileOpen?: boolean;
-  setMobileOpen?: (v: boolean) => void;
-  /** Tap-to-place fallback for touch devices. */
+  /**
+   * Desktop hover "Place on floor" arms tap-to-place. The mobile catalog
+   * is now the SimsBottomToolbar (< 1024 px); this sidebar renders only
+   * at ≥ 1024 px (`lg:`), so the old mobile drawer props were removed.
+   */
   pendingProductId?: string | null;
   setPendingProductId?: (id: string | null) => void;
 }
 
 export function ProductPalette({
-  mobileOpen: mobileOpenProp,
-  setMobileOpen: setMobileOpenProp,
   pendingProductId,
   setPendingProductId,
 }: ProductPaletteProps = {}) {
@@ -155,9 +154,6 @@ export function ProductPalette({
   // SKUs + Vic flips #WDA-1 to hard-filter, change `useState(false)` to
   // `useState(true)` (one-line flip).
   const [ecoOnly, setEcoOnly] = useState(false);
-  const [mobileOpenLocal, setMobileOpenLocal] = useState(false);
-  const mobileOpen = mobileOpenProp ?? mobileOpenLocal;
-  const setMobileOpen = setMobileOpenProp ?? setMobileOpenLocal;
   // P0-ζ — Sims-style floating hover card (only on devices with a real
   // pointer; touch devices skip it because the catalog is a bottom-sheet
   // and the floating overlay would block the place-on-floor tap).
@@ -259,14 +255,6 @@ export function ProductPalette({
       <div className="border-b border-ppw-stone px-4 py-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-ppw-slate">Catalog</h2>
-          <button
-            type="button"
-            onClick={() => setMobileOpen(false)}
-            className="md:hidden min-h-[36px] rounded-md border border-ppw-stone bg-white px-2.5 text-xs text-ppw-slate"
-            aria-label="Close catalog"
-          >
-            Close
-          </button>
         </div>
         <p className="mt-0.5 text-[11px] text-ppw-slate">
           {filtered.length} of {allProducts.length} products · ships to {region}
@@ -375,23 +363,13 @@ export function ProductPalette({
                     onPointerDown={(e) => {
                       if (!setPendingProductId) return;
                       if (e.button !== 0) return;
-                      if (isPending) {
-                        setPendingProductId(null);
-                      } else {
-                        setPendingProductId(p.id);
-                        setMobileOpen(false);
-                      }
+                      setPendingProductId(isPending ? null : p.id);
                     }}
                     onKeyDown={(e) => {
                       if (!setPendingProductId) return;
                       if (e.key !== 'Enter' && e.key !== ' ') return;
                       e.preventDefault();
-                      if (isPending) {
-                        setPendingProductId(null);
-                      } else {
-                        setPendingProductId(p.id);
-                        setMobileOpen(false);
-                      }
+                      setPendingProductId(isPending ? null : p.id);
                     }}
                     className={`group flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-md border bg-white p-1 transition hover:border-ppw-teal hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-ppw-teal active:bg-ppw-mist ${
                       isPending ? 'border-ppw-teal ring-2 ring-ppw-teal/40' : 'border-ppw-stone'
@@ -429,35 +407,11 @@ export function ProductPalette({
 
   return (
     <>
-      <aside className="hidden md:flex h-full w-72 flex-col border-r border-ppw-stone bg-white">
+      {/* Desktop catalog sidebar — ≥ 1024 px only. Below that the
+          SimsBottomToolbar is the catalog (mobile/tablet Sims mode). */}
+      <aside className="hidden lg:flex h-full w-72 flex-col border-r border-ppw-stone bg-white">
         {body}
       </aside>
-
-      <button
-        type="button"
-        onClick={() => setMobileOpen(true)}
-        className={`md:hidden fixed left-4 z-30 min-h-[44px] rounded-full bg-ppw-teal px-4 py-2.5 text-sm font-semibold text-white shadow-lg ${
-          mobileOpen ? 'hidden' : ''
-        }`}
-        style={{ bottom: 'max(1rem, env(safe-area-inset-bottom))' }}
-      >
-        Catalog ({filtered.length})
-      </button>
-
-      {mobileOpen && (
-        <>
-          <div
-            className="md:hidden fixed inset-0 z-40 bg-black/30"
-            onClick={() => setMobileOpen(false)}
-          />
-          <aside
-            className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex h-[80vh] flex-col rounded-t-2xl border-t border-ppw-stone bg-white shadow-2xl"
-            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-          >
-            {body}
-          </aside>
-        </>
-      )}
       {hover && (
         <div
           data-testid="product-hover-card"

@@ -45,8 +45,6 @@ export interface TopBarProps {
   /** Mobile UX (fix/mobile-ux-v1) — Rooms drawer state lifted to App. */
   roomsMenuOpen?: boolean;
   setRoomsMenuOpen?: (v: boolean) => void;
-  /** Mobile UX (fix/mobile-ux-v1) — opens the Catalog bottom sheet. */
-  onOpenCatalog?: () => void;
   /**
    * Polish B / V4-AU-1 conflict resolution: the 3D-preview toggle
    * migrates from the canvas top-right slot (now reserved for the
@@ -61,7 +59,6 @@ export function TopBar({
   setDrawMode,
   roomsMenuOpen = false,
   setRoomsMenuOpen,
-  onOpenCatalog,
   threeDPreview = false,
   setThreeDPreview,
 }: TopBarProps) {
@@ -505,17 +502,6 @@ export function TopBar({
           />
           <div className="md:hidden absolute right-2 top-full z-40 mt-1 w-64 rounded-lg border border-ppw-stone bg-white p-2 shadow-2xl">
             <div className="flex flex-col gap-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  if (onOpenCatalog) onOpenCatalog();
-                  setShowMobileMenu(false);
-                }}
-                className="flex min-h-[44px] items-center justify-between rounded-md border border-ppw-stone bg-white px-3 text-sm font-medium text-ppw-ink hover:border-ppw-teal"
-              >
-                <span>Catalog</span>
-                <span className="text-[10px] text-ppw-slate">products</span>
-              </button>
               <Link
                 to="/cart"
                 onClick={() => setShowMobileMenu(false)}

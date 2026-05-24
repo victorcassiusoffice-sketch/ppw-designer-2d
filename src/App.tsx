@@ -36,6 +36,10 @@ import { MiniCartPill } from './components/cart/MiniCartPill';
 import { CartDrawer } from './components/cart/CartDrawer';
 import { AddRoomChooser } from './components/AddRoomChooser';
 import { CanvasErrorBoundary } from './components/CanvasErrorBoundary';
+// Mobile Sims rebuild (2026-05-23) — persistent sticky catalog toolbar
+// for viewports < 1024 px. Replaces the old mobile bottom-sheet + the
+// "Catalog" button. Desktop (≥ 1024 px) keeps the ProductPalette sidebar.
+import { SimsBottomToolbar } from './components/mobile/SimsBottomToolbar';
 import { useKeyboardShortcuts } from './lib/useKeyboardShortcuts';
 import { useAutoSave } from './lib/useAutoSave';
 import {
@@ -210,7 +214,6 @@ export default function App() {
   }, []);
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [roomsMenuOpen, setRoomsMenuOpen] = useState(false);
-  const [catalogOpen, setCatalogOpen] = useState(false);
   const [pendingProductId, setPendingProductId] = useState<string | null>(null);
   // Tweak 06 (Phase A) — the OMS Wave 2.4 top-of-screen CSS-perspective
   // 3D preview was removed per Vic's 2026-05-21 designer test (Note 6:
@@ -234,7 +237,6 @@ export default function App() {
         setDrawMode={setDrawMode}
         roomsMenuOpen={roomsMenuOpen}
         setRoomsMenuOpen={setRoomsMenuOpen}
-        onOpenCatalog={() => setCatalogOpen(true)}
       />
       <main className="flex flex-1 overflow-hidden">
         <RoomList
@@ -243,8 +245,6 @@ export default function App() {
           setMobileOpen={setRoomsMenuOpen}
         />
         <ProductPalette
-          mobileOpen={catalogOpen}
-          setMobileOpen={setCatalogOpen}
           pendingProductId={pendingProductId}
           setPendingProductId={setPendingProductId}
         />
@@ -289,6 +289,8 @@ export default function App() {
       </main>
       <CartStrip />
       <CartDrawer />
+      {/* Mobile/tablet Sims catalog — sticky bottom toolbar (< 1024 px). */}
+      <SimsBottomToolbar />
       <AddRoomChooser
         open={addRoomOpen}
         onClose={() => setAddRoomOpen(false)}
@@ -317,7 +319,8 @@ export default function App() {
         title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
         style={{
           position: 'fixed',
-          bottom: 12,
+          // Clear the mobile Sims toolbar (var 0 on desktop → stays at 12).
+          bottom: 'calc(12px + var(--sims-toolbar-h, 0px))',
           right: 12,
           padding: '6px 10px',
           background: 'white',
