@@ -77,7 +77,9 @@ export function EngineToggle(props: EngineToggleProps): JSX.Element | null {
       aria-label="Designer engine toggle"
       style={{
         position: 'fixed',
-        bottom: 16,
+        // Clear the mobile Sims toolbar (var is 0 on desktop, where the
+        // toolbar is display:none — so desktop stays at bottom:16).
+        bottom: 'calc(16px + var(--sims-toolbar-h, 0px))',
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 720,

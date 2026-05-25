@@ -53,6 +53,7 @@ import { useHistoryStore } from '../store/historyStore';
 // Batch 3 Fix 3.2 — vertices live in a tiny shared store so the
 // RoomList sidebar can render the live counters next to the room.
 import { useDrawProgressStore } from '../store/drawProgressStore';
+import { usePlacementIntentStore } from '../store/placementIntentStore';
 
 // M1.5: HTML5 DragEvent path retired (silently fails on `.konva-stage`
 // per K1 audit). DRAG_MIME stays in ProductPalette for legacy unit
@@ -317,30 +318,24 @@ export function RoomCanvas({
   // whatever rotation the ghost preview was showing (R / Shift+R during
   // armed phase). PolB.3: drag-to-canvas auto-adds to cart with a
   // 5-second Undo toast per V4-UX-1 Vic-Y.
-  const placeProductAt = useCallback(
-    (clientX: number, clientY: number, productId: string) => {
+  // Place a product whose CENTRE is at room-space (xM, yM). Snaps to the
+  // 0.5 m grid, validates against the polygon + existing items, commits
+  // with the given rotation. Returns true on success. Shared by the
+  // pointer-FSM (via screen→room) and the mobile toolbar (room-centre).
+  const placeAtRoomPoint = useCallback(
+    (centreXm: number, centreYm: number, productId: string, rotationDeg: number) => {
       const product = getProductById(productId);
       if (!product) {
         pushToast(`Unknown product: ${productId}`, 'error');
-        return;
+        return false;
       }
-      const container = containerRef.current;
-      if (!container) return;
-      const rect = container.getBoundingClientRect();
-      const { xM, yM } = screenToRoom(
-        clientX,
-        clientY,
-        { left: rect.left, top: rect.top },
-        viewport,
-        pxPerMetre,
-      );
       const fp = {
         lengthM: cmToM(product.dimensions_cm.length),
         widthM: cmToM(product.dimensions_cm.width),
       };
-      const { w, h } = rotatedFootprint(fp, ghostRotation);
-      const snappedX = snapToGrid(xM - w / 2, 0.5);
-      const snappedY = snapToGrid(yM - h / 2, 0.5);
+      const { w, h } = rotatedFootprint(fp, rotationDeg);
+      const snappedX = snapToGrid(centreXm - w / 2, 0.5);
+      const snappedY = snapToGrid(centreYm - h / 2, 0.5);
       const candidate: PlacedRect = { x: snappedX, y: snappedY, w, h };
       const others = placedItems
         .map((it) => {
@@ -354,13 +349,13 @@ export function RoomCanvas({
       const result = validatePlacement(candidate, others, polygon);
       if (!result.ok) {
         pushToast("Item won't fit here.", 'warn');
-        return;
+        return false;
       }
       const instanceId = addItem({
         productId: product.id,
         x: snappedX,
         y: snappedY,
-        rotation: ghostRotation,
+        rotation: rotationDeg,
       });
       pushToast(`Added "${product.name}" to cart`, 'success', {
         ttlMs: 5000,
@@ -369,9 +364,55 @@ export function RoomCanvas({
           onClick: () => removeItem(instanceId),
         },
       });
+      return true;
     },
-    [viewport, pxPerMetre, ghostRotation, placedItems, polygon, addItem, removeItem, pushToast],
+    [placedItems, polygon, addItem, removeItem, pushToast],
   );
+
+  const placeProductAt = useCallback(
+    (clientX: number, clientY: number, productId: string, rotationOverride?: number) => {
+      const container = containerRef.current;
+      if (!container) return false;
+      const rect = container.getBoundingClientRect();
+      const { xM, yM } = screenToRoom(
+        clientX,
+        clientY,
+        { left: rect.left, top: rect.top },
+        viewport,
+        pxPerMetre,
+      );
+      return placeAtRoomPoint(xM, yM, productId, rotationOverride ?? ghostRotation);
+    },
+    [viewport, pxPerMetre, ghostRotation, placeAtRoomPoint],
+  );
+
+  // Mobile Sims toolbar bridge (Phase 2-4) — consume one-shot placement
+  // intents published by SimsBottomToolbar / MobileProductPopup. The
+  // popup "+" auto-places at the ROOM centre (guaranteed inside the room,
+  // independent of pan/zoom); a drag-release places at the drop point.
+  // Both run the same validated placement path. Konva core untouched.
+  const placementIntent = usePlacementIntentStore((s) => s.intent);
+  const consumeIntent = usePlacementIntentStore((s) => s.consume);
+  useEffect(() => {
+    if (!placementIntent) return;
+    if (drawMode || wallDrawEnabled) {
+      // A draw/wall tool owns the canvas — drop the intent silently so a
+      // stale placement doesn't fire when the user returns to place mode.
+      consumeIntent();
+      return;
+    }
+    // Popup/drag placements always commit at rotation 0 (the user rotates
+    // after, via the on-canvas rotate handle).
+    if (placementIntent.target === 'center') {
+      const cx = (bounds.minX + bounds.maxX) / 2;
+      const cy = (bounds.minY + bounds.maxY) / 2;
+      placeAtRoomPoint(cx, cy, placementIntent.productId, 0);
+    } else {
+      placeProductAt(placementIntent.target.clientX, placementIntent.target.clientY, placementIntent.productId, 0);
+    }
+    consumeIntent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [placementIntent?.nonce]);
 
   function resetView() {
     setViewport(INITIAL_VIEWPORT);

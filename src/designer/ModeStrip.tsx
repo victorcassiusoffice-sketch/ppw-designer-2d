@@ -36,8 +36,11 @@ export function ModeStrip(props: ModeStripProps): JSX.Element {
         // overlapped the canvas. Mode strip now sits bottom-center over
         // the canvas, above CartStrip (CartStrip is bottom:0; strip sits
         // ~76px above it so the gold pill clears the cart bar).
+        // Mobile Sims rebuild (2026-05-23) — also clear the sticky Sims
+        // toolbar: `--sims-toolbar-h` is its live height (0 on desktop,
+        // where the toolbar is display:none, so desktop stays at 76px).
         position: 'fixed',
-        bottom: 76,
+        bottom: 'calc(76px + var(--sims-toolbar-h, 0px))',
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 700,
