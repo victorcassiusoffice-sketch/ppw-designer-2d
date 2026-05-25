@@ -18,10 +18,10 @@ import { HelpLauncherIcon, HelpOverlay } from './HelpOverlay';
 import { ModeStrip } from './ModeStrip';
 import { EngineToggle } from './babylon/EngineToggle';
 import { isGamingV1Active } from './gamingV1Flag';
-import { useDesignStore } from '../store/designStore';
 import { useDesignerMode, type DesignerMode } from './useDesignerMode';
 import { useWallStore } from '../store/wallStore';
 import { useToastStore } from '../store/toastStore';
+import { clearActiveRoomContents } from '../lib/clearActions';
 
 export function GamingLayer1Surfaces(): JSX.Element | null {
   // Always call hooks unconditionally; gate the render at the bottom.
@@ -29,8 +29,6 @@ export function GamingLayer1Surfaces(): JSX.Element | null {
   const [mode, setMode] = useDesignerMode('move');
   const setWallDraw = useWallStore((s) => s.setDraw);
   const wallDrawPhase = useWallStore((s) => s.draw.phase);
-  const clearWalls = useWallStore((s) => s.clearWalls);
-  const clearActiveRoomItems = useDesignStore((s) => s.clearDesign);
   const pushToast = useToastStore((s) => s.push);
   const [helpOpen, setHelpOpen] = useState(false);
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
@@ -51,22 +49,17 @@ export function GamingLayer1Surfaces(): JSX.Element | null {
     }
   }
 
-  // Tweak 04 (Phase A): CLEAR with confirm modal. The 30-second Ctrl+Z
-  // restore IS the unified history stack from Tweak 07 — Vic's original
-  // brief language "Ctrl+Z within 30s" maps to "as long as the wipe
-  // sits within the 50-frame in-memory ring AND the user hasn't
-  // performed 50 other actions since". One-step Ctrl+Z fulfils the
-  // demand.
-  function handleClearActiveLayer(): void {
+  // CLEAR with confirm modal. Full reset per Vic 2026-05-25
+  // (AskUserQuestion): one "Clear" wipes EVERYTHING in the active room —
+  // products, walls, floor zones and wall paint — instead of only the
+  // layer matching the current mode (the old move→items / wall→walls
+  // gating left the room looking unchanged, which read as "Clear doesn't
+  // work"). The wipe is a single atomic history frame (see
+  // clearActiveRoomContents), so one Ctrl+Z restores all of it.
+  function handleClearRoom(): void {
     setClearConfirmOpen(false);
-    if (mode === 'wall' || wallDrawPhase !== 'idle') {
-      clearWalls();
-      pushToast('Walls cleared — press Ctrl+Z to restore.', 'info', 4000);
-      return;
-    }
-    // Default: clear placed items in the active room.
-    clearActiveRoomItems();
-    pushToast('Placed items cleared — press Ctrl+Z to restore.', 'info', 4000);
+    clearActiveRoomContents();
+    pushToast('Room cleared — press Ctrl+Z to restore.', 'info', 4000);
   }
 
   // Reverse-bridge: if the WallDrawLayer / HUD takes the FSM to 'idle'
@@ -149,11 +142,12 @@ export function GamingLayer1Surfaces(): JSX.Element | null {
             }}
           >
             <h2 id="clear-confirm-title" style={{ margin: 0, fontSize: 16, color: '#0E0E10' }}>
-              Clear active layer?
+              Clear this room?
             </h2>
             <p style={{ marginTop: 8, marginBottom: 18, fontSize: 13, color: '#475569' }}>
-              This wipes {mode === 'wall' || wallDrawPhase !== 'idle' ? 'all walls' : 'all placed items in this room'}.
-              You can press Ctrl+Z within the next ~30 seconds to restore.
+              This clears everything in this room — products, walls, floors and paint.
+              Your room size and other rooms are kept. Press Ctrl+Z within the next
+              ~30 seconds to restore.
             </p>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button
@@ -175,7 +169,7 @@ export function GamingLayer1Surfaces(): JSX.Element | null {
               </button>
               <button
                 type="button"
-                onClick={handleClearActiveLayer}
+                onClick={handleClearRoom}
                 data-testid="clear-confirm-yes"
                 style={{
                   padding: '8px 14px',
