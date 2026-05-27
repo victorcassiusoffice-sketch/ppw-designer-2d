@@ -40,6 +40,17 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // V-RENDER-3 (2026-05-27) — visible build-stamp so Vic can confirm the
+  // new bundle actually landed on his iPhone after the cache-header fix.
+  // Vercel sets VERCEL_GIT_COMMIT_SHA at build; local falls back to a
+  // timestamp. Surfaced bottom-left in App.tsx.
+  define: {
+    __APP_BUILD__: JSON.stringify(
+      process.env.VERCEL_GIT_COMMIT_SHA
+        ? process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7)
+        : `dev-${new Date().toISOString().slice(0, 16).replace('T', ' ')}`,
+    ),
+  },
   server: {
     port: 5173,
     strictPort: true,
@@ -49,13 +60,17 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
     rollupOptions: {
-      // jsPDF references html2canvas + canvg + dompurify as OPTIONAL
-      // deps for SVG-to-PDF rendering. We never use those code paths
-      // (we render SVG -> PNG ourselves before calling addImage), so
-      // mark them external and Rollup will drop them.
+      // jsPDF references canvg + dompurify as OPTIONAL deps for its
+      // SVG-to-PDF rendering. We never use those code paths (we render
+      // SVG -> PNG ourselves before calling addImage), so mark them
+      // external and Rollup will drop them.
+      // V-RENDER-4 (2026-05-27) — html2canvas REMOVED from this list: it
+      // is now a real dependency used by the "Capture full screen" button
+      // (dynamically imported in RoomCanvas, so it stays in its own lazy
+      // chunk and out of the main bundle). Leaving it external here would
+      // emit an unresolvable bare import and break the runtime.
       external: [
         'canvg',
-        'html2canvas',
         'dompurify',
         /^core-js\//,
       ],

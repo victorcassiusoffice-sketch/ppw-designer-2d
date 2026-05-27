@@ -33,7 +33,8 @@ import { useDesignStore } from '../store/designStore';
 import { usePropertyStore, selectActiveRoom } from '../store/propertyStore';
 import type { PlacedItem } from '../store/propertyStore';
 import { useToastStore } from '../store/toastStore';
-import { CATEGORY_FILL, CATEGORY_LABELS, getProductById } from '../data/products';
+import { CATEGORY_FILL, CATEGORY_LABELS, getProductById, productImageUrl } from '../data/products';
+import { dataUrlToBlob, triggerDownload } from '../lib/shareImage';
 import {
   cmToM,
   polygonArea,
@@ -418,6 +419,45 @@ export function RoomCanvas({
     setViewport(INITIAL_VIEWPORT);
   }
 
+  // V-RENDER-4 (2026-05-27) — "Share render". Primary path: export the
+  // Konva stage canvas at 2x for a sharp retina PNG, then hand it to the
+  // Web Share sheet (iOS/Android) or fall back to a download. NOT async:
+  // navigator.share must run synchronously inside the tap gesture on iOS
+  // (dataUrlToBlob is synchronous), or Safari throws NotAllowedError.
+  // NOTE (floorPlanSvg.ts:7): stage.toDataURL captures ONLY the active
+  // mounted room — acceptable for the v1 single-room share.
+  function handleShareRender() {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const dataUrl = stage.toDataURL({ pixelRatio: 2 });
+    const file = new File([dataUrlToBlob(dataUrl)], 'ppw-room.png', { type: 'image/png' });
+    const canShareFiles =
+      typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });
+    if (canShareFiles && typeof navigator.share === 'function') {
+      navigator.share({ files: [file], title: 'My PPW room' }).catch(() => {
+        // User dismissed the share sheet, or share failed — no-op.
+      });
+    } else {
+      triggerDownload(dataUrl, 'ppw-room.png');
+    }
+  }
+
+  // V-RENDER-4 — secondary "Capture screen" path: html2canvas snapshots
+  // the full app DOM (HUD + cart chrome live OUTSIDE the Konva Stage as
+  // DOM siblings). Dynamically imported so it stays in its own lazy chunk
+  // and out of the main bundle. Downloads (no navigator.share) so the
+  // post-await call is fine — the iOS gesture rule only binds share().
+  async function handleCaptureFullScreen() {
+    const root = document.getElementById('root') ?? document.body;
+    try {
+      const { default: html2canvas } = await import('html2canvas');
+      const canvas = await html2canvas(root as HTMLElement, { scale: 2, useCORS: true });
+      triggerDownload(canvas.toDataURL('image/png'), 'ppw-room-fullscreen.png');
+    } catch {
+      pushToast('Could not capture the screen. Try the Share render button.', 'warn');
+    }
+  }
+
   // M1.5: HTML5 DragEvent path removed. The K1 audit proved it silently
   // no-ops on `.konva-stage`. Placement now flows through the pointer-FSM
   // (catalog click → arm pendingProductId → ghost preview → click commit).
@@ -570,7 +610,10 @@ export function RoomCanvas({
       } ${drawMode ? 'cursor-crosshair' : ''} ${pendingProductId && !drawMode ? 'cursor-crosshair' : ''}`}
       data-armed={pendingProductId ? 'true' : 'false'}
     >
-      <div className="pointer-events-none absolute right-4 top-4 z-10 flex flex-col items-end gap-2">
+      <div
+        className="pointer-events-none absolute right-4 z-10 flex flex-col items-end gap-2"
+        style={{ top: 'max(1rem, env(safe-area-inset-top))' }}
+      >
         <button
           type="button"
           onClick={resetView}
@@ -578,6 +621,27 @@ export function RoomCanvas({
           title="Reset pan/zoom"
         >
           Reset view
+        </button>
+        {/* V-RENDER-4 — share / capture the current room render. Primary
+            uses the Konva stage (sharp, canvas-only); secondary snapshots
+            the full app chrome via html2canvas. Min 40px tap targets. */}
+        <button
+          type="button"
+          onClick={handleShareRender}
+          data-testid="share-render"
+          className="pointer-events-auto min-h-[40px] rounded-md bg-ppw-teal px-3 text-xs font-semibold text-white shadow-sm ring-1 ring-ppw-teal/60 hover:bg-ppw-teal/90"
+          title="Share or download a picture of your room"
+        >
+          Share render
+        </button>
+        <button
+          type="button"
+          onClick={handleCaptureFullScreen}
+          data-testid="capture-screen"
+          className="pointer-events-auto min-h-[40px] rounded-md bg-white/90 px-3 text-[11px] font-medium text-ppw-ink shadow-sm ring-1 ring-ppw-stone hover:bg-white"
+          title="Capture the full screen (with toolbars)"
+        >
+          Capture screen
         </button>
         <div className="pointer-events-none rounded-md bg-ppw-ink/80 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
           {area.toFixed(2)} m2 - {perimeter.toFixed(2)} m - {Math.round(viewport.scale * 100)}%
@@ -690,7 +754,9 @@ export function RoomCanvas({
             setGhostRotation(0);
           }
         }}
-        className="konva-stage"
+        // V-RENDER-4 — touch-none stops iOS Safari native pan/zoom from
+        // fighting item-drag + the custom pinch handler on this Stage.
+        className="konva-stage touch-none"
       >
         <Layer listening>
           {polygon.length >= 3 && (
@@ -889,7 +955,14 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
     pushToast,
     itemDragRef,
   } = props;
-  const image = useImageCache(product.image_url || null);
+  // V-RENDER-1 (2026-05-27) — use the canonical productImageUrl resolver
+  // (topdown_image_url → image_url → SVG data-URI), the same chooser the
+  // palette/popup/toolbar use, so the in-room render matches what the
+  // customer sees everywhere else. Previously bound the raw image_url,
+  // which skipped the baked top-down PNGs. productImageUrl always returns
+  // a non-empty string; useImageCache handles load/error → null internally
+  // (the grey Rect fallback below still covers a genuine 404).
+  const image = useImageCache(productImageUrl(product));
   // Fix 2.1 (Vic 2026-05-22) — render the product art at its TRUE
   // unrotated footprint and apply Konva rotation visually, so the
   // user sees the box turn smoothly as the rotate handle drags.

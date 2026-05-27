@@ -310,6 +310,29 @@ export default function App() {
           { title: 'Save & request a quote', body: 'Click Save to keep your design. Use Request quote to send the layout to the PPW team.' },
         ]}
       />
+      {/* V-RENDER-3 (2026-05-27) — unobtrusive build-stamp pinned
+          bottom-left so Vic can confirm a fresh bundle landed on his
+          iPhone after the index.html no-cache header change. Short commit
+          SHA on Vercel; dev-timestamp locally (see vite.config define). */}
+      <span
+        data-testid="build-stamp"
+        title="Build identifier"
+        style={{
+          position: 'fixed',
+          bottom: 'max(6px, env(safe-area-inset-bottom))',
+          left: 'max(6px, env(safe-area-inset-left))',
+          fontSize: 9,
+          lineHeight: 1,
+          color: '#3B4A52',
+          opacity: 0.5,
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          pointerEvents: 'none',
+          zIndex: 40,
+          userSelect: 'all',
+        }}
+      >
+        build {__APP_BUILD__}
+      </span>
       {/* OMS Wave 3.7 — small dark mode toggle pinned bottom-left. */}
       <button
         type="button"

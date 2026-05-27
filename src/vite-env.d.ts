@@ -1,5 +1,11 @@
 /// <reference types="vite/client" />
 
+// V-RENDER-3 (2026-05-27) — build-stamp constant injected by Vite
+// `define` (see vite.config.ts). Short commit SHA on Vercel, dev
+// timestamp locally. Surfaced in App.tsx so Vic can confirm a fresh
+// bundle landed on his iPhone after the cache-header change.
+declare const __APP_BUILD__: string;
+
 declare module 'jspdf' {
   export interface jsPDFOptions {
     orientation?: 'portrait' | 'landscape' | 'p' | 'l';
