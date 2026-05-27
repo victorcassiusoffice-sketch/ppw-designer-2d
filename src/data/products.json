@@ -9,16 +9,26 @@
       "name": "NordicTrack Commercial 2450 Treadmill",
       "category": "fitness",
       "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
-      "dimensions_cm": { "length": 205, "width": 95, "height": 165 },
+      "dimensions_cm": {
+        "length": 205,
+        "width": 95,
+        "height": 165
+      },
       "weight_kg": 138,
-      "price": { "value": 150000, "currency": "MUR" },
+      "price": {
+        "value": 150000,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0A2450",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Foldable commercial-grade treadmill; 24-inch touchscreen; iFit-ready. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online"
+      "source_url": "https://www.k1-sport.com/shop-online",
+      "topdown_image_url": "/products/topdown/k1-nordictrack-2450.png"
     },
     {
       "id": "k1-nordictrack-tour-de-france",
@@ -26,16 +36,26 @@
       "name": "NordicTrack Tour de France Indoor Bike",
       "category": "fitness",
       "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
-      "dimensions_cm": { "length": 150, "width": 65, "height": 135 },
+      "dimensions_cm": {
+        "length": 150,
+        "width": 65,
+        "height": 135
+      },
       "weight_kg": 84,
-      "price": { "value": 150000, "currency": "MUR" },
+      "price": {
+        "value": 150000,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0ATour+de+France",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Incline/decline indoor cycle; iFit-ready interactive trainer. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online"
+      "source_url": "https://www.k1-sport.com/shop-online",
+      "topdown_image_url": "/products/topdown/k1-nordictrack-tour-de-france.png"
     },
     {
       "id": "k1-nordictrack-gx10",
@@ -43,16 +63,26 @@
       "name": "NordicTrack GX 10 Recumbent Bike",
       "category": "fitness",
       "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
-      "dimensions_cm": { "length": 150, "width": 65, "height": 130 },
+      "dimensions_cm": {
+        "length": 150,
+        "width": 65,
+        "height": 130
+      },
       "weight_kg": 62,
-      "price": { "value": 95000, "currency": "MUR" },
+      "price": {
+        "value": 95000,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0AGX10",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Recumbent bike with 26 resistance levels. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online"
+      "source_url": "https://www.k1-sport.com/shop-online",
+      "topdown_image_url": "/products/topdown/k1-nordictrack-gx10.png"
     },
     {
       "id": "k1-schwinn-700ic",
@@ -60,16 +90,26 @@
       "name": "Schwinn 700IC Indoor Bike",
       "category": "fitness",
       "supplier": "K1-Sport (Schwinn — Mauritius distributor)",
-      "dimensions_cm": { "length": 120, "width": 55, "height": 130 },
+      "dimensions_cm": {
+        "length": 120,
+        "width": 55,
+        "height": 130
+      },
       "weight_kg": 51,
-      "price": { "value": 29000, "currency": "MUR" },
+      "price": {
+        "value": 29000,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Schwinn%0A700IC",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Indoor cycle with 18.1 kg / 40 lb flywheel. On-sale entry-price cardio. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online"
+      "source_url": "https://www.k1-sport.com/shop-online",
+      "topdown_image_url": "/products/topdown/k1-schwinn-700ic.png"
     },
     {
       "id": "k1-proform-carbon-tl",
@@ -77,16 +117,26 @@
       "name": "ProForm Carbon TL Treadmill",
       "category": "fitness",
       "supplier": "K1-Sport (ProForm — Mauritius distributor)",
-      "dimensions_cm": { "length": 180, "width": 85, "height": 145 },
+      "dimensions_cm": {
+        "length": 180,
+        "width": 85,
+        "height": 145
+      },
       "weight_kg": 79,
-      "price": { "value": 40500, "currency": "MUR" },
+      "price": {
+        "value": 40500,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=ProForm%0ACarbon+TL",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Foldable home treadmill; iFit-enabled. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online"
+      "source_url": "https://www.k1-sport.com/shop-online",
+      "topdown_image_url": "/products/topdown/k1-proform-carbon-tl.png"
     },
     {
       "id": "k1-nordictrack-x16",
@@ -94,16 +144,26 @@
       "name": "NordicTrack X16 Elliptical",
       "category": "fitness",
       "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
-      "dimensions_cm": { "length": 180, "width": 70, "height": 175 },
+      "dimensions_cm": {
+        "length": 180,
+        "width": 70,
+        "height": 175
+      },
       "weight_kg": 103,
-      "price": { "value": 125000, "currency": "MUR" },
+      "price": {
+        "value": 125000,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0AX16",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Front-drive elliptical; 16-inch touchscreen; iFit-ready. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online"
+      "source_url": "https://www.k1-sport.com/shop-online",
+      "topdown_image_url": "/products/topdown/k1-nordictrack-x16.png"
     },
     {
       "id": "k1-nordictrack-rw900",
@@ -111,16 +171,26 @@
       "name": "NordicTrack RW900 Rower",
       "category": "fitness",
       "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
-      "dimensions_cm": { "length": 220, "width": 55, "height": 110 },
+      "dimensions_cm": {
+        "length": 220,
+        "width": 55,
+        "height": 110
+      },
       "weight_kg": 53,
-      "price": { "value": 120000, "currency": "MUR" },
+      "price": {
+        "value": 120000,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0ARW900",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Magnetic + air resistance rower; 22-inch HD touchscreen; iFit-ready. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online"
+      "source_url": "https://www.k1-sport.com/shop-online",
+      "topdown_image_url": "/products/topdown/k1-nordictrack-rw900.png"
     },
     {
       "id": "k1-vision-t600-03",
@@ -128,16 +198,26 @@
       "name": "Vision Fitness T600-03 Treadmill",
       "category": "fitness",
       "supplier": "K1-Sport (Vision Fitness — Mauritius distributor)",
-      "dimensions_cm": { "length": 210, "width": 100, "height": 165 },
+      "dimensions_cm": {
+        "length": 210,
+        "width": 100,
+        "height": 165
+      },
       "weight_kg": 165,
-      "price": { "value": 210393, "currency": "MUR" },
+      "price": {
+        "value": 210393,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Vision%0AT600-03",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Commercial-grade treadmill with vibration-isolation deck. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online"
+      "source_url": "https://www.k1-sport.com/shop-online",
+      "topdown_image_url": "/products/topdown/k1-vision-t600-03.png"
     },
     {
       "id": "k1-vision-t600e-02",
@@ -145,16 +225,26 @@
       "name": "Vision Fitness T600E-02 Treadmill (22\" touchscreen)",
       "category": "fitness",
       "supplier": "K1-Sport (Vision Fitness — Mauritius distributor)",
-      "dimensions_cm": { "length": 210, "width": 100, "height": 165 },
+      "dimensions_cm": {
+        "length": 210,
+        "width": 100,
+        "height": 165
+      },
       "weight_kg": 175,
-      "price": { "value": 259600, "currency": "MUR" },
+      "price": {
+        "value": 259600,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Vision%0AT600E-02",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Top-of-line commercial treadmill with 22-inch entertainment screen. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online"
+      "source_url": "https://www.k1-sport.com/shop-online",
+      "topdown_image_url": "/products/topdown/k1-vision-t600e-02.png"
     },
     {
       "id": "k1-matrix-mg-glute",
@@ -162,16 +252,26 @@
       "name": "Matrix MG Glute Trainer",
       "category": "fitness",
       "supplier": "K1-Sport (Matrix Fitness — Mauritius distributor)",
-      "dimensions_cm": { "length": 150, "width": 100, "height": 175 },
+      "dimensions_cm": {
+        "length": 150,
+        "width": 100,
+        "height": 175
+      },
       "weight_kg": 195,
-      "price": { "value": 140001, "currency": "MUR" },
+      "price": {
+        "value": 140001,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Matrix%0AMG+Glute",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Glute + hip-thrust strength station, plate-loaded. Commercial-grade. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online"
+      "source_url": "https://www.k1-sport.com/shop-online",
+      "topdown_image_url": "/products/topdown/k1-matrix-mg-glute.png"
     },
     {
       "id": "k1-matrix-versa-adabd",
@@ -179,16 +279,26 @@
       "name": "Matrix Versa Adductor / Abductor",
       "category": "fitness",
       "supplier": "K1-Sport (Matrix Fitness — Mauritius distributor)",
-      "dimensions_cm": { "length": 165, "width": 130, "height": 195 },
+      "dimensions_cm": {
+        "length": 165,
+        "width": 130,
+        "height": 195
+      },
       "weight_kg": 220,
-      "price": { "value": 154675, "currency": "MUR" },
+      "price": {
+        "value": 154675,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Matrix%0AVersa+Ad%2FAbd",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Selectorised dual adductor/abductor station, weight-stack. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online"
+      "source_url": "https://www.k1-sport.com/shop-online",
+      "topdown_image_url": "/products/topdown/k1-matrix-versa-adabd.png"
     },
     {
       "id": "k1-vision-smith",
@@ -196,16 +306,26 @@
       "name": "Vision Fitness Smith Machine",
       "category": "fitness",
       "supplier": "K1-Sport (Vision Fitness — Mauritius distributor)",
-      "dimensions_cm": { "length": 225, "width": 165, "height": 230 },
+      "dimensions_cm": {
+        "length": 225,
+        "width": 165,
+        "height": 230
+      },
       "weight_kg": 280,
-      "price": { "value": 172500, "currency": "MUR" },
+      "price": {
+        "value": 172500,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Vision%0ASmith+Machine",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Fixed-path Smith machine; 90-degree movement track; counterbalanced bar. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online"
+      "source_url": "https://www.k1-sport.com/shop-online",
+      "topdown_image_url": "/products/topdown/k1-vision-smith.png"
     },
     {
       "id": "k1-bowflex-xtreme-2se",
@@ -213,16 +333,26 @@
       "name": "Bowflex Xtreme 2 SE Home Gym",
       "category": "fitness",
       "supplier": "K1-Sport (Bowflex — Mauritius distributor)",
-      "dimensions_cm": { "length": 205, "width": 130, "height": 210 },
+      "dimensions_cm": {
+        "length": 205,
+        "width": 130,
+        "height": 210
+      },
       "weight_kg": 81,
-      "price": { "value": 52000, "currency": "MUR" },
+      "price": {
+        "value": 52000,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Bowflex%0AXtreme+2+SE",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Power-rod multi-station home gym; 70+ exercises. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online"
+      "source_url": "https://www.k1-sport.com/shop-online",
+      "topdown_image_url": "/products/topdown/k1-bowflex-xtreme-2se.png"
     },
     {
       "id": "k1-bench-adjustable-fid",
@@ -230,16 +360,26 @@
       "name": "Adjustable Flat / Incline / Decline Bench",
       "category": "fitness",
       "supplier": "K1-Sport",
-      "dimensions_cm": { "length": 135, "width": 60, "height": 60 },
+      "dimensions_cm": {
+        "length": 135,
+        "width": 60,
+        "height": 60
+      },
       "weight_kg": 24,
-      "price": { "value": 11000, "currency": "MUR" },
+      "price": {
+        "value": 11000,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Adjustable%0AFID+Bench",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Multi-position weight bench (flat / incline / decline). Entry-price strength accessory. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online"
+      "source_url": "https://www.k1-sport.com/shop-online",
+      "topdown_image_url": "/products/topdown/k1-bench-adjustable-fid.png"
     },
     {
       "id": "k1-floor-eva-combat",
@@ -247,17 +387,27 @@
       "name": "EVA Combat Sport Mat 1×1m × 2.5 cm",
       "category": "flooring",
       "supplier": "K1-Sport",
-      "dimensions_cm": { "length": 100, "width": 100, "height": 2.5 },
+      "dimensions_cm": {
+        "length": 100,
+        "width": 100,
+        "height": 2.5
+      },
       "weight_kg": 4.5,
-      "price": { "value": 850, "currency": "MUR" },
+      "price": {
+        "value": 850,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EVA%0ACombat+Mat",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "EVA foam combat sport / martial arts mat. 1×1m tile, 2.5 cm thick. Eco — typical EVA has recycled-content options (vendor to confirm).",
       "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false
+      "eco_certified": false,
+      "topdown_image_url": "/products/topdown/k1-floor-eva-combat.png"
     },
     {
       "id": "k1-floor-eva-kids",
@@ -265,17 +415,27 @@
       "name": "EVA Kids Mat (5-pack)",
       "category": "flooring",
       "supplier": "K1-Sport",
-      "dimensions_cm": { "length": 50, "width": 50, "height": 1.0 },
+      "dimensions_cm": {
+        "length": 50,
+        "width": 50,
+        "height": 1
+      },
       "weight_kg": 1.2,
-      "price": { "value": 950, "currency": "MUR" },
+      "price": {
+        "value": 950,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EVA%0AKids+Mat",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "EVA kids' play mat sold in packs of 5. Approx Rs 190 / m². Soft 1 cm thickness for nursery / kids' rooms.",
       "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false
+      "eco_certified": false,
+      "topdown_image_url": "/products/topdown/k1-floor-eva-kids.png"
     },
     {
       "id": "k1-floor-gym-interlock",
@@ -283,17 +443,27 @@
       "name": "Gym Interlock Tile 92×92×0.5 cm",
       "category": "flooring",
       "supplier": "K1-Sport",
-      "dimensions_cm": { "length": 92, "width": 92, "height": 0.5 },
-      "weight_kg": 2.0,
-      "price": { "value": 1600, "currency": "MUR" },
+      "dimensions_cm": {
+        "length": 92,
+        "width": 92,
+        "height": 0.5
+      },
+      "weight_kg": 2,
+      "price": {
+        "value": 1600,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=PVC%0AGym+Interlock",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "PVC interlock gym flooring tile, 92×92 cm × 5 mm. Approx Rs 1,890 / m².",
       "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false
+      "eco_certified": false,
+      "topdown_image_url": "/products/topdown/k1-floor-gym-interlock.png"
     },
     {
       "id": "k1-floor-ifit-vinyl",
@@ -301,17 +471,27 @@
       "name": "iFIT Vinyl Equipment Mat 36\"×72\"",
       "category": "flooring",
       "supplier": "K1-Sport",
-      "dimensions_cm": { "length": 183, "width": 91, "height": 0.6 },
-      "weight_kg": 8.0,
-      "price": { "value": 3500, "currency": "MUR" },
+      "dimensions_cm": {
+        "length": 183,
+        "width": 91,
+        "height": 0.6
+      },
+      "weight_kg": 8,
+      "price": {
+        "value": 3500,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=iFIT%0AVinyl+Mat",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Vinyl protective mat for cardio equipment (treadmill / bike / elliptical). 36\"×72\" ≈ 183×91 cm. Approx Rs 2,090 / m².",
       "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false
+      "eco_certified": false,
+      "topdown_image_url": "/products/topdown/k1-floor-ifit-vinyl.png"
     },
     {
       "id": "k1-floor-rubber-interlock",
@@ -319,17 +499,27 @@
       "name": "Interlock Composite Rubber Tile 50×50×1.5 cm",
       "category": "flooring",
       "supplier": "K1-Sport",
-      "dimensions_cm": { "length": 50, "width": 50, "height": 1.5 },
+      "dimensions_cm": {
+        "length": 50,
+        "width": 50,
+        "height": 1.5
+      },
       "weight_kg": 3.5,
-      "price": { "value": 500, "currency": "MUR" },
+      "price": {
+        "value": 500,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Rubber%0AInterlock",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Composite rubber interlock tile, 50×50 cm × 15 mm. Approx Rs 2,000 / m². Typical recycled-content rubber.",
       "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false
+      "eco_certified": false,
+      "topdown_image_url": "/products/topdown/k1-floor-rubber-interlock.png"
     },
     {
       "id": "k1-floor-outdoor-rubber-1m",
@@ -337,17 +527,27 @@
       "name": "Outdoor Rubber Tile 1×1m × 5 cm — Red",
       "category": "flooring",
       "supplier": "K1-Sport",
-      "dimensions_cm": { "length": 100, "width": 100, "height": 5.0 },
-      "weight_kg": 24.0,
-      "price": { "value": 1500, "currency": "MUR" },
+      "dimensions_cm": {
+        "length": 100,
+        "width": 100,
+        "height": 5
+      },
+      "weight_kg": 24,
+      "price": {
+        "value": 1500,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+1m",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Outdoor rubber tile, 1×1m × 50 mm — red. Sale price. Approx Rs 1,500 / m². Suitable for playgrounds + outdoor gym pads.",
       "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false
+      "eco_certified": false,
+      "topdown_image_url": "/products/topdown/k1-floor-outdoor-rubber-1m.png"
     },
     {
       "id": "k1-floor-outdoor-rubber-50",
@@ -355,17 +555,27 @@
       "name": "Outdoor Rubber Tile 50×50×2.5 cm — Red",
       "category": "flooring",
       "supplier": "K1-Sport",
-      "dimensions_cm": { "length": 50, "width": 50, "height": 2.5 },
-      "weight_kg": 6.0,
-      "price": { "value": 375, "currency": "MUR" },
+      "dimensions_cm": {
+        "length": 50,
+        "width": 50,
+        "height": 2.5
+      },
+      "weight_kg": 6,
+      "price": {
+        "value": 375,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+50",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "Outdoor rubber tile, 50×50 cm × 25 mm — red. Sale price. Approx Rs 1,500 / m². Modular playground / outdoor surface.",
       "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false
+      "eco_certified": false,
+      "topdown_image_url": "/products/topdown/k1-floor-outdoor-rubber-50.png"
     },
     {
       "id": "k1-floor-epdm-roll",
@@ -373,17 +583,27 @@
       "name": "EPDM Rubber Roll 6 mm — Grey",
       "category": "flooring",
       "supplier": "K1-Sport",
-      "dimensions_cm": { "length": 1000, "width": 125, "height": 0.6 },
-      "weight_kg": 60.0,
-      "price": { "value": 13500, "currency": "MUR" },
+      "dimensions_cm": {
+        "length": 1000,
+        "width": 125,
+        "height": 0.6
+      },
+      "weight_kg": 60,
+      "price": {
+        "value": 13500,
+        "currency": "MUR"
+      },
       "commission_pct": 0.05,
       "shopify_ready": false,
       "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EPDM%0ARubber+Roll",
       "designer_status": "Done",
-      "delivery_regions": ["MU"],
+      "delivery_regions": [
+        "MU"
+      ],
       "notes": "EPDM rubber roll, 6 mm thick, grey. Per-roll pricing (full roll ≈ 10×1.25 m). EPDM typically uses recycled-rubber content — flag for vendor confirm.",
       "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false
+      "eco_certified": false,
+      "topdown_image_url": "/products/topdown/k1-floor-epdm-roll.png"
     }
   ]
 }
