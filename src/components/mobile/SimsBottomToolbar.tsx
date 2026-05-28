@@ -208,7 +208,10 @@ export function SimsBottomToolbar() {
                     title={p.name}
                     aria-label={`${p.name} — tap for details, hold to drag onto the floor`}
                     onPointerDown={(e) => start(e, p.id, productImageUrl(p))}
-                    className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg"
+                    // Bug 1 (2026-05-28) — long-press should drag, not pop the
+                    // browser "Save image" menu over the catalog thumbnail.
+                    onContextMenu={(e) => e.preventDefault()}
+                    className="ppw-no-callout flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg"
                     style={{ background: CREAM, border: `1px solid ${NAVY_2}` }}
                   >
                     <img

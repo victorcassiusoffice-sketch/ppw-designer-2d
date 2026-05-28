@@ -275,3 +275,63 @@ export function resolveDragTarget(input: ResolveDragInput): ResolveDragResult {
   if (!result.ok) return result;
   return { ok: true, x: snappedX, y: snappedY };
 }
+
+export interface FreeSlotInput {
+  /** Desired top-left X (metres). Snapped to the grid internally. */
+  preferredX: number;
+  /** Desired top-left Y (metres). Snapped to the grid internally. */
+  preferredY: number;
+  /** Footprint width (metres, already rotation-resolved). */
+  w: number;
+  /** Footprint height (metres, already rotation-resolved). */
+  h: number;
+  others: Array<PlacedRect & { instanceId?: string }>;
+  polygon: Polygon;
+  /** Grid step (metres). Defaults to the 0.5 m placement grid. */
+  step?: number;
+  ignoreInstanceId?: string;
+}
+
+/**
+ * Designer 3-Bug Fix (2026-05-28, Bug 2) — "items refuse to fit even
+ * though the room is big enough".
+ *
+ * Root cause: every mobile "+ Add to room" tap places at the SAME room
+ * centre, so the second item always overlapped the first and placement
+ * was rejected with "won't fit" despite acres of empty floor.
+ *
+ * Fix: return the nearest grid-aligned slot to the preferred point where
+ * the w×h footprint is fully inside the polygon AND collides with nothing.
+ * The preferred slot is tried first (so a free centre keeps the old
+ * behaviour); otherwise the polygon bounding box is scanned on the grid,
+ * nearest-first. Returns null only when the room genuinely has no free
+ * slot for this footprint — the one case where "won't fit" is honest.
+ */
+export function findFreeSlot(input: FreeSlotInput): { x: number; y: number } | null {
+  const step = input.step ?? 0.5;
+  const { w, h, others, polygon, ignoreInstanceId } = input;
+  const preferredX = snapToGrid(input.preferredX, step);
+  const preferredY = snapToGrid(input.preferredY, step);
+
+  const fits = (x: number, y: number): boolean =>
+    validatePlacement({ x, y, w, h }, others, polygon, ignoreInstanceId).ok;
+
+  if (fits(preferredX, preferredY)) return { x: preferredX, y: preferredY };
+
+  const b = polygonBounds(polygon);
+  const startX = snapToGrid(b.minX, step);
+  const startY = snapToGrid(b.minY, step);
+  const candidates: Array<{ x: number; y: number; d: number }> = [];
+  for (let x = startX; x + w <= b.maxX + 1e-9; x += step) {
+    for (let y = startY; y + h <= b.maxY + 1e-9; y += step) {
+      const dx = x - preferredX;
+      const dy = y - preferredY;
+      candidates.push({ x, y, d: dx * dx + dy * dy });
+    }
+  }
+  candidates.sort((a, c) => a.d - c.d);
+  for (const c of candidates) {
+    if (fits(c.x, c.y)) return { x: c.x, y: c.y };
+  }
+  return null;
+}

@@ -37,6 +37,7 @@ import { CATEGORY_FILL, CATEGORY_LABELS, getProductById, productImageUrl } from 
 import { dataUrlToBlob, triggerDownload } from '../lib/shareImage';
 import {
   cmToM,
+  findFreeSlot,
   polygonArea,
   polygonBounds,
   polygonPerimeter,
@@ -80,6 +81,9 @@ export function RoomCanvas({
 }: RoomCanvasProps) {
   const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  // Designer 3-Bug Fix (2026-05-28, Bug 3) — ref to the placed-items Konva
+  // layer so we can force a repaint when the item set changes (see effect).
+  const itemsLayerRef = useRef<Konva.Layer>(null);
 
   const polygon = useDesignStore((s) => s.polygon);
   const pxPerMetre = useDesignStore((s) => s.pxPerMetre);
@@ -337,7 +341,6 @@ export function RoomCanvas({
       const { w, h } = rotatedFootprint(fp, rotationDeg);
       const snappedX = snapToGrid(centreXm - w / 2, 0.5);
       const snappedY = snapToGrid(centreYm - h / 2, 0.5);
-      const candidate: PlacedRect = { x: snappedX, y: snappedY, w, h };
       const others = placedItems
         .map((it) => {
           const p = getProductById(it.productId);
@@ -347,15 +350,19 @@ export function RoomCanvas({
           return { x: it.x, y: it.y, w: r.w, h: r.h, instanceId: it.instanceId };
         })
         .filter((r): r is PlacedRect & { instanceId: string } => r !== null);
-      const result = validatePlacement(candidate, others, polygon);
-      if (!result.ok) {
-        pushToast("Item won't fit here.", 'warn');
+      // Designer 3-Bug Fix (2026-05-28, Bug 2) — auto-relocate to the
+      // nearest free grid slot instead of rejecting when the preferred
+      // point (the room centre for the mobile "+ Add to room" path) is
+      // already occupied. Only reject when the room is genuinely full.
+      const slot = findFreeSlot({ preferredX: snappedX, preferredY: snappedY, w, h, others, polygon });
+      if (!slot) {
+        pushToast("Item won't fit — the room is full.", 'warn');
         return false;
       }
       const instanceId = addItem({
         productId: product.id,
-        x: snappedX,
-        y: snappedY,
+        x: slot.x,
+        y: slot.y,
         rotation: rotationDeg,
       });
       pushToast(`Added "${product.name}" to cart`, 'success', {
@@ -602,6 +609,20 @@ export function RoomCanvas({
     return out;
   }, [showGrid, pxPerMetre, bounds.minX, bounds.minY, bounds.maxX, bounds.maxY]);
 
+  // Designer 3-Bug Fix (2026-05-28, Bug 3) — "Clear leaves ghost items on
+  // the canvas". Confirmed via a live dev-server probe: when `placedItems`
+  // empties, react-konva DOES remove the item nodes (layer children → 0)
+  // but never repaints the now-empty layer, so the last item pixels linger.
+  // We force a SYNCHRONOUS layer.draw() to re-sync the canvas to the node
+  // tree — batchDraw() proved unreliable (its requestAnimationFrame can be
+  // throttled, leaving the ghost). Runs on any item-set / draw-mode change
+  // (covers Clear, single-delete, and the draw-mode item hide). The Konva
+  // stable-lock placement math (26c144c) is untouched — this only repaints
+  // an already-reconciled layer.
+  useEffect(() => {
+    itemsLayerRef.current?.draw();
+  }, [placedItems, drawMode]);
+
   return (
     <div
       ref={containerRef}
@@ -609,6 +630,12 @@ export function RoomCanvas({
         pendingProductId && !drawMode ? 'bg-ppw-teal/5 ring-2 ring-inset ring-ppw-teal/40' : ''
       } ${drawMode ? 'cursor-crosshair' : ''} ${pendingProductId && !drawMode ? 'cursor-crosshair' : ''}`}
       data-armed={pendingProductId ? 'true' : 'false'}
+      // Designer 3-Bug Fix (2026-05-28, Bug 1) — long-press on a placed
+      // item (Konva.Image on the canvas) popped the browser "Save image"
+      // menu and hijacked drag-drop. CSS `-webkit-touch-callout: none`
+      // (index.css) kills the iOS callout; this handler kills the Android
+      // long-press contextmenu over the whole canvas surface.
+      onContextMenu={(e) => e.preventDefault()}
     >
       <div
         className="pointer-events-none absolute right-4 z-10 flex flex-col items-end gap-2"
@@ -791,7 +818,7 @@ export function RoomCanvas({
           />
         </Layer>
 
-        <Layer>
+        <Layer ref={itemsLayerRef}>
           {!drawMode && placedItems.map((item) => {
             const product = getProductById(item.productId);
             if (!product) return null;

@@ -89,9 +89,12 @@ export function MobileProductPopup({
         >
           {/* Bigger image — also the drag handle. */}
           <div
-            className="relative flex items-center justify-center"
+            className="ppw-no-callout relative flex items-center justify-center"
             style={{ background: '#F8F5EF', height: 200, touchAction: 'none' }}
             onPointerDown={(e) => start(e, product.id, imgUrl)}
+            // Bug 1 (2026-05-28) — drag the popup image onto the floor; don't
+            // let a long-press open the native "Save image" callout instead.
+            onContextMenu={(e) => e.preventDefault()}
           >
             <img
               src={imgUrl}

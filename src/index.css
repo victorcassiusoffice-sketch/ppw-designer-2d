@@ -31,12 +31,26 @@ body,
  * scroll, including on mobile.
  */
 
-/* Konva stage container — prevent text selection on drag */
+/* Konva stage container — prevent text selection on drag, and (Designer
+ * 3-Bug Fix 2026-05-28, Bug 1) suppress the iOS Safari long-press
+ * "Save Image / Copy" callout that otherwise hijacks drag-drop on the
+ * canvas (placed items render as Konva.Image post-render-bind 4718b3c). */
 .konva-stage,
 .konva-stage canvas {
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
   touch-action: none;
+}
+
+/* Catalog product images (mobile Sims toolbar + product popup): same
+ * long-press suppression so tap-and-hold drags instead of offering to
+ * save the image. Pair with onContextMenu preventDefault for Android. */
+.ppw-no-callout,
+.ppw-no-callout img {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* Subtle scrollbar styling in the palette */
