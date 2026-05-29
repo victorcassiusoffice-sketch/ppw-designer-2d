@@ -118,6 +118,19 @@ export function RoomCanvas({
   >(null);
   const [ghostRotation, setGhostRotation] = useState(0);
 
+  // Designer polish (2026-05-29) — placement micro-feedback. When a NEW
+  // item commits, its instanceId is captured here so the matching
+  // PlacedItemGroup runs a one-shot "settle" tween (subtle scale + fade
+  // in). Purely visual: the tween resets to scale 1 / opacity 1, so the
+  // committed geometry from the Konva stable-lock placement math is never
+  // mutated. Cleared on a short timer so a re-render can't re-trigger it.
+  const [justPlacedId, setJustPlacedId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!justPlacedId) return;
+    const t = window.setTimeout(() => setJustPlacedId(null), 400);
+    return () => window.clearTimeout(t);
+  }, [justPlacedId]);
+
   // Batch 3 Fix 3.2 — vertices now live in `useDrawProgressStore` so
   // RoomList sidebar can subscribe to the same source of truth for the
   // live counters. The setter API matches the prior React useState
@@ -365,6 +378,8 @@ export function RoomCanvas({
         y: slot.y,
         rotation: rotationDeg,
       });
+      // Polish (2026-05-29) — flag this fresh instance for the settle tween.
+      setJustPlacedId(instanceId);
       pushToast(`Added "${product.name}" to cart`, 'success', {
         ttlMs: 5000,
         action: {
@@ -839,6 +854,7 @@ export function RoomCanvas({
                 h={h}
                 colors={colors}
                 isSelected={isSelected}
+                justPlaced={item.instanceId === justPlacedId}
                 pxPerMetre={pxPerMetre}
                 polygon={polygon}
                 placedItems={placedItems}
@@ -919,6 +935,43 @@ export function RoomCanvas({
 
       <WallDrawHUD enabled={wallDrawEnabled && !drawMode} />
 
+      {/* Designer polish (2026-05-29) — empty-state placement tip. Shows a
+          faint, centered prompt over the (already grid-lined) empty room
+          when nothing is placed yet and no draw/wall tool is active. Auto-
+          hides the moment the first item lands. Brand register: navy ink +
+          gold accent + cream card — deliberately NOT the legacy teal chrome,
+          to match the binding brand identity for new UI. Pointer-events off
+          so it never blocks a tap-to-place on the floor beneath it. */}
+      {!drawMode && !wallDrawEnabled && !pendingProductId && placedItems.length === 0 && (
+        <div
+          className="pointer-events-none absolute inset-0 flex items-center justify-center"
+          data-testid="empty-room-hint"
+        >
+          <div
+            className="flex max-w-xs flex-col items-center gap-1 rounded-xl px-5 py-4 text-center shadow-sm"
+            style={{
+              background: 'rgba(245,235,215,0.78)',
+              border: '1px solid rgba(255,187,88,0.55)',
+              color: '#232C3B',
+            }}
+          >
+            <span
+              aria-hidden
+              style={{ fontSize: 22, lineHeight: 1, color: '#FFBB58' }}
+            >
+              ✦
+            </span>
+            <p className="text-sm font-semibold" style={{ color: '#232C3B' }}>
+              Your room is empty
+            </p>
+            <p className="text-[11px] leading-snug" style={{ color: '#3B4A52' }}>
+              Drag a product onto the floor — or tap a catalog item, then tap
+              the room — to place your first piece. Items snap to the 0.5 m grid.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div
         className="pointer-events-none absolute left-3 max-w-xs rounded-md bg-white/85 px-3 py-2 text-[11px] leading-snug text-ppw-slate shadow-sm ring-1 ring-ppw-stone hidden md:block"
         style={{ bottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
@@ -955,6 +1008,9 @@ interface PlacedItemGroupProps {
   h: number;
   colors: { fill: string; stroke: string };
   isSelected: boolean;
+  /** Polish (2026-05-29) — true for one render after a fresh placement,
+   *  triggers a one-shot visual settle tween. Defaults false. */
+  justPlaced?: boolean;
   pxPerMetre: number;
   polygon: Polygon;
   placedItems: PlacedItem[];
@@ -974,6 +1030,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
     h,
     colors,
     isSelected,
+    justPlaced,
     pxPerMetre,
     polygon,
     placedItems,
@@ -982,6 +1039,41 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
     pushToast,
     itemDragRef,
   } = props;
+  // Polish (2026-05-29) — placement settle tween. On the render where
+  // `justPlaced` is true, the group node fades + scales in from 0.9 → 1
+  // over ~180ms then settles at exactly scale 1 / opacity 1. Konva scales
+  // around the group origin; the small magnitude keeps the visual shift
+  // negligible and the final state is identical to no tween, so placement
+  // coordinates (Konva stable-lock math) are never persistently mutated.
+  const groupRef = useRef<Konva.Group>(null);
+  useEffect(() => {
+    if (!justPlaced) return;
+    const node = groupRef.current;
+    if (!node) return;
+    node.opacity(0.4);
+    node.scale({ x: 0.9, y: 0.9 });
+    node.to({
+      opacity: 1,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 0.18,
+      onFinish: () => {
+        node.opacity(1);
+        node.scale({ x: 1, y: 1 });
+      },
+    });
+    return () => {
+      // Safety: if the node unmounts mid-tween, ensure it never settles in
+      // a partial state should it be reused. Konva tears tweens down with
+      // the node, so we only normalise the transform here. `node` is the
+      // captured ref value, avoiding the stale-ref-in-cleanup lint.
+      node.opacity(1);
+      node.scale({ x: 1, y: 1 });
+    };
+    // Run only on the placement render; justPlaced flips back to false on
+    // the next render via the parent's timer, which is the desired one-shot.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // V-RENDER-1 (2026-05-27) — use the canonical productImageUrl resolver
   // (topdown_image_url → image_url → SVG data-URI), the same chooser the
   // palette/popup/toolbar use, so the in-room render matches what the
@@ -999,6 +1091,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
   const unrotatedHPx = cmToM(product.dimensions_cm.width) * pxPerMetre;
   return (
     <Group
+      ref={groupRef}
       x={item.x * pxPerMetre}
       y={item.y * pxPerMetre}
       draggable
