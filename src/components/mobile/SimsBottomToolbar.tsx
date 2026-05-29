@@ -211,15 +211,13 @@ export function SimsBottomToolbar() {
                     // Bug 1 (2026-05-28) — long-press should drag, not pop the
                     // browser "Save image" menu over the catalog thumbnail.
                     onContextMenu={(e) => e.preventDefault()}
-                    className="ppw-no-callout flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg"
+                    className="ppw-no-callout relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg"
                     style={{ background: CREAM, border: `1px solid ${NAVY_2}` }}
                   >
-                    <img
-                      src={productImageUrl(p)}
-                      alt=""
-                      draggable={false}
-                      style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 4 }}
-                    />
+                    {/* Polish (2026-05-29) — brand shimmer skeleton while the
+                        thumbnail hydrates; fades out on load (or on error,
+                        leaving the cream tile). Reduced-motion handled inside. */}
+                    <ThumbImage src={productImageUrl(p)} />
                   </button>
                 ))}
               </div>
@@ -240,6 +238,53 @@ export function SimsBottomToolbar() {
         />
       )}
       {ghost}
+    </>
+  );
+}
+
+/**
+ * Polish (2026-05-29) — catalog thumbnail with a brand-styled loading
+ * skeleton. While the <img> is hydrating, a navy→gold→cream shimmer fills
+ * the tile so it reads as "loading" rather than an empty cream square;
+ * the shimmer fades the moment the image loads. On error the shimmer is
+ * removed and the cream tile (set on the parent button) shows through,
+ * preserving the existing graceful fallback. Reduced-motion users get a
+ * static brand tint with no pulse (CSS `motion-reduce` variant). No deps,
+ * no teal, no layout/geometry change.
+ */
+function ThumbImage({ src }: { src: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const [errored, setErrored] = useState(false);
+  const showSkeleton = !loaded && !errored;
+  return (
+    <>
+      {showSkeleton && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 animate-pulse motion-reduce:animate-none"
+          style={{
+            // Brand register: cream base with a soft gold sheen over navy
+            // edges. Subtle (low-contrast) so it never looks like an error.
+            background: `linear-gradient(110deg, ${CREAM} 0%, ${GOLD}55 45%, ${CREAM} 90%)`,
+          }}
+        />
+      )}
+      <img
+        src={src}
+        alt=""
+        draggable={false}
+        onLoad={() => setLoaded(true)}
+        onError={() => setErrored(true)}
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'contain',
+          padding: 4,
+          position: 'relative',
+          opacity: loaded ? 1 : 0,
+          transition: 'opacity 200ms ease',
+        }}
+      />
     </>
   );
 }

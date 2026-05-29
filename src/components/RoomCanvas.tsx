@@ -27,7 +27,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Stage, Layer, Line, Group, Text, Circle, Rect, Image as KonvaImage } from 'react-konva';
-import { useImageCache } from '../hooks/useImageCache';
+import { useImageCache, useImageCacheStatus } from '../hooks/useImageCache';
 import type Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
 import { usePropertyStore, selectActiveRoom } from '../store/propertyStore';
@@ -1082,6 +1082,13 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
   // a non-empty string; useImageCache handles load/error → null internally
   // (the grey Rect fallback below still covers a genuine 404).
   const image = useImageCache(productImageUrl(product));
+  // Polish (2026-05-29) — distinguish "still hydrating" from "errored /
+  // no image" so the fallback shows a subtle brand shimmer while the
+  // asset loads, then settles to the real image (or the coloured rect on
+  // a genuine 404). The status hook shares the same module-level cache as
+  // useImageCache above, so this adds no extra network load.
+  const { status: imageStatus } = useImageCacheStatus(productImageUrl(product));
+  const isHydrating = !image && imageStatus === 'loading';
   // Fix 2.1 (Vic 2026-05-22) — render the product art at its TRUE
   // unrotated footprint and apply Konva rotation visually, so the
   // user sees the box turn smoothly as the rotate handle drags.
@@ -1188,6 +1195,20 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
       >
         {image ? (
           <KonvaImage image={image} width={unrotatedWPx} height={unrotatedHPx} opacity={0.95} />
+        ) : isHydrating ? (
+          // Polish (2026-05-29) — brand-styled loading skeleton while the
+          // product image hydrates via useImageCache. Navy base + a soft
+          // cream→gold pulse, so the tile reads as "loading" rather than a
+          // permanent coloured fallback. Settles to the real image on load
+          // (or to the coloured rect below on a genuine 404). Reduced-motion
+          // users get a static cream tile (no infinite pulse). Pure visual —
+          // does not touch placement geometry.
+          <HydratingSkeleton
+            width={unrotatedWPx}
+            height={unrotatedHPx}
+            stroke={isSelected ? '#FFBB58' : '#232C3B'}
+            strokeWidth={isSelected ? 2.5 : 1}
+          />
         ) : (
           <Rect
             width={unrotatedWPx}
@@ -1327,6 +1348,104 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
           />
         </>
       )}
+    </Group>
+  );
+}
+
+/**
+ * Polish (2026-05-29) — true when the user has asked the OS to minimise
+ * non-essential motion. We honour it by rendering a static skeleton tile
+ * instead of an infinite shimmer pulse. Guarded for SSR / test (jsdom may
+ * not implement matchMedia).
+ */
+function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return false;
+  }
+  try {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Polish (2026-05-29) — Konva loading skeleton for an item whose product
+ * image is still hydrating via useImageCache. Renders a navy base with a
+ * cream→gold overlay whose opacity pulses gently (a "shimmer" within a
+ * single canvas, no DOM). Reduced-motion users get a flat cream tile with
+ * the overlay held at a fixed low opacity (no animation loop). Purely
+ * visual: no placement math, no store mutation, no Konva stable-lock
+ * surface touched. The tween is torn down with the node on unmount.
+ */
+function HydratingSkeleton({
+  width,
+  height,
+  stroke,
+  strokeWidth,
+}: {
+  width: number;
+  height: number;
+  stroke: string;
+  strokeWidth: number;
+}): JSX.Element {
+  const shimmerRef = useRef<Konva.Rect>(null);
+  useEffect(() => {
+    if (prefersReducedMotion()) return;
+    const node = shimmerRef.current;
+    if (!node) return;
+    // Konva.Tween yoyo via a self-restarting pair. Keep the magnitude
+    // subtle (0.12 → 0.5 opacity) so it reads as a calm "breathing"
+    // hydrate, not a flashy strobe.
+    let cancelled = false;
+    const up = node.to.bind(node);
+    function pulse(toOpacity: number, then: () => void) {
+      up({
+        opacity: toOpacity,
+        duration: 0.75,
+        onFinish: () => {
+          if (!cancelled) then();
+        },
+      });
+    }
+    function loop() {
+      if (cancelled) return;
+      pulse(0.5, () => pulse(0.12, loop));
+    }
+    node.opacity(0.12);
+    loop();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  // Reduced-motion: hold the overlay at a fixed, visible-but-quiet opacity.
+  const staticOverlayOpacity = prefersReducedMotion() ? 0.35 : 0.12;
+  return (
+    <Group listening={false}>
+      {/* Navy base — the "loading" surface in brand register. */}
+      <Rect
+        width={width}
+        height={height}
+        fill="#232C3B"
+        opacity={0.85}
+        stroke={stroke}
+        strokeWidth={strokeWidth}
+        cornerRadius={3}
+      />
+      {/* Cream→gold shimmer overlay. Animated opacity (or static for
+          reduced-motion). Inset slightly so the navy frame stays visible. */}
+      <Rect
+        ref={shimmerRef}
+        x={2}
+        y={2}
+        width={Math.max(width - 4, 0)}
+        height={Math.max(height - 4, 0)}
+        fillLinearGradientStartPoint={{ x: 0, y: 0 }}
+        fillLinearGradientEndPoint={{ x: width, y: height }}
+        fillLinearGradientColorStops={[0, '#F5EBD7', 0.5, '#FFBB58', 1, '#F5EBD7']}
+        opacity={staticOverlayOpacity}
+        cornerRadius={2}
+      />
     </Group>
   );
 }
