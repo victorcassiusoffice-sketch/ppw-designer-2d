@@ -56,6 +56,11 @@ import { useHistoryStore } from '../store/historyStore';
 // RoomList sidebar can render the live counters next to the room.
 import { useDrawProgressStore } from '../store/drawProgressStore';
 import { usePlacementIntentStore } from '../store/placementIntentStore';
+// Sims feature-finish (2026-05-30) — inline floating cluster (flagship),
+// precision snap step, haptics. All additive; Konva stable-lock untouched.
+import { FloatingCluster } from '../designer/FloatingCluster';
+import { useDesignerUIStore, PRECISION_STEP_M } from '../store/designerUIStore';
+import { haptic } from '../lib/haptics';
 
 // M1.5: HTML5 DragEvent path retired (silently fails on `.konva-stage`
 // per K1 audit). DRAG_MIME stays in ProductPalette for legacy unit
@@ -94,6 +99,37 @@ export function RoomCanvas({
   const removeItem = useDesignStore((s) => s.removeItem);
   const selectItem = useDesignStore((s) => s.selectItem);
   const updateItem = useDesignStore((s) => s.updateItem);
+
+  // Sims feature-finish — snap resolution (full 0.5 m / quarter 0.25 m).
+  // Toggled by Ctrl+F (desktop) / the precision button (mobile). Spec D15/M13.
+  const precision = useDesignerUIStore((s) => s.precision);
+  const togglePrecision = useDesignerUIStore((s) => s.togglePrecision);
+  const tool = useDesignerUIStore((s) => s.tool);
+  const setTool = useDesignerUIStore((s) => s.setTool);
+  const snapStep = PRECISION_STEP_M[precision];
+
+  // D11/D12/D14 — tool-aware activation of a placed item. Hand (default) =
+  // select. Sledgehammer (J) = delete (stays armed for repeat). Eyedropper
+  // (E) = load the item's product type onto the placement ghost, then drop
+  // back to Hand. Returns true when the tool consumed the event (so the
+  // PlacedItemGroup skips its normal select).
+  const activatePlacedItem = useCallback(
+    (instanceId: string, productId: string): boolean => {
+      if (tool === 'sledgehammer') {
+        removeItem(instanceId);
+        haptic('delete');
+        return true;
+      }
+      if (tool === 'eyedropper') {
+        if (setPendingProductId) setPendingProductId(productId);
+        setTool('hand');
+        haptic('select');
+        return true;
+      }
+      return false;
+    },
+    [tool, removeItem, setPendingProductId, setTool],
+  );
 
   const activeRoom = usePropertyStore(selectActiveRoom);
   const addRoom = usePropertyStore((s) => s.addRoom);
@@ -193,6 +229,83 @@ export function RoomCanvas({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [pendingProductId, setPendingProductId]);
+
+  // D19 / D20 — viewport keyboard controls (zoom +/- and WASD/arrow pan).
+  // Local to RoomCanvas because the viewport transform lives here. Ignored
+  // while typing in an input or while a draw/wall tool owns the canvas.
+  useEffect(() => {
+    function isTyping(t: EventTarget | null): boolean {
+      if (!(t instanceof HTMLElement)) return false;
+      const tag = t.tagName;
+      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t.isContentEditable;
+    }
+    function onKey(e: KeyboardEvent) {
+      if (isTyping(e.target)) return;
+      if (drawMode || wallDrawEnabled) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return; // leave Ctrl+F etc alone
+      const PAN = 60;
+      const factor = 1.12;
+      switch (e.key) {
+        case '+':
+        case '=': // unshifted "+" key
+          e.preventDefault();
+          setViewport((v) => ({ ...v, scale: Math.min(MAX_SCALE, v.scale * factor) }));
+          break;
+        case '-':
+        case '_':
+          e.preventDefault();
+          setViewport((v) => ({ ...v, scale: Math.max(MIN_SCALE, v.scale / factor) }));
+          break;
+        case 'w':
+        case 'W':
+        case 'ArrowUp':
+          e.preventDefault();
+          setViewport((v) => ({ ...v, y: v.y + PAN }));
+          break;
+        case 's':
+        case 'S':
+        case 'ArrowDown':
+          e.preventDefault();
+          setViewport((v) => ({ ...v, y: v.y - PAN }));
+          break;
+        case 'a':
+        case 'A':
+        case 'ArrowLeft':
+          e.preventDefault();
+          setViewport((v) => ({ ...v, x: v.x + PAN }));
+          break;
+        case 'd':
+        case 'D':
+        case 'ArrowRight':
+          // Bare D is "duplicate" when an item is selected (global handler).
+          // Only pan with D when nothing is selected, so we never fight it.
+          if (selectedInstanceId) return;
+          e.preventDefault();
+          setViewport((v) => ({ ...v, x: v.x - PAN }));
+          break;
+        default:
+          break;
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [drawMode, wallDrawEnabled, selectedInstanceId]);
+
+  // D21 — running cost total (MUR) of everything placed. PPW's "funds"
+  // adaptation: there is no budget ceiling (it's a real shop), so this is
+  // a live spend readout, not a remaining-balance gauge. Currency is taken
+  // from the first priced item (catalog is single-currency per market).
+  const costReadout = useMemo(() => {
+    let total = 0;
+    let currency = 'MUR';
+    for (const it of placedItems) {
+      const p = getProductById(it.productId);
+      if (!p?.price) continue;
+      total += p.price.value;
+      currency = p.price.currency || currency;
+    }
+    return { total, currency };
+  }, [placedItems]);
 
   const bounds = useMemo(() => polygonBounds(polygon), [polygon]);
   const roomWpx = (bounds.maxX - bounds.minX) * pxPerMetre;
@@ -352,8 +465,8 @@ export function RoomCanvas({
         widthM: cmToM(product.dimensions_cm.width),
       };
       const { w, h } = rotatedFootprint(fp, rotationDeg);
-      const snappedX = snapToGrid(centreXm - w / 2, 0.5);
-      const snappedY = snapToGrid(centreYm - h / 2, 0.5);
+      const snappedX = snapToGrid(centreXm - w / 2, snapStep);
+      const snappedY = snapToGrid(centreYm - h / 2, snapStep);
       const others = placedItems
         .map((it) => {
           const p = getProductById(it.productId);
@@ -369,9 +482,11 @@ export function RoomCanvas({
       // already occupied. Only reject when the room is genuinely full.
       const slot = findFreeSlot({ preferredX: snappedX, preferredY: snappedY, w, h, others, polygon });
       if (!slot) {
+        haptic('invalid');
         pushToast("Item won't fit — the room is full.", 'warn');
         return false;
       }
+      haptic('place');
       const instanceId = addItem({
         productId: product.id,
         x: slot.x,
@@ -380,6 +495,9 @@ export function RoomCanvas({
       });
       // Polish (2026-05-29) — flag this fresh instance for the settle tween.
       setJustPlacedId(instanceId);
+      // M1 — the just-placed item becomes selected so the on-canvas
+      // floating cluster appears around it (Sims "placed → selected").
+      selectItem(instanceId);
       pushToast(`Added "${product.name}" to cart`, 'success', {
         ttlMs: 5000,
         action: {
@@ -389,7 +507,7 @@ export function RoomCanvas({
       });
       return true;
     },
-    [placedItems, polygon, addItem, removeItem, pushToast],
+    [placedItems, polygon, addItem, removeItem, pushToast, snapStep, selectItem],
   );
 
   const placeProductAt = useCallback(
@@ -508,8 +626,8 @@ export function RoomCanvas({
         widthM: cmToM(product.dimensions_cm.width),
       };
       const { w, h } = rotatedFootprint(fp, ghostRotation);
-      const snappedX = snapToGrid(xM - w / 2, 0.5);
-      const snappedY = snapToGrid(yM - h / 2, 0.5);
+      const snappedX = snapToGrid(xM - w / 2, snapStep);
+      const snappedY = snapToGrid(yM - h / 2, snapStep);
       const candidate: PlacedRect = { x: snappedX, y: snappedY, w, h };
       const others = placedItems
         .map((it) => {
@@ -523,7 +641,7 @@ export function RoomCanvas({
       const result = validatePlacement(candidate, others, polygon);
       return { xM: snappedX, yM: snappedY, rotation: ghostRotation, valid: result.ok, w, h };
     },
-    [viewport, pxPerMetre, ghostRotation, placedItems, polygon],
+    [viewport, pxPerMetre, ghostRotation, placedItems, polygon, snapStep],
   );
 
   const handleDrawCommit = useCallback(
@@ -688,6 +806,15 @@ export function RoomCanvas({
         <div className="pointer-events-none rounded-md bg-ppw-ink/80 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
           {area.toFixed(2)} m2 - {perimeter.toFixed(2)} m - {Math.round(viewport.scale * 100)}%
         </div>
+        {/* D21 — live cost total of placed items + D15/M13 precision badge. */}
+        <div
+          className="pointer-events-none rounded-md px-2.5 py-1 text-[11px] font-semibold shadow-sm"
+          style={{ background: 'rgba(255,187,88,0.92)', color: '#232C3B' }}
+          data-testid="cost-readout"
+        >
+          {costReadout.total.toLocaleString('en-MU', { maximumFractionDigits: 0 })} {costReadout.currency}
+          <span className="ml-1.5 opacity-70">· snap {precision === 'full' ? '0.5 m' : '0.25 m'}</span>
+        </div>
         {/* M1.5 E2E hook: visible counter so Playwright can assert that
             a placement actually committed. Updates from designStore via
             placedItems selector — independent of the cart UI. */}
@@ -720,6 +847,50 @@ export function RoomCanvas({
           </div>
         );
       })()}
+
+      {/* M14 / M13 — mobile-only top control strip: undo · redo · precision.
+          Desktop uses the keyboard (Ctrl+Z / Ctrl+Y / Ctrl+F) + has no
+          finger, so this is lg:hidden. ≥44px targets, inside the top safe
+          area, never over the canvas centre. */}
+      {!drawMode && !wallDrawEnabled && (
+        <div
+          className="lg:hidden pointer-events-none absolute left-3 z-10 flex items-center gap-2"
+          style={{ top: 'max(0.5rem, env(safe-area-inset-top))' }}
+        >
+          <button
+            type="button"
+            data-testid="mobile-undo"
+            aria-label="Undo"
+            onClick={() => useHistoryStore.getState().undo()}
+            className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-lg bg-white/90 text-lg text-ppw-ink shadow-sm ring-1 ring-ppw-stone active:scale-95"
+          >
+            ↶
+          </button>
+          <button
+            type="button"
+            data-testid="mobile-redo"
+            aria-label="Redo"
+            onClick={() => useHistoryStore.getState().redo()}
+            className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-lg bg-white/90 text-lg text-ppw-ink shadow-sm ring-1 ring-ppw-stone active:scale-95"
+          >
+            ↷
+          </button>
+          <button
+            type="button"
+            data-testid="mobile-precision"
+            aria-label="Toggle snap precision"
+            aria-pressed={precision === 'quarter'}
+            onClick={togglePrecision}
+            className="pointer-events-auto flex h-11 min-w-[64px] items-center justify-center rounded-lg px-2 text-[11px] font-semibold shadow-sm active:scale-95"
+            style={{
+              background: precision === 'quarter' ? '#FFBB58' : 'rgba(255,255,255,0.9)',
+              color: '#232C3B',
+            }}
+          >
+            {precision === 'quarter' ? '¼ tile' : '½ tile'}
+          </button>
+        </div>
+      )}
 
       <Stage
         ref={stageRef}
@@ -790,7 +961,13 @@ export function RoomCanvas({
           if (wallDrawEnabled) return; // M2: wall layer owns click
           if (e.target !== e.target.getStage()) return;
           if (pendingProductId && setPendingProductId) {
-            placeProductAt(e.evt.clientX, e.evt.clientY, pendingProductId);
+            const placed = placeProductAt(e.evt.clientX, e.evt.clientY, pendingProductId);
+            // D4 (desktop) — Shift+click STAMPS: keep the ghost on the
+            // cursor to rapid-place duplicates. Sims core duplication
+            // mechanic. Bare click commits and exits placing as before.
+            if (placed && (e.evt as MouseEvent).shiftKey) {
+              return;
+            }
             setPendingProductId(null);
             setDragGhost(null);
             setGhostRotation(0);
@@ -862,6 +1039,7 @@ export function RoomCanvas({
                 updateItem={updateItem}
                 pushToast={pushToast}
                 itemDragRef={itemDragRef}
+                activatePlacedItem={activatePlacedItem}
               />
             );
           })}
@@ -934,6 +1112,35 @@ export function RoomCanvas({
           path: Enter close · Esc cancel · Ctrl+Z undo last vertex. */}
 
       <WallDrawHUD enabled={wallDrawEnabled && !drawMode} />
+
+      {/* Sims feature-finish (flagship F1/M6) — on-canvas floating cluster
+          for the selected object. Replaces the old mobile slide-up
+          DetailsPanel modal as the manipulation surface so rotation (and
+          duplicate/delete/details/confirm) happen INLINE, never on a new
+          screen. Mobile/tablet only (lg:hidden); desktop keeps keyboard +
+          the right-rail DetailsPanel + the on-canvas rotate handle. */}
+      {!drawMode && !wallDrawEnabled && !pendingProductId && (() => {
+        const sel = placedItems.find((i) => i.instanceId === selectedInstanceId);
+        if (!sel) return null;
+        const p = getProductById(sel.productId);
+        if (!p) return null;
+        const fp = { lengthM: cmToM(p.dimensions_cm.length), widthM: cmToM(p.dimensions_cm.width) };
+        const { w } = rotatedFootprint(fp, sel.rotation);
+        const itemLeftPx = viewport.x + sel.x * pxPerMetre * viewport.scale;
+        const itemTopPx = viewport.y + sel.y * pxPerMetre * viewport.scale;
+        const itemWidthPx = w * pxPerMetre * viewport.scale;
+        return (
+          <div className="lg:hidden pointer-events-none absolute inset-0">
+            <FloatingCluster
+              itemLeftPx={itemLeftPx}
+              itemTopPx={itemTopPx}
+              itemWidthPx={itemWidthPx}
+              containerW={stageSize.width}
+              containerH={stageSize.height}
+            />
+          </div>
+        );
+      })()}
 
       {/* Designer polish (2026-05-29) — empty-state placement tip. Shows a
           faint, centered prompt over the (already grid-lined) empty room
@@ -1018,6 +1225,9 @@ interface PlacedItemGroupProps {
   updateItem: (id: string, patch: Partial<PlacedItem>) => void;
   pushToast: (msg: string, level?: 'warn' | 'info' | 'error') => void;
   itemDragRef: React.MutableRefObject<{ instanceId: string | null; moved: boolean }>;
+  /** D11/D12 — tool-aware activation. Returns true if a tool (sledgehammer/
+   *  eyedropper) consumed the click, so normal selection is skipped. */
+  activatePlacedItem: (instanceId: string, productId: string) => boolean;
 }
 
 function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
@@ -1038,6 +1248,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
     updateItem,
     pushToast,
     itemDragRef,
+    activatePlacedItem,
   } = props;
   // Polish (2026-05-29) — placement settle tween. On the render where
   // `justPlaced` is true, the group node fades + scales in from 0.9 → 1
@@ -1112,6 +1323,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
       }}
       onMouseDown={(e) => {
         e.cancelBubble = true;
+        if (activatePlacedItem(item.instanceId, item.productId)) return;
         selectItem(item.instanceId);
       }}
       onTap={(e) => {
@@ -1123,6 +1335,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
           itemDragRef.current = { instanceId: null, moved: false };
           return;
         }
+        if (activatePlacedItem(item.instanceId, item.productId)) return;
         selectItem(item.instanceId);
       }}
       onDragStart={(e) => {
@@ -1308,13 +1521,19 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
               // negate before atan2 for natural CW=positive semantics.
               const rad = Math.atan2(dx, -dy);
               let deg = (rad * 180) / Math.PI;
-              if (!e.evt.shiftKey) {
-                // Snap to 15° increments per the brief.
-                deg = Math.round(deg / 15) * 15;
+              // F2/F3 — 90° detents by default (Sims build-mode parity);
+              // hold Shift or Alt for a free angle. (Was 15° — corrected
+              // to match the desktop+mobile interaction specs.)
+              const free = e.evt.shiftKey || e.evt.altKey;
+              if (!free) {
+                deg = Math.round(deg / 90) * 90;
               }
               // Normalise to [0, 360).
               deg = ((deg % 360) + 360) % 360;
               if (Math.abs(deg - item.rotation) < 0.5) return;
+              // Haptic tick on each detent crossing (free-rotate is silent
+              // so it doesn't buzz continuously through the drag).
+              if (!free) haptic('rotate');
               // Pin the handle back to its rest position so subsequent
               // drag deltas resolve from the same anchor (Sims build
               // mode behaviour).
