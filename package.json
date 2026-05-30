@@ -45,6 +45,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@imgly/background-removal-node": "^1.4.5",
     "@playwright/test": "^1.60.0",
     "@sentry/vite-plugin": "^2.22.6",
     "@types/react": "^18.3.10",

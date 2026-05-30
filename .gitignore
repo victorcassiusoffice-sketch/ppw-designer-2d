@@ -51,3 +51,6 @@ screenshots/scratch/
 
 .vercel
 .env*.local
+
+# alpha-pass-topdown.mjs source backups (reversible, not committed)
+*.png.bak
