@@ -23,6 +23,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 const MOVE_THRESHOLD_PX = 8;
 const DEFAULT_LONGPRESS_MS = 300;
+/**
+ * Anti-occlusion lift (PARITY-MATRIX M2, mobile spec §3.2 / §9 — "render
+ * the object offset above the fingertip ... the single most important touch
+ * detail", non-negotiable). The dragged ghost is rendered this many px
+ * ABOVE the touch point, and — critically — the placement drop point is
+ * reported at the same lifted position, so what the user sees is where the
+ * item lands (the finger never hides the object or its target cell).
+ */
+export const DRAG_LIFT_PX = 56;
 
 interface DragState {
   productId: string;
@@ -105,7 +114,8 @@ export function useDragToPlace(opts: UseDragToPlaceOptions) {
       if (!p || e.pointerId !== p.pointerId) return;
       if (p.timer) clearTimeout(p.timer);
       if (p.dragging) {
-        cbs.current.onDrop(p.productId, e.clientX, e.clientY);
+        // Drop at the LIFTED point (matches the rendered ghost centre).
+        cbs.current.onDrop(p.productId, e.clientX, e.clientY - DRAG_LIFT_PX);
       } else if (!p.armed && mode === 'longpress') {
         // Released before the hold fired and without scrolling → a tap.
         cbs.current.onTap?.(p.productId);
@@ -164,7 +174,10 @@ export function useDragToPlace(opts: UseDragToPlaceOptions) {
       style={{
         position: 'fixed',
         left: drag.x,
-        top: drag.y,
+        // M2 anti-occlusion — render the ghost lifted above the fingertip
+        // (centre sits at the reported drop point), so the finger never
+        // covers the object or its target cell.
+        top: drag.y - DRAG_LIFT_PX,
         width: 72,
         height: 72,
         marginLeft: -36,

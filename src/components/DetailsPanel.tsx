@@ -13,12 +13,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useDesignStore } from '../store/designStore';
+import { useDesignerUIStore } from '../store/designerUIStore';
 import { CATEGORY_LABELS, getProductById } from '../data/products';
 import {
   rotateSelected,
   duplicateSelected,
   deleteSelected,
-  deselect,
 } from '../lib/placementActions';
 
 /**
@@ -76,6 +76,16 @@ export function DetailsPanel() {
   const selected = placedItems.find((i) => i.instanceId === selectedInstanceId);
   const selectedProduct = selected ? getProductById(selected.productId) : undefined;
 
+  // Flagship fix — the mobile slide-up is no longer the rotation surface.
+  // It opens only when the user taps ⓘ in the on-canvas FloatingCluster
+  // (infoOpen), so selecting an item shows the inline cluster instead of a
+  // full-screen modal. Reset when the selection clears.
+  const infoOpen = useDesignerUIStore((s) => s.infoOpen);
+  const setInfoOpen = useDesignerUIStore((s) => s.setInfoOpen);
+  useEffect(() => {
+    if (!selectedInstanceId) setInfoOpen(false);
+  }, [selectedInstanceId, setInfoOpen]);
+
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const sessionId = useMemo(getOrMintSessionId, []);
   // P0-ε — Pattern C BUY routes K1-* SKUs to the merchant storefront via the
@@ -94,7 +104,7 @@ export function DetailsPanel() {
         {selected && (
           <button
             type="button"
-            onClick={deselect}
+            onClick={() => setInfoOpen(false)}
             className="md:hidden rounded-md border border-ppw-stone bg-white px-2 py-0.5 text-xs text-ppw-slate"
           >
             Close
@@ -262,11 +272,11 @@ export function DetailsPanel() {
         {body}
       </aside>
 
-      {selected && (
+      {selected && infoOpen && (
         <>
           <div
             className="md:hidden fixed inset-0 z-40 bg-black/30"
-            onClick={deselect}
+            onClick={() => setInfoOpen(false)}
           />
           <aside className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex max-h-[85vh] flex-col rounded-t-2xl border-t border-ppw-stone bg-white shadow-2xl">
             {body}

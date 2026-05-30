@@ -26,6 +26,7 @@ import {
 } from './placementActions';
 import { useDesignStore } from '../store/designStore';
 import { useHistoryStore } from '../store/historyStore';
+import { useDesignerUIStore } from '../store/designerUIStore';
 
 function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -54,6 +55,20 @@ export function useKeyboardShortcuts(): void {
         }
         return;
       }
+      // D18 — Ctrl/Cmd+Y is the conventional Windows redo alias (spec lists
+      // Ctrl+Y for redo alongside Ctrl+Shift+Z above).
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || e.key === 'Y')) {
+        e.preventDefault();
+        useHistoryStore.getState().redo();
+        return;
+      }
+      // D15 / M13 — Ctrl/Cmd+F toggles full-tile (0.5 m) ↔ quarter-tile
+      // (0.25 m) snap. preventDefault stops the browser find-in-page.
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+        e.preventDefault();
+        useDesignerUIStore.getState().togglePrecision();
+        return;
+      }
 
       switch (e.key) {
         case 'r':
@@ -75,6 +90,23 @@ export function useKeyboardShortcuts(): void {
           }
           break;
         }
+        // F2 — `<` / `>` rotate ∓90° detents (Sims build-mode keys). On a
+        // US layout these are Shift+, and Shift+. — match either the
+        // shifted glyph or the bare comma/period so it works regardless.
+        case '<':
+        case ',': {
+          if (!hasSelection) return;
+          e.preventDefault();
+          rotateSelected(-ROTATION_STEP_COARSE_DEG);
+          break;
+        }
+        case '>':
+        case '.': {
+          if (!hasSelection) return;
+          e.preventDefault();
+          rotateSelected(ROTATION_STEP_COARSE_DEG);
+          break;
+        }
         case 'd':
         case 'D':
           if (!hasSelection) return;
@@ -89,8 +121,32 @@ export function useKeyboardShortcuts(): void {
           e.preventDefault();
           deleteSelected();
           break;
+        // D14 — Hand tool (H): the default select/move tool. Also cancels
+        // any armed sledgehammer/eyedropper mode.
+        case 'h':
+        case 'H':
+          e.preventDefault();
+          useDesignerUIStore.getState().setTool('hand');
+          break;
+        // D11 / M11 — Eyedropper (E): next click on a placed item loads its
+        // product type onto the placement ghost (copy-a-type).
+        case 'e':
+        case 'E':
+          e.preventDefault();
+          useDesignerUIStore.getState().setTool('eyedropper');
+          break;
+        // D12 — Sledgehammer (J): click placed items to delete them (stays
+        // armed for repeat demolition).
+        case 'j':
+        case 'J':
+          e.preventDefault();
+          useDesignerUIStore.getState().setTool('sledgehammer');
+          break;
         case 'Escape':
           e.preventDefault();
+          // Esc also drops back to the Hand tool (cancels sledgehammer/
+          // eyedropper) in addition to deselecting.
+          useDesignerUIStore.getState().setTool('hand');
           deselect();
           break;
         default:

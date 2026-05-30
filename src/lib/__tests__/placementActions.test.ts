@@ -14,7 +14,12 @@
  *     frame (Tweak 07 hook for Tweak 01).
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { rotateSelected, ROTATION_STEP_FINE_DEG, ROTATION_STEP_COARSE_DEG } from '../placementActions';
+import {
+  rotateSelected,
+  duplicateSelected,
+  ROTATION_STEP_FINE_DEG,
+  ROTATION_STEP_COARSE_DEG,
+} from '../placementActions';
 import { useDesignStore } from '../../store/designStore';
 import { usePropertyStore } from '../../store/propertyStore';
 import { useHistoryStore, installHistorySubscriptions, __test } from '../../store/historyStore';
@@ -98,6 +103,26 @@ describe('rotateSelected — Phase B rotation API', () => {
     expect(past.length).toBeGreaterThanOrEqual(1);
     const lastLabelled = past.find((s) => s.label === 'rotate');
     expect(lastLabelled).toBeDefined();
+  });
+
+  it('duplicateSelected adds a copy and selects it (M4)', () => {
+    // Use a small (0.5 m) product with open space so an offset slot is free
+    // (large products can't clear the ≤1 m duplicate offsets — separate).
+    const id = useDesignStore.getState().addItem({
+      productId: 'k1-floor-eva-kids',
+      x: 0.5,
+      y: 0.5,
+      rotation: 0,
+    });
+    useDesignStore.getState().selectItem(id);
+    const before = useDesignStore.getState().placedItems.length;
+    duplicateSelected();
+    const items = useDesignStore.getState().placedItems;
+    expect(items.length).toBe(before + 1);
+    // The newly-selected item is the copy, not the original.
+    const sel = useDesignStore.getState().selectedInstanceId;
+    expect(sel).not.toBe(id);
+    expect(items.find((i) => i.instanceId === sel)).toBeDefined();
   });
 
   it('records exactly one undoable rotation per call', () => {

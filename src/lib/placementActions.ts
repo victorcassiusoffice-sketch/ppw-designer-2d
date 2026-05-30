@@ -18,6 +18,7 @@ import {
 } from './geometry';
 import type { PlacedRect } from './geometry';
 import type { PlacedItem } from '../store/designStore';
+import { haptic } from './haptics';
 
 /**
  * Tweak 01 (Phase B) — rotation step in degrees. R-key cycles at 90°
@@ -67,6 +68,7 @@ export function rotateSelected(deltaDeg: number): void {
   const others = buildOthers(state.placedItems, id);
   const result = validatePlacement(candidate, others, state.polygon);
   if (!result.ok) {
+    haptic('invalid');
     useToastStore.getState().push("Item won't fit here.", 'warn');
     return;
   }
@@ -74,6 +76,7 @@ export function rotateSelected(deltaDeg: number): void {
   // triggers a labelled history frame instead of the unlabelled default.
   useHistoryStore.getState().recordSnapshot('rotate');
   state.updateItem(id, { rotation: newRotation });
+  haptic('rotate');
 }
 
 /** Duplicate the selected item with a 0.5 m offset; tries a few offsets. */
@@ -102,15 +105,20 @@ export function duplicateSelected(): void {
     const candidate: PlacedRect = { x: item.x + dx, y: item.y + dy, w, h };
     const result = validatePlacement(candidate, others, state.polygon);
     if (result.ok) {
-      state.addItem({
+      const newId = state.addItem({
         productId: item.productId,
         x: candidate.x,
         y: candidate.y,
         rotation: item.rotation,
       });
+      // M4 — select the new copy so the cluster/outline follows it (the
+      // touch equivalent of Shift-click rapid placement landing selected).
+      state.selectItem(newId);
+      haptic('duplicate');
       return;
     }
   }
+  haptic('invalid');
   useToastStore.getState().push("No room to duplicate here.", 'warn');
 }
 
@@ -120,6 +128,7 @@ export function deleteSelected(): void {
   const id = state.selectedInstanceId;
   if (!id) return;
   state.removeItem(id);
+  haptic('delete');
 }
 
 /** Clear selection. */
