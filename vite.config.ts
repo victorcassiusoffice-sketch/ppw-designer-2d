@@ -50,6 +50,12 @@ export default defineConfig({
         ? process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7)
         : `dev-${new Date().toISOString().slice(0, 16).replace('T', ' ')}`,
     ),
+    // VITE_TEST_HOOKS (preview-only) → compiled to a literal boolean so the
+    // window.__designer test-hook dynamic import is dead-code-eliminated from
+    // the PRODUCTION bundle (true only for a `VITE_TEST_HOOKS=1` preview build).
+    __TEST_HOOKS__: JSON.stringify(
+      process.env.VITE_TEST_HOOKS === '1' || process.env.VITE_TEST_HOOKS === 'true',
+    ),
   },
   server: {
     port: 5173,

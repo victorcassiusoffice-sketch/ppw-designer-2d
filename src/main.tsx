@@ -40,10 +40,10 @@ import './index.css';
 bootstrapFx();
 
 // VITE_TEST_HOOKS (preview only) — expose window.__designer for Playwright
-// device-emulation verification. The dynamic import is gated on the
-// build-time env so this module is NEVER bundled in a production build
-// (VITE_TEST_HOOKS unset → the import is tree-shaken out).
-if ((import.meta.env as Record<string, unknown>).VITE_TEST_HOOKS) {
+// device-emulation verification. __TEST_HOOKS__ is a build-time literal
+// (vite.config define): false in production → this whole block + the
+// dynamic import are dead-code-eliminated, so testHooks never ships.
+if (__TEST_HOOKS__) {
   import('./lib/testHooks')
     .then((m) => m.installTestHooks())
     .catch(() => {

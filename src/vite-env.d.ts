@@ -6,6 +6,10 @@
 // bundle landed on his iPhone after the cache-header change.
 declare const __APP_BUILD__: string;
 
+// Preview-only test-hook flag (vite.config `define`). Literal boolean so the
+// window.__designer bridge tree-shakes out of production builds.
+declare const __TEST_HOOKS__: boolean;
+
 declare module 'jspdf' {
   export interface jsPDFOptions {
     orientation?: 'portrait' | 'landscape' | 'p' | 'l';
