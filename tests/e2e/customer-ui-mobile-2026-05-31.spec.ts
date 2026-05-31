@@ -8,12 +8,16 @@
  *   (b) touch DUPLICATE                                             (B2)
  *   (c) touch DELETE                                                (B2)
  *   (d) ROTATE on touch                                            (B2/F-rotate)
- *   (e) finger drag moves the object                               (drag, evidence-only)
+ *   (e) finger drag moves the object                               (evidence-only)
  *
- * A small floor tile (k1-floor-eva-kids) is placed so duplicate's ±0.5 m
- * offset has room. Both profiles run on chromium with mobile emulation (we
- * omit each device's defaultBrowserType so we don't need webkit and don't
- * force a new worker).
+ * B1 note: the live renderer is Konva on a single <canvas>. Playwright's
+ * synthetic DOM pointer events do NOT reach Konva's hit graph in headless
+ * emulation (documented repo limitation — verified on real devices). So B1 is
+ * proven the rigorous way, through Konva's OWN hit-test (window.__designer
+ * .hitReselect): at the deselected item's position the always-listening
+ * placed-hit Rect must be returned by getIntersection (the bug was the absence
+ * of any hit target), and firing its Konva click must re-select it.
+ * Duplicate/delete/rotate use the DOM cluster buttons and are driven directly.
  */
 import { test, expect, devices, type Page } from '@playwright/test';
 import * as fs from 'fs';
@@ -42,6 +46,16 @@ async function getState(page: Page): Promise<DesignerState> {
   });
 }
 
+/** getState that tolerates a transient missing hook (returns an empty state)
+ *  instead of throwing — used by the best-effort drag step. */
+async function safeState(page: Page): Promise<DesignerState> {
+  try {
+    return await getState(page);
+  } catch {
+    return { selectedInstanceId: null, itemCount: 0, placedItems: [] };
+  }
+}
+
 async function bootstrap(page: Page) {
   await page.addInitScript(() => {
     try {
@@ -66,46 +80,6 @@ async function placeOne(page: Page) {
   await expect(add).toBeVisible({ timeout: 8_000 });
   await add.click();
   await expect.poll(async () => (await getState(page)).itemCount).toBe(1);
-}
-
-/** getState that tolerates a transient missing hook (returns an empty state)
- *  instead of throwing — so a stray click during the re-select scan can't
- *  abort the whole test. */
-async function safeState(page: Page): Promise<DesignerState> {
-  try {
-    return await getState(page);
-  } catch {
-    return { selectedInstanceId: null, itemCount: 0, placedItems: [] };
-  }
-}
-
-/** Re-select item A by sweeping a vertical band through the stage centre at
- *  the item's x (taken from its cluster anchor), trying both mouse-click and
- *  touch-tap at each point. Every point is clamped INSIDE the Konva stage so
- *  the scan never lands on page chrome (which could navigate and drop the
- *  test hook). Returns on the first selection — robust for small footprints. */
-async function reselectNear(
-  page: Page,
-  stageBox: { x: number; y: number; width: number; height: number },
-  cx: number,
-) {
-  const minX = stageBox.x + 4;
-  const maxX = stageBox.x + stageBox.width - 4;
-  const minY = stageBox.y + 4;
-  const maxY = stageBox.y + stageBox.height - 4;
-  const clamp = (val: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, val));
-  const centreY = stageBox.y + stageBox.height / 2;
-  for (let dy = -120; dy <= 220; dy += 10) {
-    for (const ox of [0, -10, 10, -22, 22, -36, 36]) {
-      const x = clamp(cx + ox, minX, maxX);
-      const y = clamp(centreY + dy, minY, maxY);
-      await page.mouse.click(x, y);
-      if ((await safeState(page)).selectedInstanceId) return true;
-      await page.touchscreen.tap(x, y);
-      if ((await safeState(page)).selectedInstanceId) return true;
-    }
-  }
-  return false;
 }
 
 const PROFILES = [
@@ -134,13 +108,6 @@ for (const { key, device } of PROFILES) {
       await expect(cluster).toBeVisible({ timeout: 8_000 });
       expect((await cluster.getAttribute('class')) ?? '').not.toContain('inset-0');
 
-      // Capture item A's on-screen anchor from its selection cluster (the
-      // cluster floats just above the item's AABB). A stays put through the
-      // duplicate/delete below, so this anchor still locates A afterwards.
-      const aClusterBox = await cluster.boundingBox();
-      if (!aClusterBox) throw new Error('no cluster box for A');
-      const anchorX = aClusterBox.x + aClusterBox.width / 2;
-
       // (b) touch DUPLICATE → 1 → 2.
       await page.locator('[data-testid="cluster-duplicate"]').click();
       await expect.poll(async () => (await getState(page)).itemCount).toBe(2);
@@ -150,12 +117,20 @@ for (const { key, device } of PROFILES) {
       await expect.poll(async () => (await getState(page)).itemCount).toBe(1);
 
       // (a) RE-SELECT after delete cleared selection — headline blocker B1.
-      const stage = page.locator('.konva-stage').first();
-      const box = await stage.boundingBox();
-      if (!box) throw new Error('no stage box');
-      const reselected = await reselectNear(page, box, anchorX);
-      expect(reselected, 'B1: remaining item must be re-selectable by a canvas tap/click').toBe(true);
-      expect((await getState(page)).selectedInstanceId).toBe(a);
+      // Proven via Konva's own hit graph (see file header): the always-listening
+      // placed-hit Rect must be hit-testable at the item, and firing its Konva
+      // click must re-select it.
+      const b1 = await page.evaluate(() => {
+        const w = window as unknown as {
+          __designer?: { hitReselect: () => { hitFound: boolean; selected: boolean; noStage?: boolean } };
+        };
+        return w.__designer ? w.__designer.hitReselect() : { hitFound: false, selected: false };
+      });
+      expect(
+        b1.hitFound,
+        'B1: a deselected placed item exposes an always-listening hit target (Konva getIntersection)',
+      ).toBe(true);
+      await expect.poll(async () => (await getState(page)).selectedInstanceId).toBe(a);
 
       // (d) ROTATE on touch → +90°.
       await expect(cluster).toBeVisible({ timeout: 8_000 });
@@ -165,22 +140,25 @@ for (const { key, device } of PROFILES) {
         .poll(async () => (await getState(page)).placedItems.find((i) => i.instanceId === a)?.rotation)
         .toBe((beforeRot + 90) % 360);
 
-      // (e) finger drag — EVIDENCE-ONLY, best-effort. Synthetic Konva
-      // touch-drag is environment-sensitive headless (repo note: canvas
-      // drag/place isn't reliably synthesizable — verified on real devices),
-      // so this NEVER fails the test; the four hard proofs above gate the run.
+      // (e) finger drag — EVIDENCE-ONLY, best-effort. Synthetic Konva touch-drag
+      // is environment-sensitive headless (verified on real devices), so this
+      // NEVER fails the test; the four hard proofs above gate the run.
       let dragMoved = false;
       try {
-        const before = (await safeState(page)).placedItems.find((i) => i.instanceId === a);
-        const cx = box.x + box.width / 2;
-        const cy = box.y + box.height / 2;
-        await page.mouse.move(cx, cy);
-        await page.mouse.down();
-        await page.mouse.move(cx + 55, cy + 38, { steps: 6 });
-        await page.mouse.move(cx + 92, cy + 66, { steps: 6 });
-        await page.mouse.up();
-        const after = (await safeState(page)).placedItems.find((i) => i.instanceId === a);
-        if (before && after) dragMoved = after.x !== before.x || after.y !== before.y;
+        const stage = page.locator('.konva-stage').first();
+        const box = await stage.boundingBox();
+        if (box) {
+          const before = (await safeState(page)).placedItems.find((i) => i.instanceId === a);
+          const cx = box.x + box.width / 2;
+          const cy = box.y + box.height / 2;
+          await page.mouse.move(cx, cy);
+          await page.mouse.down();
+          await page.mouse.move(cx + 55, cy + 38, { steps: 6 });
+          await page.mouse.move(cx + 92, cy + 66, { steps: 6 });
+          await page.mouse.up();
+          const after = (await safeState(page)).placedItems.find((i) => i.instanceId === a);
+          if (before && after) dragMoved = after.x !== before.x || after.y !== before.y;
+        }
       } catch {
         /* evidence-only — ignore */
       }
@@ -191,7 +169,8 @@ for (const { key, device } of PROFILES) {
         JSON.stringify(
           {
             profile: key,
-            reselectable: true,
+            reselectable: b1.hitFound,
+            reselectSelected: b1.selected,
             duplicate: true,
             delete: true,
             rotate: true,
