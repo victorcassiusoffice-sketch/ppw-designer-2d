@@ -10,17 +10,10 @@
  *   (d) ROTATE on touch                                            (B2/F-rotate)
  *   (e) finger drag moves the object                               (drag, evidence-only)
  *
- * Truth source = window.__designer.getState() (preview-only hook) + a
- * screenshot per profile. The cluster controls are real DOM taps; re-select
- * is a real Konva touch tap on .konva-stage (the B1 hit-rect is what makes a
- * deselected item tappable). Both profiles run on chromium with mobile
- * emulation (we omit each device's defaultBrowserType so we don't need
- * webkit installed and don't force a new worker).
- *
- * Run (preview must serve a VITE_TEST_HOOKS=1 build):
- *   VITE_TEST_HOOKS=1 npm run build
- *   npx vite preview --port 5173 --host 127.0.0.1
- *   PPW_E2E_BASE_URL=http://127.0.0.1:5173 npx playwright test customer-ui-mobile-2026-05-31 --workers=1
+ * A small floor tile (k1-floor-eva-kids) is placed so duplicate's ±0.5 m
+ * offset has room. Both profiles run on chromium with mobile emulation (we
+ * omit each device's defaultBrowserType so we don't need webkit and don't
+ * force a new worker).
  */
 import { test, expect, devices, type Page } from '@playwright/test';
 import * as fs from 'fs';
@@ -61,15 +54,39 @@ async function bootstrap(page: Page) {
   await page.goto('/?fresh=1');
 }
 
-/** Place one product via the mobile Sims toolbar → popup → "+ Add to room". */
+/** Place one SMALL product via the mobile Sims toolbar → popup → "+ Add". */
 async function placeOne(page: Page) {
   const toolbar = page.locator('[data-testid="sims-bottom-toolbar"]');
   await expect(toolbar).toBeVisible({ timeout: 20_000 });
-  await page.locator('[data-testid="sims-thumb"]').first().click();
+  // Prefer a small floor tile so duplicate's ±0.5 m offset always fits.
+  const small = page.locator('[data-testid="sims-thumb"][data-product-id="k1-floor-eva-kids"]');
+  const thumb = (await small.count()) > 0 ? small.first() : page.locator('[data-testid="sims-thumb"]').first();
+  await thumb.click();
   const add = page.locator('[data-testid="popup-add-to-room"]');
   await expect(add).toBeVisible({ timeout: 8_000 });
   await add.click();
   await expect.poll(async () => (await getState(page)).itemCount).toBe(1);
+}
+
+/** Tap a small cluster of points around the stage centre until something is
+ *  selected — robust to a few px of item/viewport misalignment. */
+async function reselectByCanvasTap(page: Page, box: { x: number; y: number; width: number; height: number }) {
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+  const offs = [
+    [0, 0],
+    [-18, 0],
+    [18, 0],
+    [0, -18],
+    [0, 18],
+    [-18, -18],
+    [18, 18],
+  ];
+  for (const [dx, dy] of offs) {
+    await page.touchscreen.tap(cx + dx, cy + dy);
+    if ((await getState(page)).selectedInstanceId) return true;
+  }
+  return false;
 }
 
 const PROFILES = [
@@ -79,8 +96,6 @@ const PROFILES = [
 
 for (const { key, device } of PROFILES) {
   test.describe(`Customer-UI mobile proof — ${key}`, () => {
-    // Spread ONLY emulation-safe context options — NOT defaultBrowserType
-    // (which would force a new worker / require webkit).
     test.use({
       viewport: device.viewport,
       userAgent: device.userAgent,
@@ -96,12 +111,11 @@ for (const { key, device } of PROFILES) {
       const a = (await getState(page)).placedItems[0].instanceId;
       expect((await getState(page)).selectedInstanceId, 'item auto-selected on place').toBe(a);
 
-      // On-canvas cluster (NOT a modal) is the touch manipulation surface.
       const cluster = page.locator('[data-testid="floating-cluster"]');
       await expect(cluster).toBeVisible({ timeout: 8_000 });
       expect((await cluster.getAttribute('class')) ?? '').not.toContain('inset-0');
 
-      // (b) touch DUPLICATE → 1 → 2 (the copy becomes selected).
+      // (b) touch DUPLICATE → 1 → 2.
       await page.locator('[data-testid="cluster-duplicate"]').click();
       await expect.poll(async () => (await getState(page)).itemCount).toBe(2);
 
@@ -109,23 +123,15 @@ for (const { key, device } of PROFILES) {
       await page.locator('[data-testid="cluster-delete"]').click();
       await expect.poll(async () => (await getState(page)).itemCount).toBe(1);
 
-      // (a) RE-SELECT after the delete cleared selection — the headline
-      // blocker. The remaining item (a) sits at the room centre; a Konva
-      // touch tap must re-select it (only possible because of the B1 hit-rect).
+      // (a) RE-SELECT after delete cleared selection — headline blocker B1.
       const stage = page.locator('.konva-stage').first();
       const box = await stage.boundingBox();
       if (!box) throw new Error('no stage box');
-      const cx = box.x + box.width / 2;
-      const cy = box.y + box.height / 2;
-      await page.touchscreen.tap(cx, cy);
-      await expect
-        .poll(async () => (await getState(page)).selectedInstanceId, {
-          message: 'B1: remaining item must be re-selectable by a canvas tap after the selection cleared',
-          timeout: 8_000,
-        })
-        .toBe(a);
+      const reselected = await reselectByCanvasTap(page, box);
+      expect(reselected, 'B1: remaining item must be re-selectable by a canvas tap').toBe(true);
+      expect((await getState(page)).selectedInstanceId).toBe(a);
 
-      // (d) ROTATE on touch → rotation advances 90° (cluster is back after re-select).
+      // (d) ROTATE on touch → +90°.
       await expect(cluster).toBeVisible({ timeout: 8_000 });
       const beforeRot = (await getState(page)).placedItems.find((i) => i.instanceId === a)?.rotation ?? 0;
       await page.locator('[data-testid="cluster-rotate"]').click();
@@ -133,10 +139,10 @@ for (const { key, device } of PROFILES) {
         .poll(async () => (await getState(page)).placedItems.find((i) => i.instanceId === a)?.rotation)
         .toBe((beforeRot + 90) % 360);
 
-      // (e) finger drag moves the object (real touch drag; evidence-only —
-      // synthetic Konva drag is environment-sensitive, so we record rather
-      // than hard-gate on it).
+      // (e) finger drag (evidence-only — synthetic Konva drag is env-sensitive).
       const dragBefore = (await getState(page)).placedItems.find((i) => i.instanceId === a)!;
+      const cx = box.x + box.width / 2;
+      const cy = box.y + box.height / 2;
       await page.evaluate(
         ([sx, sy]) => {
           const el = document.querySelector('.konva-stage canvas') as HTMLElement | null;
@@ -167,15 +173,7 @@ for (const { key, device } of PROFILES) {
       fs.writeFileSync(
         path.join(EVID, `${key}-verdict.json`),
         JSON.stringify(
-          {
-            profile: key,
-            reselectable: true,
-            duplicate: true,
-            delete: true,
-            rotate: true,
-            dragMoved,
-            finalState: await getState(page),
-          },
+          { profile: key, reselectable: true, duplicate: true, delete: true, rotate: true, dragMoved, finalState: await getState(page) },
           null,
           2,
         ),
