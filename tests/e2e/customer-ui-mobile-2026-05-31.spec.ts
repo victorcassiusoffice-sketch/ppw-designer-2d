@@ -68,20 +68,41 @@ async function placeOne(page: Page) {
   await expect.poll(async () => (await getState(page)).itemCount).toBe(1);
 }
 
-/** Re-select item A by scanning a vertical strip just below its selection-
- *  cluster anchor (the cluster floats above the item's AABB, so the item is
- *  a short way below the anchor). Tries both click and tap at each point and
- *  returns on the first selection — robust for small footprints where a
- *  single centre tap can miss. */
-async function reselectNear(page: Page, anchorX: number, anchorYtop: number) {
-  const xs = [anchorX, anchorX - 12, anchorX + 12];
-  for (let dy = -48; dy <= 220; dy += 12) {
-    for (const x of xs) {
-      const y = anchorYtop + dy;
+/** getState that tolerates a transient missing hook (returns an empty state)
+ *  instead of throwing — so a stray click during the re-select scan can't
+ *  abort the whole test. */
+async function safeState(page: Page): Promise<DesignerState> {
+  try {
+    return await getState(page);
+  } catch {
+    return { selectedInstanceId: null, itemCount: 0, placedItems: [] };
+  }
+}
+
+/** Re-select item A by sweeping a vertical band through the stage centre at
+ *  the item's x (taken from its cluster anchor), trying both mouse-click and
+ *  touch-tap at each point. Every point is clamped INSIDE the Konva stage so
+ *  the scan never lands on page chrome (which could navigate and drop the
+ *  test hook). Returns on the first selection — robust for small footprints. */
+async function reselectNear(
+  page: Page,
+  stageBox: { x: number; y: number; width: number; height: number },
+  cx: number,
+) {
+  const minX = stageBox.x + 4;
+  const maxX = stageBox.x + stageBox.width - 4;
+  const minY = stageBox.y + 4;
+  const maxY = stageBox.y + stageBox.height - 4;
+  const clamp = (val: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, val));
+  const centreY = stageBox.y + stageBox.height / 2;
+  for (let dy = -120; dy <= 220; dy += 10) {
+    for (const ox of [0, -10, 10, -22, 22, -36, 36]) {
+      const x = clamp(cx + ox, minX, maxX);
+      const y = clamp(centreY + dy, minY, maxY);
       await page.mouse.click(x, y);
-      if ((await getState(page)).selectedInstanceId) return true;
+      if ((await safeState(page)).selectedInstanceId) return true;
       await page.touchscreen.tap(x, y);
-      if ((await getState(page)).selectedInstanceId) return true;
+      if ((await safeState(page)).selectedInstanceId) return true;
     }
   }
   return false;
@@ -119,7 +140,6 @@ for (const { key, device } of PROFILES) {
       const aClusterBox = await cluster.boundingBox();
       if (!aClusterBox) throw new Error('no cluster box for A');
       const anchorX = aClusterBox.x + aClusterBox.width / 2;
-      const anchorYtop = aClusterBox.y;
 
       // (b) touch DUPLICATE → 1 → 2.
       await page.locator('[data-testid="cluster-duplicate"]').click();
@@ -133,7 +153,7 @@ for (const { key, device } of PROFILES) {
       const stage = page.locator('.konva-stage').first();
       const box = await stage.boundingBox();
       if (!box) throw new Error('no stage box');
-      const reselected = await reselectNear(page, anchorX, anchorYtop);
+      const reselected = await reselectNear(page, box, anchorX);
       expect(reselected, 'B1: remaining item must be re-selectable by a canvas tap/click').toBe(true);
       expect((await getState(page)).selectedInstanceId).toBe(a);
 
