@@ -165,41 +165,39 @@ for (const { key, device } of PROFILES) {
         .poll(async () => (await getState(page)).placedItems.find((i) => i.instanceId === a)?.rotation)
         .toBe((beforeRot + 90) % 360);
 
-      // (e) finger drag (evidence-only — synthetic Konva drag is env-sensitive).
-      const dragBefore = (await getState(page)).placedItems.find((i) => i.instanceId === a)!;
-      const cx = box.x + box.width / 2;
-      const cy = box.y + box.height / 2;
-      await page.evaluate(
-        ([sx, sy]) => {
-          const el = document.querySelector('.konva-stage canvas') as HTMLElement | null;
-          if (!el) return;
-          const fire = (type: string, x: number, y: number) =>
-            el.dispatchEvent(
-              new TouchEvent(type, {
-                bubbles: true,
-                cancelable: true,
-                touches:
-                  type === 'touchend'
-                    ? []
-                    : [new Touch({ identifier: 1, target: el, clientX: x, clientY: y })],
-                changedTouches: [new Touch({ identifier: 1, target: el, clientX: x, clientY: y })],
-              }),
-            );
-          fire('touchstart', sx, sy);
-          fire('touchmove', sx + 60, sy + 40);
-          fire('touchmove', sx + 95, sy + 70);
-          fire('touchend', sx + 95, sy + 70);
-        },
-        [cx, cy] as const,
-      );
-      const dragAfter = (await getState(page)).placedItems.find((i) => i.instanceId === a)!;
-      const dragMoved = dragAfter.x !== dragBefore.x || dragAfter.y !== dragBefore.y;
+      // (e) finger drag — EVIDENCE-ONLY, best-effort. Synthetic Konva
+      // touch-drag is environment-sensitive headless (repo note: canvas
+      // drag/place isn't reliably synthesizable — verified on real devices),
+      // so this NEVER fails the test; the four hard proofs above gate the run.
+      let dragMoved = false;
+      try {
+        const before = (await safeState(page)).placedItems.find((i) => i.instanceId === a);
+        const cx = box.x + box.width / 2;
+        const cy = box.y + box.height / 2;
+        await page.mouse.move(cx, cy);
+        await page.mouse.down();
+        await page.mouse.move(cx + 55, cy + 38, { steps: 6 });
+        await page.mouse.move(cx + 92, cy + 66, { steps: 6 });
+        await page.mouse.up();
+        const after = (await safeState(page)).placedItems.find((i) => i.instanceId === a);
+        if (before && after) dragMoved = after.x !== before.x || after.y !== before.y;
+      } catch {
+        /* evidence-only — ignore */
+      }
 
-      await page.screenshot({ path: path.join(EVID, `${key}-final.png`) });
+      await page.screenshot({ path: path.join(EVID, `${key}-final.png`) }).catch(() => {});
       fs.writeFileSync(
         path.join(EVID, `${key}-verdict.json`),
         JSON.stringify(
-          { profile: key, reselectable: true, duplicate: true, delete: true, rotate: true, dragMoved, finalState: await getState(page) },
+          {
+            profile: key,
+            reselectable: true,
+            duplicate: true,
+            delete: true,
+            rotate: true,
+            dragMoved,
+            finalState: await safeState(page),
+          },
           null,
           2,
         ),
