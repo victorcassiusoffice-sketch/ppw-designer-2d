@@ -141,6 +141,23 @@ export function FloatingCluster({
   // finger which is on the body). Clamp to container bottom safe-area.
   const clampedTop = Math.max(8, Math.min(top, containerH - clusterH - 8));
 
+  // M7 (Customer-UI fix 2026-05-31) — keep the cluster clear of the top-right
+  // floating button column (Reset / Share render / Capture / area + cost +
+  // count badges). If the cluster box would intrude into that zone, shove it
+  // left so its controls are never hidden under those buttons.
+  const TOPRIGHT_W = 140;
+  const TOPRIGHT_H = 210;
+  if (clampedTop < TOPRIGHT_H && left + clusterW > containerW - TOPRIGHT_W) {
+    left = Math.max(8, containerW - TOPRIGHT_W - clusterW - 8);
+  }
+
+  // M6 (Customer-UI fix 2026-05-31) — fold device safe-area insets into the
+  // FINAL CSS position so the cluster never lands under the notch / home-
+  // indicator. The numeric clamps above keep it inside the canvas box; these
+  // env() terms add the per-device insets on top.
+  const leftCss = `max(calc(8px + env(safe-area-inset-left)), min(${left}px, calc(${containerW - clusterW}px - 8px - env(safe-area-inset-right))))`;
+  const topCss = `max(calc(8px + env(safe-area-inset-top)), min(${clampedTop}px, calc(${containerH - clusterH}px - 8px - env(safe-area-inset-bottom))))`;
+
   return (
     <div
       data-testid="floating-cluster"
@@ -148,8 +165,8 @@ export function FloatingCluster({
       aria-label="Selected item controls"
       className="pointer-events-auto absolute z-40 flex items-center gap-1.5 rounded-2xl px-1.5 py-1.5 shadow-xl"
       style={{
-        left,
-        top: clampedTop,
+        left: leftCss,
+        top: topCss,
         background: NAVY,
         border: `2px solid ${GOLD}`,
         // Keep clear of notch / home-indicator if the cluster lands near an

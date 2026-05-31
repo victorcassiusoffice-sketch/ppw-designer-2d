@@ -39,6 +39,18 @@ import './index.css';
 // the cached one is stale.
 bootstrapFx();
 
+// VITE_TEST_HOOKS (preview only) — expose window.__designer for Playwright
+// device-emulation verification. The dynamic import is gated on the
+// build-time env so this module is NEVER bundled in a production build
+// (VITE_TEST_HOOKS unset → the import is tree-shaken out).
+if ((import.meta.env as Record<string, unknown>).VITE_TEST_HOOKS) {
+  import('./lib/testHooks')
+    .then((m) => m.installTestHooks())
+    .catch(() => {
+      /* preview-only convenience; ignore load failures */
+    });
+}
+
 // OMS Wave 1B / Wave 1.10 — Sentry browser init, gated on the DSN env.
 // Release-tagged with the Vercel commit SHA so source-maps map back.
 // Free-tier-safe: traces + replays off.

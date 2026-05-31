@@ -48,6 +48,7 @@ import {
   validatePlacement,
 } from '../lib/geometry';
 import type { PlacedRect, Polygon, Vertex, Viewport } from '../lib/geometry';
+import { computeZoomScale } from '../lib/zoom';
 import { RoomDrawLayer } from './RoomDrawMode';
 import { WallDrawLayer, WallDrawHUD } from '../designer/WallDrawMode';
 import { useWallStore } from '../store/wallStore';
@@ -343,21 +344,26 @@ export function RoomCanvas({
     e.evt.preventDefault();
     const stage = stageRef.current;
     if (!stage) return;
-    const oldScale = viewport.scale;
     const pointer = stage.getPointerPosition();
     if (!pointer) return;
-    const mousePointTo = {
-      x: (pointer.x - viewport.x) / oldScale,
-      y: (pointer.y - viewport.y) / oldScale,
-    };
-    const direction = e.evt.deltaY > 0 ? -1 : 1;
-    const factor = 1.08;
-    let newScale = direction > 0 ? oldScale * factor : oldScale / factor;
-    newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
-    setViewport({
-      x: pointer.x - mousePointTo.x * newScale,
-      y: pointer.y - mousePointTo.y * newScale,
-      scale: newScale,
+    // M5 (Customer-UI fix 2026-05-31) — use a FUNCTIONAL setViewport so the
+    // zoom always reads the CURRENT viewport (never a stale render closure),
+    // and so the one-time re-centre effect (which only fires while the
+    // viewport is pristine) can never undo a user zoom. The scale math is
+    // extracted to lib/zoom (computeZoomScale) so it is unit-tested without
+    // a Konva stage. Pinch (below) is unaffected.
+    setViewport((v) => {
+      const oldScale = v.scale;
+      const mousePointTo = {
+        x: (pointer.x - v.x) / oldScale,
+        y: (pointer.y - v.y) / oldScale,
+      };
+      const newScale = computeZoomScale(oldScale, e.evt.deltaY, MIN_SCALE, MAX_SCALE);
+      return {
+        x: pointer.x - mousePointTo.x * newScale,
+        y: pointer.y - mousePointTo.y * newScale,
+        scale: newScale,
+      };
     });
   }
 
@@ -770,9 +776,16 @@ export function RoomCanvas({
       // long-press contextmenu over the whole canvas surface.
       onContextMenu={(e) => e.preventDefault()}
     >
+      {/* M6 (Customer-UI fix 2026-05-31) — top-right floating button column.
+          Both top AND right offsets fold in env(safe-area-inset-*) so the
+          controls never sit under the notch / rounded corner on a notched
+          device. */}
       <div
-        className="pointer-events-none absolute right-4 z-10 flex flex-col items-end gap-2"
-        style={{ top: 'max(1rem, env(safe-area-inset-top))' }}
+        className="pointer-events-none absolute z-10 flex flex-col items-end gap-2"
+        style={{
+          top: 'max(1rem, env(safe-area-inset-top))',
+          right: 'max(1rem, env(safe-area-inset-right))',
+        }}
       >
         <button
           type="button"
@@ -999,15 +1012,9 @@ export function RoomCanvas({
             </Group>
           )}
 
-          <Text
-            x={bounds.minX * pxPerMetre + 6}
-            y={bounds.minY * pxPerMetre + 6}
-            text={`0,0 - ${(bounds.maxX - bounds.minX).toFixed(1)} x ${(bounds.maxY - bounds.minY).toFixed(1)} m bbox`}
-            fontSize={12}
-            fontFamily="Inter, sans-serif"
-            fill="#3B4A52"
-            listening={false}
-          />
+          {/* M4 (Customer-UI fix 2026-05-31) — the on-canvas "0,0 - W x H m
+              bbox" debug Text was removed; it was developer instrumentation
+              that should never have shipped to the customer surface. */}
         </Layer>
 
         <Layer ref={itemsLayerRef}>
@@ -1179,20 +1186,19 @@ export function RoomCanvas({
         </div>
       )}
 
-      <div
-        className="pointer-events-none absolute left-3 max-w-xs rounded-md bg-white/85 px-3 py-2 text-[11px] leading-snug text-ppw-slate shadow-sm ring-1 ring-ppw-stone hidden md:block"
-        style={{ bottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
-      >
-        {drawMode ? (
-          <>
-            <span className="font-semibold text-ppw-ink">Draw mode:</span> click to place wall vertices - click first vertex or press <kbd>Enter</kbd> to close - <kbd>Ctrl+Z</kbd> undo - <kbd>Esc</kbd> cancel.
-          </>
-        ) : (
-          <>
-            <span className="font-semibold text-ppw-ink">Tip:</span> drag a product onto the floor; scroll to zoom; click an item to edit. Keys: <kbd>R</kbd> rotate - <kbd>D</kbd> duplicate - <kbd>Del</kbd> delete - <kbd>Esc</kbd> deselect.
-          </>
-        )}
-      </div>
+      {/* M4 (Customer-UI fix 2026-05-31) — the persistent "Tip:" banner that
+          sat over the bottom-left of the play area was removed from normal
+          use; the centred empty-room hint already coaches first placement.
+          The draw-mode instructions remain (they're only shown while the
+          draw tool owns the canvas, and never overlap a placed design). */}
+      {drawMode && (
+        <div
+          className="pointer-events-none absolute left-3 max-w-xs rounded-md bg-white/85 px-3 py-2 text-[11px] leading-snug text-ppw-slate shadow-sm ring-1 ring-ppw-stone hidden md:block"
+          style={{ bottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+        >
+          <span className="font-semibold text-ppw-ink">Draw mode:</span> click to place wall vertices - click first vertex or press <kbd>Enter</kbd> to close - <kbd>Ctrl+Z</kbd> undo - <kbd>Esc</kbd> cancel.
+        </div>
+      )}
     </div>
   );
 }
@@ -1394,6 +1400,21 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         }
       }}
     >
+      {/* B1 (Customer-UI fix 2026-05-31) — always-listening transparent hit
+          target sized to the AABB. The outer Group carries the click/tap/
+          drag handlers but has no fillable shape of its own; the visible art
+          lives in the inner listening={false} group and the corner/rotate
+          handles exist ONLY while selected. Without this rect a DESELECTED
+          item has zero hit targets, so Konva getIntersection() returns null
+          and the item can never be re-selected (the headline blocker).
+          Additive — it leaves all placement/rotation geometry untouched. */}
+      <Rect
+        width={wPx}
+        height={hPx}
+        fill="transparent"
+        perfectDrawEnabled={false}
+        data-testid="placed-hit"
+      />
       {/* Inner Group rotates the art around the AABB centre. Konva
           applies rotation around offsetX/offsetY relative to the inner
           group origin, so we centre offsets to the unrotated size and
@@ -1443,28 +1464,33 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
             cornerRadius={3}
           />
         )}
-        <Text
-          x={4}
-          y={4}
-          width={Math.max(unrotatedWPx - 8, 20)}
-          text={product.name}
-          fontSize={Math.min(12, Math.max(8, unrotatedWPx / 14))}
-          fontFamily="Inter, sans-serif"
-          fill="#0E1B1F"
-          listening={false}
-          ellipsis
-          wrap="word"
-        />
-        <Text
-          x={4}
-          y={unrotatedHPx - 14}
-          text={CATEGORY_LABELS[product.category]}
-          fontSize={9}
-          fontFamily="Inter, sans-serif"
-          fill="#3B4A52"
-          listening={false}
-        />
       </Group>
+      {/* Minor 11 (Customer-UI fix 2026-05-31) — product + category labels
+          render in the NON-rotating OUTER group so they stay upright at every
+          rotation. They previously lived inside the rotating art group, so a
+          180°-rotated item showed its name upside-down. Anchored to the AABB
+          (wPx × hPx). */}
+      <Text
+        x={4}
+        y={4}
+        width={Math.max(wPx - 8, 20)}
+        text={product.name}
+        fontSize={Math.min(12, Math.max(8, wPx / 14))}
+        fontFamily="Inter, sans-serif"
+        fill="#0E1B1F"
+        listening={false}
+        ellipsis
+        wrap="word"
+      />
+      <Text
+        x={4}
+        y={hPx - 14}
+        text={CATEGORY_LABELS[product.category]}
+        fontSize={9}
+        fontFamily="Inter, sans-serif"
+        fill="#3B4A52"
+        listening={false}
+      />
       {isSelected && (
         <>
           <Circle x={0} y={0} radius={4} fill="#06B6D4" />

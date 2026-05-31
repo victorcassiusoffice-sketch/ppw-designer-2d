@@ -40,7 +40,6 @@ interface HoverState {
   anchorYPx: number;
 }
 
-const DRAG_MIME = 'application/x-ppw-product-id';
 const REGION_LS_KEY = 'ppw_region_filter_v1';
 const DEFAULT_REGION: RegionGroup = 'Mauritius';
 
@@ -238,17 +237,11 @@ export function ProductPalette({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, activeCategory, region, ecoOnly, allProducts]);
 
-  // M1.5: kept for legacy DataTransfer consumers (e.g. external DnD
-  // tests). The primary placement path is now the pointer-FSM: clicking
-  // a card arms `pendingProductId`, the canvas shows a ghost preview,
-  // and the next click on the floor commits. HTML5 DragEvent silently
-  // no-ops on `.konva-stage` per the K1 audit, so the FSM is the only
-  // path that actually places items on production Chrome.
-  function handleDragStart(e: React.DragEvent<HTMLDivElement>, product: Product) {
-    e.dataTransfer.effectAllowed = 'copy';
-    e.dataTransfer.setData(DRAG_MIME, product.id);
-    e.dataTransfer.setData('text/plain', product.id);
-  }
+  // M3 (Customer-UI fix 2026-05-31) — the HTML5 DragEvent path is retired on
+  // catalog cards. Placement is unified on Pointer Events (onPointerDown →
+  // arm pendingProductId → tap the floor to commit), the only path that works
+  // on touch. The legacy handleDragStart + DRAG_MIME were removed (nothing
+  // listened to the DataTransfer payload on the live canvas).
 
   const body = (
     <>
@@ -358,8 +351,6 @@ export function ProductPalette({
                     aria-pressed={isPending}
                     aria-label={`Place ${p.name} — ${formatPrice(p)} — ${isPending ? 'armed, click on the floor to drop' : 'click to arm placement'}`}
                     title={`${p.name} · ${formatPrice(p)} · ${formatFootprint(p)}`}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, p)}
                     onPointerDown={(e) => {
                       if (!setPendingProductId) return;
                       if (e.button !== 0) return;
@@ -390,6 +381,11 @@ export function ProductPalette({
                     />
                     <p className="line-clamp-2 px-1 text-center text-[10px] leading-tight text-ppw-slate">
                       {p.name}
+                    </p>
+                    {/* Minor 13 (Customer-UI fix 2026-05-31) — show price on
+                        the card face (footprint stays in the title tooltip). */}
+                    <p className="px-1 text-center text-[9px] font-semibold leading-tight text-ppw-teal">
+                      {formatPrice(p)}
                     </p>
                   </div>
                 </li>

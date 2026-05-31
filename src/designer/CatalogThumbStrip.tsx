@@ -43,12 +43,6 @@ export function CatalogThumbStrip(props: CatalogThumbStripProps): JSX.Element {
         <div
           key={t.id}
           role="listitem"
-          draggable
-          onDragStart={(e) => {
-            dragSource.current = t.id;
-            e.dataTransfer?.setData('text/x-ppw-product', t.id);
-            props.onDragStart(t);
-          }}
           onPointerDown={() => {
             dragSource.current = t.id;
             props.onDragStart(t);
