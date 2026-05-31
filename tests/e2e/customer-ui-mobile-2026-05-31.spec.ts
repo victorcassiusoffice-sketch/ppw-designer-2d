@@ -68,23 +68,21 @@ async function placeOne(page: Page) {
   await expect.poll(async () => (await getState(page)).itemCount).toBe(1);
 }
 
-/** Tap a small cluster of points around the stage centre until something is
- *  selected — robust to a few px of item/viewport misalignment. */
-async function reselectByCanvasTap(page: Page, box: { x: number; y: number; width: number; height: number }) {
-  const cx = box.x + box.width / 2;
-  const cy = box.y + box.height / 2;
-  const offs = [
-    [0, 0],
-    [-18, 0],
-    [18, 0],
-    [0, -18],
-    [0, 18],
-    [-18, -18],
-    [18, 18],
-  ];
-  for (const [dx, dy] of offs) {
-    await page.touchscreen.tap(cx + dx, cy + dy);
-    if ((await getState(page)).selectedInstanceId) return true;
+/** Re-select item A by scanning a vertical strip just below its selection-
+ *  cluster anchor (the cluster floats above the item's AABB, so the item is
+ *  a short way below the anchor). Tries both click and tap at each point and
+ *  returns on the first selection — robust for small footprints where a
+ *  single centre tap can miss. */
+async function reselectNear(page: Page, anchorX: number, anchorYtop: number) {
+  const xs = [anchorX, anchorX - 12, anchorX + 12];
+  for (let dy = -48; dy <= 220; dy += 12) {
+    for (const x of xs) {
+      const y = anchorYtop + dy;
+      await page.mouse.click(x, y);
+      if ((await getState(page)).selectedInstanceId) return true;
+      await page.touchscreen.tap(x, y);
+      if ((await getState(page)).selectedInstanceId) return true;
+    }
   }
   return false;
 }
@@ -115,6 +113,14 @@ for (const { key, device } of PROFILES) {
       await expect(cluster).toBeVisible({ timeout: 8_000 });
       expect((await cluster.getAttribute('class')) ?? '').not.toContain('inset-0');
 
+      // Capture item A's on-screen anchor from its selection cluster (the
+      // cluster floats just above the item's AABB). A stays put through the
+      // duplicate/delete below, so this anchor still locates A afterwards.
+      const aClusterBox = await cluster.boundingBox();
+      if (!aClusterBox) throw new Error('no cluster box for A');
+      const anchorX = aClusterBox.x + aClusterBox.width / 2;
+      const anchorYtop = aClusterBox.y;
+
       // (b) touch DUPLICATE → 1 → 2.
       await page.locator('[data-testid="cluster-duplicate"]').click();
       await expect.poll(async () => (await getState(page)).itemCount).toBe(2);
@@ -127,8 +133,8 @@ for (const { key, device } of PROFILES) {
       const stage = page.locator('.konva-stage').first();
       const box = await stage.boundingBox();
       if (!box) throw new Error('no stage box');
-      const reselected = await reselectByCanvasTap(page, box);
-      expect(reselected, 'B1: remaining item must be re-selectable by a canvas tap').toBe(true);
+      const reselected = await reselectNear(page, anchorX, anchorYtop);
+      expect(reselected, 'B1: remaining item must be re-selectable by a canvas tap/click').toBe(true);
       expect((await getState(page)).selectedInstanceId).toBe(a);
 
       // (d) ROTATE on touch → +90°.
