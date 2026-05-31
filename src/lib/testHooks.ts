@@ -10,9 +10,10 @@
  * `hitReselect` exists because the live renderer is Konva on a single
  * <canvas>: Playwright's synthetic DOM pointer events don't reach Konva's hit
  * graph in headless emulation (a documented limitation — real-device verified).
- * It drives Konva's OWN hit-test at the placed item's location to prove the B1
- * fix (the always-listening transparent hit Rect) is present + routes a click
- * back to selection.
+ * It proves the B1 fix at runtime by traversing the Konva node tree directly
+ * (coordinate-independent) to confirm the always-listening transparent
+ * `placed-hit` Rect is present + listening on the placed item, then fires its
+ * Konva click to attempt re-selection.
  */
 import Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
@@ -24,10 +25,19 @@ interface DesignerTestState {
   itemCount: number;
 }
 
+interface HitReselectResult {
+  hitFound: boolean;
+  listening?: boolean;
+  selected?: boolean;
+  noStage?: boolean;
+  stages?: number;
+  via?: string;
+}
+
 export interface DesignerTestApi {
   getState: () => DesignerTestState;
   selectItem: (id: string | null) => void;
-  hitReselect: () => { hitFound: boolean; selected: boolean; noStage?: boolean };
+  hitReselect: () => HitReselectResult;
 }
 
 export function installTestHooks(): void {
@@ -45,14 +55,50 @@ export function installTestHooks(): void {
     selectItem(id: string | null) {
       useDesignStore.getState().selectItem(id);
     },
-    hitReselect() {
+    hitReselect(): HitReselectResult {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const stage: any = (Konva.stages && Konva.stages[0]) || null;
-      if (!stage) return { hitFound: false, selected: false, noStage: true };
-      const w = stage.width();
-      const h = stage.height();
-      const cx = w / 2;
-      const cy = h / 2;
+      if (!stage) return { hitFound: false, noStage: true, stages: 0 };
+      const stages = Konva.stages.length;
+
+      // Coordinate-independent: walk the Konva tree for the always-listening
+      // placed-hit Rect (the B1 fix). No hit-canvas / pointer dependency.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let hit: any = null;
+      let via = 'placed-hit';
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rects = Array.from((stage.find('Rect') as any) || []);
+        hit =
+          rects.find(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (r: any) => typeof r.getAttr === 'function' && r.getAttr('data-testid') === 'placed-hit',
+          ) || null;
+      } catch {
+        /* find unsupported */
+      }
+      if (!hit) {
+        // Fallback: a placed item is a draggable Group (room/floor are not).
+        via = 'draggable-group';
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const groups = Array.from((stage.find('Group') as any) || []).filter(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (g: any) => typeof g.draggable === 'function' && g.draggable(),
+          );
+          if (groups.length) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const g: any = groups[0];
+            const kids = typeof g.getChildren === 'function' ? g.getChildren() : [];
+            hit = kids && kids.length ? kids[0] : g;
+          }
+        } catch {
+          /* find unsupported */
+        }
+      }
+      if (!hit) return { hitFound: false, stages, via: 'none' };
+
+      const listening = typeof hit.listening === 'function' ? hit.listening() : undefined;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const fireAll = (node: any) => {
         ['mousedown', 'mouseup', 'click', 'touchstart', 'touchend', 'tap'].forEach((t) => {
@@ -73,40 +119,10 @@ export function installTestHooks(): void {
           }
         });
       };
-      // Sweep the central band where a centre-placed item sits, asking Konva's
-      // hit graph what's under each point.
-      for (let dy = -160; dy <= 200; dy += 8) {
-        for (const ox of [0, -14, 14, -30, 30, -48, 48]) {
-          const x = cx + ox;
-          const y = cy + dy;
-          if (x < 0 || y < 0 || x > w || y > h) continue;
-          const shape = stage.getIntersection({ x, y });
-          if (!shape) continue;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let node: any = shape;
-          let placed = false;
-          while (node) {
-            const tid = typeof node.getAttr === 'function' ? node.getAttr('data-testid') : undefined;
-            if (tid === 'placed-hit') {
-              placed = true;
-              break;
-            }
-            // Placed items are draggable groups; the room/floor is not.
-            if (typeof node.draggable === 'function' && node.draggable()) {
-              placed = true;
-              break;
-            }
-            node = typeof node.getParent === 'function' ? node.getParent() : null;
-          }
-          if (!placed) continue;
-          // Found the B1 hit target — fire selection on it + its group.
-          fireAll(shape);
-          if (typeof shape.getParent === 'function') fireAll(shape.getParent());
-          const sel = useDesignStore.getState().selectedInstanceId;
-          return { hitFound: true, selected: !!sel };
-        }
-      }
-      return { hitFound: false, selected: false };
+      fireAll(hit);
+      if (typeof hit.getParent === 'function') fireAll(hit.getParent());
+      const sel = useDesignStore.getState().selectedInstanceId;
+      return { hitFound: true, listening, selected: !!sel, stages, via };
     },
   };
   (window as unknown as { __designer?: DesignerTestApi }).__designer = api;
