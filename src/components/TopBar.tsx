@@ -31,6 +31,8 @@ import { usePropertyStore } from '../store/propertyStore';
 import { useDesignsStore } from '../store/designsStore';
 import { useToastStore } from '../store/toastStore';
 import { useHistoryStore } from '../store/historyStore';
+import { useWallStore } from '../store/wallStore';
+import { clearActiveRoomContents } from '../lib/clearActions';
 import { useCart } from '../store/cartStore';
 import { CurrencySwitcher } from './CurrencySwitcher';
 import {
@@ -104,6 +106,33 @@ export function TopBar({
     }
     setMobileUndoArmed(false);
     undo();
+  }
+
+  // 2026-06-01 — Wall tool + Clear, folded in from the removed ModeStrip.
+  // Wall reads/toggles the wall-draw FSM directly (no local mode state):
+  // pressed === FSM not idle. Clear opens a confirm modal then wipes the
+  // active room (products + walls + floors + paint) as one undoable frame.
+  const wallDrawPhase = useWallStore((s) => s.draw.phase);
+  const setWallDraw = useWallStore((s) => s.setDraw);
+  const wallActive = wallDrawPhase !== 'idle';
+  const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
+
+  function handleToggleWall() {
+    if (wallActive) {
+      setWallDraw({ phase: 'idle' });
+      return;
+    }
+    // Entering wall mode — leave polygon-draw mode if it was on so the two
+    // tools don't fight over the canvas (setDrawMode has history side
+    // effects, so only call it when actually in draw mode).
+    if (drawMode) setDrawMode(false);
+    setWallDraw({ phase: 'armed' });
+  }
+
+  function handleClearRoom() {
+    setClearConfirmOpen(false);
+    clearActiveRoomContents();
+    pushToast('Room cleared — press Ctrl+Z to restore.', 'info', 4000);
   }
 
   const [showHelp, setShowHelp] = useState(false);
@@ -343,6 +372,19 @@ export function TopBar({
           >
             Draw
           </button>
+          {/* Wall tool — folded in from the removed ModeStrip (2026-06-01).
+              Arms the Sims-style interior wall-draw FSM; the on-canvas HUD
+              owns Done/Esc to finish. Visible on mobile + desktop. */}
+          <button
+            type="button"
+            onClick={handleToggleWall}
+            data-testid="wall-tool-toggle"
+            className={`min-h-[40px] border-l border-ppw-stone px-3 text-xs font-medium ${wallActive ? 'bg-ppw-teal text-white' : 'text-ppw-slate hover:text-ppw-teal'}`}
+            title="Draw interior walls (click to start, then click to drop each corner)"
+            aria-pressed={wallActive}
+          >
+            Wall
+          </button>
         </div>
 
         {/* Tweak 07 (Phase A.0) — UNDO / REDO buttons. Visible on both
@@ -437,6 +479,19 @@ export function TopBar({
           title="New property"
         >
           New
+        </button>
+
+        {/* Clear — folded in from the removed ModeStrip (2026-06-01). Wipes
+            the active room (products + walls + floors + paint) as a single
+            undoable action; confirm modal below. */}
+        <button
+          type="button"
+          onClick={() => setClearConfirmOpen(true)}
+          data-testid="clear-room-button"
+          className="hidden md:inline-block rounded-md border border-ppw-coral/60 bg-white px-2.5 py-1 text-xs font-medium text-ppw-coral hover:border-ppw-coral hover:bg-ppw-coral/5"
+          title="Clear everything in this room (Ctrl+Z restores)"
+        >
+          Clear
         </button>
 
         <button
@@ -558,6 +613,17 @@ export function TopBar({
                 className="min-h-[44px] rounded-md border border-ppw-stone bg-white px-3 text-left text-sm font-medium text-ppw-ink hover:border-ppw-teal"
               >
                 New property
+              </button>
+              <button
+                type="button"
+                data-testid="clear-room-button-mobile"
+                onClick={() => {
+                  setShowMobileMenu(false);
+                  setClearConfirmOpen(true);
+                }}
+                className="min-h-[44px] rounded-md border border-ppw-coral/60 bg-white px-3 text-left text-sm font-medium text-ppw-coral hover:border-ppw-coral"
+              >
+                Clear room
               </button>
               <button
                 type="button"
@@ -683,6 +749,54 @@ export function TopBar({
               })}
             </ul>
           )}
+        </div>
+      )}
+
+      {/* Clear confirm modal — folded in from the removed ModeStrip
+          (2026-06-01). Same testids as before so the clear-button e2e
+          specs keep asserting the real flow. */}
+      {clearConfirmOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="clear-confirm-title"
+          data-testid="clear-confirm-modal"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setClearConfirmOpen(false);
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setClearConfirmOpen(false);
+          }}
+        >
+          <div className="w-[min(92vw,360px)] rounded-lg bg-white p-5 shadow-2xl">
+            <h2 id="clear-confirm-title" className="text-sm font-semibold text-ppw-ink">
+              Clear this room?
+            </h2>
+            <p className="mt-1 text-xs text-ppw-slate">
+              This clears everything in this room — products, walls, floors and paint.
+              Your room size and other rooms are kept. Press Ctrl+Z within the next
+              ~30 seconds to restore.
+            </p>
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setClearConfirmOpen(false)}
+                className="flex-1 rounded-md border border-ppw-stone bg-white px-3 py-1.5 text-sm font-semibold text-ppw-slate hover:border-ppw-ink"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleClearRoom}
+                data-testid="clear-confirm-yes"
+                className="flex-1 rounded-md bg-ppw-coral px-3 py-1.5 text-sm font-semibold text-white hover:bg-ppw-coral/90"
+              >
+                Yes, clear
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

@@ -7,7 +7,8 @@
  *
  *   PPW_E2E_BASE_URL=http://localhost:5173 npx playwright test wall-draw
  *
- * The Wall mode is engaged via the ModeStrip; the WallDrawLayer wires
+ * The Wall mode is engaged via the TopBar "Wall" toggle (folded in from
+ * the removed ModeStrip, 2026-06-01); the WallDrawLayer wires
  * `mousemove.walldraw` / `click.walldraw` directly on the Konva Stage,
  * so synthetic React events would not exercise the production path —
  * the spec uses `stage.click({ position })` which fires CDP-driven
@@ -26,7 +27,7 @@ test.describe('M2 wall draw', () => {
     });
     await page.reload();
 
-    // Engage Wall mode from the ModeStrip.
+    // Engage Wall mode from the TopBar "Wall" toggle.
     await page.getByRole('button', { name: /^Wall$/ }).click();
     await expect(page.locator('[data-testid="wall-draw-hud"]')).toBeVisible();
     await expect(page.locator('[data-testid="wall-count"]')).toHaveText('0');

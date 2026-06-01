@@ -197,8 +197,8 @@ test.describe('Design Tweak 1 — Phase A surface checks', () => {
     if (!box) throw new Error('Stage not mounted');
     await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
 
-    // Clear pill lives inside the ModeStrip — `data-testid="mode-strip-clear"`.
-    const clearBtn = page.getByTestId('mode-strip-clear');
+    // Clear moved into the TopBar (2026-06-01) — `data-testid="clear-room-button"`.
+    const clearBtn = page.getByTestId('clear-room-button');
     await expect(clearBtn).toBeVisible({ timeout: 10_000 });
     await clearBtn.click();
     const modal = page.getByTestId('clear-confirm-modal');

@@ -34,7 +34,7 @@ import { usePropertyStore, selectActiveRoom } from '../store/propertyStore';
 import type { PlacedItem } from '../store/propertyStore';
 import { useToastStore } from '../store/toastStore';
 import { CATEGORY_FILL, CATEGORY_LABELS, getProductById, productImageUrl } from '../data/products';
-import { dataUrlToBlob, triggerDownload } from '../lib/shareImage';
+import { dataUrlToBlob, triggerDownload, safeStageDataUrl } from '../lib/shareImage';
 import {
   cmToM,
   findFreeSlot,
@@ -575,7 +575,19 @@ export function RoomCanvas({
   function handleShareRender() {
     const stage = stageRef.current;
     if (!stage) return;
-    const dataUrl = stage.toDataURL({ pixelRatio: 2 });
+    // Mobile capture fix (2026-06-01) — safeStageDataUrl clamps the
+    // pixelRatio so a large retina stage doesn't toDataURL to a blank
+    // image on iOS Safari, and catches the SecurityError a tainted canvas
+    // throws (previously an unhandled throw that made the button look
+    // dead with no feedback). Returns null on any failure → we toast.
+    const dataUrl = safeStageDataUrl(stage, 2);
+    if (!dataUrl) {
+      pushToast(
+        'Could not capture the room image. Try the Capture screen button instead.',
+        'warn',
+      );
+      return;
+    }
     const file = new File([dataUrlToBlob(dataUrl)], 'ppw-room.png', { type: 'image/png' });
     const canShareFiles =
       typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });

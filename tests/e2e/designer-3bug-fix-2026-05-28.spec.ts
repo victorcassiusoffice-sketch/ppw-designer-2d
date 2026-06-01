@@ -79,10 +79,11 @@ test('Bug 3 — Clear repaints the canvas (no ghost items)', async ({ page }) =>
   // Items must actually be painted on the layer canvas before we clear.
   await expect.poll(() => itemsLayerPixels(page)).toBeGreaterThan(0);
 
-  const clearBtn = page.getByTestId('mode-strip-clear');
+  // Clear moved from the removed ModeStrip into the TopBar (2026-06-01).
+  const clearBtn = page.getByTestId('clear-room-button');
   test.skip(
     !(await clearBtn.isVisible({ timeout: 5000 }).catch(() => false)),
-    'Clear pill not present in this build',
+    'Clear button not present in this build',
   );
   await clearBtn.click();
   await page.getByTestId('clear-confirm-yes').click();

@@ -103,13 +103,23 @@ for (const vp of [
     expect(before.items).toBe(2);
     expect(before.wallCount).toBe(1);
 
-    const clearBtn = page.getByTestId('mode-strip-clear');
-    test.skip(
-      !(await clearBtn.isVisible({ timeout: 5000 }).catch(() => false)),
-      'Clear pill not present in this build',
-    );
-
-    await clearBtn.click();
+    // Clear moved from the removed ModeStrip into the TopBar (2026-06-01).
+    // Desktop: a visible "Clear" button in the toolbar. Mobile (<768px):
+    // the desktop button is hidden, so open the hamburger overflow menu and
+    // use the "Clear room" entry there.
+    const desktopClear = page.getByTestId('clear-room-button');
+    const isDesktopClearVisible = await desktopClear
+      .isVisible({ timeout: 5000 })
+      .catch(() => false);
+    if (isDesktopClearVisible) {
+      await desktopClear.click();
+    } else {
+      const menuClear = page.getByTestId('clear-room-button-mobile');
+      const menuClearExists = (await menuClear.count()) > 0;
+      test.skip(!menuClearExists, 'Clear button not present in this build');
+      await page.getByRole('button', { name: /Open menu/i }).click();
+      await menuClear.click();
+    }
     const modal = page.getByTestId('clear-confirm-modal');
     await expect(modal).toBeVisible();
 
