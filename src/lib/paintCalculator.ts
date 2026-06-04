@@ -19,7 +19,7 @@ import {
   ECO_PAINT_PALETTE,
   findPaintById,
   type EcoPaintColour,
-} from '../data/paintPalette';
+} from '../data/paintPalette.js';
 import type { WallSegment } from '../store/wallStore';
 
 export interface PaintCalcInput {

@@ -57,6 +57,14 @@ import { getDb, schema } from './db/client.js';
 import { and, eq, gte, gt, isNull, lte, sql, inArray, type SQL } from 'drizzle-orm';
 import { drizzleAuditWriter } from './lib/auditLog.js';
 import { verifyMerchantSession } from './lib/merchantSession.js';
+import { buildSeedImageryMap, enrichImagery } from './lib/products/seedImagery.js';
+import productsSeed from '../src/data/products.json' with { type: 'json' };
+
+// P0-2: SKU → real top-down asset + description, built once from the bundled
+// seed catalog. Used to enrich live rows whose image is still a placeholder.
+const SEED_IMAGERY = buildSeedImageryMap(
+  (productsSeed as { products: Array<{ sku?: string; topdown_image_url?: string | null; notes?: string | null }> }).products,
+);
 
 type ProductsReq = MinReq & { query?: Record<string, string | string[] | undefined> };
 
@@ -275,7 +283,7 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
     const total = countRes[0]?.c ?? 0;
 
     const result: ProductListResult = {
-      products: rows,
+      products: enrichImagery(rows, SEED_IMAGERY),
       total,
       limit: filters.limit,
       offset: filters.offset,
