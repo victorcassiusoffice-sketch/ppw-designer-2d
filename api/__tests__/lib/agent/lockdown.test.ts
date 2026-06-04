@@ -9,12 +9,29 @@ import {
   applyAgentChatLockdown,
   checkDailyCostBudget,
   budgetKey,
+  scopedBudgetKey,
   utcDateStamp,
   DAILY_COST_CAP_MICRO_USD,
+  PER_SCOPE_DAILY_CAP_MICRO_USD,
   RATE_LIMIT_PER_MINUTE,
   _resetLockdownForTests,
   _setLockdownRedisForTests,
 } from '../../../lib/agent/lockdown';
+
+/** Per-key in-memory fake Redis for budget tests. */
+function mapRedis() {
+  const store = new Map<string, number>();
+  return {
+    store,
+    async incrby(k: string, n: number) {
+      const t = (store.get(k) ?? 0) + n;
+      store.set(k, t);
+      return t;
+    },
+    async expire() { return 1; },
+    async get() { return null; },
+  };
+}
 
 function mkUser(content: string) {
   return { role: 'user', content };
@@ -195,5 +212,65 @@ describe('applyAgentChatLockdown', () => {
       estimatedNextCostMicroUsd: 100,
     });
     expect(r.ok).toBe(true);
+  });
+});
+
+describe('P3-4 — per-scope (per-merchant/session) daily sub-cap', () => {
+  beforeEach(() => { _resetLockdownForTests(); });
+
+  it('increments BOTH the global and the per-scope key', async () => {
+    const redis = mapRedis();
+    _setLockdownRedisForTests(redis);
+    const r = await checkDailyCostBudget(1000, 'session:42');
+    expect(r.allowed).toBe(true);
+    expect(redis.store.get(budgetKey())).toBe(1000);
+    expect(redis.store.get(scopedBudgetKey('session:42'))).toBe(1000);
+    expect(r.scopeSpentMicroUsd).toBe(1000);
+    expect(r.scopeCapMicroUsd).toBe(PER_SCOPE_DAILY_CAP_MICRO_USD);
+  });
+
+  it('rejects with over-scope-budget when the session exceeds $2/day but global is fine', async () => {
+    const redis = mapRedis();
+    // pre-load the scope near its cap, global well under its cap
+    redis.store.set(scopedBudgetKey('session:7'), PER_SCOPE_DAILY_CAP_MICRO_USD - 100);
+    redis.store.set(budgetKey(), 100);
+    _setLockdownRedisForTests(redis);
+    const r = await checkDailyCostBudget(500, 'session:7');
+    expect(r.allowed).toBe(false);
+    expect(r.reason).toBe('over-scope-budget');
+    expect(r.scopeSpentMicroUsd).toBeGreaterThan(PER_SCOPE_DAILY_CAP_MICRO_USD);
+    expect(r.spentMicroUsd).toBeLessThan(DAILY_COST_CAP_MICRO_USD); // global still OK
+  });
+
+  it('global cap still trumps per-scope (over-budget wins)', async () => {
+    const redis = mapRedis();
+    redis.store.set(budgetKey(), DAILY_COST_CAP_MICRO_USD - 100);
+    _setLockdownRedisForTests(redis);
+    const r = await checkDailyCostBudget(500, 'session:9');
+    expect(r.allowed).toBe(false);
+    expect(r.reason).toBe('over-budget');
+  });
+
+  it('no scopeKey → only the global key is touched (back-compat)', async () => {
+    const redis = mapRedis();
+    _setLockdownRedisForTests(redis);
+    const r = await checkDailyCostBudget(1000);
+    expect(r.allowed).toBe(true);
+    expect(redis.store.size).toBe(1);
+    expect(r.scopeSpentMicroUsd).toBeUndefined();
+  });
+
+  it('applyAgentChatLockdown threads scopeKey into the budget check', async () => {
+    const redis = mapRedis();
+    redis.store.set(scopedBudgetKey('session:3'), PER_SCOPE_DAILY_CAP_MICRO_USD);
+    _setLockdownRedisForTests(redis);
+    const v = await applyAgentChatLockdown({
+      ip: '203.0.113.9',
+      messages: [mkUser('add my treadmill product')],
+      estimatedNextCostMicroUsd: 1000,
+      scopeKey: 'session:3',
+    });
+    expect(v.ok).toBe(false);
+    if (!v.ok) expect(v.code).toBe('cost_budget_exceeded');
   });
 });

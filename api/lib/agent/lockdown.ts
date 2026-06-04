@@ -35,7 +35,18 @@ import { Redis } from '@upstash/redis';
 
 import { buildLimiter, type Verdict } from '../rateLimit.js';
 
-export const DAILY_COST_CAP_MICRO_USD = 5_000_000; // $5/day
+export const DAILY_COST_CAP_MICRO_USD = 5_000_000; // $5/day (global backstop)
+/**
+ * P3-4 — per-merchant (per-agent-session) daily sub-cap. One merchant's
+ * onboarding session can't consume more than $2/day, leaving headroom under
+ * the $5 global cap for everyone else. This is BEST-EFFORT until the Phase 6
+ * pt2 Clerk merchant-auth gate lands: the scope key is the client-supplied
+ * agent `sessionId`, so it bounds accidental runaway + honest per-merchant
+ * usage, but a malicious caller rotating sessionIds is still caught by the
+ * global cap + the per-IP rate limit. Real per-merchant enforcement needs the
+ * authenticated merchant id (tracker p3-agent-costcap notes the dependency).
+ */
+export const PER_SCOPE_DAILY_CAP_MICRO_USD = 2_000_000; // $2/day per session
 export const RATE_LIMIT_PER_MINUTE = 20;
 
 /** Reuses the existing rateLimit.ts builder for the agent-chat namespace. */
@@ -126,24 +137,47 @@ export function budgetKey(now: Date = new Date()): string {
   return `openrouter:cost:${utcDateStamp(now)}`;
 }
 
+/** Per-scope (per-agent-session) daily budget key. */
+export function scopedBudgetKey(scope: string, now: Date = new Date()): string {
+  return `openrouter:cost:${utcDateStamp(now)}:scope:${scope}`;
+}
+
 export interface BudgetVerdict {
   allowed: boolean;
   spentMicroUsd: number;
   capMicroUsd: number;
-  reason?: 'no-redis' | 'over-budget';
+  /** Per-scope running total (only set when a scopeKey was supplied). */
+  scopeSpentMicroUsd?: number;
+  scopeCapMicroUsd?: number;
+  reason?: 'no-redis' | 'over-budget' | 'over-scope-budget';
+}
+
+async function incrBudget(
+  redis: MinimalRedis,
+  key: string,
+  amount: number,
+): Promise<number> {
+  const total = await redis.incrby(key, amount);
+  if (total === amount) {
+    await redis.expire(key, 90_000); // 25h — keeps yesterday's bucket viewable for diagnostics
+  }
+  return total;
 }
 
 /**
- * INCRBY the running daily spend by the estimated cost of the
- * upcoming call. If the post-increment total exceeds the cap, the
- * verdict is `{allowed: false}`. Caller MUST NOT proceed in that case.
+ * INCRBY the running daily spend by the estimated cost of the upcoming call.
+ * Enforces the GLOBAL $5/day cap and, when `scopeKey` is supplied (the agent
+ * sessionId — P3-4 per-merchant best-effort), an additional per-scope $2/day
+ * sub-cap. Refuses if EITHER cap would be exceeded. Caller MUST NOT proceed
+ * on `{allowed: false}`.
  *
- * Failing open on KV outage (matches rateLimit.ts posture) — we'd
- * rather accept the per-call $5 cap risk during a KV outage than
- * silence the agent for valid merchant traffic.
+ * Failing open on KV outage (matches rateLimit.ts posture) — we'd rather
+ * accept the per-call cap risk during a KV outage than silence the agent for
+ * valid merchant traffic.
  */
 export async function checkDailyCostBudget(
   estimatedNextCostMicroUsd: number,
+  scopeKey?: string,
 ): Promise<BudgetVerdict> {
   const redis = getBudgetRedis();
   if (!redis) {
@@ -154,13 +188,13 @@ export async function checkDailyCostBudget(
       reason: 'no-redis',
     };
   }
-  const key = budgetKey();
   const amount = Math.max(0, Math.floor(estimatedNextCostMicroUsd));
   let total: number;
+  let scopeTotal: number | undefined;
   try {
-    total = await redis.incrby(key, amount);
-    if (total === amount) {
-      await redis.expire(key, 90_000); // 25h — keeps yesterday's bucket viewable for diagnostics
+    total = await incrBudget(redis, budgetKey(), amount);
+    if (scopeKey) {
+      scopeTotal = await incrBudget(redis, scopedBudgetKey(scopeKey), amount);
     }
   } catch {
     return {
@@ -171,9 +205,25 @@ export async function checkDailyCostBudget(
     };
   }
   if (total > DAILY_COST_CAP_MICRO_USD) {
-    return { allowed: false, spentMicroUsd: total, capMicroUsd: DAILY_COST_CAP_MICRO_USD, reason: 'over-budget' };
+    return { allowed: false, spentMicroUsd: total, capMicroUsd: DAILY_COST_CAP_MICRO_USD, reason: 'over-budget', scopeSpentMicroUsd: scopeTotal, scopeCapMicroUsd: scopeKey ? PER_SCOPE_DAILY_CAP_MICRO_USD : undefined };
   }
-  return { allowed: true, spentMicroUsd: total, capMicroUsd: DAILY_COST_CAP_MICRO_USD };
+  if (scopeKey && scopeTotal !== undefined && scopeTotal > PER_SCOPE_DAILY_CAP_MICRO_USD) {
+    return {
+      allowed: false,
+      spentMicroUsd: total,
+      capMicroUsd: DAILY_COST_CAP_MICRO_USD,
+      scopeSpentMicroUsd: scopeTotal,
+      scopeCapMicroUsd: PER_SCOPE_DAILY_CAP_MICRO_USD,
+      reason: 'over-scope-budget',
+    };
+  }
+  return {
+    allowed: true,
+    spentMicroUsd: total,
+    capMicroUsd: DAILY_COST_CAP_MICRO_USD,
+    scopeSpentMicroUsd: scopeTotal,
+    scopeCapMicroUsd: scopeKey ? PER_SCOPE_DAILY_CAP_MICRO_USD : undefined,
+  };
 }
 
 // ─── Composed verdict ─────────────────────────────────────────────────
@@ -196,6 +246,8 @@ export async function applyAgentChatLockdown(args: {
   ip: string;
   messages: Array<{ role: string; content: string }>;
   estimatedNextCostMicroUsd: number;
+  /** P3-4 — per-merchant (per-agent-session) budget scope, e.g. `session:42`. */
+  scopeKey?: string;
 }): Promise<LockdownVerdict> {
   // 1. Prompt-injection (pure; runs even in KV outage).
   const injection = detectPromptInjection(args.messages);
@@ -217,8 +269,8 @@ export async function applyAgentChatLockdown(args: {
       details: rl,
     };
   }
-  // 3. Daily cost budget (KV; fails open on KV outage).
-  const budget = await checkDailyCostBudget(args.estimatedNextCostMicroUsd);
+  // 3. Daily cost budget (KV; fails open on KV outage) — global + per-scope.
+  const budget = await checkDailyCostBudget(args.estimatedNextCostMicroUsd, args.scopeKey);
   if (!budget.allowed) {
     return {
       ok: false,

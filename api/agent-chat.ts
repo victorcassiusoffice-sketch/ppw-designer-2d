@@ -234,6 +234,8 @@ async function rawHandler(req: ChatReq, res: MinRes): Promise<void> {
     ip: getClientIp(req),
     messages,
     estimatedNextCostMicroUsd: pessimisticCostMicroUsd,
+    // P3-4 — per-merchant (best-effort, via agent sessionId) daily sub-cap.
+    scopeKey: v.sessionId !== undefined ? `session:${v.sessionId}` : undefined,
   });
   if (!lockdown.ok) {
     const status =
