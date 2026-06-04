@@ -20,6 +20,7 @@
  */
 
 import { handler as merchantsList } from './lib/admin/merchants/list.js';
+import { withSentry } from "./lib/sentry.js";
 import { handler as merchantsDetail } from './lib/admin/merchants/detail.js';
 import { handler as merchantsApprove } from './lib/admin/merchants/approve.js';
 import { handler as merchantsReject } from './lib/admin/merchants/reject.js';
@@ -62,7 +63,7 @@ function getSlugSegments(req: MinimalReq): string[] {
   return [];
 }
 
-export default async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
+async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
   const segments = getSlugSegments(req);
   const [resource, ...rest] = segments;
 
@@ -118,3 +119,5 @@ export default async function handler(req: MinimalReq, res: MinimalRes): Promise
 
   res.status(404).json({ error: `unknown admin resource: ${resource ?? '(empty)'}` });
 }
+
+export default withSentry(handler);

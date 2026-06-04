@@ -15,6 +15,7 @@
  */
 
 import Stripe from 'stripe';
+import { withSentry } from "../lib/sentry.js";
 import { drizzleMerchantStore } from '../db/merchantStore.js';
 import { STRIPE_API_VERSION, getConnectWebhookSecret } from '../lib/stripeConnect.js';
 import { handleAccountUpdated } from '../lib/stripeConnectWebhook.js';
@@ -72,7 +73,7 @@ interface MinimalRes {
   json(body: unknown): void;
 }
 
-export default async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
+async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     res.status(405).end();
@@ -150,3 +151,5 @@ export default async function handler(req: MinimalReq, res: MinimalRes): Promise
     res.json({ error: 'Webhook handler failed.' });
   }
 }
+
+export default withSentry(handler);

@@ -19,6 +19,7 @@
  */
 
 import Stripe from 'stripe';
+import { withSentry } from "./lib/sentry.js";
 import type {
   CreateCheckoutSessionRequest,
   CartLineItemPayload,
@@ -243,7 +244,7 @@ export async function processCheckoutRequest(
 }
 
 /** Vercel function entry point. */
-export default async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
+async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
   const origin = typeof req.headers.origin === 'string' ? req.headers.origin : undefined;
   const cors = corsHeaders(origin);
   for (const [k, v] of Object.entries(cors)) res.setHeader(k, v);
@@ -283,3 +284,5 @@ export default async function handler(req: MinimalReq, res: MinimalRes): Promise
   res.status(result.status);
   res.json({ error: result.error });
 }
+
+export default withSentry(handler);

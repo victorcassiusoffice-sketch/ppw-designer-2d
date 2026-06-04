@@ -28,6 +28,7 @@
  */
 
 import Stripe from 'stripe';
+import { withSentry } from "./lib/sentry.js";
 import {
   sendOrderConfirmation,
   sendOrderAlertToVic,
@@ -164,7 +165,7 @@ interface MinimalRes {
 }
 
 /** Vercel function entry point. */
-export default async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
+async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     res.status(405).end();
@@ -278,3 +279,5 @@ export async function dispatchEvent(
       return;
   }
 }
+
+export default withSentry(handler);

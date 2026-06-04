@@ -9,6 +9,9 @@
  * a per-merchant split.
  *
  * After Wave 2 (Designer→/api/products wiring) the two stores may merge.
+ * The intended split + future-merge plan is documented in
+ * `docs/CART-ARCHITECTURE.md` (P1-2). Both stores back LIVE checkout routes;
+ * a merge is a payment-touching, Vic-gated change — do not delete either.
  */
 
 import { create } from 'zustand';

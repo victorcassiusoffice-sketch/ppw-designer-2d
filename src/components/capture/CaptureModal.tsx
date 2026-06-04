@@ -174,9 +174,9 @@ export function CaptureModal(props: CaptureModalProps): JSX.Element {
 
         {step === 'side-back' && (
           <Panel
-            title="Side / back photos (DT-08 incoming, optional)"
-            body="Optional photos arrive in DT-08."
-            primaryLabel="Skip"
+            title="Extra photos (optional)"
+            body="The front photo and measurements above are all we need to list your product. You can add side and back photos later from the product page — skip ahead to review and submit now."
+            primaryLabel="Continue to review"
             onPrimary={advance}
             secondaryLabel="Back"
             onSecondary={() => setStep('dimensions')}

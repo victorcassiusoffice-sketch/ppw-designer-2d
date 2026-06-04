@@ -96,18 +96,7 @@ test('e) M3 — place 1 item in 2D, switch to BABYLON → 1 product mesh', async
   await page.mouse.move(cx, cy, { steps: 8 });
   await page.mouse.click(cx, cy);
   await expect(page.locator('[data-testid="items-placed"]')).toHaveText('1');
-
-  await page.goto('/?engine=babylon');
-  await page.waitForFunction(() => Boolean((window as any).__ppwBabylonScene), null, { timeout: 20_000 });
-  const probe = await page.evaluate(() => {
-    const scene = (window as any).__ppwBabylonScene;
-    if (!scene) return { itemMeshes: 0, names: [] as string[] };
-    const products = (scene.meshes ?? []).filter((m: any) => m.name?.startsWith?.('product-'));
-    return { itemMeshes: products.length, names: products.map((m: any) => m.name) };
-  });
-  expect(probe.itemMeshes).toBe(1);
-
-  await page.screenshot({ path: path.join(SHOT_DIR, 'e-m3-babylon.png'), fullPage: true });
+  // (Babylon 3D mirror probe removed with the 3D viewer — P1-1 2026-06-04.)
 });
 
 test('f) M2 — wallStore persists 4 walls, HUD displays count + room area on reload', async ({ page }) => {

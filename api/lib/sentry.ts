@@ -54,6 +54,21 @@ export function captureException(err: unknown, context?: Record<string, unknown>
   }
 }
 
+/**
+ * Flush queued events to Sentry. CRITICAL in serverless: the lambda may
+ * freeze immediately after the handler returns/throws, dropping any
+ * not-yet-sent events. Always `await flushSentry()` after capturing in a
+ * request lifecycle. No-op when Sentry is inert (no DSN).
+ */
+export async function flushSentry(timeoutMs = 2000): Promise<void> {
+  if (!initialised) return;
+  try {
+    await Sentry.flush(timeoutMs);
+  } catch {
+    // Never let a flush failure mask the original error.
+  }
+}
+
 export function captureMessage(msg: string, level: Sentry.SeverityLevel = 'info'): void {
   const sentry = initSentry();
   if (!sentry) return;
@@ -82,6 +97,9 @@ export function withSentry<Q extends MinimalReq, S extends MinimalRes>(handler: 
         url: req.url,
         method: req.method,
       });
+      // Serverless: flush before re-throwing or the frozen lambda drops
+      // the event. Bounded so a slow Sentry never hangs the 500 response.
+      await flushSentry(2000);
       // Re-throw so Vercel logs + returns its default 500.
       throw err;
     }

@@ -17,7 +17,6 @@
 
 import { useEffect, useState } from 'react';
 import { HelpLauncherIcon, HelpOverlay } from './HelpOverlay';
-import { EngineToggle } from './babylon/EngineToggle';
 import { isGamingV1Active } from './gamingV1Flag';
 
 export function GamingLayer1Surfaces(): JSX.Element | null {
@@ -45,8 +44,6 @@ export function GamingLayer1Surfaces(): JSX.Element | null {
     <>
       <HelpLauncherIcon onOpen={() => setHelpOpen(true)} />
       <HelpOverlay open={helpOpen} onClose={() => setHelpOpen(false)} />
-      {/* DT-27 — engine side-by-side toggle. Hard-refreshes on flip. */}
-      <EngineToggle />
     </>
   );
 }

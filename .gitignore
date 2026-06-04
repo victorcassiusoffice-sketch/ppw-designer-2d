@@ -54,3 +54,14 @@ screenshots/scratch/
 
 # alpha-pass-topdown.mjs source backups (reversible, not committed)
 *.png.bak
+
+# P1-6 repo-cleanup — local scratch/junk that kept landing at the repo root
+*.PAYPAL-SLICE
+*.bundle
+*.tmp
+.audit-probe
+.mobile-test*.txt
+nul
+test-results/
+merchant-page.html
+products-prod.json

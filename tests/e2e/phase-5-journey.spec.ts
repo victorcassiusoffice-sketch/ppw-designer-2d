@@ -79,20 +79,8 @@ test.describe('Phase 5 — desktop journey', () => {
     await expect(page.locator('[data-testid="room-area"]')).toContainText(/m²/);
     await page.screenshot({ path: path.join(SHOT_DIR, '03-walls-desktop.png'), fullPage: true });
 
-    // 4. Switch to BABYLON 3D in-place — keeps the same browser context so
-    // designStore.placedItems + wallStore.walls survive (auto-save hydrates).
-    await page.goto('/?engine=babylon');
-    await page.waitForFunction(() => Boolean((window as any).__ppwBabylonScene), null, { timeout: 20_000 });
-    const probe = await page.evaluate(() => {
-      const scene = (window as any).__ppwBabylonScene;
-      const products = (scene?.meshes ?? []).filter((m: any) => m.name?.startsWith?.('product-'));
-      const walls = (scene?.meshes ?? []).filter((m: any) => m.name?.startsWith?.('wall-seg-'));
-      return { products: products.length, walls: walls.length };
-    });
-    expect(probe.walls).toBeGreaterThanOrEqual(4);
-    // The 2D-placed item may not survive an engine swap if the page state
-    // is reset by router params; just record what we see for evidence.
-    await page.screenshot({ path: path.join(SHOT_DIR, '04-babylon-3d-desktop.png'), fullPage: true });
+    // 4. (Babylon 3D engine-swap step removed with the 3D viewer — P1-1 2026-06-04.
+    //    Konva 2D is the only engine now.)
 
     // 5. Verify the BUY-from-K1 attribution URL works directly via /api/k1/redirect.
     // (Decoupled from re-selecting the placed item because the engine swap

@@ -10,6 +10,7 @@
  */
 
 import { handler as createOrderHandler } from './lib/paypal/createOrder.js';
+import { withSentry } from "./lib/sentry.js";
 import { handler as captureOrderHandler } from './lib/paypal/captureOrder.js';
 import { handler as webhookHandler } from './lib/paypal/webhook.js';
 
@@ -43,10 +44,12 @@ function getAction(req: MinimalReq): string | null {
   return null;
 }
 
-export default async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
+async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
   const action = getAction(req);
   if (action === 'createOrder') return createOrderHandler(req as never, res as never);
   if (action === 'captureOrder') return captureOrderHandler(req as never, res as never);
   if (action === 'webhook') return webhookHandler(req as never, res as never);
   res.status(404).json({ error: `unknown paypal action: ${action ?? '(empty)'}` });
 }
+
+export default withSentry(handler);

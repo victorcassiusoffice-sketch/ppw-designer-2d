@@ -3,23 +3,9 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { isGamingV1Active, GAMING_V1_QUERY_KEY, GAMING_V1_QUERY_VALUE } from '../gamingV1Flag';
-import { isBabylonActive } from '../babylon/engineFlag';
-import { getDefaultEngine } from '../babylon/defaultEngine';
 
-describe('DT-28 / engine default + override semantics', () => {
-  it('default engine is still Konva (soak gate in effect)', () => {
-    expect(getDefaultEngine()).toBe('konva');
-  });
-  it('?engine=babylon overrides the default', () => {
-    expect(isBabylonActive('?engine=babylon')).toBe(true);
-  });
-  it('?engine=konva overrides even after a future default flip', () => {
-    expect(isBabylonActive('?engine=konva')).toBe(false);
-  });
-  it('no explicit engine param respects getDefaultEngine()', () => {
-    expect(isBabylonActive('')).toBe(false); // matches default = konva today
-  });
-});
+// DT-28 engine default/override tests removed with the Babylon viewer (P1-1,
+// 2026-06-04). Konva is now the only engine — there is no engine flag to test.
 
 describe('gamingV1Flag — V4 default-ON', () => {
   beforeEach(() => {

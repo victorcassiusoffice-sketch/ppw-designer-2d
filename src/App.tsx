@@ -58,12 +58,11 @@ import { useDrawProgressStore } from './store/drawProgressStore';
 // mounted on top of the existing Konva render-core. Konva stable-lock 26c144c
 // untouched; classic UI surfaces via `?ui=classic`.
 import { GamingLayer1Surfaces } from './designer/GamingLayer1Surfaces';
-// Sims-Parity DT-21 — Babylon Phase 2 (V7=YES 2026-05-19). Lazy-loaded
-// so the marketing-route bundle stays under the 250 KB delta gate.
-// Mounted only when `?engine=babylon` is on the URL.
-import { lazy, Suspense } from 'react';
-import { isBabylonActive } from './designer/babylon/engineFlag';
-const BabylonRoomLazy = lazy(() => import('./designer/babylon/BabylonRoom'));
+// Babylon 3D viewer removed 2026-06-04 (P1-1): the lazy 3D path (6.46 MB raw /
+// 1.43 MB gzip) was never flipped past its soak (DEFAULT_ENGINE='konva'),
+// carried untested-in-prod surface, and is the single biggest simplification.
+// Konva 2D is now the only canvas engine. Capture-side WebXR is a SEPARATE
+// feature and is untouched.
 
 // M8 (Customer-UI fix 2026-05-31) — the desktop-first "Best experienced on a
 // laptop" MobilePreviewBanner interstitial was removed now that mobile parity
@@ -117,11 +116,7 @@ export default function App() {
   // images of the products."). The TopBar prop is left undefined so its
   // toggle is hidden; the canvas wrapper below no longer applies the
   // perspective transform. ProductPalette's Sims-style hover DetailCard
-  // (P0-ζ) replaces the "show what you're placing" need. Babylon 3D is
-  // a separate path via ?engine=babylon and stays untouched.
-  // DT-21 — Babylon engine flag captured at mount; URL change requires
-  // a hard refresh to switch (matches the ?ui=classic semantics).
-  const babylonActive = isBabylonActive();
+  // (P0-ζ) replaces the "show what you're placing" need.
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-ppw-sand text-ppw-ink">
@@ -143,37 +138,17 @@ export default function App() {
         />
         <section className="relative flex-1 overflow-hidden">
           {/* Polish B (V4 Driver tick 35): MiniCartPill owns the canvas
-              top-right slot. The 3D toggle migrated to TopBar overflow
-              per V4-AU-1 conflict resolution. */}
+              top-right slot. */}
           <MiniCartPill />
           <CanvasErrorBoundary onReset={() => setDrawMode(false)}>
             <div style={{ width: '100%', height: '100%' }}>
               <div style={{ width: '100%', height: '100%' }}>
-                {babylonActive ? (
-                  <Suspense
-                    fallback={
-                      <div style={{
-                        width: '100%', height: '100%',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: '#0E0E10', color: '#F5EFE6', fontSize: 13,
-                      }}>
-                        Loading Babylon 3D engine…
-                      </div>
-                    }
-                  >
-                    <BabylonRoomLazy
-                      pendingProductId={pendingProductId}
-                      setPendingProductId={setPendingProductId}
-                    />
-                  </Suspense>
-                ) : (
-                  <RoomCanvas
-                    drawMode={drawMode}
-                    onDrawComplete={() => setDrawMode(false)}
-                    pendingProductId={pendingProductId}
-                    setPendingProductId={setPendingProductId}
-                  />
-                )}
+                <RoomCanvas
+                  drawMode={drawMode}
+                  onDrawComplete={() => setDrawMode(false)}
+                  pendingProductId={pendingProductId}
+                  setPendingProductId={setPendingProductId}
+                />
               </div>
             </div>
           </CanvasErrorBoundary>
