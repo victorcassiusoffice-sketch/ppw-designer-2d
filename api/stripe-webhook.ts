@@ -35,6 +35,7 @@ import {
   sendPaymentFailedAlertToVic,
 } from './lib/email.js';
 import type { OrderSummary, CustomerInfo, Currency } from './lib/orderTypes.js';
+import { recordWebhookEvent } from './lib/webhookDedupe.js';
 
 // IMPORTANT — disables Vercel's default JSON body parser so we get the
 // raw bytes Stripe signed.
@@ -207,13 +208,27 @@ async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
     return;
   }
 
-  if (PROCESSED_EVENTS.has(event.id)) {
+  // P2-6: durable, multi-instance-safe idempotency via the `webhook_events`
+  // unique (source, event_id) constraint (same path as the PayPal webhook) —
+  // replaces the old single-lambda in-memory Set. If the DB is unreachable we
+  // fall back to the in-memory Set so a transient outage degrades to the old
+  // behaviour rather than processing nothing.
+  let alreadyProcessed = false;
+  try {
+    const dedupe = await recordWebhookEvent('stripe', event.id, event.type, event);
+    alreadyProcessed = dedupe.alreadyProcessed;
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[stripe-webhook] DB dedupe unavailable — in-memory fallback', err);
+    if (PROCESSED_EVENTS.has(event.id)) alreadyProcessed = true;
+    else rememberEvent(event.id);
+  }
+  if (alreadyProcessed) {
     // Already processed — Stripe retries every 5s for up to ~3 days.
     res.status(200);
     res.json({ ok: true, deduped: true });
     return;
   }
-  rememberEvent(event.id);
 
   await dispatchEvent(event, stripe);
 

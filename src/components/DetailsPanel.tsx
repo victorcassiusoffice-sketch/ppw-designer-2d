@@ -259,10 +259,8 @@ export function DetailsPanel() {
           />
         )}
       </div>
-
-      <div className="border-t border-ppw-stone bg-ppw-sand px-4 py-2 text-[10px] leading-snug text-ppw-slate">
-        Week 2 · drag-drop, collision, save/load · cart Week 3.
-      </div>
+      {/* P2-1: removed the "Week 2 · drag-drop, collision, save/load · cart
+          Week 3" developer build-status footer that was visible to customers. */}
     </>
   );
 

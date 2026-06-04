@@ -85,6 +85,17 @@ export default function OrdersPage() {
                     </li>
                   ))}
                 </ul>
+                {/* P2-3: link the local record to its live server-backed status
+                    (OrderTrackPage polls /api/orders/:ref). Turns this from a
+                    device-only list into a gateway to real fulfilment status. */}
+                <div className="mt-3 border-t border-ppw-stone pt-2">
+                  <Link
+                    to={`/order/track/${encodeURIComponent(o.id)}`}
+                    className="text-[11px] font-semibold text-ppw-teal hover:underline"
+                  >
+                    Track live status →
+                  </Link>
+                </div>
               </li>
             ))}
           </ul>

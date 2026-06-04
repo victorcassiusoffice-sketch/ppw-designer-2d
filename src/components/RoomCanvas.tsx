@@ -40,7 +40,6 @@ import {
   findFreeSlot,
   polygonArea,
   polygonBounds,
-  polygonPerimeter,
   resolveDragTarget,
   rotatedFootprint,
   screenToRoom,
@@ -311,7 +310,6 @@ export function RoomCanvas({
   const bounds = useMemo(() => polygonBounds(polygon), [polygon]);
   const roomWpx = (bounds.maxX - bounds.minX) * pxPerMetre;
   const roomHpx = (bounds.maxY - bounds.minY) * pxPerMetre;
-  const perimeter = useMemo(() => polygonPerimeter(polygon), [polygon]);
   const area = useMemo(() => polygonArea(polygon), [polygon]);
   const polygonPoints = useMemo(
     () => polygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre]),
@@ -828,8 +826,11 @@ export function RoomCanvas({
         >
           Capture screen
         </button>
+        {/* Room size + zoom readout (P2-1: trimmed the developer-looking
+            "area m2 - perimeter m - scale%" debug line to a clean,
+            customer-facing area + zoom badge). */}
         <div className="pointer-events-none rounded-md bg-ppw-ink/80 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
-          {area.toFixed(2)} m2 - {perimeter.toFixed(2)} m - {Math.round(viewport.scale * 100)}%
+          {area.toFixed(1)} m² · {Math.round(viewport.scale * 100)}%
         </div>
         {/* D21 — live cost total of placed items + D15/M13 precision badge. */}
         <div
