@@ -9,7 +9,7 @@
  *                     after a deploy. Returns 500.
  */
 
-import { initSentry, withSentry } from './lib/sentry.js';
+import { initSentry, withSentry, isSentryConfigured } from './lib/sentry.js';
 
 interface MinimalReq {
   method?: string;
@@ -46,6 +46,9 @@ async function healthcheck(req: MinimalReq, res: MinimalRes): Promise<void> {
     service: 'ppw-designer-2d',
     env: process.env.VERCEL_ENV ?? 'unknown',
     commit: process.env.VERCEL_GIT_COMMIT_SHA ?? 'unknown',
+    // Boolean only — confirms SENTRY_DSN is wired without exposing the value.
+    // Vic can curl this to verify server-error capture is live in prod.
+    sentryConfigured: isSentryConfigured(),
     timestamp: new Date().toISOString(),
   });
 }

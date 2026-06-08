@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { calcDispatch, paintCalcHandler } from '../lib/calc/paintCalcHandler';
+import { calcDispatch, paintCalcHandler, floorCalcHandler } from '../lib/calc/paintCalcHandler';
 
 function fakeRes() {
   const res = {
@@ -104,12 +104,55 @@ describe('paintCalcHandler — happy path', () => {
   });
 });
 
+describe('floorCalcHandler — method + body + happy path', () => {
+  it('responds 405 to GET', async () => {
+    const res = fakeRes();
+    await floorCalcHandler({ method: 'GET', url: '/api/calc/floor', headers: {} }, res);
+    expect(res.statusCode).toBe(405);
+    expect(res.headers.Allow).toBe('POST');
+  });
+
+  it('rejects a non-numeric areaM2 (422)', async () => {
+    const res = fakeRes();
+    await floorCalcHandler(
+      { method: 'POST', url: '/api/calc/floor', headers: {}, body: { areaM2: 'big', materialId: 'eva-combat' } },
+      res,
+    );
+    expect(res.statusCode).toBe(422);
+  });
+
+  it('returns area + units + price for a valid request', async () => {
+    const res = fakeRes();
+    await floorCalcHandler(
+      { method: 'POST', url: '/api/calc/floor', headers: {}, body: { areaM2: 20, materialId: 'eva-combat' } },
+      res,
+    );
+    expect(res.statusCode).toBe(200);
+    const body = res.body as {
+      area_m2: number; units_needed: number; unit?: string;
+      material?: { id: string }; total_price_mur?: number;
+    };
+    expect(body.area_m2).toBe(20);
+    expect(body.units_needed).toBe(22); // 20 × 1.10 / 1.0
+    expect(body.unit).toBe('tile');
+    expect(body.material?.id).toBe('eva-combat');
+    expect(body.total_price_mur).toBe(22 * 850);
+  });
+});
+
 describe('calcDispatch', () => {
   it('routes type="paint" to paintCalcHandler', async () => {
     const res = fakeRes();
     await calcDispatch('paint', { method: 'GET', url: '/api/calc/paint', headers: {} }, res);
     // paintCalcHandler will 405 for GET — confirms it ran.
     expect(res.statusCode).toBe(405);
+  });
+
+  it('routes type="floor" to floorCalcHandler', async () => {
+    const res = fakeRes();
+    await calcDispatch('floor', { method: 'GET', url: '/api/calc/floor', headers: {} }, res);
+    expect(res.statusCode).toBe(405); // floorCalcHandler 405s GET — confirms it ran
+    expect(res.headers.Allow).toBe('POST');
   });
 
   it('returns 404 for unknown calc type', async () => {

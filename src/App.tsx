@@ -58,7 +58,7 @@ import { useDrawProgressStore } from './store/drawProgressStore';
 // mounted on top of the existing Konva render-core. Konva stable-lock 26c144c
 // untouched; classic UI surfaces via `?ui=classic`.
 import { GamingLayer1Surfaces } from './designer/GamingLayer1Surfaces';
-import { PaintEstimatePanel } from './components/PaintEstimatePanel';
+import { RoomEstimatePanel } from './components/RoomEstimatePanel';
 import { isPaintEstimateActive } from './designer/paintEstimateFlag';
 // Babylon 3D viewer removed 2026-06-04 (P1-1): the lazy 3D path (6.46 MB raw /
 // 1.43 MB gzip) was never flipped past its soak (DEFAULT_ENGINE='konva'),
@@ -157,8 +157,8 @@ export default function App() {
               </div>
             </div>
           </CanvasErrorBoundary>
-          {/* P3-2 — paint/flooring estimate (beta, OFF by default; ?paint=1). */}
-          {paintEstimateActive && <PaintEstimatePanel />}
+          {/* P3-2 — room estimate: paint + flooring (beta, OFF by default; ?paint=1). */}
+          {paintEstimateActive && <RoomEstimatePanel />}
         </section>
         <DetailsPanel />
       </main>

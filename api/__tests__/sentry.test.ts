@@ -7,8 +7,8 @@
  * Vercel still returns its 500. Flush is the critical serverless bit — without
  * it the frozen lambda drops the event.
  */
-import { describe, it, expect, vi } from 'vitest';
-import { withSentry, flushSentry } from '../lib/sentry.js';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { withSentry, flushSentry, isSentryConfigured } from '../lib/sentry.js';
 
 type Req = { method?: string; url?: string; headers: Record<string, string | string[] | undefined> };
 type Res = { setHeader(n: string, v: string): void; status(c: number): Res; end(p?: string): void; json(b: unknown): void };
@@ -31,5 +31,23 @@ describe('withSentry', () => {
 
   it('flushSentry resolves and never throws when Sentry is inert (no DSN)', async () => {
     await expect(flushSentry(10)).resolves.toBeUndefined();
+  });
+});
+
+describe('isSentryConfigured', () => {
+  const original = process.env.SENTRY_DSN;
+  afterEach(() => {
+    if (original === undefined) delete process.env.SENTRY_DSN;
+    else process.env.SENTRY_DSN = original;
+  });
+
+  it('is false when SENTRY_DSN is absent', () => {
+    delete process.env.SENTRY_DSN;
+    expect(isSentryConfigured()).toBe(false);
+  });
+
+  it('is true when SENTRY_DSN is set (never exposes the value)', () => {
+    process.env.SENTRY_DSN = 'https://examplePublicKey@o0.ingest.sentry.io/0';
+    expect(isSentryConfigured()).toBe(true);
   });
 });

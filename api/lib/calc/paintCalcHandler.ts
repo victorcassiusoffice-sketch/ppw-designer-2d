@@ -16,6 +16,7 @@
  */
 
 import { calculatePaint, type PaintCalcResult } from '../../../src/lib/paintCalculator.js';
+import { calculateFloor, type FloorCalcResult } from '../../../src/lib/floorCalculator.js';
 import type { WallSegment } from '../../../src/store/wallStore.js';
 
 interface MinimalReq {
@@ -96,14 +97,74 @@ export async function paintCalcHandler(req: MinimalReq, res: MinimalRes): Promis
   }
 }
 
+interface FloorCalcRequest {
+  areaM2: number;
+  materialId?: string;
+  wastePct?: number;
+}
+
+function isFloorCalcRequest(x: unknown): x is FloorCalcRequest {
+  if (!x || typeof x !== 'object') return false;
+  const r = x as Record<string, unknown>;
+  if (typeof r.areaM2 !== 'number' || !Number.isFinite(r.areaM2)) return false;
+  if (r.materialId !== undefined && typeof r.materialId !== 'string') return false;
+  if (r.wastePct !== undefined && typeof r.wastePct !== 'number') return false;
+  return true;
+}
+
+export async function floorCalcHandler(req: MinimalReq, res: MinimalRes): Promise<void> {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    res.status(405).json({ error: 'method_not_allowed' });
+    return;
+  }
+  const body = req.body;
+  if (!isFloorCalcRequest(body)) {
+    res.status(422).json({ error: 'invalid_body', expected: '{ areaM2: number, materialId?: string, wastePct?: number }' });
+    return;
+  }
+  try {
+    const result: FloorCalcResult = calculateFloor({
+      areaM2: body.areaM2,
+      materialId: body.materialId,
+      wastePct: body.wastePct,
+    });
+    res.status(200).json({
+      area_m2: result.area_m2,
+      effective_area_m2: result.effective_area_m2,
+      waste_pct: result.waste_pct,
+      coverage_m2_per_unit: result.coverage_m2_per_unit,
+      units_needed: result.units_needed,
+      unit: result.unit,
+      material: result.material
+        ? {
+            id: result.material.id,
+            sku: result.material.sku,
+            name: result.material.name,
+            hex: result.material.hex,
+            coverage_m2_per_unit: result.material.coverage_m2_per_unit,
+            price_per_unit_mur: result.material.price_per_unit_mur,
+          }
+        : undefined,
+      total_price_mur: result.total_price_mur,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'calc_failed';
+    res.status(500).json({ error: 'calc_failed', detail: msg });
+  }
+}
+
 /**
  * Dispatch for `/api/calc/:type` — the catch-all the merchants-router
- * forwards to. Currently only `paint` is implemented; future types
- * (flooring area, panel m² → sheets) plug in here.
+ * forwards to. Implements `paint` (wall area → litres) and `floor`
+ * (floor area → units). Future types (panel m² → sheets) plug in here.
  */
 export async function calcDispatch(type: string, req: MinimalReq, res: MinimalRes): Promise<void> {
   if (type === 'paint') {
     return paintCalcHandler(req, res);
+  }
+  if (type === 'floor') {
+    return floorCalcHandler(req, res);
   }
   res.status(404).json({ error: 'unknown_calc_type', type });
 }

@@ -41,6 +41,16 @@ export function initSentry(): typeof Sentry | null {
   return Sentry;
 }
 
+/**
+ * Whether the Sentry DSN env var is present — i.e. server error capture is
+ * wired. Returns a boolean only; NEVER exposes the DSN value. Used by the
+ * healthcheck so Vic can confirm from his phone that `SENTRY_DSN` is set in
+ * the Vercel environment without having to trigger a real error.
+ */
+export function isSentryConfigured(): boolean {
+  return Boolean(process.env.SENTRY_DSN);
+}
+
 export function captureException(err: unknown, context?: Record<string, unknown>): void {
   const sentry = initSentry();
   if (!sentry) return;
@@ -104,4 +114,18 @@ export function withSentry<Q extends MinimalReq, S extends MinimalRes>(handler: 
       throw err;
     }
   };
+}
+
+// Eagerly initialise on module load (when a DSN is present) so @sentry/node's
+// global onUncaughtException + onUnhandledRejection handlers are installed for
+// the whole function lifetime — catching errors that escape the per-handler
+// `withSentry` try/catch (e.g. an unhandled promise rejection in a fire-and-
+// forget call). No-op + zero noise when SENTRY_DSN is absent (local / tests).
+//
+// LIMITATION: a module-RESOLUTION failure (e.g. the 2026-06-04 extensionless
+// ESM import → ERR_MODULE_NOT_FOUND) crashes before any code runs, so Sentry
+// cannot capture it. That class is guarded by the build-time
+// `api/__tests__/esm-extension-guard.test.ts`, not by this runtime wiring.
+if (process.env.SENTRY_DSN) {
+  initSentry();
 }

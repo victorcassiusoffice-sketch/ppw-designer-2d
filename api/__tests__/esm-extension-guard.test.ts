@@ -26,6 +26,7 @@ const REPO_ROOT = resolve(__dirname, '..', '..');
 // Keep in sync with `grep -rln "from '.*src/.*\.js'" api/`.
 const API_REACHABLE_SRC_ENTRIES = [
   'src/lib/paintCalculator.ts',
+  'src/lib/floorCalculator.ts',
   'src/lib/capture/types.ts',
 ];
 

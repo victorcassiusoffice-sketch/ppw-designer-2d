@@ -3,8 +3,8 @@
  *
  * The paint calculator engine (`src/lib/paintCalculator.ts`) + the
  * `/api/calc/paint` endpoint are live, but the customer-facing UI is
- * "pending product decision" (audit P3-2). The PaintEstimatePanel is
- * therefore OFF by default and only renders when `?paint=1` is on the URL,
+ * "pending product decision" (audit P3-2). The RoomEstimatePanel (paint +
+ * flooring) is OFF by default and only renders when `?paint=1` is on the URL,
  * so Vic can evaluate it on a real device before it goes default-on for
  * customers. Mirrors the `?ui=classic` / `?engine=*` opt-in pattern.
  */
