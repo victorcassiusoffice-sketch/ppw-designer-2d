@@ -65,3 +65,13 @@ nul
 test-results/
 merchant-page.html
 products-prod.json
+
+# Local-only developer artifacts (notes, push helpers, scratch specs) — kept
+# out of the tree so the host /goal runner's collision guard sees a clean repo.
+.claude/
+CLAUDE.md
+*.bat
+HANDOFF-*.md
+OMS-GOAL.md
+*-LOG.md
+tests/e2e/auto-dig-*.spec.ts
