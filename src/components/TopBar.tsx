@@ -32,7 +32,6 @@ import { useDesignsStore } from '../store/designsStore';
 import { useToastStore } from '../store/toastStore';
 import { useHistoryStore } from '../store/historyStore';
 import { useWallStore } from '../store/wallStore';
-import { clearActiveRoomContents } from '../lib/clearActions';
 import { useCart } from '../store/cartStore';
 import { CurrencySwitcher } from './CurrencySwitcher';
 import {
@@ -108,14 +107,18 @@ export function TopBar({
     undo();
   }
 
-  // 2026-06-01 — Wall tool + Clear, folded in from the removed ModeStrip.
-  // Wall reads/toggles the wall-draw FSM directly (no local mode state):
-  // pressed === FSM not idle. Clear opens a confirm modal then wipes the
-  // active room (products + walls + floors + paint) as one undoable frame.
+  // 2026-06-01 — Wall tool, folded in from the removed ModeStrip. Wall
+  // reads/toggles the wall-draw FSM directly (no local mode state):
+  // pressed === FSM not idle.
+  //
+  // 2026-06-09 — the TopBar "Clear" button was retired in favour of the
+  // two always-visible STICKY clear buttons pinned to the canvas
+  // (ClearControls: "Clear products" / "Clear all"). The full-room
+  // `clearActiveRoomContents` helper still lives in lib/clearActions for
+  // any future caller, but the toolbar no longer hosts a third clear.
   const wallDrawPhase = useWallStore((s) => s.draw.phase);
   const setWallDraw = useWallStore((s) => s.setDraw);
   const wallActive = wallDrawPhase !== 'idle';
-  const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
 
   function handleToggleWall() {
     if (wallActive) {
@@ -127,12 +130,6 @@ export function TopBar({
     // effects, so only call it when actually in draw mode).
     if (drawMode) setDrawMode(false);
     setWallDraw({ phase: 'armed' });
-  }
-
-  function handleClearRoom() {
-    setClearConfirmOpen(false);
-    clearActiveRoomContents();
-    pushToast('Room cleared — press Ctrl+Z to restore.', 'info', 4000);
   }
 
   const [showHelp, setShowHelp] = useState(false);
@@ -347,6 +344,9 @@ export function TopBar({
               />
               <span className="text-[11px] text-ppw-slate">m</span>
             </>
+          ) : room.lengthM < 0.5 ? (
+            // Blank-canvas-on-open (2026-06-09) — no room drawn yet.
+            <span className="text-[11px] italic text-ppw-slate">Draw a room →</span>
           ) : (
             <span className="text-[11px] italic text-ppw-slate">(polygon)</span>
           )}
@@ -481,18 +481,8 @@ export function TopBar({
           New
         </button>
 
-        {/* Clear — folded in from the removed ModeStrip (2026-06-01). Wipes
-            the active room (products + walls + floors + paint) as a single
-            undoable action; confirm modal below. */}
-        <button
-          type="button"
-          onClick={() => setClearConfirmOpen(true)}
-          data-testid="clear-room-button"
-          className="hidden md:inline-block rounded-md border border-ppw-coral/60 bg-white px-2.5 py-1 text-xs font-medium text-ppw-coral hover:border-ppw-coral hover:bg-ppw-coral/5"
-          title="Clear everything in this room (Ctrl+Z restores)"
-        >
-          Clear
-        </button>
+        {/* Clear moved to the canvas as two always-visible sticky buttons
+            (ClearControls — 2026-06-09): "Clear products" / "Clear all". */}
 
         <button
           type="button"
@@ -614,17 +604,7 @@ export function TopBar({
               >
                 New property
               </button>
-              <button
-                type="button"
-                data-testid="clear-room-button-mobile"
-                onClick={() => {
-                  setShowMobileMenu(false);
-                  setClearConfirmOpen(true);
-                }}
-                className="min-h-[44px] rounded-md border border-ppw-coral/60 bg-white px-3 text-left text-sm font-medium text-ppw-coral hover:border-ppw-coral"
-              >
-                Clear room
-              </button>
+              {/* Clear moved to the canvas sticky ClearControls (2026-06-09). */}
               <button
                 type="button"
                 onClick={() => {
@@ -690,7 +670,8 @@ export function TopBar({
             <li><em>Save as...</em> stores the whole property (all rooms + items).</li>
           </ol>
           <p className="mt-2 text-[10px] text-ppw-slate">
-            Keys: R rotate; D duplicate; Del delete; Esc deselect; Ctrl+Z undo last wall (draw mode).
+            Keys: R rotate; D duplicate; Del delete; Esc deselect; Ctrl+Z undo;
+            Shift+P clear products; Shift+X clear all.
           </p>
         </div>
       )}
@@ -749,54 +730,6 @@ export function TopBar({
               })}
             </ul>
           )}
-        </div>
-      )}
-
-      {/* Clear confirm modal — folded in from the removed ModeStrip
-          (2026-06-01). Same testids as before so the clear-button e2e
-          specs keep asserting the real flow. */}
-      {clearConfirmOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="clear-confirm-title"
-          data-testid="clear-confirm-modal"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55"
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') setClearConfirmOpen(false);
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setClearConfirmOpen(false);
-          }}
-        >
-          <div className="w-[min(92vw,360px)] rounded-lg bg-white p-5 shadow-2xl">
-            <h2 id="clear-confirm-title" className="text-sm font-semibold text-ppw-ink">
-              Clear this room?
-            </h2>
-            <p className="mt-1 text-xs text-ppw-slate">
-              This clears everything in this room — products, walls, floors and paint.
-              Your room size and other rooms are kept. Press Ctrl+Z within the next
-              ~30 seconds to restore.
-            </p>
-            <div className="mt-4 flex gap-2">
-              <button
-                type="button"
-                autoFocus
-                onClick={() => setClearConfirmOpen(false)}
-                className="flex-1 rounded-md border border-ppw-stone bg-white px-3 py-1.5 text-sm font-semibold text-ppw-slate hover:border-ppw-ink"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleClearRoom}
-                data-testid="clear-confirm-yes"
-                className="flex-1 rounded-md bg-ppw-coral px-3 py-1.5 text-sm font-semibold text-white hover:bg-ppw-coral/90"
-              >
-                Yes, clear
-              </button>
-            </div>
-          </div>
         </div>
       )}
 

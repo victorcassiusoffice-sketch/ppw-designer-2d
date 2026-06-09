@@ -66,8 +66,31 @@ function makeDefaultRoom(name = 'Main Room'): Room {
   };
 }
 
+/**
+ * Blank-canvas-on-open (2026-06-09, Vic): a FRESH start (no saved data)
+ * and "New" / "Clear all" now open onto an EMPTY room — no polygon, no
+ * items — so the customer draws their own room first, Sims build-mode
+ * style. An empty polygon (`[]`) renders nothing on the canvas (the
+ * Konva layer guards `polygon.length >= 3`) and is safe across every
+ * geometry helper (`polygonBounds([])` / `polygonArea([])` return zero).
+ *
+ * Deliberately distinct from `makeDefaultRoom` (a 5×4 rectangle). The
+ * rectangle is still the DEFENSIVE re-seed when a loaded/persisted
+ * property turns out to have zero rooms or the last room is removed —
+ * there we want a usable room, not a forced redraw. Only the user-facing
+ * "start fresh" entry points open blank.
+ */
+function makeBlankRoom(name = 'Main Room'): Room {
+  return {
+    id: nanoid(8),
+    name,
+    polygon: [],
+    placedItems: [],
+  };
+}
+
 function makeDefaultProperty(): Property {
-  const room = makeDefaultRoom();
+  const room = makeBlankRoom();
   return {
     id: nanoid(8),
     name: 'Wellness Property',

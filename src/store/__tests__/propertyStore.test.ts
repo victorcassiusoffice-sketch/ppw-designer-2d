@@ -24,10 +24,15 @@ beforeEach(() => {
 });
 
 describe('propertyStore — defaults', () => {
-  it('starts with one rectangle room', () => {
+  // Blank-canvas-on-open (2026-06-09, Vic): a fresh start / resetToDefault
+  // opens onto ONE empty room (no polygon) so the customer draws their own
+  // room first, Sims-style. The room still exists (the model never allows
+  // zero rooms) — it just has no walls yet.
+  it('starts with one empty (un-drawn) room', () => {
     const { property } = usePropertyStore.getState();
     expect(property.rooms).toHaveLength(1);
-    expect(property.rooms[0].polygon).toHaveLength(4);
+    expect(property.rooms[0].polygon).toHaveLength(0);
+    expect(property.rooms[0].placedItems).toHaveLength(0);
     expect(property.activeRoomId).toBe(property.rooms[0].id);
   });
 });

@@ -14,7 +14,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDesignStore } from '../store/designStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
-import { CATEGORY_LABELS, getProductById } from '../data/products';
+import { CATEGORY_LABELS, getProductById, productImageUrl } from '../data/products';
+import type { Product } from '../data/products.schema';
 import {
   rotateSelected,
   duplicateSelected,
@@ -67,7 +68,17 @@ function buildBuyUrl(args: {
   return `/api/k1/redirect?${q.toString()}`;
 }
 
-export function DetailsPanel() {
+export interface DetailsPanelProps {
+  /**
+   * Real-image detail (2026-06-09) — the product the customer just clicked
+   * in the catalog (armed for placement). When set and nothing is selected
+   * on the canvas, the panel shows that product's real photo + description
+   * so "click a product → see its detail" works before placement too.
+   */
+  armedProductId?: string | null;
+}
+
+export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
   const placedItems = useDesignStore((s) => s.placedItems);
   const selectedInstanceId = useDesignStore((s) => s.selectedInstanceId);
   const clearDesign = useDesignStore((s) => s.clearDesign);
@@ -75,6 +86,8 @@ export function DetailsPanel() {
 
   const selected = placedItems.find((i) => i.instanceId === selectedInstanceId);
   const selectedProduct = selected ? getProductById(selected.productId) : undefined;
+  const armedProduct =
+    !selected && armedProductId ? getProductById(armedProductId) : undefined;
 
   // Flagship fix — the mobile slide-up is no longer the rotation surface.
   // It opens only when the user taps ⓘ in the on-canvas FloatingCluster
@@ -115,6 +128,7 @@ export function DetailsPanel() {
       <div className="scroll-pane flex-1 overflow-y-auto px-4 py-4">
         {selected && selectedProduct ? (
           <div className="space-y-4">
+            <ProductHero product={selectedProduct} />
             <div>
               <p className="text-[10px] uppercase tracking-wide text-ppw-slate">Selected item</p>
               <h3 className="mt-0.5 text-base font-semibold text-ppw-ink">{selectedProduct.name}</h3>
@@ -250,6 +264,8 @@ export function DetailsPanel() {
               </p>
             </div>
           </div>
+        ) : armedProduct ? (
+          <ArmedProductDetails product={armedProduct} />
         ) : (
           <DesignSummary
             roomLengthM={roomDimensions.lengthM}
@@ -285,6 +301,67 @@ export function DetailsPanel() {
   );
 }
 
+/**
+ * Real product photo block (2026-06-09) shown at the top of a product's
+ * detail. Uses the catalog resolver (real photo → top-down → …) and falls
+ * back to a neutral tile on a load error so it never shows a broken image.
+ */
+function ProductHero({ product }: { product: Product }) {
+  const [errored, setErrored] = useState(false);
+  const src = productImageUrl(product);
+  return (
+    <div
+      className="flex items-center justify-center overflow-hidden rounded-lg border border-ppw-stone"
+      style={{ background: '#F8F5EF', height: 160 }}
+    >
+      {!errored && src ? (
+        <img
+          src={src}
+          alt={product.name}
+          draggable={false}
+          onError={() => setErrored(true)}
+          style={{ maxHeight: 150, maxWidth: '92%', objectFit: 'contain' }}
+        />
+      ) : (
+        <span className="text-xs text-ppw-slate">No image</span>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Armed-product detail (2026-06-09) — shown in the right rail when the
+ * customer has clicked a catalog product (but not yet placed it). Mirrors
+ * the placed-item detail: real photo + name + specs + the real description.
+ */
+function ArmedProductDetails({ product }: { product: Product }) {
+  return (
+    <div className="space-y-4">
+      <ProductHero product={product} />
+      <div>
+        <p className="text-[10px] uppercase tracking-wide text-ppw-slate">Placing</p>
+        <h3 className="mt-0.5 text-base font-semibold text-ppw-ink">{product.name}</h3>
+        <p className="mt-0.5 text-xs text-ppw-slate">
+          {CATEGORY_LABELS[product.category]} · SKU {product.sku}
+        </p>
+      </div>
+      <Stat
+        label="Footprint"
+        value={`${product.dimensions_cm.length} × ${product.dimensions_cm.width} cm`}
+      />
+      <Stat
+        label="Price"
+        value={`${product.price.value.toLocaleString('en-MU')} ${product.price.currency}`}
+      />
+      <Stat label="Supplier" value={product.supplier} />
+      {product.notes?.trim() && <Stat label="About" value={product.notes.trim()} multiline />}
+      <div className="rounded-md border border-dashed border-ppw-teal/50 bg-ppw-teal/5 px-3 py-2.5 text-[11px] leading-snug text-ppw-slate">
+        Click an empty spot on the floor to place this product. Press <kbd>Esc</kbd> to cancel.
+      </div>
+    </div>
+  );
+}
+
 function Stat({ label, value, multiline = false }: { label: string; value: string; multiline?: boolean }) {
   return (
     <div>
@@ -308,6 +385,24 @@ function DesignSummary({
   onClear: () => void;
 }) {
   const areaM2 = roomLengthM * roomWidthM;
+  // Blank-canvas-on-open (2026-06-09): an un-drawn room projects to a
+  // ~0 m² bounding box. Show a friendly "draw your room" summary rather
+  // than a confusing "0.00 m²" readout.
+  const hasRoom = areaM2 > 0.01;
+  if (!hasRoom) {
+    return (
+      <div className="space-y-4">
+        <div>
+          <p className="text-[10px] uppercase tracking-wide text-ppw-slate">Design summary</p>
+          <h3 className="mt-0.5 text-base font-semibold text-ppw-ink">No room yet</h3>
+        </div>
+        <div className="rounded-md border border-dashed border-ppw-stone bg-ppw-mist px-3 py-2.5 text-[11px] leading-snug text-ppw-slate">
+          Your canvas is blank. Use <span className="font-semibold">Draw</span> in the top bar
+          (or the “Draw room” button on the canvas) to sketch your space, then drag products in.
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="space-y-4">
       <div>

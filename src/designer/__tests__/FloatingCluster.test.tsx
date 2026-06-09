@@ -22,6 +22,17 @@ let root: Root;
 
 beforeEach(() => {
   usePropertyStore.getState().resetToDefault();
+  // Blank-canvas-on-open (2026-06-09): seed a room polygon so the inline
+  // duplicate/rotate actions (which validate against the polygon) work.
+  {
+    const ps = usePropertyStore.getState();
+    ps.setRoomPolygon(ps.property.activeRoomId, [
+      { x: 0, y: 0 },
+      { x: 12, y: 0 },
+      { x: 12, y: 12 },
+      { x: 0, y: 12 },
+    ]);
+  }
   useDesignerUIStore.setState({ infoOpen: false, precision: 'full', tool: 'hand' });
   container = document.createElement('div');
   document.body.appendChild(container);

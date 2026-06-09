@@ -31,6 +31,17 @@ function Harness() {
 beforeEach(() => {
   __test.resetSubscriptions();
   usePropertyStore.getState().resetToDefault();
+  // Blank-canvas-on-open (2026-06-09): seed a room polygon so rotate/
+  // duplicate (which validate against the polygon) operate on a real room.
+  {
+    const ps = usePropertyStore.getState();
+    ps.setRoomPolygon(ps.property.activeRoomId, [
+      { x: 0, y: 0 },
+      { x: 12, y: 0 },
+      { x: 12, y: 12 },
+      { x: 0, y: 12 },
+    ]);
+  }
   useDesignerUIStore.setState({ infoOpen: false, precision: 'full', tool: 'hand' });
   if (typeof sessionStorage !== 'undefined') sessionStorage.clear();
   teardown = installHistorySubscriptions({ coalesceMs: 0 });

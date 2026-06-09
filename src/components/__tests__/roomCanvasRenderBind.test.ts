@@ -4,7 +4,8 @@
  * Konva renders every placed item into a single <canvas> (no per-shape
  * DOM), so the in-room image bind can't be asserted by rendering in the
  * node test env. Instead we statically assert the RoomCanvas image bind
- * uses the canonical `productImageUrl(product)` resolver and has NOT
+ * uses the canonical `productTopDownUrl(product)` resolver (top-down-first,
+ * so the floor-plan footprint reads correctly — 2026-06-09) and has NOT
  * regressed to the raw `product.image_url` field that skipped the baked
  * top-down PNGs (the original bug).
  *
@@ -23,12 +24,12 @@ const roomCanvasPath = path.resolve(here, '../RoomCanvas.tsx');
 const source = readFileSync(roomCanvasPath, 'utf8');
 
 describe('RoomCanvas in-room image bind', () => {
-  it('binds the canonical productImageUrl resolver into useImageCache', () => {
-    expect(source).toContain('useImageCache(productImageUrl(product))');
+  it('binds the canonical top-down resolver into useImageCache', () => {
+    expect(source).toContain('useImageCache(productTopDownUrl(product))');
   });
 
-  it('imports productImageUrl from the products module', () => {
-    expect(source).toMatch(/import\s*\{[^}]*\bproductImageUrl\b[^}]*\}\s*from\s*'\.\.\/data\/products'/);
+  it('imports productTopDownUrl from the products module', () => {
+    expect(source).toMatch(/import\s*\{[^}]*\bproductTopDownUrl\b[^}]*\}\s*from\s*'\.\.\/data\/products'/);
   });
 
   it('has NOT regressed to binding the raw image_url field', () => {

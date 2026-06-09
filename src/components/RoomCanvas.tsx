@@ -33,7 +33,7 @@ import { useDesignStore } from '../store/designStore';
 import { usePropertyStore, selectActiveRoom } from '../store/propertyStore';
 import type { PlacedItem } from '../store/propertyStore';
 import { useToastStore } from '../store/toastStore';
-import { CATEGORY_FILL, CATEGORY_LABELS, getProductById, productImageUrl } from '../data/products';
+import { CATEGORY_FILL, CATEGORY_LABELS, getProductById, productTopDownUrl } from '../data/products';
 import { dataUrlToBlob, triggerDownload, safeStageDataUrl } from '../lib/shareImage';
 import {
   cmToM,
@@ -76,6 +76,12 @@ export interface RoomCanvasProps {
   onDrawComplete?: () => void;
   pendingProductId?: string | null;
   setPendingProductId?: (id: string | null) => void;
+  /**
+   * Blank-canvas-on-open (2026-06-09) — the empty-state prompt's "Draw
+   * room" button asks App to flip into draw mode (App owns `setDrawMode`
+   * because it carries the history-transaction side-effects).
+   */
+  onRequestDraw?: () => void;
 }
 
 export function RoomCanvas({
@@ -83,6 +89,7 @@ export function RoomCanvas({
   onDrawComplete,
   pendingProductId,
   setPendingProductId,
+  onRequestDraw,
 }: RoomCanvasProps) {
   const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -135,6 +142,29 @@ export function RoomCanvas({
   const addRoom = usePropertyStore((s) => s.addRoom);
 
   const pushToast = useToastStore((s) => s.push);
+
+  // Blank-canvas-on-open (2026-06-09) — "no room drawn yet" iff the active
+  // room's polygon has fewer than 3 vertices (the empty-on-fresh-start
+  // state, or after Clear all). Drives the start-state prompt below.
+  const hasRoom = polygon.length >= 3;
+
+  // Quick-rectangle escape hatch from the start-state prompt: gives the
+  // active (empty) room a default 5×4 m rectangle so the customer can
+  // place products immediately without drawing, and so the TopBar L/W
+  // inputs (which only edit rectangle rooms) light up. Draw mode stays
+  // the primary path per Vic's Sims-style brief.
+  const handleQuickRectangle = useCallback(() => {
+    const ps = usePropertyStore.getState();
+    const active = selectActiveRoom(ps);
+    if (!active) return;
+    ps.setRoomPolygon(active.id, [
+      { x: 0, y: 0 },
+      { x: 5, y: 0 },
+      { x: 5, y: 4 },
+      { x: 0, y: 4 },
+    ]);
+    pushToast('Added a 5 × 4 m room — adjust the size in the top bar or place products.', 'info');
+  }, [pushToast]);
 
   const [viewport, setViewport] = useState<Viewport>(INITIAL_VIEWPORT);
   const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
@@ -1011,7 +1041,7 @@ export function RoomCanvas({
             </Group>
           )}
 
-          {showGrid && (
+          {showGrid && hasRoom && (
             <Group listening={false} clipFunc={polygonClipFunc(polygon, pxPerMetre)}>
               {gridLines.map((l) => (
                 <Line
@@ -1162,14 +1192,65 @@ export function RoomCanvas({
         );
       })()}
 
-      {/* Designer polish (2026-05-29) — empty-state placement tip. Shows a
-          faint, centered prompt over the (already grid-lined) empty room
-          when nothing is placed yet and no draw/wall tool is active. Auto-
-          hides the moment the first item lands. Brand register: navy ink +
-          gold accent + cream card — deliberately NOT the legacy teal chrome,
-          to match the binding brand identity for new UI. Pointer-events off
-          so it never blocks a tap-to-place on the floor beneath it. */}
-      {!drawMode && !wallDrawEnabled && !pendingProductId && placedItems.length === 0 && (
+      {/* Blank-canvas-on-open (2026-06-09, Vic) — START-STATE prompt. Shown
+          on a FRESH canvas (no room drawn yet) and after "Clear all". Guides
+          the customer to draw their own room first, Sims build-mode style,
+          with a one-tap "Quick rectangle" escape hatch. This card IS
+          interactive (its buttons need clicks) so it opts back into pointer
+          events; it sits centred and never overlaps the toolbars. */}
+      {!drawMode && !wallDrawEnabled && !pendingProductId && !hasRoom && (
+        <div
+          className="pointer-events-none absolute inset-0 flex items-center justify-center px-4"
+          data-testid="start-room-prompt"
+        >
+          <div
+            className="pointer-events-auto flex max-w-sm flex-col items-center gap-2 rounded-2xl px-6 py-5 text-center shadow-md"
+            style={{
+              background: 'rgba(245,235,215,0.92)',
+              border: '1px solid rgba(255,187,88,0.6)',
+              color: '#232C3B',
+            }}
+          >
+            <span aria-hidden style={{ fontSize: 26, lineHeight: 1, color: '#FFBB58' }}>
+              ▱
+            </span>
+            <p className="text-base font-semibold" style={{ color: '#232C3B' }}>
+              Start by drawing your room
+            </p>
+            <p className="text-xs leading-snug" style={{ color: '#3B4A52' }}>
+              Your canvas is blank. Sketch the walls of your space first, then
+              drag products in. You can redraw or clear it any time.
+            </p>
+            <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                data-testid="start-draw-room"
+                onClick={() => onRequestDraw?.()}
+                className="min-h-[40px] rounded-lg px-4 text-sm font-semibold text-white shadow-sm"
+                style={{ background: '#232C3B' }}
+              >
+                Draw room
+              </button>
+              <button
+                type="button"
+                data-testid="start-quick-rectangle"
+                onClick={handleQuickRectangle}
+                className="min-h-[40px] rounded-lg border px-4 text-sm font-semibold"
+                style={{ background: '#fff', borderColor: '#232C3B33', color: '#232C3B' }}
+              >
+                Quick 5 × 4 m room
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Designer polish (2026-05-29) — empty-room placement tip. Shows once a
+          room EXISTS but holds no products yet (and no draw/wall tool is
+          active). Auto-hides the moment the first item lands. Brand register:
+          navy ink + gold accent + cream card. Pointer-events off so it never
+          blocks a tap-to-place on the floor beneath it. */}
+      {!drawMode && !wallDrawEnabled && !pendingProductId && hasRoom && placedItems.length === 0 && (
         <div
           className="pointer-events-none absolute inset-0 flex items-center justify-center"
           data-testid="empty-room-hint"
@@ -1304,20 +1385,20 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
     // the next render via the parent's timer, which is the desired one-shot.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  // V-RENDER-1 (2026-05-27) — use the canonical productImageUrl resolver
-  // (topdown_image_url → image_url → SVG data-URI), the same chooser the
-  // palette/popup/toolbar use, so the in-room render matches what the
-  // customer sees everywhere else. Previously bound the raw image_url,
-  // which skipped the baked top-down PNGs. productImageUrl always returns
-  // a non-empty string; useImageCache handles load/error → null internally
-  // (the grey Rect fallback below still covers a genuine 404).
-  const image = useImageCache(productImageUrl(product));
+  // V-RENDER-1 (2026-05-27) — use the canonical TOP-DOWN resolver
+  // (topdown_image_url → photo_image_url → image_url → SVG data-URI). On the
+  // floor plan a top-down render reads correctly (a rotated item turns the
+  // image, not a perspective photo), so the canvas prefers top-down even now
+  // that the catalog shows real perspective photos (productImageUrl). Always
+  // returns a non-empty string; useImageCache handles load/error → null
+  // internally (the grey Rect fallback below still covers a genuine 404).
+  const image = useImageCache(productTopDownUrl(product));
   // Polish (2026-05-29) — distinguish "still hydrating" from "errored /
   // no image" so the fallback shows a subtle brand shimmer while the
   // asset loads, then settles to the real image (or the coloured rect on
   // a genuine 404). The status hook shares the same module-level cache as
   // useImageCache above, so this adds no extra network load.
-  const { status: imageStatus } = useImageCacheStatus(productImageUrl(product));
+  const { status: imageStatus } = useImageCacheStatus(productTopDownUrl(product));
   const isHydrating = !image && imageStatus === 'loading';
   // Fix 2.1 (Vic 2026-05-22) — render the product art at its TRUE
   // unrotated footprint and apply Konva rotation visually, so the
