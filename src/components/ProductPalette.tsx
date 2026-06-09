@@ -198,10 +198,26 @@ export function ProductPalette({
   }, [region]);
 
   const allProducts = useMemo(() => {
-    // Merchant products first so they're the top of the catalog grid —
+    // Merchant (API) products first so they're the top of the catalog grid —
     // K1 demo path: open catalog, see Matrix/NordicTrack-style items
     // immediately above the bundled wellness seeds.
-    return [...apiProducts, ...getAllProducts()];
+    //
+    // Dedup by SKU (2026-06-09): the 14 K1 fitness SKUs exist in BOTH the
+    // live `/api/products` rows AND the bundled seed, which previously
+    // rendered every K1 item twice. Keep the FIRST occurrence per SKU (the
+    // API row, already enriched with the real photo + description by SKU in
+    // apiCatalogAdapter), so each product shows exactly once. Bundled-only
+    // products (e.g. flooring) have no API twin and are kept as-is.
+    const merged = [...apiProducts, ...getAllProducts()];
+    const seen = new Set<string>();
+    const out: Product[] = [];
+    for (const p of merged) {
+      const key = p.sku || p.id;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(p);
+    }
+    return out;
   }, [apiProducts]);
 
   function searchAll(q: string): Product[] {
@@ -375,10 +391,7 @@ export function ProductPalette({
                     onBlur={disarmHover}
                     style={{ minHeight: 80 }}
                   >
-                    <div
-                      className="flex h-12 w-12 shrink-0 items-center justify-center"
-                      dangerouslySetInnerHTML={{ __html: thumbnailFor(p.category) }}
-                    />
+                    <CatalogTileThumb product={p} />
                     <p className="line-clamp-2 px-1 text-center text-[10px] leading-tight text-ppw-slate">
                       {p.name}
                     </p>
@@ -424,7 +437,13 @@ export function ProductPalette({
             thumbUrl={productImageUrl(hover.product)}
             name={hover.product.name}
             priceMur={Math.round(hover.product.price?.value ?? 0)}
-            description={`${hover.product.dimensions_cm.length}×${hover.product.dimensions_cm.width}×${hover.product.dimensions_cm.height} cm · ${hover.product.supplier}`}
+            // Real product blurb first; the dimensions/supplier line is
+            // appended so the card still carries the footprint + source.
+            description={
+              hover.product.notes?.trim()
+                ? `${hover.product.notes.trim()}\n${hover.product.dimensions_cm.length}×${hover.product.dimensions_cm.width}×${hover.product.dimensions_cm.height} cm · ${hover.product.supplier}`
+                : `${hover.product.dimensions_cm.length}×${hover.product.dimensions_cm.width}×${hover.product.dimensions_cm.height} cm · ${hover.product.supplier}`
+            }
             actions={
               setPendingProductId
                 ? [
@@ -444,6 +463,38 @@ export function ProductPalette({
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * Catalog tile thumbnail (2026-06-09) — shows the REAL product image
+ * (productImageUrl: real photo → top-down → …) instead of the generic
+ * category SVG. On a load error it falls back to the inline category SVG so
+ * a 404 never leaves a blank tile. `object-contain` keeps the product
+ * un-cropped on its white studio background.
+ */
+function CatalogTileThumb({ product }: { product: Product }) {
+  const [errored, setErrored] = useState(false);
+  const src = productImageUrl(product);
+  // SVG data-URI fallbacks always "load", so only a real raster 404 flips
+  // `errored`; when it does, drop straight to the category SVG primitive.
+  if (errored || !src) {
+    return (
+      <div
+        className="flex h-12 w-12 shrink-0 items-center justify-center"
+        dangerouslySetInnerHTML={{ __html: thumbnailFor(product.category) }}
+      />
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={product.name}
+      loading="lazy"
+      draggable={false}
+      onError={() => setErrored(true)}
+      className="h-12 w-12 shrink-0 object-contain"
+    />
   );
 }
 

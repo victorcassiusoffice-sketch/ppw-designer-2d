@@ -81,6 +81,15 @@ export interface Product {
   commission_pct: number;
   shopify_ready: boolean;
   image_url: string;
+  /**
+   * Real product PHOTO (2026-06-09) — manufacturer/retailer studio shot,
+   * downloaded into `/public/products/photos/<slug>.<ext>` (never hotlinked,
+   * so it's reliable). Highest-priority image when present. Sourced by
+   * `scripts/fetch-real-images.mjs`; provenance + any "representative
+   * variant" flags live in `scripts/real-image-manifest.json`. Falls back to
+   * `topdown_image_url` (the generated top-down render) when absent.
+   */
+  photo_image_url?: string;
   /** Inline SVG snippet used for Week 1 placeholder thumbnails. */
   thumbnail_svg?: string;
   designer_status: DesignerStatus;

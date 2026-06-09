@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { productImageUrl } from '../products';
+import { productImageUrl, productTopDownUrl } from '../products';
 import type { Product } from '../products.schema';
 
 function makeProduct(overrides: Partial<Product>): Product {
@@ -33,35 +33,65 @@ function makeProduct(overrides: Partial<Product>): Product {
   };
 }
 
-describe('productImageUrl resolver', () => {
+// CANVAS footprint resolver — top-down preferred so a rotated placed item
+// turns the image, not a perspective photo.
+describe('productTopDownUrl resolver (canvas footprint)', () => {
   it('prefers topdown_image_url when present (the baked top-down PNG)', () => {
     const p = makeProduct({
       topdown_image_url: '/products/topdown/k1-nordictrack-2450.png',
+      photo_image_url: '/products/photos/k1-nordictrack-2450.png',
       image_url: 'https://placehold.co/600x400',
     });
-    expect(productImageUrl(p)).toBe('/products/topdown/k1-nordictrack-2450.png');
+    expect(productTopDownUrl(p)).toBe('/products/topdown/k1-nordictrack-2450.png');
   });
 
-  it('falls back to image_url when no top-down asset exists', () => {
-    const p = makeProduct({
-      topdown_image_url: undefined,
-      image_url: 'https://cdn.example.com/photo.jpg',
-    });
-    expect(productImageUrl(p)).toBe('https://cdn.example.com/photo.jpg');
+  it('falls back to the real photo, then image_url, when no top-down asset exists', () => {
+    expect(
+      productTopDownUrl(makeProduct({ photo_image_url: '/products/photos/x.jpg' })),
+    ).toBe('/products/photos/x.jpg');
+    expect(
+      productTopDownUrl(makeProduct({ image_url: 'https://cdn.example.com/photo.jpg' })),
+    ).toBe('https://cdn.example.com/photo.jpg');
   });
 
-  it('falls back to an inline SVG data-URI when neither image is set', () => {
-    const p = makeProduct({ topdown_image_url: undefined, image_url: '' });
-    const url = productImageUrl(p);
+  it('falls back to an inline SVG data-URI when no image is set', () => {
+    const url = productTopDownUrl(makeProduct({ image_url: '' }));
     expect(url.startsWith('data:image/svg+xml')).toBe(true);
-    // Never empty — the canvas must never get a blank source (regression
-    // guard for the no-top-down case).
     expect(url.length).toBeGreaterThan(20);
   });
+});
 
-  it('never returns an empty string for any of the three branches', () => {
+// CATALOG / DETAIL resolver — real product PHOTO preferred so shoppers see
+// the actual product, falling back to the generated top-down render.
+describe('productImageUrl resolver (catalog/detail)', () => {
+  it('prefers the real photo over the top-down render', () => {
+    const p = makeProduct({
+      photo_image_url: '/products/photos/k1-nordictrack-2450.png',
+      topdown_image_url: '/products/topdown/k1-nordictrack-2450.png',
+      image_url: 'https://placehold.co/600x400',
+    });
+    expect(productImageUrl(p)).toBe('/products/photos/k1-nordictrack-2450.png');
+  });
+
+  it('falls back to the top-down render when no real photo exists', () => {
+    const p = makeProduct({
+      topdown_image_url: '/products/topdown/x.png',
+      image_url: 'https://placehold.co/600x400',
+    });
+    expect(productImageUrl(p)).toBe('/products/topdown/x.png');
+  });
+
+  it('falls back to image_url, then an inline SVG data-URI', () => {
+    expect(productImageUrl(makeProduct({ image_url: 'https://cdn.example.com/photo.jpg' }))).toBe(
+      'https://cdn.example.com/photo.jpg',
+    );
+    const url = productImageUrl(makeProduct({ image_url: '' }));
+    expect(url.startsWith('data:image/svg+xml')).toBe(true);
+  });
+
+  it('never returns an empty string', () => {
+    expect(productImageUrl(makeProduct({ photo_image_url: '/p.png' }))).not.toBe('');
     expect(productImageUrl(makeProduct({ topdown_image_url: '/a.png' }))).not.toBe('');
-    expect(productImageUrl(makeProduct({ image_url: '/b.jpg' }))).not.toBe('');
     expect(productImageUrl(makeProduct({ image_url: '' }))).not.toBe('');
   });
 });

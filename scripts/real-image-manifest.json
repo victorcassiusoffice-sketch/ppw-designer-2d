@@ -1,0 +1,145 @@
+{
+  "generated": "fetch-real-images.mjs 2026-06-09",
+  "products": [
+    {
+      "slug": "k1-nordictrack-2450",
+      "name": "NordicTrack Commercial 2450 Treadmill",
+      "sourcePageUrl": "https://www.nordictrack.com/treadmills/commercial-2450-treadmill",
+      "imageSourceUrl": "https://images.contentstack.io/v3/assets/blt40913d6edfec40cc/blt7bf5e0aed701ab36/66e30fd107e58b4d4d7ffcd8/NTL19125_PLP.png",
+      "imageFile": "products/photos/k1-nordictrack-2450.png",
+      "description": "The NordicTrack Commercial 2450 Treadmilll is our fastest treadmill with a max speed of 14 MPH, capable of a sub-2 hour marathon.",
+      "status": "real",
+      "note": ""
+    },
+    {
+      "slug": "k1-nordictrack-tour-de-france",
+      "name": "NordicTrack Tour de France Indoor Bike",
+      "sourcePageUrl": "https://www.nordictrack.com/product/tour-de-france-bike",
+      "imageSourceUrl": "https://images.contentstack.io/v3/assets/blt40913d6edfec40cc/blt9186d256bcf00bdb/6786f406e91b050ae59f3852/NTEXTDF25_PLP.png",
+      "imageFile": "products/photos/k1-nordictrack-tour-de-france.png",
+      "description": "Train for hills, flats, and descents on the NordicTrack Tour De France Bike. This is indoor cycling that prepares you for a realistic Tour De France experience.",
+      "status": "real",
+      "note": ""
+    },
+    {
+      "slug": "k1-nordictrack-gx10",
+      "name": "NordicTrack GX 10 Recumbent Bike",
+      "sourcePageUrl": "https://www.nordictrack.com/exercise-bikes/commercial-r35-recumbent-bike",
+      "imageSourceUrl": "https://images.contentstack.io/v3/assets/blt40913d6edfec40cc/blt57dc94b7e23ce112/66623e3b67d4ad8ad658c1f5/NTEX14921_catcompare.png",
+      "imageFile": "products/photos/k1-nordictrack-gx10.png",
+      "description": "Access interactive personal training from iFIT on the Recumbent R35 14\" HD Smart Touchscreen",
+      "status": "fallback-variant",
+      "note": "GX 10 page retired; using current Commercial R35 recumbent (closest NordicTrack recumbent)."
+    },
+    {
+      "slug": "k1-schwinn-700ic",
+      "name": "Schwinn 700IC Indoor Cycle",
+      "sourcePageUrl": "https://uk.johnsonfitness.com/products/schwinn-finess-700ic-indoor-cycle",
+      "imageSourceUrl": "https://uk.johnsonfitness.com/cdn/shop/files/100718.jpg?v=1731336920",
+      "imageFile": "products/photos/k1-schwinn-700ic.jpg",
+      "description": "Schwinn 700IC Indoor Cycling Bike - Product Description The Schwinn 700IC Indoor Cycling Bike is designed for serious cyclists seeking a high-energy, low-impact training experience. While it doesn't connect directly to the JRNY app, you can still enjoy JRNY's personalized workouts by using a separate device to play the",
+      "status": "real",
+      "note": ""
+    },
+    {
+      "slug": "k1-proform-carbon-tl",
+      "name": "ProForm Carbon TL Treadmill",
+      "sourcePageUrl": "https://www.proform.com/product/carbon-tls-treadmill",
+      "imageSourceUrl": "https://images.contentstack.io/v3/assets/blt40913d6edfec40cc/blt3d7ed23296cfb938/6943088ab0a12c24e112d802/PFTL79925_PLP.png",
+      "imageFile": "products/photos/k1-proform-carbon-tl.png",
+      "description": "Start your fitness journey with the Carbon TLS Treadmill. With an iFIT Pro Membership, workouts are personalized to meet you at your fitness level.",
+      "status": "real",
+      "note": ""
+    },
+    {
+      "slug": "k1-nordictrack-x16",
+      "name": "NordicTrack X16 Elliptical",
+      "sourcePageUrl": "https://www.nordictrack.com/product/x16-elliptical",
+      "imageSourceUrl": "https://images.contentstack.io/v3/assets/blt40913d6edfec40cc/blt934905389a93ea3f/670072ea904bad48d752b3bf/NTEL71625_PLP.png",
+      "imageFile": "products/photos/k1-nordictrack-x16.png",
+      "description": "The NordicTrack X16 Elliptical and iFIT Pro Membership deliver results. iFIT tracks your performance and adjusts incline and resistance to your needs.",
+      "status": "real",
+      "note": ""
+    },
+    {
+      "slug": "k1-nordictrack-rw900",
+      "name": "NordicTrack RW900 Rower",
+      "sourcePageUrl": "https://www.nordictrack.com/product/rw900-rower",
+      "imageSourceUrl": "https://images.contentstack.io/v3/assets/blt40913d6edfec40cc/blta818a9d365235879/670073bbcb45414fe9dfad1c/NTRW19425_PLP.png",
+      "imageFile": "products/photos/k1-nordictrack-rw900.png",
+      "description": "Experience immersive full-body workouts on the NordicTrack RW900 rower.",
+      "status": "real",
+      "note": ""
+    },
+    {
+      "slug": "k1-vision-t600-03",
+      "name": "Vision Fitness T600-03 Treadmill",
+      "sourcePageUrl": "https://www.360fitnesssuperstore.com/products/vision-t600-light-commercial-treadmill",
+      "imageSourceUrl": "https://www.360fitnesssuperstore.com/cdn/shop/products/Vision_T600_Treadmill3_1200x1200.jpg?v=1638586329",
+      "imageFile": "products/photos/k1-vision-t600-03.jpg",
+      "description": "ADVANCED PERFORMANCE. EXCEPTIONAL STYLE. The advanced T600 treadmill combines performance, durability and contemporary style to elevate the exercise experience. A powerful motor and an extra-large running surface accommodate hard workouts, and heavy-duty components stand up to the toughest environments for years. Perhaps best of all, the refined styling of the frame and console will make the T600 an attention-grabbing highlight of your fitness offering.",
+      "status": "real",
+      "note": ""
+    },
+    {
+      "slug": "k1-vision-t600e-02",
+      "name": "Vision Fitness T600E-02 Treadmill",
+      "sourcePageUrl": "https://www.360fitnesssuperstore.com/products/vision-t600-light-commercial-treadmill",
+      "imageSourceUrl": "https://www.360fitnesssuperstore.com/cdn/shop/products/Vision_T600_Treadmill3_1200x1200.jpg?v=1638586329",
+      "imageFile": "products/photos/k1-vision-t600e-02.jpg",
+      "description": "ADVANCED PERFORMANCE. EXCEPTIONAL STYLE. The advanced T600 treadmill combines performance, durability and contemporary style to elevate the exercise experience. A powerful motor and an extra-large running surface accommodate hard workouts, and heavy-duty components stand up to the toughest environments for years. Perhaps best of all, the refined styling of the frame and console will make the T600 an attention-grabbing highlight of your fitness offering.",
+      "status": "fallback-variant",
+      "note": "T600E-02 has no standalone retail page; using T600 (same Vision commercial line, visually near-identical)."
+    },
+    {
+      "slug": "k1-matrix-mg-glute",
+      "name": "Matrix Magnum MG Glute Trainer",
+      "sourcePageUrl": "https://fitnessexperience.ca/products/matrix-mg-glute-trainer",
+      "imageSourceUrl": "https://fitnessexperience.ca/cdn/shop/files/MX21_MAGNUMMG-PL78glutetrainer_IcedSlvr_hero_1200x1200.jpg?v=1699816185",
+      "imageFile": "products/photos/k1-matrix-mg-glute.jpg",
+      "description": "The Matrix Fitness Magnum Glute Trainer is an innovative piece of workout equipment designed to amplify your glute workouts. It provides an exceptional way to tone muscles, build power, and enhance hip and core stability. This Glute Trainer mimics bar hip thrusting movements.",
+      "status": "real",
+      "note": ""
+    },
+    {
+      "slug": "k1-matrix-versa-adabd",
+      "name": "Matrix Versa Adductor/Abductor",
+      "sourcePageUrl": "https://www.johnsonfitness.com.au/products/matrix-versa-hip-abductor-adductor",
+      "imageSourceUrl": "https://www.johnsonfitness.com.au/cdn/shop/files/Versa-HipAbductorAdductor-herosquare.jpg?crop=center&height=1200&v=1706143816&width=1200",
+      "imageFile": "products/photos/k1-matrix-versa-adabd.jpg",
+      "description": "MATRIX VERSA HIP ABDUCTOR / ADDUCTOR Offer your people more functionality in less space with our Versa Hip Abductor / Adductor dual station. It transitions smoothly from one exercise to the other, and clearly indicated adjustment points make it easy for virtually anyone to get comfortable and get started. It even inclu",
+      "status": "real",
+      "note": ""
+    },
+    {
+      "slug": "k1-vision-smith",
+      "name": "Vision Fitness Smith Machine",
+      "sourcePageUrl": "https://fitness-specialist.com/products/vision-plate-loaded-smith-machine",
+      "imageSourceUrl": "https://fitness-specialist.com/cdn/shop/files/vision-plate-loaded-smith-machine-896851_1200x1200.jpg?v=1724860331",
+      "imageFile": "products/photos/k1-vision-smith.jpg",
+      "description": "he Vision Plate Loaded Smith Machine VST600-PL62 offers a robust design with adjustable settings for safe, effective workouts.",
+      "status": "real",
+      "note": ""
+    },
+    {
+      "slug": "k1-bowflex-xtreme-2se",
+      "name": "Bowflex Xtreme 2 SE Home Gym",
+      "sourcePageUrl": "https://www.bowflex.com/product/x2se-home-gym/100334.html",
+      "imageSourceUrl": "https://www.bowflex.com/on/demandware.static/-/Sites-nautilus-master-catalog/default/dw1bc53735/images/bowflex/home-gyms/xtreme2se/100334/bowflex-xtreme2se-home-gym-2.png",
+      "imageFile": "products/photos/k1-bowflex-xtreme-2se.png",
+      "description": "The BowFlex Xtreme 2 SE lets you change exercises more quickly and easily with no cable changes needed between exercises. Now includes ab crunch shoulder harness and ergonomically designed adjustable seat.",
+      "status": "real",
+      "note": ""
+    },
+    {
+      "slug": "k1-bench-adjustable-fid",
+      "name": "Adjustable FID Weight Bench",
+      "sourcePageUrl": "https://www.roguefitness.com/rogue-adjustable-bench-2-0",
+      "imageSourceUrl": "https://assets.roguefitness.com/f_auto,q_auto,c_limit,w_1600,b_rgb:ffffff/catalog/Strength%20Equipment/Strength%20Training/Weight%20Benches/Adjustable%20:%20Incline%20Benches/AB2-0/RA0646-H_usdgje.png",
+      "imageFile": "products/photos/k1-bench-adjustable-fid.jpg",
+      "description": "The latest reincarnation of our heavy-duty adjustable bench; new and improved, still built to last a lifetime. Get yours at Rogue today!",
+      "status": "real",
+      "note": ""
+    }
+  ]
+}

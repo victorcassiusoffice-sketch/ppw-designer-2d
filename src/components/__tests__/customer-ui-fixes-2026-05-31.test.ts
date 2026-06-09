@@ -33,7 +33,10 @@ describe('B1 — placed items carry an always-listening hit target', () => {
 
 describe('M3 — no HTML5 draggable on catalog cards', () => {
   it('ProductPalette card dropped draggable / handleDragStart / DRAG_MIME', () => {
-    expect(productPalette).not.toMatch(/\n\s*draggable\b/);
+    // Forbid the HTML5 drag-ENABLING `draggable` attr, but allow the
+    // explicit `draggable={false}` that DISABLES native image drag on the
+    // real-photo thumbnail (2026-06-09) — disabling is not the regression.
+    expect(productPalette).not.toMatch(/\n\s*draggable(?!=\{false\})\b/);
     // assert on the real code forms (an explanatory comment may name them)
     expect(productPalette).not.toContain('function handleDragStart');
     expect(productPalette).not.toContain('const DRAG_MIME');

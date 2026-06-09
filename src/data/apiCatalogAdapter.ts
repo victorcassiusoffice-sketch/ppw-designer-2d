@@ -13,9 +13,23 @@
 import type {
   Currency,
   Product,
+  ProductCatalog,
   ProductCategory,
   Region,
 } from './products.schema';
+import catalogJson from './products.json';
+
+/**
+ * Real-image enrichment (2026-06-09) — the live `/api/products` rows carry
+ * the generated top-down path as `imageUrl` and never the real product
+ * PHOTO. We backfill the photo (and the bundled top-down) from the bundled
+ * seed, matched by SKU, so merchant/DB products show the same real photos
+ * as the bundled catalog WITHOUT needing a DB re-seed. Imported from the
+ * JSON directly (not via products.ts) to avoid an import cycle.
+ */
+const _bundledBySku: Map<string, Product> = new Map(
+  (catalogJson as unknown as ProductCatalog).products.map((p) => [p.sku, p]),
+);
 
 /** Wire shape from `/api/products`. Mirror of `ProductSummary`. */
 export interface ApiProductSummary {
@@ -94,12 +108,14 @@ export function apiProductToProduct(api: ApiProductSummary): Product {
   const widthCm = (api.widthMm ?? 600) / 10;
   const depthCm = (api.depthMm ?? 400) / 10;
   const heightCm = (api.heightMm ?? 800) / 10;
+  // Real-image + description enrichment by SKU (see _bundledBySku above).
+  const seed = _bundledBySku.get(api.sku);
   return {
     id: `m-${api.id}`, // namespace API ids so they never collide with seed ids
     sku: api.sku,
     name: api.name,
     category: normaliseCategory(api.category),
-    supplier: 'Merchant via M9.B.1',
+    supplier: seed?.supplier ?? 'Merchant via M9.B.1',
     dimensions_cm: {
       length: Math.max(1, Math.round(widthCm)),
       width: Math.max(1, Math.round(depthCm)),
@@ -110,12 +126,19 @@ export function apiProductToProduct(api: ApiProductSummary): Product {
       value: (api.priceMinor ?? 0) / 100,
       currency: normaliseCurrency(api.currency ?? 'MUR'),
     },
-    commission_pct: 0,
+    commission_pct: seed?.commission_pct ?? 0,
     shopify_ready: false,
     image_url: api.imageUrl ?? '',
+    // Real product photo + generated top-down, pulled from the bundled
+    // seed by SKU. `productImageUrl` prefers the photo (catalog/detail);
+    // `productTopDownUrl` prefers the top-down (canvas footprint).
+    photo_image_url: seed?.photo_image_url,
+    topdown_image_url: seed?.topdown_image_url,
     designer_status: 'Done',
     delivery_regions: normaliseRegion(api.region),
-    notes: api.description ?? '',
+    // Prefer the live DB description; fall back to the curated bundled notes
+    // so the detail panel is never blank.
+    notes: api.description?.trim() || seed?.notes || '',
   };
 }
 

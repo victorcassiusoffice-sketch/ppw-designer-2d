@@ -189,7 +189,7 @@ function CardBody(props: DetailCardProps): JSX.Element {
         </button>
       </header>
 
-      <p style={{ fontSize: 12, color: 'rgba(14,14,16,0.7)', margin: '0 0 12px' }}>
+      <p style={{ fontSize: 12, color: 'rgba(14,14,16,0.7)', margin: '0 0 12px', whiteSpace: 'pre-line' }}>
         {props.description}
       </p>
 

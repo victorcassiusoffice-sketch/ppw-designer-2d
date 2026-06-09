@@ -28,7 +28,8 @@
       ],
       "notes": "Foldable commercial-grade treadmill; 24-inch touchscreen; iFit-ready. Distributor stock at K1-Sport.",
       "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-nordictrack-2450.png"
+      "topdown_image_url": "/products/topdown/k1-nordictrack-2450.png",
+      "photo_image_url": "/products/photos/k1-nordictrack-2450.png"
     },
     {
       "id": "k1-nordictrack-tour-de-france",
@@ -55,7 +56,8 @@
       ],
       "notes": "Incline/decline indoor cycle; iFit-ready interactive trainer. Distributor stock at K1-Sport.",
       "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-nordictrack-tour-de-france.png"
+      "topdown_image_url": "/products/topdown/k1-nordictrack-tour-de-france.png",
+      "photo_image_url": "/products/photos/k1-nordictrack-tour-de-france.png"
     },
     {
       "id": "k1-nordictrack-gx10",
@@ -82,7 +84,8 @@
       ],
       "notes": "Recumbent bike with 26 resistance levels. Distributor stock at K1-Sport.",
       "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-nordictrack-gx10.png"
+      "topdown_image_url": "/products/topdown/k1-nordictrack-gx10.png",
+      "photo_image_url": "/products/photos/k1-nordictrack-gx10.png"
     },
     {
       "id": "k1-schwinn-700ic",
@@ -109,7 +112,8 @@
       ],
       "notes": "Indoor cycle with 18.1 kg / 40 lb flywheel. On-sale entry-price cardio. Distributor stock at K1-Sport.",
       "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-schwinn-700ic.png"
+      "topdown_image_url": "/products/topdown/k1-schwinn-700ic.png",
+      "photo_image_url": "/products/photos/k1-schwinn-700ic.jpg"
     },
     {
       "id": "k1-proform-carbon-tl",
@@ -136,7 +140,8 @@
       ],
       "notes": "Foldable home treadmill; iFit-enabled. Distributor stock at K1-Sport.",
       "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-proform-carbon-tl.png"
+      "topdown_image_url": "/products/topdown/k1-proform-carbon-tl.png",
+      "photo_image_url": "/products/photos/k1-proform-carbon-tl.png"
     },
     {
       "id": "k1-nordictrack-x16",
@@ -163,7 +168,8 @@
       ],
       "notes": "Front-drive elliptical; 16-inch touchscreen; iFit-ready. Distributor stock at K1-Sport.",
       "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-nordictrack-x16.png"
+      "topdown_image_url": "/products/topdown/k1-nordictrack-x16.png",
+      "photo_image_url": "/products/photos/k1-nordictrack-x16.png"
     },
     {
       "id": "k1-nordictrack-rw900",
@@ -190,7 +196,8 @@
       ],
       "notes": "Magnetic + air resistance rower; 22-inch HD touchscreen; iFit-ready. Distributor stock at K1-Sport.",
       "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-nordictrack-rw900.png"
+      "topdown_image_url": "/products/topdown/k1-nordictrack-rw900.png",
+      "photo_image_url": "/products/photos/k1-nordictrack-rw900.png"
     },
     {
       "id": "k1-vision-t600-03",
@@ -217,7 +224,8 @@
       ],
       "notes": "Commercial-grade treadmill with vibration-isolation deck. Distributor stock at K1-Sport.",
       "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-vision-t600-03.png"
+      "topdown_image_url": "/products/topdown/k1-vision-t600-03.png",
+      "photo_image_url": "/products/photos/k1-vision-t600-03.jpg"
     },
     {
       "id": "k1-vision-t600e-02",
@@ -244,7 +252,8 @@
       ],
       "notes": "Top-of-line commercial treadmill with 22-inch entertainment screen. Distributor stock at K1-Sport.",
       "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-vision-t600e-02.png"
+      "topdown_image_url": "/products/topdown/k1-vision-t600e-02.png",
+      "photo_image_url": "/products/photos/k1-vision-t600e-02.jpg"
     },
     {
       "id": "k1-matrix-mg-glute",
@@ -271,7 +280,8 @@
       ],
       "notes": "Glute + hip-thrust strength station, plate-loaded. Commercial-grade. Distributor stock at K1-Sport.",
       "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-matrix-mg-glute.png"
+      "topdown_image_url": "/products/topdown/k1-matrix-mg-glute.png",
+      "photo_image_url": "/products/photos/k1-matrix-mg-glute.jpg"
     },
     {
       "id": "k1-matrix-versa-adabd",
@@ -298,7 +308,8 @@
       ],
       "notes": "Selectorised dual adductor/abductor station, weight-stack. Distributor stock at K1-Sport.",
       "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-matrix-versa-adabd.png"
+      "topdown_image_url": "/products/topdown/k1-matrix-versa-adabd.png",
+      "photo_image_url": "/products/photos/k1-matrix-versa-adabd.jpg"
     },
     {
       "id": "k1-vision-smith",
@@ -325,7 +336,8 @@
       ],
       "notes": "Fixed-path Smith machine; 90-degree movement track; counterbalanced bar. Distributor stock at K1-Sport.",
       "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-vision-smith.png"
+      "topdown_image_url": "/products/topdown/k1-vision-smith.png",
+      "photo_image_url": "/products/photos/k1-vision-smith.jpg"
     },
     {
       "id": "k1-bowflex-xtreme-2se",
@@ -352,7 +364,8 @@
       ],
       "notes": "Power-rod multi-station home gym; 70+ exercises. Distributor stock at K1-Sport.",
       "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-bowflex-xtreme-2se.png"
+      "topdown_image_url": "/products/topdown/k1-bowflex-xtreme-2se.png",
+      "photo_image_url": "/products/photos/k1-bowflex-xtreme-2se.png"
     },
     {
       "id": "k1-bench-adjustable-fid",
@@ -379,7 +392,8 @@
       ],
       "notes": "Multi-position weight bench (flat / incline / decline). Entry-price strength accessory. Distributor stock at K1-Sport.",
       "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-bench-adjustable-fid.png"
+      "topdown_image_url": "/products/topdown/k1-bench-adjustable-fid.png",
+      "photo_image_url": "/products/photos/k1-bench-adjustable-fid.jpg"
     },
     {
       "id": "k1-floor-eva-combat",
