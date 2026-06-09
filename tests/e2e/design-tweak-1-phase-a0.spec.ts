@@ -197,13 +197,14 @@ test.describe('Design Tweak 1 — Phase A surface checks', () => {
     if (!box) throw new Error('Stage not mounted');
     await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
 
-    // Clear moved into the TopBar (2026-06-01) — `data-testid="clear-room-button"`.
-    const clearBtn = page.getByTestId('clear-room-button');
+    // Clear moved to the canvas sticky ClearControls (2026-06-09). "Clear
+    // all" wipes products + room and is always visible on both viewports.
+    const clearBtn = page.getByTestId('clear-all-button');
     await expect(clearBtn).toBeVisible({ timeout: 10_000 });
     await clearBtn.click();
-    const modal = page.getByTestId('clear-confirm-modal');
+    const modal = page.getByTestId('clear-controls-modal');
     await expect(modal).toBeVisible();
-    const confirm = page.getByTestId('clear-confirm-yes');
+    const confirm = page.getByTestId('clear-controls-confirm');
     await confirm.click();
     await expect(modal).toBeHidden();
     // After CLEAR, the UNDO button is enabled so the Ctrl+Z restore works.

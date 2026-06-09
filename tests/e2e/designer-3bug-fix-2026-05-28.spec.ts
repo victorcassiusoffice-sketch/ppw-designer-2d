@@ -79,14 +79,15 @@ test('Bug 3 — Clear repaints the canvas (no ghost items)', async ({ page }) =>
   // Items must actually be painted on the layer canvas before we clear.
   await expect.poll(() => itemsLayerPixels(page)).toBeGreaterThan(0);
 
-  // Clear moved from the removed ModeStrip into the TopBar (2026-06-01).
-  const clearBtn = page.getByTestId('clear-room-button');
+  // Clear moved to the canvas sticky ClearControls (2026-06-09) — "Clear
+  // all" wipes products + room and is always visible.
+  const clearBtn = page.getByTestId('clear-all-button');
   test.skip(
     !(await clearBtn.isVisible({ timeout: 5000 }).catch(() => false)),
     'Clear button not present in this build',
   );
   await clearBtn.click();
-  await page.getByTestId('clear-confirm-yes').click();
+  await page.getByTestId('clear-controls-confirm').click();
 
   await expect(page.getByTestId('items-placed')).toHaveText('0');
   // The regression: state cleared but canvas still showed pixels. After the

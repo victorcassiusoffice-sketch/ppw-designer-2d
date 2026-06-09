@@ -105,33 +105,19 @@ for (const vp of [
 
     // Clear moved from the removed ModeStrip into the TopBar (2026-06-01).
     // Desktop: a visible "Clear" button in the toolbar. Mobile (<768px):
-    // the desktop button is hidden, so open the hamburger overflow menu and
-    // use the "Clear room" entry there.
-    const desktopClear = page.getByTestId('clear-room-button');
-    const isDesktopClearVisible = await desktopClear
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-    if (isDesktopClearVisible) {
-      await desktopClear.click();
-    } else {
-      const menuClear = page.getByTestId('clear-room-button-mobile');
-      const menuClearExists = (await menuClear.count()) > 0;
-      test.skip(!menuClearExists, 'Clear button not present in this build');
-      await page.getByRole('button', { name: /Open menu/i }).click();
-      await menuClear.click();
-    }
-    const modal = page.getByTestId('clear-confirm-modal');
+    // Clear is now two always-visible STICKY canvas buttons (2026-06-09,
+    // ClearControls). "Clear all" wipes the room + products + walls back to
+    // the blank-on-open canvas — the full reset this spec asserts. The
+    // button is visible on BOTH desktop and mobile (no hamburger needed).
+    const clearAll = page.getByTestId('clear-all-button');
+    const clearAllExists = (await clearAll.count()) > 0;
+    test.skip(!clearAllExists, 'Build predates the sticky ClearControls');
+    await clearAll.click();
+
+    const modal = page.getByTestId('clear-controls-modal');
     await expect(modal).toBeVisible();
 
-    // Gate the full-reset assertion on the NEW copy so this spec skips
-    // gracefully against a pre-fix deploy and gates it once shipped.
-    const modalText = await modal.innerText();
-    test.skip(
-      !/products,\s*walls,\s*floors/i.test(modalText),
-      'Build predates the full-reset Clear fix',
-    );
-
-    await page.getByTestId('clear-confirm-yes').click();
+    await page.getByTestId('clear-controls-confirm').click();
     await expect(modal).toBeHidden();
     await page.waitForTimeout(400);
 

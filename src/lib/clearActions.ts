@@ -40,3 +40,40 @@ export function clearActiveRoomContents(): void {
     endDrawTransaction();
   }
 }
+
+/**
+ * "Clear products" (2026-06-09, Vic) — remove ONLY the placed products
+ * from the active room. The drawn room is KEPT: polygon/dimensions, walls,
+ * floor zones and wall paint all stay. One undoable frame (Ctrl+Z restores
+ * the products).
+ */
+export function clearActiveRoomProducts(): void {
+  beginDrawTransaction('clear products');
+  try {
+    usePropertyStore.getState().clearActiveRoomItems();
+  } finally {
+    endDrawTransaction();
+  }
+}
+
+/**
+ * "Clear all" (2026-06-09, Vic) — wipe the ENTIRE design back to the
+ * fresh blank-on-open state: the room itself (polygon), all placed
+ * products, and the global walls / floor zones / wall treatments. After
+ * this the canvas is blank and the start-state "draw your room" prompt
+ * shows again. One undoable frame (Ctrl+Z restores everything).
+ *
+ * `resetToDefault()` re-seeds a single EMPTY room (no polygon) — see
+ * `makeBlankRoom` in propertyStore — which is exactly the on-open state.
+ */
+export function clearEntireDesign(): void {
+  beginDrawTransaction('clear all');
+  try {
+    useWallStore.getState().clearWalls();
+    useFloorZoneStore.getState().clearZones();
+    useWallTreatmentStore.getState().clearTreatments();
+    usePropertyStore.getState().resetToDefault();
+  } finally {
+    endDrawTransaction();
+  }
+}
