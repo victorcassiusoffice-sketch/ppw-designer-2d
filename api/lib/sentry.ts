@@ -86,6 +86,28 @@ export function captureMessage(msg: string, level: Sentry.SeverityLevel = 'info'
 }
 
 /**
+ * Canonical server-side error-capture entry point for the API layer.
+ *
+ * Captures an unhandled 5xx error THEN flushes before the serverless function
+ * returns/freezes — the two halves that the capture-PDF 500 incident proved
+ * must always travel together (capture without flush = the frozen lambda drops
+ * the event; tracker row `sentry-server-errors-uncaptured`). The catch-all
+ * routers' central error path (`withSentry`) calls this before re-surfacing the
+ * 500, so every prod 5xx — capture-PDF included — becomes observable.
+ *
+ * No-op + zero network when `SENTRY_DSN` is unset: `captureException` returns
+ * early (Sentry inert) and `flushSentry` short-circuits on `!initialised`.
+ */
+export async function captureServerError(
+  err: unknown,
+  context?: Record<string, unknown>,
+  flushTimeoutMs = 2000,
+): Promise<void> {
+  captureException(err, context);
+  await flushSentry(flushTimeoutMs);
+}
+
+/**
  * Wrap a Vercel handler so any thrown error is reported to Sentry
  * before propagating. The wrapper deliberately re-throws so Vercel
  * preserves the 500 status + the stack trace in its own logs.
@@ -103,13 +125,14 @@ export function withSentry<Q extends MinimalReq, S extends MinimalRes>(handler: 
     try {
       await handler(req, res);
     } catch (err) {
-      captureException(err, {
+      // Central server error path for every catch-all router (merchants /
+      // admin / paypal / cron all wrap through here). captureServerError
+      // captures AND flushes before we re-throw — bounded so a slow Sentry
+      // never hangs the 500 response, no-op when SENTRY_DSN is absent.
+      await captureServerError(err, {
         url: req.url,
         method: req.method,
       });
-      // Serverless: flush before re-throwing or the frozen lambda drops
-      // the event. Bounded so a slow Sentry never hangs the 500 response.
-      await flushSentry(2000);
       // Re-throw so Vercel logs + returns its default 500.
       throw err;
     }
