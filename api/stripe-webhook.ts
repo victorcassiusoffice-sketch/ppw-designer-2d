@@ -12,19 +12,21 @@
  *   1. Read raw body (we DISABLE Vercel body parsing — Stripe needs the
  *      exact bytes to verify the signature).
  *   2. Verify with `stripe.webhooks.constructEvent`.
- *   3. Dedupe via in-memory Set of event ids — Phase 2 swaps this for
- *      a Vercel KV (Upstash Redis) so multiple lambda instances dedupe
- *      coherently.
+ *   3. Dedupe durably via the `webhook_events` unique (source, event_id)
+ *      constraint (`recordWebhookEvent`, same path as the PayPal webhook)
+ *      so multiple lambda instances dedupe coherently. An in-memory Set
+ *      remains only as a fallback if the DB is transiently unreachable.
  *   4. Branch on event type. Email sends are awaited (we WANT them to
  *      finish before returning 200 — Phase 2 can swap to background
  *      function queue if latency matters).
  *   5. Return 200 fast on success, 4xx on bad signature, 5xx otherwise.
  *
- * Idempotency note: an in-memory Set works on a SINGLE warm lambda
- * instance. Vercel may spin up multiple — duplicates will slip through.
- * The customer won't be charged twice (Stripe handles that), but they
- * could receive duplicate emails. Phase 2 = KV-backed Set keyed on
- * Stripe event id.
+ * Idempotency note: dedupe is durable + multi-instance-safe via the
+ * `webhook_events` table's unique (source, event_id) constraint (P2-6).
+ * The in-memory Set below is a degraded fallback used only when that DB
+ * write throws (transient outage) — it works on a single warm lambda, so
+ * in that rare window Vercel-spun duplicates could re-send an email
+ * (Stripe still guarantees no double-charge). Steady state: DB-backed.
  */
 
 import Stripe from 'stripe';
@@ -45,7 +47,7 @@ export const config = {
 
 const STRIPE_API_VERSION = '2025-02-24.acacia' as const;
 
-/** In-memory dedupe set. Cleared on cold start — Phase 2 = KV. */
+/** In-memory dedupe set — degraded fallback only (steady state = DB `webhook_events`). */
 const PROCESSED_EVENTS = new Set<string>();
 const MAX_PROCESSED = 1000;
 
