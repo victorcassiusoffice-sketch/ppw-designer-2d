@@ -14,6 +14,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { assessBlur, type BlurVerdict } from '../../lib/capture/blurDetection';
+import { describeError, type CaptureErrorKind } from '../../lib/capture/captureFsm';
 
 const A4_ASPECT = 210 / 297; // portrait
 
@@ -28,11 +29,20 @@ export interface CapturedFrame {
   blur: BlurVerdict;
 }
 
+export interface CameraStageGuidance {
+  /** Short slot label, e.g. "Side photo". */
+  label: string;
+  /** One-line instruction shown above the shutter for this shot. */
+  instruction: string;
+}
+
 export interface CameraStageProps {
   /** Called with the captured frame after a successful shutter. */
   onCapture: (frame: CapturedFrame) => void;
   /** Called when the user closes the camera before shooting. */
   onCancel: () => void;
+  /** Per-shot guidance (front/side/back) rendered as an overlay banner. */
+  guidance?: CameraStageGuidance;
   /** Target capture width — defaults to 1920 per spec. */
   targetWidth?: number;
   /** Blur threshold override (Laplacian variance) — defaults to 100. */
@@ -41,15 +51,33 @@ export interface CameraStageProps {
   __testStream?: MediaStream;
 }
 
+/** Map a getUserMedia rejection to a recover-able error kind. */
+function classifyCameraError(err: unknown): CaptureErrorKind {
+  const name = err instanceof Error ? err.name : '';
+  if (name === 'NotFoundError' || name === 'NotReadableError' || name === 'OverconstrainedError') {
+    return 'camera-unavailable';
+  }
+  return 'camera-denied';
+}
+
 export function CameraStage(props: CameraStageProps): JSX.Element {
-  const { onCapture, onCancel, targetWidth = 1920, blurThreshold = 100 } = props;
+  const { onCapture, onCancel, guidance, targetWidth = 1920, blurThreshold = 100 } = props;
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<CaptureErrorKind | null>(null);
   const [busy, setBusy] = useState<boolean>(false);
+  const [retryKey, setRetryKey] = useState<number>(0);
   const [permissionState, setPermissionState] = useState<'idle' | 'pending' | 'granted' | 'denied'>('idle');
 
-  // Mount: request the camera stream.
+  // Re-acquire the camera. Bumping retryKey re-runs the effect below — the
+  // recover action when permission was denied or the device had no camera.
+  const retryCamera = useCallback(() => {
+    setErrorKind(null);
+    setPermissionState('idle');
+    setRetryKey((k) => k + 1);
+  }, []);
+
+  // Mount (and every retry): request the camera stream.
   useEffect(() => {
     let cancelled = false;
 
@@ -63,7 +91,8 @@ export function CameraStage(props: CameraStageProps): JSX.Element {
         return;
       }
       if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-        setError('getUserMedia is not available in this browser.');
+        setPermissionState('denied');
+        setErrorKind('camera-unavailable');
         return;
       }
       setPermissionState('pending');
@@ -83,7 +112,7 @@ export function CameraStage(props: CameraStageProps): JSX.Element {
         setPermissionState('granted');
       } catch (err) {
         setPermissionState('denied');
-        setError(err instanceof Error ? err.message : 'Camera permission denied.');
+        setErrorKind(classifyCameraError(err));
       }
     }
 
@@ -94,7 +123,7 @@ export function CameraStage(props: CameraStageProps): JSX.Element {
       if (stream) stream.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     };
-  }, [targetWidth, props.__testStream]);
+  }, [targetWidth, props.__testStream, retryKey]);
 
   const handleShutter = useCallback(async () => {
     if (busy || !videoRef.current || !streamRef.current) return;
@@ -126,8 +155,8 @@ export function CameraStage(props: CameraStageProps): JSX.Element {
       }
 
       onCapture({ blob, widthPx: w, heightPx: h, blur });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'capture failed');
+    } catch {
+      setErrorKind('capture-failed');
     } finally {
       setBusy(false);
     }
@@ -182,14 +211,69 @@ export function CameraStage(props: CameraStageProps): JSX.Element {
         />
       ))}
 
+      {/* Per-shot guidance banner (front/side/back). */}
+      {guidance && !errorKind && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            padding: '10px 16px',
+            background: 'rgba(14, 14, 16, 0.55)',
+            color: '#F5EFE6',
+            fontSize: 12,
+            lineHeight: 1.4,
+          }}
+        >
+          <strong style={{ display: 'block', fontSize: 13 }}>{guidance.label}</strong>
+          {guidance.instruction}
+        </div>
+      )}
+
       {permissionState === 'pending' && (
         <div role="status" style={overlayCentre()}>
           Requesting camera permission…
         </div>
       )}
-      {error && (
-        <div role="alert" style={overlayCentre()}>
-          {error}
+      {errorKind && (
+        <div role="alert" style={{ ...overlayCentre(), flexDirection: 'column', gap: 12 }}>
+          <div>
+            <strong style={{ display: 'block', marginBottom: 6 }}>
+              {describeError(errorKind).title}
+            </strong>
+            <span style={{ fontSize: 13, opacity: 0.9 }}>{describeError(errorKind).body}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button
+              type="button"
+              onClick={retryCamera}
+              style={{
+                background: '#C0A67E',
+                color: '#0E0E10',
+                border: '1px solid #C0A67E',
+                borderRadius: 6,
+                padding: '8px 16px',
+                cursor: 'pointer',
+              }}
+            >
+              {describeError(errorKind).actions[0]?.label ?? 'Try again'}
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              style={{
+                background: 'transparent',
+                color: '#F5EFE6',
+                border: '1px solid #F5EFE6',
+                borderRadius: 6,
+                padding: '8px 16px',
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
 

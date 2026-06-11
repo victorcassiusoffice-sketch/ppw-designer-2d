@@ -22,18 +22,31 @@ import { useState } from 'react';
 import { uploadCaptureBlob, UploadBlobError } from '../../lib/capture/uploadBlob';
 import type { CapturedFrame } from './CameraStage';
 import type { ScaleFromMarkerOutput } from '../../lib/capture/scaleFromMarker';
+import { describeError } from '../../lib/capture/captureFsm';
 
 export interface ReviewSubmitProps {
   merchantSlug: string;
   merchantId: number;
   frontFrame: CapturedFrame;
   frontFrameUrl: string;
+  /** Optional extra shots captured in the ShotSet step. */
+  sideFrame?: CapturedFrame | null;
+  sideFrameUrl?: string | null;
+  backFrame?: CapturedFrame | null;
+  backFrameUrl?: string | null;
   calibration: ScaleFromMarkerOutput;
   dimensions: {
     dimensionsMm: { width: number; depth: number; height: number };
     typedVsMeasured: { deltaPct: number; flagged: boolean; overrideReason?: string };
   };
+  /**
+   * When set, Submit is disabled and this reason is shown — the reconcile
+   * gate (front + calibration + dimensions must all be present). The modal
+   * computes it via `submitBlockedReason`; null/undefined ⇒ ready.
+   */
+  blockedReason?: string | null;
   onComplete: (scaleLockId: string) => void;
+  /** Route back to the shot-set step to retake/add shots. */
   onBack: () => void;
   onCancel: () => void;
   /** Test injector for fetch. */
@@ -49,8 +62,36 @@ type SubmitState =
 
 export function ReviewSubmit(props: ReviewSubmitProps): JSX.Element {
   const [state, setState] = useState<SubmitState>({ kind: 'idle' });
+  /** Non-fatal note when an OPTIONAL side/back shot failed to upload. */
+  const [optionalWarning, setOptionalWarning] = useState<string | null>(null);
+
+  /** Best-effort upload for an optional side/back shot — never fatal. */
+  async function uploadOptional(
+    slot: 'side' | 'back',
+    frame: CapturedFrame,
+  ): Promise<{ blobUrl: string } | null> {
+    try {
+      const upload = await uploadCaptureBlob({
+        merchantSlug: props.merchantSlug,
+        file: frame.blob,
+        filename: `${slot}-${Date.now()}.webp`,
+        contentType: 'image/webp',
+        slot,
+        deps: props.__testFetch ? { fetch: props.__testFetch } : undefined,
+      });
+      return { blobUrl: upload.blobUrl };
+    } catch {
+      // Optional shot — record a warning, do not block the submit.
+      setOptionalWarning(
+        `The ${slot} photo couldn't be uploaded and was left off — your listing still went through.`,
+      );
+      return null;
+    }
+  }
 
   async function handleSubmit(): Promise<void> {
+    if (props.blockedReason) return;
+    setOptionalWarning(null);
     setState({ kind: 'uploading' });
     let blobKey: string;
     let blobUrl: string;
@@ -72,6 +113,11 @@ export function ReviewSubmit(props: ReviewSubmitProps): JSX.Element {
       return;
     }
 
+    // Optional shots — uploaded after the (fatal) front shot. A failure
+    // here only drops that one photo; the listing still submits.
+    const photoSide = props.sideFrame ? await uploadOptional('side', props.sideFrame) : null;
+    const photoBack = props.backFrame ? await uploadOptional('back', props.backFrame) : null;
+
     // Mint scaleLockId on the server; client sends a placeholder UUID
     // so the Zod CapturePacketSchema accepts the shape. The server
     // ignores client-supplied scaleLockId — calibrateHandler always
@@ -89,6 +135,8 @@ export function ReviewSubmit(props: ReviewSubmitProps): JSX.Element {
         alphaClean: false,
         silhouette_bbox_px: props.calibration.silhouette_bbox_px,
       },
+      ...(photoSide ? { photoSide } : {}),
+      ...(photoBack ? { photoBack } : {}),
       dimensionsMm: props.dimensions.dimensionsMm,
       typedVsMeasured: props.dimensions.typedVsMeasured,
     };
@@ -125,25 +173,39 @@ export function ReviewSubmit(props: ReviewSubmitProps): JSX.Element {
 
   const dimText = `${props.dimensions.dimensionsMm.width} × ${props.dimensions.dimensionsMm.depth} × ${props.dimensions.dimensionsMm.height} mm`;
 
+  const shots: { label: string; url: string }[] = [
+    { label: 'Front', url: props.frontFrameUrl },
+    ...(props.sideFrame && props.sideFrameUrl ? [{ label: 'Side', url: props.sideFrameUrl }] : []),
+    ...(props.backFrame && props.backFrameUrl ? [{ label: 'Back', url: props.backFrameUrl }] : []),
+  ];
+
   return (
     <div>
       <h2 style={{ margin: '0 0 8px', fontSize: 20 }}>Review &amp; submit</h2>
       <p style={{ margin: '0 0 16px', fontSize: 13, color: 'rgba(14,14,16,0.7)' }}>
-        Confirm the captured photo + measurements before we mint the scale-lock.
+        Confirm your {shots.length === 1 ? 'photo' : `${shots.length} photos`} + measurements,
+        or go back to retake, before we mint the scale-lock.
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-        <div
-          style={{
-            aspectRatio: '210 / 297',
-            backgroundImage: `url("${props.frontFrameUrl}")`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            borderRadius: 8,
-            border: '1px solid rgba(14,14,16,0.15)',
-          }}
-          aria-label="Captured photo preview"
-        />
+        <div style={{ display: 'flex', gap: 8 }} aria-label="Captured photos preview">
+          {shots.map((s) => (
+            <div key={s.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div
+                style={{
+                  aspectRatio: '210 / 297',
+                  backgroundImage: `url("${s.url}")`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  borderRadius: 8,
+                  border: '1px solid rgba(14,14,16,0.15)',
+                }}
+                aria-label={`${s.label} photo`}
+              />
+              <span style={{ fontSize: 10, textAlign: 'center', color: 'rgba(14,14,16,0.6)' }}>{s.label}</span>
+            </div>
+          ))}
+        </div>
         <dl style={{ margin: 0, fontSize: 13 }}>
           <Row k="Dimensions" v={dimText} />
           <Row k="Pixels/mm" v={props.calibration.pixelsPerMm.toFixed(3)} />
@@ -161,22 +223,35 @@ export function ReviewSubmit(props: ReviewSubmitProps): JSX.Element {
           ✓ Scale-lock minted: <code style={{ fontSize: 11 }}>{state.scaleLockId}</code>
         </div>
       )}
+      {optionalWarning && state.kind !== 'error' && (
+        <div role="status" style={warningStyle()}>{optionalWarning}</div>
+      )}
       {state.kind === 'error' && (
         <div role="alert" style={errorStyle()}>
-          {state.phase === 'upload' ? 'Upload error: ' : 'Calibrate error: '}
+          <strong style={{ display: 'block' }}>
+            {describeError(state.phase === 'upload' ? 'upload-failed' : 'calibrate-failed').title}
+          </strong>
           {state.message}
         </div>
+      )}
+      {props.blockedReason && state.kind === 'idle' && (
+        <div role="alert" style={warningStyle()}>{props.blockedReason}</div>
       )}
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
         {state.kind !== 'success' && (
           <>
-            <button type="button" onClick={props.onBack} style={btn('ghost')}>Back</button>
+            <button type="button" onClick={props.onBack} style={btn('ghost')}>Edit shots</button>
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={state.kind === 'uploading' || state.kind === 'calibrating'}
+              disabled={
+                state.kind === 'uploading'
+                || state.kind === 'calibrating'
+                || Boolean(props.blockedReason)
+              }
               style={btn('primary')}
+              aria-disabled={Boolean(props.blockedReason)}
             >
               {state.kind === 'uploading' ? 'Uploading…'
                 : state.kind === 'calibrating' ? 'Minting scale-lock…'
@@ -229,6 +304,17 @@ function errorStyle(): React.CSSProperties {
     background: 'rgba(255, 80, 80, 0.1)',
     border: '1px solid rgba(255, 80, 80, 0.5)',
     color: '#7a1a1a',
+    padding: 10,
+    borderRadius: 6,
+    fontSize: 13,
+    marginBottom: 16,
+  };
+}
+function warningStyle(): React.CSSProperties {
+  return {
+    background: 'rgba(192,166,126,0.18)',
+    border: '1px solid rgba(192,166,126,0.6)',
+    color: '#5c4a25',
     padding: 10,
     borderRadius: 6,
     fontSize: 13,

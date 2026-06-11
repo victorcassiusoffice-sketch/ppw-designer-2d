@@ -1,27 +1,36 @@
 /**
- * Sims-Parity DT-05 — CaptureModal scaffold.
+ * Sims-Parity DT-05 — CaptureModal (capture-flow FSM).
  *
- * Six-step state machine harness that downstream DTs hang their own
- * step implementations on:
+ * The merchant onboarding capture journey. `p1-capture-flow-finish` turned
+ * this from a happy-path front-only stub into a finished flow:
  *
- *   1. prepare      — DT-02 PDF print instructions
- *   2. camera       — DT-05 CameraStage (this DT)
- *   3. calibrate    — DT-06 CornerCalibration
- *   4. dimensions   — DT-07 DimensionForm
- *   5. side+back    — DT-08 optional second/third shots
- *   6. review       — DT-08 ReviewSubmit → POST /calibrate
+ *   1. prepare      — print + open the A4 reference PDF (with a fetch-error
+ *                     recover path; the PDF route used to 500 silently)
+ *   2. camera       — capture the calibrated FRONT shot (CameraStage)
+ *   3. calibrate    — corner-tap the printed page (CornerCalibration)
+ *   4. dimensions   — type W×D×H vs measured (DimensionForm)
+ *   5. shots        — optional SIDE + BACK photos, retake/remove (ShotSet)
+ *   6. review       — reconcile every shot + measurement, submit gated
+ *                     until the required set is complete (ReviewSubmit)
  *
- * The modal renders the Camera step today + step-strip nav. Step
- * 3-6 render placeholder panels until their owning DTs land. The
- * top-level state machine is fully wired so each step can move
- * forward by emitting its data.
+ * The state machine + gating + error catalogue live in the pure
+ * `lib/capture/captureFsm` module so they are deterministically testable.
  */
 
 import { useEffect, useMemo, useState } from 'react';
 import { CameraStage, type CapturedFrame } from './CameraStage';
 import { CornerCalibration } from './CornerCalibration';
 import { DimensionForm } from './DimensionForm';
+import { ShotSet } from './ShotSet';
 import { ReviewSubmit } from './ReviewSubmit';
+import {
+  STEP_ORDER,
+  nextStep,
+  shotGuidance,
+  submitBlockedReason,
+  describeError,
+  type CaptureStep,
+} from '../../lib/capture/captureFsm';
 import type { ScaleFromMarkerOutput } from '../../lib/capture/scaleFromMarker';
 
 export interface DimensionResult {
@@ -29,9 +38,9 @@ export interface DimensionResult {
   typedVsMeasured: { deltaPct: number; flagged: boolean; overrideReason?: string };
 }
 
-export type CaptureStep = 'prepare' | 'camera' | 'calibrate' | 'dimensions' | 'side-back' | 'review';
+export type { CaptureStep };
 
-const STEP_ORDER: CaptureStep[] = ['prepare', 'camera', 'calibrate', 'dimensions', 'side-back', 'review'];
+const REFERENCE_PDF_URL = '/api/capture/reference-page.pdf';
 
 export interface CaptureModalProps {
   merchantSlug: string;
@@ -44,27 +53,50 @@ export interface CaptureModalProps {
   initialStep?: CaptureStep;
   /** Optional test stream for the CameraStage. */
   __testStream?: MediaStream;
+  /** fetch injector — used for the prepare-step PDF reachability check. */
+  __testFetch?: typeof globalThis.fetch;
 }
 
 export function CaptureModal(props: CaptureModalProps): JSX.Element {
   const [step, setStep] = useState<CaptureStep>(props.initialStep ?? 'prepare');
   const [frontFrame, setFrontFrame] = useState<CapturedFrame | null>(null);
+  const [sideFrame, setSideFrame] = useState<CapturedFrame | null>(null);
+  const [backFrame, setBackFrame] = useState<CapturedFrame | null>(null);
   const [calibration, setCalibration] = useState<ScaleFromMarkerOutput | null>(null);
   const [dimensions, setDimensions] = useState<DimensionResult | null>(null);
 
-  // Build + revoke object URL for the captured photo.
-  const frameUrl = useMemo(() => {
-    if (!frontFrame) return null;
-    return URL.createObjectURL(frontFrame.blob);
-  }, [frontFrame]);
-  useEffect(() => () => {
-    if (frameUrl) URL.revokeObjectURL(frameUrl);
-  }, [frameUrl]);
+  const frameUrl = useObjectUrl(frontFrame);
+  const sideUrl = useObjectUrl(sideFrame);
+  const backUrl = useObjectUrl(backFrame);
 
   function advance(): void {
-    const idx = STEP_ORDER.indexOf(step);
-    if (idx < STEP_ORDER.length - 1) setStep(STEP_ORDER[idx + 1]);
+    setStep((s) => nextStep(s));
   }
+
+  function captureOptional(slot: 'side' | 'back', frame: CapturedFrame): void {
+    if (slot === 'side') setSideFrame(frame);
+    else setBackFrame(frame);
+  }
+  function removeOptional(slot: 'side' | 'back'): void {
+    if (slot === 'side') setSideFrame(null);
+    else setBackFrame(null);
+  }
+
+  // Retaking the FRONT shot invalidates the calibration + dimensions
+  // derived from it — clear them and walk back to the camera step. Side
+  // and back shots are kept.
+  function retakeFront(): void {
+    setCalibration(null);
+    setDimensions(null);
+    setFrontFrame(null);
+    setStep('camera');
+  }
+
+  const blockedReason = submitBlockedReason({
+    hasFront: Boolean(frontFrame),
+    hasCalibration: Boolean(calibration),
+    hasDimensions: Boolean(dimensions),
+  });
 
   return (
     <div
@@ -94,35 +126,26 @@ export function CaptureModal(props: CaptureModalProps): JSX.Element {
         <StepStrip current={step} />
 
         {step === 'prepare' && (
-          <Panel
-            title="Print the A4 reference page"
-            body="Download and print the PDF at 100% scale. Lay it flat next to your product."
-            primaryLabel="I've printed it"
-            onPrimary={advance}
-            secondaryLabel="Cancel"
-            onSecondary={props.onClose}
-            extra={
-              <a
-                href="/api/capture/reference-page.pdf"
-                target="_blank"
-                rel="noreferrer"
-                style={{ color: '#C0A67E', textDecoration: 'underline' }}
-              >
-                Open reference PDF (new tab)
-              </a>
-            }
+          <PrepareStep
+            onContinue={advance}
+            onCancel={props.onClose}
+            __testFetch={props.__testFetch}
           />
         )}
 
         {step === 'camera' && (
-          <CameraStage
-            onCapture={(frame) => {
-              setFrontFrame(frame);
-              advance();
-            }}
-            onCancel={props.onClose}
-            __testStream={props.__testStream}
-          />
+          <div>
+            <ShotIntro slot="front" />
+            <CameraStage
+              guidance={{ label: shotGuidance('front').label, instruction: shotGuidance('front').instruction }}
+              onCapture={(frame) => {
+                setFrontFrame(frame);
+                advance();
+              }}
+              onCancel={props.onClose}
+              __testStream={props.__testStream}
+            />
+          </div>
         )}
 
         {step === 'calibrate' && frontFrame && frameUrl && (
@@ -168,18 +191,33 @@ export function CaptureModal(props: CaptureModalProps): JSX.Element {
             } : undefined}
             onConfirm={(out) => { setDimensions(out); advance(); }}
             onBack={() => setStep('calibrate')}
-            onRetake={() => setStep('camera')}
+            onRetake={retakeFront}
           />
         )}
 
-        {step === 'side-back' && (
+        {step === 'shots' && frontFrame && frameUrl && (
+          <ShotSet
+            frontFrameUrl={frameUrl}
+            side={sideFrame}
+            sideUrl={sideUrl}
+            back={backFrame}
+            backUrl={backUrl}
+            onCapture={captureOptional}
+            onRemove={removeOptional}
+            onRetakeFront={retakeFront}
+            onContinue={advance}
+            onBack={() => setStep('dimensions')}
+            __testStream={props.__testStream}
+          />
+        )}
+        {step === 'shots' && (!frontFrame || !frameUrl) && (
           <Panel
-            title="Extra photos (optional)"
-            body="The front photo and measurements above are all we need to list your product. You can add side and back photos later from the product page — skip ahead to review and submit now."
-            primaryLabel="Continue to review"
-            onPrimary={advance}
-            secondaryLabel="Back"
-            onSecondary={() => setStep('dimensions')}
+            title="Capture the front photo first"
+            body="Return to the camera step to take the front shot."
+            primaryLabel="Back to camera"
+            onPrimary={() => setStep('camera')}
+            secondaryLabel="Cancel"
+            onSecondary={props.onClose}
           />
         )}
 
@@ -189,21 +227,26 @@ export function CaptureModal(props: CaptureModalProps): JSX.Element {
             merchantId={props.merchantId}
             frontFrame={frontFrame}
             frontFrameUrl={frameUrl}
+            sideFrame={sideFrame}
+            sideFrameUrl={sideUrl}
+            backFrame={backFrame}
+            backFrameUrl={backUrl}
             calibration={calibration}
             dimensions={dimensions}
+            blockedReason={blockedReason}
             onComplete={(scaleLockId) => {
               props.onComplete?.(scaleLockId);
               props.onClose();
             }}
-            onBack={() => setStep('side-back')}
+            onBack={() => setStep('shots')}
             onCancel={props.onClose}
           />
         )}
         {step === 'review' && (!frontFrame || !calibration || !dimensions) && (
           <Panel
             title="Missing capture data"
-            body="Return to an earlier step."
-            primaryLabel="Restart"
+            body="Return to an earlier step to finish the required photo + measurements."
+            primaryLabel="Back to start"
             onPrimary={() => setStep('prepare')}
             secondaryLabel="Cancel"
             onSecondary={props.onClose}
@@ -211,6 +254,104 @@ export function CaptureModal(props: CaptureModalProps): JSX.Element {
         )}
       </div>
     </div>
+  );
+}
+
+/** Build + revoke an object URL for a captured frame's blob. */
+function useObjectUrl(frame: CapturedFrame | null): string | null {
+  const url = useMemo(() => {
+    if (!frame) return null;
+    if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') return null;
+    return URL.createObjectURL(frame.blob);
+  }, [frame]);
+  useEffect(() => () => {
+    if (url && typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+      URL.revokeObjectURL(url);
+    }
+  }, [url]);
+  return url;
+}
+
+/** Step 1 — print/open the A4 reference page, with a fetch-failure recover path. */
+function PrepareStep(props: {
+  onContinue: () => void;
+  onCancel: () => void;
+  __testFetch?: typeof globalThis.fetch;
+}): JSX.Element {
+  const [pdfState, setPdfState] = useState<'idle' | 'loading' | 'error'>('idle');
+
+  async function openReferencePdf(): Promise<void> {
+    setPdfState('loading');
+    try {
+      const fetchImpl = props.__testFetch ?? globalThis.fetch;
+      const res = await fetchImpl(REFERENCE_PDF_URL);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      if (!blob || blob.size === 0) throw new Error('empty PDF');
+      if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
+          && typeof window !== 'undefined' && typeof window.open === 'function') {
+        const objectUrl = URL.createObjectURL(blob);
+        window.open(objectUrl, '_blank', 'noopener');
+      }
+      setPdfState('idle');
+    } catch {
+      setPdfState('error');
+    }
+  }
+
+  if (pdfState === 'error') {
+    const err = describeError('pdf-unreachable');
+    return (
+      <div role="alert">
+        <h2 style={{ margin: '0 0 8px', fontSize: 22 }}>{err.title}</h2>
+        <p style={{ margin: '0 0 16px', fontSize: 14, color: 'rgba(14,14,16,0.7)' }}>{err.body}</p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+          <button type="button" onClick={props.onCancel} style={{ ...ctaBtn('ghost'), marginRight: 'auto' }}>
+            Cancel
+          </button>
+          <button type="button" onClick={() => void openReferencePdf()} style={ctaBtn('ghost')}>
+            Retry
+          </button>
+          <button type="button" onClick={props.onContinue} style={ctaBtn('primary')}>
+            I already printed it
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h2 style={{ margin: '0 0 8px', fontSize: 22 }}>Print the A4 reference page</h2>
+      <p style={{ margin: '0 0 16px', fontSize: 14, color: 'rgba(14,14,16,0.7)' }}>
+        Download and print the PDF at 100% scale. Lay it flat next to your product.
+      </p>
+      <div style={{ marginBottom: 16 }}>
+        <button
+          type="button"
+          onClick={() => void openReferencePdf()}
+          disabled={pdfState === 'loading'}
+          style={ctaBtn('ghost')}
+        >
+          {pdfState === 'loading' ? 'Opening…' : 'Open reference PDF'}
+        </button>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+        <button type="button" onClick={props.onCancel} style={ctaBtn('ghost')}>Cancel</button>
+        <button type="button" onClick={props.onContinue} style={ctaBtn('primary')}>I've printed it</button>
+      </div>
+    </div>
+  );
+}
+
+/** Tiny per-shot heading shown above the front CameraStage. */
+function ShotIntro({ slot }: { slot: 'front' | 'side' | 'back' }): JSX.Element {
+  const g = shotGuidance(slot);
+  return (
+    <h2 style={{ margin: '0 0 12px', fontSize: 18 }}>
+      {g.label}
+      {g.optional ? <span style={{ color: 'rgba(14,14,16,0.5)', fontWeight: 400 }}> · optional</span> : null}
+    </h2>
   );
 }
 
@@ -267,34 +408,26 @@ function Panel({
       <p style={{ margin: '0 0 16px', fontSize: 14, color: 'rgba(14,14,16,0.7)' }}>{body}</p>
       {extra && <div style={{ marginBottom: 16 }}>{extra}</div>}
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-        <button
-          type="button"
-          onClick={onSecondary}
-          style={{
-            background: 'transparent',
-            border: '1px solid #0E0E10',
-            padding: '8px 14px',
-            borderRadius: 6,
-            cursor: 'pointer',
-          }}
-        >
+        <button type="button" onClick={onSecondary} style={ctaBtn('ghost')}>
           {secondaryLabel}
         </button>
-        <button
-          type="button"
-          onClick={onPrimary}
-          style={{
-            background: '#C0A67E',
-            color: '#0E0E10',
-            border: '1px solid #C0A67E',
-            padding: '8px 14px',
-            borderRadius: 6,
-            cursor: 'pointer',
-          }}
-        >
+        <button type="button" onClick={onPrimary} style={ctaBtn('primary')}>
           {primaryLabel}
         </button>
       </div>
     </div>
   );
+}
+
+function ctaBtn(variant: 'primary' | 'ghost'): React.CSSProperties {
+  const base: React.CSSProperties = {
+    padding: '8px 14px',
+    borderRadius: 6,
+    cursor: 'pointer',
+    border: '1px solid #0E0E10',
+    background: 'transparent',
+    color: '#0E0E10',
+  };
+  if (variant === 'primary') return { ...base, background: '#C0A67E', borderColor: '#C0A67E' };
+  return base;
 }
