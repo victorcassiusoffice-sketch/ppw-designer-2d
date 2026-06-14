@@ -18,6 +18,7 @@ import { drizzleMerchantStore } from '../../../db/merchantStore.js';
 import { authoriseAdminWithLive } from '../../adminAuth.js';
 import { getDb, schema } from '../../../db/client.js';
 import { and, desc, eq, sql, type SQL } from 'drizzle-orm';
+import { fetchAdminLedgerSummary } from '../../payouts/ledger.js';
 
 interface MinimalReq {
   method?: string;
@@ -156,10 +157,13 @@ export async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
     if (result.schemaMissing) {
       res.setHeader('X-Schema-Missing', 'payout_queue');
     }
+    // Phase 5 — additive platform commission summary (gross/commission/net).
+    const commissionSummary = result.schemaMissing ? null : await fetchAdminLedgerSummary();
     res.status(200);
     res.json({
       admin: { email: auth.admin.email, role: auth.admin.role },
       filters,
+      commissionSummary,
       ...result,
     });
   } catch (err) {

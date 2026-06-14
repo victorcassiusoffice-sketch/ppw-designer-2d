@@ -31,7 +31,11 @@ import { handler as signUploadHandler } from './lib/capture/signUpload.js';
 import { handler as calibrateHandler } from './lib/capture/calibrateHandler.js';
 import { handler as uploadProductImageHandler } from './lib/merchants/uploadProductImage.js';
 import { calcDispatch } from './lib/calc/paintCalcHandler.js';
+import { handleMerchantOnboarding } from './lib/merchants/onboardingHandler.js';
 import { withSentry } from './lib/sentry.js';
+
+/** Phase 5 — merchant-scoped onboarding/payout actions folded here. */
+const ONBOARDING_ACTIONS = new Set(['onboarding', 'kyc-lite', 'go-live', 'payouts']);
 
 interface MinimalReq {
   method?: string;
@@ -154,6 +158,26 @@ async function rootHandler(req: MinimalReq, res: MinimalRes): Promise<void> {
   ) {
     const slug = segments[1];
     return uploadProductImageHandler(slug, req, res);
+  }
+
+  // Phase 5 — POST /api/merchants/:slug/products/bulk (self-serve bulk catalog upload)
+  if (
+    segments[0] === 'merchants'
+    && typeof segments[1] === 'string'
+    && segments[2] === 'products'
+    && segments[3] === 'bulk'
+  ) {
+    return handleMerchantOnboarding(segments[1], 'products', 'bulk', req, res);
+  }
+
+  // Phase 5 — merchant onboarding / KYC-lite / go-live / payout ledger.
+  if (
+    segments[0] === 'merchants'
+    && typeof segments[1] === 'string'
+    && typeof segments[2] === 'string'
+    && ONBOARDING_ACTIONS.has(segments[2])
+  ) {
+    return handleMerchantOnboarding(segments[1], segments[2], undefined, req, res);
   }
 
   // POST /api/calc/:type — Tweak 03 (Phase C) paint calculator + future
