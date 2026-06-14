@@ -90,6 +90,9 @@ export function buildLimiter(
 /** 3 signups / IP / 10 minutes. */
 export const merchantSignupLimiter = buildLimiter('merchant-signup', 3, 600);
 
+/** Phase 4 — 5 review submissions / IP / 10 minutes (fails-open). */
+export const reviewSubmitLimiter = buildLimiter('review-submit', 5, 600);
+
 /** Extract the real client IP behind Vercel's edge. */
 export function getClientIp(req: { headers: Record<string, string | string[] | undefined> }): string {
   const fwd = req.headers['x-forwarded-for'];

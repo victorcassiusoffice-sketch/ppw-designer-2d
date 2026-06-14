@@ -33,6 +33,7 @@ import { handler as suppliersList } from './lib/admin/suppliers/list.js';
 import { handler as suppliersWrite } from './lib/admin/suppliers/write.js';
 import { handler as statsHandler } from './lib/admin/stats.js';
 import { handler as auditLogHandler } from './lib/admin/auditLogList.js';
+import { handler as reviewsHandler } from './lib/admin/reviews/list.js';
 
 interface MinimalReq {
   method?: string;
@@ -115,6 +116,13 @@ async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
 
   if (resource === 'audit-log') {
     return auditLogHandler(req as never, res as never);
+  }
+
+  // Phase 4 — review moderation. Pass the rest-segments (e.g. [':id',
+  // 'approve']) through query.slug so the handler can resolve moderation.
+  if (resource === 'reviews') {
+    req.query = { ...(req.query ?? {}), slug: rest };
+    return reviewsHandler(req as never, res as never);
   }
 
   res.status(404).json({ error: `unknown admin resource: ${resource ?? '(empty)'}` });

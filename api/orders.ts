@@ -44,6 +44,8 @@ import {
 } from './db/referralStore.js';
 import { Redis } from '@upstash/redis';
 import { sql } from 'drizzle-orm';
+import { submitReview, listProductReviews } from './lib/reviews/reviews.js';
+import { reviewSubmitLimiter, getClientIp } from './lib/rateLimit.js';
 // Cowork OS Phase 0.5 — subscriptions feed reads the canonical Vic-edited
 // JSON from src/data. Vercel's bundler follows the relative path.
 import subscriptionsJson from '../src/data/subscriptions.json' with { type: 'json' };
@@ -1485,6 +1487,67 @@ async function handleLeads(req: RouterReq, res: MinRes): Promise<void> {
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// Phase 4 — verified-purchase reviews (folded; no new Vercel function).
+//   POST /api/reviews              → submit (rate-limited, fails-open)
+//   GET  /api/products/:id/reviews → published list + aggregate
+// ─────────────────────────────────────────────────────────────────────
+
+async function handleReviewSubmit(req: RouterReq, res: MinRes): Promise<void> {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST, OPTIONS');
+    res.status(405).end();
+    return;
+  }
+  // Rate-limit by IP. Limiter fails-open (returns success on no-redis).
+  const verdict = await reviewSubmitLimiter.check(getClientIp(req));
+  if (!verdict.success) {
+    res.setHeader('Retry-After', String(verdict.retryAfterSec));
+    res.status(429);
+    res.json({ error: 'Too many requests.' });
+    return;
+  }
+  const body =
+    typeof req.body === 'string'
+      ? JSON.parse(req.body || '{}')
+      : Buffer.isBuffer(req.body)
+        ? JSON.parse(req.body.toString('utf8') || '{}')
+        : (req.body ?? {});
+  const result = await submitReview(body);
+  if (result.ok) {
+    res.status(result.status);
+    res.json({ review: result.review });
+    return;
+  }
+  res.status(result.status);
+  res.json({ error: result.error });
+}
+
+async function handleProductReviewsList(productIdRaw: string, req: RouterReq, res: MinRes): Promise<void> {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET, OPTIONS');
+    res.status(405).end();
+    return;
+  }
+  const productId = Number(productIdRaw);
+  const q = new URL(req.url ?? '', 'http://x').searchParams;
+  const limit = Number(q.get('limit') ?? '50');
+  const offset = Number(q.get('offset') ?? '0');
+  const result = await listProductReviews(
+    productId,
+    { limit: Number.isFinite(limit) ? limit : 50, offset: Number.isFinite(offset) ? offset : 0 },
+  );
+  if (!result.ok) {
+    res.status(result.status);
+    res.json({ error: result.error });
+    return;
+  }
+  if (result.schemaMissing) res.setHeader('X-Schema-Missing', 'product_reviews');
+  res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=30');
+  res.status(200);
+  res.json({ reviews: result.reviews, aggregate: result.aggregate });
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // Dispatcher.
 // ─────────────────────────────────────────────────────────────────────
 
@@ -1519,6 +1582,36 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
       res.status(500);
       res.json({ error: msg });
     }
+    return;
+  }
+
+  // Phase 4 — POST /api/reviews (submit a verified-purchase review).
+  if (resource === 'reviews') {
+    try {
+      await handleReviewSubmit(req, res);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'review submit failed';
+      res.status(500);
+      res.json({ error: msg });
+    }
+    return;
+  }
+
+  // Phase 4 — GET /api/products/:id/reviews (published list + aggregate).
+  if (resource === 'products') {
+    const productIdRaw = segments[0];
+    if (productIdRaw && segments[1] === 'reviews') {
+      try {
+        await handleProductReviewsList(productIdRaw, req, res);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'reviews list failed';
+        res.status(500);
+        res.json({ error: msg });
+      }
+      return;
+    }
+    res.status(404);
+    res.json({ error: `unknown products action: ${segments[1] ?? '(empty)'}` });
     return;
   }
 

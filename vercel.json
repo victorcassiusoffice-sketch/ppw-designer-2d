@@ -72,6 +72,8 @@
     { "source": "/api/merchants/:slug/magic-link", "destination": "/api/orders" },
     { "source": "/api/k1/redirect", "destination": "/api/orders" },
     { "source": "/api/commission/reconcile", "destination": "/api/orders" },
+    { "source": "/api/reviews", "destination": "/api/orders" },
+    { "source": "/api/products/:id/reviews", "destination": "/api/orders" },
     { "source": "/api/cowork-os/(.*)", "destination": "/api/orders" },
     { "source": "/api/merchants/_catalog/products", "destination": "/api/products" },
     { "source": "/api/merchants/:slug/products/:id", "destination": "/api/products" },
