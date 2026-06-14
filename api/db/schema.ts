@@ -699,6 +699,50 @@ export const designerReferrals = pgTable(
 export type DesignerReferral = typeof designerReferrals.$inferSelect;
 export type NewDesignerReferral = typeof designerReferrals.$inferInsert;
 
+// ─────────────────────────────────────────────────────────────────────
+// Phase 4 (BACKEND-RUN-ORDER-2026-06-11) — verified-purchase product reviews.
+//
+// Storefront trust layer. `verified` + `orderId` are set only when the
+// submitting customer_email_hash matches a real order line for the
+// product (verified-purchase). New rows land status='pending' and are
+// invisible publicly until admin moderation publishes them. Public
+// list/aggregate endpoints read status='published' only.
+//
+// Migration 0027. Additive + reversible; touches no money/order table
+// beyond FK references to products + orders.
+// ─────────────────────────────────────────────────────────────────────
+
+export const reviewStatusEnum = pgEnum('review_status', ['pending', 'published', 'rejected']);
+
+export const productReviews = pgTable(
+  'product_reviews',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    productId: bigint('product_id', { mode: 'number' })
+      .notNull()
+      .references(() => products.id, { onDelete: 'cascade' }),
+    orderId: bigint('order_id', { mode: 'number' }).references(() => orders.id, {
+      onDelete: 'set null',
+    }),
+    customerEmailHash: varchar('customer_email_hash', { length: 64 }).notNull(),
+    rating: integer('rating').notNull(),
+    title: varchar('title', { length: 200 }),
+    body: text('body'),
+    status: reviewStatusEnum('status').notNull().default('pending'),
+    verified: boolean('verified').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    productStatusIdx: index('product_reviews_product_status_idx').on(t.productId, t.status),
+    emailHashIdx: index('product_reviews_email_hash_idx').on(t.customerEmailHash),
+  }),
+);
+
+export type ProductReview = typeof productReviews.$inferSelect;
+export type NewProductReview = typeof productReviews.$inferInsert;
+export type ReviewStatus = ProductReview['status'];
+
 // V4 W0.D.1 — migration tracking table (ME §03.5 / V4-ME-1 CLOSED 2026-05-16).
 // Drizzle entry kept for the schema-mirror parity check; the table itself is
 // owned + populated by scripts/migrate.ts, not by application code.
