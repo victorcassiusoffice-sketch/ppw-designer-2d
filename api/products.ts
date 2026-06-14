@@ -53,11 +53,12 @@
 import { z } from 'zod';
 
 import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
-import { getDb, schema } from './db/client.js';
+import { getDb, schema, type Db } from './db/client.js';
 import { and, eq, gte, gt, isNull, lte, sql, inArray, type SQL } from 'drizzle-orm';
 import { drizzleAuditWriter } from './lib/auditLog.js';
 import { verifyMerchantSession } from './lib/merchantSession.js';
 import { buildSeedImageryMap, enrichImagery } from './lib/products/seedImagery.js';
+import { fetchReviewAggregates, rankBySearch } from './lib/reviews/reviews.js';
 import productsSeed from '../src/data/products.json' with { type: 'json' };
 
 // P0-2: SKU → real top-down asset + description, built once from the bundled
@@ -82,13 +83,39 @@ interface ProductSummary {
   currency: string;
   imageUrl: string | null;
   region: string | null;
+  // Phase 4 — additive aggregate rating from published reviews. `null`
+  // when product_reviews is not migrated / the product has no reviews.
+  rating?: { average: number; count: number } | null;
 }
 
 export const ECO_CERT_LEVELS = ['none', 'self-declared', 'third-party-claimed', 'verified-certified'] as const;
 export type EcoCertLevel = (typeof ECO_CERT_LEVELS)[number];
 
-export const SORT_OPTIONS = ['price_asc', 'price_desc', 'rating_desc', 'newest'] as const;
+// `rating_desc` (supplier_rating) kept for backward-compat with existing
+// catalog-filter callers. Phase 4 adds `relevance`, `rating` (review
+// average), and `popularity` (review volume) — the friendlier-than-Amazon
+// ranked search.
+export const SORT_OPTIONS = [
+  'price_asc',
+  'price_desc',
+  'rating_desc',
+  'newest',
+  'relevance',
+  'rating',
+  'popularity',
+] as const;
 export type SortOption = (typeof SORT_OPTIONS)[number];
+
+/** Sorts computed in SQL directly (no review aggregate needed). */
+const SQL_NATIVE_SORTS: ReadonlySet<SortOption> = new Set([
+  'price_asc',
+  'price_desc',
+  'rating_desc',
+  'newest',
+]);
+
+/** Hard cap on rows pulled for JS-side ranking sorts. Logged if hit. */
+const MAX_RANK_ROWS = 500;
 
 /** Default price-bucket boundaries in MUR minor units (cents-of-MUR). */
 const PRICE_BUCKETS_MINOR: Array<{ min: number; max: number | null }> = [
@@ -166,6 +193,8 @@ export interface ProductFilters {
   ecoCerts: EcoCertLevel[];
   inStockOnly: boolean;
   ratingMin: number | null;
+  /** Phase 4 — free-text search query (name/category/description). */
+  q: string | null;
   sort: SortOption;
   includeFacets: boolean;
   limit: number;
@@ -176,6 +205,7 @@ export function parseProductFilters(
   q: Record<string, string | string[] | undefined>,
 ): ProductFilters {
   const ratingRaw = pickIntOrNull(q, 'rating_min', 5);
+  const search = pickStr(q, 'q');
   return {
     category: pickStr(q, 'category'),
     region: pickStr(q, 'region'),
@@ -185,6 +215,7 @@ export function parseProductFilters(
     ecoCerts: parseEcoCerts(q),
     inStockOnly: pickBool(q, 'in_stock'),
     ratingMin: ratingRaw !== null ? Math.max(1, Math.min(5, ratingRaw)) : null,
+    q: search && search.length <= 200 ? search : search ? search.slice(0, 200) : null,
     sort: parseSort(q),
     includeFacets: pickBool(q, 'include_facets'),
     limit: pickInt(q, 'limit', 24, 100) || 24,
@@ -221,6 +252,67 @@ function buildOrderBy(sort: SortOption): SQL {
   }
 }
 
+/** Escape LIKE wildcards so user text is matched literally (ESCAPE '\'). */
+function escapeLike(s: string): string {
+  return s.replace(/[\\%_]/g, (c) => `\\${c}`);
+}
+
+/** SELECT column map shared by both fetch paths. */
+const PRODUCT_SELECT = {
+  id: schema.products.id,
+  sku: schema.products.sku,
+  name: schema.products.name,
+  category: schema.products.category,
+  description: schema.products.description,
+  widthMm: schema.products.widthMm,
+  depthMm: schema.products.depthMm,
+  heightMm: schema.products.heightMm,
+  weightG: schema.products.weightG,
+  priceMinor: schema.products.priceMinor,
+  currency: schema.products.currency,
+  imageUrl: schema.products.imageUrl,
+  region: schema.products.region,
+} as const;
+
+/** Attach the additive `rating` aggregate to enriched rows (resilient). */
+async function attachRatings(rows: ProductSummary[]): Promise<ProductSummary[]> {
+  const ids = rows.map((r) => r.id).filter((n) => Number.isFinite(n));
+  const aggMap = await fetchReviewAggregates(ids);
+  return rows.map((r) => ({ ...r, rating: aggMap.get(r.id) ?? null }));
+}
+
+/**
+ * Pure ranking for the JS-side sorts. `relevance` ranks by search score
+ * (drops non-matches when a query is present); `rating` orders by review
+ * average then volume; `popularity` orders by review volume then average.
+ * Products without reviews sort last for rating/popularity. Stable.
+ */
+export function rankProducts(
+  rows: ProductSummary[],
+  filters: Pick<ProductFilters, 'sort' | 'q'>,
+): ProductSummary[] {
+  if (filters.sort === 'relevance') {
+    return filters.q ? rankBySearch(rows, filters.q) : rows;
+  }
+  const indexed = rows.map((row, i) => ({ row, i }));
+  if (filters.sort === 'rating') {
+    indexed.sort(
+      (a, b) =>
+        (b.row.rating?.average ?? -1) - (a.row.rating?.average ?? -1) ||
+        (b.row.rating?.count ?? 0) - (a.row.rating?.count ?? 0) ||
+        a.i - b.i,
+    );
+  } else if (filters.sort === 'popularity') {
+    indexed.sort(
+      (a, b) =>
+        (b.row.rating?.count ?? 0) - (a.row.rating?.count ?? 0) ||
+        (b.row.rating?.average ?? -1) - (a.row.rating?.average ?? -1) ||
+        a.i - b.i,
+    );
+  }
+  return indexed.map((x) => x.row);
+}
+
 export async function fetchActiveProducts(filters: ProductFilters): Promise<ProductListResult> {
   const db = getDb();
   // V4 M9.B.4 — exclude soft-deleted products everywhere (retired_at IS NULL).
@@ -232,6 +324,13 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
   if (filters.ecoCerts.length > 0) conds.push(inArray(schema.products.ecoCertLevel, filters.ecoCerts));
   if (filters.inStockOnly) conds.push(gt(schema.products.inStockQty, 0));
   if (filters.ratingMin !== null) conds.push(gte(schema.products.supplierRating, filters.ratingMin));
+  // Phase 4 — free-text search across name/category/description.
+  if (filters.q) {
+    const like = `%${escapeLike(filters.q.toLowerCase())}%`;
+    conds.push(
+      sql`(lower(${schema.products.name}) LIKE ${like} ESCAPE '\\' OR lower(${schema.products.category}) LIKE ${like} ESCAPE '\\' OR lower(coalesce(${schema.products.description}, '')) LIKE ${like} ESCAPE '\\')`,
+    );
+  }
 
   try {
     if (filters.merchantSlug) {
@@ -254,36 +353,46 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
       conds.push(eq(schema.products.merchantId, Number(merchantRow.id)));
     }
 
-    const rows = await db
-      .select({
-        id: schema.products.id,
-        sku: schema.products.sku,
-        name: schema.products.name,
-        category: schema.products.category,
-        description: schema.products.description,
-        widthMm: schema.products.widthMm,
-        depthMm: schema.products.depthMm,
-        heightMm: schema.products.heightMm,
-        weightG: schema.products.weightG,
-        priceMinor: schema.products.priceMinor,
-        currency: schema.products.currency,
-        imageUrl: schema.products.imageUrl,
-        region: schema.products.region,
-      })
-      .from(schema.products)
-      .where(and(...conds))
-      .orderBy(buildOrderBy(filters.sort))
-      .limit(filters.limit)
-      .offset(filters.offset);
-
     const countRes = await db
       .select({ c: sql<number>`COUNT(*)::int` })
       .from(schema.products)
       .where(and(...conds));
     const total = countRes[0]?.c ?? 0;
 
+    let products: ProductSummary[];
+
+    if (SQL_NATIVE_SORTS.has(filters.sort)) {
+      // Fast path — DB does ordering + pagination.
+      const rows = await db
+        .select(PRODUCT_SELECT)
+        .from(schema.products)
+        .where(and(...conds))
+        .orderBy(buildOrderBy(filters.sort))
+        .limit(filters.limit)
+        .offset(filters.offset);
+      products = await attachRatings(enrichImagery(rows, SEED_IMAGERY));
+    } else {
+      // Ranking path (relevance | rating | popularity) — pull the filtered
+      // set (capped), enrich with review aggregates, sort + paginate in JS.
+      if (total > MAX_RANK_ROWS) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[products] ranking sort '${filters.sort}' over ${total} rows capped at ${MAX_RANK_ROWS}; tail not ranked.`,
+        );
+      }
+      const allRows = await db
+        .select(PRODUCT_SELECT)
+        .from(schema.products)
+        .where(and(...conds))
+        .orderBy(sql`created_at DESC`)
+        .limit(MAX_RANK_ROWS);
+      const enriched = await attachRatings(enrichImagery(allRows, SEED_IMAGERY));
+      const ranked = rankProducts(enriched, filters);
+      products = ranked.slice(filters.offset, filters.offset + filters.limit);
+    }
+
     const result: ProductListResult = {
-      products: enrichImagery(rows, SEED_IMAGERY),
+      products,
       total,
       limit: filters.limit,
       offset: filters.offset,
@@ -305,6 +414,60 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
         offset: filters.offset,
         schemaMissing: true,
       };
+    }
+    throw err;
+  }
+}
+
+export interface Suggestion {
+  id: number;
+  name: string;
+  category: string;
+}
+
+/**
+ * Phase 4 — lightweight typeahead. Returns up to `limit` product-name
+ * suggestions matching the query (active, not retired), ranked by search
+ * relevance so prefix/exact matches surface first. Empty query → [].
+ */
+export async function fetchSuggestions(
+  query: string,
+  limit = 8,
+  db: Db = getDb(),
+): Promise<{ suggestions: Suggestion[]; schemaMissing: boolean }> {
+  const q = query.trim();
+  if (!q) return { suggestions: [], schemaMissing: false };
+  const like = `%${escapeLike(q.toLowerCase())}%`;
+  const cap = Math.min(25, Math.max(1, Math.floor(limit))) * 3;
+  try {
+    const rows = await db
+      .select({
+        id: schema.products.id,
+        name: schema.products.name,
+        category: schema.products.category,
+        description: schema.products.description,
+      })
+      .from(schema.products)
+      .where(
+        and(
+          eq(schema.products.status, 'active'),
+          isNull(schema.products.retiredAt),
+          sql`(lower(${schema.products.name}) LIKE ${like} ESCAPE '\\' OR lower(${schema.products.category}) LIKE ${like} ESCAPE '\\')`,
+        ),
+      )
+      .limit(cap);
+    const ranked = rankBySearch(
+      rows.map((r) => ({ id: Number(r.id), name: r.name, category: r.category, description: r.description })),
+      q,
+    ).slice(0, Math.min(25, Math.max(1, Math.floor(limit))));
+    return {
+      suggestions: ranked.map((r) => ({ id: r.id, name: r.name, category: r.category })),
+      schemaMissing: false,
+    };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/relation .*products.* does not exist|column .* does not exist|42P01|42703|undefined_table/i.test(msg)) {
+      return { suggestions: [], schemaMissing: true };
     }
     throw err;
   }
@@ -947,6 +1110,24 @@ async function handler(req: ProductsReq, res: MinRes): Promise<void> {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET, POST, PATCH, DELETE, OPTIONS');
     res.status(405).end();
+    return;
+  }
+
+  // Phase 4 — typeahead suggest mode: GET /api/products?suggest=1&q=ic
+  if (pickBool(q, 'suggest') || pickStr(q, 'mode') === 'suggest') {
+    const query = pickStr(q, 'q') ?? '';
+    const limit = pickInt(q, 'limit', 8, 25) || 8;
+    try {
+      const sugg = await fetchSuggestions(query, limit);
+      if (sugg.schemaMissing) res.setHeader('X-Schema-Missing', 'products');
+      res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=30');
+      res.status(200);
+      res.json({ suggestions: sugg.suggestions });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'suggest query failed';
+      res.status(500);
+      res.json({ error: msg });
+    }
     return;
   }
 

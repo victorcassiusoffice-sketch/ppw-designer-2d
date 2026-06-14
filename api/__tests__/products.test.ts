@@ -18,6 +18,7 @@ describe('parseProductFilters', () => {
       ecoCerts: [],
       inStockOnly: false,
       ratingMin: null,
+      q: null,
       sort: 'newest',
       includeFacets: false,
       limit: 24,
