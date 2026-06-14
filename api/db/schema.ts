@@ -62,6 +62,16 @@ export const merchantDocumentTypeEnum = pgEnum('merchant_document_type', [
 
 export const adminRoleEnum = pgEnum('admin_role', ['super_admin', 'reviewer']);
 
+// Phase 5 (BACKEND-RUN-ORDER-2026-06-11) — merchant self-serve onboarding
+// KYC-lite status. Distinct from merchant_status (Stripe-Connect lifecycle):
+// this tracks the lightweight "business + contact + payout method captured"
+// gate that lets a merchant go live in ~1 hour. Migration 0028.
+export const merchantKycStatusEnum = pgEnum('merchant_kyc_status', [
+  'none',
+  'lite_submitted',
+  'verified',
+]);
+
 export const merchants = pgTable(
   'merchants',
   {
@@ -81,6 +91,11 @@ export const merchants = pgTable(
     /** OMS Wave 1.4 — HMAC shared secret for /api/merchants/:slug/order-update. Null until Vic approves. */
     webhookSecret: varchar('webhook_secret', { length: 64 }),
     status: merchantStatusEnum('status').notNull().default('pending_signup'),
+    // Phase 5 — self-serve onboarding state (migration 0028, additive).
+    onboardingStep: integer('onboarding_step').notNull().default(0),
+    kycStatus: merchantKycStatusEnum('kyc_status').notNull().default('none'),
+    payoutMethod: varchar('payout_method', { length: 40 }),
+    goLiveAt: timestamp('go_live_at', { withTimezone: true }),
     notes: text('notes'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
