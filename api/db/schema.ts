@@ -699,6 +699,73 @@ export const designerReferrals = pgTable(
 export type DesignerReferral = typeof designerReferrals.$inferSelect;
 export type NewDesignerReferral = typeof designerReferrals.$inferInsert;
 
+// ─────────────────────────────────────────────────────────────────────
+// Phase 6 (BACKEND-RUN-ORDER-2026-06-11) — coupons + commission ledger.
+//
+// coupons: promotions the cart-quote validates + applies (percent|fixed,
+//   platform-wide when merchant_id is null, else merchant-scoped). The
+//   real K1 Pattern-C code is a Vic-issued row at GATE-2.
+// commission_ledger: reconciliation state over designer_referrals (matched
+//   by ref_code) so a 5% commission line transitions pending → reconciled.
+// Migration 0029. Additive + reversible; no money/attribution table altered.
+// ─────────────────────────────────────────────────────────────────────
+
+export const couponTypeEnum = pgEnum('coupon_type', ['percent', 'fixed']);
+export const commissionStatusEnum = pgEnum('commission_status', ['pending', 'reconciled']);
+
+export const coupons = pgTable(
+  'coupons',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    code: varchar('code', { length: 60 }).notNull().unique(),
+    merchantId: bigint('merchant_id', { mode: 'number' }).references(() => merchants.id, {
+      onDelete: 'cascade',
+    }),
+    type: couponTypeEnum('type').notNull(),
+    value: integer('value').notNull(),
+    currency: varchar('currency', { length: 3 }),
+    minSubtotal: integer('min_subtotal'),
+    startsAt: timestamp('starts_at', { withTimezone: true }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    maxRedemptions: integer('max_redemptions'),
+    redemptions: integer('redemptions').notNull().default(0),
+    active: boolean('active').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    merchantIdx: index('coupons_merchant_idx').on(t.merchantId),
+  }),
+);
+
+export const commissionLedger = pgTable(
+  'commission_ledger',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    refCode: varchar('ref_code', { length: 80 }).notNull().unique(),
+    orderId: bigint('order_id', { mode: 'number' }).references(() => orders.id, {
+      onDelete: 'set null',
+    }),
+    merchantSlug: varchar('merchant_slug', { length: 120 }).notNull(),
+    grossMinor: integer('gross_minor').notNull(),
+    commissionMinor: integer('commission_minor').notNull(),
+    currency: varchar('currency', { length: 8 }),
+    status: commissionStatusEnum('status').notNull().default('pending'),
+    reconciledAt: timestamp('reconciled_at', { withTimezone: true }),
+    note: text('note'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    statusIdx: index('commission_ledger_status_idx').on(t.status, t.merchantSlug),
+  }),
+);
+
+export type Coupon = typeof coupons.$inferSelect;
+export type NewCoupon = typeof coupons.$inferInsert;
+export type CouponType = Coupon['type'];
+export type CommissionLedgerRow = typeof commissionLedger.$inferSelect;
+export type NewCommissionLedgerRow = typeof commissionLedger.$inferInsert;
+export type CommissionStatus = CommissionLedgerRow['status'];
+
 // V4 W0.D.1 — migration tracking table (ME §03.5 / V4-ME-1 CLOSED 2026-05-16).
 // Drizzle entry kept for the schema-mirror parity check; the table itself is
 // owned + populated by scripts/migrate.ts, not by application code.
