@@ -33,6 +33,8 @@ import { handler as suppliersList } from './lib/admin/suppliers/list.js';
 import { handler as suppliersWrite } from './lib/admin/suppliers/write.js';
 import { handler as statsHandler } from './lib/admin/stats.js';
 import { handler as auditLogHandler } from './lib/admin/auditLogList.js';
+import { handler as couponsHandler } from './lib/admin/coupons/handler.js';
+import { handler as commissionHandler } from './lib/admin/commission/handler.js';
 
 interface MinimalReq {
   method?: string;
@@ -115,6 +117,18 @@ async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
 
   if (resource === 'audit-log') {
     return auditLogHandler(req as never, res as never);
+  }
+
+  // Phase 6 — coupon CRUD + Pattern-C commission ledger. Pass the
+  // rest-segments through query.slug so the handlers can resolve
+  // /coupons/:code and /k1-commission/:refCode/reconcile.
+  if (resource === 'coupons') {
+    req.query = { ...(req.query ?? {}), slug: rest };
+    return couponsHandler(req as never, res as never);
+  }
+  if (resource === 'k1-commission') {
+    req.query = { ...(req.query ?? {}), slug: rest };
+    return commissionHandler(req as never, res as never);
   }
 
   res.status(404).json({ error: `unknown admin resource: ${resource ?? '(empty)'}` });

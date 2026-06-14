@@ -15,6 +15,7 @@ import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
 import { getDb, schema } from './db/client.js';
 import { inArray } from 'drizzle-orm';
 import { splitCartByMerchant, type CartLineItem, type ProductMerchantLink } from './lib/cart/split.js';
+import { fetchCouponByCode, applyCouponToSplit, toCouponView } from './lib/coupons/coupons.js';
 
 interface QuoteReq extends MinReq {
   body?: unknown;
@@ -31,6 +32,13 @@ async function readJson(req: QuoteReq): Promise<unknown> {
     try { return JSON.parse(b.toString('utf8')); } catch { return null; }
   }
   return null;
+}
+
+/** Phase 6 — extract an optional coupon code from the quote body. */
+export function readCouponCode(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const c = (payload as { coupon?: unknown }).coupon;
+  return typeof c === 'string' && c.trim().length > 0 ? c.trim() : null;
 }
 
 export function validateCart(payload: unknown): { ok: true; data: CartLineItem[] } | { ok: false; error: string } {
@@ -122,8 +130,27 @@ async function rawHandler(req: QuoteReq, res: MinRes): Promise<void> {
       res.json({ error: split.error });
       return;
     }
+
+    // Phase 6 — optional coupon. Validating a quote NEVER consumes a
+    // redemption (idempotent); only a completed order does that (GATE-2).
+    // Invalid/expired coupons return a legible error alongside the quote,
+    // never a silent no-op, and never break the base quote.
+    const couponCode = readCouponCode(body);
+    let coupon: unknown;
+    if (couponCode) {
+      const row = await fetchCouponByCode(couponCode);
+      if (!row) {
+        coupon = { applied: false, code: couponCode, error: 'coupon_not_found' };
+      } else {
+        const applied = applyCouponToSplit(toCouponView(row), split, new Date());
+        coupon = applied.ok
+          ? { applied: true, ...applied }
+          : { applied: false, code: row.code, error: applied.error };
+      }
+    }
+
     res.status(200);
-    res.json(split);
+    res.json(coupon === undefined ? split : { ...split, coupon });
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'cart-quote failed';
     if (/relation .*products.* does not exist|42P01|undefined_table/i.test(msg)) {
