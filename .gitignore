@@ -68,6 +68,7 @@ products-prod.json
 
 # Local-only developer artifacts (notes, push helpers, scratch specs) — kept
 # out of the tree so the host /goal runner's collision guard sees a clean repo.
+.goal-status/
 .claude/
 CLAUDE.md
 *.bat
