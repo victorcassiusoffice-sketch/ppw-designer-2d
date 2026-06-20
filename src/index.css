@@ -61,3 +61,168 @@ body,
   background-color: theme('colors.ppw.stone');
   border-radius: 4px;
 }
+
+/* ---------------------------------------------------------------------------
+ * DESIGNER-EXPANSION P4 — multi-domain picker + per-domain builder.
+ * Self-contained plain CSS (no Tailwind dependency) so the new /build surfaces
+ * read cleanly without touching any existing rule. Brand-ish navy/gold/cream.
+ * Final look-and-feel is [VIC-VERIFY].
+ * ------------------------------------------------------------------------- */
+.domain-picker,
+.domain-builder {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  color: #232c3b;
+}
+.domain-picker-head h1,
+.domain-builder-head h1 {
+  font-size: 1.6rem;
+  margin: 0 0 0.25rem;
+}
+.domain-picker-grid {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.domain-card {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid #e3dcce;
+  border-radius: 12px;
+  background: #fbf8f2;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+.domain-card:hover {
+  border-color: #c9a227;
+  transform: translateY(-1px);
+}
+.domain-card.is-disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.domain-card-label {
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+.domain-card-tagline {
+  font-size: 0.85rem;
+  color: #5b6470;
+}
+.domain-card-soon {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: #232c3b;
+  color: #f5ebd7;
+}
+.domain-builder-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.domain-catalog-tabs,
+.car-stepper-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+.domain-cat-tab,
+.car-step {
+  border: 1px solid #e3dcce;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.domain-cat-tab.is-active,
+.car-step.is-active {
+  background: #232c3b;
+  color: #f5ebd7;
+  border-color: #232c3b;
+}
+.car-step.is-done {
+  border-color: #c9a227;
+  color: #8a6d12;
+}
+.domain-catalog-items,
+.car-step-options {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0;
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+.domain-product-card,
+.car-option {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #e3dcce;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+}
+.domain-product-card.is-selected,
+.car-option.is-chosen {
+  border-color: #c9a227;
+  box-shadow: 0 0 0 2px rgba(201, 162, 39, 0.25);
+}
+.domain-product-price,
+.car-option-price {
+  font-size: 0.78rem;
+  color: #5b6470;
+}
+.car-stepper-nav {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.car-stepper-nav button {
+  padding: 0.45rem 1.1rem;
+  border-radius: 8px;
+  border: 1px solid #232c3b;
+  background: #232c3b;
+  color: #f5ebd7;
+  cursor: pointer;
+}
+.car-stepper-nav button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.airplane-cell {
+  aspect-ratio: 1 / 1;
+  min-height: 28px;
+  border: 1px solid #d8dde3;
+  border-radius: 6px;
+  background: #f4f6f8;
+  cursor: pointer;
+  color: #c9a227;
+  font-size: 1rem;
+  line-height: 1;
+}
+.airplane-cell.is-filled {
+  background: #fff7e0;
+  border-color: #c9a227;
+}

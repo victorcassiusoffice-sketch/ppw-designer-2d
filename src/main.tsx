@@ -32,6 +32,11 @@ import MerchantOnboardingPage from './pages/MerchantOnboardingPage';
 import MerchantAddProductPage from './pages/MerchantAddProductPage';
 import RequireMerchant from './components/RequireMerchant';
 import MyDesignsPage from './pages/MyDesignsPage';
+// DESIGNER-EXPANSION P4 — multi-domain picker + per-domain builder shell.
+// Additive routes (`/build`, `/build/:domainId`); the wellness `/` + `/designer`
+// routes are untouched.
+import { DomainPicker } from './components/domain/DomainPicker';
+import { DomainBuilderShell } from './components/domain/DomainBuilderShell';
 import { bootstrapFx } from './store/currencyStore';
 import './index.css';
 
@@ -123,6 +128,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 
         {/* V3.1 M1.C.6 — cloud-save listing page (email-keyed). */}
         <Route path="/my-designs" element={<MyDesignsPage />} />
+
+        {/* DESIGNER-EXPANSION P4 — multi-domain picker + per-domain builder.
+            Wellness-room enters via /designer (unchanged); airplane + car are
+            gated by DomainConfig.enabled inside the shell. */}
+        <Route path="/build" element={<DomainPicker />} />
+        <Route path="/build/:domainId" element={<DomainBuilderShell />} />
 
         {/* OMS Phase 1 - Admin merchants stub (Clerk-protected) */}
         {/* OMS Phase 2 - Full admin portal: merchants list/detail, orders, payouts */}

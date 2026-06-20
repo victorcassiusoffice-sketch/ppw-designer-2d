@@ -64,6 +64,11 @@ export function getAllProducts(): Product[];
 export function getAllProducts(domain: 'wellness-room'): Product[];
 export function getAllProducts(domain: 'airplane'): AirplaneProduct[];
 export function getAllProducts(domain: 'car'): CarProduct[];
+// Domain-generic accessor (DESIGNER-EXPANSION P4): a call site holding a
+// `DomainId` variable (e.g. the active-domain UI) gets the widened union.
+// Listed after the literal overloads so a literal still resolves to its
+// narrow per-domain product type.
+export function getAllProducts(domain: DomainId): AnyDomainProduct[];
 export function getAllProducts(domain: DomainId = DEFAULT_DOMAIN): AnyDomainProduct[] {
   return catalogFor(domain).products;
 }
