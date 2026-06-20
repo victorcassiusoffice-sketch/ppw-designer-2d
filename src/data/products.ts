@@ -8,22 +8,64 @@
  */
 
 import catalogJson from './products.json';
+import airplaneJson from './products.airplane.json';
+import carJson from './products.car.json';
 import { getApiProductFromCache } from './apiCatalogAdapter';
+import { DEFAULT_DOMAIN } from '../lib/domain';
+import type { DomainId } from '../lib/domain';
 import type {
   Product,
+  AirplaneProduct,
+  CarProduct,
+  AnyDomainProduct,
   ProductCatalog,
+  AirplaneCatalog,
+  CarCatalog,
   ProductCategory,
+  AirplaneCategory,
+  CarCategory,
+  DomainCategory,
   Region,
 } from './products.schema';
 
 const catalog = catalogJson as unknown as ProductCatalog;
+const airplaneCatalog = airplaneJson as unknown as AirplaneCatalog;
+const carCatalog = carJson as unknown as CarCatalog;
 
-export function getCatalog(): ProductCatalog {
-  return catalog;
+/** The bundled catalog for a domain. Defaults preserve wellness behaviour. */
+function catalogFor(domain: DomainId): ProductCatalog | AirplaneCatalog | CarCatalog {
+  switch (domain) {
+    case 'airplane':
+      return airplaneCatalog;
+    case 'car':
+      return carCatalog;
+    case 'wellness-room':
+    default:
+      return catalog;
+  }
 }
 
-export function getAllProducts(): Product[] {
-  return catalog.products;
+/**
+ * The product catalog for a domain. No-arg + `'wellness-room'` return the
+ * original wellness catalog unchanged, so every existing call site is intact.
+ */
+export function getCatalog(): ProductCatalog;
+export function getCatalog(domain: 'wellness-room'): ProductCatalog;
+export function getCatalog(domain: 'airplane'): AirplaneCatalog;
+export function getCatalog(domain: 'car'): CarCatalog;
+export function getCatalog(
+  domain: DomainId = DEFAULT_DOMAIN,
+): ProductCatalog | AirplaneCatalog | CarCatalog {
+  return catalogFor(domain);
+}
+
+/** All products for a domain. No-arg defaults to wellness (unchanged). */
+export function getAllProducts(): Product[];
+export function getAllProducts(domain: 'wellness-room'): Product[];
+export function getAllProducts(domain: 'airplane'): AirplaneProduct[];
+export function getAllProducts(domain: 'car'): CarProduct[];
+export function getAllProducts(domain: DomainId = DEFAULT_DOMAIN): AnyDomainProduct[] {
+  return catalogFor(domain).products;
 }
 
 export function getProductById(id: string): Product | undefined {
@@ -32,8 +74,26 @@ export function getProductById(id: string): Product | undefined {
   return getApiProductFromCache(id);
 }
 
-export function getProductsByCategory(category: ProductCategory): Product[] {
-  return catalog.products.filter((p) => p.category === category);
+/** Products in a domain's category. Category type is checked per domain. */
+export function getProductsByCategory(
+  domain: 'wellness-room',
+  category: ProductCategory,
+): Product[];
+export function getProductsByCategory(
+  domain: 'airplane',
+  category: AirplaneCategory,
+): AirplaneProduct[];
+export function getProductsByCategory(
+  domain: 'car',
+  category: CarCategory,
+): CarProduct[];
+export function getProductsByCategory(
+  domain: DomainId,
+  category: DomainCategory,
+): AnyDomainProduct[] {
+  return (catalogFor(domain).products as AnyDomainProduct[]).filter(
+    (p) => p.category === category,
+  );
 }
 
 export function getCategories(): ProductCategory[] {
