@@ -17,3 +17,10 @@ export {
   listDomains,
   listEnabledDomains,
 } from './domainRegistry';
+export type {
+  BuildSpace,
+  PolygonRoomSpace,
+  FuselageSectionSpace,
+  VehicleConfigSpace,
+} from './templates';
+export { getDefaultSpace, serializeSpace, deserializeSpace } from './templates';
