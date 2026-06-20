@@ -24,3 +24,17 @@ export type {
   VehicleConfigSpace,
 } from './templates';
 export { getDefaultSpace, serializeSpace, deserializeSpace } from './templates';
+// P5 — per-domain rendering models.
+export type { SeatCell, SeatMap, SeatMapOptions } from './seatMap';
+export { buildSeatMap } from './seatMap';
+export type {
+  SceneNode,
+  DomainScene,
+  SceneCamera,
+  OrbitCamera,
+  WalkCamera,
+  MeshKind,
+  Vec3,
+} from './scene3d';
+export { buildDomainScene } from './scene3d';
+export { hasCanvas2d, hasWebGL } from './renderCaps';

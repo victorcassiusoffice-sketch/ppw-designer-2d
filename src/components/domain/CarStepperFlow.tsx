@@ -16,6 +16,7 @@ import type { VehicleConfigSpace } from '../../lib/domain';
 import { categoryLabel } from '../../lib/domain/categories';
 import { getAllProducts } from '../../data/products';
 import type { CarCategory, CarProduct } from '../../data/products.schema';
+import { DomainMirror3D } from './DomainMirror3D';
 
 /** The ordered slot keys = the stepper's steps (template slot-set order). */
 function stepOrder(space: VehicleConfigSpace): CarCategory[] {
@@ -71,6 +72,9 @@ export function CarStepperFlow(): JSX.Element {
           </li>
         ))}
       </ol>
+
+      {/* P5 — procedural 3D turntable mirror (guarded SVG projection). */}
+      <DomainMirror3D domain="car" />
 
       <div className="car-stepper-body">
         <h3 data-testid="car-step-title">

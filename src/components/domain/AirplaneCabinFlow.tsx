@@ -16,6 +16,8 @@ import { getDefaultSpace } from '../../lib/domain';
 import type { FuselageSectionSpace } from '../../lib/domain';
 import { getProductById } from '../../data/products';
 import { DomainCatalogStrip } from './DomainCatalogStrip';
+import { AirplaneSeatMapCanvas } from './AirplaneSeatMapCanvas';
+import { DomainMirror3D } from './DomainMirror3D';
 
 /** A placement = which product sits on which grid cell. */
 type Placements = Record<string, string>; // cellKey "r-c" -> productId
@@ -41,6 +43,13 @@ export function AirplaneCabinFlow(): JSX.Element {
 
   const placedCount = Object.keys(placements).length;
 
+  // Seat-map cell ids use the `r{row}-c{col}` form; placement keys are
+  // `{row}-{col}` — map across so filled seats tint on the 2D render.
+  const filledSeatIds = useMemo(
+    () => new Set(Object.keys(placements).map((k) => `r${k}`.replace('-', '-c'))),
+    [placements],
+  );
+
   return (
     <section
       data-testid="airplane-cabin-flow"
@@ -62,6 +71,14 @@ export function AirplaneCabinFlow(): JSX.Element {
         onPick={setSelectedProductId}
         selectedProductId={selectedProductId}
       />
+
+      {/* P5 — 2D Konva top-down seat-map render (SVG fallback when headless). */}
+      <div className="airplane-seatmap-wrap" data-testid="airplane-seatmap-wrap">
+        <AirplaneSeatMapCanvas filledCellIds={filledSeatIds} />
+      </div>
+
+      {/* P5 — procedural 3D cabin mirror (guarded SVG projection). */}
+      <DomainMirror3D domain="airplane" />
 
       <div
         className="airplane-seat-grid"
