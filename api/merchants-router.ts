@@ -20,18 +20,18 @@
  */
 
 import { Buffer } from 'node:buffer';
-import { handler as signupHandler } from './lib/merchants/signup.js';
+import { handler as signupHandler } from './_lib/merchants/signup.js';
 import {
   generateReferencePagePdf,
   generateReferencePageV2Pdf,
   REFERENCE_PAGE_HEADERS,
   REFERENCE_PAGE_V2_HEADERS,
-} from './lib/capture/referencePage.js';
-import { handler as signUploadHandler } from './lib/capture/signUpload.js';
-import { handler as calibrateHandler } from './lib/capture/calibrateHandler.js';
-import { handler as uploadProductImageHandler } from './lib/merchants/uploadProductImage.js';
-import { calcDispatch } from './lib/calc/paintCalcHandler.js';
-import { withSentry } from './lib/sentry.js';
+} from './_lib/capture/referencePage.js';
+import { handler as signUploadHandler } from './_lib/capture/signUpload.js';
+import { handler as calibrateHandler } from './_lib/capture/calibrateHandler.js';
+import { handler as uploadProductImageHandler } from './_lib/merchants/uploadProductImage.js';
+import { calcDispatch } from './_lib/calc/paintCalcHandler.js';
+import { withSentry } from './_lib/sentry.js';
 
 interface MinimalReq {
   method?: string;

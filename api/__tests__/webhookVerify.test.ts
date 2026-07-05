@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { createHmac } from 'crypto';
-import { verifySharedSecretHmac } from '../lib/webhookVerify';
+import { verifySharedSecretHmac } from '../_lib/webhookVerify';
 
 const SECRET = 'a'.repeat(64);
 

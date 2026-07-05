@@ -11,10 +11,10 @@
  * per-supplier subtotals before checkout.
  */
 
-import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
-import { getDb, schema } from './db/client.js';
+import { withSentry, type MinReq, type MinRes } from './_lib/sentry.js';
+import { getDb, schema } from './_db/client.js';
 import { inArray } from 'drizzle-orm';
-import { splitCartByMerchant, type CartLineItem, type ProductMerchantLink } from './lib/cart/split.js';
+import { splitCartByMerchant, type CartLineItem, type ProductMerchantLink } from './_lib/cart/split.js';
 
 interface QuoteReq extends MinReq {
   body?: unknown;

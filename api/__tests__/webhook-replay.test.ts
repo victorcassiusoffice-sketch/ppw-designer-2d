@@ -22,7 +22,7 @@ vi.mock('@upstash/redis', () => ({
   },
 }));
 
-import { hashBody, checkIdempotency, storeIdempotency } from '../lib/idempotency';
+import { hashBody, checkIdempotency, storeIdempotency } from '../_lib/idempotency';
 
 beforeEach(() => {
   memStore.clear();

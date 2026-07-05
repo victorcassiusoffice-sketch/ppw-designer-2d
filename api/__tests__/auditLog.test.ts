@@ -4,8 +4,8 @@ import {
   setAuditWriter,
   resetAuditWriter,
   createInMemoryAuditWriter,
-} from '../lib/auditLog';
-import { ADMIN_EMAIL_ALLOWLIST } from '../lib/adminAllowlist';
+} from '../_lib/auditLog';
+import { ADMIN_EMAIL_ALLOWLIST } from '../_lib/adminAllowlist';
 import {
   ADMIN_EMAIL_ALLOWLIST as CLIENT_ALLOWLIST,
 } from '../../src/lib/adminAllowlist';

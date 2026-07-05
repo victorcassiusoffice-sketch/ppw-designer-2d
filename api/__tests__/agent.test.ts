@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { pickModel, MODEL_SLUGS, openRouterChat } from '../lib/agent/openrouter';
+import { pickModel, MODEL_SLUGS, openRouterChat } from '../_lib/agent/openrouter';
 import { validateChatRequest, buildAgentHealthBody } from '../agent-chat';
 
 describe('pickModel', () => {

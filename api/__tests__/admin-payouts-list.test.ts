@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { parsePayoutFilters } from '../lib/admin/payouts/list';
+import { parsePayoutFilters } from '../_lib/admin/payouts/list';
 
 describe('parsePayoutFilters', () => {
   it('defaults', () => {
@@ -26,7 +26,7 @@ describe('parsePayoutFilters', () => {
 
 describe('GET /api/admin/payouts — handler shape', () => {
   it('returns 405 for non-GET', async () => {
-    const mod = await import('../lib/admin/payouts/list');
+    const mod = await import('../_lib/admin/payouts/list');
     const handler = mod.handler;
     let status = 0;
     const res = {
@@ -43,7 +43,7 @@ describe('GET /api/admin/payouts — handler shape', () => {
   });
 
   it('returns 401 without a Bearer token', async () => {
-    const mod = await import('../lib/admin/payouts/list');
+    const mod = await import('../_lib/admin/payouts/list');
     const handler = mod.handler;
     let status = 0;
     const res = {
@@ -74,7 +74,7 @@ describe('GET /api/admin/payouts — handler shape', () => {
 describe('fetchPayoutsPage — empty fixture (schema-missing)', () => {
   it('returns empty page when relation does not exist', async () => {
     vi.resetModules();
-    vi.doMock('../db/client.js', () => ({
+    vi.doMock('../_db/client.js', () => ({
       getDb: () => ({
         select: () => ({
           from: () => ({
@@ -101,7 +101,7 @@ describe('fetchPayoutsPage — empty fixture (schema-missing)', () => {
         },
       },
     }));
-    const { fetchPayoutsPage } = await import('../lib/admin/payouts/list');
+    const { fetchPayoutsPage } = await import('../_lib/admin/payouts/list');
     const out = await fetchPayoutsPage({
       page: 1,
       perPage: 25,
@@ -111,7 +111,7 @@ describe('fetchPayoutsPage — empty fixture (schema-missing)', () => {
     expect(out.schemaMissing).toBe(true);
     expect(out.items).toEqual([]);
     expect(out.total).toBe(0);
-    vi.doUnmock('../db/client.js');
+    vi.doUnmock('../_db/client.js');
     vi.resetModules();
   });
 });

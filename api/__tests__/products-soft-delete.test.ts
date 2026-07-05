@@ -10,7 +10,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('../db/client.js', () => {
+vi.mock('../_db/client.js', () => {
   const fakeMerchants = new Map<string, { id: number }>();
   const fakeProducts = new Map<number, { id: number; merchantId: number; retiredAt: Date | null }>();
   const updates: Array<{ id: number; merchantId: number; retiredAt: Date }> = [];
@@ -60,14 +60,14 @@ vi.mock('../db/client.js', () => {
   };
 });
 
-vi.mock('../lib/auditLog.js', () => ({
+vi.mock('../_lib/auditLog.js', () => ({
   drizzleAuditWriter: () => ({ record: vi.fn(async () => ({ ok: true })) }),
   recordAudit: vi.fn(async () => ({ ok: true })),
 }));
 
 // Import AFTER mocks so the module sees the mocked client.
 import { softDeleteProduct } from '../products';
-import * as dbClient from '../db/client.js';
+import * as dbClient from '../_db/client.js';
 
 interface FakeContext {
   builder: {

@@ -5,7 +5,7 @@
  * Phase 1+1B+1.5+2+3 generates 19 functions if every endpoint is its
  * own file. This dispatcher consolidates 10 admin endpoints into one.
  *
- * Routes handled (forwarded to handlers in api/lib/admin/*):
+ * Routes handled (forwarded to handlers in api/_lib/admin/*):
  *   GET    /api/admin/merchants                → merchants/list
  *   GET    /api/admin/merchants/:slug          → merchants/detail
  *   POST   /api/admin/merchants/:slug/approve  → merchants/approve
@@ -19,20 +19,20 @@
  *   POST/PATCH/DELETE /api/admin/suppliers     → suppliers/write
  */
 
-import { handler as merchantsList } from './lib/admin/merchants/list.js';
-import { withSentry } from "./lib/sentry.js";
-import { handler as merchantsDetail } from './lib/admin/merchants/detail.js';
-import { handler as merchantsApprove } from './lib/admin/merchants/approve.js';
-import { handler as merchantsReject } from './lib/admin/merchants/reject.js';
-import { handler as ordersList } from './lib/admin/orders/list.js';
-import { handler as payoutsList } from './lib/admin/payouts/list.js';
-import { handler as productsList } from './lib/admin/products/list.js';
-import { handler as productsWrite } from './lib/admin/products/write.js';
-import { handler as productsImportCsv } from './lib/admin/products/importCsv.js';
-import { handler as suppliersList } from './lib/admin/suppliers/list.js';
-import { handler as suppliersWrite } from './lib/admin/suppliers/write.js';
-import { handler as statsHandler } from './lib/admin/stats.js';
-import { handler as auditLogHandler } from './lib/admin/auditLogList.js';
+import { handler as merchantsList } from './_lib/admin/merchants/list.js';
+import { withSentry } from "./_lib/sentry.js";
+import { handler as merchantsDetail } from './_lib/admin/merchants/detail.js';
+import { handler as merchantsApprove } from './_lib/admin/merchants/approve.js';
+import { handler as merchantsReject } from './_lib/admin/merchants/reject.js';
+import { handler as ordersList } from './_lib/admin/orders/list.js';
+import { handler as payoutsList } from './_lib/admin/payouts/list.js';
+import { handler as productsList } from './_lib/admin/products/list.js';
+import { handler as productsWrite } from './_lib/admin/products/write.js';
+import { handler as productsImportCsv } from './_lib/admin/products/importCsv.js';
+import { handler as suppliersList } from './_lib/admin/suppliers/list.js';
+import { handler as suppliersWrite } from './_lib/admin/suppliers/write.js';
+import { handler as statsHandler } from './_lib/admin/stats.js';
+import { handler as auditLogHandler } from './_lib/admin/auditLogList.js';
 
 interface MinimalReq {
   method?: string;

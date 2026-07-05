@@ -22,7 +22,7 @@ import {
   splitCartByMerchant,
   type CartLineItem,
   type ProductMerchantLink,
-} from '../lib/cart/split';
+} from '../_lib/cart/split';
 
 function rng(seed: number): () => number {
   // Mulberry32 — deterministic PRNG so failures reproduce.

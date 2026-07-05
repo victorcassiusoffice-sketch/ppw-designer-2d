@@ -1,5 +1,5 @@
 /**
- * Tests for api/lib/email.ts — template rendering + RESEND_API_KEY
+ * Tests for api/_lib/email.ts — template rendering + RESEND_API_KEY
  * dry-run path. No live network calls.
  */
 
@@ -11,8 +11,8 @@ import {
   sendOrderAlertToVic,
   _resetEmailClientForTests,
   formatMoney,
-} from '../lib/email';
-import type { CustomerInfo, OrderSummary } from '../lib/orderTypes';
+} from '../_lib/email';
+import type { CustomerInfo, OrderSummary } from '../_lib/orderTypes';
 
 function makeOrder(): OrderSummary {
   return {

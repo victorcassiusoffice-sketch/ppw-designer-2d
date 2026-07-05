@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createInMemoryMerchantStore } from '../db/merchantStore';
+import { createInMemoryMerchantStore } from '../_db/merchantStore';
 import {
   approveMerchant,
   listPendingMerchants,
   rejectMerchant,
-} from '../lib/adminMerchantActions';
+} from '../_lib/adminMerchantActions';
 
 async function seedPending(store: ReturnType<typeof createInMemoryMerchantStore>) {
   const m = await store.insert({

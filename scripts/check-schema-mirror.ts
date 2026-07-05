@@ -4,8 +4,8 @@
  * Migration ↔ Drizzle schema mirror guard.
  *
  * Parses every `CREATE TABLE [IF NOT EXISTS] <name>` statement from
- * api/db/migrations/*.sql and every `pgTable('<name>', { … })` call
- * from api/db/schema.ts, then asserts the table-name sets match.
+ * api/_db/migrations/*.sql and every `pgTable('<name>', { … })` call
+ * from api/_db/schema.ts, then asserts the table-name sets match.
  *
  * Catches the classic drift mode where a migration adds a table but
  * the Drizzle schema isn't updated (so queries against it stay
@@ -40,8 +40,8 @@ export interface SchemaDiff {
   common: string[];
 }
 
-const MIGRATION_DIR_REL = 'api/db/migrations';
-const SCHEMA_FILE_REL = 'api/db/schema.ts';
+const MIGRATION_DIR_REL = 'api/_db/migrations';
+const SCHEMA_FILE_REL = 'api/_db/schema.ts';
 
 function resolveRepoRoot(): string {
   // This file lives at <root>/scripts/check-schema-mirror.ts so the
@@ -50,7 +50,7 @@ function resolveRepoRoot(): string {
   return resolve(here, '..');
 }
 
-/** Read every .sql file in api/db/migrations/ and collect CREATE TABLE names. */
+/** Read every .sql file in api/_db/migrations/ and collect CREATE TABLE names. */
 export function loadSqlTables(root = resolveRepoRoot()): string[] {
   const dir = join(root, MIGRATION_DIR_REL);
   const files = readdirSync(dir).filter((f) => f.endsWith('.sql')).sort();
@@ -67,7 +67,7 @@ export function loadSqlTables(root = resolveRepoRoot()): string[] {
   return [...found].sort();
 }
 
-/** Read api/db/schema.ts and collect the first string argument of each pgTable() call. */
+/** Read api/_db/schema.ts and collect the first string argument of each pgTable() call. */
 export function loadDrizzleTables(root = resolveRepoRoot()): string[] {
   const src = readFileSync(join(root, SCHEMA_FILE_REL), 'utf8');
   const found = new Set<string>();

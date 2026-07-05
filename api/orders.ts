@@ -24,24 +24,24 @@
 
 import { eq, desc, inArray } from 'drizzle-orm';
 import { createHmac, timingSafeEqual } from 'crypto';
-import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
-import { getDb, schema } from './db/client.js';
-import { aggregateOrderStatus, isValidTransition, type OrderEventType } from './lib/order-status.js';
-import { dispatchDesignSavedEmail } from './lib/email/dispatch.js';
-import { sendEmail } from './lib/email/send.js';
-import { drizzleMerchantStore } from './db/merchantStore.js';
+import { withSentry, type MinReq, type MinRes } from './_lib/sentry.js';
+import { getDb, schema } from './_db/client.js';
+import { aggregateOrderStatus, isValidTransition, type OrderEventType } from './_lib/order-status.js';
+import { dispatchDesignSavedEmail } from './_lib/email/dispatch.js';
+import { sendEmail } from './_lib/email/send.js';
+import { drizzleMerchantStore } from './_db/merchantStore.js';
 import {
   signMerchantSession,
   buildMagicLinkUrl,
   DEFAULT_TTL_MS,
   readMerchantSessionSecret,
-} from './lib/merchantSession.js';
+} from './_lib/merchantSession.js';
 import {
   drizzleReferralStore,
   mintRefCode,
   type ReferralStore,
   type ListReferralsFilter,
-} from './db/referralStore.js';
+} from './_db/referralStore.js';
 import { Redis } from '@upstash/redis';
 import { sql } from 'drizzle-orm';
 // Cowork OS Phase 0.5 — subscriptions feed reads the canonical Vic-edited
@@ -1248,7 +1248,7 @@ async function handleCommissionReconcile(req: RouterReq, res: MinRes): Promise<v
   }
   // Admin gate — only signed-in Vic / admin role can pull the CSV.
   // Defers to the existing adminAuth helper that powers /api/admin/*.
-  const { authoriseAdminWithLive } = await import('./lib/adminAuth.js');
+  const { authoriseAdminWithLive } = await import('./_lib/adminAuth.js');
   const auth = await authoriseAdminWithLive(req.headers ?? {}, drizzleMerchantStore());
   if (!auth.ok) {
     res.status(auth.status ?? 401);

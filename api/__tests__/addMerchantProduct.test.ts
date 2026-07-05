@@ -5,7 +5,7 @@ import { describe, it, expect } from 'vitest';
 import {
   addMerchantProduct,
   updateProductDimensions,
-} from '../lib/agent/intents/addMerchantProduct';
+} from '../_lib/agent/intents/addMerchantProduct';
 
 function validPacket(extra: Record<string, unknown> = {}): Record<string, unknown> {
   const { photoFront: photoFrontOverride, ...restExtra } = extra as { photoFront?: Record<string, unknown> };

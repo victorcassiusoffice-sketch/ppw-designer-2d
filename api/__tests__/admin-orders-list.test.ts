@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { parseOrdersFilters } from '../lib/admin/orders/list';
+import { parseOrdersFilters } from '../_lib/admin/orders/list';
 
 describe('parseOrdersFilters', () => {
   it('defaults to page 1 / perPage 25 with no filters', () => {
@@ -45,7 +45,7 @@ describe('parseOrdersFilters', () => {
 
 describe('GET /api/admin/orders — handler shape', () => {
   it('returns 405 for non-GET', async () => {
-    const mod = await import('../lib/admin/orders/list');
+    const mod = await import('../_lib/admin/orders/list');
     const handler = mod.handler;
     let status = 0;
     let ended = false;
@@ -66,7 +66,7 @@ describe('GET /api/admin/orders — handler shape', () => {
   });
 
   it('returns 401 without a Bearer token', async () => {
-    const mod = await import('../lib/admin/orders/list');
+    const mod = await import('../_lib/admin/orders/list');
     const handler = mod.handler;
     let status = 0;
     let body: unknown = null;
@@ -103,7 +103,7 @@ describe('fetchOrdersPage schema-missing fallback', () => {
     // We can't actually run a query here without a DB. Validate by
     // re-importing and stubbing getDb to throw the undefined_table error.
     vi.resetModules();
-    vi.doMock('../db/client.js', () => ({
+    vi.doMock('../_db/client.js', () => ({
       getDb: () => ({
         execute: async () => {
           throw new Error('relation "orders" does not exist');
@@ -111,7 +111,7 @@ describe('fetchOrdersPage schema-missing fallback', () => {
       }),
       schema: {},
     }));
-    const { fetchOrdersPage } = await import('../lib/admin/orders/list');
+    const { fetchOrdersPage } = await import('../_lib/admin/orders/list');
     const out = await fetchOrdersPage({
       page: 1,
       perPage: 25,
@@ -123,7 +123,7 @@ describe('fetchOrdersPage schema-missing fallback', () => {
     expect(out.schemaMissing).toBe(true);
     expect(out.items).toEqual([]);
     expect(out.total).toBe(0);
-    vi.doUnmock('../db/client.js');
+    vi.doUnmock('../_db/client.js');
     vi.resetModules();
   });
 });

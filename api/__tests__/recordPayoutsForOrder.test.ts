@@ -11,7 +11,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const insertedRows: unknown[] = [];
 
-vi.mock('../db/client.js', () => {
+vi.mock('../_db/client.js', () => {
   const builder = {
     _orderLookup: [] as unknown[],
     _itemRows: [] as unknown[],
@@ -63,9 +63,9 @@ import {
   recordPayoutsForOrder,
   PPW_PAYOUT_COMMISSION_DEFAULT,
   PAYOUT_HOLD_MS,
-} from '../lib/payouts/recordPayoutsForOrder';
+} from '../_lib/payouts/recordPayoutsForOrder';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fakeDb: any = await import('../db/client.js').then((m) => (m as any).__fake);
+const fakeDb: any = await import('../_db/client.js').then((m) => (m as any).__fake);
 
 describe('Wellness-Designer-App (f) / recordPayoutsForOrder', () => {
   beforeEach(() => {

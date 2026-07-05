@@ -8,7 +8,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const sendEmail = vi.fn();
-vi.mock('../../../lib/email/send.js', () => ({
+vi.mock('../../../_lib/email/send.js', () => ({
   sendEmail: (args: unknown) => sendEmail(args),
 }));
 
@@ -16,7 +16,7 @@ import {
   dispatchDesignSavedEmail,
   dispatchOrderConfirmedEmail,
   deriveGreetingName,
-} from '../../../lib/email/dispatch';
+} from '../../../_lib/email/dispatch';
 
 describe('deriveGreetingName', () => {
   it('uses the email-prefix as a friendly proxy name', () => {

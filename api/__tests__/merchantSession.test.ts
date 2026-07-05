@@ -5,7 +5,7 @@ import {
   buildMagicLinkUrl,
   DEFAULT_TTL_MS,
   type MerchantSessionPayload,
-} from '../lib/merchantSession';
+} from '../_lib/merchantSession';
 import {
   parseMagicLinkBody,
   buildMagicLinkEmail,

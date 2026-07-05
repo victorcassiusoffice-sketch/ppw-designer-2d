@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { computeDedupKey } from '../../../lib/email/dedupKey';
+import { computeDedupKey } from '../../../_lib/email/dedupKey';
 
 describe('computeDedupKey', () => {
   it('returns the same key for the same input', () => {

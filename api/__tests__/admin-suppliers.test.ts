@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { parseAdminSupplierFilters } from '../lib/admin/suppliers/list';
-import { validateCreate, validateUpdate } from '../lib/admin/suppliers/write';
+import { parseAdminSupplierFilters } from '../_lib/admin/suppliers/list';
+import { validateCreate, validateUpdate } from '../_lib/admin/suppliers/write';
 
 describe('parseAdminSupplierFilters', () => {
   it('defaults', () => {
@@ -81,7 +81,7 @@ describe('admin suppliers validateUpdate', () => {
 
 describe('admin suppliers handler gates', () => {
   it('list returns 405 for non-GET', async () => {
-    const mod = await import('../lib/admin/suppliers/list');
+    const mod = await import('../_lib/admin/suppliers/list');
     const handler = mod.handler;
     let status = 0;
     let ended = false;
@@ -97,7 +97,7 @@ describe('admin suppliers handler gates', () => {
   });
 
   it('write returns 405 for GET', async () => {
-    const mod = await import('../lib/admin/suppliers/write');
+    const mod = await import('../_lib/admin/suppliers/write');
     const handler = mod.handler;
     let status = 0;
     let ended = false;
@@ -113,7 +113,7 @@ describe('admin suppliers handler gates', () => {
   });
 
   it('list returns 401 without Bearer', async () => {
-    const mod = await import('../lib/admin/suppliers/list');
+    const mod = await import('../_lib/admin/suppliers/list');
     const handler = mod.handler;
     let status = 0;
     const res = {
@@ -138,7 +138,7 @@ describe('admin suppliers handler gates', () => {
   });
 
   it('write returns 401 without Bearer for POST', async () => {
-    const mod = await import('../lib/admin/suppliers/write');
+    const mod = await import('../_lib/admin/suppliers/write');
     const handler = mod.handler;
     let status = 0;
     const res = {

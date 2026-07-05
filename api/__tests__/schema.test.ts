@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getTableColumns } from 'drizzle-orm';
-import { merchants, merchantDocuments, admins, merchantStatusEnum } from '../db/schema';
+import { merchants, merchantDocuments, admins, merchantStatusEnum } from '../_db/schema';
 
 /**
  * The schema module must import cleanly (drizzle-orm resolved, all

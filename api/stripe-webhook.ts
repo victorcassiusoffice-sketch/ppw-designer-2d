@@ -28,14 +28,14 @@
  */
 
 import Stripe from 'stripe';
-import { withSentry, captureException, flushSentry } from "./lib/sentry.js";
+import { withSentry, captureException, flushSentry } from "./_lib/sentry.js";
 import {
   sendOrderConfirmation,
   sendOrderAlertToVic,
   sendPaymentFailedAlertToVic,
-} from './lib/email.js';
-import type { OrderSummary, CustomerInfo, Currency } from './lib/orderTypes.js';
-import { recordWebhookEvent } from './lib/webhookDedupe.js';
+} from './_lib/email.js';
+import type { OrderSummary, CustomerInfo, Currency } from './_lib/orderTypes.js';
+import { recordWebhookEvent } from './_lib/webhookDedupe.js';
 
 // IMPORTANT — disables Vercel's default JSON body parser so we get the
 // raw bytes Stripe signed.

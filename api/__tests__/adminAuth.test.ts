@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { authoriseAdminRequest, VIC_EMAIL_ALLOWLIST } from '../lib/adminAuth';
+import { authoriseAdminRequest, VIC_EMAIL_ALLOWLIST } from '../_lib/adminAuth';
 
 describe('authoriseAdminRequest', () => {
   it('rejects when Authorization header is missing', async () => {

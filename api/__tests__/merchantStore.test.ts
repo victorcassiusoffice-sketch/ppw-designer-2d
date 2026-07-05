@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createInMemoryMerchantStore } from '../db/merchantStore';
+import { createInMemoryMerchantStore } from '../_db/merchantStore';
 
 describe('in-memory merchant store', () => {
   let store: ReturnType<typeof createInMemoryMerchantStore>;

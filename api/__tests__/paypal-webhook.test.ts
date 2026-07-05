@@ -11,19 +11,19 @@ import {
   extractHeaders,
   applyEventToOrder,
   type PaypalEvent,
-} from '../lib/paypal/webhook';
+} from '../_lib/paypal/webhook';
 
 // Mock the dedupe + db modules so the dispatch core can run without a real DB.
-vi.mock('../lib/webhookDedupe', () => ({
+vi.mock('../_lib/webhookDedupe', () => ({
   recordWebhookEvent: vi.fn(),
 }));
-vi.mock('../db/client', () => ({
+vi.mock('../_db/client', () => ({
   getDb: () => ({
     execute: vi.fn().mockResolvedValue([]),
   }),
 }));
 
-import { recordWebhookEvent } from '../lib/webhookDedupe';
+import { recordWebhookEvent } from '../_lib/webhookDedupe';
 
 const mockRecord = recordWebhookEvent as unknown as ReturnType<typeof vi.fn>;
 

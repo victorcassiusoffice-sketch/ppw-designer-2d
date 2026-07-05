@@ -8,8 +8,8 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { z } from 'zod';
-import { withApi, type WithApiErrorBody } from '../lib/withApi';
-import type { CachedResult } from '../lib/idempotency';
+import { withApi, type WithApiErrorBody } from '../_lib/withApi';
+import type { CachedResult } from '../_lib/idempotency';
 
 interface MockRes {
   statusCode: number;

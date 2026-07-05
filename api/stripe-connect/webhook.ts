@@ -15,11 +15,11 @@
  */
 
 import Stripe from 'stripe';
-import { withSentry } from "../lib/sentry.js";
-import { drizzleMerchantStore } from '../db/merchantStore.js';
-import { STRIPE_API_VERSION, getConnectWebhookSecret } from '../lib/stripeConnect.js';
-import { handleAccountUpdated } from '../lib/stripeConnectWebhook.js';
-import { recordWebhookEvent } from '../lib/webhookDedupe.js';
+import { withSentry } from "../_lib/sentry.js";
+import { drizzleMerchantStore } from '../_db/merchantStore.js';
+import { STRIPE_API_VERSION, getConnectWebhookSecret } from '../_lib/stripeConnect.js';
+import { handleAccountUpdated } from '../_lib/stripeConnectWebhook.js';
+import { recordWebhookEvent } from '../_lib/webhookDedupe.js';
 
 // Disable Vercel JSON parser — needed for signature verification.
 export const config = {

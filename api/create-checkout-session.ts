@@ -2,7 +2,7 @@
  * Vercel serverless function — create Stripe Checkout Session.
  *
  * POST /api/create-checkout-session
- *   body:  CreateCheckoutSessionRequest (see api/lib/orderTypes.ts)
+ *   body:  CreateCheckoutSessionRequest (see api/_lib/orderTypes.ts)
  *   200:   { url: string }
  *   400:   { error: '<safe-message>' }   — validation failure
  *   405:   wrong method
@@ -19,20 +19,20 @@
  */
 
 import Stripe from 'stripe';
-import { withSentry } from "./lib/sentry.js";
+import { withSentry } from "./_lib/sentry.js";
 import {
   hashBody,
   checkIdempotency,
   storeIdempotency,
   extractIdempotencyKey,
-} from './lib/idempotency.js';
+} from './_lib/idempotency.js';
 import type {
   CreateCheckoutSessionRequest,
   CartLineItemPayload,
   CustomerInfo,
   PropertySnapshot,
   Currency,
-} from './lib/orderTypes.js';
+} from './_lib/orderTypes.js';
 
 // Pin Stripe API version — bumping should be a deliberate edit.
 const STRIPE_API_VERSION = '2025-02-24.acacia' as const;

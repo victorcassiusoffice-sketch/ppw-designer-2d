@@ -9,7 +9,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createHmac } from 'node:crypto';
-import { calibrate, __TEST__ } from '../lib/capture/calibrateHandler';
+import { calibrate, __TEST__ } from '../_lib/capture/calibrateHandler';
 import merchantsRouter from '../merchants-router';
 
 const SECRET = 'test-hmac-secret-do-not-use-in-prod';

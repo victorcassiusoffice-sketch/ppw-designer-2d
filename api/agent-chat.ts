@@ -13,7 +13,7 @@
  * per-merchant cost tracking (writes to admin dashboard).
  */
 
-import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
+import { withSentry, type MinReq, type MinRes } from './_lib/sentry.js';
 import {
   readOpenRouterEnv,
   openRouterChat,
@@ -23,11 +23,11 @@ import {
   MODEL_SLUGS,
   type ChatMessage,
   type AgentModel,
-} from './lib/agent/openrouter.js';
-import { applyAgentChatLockdown } from './lib/agent/lockdown.js';
-import { getClientIp } from './lib/rateLimit.js';
+} from './_lib/agent/openrouter.js';
+import { applyAgentChatLockdown } from './_lib/agent/lockdown.js';
+import { getClientIp } from './_lib/rateLimit.js';
 import { eq, sql } from 'drizzle-orm';
-import { getDb, schema } from './db/client.js';
+import { getDb, schema } from './_db/client.js';
 
 const MAX_MESSAGES = 30;
 const MAX_MESSAGE_CHARS = 4000;

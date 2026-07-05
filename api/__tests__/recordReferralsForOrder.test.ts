@@ -13,7 +13,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const insertedRows: unknown[] = [];
 
-vi.mock('../db/client.js', () => {
+vi.mock('../_db/client.js', () => {
   const builder = {
     _orderLookup: [] as unknown[],
     _itemRows: [] as unknown[],
@@ -69,9 +69,9 @@ vi.mock('../db/client.js', () => {
 import {
   deriveCartRefCode,
   recordReferralsForOrder,
-} from '../lib/payouts/recordReferralsForOrder';
+} from '../_lib/payouts/recordReferralsForOrder';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fakeDb: any = await import('../db/client.js').then((m) => (m as any).__fake);
+const fakeDb: any = await import('../_db/client.js').then((m) => (m as any).__fake);
 
 describe('deriveCartRefCode', () => {
   it('produces a deterministic PPW-<MERCHANT>-<ORDER>-<SKU> shape', () => {

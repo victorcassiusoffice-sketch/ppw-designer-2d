@@ -13,7 +13,7 @@ import { describe, it, expect } from 'vitest';
 import {
   generateReferencePagePdf,
   REFERENCE_PAGE_HEADERS,
-} from '../lib/capture/referencePage';
+} from '../_lib/capture/referencePage';
 import merchantsRouter, { pathSegments } from '../merchants-router';
 
 const PDF_MAGIC = Buffer.from('%PDF-', 'ascii');

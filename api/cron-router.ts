@@ -17,12 +17,12 @@
  */
 
 import { sql } from 'drizzle-orm';
-import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
-import { getDb } from './db/client.js';
-import { recordAudit } from './lib/auditLog.js';
-import { emailMerchantApproved } from './lib/merchantEmails.js';
-import { refreshSupplierRatingBatch } from './lib/cron/refreshSupplierRating.js';
-import { reconcileEmailSendsBatch } from './lib/cron/reconcileEmailSends.js';
+import { withSentry, type MinReq, type MinRes } from './_lib/sentry.js';
+import { getDb } from './_db/client.js';
+import { recordAudit } from './_lib/auditLog.js';
+import { emailMerchantApproved } from './_lib/merchantEmails.js';
+import { refreshSupplierRatingBatch } from './_lib/cron/refreshSupplierRating.js';
+import { reconcileEmailSendsBatch } from './_lib/cron/reconcileEmailSends.js';
 
 interface RouterReq extends MinReq {
   body?: unknown;

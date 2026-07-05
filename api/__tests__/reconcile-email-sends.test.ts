@@ -8,14 +8,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const dispatchOrderConfirmedEmail = vi.fn();
-vi.mock('../lib/email/dispatch.js', () => ({
+vi.mock('../_lib/email/dispatch.js', () => ({
   dispatchOrderConfirmedEmail: (args: unknown) => dispatchOrderConfirmedEmail(args),
   dispatchDesignSavedEmail: vi.fn(),
   deriveGreetingName: (s: string) => s,
 }));
 
 const dbExecute = vi.fn();
-vi.mock('../db/client.js', () => ({
+vi.mock('../_db/client.js', () => ({
   getDb: () => ({ execute: (q: unknown) => dbExecute(q) }),
   schema: { orders: {}, auditLog: {} },
 }));
@@ -26,7 +26,7 @@ import {
   extractPayerEmail,
   reconcileEmailSendsBatch,
   type CapturedOrderRow,
-} from '../lib/cron/reconcileEmailSends';
+} from '../_lib/cron/reconcileEmailSends';
 
 describe('M9.A.recon.1 constants', () => {
   it('window is 24 hours', () => {

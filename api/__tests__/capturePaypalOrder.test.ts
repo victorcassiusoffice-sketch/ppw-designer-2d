@@ -6,8 +6,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   processCaptureRequest,
   validateCaptureRequest,
-} from '../lib/paypal/captureOrder';
-import { _resetPaypalTokenCacheForTests } from '../lib/paypalClient';
+} from '../_lib/paypal/captureOrder';
+import { _resetPaypalTokenCacheForTests } from '../_lib/paypalClient';
 
 describe('validateCaptureRequest', () => {
   it('accepts valid body', () => {

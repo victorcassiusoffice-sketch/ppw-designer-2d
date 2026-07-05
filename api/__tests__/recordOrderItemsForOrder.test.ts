@@ -13,7 +13,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const insertedRows: unknown[] = [];
 
-vi.mock('../db/client.js', () => {
+vi.mock('../_db/client.js', () => {
   const builder = {
     _orderLookup: [] as unknown[],
     _productLookup: [] as unknown[],
@@ -60,9 +60,9 @@ vi.mock('../db/client.js', () => {
 import {
   recordOrderItemsForOrder,
   paypalItemTotalMinor,
-} from '../lib/payouts/recordOrderItemsForOrder';
+} from '../_lib/payouts/recordOrderItemsForOrder';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fakeDb: any = await import('../db/client.js').then((m) => (m as any).__fake);
+const fakeDb: any = await import('../_db/client.js').then((m) => (m as any).__fake);
 
 describe('paypalItemTotalMinor', () => {
   it('parses USD decimal value × quantity into minor units', () => {

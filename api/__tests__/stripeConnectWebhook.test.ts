@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import type Stripe from 'stripe';
-import { createInMemoryMerchantStore } from '../db/merchantStore';
+import { createInMemoryMerchantStore } from '../_db/merchantStore';
 import {
   handleAccountUpdated,
   mapStripeAccountToStatus,
-} from '../lib/stripeConnectWebhook';
+} from '../_lib/stripeConnectWebhook';
 
 function mkAccount(
   id: string,

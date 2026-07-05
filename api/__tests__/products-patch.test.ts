@@ -8,7 +8,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('../db/client.js', () => {
+vi.mock('../_db/client.js', () => {
   const builder = {
     _lastResult: [] as unknown[],
     _updatedReturning: [] as unknown[],
@@ -61,13 +61,13 @@ vi.mock('../db/client.js', () => {
   };
 });
 
-vi.mock('../lib/auditLog.js', () => ({
+vi.mock('../_lib/auditLog.js', () => ({
   drizzleAuditWriter: () => ({ record: vi.fn(async () => ({ ok: true })) }),
   recordAudit: vi.fn(async () => ({ ok: true })),
 }));
 
 import { patchProduct, productPatchSchema } from '../products';
-import * as dbClient from '../db/client.js';
+import * as dbClient from '../_db/client.js';
 
 interface FakeCtx {
   builder: {

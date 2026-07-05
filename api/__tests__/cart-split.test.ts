@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { splitCartByMerchant, type CartLineItem, type ProductMerchantLink } from '../lib/cart/split';
+import { splitCartByMerchant, type CartLineItem, type ProductMerchantLink } from '../_lib/cart/split';
 import { validateCart } from '../cart-quote';
 
 const usdItem = (productId: number, sku: string, qty: number, price: number): CartLineItem => ({

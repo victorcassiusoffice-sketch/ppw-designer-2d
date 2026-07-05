@@ -12,7 +12,7 @@ import {
   renderOrderConfirmed,
   renderMerchantOnboard,
   renderOrderShipped,
-} from '../lib/email/templates';
+} from '../_lib/email/templates';
 
 describe('renderDesignSaved', () => {
   it('subject leads with the design name and uses the canonical phrase', () => {

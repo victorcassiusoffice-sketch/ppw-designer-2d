@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { __testing } from '../lib/admin/merchants/detail';
+import { __testing } from '../_lib/admin/merchants/detail';
 
 describe('admin/merchants/detail — pickSlug', () => {
   it('reads slug from query.slug', () => {
@@ -54,7 +54,7 @@ describe('admin/merchants/detail — fetchStripeAccount', () => {
 describe('admin/merchants/detail — auth gate', () => {
   it('returns 401 when Authorization header is missing', async () => {
     // Import handler lazily so we can swap the auth helper first.
-    const mod = await import('../lib/admin/merchants/detail');
+    const mod = await import('../_lib/admin/merchants/detail');
     const handler = mod.handler;
 
     const calls: Array<{ status: number; body: unknown }> = [];
@@ -91,7 +91,7 @@ describe('admin/merchants/detail — auth gate', () => {
   });
 
   it('returns 405 for non-GET', async () => {
-    const mod = await import('../lib/admin/merchants/detail');
+    const mod = await import('../_lib/admin/merchants/detail');
     const handler = mod.handler;
     const allowSpy = vi.fn();
     let lastStatus = 0;

@@ -1,5 +1,5 @@
 /**
- * Unit tests for api/lib/webhookDedupe.ts
+ * Unit tests for api/_lib/webhookDedupe.ts
  *
  * The Drizzle query builder is mocked so we don't hit Neon. We verify
  * the call shape: insert ... onConflictDoNothing returning {id}.
@@ -13,14 +13,14 @@ const valuesSpy = vi.fn().mockReturnValue({ onConflictDoNothing: onConflictSpy }
 const insertSpy = vi.fn().mockReturnValue({ values: valuesSpy });
 const executeSpy = vi.fn().mockResolvedValue([]);
 
-vi.mock('../db/client', () => ({
+vi.mock('../_db/client', () => ({
   getDb: () => ({
     insert: insertSpy,
     execute: executeSpy,
   }),
 }));
 
-import { recordWebhookEvent, markWebhookEventProcessed } from '../lib/webhookDedupe';
+import { recordWebhookEvent, markWebhookEventProcessed } from '../_lib/webhookDedupe';
 
 beforeEach(() => {
   insertSpy.mockClear();

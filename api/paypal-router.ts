@@ -9,10 +9,10 @@
  *   /api/paypal-webhook     → /api/paypal/webhook
  */
 
-import { handler as createOrderHandler } from './lib/paypal/createOrder.js';
-import { withSentry } from "./lib/sentry.js";
-import { handler as captureOrderHandler } from './lib/paypal/captureOrder.js';
-import { handler as webhookHandler } from './lib/paypal/webhook.js';
+import { handler as createOrderHandler } from './_lib/paypal/createOrder.js';
+import { withSentry } from "./_lib/sentry.js";
+import { handler as captureOrderHandler } from './_lib/paypal/captureOrder.js';
+import { handler as webhookHandler } from './_lib/paypal/webhook.js';
 
 interface MinimalReq {
   method?: string;

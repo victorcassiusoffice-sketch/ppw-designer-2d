@@ -4,8 +4,8 @@ import {
   merchantSignupSchema,
   processMerchantSignup,
   type MerchantSignupEmailTransport,
-} from '../lib/merchantSignup';
-import { createInMemoryMerchantStore } from '../db/merchantStore';
+} from '../_lib/merchantSignup';
+import { createInMemoryMerchantStore } from '../_db/merchantStore';
 
 function fakeEmails(): MerchantSignupEmailTransport & { ackCount: () => number; vicCount: () => number } {
   let ackCount = 0;

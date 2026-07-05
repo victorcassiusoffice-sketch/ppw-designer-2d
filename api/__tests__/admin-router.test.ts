@@ -8,67 +8,67 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('../lib/admin/merchants/list.js', () => ({
+vi.mock('../_lib/admin/merchants/list.js', () => ({
   handler: vi.fn(async (_req: unknown, res: { status: (c: number) => { json: (b: unknown) => void } }) => {
     res.status(200).json({ marker: 'merchants:list' });
   }),
 }));
-vi.mock('../lib/admin/merchants/detail.js', () => ({
+vi.mock('../_lib/admin/merchants/detail.js', () => ({
   handler: vi.fn(async (_req: unknown, res: { status: (c: number) => { json: (b: unknown) => void } }) => {
     res.status(200).json({ marker: 'merchants:detail' });
   }),
 }));
-vi.mock('../lib/admin/merchants/approve.js', () => ({
+vi.mock('../_lib/admin/merchants/approve.js', () => ({
   handler: vi.fn(async (_req: unknown, res: { status: (c: number) => { json: (b: unknown) => void } }) => {
     res.status(200).json({ marker: 'merchants:approve' });
   }),
 }));
-vi.mock('../lib/admin/merchants/reject.js', () => ({
+vi.mock('../_lib/admin/merchants/reject.js', () => ({
   handler: vi.fn(async (_req: unknown, res: { status: (c: number) => { json: (b: unknown) => void } }) => {
     res.status(200).json({ marker: 'merchants:reject' });
   }),
 }));
-vi.mock('../lib/admin/orders/list.js', () => ({
+vi.mock('../_lib/admin/orders/list.js', () => ({
   handler: vi.fn(async (_req: unknown, res: { status: (c: number) => { json: (b: unknown) => void } }) => {
     res.status(200).json({ marker: 'orders:list' });
   }),
 }));
-vi.mock('../lib/admin/payouts/list.js', () => ({
+vi.mock('../_lib/admin/payouts/list.js', () => ({
   handler: vi.fn(async (_req: unknown, res: { status: (c: number) => { json: (b: unknown) => void } }) => {
     res.status(200).json({ marker: 'payouts:list' });
   }),
 }));
-vi.mock('../lib/admin/products/list.js', () => ({
+vi.mock('../_lib/admin/products/list.js', () => ({
   handler: vi.fn(async (_req: unknown, res: { status: (c: number) => { json: (b: unknown) => void } }) => {
     res.status(200).json({ marker: 'products:list' });
   }),
 }));
-vi.mock('../lib/admin/products/write.js', () => ({
+vi.mock('../_lib/admin/products/write.js', () => ({
   handler: vi.fn(async (_req: unknown, res: { status: (c: number) => { json: (b: unknown) => void } }) => {
     res.status(200).json({ marker: 'products:write' });
   }),
 }));
-vi.mock('../lib/admin/products/importCsv.js', () => ({
+vi.mock('../_lib/admin/products/importCsv.js', () => ({
   handler: vi.fn(async (_req: unknown, res: { status: (c: number) => { json: (b: unknown) => void } }) => {
     res.status(200).json({ marker: 'products:import-csv' });
   }),
 }));
-vi.mock('../lib/admin/suppliers/list.js', () => ({
+vi.mock('../_lib/admin/suppliers/list.js', () => ({
   handler: vi.fn(async (_req: unknown, res: { status: (c: number) => { json: (b: unknown) => void } }) => {
     res.status(200).json({ marker: 'suppliers:list' });
   }),
 }));
-vi.mock('../lib/admin/suppliers/write.js', () => ({
+vi.mock('../_lib/admin/suppliers/write.js', () => ({
   handler: vi.fn(async (_req: unknown, res: { status: (c: number) => { json: (b: unknown) => void } }) => {
     res.status(200).json({ marker: 'suppliers:write' });
   }),
 }));
-vi.mock('../lib/admin/stats.js', () => ({
+vi.mock('../_lib/admin/stats.js', () => ({
   handler: vi.fn(async (_req: unknown, res: { status: (c: number) => { json: (b: unknown) => void } }) => {
     res.status(200).json({ marker: 'stats' });
   }),
 }));
-vi.mock('../lib/admin/auditLogList.js', () => ({
+vi.mock('../_lib/admin/auditLogList.js', () => ({
   handler: vi.fn(async (_req: unknown, res: { status: (c: number) => { json: (b: unknown) => void } }) => {
     res.status(200).json({ marker: 'audit-log' });
   }),

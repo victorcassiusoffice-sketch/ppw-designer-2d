@@ -8,7 +8,7 @@
  * it the frozen lambda drops the event.
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { withSentry, flushSentry, isSentryConfigured } from '../lib/sentry.js';
+import { withSentry, flushSentry, isSentryConfigured } from '../_lib/sentry.js';
 
 type Req = { method?: string; url?: string; headers: Record<string, string | string[] | undefined> };
 type Res = { setHeader(n: string, v: string): void; status(c: number): Res; end(p?: string): void; json(b: unknown): void };

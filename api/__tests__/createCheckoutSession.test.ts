@@ -9,7 +9,7 @@ import {
   buildMetadata,
   buildLineItems,
 } from '../create-checkout-session';
-import type { CreateCheckoutSessionRequest } from '../lib/orderTypes';
+import type { CreateCheckoutSessionRequest } from '../_lib/orderTypes';
 import type Stripe from 'stripe';
 
 function makeValidRequest(): CreateCheckoutSessionRequest {

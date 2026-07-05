@@ -16,7 +16,7 @@ import {
   RATE_LIMIT_PER_MINUTE,
   _resetLockdownForTests,
   _setLockdownRedisForTests,
-} from '../../../lib/agent/lockdown';
+} from '../../../_lib/agent/lockdown';
 
 /** Per-key in-memory fake Redis for budget tests. */
 function mapRedis() {

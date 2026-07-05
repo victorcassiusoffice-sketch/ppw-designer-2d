@@ -16,7 +16,7 @@ import {
   csvRowToCreatePayload,
   validateCsvRows,
   type CsvRowRecord,
-} from '../lib/admin/products/importCsv';
+} from '../_lib/admin/products/importCsv';
 
 const HEADER_LINE = CSV_HEADERS.join(',');
 

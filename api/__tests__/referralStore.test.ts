@@ -6,7 +6,7 @@ import {
   mintRefCode,
   createInMemoryReferralStore,
   REF_CODE_HEX_BYTES,
-} from '../db/referralStore';
+} from '../_db/referralStore';
 import {
   REFERRAL_OUTBOUND_BASE,
   validateRedirectQuery,

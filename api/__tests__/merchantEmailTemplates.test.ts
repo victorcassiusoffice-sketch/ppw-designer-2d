@@ -6,7 +6,7 @@ import {
   renderMerchantSignupAcknowledged,
   renderMerchantSignupAlertToVic,
   type MerchantEmailData,
-} from '../lib/email-templates';
+} from '../_lib/email-templates';
 
 const SAMPLE: MerchantEmailData = {
   businessName: 'Aurora Wellness Ltd',

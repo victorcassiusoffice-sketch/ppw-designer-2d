@@ -52,12 +52,12 @@
 
 import { z } from 'zod';
 
-import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
-import { getDb, schema } from './db/client.js';
+import { withSentry, type MinReq, type MinRes } from './_lib/sentry.js';
+import { getDb, schema } from './_db/client.js';
 import { and, eq, gte, gt, isNull, lte, notLike, sql, inArray, type SQL } from 'drizzle-orm';
-import { drizzleAuditWriter } from './lib/auditLog.js';
-import { verifyMerchantSession } from './lib/merchantSession.js';
-import { buildSeedImageryMap, enrichImagery } from './lib/products/seedImagery.js';
+import { drizzleAuditWriter } from './_lib/auditLog.js';
+import { verifyMerchantSession } from './_lib/merchantSession.js';
+import { buildSeedImageryMap, enrichImagery } from './_lib/products/seedImagery.js';
 import productsSeed from '../src/data/products.json' with { type: 'json' };
 
 // P0-2: SKU → real top-down asset + description, built once from the bundled

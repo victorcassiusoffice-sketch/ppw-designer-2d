@@ -8,8 +8,8 @@ import {
   validatePaypalRequest,
   buildPaypalOrderBody,
   toPaypalAmount,
-} from '../lib/paypal/createOrder';
-import { _resetPaypalTokenCacheForTests } from '../lib/paypalClient';
+} from '../_lib/paypal/createOrder';
+import { _resetPaypalTokenCacheForTests } from '../_lib/paypalClient';
 
 function makeValidRequest() {
   return {

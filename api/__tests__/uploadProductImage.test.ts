@@ -13,7 +13,7 @@ import {
   uploadProductImage,
   UPLOAD_PRODUCT_IMAGE_TOKEN_TTL_MS,
   UPLOAD_PRODUCT_IMAGE_MAX_BYTES,
-} from '../lib/merchants/uploadProductImage';
+} from '../_lib/merchants/uploadProductImage';
 import merchantsRouter from '../merchants-router';
 
 const FIXED_NOW_MS = 1748764800000; // 2025-06-01T08:00:00Z — pinned for deterministic blobKey

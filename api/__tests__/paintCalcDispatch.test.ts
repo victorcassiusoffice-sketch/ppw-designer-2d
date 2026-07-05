@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { calcDispatch, paintCalcHandler, floorCalcHandler } from '../lib/calc/paintCalcHandler';
+import { calcDispatch, paintCalcHandler, floorCalcHandler } from '../_lib/calc/paintCalcHandler';
 
 function fakeRes() {
   const res = {

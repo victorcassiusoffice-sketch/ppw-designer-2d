@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { validateCreate, validateUpdate } from '../lib/admin/products/write';
+import { validateCreate, validateUpdate } from '../_lib/admin/products/write';
 
 describe('admin products validateCreate', () => {
   const valid = {
@@ -100,7 +100,7 @@ describe('admin products validateUpdate', () => {
 
 describe('admin products write handler — auth + method gate', () => {
   it('returns 405 for GET', async () => {
-    const mod = await import('../lib/admin/products/write');
+    const mod = await import('../_lib/admin/products/write');
     const handler = mod.handler;
     let status = 0;
     let ended = false;
@@ -116,7 +116,7 @@ describe('admin products write handler — auth + method gate', () => {
   });
 
   it('returns 401 without Bearer for POST', async () => {
-    const mod = await import('../lib/admin/products/write');
+    const mod = await import('../_lib/admin/products/write');
     const handler = mod.handler;
     let status = 0;
     const res = {

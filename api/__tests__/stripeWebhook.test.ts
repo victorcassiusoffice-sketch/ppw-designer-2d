@@ -16,13 +16,13 @@ import {
   _resetWebhookStateForTests,
 } from '../stripe-webhook';
 
-vi.mock('../lib/email', () => ({
+vi.mock('../_lib/email', () => ({
   sendOrderConfirmation: vi.fn().mockResolvedValue({ ok: true, loggedOnly: true }),
   sendOrderAlertToVic: vi.fn().mockResolvedValue({ ok: true, loggedOnly: true }),
   sendPaymentFailedAlertToVic: vi.fn().mockResolvedValue({ ok: true, loggedOnly: true }),
 }));
 
-import * as emailLib from '../lib/email';
+import * as emailLib from '../_lib/email';
 
 function makeSession(overrides: Partial<Stripe.Checkout.Session> = {}): Stripe.Checkout.Session {
   return {

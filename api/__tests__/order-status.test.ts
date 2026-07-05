@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { aggregateOrderStatus, isValidTransition } from '../lib/order-status';
+import { aggregateOrderStatus, isValidTransition } from '../_lib/order-status';
 
 describe('aggregateOrderStatus', () => {
   it('returns pending for empty input', () => {

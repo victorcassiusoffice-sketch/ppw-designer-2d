@@ -9,7 +9,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('../db/client.js', () => {
+vi.mock('../_db/client.js', () => {
   const builder = {
     _orderLookup: [] as unknown[],
     _itemRows: [] as unknown[],
@@ -61,7 +61,7 @@ vi.mock('../db/client.js', () => {
   };
 });
 
-vi.mock('../lib/email/send.js', () => ({
+vi.mock('../_lib/email/send.js', () => ({
   sendEmail: vi.fn(async (args: { to: string; subject: string; template: string }) => ({
     ok: true,
     id: 're_test_' + args.template,
@@ -71,11 +71,11 @@ vi.mock('../lib/email/send.js', () => ({
 import {
   renderMerchantOrderConfirmed,
   type MerchantOrderConfirmedData,
-} from '../lib/email/templates';
-import { dispatchMerchantOrderConfirmedEmail } from '../lib/email/dispatch';
-import { fetchMerchantNotifyRowsForOrder } from '../lib/email/merchantOrderLookup';
+} from '../_lib/email/templates';
+import { dispatchMerchantOrderConfirmedEmail } from '../_lib/email/dispatch';
+import { fetchMerchantNotifyRowsForOrder } from '../_lib/email/merchantOrderLookup';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fakeDb: any = await import('../db/client.js').then((m) => (m as any).__fake);
+const fakeDb: any = await import('../_db/client.js').then((m) => (m as any).__fake);
 
 describe('Wellness-Designer-App (g) / renderMerchantOrderConfirmed', () => {
   const baseData: MerchantOrderConfirmedData = {

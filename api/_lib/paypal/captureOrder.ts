@@ -1,0 +1,355 @@
+/**
+ * Vercel serverless function - capture PayPal Standard order.
+ *
+ * POST /api/capturePaypalOrder
+ *   body: { paypalOrderId: string, ppwOrderId: string }
+ *   200:  { ok: true, status: 'captured' }
+ *   400:  { error: '<safe-message>' }
+ *   405:  wrong method
+ *   500:  { error: '<safe-message>' }
+ *
+ * After the buyer approves the payment on PayPal they're redirected
+ * back to our return_url (which lives on /order/success). The page
+ * extracts the PayPal `token` (= paypalOrderId) and calls this
+ * endpoint to capture the funds.
+ *
+ * On a successful capture we insert/update the `orders` row with
+ * payment_status='captured'. The PayPal webhook is the authoritative
+ * source of truth for state changes after this point - this endpoint
+ * is the "happy-path" UI accelerator.
+ */
+
+import { withSentry, type MinReq, type MinRes } from '../sentry.js';
+import { readPaypalEnv, paypalFetch } from '../paypalClient.js';
+import { getDb } from '../../_db/client.js';
+import { orders } from '../../_db/schema.js';
+import { sql } from 'drizzle-orm';
+import {
+  dispatchOrderConfirmedEmail,
+  dispatchMerchantOrderConfirmedEmail,
+  deriveGreetingName,
+} from '../email/dispatch.js';
+import { fetchMerchantNotifyRowsForOrder } from '../email/merchantOrderLookup.js';
+import { recordPayoutsForOrder } from '../payouts/recordPayoutsForOrder.js';
+import { recordOrderItemsForOrder, type PaypalCaptureItem } from '../payouts/recordOrderItemsForOrder.js';
+import { recordReferralsForOrder } from '../payouts/recordReferralsForOrder.js';
+
+const ALLOWED_ORIGINS = new Set([
+  'http://127.0.0.1:5173',
+  'http://localhost:5173',
+  'https://designer.ppwellness.co',
+]);
+
+function corsHeaders(origin: string | undefined): Record<string, string> {
+  const allow = origin && ALLOWED_ORIGINS.has(origin) ? origin : 'https://designer.ppwellness.co';
+  return {
+    'Access-Control-Allow-Origin': allow,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400',
+    Vary: 'Origin',
+  };
+}
+
+async function readJsonBody(req: MinReq): Promise<unknown> {
+  const b = req.body;
+  if (b === undefined || b === null) return {};
+  if (typeof b === 'object' && !Buffer.isBuffer(b)) return b;
+  if (typeof b === 'string') {
+    try { return JSON.parse(b); } catch { return null; }
+  }
+  if (Buffer.isBuffer(b)) {
+    try { return JSON.parse(b.toString('utf8')); } catch { return null; }
+  }
+  return null;
+}
+
+export interface ValidatedCaptureRequest {
+  paypalOrderId: string;
+  ppwOrderId: string;
+}
+
+export function validateCaptureRequest(
+  payload: unknown,
+): { ok: true; data: ValidatedCaptureRequest } | { ok: false; error: string } {
+  if (!payload || typeof payload !== 'object') return { ok: false, error: 'Invalid request body.' };
+  const p = payload as Partial<ValidatedCaptureRequest>;
+  if (typeof p.paypalOrderId !== 'string' || p.paypalOrderId.length === 0) {
+    return { ok: false, error: 'paypalOrderId required.' };
+  }
+  if (typeof p.ppwOrderId !== 'string' || p.ppwOrderId.length === 0) {
+    return { ok: false, error: 'ppwOrderId required.' };
+  }
+  return {
+    ok: true,
+    data: { paypalOrderId: p.paypalOrderId, ppwOrderId: p.ppwOrderId },
+  };
+}
+
+interface PaypalCaptureResponse {
+  id?: string;
+  status?: string;
+  payer?: {
+    email_address?: string;
+    name?: { given_name?: string; surname?: string };
+  };
+  purchase_units?: Array<{
+    // PayPal echoes the items[] array we sent at create-order time when it
+    // returns the capture response — recordOrderItemsForOrder reads them.
+    items?: PaypalCaptureItem[];
+    payments?: {
+      captures?: Array<{
+        id?: string;
+        status?: string;
+        amount?: { currency_code?: string; value?: string };
+      }>;
+    };
+  }>;
+}
+
+/**
+ * DB writer split out so tests can inject a no-op when DATABASE_URL is
+ * unset. Returns true if the row was upserted, false if the DB layer
+ * isn't reachable (still a 200 response - capture is the source of
+ * truth, the order row is a convenience mirror).
+ */
+export async function recordCapturedOrder(
+  ppwOrderId: string,
+  paypalOrderId: string,
+  capture: PaypalCaptureResponse,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const db = getDb();
+    const cap = capture.purchase_units?.[0]?.payments?.captures?.[0];
+    const amountStr = cap?.amount?.value ?? '0';
+    const currency = cap?.amount?.currency_code ?? 'USD';
+    const totalMinor = Math.round(parseFloat(amountStr) * (currency === 'MUR' ? 1 : 100));
+    await db.execute(sql`
+      INSERT INTO orders (ppw_order_id, customer_email, currency, total_minor, payment_rail, payment_rail_order_id, payment_status, raw_payload)
+      VALUES (${ppwOrderId}, ${''}, ${currency}, ${totalMinor}, ${'paypal'}, ${paypalOrderId}, ${'captured'}, ${JSON.stringify(capture)}::jsonb)
+      ON CONFLICT (ppw_order_id) DO UPDATE
+        SET payment_status = EXCLUDED.payment_status,
+            payment_rail_order_id = EXCLUDED.payment_rail_order_id,
+            raw_payload = EXCLUDED.raw_payload,
+            updated_at = NOW()
+    `);
+    void orders; // schema reference for future typed inserts
+    return { ok: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message.slice(0, 200) : 'DB write failed';
+    return { ok: false, error: message };
+  }
+}
+
+/**
+ * Public-for-tests core: take parsed body, optional fetch + recorder,
+ * return the response shape.
+ */
+export async function processCaptureRequest(
+  payload: unknown,
+  fetchFn: typeof fetch = fetch,
+  recorder: (
+    ppwOrderId: string,
+    paypalOrderId: string,
+    capture: PaypalCaptureResponse,
+  ) => Promise<{ ok: boolean; error?: string }> = recordCapturedOrder,
+): Promise<
+  | { status: 200; ok: true; paymentStatus: 'captured' }
+  | { status: 400 | 500; error: string }
+> {
+  const v = validateCaptureRequest(payload);
+  if (!v.ok) return { status: 400, error: v.error };
+  let cfg;
+  try {
+    cfg = readPaypalEnv();
+  } catch {
+    return { status: 500, error: 'PayPal not configured' };
+  }
+  try {
+    const res = await paypalFetch(
+      `/v2/checkout/orders/${encodeURIComponent(v.data.paypalOrderId)}/capture`,
+      { method: 'POST', body: '{}' },
+      cfg,
+      fetchFn,
+    );
+    if (!res.ok) {
+      return { status: 500, error: `PayPal capture failed: ${res.status}` };
+    }
+    const json = (await res.json()) as PaypalCaptureResponse;
+    if (json.status !== 'COMPLETED') {
+      return { status: 500, error: `PayPal capture status: ${json.status ?? 'unknown'}` };
+    }
+    // Recorder failures are non-fatal - the webhook will reconcile.
+    await recorder(v.data.ppwOrderId, v.data.paypalOrderId, json);
+
+    // Wellness-Designer-App (f) part 2 — populate order_items from the
+    // capture's purchase_units[].items[] so the payout + merchant-email
+    // pipelines have data to operate on. Non-fatal; capture authoritative.
+    try {
+      const itemsSummary = await recordOrderItemsForOrder(v.data.ppwOrderId, json);
+      if (!itemsSummary.ok) {
+        // eslint-disable-next-line no-console
+        console.error(
+          '[wellness-designer-app (f) order-items-record] failed:',
+          itemsSummary.error ?? itemsSummary.skippedReason,
+        );
+      } else if (itemsSummary.skippedSkus && itemsSummary.skippedSkus.length > 0) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          '[wellness-designer-app (f) order-items-record] SKUs not in catalog:',
+          itemsSummary.skippedSkus.join(', '),
+        );
+      }
+    } catch (itemsErr) {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[wellness-designer-app (f) order-items-record] unexpected:',
+        itemsErr instanceof Error ? itemsErr.message : String(itemsErr),
+      );
+    }
+
+    // M9.A.2 — order-confirmed email. Best-effort; capture is the
+    // authoritative outcome and the email is a courtesy. The dispatch
+    // helper itself never re-throws, but we still defensively wrap
+    // here in case the import path breaks.
+    try {
+      const cap = json.purchase_units?.[0]?.payments?.captures?.[0];
+      const amountStr = cap?.amount?.value ?? '0';
+      const currency = cap?.amount?.currency_code ?? 'USD';
+      const totalMinor = Math.round(parseFloat(amountStr) * (currency === 'MUR' ? 1 : 100));
+      const customerEmail = json.payer?.email_address ?? null;
+      const givenName = json.payer?.name?.given_name?.trim();
+      const dispatch = await dispatchOrderConfirmedEmail({
+        ppwOrderId: v.data.ppwOrderId,
+        customerEmail,
+        totalMinor,
+        currency,
+        customerName: givenName && givenName.length > 0 ? givenName : undefined,
+      });
+      if (dispatch.skippedReason === 'caller_caught') {
+        // eslint-disable-next-line no-console
+        console.error('[M9.A.2 order-confirmed-email] caught:', dispatch.error);
+      }
+
+      // Wellness-Designer-App (g) — merchant-side dispatch. Per unique
+      // merchant in the order, fire a separate Resend email. Lookup
+      // failures are non-fatal — capture is the authoritative outcome.
+      try {
+        const merchantRows = await fetchMerchantNotifyRowsForOrder(v.data.ppwOrderId);
+        const customerGreetingName =
+          givenName && givenName.length > 0
+            ? givenName
+            : customerEmail
+              ? deriveGreetingName(customerEmail)
+              : 'a customer';
+        for (const row of merchantRows) {
+          const merchantDispatch = await dispatchMerchantOrderConfirmedEmail({
+            row,
+            orderRef: v.data.ppwOrderId,
+            customerGreetingName,
+            currency,
+          });
+          if (merchantDispatch.skippedReason === 'caller_caught') {
+            // eslint-disable-next-line no-console
+            console.error(
+              '[wellness-designer-app (g) merchant-order-confirmed-email] caught:',
+              merchantDispatch.error,
+            );
+          }
+        }
+      } catch (merchantErr) {
+        // eslint-disable-next-line no-console
+        console.error(
+          '[wellness-designer-app (g) merchant-order-confirmed-email] lookup failed:',
+          merchantErr instanceof Error ? merchantErr.message : String(merchantErr),
+        );
+      }
+
+      // Wellness-Designer-App (f) — payout_queue 5% / 95% split. No-op
+      // when order_items is empty (current sandbox state); auto-fires
+      // once order_items population lands. Failures are non-fatal.
+      try {
+        const summary = await recordPayoutsForOrder(v.data.ppwOrderId);
+        if (!summary.ok) {
+          // eslint-disable-next-line no-console
+          console.error(
+            '[wellness-designer-app (f) payout-record] failed:',
+            summary.error ?? summary.skippedReason,
+          );
+        }
+      } catch (payoutErr) {
+        // eslint-disable-next-line no-console
+        console.error(
+          '[wellness-designer-app (f) payout-record] unexpected:',
+          payoutErr instanceof Error ? payoutErr.message : String(payoutErr),
+        );
+      }
+
+      // Wellness-Designer-App (f) closure — designer_referrals rows for
+      // inbound Pattern-B cart purchases (one row per order line).
+      // Idempotent via deterministic refCode + DB unique constraint.
+      // Non-fatal — capture is the authoritative outcome.
+      try {
+        const refSummary = await recordReferralsForOrder(v.data.ppwOrderId);
+        if (!refSummary.ok) {
+          // eslint-disable-next-line no-console
+          console.error(
+            '[wellness-designer-app (f) referral-record] failed:',
+            refSummary.error ?? refSummary.skippedReason,
+          );
+        }
+      } catch (refErr) {
+        // eslint-disable-next-line no-console
+        console.error(
+          '[wellness-designer-app (f) referral-record] unexpected:',
+          refErr instanceof Error ? refErr.message : String(refErr),
+        );
+      }
+    } catch (emailErr) {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[M9.A.2 order-confirmed-email] unexpected:',
+        emailErr instanceof Error ? emailErr.message : String(emailErr),
+      );
+    }
+    return { status: 200, ok: true, paymentStatus: 'captured' };
+  } catch (err) {
+    const message = err instanceof Error ? err.message.slice(0, 200) : 'Capture failed.';
+    return { status: 500, error: message };
+  }
+}
+
+async function rawHandler(req: MinReq, res: MinRes): Promise<void> {
+  const origin = typeof req.headers.origin === 'string' ? req.headers.origin : undefined;
+  const cors = corsHeaders(origin);
+  for (const [k, v] of Object.entries(cors)) res.setHeader(k, v);
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return;
+  }
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST, OPTIONS');
+    res.status(405).end();
+    return;
+  }
+
+  const body = await readJsonBody(req);
+  if (body === null) {
+    res.status(400);
+    res.json({ error: 'Body must be valid JSON.' });
+    return;
+  }
+
+  const result = await processCaptureRequest(body);
+  if (result.status === 200) {
+    res.status(200);
+    res.json({ ok: true, paymentStatus: 'captured' });
+    return;
+  }
+  res.status(result.status);
+  res.json({ error: result.error });
+}
+
+export const handler = withSentry(rawHandler);
+

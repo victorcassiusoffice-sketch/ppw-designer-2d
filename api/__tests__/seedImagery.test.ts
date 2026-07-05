@@ -3,7 +3,7 @@ import {
   buildSeedImageryMap,
   enrichImagery,
   isPlaceholderImage,
-} from '../lib/products/seedImagery.js';
+} from '../_lib/products/seedImagery.js';
 
 const SEED = [
   { sku: 'K1-CDIO-NT2450', topdown_image_url: '/products/topdown/k1-nordictrack-2450.png', notes: 'Foldable commercial treadmill.' },

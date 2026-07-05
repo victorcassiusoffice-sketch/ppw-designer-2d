@@ -9,7 +9,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('../db/client.js', () => {
+vi.mock('../_db/client.js', () => {
   const builder = {
     _merchantLookup: [] as unknown[],
     _insertReturning: [] as unknown[],
@@ -58,7 +58,7 @@ vi.mock('../db/client.js', () => {
   };
 });
 
-vi.mock('../lib/auditLog.js', () => ({
+vi.mock('../_lib/auditLog.js', () => ({
   drizzleAuditWriter: () => ({
     record: vi.fn(async () => ({ ok: true })),
   }),
@@ -69,9 +69,9 @@ import {
   createMerchantProduct,
   authoriseMerchantSession,
 } from '../products';
-import { signMerchantSession } from '../lib/merchantSession';
+import { signMerchantSession } from '../_lib/merchantSession';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fakeDb: any = await import('../db/client.js').then((m) => (m as any).__fake);
+const fakeDb: any = await import('../_db/client.js').then((m) => (m as any).__fake);
 
 describe('Wellness-Designer-App (c) / productCreateSchema', () => {
   const validBody = {

@@ -1,5 +1,5 @@
 /**
- * scripts/migrate.ts — apply SQL files in `api/db/migrations/` to Neon.
+ * scripts/migrate.ts — apply SQL files in `api/_db/migrations/` to Neon.
  *
  * Usage:
  *   DATABASE_URL=postgres://... npx tsx scripts/migrate.ts

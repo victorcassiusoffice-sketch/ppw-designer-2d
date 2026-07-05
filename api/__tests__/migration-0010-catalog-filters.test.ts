@@ -16,7 +16,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const MIG_DIR = join(__dirname, '..', 'db', 'migrations');
+const MIG_DIR = join(__dirname, '..', '_db', 'migrations');
 
 function read(name: string): string {
   return readFileSync(join(MIG_DIR, name), 'utf8');

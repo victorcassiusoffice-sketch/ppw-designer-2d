@@ -7,19 +7,19 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import type { AuditEntry } from '../../../lib/auditLog';
+import type { AuditEntry } from '../../../_lib/auditLog';
 import {
   sendEmail,
   _resetForTests,
   _setForTests,
   BUDGET_LIMIT_PER_DAY,
-} from '../../../lib/email/send';
+} from '../../../_lib/email/send';
 
 // Mock the audit writer so we can assert records without a DB.
 const auditRecord = vi.fn<(entry: AuditEntry) => Promise<{ ok: true } | { ok: false; error: string }>>(
   async () => ({ ok: true as const }),
 );
-vi.mock('../../../lib/auditLog.js', () => ({
+vi.mock('../../../_lib/auditLog.js', () => ({
   drizzleAuditWriter: () => ({ record: auditRecord }),
   recordAudit: vi.fn(async () => ({ ok: true })),
 }));

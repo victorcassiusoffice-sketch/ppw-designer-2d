@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { signUpload, SIGN_UPLOAD_TOKEN_TTL_MS } from '../lib/capture/signUpload';
+import { signUpload, SIGN_UPLOAD_TOKEN_TTL_MS } from '../_lib/capture/signUpload';
 import merchantsRouter from '../merchants-router';
 
 const FIXED_NOW_MS = 1748764800000; // 2025-06-01T08:00:00Z — pinned for deterministic blobKey

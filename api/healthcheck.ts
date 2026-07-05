@@ -9,7 +9,7 @@
  *                     after a deploy. Returns 500.
  */
 
-import { initSentry, withSentry, isSentryConfigured } from './lib/sentry.js';
+import { initSentry, withSentry, isSentryConfigured } from './_lib/sentry.js';
 
 interface MinimalReq {
   method?: string;

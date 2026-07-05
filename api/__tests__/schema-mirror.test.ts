@@ -20,11 +20,11 @@ describe('W0.D.7 schema-mirror', () => {
     const diff = diffSchemas(sql, drizzle);
     expect(
       diff.inSqlOnly,
-      `Tables in api/db/migrations/*.sql but missing from api/db/schema.ts: ${diff.inSqlOnly.join(', ')}`,
+      `Tables in api/_db/migrations/*.sql but missing from api/_db/schema.ts: ${diff.inSqlOnly.join(', ')}`,
     ).toEqual([]);
     expect(
       diff.inDrizzleOnly,
-      `Tables in api/db/schema.ts pgTable() but missing from any SQL migration: ${diff.inDrizzleOnly.join(', ')}`,
+      `Tables in api/_db/schema.ts pgTable() but missing from any SQL migration: ${diff.inDrizzleOnly.join(', ')}`,
     ).toEqual([]);
     // Sanity: at least one table on both sides — guards against the parser
     // silently returning [] (e.g. if the migrations dir moves).

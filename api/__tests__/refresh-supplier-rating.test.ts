@@ -17,10 +17,10 @@ import {
   BACKFILL_LIMIT,
   REFRESH_INTERVAL_DAYS,
   computeRatingForMerchantStatus,
-} from '../lib/cron/refreshSupplierRating';
+} from '../_lib/cron/refreshSupplierRating';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const MIG_DIR = join(__dirname, '..', 'db', 'migrations');
+const MIG_DIR = join(__dirname, '..', '_db', 'migrations');
 
 describe('computeRatingForMerchantStatus (W0.D.9 v1 algorithm)', () => {
   it('approved → 3', () => {

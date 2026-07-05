@@ -21,7 +21,7 @@
  *   node scripts/ops/backfill-live-product-images.mjs            # dry-run
  *   APPLY=1 node scripts/ops/backfill-live-product-images.mjs    # execute
  *
- * Connection string resolves the same way as api/db/client.ts:
+ * Connection string resolves the same way as api/_db/client.ts:
  *   DATABASE_URL || POSTGRES_URL || POSTGRES_DATABASE_URL || POSTGRES_URL_NON_POOLING
  */
 import { readFileSync } from 'node:fs';
