@@ -19,6 +19,7 @@ import { withSentry } from "../lib/sentry.js";
 import { drizzleMerchantStore } from '../db/merchantStore.js';
 import { STRIPE_API_VERSION, getConnectWebhookSecret } from '../lib/stripeConnect.js';
 import { handleAccountUpdated } from '../lib/stripeConnectWebhook.js';
+import { recordWebhookEvent } from '../lib/webhookDedupe.js';
 
 // Disable Vercel JSON parser — needed for signature verification.
 export const config = {
@@ -115,12 +116,25 @@ async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
     return;
   }
 
-  if (PROCESSED_EVENTS.has(event.id)) {
+  // Durable, multi-instance-safe idempotency via the `webhook_events`
+  // unique (source, event_id) constraint — same pattern as the main
+  // Stripe receiver (api/stripe-webhook.ts). The in-memory Set is only
+  // the degraded fallback for a transient DB outage.
+  let alreadyProcessed = false;
+  try {
+    const dedupe = await recordWebhookEvent('stripe-connect', event.id, event.type, event);
+    alreadyProcessed = dedupe.alreadyProcessed;
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[stripe-connect-webhook] DB dedupe unavailable — in-memory fallback', err);
+    if (PROCESSED_EVENTS.has(event.id)) alreadyProcessed = true;
+    else rememberEvent(event.id);
+  }
+  if (alreadyProcessed) {
     res.status(200);
     res.json({ ok: true, deduped: true });
     return;
   }
-  rememberEvent(event.id);
 
   const publicBaseUrl =
     process.env.PUBLIC_BASE_URL ?? 'https://designer.ppwellness.co';

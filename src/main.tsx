@@ -1,39 +1,53 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
 import App from './App';
-import CartPage from './pages/CartPage';
-import CheckoutPage from './pages/CheckoutPage';
-import OrderSuccessPage from './pages/OrderSuccessPage';
-import OrderCancelledPage from './pages/OrderCancelledPage';
-import OrderPendingPage from './pages/OrderPendingPage';
-import OrdersPage from './pages/OrdersPage';
-import SuppliersPage from './pages/SuppliersPage';
-import SuppliersSignupCompletePage from './pages/SuppliersSignupCompletePage';
-import AdminLayout from './pages/AdminLayout';
-import AdminMerchantsPage from './pages/AdminMerchantsPage';
-import RequireAdmin from './admin/RequireAdmin';
-import MerchantsListPage from './pages/admin/MerchantsListPage';
-import MerchantDetailPage from './pages/admin/MerchantDetailPage';
-import OrdersListPage from './pages/admin/OrdersListPage';
-import PayoutsListPage from './pages/admin/PayoutsListPage';
-import ProductsListPage from './pages/admin/ProductsListPage';
-import SuppliersListPage from './pages/admin/SuppliersListPage';
-import DashboardPage from './pages/admin/DashboardPage';
-import AuditLogPage from './pages/admin/AuditLogPage';
-import PublicProductsPage from './pages/PublicProductsPage';
-import MarketplaceCartPage from './pages/MarketplaceCartPage';
-import MarketplaceCheckoutPage from './pages/MarketplaceCheckoutPage';
-import OrderTrackPage from './pages/OrderTrackPage';
-import MerchantAgentPage from './pages/MerchantAgentPage';
-import MerchantDashboardPage from './pages/MerchantDashboardPage';
-import MerchantOnboardingPage from './pages/MerchantOnboardingPage';
-import MerchantAddProductPage from './pages/MerchantAddProductPage';
-import RequireMerchant from './components/RequireMerchant';
-import MyDesignsPage from './pages/MyDesignsPage';
 import { bootstrapFx } from './store/currencyStore';
 import './index.css';
+
+// Route-level code splitting (designer-loop 2026-07-05): the designer (App)
+// is the primary customer surface and stays eager; every other page loads
+// on navigation. This keeps Clerk (admin-only) and jsPDF (order-success
+// only) out of the main chunk entirely.
+const CartPage = lazy(() => import('./pages/CartPage'));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+const OrderSuccessPage = lazy(() => import('./pages/OrderSuccessPage'));
+const OrderCancelledPage = lazy(() => import('./pages/OrderCancelledPage'));
+const OrderPendingPage = lazy(() => import('./pages/OrderPendingPage'));
+const OrdersPage = lazy(() => import('./pages/OrdersPage'));
+const SuppliersPage = lazy(() => import('./pages/SuppliersPage'));
+const SuppliersSignupCompletePage = lazy(() => import('./pages/SuppliersSignupCompletePage'));
+const AdminLayout = lazy(() => import('./pages/AdminLayout'));
+const AdminMerchantsPage = lazy(() => import('./pages/AdminMerchantsPage'));
+const RequireAdmin = lazy(() => import('./admin/RequireAdmin'));
+const MerchantsListPage = lazy(() => import('./pages/admin/MerchantsListPage'));
+const MerchantDetailPage = lazy(() => import('./pages/admin/MerchantDetailPage'));
+const OrdersListPage = lazy(() => import('./pages/admin/OrdersListPage'));
+const PayoutsListPage = lazy(() => import('./pages/admin/PayoutsListPage'));
+const ProductsListPage = lazy(() => import('./pages/admin/ProductsListPage'));
+const SuppliersListPage = lazy(() => import('./pages/admin/SuppliersListPage'));
+const DashboardPage = lazy(() => import('./pages/admin/DashboardPage'));
+const AuditLogPage = lazy(() => import('./pages/admin/AuditLogPage'));
+const PublicProductsPage = lazy(() => import('./pages/PublicProductsPage'));
+const MarketplaceCartPage = lazy(() => import('./pages/MarketplaceCartPage'));
+const MarketplaceCheckoutPage = lazy(() => import('./pages/MarketplaceCheckoutPage'));
+const OrderTrackPage = lazy(() => import('./pages/OrderTrackPage'));
+const MerchantAgentPage = lazy(() => import('./pages/MerchantAgentPage'));
+const MerchantDashboardPage = lazy(() => import('./pages/MerchantDashboardPage'));
+const MerchantOnboardingPage = lazy(() => import('./pages/MerchantOnboardingPage'));
+const MerchantAddProductPage = lazy(() => import('./pages/MerchantAddProductPage'));
+const RequireMerchant = lazy(() => import('./components/RequireMerchant'));
+const MyDesignsPage = lazy(() => import('./pages/MyDesignsPage'));
+
+/** Full-screen fallback shown while a lazy route chunk downloads. */
+function RouteFallback(): JSX.Element {
+  return (
+    <div className="flex h-screen w-screen items-center justify-center bg-ppw-sand">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-ppw-ink border-t-transparent" />
+    </div>
+  );
+}
 
 // Fire-and-forget FX bootstrap - refreshes the live rate snapshot if
 // the cached one is stale.
@@ -72,7 +86,8 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <Routes>
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
         <Route path="/" element={<App />} />
         <Route path="/designer" element={<App />} />
         <Route path="/cart" element={<CartPage />} />
@@ -197,7 +212,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   </React.StrictMode>,
 );
