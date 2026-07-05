@@ -54,7 +54,7 @@ import { z } from 'zod';
 
 import { withSentry, type MinReq, type MinRes } from './lib/sentry.js';
 import { getDb, schema } from './db/client.js';
-import { and, eq, gte, gt, isNull, lte, sql, inArray, type SQL } from 'drizzle-orm';
+import { and, eq, gte, gt, isNull, lte, notLike, sql, inArray, type SQL } from 'drizzle-orm';
 import { drizzleAuditWriter } from './lib/auditLog.js';
 import { verifyMerchantSession } from './lib/merchantSession.js';
 import { buildSeedImageryMap, enrichImagery } from './lib/products/seedImagery.js';
@@ -168,6 +168,9 @@ export interface ProductFilters {
   ratingMin: number | null;
   sort: SortOption;
   includeFacets: boolean;
+  /** Demo/placeholder SKUs (DEMO-*) are hidden from the public catalog
+   *  unless `include_demo=1` — Mauritius-focus catalog hygiene 2026-07-05. */
+  includeDemo: boolean;
   limit: number;
   offset: number;
 }
@@ -187,6 +190,7 @@ export function parseProductFilters(
     ratingMin: ratingRaw !== null ? Math.max(1, Math.min(5, ratingRaw)) : null,
     sort: parseSort(q),
     includeFacets: pickBool(q, 'include_facets'),
+    includeDemo: pickBool(q, 'include_demo'),
     limit: pickInt(q, 'limit', 24, 100) || 24,
     offset: pickInt(q, 'offset', 0, 100000),
   };
@@ -225,6 +229,7 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
   const db = getDb();
   // V4 M9.B.4 — exclude soft-deleted products everywhere (retired_at IS NULL).
   const conds = [eq(schema.products.status, 'active'), isNull(schema.products.retiredAt)];
+  if (!filters.includeDemo) conds.push(notLike(schema.products.sku, 'DEMO-%'));
   if (filters.category) conds.push(eq(schema.products.category, filters.category));
   if (filters.region) conds.push(eq(schema.products.region, filters.region));
   if (filters.priceMin !== null) conds.push(gte(schema.products.priceMinor, filters.priceMin));
@@ -327,6 +332,7 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
 export async function fetchCatalogFacets(filters: ProductFilters): Promise<CatalogFacets> {
   const db = getDb();
   const baseConds = [eq(schema.products.status, 'active')];
+  if (!filters.includeDemo) baseConds.push(notLike(schema.products.sku, 'DEMO-%'));
   if (filters.category) baseConds.push(eq(schema.products.category, filters.category));
   if (filters.region) baseConds.push(eq(schema.products.region, filters.region));
   if (filters.inStockOnly) baseConds.push(gt(schema.products.inStockQty, 0));

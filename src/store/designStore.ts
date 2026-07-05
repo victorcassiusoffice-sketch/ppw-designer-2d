@@ -103,10 +103,24 @@ export function isActiveRoomRectangle(): boolean {
   );
 }
 
+/**
+ * Unsubscriber for the propertyStore→designStore mirror subscription.
+ * The store is a module singleton so the subscription lives for the app
+ * lifetime in production; the handle exists so tests / HMR teardown can
+ * detach it instead of stacking duplicate listeners (same pattern as
+ * historyStore's uninstallHistorySubscriptions).
+ */
+let _unsubscribeMirror: (() => void) | null = null;
+
+export function uninstallDesignStoreMirror(): void {
+  _unsubscribeMirror?.();
+  _unsubscribeMirror = null;
+}
+
 export const useDesignStore = create<DesignState>((set) => {
   const initial = projectFromProperty();
 
-  usePropertyStore.subscribe((ps) => {
+  _unsubscribeMirror = usePropertyStore.subscribe((ps) => {
     const active = selectActiveRoom(ps);
     const polygon = active?.polygon ?? rectToPolygon({ lengthM: 5, widthM: 4 });
     const b = polygonBounds(polygon);

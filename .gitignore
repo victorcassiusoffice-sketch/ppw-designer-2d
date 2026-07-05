@@ -75,3 +75,6 @@ HANDOFF-*.md
 OMS-GOAL.md
 *-LOG.md
 tests/e2e/auto-dig-*.spec.ts
+
+# /goal runner sentinels (local run state, never source)
+.goal-status/

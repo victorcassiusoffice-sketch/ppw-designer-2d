@@ -20,9 +20,15 @@ describe('parseProductFilters', () => {
       ratingMin: null,
       sort: 'newest',
       includeFacets: false,
+      includeDemo: false,
       limit: 24,
       offset: 0,
     });
+  });
+
+  it('parses include_demo=1 (DEMO-* SKUs hidden by default)', () => {
+    expect(parseProductFilters({}).includeDemo).toBe(false);
+    expect(parseProductFilters({ include_demo: '1' }).includeDemo).toBe(true);
   });
 
   it('clamps limit to 100', () => {
