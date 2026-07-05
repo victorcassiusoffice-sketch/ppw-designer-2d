@@ -23,6 +23,7 @@
 
 import { eq } from 'drizzle-orm';
 import { getDb, schema } from '../../db/client.js';
+import { captureException } from '../sentry.js';
 
 /** Default platform commission rate (Vic-decision #6 — chain spec 5%
  *  vs existing UI 7%; foundation defaults to chain spec 0.05). The
@@ -107,7 +108,18 @@ export async function recordPayoutsForOrder(
         if (existing.currency !== cur) {
           // Mixed-currency lines for the same merchant shouldn't happen
           // — the cart-quote endpoint validates this upstream. Skip the
-          // payout for this merchant rather than insert a bad row.
+          // payout for this merchant rather than insert a bad row, but
+          // NEVER silently: the merchant would otherwise get no payout
+          // and no one would know.
+          // eslint-disable-next-line no-console
+          console.error(
+            `[payout-record] mixed currency for merchant ${mid} on order ${ppwOrderId}: ${existing.currency} vs ${cur} — payout row skipped`,
+          );
+          captureException(new Error('payout skipped: mixed currency for merchant'), {
+            ppwOrderId,
+            merchantId: mid,
+            currencies: `${existing.currency},${cur}`,
+          });
           continue;
         }
         existing.subtotalMinor += row.lineTotalMinor;

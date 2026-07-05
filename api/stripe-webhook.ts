@@ -28,7 +28,7 @@
  */
 
 import Stripe from 'stripe';
-import { withSentry } from "./lib/sentry.js";
+import { withSentry, captureException, flushSentry } from "./lib/sentry.js";
 import {
   sendOrderConfirmation,
   sendOrderAlertToVic,
@@ -230,7 +230,21 @@ async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
     return;
   }
 
-  await dispatchEvent(event, stripe);
+  // The event is already recorded as processed above, so a throw here
+  // would 500 → Stripe retries → the retry gets deduped → the emails are
+  // silently lost with no signal. Capture to Sentry + return 200 instead:
+  // delivery outcome is the same, but the failure is observable.
+  try {
+    await dispatchEvent(event, stripe);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[stripe-webhook] dispatchEvent failed after dedupe record', err);
+    captureException(err, { eventId: event.id, eventType: event.type });
+    await flushSentry(2000);
+    res.status(200);
+    res.json({ ok: true, dispatch: 'failed' });
+    return;
+  }
 
   res.status(200);
   res.json({ ok: true });

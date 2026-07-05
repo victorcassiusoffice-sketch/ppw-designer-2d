@@ -20,6 +20,12 @@
 
 import Stripe from 'stripe';
 import { withSentry } from "./lib/sentry.js";
+import {
+  hashBody,
+  checkIdempotency,
+  storeIdempotency,
+  extractIdempotencyKey,
+} from './lib/idempotency.js';
 import type {
   CreateCheckoutSessionRequest,
   CartLineItemPayload,
@@ -44,7 +50,7 @@ function corsHeaders(origin: string | undefined): Record<string, string> {
   return {
     'Access-Control-Allow-Origin': allow,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Idempotency-Key',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   };
@@ -219,15 +225,23 @@ export async function processCheckoutRequest(
   if (!v.ok) return { status: 400, error: v.error };
   const { data } = v;
   try {
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card'],
-      customer_email: data.customer.email,
-      line_items: buildLineItems(data.cart, data.currency),
-      success_url: data.successUrl,
-      cancel_url: data.cancelUrl,
-      metadata: buildMetadata(data),
-    });
+    // Stripe-native idempotency: a client retry with the identical payload
+    // (same orderId + same cart) returns the SAME session instead of
+    // minting a duplicate. The body hash is part of the key so a genuinely
+    // changed cart gets a fresh session rather than a Stripe key-reuse 400.
+    const idempotencyKey = `checkout:${data.orderId}:${hashBody(payload)}`;
+    const session = await stripe.checkout.sessions.create(
+      {
+        mode: 'payment',
+        payment_method_types: ['card'],
+        customer_email: data.customer.email,
+        line_items: buildLineItems(data.cart, data.currency),
+        success_url: data.successUrl,
+        cancel_url: data.cancelUrl,
+        metadata: buildMetadata(data),
+      },
+      { idempotencyKey },
+    );
     if (!session.url) {
       return { status: 500, error: 'Checkout session created without a URL.' };
     }
@@ -274,9 +288,43 @@ async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
     return;
   }
 
+  // Request-level idempotency (OMS Wave 4.6 middleware, degrades open
+  // when KV is unconfigured): an exact replay gets the cached response,
+  // a key reuse with a different body is a 409.
+  const idemKey = extractIdempotencyKey(req.headers);
+  const bodyHash = hashBody(body);
+  if (idemKey) {
+    try {
+      const check = await checkIdempotency('create-checkout-session', idemKey, bodyHash);
+      if (check.kind === 'replay') {
+        res.status(check.cached.status);
+        res.json(check.cached.body);
+        return;
+      }
+      if (check.kind === 'conflict') {
+        res.status(409);
+        res.json({ error: 'Idempotency-Key reused with a different body.' });
+        return;
+      }
+    } catch {
+      // KV outage — degrade open; Stripe-native idempotency still guards.
+    }
+  }
+
   const stripe = new Stripe(secret, { apiVersion: STRIPE_API_VERSION });
   const result = await processCheckoutRequest(body, stripe);
   if (result.status === 200) {
+    if (idemKey) {
+      try {
+        await storeIdempotency('create-checkout-session', idemKey, {
+          status: 200,
+          body: { url: result.url },
+          bodyHash,
+        });
+      } catch {
+        // Cache-store failure must never fail the checkout response.
+      }
+    }
     res.status(200);
     res.json({ url: result.url });
     return;

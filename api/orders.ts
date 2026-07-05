@@ -1330,12 +1330,14 @@ async function handleDesigns(
     return;
   }
 
-  const body =
-    typeof req.body === 'string'
-      ? JSON.parse(req.body || '{}')
-      : Buffer.isBuffer(req.body)
-        ? JSON.parse(req.body.toString('utf8') || '{}')
-        : (req.body ?? {});
+  // Safe parse — malformed JSON must be a 400, not a SyntaxError that
+  // relies on the dispatcher's catch-all to become a 500.
+  const body = await readJsonBody(req);
+  if (body === null) {
+    res.status(400);
+    res.json({ error: 'Malformed JSON body.' });
+    return;
+  }
 
   if (req.method === 'POST' && isNaN(designId)) {
     const v = validateDesignPayload(body);
@@ -1454,12 +1456,12 @@ async function handleLeads(req: RouterReq, res: MinRes): Promise<void> {
     res.status(405).end();
     return;
   }
-  const body =
-    typeof req.body === 'string'
-      ? JSON.parse(req.body || '{}')
-      : Buffer.isBuffer(req.body)
-        ? JSON.parse(req.body.toString('utf8') || '{}')
-        : (req.body ?? {});
+  const body = await readJsonBody(req);
+  if (body === null) {
+    res.status(400);
+    res.json({ error: 'Malformed JSON body.' });
+    return;
+  }
   const v = validateLeadPayload(body);
   if (!v.ok) {
     res.status(400);
