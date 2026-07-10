@@ -273,6 +273,10 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
         priceMinor: schema.products.priceMinor,
         currency: schema.products.currency,
         imageUrl: schema.products.imageUrl,
+        // WD-2D: the generated footprint-exact top-down (migration 0027).
+        // Preferred over the merchant's raw photo when present so the
+        // designer renders the to-scale top-down.
+        topdownImageUrl: schema.products.topdownImageUrl,
         region: schema.products.region,
       })
       .from(schema.products)
@@ -287,8 +291,14 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
       .where(and(...conds));
     const total = countRes[0]?.c ?? 0;
 
+    // Prefer the generated top-down over the merchant's raw photo, then let
+    // the seed-imagery enrichment fill any remaining placeholders.
+    const coalesced = rows.map(({ topdownImageUrl, ...r }) => ({
+      ...r,
+      imageUrl: topdownImageUrl ?? r.imageUrl,
+    }));
     const result: ProductListResult = {
-      products: enrichImagery(rows, SEED_IMAGERY),
+      products: enrichImagery(coalesced, SEED_IMAGERY),
       total,
       limit: filters.limit,
       offset: filters.offset,
@@ -400,8 +410,12 @@ export const productCreateSchema = z
       .length(3)
       .transform((s) => s.toUpperCase()),
     description: z.string().trim().max(5000).optional().nullable(),
-    widthMm: z.number().int().nonnegative().optional().nullable(),
-    depthMm: z.number().int().nonnegative().optional().nullable(),
+    // WD-2D top-down rebuild (2026-07-10): footprint width + depth are now
+    // REQUIRED + positive. To-scale placement on the 0.5 m grid and the
+    // deterministic top-down normaliser both depend on a real W×D, so the
+    // web/API create path no longer accepts a dimensionless product.
+    widthMm: z.number().int().positive(),
+    depthMm: z.number().int().positive(),
     heightMm: z.number().int().nonnegative().optional().nullable(),
     weightG: z.number().int().nonnegative().optional().nullable(),
     imageUrl: z
