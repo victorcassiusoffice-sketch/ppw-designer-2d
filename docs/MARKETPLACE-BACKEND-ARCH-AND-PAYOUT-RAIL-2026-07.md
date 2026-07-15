@@ -1,9 +1,18 @@
 # Wellness Designer — Marketplace Backend Architecture & Split-Payout Rail
 
 **Author:** Cowork (for Vic Bhatoolaul / PPWellness)
-**Date:** 2026-07-10
+**Date:** 2026-07-10 · **REVISED 2026-07-15** (see revision note)
 **Repo:** `ppw-designer-2d` (the Designer)
 **Status:** Architecture + research only. No code built, no signups, no spend.
+
+> ### ⚠️ REVISION NOTE — 2026-07-15 (read this)
+> **MIPS 1BMV is OFF the table.** MCB/MIPS have now confirmed **in writing**
+> (Sabrina Laval-Venkatachellum, official): *"The bank does not hold the necessary
+> licence to support marketplace solutions with automatic split settlements between
+> independent merchants."* The prior lead recommendation (§0 + Part B v1) is **dead**.
+> Part B has been fully re-written below (see **Part B — REVISED**). MIPS **Essential**
+> (single-merchant gateway) still works for PPW's *own* collection — that turns out to
+> be central to the new recommendation. The §0 summary below reflects the revised call.
 **Purpose:** Give Claude Code an implementation-ready spec for an Amazon-heavy,
 multi-merchant marketplace where one customer makes a **single payment** that is
 **split-paid out to many merchants** (minus PPW commission), plus an Amazon-style
@@ -12,24 +21,50 @@ from Mauritius now that Stripe Connect and PayPal are off the table.
 
 ---
 
-## 0. Decision summary (read this first)
+## 0. Decision summary (read this first) — REVISED 2026-07-15
 
 **Model (decided by Vic):** One cart → many merchants → **one** customer charge →
-PPW captures → **split payout** to each merchant, PPW keeps commission. Payout
-**speed to merchants matters**. A second listing path (merchant lists a product,
-Amazon-style) sits alongside the 2D room-designer path.
+PPW captures → money reaches each merchant, PPW keeps commission. Payout **speed to
+merchants matters**. A second listing path (merchant lists a product, Amazon-style)
+sits alongside the 2D room-designer path.
 
-**Rail recommendation (Part B):** **MIPS 1BMV (“1 Basket Multi-Vendor”)** as the
-primary rail. It is a 100% Mauritian gateway whose marketplace product does the
-exact thing required — routes one basket containing products from multiple vendors
-and **credits each vendor in real time**, auto-settling the marketplace’s (PPW’s)
-fee, *with no marketplace licence required*. Nothing else on the market is this
-close a fit for a MU-based platform paying mostly-local merchants.
+**The real blocker (reframed):** It is **not** that PPW needs its own licence. The
+standard safe structure is *"a licensed provider holds and splits the funds, so the
+platform stays out of regulatory scope."* The problem is that **no licensed provider
+in Mauritius will do that split to independent merchants**: MCB/MIPS have confirmed
+they lack the licence; **Peach's marketplace/aggregation product is South-Africa-only**
+(in MU it does *direct* single-merchant settlement + a Payouts API); Rapyd only
+*disburses* into MU (bank transfer) and is heavy. So provider-side split has no MU
+executor. **The workable paths therefore avoid regulated split-settlement entirely.**
 
-- **Primary:** MIPS 1BMV — real-time split settlement, MU-native, card + MauCAS QR + MCB Juice acceptance.
-- **Fallback / hybrid (build-your-own-split):** **Peach Payments** (collections in MU via MCB MCP account, settle in USD/MUR) **+ Peach Payouts API** to disburse each merchant slice. Use if MIPS 1BMV commercial terms or onboarding stall.
-- **Manual backstop (already half-built in repo):** capture via any single rail → write `payout_queue` rows → disburse with **MCB Bulk Payment** (batch file) on a hold cycle. This is what the current codebase already scaffolds.
-- **Ruled out:** Stripe Connect (no MU), PayPal split/Marketplaces (restricted MU), Paystack (no MU), Flutterwave payout-subaccounts (NGN-only), pure MoR like Paddle/Lemon Squeezy (they pay **one** account, cannot split to sub-merchants).
+**Re-ranked recommendation (Part B — REVISED):**
+
+1. **★ PRIMARY — "PPW-as-Principal" (Reseller / Seller-of-Record).** PPW collects the
+   **full** basket through its **own single-merchant gateway** (MIPS **Essential** —
+   already confirmed working — or Peach MU direct). PPW is the seller; merchants are
+   its **suppliers**, paid by **bulk bank transfer** (MCB Bulk Payment, already
+   scaffolded in-repo) or **Peach Payouts API**. No regulated split, no marketplace
+   licence — PPW is moving *its own* money to *its own* suppliers. Keeps the
+   one-basket/one-payment Amazon UX. **⚠ Legal/tax checks flagged in Part B §B5.**
+2. **★ FAST PARALLEL / FALLBACK — Referral-commission model.** Merchants run their
+   **own** checkout and collect their **own** money; PPW earns a tracked attribution
+   commission (`designer_referrals` table **already exists** in-repo). Zero payment
+   licence, zero VAT-on-gross, fastest to launch — but breaks the single-payment UX
+   (customer pays each merchant / clicks out). Good bridge while §1's structuring is
+   confirmed with a lawyer.
+3. **SCALE-LATER — Offshore split infra** (Mangopay / Rapyd / Payoneer / ConnectPay)
+   with PPW as a foreign-structured entity. Real split/sub-accounts, but built for
+   EU/global; needs an offshore entity, KYB, cross-border FX to pay MU merchants.
+   Only if §1/§2 prove insufficient at scale.
+- **Ruled out:** MIPS 1BMV / MCB split (confirmed no licence), Peach marketplace
+  aggregation (SA-only), Stripe Connect (no MU), PayPal Marketplaces (restricted MU),
+  Paystack (no MU), Flutterwave payout-subaccounts (NGN-only), pure MoR like
+  Paddle/Lemon Squeezy (pay **one** account, can't split to independent sub-merchants).
+
+**Backend impact:** minimal. Under §1 the existing `orders` / `order_items` /
+`payout_queue` / ledger model is unchanged — the "split" simply becomes **internal
+supplier settlement** (PPW→supplier) rather than **regulated split-settlement**
+(buyer→independent merchant). Same tables, cleaner legal footing.
 
 **Backend headline (Part A):** ~70% of the data model already exists in this repo
 (`merchants`, `products`, `orders`, `order_items`, `payout_queue`,
@@ -311,68 +346,128 @@ Payout-account sub-state: `unverified → pending → verified / rejected`.
 
 ---
 
-# PART B — Split-Payout Rail Research & Recommendation
+# PART B — REVISED: Split-Payout Rail Research & Recommendation (2026-07-15)
 
-## B1. The constraint
-Standard marketplace rails are unavailable to a Mauritius-domiciled platform:
-- **Stripe Connect** — not available in Mauritius (no MU seller onboarding).
-- **PayPal** — receiving/marketplace payouts restricted in MU; the repo’s PayPal
-  slice is effectively a dead-end for split payout.
+## B1. What changed and the reframed constraint
+MCB/MIPS confirmed **in writing** they cannot support automatic split settlements
+between independent merchants (no licence). Combined with the earlier exclusions,
+**every provider-side split option for a MU-domiciled platform is now closed:**
+- **Stripe Connect** — not available in MU. **PayPal Marketplaces** — restricted in MU.
+- **MIPS 1BMV / MCB split** — confirmed **no licence** (2026-07-15).
+- **Peach Payments marketplace/aggregation** — **South-Africa-only**; in MU Peach does
+  *direct* single-merchant settlement + MauCAS + a **Payouts** product (disburse to any
+  bank account), **not** licensed buyer→independent-merchant split.
+- **Rapyd** — *disburses* into MU (bank transfer) but collection is thin and the
+  contract/KYB is heavy; split is a global-entity product, not a MU-local one.
 
-So the platform needs a rail that (a) onboards **MU merchants**, (b) does
-**split / marketplace payout**, ideally (c) **fast** to merchants, at (d) sane fees
-and (e) reasonable integration effort.
+**Regulatory reframe (must-verify, not legal advice):** Mauritius has **two** regimes —
+(1) **Bank of Mauritius**, under the **National Payment Systems Act 2018**, licenses
+**domestic** payment service providers / payment intermediaries (the licence MCB says
+it lacks for this); (2) the **FSC Payment Intermediary Services (PIS) licence**, which
+is **cross-border only** (clients *outside* Mauritius) — so PIS does **not** help pay
+local MU merchants. The standard "stay-out-of-scope" pattern (a licensed provider holds
+& splits) has **no MU provider to execute it**. Therefore the recommendation pivots to
+structures that **don't require regulated split-settlement at all.**
 
-## B2. Provider matrix
+## B2. Provider re-verification matrix
 
-| Provider | MU merchants? | Split / marketplace payout? | Payout speed | Fees (indicative) | Integration effort | Verdict |
-|---|---|---|---|---|---|---|
-| **MIPS 1BMV** (Mauritian) | **Yes — native** | **Yes — 1 basket, multi-vendor, credits each vendor in real time; auto-settles marketplace fee; no marketplace licence needed** | **Real-time at purchase** | “% per transaction, very competitive” (not public — get a quote) | Low-med: REST API (`docs.mips.mu`), Shopify/Woo/Magento/PrestaShop/Odoo plugins, sandbox+SDKs | ★ **PRIMARY** |
-| **Peach Payments** | **Yes** — registers you an MCP account with **MCB**, can settle in USD or MUR | Collections yes; **Payouts API** disburses to merchants “in minutes”; split not a single turnkey product — you orchestrate | Payouts in minutes | Per-txn gateway + payout fees (quote) | Med: single API + dashboard; MauCAS QR + MCB Juice supported | ★ **FALLBACK / hybrid** |
-| **MCB (Bulk Payment + MPGS gateway)** | Yes — the bank itself | No native split; **Bulk Payment** = batch file disbursement (corporate) | Batch (same/next-day domestic) | Bank tariffs | Med-high: MPGS (Mastercard) gateway for collection + manual/API bulk file for payout | Manual **backstop** (repo already models this) |
-| **Rapyd** | Yes (legal entity) — Disburse supports MU **bank transfer**; collections limited (bank transfer/redirect, weak cards) | Yes — sub-accounts + rules split, global | Varies; RTP in 50+ countries (MU not RTP) | Global pricing, higher | High: global KYB, heavier contracts | Overkill for mostly-local; keep for cross-border only |
-| **DPO Group (DPO Pay by Network)** | **Yes** — strong MU presence (130k+ merchants, 20+ countries) | Gateway strong; **marketplace split not a documented product**; “split payment” = customer splitting their own payment | Standard settlement | Per-txn | Med | Good collections backup; **not** a split-payout answer |
-| **Flutterwave** | Unclear/weak for MU | Split payments + subaccounts exist, **but payout subaccounts are NGN-only**; MU support not confirmed | — | — | Med | **Not a fit** for MU payout |
-| **Cellulant** | Broad (35 markets) | Enterprise pan-African collections/payout; MU marketplace split undocumented | Corridor-dependent | Enterprise | High (enterprise sales) | Slow to stand up; not fast path |
-| **Paystack** | **No** (NG/GH/KE/ZA/CI only) | n/a | n/a | n/a | n/a | **Ruled out** |
-| **MoR: Paddle / Lemon Squeezy** | They’re MoR globally | **No** — they pay out to **one** account (the platform), cannot split to N sub-merchants | — | ~5%+ | Low | Only if PPW is sole seller; **does not solve multi-merchant split** |
+| Provider | MU merchants? | Buyer→**independent-merchant** split in MU? | Useful role now | Verdict |
+|---|---|---|---|---|
+| **MIPS / MCB (1BMV)** | Yes (native) | **NO — confirmed in writing, no licence** | MIPS **Essential** single-merchant gateway for **PPW's own** collection | Split ❌ / Collection ✅ |
+| **Peach Payments** | **Yes** (KE, MU, ZA) | **NO — marketplace aggregation is ZA-only**; MU = direct settlement | MU **collection** (MauCAS, cards, daily settlement) + **Payouts API** to disburse to any bank a/c | Split ❌ / Collect+Payout ✅ |
+| **Rapyd** | Disburse-only into MU (bank transfer) | Split is a global sub-account product, **not MU-local**; needs entity + KYB | Cross-border payout if PPW goes offshore | Heavy / later |
+| **DPO Pay** | Yes (strong MU presence) | **NO** documented marketplace split | Collection backup | Split ❌ |
+| **Flutterwave** | Weak/unconfirmed MU | Split exists but **payout subaccounts NGN-only** | — | ❌ |
+| **Cellulant** | Broad (35 mkts) | Enterprise; MU split undocumented, slow to stand up | — | ❌ (not fast) |
+| **Paystack** | **No MU** | n/a | — | ❌ |
+| **Mangopay / ConnectPay** | EU-licensed EMIs | Real split, but EU-centric; PPW would need EU/offshore entity | Scale-later infra | Later |
+| **Payoneer** | Global payee network | Not a split-at-checkout tool; good for cross-border **payout** to merchants | Offshore payout leg | Later |
+| **MoR (Paddle / Lemon Squeezy / PayPro)** | Global MoR | **NO** — pays **one** account; can't split to independent sub-merchants; physical-goods weak | Only if PPW sole seller of digital goods | ❌ for this model |
 
-## B3. Why MIPS 1BMV wins
-1. **It is literally the required product.** “One basket, multiple products, multiple
-   vendors, credited to each vendor **in real time**” — that is Vic’s exact model,
-   sold as a named feature, by a Mauritian company, for Mauritian marketplaces.
-2. **Speed = instant.** Merchant payout speed was called out as important. 1BMV
-   settles each vendor at the moment of purchase — nothing waits for a batch. This
-   also collapses most of Flow 3 and the whole “book of debt / reconciliation”
-   problem the current `payout_queue` was built to manage.
-3. **No marketplace licence needed** — MIPS explicitly removes the regulatory /
-   banking blocker that makes MU banks “think twice” about marketplace accounts.
-4. **Local acceptance** — cards + MauCAS QR + MCB Juice (500k+ users), which is how
-   Mauritian customers actually pay.
-5. **Low integration lift** — documented REST API + sandbox + existing e-commerce
-   plugins; the repo’s `payment_rail` enum already includes `mips`.
+## B3. The three viable paths (re-ranked)
 
-**The one open question is commercial:** MIPS doesn’t publish 1BMV pricing or the
-full split-API contract — both require contacting `contact@mips.mu` /
-`docs.mips.mu`. That’s a Vic quick-check (a conversation, not a spend).
+### ★ Option 1 — PPW-as-Principal (Reseller / Seller-of-Record) — RECOMMENDED
+- **How:** PPW collects the **full basket** on its **own single-merchant gateway**
+  (MIPS **Essential**, already confirmed working; Peach MU is a drop-in alternative).
+  There is **one merchant of record — PPW.** PPW then settles each supplier
+  (the "merchants") by **bulk bank transfer** (MCB Bulk Payment — already scaffolded)
+  or **Peach Payouts API**.
+- **Why it's legal-workable:** no buyer→independent-merchant split occurs, so **no
+  marketplace/payment-intermediary licence is triggered** — PPW is simply paying its
+  own suppliers. It **keeps the one-basket / one-payment Amazon UX.**
+- **Backend fit:** near-perfect. `orders` / `order_items` / `payout_queue` / the new
+  `payout_ledger` all stand; the "split" is re-labelled **internal supplier
+  settlement**. `disburseViaRail('mcb_bulk' | 'peach_payout')` is the only adapter to
+  write.
+- **Speed:** supplier payout speed = your batch cadence (daily/weekly) or near-real-time
+  via Peach Payouts. You control it.
+
+### ★ Option 2 — Referral / Attribution Commission — FAST PARALLEL / FALLBACK
+- **How:** merchants keep their **own** checkout and collect their **own** money; PPW
+  tracks the referral and **invoices a commission** (or merchants pre-load credit).
+- **Why:** **zero** payment-facilitator exposure, **zero** VAT-on-gross, fastest to
+  launch, and the **`designer_referrals` table + Pattern-C attribution already exist
+  in-repo.**
+- **Trade-off:** breaks single-payment UX (customer pays each merchant separately or
+  clicks out); commission reconciliation + trust that merchants honour tracking.
+- **Use as the bridge** while Option 1's tax/legal structuring is confirmed.
+
+### Option 3 — Offshore split infrastructure — SCALE-LATER
+- Mangopay / Rapyd / ConnectPay / Payoneer do real split/sub-accounts, but assume an
+  EU/global-structured entity and cross-border FX to reach MU merchants. Real cost,
+  KYB, and FX. Only justified if Options 1–2 cap out at scale. (FSC PIS licence is
+  cross-border-only, so it would fit an offshore-facing structure — but not paying
+  local merchants.)
 
 ## B4. Recommended rollout
-1. **Now (unblocks money movement fastest):** engage MIPS for 1BMV — get the API
-   contract + fee quote + sandbox. Build `POST /api/checkout` (1BMV basket) +
-   `POST /api/mips-webhook` + `disburseViaRail('mips')` (mostly reconciliation, since
-   settlement is real-time). Keep everything behind `PAYOUT_DISBURSE_ENABLED`.
-2. **In parallel (de-risk):** stand up **Peach Payments** as the fallback —
-   collections via the MCB MCP account + **Payouts API** to disburse each merchant
-   slice from the ledger. This is the “PPW captures, PPW splits” model and reuses
-   the existing `payout_queue` → `disburseViaRail('peach')` path 1:1.
-3. **Backstop (already coded):** MCB Bulk Payment file for any merchant not on a
-   real-time rail — the current dry-run cron + `payout_queue` already implements the
-   scheduling half.
+1. **Now:** build on **Option 1**. Confirm MIPS **Essential** (or Peach MU) collection
+   for PPW as sole merchant of record; wire supplier settlement through the existing
+   `payout_queue` → `disburseViaRail('mcb_bulk')`, adding **Peach Payouts API** as the
+   faster disbursement adapter. All behind `PAYOUT_DISBURSE_ENABLED`.
+2. **In parallel / immediately shippable:** turn on **Option 2** for any merchant who
+   prefers to run their own checkout — it's already 80% built (`designer_referrals`).
+3. **Defer Option 3** until volume + margin justify an offshore entity.
 
-**Net:** MIPS 1BMV for speed and native fit; Peach as the build-your-own-split
-insurance; MCB bulk as the manual floor. All three slot into the **one**
-`disburseViaRail()` seam the repo already exposes — so the architecture doesn’t
-change if the rail choice does.
+## B5. ⚠️ Legal / licensing / tax checks — VERIFY WITH A MU ACCOUNTANT + LAWYER
+*(This is a founder's checklist, **not legal advice**. Vic must confirm each with a
+qualified Mauritian professional before launch — good ammunition for the MIPS meeting.)*
+
+For **Option 1 (PPW-as-Principal):**
+1. **VAT-as-deemed-supplier:** MU law can **deem the platform the supplier for VAT**
+   when it controls terms / authorises payment / controls delivery. Under Option 1 PPW
+   *is* the seller, so expect to **charge 15% VAT on the GROSS basket** and let
+   suppliers invoice PPW net (PPW reclaims input VAT). Confirm treatment.
+2. **VAT registration threshold:** compulsory at **MUR 3,000,000** annual taxable
+   turnover (lowered from MUR 6M on **1 Oct 2025**). PPW's turnover = **gross sales**,
+   not commission — this threshold arrives fast. Confirm timing + registration.
+3. **Not payment intermediation:** confirm that "collect in PPW's name → pay own
+   suppliers" is **not** deemed unlicensed payment-intermediary activity under NPSA
+   2018 (it should not be — no third-party funds are held on behalf of independent
+   merchants — but get it in writing).
+4. **Contracts:** merchant agreements must read as **reseller / supply** contracts
+   (PPW buys/resells), **not** "marketplace facilitation" contracts.
+5. **Liability shift:** as seller-of-record, **consumer protection, returns, refunds,
+   warranty and product liability sit with PPW.** Price the risk; align the refund
+   clawback flow (Part A §A5).
+6. **Import VAT** if any supplier stock is imported in PPW's name (15% at import,
+   recoverable as input credit under the local-stock model).
+
+For **Option 2 (Referral):**
+7. Confirm the commission income is ordinary **service revenue** (VAT on the commission
+   only) and that PPW is **not** deemed the supplier (it must **not** control
+   payment/terms/delivery, or it risks being pulled back into deemed-supplier VAT).
+8. Ensure no "collection on behalf of" mechanic creeps in (that would re-trigger the
+   payment-intermediary question).
+
+## B6. Questions for Vic to raise at the MIPS meeting
+- Can MIPS **Essential** support PPW as **sole merchant of record** collecting full
+  multi-item baskets (yes — that's just single-merchant), and what are the fees?
+- Does MIPS offer a **disbursement / Payouts API** (to pay suppliers), or is MCB
+  **Bulk Payment** the route?
+- Get written confirmation of exactly **which licence** is missing and whether **any**
+  MIPS/MCB product (present or roadmap) could ever do compliant split — so the door is
+  documented as closed (or dated).
+- Ask MIPS who, in the MU market, **does** hold a split-settlement licence, if anyone.
 
 ---
 
@@ -387,3 +482,11 @@ change if the rail choice does.
 - [MCB — Bulk Payment](https://mcb.mu/corporate/payment-cash/pay/bulk-payment) · [MCB Online Payment Gateway](https://mcb.mu/corporate/payment-cash/collect/e-commerce/online-payment-gateway) · [MCB × Peach partnership](https://mcbmu.sitefinity.cloud/docs/default-source/press-release-doc/mcb-partners-with-peach-payments_en.pdf)
 - [Paystack — pricing / supported countries](https://paystack.com/pricing) · [Cellulant](https://www.cellulant.io/)
 - [Instant Payments Mauritius (rails overview)](https://www.lightspark.com/knowledge/instant-payments-mauritius)
+
+**Revision (2026-07-15) — regulatory / structuring / provider re-verification:**
+- [Bank of Mauritius — National Payment Systems Act 2018](https://www.bom.mu/about-bank/legislations/national-payment-systems-act-2018) · [NPSA regulations public notice](https://www.bom.mu/media/media-releases/public-notice-bank-mauritius-issues-regulations-under-national-payment-systems-act-2018) · [Bowmans — NPSA key features](https://bowmanslaw.com/insights/mauritius-national-payment-systems-regulations-key-features/)
+- [FSC Payment Intermediary Services (PIS) licence — cross-border only](https://renesisfinancial.com/structures-vehicles/licence/payment-intermediary-services-licence/) · [Renesis — Payment Services Licence guide 2026](https://renesisfinancial.com/structures-vehicles/licence/payment-service-licence-in-mauritius/)
+- [Peach Payments — Marketplaces](https://www.peachpayments.com/industry/marketplaces/) · [Payouts (real-time to any bank account)](https://www.peachpayments.com/products/payouts/) · [Daily settlements (KE/MU/ZA; aggregation ZA-only)](https://www.peachpayments.com/scale/daily-settlements/) · [MauCAS integration](https://platformafrica.com/2025/07/14/peach-payments-integrates-maucas-to-empower-online-merchants-to-offer-a-range-of-payments-on-e-commerce-checkout/)
+- [Rapyd — Disburse (MU = bank transfer)](https://docs.rapyd.net/en/rapyd-disburse.html) · [Marketplaces](https://www.rapyd.net/solutions/industries/marketplaces/)
+- [Mauritius VAT — deemed-supplier / marketplace facilitator + MUR 3M threshold](https://globallawexperts.com/mauritius-vat-digital-services-2026/) · [MRA — Simplified VAT registration](https://www.mra.mu/index.php/eservices1/vat-eservices/simplified-vat-registration) · [Seller-of-Record explainer](https://passportglobal.com/blog/seller-of-record-an-easier-solution-to-international-tax-compliance-for-ecommerce)
+- [Payneteasy — how marketplaces handle split payouts (structuring reference)](https://payneteasy.com/blog/how-marketplaces-handle-split-payments-and-payouts-to-sellers)
