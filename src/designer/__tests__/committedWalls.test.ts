@@ -6,7 +6,7 @@
  * is exercised by tests/e2e/wall-draw.spec.ts; here we lock the pure geometry.
  */
 import { describe, it, expect } from 'vitest';
-import { wallLinePoints, wallStrokeWidthPx } from '../wallGeometry';
+import { wallLinePoints, wallStrokeWidthPx, segmentLengthM, formatWallLengthM } from '../wallGeometry';
 import type { WallSegment } from '../../store/wallStore';
 
 const seg = (over: Partial<WallSegment> = {}): WallSegment => ({
@@ -39,5 +39,22 @@ describe('wallStrokeWidthPx', () => {
   it('clamps thin walls to a 3px minimum', () => {
     // 10mm at 100px/m = 1px → floored to 3.
     expect(wallStrokeWidthPx(seg({ thickness_mm: 10 }), 100)).toBe(3);
+  });
+});
+
+describe('segmentLengthM', () => {
+  it('is the Euclidean distance in metres', () => {
+    // 3000mm × 4000mm → 5m (3-4-5).
+    expect(segmentLengthM({ x_mm: 0, y_mm: 0 }, { x_mm: 3000, y_mm: 4000 })).toBeCloseTo(5, 6);
+  });
+});
+
+describe('formatWallLengthM', () => {
+  it('shows metres to 2dp at or above 1 m', () => {
+    expect(formatWallLengthM({ x_mm: 0, y_mm: 0 }, { x_mm: 2500, y_mm: 0 })).toBe('2.50 m');
+  });
+
+  it('shows whole centimetres below 1 m', () => {
+    expect(formatWallLengthM({ x_mm: 0, y_mm: 0 }, { x_mm: 800, y_mm: 0 })).toBe('80 cm');
   });
 });

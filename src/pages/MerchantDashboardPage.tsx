@@ -288,24 +288,42 @@ function ProductCard({ product }: { product: ApiProductSummary }): JSX.Element {
         minHeight: 180,
       }}
     >
-      <div
-        aria-hidden
-        style={{
-          width: '100%',
-          height: 70,
-          borderRadius: 6,
-          background: BRAND.goldSoft,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: BRAND.gold,
-          fontFamily: BRAND.serif,
-          fontSize: 14,
-          letterSpacing: '0.04em',
-        }}
-      >
-        {product.category}
-      </div>
+      {product.imageUrl ? (
+        // Show the product's own image (top-down render or uploaded photo).
+        // White fill so transparent top-down PNGs read on the navy card.
+        <img
+          src={product.imageUrl}
+          alt={product.name}
+          loading="lazy"
+          data-testid="merchant-product-image"
+          style={{
+            width: '100%',
+            height: 70,
+            borderRadius: 6,
+            objectFit: 'contain',
+            background: '#FFFFFF',
+          }}
+        />
+      ) : (
+        <div
+          aria-hidden
+          style={{
+            width: '100%',
+            height: 70,
+            borderRadius: 6,
+            background: BRAND.goldSoft,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: BRAND.gold,
+            fontFamily: BRAND.serif,
+            fontSize: 14,
+            letterSpacing: '0.04em',
+          }}
+        >
+          {product.category}
+        </div>
+      )}
       <h3
         style={{
           margin: 0,

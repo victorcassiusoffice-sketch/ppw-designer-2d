@@ -17,7 +17,7 @@
  */
 
 import { useEffect, useMemo, useRef } from 'react';
-import { Layer, Line, Circle, Group } from 'react-konva';
+import { Layer, Line, Circle, Group, Text } from 'react-konva';
 import type Konva from 'konva';
 import { screenToRoom } from '../lib/geometry';
 import type { Viewport } from '../lib/geometry';
@@ -32,9 +32,9 @@ import {
 } from '../store/wallStore';
 import { useToastStore } from '../store/toastStore';
 import { useHistoryStore } from '../store/historyStore';
-import { wallLinePoints, wallStrokeWidthPx } from './wallGeometry';
+import { wallLinePoints, wallStrokeWidthPx, formatWallLengthM } from './wallGeometry';
 
-export { wallLinePoints, wallStrokeWidthPx } from './wallGeometry';
+export { wallLinePoints, wallStrokeWidthPx, segmentLengthM, formatWallLengthM } from './wallGeometry';
 
 const DBG = '[wall-draw]';
 
@@ -67,6 +67,7 @@ export function WallDrawLayer({
   viewportRef.current = viewport;
   const cursorRef = useRef<{ x_mm: number; y_mm: number } | null>(null);
   const cursorLineRef = useRef<Konva.Line | null>(null);
+  const lengthLabelRef = useRef<Konva.Text | null>(null);
 
   // Stage event wiring: only while enabled. Tagged namespace `.walldraw`.
   useEffect(() => {
@@ -123,6 +124,15 @@ export function WallDrawLayer({
           (cur.x_mm / 1000) * pxPerMetre,
           (cur.y_mm / 1000) * pxPerMetre,
         ]);
+        // Live length label at the segment midpoint (Sims "wall grows as you
+        // drag" feel). Updated imperatively alongside the cursor line.
+        const label = lengthLabelRef.current;
+        if (label) {
+          const midX = ((anchor.x_mm + cur.x_mm) / 2 / 1000) * pxPerMetre;
+          const midY = ((anchor.y_mm + cur.y_mm) / 2 / 1000) * pxPerMetre;
+          label.text(formatWallLengthM(anchor, cur));
+          label.position({ x: midX + 8, y: midY - 20 });
+        }
         node.getLayer()?.batchDraw();
       }
     }
@@ -269,6 +279,19 @@ export function WallDrawLayer({
             fill="#FFBB58"
             stroke="#232C3B"
             strokeWidth={1.5}
+          />
+          <Text
+            ref={lengthLabelRef}
+            text=""
+            fontSize={13}
+            fontStyle="bold"
+            fontFamily="Inter, sans-serif"
+            fill="#232C3B"
+            // White halo so the length reads over any floor colour.
+            stroke="#FFFFFF"
+            strokeWidth={3}
+            fillAfterStrokeEnabled
+            listening={false}
           />
         </Group>
       )}
