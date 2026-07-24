@@ -50,6 +50,7 @@ export default function PublicProductsPage(): JSX.Element {
   const cartItems = useMarketplaceCart((s) => s.items);
   const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
 
+  const search = params.get('search') ?? '';
   const category = params.get('category') ?? '';
   const region = params.get('region') ?? '';
   const offset = Number(params.get('offset') ?? '0') || 0;
@@ -62,6 +63,7 @@ export default function PublicProductsPage(): JSX.Element {
       setError(null);
       try {
         const qs = new URLSearchParams();
+        if (search) qs.set('search', search);
         if (category) qs.set('category', category);
         if (region) qs.set('region', region);
         qs.set('limit', String(limit));
@@ -80,7 +82,7 @@ export default function PublicProductsPage(): JSX.Element {
     return () => {
       cancelled = true;
     };
-  }, [category, region, offset]);
+  }, [search, category, region, offset]);
 
   const totalPages = useMemo(() => (data ? Math.ceil(data.total / limit) : 0), [data]);
   const currentPage = Math.floor(offset / limit) + 1;
@@ -121,6 +123,30 @@ export default function PublicProductsPage(): JSX.Element {
         </Link>
       </header>
 
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const input = e.currentTarget.elements.namedItem('q') as HTMLInputElement | null;
+          setQuery({ search: input?.value.trim() ?? '', offset: '0' });
+        }}
+        style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}
+      >
+        <input
+          name="q"
+          type="search"
+          placeholder="Search products…"
+          defaultValue={search}
+          aria-label="Search products"
+          style={{ padding: 8, minWidth: 260, flex: '1 1 260px', maxWidth: 480 }}
+        />
+        <button
+          type="submit"
+          style={{ padding: '8px 16px', background: '#0a0a0a', color: 'white', border: 'none', borderRadius: 4, fontWeight: 600, cursor: 'pointer' }}
+        >
+          Search
+        </button>
+      </form>
+
       <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
         <input
           placeholder="Filter by category"
@@ -134,8 +160,8 @@ export default function PublicProductsPage(): JSX.Element {
           onBlur={(e) => setQuery({ region: e.target.value, offset: '0' })}
           style={{ padding: 8, minWidth: 200 }}
         />
-        {(category || region) && (
-          <button type="button" onClick={() => setQuery({ category: '', region: '', offset: '0' })}>
+        {(search || category || region) && (
+          <button type="button" onClick={() => setQuery({ search: '', category: '', region: '', offset: '0' })}>
             Clear filters
           </button>
         )}
@@ -154,15 +180,21 @@ export default function PublicProductsPage(): JSX.Element {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
             {data.products.map((p) => (
               <article key={p.id} style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden', background: 'white' }}>
-                {p.imageUrl ? (
-                  <img src={p.imageUrl} alt={p.name} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block' }} />
-                ) : (
-                  <div style={{ width: '100%', aspectRatio: '4/3', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
-                    No image
-                  </div>
-                )}
+                <Link to={`/products/${p.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                  {p.imageUrl ? (
+                    <img src={p.imageUrl} alt={p.name} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block' }} />
+                  ) : (
+                    <div style={{ width: '100%', aspectRatio: '4/3', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
+                      No image
+                    </div>
+                  )}
+                </Link>
                 <div style={{ padding: 12 }}>
-                  <h3 style={{ fontSize: 16, margin: '0 0 4px' }}>{p.name}</h3>
+                  <h3 style={{ fontSize: 16, margin: '0 0 4px' }}>
+                    <Link to={`/products/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                      {p.name}
+                    </Link>
+                  </h3>
                   <p style={{ fontSize: 12, color: '#6b7280', margin: '0 0 8px' }}>{p.category}</p>
                   <p style={{ fontSize: 18, fontWeight: 600, margin: '0 0 8px' }}>{formatPrice(p.priceMinor, p.currency)}</p>
                   <button

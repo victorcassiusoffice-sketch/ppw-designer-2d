@@ -461,6 +461,16 @@ export function TopBar({
           <CurrencySwitcher compact />
         </div>
 
+        {/* Shop entry — surfaces the Amazon-style storefront (/products) so
+            customers can browse + buy without designing a room (WD rework). */}
+        <Link
+          to="/products"
+          className="hidden md:flex items-center gap-1.5 rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs text-ppw-slate hover:border-ppw-teal"
+          title="Browse the full product shop"
+        >
+          Shop
+        </Link>
+
         <Link
           to="/cart"
           className="hidden md:flex items-center gap-1.5 rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs hover:border-ppw-teal"

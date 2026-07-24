@@ -54,7 +54,7 @@ import { z } from 'zod';
 
 import { withSentry, type MinReq, type MinRes } from './_lib/sentry.js';
 import { getDb, schema } from './_db/client.js';
-import { and, eq, gte, gt, isNull, lte, notLike, sql, inArray, type SQL } from 'drizzle-orm';
+import { and, eq, gte, gt, isNull, lte, notLike, ilike, or, sql, inArray, type SQL } from 'drizzle-orm';
 import { drizzleAuditWriter } from './_lib/auditLog.js';
 import { verifyMerchantSession } from './_lib/merchantSession.js';
 import { buildSeedImageryMap, enrichImagery } from './_lib/products/seedImagery.js';
@@ -160,6 +160,10 @@ export function parseSort(q: Record<string, string | string[] | undefined>): Sor
 export interface ProductFilters {
   category: string | null;
   region: string | null;
+  /** Free-text keyword — matched against name / description / category (ILIKE). */
+  search: string | null;
+  /** Single-product lookup by numeric id (product-detail page). */
+  productId: number | null;
   merchantSlug: string | null;
   priceMin: number | null;
   priceMax: number | null;
@@ -182,6 +186,8 @@ export function parseProductFilters(
   return {
     category: pickStr(q, 'category'),
     region: pickStr(q, 'region'),
+    search: pickStr(q, 'search') ?? pickStr(q, 'q'),
+    productId: pickIntOrNull(q, 'id', 2_000_000_000),
     merchantSlug: pickStr(q, 'slug'),
     priceMin: pickIntOrNull(q, 'price_min', 1_000_000_000),
     priceMax: pickIntOrNull(q, 'price_max', 1_000_000_000),
@@ -230,8 +236,20 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
   // V4 M9.B.4 — exclude soft-deleted products everywhere (retired_at IS NULL).
   const conds = [eq(schema.products.status, 'active'), isNull(schema.products.retiredAt)];
   if (!filters.includeDemo) conds.push(notLike(schema.products.sku, 'DEMO-%'));
+  if (filters.productId !== null) conds.push(eq(schema.products.id, filters.productId));
   if (filters.category) conds.push(eq(schema.products.category, filters.category));
   if (filters.region) conds.push(eq(schema.products.region, filters.region));
+  if (filters.search) {
+    // Keyword across name / description / category. Escape ILIKE wildcards so
+    // user input can't inject `%`/`_` patterns (backslash is the PG default).
+    const term = `%${filters.search.replace(/[\\%_]/g, (m) => `\\${m}`)}%`;
+    const kw = or(
+      ilike(schema.products.name, term),
+      ilike(schema.products.description, term),
+      ilike(schema.products.category, term),
+    );
+    if (kw) conds.push(kw);
+  }
   if (filters.priceMin !== null) conds.push(gte(schema.products.priceMinor, filters.priceMin));
   if (filters.priceMax !== null) conds.push(lte(schema.products.priceMinor, filters.priceMax));
   if (filters.ecoCerts.length > 0) conds.push(inArray(schema.products.ecoCertLevel, filters.ecoCerts));
