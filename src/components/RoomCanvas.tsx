@@ -49,7 +49,7 @@ import {
 import type { PlacedRect, Polygon, Vertex, Viewport } from '../lib/geometry';
 import { computeZoomScale } from '../lib/zoom';
 import { RoomDrawLayer } from './RoomDrawMode';
-import { WallDrawLayer, WallDrawHUD } from '../designer/WallDrawMode';
+import { WallDrawLayer, WallDrawHUD, CommittedWallsLayer } from '../designer/WallDrawMode';
 import { useWallStore } from '../store/wallStore';
 import { useHistoryStore } from '../store/historyStore';
 // Batch 3 Fix 3.2 — vertices live in a tiny shared store so the
@@ -212,6 +212,9 @@ export function RoomCanvas({
   // so the two tools don't fight over the same cursor.
   const wallDrawPhase = useWallStore((s) => s.draw.phase);
   const wallDrawEnabled = wallDrawPhase !== 'idle';
+  // Committed interior walls, rendered in an always-on layer (below) so they
+  // persist on the floor plan after the wall tool goes idle (2026-07-24 fix).
+  const committedWalls = useWallStore((s) => s.walls);
 
   useEffect(() => {
     if (drawMode) {
@@ -1143,6 +1146,10 @@ export function RoomCanvas({
           onCommit={handleDrawCommit}
           onCancel={handleDrawCancel}
         />
+
+        {/* Persistent committed walls — always rendered so drawn interior
+            walls survive exiting the wall tool (2026-07-24 fix). */}
+        <CommittedWallsLayer walls={committedWalls} pxPerMetre={pxPerMetre} />
 
         {/* M2 — Sims-style wall tool. Visible whenever wallStore phase
             is not 'idle' (driven by the ModeStrip's Wall button). Mounts

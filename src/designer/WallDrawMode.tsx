@@ -32,6 +32,9 @@ import {
 } from '../store/wallStore';
 import { useToastStore } from '../store/toastStore';
 import { useHistoryStore } from '../store/historyStore';
+import { wallLinePoints, wallStrokeWidthPx } from './wallGeometry';
+
+export { wallLinePoints, wallStrokeWidthPx } from './wallGeometry';
 
 const DBG = '[wall-draw]';
 
@@ -269,6 +272,46 @@ export function WallDrawLayer({
           />
         </Group>
       )}
+    </Layer>
+  );
+}
+
+// ----------------------------------------------------------------------
+// Persistent committed-walls layer.
+//
+// FIX (2026-07-24): drawn interior walls used to render ONLY inside
+// `WallDrawLayer`, which returns null the instant the wall tool goes idle
+// (`if (!enabled) return null`). So a user would draw walls, press Done, and
+// watch them vanish — the data survived in `wallStore` (localStorage), but
+// nothing rendered it. This layer renders committed walls ALWAYS, decoupled
+// from the tool's enabled state, so walls persist on the floor plan like The
+// Sims. Purely additive + `listening={false}` (no hit-testing, no FSM
+// coupling) — respects the Konva stable-lock. Mounts as a Stage child so it
+// shares the viewport + pxPerMetre transform.
+// ----------------------------------------------------------------------
+
+export interface CommittedWallsLayerProps {
+  walls: WallSegment[];
+  pxPerMetre: number;
+}
+
+/**
+ * Always-on render of committed walls. Styling matches the committed-wall
+ * render inside `WallDrawLayer` (navy #232C3B, round cap) so there is no
+ * visual jump between drawing and idle.
+ */
+export function CommittedWallsLayer({ walls, pxPerMetre }: CommittedWallsLayerProps): JSX.Element {
+  return (
+    <Layer listening={false}>
+      {walls.map((w) => (
+        <Line
+          key={w.id}
+          points={wallLinePoints(w, pxPerMetre)}
+          stroke="#232C3B"
+          strokeWidth={wallStrokeWidthPx(w, pxPerMetre)}
+          lineCap="round"
+        />
+      ))}
     </Layer>
   );
 }
