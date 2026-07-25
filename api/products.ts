@@ -870,7 +870,9 @@ export async function softDeleteProduct(slug: string, productId: number): Promis
   }
 }
 
-async function handler(req: ProductsReq, res: MinRes): Promise<void> {
+// Exported for handler-level tests (e.g. the PATCH/DELETE auth gate). The
+// deployed entrypoint remains the withSentry-wrapped default export.
+export async function handler(req: ProductsReq, res: MinRes): Promise<void> {
   if (req.method === 'OPTIONS') {
     res.status(204).end();
     return;
@@ -929,6 +931,15 @@ async function handler(req: ProductsReq, res: MinRes): Promise<void> {
       res.json({ error: 'slug query param required' });
       return;
     }
+    // Access control: require a valid merchant session for THIS slug — same
+    // gate as POST. Without it any caller who knows a (public) slug could edit
+    // another merchant's prices/stock (IDOR). Closed 2026-07-24.
+    const auth = authoriseMerchantSession(req.headers, slug.trim());
+    if (!auth.ok) {
+      res.status(auth.status);
+      res.json({ error: auth.error });
+      return;
+    }
     if (typeof idStr !== 'string' || !/^\d+$/.test(idStr)) {
       res.status(400);
       res.json({ error: 'numeric id query param required' });
@@ -965,6 +976,14 @@ async function handler(req: ProductsReq, res: MinRes): Promise<void> {
     if (typeof slug !== 'string' || !slug.trim()) {
       res.status(400);
       res.json({ error: 'slug query param required' });
+      return;
+    }
+    // Access control: require a valid merchant session for THIS slug — same
+    // gate as POST (IDOR fix 2026-07-24; see PATCH branch).
+    const auth = authoriseMerchantSession(req.headers, slug.trim());
+    if (!auth.ok) {
+      res.status(auth.status);
+      res.json({ error: auth.error });
       return;
     }
     if (typeof idStr !== 'string' || !/^\d+$/.test(idStr)) {
