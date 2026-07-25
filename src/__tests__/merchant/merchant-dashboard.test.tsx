@@ -14,6 +14,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 import MerchantDashboardPage from '../../pages/MerchantDashboardPage';
+import { SESSION_STORAGE_KEY } from '../../components/RequireMerchant';
 
 const SAMPLE_PRODUCTS = [
   {
@@ -190,5 +191,112 @@ describe('MerchantDashboardPage (M5)', () => {
     expect(style).toContain('rgb(35, 44, 59)'); // navy
     expect(style).toContain('rgb(245, 235, 215)'); // cream
     expect(container.innerHTML).toContain('rgb(255, 187, 88)'); // gold
+  });
+});
+
+describe('MerchantDashboardPage — product management (session-gated, WD Phase 3)', () => {
+  const SLUG = 'demo-supplier-cn';
+
+  function signIn(): void {
+    localStorage.setItem(
+      SESSION_STORAGE_KEY,
+      JSON.stringify({ slug: SLUG, token: 'test-token', email: 'm@x.co', exp: Date.now() + 60_000 }),
+    );
+  }
+
+  function routeFetch(listPayload: unknown): {
+    impl: typeof globalThis.fetch;
+    calls: Array<{ url: string; method: string; headers: unknown; body: unknown }>;
+  } {
+    const calls: Array<{ url: string; method: string; headers: unknown; body: unknown }> = [];
+    const impl = vi.fn(async (url: unknown, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      calls.push({ url: String(url), method, headers: init?.headers, body: init?.body });
+      if (method === 'DELETE') return new Response(null, { status: 204 });
+      if (method === 'PATCH') {
+        return new Response(JSON.stringify({ product: {} }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify(listPayload), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    return { impl: impl as unknown as typeof globalThis.fetch, calls };
+  }
+
+  afterEach(() => {
+    localStorage.clear();
+    vi.restoreAllMocks();
+  });
+
+  it('hides manage controls when not signed in', async () => {
+    localStorage.clear();
+    const fetchImpl = mockFetch({ products: SAMPLE_PRODUCTS, total: 2, limit: 100, offset: 0, schemaMissing: false });
+    renderAt(SLUG, fetchImpl);
+    await flushAsync();
+    expect(container.querySelector('[data-testid="merchant-product-manage"]')).toBeNull();
+  });
+
+  it('shows Edit + Delete on each card when signed in', async () => {
+    signIn();
+    const { impl } = routeFetch({ products: SAMPLE_PRODUCTS, total: 2, limit: 100, offset: 0, schemaMissing: false });
+    renderAt(SLUG, impl);
+    await flushAsync();
+    expect(container.querySelectorAll('[data-testid="merchant-product-edit"]').length).toBe(2);
+    expect(container.querySelectorAll('[data-testid="merchant-product-delete"]').length).toBe(2);
+  });
+
+  it('Delete calls DELETE with the Bearer token and removes the card', async () => {
+    signIn();
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const { impl, calls } = routeFetch({ products: SAMPLE_PRODUCTS, total: 2, limit: 100, offset: 0, schemaMissing: false });
+    renderAt(SLUG, impl);
+    await flushAsync();
+    const delBtn = container.querySelector('[data-testid="merchant-product-delete"]') as HTMLButtonElement;
+    act(() => {
+      flushSync(() => delBtn.click());
+    });
+    await flushAsync();
+    const del = calls.find((c) => c.method === 'DELETE');
+    expect(del).toBeDefined();
+    expect(del!.url).toContain(`slug=${SLUG}`);
+    expect(del!.url).toContain('id=1');
+    expect((del!.headers as Record<string, string>).Authorization).toBe('Bearer test-token');
+    expect(container.querySelectorAll('[data-testid="merchant-product-card"]').length).toBe(1);
+  });
+
+  it('Save price calls PATCH with the Bearer token + priceMinor body', async () => {
+    signIn();
+    const { impl, calls } = routeFetch({ products: SAMPLE_PRODUCTS, total: 2, limit: 100, offset: 0, schemaMissing: false });
+    renderAt(SLUG, impl);
+    await flushAsync();
+    // Enter edit mode on the first card.
+    const editBtn = container.querySelector('[data-testid="merchant-product-edit"]') as HTMLButtonElement;
+    act(() => {
+      flushSync(() => editBtn.click());
+    });
+    // Set a new price on the controlled input (native setter + input event).
+    const input = container.querySelector('[data-testid="merchant-product-price-input"]') as HTMLInputElement;
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')!.set!;
+    act(() => {
+      flushSync(() => {
+        setter.call(input, '200');
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    });
+    const saveBtn = container.querySelector('[data-testid="merchant-product-save"]') as HTMLButtonElement;
+    act(() => {
+      flushSync(() => saveBtn.click());
+    });
+    await flushAsync();
+    const patch = calls.find((c) => c.method === 'PATCH');
+    expect(patch).toBeDefined();
+    expect(patch!.url).toContain(`slug=${SLUG}`);
+    expect(patch!.url).toContain('id=1');
+    expect((patch!.headers as Record<string, string>).Authorization).toBe('Bearer test-token');
+    expect(JSON.parse(patch!.body as string)).toEqual({ priceMinor: 20000 });
   });
 });
