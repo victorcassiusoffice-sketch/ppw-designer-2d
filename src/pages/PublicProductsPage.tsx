@@ -154,12 +154,16 @@ export default function PublicProductsPage(): JSX.Element {
       <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
         <input
           placeholder="Filter by category"
+          // key re-syncs the uncontrolled input to the applied param on
+          // Clear/Back (same fix as the search box).
+          key={`cat-${category}`}
           defaultValue={category}
           onBlur={(e) => setQuery({ category: e.target.value, offset: '0' })}
           style={{ padding: 8, minWidth: 200 }}
         />
         <input
           placeholder="Filter by region"
+          key={`region-${region}`}
           defaultValue={region}
           onBlur={(e) => setQuery({ region: e.target.value, offset: '0' })}
           style={{ padding: 8, minWidth: 200 }}
