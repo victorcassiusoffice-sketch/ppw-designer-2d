@@ -299,4 +299,31 @@ describe('MerchantDashboardPage — product management (session-gated, WD Phase 
     expect((patch!.headers as Record<string, string>).Authorization).toBe('Bearer test-token');
     expect(JSON.parse(patch!.body as string)).toEqual({ priceMinor: 20000 });
   });
+
+  it('rejects an empty price on Save (no PATCH, shows error) — no free products', async () => {
+    signIn();
+    const { impl, calls } = routeFetch({ products: SAMPLE_PRODUCTS, total: 2, limit: 100, offset: 0, schemaMissing: false });
+    renderAt(SLUG, impl);
+    await flushAsync();
+    const editBtn = container.querySelector('[data-testid="merchant-product-edit"]') as HTMLButtonElement;
+    act(() => {
+      flushSync(() => editBtn.click());
+    });
+    const input = container.querySelector('[data-testid="merchant-product-price-input"]') as HTMLInputElement;
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')!.set!;
+    act(() => {
+      flushSync(() => {
+        setter.call(input, '');
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    });
+    const saveBtn = container.querySelector('[data-testid="merchant-product-save"]') as HTMLButtonElement;
+    act(() => {
+      flushSync(() => saveBtn.click());
+    });
+    await flushAsync();
+    expect(calls.find((c) => c.method === 'PATCH')).toBeUndefined();
+    expect(container.querySelector('[data-testid="merchant-product-error"]')).not.toBeNull();
+  });
+
 });

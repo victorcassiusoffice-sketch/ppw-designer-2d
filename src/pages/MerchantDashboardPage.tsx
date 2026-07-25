@@ -393,9 +393,13 @@ function ProductCard({
   const [err, setErr] = useState<string | null>(null);
 
   async function handleSave(): Promise<void> {
-    const major = Number(priceMajor);
-    if (!Number.isFinite(major) || major < 0) {
-      setErr('Enter a valid price.');
+    // Reject empty/whitespace BEFORE coercion — Number('') === 0 would slip a
+    // free product past a `< 0` check. Require a positive price on this money
+    // field (a $0 product can be designed into a room + routed to fulfilment).
+    const raw = priceMajor.trim();
+    const major = Number(raw);
+    if (raw === '' || !Number.isFinite(major) || major <= 0) {
+      setErr('Enter a valid price above 0.');
       return;
     }
     setBusy('save');
