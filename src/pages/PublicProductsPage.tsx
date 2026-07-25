@@ -135,6 +135,10 @@ export default function PublicProductsPage(): JSX.Element {
           name="q"
           type="search"
           placeholder="Search products…"
+          // key tied to the applied term so the box remounts + re-reads the
+          // value when ?search changes without typing (Clear filters, browser
+          // Back) — otherwise the uncontrolled input keeps a stale term.
+          key={search}
           defaultValue={search}
           aria-label="Search products"
           style={{ padding: 8, minWidth: 260, flex: '1 1 260px', maxWidth: 480 }}

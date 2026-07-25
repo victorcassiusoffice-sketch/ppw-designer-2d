@@ -179,6 +179,14 @@ export function WallDrawLayer({
       } else {
         // Chain: next anchor is the just-clicked endpoint.
         setDraw({ phase: 'drawing', anchor: snapped });
+        // Clear the live length label so it doesn't linger at the previous
+        // segment's midpoint after a commit (esp. touch taps, which fire no
+        // mousemove to overwrite it). Cursor line resets via its bound props.
+        const label = lengthLabelRef.current;
+        if (label) {
+          label.text('');
+          label.getLayer()?.batchDraw();
+        }
       }
     }
 
