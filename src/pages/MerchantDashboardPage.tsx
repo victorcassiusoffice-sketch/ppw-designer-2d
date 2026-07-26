@@ -148,6 +148,11 @@ export default function MerchantDashboardPage(
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (res.status === 401 || res.status === 403) {
+        // UX (analysis Part 3 #5): the 30-day magic-link session expires
+        // silently — say so instead of a bare HTTP code.
+        throw new Error('Session expired — open your sign-in link again (or request a new one).');
+      }
       if (!res.ok && res.status !== 204) throw new Error(`Delete failed (HTTP ${res.status})`);
       setState((s) =>
         s.phase === 'loaded' ? { ...s, products: s.products.filter((p) => p.id !== id) } : s,
@@ -164,6 +169,9 @@ export default function MerchantDashboardPage(
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ priceMinor }),
       });
+      if (res.status === 401 || res.status === 403) {
+        throw new Error('Session expired — open your sign-in link again (or request a new one).');
+      }
       if (!res.ok) throw new Error(`Save failed (HTTP ${res.status})`);
       setState((s) =>
         s.phase === 'loaded'
