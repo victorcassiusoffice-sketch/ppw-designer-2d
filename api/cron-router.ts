@@ -27,7 +27,14 @@ import { emailMerchantApproved } from './_lib/merchantEmails.js';
 import { refreshSupplierRatingBatch } from './_lib/cron/refreshSupplierRating.js';
 import { reconcileEmailSendsBatch } from './_lib/cron/reconcileEmailSends.js';
 import { disbursePayoutsBatch } from './_lib/cron/disbursePayouts.js';
-import { generateTopdownsBatch } from './_lib/cron/generateTopdowns.js';
+// NOTE (2026-07-26): `generateTopdownsBatch` is deliberately NOT imported.
+// It pulls in `sharp` + `@imgly/background-removal-node` (onnx runtime),
+// which ballooned this lambda to 553 MB — over Vercel's 250 MB uncompressed
+// limit — and FAILED the production deploy. Top-down generation runs
+// OUT-OF-BAND instead (session/script batch → footprint-exact PNGs committed
+// to public/products/topdown/, served via enrichImagery). The module stays on
+// disk for `scripts/` + session use; it must never be imported by an api/*
+// entrypoint again. See api/_lib/cron/generateTopdowns.ts header.
 
 interface RouterReq extends MinReq {
   body?: unknown;
@@ -219,13 +226,14 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
   }
 
   if (action === 'generate-topdowns') {
-    try {
-      await handleGenerateTopdowns(res);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'generate-topdowns failed';
-      res.status(500);
-      res.json({ error: msg });
-    }
+    // Retired from the serverless surface (2026-07-26) — see the import note
+    // at the top of this file. Generation is an out-of-band batch.
+    res.status(410);
+    res.json({
+      ok: false,
+      error:
+        'generate-topdowns is not available as a serverless action (lambda size limit). Run the out-of-band top-down batch instead.',
+    });
     return;
   }
 
@@ -264,39 +272,6 @@ async function handleDisbursePayouts(res: MinRes): Promise<void> {
   res.json({ ok: true, ...result });
 }
 
-// Top-down generation worker (WD-2D 2026-07-10): DRY-RUN by default —
-// reports eligible products + est cost. Generates only when
-// TOPDOWN_GENERATE_ENABLED=true AND RUNWAY_API_KEY + BLOB_READ_WRITE_TOKEN
-// are set (per-run count + USD caps enforced). NOT in vercel.json crons —
-// manual invoke only. See api/_lib/cron/generateTopdowns.ts.
-async function handleGenerateTopdowns(res: MinRes): Promise<void> {
-  let result;
-  try {
-    result = await generateTopdownsBatch();
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    if (/relation .* does not exist|column .* does not exist|42P01|42703/i.test(msg)) {
-      res.status(503);
-      res.json({ ok: false, error: 'products schema not migrated (run migration 0027).' });
-      return;
-    }
-    res.status(500);
-    res.json({ ok: false, error: msg });
-    return;
-  }
-  if (result.generated > 0 || result.failed > 0) {
-    await recordAudit('system:cron', 'products.topdown_generate', 'products', String(result.generated), null, {
-      mode: result.mode,
-      eligible: result.eligible,
-      attempted: result.attempted,
-      generated: result.generated,
-      failed: result.failed,
-      spentCredits: result.spentCredits,
-    });
-  }
-  res.status(200);
-  res.json({ ok: true, ...result });
-}
 
 async function handleEmailSendReconcile(res: MinRes): Promise<void> {
   let result;

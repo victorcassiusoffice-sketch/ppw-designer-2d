@@ -25,7 +25,7 @@
  * invoke the route. Each step is its own reviewable action.
  */
 
-import { and, eq, isNull, isNotNull, gt, ne, notLike, sql } from 'drizzle-orm';
+import { and, eq, isNull, isNotNull, gt, ne, notLike } from 'drizzle-orm';
 import { getDb, schema } from '../../_db/client.js';
 import {
   GEN4_IMAGE_CREDITS_1080P,
