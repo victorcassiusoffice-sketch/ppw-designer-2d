@@ -23,7 +23,7 @@ async function toolbarOrSkip(page: Page) {
     window.localStorage.setItem('ppw_designer_coach_v1', '1');
     window.localStorage.setItem('ppw_mobile_banner_dismissed_v1', '1');
   });
-  await page.goto('/');
+  await page.goto('/designer');
   const toolbar = page.locator('[data-testid="sims-bottom-toolbar"]');
   if ((await toolbar.count()) === 0) {
     test.skip(true, 'Sims toolbar not in this build yet (pre-merge).');

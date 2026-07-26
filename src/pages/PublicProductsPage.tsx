@@ -104,23 +104,45 @@ export default function PublicProductsPage(): JSX.Element {
     <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
       <header style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 28, margin: 0 }}>Marketplace</h1>
-          <p style={{ color: '#6b7280' }}>Browse products from approved Peak Performance Wellness suppliers.</p>
+          <h1 style={{ fontSize: 28, margin: 0 }}>Shop</h1>
+          <p style={{ color: '#6b7280', margin: '4px 0 0' }}>
+            Browse and buy wellness equipment from approved Peak Performance Wellness suppliers.
+          </p>
         </div>
-        <Link
-          to="/marketplace/cart"
-          style={{
-            padding: '8px 14px',
-            background: '#0a0a0a',
-            color: 'white',
-            borderRadius: 6,
-            textDecoration: 'none',
-            fontSize: 14,
-            fontWeight: 600,
-          }}
-        >
-          Cart{cartCount > 0 ? ` (${cartCount})` : ''}
-        </Link>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* Directive 5: the designer is an optional extra mode, entered from
+              the shop — not the landing page. */}
+          <Link
+            to="/designer"
+            data-testid="enter-designer"
+            style={{
+              padding: '8px 14px',
+              background: 'white',
+              color: '#0a0a0a',
+              border: '1px solid #0a0a0a',
+              borderRadius: 6,
+              textDecoration: 'none',
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+          >
+            Design a room
+          </Link>
+          <Link
+            to="/marketplace/cart"
+            style={{
+              padding: '8px 14px',
+              background: '#0a0a0a',
+              color: 'white',
+              borderRadius: 6,
+              textDecoration: 'none',
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+          >
+            Cart{cartCount > 0 ? ` (${cartCount})` : ''}
+          </Link>
+        </div>
       </header>
 
       <form

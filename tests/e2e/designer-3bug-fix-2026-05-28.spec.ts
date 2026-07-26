@@ -72,7 +72,7 @@ test('Bug 3 — Clear repaints the canvas (no ghost items)', async ({ page }) =>
     { instanceId: 'i1', productId: 'k1-nordictrack-2450', x: 1, y: 1, rotation: 0 },
     { instanceId: 'i2', productId: 'k1-nordictrack-tour-de-france', x: 3, y: 2, rotation: 0 },
   ]);
-  await page.goto('/');
+  await page.goto('/designer');
   await page.waitForSelector('header', { timeout: 15_000 });
 
   await expect(page.getByTestId('items-placed')).toHaveText('2');
@@ -98,7 +98,7 @@ test('Bug 3 — Clear repaints the canvas (no ghost items)', async ({ page }) =>
 test('Bug 2 — two "+ Add to room" taps both land (no false "won\'t fit")', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await seedProperty(page, []);
-  await page.goto('/');
+  await page.goto('/designer');
   await page.waitForSelector('header', { timeout: 15_000 });
 
   const toolbar = page.getByTestId('sims-bottom-toolbar');
@@ -161,7 +161,7 @@ test('Bug 2 — two "+ Add to room" taps both land (no false "won\'t fit")', asy
 test('Bug 1 — long-press context menu is suppressed on canvas + catalog tile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await seedProperty(page, [{ instanceId: 'i1', productId: 'k1-nordictrack-2450', x: 1, y: 1, rotation: 0 }]);
-  await page.goto('/');
+  await page.goto('/designer');
   await page.waitForSelector('header', { timeout: 15_000 });
 
   const res = await page.evaluate(() => {

@@ -65,7 +65,7 @@ async function bootstrap(page: Page) {
       /* storage blocked */
     }
   });
-  await page.goto('/?fresh=1');
+  await page.goto('/designer?fresh=1');
 }
 
 /** Place one SMALL product via the mobile Sims toolbar → popup → "+ Add". */

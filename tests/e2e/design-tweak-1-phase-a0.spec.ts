@@ -37,7 +37,7 @@ test.describe('Design Tweak 1 — Phase A.0 (Tweak 07 Undo foundation)', () => {
         // ignore — some embeds disallow storage.
       }
     });
-    await page.goto('/?fresh=1');
+    await page.goto('/designer?fresh=1');
     // Wait for the designer canvas to mount.
     await page.waitForSelector('header', { timeout: 15_000 });
     // Dismiss the OMS Wave 3.5 CoachMark dialog if it's still mounted.
@@ -144,7 +144,7 @@ test.describe('Design Tweak 1 — Phase A surface checks', () => {
         // ignore
       }
     });
-    await page.goto('/?fresh=1');
+    await page.goto('/designer?fresh=1');
     await page.waitForSelector('header', { timeout: 15_000 });
     const coachSkip = page.getByRole('button', { name: /Skip/i });
     if (await coachSkip.isVisible({ timeout: 500 }).catch(() => false)) {

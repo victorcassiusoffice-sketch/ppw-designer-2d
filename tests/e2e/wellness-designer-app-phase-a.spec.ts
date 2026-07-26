@@ -36,7 +36,7 @@ const HAS_MERCHANT_TOKEN = !!process.env.PPW_E2E_MERCHANT_TOKEN;
 
 test.describe('Wellness-Designer-App (i) · Customer journey', () => {
   test('A.C.1 — Designer cold-start renders with brand v1 + mode strip', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/designer');
     await expect(page).toHaveTitle(/PPW|Designer|Wellness/i);
     // Brand v1 typography load. Body styles inherit from the global
     // cascade; presence of the Konva stage container is a faster signal.
@@ -46,7 +46,7 @@ test.describe('Wellness-Designer-App (i) · Customer journey', () => {
   });
 
   test('A.C.2 — Catalog drawer opens and shows products', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/designer');
     // ProductPalette renders a search input with placeholder "Search
     // products…" — a stable + brittleness-resistant signal that the
     // catalog drawer mounted.
@@ -55,7 +55,7 @@ test.describe('Wellness-Designer-App (i) · Customer journey', () => {
   });
 
   test('A.C.3 — Customer can search/filter the catalog', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/designer');
     const searchInput = page.locator('input[type="search"]').first();
     if (await searchInput.count() === 0) {
       test.skip(true, 'Search input not visible in this layout — skipping.');
@@ -67,7 +67,7 @@ test.describe('Wellness-Designer-App (i) · Customer journey', () => {
   });
 
   test('A.C.9 — Eco-only filter chip is visible and toggles state (h)', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/designer');
     const chip = page.locator('[data-testid="catalog-eco-filter"]');
     // After PR #20 lands, the chip is rendered. Pre-merge: chip count 0.
     const count = await chip.count();
@@ -85,7 +85,7 @@ test.describe('Wellness-Designer-App (i) · Customer journey', () => {
   });
 
   test('A.C.4 — Cart pill correctly hides on empty cart (documented UX)', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/designer');
     // Verify the designer mounted (Konva stage present), and that the
     // empty-cart pill is NOT rendered per MiniCartPill.tsx line 30:
     // "Hidden when the cart is empty so first-time users see a clean

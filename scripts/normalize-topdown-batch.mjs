@@ -11,9 +11,22 @@
  * transparent → trim to the silhouette bbox → resize that bbox to the exact
  * footprint canvas (widthCm × depthCm × PX_PER_CM).
  *
+ * ⚠ AXIS CONVENTION (2026-07-26 fix — this was getting items drawn stretched
+ * sideways). The Konva canvas draws a placed item at rotation 0 as
+ * LENGTH along X (screen width) and WIDTH along Y (screen depth):
+ *   RoomCanvas.tsx:1415  unrotatedWPx = dimensions_cm.LENGTH * pxPerMetre
+ *   RoomCanvas.tsx:1416  unrotatedHPx = dimensions_cm.WIDTH  * pxPerMetre
+ *   geometry.ts rotatedFootprint() → { w: lengthM, h: widthM } at 0°/180°
+ * So a catalog top-down MUST be LANDSCAPE: the product's LENGTH runs left↔right.
+ * Therefore the output canvas is (length × width), NOT (width × length) —
+ * pass `lengthCm` + `widthCm` and let this script map them to X/Y.
+ * If the source render is portrait (product running top↔bottom), set
+ * `rotateDeg: 90` so it is turned to lie lengthwise before normalising.
+ *
  * Usage:
  *   node scripts/normalize-topdown-batch.mjs <manifest.json>
- * Manifest: [{ "src": "<raw.png>", "out": "<dest.png>", "widthCm": 95, "depthCm": 205 }]
+ * Manifest: [{ "src": "<raw.png>", "out": "<dest.png>",
+ *              "lengthCm": 205, "widthCm": 95, "rotateDeg": 90 }]
  *
  * Pure local raster work — no network, no API keys, no spend.
  */
@@ -65,16 +78,23 @@ function floodFillBackground(data, width, height, whiteThreshold = 235) {
   }
 }
 
-async function normalize({ src, out, widthCm, depthCm }) {
+async function normalize({ src, out, lengthCm, widthCm, rotateDeg = 0 }) {
+  if (!Number.isFinite(lengthCm) || !Number.isFinite(widthCm)) {
+    throw new Error('lengthCm + widthCm are required (canvas maps length→X, width→Y)');
+  }
   const input = await readFile(src);
-  const { data, info } = await sharp(input).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  // Rotate FIRST (on the opaque source) so a portrait render is laid down
+  // lengthwise before the background key + trim run.
+  const oriented = rotateDeg ? await sharp(input).rotate(rotateDeg, { background: '#ffffff' }).png().toBuffer() : input;
+  const { data, info } = await sharp(oriented).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   floodFillBackground(data, info.width, info.height);
   const keyed = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
     .png()
     .toBuffer();
 
-  const wPx = Math.max(1, Math.round(widthCm * PX_PER_CM));
-  const hPx = Math.max(1, Math.round(depthCm * PX_PER_CM));
+  // Canvas convention: X = LENGTH, Y = WIDTH (see header).
+  const wPx = Math.max(1, Math.round(lengthCm * PX_PER_CM));
+  const hPx = Math.max(1, Math.round(widthCm * PX_PER_CM));
 
   const buffer = await sharp(keyed)
     .ensureAlpha()
@@ -98,7 +118,9 @@ let ok = 0;
 for (const job of jobs) {
   try {
     const r = await normalize(job);
-    console.log(`✓ ${r.out}  ${r.actual}px (${job.widthCm}×${job.depthCm}cm)  ${(r.bytes / 1024).toFixed(0)}kB`);
+    console.log(
+      `✓ ${r.out}  ${r.actual}px  (L${job.lengthCm}×W${job.widthCm}cm, rot ${job.rotateDeg ?? 0}°)  ${(r.bytes / 1024).toFixed(0)}kB`,
+    );
     ok++;
   } catch (err) {
     console.error(`✗ ${job.src}: ${err instanceof Error ? err.message : err}`);

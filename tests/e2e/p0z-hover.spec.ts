@@ -4,7 +4,7 @@ test('P0-ζ — pointer enter catalog card shows floating DetailCard', async ({ 
   await page.addInitScript(() => {
     try { localStorage.setItem('ppw_designer_coach_v1', '1'); localStorage.removeItem('ppw_walls_v1'); } catch {}
   });
-  await page.goto('/?fresh=1');
+  await page.goto('/designer?fresh=1');
   await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
 
   const card = page.locator('[data-product-id]').first();

@@ -22,7 +22,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('M1.5 pointer-FSM placement', () => {
   test('click catalog card to arm, click floor to commit → items-placed = 1', async ({ page }) => {
-    await page.goto('/?fresh=1');
+    await page.goto('/designer?fresh=1');
 
     const itemsPlaced = page.locator('[data-testid="items-placed"]');
     await expect(itemsPlaced).toBeVisible({ timeout: 10_000 });
@@ -70,7 +70,7 @@ test.describe('M1.5 pointer-FSM placement', () => {
   });
 
   test('Escape during armed phase cancels without committing', async ({ page }) => {
-    await page.goto('/?fresh=1');
+    await page.goto('/designer?fresh=1');
     const itemsPlaced = page.locator('[data-testid="items-placed"]');
     const before = (await itemsPlaced.textContent())?.trim() ?? '';
 

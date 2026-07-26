@@ -89,7 +89,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
-        <Route path="/" element={<App />} />
+        {/* WD rework 2026-07-26 (Vic directive 5): the SHOP is the front door.
+            "Browse and buy" is the primary journey; the Sims-style room
+            designer is an optional extra mode at /designer. */}
+        <Route path="/" element={<PublicProductsPage />} />
         <Route path="/designer" element={<App />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />

@@ -19,7 +19,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('M2 wall draw', () => {
   test('4-click closed rectangle → 4 walls + room area populated', async ({ page }) => {
-    await page.goto('/?fresh=1');
+    await page.goto('/designer?fresh=1');
 
     // Clear any wall sketch from a prior session.
     await page.evaluate(() => {
@@ -60,7 +60,7 @@ test.describe('M2 wall draw', () => {
   });
 
   test('Wall mode → click → Esc → mode returns to Move without committing the in-flight segment', async ({ page }) => {
-    await page.goto('/?fresh=1');
+    await page.goto('/designer?fresh=1');
     await page.evaluate(() => {
       try { localStorage.removeItem('ppw_walls_v1'); } catch { /* ignore */ }
     });

@@ -4,7 +4,7 @@ test('P0-ε — BUY button visible for K1 product + /api/k1/redirect 302 with at
   await page.addInitScript(() => {
     try { localStorage.setItem('ppw_designer_coach_v1', '1'); localStorage.removeItem('ppw_walls_v1'); } catch {}
   });
-  await page.goto('/?fresh=1');
+  await page.goto('/designer?fresh=1');
   await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
 
   await page.locator('[data-product-id]').first().click();

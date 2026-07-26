@@ -38,7 +38,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('c) M1 — click catalog card + click canvas → ITEMS PLACED = 1', async ({ page }) => {
-  await page.goto('/?fresh=1');
+  await page.goto('/designer?fresh=1');
   const itemsPlaced = page.locator('[data-testid="items-placed"]');
   await expect(itemsPlaced).toBeVisible({ timeout: 15_000 });
 
@@ -84,7 +84,7 @@ test('d) M5+M5.b — /merchant/demo-supplier-cn renders sign-in form (not design
 });
 
 test('e) M3 — place 1 item in 2D, switch to BABYLON → 1 product mesh', async ({ page }) => {
-  await page.goto('/?fresh=1');
+  await page.goto('/designer?fresh=1');
   const card = page.locator('[data-product-id]').first();
   await expect(card).toBeVisible({ timeout: 15_000 });
   await card.click();
@@ -122,7 +122,7 @@ test('f) M2 — wallStore persists 4 walls, HUD displays count + room area on re
     try { window.localStorage.setItem('ppw_walls_v1', JSON.stringify(walls)); } catch { /* ignore */ }
   }, fourWalls);
 
-  await page.goto('/');
+  await page.goto('/designer');
   await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
 
   await page.getByRole('button', { name: /^Wall$/ }).click();

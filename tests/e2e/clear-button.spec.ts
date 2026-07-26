@@ -96,7 +96,7 @@ for (const vp of [
   test(`Clear fully resets the room @ ${vp.name}`, async ({ page }) => {
     await page.setViewportSize({ width: vp.width, height: vp.height });
     await seed(page);
-    await page.goto('/');
+    await page.goto('/designer');
     await page.waitForSelector('header', { timeout: 15_000 });
 
     const before = await readState(page);

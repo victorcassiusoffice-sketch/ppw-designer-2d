@@ -54,7 +54,7 @@ test.describe('Phase 5 — desktop journey', () => {
       } catch { /* ignore */ }
     });
 
-    await page.goto('/');
+    await page.goto('/designer');
     await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
 
     // 1. Arrive screenshot
@@ -96,7 +96,7 @@ test.describe('Phase 5 — desktop journey', () => {
     expect(res.headers().location).toMatch(/ref=PPW-/);
 
     // Back to 2D to capture the BUY button screenshot.
-    await page.goto('/?engine=konva');
+    await page.goto('/designer?engine=konva');
     await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
     // Place a fresh item so the BUY button has something to attach to.
     await page.locator('[data-product-id]').first().click();
@@ -120,7 +120,7 @@ test.describe('Phase 5 — mobile 390 px journey', () => {
     const ctx = await browser.newContext({ ...devices['iPhone 13'] });
     const page = await ctx.newPage();
     await dismissCoach(page);
-    await page.goto('/');
+    await page.goto('/designer');
     await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
 
     // The mobile UA shows the "Best experienced on a laptop" banner +
