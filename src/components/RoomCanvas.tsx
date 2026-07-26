@@ -830,58 +830,66 @@ export function RoomCanvas({
           right: 'max(1rem, env(safe-area-inset-right))',
         }}
       >
-        <button
-          type="button"
-          onClick={resetView}
-          className="pointer-events-auto min-h-[40px] rounded-md bg-white/90 px-3 text-xs font-medium text-ppw-ink shadow-sm ring-1 ring-ppw-stone hover:bg-white"
-          title="Reset pan/zoom"
-        >
-          Reset view
-        </button>
-        {/* V-RENDER-4 — share / capture the current room render. Primary
-            uses the Konva stage (sharp, canvas-only); secondary snapshots
-            the full app chrome via html2canvas. Min 40px tap targets. */}
-        <button
-          type="button"
-          onClick={handleShareRender}
-          data-testid="share-render"
-          className="pointer-events-auto min-h-[40px] rounded-md bg-ppw-teal px-3 text-xs font-semibold text-white shadow-sm ring-1 ring-ppw-teal/60 hover:bg-ppw-teal/90"
-          title="Share or download a picture of your room"
-        >
-          Share render
-        </button>
-        <button
-          type="button"
-          onClick={handleCaptureFullScreen}
-          data-testid="capture-screen"
-          className="pointer-events-auto min-h-[40px] rounded-md bg-white/90 px-3 text-[11px] font-medium text-ppw-ink shadow-sm ring-1 ring-ppw-stone hover:bg-white"
-          title="Capture the full screen (with toolbars)"
-        >
-          Capture screen
-        </button>
+        {/* Declutter 2026-07-26 (Vic directive 2): the top-right used to be a
+            6-deep VERTICAL stack of full-width buttons + badges that crowded
+            the canvas. Actions now sit in ONE compact horizontal row with
+            short labels; every data-testid stays mounted so e2e is unaffected. */}
+        <div className="pointer-events-auto flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={resetView}
+            className="min-h-[36px] rounded-md bg-white/90 px-2.5 text-[11px] font-medium text-ppw-ink shadow-sm ring-1 ring-ppw-stone hover:bg-white"
+            title="Reset pan/zoom"
+          >
+            Reset
+          </button>
+          {/* V-RENDER-4 — share / capture the current room render. Primary
+              uses the Konva stage (sharp, canvas-only); secondary snapshots
+              the full app chrome via html2canvas. */}
+          <button
+            type="button"
+            onClick={handleShareRender}
+            data-testid="share-render"
+            className="min-h-[36px] rounded-md bg-ppw-teal px-2.5 text-[11px] font-semibold text-white shadow-sm ring-1 ring-ppw-teal/60 hover:bg-ppw-teal/90"
+            title="Share or download a picture of your room"
+          >
+            Share
+          </button>
+          <button
+            type="button"
+            onClick={handleCaptureFullScreen}
+            data-testid="capture-screen"
+            className="min-h-[36px] rounded-md bg-white/90 px-2.5 text-[11px] font-medium text-ppw-ink shadow-sm ring-1 ring-ppw-stone hover:bg-white"
+            title="Capture the full screen (with toolbars)"
+          >
+            Capture
+          </button>
+        </div>
         {/* Room size + zoom readout (P2-1: trimmed the developer-looking
             "area m2 - perimeter m - scale%" debug line to a clean,
             customer-facing area + zoom badge). */}
-        <div className="pointer-events-none rounded-md bg-ppw-ink/80 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
-          {area.toFixed(1)} m² · {Math.round(viewport.scale * 100)}%
+        {/* One combined readout instead of three stacked badges: room size,
+            zoom, snap and item count. `items-placed` stays a discrete element
+            (M1.5 Playwright hook) — it is just inlined here now. */}
+        <div className="pointer-events-none flex items-center gap-1.5">
+          <span className="rounded-md bg-ppw-ink/80 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
+            {area.toFixed(1)} m² · {Math.round(viewport.scale * 100)}% · {precision === 'full' ? '0.5' : '0.25'} m
+          </span>
+          <span
+            className="rounded-md bg-ppw-teal/90 px-2 py-1 text-[11px] font-medium text-white shadow-sm"
+            data-testid="items-placed"
+          >
+            {placedItems.length}
+          </span>
         </div>
-        {/* D21 — live cost total of placed items + D15/M13 precision badge. */}
+        {/* D21 — live cost total of placed items. Kept as its own prominent
+            badge: it is the running shopping total, not chrome. */}
         <div
           className="pointer-events-none rounded-md px-2.5 py-1 text-[11px] font-semibold shadow-sm"
           style={{ background: 'rgba(255,187,88,0.92)', color: '#232C3B' }}
           data-testid="cost-readout"
         >
           {costReadout.total.toLocaleString('en-MU', { maximumFractionDigits: 0 })} {costReadout.currency}
-          <span className="ml-1.5 opacity-70">· snap {precision === 'full' ? '0.5 m' : '0.25 m'}</span>
-        </div>
-        {/* M1.5 E2E hook: visible counter so Playwright can assert that
-            a placement actually committed. Updates from designStore via
-            placedItems selector — independent of the cart UI. */}
-        <div
-          className="pointer-events-none rounded-md bg-ppw-teal/90 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm"
-          data-testid="items-placed"
-        >
-          {placedItems.length}
         </div>
       </div>
 
