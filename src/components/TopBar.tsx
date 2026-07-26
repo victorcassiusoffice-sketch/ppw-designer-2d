@@ -248,14 +248,19 @@ export function TopBar({
   }
 
   return (
-    <header className="relative z-20 flex h-14 shrink-0 items-center justify-between border-b border-ppw-stone bg-white px-2 md:px-4 gap-2">
+    // Soft-skin frame (2026-07-26): warm surface + hairline rim, matching
+    // the shop's neumorphic register instead of stark white.
+    <header className="relative z-20 flex h-14 shrink-0 items-center justify-between border-b border-[#dcd9d0] bg-[#faf9f5] px-2 md:px-4 gap-2">
       <div className="flex items-center gap-2 min-w-0 flex-1 md:flex-initial">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-ppw-teal">
-          <svg viewBox="0 0 24 24" className="h-5 w-5 text-white" aria-hidden="true">
-            <path d="M5 18 L12 5 L19 18 Z" fill="currentColor" />
-            <circle cx="12" cy="14" r="1.6" fill="#0F766E" />
-          </svg>
-        </div>
+        {/* PPW brand mark — same tile as the shop header (was a placeholder
+            teal triangle). Links back to the storefront. */}
+        <Link
+          to="/products"
+          title="Back to PPWellness Shop"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#dcd9d0] bg-[#faf9f5] shadow-[3px_3px_7px_rgba(167,160,144,0.42),-3px_-3px_7px_rgba(255,255,255,0.95)]"
+        >
+          <img src="/brand/ppw-mark-512.png" alt="PPWellness" width={24} height={24} className="block" />
+        </Link>
 
         {/* Desktop: title + property rename. Hidden on mobile to save room. */}
         <div className="hidden md:block leading-tight min-w-0">
@@ -352,40 +357,49 @@ export function TopBar({
           )}
         </div>
 
-        {/* Rect / Draw mode toggle — visible on BOTH mobile and desktop. */}
-        <div className="flex overflow-hidden rounded-md border border-ppw-stone bg-white">
+        {/* 3c (2026-07-26): the old Rect|Draw|Wall triple read as three
+            identical mystery tools. Regrouped with intent labels:
+            ROOM SHAPE (rectangle via the L×W inputs vs custom polygon
+            sketch) — then a separate WALLS tool for interior walls. Same
+            handlers, clearer names. Visible on mobile + desktop. */}
+        <div className="flex items-stretch overflow-hidden rounded-md border border-ppw-stone bg-white">
+          <span className="hidden lg:flex items-center px-2 text-[9px] font-bold uppercase tracking-wider text-ppw-slate/70 border-r border-ppw-stone bg-[#efede8]">
+            Room
+          </span>
           <button
             type="button"
             onClick={() => setDrawMode(false)}
             className={`min-h-[40px] px-3 text-xs font-medium ${!drawMode ? 'bg-ppw-teal text-white' : 'text-ppw-slate hover:text-ppw-teal'}`}
-            title="Rectangle / place-items mode"
+            title="Rectangle room — set its size with the L × W boxes"
             aria-pressed={!drawMode}
           >
-            Rect
+            Rectangle
           </button>
           <button
             type="button"
             onClick={() => setDrawMode(true)}
             className={`min-h-[40px] px-3 text-xs font-medium ${drawMode ? 'bg-ppw-teal text-white' : 'text-ppw-slate hover:text-ppw-teal'}`}
-            title="Draw polygon room"
+            title="Custom-shaped room — click corner by corner to sketch the outline (starts a fresh room)"
             aria-pressed={drawMode}
           >
-            Draw
-          </button>
-          {/* Wall tool — folded in from the removed ModeStrip (2026-06-01).
-              Arms the Sims-style interior wall-draw FSM; the on-canvas HUD
-              owns Done/Esc to finish. Visible on mobile + desktop. */}
-          <button
-            type="button"
-            onClick={handleToggleWall}
-            data-testid="wall-tool-toggle"
-            className={`min-h-[40px] border-l border-ppw-stone px-3 text-xs font-medium ${wallActive ? 'bg-ppw-teal text-white' : 'text-ppw-slate hover:text-ppw-teal'}`}
-            title="Draw interior walls (click to start, then click to drop each corner)"
-            aria-pressed={wallActive}
-          >
-            Wall
+            Custom shape
           </button>
         </div>
+        {/* Interior walls — its own control, not a third "room shape". */}
+        <button
+          type="button"
+          onClick={handleToggleWall}
+          data-testid="wall-tool-toggle"
+          className={`min-h-[40px] rounded-md border px-3 text-xs font-medium ${
+            wallActive
+              ? 'border-ppw-teal bg-ppw-teal text-white'
+              : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
+          }`}
+          title="Add interior walls inside the room — click to start a wall, click to drop each corner, Done to finish"
+          aria-pressed={wallActive}
+        >
+          + Walls
+        </button>
 
         {/* Tweak 07 (Phase A.0) — UNDO / REDO buttons. Visible on both
             mobile and desktop. The undo button arms-then-fires on
@@ -517,7 +531,7 @@ export function TopBar({
           type="button"
           onClick={handleRequestQuote}
           disabled={submittingQuote}
-          className="hidden md:inline-block rounded-md bg-ppw-coral px-2.5 py-1 text-xs font-semibold text-white shadow-sm hover:bg-ppw-coral/90 disabled:opacity-60"
+          className="hidden md:inline-block rounded-full border border-[#79c7ad] bg-[#a9e2cf] px-3 py-1 text-xs font-semibold text-[#1e3a30] shadow-sm hover:brightness-105 disabled:opacity-60"
           title="Send the current property + cart to the PPW team for a quote"
         >
           {submittingQuote ? 'Sending…' : 'Request quote'}
@@ -557,6 +571,15 @@ export function TopBar({
           />
           <div className="md:hidden absolute right-2 top-full z-40 mt-1 w-64 rounded-lg border border-ppw-stone bg-white p-2 shadow-2xl">
             <div className="flex flex-col gap-1.5">
+              {/* 3b (2026-07-26): mobile route back to the storefront — the
+                  desktop Shop pill was md:-only, stranding phone users. */}
+              <Link
+                to="/products"
+                onClick={() => setShowMobileMenu(false)}
+                className="flex min-h-[44px] items-center rounded-md border border-ppw-stone bg-white px-3 text-sm font-medium text-ppw-ink hover:border-ppw-teal"
+              >
+                ← Back to Shop
+              </Link>
               <Link
                 to="/cart"
                 onClick={() => setShowMobileMenu(false)}

@@ -25,7 +25,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { TopBar } from './components/TopBar';
-import { CoachMark, useDarkMode } from './components/uxKit';
+import { CoachMark } from './components/uxKit';
 import { ProductPalette } from './components/ProductPalette';
 import { RoomCanvas } from './components/RoomCanvas';
 import { DetailsPanel } from './components/DetailsPanel';
@@ -81,10 +81,6 @@ export default function App() {
   useEffect(() => {
     return installHistorySubscriptions();
   }, []);
-  // OMS Wave 3.7 — dark mode opt-in. localStorage flag flips
-  // `<html class="dark">` so Tailwind dark: variants apply globally.
-  const [darkMode, toggleDark] = useDarkMode();
-
   const [drawMode, setDrawModeRaw] = useState(false);
   // Batch 3 Fix 3.1 — wrapped setDrawMode that, on entry, snapshots the
   // canvas into a single undo frame then wipes items / walls / zones /
@@ -125,7 +121,7 @@ export default function App() {
   const paintEstimateActive = isPaintEstimateActive();
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-ppw-sand text-ppw-ink">
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#efede8] text-ppw-ink">
       <TopBar
         drawMode={drawMode}
         setDrawMode={setDrawMode}
@@ -213,30 +209,10 @@ export default function App() {
       >
         build {__APP_BUILD__}
       </span>
-      {/* OMS Wave 3.7 — small dark mode toggle pinned bottom-left. */}
-      <button
-        type="button"
-        onClick={toggleDark}
-        aria-label="Toggle dark mode"
-        aria-pressed={darkMode}
-        title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-        style={{
-          position: 'fixed',
-          // Clear the mobile Sims toolbar (var 0 on desktop → stays at 12).
-          bottom: 'calc(12px + var(--sims-toolbar-h, 0px))',
-          right: 12,
-          padding: '6px 10px',
-          background: 'white',
-          border: '1px solid #d1d5db',
-          borderRadius: 999,
-          fontSize: 11,
-          cursor: 'pointer',
-          opacity: 0.8,
-          zIndex: 50,
-        }}
-      >
-        {darkMode ? '☀️ light' : '🌙 dark'}
-      </button>
+      {/* 3e (2026-07-26): the dark-mode toggle was removed — it flipped a
+          Tailwind `dark` class that almost nothing consumed (2 dark:
+          variants app-wide), so it visibly did nothing. A real dark
+          designer theme is a separate design decision. */}
     </div>
   );
 }
