@@ -1,10 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import {
   parseProductFilters,
   parseEcoCerts,
   parseSort,
   ECO_CERT_LEVELS,
   SORT_OPTIONS,
+  topdownColumnsEnabled,
 } from '../products';
 
 describe('parseProductFilters', () => {
@@ -46,6 +47,30 @@ describe('parseProductFilters', () => {
 
   it('extracts merchant slug from the slug query param (M9.B.2 rewrite)', () => {
     expect(parseProductFilters({ slug: 'acme-ergo' }).merchantSlug).toBe('acme-ergo');
+  });
+
+  describe('topdownColumnsEnabled (migration-0027 gate)', () => {
+    const prev = process.env.TOPDOWN_DB_COLUMNS;
+    afterEach(() => {
+      if (prev === undefined) delete process.env.TOPDOWN_DB_COLUMNS;
+      else process.env.TOPDOWN_DB_COLUMNS = prev;
+    });
+
+    it('defaults to FALSE so an unmigrated DB cannot empty the catalog', () => {
+      delete process.env.TOPDOWN_DB_COLUMNS;
+      expect(topdownColumnsEnabled()).toBe(false);
+      process.env.TOPDOWN_DB_COLUMNS = '';
+      expect(topdownColumnsEnabled()).toBe(false);
+      process.env.TOPDOWN_DB_COLUMNS = '0';
+      expect(topdownColumnsEnabled()).toBe(false);
+    });
+
+    it('enables on 1 / true / on', () => {
+      for (const v of ['1', 'true', 'TRUE', 'on']) {
+        process.env.TOPDOWN_DB_COLUMNS = v;
+        expect(topdownColumnsEnabled()).toBe(true);
+      }
+    });
   });
 
   describe('keyword search + single-product (WD rework Phase 2)', () => {

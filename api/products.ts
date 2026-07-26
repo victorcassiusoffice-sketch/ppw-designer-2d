@@ -157,6 +157,17 @@ export function parseSort(q: Record<string, string | string[] | undefined>): Sor
   return v && (SORT_OPTIONS as readonly string[]).includes(v) ? (v as SortOption) : 'newest';
 }
 
+/**
+ * True when the migration-0027 top-down columns exist on the deployed DB.
+ * Defaults FALSE so a deploy against a not-yet-migrated branch cannot take the
+ * catalog down (missing column → 42703 → `schemaMissing` → empty shop).
+ * Flip `TOPDOWN_DB_COLUMNS=1` in the Vercel env once 0027 is applied.
+ */
+export function topdownColumnsEnabled(): boolean {
+  const v = (process.env.TOPDOWN_DB_COLUMNS ?? '').trim().toLowerCase();
+  return v === '1' || v === 'true' || v === 'on';
+}
+
 export interface ProductFilters {
   category: string | null;
   region: string | null;
@@ -292,9 +303,16 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
         currency: schema.products.currency,
         imageUrl: schema.products.imageUrl,
         // WD-2D: the generated footprint-exact top-down (migration 0027).
-        // Preferred over the merchant's raw photo when present so the
-        // designer renders the to-scale top-down.
-        topdownImageUrl: schema.products.topdownImageUrl,
+        // Preferred over the merchant's raw photo when present.
+        //
+        // ⚠ MIGRATION-GATED (2026-07-26): migration 0027 is NOT applied on the
+        // prod Neon branch, so selecting these columns raises 42703 and the
+        // whole catalog degrades to `schemaMissing` (empty shop). Until the
+        // migration is applied, the column is omitted from the query. Real
+        // top-down art is served meanwhile by `enrichImagery()` (bundled
+        // static PNGs, SKU-exact) which needs no DB column at all.
+        // TO ENABLE: apply 0027 on Neon, then set TOPDOWN_DB_COLUMNS=1.
+        ...(topdownColumnsEnabled() ? { topdownImageUrl: schema.products.topdownImageUrl } : {}),
         region: schema.products.region,
       })
       .from(schema.products)
@@ -310,11 +328,15 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
     const total = countRes[0]?.c ?? 0;
 
     // Prefer the generated top-down over the merchant's raw photo, then let
-    // the seed-imagery enrichment fill any remaining placeholders.
-    const coalesced = rows.map(({ topdownImageUrl, ...r }) => ({
-      ...r,
-      imageUrl: topdownImageUrl ?? r.imageUrl,
-    }));
+    // the seed-imagery enrichment fill any remaining placeholders. When the
+    // top-down columns are migration-gated off, `topdownImageUrl` is simply
+    // absent (undefined) and the raw photo / seed enrichment wins.
+    const coalesced = (rows as Array<Record<string, unknown> & { imageUrl: string | null }>).map(
+      ({ topdownImageUrl, ...r }) => ({
+        ...r,
+        imageUrl: (topdownImageUrl as string | null | undefined) ?? r.imageUrl,
+      }),
+    ) as typeof rows;
     const result: ProductListResult = {
       products: enrichImagery(coalesced, SEED_IMAGERY),
       total,
