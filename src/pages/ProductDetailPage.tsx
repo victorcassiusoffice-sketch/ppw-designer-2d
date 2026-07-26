@@ -9,6 +9,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useMarketplaceCart } from '../store/marketplaceCartStore';
+import '../styles/soft-shop.css';
 
 interface PublicProduct {
   id: number;
@@ -78,63 +79,59 @@ export default function ProductDetailPage(): JSX.Element {
   const dims = product ? formatDims(product) : null;
 
   return (
-    <div style={{ padding: 24, maxWidth: 1000, margin: '0 auto' }}>
-      <header style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-        <Link to="/products" style={{ textDecoration: 'none', color: '#0a0a0a', fontWeight: 600 }}>
+    <div className="soft-page">
+    <div style={{ padding: '28px 24px 48px', maxWidth: 1000, margin: '0 auto' }}>
+      <header style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+        <Link to="/products" className="soft-pill soft-pill--sm">
           ← Back to shop
         </Link>
-        <Link
-          to="/marketplace/cart"
-          style={{ padding: '8px 14px', background: '#0a0a0a', color: 'white', borderRadius: 6, textDecoration: 'none', fontSize: 14, fontWeight: 600 }}
-        >
+        <Link to="/marketplace/cart" className="soft-pill soft-pill--primary soft-pill--sm">
           Cart{cartCount > 0 ? ` (${cartCount})` : ''}
         </Link>
       </header>
 
-      {loading && <p>Loading…</p>}
-      {error && <p style={{ color: '#b91c1c' }}>{error}</p>}
+      {loading && <p className="soft-muted">Loading…</p>}
+      {error && <p className="soft-alert soft-alert--error">{error}</p>}
       {!loading && !error && !product && (
-        <p style={{ textAlign: 'center', padding: 48, color: '#6b7280' }}>
+        <p className="soft-muted" style={{ textAlign: 'center', padding: 48 }}>
           Product not found. <Link to="/products">Browse the shop</Link>.
         </p>
       )}
 
       {product && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
-          <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden', background: 'white' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 28 }}>
+          <div className="soft-card" style={{ overflow: 'hidden', alignSelf: 'start' }}>
             {product.imageUrl ? (
-              <img src={product.imageUrl} alt={product.name} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'contain', background: '#fff', display: 'block' }} />
+              <img src={product.imageUrl} alt={product.name} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'contain', background: '#fff', display: 'block', borderRadius: 19 }} />
             ) : (
-              <div style={{ width: '100%', aspectRatio: '4/3', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
-                No image
-              </div>
+              <div className="soft-product-img soft-product-img--empty">No image</div>
             )}
           </div>
 
           <div>
-            <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 4px', textTransform: 'capitalize' }}>{product.category}</p>
-            <h1 style={{ fontSize: 26, margin: '0 0 12px' }}>{product.name}</h1>
+            <p className="soft-muted" style={{ fontSize: 13, margin: '0 0 4px', textTransform: 'capitalize' }}>{product.category}</p>
+            <h1 style={{ fontSize: 26, margin: '0 0 12px', letterSpacing: '-0.01em' }}>{product.name}</h1>
             <p style={{ fontSize: 24, fontWeight: 700, margin: '0 0 16px' }}>{formatPrice(product.priceMinor, product.currency)}</p>
 
             {product.description && (
-              <p style={{ fontSize: 14, lineHeight: 1.6, color: '#374151', margin: '0 0 16px' }}>{product.description}</p>
+              <p style={{ fontSize: 14, lineHeight: 1.6, margin: '0 0 16px' }}>{product.description}</p>
             )}
 
-            <dl style={{ margin: '0 0 20px', fontSize: 13, color: '#374151' }}>
+            <dl style={{ margin: '0 0 20px', fontSize: 13 }}>
               {dims && (
                 <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
-                  <dt style={{ color: '#6b7280', minWidth: 90 }}>Dimensions</dt>
+                  <dt className="soft-muted" style={{ minWidth: 90 }}>Dimensions</dt>
                   <dd style={{ margin: 0 }}>{dims}</dd>
                 </div>
               )}
               {product.region && (
                 <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
-                  <dt style={{ color: '#6b7280', minWidth: 90 }}>Region</dt>
+                  <dt className="soft-muted" style={{ minWidth: 90 }}>Region</dt>
                   <dd style={{ margin: 0 }}>{product.region}</dd>
                 </div>
               )}
               <div style={{ display: 'flex', gap: 8 }}>
-                <dt style={{ color: '#6b7280', minWidth: 90 }}>SKU</dt>
+                <dt className="soft-muted" style={{ minWidth: 90 }}>SKU</dt>
                 <dd style={{ margin: 0 }}>{product.sku}</dd>
               </div>
             </dl>
@@ -142,6 +139,8 @@ export default function ProductDetailPage(): JSX.Element {
             <button
               type="button"
               data-testid="product-detail-add"
+              className="soft-pill soft-pill--primary"
+              style={{ padding: '13px 28px', fontSize: 15 }}
               onClick={() => {
                 addToCart({
                   productId: product.id,
@@ -154,18 +153,28 @@ export default function ProductDetailPage(): JSX.Element {
                 });
                 setAdded(true);
               }}
-              style={{ padding: '12px 24px', background: '#0a0a0a', color: 'white', border: 'none', borderRadius: 6, fontSize: 15, fontWeight: 600, cursor: 'pointer' }}
             >
               Add to cart
             </button>
             {added && (
-              <span style={{ marginLeft: 12, fontSize: 14, color: '#15803d', fontWeight: 600 }}>
-                Added ✓ <Link to="/marketplace/cart" style={{ color: '#0a0a0a' }}>View cart</Link>
+              <span style={{ marginLeft: 12, fontSize: 14, fontWeight: 600, color: '#2e6b57' }}>
+                Added ✓ <Link to="/marketplace/cart">View cart</Link>
               </span>
             )}
+
+            {/* Trust strip — facts only (supplier fulfils, PPW handles billing). */}
+            <div className="soft-card" style={{ marginTop: 22, padding: '12px 16px', borderRadius: 16, fontSize: 12.5 }}>
+              <p style={{ margin: 0 }}>
+                Sold and shipped by an approved Peak Performance Wellness supplier.
+              </p>
+              <p className="soft-muted" style={{ margin: '4px 0 0' }}>
+                PPW handles billing · shipping quoted at checkout · placeable to exact scale in the room designer.
+              </p>
+            </div>
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

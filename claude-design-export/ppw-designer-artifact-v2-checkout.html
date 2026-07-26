@@ -1,0 +1,1683 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PPW Wellness Room Designer — Claude Design duplicate</title>
+</head>
+<body>
+<!--
+  PPW Wellness Room Designer — Claude Design artifact (faithful duplicate)
+  ========================================================================
+  Source of truth: C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d @ main 241de3a
+  Live app:        https://designer.ppwellness.co
+  Generated:       2026-07-06 (claude-design-export)
+
+  WHAT THIS IS — a single, self-contained visual duplicate of the CURRENT
+  customer Designer UI: same layout, same panels, same labels, same colour
+  tokens, same boot state (blank canvas + "Start by drawing your room").
+  No backend, no build step, no external requests: the 22-product K1 catalog
+  is inlined as mock data, the Konva stage is reproduced as an SVG that looks
+  and behaves the same for design purposes (grid, room, snap-place, select,
+  rotate, drag). Paste into Claude artifacts (or open in any browser) and it
+  renders on its own.
+
+  FIDELITY CAVEATS (also in README):
+  - Konva canvas -> SVG equivalent. Placement/select/rotate/drag work; the
+    real app renders top-down product PHOTOS on the floor — here items render
+    as the app's own category-colour fallback boxes + glyphs (no external
+    images allowed in the artifact sandbox).
+  - Catalog tiles show the app's real inline category SVG fallbacks instead
+    of product photos (same reason).
+  - Font: Inter is requested with system fallback (no webfont fetch).
+  - Dark-mode toggle is present but visual-only (the live dark theme is not
+    replicated). localStorage is not used (artifact constraint), so the
+    3-step coach mark shows on every load — Skip it.
+  - Polygon "Draw" mode is simplified (click vertices, click first vertex or
+    press Enter to close). Wall tool is a visual toggle only.
+
+  UPDATE 2026-07-10 - CHECKOUT / PAYMENT-GATEWAY VIEWS ADDED
+  Cart, Checkout (payment gateway) and Order-received pages are now real
+  navigable views (previously toast stubs). Reach them via the top-bar
+  "Cart", the cart-strip "View cart"/"Checkout", or the cart page
+  "Checkout ->". They mirror src/pages/CartPage.tsx, CheckoutPage.tsx and
+  OrderPendingPage.tsx. Payment rails: the live app gates Stripe/PayPal on
+  env vars; here the full surface is shown ON (Stripe card + PayPal +
+  Stripe test-mode banner) for design refinement - flip STRIPE_TEST_MODE /
+  PAYPAL_ENABLED / STRIPE_CONFIGURED at the top of the script for other env
+  states. In this offline mock "Place order" always routes to the
+  manual-handover /order/pending screen: buttons/radios/banners are visual
+  only - no gateway SDK, no /api calls, no money movement.
+-->
+<div id="ppw-designer-root"></div>
+<style>
+  /* ============ PPW brand tokens (verbatim from tailwind.config.js) ===== */
+  :root {
+    --ppw-ink: #0E1B1F;
+    --ppw-slate: #3B4A52;
+    --ppw-sand: #F5F1EA;
+    --ppw-mist: #E9EDEF;
+    --ppw-stone: #C4CBCD;
+    --ppw-teal: #0F766E;
+    --ppw-teal-light: #5EEAD4;
+    --ppw-coral: #E76F51;
+    --ppw-leaf: #84A98C;
+    /* mobile Sims register (hardcoded in the live components) */
+    --sims-navy: #232C3B;
+    --sims-gold: #FFBB58;
+    --sims-cream: #F5EBD7;
+    --sel-cyan: #06B6D4;
+  }
+  #ppw-designer-root, #ppw-designer-root * { box-sizing: border-box; margin: 0; padding: 0; }
+  #ppw-designer-root {
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    color: var(--ppw-ink);
+    background: var(--ppw-sand);
+    height: 100vh; width: 100%;
+    display: flex; flex-direction: column; overflow: hidden;
+    font-size: 16px; line-height: 1.4;
+  }
+  #ppw-designer-root button { font: inherit; cursor: pointer; background: none; border: none; color: inherit; }
+  #ppw-designer-root input, #ppw-designer-root select { font: inherit; }
+  #ppw-designer-root kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; background: rgba(0,0,0,0.06); border-radius: 3px; padding: 0 3px; }
+
+  /* ============ Top bar ============ */
+  .tb { position: relative; z-index: 20; display: flex; height: 56px; flex-shrink: 0; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--ppw-stone); background: #fff; padding: 0 16px; gap: 8px; }
+  .tb-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .tb-logo { display: flex; height: 36px; width: 36px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 6px; background: var(--ppw-teal); }
+  .tb-title p.t { font-size: 14px; font-weight: 600; color: var(--ppw-ink); white-space: nowrap; }
+  .tb-title button.p { display: block; font-size: 11px; color: var(--ppw-slate); text-align: left; }
+  .tb-title button.p:hover { color: var(--ppw-teal); }
+  .tb-right { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .tb-dims { display: flex; align-items: center; gap: 6px; border-radius: 6px; border: 1px solid var(--ppw-stone); background: var(--ppw-sand); padding: 4px 8px; }
+  .tb-dims label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ppw-slate); }
+  .tb-dims input { width: 56px; background: transparent; text-align: right; font-size: 14px; font-weight: 500; color: var(--ppw-ink); border: none; outline: none; }
+  .tb-dims .u { font-size: 11px; color: var(--ppw-slate); }
+  .tb-dims .dot { padding: 0 4px; color: var(--ppw-stone); }
+  .tb-dims .placeholder { font-size: 11px; font-style: italic; color: var(--ppw-slate); }
+  .seg { display: flex; overflow: hidden; border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; }
+  .seg button { min-height: 40px; padding: 0 12px; font-size: 12px; font-weight: 500; color: var(--ppw-slate); }
+  .seg button + button { border-left: 1px solid var(--ppw-stone); }
+  .seg button:hover { color: var(--ppw-teal); }
+  .seg button.on { background: var(--ppw-teal); color: #fff; }
+  .seg button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .tb-btn { border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; padding: 4px 10px; font-size: 12px; font-weight: 500; color: var(--ppw-slate); }
+  .tb-btn:hover { border-color: var(--ppw-teal); }
+  .tb-btn.on { border-color: var(--ppw-teal); background: var(--ppw-teal); color: #fff; }
+  .tb-cur { display: flex; align-items: center; gap: 4px; border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; padding: 4px 8px; font-size: 12px; }
+  .tb-cur select { background: transparent; font-size: 12px; font-weight: 600; color: var(--ppw-ink); border: none; outline: none; }
+  .tb-cur .fx-dot { font-size: 9px; color: var(--ppw-coral); }
+  .tb-cart { display: flex; align-items: center; gap: 6px; border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; padding: 4px 10px; font-size: 12px; color: var(--ppw-slate); text-decoration: none; }
+  .tb-cart:hover { border-color: var(--ppw-teal); }
+  .badge-teal { border-radius: 999px; background: var(--ppw-teal); padding: 1px 6px; font-size: 10px; font-weight: 700; color: #fff; }
+  .tb-quote { border-radius: 6px; background: var(--ppw-coral); padding: 4px 10px; font-size: 12px; font-weight: 600; color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+  .tb-quote:hover { opacity: 0.9; }
+  .tb-help { display: flex; height: 28px; width: 28px; align-items: center; justify-content: center; border-radius: 999px; border: 1px solid var(--ppw-stone); background: #fff; font-size: 14px; font-weight: 700; color: var(--ppw-slate); }
+  .tb-help:hover { border-color: var(--ppw-teal); color: var(--ppw-teal); }
+  .tb-rooms-trigger, .tb-burger { display: none; }
+
+  /* ============ Main split ============ */
+  .main { display: flex; flex: 1; overflow: hidden; }
+
+  /* Room list sidebar */
+  .rl { display: flex; height: 100%; width: 224px; flex-direction: column; border-right: 1px solid var(--ppw-stone); background: #fff; flex-shrink: 0; }
+  .rl-head { border-bottom: 1px solid var(--ppw-stone); padding: 12px; }
+  .microlabel { font-size: 10px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ppw-slate); }
+  .rl-head .pname { display: block; width: 100%; text-align: left; font-size: 14px; font-weight: 600; color: var(--ppw-ink); margin-top: 2px; }
+  .rl-head .pname:hover { color: var(--ppw-teal); }
+  .rl-head .pcount { margin-top: 2px; font-size: 10px; color: var(--ppw-slate); }
+  .rl-body { flex: 1; overflow-y: auto; padding: 8px; }
+  .rl-row { border-radius: 6px; border: 1px solid var(--ppw-teal); background: rgba(15,118,110,0.05); padding: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .rl-row .rname { font-size: 14px; font-weight: 500; color: var(--ppw-teal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rl-row .active-chip { margin-left: 6px; border-radius: 2px; background: var(--ppw-teal); padding: 1px 4px; font-size: 9px; font-weight: 600; text-transform: uppercase; color: #fff; }
+  .rl-row .rstats { margin-top: 2px; font-size: 10px; color: var(--ppw-slate); }
+  .rl-row .rvalue { margin-top: 2px; font-size: 10px; font-weight: 500; color: var(--ppw-teal); }
+  .rl-row .rbtns { display: flex; gap: 4px; flex-shrink: 0; }
+  .rl-row .rbtns button { min-height: 32px; min-width: 32px; border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; font-size: 10px; color: var(--ppw-slate); }
+  .rl-row .rbtns button:hover { border-color: var(--ppw-teal); color: var(--ppw-teal); }
+  .rl-add { margin-top: 8px; width: 100%; min-height: 36px; border-radius: 6px; border: 1px dashed var(--ppw-stone); background: #fff; font-size: 12px; font-weight: 500; color: var(--ppw-slate); }
+  .rl-add:hover { border-color: var(--ppw-teal); color: var(--ppw-teal); }
+  .rl-foot { border-top: 1px solid var(--ppw-stone); background: var(--ppw-sand); padding: 8px 12px; font-size: 10px; line-height: 1.35; color: var(--ppw-slate); }
+
+  /* Catalog sidebar */
+  .cat { display: flex; height: 100%; width: 288px; flex-direction: column; border-right: 1px solid var(--ppw-stone); background: #fff; flex-shrink: 0; }
+  .cat-head { border-bottom: 1px solid var(--ppw-stone); padding: 12px 16px; }
+  .cat-head h2 { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ppw-slate); }
+  .cat-head .count { margin-top: 2px; font-size: 11px; color: var(--ppw-slate); }
+  .cat-head input[type=search] { margin-top: 12px; width: 100%; border-radius: 6px; border: 1px solid var(--ppw-stone); background: var(--ppw-sand); padding: 8px 10px; font-size: 14px; outline: none; }
+  .cat-head input[type=search]::placeholder { color: rgba(59,74,82,0.7); }
+  .cat-head input[type=search]:focus { border-color: var(--ppw-teal); box-shadow: 0 0 0 1px var(--ppw-teal); }
+  .eco-chip { margin-top: 8px; display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; border: 1px solid var(--ppw-stone); background: #fff; padding: 4px 10px; font-size: 11px; font-weight: 600; color: var(--ppw-slate); }
+  .eco-chip.on { border-color: #047857; background: #d1fae5; color: #064e3b; }
+  .cat-head .region-label { margin-top: 8px; display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ppw-slate); }
+  .cat-head select { margin-top: 4px; width: 100%; border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; padding: 8px; font-size: 14px; color: var(--ppw-ink); outline: none; }
+  .cat-tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--ppw-stone); padding: 8px; scrollbar-width: none; }
+  .cat-tabs::-webkit-scrollbar { display: none; }
+  .cat-tab { min-height: 32px; border-radius: 999px; padding: 0 10px; font-size: 11px; font-weight: 500; color: var(--ppw-slate); background: #fff; box-shadow: inset 0 0 0 1px var(--ppw-stone); white-space: nowrap; }
+  .cat-tab:hover { background: var(--ppw-mist); }
+  .cat-tab.on { background: var(--ppw-teal); color: #fff; box-shadow: inset 0 0 0 1px var(--ppw-teal); }
+  .cat-grid-wrap { flex: 1; overflow-y: auto; padding: 12px; }
+  .cat-grid { display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); list-style: none; }
+  .cat-tile { display: flex; aspect-ratio: 1/1; min-height: 80px; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; padding: 4px; transition: border-color .12s, box-shadow .12s; }
+  .cat-tile:hover { border-color: var(--ppw-teal); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+  .cat-tile:active { background: var(--ppw-mist); }
+  .cat-tile.armed { border-color: var(--ppw-teal); box-shadow: 0 0 0 2px rgba(15,118,110,0.4); }
+  .cat-tile .thumb { height: 48px; width: 48px; flex-shrink: 0; }
+  .cat-tile .thumb svg { height: 100%; width: 100%; }
+  .cat-tile .nm { padding: 0 4px; text-align: center; font-size: 10px; line-height: 1.25; color: var(--ppw-slate); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .cat-tile .pr { padding: 0 4px; text-align: center; font-size: 9px; font-weight: 600; line-height: 1.25; color: var(--ppw-teal); }
+  .cat-empty { padding: 24px 4px; text-align: center; font-size: 12px; color: var(--ppw-slate); }
+  .cat-foot { border-top: 1px solid var(--ppw-stone); background: var(--ppw-sand); padding: 8px 12px; font-size: 10px; line-height: 1.35; color: var(--ppw-slate); }
+
+  /* Canvas region */
+  .cv { position: relative; flex: 1; overflow: hidden; background: var(--ppw-mist); }
+  .cv.armed { background: rgba(15,118,110,0.05); box-shadow: inset 0 0 0 2px rgba(15,118,110,0.4); cursor: crosshair; }
+  .cv.drawing { cursor: crosshair; }
+  .cv svg.stage { position: absolute; inset: 0; width: 100%; height: 100%; user-select: none; touch-action: none; display: block; }
+  .cv-tr { pointer-events: none; position: absolute; z-index: 10; top: 16px; right: 16px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .cv-tr .btn-w { pointer-events: auto; min-height: 40px; border-radius: 6px; background: rgba(255,255,255,0.9); padding: 0 12px; font-size: 12px; font-weight: 500; color: var(--ppw-ink); box-shadow: 0 1px 2px rgba(0,0,0,0.06), inset 0 0 0 1px var(--ppw-stone); }
+  .cv-tr .btn-w:hover { background: #fff; }
+  .cv-tr .btn-share { pointer-events: auto; min-height: 40px; border-radius: 6px; background: var(--ppw-teal); padding: 0 12px; font-size: 12px; font-weight: 600; color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.06), inset 0 0 0 1px rgba(15,118,110,0.6); }
+  .cv-tr .btn-share:hover { opacity: 0.92; }
+  .cv-tr .badge-area { border-radius: 6px; background: rgba(14,27,31,0.8); padding: 4px 10px; font-size: 11px; font-weight: 500; color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+  .cv-tr .badge-cost { border-radius: 6px; background: rgba(255,187,88,0.92); color: var(--sims-navy); padding: 4px 10px; font-size: 11px; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+  .cv-tr .badge-count { border-radius: 6px; background: rgba(15,118,110,0.9); padding: 4px 10px; font-size: 11px; font-weight: 500; color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+  .help-fab { position: fixed; top: 204px; right: 16px; width: 36px; height: 36px; border-radius: 50%; background: #F5EFE6; border: 2px solid #C0A67E; font-size: 16px; font-weight: 700; color: #0E0E10; z-index: 700; box-shadow: 0 4px 12px rgba(14,14,16,0.18); }
+  .clear-ctl { pointer-events: none; position: absolute; z-index: 30; bottom: 16px; left: 12px; display: flex; align-items: center; gap: 8px; }
+  .clear-ctl button { pointer-events: auto; display: flex; min-height: 34px; align-items: center; gap: 6px; border-radius: 999px; background: rgba(255,255,255,0.95); padding: 0 12px; font-size: 11px; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.06); backdrop-filter: blur(4px); transition: all .12s; }
+  .clear-ctl .cp { border: 1px solid var(--ppw-stone); color: var(--ppw-slate); }
+  .clear-ctl .cp:hover:not(:disabled) { border-color: var(--ppw-teal); color: var(--ppw-teal); }
+  .clear-ctl .ca { border: 1px solid rgba(231,111,81,0.6); color: var(--ppw-coral); }
+  .clear-ctl .ca:hover:not(:disabled) { border-color: var(--ppw-coral); background: var(--ppw-coral); color: #fff; }
+  .clear-ctl button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* Start-state prompt + empty-room hint (verbatim inline styles) */
+  .start-wrap { pointer-events: none; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 0 16px; }
+  .start-card { pointer-events: auto; display: flex; max-width: 384px; flex-direction: column; align-items: center; gap: 8px; border-radius: 16px; padding: 20px 24px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background: rgba(245,235,215,0.92); border: 1px solid rgba(255,187,88,0.6); color: var(--sims-navy); }
+  .start-card .glyph { font-size: 26px; line-height: 1; color: var(--sims-gold); }
+  .start-card .h { font-size: 16px; font-weight: 600; color: var(--sims-navy); }
+  .start-card .b { font-size: 12px; line-height: 1.35; color: var(--ppw-slate); }
+  .start-card .btns { margin-top: 4px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+  .start-card .draw { min-height: 40px; border-radius: 8px; padding: 0 16px; font-size: 14px; font-weight: 600; color: #fff; background: var(--sims-navy); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+  .start-card .quick { min-height: 40px; border-radius: 8px; border: 1px solid rgba(35,44,59,0.2); padding: 0 16px; font-size: 14px; font-weight: 600; background: #fff; color: var(--sims-navy); }
+  .hint-card { display: flex; max-width: 320px; flex-direction: column; align-items: center; gap: 4px; border-radius: 12px; padding: 16px 20px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.06); background: rgba(245,235,215,0.78); border: 1px solid rgba(255,187,88,0.55); color: var(--sims-navy); }
+  .hint-card .glyph { font-size: 22px; line-height: 1; color: var(--sims-gold); }
+  .hint-card .h { font-size: 14px; font-weight: 600; color: var(--sims-navy); }
+  .hint-card .b { font-size: 11px; line-height: 1.35; color: var(--ppw-slate); }
+
+  /* Armed placement banner */
+  .armed-banner { pointer-events: auto; position: absolute; left: 50%; top: 12px; z-index: 20; display: flex; width: min(92vw, 420px); transform: translateX(-50%); align-items: center; justify-content: space-between; gap: 8px; border-radius: 8px; border: 1px solid var(--ppw-teal); background: #fff; padding: 8px 12px; font-size: 12px; box-shadow: 0 10px 24px rgba(0,0,0,0.14), 0 0 0 1px rgba(15,118,110,0.4); }
+  .armed-banner .t { font-weight: 600; color: var(--ppw-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .armed-banner .s { font-size: 10px; color: var(--ppw-slate); }
+  .armed-banner .cancel { flex-shrink: 0; min-height: 36px; border-radius: 6px; border: 1px solid var(--ppw-coral); background: #fff; padding: 0 12px; font-size: 11px; font-weight: 600; color: var(--ppw-coral); }
+  .armed-banner .cancel:hover { background: var(--ppw-coral); color: #fff; }
+
+  /* Draw-mode HUD */
+  .draw-hud { position: absolute; left: 50%; top: 12px; z-index: 20; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; border-radius: 8px; border: 1px solid var(--ppw-teal); background: #fff; padding: 8px 12px; font-size: 12px; box-shadow: 0 10px 24px rgba(0,0,0,0.14); }
+  .draw-hud .stats { color: var(--ppw-slate); }
+  .draw-hud button { min-height: 32px; border-radius: 6px; padding: 0 12px; font-size: 11px; font-weight: 600; }
+  .draw-hud .close-poly { background: var(--ppw-teal); color: #fff; }
+  .draw-hud .cancel { border: 1px solid var(--ppw-stone); color: var(--ppw-slate); background: #fff; }
+
+  /* Floating cluster (on-canvas item controls) */
+  .fcluster { position: absolute; z-index: 25; display: flex; gap: 6px; border-radius: 12px; background: var(--sims-navy); padding: 6px; box-shadow: 0 8px 20px rgba(14,14,16,0.3); }
+  .fcluster button { display: flex; height: 44px; width: 44px; align-items: center; justify-content: center; border-radius: 8px; background: var(--sims-cream); color: var(--sims-navy); font-size: 18px; }
+  .fcluster button:hover { background: #fff; }
+  .fcluster .danger { background: #E5654B; color: #fff; }
+  .fcluster .confirm { background: #4C9A6A; color: #fff; }
+
+  /* Details panel */
+  .dp { display: flex; height: 100%; width: 320px; flex-direction: column; border-left: 1px solid var(--ppw-stone); background: #fff; flex-shrink: 0; }
+  .dp-head { border-bottom: 1px solid var(--ppw-stone); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .dp-head h2 { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ppw-slate); }
+  .dp-body { flex: 1; overflow-y: auto; padding: 16px; }
+  .dp-body .sec { margin-bottom: 16px; }
+  .dp-body h3 { margin-top: 2px; font-size: 16px; font-weight: 600; color: var(--ppw-ink); }
+  .stat { margin-bottom: 12px; }
+  .stat .v { margin-top: 2px; font-size: 13px; color: var(--ppw-ink); }
+  .dashed-tip { border-radius: 6px; border: 1px dashed var(--ppw-stone); background: var(--ppw-mist); padding: 10px 12px; font-size: 11px; line-height: 1.4; color: var(--ppw-slate); }
+  .dashed-tip.teal { border-color: rgba(15,118,110,0.5); background: rgba(15,118,110,0.05); }
+  .dp-thumb { width: 100%; height: 128px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--ppw-stone); background: #fff; margin-bottom: 12px; }
+  .dp-thumb svg { height: 96px; width: 96px; }
+  .dp-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0; }
+  .dp-actions button { min-height: 36px; flex: 1; border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; padding: 0 10px; font-size: 12px; font-weight: 500; color: var(--ppw-slate); white-space: nowrap; }
+  .dp-actions button:hover { border-color: var(--ppw-teal); color: var(--ppw-teal); }
+  .dp-actions .del:hover { border-color: var(--ppw-coral); color: var(--ppw-coral); }
+  .dp-keys { margin-top: 8px; font-size: 10px; line-height: 1.5; color: var(--ppw-slate); }
+
+  /* Cart strip */
+  .cs { display: none; flex-direction: column; border-top: 1px solid var(--ppw-stone); background: #fff; flex-shrink: 0; }
+  .cs.visible { display: flex; }
+  .cs-head { display: flex; min-height: 44px; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 12px; width: 100%; }
+  .cs-head .chip { border-radius: 6px; background: var(--ppw-teal); padding: 2px 8px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: #fff; }
+  .cs-head .cnt { color: var(--ppw-slate); margin-left: 12px; }
+  .cs-head .cnt b { color: var(--ppw-ink); }
+  .cs-head .tot { font-size: 14px; font-weight: 600; color: var(--ppw-ink); }
+  .cs-head .alt { font-size: 11px; color: var(--ppw-slate); margin-left: 12px; }
+  .cs-head .chev { font-size: 10px; color: var(--ppw-slate); margin-left: 12px; }
+  .cs-detail { border-top: 1px solid var(--ppw-stone); background: var(--ppw-sand); padding: 8px 12px; }
+  .cs-detail table { width: 100%; font-size: 11px; border-collapse: collapse; }
+  .cs-detail th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ppw-slate); padding: 4px 0; font-weight: 500; }
+  .cs-detail th.r, .cs-detail td.r { text-align: right; }
+  .cs-detail td { padding: 4px 8px 4px 0; border-top: 1px solid rgba(196,203,205,0.6); }
+  .cs-detail td.nm { font-weight: 500; color: var(--ppw-ink); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cs-detail td.cat { color: var(--ppw-slate); }
+  .cs-detail tfoot td { border-top: 2px solid var(--ppw-ink); font-size: 11px; }
+  .cs-detail .foot-row { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+  .cs-detail .foot-row p { font-size: 10px; color: var(--ppw-slate); }
+  .cs-detail .view { min-height: 40px; border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; padding: 0 12px; font-size: 12px; font-weight: 500; color: var(--ppw-slate); }
+  .cs-detail .view:hover { border-color: var(--ppw-teal); color: var(--ppw-teal); }
+  .cs-detail .checkout { min-height: 40px; border-radius: 6px; background: var(--ppw-teal); padding: 0 12px; font-size: 12px; font-weight: 600; color: #fff; }
+  .cs-detail .checkout:hover { opacity: 0.9; }
+
+  /* Mini cart pill (canvas top-right slot when items exist) */
+  .mini-cart { pointer-events: none; position: absolute; right: 12px; top: 12px; z-index: 20; display: none; justify-content: flex-end; }
+  .mini-cart.visible { display: flex; }
+  .mini-cart button { pointer-events: auto; display: flex; min-height: 40px; align-items: center; gap: 8px; border-radius: 999px; border: 1px solid #C0A67E; background: #0E0E10; padding: 6px 12px; font-size: 12px; font-weight: 600; color: #F5EFE6; box-shadow: 0 10px 15px rgba(0,0,0,0.2), 0 0 0 1px rgba(192,166,126,0.4); }
+  .mini-cart .n { border-radius: 999px; background: #C0A67E; padding: 1px 6px; font-size: 10px; font-weight: 700; color: #0E0E10; }
+
+  /* Build stamp + dark toggle */
+  .build-stamp { position: fixed; bottom: 6px; left: 6px; font-size: 9px; line-height: 1; color: var(--ppw-slate); opacity: 0.5; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; pointer-events: none; z-index: 40; }
+  .dark-toggle { position: fixed; bottom: 12px; right: 12px; padding: 6px 10px; background: #fff; border: 1px solid #d1d5db; border-radius: 999px; font-size: 11px; opacity: 0.8; z-index: 50; }
+
+  /* Modals (confirm / coach / help) */
+  .modal-scrim { position: fixed; inset: 0; z-index: 900; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .modal-card { width: min(92vw, 360px); border-radius: 12px; background: #fff; padding: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+  .modal-card h2 { font-size: 14px; font-weight: 600; color: var(--ppw-ink); }
+  .modal-card p { margin-top: 4px; font-size: 12px; line-height: 1.4; color: var(--ppw-slate); }
+  .modal-card .row { margin-top: 16px; display: flex; gap: 8px; }
+  .modal-card .row button { flex: 1; border-radius: 6px; padding: 6px 12px; font-size: 14px; font-weight: 600; }
+  .modal-card .neutral { border: 1px solid var(--ppw-stone); background: #fff; color: var(--ppw-slate); }
+  .modal-card .neutral:hover { border-color: var(--ppw-ink); }
+  .modal-card .danger { background: var(--ppw-coral); color: #fff; }
+  .modal-card .danger:hover { opacity: 0.9; }
+
+  .coach-card { width: 320px; padding: 24px; background: #fff; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.25); }
+  .coach-card .step { font-size: 11px; color: #6b7280; text-transform: uppercase; }
+  .coach-card h2 { margin: 4px 0 8px; font-size: 18px; }
+  .coach-card p { margin: 0 0 16px; font-size: 14px; color: #374151; }
+  .coach-card .row { display: flex; justify-content: space-between; }
+  .coach-card .skip { font-size: 12px; color: #6b7280; }
+  .coach-card .next { padding: 6px 14px; background: #0a0a0a; color: #fff; border-radius: 6px; font-size: 14px; }
+
+  .helpov-card { background: #F5EFE6; color: #0E0E10; width: 100%; max-width: 560px; padding: 24px; border-radius: 12px; border: 1px solid #C0A67E; max-height: 80vh; overflow-y: auto; }
+  .helpov-card header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+  .helpov-card h2 { font-size: 18px; }
+  .helpov-card h3 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #C0A67E; }
+  .helpov-card section { margin-bottom: 18px; }
+  .helpov-card li { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(14,14,16,0.08); font-size: 13px; list-style: none; }
+  .helpov-card code { background: rgba(192,166,126,0.18); padding: 1px 6px; border-radius: 4px; font-family: monospace; }
+  .helpov-card li span { color: rgba(14,14,16,0.7); }
+
+  /* Toasts */
+  .toasts { position: fixed; bottom: 76px; left: 50%; transform: translateX(-50%); z-index: 999; display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none; }
+  .toast { border-radius: 8px; background: rgba(14,27,31,0.92); color: #fff; padding: 8px 14px; font-size: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); animation: toast-in .18s ease-out; max-width: 90vw; }
+  @keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* Mobile Sims bottom toolbar (< 1024 px) */
+  .sims { display: none; }
+
+  /* Scrollbars (match .scroll-pane) */
+  .rl-body::-webkit-scrollbar, .cat-grid-wrap::-webkit-scrollbar, .dp-body::-webkit-scrollbar { width: 8px; }
+  .rl-body::-webkit-scrollbar-thumb, .cat-grid-wrap::-webkit-scrollbar-thumb, .dp-body::-webkit-scrollbar-thumb { background: var(--ppw-stone); border-radius: 4px; }
+
+  /* ============ Responsive ============ */
+  @media (max-width: 1023px) {
+    .cat { display: none; }
+    .sims { display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 60; background: var(--sims-navy); border-top: 2px solid var(--sims-gold); padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); gap: 8px; align-items: stretch; }
+    .sims-cats { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+    .sims-cats button { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: rgba(245,235,215,0.75); font-size: 15px; }
+    .sims-cats button.on { color: var(--sims-gold); background: rgba(255,187,88,0.14); }
+    .sims-scroll { flex: 1; display: grid; grid-auto-flow: column; grid-template-rows: repeat(2, 1fr); gap: 6px; overflow-x: auto; scrollbar-width: none; }
+    .sims-scroll::-webkit-scrollbar { display: none; }
+    .sims-thumb { width: 64px; height: 64px; border-radius: 8px; background: var(--sims-cream); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid transparent; }
+    .sims-thumb.armed { border-color: var(--sims-gold); }
+    .sims-thumb svg { width: 44px; height: 44px; }
+    .sims-min { align-self: center; color: var(--sims-cream); font-size: 18px; padding: 0 4px; }
+    .dark-toggle { bottom: calc(12px + 92px); }
+  }
+  @media (max-width: 767px) {
+    .rl, .dp, .tb-title, .tb-dims, .tb-grid-btn, .tb-cart, .tb-new, .tb-save, .tb-load, .tb-quote, .tb-help { display: none; }
+    .tb { padding: 0 8px; }
+    .tb-rooms-trigger { display: flex; min-height: 40px; min-width: 0; flex: 1; align-items: center; gap: 4px; border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; padding: 0 10px; text-align: left; font-size: 12px; font-weight: 500; color: var(--ppw-ink); overflow: hidden; }
+    .tb-rooms-trigger .rn { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tb-rooms-trigger .rc { margin-left: 4px; color: var(--ppw-slate); }
+    .tb-burger { display: flex; height: 40px; width: 40px; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; color: var(--ppw-slate); }
+  }
+
+  /* Mobile drawers */
+  .m-scrim { position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,0.3); }
+  .m-menu { position: absolute; right: 8px; top: 56px; z-index: 40; width: 256px; border-radius: 8px; border: 1px solid var(--ppw-stone); background: #fff; padding: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.25); display: flex; flex-direction: column; gap: 6px; }
+  .m-menu button, .m-menu .mrow { display: flex; min-height: 44px; align-items: center; justify-content: space-between; border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; padding: 0 12px; font-size: 14px; font-weight: 500; color: var(--ppw-ink); text-align: left; }
+  .m-menu .quote { background: var(--ppw-coral); color: #fff; border: none; font-weight: 600; }
+  .m-rooms { position: absolute; left: 8px; top: 56px; z-index: 40; width: 260px; border-radius: 8px; border: 1px solid var(--ppw-stone); background: #fff; padding: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.25); }
+
+  /* ================= CART / CHECKOUT / ORDER PAGES (added 2026-07-10) ===== */
+  .pg { display: flex; min-height: 100%; height: 100%; flex-direction: column; background: var(--ppw-sand); color: var(--ppw-ink); overflow: auto; }
+  .pg-head { position: relative; z-index: 20; display: flex; height: 56px; flex-shrink: 0; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--ppw-stone); background: #fff; padding: 0 24px; }
+  .pg-brand { display: flex; align-items: center; gap: 10px; background: none; border: none; cursor: pointer; padding: 0; min-width: 0; }
+  .pg-logo { display: flex; height: 32px; width: 32px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 6px; background: var(--ppw-teal); }
+  .pg-brand-txt { display: flex; flex-direction: column; line-height: 1.15; text-align: left; min-width: 0; }
+  .pg-brand-txt b { font-size: 14px; font-weight: 600; color: var(--ppw-ink); }
+  .pg-brand-txt small { font-size: 11px; color: var(--ppw-slate); }
+  .pg-head-right { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .pg-back { border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; padding: 5px 10px; font-size: 12px; font-weight: 500; color: var(--ppw-slate); cursor: pointer; }
+  .pg-back:hover { border-color: var(--ppw-teal); color: var(--ppw-teal); }
+  .pg-main { margin: 0 auto; display: flex; width: 100%; max-width: 1152px; flex: 1; flex-direction: column; gap: 24px; padding: 24px; }
+  @media (min-width: 768px) { .pg-main { flex-direction: row; } }
+  .pg-col { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+  .pg-col-head { display: flex; align-items: center; justify-content: space-between; }
+  .pg-col-head h1 { font-size: 20px; font-weight: 700; margin: 0; }
+  .muted { color: var(--ppw-slate); }
+  .pg-col-head .muted { font-size: 12px; }
+  @media (min-width: 768px) { .pg-aside { width: 320px; flex-shrink: 0; } }
+  .sum-card { position: sticky; top: 16px; border-radius: 8px; border: 1px solid var(--ppw-stone); background: #fff; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+  .sum-ttl { font-size: 14px; font-weight: 700; margin: 0; }
+  .sum-dl { margin: 12px 0 0; display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+  .sum-dl > div { display: flex; justify-content: space-between; color: var(--ppw-slate); }
+  .sum-dl dt { margin: 0; } .sum-dl dd { margin: 0; color: var(--ppw-ink); }
+  .sum-dl dd.it { font-style: italic; color: var(--ppw-slate); }
+  .sum-lines { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+  .sum-lines li { display: flex; justify-content: space-between; gap: 8px; }
+  .sum-lines .nm { color: var(--ppw-slate); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sum-lines .x { font-size: 10px; } .sum-lines li > span:last-child { flex-shrink: 0; color: var(--ppw-ink); }
+  .sum-row { margin-top: 6px; display: flex; justify-content: space-between; font-size: 12px; padding-top: 0; }
+  .sum-row.muted span { color: var(--ppw-slate); } .sum-row .it { font-style: italic; }
+  .sum-total { margin-top: 12px; display: flex; align-items: baseline; justify-content: space-between; border-top: 1px solid var(--ppw-stone); padding-top: 12px; }
+  .sum-total span:first-child { font-size: 14px; font-weight: 700; } .sum-total .big { font-size: 18px; font-weight: 700; }
+  .alt { margin-top: 4px; font-size: 10px; color: var(--ppw-slate); }
+  .btn-teal { border: none; border-radius: 6px; background: var(--ppw-teal); padding: 10px 20px; font-size: 14px; font-weight: 600; color: #fff; cursor: pointer; text-decoration: none; display: inline-block; text-align: center; }
+  .btn-teal:hover { opacity: 0.9; } .btn-teal.wide { display: block; width: 100%; margin-top: 16px; }
+  .btn-outline { border: 1px solid var(--ppw-stone); border-radius: 6px; background: #fff; padding: 8px 16px; font-size: 14px; font-weight: 600; color: var(--ppw-slate); cursor: pointer; }
+  .btn-outline:hover { border-color: var(--ppw-teal); color: var(--ppw-teal); }
+  .fineprint { margin-top: 12px; font-size: 10px; line-height: 1.5; color: var(--ppw-slate); }
+  .linkish { background: none; border: none; padding: 0; font-size: 12px; font-weight: 500; color: var(--ppw-slate); cursor: pointer; }
+  .linkish:hover { color: var(--ppw-teal); }
+  .pg-cont { display: flex; align-items: center; gap: 12px; padding-top: 8px; }
+  .cart-lines { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .cart-line { display: flex; flex-direction: column; gap: 12px; border-radius: 8px; border: 1px solid var(--ppw-stone); background: #fff; padding: 12px; }
+  @media (min-width: 768px) { .cart-line { flex-direction: row; align-items: center; } }
+  .cl-thumb { height: 64px; width: 64px; flex-shrink: 0; border-radius: 6px; background: var(--ppw-sand); padding: 4px; }
+  .cl-thumb svg { width: 100%; height: 100%; }
+  .cl-info { min-width: 0; flex: 1; } .cl-info .nm { font-size: 14px; font-weight: 600; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cl-info .meta { font-size: 11px; color: var(--ppw-slate); margin: 2px 0 0; }
+  .cl-qty { display: flex; align-items: center; gap: 8px; }
+  .cl-qty button { height: 28px; width: 28px; border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; font-size: 14px; font-weight: 700; color: var(--ppw-slate); cursor: pointer; }
+  .cl-qty button:hover:not(:disabled) { border-color: var(--ppw-teal); color: var(--ppw-teal); } .cl-qty button:disabled { opacity: 0.3; cursor: default; }
+  .cl-qty input { width: 48px; border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; padding: 4px; text-align: center; font-size: 14px; }
+  .cl-right { text-align: right; } @media (min-width: 768px) { .cl-right { width: 128px; } }
+  .cl-right .line { font-size: 14px; font-weight: 700; margin: 0; }
+  .cl-right .rm { margin-top: 4px; background: none; border: none; font-size: 11px; color: var(--ppw-coral); cursor: pointer; } .cl-right .rm:hover { text-decoration: underline; }
+  .breakdown { border-radius: 8px; border: 1px solid var(--ppw-stone); background: #fff; }
+  .bd-head { display: flex; width: 100%; align-items: center; justify-content: space-between; background: none; border: none; padding: 8px 12px; font-size: 12px; font-weight: 600; color: var(--ppw-slate); cursor: pointer; }
+  .bd-body { border-top: 1px solid var(--ppw-stone); padding: 12px; font-size: 12px; }
+  .bd-body .rn { font-weight: 600; margin: 0; } .bd-list { margin: 4px 0 0 16px; color: var(--ppw-slate); } .bd-list .x { font-size: 10px; }
+  .pg-empty { margin: 0 auto; display: flex; width: 100%; max-width: 768px; flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; gap: 8px; }
+  .pg-empty .ttl { font-size: 24px; font-weight: 600; margin: 0; } .pg-empty .sub { font-size: 14px; color: var(--ppw-slate); margin: 0; } .pg-empty .btn-teal { margin-top: 16px; }
+  .co-form { gap: 20px; } .co-head h1 { font-size: 20px; font-weight: 700; margin: 0; } .co-head .muted { font-size: 12px; margin: 4px 0 0; }
+  .co-sec { border-radius: 8px; border: 1px solid var(--ppw-stone); background: #fff; padding: 16px; }
+  .co-sec-ttl { font-size: 14px; font-weight: 700; margin: 0; }
+  .co-grid { margin-top: 12px; display: grid; gap: 12px; } @media (min-width: 768px) { .co-grid { grid-template-columns: 1fr 1fr; } .co-grid .fld.full { grid-column: 1 / -1; } }
+  .fld label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ppw-slate); }
+  .fld .req { color: var(--ppw-coral); }
+  .fld input, .fld select, .co-sec textarea { margin-top: 4px; width: 100%; border-radius: 6px; border: 1px solid var(--ppw-stone); background: #fff; padding: 8px 10px; font-size: 14px; box-sizing: border-box; }
+  .fld input:focus, .fld select:focus, .co-sec textarea:focus { outline: none; border-color: var(--ppw-teal); }
+  .fld input.err, .fld select.err { border-color: var(--ppw-coral); }
+  .fld-err { margin: 4px 0 0; font-size: 11px; color: var(--ppw-coral); }
+  .co-sec textarea { margin-top: 8px; resize: vertical; font-family: inherit; }
+  .pay-rails { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .pay-rail { display: flex; cursor: pointer; align-items: center; gap: 8px; border-radius: 6px; border: 1px solid var(--ppw-stone); padding: 10px; font-size: 14px; }
+  .pay-rail:hover { border-color: var(--ppw-teal); } .pay-rail.on { border-color: var(--ppw-teal); }
+  .pay-rail input { height: 16px; width: 16px; accent-color: var(--ppw-teal); }
+  .server-msg { border-radius: 6px; border: 1px solid var(--ppw-coral); background: rgba(231,111,81,0.1); padding: 10px; font-size: 12px; color: var(--ppw-coral); }
+  .co-actions { display: flex; flex-direction: column-reverse; gap: 8px; } @media (min-width: 768px) { .co-actions { flex-direction: row; align-items: center; justify-content: space-between; } }
+  .stripe-test { margin-top: 12px; border-radius: 6px; border: 1px solid rgba(15,118,110,0.4); background: rgba(15,118,110,0.1); padding: 8px; font-size: 10px; line-height: 1.4; color: var(--ppw-ink); }
+  .manual-note { margin-top: 12px; border-radius: 6px; background: var(--ppw-sand); padding: 8px; font-size: 10px; line-height: 1.4; color: var(--ppw-slate); }
+  .pg-order { margin: 0 auto; display: flex; width: 100%; max-width: 672px; flex: 1; flex-direction: column; padding: 24px; }
+  .order-card { border-radius: 12px; border: 1px solid var(--ppw-stone); background: #fff; padding: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+  .order-card .ttl { font-size: 24px; font-weight: 700; margin: 0; } .order-card .sub { margin: 8px 0 0; font-size: 14px; color: var(--ppw-slate); }
+  .order-dl { margin: 16px 0 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; } .order-dl > div { display: flex; justify-content: space-between; } .order-dl dt { margin: 0; color: var(--ppw-slate); } .order-dl dd { margin: 0; font-weight: 600; } .order-dl .mono { font-family: ui-monospace, Menlo, monospace; }
+  .order-btns { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px; } @media (min-width: 768px) { .order-btns { flex-direction: row; } }
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =====================================================================
+     MOCK DATA — the real bundled catalog (products.json @ 241de3a),
+     DEMO-* SKUs excluded (hidden from the public catalog in prod).
+     ===================================================================== */
+  var PRODUCTS = [
+    { id: 'k1-nordictrack-2450', sku: 'K1-CDIO-NT2450', name: 'NordicTrack Commercial 2450 Treadmill', cat: 'fitness', dims: { l: 205, w: 95, h: 165 }, price: 150000, supplier: 'K1-Sport (NordicTrack — Mauritius distributor)', notes: 'Foldable commercial-grade treadmill; 24-inch touchscreen; iFit-ready.' },
+    { id: 'k1-nordictrack-tour-de-france', sku: 'K1-CDIO-NTTDF', name: 'NordicTrack Tour de France Indoor Bike', cat: 'fitness', dims: { l: 150, w: 65, h: 135 }, price: 150000, supplier: 'K1-Sport (NordicTrack — Mauritius distributor)', notes: 'Incline/decline indoor cycle; iFit-ready interactive trainer.' },
+    { id: 'k1-nordictrack-gx10', sku: 'K1-CDIO-NTGX10', name: 'NordicTrack GX 10 Recumbent Bike', cat: 'fitness', dims: { l: 150, w: 65, h: 130 }, price: 95000, supplier: 'K1-Sport (NordicTrack — Mauritius distributor)', notes: 'Recumbent bike with 26 resistance levels.' },
+    { id: 'k1-schwinn-700ic', sku: 'K1-CDIO-SCH700IC', name: 'Schwinn 700IC Indoor Bike', cat: 'fitness', dims: { l: 120, w: 55, h: 130 }, price: 29000, supplier: 'K1-Sport (Schwinn — Mauritius distributor)', notes: 'Indoor cycle with 18.1 kg / 40 lb flywheel. Entry-price cardio.' },
+    { id: 'k1-proform-carbon-tl', sku: 'K1-CDIO-PROFCTL', name: 'ProForm Carbon TL Treadmill', cat: 'fitness', dims: { l: 180, w: 85, h: 145 }, price: 40500, supplier: 'K1-Sport (ProForm — Mauritius distributor)', notes: 'Foldable home treadmill; iFit-enabled.' },
+    { id: 'k1-nordictrack-x16', sku: 'K1-CDIO-NTX16', name: 'NordicTrack X16 Elliptical', cat: 'fitness', dims: { l: 180, w: 70, h: 175 }, price: 125000, supplier: 'K1-Sport (NordicTrack — Mauritius distributor)', notes: 'Front-drive elliptical; 16-inch touchscreen; iFit-ready.' },
+    { id: 'k1-nordictrack-rw900', sku: 'K1-CDIO-NTRW900', name: 'NordicTrack RW900 Rower', cat: 'fitness', dims: { l: 220, w: 55, h: 110 }, price: 120000, supplier: 'K1-Sport (NordicTrack — Mauritius distributor)', notes: 'Magnetic + air resistance rower; 22-inch HD touchscreen.' },
+    { id: 'k1-vision-t600-03', sku: 'K1-CDIO-VST60003', name: 'Vision Fitness T600-03 Treadmill', cat: 'fitness', dims: { l: 210, w: 100, h: 165 }, price: 210393, supplier: 'K1-Sport (Vision Fitness — Mauritius distributor)', notes: 'Commercial-grade treadmill with vibration-isolation deck.' },
+    { id: 'k1-vision-t600e-02', sku: 'K1-CDIO-VST600E02', name: 'Vision Fitness T600E-02 Treadmill (22" touchscreen)', cat: 'fitness', dims: { l: 210, w: 100, h: 165 }, price: 259600, supplier: 'K1-Sport (Vision Fitness — Mauritius distributor)', notes: 'Top-of-line commercial treadmill with 22-inch entertainment screen.' },
+    { id: 'k1-matrix-mg-glute', sku: 'K1-STRG-MXMGGT', name: 'Matrix MG Glute Trainer', cat: 'fitness', dims: { l: 150, w: 100, h: 175 }, price: 140001, supplier: 'K1-Sport (Matrix Fitness — Mauritius distributor)', notes: 'Glute + hip-thrust strength station, plate-loaded. Commercial-grade.' },
+    { id: 'k1-matrix-versa-adabd', sku: 'K1-STRG-MXVSAD', name: 'Matrix Versa Adductor / Abductor', cat: 'fitness', dims: { l: 165, w: 130, h: 195 }, price: 154675, supplier: 'K1-Sport (Matrix Fitness — Mauritius distributor)', notes: 'Selectorised dual adductor/abductor station, weight-stack.' },
+    { id: 'k1-vision-smith', sku: 'K1-STRG-VSSMITH', name: 'Vision Fitness Smith Machine', cat: 'fitness', dims: { l: 225, w: 165, h: 230 }, price: 172500, supplier: 'K1-Sport (Vision Fitness — Mauritius distributor)', notes: 'Fixed-path Smith machine; counterbalanced bar.' },
+    { id: 'k1-bowflex-xtreme-2se', sku: 'K1-STRG-BFXT2SE', name: 'Bowflex Xtreme 2 SE Home Gym', cat: 'fitness', dims: { l: 205, w: 130, h: 210 }, price: 52000, supplier: 'K1-Sport (Bowflex — Mauritius distributor)', notes: 'Power-rod multi-station home gym; 70+ exercises.' },
+    { id: 'k1-bench-adjustable-fid', sku: 'K1-STRG-FIDBN', name: 'Adjustable Flat / Incline / Decline Bench', cat: 'fitness', dims: { l: 135, w: 60, h: 60 }, price: 11000, supplier: 'K1-Sport', notes: 'Multi-position weight bench (flat / incline / decline).' },
+    { id: 'k1-floor-eva-combat', sku: 'K1-FLOR-EVACOMBAT', name: 'EVA Combat Sport Mat 1×1m × 2.5 cm', cat: 'flooring', dims: { l: 100, w: 100, h: 2.5 }, price: 850, supplier: 'K1-Sport', notes: 'EVA foam combat sport / martial arts mat. 1×1m tile, 2.5 cm thick.' },
+    { id: 'k1-floor-eva-kids', sku: 'K1-FLOR-EVAKIDS', name: 'EVA Kids Mat (5-pack)', cat: 'flooring', dims: { l: 50, w: 50, h: 1 }, price: 950, supplier: 'K1-Sport', notes: "EVA kids' play mat sold in packs of 5. Approx Rs 190 / m²." },
+    { id: 'k1-floor-gym-interlock', sku: 'K1-FLOR-GYMTILE', name: 'Gym Interlock Tile 92×92×0.5 cm', cat: 'flooring', dims: { l: 92, w: 92, h: 0.5 }, price: 1600, supplier: 'K1-Sport', notes: 'PVC interlock gym flooring tile, 92×92 cm × 5 mm.' },
+    { id: 'k1-floor-ifit-vinyl', sku: 'K1-FLOR-IFITVINYL', name: 'iFIT Vinyl Equipment Mat 36"×72"', cat: 'flooring', dims: { l: 183, w: 91, h: 0.6 }, price: 3500, supplier: 'K1-Sport', notes: 'Vinyl protective mat for cardio equipment.' },
+    { id: 'k1-floor-rubber-interlock', sku: 'K1-FLOR-RUBCOMP', name: 'Interlock Composite Rubber Tile 50×50×1.5 cm', cat: 'flooring', dims: { l: 50, w: 50, h: 1.5 }, price: 500, supplier: 'K1-Sport', notes: 'Composite rubber interlock tile, 50×50 cm × 15 mm.' },
+    { id: 'k1-floor-outdoor-rubber-1m', sku: 'K1-FLOR-OUTDOOR1M', name: 'Outdoor Rubber Tile 1×1m × 5 cm — Red', cat: 'flooring', dims: { l: 100, w: 100, h: 5 }, price: 1500, supplier: 'K1-Sport', notes: 'Outdoor rubber tile, 1×1m × 50 mm — red.' },
+    { id: 'k1-floor-outdoor-rubber-50', sku: 'K1-FLOR-OUTDOOR50', name: 'Outdoor Rubber Tile 50×50×2.5 cm — Red', cat: 'flooring', dims: { l: 50, w: 50, h: 2.5 }, price: 375, supplier: 'K1-Sport', notes: 'Outdoor rubber tile, 50×50 cm × 25 mm — red.' },
+    { id: 'k1-floor-epdm-roll', sku: 'K1-FLOR-EPDM6', name: 'EPDM Rubber Roll 6 mm — Grey', cat: 'flooring', dims: { l: 1000, w: 125, h: 0.6 }, price: 13500, supplier: 'K1-Sport', notes: 'EPDM rubber roll, 6 mm thick, grey. Per-roll pricing (≈ 10×1.25 m).' }
+  ];
+  var CATEGORY_LABELS = { fitness: 'Fitness', flooring: 'Flooring' };
+  /* PRODUCT_TO_MACRO (verbatim mapping): fitness→cardio, flooring→flooring */
+  var MACRO_OF = { fitness: 'cardio', flooring: 'flooring' };
+  var MACRO_TABS = [
+    ['all', 'All'], ['furniture', 'Furniture'], ['cardio', 'Cardio'], ['recovery', 'Recovery'],
+    ['sauna', 'Sauna'], ['flooring', 'Flooring'], ['walls', 'Walls'], ['decor', 'Decor']
+  ];
+  var REGIONS = ['Mauritius', 'Africa', 'Europe', 'North America', 'Asia-Pacific', 'Worldwide'];
+  /* CATEGORY_FILL — on-canvas fallback colours (products.ts verbatim) */
+  var CATEGORY_FILL = {
+    fitness: { fill: '#C0C0C0', stroke: '#404040' },
+    flooring: { fill: '#D7C3A0', stroke: '#7C5E3C' }
+  };
+  /* thumbnailFor() — the app's real inline SVG category fallbacks */
+  var THUMB_SVG = {
+    fitness: '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="10" y="26" width="44" height="14" rx="3" fill="#C0C0C0" stroke="#404040" stroke-width="2"/><circle cx="18" cy="33" r="4" fill="#404040"/><circle cx="46" cy="33" r="4" fill="#404040"/><rect x="22" y="18" width="20" height="6" rx="1" fill="#0E0E10"/></svg>',
+    flooring: '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="8" y="8" width="48" height="48" rx="2" fill="#D7C3A0" stroke="#7C5E3C" stroke-width="2"/><line x1="8" y1="20" x2="56" y2="20" stroke="#7C5E3C" stroke-width="1.2" opacity="0.5"/><line x1="8" y1="32" x2="56" y2="32" stroke="#7C5E3C" stroke-width="1.2" opacity="0.5"/><line x1="8" y1="44" x2="56" y2="44" stroke="#7C5E3C" stroke-width="1.2" opacity="0.5"/><line x1="20" y1="8" x2="20" y2="56" stroke="#7C5E3C" stroke-width="1.2" opacity="0.3"/><line x1="32" y1="8" x2="32" y2="56" stroke="#7C5E3C" stroke-width="1.2" opacity="0.3"/><line x1="44" y1="8" x2="44" y2="56" stroke="#7C5E3C" stroke-width="1.2" opacity="0.3"/></svg>'
+  };
+  /* Fallback FX (the live app's fallback-rates state — coral dot shows) */
+  var FX = { MUR: 1, USD: 0.0215, EUR: 0.0197, GBP: 0.0169 };
+  function fmtMoney(mur, cur) {
+    var v = mur * FX[cur];
+    var s = cur === 'MUR' ? Math.round(v).toLocaleString('en-MU') : v.toLocaleString('en-MU', { maximumFractionDigits: 0 });
+    return s + ' ' + cur;
+  }
+
+  /* =====================================================================
+     STATE (in-memory only — no localStorage in the artifact sandbox)
+     ===================================================================== */
+  var S = {
+    room: null,              // {lengthM, widthM} once drawn (rect) or {poly:[{x,y}m]}
+    items: [],               // {iid, productId, xM, yM, rot}
+    selectedIid: null,
+    armedProductId: null,
+    drawMode: false,
+    drawVerts: [],           // metres
+    wallMode: false,
+    gridOn: true,
+    currency: 'MUR',
+    query: '',
+    tab: 'all',
+    region: 'Mauritius',
+    ecoOnly: false,
+    expandedCart: true,
+    history: [],
+    future: [],
+    coachStep: 0,            // 0..2 visible, -1 dismissed
+    helpOpen: false,
+    pendingClear: null,      // 'products' | 'all' | null
+    dark: false,
+    simsCat: 'all',
+    simsMin: false,
+    iidSeq: 1,
+    view: 'designer',
+    cartBreakdownOpen: true,
+    checkoutForm: { name: '', email: '', phone: '', addressLine1: '', addressLine2: '', city: '', postcode: '', country: 'MU', notes: '' },
+    checkoutSubmitted: false,
+    selectedRail: 'stripe',
+    serverMessage: null,
+    lastOrderId: null
+  };
+  var PX_PER_M = 70;
+  var STRIPE_TEST_MODE = true;
+  var PAYPAL_ENABLED = true;
+  var STRIPE_CONFIGURED = true;
+  var COUNTRY_OPTIONS = [
+    ['MU','Mauritius'],['AE','United Arab Emirates'],['AU','Australia'],['BE','Belgium'],
+    ['CA','Canada'],['CH','Switzerland'],['DE','Germany'],['ES','Spain'],['FR','France'],
+    ['GB','United Kingdom'],['IE','Ireland'],['IN','India'],['IT','Italy'],['KE','Kenya'],
+    ['MG','Madagascar'],['NL','Netherlands'],['NZ','New Zealand'],['PT','Portugal'],
+    ['SC','Seychelles'],['SG','Singapore'],['US','United States'],['ZA','South Africa']
+  ];
+
+  function prodById(id) { for (var i = 0; i < PRODUCTS.length; i++) if (PRODUCTS[i].id === id) return PRODUCTS[i]; return null; }
+  function snap(m) { return Math.round(m * 2) / 2; }
+  function roomWm() { return S.room ? S.room.lengthM : 0; }
+  function roomHm() { return S.room ? S.room.widthM : 0; }
+  function areaM2() { return S.room ? S.room.lengthM * S.room.widthM : 0; }
+  function pushHistory() { S.history.push(JSON.stringify({ room: S.room, items: S.items })); if (S.history.length > 50) S.history.shift(); S.future = []; }
+  function undo() {
+    if (!S.history.length) return;
+    S.future.push(JSON.stringify({ room: S.room, items: S.items }));
+    var prev = JSON.parse(S.history.pop());
+    S.room = prev.room; S.items = prev.items; S.selectedIid = null;
+    render();
+  }
+  function redo() {
+    if (!S.future.length) return;
+    S.history.push(JSON.stringify({ room: S.room, items: S.items }));
+    var nxt = JSON.parse(S.future.pop());
+    S.room = nxt.room; S.items = nxt.items; S.selectedIid = null;
+    render();
+  }
+  function cartLines() {
+    var by = {};
+    S.items.forEach(function (it) {
+      if (!by[it.productId]) by[it.productId] = 0;
+      by[it.productId]++;
+    });
+    return Object.keys(by).map(function (pid) {
+      var p = prodById(pid);
+      return { p: p, qty: by[pid], line: p.price * by[pid] };
+    });
+  }
+  function cartSubtotalMur() { return cartLines().reduce(function (a, l) { return a + l.line; }, 0); }
+
+  var toastsEl;
+  function toast(msg, ms) {
+    var t = document.createElement('div');
+    t.className = 'toast'; t.textContent = msg;
+    toastsEl.appendChild(t);
+    setTimeout(function () { t.remove(); }, ms || 2600);
+  }
+
+  /* =====================================================================
+     FILTERING
+     ===================================================================== */
+  function filteredProducts() {
+    var q = S.query.trim().toLowerCase();
+    return PRODUCTS.filter(function (p) {
+      if (q && !(p.name.toLowerCase().indexOf(q) >= 0 || p.sku.toLowerCase().indexOf(q) >= 0 || p.cat.indexOf(q) >= 0 || p.supplier.toLowerCase().indexOf(q) >= 0 || p.notes.toLowerCase().indexOf(q) >= 0)) return false;
+      if (S.tab !== 'all' && MACRO_OF[p.cat] !== S.tab) return false;
+      if (S.ecoOnly) return false; /* no eco-tagged products in the current catalog */
+      return true;
+    });
+  }
+
+  /* =====================================================================
+     RENDER — full re-render on state change (small DOM, fine for a mock)
+     ===================================================================== */
+  var root;
+  function h(html) { var d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild; }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+
+  function render() {
+    var scrollPositions = {};
+    ['cat-grid-wrap', 'dp-body', 'rl-body'].forEach(function (cls) {
+      var el = root.querySelector('.' + cls);
+      if (el) scrollPositions[cls] = el.scrollTop;
+    });
+    root.innerHTML = '';
+    if (S.view !== 'designer') {
+      if (S.view === 'cart') root.appendChild(renderCartPage());
+      else if (S.view === 'checkout') root.appendChild(renderCheckoutPage());
+      else if (S.view === 'pending') root.appendChild(renderPendingPage());
+      toastsEl = h('<div class="toasts"></div>');
+      root.appendChild(toastsEl);
+      return;
+    }
+    root.appendChild(renderTopBar());
+    var main = h('<div class="main"></div>');
+    main.appendChild(renderRoomList());
+    main.appendChild(renderCatalog());
+    main.appendChild(renderCanvas());
+    main.appendChild(renderDetails());
+    root.appendChild(main);
+    root.appendChild(renderCartStrip());
+    root.appendChild(renderSims());
+    root.appendChild(h('<span class="build-stamp" title="Build identifier">build claude-design-export</span>'));
+    var darkBtn = h('<button type="button" class="dark-toggle" title="' + (S.dark ? 'Switch to light mode' : 'Switch to dark mode') + '">' + (S.dark ? '☀️ light' : '🌙 dark') + '</button>');
+    darkBtn.onclick = function () { S.dark = !S.dark; toast('Dark theme not replicated in this design mockup'); render(); };
+    root.appendChild(darkBtn);
+    var helpFab = h('<button type="button" class="help-fab" aria-label="Open keyboard shortcuts help">?</button>');
+    helpFab.onclick = function () { S.helpOpen = true; render(); };
+    root.appendChild(helpFab);
+    toastsEl = h('<div class="toasts"></div>');
+    root.appendChild(toastsEl);
+    if (S.pendingClear) root.appendChild(renderClearModal());
+    if (S.helpOpen) root.appendChild(renderHelpOverlay());
+    if (S.coachStep >= 0) root.appendChild(renderCoach());
+    Object.keys(scrollPositions).forEach(function (cls) {
+      var el = root.querySelector('.' + cls);
+      if (el) el.scrollTop = scrollPositions[cls];
+    });
+  }
+
+  /* ---------- Top bar ---------- */
+  function renderTopBar() {
+    var el = h('<header class="tb"></header>');
+    var left = h('<div class="tb-left"></div>');
+    left.appendChild(h(
+      '<div class="tb-logo"><svg viewBox="0 0 24 24" style="height:20px;width:20px;color:#fff" aria-hidden="true">' +
+      '<path d="M5 18 L12 5 L19 18 Z" fill="currentColor"></path><circle cx="12" cy="14" r="1.6" fill="#0F766E"></circle></svg></div>'
+    ));
+    var title = h('<div class="tb-title"><p class="t">Wellness Room Designer</p></div>');
+    var pbtn = h('<button type="button" class="p" title="Rename property">Wellness Property - 1 room</button>');
+    title.appendChild(pbtn);
+    left.appendChild(title);
+    var roomsTrig = h('<button type="button" class="tb-rooms-trigger" aria-label="Open rooms list">' +
+      '<svg viewBox="0 0 16 16" style="height:14px;width:14px;flex-shrink:0;color:var(--ppw-slate)" aria-hidden="true"><path fill="currentColor" d="M2 3h12v3H2zM2 7h12v3H2zM2 11h12v2H2z"></path></svg>' +
+      '<span class="rn">Main Room</span><span class="rc">· 1</span></button>');
+    roomsTrig.onclick = function () { toast('Rooms drawer (mobile) — one room in this mockup'); };
+    left.appendChild(roomsTrig);
+    el.appendChild(left);
+
+    var right = h('<div class="tb-right"></div>');
+
+    var dims = h('<div class="tb-dims"></div>');
+    if (S.room) {
+      dims.innerHTML =
+        '<label>L</label><input type="number" min="1" max="50" step="0.5" value="' + S.room.lengthM + '" data-dim="l">' +
+        '<span class="u">m</span><span class="dot">.</span>' +
+        '<label>W</label><input type="number" min="1" max="50" step="0.5" value="' + S.room.widthM + '" data-dim="w">' +
+        '<span class="u">m</span>';
+      dims.querySelectorAll('input').forEach(function (inp) {
+        inp.onchange = function () {
+          pushHistory();
+          var v = Number(inp.value) || (inp.dataset.dim === 'l' ? S.room.lengthM : S.room.widthM);
+          if (inp.dataset.dim === 'l') S.room.lengthM = v; else S.room.widthM = v;
+          render();
+        };
+      });
+    } else {
+      dims.innerHTML = '<span class="placeholder">Draw a room →</span>';
+    }
+    right.appendChild(dims);
+
+    var seg = h('<div class="seg"></div>');
+    var bRect = h('<button type="button" title="Rectangle / place-items mode" class="' + (!S.drawMode ? 'on' : '') + '">Rect</button>');
+    bRect.onclick = function () { S.drawMode = false; S.drawVerts = []; render(); };
+    var bDraw = h('<button type="button" title="Draw polygon room" class="' + (S.drawMode ? 'on' : '') + '">Draw</button>');
+    bDraw.onclick = function () { pushHistory(); S.drawMode = true; S.wallMode = false; S.armedProductId = null; S.room = null; S.items = []; S.selectedIid = null; S.drawVerts = []; render(); };
+    var bWall = h('<button type="button" title="Draw interior walls (click to start, then click to drop each corner)" class="' + (S.wallMode ? 'on' : '') + '">Wall</button>');
+    bWall.onclick = function () { S.wallMode = !S.wallMode; S.drawMode = false; if (S.wallMode) toast('Wall tool — visual toggle only in this mockup'); render(); };
+    seg.appendChild(bRect); seg.appendChild(bDraw); seg.appendChild(bWall);
+    right.appendChild(seg);
+
+    var hist = h('<div class="seg"></div>');
+    var bU = h('<button type="button" title="Undo (Ctrl+Z)"' + (S.history.length ? '' : ' disabled') + '><svg viewBox="0 0 16 16" style="height:14px;width:14px" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M3 7h7a3 3 0 010 6H7M3 7l3-3M3 7l3 3"></path></svg></button>');
+    bU.onclick = undo;
+    var bR = h('<button type="button" title="Redo (Ctrl+Shift+Z)"' + (S.future.length ? '' : ' disabled') + '><svg viewBox="0 0 16 16" style="height:14px;width:14px" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M13 7H6a3 3 0 000 6h3M13 7l-3-3M13 7l-3 3"></path></svg></button>');
+    bR.onclick = redo;
+    hist.appendChild(bU); hist.appendChild(bR);
+    right.appendChild(hist);
+
+    var grid = h('<button type="button" class="tb-btn tb-grid-btn ' + (S.gridOn ? 'on' : '') + '" title="Toggle 0.5 m grid overlay">Grid 0.5 m</button>');
+    grid.onclick = function () { S.gridOn = !S.gridOn; render(); };
+    right.appendChild(grid);
+
+    var cur = h('<label class="tb-cur" title="Using fallback exchange rates (FX feed unavailable)."></label>');
+    var sel = h('<select>' + ['MUR', 'USD', 'EUR', 'GBP'].map(function (c) { return '<option value="' + c + '"' + (S.currency === c ? ' selected' : '') + '>' + c + '</option>'; }).join('') + '</select>');
+    sel.onchange = function () { S.currency = sel.value; render(); };
+    cur.appendChild(sel);
+    cur.appendChild(h('<span class="fx-dot" title="Live FX feed unavailable">•</span>'));
+    right.appendChild(cur);
+
+    var uniq = cartLines().length;
+    var cart = h('<a href="#" class="tb-cart" title="Cart: ' + uniq + ' unique products"><span>Cart</span><span class="badge-teal">' + uniq + '</span></a>');
+    cart.onclick = function (e) { e.preventDefault(); S.view = 'cart'; render(); };
+    right.appendChild(cart);
+
+    var bNew = h('<button type="button" class="tb-btn tb-new" title="New property">New</button>');
+    bNew.onclick = function () { pushHistory(); S.room = null; S.items = []; S.selectedIid = null; S.armedProductId = null; toast('New property started.'); render(); };
+    right.appendChild(bNew);
+    var bSave = h('<button type="button" class="tb-btn tb-save" title="Save the current property under a name">Save as...</button>');
+    bSave.onclick = function () { toast('Save is mocked in this design duplicate'); };
+    right.appendChild(bSave);
+    var bLoad = h('<button type="button" class="tb-btn tb-load" title="Load a saved property">Load (0)</button>');
+    bLoad.onclick = function () { toast('No saved properties in this mockup'); };
+    right.appendChild(bLoad);
+    var bQuote = h('<button type="button" class="tb-quote" title="Send the current property + cart to the PPW team for a quote">Request quote</button>');
+    bQuote.onclick = function () { toast('Quote request — mocked (posts to /api/leads in the live app)'); };
+    right.appendChild(bQuote);
+    var bHelp = h('<button type="button" class="tb-help" title="Help" aria-label="Help">?</button>');
+    bHelp.onclick = function () { S.helpOpen = true; render(); };
+    right.appendChild(bHelp);
+
+    var burger = h('<button type="button" class="tb-burger" aria-label="Open menu"><svg viewBox="0 0 16 16" style="height:16px;width:16px" aria-hidden="true"><path fill="currentColor" d="M2 4h12v1.5H2zM2 7.25h12v1.5H2zM2 10.5h12v1.5H2z"></path></svg></button>');
+    burger.onclick = function () { toast('Mobile overflow menu: Cart · Grid · Currency · New · Save · Load · My designs · Request quote · Help'); };
+    right.appendChild(burger);
+
+    el.appendChild(right);
+    return el;
+  }
+
+  /* ---------- Room list ---------- */
+  function renderRoomList() {
+    var el = h('<aside class="rl"></aside>');
+    el.appendChild(h(
+      '<div class="rl-head"><p class="microlabel">Property</p>' +
+      '<button type="button" class="pname" title="Rename property">Wellness Property</button>' +
+      '<p class="pcount">1 room</p></div>'
+    ));
+    var body = h('<div class="rl-body"></div>');
+    var row = h('<div class="rl-row"></div>');
+    var info = h('<button type="button" style="min-width:0;flex:1;text-align:left" title="Click to activate · double-click to rename"></button>');
+    info.innerHTML =
+      '<p class="rname">Main Room<span class="active-chip">Active</span></p>' +
+      '<p class="rstats">' + areaM2().toFixed(2) + ' m² · ' + S.items.length + ' item' + (S.items.length === 1 ? '' : 's') + '</p>' +
+      '<p class="rvalue">Room value Rs ' + cartSubtotalMur().toLocaleString('en-MU') + '</p>';
+    row.appendChild(info);
+    var btns = h('<div class="rbtns"></div>');
+    var e1 = h('<button type="button" title="Rename room">✎</button>'); e1.onclick = function () { toast('Rename — mocked'); };
+    var e2 = h('<button type="button" title="Delete room">×</button>'); e2.onclick = function () { toast('A property must have at least one room.'); };
+    btns.appendChild(e1); btns.appendChild(e2);
+    row.appendChild(btns);
+    body.appendChild(row);
+    var add = h('<button type="button" class="rl-add">+ Add room</button>');
+    add.onclick = function () { toast('Add room chooser: Rectangle / Draw / By dimensions — single room in this mockup'); };
+    body.appendChild(add);
+    el.appendChild(body);
+    el.appendChild(h('<div class="rl-foot">Click a room to switch · ✎ rename · × delete</div>'));
+    return el;
+  }
+
+  /* ---------- Catalog ---------- */
+  function renderCatalog() {
+    var el = h('<aside class="cat"></aside>');
+    var list = filteredProducts();
+    var head = h('<div class="cat-head"></div>');
+    head.appendChild(h('<div style="display:flex;align-items:center;justify-content:space-between"><h2>Catalog</h2></div>'));
+    head.appendChild(h('<p class="count">' + list.length + ' of ' + PRODUCTS.length + ' products · ships to ' + esc(S.region) + '</p>'));
+    var search = h('<input type="search" placeholder="Search products…" value="' + esc(S.query) + '">');
+    search.oninput = function () { S.query = search.value; renderCatalogOnly(); };
+    head.appendChild(search);
+    var ecoWrap = h('<div style="margin-top:8px;display:flex;align-items:center;gap:8px"></div>');
+    var eco = h('<button type="button" role="switch" aria-checked="' + S.ecoOnly + '" class="eco-chip ' + (S.ecoOnly ? 'on' : '') + '" title="Show only products that pass the eco-certified filter"><span aria-hidden="true">' + (S.ecoOnly ? '✓' : '○') + '</span><span>Eco-only</span></button>');
+    eco.onclick = function () { S.ecoOnly = !S.ecoOnly; render(); };
+    ecoWrap.appendChild(eco);
+    if (S.ecoOnly) ecoWrap.appendChild(h('<span style="font-size:10px;color:var(--ppw-slate)">No eco-tagged products yet</span>'));
+    head.appendChild(ecoWrap);
+    head.appendChild(h('<label class="region-label">Delivery region</label>'));
+    var rsel = h('<select>' + REGIONS.map(function (r) { return '<option' + (S.region === r ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select>');
+    rsel.onchange = function () { S.region = rsel.value; render(); };
+    head.appendChild(rsel);
+    el.appendChild(head);
+
+    var tabs = h('<div class="cat-tabs" role="tablist" aria-label="Product category"></div>');
+    MACRO_TABS.forEach(function (t) {
+      var b = h('<button type="button" class="cat-tab ' + (S.tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>');
+      b.onclick = function () { S.tab = t[0]; render(); };
+      tabs.appendChild(b);
+    });
+    el.appendChild(tabs);
+
+    var wrap = h('<div class="cat-grid-wrap"></div>');
+    wrap.appendChild(buildCatalogGrid(list));
+    el.appendChild(wrap);
+
+    el.appendChild(h('<div class="cat-foot">Drag a card onto the canvas (or tap "Place on floor" on mobile). Click a placed item to edit. Region filter is remembered.</div>'));
+    return el;
+  }
+  function buildCatalogGrid(list) {
+    if (!list.length) return h('<p class="cat-empty">No products match — try changing the region or category filter.</p>');
+    var ul = h('<ul class="cat-grid"></ul>');
+    list.forEach(function (p) {
+      var armed = S.armedProductId === p.id;
+      var li = h('<li></li>');
+      var tile = h(
+        '<div role="button" tabindex="0" class="cat-tile ' + (armed ? 'armed' : '') + '" title="' + esc(p.name) + ' · ' + fmtMoney(p.price, 'MUR') + ' · ' + p.dims.l + '×' + p.dims.w + '×' + p.dims.h + ' cm">' +
+        '<div class="thumb">' + THUMB_SVG[p.cat] + '</div>' +
+        '<p class="nm">' + esc(p.name) + '</p>' +
+        '<p class="pr">' + fmtMoney(p.price, 'MUR') + '</p></div>'
+      );
+      tile.onpointerdown = function (e) {
+        if (e.button !== 0) return;
+        S.armedProductId = armed ? null : p.id;
+        S.selectedIid = null;
+        render();
+      };
+      li.appendChild(tile);
+      ul.appendChild(li);
+    });
+    return ul;
+  }
+  function renderCatalogOnly() {
+    /* keep focus in the search box: only swap the grid + count line */
+    var list = filteredProducts();
+    var wrap = root.querySelector('.cat-grid-wrap');
+    if (wrap) { wrap.innerHTML = ''; wrap.appendChild(buildCatalogGrid(list)); }
+    var count = root.querySelector('.cat-head .count');
+    if (count) count.textContent = list.length + ' of ' + PRODUCTS.length + ' products · ships to ' + S.region;
+  }
+
+  /* ---------- Canvas (SVG stand-in for the Konva stage) ---------- */
+  var dragState = null;
+  function renderCanvas() {
+    var el = h('<section class="cv ' + (S.armedProductId && !S.drawMode ? 'armed' : '') + ' ' + (S.drawMode ? 'drawing' : '') + '"></section>');
+
+    /* Mini cart pill (appears when items exist) */
+    var mc = h('<div class="mini-cart ' + (S.items.length ? 'visible' : '') + '"><button type="button" aria-label="Open cart">' +
+      '<svg viewBox="0 0 20 20" style="height:16px;width:16px;color:#C0A67E" aria-hidden="true"><path fill="currentColor" d="M3 4h2l1.5 9.5A2 2 0 0 0 8.5 15h6.5a2 2 0 0 0 2-1.5L18 7H6.2l-.4-2.4A1 1 0 0 0 4.8 4H3v0Zm6 13a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"></path></svg>' +
+      '<span class="n">' + cartLines().length + '</span><span style="font-variant-numeric:tabular-nums">' + fmtMoney(cartSubtotalMur(), S.currency) + '</span></button></div>');
+    mc.querySelector('button').onclick = function () { toast('Cart drawer — mocked; see the cart strip below'); };
+    el.appendChild(mc);
+
+    /* SVG stage */
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'stage');
+    el.appendChild(svg);
+    requestAnimationFrame(function () { drawStage(svg, el); });
+
+    /* Top-right control column */
+    var tr = h('<div class="cv-tr"></div>');
+    var rv = h('<button type="button" class="btn-w" title="Reset pan/zoom">Reset view</button>');
+    rv.onclick = function () { toast('View reset'); };
+    tr.appendChild(rv);
+    var sh = h('<button type="button" class="btn-share" title="Share or download a picture of your room">Share render</button>');
+    sh.onclick = function () { toast('Share render — exports the canvas as PNG in the live app'); };
+    tr.appendChild(sh);
+    var cap = h('<button type="button" class="btn-w" style="font-size:11px" title="Capture the full screen (with toolbars)">Capture screen</button>');
+    cap.onclick = function () { toast('Capture screen — html2canvas snapshot in the live app'); };
+    tr.appendChild(cap);
+    tr.appendChild(h('<div class="badge-area">' + areaM2().toFixed(1) + ' m² · 100%</div>'));
+    tr.appendChild(h('<div class="badge-cost">' + Math.round(cartSubtotalMur() * FX[S.currency]).toLocaleString('en-MU') + ' ' + S.currency + '<span style="margin-left:6px;opacity:0.7">· snap 0.5 m</span></div>'));
+    tr.appendChild(h('<div class="badge-count">' + S.items.length + '</div>'));
+    el.appendChild(tr);
+
+    /* Clear controls (sticky bottom-left on desktop) */
+    var cc = h('<div class="clear-ctl"></div>');
+    var cp = h('<button type="button" class="cp"' + (S.items.length ? '' : ' disabled') + ' title="Remove all placed products, keep the room (Shift+P)"><svg viewBox="0 0 16 16" style="height:14px;width:14px" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" d="M3 5h10M6.5 5V3.5h3V5M5 5l.6 8h4.8L11 5"></path></svg>Clear products</button>');
+    cp.onclick = function () { S.pendingClear = 'products'; render(); };
+    var ca = h('<button type="button" class="ca"' + (S.items.length || S.room ? '' : ' disabled') + ' title="Delete the whole room + products, start blank (Shift+X)"><svg viewBox="0 0 16 16" style="height:14px;width:14px" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" d="M3 3l10 10M13 3L3 13"></path></svg>Clear all</button>');
+    ca.onclick = function () { S.pendingClear = 'all'; render(); };
+    cc.appendChild(cp); cc.appendChild(ca);
+    el.appendChild(cc);
+
+    /* Armed-placement banner */
+    if (S.armedProductId && !S.drawMode) {
+      var p = prodById(S.armedProductId);
+      var ab = h('<div class="armed-banner"><div style="min-width:0"><p class="t">Tap the floor to place “' + esc(p.name) + '”</p><p class="s">Or hit Cancel.</p></div></div>');
+      var cx = h('<button type="button" class="cancel">Cancel</button>');
+      cx.onclick = function () { S.armedProductId = null; render(); };
+      ab.appendChild(cx);
+      el.appendChild(ab);
+    }
+
+    /* Draw-mode HUD */
+    if (S.drawMode) {
+      var hud = h('<div class="draw-hud"><span class="stats">' + S.drawVerts.length + ' vert · click to drop corners · snap 0.5 m</span></div>');
+      var closeB = h('<button type="button" class="close-poly">Close</button>');
+      closeB.onclick = closePolygon;
+      var cancelB = h('<button type="button" class="cancel">Cancel</button>');
+      cancelB.onclick = function () { S.drawMode = false; S.drawVerts = []; render(); };
+      hud.appendChild(closeB); hud.appendChild(cancelB);
+      el.appendChild(hud);
+    }
+
+    /* Start-state prompt (blank canvas) */
+    if (!S.drawMode && !S.armedProductId && !S.room) {
+      var sw = h('<div class="start-wrap"></div>');
+      var sc = h(
+        '<div class="start-card"><span class="glyph" aria-hidden="true">▱</span>' +
+        '<p class="h">Start by drawing your room</p>' +
+        '<p class="b">Your canvas is blank. Sketch the walls of your space first, then drag products in. You can redraw or clear it any time.</p>' +
+        '<div class="btns"></div></div>'
+      );
+      var bd = h('<button type="button" class="draw">Draw room</button>');
+      bd.onclick = function () { pushHistory(); S.drawMode = true; S.drawVerts = []; render(); };
+      var bq = h('<button type="button" class="quick">Quick 5 × 4 m room</button>');
+      bq.onclick = function () {
+        pushHistory();
+        S.room = { lengthM: 5, widthM: 4 };
+        toast('Added a 5 × 4 m room — adjust in top bar or place products.');
+        render();
+      };
+      sc.querySelector('.btns').appendChild(bd);
+      sc.querySelector('.btns').appendChild(bq);
+      sw.appendChild(sc);
+      el.appendChild(sw);
+    }
+
+    /* Empty-room hint */
+    if (!S.drawMode && !S.armedProductId && S.room && S.items.length === 0) {
+      el.appendChild(h(
+        '<div class="start-wrap" style="pointer-events:none"><div class="hint-card">' +
+        '<span class="glyph" aria-hidden="true">✦</span>' +
+        '<p class="h">Your room is empty</p>' +
+        '<p class="b">Drag a product onto the floor — or tap a catalog item, then tap the room — to place your first piece. Items snap to the 0.5 m grid.</p>' +
+        '</div></div>'
+      ));
+    }
+
+    /* Floating cluster for the selected item */
+    if (S.selectedIid !== null && S.room) {
+      var it = S.items.find(function (x) { return x.iid === S.selectedIid; });
+      if (it) el.appendChild(renderCluster(it, el));
+    }
+
+    /* Pointer handling on the stage */
+    svg.addEventListener('pointerdown', function (e) { onStagePointerDown(e, svg, el); });
+    svg.addEventListener('pointermove', function (e) { onStagePointerMove(e, svg); });
+    svg.addEventListener('pointerup', function () { if (dragState) { dragState = null; render(); } });
+    el.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+    return el;
+  }
+
+  function stageOrigin(svg) {
+    var r = svg.getBoundingClientRect();
+    return { ox: r.width / 2 - roomWm() * PX_PER_M / 2, oy: r.height / 2 - roomHm() * PX_PER_M / 2, rect: r };
+  }
+  function evtToMetres(e, svg) {
+    var o = stageOrigin(svg);
+    return { xM: (e.clientX - o.rect.left - o.ox) / PX_PER_M, yM: (e.clientY - o.rect.top - o.oy) / PX_PER_M };
+  }
+
+  function drawStage(svg, section) {
+    var NS = 'http://www.w3.org/2000/svg';
+    svg.innerHTML = '';
+    var r = svg.getBoundingClientRect();
+    if (!r.width) return;
+    var o = stageOrigin(svg);
+
+    if (S.drawMode) {
+      /* draw-in-progress polyline */
+      if (S.drawVerts.length) {
+        var pl = document.createElementNS(NS, 'polyline');
+        pl.setAttribute('points', S.drawVerts.map(function (v) { return (r.width / 2 + (v.x - 2.5) * PX_PER_M) + ',' + (r.height / 2 + (v.y - 2) * PX_PER_M); }).join(' '));
+        pl.setAttribute('fill', 'none'); pl.setAttribute('stroke', '#0F766E'); pl.setAttribute('stroke-width', '2');
+        svg.appendChild(pl);
+        S.drawVerts.forEach(function (v) {
+          var c = document.createElementNS(NS, 'circle');
+          c.setAttribute('cx', r.width / 2 + (v.x - 2.5) * PX_PER_M); c.setAttribute('cy', r.height / 2 + (v.y - 2) * PX_PER_M);
+          c.setAttribute('r', '4'); c.setAttribute('fill', '#fff'); c.setAttribute('stroke', '#0F766E'); c.setAttribute('stroke-width', '2');
+          svg.appendChild(c);
+        });
+      }
+      return;
+    }
+    if (!S.room) return;
+
+    var wPx = roomWm() * PX_PER_M, hPx = roomHm() * PX_PER_M;
+
+    /* floor + outer wall stroke (Konva: fill #FAF7F1, stroke #0E1B1F w6, inner #3B4A52 w1) */
+    var floor = document.createElementNS(NS, 'rect');
+    floor.setAttribute('x', o.ox); floor.setAttribute('y', o.oy);
+    floor.setAttribute('width', wPx); floor.setAttribute('height', hPx);
+    floor.setAttribute('fill', '#FAF7F1'); floor.setAttribute('stroke', '#0E1B1F'); floor.setAttribute('stroke-width', '6');
+    svg.appendChild(floor);
+    var inner = document.createElementNS(NS, 'rect');
+    inner.setAttribute('x', o.ox); inner.setAttribute('y', o.oy);
+    inner.setAttribute('width', wPx); inner.setAttribute('height', hPx);
+    inner.setAttribute('fill', 'none'); inner.setAttribute('stroke', '#3B4A52'); inner.setAttribute('stroke-width', '1');
+    svg.appendChild(inner);
+
+    /* 0.5 m grid, clipped to the room; major line every 2 steps */
+    if (S.gridOn) {
+      var g = document.createElementNS(NS, 'g');
+      var step = 0.5 * PX_PER_M, i, n = 0;
+      for (i = step; i < wPx; i += step, n++) {
+        var lv = document.createElementNS(NS, 'line');
+        lv.setAttribute('x1', o.ox + i); lv.setAttribute('y1', o.oy); lv.setAttribute('x2', o.ox + i); lv.setAttribute('y2', o.oy + hPx);
+        lv.setAttribute('stroke', '#C4CBCD'); lv.setAttribute('stroke-width', n % 2 === 1 ? '1' : '0.5'); lv.setAttribute('opacity', n % 2 === 1 ? '0.9' : '0.55');
+        g.appendChild(lv);
+      }
+      n = 0;
+      for (i = step; i < hPx; i += step, n++) {
+        var lh = document.createElementNS(NS, 'line');
+        lh.setAttribute('x1', o.ox); lh.setAttribute('y1', o.oy + i); lh.setAttribute('x2', o.ox + wPx); lh.setAttribute('y2', o.oy + i);
+        lh.setAttribute('stroke', '#C4CBCD'); lh.setAttribute('stroke-width', n % 2 === 1 ? '1' : '0.5'); lh.setAttribute('opacity', n % 2 === 1 ? '0.9' : '0.55');
+        g.appendChild(lh);
+      }
+      svg.appendChild(g);
+    }
+
+    /* placed items — footprint boxes in the app's category fallback colours */
+    S.items.forEach(function (it) {
+      var p = prodById(it.productId);
+      var colors = CATEGORY_FILL[p.cat] || { fill: '#F5EFE6', stroke: '#C0A67E' };
+      var fw = (it.rot % 180 === 0 ? p.dims.l : p.dims.w) / 100 * PX_PER_M;
+      var fh = (it.rot % 180 === 0 ? p.dims.w : p.dims.l) / 100 * PX_PER_M;
+      var gx = o.ox + it.xM * PX_PER_M, gy = o.oy + it.yM * PX_PER_M;
+      var grp = document.createElementNS(NS, 'g');
+      grp.setAttribute('data-iid', it.iid);
+      grp.style.cursor = 'move';
+      var rect = document.createElementNS(NS, 'rect');
+      rect.setAttribute('x', gx); rect.setAttribute('y', gy);
+      rect.setAttribute('width', Math.max(fw, 6)); rect.setAttribute('height', Math.max(fh, 6));
+      rect.setAttribute('rx', '3');
+      rect.setAttribute('fill', colors.fill); rect.setAttribute('fill-opacity', '0.55');
+      var sel = it.iid === S.selectedIid;
+      rect.setAttribute('stroke', sel ? '#06B6D4' : colors.stroke);
+      rect.setAttribute('stroke-width', sel ? '2.5' : '1');
+      grp.appendChild(rect);
+      /* small category glyph centred in the footprint */
+      var fo = document.createElementNS(NS, 'foreignObject');
+      var gsz = Math.min(Math.max(fw, 6), Math.max(fh, 6)) * 0.6;
+      fo.setAttribute('x', gx + (Math.max(fw, 6) - gsz) / 2); fo.setAttribute('y', gy + (Math.max(fh, 6) - gsz) / 2);
+      fo.setAttribute('width', gsz); fo.setAttribute('height', gsz);
+      fo.style.pointerEvents = 'none';
+      var div = document.createElement('div');
+      div.innerHTML = THUMB_SVG[p.cat];
+      div.style.width = '100%'; div.style.height = '100%'; div.style.opacity = '0.85';
+      div.firstChild.style.width = '100%'; div.firstChild.style.height = '100%';
+      fo.appendChild(div);
+      grp.appendChild(fo);
+      svg.appendChild(grp);
+    });
+  }
+
+  function closePolygon() {
+    if (S.drawVerts.length < 3) { toast('Need at least 3 corners — keep clicking, then Close.'); return; }
+    /* simplify: fit the polygon's bounding box as the room rect */
+    var xs = S.drawVerts.map(function (v) { return v.x; }), ys = S.drawVerts.map(function (v) { return v.y; });
+    var l = snap(Math.max.apply(null, xs) - Math.min.apply(null, xs));
+    var w = snap(Math.max.apply(null, ys) - Math.min.apply(null, ys));
+    S.room = { lengthM: Math.max(l, 1), widthM: Math.max(w, 1) };
+    S.drawMode = false; S.drawVerts = [];
+    toast('Room closed — ' + S.room.lengthM + ' × ' + S.room.widthM + ' m. (Polygon simplified to its bounding rectangle in this mockup.)');
+    render();
+  }
+
+  function onStagePointerDown(e, svg, section) {
+    if (S.drawMode) {
+      var r = svg.getBoundingClientRect();
+      var x = snap((e.clientX - r.left - r.width / 2) / PX_PER_M + 2.5);
+      var y = snap((e.clientY - r.top - r.height / 2) / PX_PER_M + 2);
+      if (S.drawVerts.length >= 3) {
+        var f = S.drawVerts[0];
+        if (Math.abs(f.x - x) < 0.4 && Math.abs(f.y - y) < 0.4) { closePolygon(); return; }
+      }
+      S.drawVerts.push({ x: x, y: y });
+      render();
+      return;
+    }
+    if (!S.room) return;
+    var m = evtToMetres(e, svg);
+
+    /* place armed product */
+    if (S.armedProductId) {
+      var p = prodById(S.armedProductId);
+      var fwM = p.dims.l / 100, fhM = p.dims.w / 100;
+      var xM = snap(m.xM - fwM / 2), yM = snap(m.yM - fhM / 2);
+      if (m.xM < 0 || m.yM < 0 || m.xM > roomWm() || m.yM > roomHm()) { toast('Tap inside the room floor to place.'); return; }
+      xM = Math.min(Math.max(xM, 0), Math.max(roomWm() - fwM, 0));
+      yM = Math.min(Math.max(yM, 0), Math.max(roomHm() - fhM, 0));
+      pushHistory();
+      var iid = S.iidSeq++;
+      S.items.push({ iid: iid, productId: p.id, xM: xM, yM: yM, rot: 0 });
+      S.selectedIid = iid;
+      S.armedProductId = null;
+      render();
+      return;
+    }
+
+    /* select / drag an item */
+    var hit = e.target.closest ? e.target.closest('g[data-iid]') : null;
+    if (hit) {
+      var iid2 = Number(hit.getAttribute('data-iid'));
+      S.selectedIid = iid2;
+      var it = S.items.find(function (x) { return x.iid === iid2; });
+      dragState = { iid: iid2, dx: m.xM - it.xM, dy: m.yM - it.yM, moved: false };
+      render();
+      return;
+    }
+    /* empty stage tap → deselect */
+    if (S.selectedIid !== null) { S.selectedIid = null; render(); }
+  }
+
+  function onStagePointerMove(e, svg) {
+    if (!dragState || !S.room) return;
+    var it = S.items.find(function (x) { return x.iid === dragState.iid; });
+    if (!it) return;
+    var p = prodById(it.productId);
+    var m = evtToMetres(e, svg);
+    var fwM = (it.rot % 180 === 0 ? p.dims.l : p.dims.w) / 100;
+    var fhM = (it.rot % 180 === 0 ? p.dims.w : p.dims.l) / 100;
+    it.xM = Math.min(Math.max(snap(m.xM - dragState.dx), 0), Math.max(roomWm() - fwM, 0));
+    it.yM = Math.min(Math.max(snap(m.yM - dragState.dy), 0), Math.max(roomHm() - fhM, 0));
+    dragState.moved = true;
+    drawStage(svg);
+  }
+
+  /* ---------- Floating cluster ---------- */
+  function renderCluster(it, section) {
+    var p = prodById(it.productId);
+    var el = h('<div class="fcluster" role="toolbar" aria-label="Item controls"></div>');
+    var mk = function (glyph, title, cls, fn) {
+      var b = h('<button type="button" class="' + (cls || '') + '" title="' + title + '">' + glyph + '</button>');
+      b.onclick = fn; el.appendChild(b);
+    };
+    mk('⟳', 'Rotate 90°', '', function () { pushHistory(); it.rot = (it.rot + 90) % 360; render(); });
+    mk('⧉', 'Duplicate', '', function () {
+      pushHistory();
+      var iid = S.iidSeq++;
+      S.items.push({ iid: iid, productId: it.productId, xM: Math.min(it.xM + 0.5, roomWm() - 0.5), yM: Math.min(it.yM + 0.5, roomHm() - 0.5), rot: it.rot });
+      S.selectedIid = iid; render();
+    });
+    mk('ⓘ', 'Details', '', function () { toast('Details are in the right-hand panel'); });
+    mk('🗑', 'Delete', 'danger', function () { pushHistory(); S.items = S.items.filter(function (x) { return x.iid !== it.iid; }); S.selectedIid = null; render(); });
+    mk('✓', 'Done', 'confirm', function () { S.selectedIid = null; render(); });
+    /* position above the item */
+    requestAnimationFrame(function () {
+      var svg = section.querySelector('svg.stage');
+      if (!svg) return;
+      var o = stageOrigin(svg);
+      var fwM = (it.rot % 180 === 0 ? p.dims.l : p.dims.w) / 100;
+      var cx = o.ox + (it.xM + fwM / 2) * PX_PER_M;
+      var cy = o.oy + it.yM * PX_PER_M;
+      var w = el.offsetWidth || 260;
+      el.style.left = Math.max(8, Math.min(cx - w / 2, section.clientWidth - w - 8)) + 'px';
+      el.style.top = Math.max(8, cy - 64) + 'px';
+    });
+    return el;
+  }
+
+  /* ---------- Details panel ---------- */
+  function renderDetails() {
+    var el = h('<aside class="dp"></aside>');
+    el.appendChild(h('<div class="dp-head"><h2>Details</h2></div>'));
+    var body = h('<div class="dp-body"></div>');
+
+    var sel = S.selectedIid !== null ? S.items.find(function (x) { return x.iid === S.selectedIid; }) : null;
+    var selP = sel ? prodById(sel.productId) : null;
+    var armedP = !sel && S.armedProductId ? prodById(S.armedProductId) : null;
+
+    function stat(label, value) {
+      return '<div class="stat"><p class="microlabel">' + label + '</p><p class="v">' + value + '</p></div>';
+    }
+
+    if (selP) {
+      body.innerHTML =
+        '<div class="dp-thumb">' + THUMB_SVG[selP.cat] + '</div>' +
+        '<div class="sec"><p class="microlabel">' + CATEGORY_LABELS[selP.cat] + '</p><h3>' + esc(selP.name) + '</h3></div>' +
+        stat('Price', fmtMoney(selP.price, S.currency)) +
+        stat('Footprint', selP.dims.l + ' × ' + selP.dims.w + ' cm · H ' + selP.dims.h + ' cm') +
+        stat('Supplier', esc(selP.supplier)) +
+        (selP.notes ? stat('About', esc(selP.notes)) : '');
+      var acts = h('<div class="dp-actions"></div>');
+      var mkA = function (label, cls, fn) { var b = h('<button type="button" class="' + (cls || '') + '">' + label + '</button>'); b.onclick = fn; acts.appendChild(b); };
+      mkA('⟳ Rotate 90°', '', function () { pushHistory(); sel.rot = (sel.rot + 90) % 360; render(); });
+      mkA('⧉ Duplicate', '', function () {
+        pushHistory();
+        var iid = S.iidSeq++;
+        S.items.push({ iid: iid, productId: sel.productId, xM: Math.min(sel.xM + 0.5, roomWm() - 0.5), yM: Math.min(sel.yM + 0.5, roomHm() - 0.5), rot: sel.rot });
+        S.selectedIid = iid; render();
+      });
+      mkA('Delete', 'del', function () { pushHistory(); S.items = S.items.filter(function (x) { return x.iid !== sel.iid; }); S.selectedIid = null; render(); });
+      body.appendChild(acts);
+      body.appendChild(h('<p class="dp-keys">Keys: <kbd>R</kbd> rotate · <kbd>Shift+R</kbd> CCW · <kbd>D</kbd> duplicate · <kbd>Del</kbd> delete · <kbd>Esc</kbd> deselect</p>'));
+    } else if (armedP) {
+      body.innerHTML =
+        '<div class="dp-thumb">' + THUMB_SVG[armedP.cat] + '</div>' +
+        '<div class="sec"><p class="microlabel">' + CATEGORY_LABELS[armedP.cat] + '</p><h3>' + esc(armedP.name) + '</h3></div>' +
+        stat('Price', fmtMoney(armedP.price, S.currency)) +
+        stat('Footprint', armedP.dims.l + ' × ' + armedP.dims.w + ' cm · H ' + armedP.dims.h + ' cm') +
+        stat('Supplier', esc(armedP.supplier)) +
+        (armedP.notes ? stat('About', esc(armedP.notes)) : '') +
+        '<div class="dashed-tip teal">Click an empty spot on the floor to place this product. Press <kbd>Esc</kbd> to cancel.</div>';
+    } else if (!S.room) {
+      body.innerHTML =
+        '<div class="sec"><p class="microlabel">Design summary</p><h3>No room yet</h3></div>' +
+        '<div class="dashed-tip">Your canvas is blank. Use <span style="font-weight:600">Draw</span> in the top bar (or the “Draw room” button on the canvas) to sketch your space, then drag products in.</div>';
+    } else {
+      body.innerHTML =
+        '<div class="sec"><p class="microlabel">Design summary</p><h3>Wellness Room</h3></div>' +
+        stat('Room dimensions', S.room.lengthM + ' m × ' + S.room.widthM + ' m') +
+        stat('Floor area', areaM2().toFixed(2) + ' m²') +
+        stat('Items placed', String(S.items.length)) +
+        (S.items.length ? '<button type="button" class="clear-items" style="width:100%;border-radius:6px;border:1px solid var(--ppw-stone);background:#fff;padding:6px 12px;font-size:14px;font-weight:500;color:var(--ppw-slate)">Clear all items</button>' : '') +
+        '<div class="dashed-tip" style="margin-top:12px">Drag a product from the catalog onto the canvas. Selecting a placed item shows its details + controls here.</div>';
+      var ci = body.querySelector('.clear-items');
+      if (ci) ci.onclick = function () { S.pendingClear = 'products'; render(); };
+    }
+    el.appendChild(body);
+    return el;
+  }
+
+  /* ---------- Cart strip ---------- */
+  function renderCartStrip() {
+    var lines = cartLines();
+    var el = h('<div class="cs ' + (S.items.length ? 'visible' : '') + '"></div>');
+    if (!S.items.length) return el;
+    var alt = S.currency === 'MUR' ? 'USD' : 'MUR';
+    var head = h(
+      '<button type="button" class="cs-head"><div style="display:flex;align-items:center">' +
+      '<span class="chip">Cart</span>' +
+      '<span class="cnt"><b>' + lines.length + '</b> unique - <b>' + S.items.length + '</b> placed</span></div>' +
+      '<div style="display:flex;align-items:baseline"><span class="tot">' + fmtMoney(cartSubtotalMur(), S.currency) + '</span>' +
+      '<span class="alt">~ ' + fmtMoney(cartSubtotalMur(), alt) + '</span>' +
+      '<span class="chev">' + (S.expandedCart ? 'v' : '>') + '</span></div></button>'
+    );
+    head.onclick = function () { S.expandedCart = !S.expandedCart; render(); };
+    el.appendChild(head);
+    if (S.expandedCart) {
+      var rows = lines.map(function (l) {
+        return '<tr><td class="nm">' + esc(l.p.name) + '</td><td class="cat">' + CATEGORY_LABELS[l.p.cat] + '</td>' +
+          '<td class="r">' + l.qty + '</td><td class="r" style="color:var(--ppw-slate)">' + fmtMoney(l.p.price, S.currency) + '</td>' +
+          '<td class="r" style="font-weight:600">' + fmtMoney(l.line, S.currency) + '</td></tr>';
+      }).join('');
+      var det = h(
+        '<div class="cs-detail"><table>' +
+        '<thead><tr><th>Product</th><th>Cat.</th><th class="r">Qty</th><th class="r">Unit</th><th class="r">Line</th></tr></thead>' +
+        '<tbody>' + rows + '</tbody>' +
+        '<tfoot><tr><td colspan="3"></td><td class="r microlabel">Subtotal</td><td class="r" style="font-weight:700">' + fmtMoney(cartSubtotalMur(), S.currency) + '</td></tr>' +
+        '<tr><td colspan="3" style="border:none"></td><td class="r microlabel" style="border:none">~ ' + alt + '</td><td class="r" style="border:none;color:var(--ppw-slate)">' + fmtMoney(cartSubtotalMur(), alt) + '</td></tr></tfoot>' +
+        '</table><div class="foot-row"><p>Shipping + tax calculated at checkout. FX live-fetched daily.</p>' +
+        '<div style="display:flex;gap:8px"><button type="button" class="view">View cart</button><button type="button" class="checkout">Checkout</button></div></div></div>'
+      );
+      det.querySelector('.view').onclick = function () { S.view = 'cart'; render(); };
+      det.querySelector('.checkout').onclick = function () { S.view = 'checkout'; render(); };
+      el.appendChild(det);
+    }
+    return el;
+  }
+
+  /* ---------- Mobile Sims bottom toolbar ---------- */
+  function renderSims() {
+    var el = h('<div class="sims"></div>');
+    var cats = h('<div class="sims-cats"></div>');
+    [['all', '▦'], ['cardio', '🏃'], ['flooring', '▧']].forEach(function (c) {
+      var b = h('<button type="button" class="' + (S.simsCat === c[0] ? 'on' : '') + '" title="' + c[0] + '">' + c[1] + '</button>');
+      b.onclick = function () { S.simsCat = c[0]; render(); };
+      cats.appendChild(b);
+    });
+    el.appendChild(cats);
+    var scroll = h('<div class="sims-scroll"></div>');
+    PRODUCTS.filter(function (p) { return S.simsCat === 'all' || MACRO_OF[p.cat] === S.simsCat; }).forEach(function (p) {
+      var t = h('<button type="button" class="sims-thumb ' + (S.armedProductId === p.id ? 'armed' : '') + '" title="' + esc(p.name) + '">' + THUMB_SVG[p.cat] + '</button>');
+      t.onclick = function () { S.armedProductId = S.armedProductId === p.id ? null : p.id; render(); };
+      scroll.appendChild(t);
+    });
+    el.appendChild(scroll);
+    var min = h('<button type="button" class="sims-min" title="Minimize">⌄</button>');
+    min.onclick = function () { toast('Toolbar minimize — visual only in this mockup'); };
+    el.appendChild(min);
+    return el;
+  }
+
+  /* ---------- Modals ---------- */
+  function renderClearModal() {
+    var products = S.pendingClear === 'products';
+    var scrim = h('<div class="modal-scrim" role="dialog" aria-modal="true"></div>');
+    var card = h(
+      '<div class="modal-card"><h2>' + (products ? 'Clear all products?' : 'Clear everything?') + '</h2>' +
+      '<p>' + (products
+        ? 'This removes every product you have placed. Your drawn room stays. Press Ctrl+Z to restore.'
+        : 'This deletes the whole room and every product, leaving a fresh blank canvas. Press Ctrl+Z to restore.') + '</p>' +
+      '<div class="row"></div></div>'
+    );
+    var cancel = h('<button type="button" class="neutral">Cancel</button>');
+    cancel.onclick = function () { S.pendingClear = null; render(); };
+    var ok = h('<button type="button" class="danger">' + (products ? 'Clear products' : 'Clear all') + '</button>');
+    ok.onclick = function () {
+      pushHistory();
+      if (products) { S.items = []; toast('Products cleared — room kept. Ctrl+Z to restore.'); }
+      else { S.items = []; S.room = null; toast('Cleared to a blank canvas. Ctrl+Z to restore.'); }
+      S.selectedIid = null; S.pendingClear = null;
+      render();
+    };
+    card.querySelector('.row').appendChild(cancel);
+    card.querySelector('.row').appendChild(ok);
+    scrim.appendChild(card);
+    scrim.onclick = function (e) { if (e.target === scrim) { S.pendingClear = null; render(); } };
+    return scrim;
+  }
+
+  var COACH_STEPS = [
+    { title: 'Set your room dims', body: 'Use the toolbar above to set length/width, or click Draw room to sketch a custom polygon.' },
+    { title: 'Drag products in', body: 'Open the catalog from the top bar, then drag (or tap then tap) items into your room.' },
+    { title: 'Save & request a quote', body: 'Click Save to keep your design. Use Request quote to send the layout to the PPW team.' }
+  ];
+  function renderCoach() {
+    var st = COACH_STEPS[S.coachStep];
+    var scrim = h('<div class="modal-scrim" role="dialog" style="background:rgba(0,0,0,0.4)"></div>');
+    var card = h(
+      '<div class="coach-card"><p class="step">Step ' + (S.coachStep + 1) + ' of 3</p>' +
+      '<h2>' + st.title + '</h2><p>' + st.body + '</p><div class="row"></div></div>'
+    );
+    var skip = h('<button type="button" class="skip">Skip</button>');
+    skip.onclick = function () { S.coachStep = -1; render(); };
+    var next = h('<button type="button" class="next">' + (S.coachStep === 2 ? 'Done' : 'Next') + '</button>');
+    next.onclick = function () { S.coachStep = S.coachStep >= 2 ? -1 : S.coachStep + 1; render(); };
+    card.querySelector('.row').appendChild(skip);
+    card.querySelector('.row').appendChild(next);
+    scrim.appendChild(card);
+    return scrim;
+  }
+
+  var SHORTCUTS = [
+    ['Build mode', [['Click + drag', 'Place product'], ['Shift', 'Free-place (bypass 50 cm snap)'], ['Esc', 'Cancel placement'], ['R / Shift+R', 'Rotate 15° CW / CCW'], ['Right-click drag', 'Free rotate (snap off w/ Shift)']]],
+    ['Selection', [['Click', 'Select item'], ['Shift + click', 'Add to selection'], ['Drag on empty floor', 'Marquee select (desktop only)']]],
+    ['History', [['Ctrl+Z', 'Undo (removes both visual + cart line)'], ['Ctrl+Y / Ctrl+Shift+Z', 'Redo']]],
+    ['Misc', [['?', 'Open this help'], ['Right-click / long-press', 'Context menu']]]
+  ];
+  function renderHelpOverlay() {
+    var scrim = h('<div class="modal-scrim" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" style="background:rgba(14,14,16,0.7);z-index:950"></div>');
+    var card = h('<div class="helpov-card"><header><h2>Designer shortcuts</h2><button type="button" aria-label="Close help" style="font-size:18px">×</button></header></div>');
+    card.querySelector('button').onclick = function () { S.helpOpen = false; render(); };
+    SHORTCUTS.forEach(function (cat) {
+      var sec = h('<section><h3>' + cat[0] + '</h3><ul style="margin:0;padding:0"></ul></section>');
+      cat[1].forEach(function (row) {
+        sec.querySelector('ul').appendChild(h('<li><code>' + row[0] + '</code><span>' + row[1] + '</span></li>'));
+      });
+      card.appendChild(sec);
+    });
+    scrim.appendChild(card);
+    scrim.onclick = function (e) { if (e.target === scrim) { S.helpOpen = false; render(); } };
+    return scrim;
+  }
+
+  /* =====================================================================
+     CART / CHECKOUT / ORDER PAGES (added 2026-07-10)
+     Faithful to src/pages/CartPage.tsx, CheckoutPage.tsx,
+     OrderPendingPage.tsx + components/CartPageHeader.tsx. Money reuses the
+     artifact-wide fmtMoney() so formatting matches the rest of the mock.
+     ===================================================================== */
+  var CURRENCIES = ['USD', 'MUR', 'EUR', 'GBP'];
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  var PHONE_RE = /^[+]?[0-9 ()\-]{6,20}$/;
+
+  function makeOrderId() {
+    var ts = Date.now().toString(36).toUpperCase();
+    var rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+    return 'PPW-' + ts + '-' + rand;
+  }
+  function validateCheckout(f) {
+    var e = {};
+    if (!f.name.trim()) e.name = 'Required.';
+    if (!f.email.trim()) e.email = 'Required.';
+    else if (!EMAIL_RE.test(f.email.trim())) e.email = 'Doesn’t look like an email address.';
+    if (!f.phone.trim()) e.phone = 'Required.';
+    else if (!PHONE_RE.test(f.phone.trim())) e.phone = 'Use international format (e.g. +230 5 123 4567).';
+    if (!f.addressLine1.trim()) e.addressLine1 = 'Required.';
+    if (!f.city.trim()) e.city = 'Required.';
+    if (!f.postcode.trim()) e.postcode = 'Required.';
+    if (!f.country.trim()) e.country = 'Required.';
+    return e;
+  }
+
+  function renderPageHeader() {
+    var el = h('<header class="pg-head"></header>');
+    var brand = h('<button type="button" class="pg-brand" title="Back to designer">' +
+      '<span class="pg-logo"><svg viewBox="0 0 24 24" style="height:20px;width:20px;color:#fff" aria-hidden="true"><path d="M5 18 L12 5 L19 18 Z" fill="currentColor"></path><circle cx="12" cy="14" r="1.6" fill="#0F766E"></circle></svg></span>' +
+      '<span class="pg-brand-txt"><b>Peak Performance Wellness</b><small>Wellness Room Designer</small></span></button>');
+    brand.onclick = function () { S.view = 'designer'; render(); };
+    el.appendChild(brand);
+    var right = h('<div class="pg-head-right"></div>');
+    var cur = h('<label class="tb-cur" title="Using fallback exchange rates (FX feed unavailable)."></label>');
+    var sel = h('<select>' + CURRENCIES.slice().sort().map(function (c) { return '<option value="' + c + '"' + (S.currency === c ? ' selected' : '') + '>' + c + '</option>'; }).join('') + '</select>');
+    sel.onchange = function () { S.currency = sel.value; render(); };
+    cur.appendChild(sel); cur.appendChild(h('<span class="fx-dot" title="Live FX feed unavailable">•</span>'));
+    right.appendChild(cur);
+    var back = h('<button type="button" class="pg-back">← Designer</button>');
+    back.onclick = function () { S.view = 'designer'; render(); };
+    right.appendChild(back);
+    el.appendChild(right);
+    return el;
+  }
+
+  function emptyCartPage(msgTitle, msgBody, ctaLabel) {
+    var page = h('<div class="pg"></div>');
+    page.appendChild(renderPageHeader());
+    var main = h('<main class="pg-empty"></main>');
+    main.appendChild(h('<p class="ttl">' + msgTitle + '</p>'));
+    if (msgBody) main.appendChild(h('<p class="sub">' + msgBody + '</p>'));
+    var cta = h('<button type="button" class="btn-teal">' + ctaLabel + '</button>');
+    cta.onclick = function () { S.view = 'designer'; render(); };
+    main.appendChild(cta);
+    page.appendChild(main);
+    return page;
+  }
+
+  function renderCartPage() {
+    var lines = cartLines();
+    if (!lines.length) return emptyCartPage('Your cart is empty.', 'Drag products onto your room canvas to start building your wellness setup.', '← Continue designing');
+    var page = h('<div class="pg"></div>');
+    page.appendChild(renderPageHeader());
+    var main = h('<main class="pg-main"></main>');
+    var col = h('<section class="pg-col"></section>');
+    var totalUnits = S.items.length;
+    col.appendChild(h('<header class="pg-col-head"><h1>Your cart</h1><span class="muted">' +
+      lines.length + ' product' + (lines.length === 1 ? '' : 's') + ' · ' + totalUnits + ' unit' + (totalUnits === 1 ? '' : 's') + ' · 1 room</span></header>'));
+    var ul = h('<ul class="cart-lines"></ul>');
+    lines.forEach(function (l) {
+      var li = h('<li class="cart-line"></li>');
+      li.appendChild(h('<div class="cl-thumb">' + THUMB_SVG[l.p.cat] + '</div>'));
+      li.appendChild(h('<div class="cl-info"><p class="nm">' + esc(l.p.name) + '</p>' +
+        '<p class="meta">' + CATEGORY_LABELS[l.p.cat] + ' · ' + esc(l.p.supplier) + '</p>' +
+        '<p class="meta">Unit: ' + fmtMoney(l.p.price, S.currency) + '</p></div>'));
+      var qty = h('<div class="cl-qty"></div>');
+      var minus = h('<button type="button" aria-label="Decrease quantity"' + (l.qty <= 1 ? ' disabled' : '') + '>−</button>');
+      minus.onclick = function () { if (l.qty > 1) { pushHistory(); removeOneOf(l.p.id); render(); } };
+      var num = h('<input type="number" min="1" value="' + l.qty + '">');
+      num.onchange = function () { setQtyOf(l.p.id, parseInt(num.value, 10) || 1); render(); };
+      var plus = h('<button type="button" aria-label="Increase quantity">+</button>');
+      plus.onclick = function () { pushHistory(); addOneOf(l.p.id); render(); };
+      qty.appendChild(minus); qty.appendChild(num); qty.appendChild(plus);
+      li.appendChild(qty);
+      var right = h('<div class="cl-right"><p class="line">' + fmtMoney(l.line, S.currency) + '</p></div>');
+      var rm = h('<button type="button" class="rm">Remove</button>');
+      rm.onclick = function () { pushHistory(); removeAllOf(l.p.id); render(); };
+      right.appendChild(rm);
+      li.appendChild(right);
+      ul.appendChild(li);
+    });
+    col.appendChild(ul);
+    var bd = h('<section class="breakdown"></section>');
+    var bdBtn = h('<button type="button" class="bd-head"><span>Per-room breakdown</span><span>' + (S.cartBreakdownOpen ? '▾' : '▸') + '</span></button>');
+    bdBtn.onclick = function () { S.cartBreakdownOpen = !S.cartBreakdownOpen; render(); };
+    bd.appendChild(bdBtn);
+    if (S.cartBreakdownOpen) {
+      var body = h('<div class="bd-body"><p class="rn">Main Room</p></div>');
+      if (!lines.length) body.appendChild(h('<p class="muted">No items in this room.</p>'));
+      else {
+        var lis = lines.map(function (l) { return '<li>' + esc(l.p.name) + ' <span class="x">× ' + l.qty + '</span></li>'; }).join('');
+        body.appendChild(h('<ul class="bd-list">' + lis + '</ul>'));
+      }
+      bd.appendChild(body);
+    }
+    col.appendChild(bd);
+    var cont = h('<div class="pg-cont"><button type="button" class="linkish">← Continue designing</button></div>');
+    cont.querySelector('button').onclick = function () { S.view = 'designer'; render(); };
+    col.appendChild(cont);
+    main.appendChild(col);
+    var sub = cartSubtotalMur();
+    var aside = h('<aside class="pg-aside"></aside>');
+    var card = h('<div class="sum-card"><p class="sum-ttl">Order summary</p>' +
+      '<dl class="sum-dl">' +
+      '<div><dt>Subtotal</dt><dd>' + fmtMoney(sub, S.currency) + '</dd></div>' +
+      '<div><dt>Shipping</dt><dd class="it">Calculated at checkout</dd></div>' +
+      '<div><dt>Tax</dt><dd class="it">VAT/duties may apply</dd></div></dl>' +
+      '<div class="sum-total"><span>Total (est.)</span><span class="big">' + fmtMoney(sub, S.currency) + '</span></div>' +
+      '<p class="alt">≈ ' + CURRENCIES.filter(function (c) { return c !== S.currency; }).map(function (c) { return fmtMoney(sub, c); }).join(' · ') + '</p></div>');
+    var co = h('<button type="button" class="btn-teal wide">Checkout →</button>');
+    co.onclick = function () { S.view = 'checkout'; render(); };
+    card.appendChild(co);
+    card.appendChild(h('<p class="fineprint">You will not be charged until the Peak Performance Wellness install team has confirmed availability + shipping for your region. Stripe is used for final payment.</p>'));
+    aside.appendChild(card);
+    main.appendChild(aside);
+    page.appendChild(main);
+    return page;
+  }
+
+  function renderCheckoutPage() {
+    var lines = cartLines();
+    if (!lines.length) return emptyCartPage('Your cart is empty.', null, 'Back to designer');
+    var f = S.checkoutForm;
+    var errs = S.checkoutSubmitted ? validateCheckout(f) : {};
+    var sub = cartSubtotalMur();
+    var page = h('<div class="pg"></div>');
+    page.appendChild(renderPageHeader());
+    var main = h('<main class="pg-main"></main>');
+    var form = h('<form class="pg-col co-form" novalidate></form>');
+    form.appendChild(h('<header class="co-head"><h1>Checkout</h1><p class="muted">You will not be charged until our install team has confirmed availability and shipping for your region.</p></header>'));
+    function field(label, name, opts) {
+      opts = opts || {};
+      var req = opts.required !== false;
+      var wrap = h('<div class="fld' + (opts.full ? ' full' : '') + '"></div>');
+      wrap.appendChild(h('<label for="f-' + name + '">' + label + (req ? ' <span class="req">*</span>' : '') + '</label>'));
+      var inp = h('<input id="f-' + name + '" type="' + (opts.type || 'text') + '" value="' + esc(f[name]) + '"' + (opts.ph ? ' placeholder="' + esc(opts.ph) + '"' : '') + (errs[name] ? ' class="err"' : '') + '>');
+      inp.oninput = function () { f[name] = inp.value; };
+      wrap.appendChild(inp);
+      if (errs[name]) wrap.appendChild(h('<p class="fld-err">' + errs[name] + '</p>'));
+      return wrap;
+    }
+    var contact = h('<section class="co-sec"><p class="co-sec-ttl">Contact</p></section>');
+    var g1 = h('<div class="co-grid"></div>');
+    g1.appendChild(field('Full name', 'name', { type: 'text' }));
+    g1.appendChild(field('Email', 'email', { type: 'email' }));
+    g1.appendChild(field('Phone', 'phone', { type: 'tel', ph: '+230 5 123 4567' }));
+    contact.appendChild(g1); form.appendChild(contact);
+    var addr = h('<section class="co-sec"><p class="co-sec-ttl">Delivery address</p></section>');
+    var g2 = h('<div class="co-grid"></div>');
+    g2.appendChild(field('Address line 1', 'addressLine1', { full: true }));
+    g2.appendChild(field('Address line 2 (optional)', 'addressLine2', { full: true, required: false }));
+    g2.appendChild(field('City', 'city'));
+    g2.appendChild(field('Postcode', 'postcode'));
+    var cWrap = h('<div class="fld"></div>');
+    cWrap.appendChild(h('<label for="f-country">Country <span class="req">*</span></label>'));
+    var csel = h('<select id="f-country"' + (errs.country ? ' class="err"' : '') + '>' + COUNTRY_OPTIONS.map(function (c) { return '<option value="' + c[0] + '"' + (f.country === c[0] ? ' selected' : '') + '>' + c[1] + '</option>'; }).join('') + '</select>');
+    csel.onchange = function () { f.country = csel.value; };
+    cWrap.appendChild(csel);
+    if (errs.country) cWrap.appendChild(h('<p class="fld-err">' + errs.country + '</p>'));
+    g2.appendChild(cWrap);
+    addr.appendChild(g2); form.appendChild(addr);
+    var notes = h('<section class="co-sec"><p class="co-sec-ttl">Notes for the install team</p></section>');
+    var ta = h('<textarea rows="4" placeholder="Access codes, lift hours, preferred install times, anything else we should know.">' + esc(f.notes) + '</textarea>');
+    ta.oninput = function () { f.notes = ta.value; };
+    notes.appendChild(ta); form.appendChild(notes);
+    var pay = h('<section class="co-sec"><p class="co-sec-ttl">Payment method</p></section>');
+    var rails = h('<div class="pay-rails"></div>');
+    var rStripe = h('<label class="pay-rail' + (S.selectedRail === 'stripe' ? ' on' : '') + '"><input type="radio" name="rail"' + (S.selectedRail === 'stripe' ? ' checked' : '') + '><span>Pay by card (Stripe)</span></label>');
+    rStripe.querySelector('input').onchange = function () { S.selectedRail = 'stripe'; render(); };
+    rails.appendChild(rStripe);
+    if (PAYPAL_ENABLED) {
+      var rPaypal = h('<label class="pay-rail' + (S.selectedRail === 'paypal' ? ' on' : '') + '"><input type="radio" name="rail"' + (S.selectedRail === 'paypal' ? ' checked' : '') + '><span>Pay with PayPal</span></label>');
+      rPaypal.querySelector('input').onchange = function () { S.selectedRail = 'paypal'; render(); };
+      rails.appendChild(rPaypal);
+    }
+    pay.appendChild(rails); form.appendChild(pay);
+    if (S.serverMessage) form.appendChild(h('<p class="server-msg">' + esc(S.serverMessage) + '</p>'));
+    var actions = h('<div class="co-actions"></div>');
+    var back = h('<button type="button" class="linkish">Back to cart</button>');
+    back.onclick = function () { S.view = 'cart'; render(); };
+    var place = h('<button type="submit" class="btn-teal">Place order - ' + fmtMoney(sub, S.currency) + '</button>');
+    actions.appendChild(back); actions.appendChild(place);
+    form.appendChild(actions);
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      S.checkoutSubmitted = true;
+      var v = validateCheckout(f);
+      if (Object.keys(v).length) { render(); return; }
+      S.lastOrderId = makeOrderId();
+      S.serverMessage = null;
+      S.view = 'pending';
+      render();
+    };
+    main.appendChild(form);
+    var aside = h('<aside class="pg-aside"></aside>');
+    var rows = lines.map(function (l) { return '<li><span class="nm">' + esc(l.p.name) + ' <span class="x">x ' + l.qty + '</span></span><span>' + fmtMoney(l.line, S.currency) + '</span></li>'; }).join('');
+    var card = h('<div class="sum-card"><p class="sum-ttl">Order summary</p>' +
+      '<ul class="sum-lines">' + rows + '</ul>' +
+      '<div class="sum-row"><span>Subtotal</span><span>' + fmtMoney(sub, S.currency) + '</span></div>' +
+      '<div class="sum-row muted"><span>Shipping</span><span class="it">Calculated at checkout</span></div>' +
+      '<div class="sum-row muted"><span>Tax</span><span class="it">May apply</span></div>' +
+      '<div class="sum-total"><span>Total (est.)</span><span class="big">' + fmtMoney(sub, S.currency) + '</span></div></div>');
+    if (STRIPE_TEST_MODE) card.appendChild(h('<p class="stripe-test"><b>Stripe Test Mode</b> - this is a test order, no real money will be charged. Use card <b>4242 4242 4242 4242</b>, any future expiry date, and any 3-digit CVC.</p>'));
+    else if (!STRIPE_CONFIGURED) card.appendChild(h('<p class="manual-note"><b>Manual handover:</b> your order will be recorded and Vic will contact you within 24 hours to confirm details and arrange payment + installation.</p>'));
+    aside.appendChild(card);
+    main.appendChild(aside);
+    page.appendChild(main);
+    return page;
+  }
+
+  function renderPendingPage() {
+    var page = h('<div class="pg"></div>');
+    page.appendChild(renderPageHeader());
+    var main = h('<main class="pg-order"></main>');
+    var oid = S.lastOrderId || makeOrderId();
+    var total = cartSubtotalMur();
+    var card = h('<div class="order-card"><p class="ttl">Order received.</p>' +
+      '<p class="sub">Vic will contact you within 24 hours to finalise payment and delivery. Live Stripe checkout will be enabled shortly.</p>' +
+      '<dl class="order-dl"><div><dt>Confirmation number</dt><dd class="mono">' + oid + '</dd></div>' +
+      '<div><dt>Total (estimate)</dt><dd>' + fmtMoney(total, S.currency) + '</dd></div></dl></div>');
+    var rowBtns = h('<div class="order-btns"></div>');
+    var email = h('<a class="btn-teal" href="mailto:victor@ppwellness.co?subject=' + encodeURIComponent('[PPW Designer] New order ' + oid) + '">Email order to Vic</a>');
+    var myOrders = h('<button type="button" class="btn-outline">View my orders</button>');
+    myOrders.onclick = function () { toast('Orders history (/orders) — mocked in this design duplicate'); };
+    var backD = h('<button type="button" class="btn-outline">Back to designer</button>');
+    backD.onclick = function () { S.view = 'designer'; render(); };
+    rowBtns.appendChild(email); rowBtns.appendChild(myOrders); rowBtns.appendChild(backD);
+    card.appendChild(rowBtns);
+    card.appendChild(h('<p class="fineprint">This is the manual-handover path. Once Stripe is live you’ll be redirected to Stripe Checkout to pay securely with card or bank transfer.</p>'));
+    main.appendChild(card);
+    page.appendChild(main);
+    return page;
+  }
+
+  function addOneOf(pid) {
+    var p = prodById(pid); if (!p) return;
+    var iid = S.iidSeq++;
+    var last = null; for (var i = S.items.length - 1; i >= 0; i--) { if (S.items[i].productId === pid) { last = S.items[i]; break; } }
+    var x = last ? Math.min(last.xM + 0.5, Math.max(0.5, roomWm() - 0.5)) : 0.5;
+    var y = last ? Math.min(last.yM + 0.5, Math.max(0.5, roomHm() - 0.5)) : 0.5;
+    S.items.push({ iid: iid, productId: pid, xM: x, yM: y, rot: last ? last.rot : 0 });
+  }
+  function removeOneOf(pid) {
+    for (var i = S.items.length - 1; i >= 0; i--) { if (S.items[i].productId === pid) { S.items.splice(i, 1); return; } }
+  }
+  function removeAllOf(pid) { S.items = S.items.filter(function (it) { return it.productId !== pid; }); }
+  function setQtyOf(pid, q) {
+    q = Math.max(1, q | 0);
+    var cur = S.items.filter(function (it) { return it.productId === pid; }).length;
+    pushHistory();
+    while (cur < q) { addOneOf(pid); cur++; }
+    while (cur > q) { removeOneOf(pid); cur--; }
+  }
+
+  /* ---------- Keyboard shortcuts ---------- */
+  document.addEventListener('keydown', function (e) {
+    var tag = (e.target && e.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); return; }
+    if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { e.preventDefault(); redo(); return; }
+    if (e.key === 'Escape') {
+      if (S.helpOpen) { S.helpOpen = false; render(); return; }
+      if (S.pendingClear) { S.pendingClear = null; render(); return; }
+      if (S.drawMode) { S.drawMode = false; S.drawVerts = []; render(); return; }
+      if (S.armedProductId) { S.armedProductId = null; render(); return; }
+      if (S.selectedIid !== null) { S.selectedIid = null; render(); return; }
+    }
+    if (e.key === '?') { S.helpOpen = true; render(); return; }
+    if (e.key === 'Enter' && S.drawMode) { closePolygon(); return; }
+    if (!e.ctrlKey && !e.metaKey && !e.altKey && e.shiftKey && (e.key === 'P' || e.key === 'p')) { e.preventDefault(); S.pendingClear = 'products'; render(); return; }
+    if (!e.ctrlKey && !e.metaKey && !e.altKey && e.shiftKey && (e.key === 'X' || e.key === 'x')) { e.preventDefault(); S.pendingClear = 'all'; render(); return; }
+    var sel = S.selectedIid !== null ? S.items.find(function (x) { return x.iid === S.selectedIid; }) : null;
+    if (sel) {
+      if (e.key === 'r' || e.key === 'R') { pushHistory(); sel.rot = (sel.rot + (e.shiftKey ? 270 : 90)) % 360; render(); return; }
+      if (e.key === 'd' || e.key === 'D') {
+        pushHistory();
+        var iid = S.iidSeq++;
+        S.items.push({ iid: iid, productId: sel.productId, xM: Math.min(sel.xM + 0.5, roomWm() - 0.5), yM: Math.min(sel.yM + 0.5, roomHm() - 0.5), rot: sel.rot });
+        S.selectedIid = iid; render(); return;
+      }
+      if (e.key === 'Delete' || e.key === 'Backspace') { pushHistory(); S.items = S.items.filter(function (x) { return x.iid !== sel.iid; }); S.selectedIid = null; render(); return; }
+    }
+  });
+
+  window.addEventListener('resize', function () {
+    var svg = root && root.querySelector('svg.stage');
+    if (svg) drawStage(svg, svg.parentElement);
+  });
+
+  /* ---------- Boot ---------- */
+  function boot() {
+    root = document.getElementById('ppw-designer-root');
+    if (!root) { setTimeout(boot, 30); return; }
+    render();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
+
+</body>
+</html>

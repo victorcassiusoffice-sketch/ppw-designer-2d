@@ -12,6 +12,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useMarketplaceCart } from '../store/marketplaceCartStore';
+import '../styles/soft-shop.css';
 
 interface PublicProduct {
   id: number;
@@ -101,45 +102,31 @@ export default function PublicProductsPage(): JSX.Element {
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
-      <header style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 28, margin: 0 }}>Shop</h1>
-          <p style={{ color: '#6b7280', margin: '4px 0 0' }}>
-            Browse and buy wellness equipment from approved Peak Performance Wellness suppliers.
-          </p>
+    <div className="soft-page">
+    <div style={{ padding: '28px 24px 48px', maxWidth: 1400, margin: '0 auto' }}>
+      <header style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <span
+            className="soft-card"
+            aria-hidden="true"
+            style={{ width: 52, height: 52, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}
+          >
+            <img src="/brand/ppw-mark-512.png" alt="" width={34} height={34} style={{ display: 'block' }} />
+          </span>
+          <div>
+            <h1 style={{ fontSize: 26, margin: 0, letterSpacing: '-0.01em' }}>PPWellness Shop</h1>
+            <p className="soft-muted" style={{ margin: '2px 0 0', fontSize: 13.5 }}>
+              Browse and buy wellness equipment from approved Peak Performance Wellness suppliers.
+            </p>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
           {/* Directive 5: the designer is an optional extra mode, entered from
               the shop — not the landing page. */}
-          <Link
-            to="/designer"
-            data-testid="enter-designer"
-            style={{
-              padding: '8px 14px',
-              background: 'white',
-              color: '#0a0a0a',
-              border: '1px solid #0a0a0a',
-              borderRadius: 6,
-              textDecoration: 'none',
-              fontSize: 14,
-              fontWeight: 600,
-            }}
-          >
+          <Link to="/designer" data-testid="enter-designer" className="soft-pill">
             Design a room
           </Link>
-          <Link
-            to="/marketplace/cart"
-            style={{
-              padding: '8px 14px',
-              background: '#0a0a0a',
-              color: 'white',
-              borderRadius: 6,
-              textDecoration: 'none',
-              fontSize: 14,
-              fontWeight: 600,
-            }}
-          >
+          <Link to="/marketplace/cart" className="soft-pill soft-pill--primary">
             Cart{cartCount > 0 ? ` (${cartCount})` : ''}
           </Link>
         </div>
@@ -151,7 +138,7 @@ export default function PublicProductsPage(): JSX.Element {
           const input = e.currentTarget.elements.namedItem('q') as HTMLInputElement | null;
           setQuery({ search: input?.value.trim() ?? '', offset: '0' });
         }}
-        style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}
+        style={{ display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}
       >
         <input
           name="q"
@@ -163,17 +150,15 @@ export default function PublicProductsPage(): JSX.Element {
           key={search}
           defaultValue={search}
           aria-label="Search products"
-          style={{ padding: 8, minWidth: 260, flex: '1 1 260px', maxWidth: 480 }}
+          className="soft-input"
+          style={{ minWidth: 260, flex: '1 1 260px', maxWidth: 480 }}
         />
-        <button
-          type="submit"
-          style={{ padding: '8px 16px', background: '#0a0a0a', color: 'white', border: 'none', borderRadius: 4, fontWeight: 600, cursor: 'pointer' }}
-        >
+        <button type="submit" className="soft-pill soft-pill--primary">
           Search
         </button>
       </form>
 
-      <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 26, flexWrap: 'wrap', alignItems: 'center' }}>
         <input
           placeholder="Filter by category"
           // key re-syncs the uncontrolled input to the applied param on
@@ -181,54 +166,56 @@ export default function PublicProductsPage(): JSX.Element {
           key={`cat-${category}`}
           defaultValue={category}
           onBlur={(e) => setQuery({ category: e.target.value, offset: '0' })}
-          style={{ padding: 8, minWidth: 200 }}
+          className="soft-input"
+          style={{ minWidth: 190 }}
         />
         <input
           placeholder="Filter by region"
           key={`region-${region}`}
           defaultValue={region}
           onBlur={(e) => setQuery({ region: e.target.value, offset: '0' })}
-          style={{ padding: 8, minWidth: 200 }}
+          className="soft-input"
+          style={{ minWidth: 190 }}
         />
         {(search || category || region) && (
-          <button type="button" onClick={() => setQuery({ search: '', category: '', region: '', offset: '0' })}>
-            Clear filters
+          <button type="button" className="soft-chip" onClick={() => setQuery({ search: '', category: '', region: '', offset: '0' })}>
+            ✕ Clear filters
           </button>
         )}
       </div>
 
-      {loading && <p>Loading…</p>}
-      {error && <p style={{ color: '#b91c1c' }}>{error}</p>}
+      {loading && <p className="soft-muted">Loading…</p>}
+      {error && <p className="soft-alert soft-alert--error">{error}</p>}
       {data?.schemaMissing && (
-        <div style={{ padding: 12, background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: 6, marginBottom: 16 }}>
+        <div className="soft-alert soft-alert--warn" style={{ marginBottom: 16 }}>
           Product catalog migration not yet applied — the storefront is empty by design.
         </div>
       )}
 
       {data && (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 22 }}>
             {data.products.map((p) => (
-              <article key={p.id} style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden', background: 'white' }}>
+              <article key={p.id} className="soft-card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 <Link to={`/products/${p.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                   {p.imageUrl ? (
-                    <img src={p.imageUrl} alt={p.name} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block' }} />
+                    <img src={p.imageUrl} alt={p.name} className="soft-product-img" />
                   ) : (
-                    <div style={{ width: '100%', aspectRatio: '4/3', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
-                      No image
-                    </div>
+                    <div className="soft-product-img soft-product-img--empty">No image</div>
                   )}
                 </Link>
-                <div style={{ padding: 12 }}>
-                  <h3 style={{ fontSize: 16, margin: '0 0 4px' }}>
+                <div style={{ padding: '14px 16px 16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                  <h3 style={{ fontSize: 15.5, margin: '0 0 2px', lineHeight: 1.35 }}>
                     <Link to={`/products/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                       {p.name}
                     </Link>
                   </h3>
-                  <p style={{ fontSize: 12, color: '#6b7280', margin: '0 0 8px' }}>{p.category}</p>
-                  <p style={{ fontSize: 18, fontWeight: 600, margin: '0 0 8px' }}>{formatPrice(p.priceMinor, p.currency)}</p>
+                  <p className="soft-muted" style={{ fontSize: 12, margin: '0 0 8px', textTransform: 'capitalize' }}>{p.category}</p>
+                  <p style={{ fontSize: 18, fontWeight: 700, margin: '0 0 12px' }}>{formatPrice(p.priceMinor, p.currency)}</p>
                   <button
                     type="button"
+                    className="soft-pill soft-pill--primary soft-pill--sm"
+                    style={{ width: '100%', marginTop: 'auto' }}
                     onClick={() =>
                       addToCart({
                         productId: p.id,
@@ -240,17 +227,6 @@ export default function PublicProductsPage(): JSX.Element {
                         imageUrl: p.imageUrl,
                       })
                     }
-                    style={{
-                      width: '100%',
-                      padding: '6px 10px',
-                      background: '#0a0a0a',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: 4,
-                      fontSize: 13,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
                   >
                     Add to cart
                   </button>
@@ -260,26 +236,27 @@ export default function PublicProductsPage(): JSX.Element {
           </div>
 
           {data.products.length === 0 && !loading && !data.schemaMissing && (
-            <p style={{ textAlign: 'center', padding: 48, color: '#6b7280' }}>
+            <p className="soft-muted" style={{ textAlign: 'center', padding: 48 }}>
               No products match these filters yet.
             </p>
           )}
 
           {totalPages > 1 && (
-            <nav style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 24 }}>
-              <button type="button" disabled={currentPage <= 1} onClick={() => gotoPage(currentPage - 1)}>
+            <nav style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 28, alignItems: 'center' }}>
+              <button type="button" className="soft-pill soft-pill--sm" disabled={currentPage <= 1} onClick={() => gotoPage(currentPage - 1)}>
                 ← Previous
               </button>
-              <span style={{ alignSelf: 'center' }}>
+              <span className="soft-muted" style={{ fontSize: 13.5 }}>
                 Page {currentPage} of {totalPages}
               </span>
-              <button type="button" disabled={currentPage >= totalPages} onClick={() => gotoPage(currentPage + 1)}>
+              <button type="button" className="soft-pill soft-pill--sm" disabled={currentPage >= totalPages} onClick={() => gotoPage(currentPage + 1)}>
                 Next →
               </button>
             </nav>
           )}
         </>
       )}
+    </div>
     </div>
   );
 }

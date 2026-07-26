@@ -1,0 +1,204 @@
+/**
+ * Soft-neumorphic shop skin — Vic's Product-UI-Styleguide refs (2026-07-26).
+ *
+ * Register: warm off-white ground, near-white raised surfaces, mint primary,
+ * pill controls, dual-light shadows. Follows the vault soft-neumorphism laws:
+ *   - surface ≈ ground hue (elevation comes from the DUAL shadow, not colour)
+ *   - always dual-light shadow (top-left highlight + bottom-right shade)
+ *   - never blur/backdrop-filter
+ *   - pressed/selected = convex → concave (inset) flip, never colour-only
+ *   - hairline rims on interactive controls (WCAG 1.4.11 non-text contrast)
+ *   - accent (mint) is sparing: primary actions + selected states only
+ * Text is dark warm ink on light surfaces (AA); mint buttons carry dark ink.
+ * Scope: shop surfaces only (storefront, product page, marketplace cart +
+ * checkout). The designer canvas keeps its own skin.
+ */
+
+.soft-page {
+  --sg: #efede8; /* ground */
+  --ss: #faf9f5; /* surface */
+  --ink: #37362f;
+  --ink2: #85826f; /* 4.5:1 on ground for small text */
+  --mint: #a9e2cf;
+  --mint-deep: #79c7ad;
+  --rim: #dcd9d0;
+  --err-bg: #f6dedc;
+  --err-ink: #8c3a33;
+  --warn-bg: #f4e7bb;
+  --warn-ink: #6d5716;
+  --sh-lo: rgba(167, 160, 144, 0.42);
+  --sh-hi: rgba(255, 255, 255, 0.95);
+  --raise: 7px 7px 14px var(--sh-lo), -7px -7px 14px var(--sh-hi);
+  --raise-sm: 4px 4px 9px var(--sh-lo), -4px -4px 9px var(--sh-hi);
+  --inset: inset 4px 4px 8px rgba(167, 160, 144, 0.35), inset -4px -4px 8px var(--sh-hi);
+  --focus: 0 0 0 3px rgba(0, 190, 185, 0.4);
+
+  min-height: 100vh;
+  background: var(--sg);
+  color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.soft-page a {
+  color: inherit;
+}
+
+/* ---- raised card ---- */
+.soft-card {
+  background: var(--ss);
+  border: 1px solid var(--rim);
+  border-radius: 20px;
+  box-shadow: var(--raise);
+}
+
+/* ---- pills (buttons + links) ---- */
+.soft-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--rim);
+  background: var(--ss);
+  color: var(--ink);
+  font: 600 14px/1.2 inherit;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: var(--raise-sm);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.soft-pill:hover {
+  transform: translateY(-1px);
+}
+.soft-pill:active {
+  box-shadow: var(--inset);
+  transform: none;
+}
+.soft-pill:focus-visible {
+  outline: none;
+  box-shadow: var(--raise-sm), var(--focus);
+}
+.soft-pill:disabled {
+  color: var(--ink2);
+  box-shadow: none;
+  cursor: default;
+  transform: none;
+}
+
+.soft-pill--primary {
+  background: var(--mint);
+  border-color: var(--mint-deep);
+  color: #1e3a30; /* dark ink on mint — AA */
+}
+.soft-pill--primary:hover {
+  box-shadow: var(--raise-sm), 0 0 12px rgba(121, 199, 173, 0.45);
+}
+
+.soft-pill--sm {
+  padding: 7px 14px;
+  font-size: 13px;
+}
+
+/* ---- inset pill input (styleguide "Search invoices") ---- */
+.soft-input {
+  padding: 11px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--rim);
+  background: var(--sg);
+  color: var(--ink);
+  font: 400 14px/1.2 inherit;
+  font-family: inherit;
+  box-shadow: var(--inset);
+}
+.soft-input::placeholder {
+  color: var(--ink2);
+}
+.soft-input:focus-visible {
+  outline: none;
+  box-shadow: var(--inset), var(--focus);
+}
+
+/* number steppers etc. */
+.soft-input--square {
+  border-radius: 12px;
+}
+
+/* ---- chips ---- */
+.soft-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--rim);
+  background: var(--ss);
+  color: var(--ink);
+  font: 600 12.5px/1.2 inherit;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: var(--raise-sm);
+}
+.soft-chip[data-selected='true'] {
+  background: var(--mint);
+  border-color: var(--mint-deep);
+  color: #1e3a30;
+  box-shadow: var(--inset);
+}
+.soft-chip:focus-visible {
+  outline: none;
+  box-shadow: var(--raise-sm), var(--focus);
+}
+
+/* ---- alerts (soft pastel pills) ---- */
+.soft-alert {
+  padding: 12px 18px;
+  border-radius: 16px;
+  font-size: 13.5px;
+  border: 1px solid var(--rim);
+  box-shadow: var(--raise-sm);
+}
+.soft-alert--error {
+  background: var(--err-bg);
+  color: var(--err-ink);
+}
+.soft-alert--warn {
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+
+/* ---- embossed brand text (logo relief treatment from the refs) ---- */
+.soft-emboss {
+  color: var(--sg);
+  text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.9), -1px -1px 1px rgba(167, 160, 144, 0.55);
+}
+
+/* ---- product card internals ---- */
+.soft-product-img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  display: block;
+  background: #fff;
+  border-radius: 19px 19px 0 0;
+}
+.soft-product-img--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink2);
+  background: var(--sg);
+}
+
+/* muted small text */
+.soft-muted {
+  color: var(--ink2);
+}
+
+/* hairline divider */
+.soft-hr {
+  border: 0;
+  border-top: 1px solid var(--rim);
+}

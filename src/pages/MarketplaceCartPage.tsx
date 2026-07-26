@@ -9,6 +9,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMarketplaceCart } from '../store/marketplaceCartStore';
+import '../styles/soft-shop.css';
 
 interface MerchantSubtotal {
   merchantId: number;
@@ -102,11 +103,16 @@ export default function MarketplaceCartPage(): JSX.Element {
 
   if (items.length === 0) {
     return (
-      <div style={{ padding: 24, maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
-        <h1>Your marketplace cart is empty.</h1>
-        <p style={{ color: '#6b7280', marginTop: 12 }}>
-          Browse the <Link to="/products">marketplace catalog</Link> to add items.
-        </p>
+      <div className="soft-page">
+        <div style={{ padding: 24, maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
+          <h1>Your marketplace cart is empty.</h1>
+          <p className="soft-muted" style={{ marginTop: 12 }}>
+            Browse the <Link to="/products">marketplace catalog</Link> to add items.
+          </p>
+          <p style={{ marginTop: 20 }}>
+            <Link to="/products" className="soft-pill soft-pill--primary">Back to the shop</Link>
+          </p>
+        </div>
       </div>
     );
   }
@@ -114,27 +120,21 @@ export default function MarketplaceCartPage(): JSX.Element {
   const commissionMinor = quote ? Math.round(quote.totalMinor * PPW_COMMISSION_RATE) : 0;
 
   return (
-    <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-      <header style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 28, margin: 0 }}>Marketplace cart</h1>
-        <p style={{ color: '#6b7280' }}>
-          Items grouped by supplier. Each supplier ships separately; PPW handles billing.
-        </p>
+    <div className="soft-page">
+    <div style={{ padding: '28px 24px 48px', maxWidth: 1200, margin: '0 auto' }}>
+      <header style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h1 style={{ fontSize: 26, margin: 0, letterSpacing: '-0.01em' }}>Your cart</h1>
+          <p className="soft-muted" style={{ margin: '2px 0 0', fontSize: 13.5 }}>
+            Items grouped by supplier. Each supplier ships separately; PPW handles billing.
+          </p>
+        </div>
+        <Link to="/products" className="soft-pill soft-pill--sm">← Keep shopping</Link>
       </header>
 
-      {loading && <p>Calculating split…</p>}
+      {loading && <p className="soft-muted">Calculating split…</p>}
       {error && (
-        <div
-          role="alert"
-          style={{
-            padding: 12,
-            background: '#fef2f2',
-            border: '1px solid #fecaca',
-            borderRadius: 6,
-            marginBottom: 16,
-            color: '#991b1b',
-          }}
-        >
+        <div role="alert" className="soft-alert soft-alert--error" style={{ marginBottom: 16 }}>
           {error}
         </div>
       )}
@@ -144,17 +144,12 @@ export default function MarketplaceCartPage(): JSX.Element {
           {quote?.merchantBreakdown.map((m) => (
             <article
               key={m.merchantId}
-              style={{
-                border: '1px solid #e5e7eb',
-                borderRadius: 8,
-                padding: 16,
-                marginBottom: 16,
-                background: 'white',
-              }}
+              className="soft-card"
+              style={{ padding: 18, marginBottom: 18 }}
             >
               <header style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between' }}>
                 <strong>Supplier #{m.merchantId}</strong>
-                <span style={{ color: '#6b7280', fontSize: 12 }}>
+                <span className="soft-muted" style={{ fontSize: 12 }}>
                   {m.itemCount} unit{m.itemCount === 1 ? '' : 's'}
                 </span>
               </header>
@@ -168,37 +163,33 @@ export default function MarketplaceCartPage(): JSX.Element {
                         display: 'flex',
                         gap: 12,
                         alignItems: 'center',
-                        padding: '8px 0',
-                        borderBottom: '1px solid #f3f4f6',
+                        padding: '10px 0',
+                        borderBottom: '1px solid var(--rim)',
                       }}
                     >
                       {cartItem?.imageUrl ? (
                         <img
                           src={cartItem.imageUrl}
                           alt={line.name}
-                          style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 4 }}
+                          style={{ width: 56, height: 56, objectFit: 'contain', borderRadius: 12, background: '#fff', border: '1px solid var(--rim)' }}
                         />
                       ) : (
                         <div
-                          style={{
-                            width: 56,
-                            height: 56,
-                            background: '#f3f4f6',
-                            borderRadius: 4,
-                          }}
+                          style={{ width: 56, height: 56, background: 'var(--sg)', borderRadius: 12, border: '1px solid var(--rim)' }}
                         />
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ margin: 0, fontWeight: 600 }}>{line.name}</p>
-                        <p style={{ margin: 0, fontSize: 12, color: '#6b7280' }}>SKU {line.sku}</p>
+                        <p className="soft-muted" style={{ margin: 0, fontSize: 12 }}>SKU {line.sku}</p>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <button
                           type="button"
+                          className="soft-pill soft-pill--sm"
                           onClick={() => setQuantity(line.productId, line.quantity - 1)}
                           aria-label="Decrease quantity"
                           disabled={line.quantity <= 1}
-                          style={{ width: 28, height: 28 }}
+                          style={{ width: 32, height: 32, padding: 0 }}
                         >
                           −
                         </button>
@@ -209,13 +200,15 @@ export default function MarketplaceCartPage(): JSX.Element {
                           onChange={(e) =>
                             setQuantity(line.productId, parseInt(e.target.value, 10) || 1)
                           }
-                          style={{ width: 48, textAlign: 'center' }}
+                          className="soft-input soft-input--square"
+                          style={{ width: 52, textAlign: 'center', padding: '6px 4px' }}
                         />
                         <button
                           type="button"
+                          className="soft-pill soft-pill--sm"
                           onClick={() => setQuantity(line.productId, line.quantity + 1)}
                           aria-label="Increase quantity"
-                          style={{ width: 28, height: 28 }}
+                          style={{ width: 32, height: 32, padding: 0 }}
                         >
                           +
                         </button>
@@ -230,10 +223,11 @@ export default function MarketplaceCartPage(): JSX.Element {
                           style={{
                             background: 'none',
                             border: 'none',
-                            color: '#dc2626',
+                            color: 'var(--err-ink)',
                             cursor: 'pointer',
                             fontSize: 11,
                             padding: 0,
+                            fontWeight: 600,
                           }}
                         >
                           Remove
@@ -247,13 +241,13 @@ export default function MarketplaceCartPage(): JSX.Element {
                 style={{
                   marginTop: 12,
                   paddingTop: 12,
-                  borderTop: '1px solid #e5e7eb',
+                  borderTop: '1px solid var(--rim)',
                   display: 'flex',
                   justifyContent: 'space-between',
                   fontSize: 13,
                 }}
               >
-                <span style={{ color: '#6b7280' }}>
+                <span className="soft-muted">
                   Supplier subtotal · shipping calculated at checkout
                 </span>
                 <strong>{formatPrice(m.subtotalMinor, m.currency)}</strong>
@@ -263,38 +257,29 @@ export default function MarketplaceCartPage(): JSX.Element {
         </section>
 
         <aside>
-          <div
-            style={{
-              position: 'sticky',
-              top: 16,
-              border: '1px solid #e5e7eb',
-              borderRadius: 8,
-              padding: 16,
-              background: 'white',
-            }}
-          >
+          <div className="soft-card" style={{ position: 'sticky', top: 16, padding: 18 }}>
             <h2 style={{ fontSize: 16, margin: '0 0 12px' }}>Order summary</h2>
             {quote && (
               <>
                 <dl style={{ margin: 0, fontSize: 13 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <dt style={{ color: '#6b7280' }}>Items subtotal</dt>
+                    <dt className="soft-muted">Items subtotal</dt>
                     <dd style={{ margin: 0 }}>{formatPrice(quote.totalMinor, quote.currency)}</dd>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <dt style={{ color: '#6b7280' }}>
+                    <dt className="soft-muted">
                       PPW marketplace fee ({Math.round(PPW_COMMISSION_RATE * 100)}%)
                     </dt>
                     <dd style={{ margin: 0 }}>{formatPrice(commissionMinor, quote.currency)}</dd>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <dt style={{ color: '#6b7280' }}>Shipping</dt>
+                    <dt className="soft-muted">Shipping</dt>
                     <dd style={{ margin: 0, fontStyle: 'italic' }}>Calculated at checkout</dd>
                   </div>
                 </dl>
                 <div
                   style={{
-                    borderTop: '1px solid #e5e7eb',
+                    borderTop: '1px solid var(--rim)',
                     marginTop: 12,
                     paddingTop: 12,
                     display: 'flex',
@@ -308,33 +293,25 @@ export default function MarketplaceCartPage(): JSX.Element {
                 </div>
                 <button
                   type="button"
+                  className="soft-pill soft-pill--primary"
+                  style={{ marginTop: 16, width: '100%' }}
                   onClick={() => navigate('/marketplace/checkout')}
-                  style={{
-                    marginTop: 16,
-                    width: '100%',
-                    padding: '10px 16px',
-                    background: '#0a0a0a',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: 6,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
                 >
                   Continue to checkout →
                 </button>
-                <p style={{ fontSize: 11, color: '#6b7280', marginTop: 8 }}>
+                <p className="soft-muted" style={{ fontSize: 11, marginTop: 8 }}>
                   Each supplier ships separately. Track each item from{' '}
                   <Link to="/orders">your orders page</Link>.
                 </p>
               </>
             )}
             {!quote && !loading && !error && (
-              <p style={{ color: '#6b7280', fontSize: 13 }}>Loading quote…</p>
+              <p className="soft-muted" style={{ fontSize: 13 }}>Loading quote…</p>
             )}
           </div>
         </aside>
       </div>
+    </div>
     </div>
   );
 }

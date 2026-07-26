@@ -1,0 +1,73 @@
+PPW WELLNESS ROOM DESIGNER — CLAUDE DESIGN BRIEF
+(paste this message into Claude, then attach/paste the file ppw-designer-artifact.html)
+
+WHAT THIS IS
+The attached single HTML file is a faithful, self-contained duplicate of the CURRENT
+Peak Performance Wellness "Wellness Room Designer" — the customer web app live at
+https://designer.ppwellness.co (repo: ppw-designer-2d, main @ 241de3a, React + Vite +
+Konva 2D). It reproduces the exact current UI: layout, panels, labels, colour tokens,
+boot state and interactions, with the real 22-product K1-Sport catalog inlined as mock
+data and the Konva canvas reproduced as an SVG equivalent. It renders standalone —
+no backend, no build step, no external requests.
+
+STEP 1 — DUPLICATE IT EXACTLY
+Render the attached file as an artifact, unchanged. This is the starting canvas.
+Do NOT redesign, "improve", rename, restyle or add features at this step. Confirm it
+renders and walk me through what you see (top bar, room list, catalog, canvas,
+details panel) so we both know you've scanned it correctly.
+
+WHAT THE APP IS
+A Sims-style build-mode room designer: a customer draws a room (or taps
+"Quick 5 × 4 m room"), then places wellness/fitness products from a merchant catalog
+onto the floor plan (0.5 m snap grid), sees a live cost total, and sends the design
+to the PPW team via "Request quote". Revenue model: referral commission to merchants
+(K1-Sport is the launch merchant) — the app never takes payment itself in this flow.
+
+THE CURRENT UI, PANEL BY PANEL
+- Top bar (56 px, white): teal house logo · "Wellness Room Designer" + property name ·
+  L/W room-dimension inputs · Rect | Draw | Wall mode toggle · undo/redo ·
+  "Grid 0.5 m" toggle · currency (MUR/USD/EUR/GBP) · Cart badge · New · Save as... ·
+  Load · "Request quote" (coral CTA) · "?" help.
+- Left rail 1 (224 px): PROPERTY / room list (name, m², item count, Room value Rs) ·
+  "+ Add room".
+- Left rail 2 (288 px): CATALOG — count line, search, Eco-only chip, delivery-region
+  select, macro tabs (All · Furniture · Cardio · Recovery · Sauna · Flooring · Walls ·
+  Decor), dense square tile grid (thumb + name + MUR price).
+- Centre: the room canvas (mist ground #E9EDEF, cream floor #FAF7F1, ink wall stroke,
+  0.5 m grid). Top-right: Reset view / Share render / Capture screen buttons + area/zoom
+  badge + GOLD cost readout + item counter. Bottom-left: "Clear products" / "Clear all"
+  pills. Blank boot state shows the cream "Start by drawing your room" card
+  (Draw room / Quick 5 × 4 m room). Selecting a placed item shows a navy floating
+  cluster (rotate · duplicate · info · delete · done).
+- Right rail (320 px): DETAILS — design summary, or full product info + rotate /
+  duplicate / delete when an item is selected.
+- Bottom: cart strip (appears when items are placed) with expandable line-item table
+  + Checkout. On mobile (<1024 px) the catalog becomes a navy/gold sticky bottom
+  toolbar (Sims style).
+
+BRAND TOKENS (do not drift)
+ink #0E1B1F · slate #3B4A52 · sand #F5F1EA · mist #E9EDEF · stone #C4CBCD ·
+teal #0F766E (primary) · tealLight #5EEAD4 · coral #E76F51 (CTA) · leaf #84A98C.
+Sims/mobile register: navy #232C3B · gold #FFBB58 · cream #F5EBD7. Selection cyan
+#06B6D4. Font: Inter.
+
+FIDELITY CAVEATS (things in the mock that differ from the live app)
+- The live canvas renders top-down product PHOTOS; the mock uses the app's own
+  category-colour fallback boxes + SVG glyphs (no external images in artifacts).
+- Catalog tiles likewise show the app's inline category SVGs, not product photos.
+- Polygon Draw mode is simplified (bounding rectangle on close); Wall tool is a
+  visual toggle; dark-mode toggle is visual-only; Save/Load/quote/checkout are toasts.
+- The 3-step coach mark shows on every load (no localStorage in artifacts) — Skip it.
+None of these are design targets; treat photo-realism on tiles/canvas as already
+solved in the real app.
+
+STEP 2 — THEN WE DESIGN
+After the faithful duplicate renders, I will give refinement instructions on top of
+it, one change-set at a time. Rules for the design phase:
+- Keep every existing capability visible (draw room, place, rotate, cost readout,
+  request quote) — reorganising is fine, dropping is not.
+- Stay inside the PPW brand tokens above unless I explicitly change them.
+- Desktop-first (this is the primary design surface), but keep the <1024 px Sims
+  toolbar concept in mind.
+- After each change, restate briefly WHAT you changed and WHY, so I can accept or
+  roll back per change-set.

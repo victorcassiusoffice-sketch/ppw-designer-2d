@@ -9,6 +9,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMarketplaceCart } from '../store/marketplaceCartStore';
+import '../styles/soft-shop.css';
 
 interface MerchantSubtotal {
   merchantId: number;
@@ -157,11 +158,16 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
 
   if (items.length === 0) {
     return (
-      <div style={{ padding: 24, maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
-        <h1>No items to check out.</h1>
-        <p style={{ color: '#6b7280', marginTop: 12 }}>
-          <Link to="/products">Browse the marketplace</Link> to get started.
-        </p>
+      <div className="soft-page">
+        <div style={{ padding: 24, maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
+          <h1>No items to check out.</h1>
+          <p className="soft-muted" style={{ marginTop: 12 }}>
+            <Link to="/products">Browse the marketplace</Link> to get started.
+          </p>
+          <p style={{ marginTop: 20 }}>
+            <Link to="/products" className="soft-pill soft-pill--primary">Back to the shop</Link>
+          </p>
+        </div>
       </div>
     );
   }
@@ -169,27 +175,21 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
   const commissionMinor = quote ? Math.round(quote.totalMinor * PPW_COMMISSION_RATE) : 0;
 
   return (
-    <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-      <header style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 28, margin: 0 }}>Checkout</h1>
-        <p style={{ color: '#6b7280' }}>
-          Review the per-supplier split below before paying. PPW collects the marketplace fee
-          transparently — every supplier sees their own subtotal.
-        </p>
+    <div className="soft-page">
+    <div style={{ padding: '28px 24px 48px', maxWidth: 1200, margin: '0 auto' }}>
+      <header style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h1 style={{ fontSize: 26, margin: 0, letterSpacing: '-0.01em' }}>Checkout</h1>
+          <p className="soft-muted" style={{ margin: '2px 0 0', fontSize: 13.5 }}>
+            Review the per-supplier split below before paying. PPW collects the marketplace fee
+            transparently — every supplier sees their own subtotal.
+          </p>
+        </div>
+        <Link to="/marketplace/cart" className="soft-pill soft-pill--sm">← Back to cart</Link>
       </header>
 
       {error && (
-        <div
-          role="alert"
-          style={{
-            padding: 12,
-            background: '#fef2f2',
-            border: '1px solid #fecaca',
-            borderRadius: 6,
-            marginBottom: 16,
-            color: '#991b1b',
-          }}
-        >
+        <div role="alert" className="soft-alert soft-alert--error" style={{ marginBottom: 16 }}>
           {error}
         </div>
       )}
@@ -199,13 +199,8 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
           {quote?.merchantBreakdown.map((m) => (
             <article
               key={m.merchantId}
-              style={{
-                border: '1px solid #e5e7eb',
-                borderRadius: 8,
-                padding: 16,
-                marginBottom: 16,
-                background: 'white',
-              }}
+              className="soft-card"
+              style={{ padding: 18, marginBottom: 18 }}
             >
               <header
                 style={{
@@ -216,7 +211,7 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
                 }}
               >
                 <strong>Supplier #{m.merchantId}</strong>
-                <span style={{ fontSize: 12, color: '#6b7280' }}>{m.itemCount} units</span>
+                <span className="soft-muted" style={{ fontSize: 12 }}>{m.itemCount} units</span>
               </header>
               <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
                 {m.items.map((line) => (
@@ -230,7 +225,7 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
                     }}
                   >
                     <span>
-                      {line.name} <span style={{ color: '#6b7280' }}>× {line.quantity}</span>
+                      {line.name} <span className="soft-muted">× {line.quantity}</span>
                     </span>
                     <span>{formatPrice(line.lineTotalMinor, m.currency)}</span>
                   </li>
@@ -238,7 +233,7 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
               </ul>
               <div
                 style={{
-                  borderTop: '1px solid #e5e7eb',
+                  borderTop: '1px solid var(--rim)',
                   marginTop: 8,
                   paddingTop: 8,
                   display: 'flex',
@@ -246,7 +241,7 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
                   fontSize: 14,
                 }}
               >
-                <span style={{ color: '#6b7280' }}>Paid to supplier (post-fee)</span>
+                <span className="soft-muted">Paid to supplier (post-fee)</span>
                 <span>
                   {formatPrice(
                     Math.round(m.subtotalMinor * (1 - PPW_COMMISSION_RATE)),
@@ -259,18 +254,9 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
         </section>
 
         <aside>
-          <div
-            style={{
-              position: 'sticky',
-              top: 16,
-              border: '1px solid #e5e7eb',
-              borderRadius: 8,
-              padding: 16,
-              background: 'white',
-            }}
-          >
+          <div className="soft-card" style={{ position: 'sticky', top: 16, padding: 18 }}>
             <h2 style={{ fontSize: 16, margin: '0 0 12px' }}>Pay</h2>
-            <label style={{ display: 'block', fontSize: 12, marginBottom: 4, color: '#6b7280' }}>
+            <label className="soft-muted" style={{ display: 'block', fontSize: 12, marginBottom: 4 }}>
               Email (for order tracking)
             </label>
             <input
@@ -279,35 +265,30 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
               value={customerEmail}
               onChange={(e) => setCustomerEmail(e.target.value)}
               placeholder="you@example.com"
-              style={{
-                width: '100%',
-                padding: 8,
-                border: '1px solid #d1d5db',
-                borderRadius: 4,
-                marginBottom: 12,
-              }}
+              className="soft-input"
+              style={{ width: '100%', marginBottom: 12, boxSizing: 'border-box' }}
             />
             {quote && (
               <>
                 <dl style={{ margin: 0, fontSize: 13 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <dt style={{ color: '#6b7280' }}>Items subtotal</dt>
+                    <dt className="soft-muted">Items subtotal</dt>
                     <dd style={{ margin: 0 }}>{formatPrice(quote.totalMinor, quote.currency)}</dd>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <dt style={{ color: '#6b7280' }}>
+                    <dt className="soft-muted">
                       PPW marketplace fee ({Math.round(PPW_COMMISSION_RATE * 100)}%)
                     </dt>
                     <dd style={{ margin: 0 }}>{formatPrice(commissionMinor, quote.currency)}</dd>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <dt style={{ color: '#6b7280' }}>Shipping</dt>
+                    <dt className="soft-muted">Shipping</dt>
                     <dd style={{ margin: 0, fontStyle: 'italic' }}>Calculated post-payment</dd>
                   </div>
                 </dl>
                 <div
                   style={{
-                    borderTop: '1px solid #e5e7eb',
+                    borderTop: '1px solid var(--rim)',
                     marginTop: 12,
                     paddingTop: 12,
                     display: 'flex',
@@ -321,23 +302,14 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
                 </div>
                 <button
                   type="button"
+                  className="soft-pill soft-pill--primary"
                   onClick={payWithPaypal}
                   disabled={submitting}
-                  style={{
-                    marginTop: 16,
-                    width: '100%',
-                    padding: '10px 16px',
-                    background: submitting ? '#9ca3af' : '#0070ba',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: 6,
-                    fontWeight: 600,
-                    cursor: submitting ? 'wait' : 'pointer',
-                  }}
+                  style={{ marginTop: 16, width: '100%', cursor: submitting ? 'wait' : 'pointer' }}
                 >
                   {submitting ? 'Redirecting to PayPal…' : 'Pay with PayPal'}
                 </button>
-                <p style={{ fontSize: 11, color: '#6b7280', marginTop: 8 }}>
+                <p className="soft-muted" style={{ fontSize: 11, marginTop: 8 }}>
                   Sandbox / live based on env. Order tracking link will be emailed.
                 </p>
               </>
@@ -345,6 +317,7 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
           </div>
         </aside>
       </div>
+    </div>
     </div>
   );
 }
