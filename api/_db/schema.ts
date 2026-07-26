@@ -369,6 +369,16 @@ export const products = pgTable(
     // Sims-Parity DT-26 — per-SKU hero-glTF flag. V8=NO so default
     // stays FALSE forever until external 3D artist spend unblocks.
     useGltf: boolean('use_gltf').notNull().default(false),
+    // WD-2D top-down pipeline (2026-07-10, migration 0027). The Runway
+    // generator + footprint normaliser writes a footprint-exact transparent
+    // PNG here WITHOUT clobbering image_url (the merchant's raw photo, which
+    // becomes the generation reference). Designer prefers topdown_image_url
+    // when present. Status: none|pending|processing|done|failed.
+    topdownImageUrl: varchar('topdown_image_url', { length: 500 }),
+    topdownStatus: varchar('topdown_status', { length: 20 }).notNull().default('none'),
+    topdownSourceUrl: varchar('topdown_source_url', { length: 500 }),
+    topdownGeneratedAt: timestamp('topdown_generated_at', { withTimezone: true }),
+    topdownError: text('topdown_error'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -386,6 +396,8 @@ export const products = pgTable(
       t.priceMinor,
     ),
     captureScaleLockIdx: index('products_capture_scale_lock_idx').on(t.captureScaleLockId),
+    // WD-2D top-down worklist (partial WHERE lives in migration 0027 SQL).
+    topdownStatusIdx: index('products_topdown_status_idx').on(t.topdownStatus),
   }),
 );
 

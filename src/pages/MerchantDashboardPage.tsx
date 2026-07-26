@@ -21,9 +21,35 @@
  * the existing `ppw-*` token namespace used by the designer surface.
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { ApiProductsResponse, ApiProductSummary } from '../data/apiCatalogAdapter';
+import { SESSION_STORAGE_KEY } from '../components/RequireMerchant';
+
+interface StoredSession {
+  slug: string;
+  token: string;
+  email: string;
+  exp: number;
+}
+
+function readSession(): StoredSession | null {
+  try {
+    if (typeof localStorage === 'undefined') return null;
+    const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as StoredSession;
+  } catch {
+    return null;
+  }
+}
+
+/** Product management callbacks threaded to each ProductCard. */
+interface ManageHandlers {
+  canManage: boolean;
+  onSavePrice: (id: number, priceMinor: number) => Promise<void>;
+  onDelete: (id: number) => Promise<void>;
+}
 
 const BRAND = {
   navy: '#232C3B',
@@ -109,6 +135,47 @@ export default function MerchantDashboardPage(
     };
   }, [slug, props.fetchImpl]);
 
+  // Merchant session (Bearer token) enables in-place price edit + delete. The
+  // token authorises writes for THIS slug only; the server also enforces it.
+  const session = useMemo(readSession, []);
+  const token = session && session.slug === slug ? session.token : null;
+  const fetcher = props.fetchImpl ?? globalThis.fetch;
+
+  const onDelete = useCallback(
+    async (id: number): Promise<void> => {
+      if (!slug || !token) throw new Error('Not signed in.');
+      const res = await fetcher(`/api/products?slug=${encodeURIComponent(slug)}&id=${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok && res.status !== 204) throw new Error(`Delete failed (HTTP ${res.status})`);
+      setState((s) =>
+        s.phase === 'loaded' ? { ...s, products: s.products.filter((p) => p.id !== id) } : s,
+      );
+    },
+    [slug, token, fetcher],
+  );
+
+  const onSavePrice = useCallback(
+    async (id: number, priceMinor: number): Promise<void> => {
+      if (!slug || !token) throw new Error('Not signed in.');
+      const res = await fetcher(`/api/products?slug=${encodeURIComponent(slug)}&id=${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ priceMinor }),
+      });
+      if (!res.ok) throw new Error(`Save failed (HTTP ${res.status})`);
+      setState((s) =>
+        s.phase === 'loaded'
+          ? { ...s, products: s.products.map((p) => (p.id === id ? { ...p, priceMinor } : p)) }
+          : s,
+      );
+    },
+    [slug, token, fetcher],
+  );
+
+  const manage: ManageHandlers = { canManage: !!token, onSavePrice, onDelete };
+
   return (
     <div
       data-testid="merchant-dashboard"
@@ -122,7 +189,7 @@ export default function MerchantDashboardPage(
     >
       <Header slug={slug ?? ''} />
       <main style={{ maxWidth: 1120, margin: '0 auto', padding: '32px 24px 64px' }}>
-        <ProductsSection state={state} slug={slug ?? ''} />
+        <ProductsSection state={state} slug={slug ?? ''} manage={manage} />
         <TwoColumnRow>
           <RecentDesignsCard />
           <CommissionLedgerCard />
@@ -234,7 +301,15 @@ function SectionHeading({ children, testid }: { children: React.ReactNode; testi
   );
 }
 
-function ProductsSection({ state, slug }: { state: FetchState; slug: string }): JSX.Element {
+function ProductsSection({
+  state,
+  slug,
+  manage,
+}: {
+  state: FetchState;
+  slug: string;
+  manage: ManageHandlers;
+}): JSX.Element {
   return (
     <section style={{ marginBottom: 40 }}>
       <SectionHeading testid="products-heading">Your products</SectionHeading>
@@ -264,7 +339,7 @@ function ProductsSection({ state, slug }: { state: FetchState; slug: string }): 
           }}
         >
           {state.products.map((p) => (
-            <ProductCard key={p.id} product={p} />
+            <ProductCard key={p.id} product={p} manage={manage} />
           ))}
         </div>
       )}
@@ -272,7 +347,91 @@ function ProductsSection({ state, slug }: { state: FetchState; slug: string }): 
   );
 }
 
-function ProductCard({ product }: { product: ApiProductSummary }): JSX.Element {
+const MANAGE_BTN = {
+  ghost: {
+    padding: '4px 10px',
+    borderRadius: 4,
+    fontSize: 11,
+    fontWeight: 600,
+    cursor: 'pointer',
+    border: `1px solid ${BRAND.creamLine}`,
+    background: 'transparent',
+    color: BRAND.cream,
+  },
+  primary: {
+    padding: '4px 10px',
+    borderRadius: 4,
+    fontSize: 11,
+    fontWeight: 700,
+    cursor: 'pointer',
+    border: 'none',
+    background: BRAND.gold,
+    color: BRAND.deepNavy,
+  },
+  danger: {
+    padding: '4px 10px',
+    borderRadius: 4,
+    fontSize: 11,
+    fontWeight: 600,
+    cursor: 'pointer',
+    border: '1px solid rgba(220,80,80,0.5)',
+    background: 'transparent',
+    color: '#F0A0A0',
+  },
+} as const;
+
+function ProductCard({
+  product,
+  manage,
+}: {
+  product: ApiProductSummary;
+  manage: ManageHandlers;
+}): JSX.Element {
+  const [editing, setEditing] = useState(false);
+  const [priceMajor, setPriceMajor] = useState(String((product.priceMinor ?? 0) / 100));
+  const [busy, setBusy] = useState<null | 'save' | 'delete'>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function handleSave(): Promise<void> {
+    // Reject empty/whitespace BEFORE coercion — Number('') === 0 would slip a
+    // free product past a `< 0` check. Require a positive price on this money
+    // field (a $0 product can be designed into a room + routed to fulfilment).
+    const raw = priceMajor.trim();
+    const major = Number(raw);
+    if (raw === '' || !Number.isFinite(major) || major <= 0) {
+      setErr('Enter a valid price above 0.');
+      return;
+    }
+    setBusy('save');
+    setErr(null);
+    try {
+      await manage.onSavePrice(product.id, Math.round(major * 100));
+      setEditing(false);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Save failed.');
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleDelete(): Promise<void> {
+    if (
+      typeof window !== 'undefined' &&
+      !window.confirm(`Delete “${product.name}”? It will be removed from your catalogue.`)
+    ) {
+      return;
+    }
+    setBusy('delete');
+    setErr(null);
+    try {
+      await manage.onDelete(product.id);
+      // On success the card unmounts (removed from list) — no state reset needed.
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Delete failed.');
+      setBusy(null);
+    }
+  }
+
   return (
     <article
       data-testid="merchant-product-card"
@@ -288,24 +447,42 @@ function ProductCard({ product }: { product: ApiProductSummary }): JSX.Element {
         minHeight: 180,
       }}
     >
-      <div
-        aria-hidden
-        style={{
-          width: '100%',
-          height: 70,
-          borderRadius: 6,
-          background: BRAND.goldSoft,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: BRAND.gold,
-          fontFamily: BRAND.serif,
-          fontSize: 14,
-          letterSpacing: '0.04em',
-        }}
-      >
-        {product.category}
-      </div>
+      {product.imageUrl ? (
+        // Show the product's own image (top-down render or uploaded photo).
+        // White fill so transparent top-down PNGs read on the navy card.
+        <img
+          src={product.imageUrl}
+          alt={product.name}
+          loading="lazy"
+          data-testid="merchant-product-image"
+          style={{
+            width: '100%',
+            height: 70,
+            borderRadius: 6,
+            objectFit: 'contain',
+            background: '#FFFFFF',
+          }}
+        />
+      ) : (
+        <div
+          aria-hidden
+          style={{
+            width: '100%',
+            height: 70,
+            borderRadius: 6,
+            background: BRAND.goldSoft,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: BRAND.gold,
+            fontFamily: BRAND.serif,
+            fontSize: 14,
+            letterSpacing: '0.04em',
+          }}
+        >
+          {product.category}
+        </div>
+      )}
       <h3
         style={{
           margin: 0,
@@ -325,6 +502,83 @@ function ProductCard({ product }: { product: ApiProductSummary }): JSX.Element {
         <Row label="Dimensions" value={fmtDims(product)} muted />
         <Row label="Price" value={fmtPrice(product)} accent />
       </dl>
+
+      {manage.canManage && (
+        <div
+          data-testid="merchant-product-manage"
+          style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}
+        >
+          {editing ? (
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={priceMajor}
+                onChange={(e) => setPriceMajor(e.target.value)}
+                aria-label="New price"
+                data-testid="merchant-product-price-input"
+                style={{
+                  width: 84,
+                  padding: '4px 6px',
+                  borderRadius: 4,
+                  border: `1px solid ${BRAND.creamLine}`,
+                  background: BRAND.navy,
+                  color: BRAND.cream,
+                  fontSize: 12,
+                }}
+              />
+              <span style={{ fontSize: 11, color: BRAND.muted }}>{product.currency || 'MUR'}</span>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={busy !== null}
+                data-testid="merchant-product-save"
+                style={MANAGE_BTN.primary}
+              >
+                {busy === 'save' ? 'Saving…' : 'Save'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditing(false);
+                  setPriceMajor(String((product.priceMinor ?? 0) / 100));
+                  setErr(null);
+                }}
+                disabled={busy !== null}
+                style={MANAGE_BTN.ghost}
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                data-testid="merchant-product-edit"
+                style={MANAGE_BTN.ghost}
+              >
+                Edit price
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={busy !== null}
+                data-testid="merchant-product-delete"
+                style={MANAGE_BTN.danger}
+              >
+                {busy === 'delete' ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          )}
+          {err && (
+            <span data-testid="merchant-product-error" style={{ fontSize: 11, color: BRAND.gold }}>
+              {err}
+            </span>
+          )}
+        </div>
+      )}
     </article>
   );
 }

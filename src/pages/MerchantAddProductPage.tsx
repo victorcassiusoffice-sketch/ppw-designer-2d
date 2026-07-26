@@ -108,8 +108,12 @@ export interface SubmitDecisionOk {
     priceMinor: number;
     currency: Currency;
     ecoCertLevel: ProductFormState['ecoCertLevel'];
-    widthMm: number | null;
-    depthMm: number | null;
+    // Footprint width + depth are REQUIRED (WD-2D top-down rebuild
+    // 2026-07-10): the deterministic footprint normaliser + the to-scale
+    // 0.5 m-grid placement both depend on a real W×D, so it can no longer
+    // be blank/free-typed. Height stays optional (shadow only).
+    widthMm: number;
+    depthMm: number;
     heightMm: number | null;
   };
   imageFile: File | null;
@@ -152,8 +156,14 @@ export function decideProductFormSubmit(state: ProductFormState): SubmitDecision
   const w = parseDim(state.widthMm);
   const d = parseDim(state.depthMm);
   const h = parseDim(state.heightMm);
-  if (w === 'invalid') errors.widthMm = 'Whole non-negative mm.';
-  if (d === 'invalid') errors.depthMm = 'Whole non-negative mm.';
+  // Width + depth REQUIRED and positive (footprint drives to-scale placement
+  // + the top-down normaliser). Height optional (shadow geometry only).
+  if (w === 'invalid') errors.widthMm = 'Whole positive mm.';
+  else if (w === null) errors.widthMm = 'Required — real footprint width in mm.';
+  else if (w <= 0) errors.widthMm = 'Must be greater than 0.';
+  if (d === 'invalid') errors.depthMm = 'Whole positive mm.';
+  else if (d === null) errors.depthMm = 'Required — real footprint depth in mm.';
+  else if (d <= 0) errors.depthMm = 'Must be greater than 0.';
   if (h === 'invalid') errors.heightMm = 'Whole non-negative mm.';
 
   if (state.imageFile) {
@@ -179,8 +189,9 @@ export function decideProductFormSubmit(state: ProductFormState): SubmitDecision
       priceMinor,
       currency: state.currency,
       ecoCertLevel: state.ecoCertLevel,
-      widthMm: w === null || w === 'invalid' ? null : w,
-      depthMm: d === null || d === 'invalid' ? null : d,
+      // w and d are guaranteed valid positive numbers here (guarded above).
+      widthMm: w as number,
+      depthMm: d as number,
       heightMm: h === null || h === 'invalid' ? null : h,
     },
     imageFile: state.imageFile,
@@ -311,8 +322,10 @@ export default function MerchantAddProductPage(
         </a>
         <h1 style={styles.h1}>Add product</h1>
         <p style={styles.lede}>
-          Fields marked with * are required. Image must be PNG or JPG, ≤5 MB. Top-down product
-          shots (white or transparent background) render best in the designer canvas.
+          Fields marked with * are required. Image must be PNG or JPG, ≤5 MB. Real footprint
+          Width × Depth (mm) are required — they place your product to-scale in the room designer
+          and drive the top-down catalog render. Upload a clear product photo; we generate the
+          to-scale top-down for you.
         </p>
       </header>
 
@@ -397,10 +410,10 @@ export default function MerchantAddProductPage(
         </Field>
 
         <div style={styles.row3}>
-          <Field label="Width (mm)" error={errors.widthMm}>
+          <Field label="Width (mm) *" error={errors.widthMm}>
             <input
               type="number"
-              min={0}
+              min={1}
               step={1}
               value={form.widthMm}
               onChange={(e) => update('widthMm', e.target.value)}
@@ -408,10 +421,10 @@ export default function MerchantAddProductPage(
               data-testid="product-width"
             />
           </Field>
-          <Field label="Depth (mm)" error={errors.depthMm}>
+          <Field label="Depth (mm) *" error={errors.depthMm}>
             <input
               type="number"
-              min={0}
+              min={1}
               step={1}
               value={form.depthMm}
               onChange={(e) => update('depthMm', e.target.value)}

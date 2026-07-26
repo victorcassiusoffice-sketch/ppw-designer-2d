@@ -11,6 +11,9 @@
  *   GET /api/cron/escalate-orders          → flag stuck order_items
  *   GET /api/cron/refresh-supplier-rating  → W0.D.9 watermark backfill
  *   GET /api/cron/email-send-reconcile     → M9.A.recon.1 catch missed sends
+ *   GET /api/cron/disburse-payouts         → payout scaffold: dry-run report
+ *                                            (flag-gated, no rail adapters,
+ *                                            unscheduled — see disbursePayouts.ts)
  *
  * Future cron jobs (dep audit, KV cleanups, etc.) fold into this same
  * file to stay under the Vercel Hobby 12-fn cap.
@@ -23,6 +26,8 @@ import { recordAudit } from './_lib/auditLog.js';
 import { emailMerchantApproved } from './_lib/merchantEmails.js';
 import { refreshSupplierRatingBatch } from './_lib/cron/refreshSupplierRating.js';
 import { reconcileEmailSendsBatch } from './_lib/cron/reconcileEmailSends.js';
+import { disbursePayoutsBatch } from './_lib/cron/disbursePayouts.js';
+import { generateTopdownsBatch } from './_lib/cron/generateTopdowns.js';
 
 interface RouterReq extends MinReq {
   body?: unknown;
@@ -191,6 +196,17 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
     return;
   }
 
+  if (action === 'disburse-payouts') {
+    try {
+      await handleDisbursePayouts(res);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'disburse-payouts failed';
+      res.status(500);
+      res.json({ error: msg });
+    }
+    return;
+  }
+
   if (action === 'email-send-reconcile') {
     try {
       await handleEmailSendReconcile(res);
@@ -202,8 +218,84 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
     return;
   }
 
+  if (action === 'generate-topdowns') {
+    try {
+      await handleGenerateTopdowns(res);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'generate-topdowns failed';
+      res.status(500);
+      res.json({ error: msg });
+    }
+    return;
+  }
+
   res.status(404);
   res.json({ error: `unknown cron action: ${action ?? '(empty)'}` });
+}
+
+// Payout-disbursement scaffold (2026-07-06): dry-run report unless
+// PAYOUT_DISBURSE_ENABLED=true, and no rail adapters exist yet, so no
+// money can move regardless. NOT in vercel.json crons — manual invoke
+// only. See api/_lib/cron/disbursePayouts.ts for the safety layers.
+async function handleDisbursePayouts(res: MinRes): Promise<void> {
+  let result;
+  try {
+    result = await disbursePayoutsBatch();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/relation .* does not exist|42P01/i.test(msg)) {
+      res.status(503);
+      res.json({ ok: false, error: 'payout_queue schema not migrated.' });
+      return;
+    }
+    res.status(500);
+    res.json({ ok: false, error: msg });
+    return;
+  }
+  if (result.due > 0) {
+    await recordAudit('system:cron', 'payouts.disburse_scan', 'payout_queue', String(result.due), null, {
+      mode: result.mode,
+      due: result.due,
+      disbursed: result.disbursed,
+      skippedReasons: result.skipped.slice(0, 20),
+    });
+  }
+  res.status(200);
+  res.json({ ok: true, ...result });
+}
+
+// Top-down generation worker (WD-2D 2026-07-10): DRY-RUN by default —
+// reports eligible products + est cost. Generates only when
+// TOPDOWN_GENERATE_ENABLED=true AND RUNWAY_API_KEY + BLOB_READ_WRITE_TOKEN
+// are set (per-run count + USD caps enforced). NOT in vercel.json crons —
+// manual invoke only. See api/_lib/cron/generateTopdowns.ts.
+async function handleGenerateTopdowns(res: MinRes): Promise<void> {
+  let result;
+  try {
+    result = await generateTopdownsBatch();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/relation .* does not exist|column .* does not exist|42P01|42703/i.test(msg)) {
+      res.status(503);
+      res.json({ ok: false, error: 'products schema not migrated (run migration 0027).' });
+      return;
+    }
+    res.status(500);
+    res.json({ ok: false, error: msg });
+    return;
+  }
+  if (result.generated > 0 || result.failed > 0) {
+    await recordAudit('system:cron', 'products.topdown_generate', 'products', String(result.generated), null, {
+      mode: result.mode,
+      eligible: result.eligible,
+      attempted: result.attempted,
+      generated: result.generated,
+      failed: result.failed,
+      spentCredits: result.spentCredits,
+    });
+  }
+  res.status(200);
+  res.json({ ok: true, ...result });
 }
 
 async function handleEmailSendReconcile(res: MinRes): Promise<void> {

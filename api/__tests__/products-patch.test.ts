@@ -66,8 +66,36 @@ vi.mock('../_lib/auditLog.js', () => ({
   recordAudit: vi.fn(async () => ({ ok: true })),
 }));
 
-import { patchProduct, productPatchSchema } from '../products';
+import { patchProduct, productPatchSchema, handler } from '../products';
+import { signMerchantSession } from '../_lib/merchantSession';
 import * as dbClient from '../_db/client.js';
+
+/** Minimal MinRes mock capturing status + json for handler-level tests. */
+function mockRes() {
+  const out: { status: number | null; body: unknown; ended: boolean } = {
+    status: null,
+    body: undefined,
+    ended: false,
+  };
+  const res = {
+    status(code: number) {
+      out.status = code;
+      return res;
+    },
+    json(payload: unknown) {
+      out.body = payload;
+      return res;
+    },
+    end() {
+      out.ended = true;
+      return res;
+    },
+    setHeader() {
+      return res;
+    },
+  };
+  return { res, out };
+}
 
 interface FakeCtx {
   builder: {
@@ -236,5 +264,59 @@ describe('patchProduct (M9.B.3 helper)', () => {
     const r = await patchProduct('acme', 1, { name: 'x' });
     expect(r.status).toBe(503);
     expect(r.error).toBe('schema_missing');
+  });
+});
+
+describe('handler auth gate — PATCH/DELETE require a merchant session (IDOR fix 2026-07-24)', () => {
+  it('PATCH without an Authorization header → 401 (no DB write)', async () => {
+    fake.builder._updatedReturning = [{ id: 1 }];
+    const { res, out } = mockRes();
+    await handler(
+      { method: 'PATCH', query: { slug: 'acme', id: '1' }, headers: {}, body: { priceMinor: 999 } } as never,
+      res as never,
+    );
+    expect(out.status).toBe(401);
+  });
+
+  it('DELETE without an Authorization header → 401', async () => {
+    const { res, out } = mockRes();
+    await handler(
+      { method: 'DELETE', query: { slug: 'acme', id: '1' }, headers: {}, body: undefined } as never,
+      res as never,
+    );
+    expect(out.status).toBe(401);
+  });
+
+  it('PATCH for a DIFFERENT merchant than the token → 403 (slug mismatch)', async () => {
+    const token = signMerchantSession({ slug: 'other-merchant', email: 'm@x.co', exp: Date.now() + 60_000 });
+    const { res, out } = mockRes();
+    await handler(
+      {
+        method: 'PATCH',
+        query: { slug: 'acme', id: '1' },
+        headers: { authorization: `Bearer ${token}` },
+        body: { priceMinor: 999 },
+      } as never,
+      res as never,
+    );
+    expect(out.status).toBe(403);
+  });
+
+  it('PATCH with a valid session for the slug passes the auth gate (not 401/403)', async () => {
+    // Past auth, the fake DB returns no merchant row → 404, proving auth passed.
+    fake.builder._lastResult = [];
+    const token = signMerchantSession({ slug: 'acme', email: 'm@x.co', exp: Date.now() + 60_000 });
+    const { res, out } = mockRes();
+    await handler(
+      {
+        method: 'PATCH',
+        query: { slug: 'acme', id: '1' },
+        headers: { authorization: `Bearer ${token}` },
+        body: { priceMinor: 999 },
+      } as never,
+      res as never,
+    );
+    expect(out.status).not.toBe(401);
+    expect(out.status).not.toBe(403);
   });
 });

@@ -54,7 +54,7 @@ import { z } from 'zod';
 
 import { withSentry, type MinReq, type MinRes } from './_lib/sentry.js';
 import { getDb, schema } from './_db/client.js';
-import { and, eq, gte, gt, isNull, lte, notLike, sql, inArray, type SQL } from 'drizzle-orm';
+import { and, eq, gte, gt, isNull, lte, notLike, ilike, or, sql, inArray, type SQL } from 'drizzle-orm';
 import { drizzleAuditWriter } from './_lib/auditLog.js';
 import { verifyMerchantSession } from './_lib/merchantSession.js';
 import { buildSeedImageryMap, enrichImagery } from './_lib/products/seedImagery.js';
@@ -157,9 +157,24 @@ export function parseSort(q: Record<string, string | string[] | undefined>): Sor
   return v && (SORT_OPTIONS as readonly string[]).includes(v) ? (v as SortOption) : 'newest';
 }
 
+/**
+ * True when the migration-0027 top-down columns exist on the deployed DB.
+ * Defaults FALSE so a deploy against a not-yet-migrated branch cannot take the
+ * catalog down (missing column → 42703 → `schemaMissing` → empty shop).
+ * Flip `TOPDOWN_DB_COLUMNS=1` in the Vercel env once 0027 is applied.
+ */
+export function topdownColumnsEnabled(): boolean {
+  const v = (process.env.TOPDOWN_DB_COLUMNS ?? '').trim().toLowerCase();
+  return v === '1' || v === 'true' || v === 'on';
+}
+
 export interface ProductFilters {
   category: string | null;
   region: string | null;
+  /** Free-text keyword — matched against name / description / category (ILIKE). */
+  search: string | null;
+  /** Single-product lookup by numeric id (product-detail page). */
+  productId: number | null;
   merchantSlug: string | null;
   priceMin: number | null;
   priceMax: number | null;
@@ -182,6 +197,8 @@ export function parseProductFilters(
   return {
     category: pickStr(q, 'category'),
     region: pickStr(q, 'region'),
+    search: pickStr(q, 'search') ?? pickStr(q, 'q'),
+    productId: pickIntOrNull(q, 'id', 2_000_000_000),
     merchantSlug: pickStr(q, 'slug'),
     priceMin: pickIntOrNull(q, 'price_min', 1_000_000_000),
     priceMax: pickIntOrNull(q, 'price_max', 1_000_000_000),
@@ -230,8 +247,20 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
   // V4 M9.B.4 — exclude soft-deleted products everywhere (retired_at IS NULL).
   const conds = [eq(schema.products.status, 'active'), isNull(schema.products.retiredAt)];
   if (!filters.includeDemo) conds.push(notLike(schema.products.sku, 'DEMO-%'));
+  if (filters.productId !== null) conds.push(eq(schema.products.id, filters.productId));
   if (filters.category) conds.push(eq(schema.products.category, filters.category));
   if (filters.region) conds.push(eq(schema.products.region, filters.region));
+  if (filters.search) {
+    // Keyword across name / description / category. Escape ILIKE wildcards so
+    // user input can't inject `%`/`_` patterns (backslash is the PG default).
+    const term = `%${filters.search.replace(/[\\%_]/g, (m) => `\\${m}`)}%`;
+    const kw = or(
+      ilike(schema.products.name, term),
+      ilike(schema.products.description, term),
+      ilike(schema.products.category, term),
+    );
+    if (kw) conds.push(kw);
+  }
   if (filters.priceMin !== null) conds.push(gte(schema.products.priceMinor, filters.priceMin));
   if (filters.priceMax !== null) conds.push(lte(schema.products.priceMinor, filters.priceMax));
   if (filters.ecoCerts.length > 0) conds.push(inArray(schema.products.ecoCertLevel, filters.ecoCerts));
@@ -273,6 +302,17 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
         priceMinor: schema.products.priceMinor,
         currency: schema.products.currency,
         imageUrl: schema.products.imageUrl,
+        // WD-2D: the generated footprint-exact top-down (migration 0027).
+        // Preferred over the merchant's raw photo when present.
+        //
+        // ⚠ MIGRATION-GATED (2026-07-26): migration 0027 is NOT applied on the
+        // prod Neon branch, so selecting these columns raises 42703 and the
+        // whole catalog degrades to `schemaMissing` (empty shop). Until the
+        // migration is applied, the column is omitted from the query. Real
+        // top-down art is served meanwhile by `enrichImagery()` (bundled
+        // static PNGs, SKU-exact) which needs no DB column at all.
+        // TO ENABLE: apply 0027 on Neon, then set TOPDOWN_DB_COLUMNS=1.
+        ...(topdownColumnsEnabled() ? { topdownImageUrl: schema.products.topdownImageUrl } : {}),
         region: schema.products.region,
       })
       .from(schema.products)
@@ -287,8 +327,18 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
       .where(and(...conds));
     const total = countRes[0]?.c ?? 0;
 
+    // Prefer the generated top-down over the merchant's raw photo, then let
+    // the seed-imagery enrichment fill any remaining placeholders. When the
+    // top-down columns are migration-gated off, `topdownImageUrl` is simply
+    // absent (undefined) and the raw photo / seed enrichment wins.
+    const coalesced = (rows as Array<Record<string, unknown> & { imageUrl: string | null }>).map(
+      ({ topdownImageUrl, ...r }) => ({
+        ...r,
+        imageUrl: (topdownImageUrl as string | null | undefined) ?? r.imageUrl,
+      }),
+    ) as typeof rows;
     const result: ProductListResult = {
-      products: enrichImagery(rows, SEED_IMAGERY),
+      products: enrichImagery(coalesced, SEED_IMAGERY),
       total,
       limit: filters.limit,
       offset: filters.offset,
@@ -400,8 +450,12 @@ export const productCreateSchema = z
       .length(3)
       .transform((s) => s.toUpperCase()),
     description: z.string().trim().max(5000).optional().nullable(),
-    widthMm: z.number().int().nonnegative().optional().nullable(),
-    depthMm: z.number().int().nonnegative().optional().nullable(),
+    // WD-2D top-down rebuild (2026-07-10): footprint width + depth are now
+    // REQUIRED + positive. To-scale placement on the 0.5 m grid and the
+    // deterministic top-down normaliser both depend on a real W×D, so the
+    // web/API create path no longer accepts a dimensionless product.
+    widthMm: z.number().int().positive(),
+    depthMm: z.number().int().positive(),
     heightMm: z.number().int().nonnegative().optional().nullable(),
     weightG: z.number().int().nonnegative().optional().nullable(),
     imageUrl: z
@@ -838,7 +892,9 @@ export async function softDeleteProduct(slug: string, productId: number): Promis
   }
 }
 
-async function handler(req: ProductsReq, res: MinRes): Promise<void> {
+// Exported for handler-level tests (e.g. the PATCH/DELETE auth gate). The
+// deployed entrypoint remains the withSentry-wrapped default export.
+export async function handler(req: ProductsReq, res: MinRes): Promise<void> {
   if (req.method === 'OPTIONS') {
     res.status(204).end();
     return;
@@ -897,6 +953,15 @@ async function handler(req: ProductsReq, res: MinRes): Promise<void> {
       res.json({ error: 'slug query param required' });
       return;
     }
+    // Access control: require a valid merchant session for THIS slug — same
+    // gate as POST. Without it any caller who knows a (public) slug could edit
+    // another merchant's prices/stock (IDOR). Closed 2026-07-24.
+    const auth = authoriseMerchantSession(req.headers, slug.trim());
+    if (!auth.ok) {
+      res.status(auth.status);
+      res.json({ error: auth.error });
+      return;
+    }
     if (typeof idStr !== 'string' || !/^\d+$/.test(idStr)) {
       res.status(400);
       res.json({ error: 'numeric id query param required' });
@@ -933,6 +998,14 @@ async function handler(req: ProductsReq, res: MinRes): Promise<void> {
     if (typeof slug !== 'string' || !slug.trim()) {
       res.status(400);
       res.json({ error: 'slug query param required' });
+      return;
+    }
+    // Access control: require a valid merchant session for THIS slug — same
+    // gate as POST (IDOR fix 2026-07-24; see PATCH branch).
+    const auth = authoriseMerchantSession(req.headers, slug.trim());
+    if (!auth.ok) {
+      res.status(auth.status);
+      res.json({ error: auth.error });
       return;
     }
     if (typeof idStr !== 'string' || !/^\d+$/.test(idStr)) {

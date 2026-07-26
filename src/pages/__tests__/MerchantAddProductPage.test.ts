@@ -21,6 +21,10 @@ function withDefaults(overrides: Partial<typeof EMPTY_FORM>): typeof EMPTY_FORM 
     ...EMPTY_FORM,
     name: 'Vision T600E-02',
     priceMajor: '1500',
+    // Width + depth are required (WD-2D top-down rebuild) — supply real
+    // footprint defaults so the other assertions test their own field.
+    widthMm: '900',
+    depthMm: '600',
     ...overrides,
   };
 }
@@ -33,7 +37,9 @@ describe('decideProductFormSubmit / valid payloads', () => {
       expect(r.payload.priceMinor).toBe(150_000);
       expect(r.payload.currency).toBe('MUR');
       expect(r.payload.description).toBe(null);
-      expect(r.payload.widthMm).toBe(null);
+      expect(r.payload.widthMm).toBe(900);
+      expect(r.payload.depthMm).toBe(600);
+      expect(r.payload.heightMm).toBe(null);
       expect(r.payload.ecoCertLevel).toBe('none');
     }
   });
@@ -112,6 +118,24 @@ describe('decideProductFormSubmit / validation errors', () => {
 
   it('rejects a decimal width', () => {
     const r = decideProductFormSubmit(withDefaults({ widthMm: '12.5' }));
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.widthMm).toBeTruthy();
+  });
+
+  it('rejects a missing (blank) width — footprint is required', () => {
+    const r = decideProductFormSubmit(withDefaults({ widthMm: '' }));
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.widthMm).toBeTruthy();
+  });
+
+  it('rejects a missing (blank) depth — footprint is required', () => {
+    const r = decideProductFormSubmit(withDefaults({ depthMm: '' }));
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.depthMm).toBeTruthy();
+  });
+
+  it('rejects a zero width', () => {
+    const r = decideProductFormSubmit(withDefaults({ widthMm: '0' }));
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors.widthMm).toBeTruthy();
   });

@@ -15,7 +15,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createRoot, type Root } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 import { act } from 'react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 import { CartDrawer } from '../../components/cart/CartDrawer';
@@ -213,5 +213,47 @@ describe('CartDrawer — pure totals via rendered HTML', () => {
     expect(feeMatch).not.toBeNull();
     expect(totalMatch![1].trim().length).toBeGreaterThan(0);
     expect(feeMatch![1].trim().length).toBeGreaterThan(0);
+  });
+});
+
+describe('CartDrawer — checkout routes to the cartStore-backed checkout', () => {
+  // Regression guard for the 2026-07-24 fix: the drawer reads cartStore
+  // (useCart) but used to navigate to /marketplace/checkout, which reads a
+  // DIFFERENT store (marketplaceCartStore) → the placed-item cart arrived
+  // empty. Clicking Checkout must land on /checkout (same store), not
+  // /marketplace/checkout.
+  it('navigates to /checkout (not /marketplace/checkout) on Checkout click', () => {
+    const product = getAllProducts()[0];
+    usePropertyStore.getState().addItem({ productId: product.id, x: 0, y: 0, rotation: 0 });
+    useCartUIStore.getState().open();
+
+    act(() => {
+      flushSync(() => {
+        root.render(
+          <MemoryRouter initialEntries={['/']}>
+            <Routes>
+              <Route path="/" element={<CartDrawer />} />
+              <Route path="/checkout" element={<div data-testid="at-designer-checkout" />} />
+              <Route
+                path="/marketplace/checkout"
+                element={<div data-testid="at-marketplace-checkout" />}
+              />
+            </Routes>
+          </MemoryRouter>,
+        );
+      });
+    });
+
+    const btn = container.querySelector<HTMLButtonElement>('[data-testid="cart-drawer-checkout"]');
+    expect(btn).not.toBeNull();
+
+    act(() => {
+      flushSync(() => {
+        btn!.click();
+      });
+    });
+
+    expect(container.querySelector('[data-testid="at-designer-checkout"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="at-marketplace-checkout"]')).toBeNull();
   });
 });

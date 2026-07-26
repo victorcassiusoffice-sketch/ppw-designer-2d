@@ -30,6 +30,7 @@ const SuppliersListPage = lazy(() => import('./pages/admin/SuppliersListPage'));
 const DashboardPage = lazy(() => import('./pages/admin/DashboardPage'));
 const AuditLogPage = lazy(() => import('./pages/admin/AuditLogPage'));
 const PublicProductsPage = lazy(() => import('./pages/PublicProductsPage'));
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'));
 const MarketplaceCartPage = lazy(() => import('./pages/MarketplaceCartPage'));
 const MarketplaceCheckoutPage = lazy(() => import('./pages/MarketplaceCheckoutPage'));
 const OrderTrackPage = lazy(() => import('./pages/OrderTrackPage'));
@@ -104,6 +105,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 
         {/* OMS Phase 3 - Public storefront product listing */}
         <Route path="/products" element={<PublicProductsPage />} />
+        <Route path="/products/:id" element={<ProductDetailPage />} />
 
         {/* OMS Wave 1 - Marketplace checkout flow */}
         <Route path="/marketplace/cart" element={<MarketplaceCartPage />} />

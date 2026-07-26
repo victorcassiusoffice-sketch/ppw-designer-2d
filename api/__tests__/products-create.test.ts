@@ -79,6 +79,9 @@ describe('Wellness-Designer-App (c) / productCreateSchema', () => {
     category: 'cardio',
     priceMinor: 1_500_000,
     currency: 'mur',
+    // Footprint W×D required since the WD-2D top-down rebuild (2026-07-10).
+    widthMm: 1830,
+    depthMm: 750,
   };
 
   it('accepts a minimum-valid body + uppercases the currency', () => {
@@ -113,6 +116,13 @@ describe('Wellness-Designer-App (c) / productCreateSchema', () => {
   it('rejects missing name', () => {
     const { name: _n, ...rest } = validBody;
     expect(productCreateSchema.safeParse(rest).success).toBe(false);
+  });
+
+  it('rejects missing footprint dimensions (widthMm / depthMm required)', () => {
+    const { widthMm: _w, depthMm: _d, ...noDims } = validBody;
+    expect(productCreateSchema.safeParse(noDims).success).toBe(false);
+    expect(productCreateSchema.safeParse({ ...noDims, widthMm: 100 }).success).toBe(false);
+    expect(productCreateSchema.safeParse({ ...validBody, widthMm: 0 }).success).toBe(false);
   });
 
   it('rejects negative priceMinor', () => {
@@ -232,6 +242,8 @@ describe('Wellness-Designer-App (c) / createMerchantProduct DB path', () => {
     category: 'cardio',
     priceMinor: 1_500_000,
     currency: 'MUR',
+    widthMm: 1830,
+    depthMm: 750,
   };
 
   it('returns 404 merchant_not_found when the slug is unknown', async () => {

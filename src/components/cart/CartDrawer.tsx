@@ -77,8 +77,12 @@ export function CartDrawer() {
   const isEmpty = cart.lines.length === 0;
 
   function handleCheckout() {
+    // Route to the cartStore-backed checkout — the SAME store this drawer
+    // reads (useCart). Previously navigated to /marketplace/checkout, which
+    // reads a DIFFERENT store (marketplaceCartStore), so the customer's
+    // placed-item cart arrived empty (2026-07-24 fix). Matches CartStrip.
     close();
-    navigate('/marketplace/checkout');
+    navigate('/checkout');
   }
 
   return (
