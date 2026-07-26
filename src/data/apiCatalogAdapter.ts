@@ -20,12 +20,13 @@ import type {
 import catalogJson from './products.json';
 
 /**
- * Real-image enrichment (2026-06-09) — the live `/api/products` rows carry
- * the generated top-down path as `imageUrl` and never the real product
- * PHOTO. We backfill the photo (and the bundled top-down) from the bundled
- * seed, matched by SKU, so merchant/DB products show the same real photos
- * as the bundled catalog WITHOUT needing a DB re-seed. Imported from the
- * JSON directly (not via products.ts) to avoid an import cycle.
+ * Real-image enrichment. Since 2026-07-26 (WD directive 2) the live
+ * `/api/products` contract is: `imageUrl` = shop-facing product PHOTO,
+ * `topdownImageUrl` = designer-canvas plan asset. The bundled seed remains
+ * the belt-and-braces source for both, matched by SKU, so designer products
+ * keep their exact-footprint top-downs WITHOUT needing a DB re-seed.
+ * Imported from the JSON directly (not via products.ts) to avoid an import
+ * cycle.
  */
 const _bundledBySku: Map<string, Product> = new Map(
   (catalogJson as unknown as ProductCatalog).products.map((p) => [p.sku, p]),
@@ -45,6 +46,8 @@ export interface ApiProductSummary {
   priceMinor: number;
   currency: string;
   imageUrl: string | null;
+  /** Designer-canvas plan asset (photo/top-down split, 2026-07-26). */
+  topdownImageUrl?: string | null;
   region: string | null;
 }
 
@@ -129,11 +132,12 @@ export function apiProductToProduct(api: ApiProductSummary): Product {
     commission_pct: seed?.commission_pct ?? 0,
     shopify_ready: false,
     image_url: api.imageUrl ?? '',
-    // Real product photo + generated top-down, pulled from the bundled
-    // seed by SKU. `productImageUrl` prefers the photo (catalog/detail);
-    // `productTopDownUrl` prefers the top-down (canvas footprint).
+    // Real product photo + generated top-down. Bundled seed wins (exact
+    // committed assets); the API's topdownImageUrl covers non-seed merchant
+    // products once generated. `productImageUrl` prefers the photo
+    // (catalog/detail); `productTopDownUrl` prefers the top-down (canvas).
     photo_image_url: seed?.photo_image_url,
-    topdown_image_url: seed?.topdown_image_url,
+    topdown_image_url: seed?.topdown_image_url ?? api.topdownImageUrl ?? undefined,
     designer_status: 'Done',
     delivery_regions: normaliseRegion(api.region),
     // Prefer the live DB description; fall back to the curated bundled notes

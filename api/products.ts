@@ -327,18 +327,19 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
       .where(and(...conds));
     const total = countRes[0]?.c ?? 0;
 
-    // Prefer the generated top-down over the merchant's raw photo, then let
-    // the seed-imagery enrichment fill any remaining placeholders. When the
-    // top-down columns are migration-gated off, `topdownImageUrl` is simply
-    // absent (undefined) and the raw photo / seed enrichment wins.
-    const coalesced = (rows as Array<Record<string, unknown> & { imageUrl: string | null }>).map(
+    // WD directive 2 (2026-07-26): imageUrl = the SHOP-facing product PHOTO,
+    // topdownImageUrl = the designer-canvas plan asset. The old behaviour
+    // (coalesce top-down INTO imageUrl) put plan views on the storefront —
+    // reversed. Both fields now pass through; seed enrichment fills each
+    // independently (photos for placeholders, top-downs when absent).
+    const passthrough = (rows as Array<Record<string, unknown> & { imageUrl: string | null }>).map(
       ({ topdownImageUrl, ...r }) => ({
         ...r,
-        imageUrl: (topdownImageUrl as string | null | undefined) ?? r.imageUrl,
+        topdownImageUrl: (topdownImageUrl as string | null | undefined) ?? null,
       }),
-    ) as typeof rows;
+    ) as unknown as typeof rows;
     const result: ProductListResult = {
-      products: enrichImagery(coalesced, SEED_IMAGERY),
+      products: enrichImagery(passthrough, SEED_IMAGERY),
       total,
       limit: filters.limit,
       offset: filters.offset,

@@ -21,24 +21,29 @@ const PLACEHOLDER_RE = /placehold\.co/i;
 
 export interface SeedImageryEntry {
   topdown: string | null;
+  /** Real product PHOTO (shop-facing). WD directive 2 (2026-07-26): the shop
+   *  shows photos; top-downs are designer-canvas assets only. */
+  photo: string | null;
   description: string | null;
 }
 
 export interface SeedProductLike {
   sku?: string | null;
   topdown_image_url?: string | null;
+  photo_image_url?: string | null;
   notes?: string | null;
 }
 
-/** Build a SKU(upper) → {topdown, description} lookup from the seed catalog. */
+/** Build a SKU(upper) → {topdown, photo, description} lookup from the seed catalog. */
 export function buildSeedImageryMap(seedProducts: SeedProductLike[]): Map<string, SeedImageryEntry> {
   const map = new Map<string, SeedImageryEntry>();
   for (const p of seedProducts) {
     if (!p.sku) continue;
     const topdown = p.topdown_image_url?.trim() || null;
+    const photo = p.photo_image_url?.trim() || null;
     const description = p.notes?.trim() || null;
-    if (!topdown && !description) continue;
-    map.set(p.sku.toUpperCase(), { topdown, description });
+    if (!topdown && !photo && !description) continue;
+    map.set(p.sku.toUpperCase(), { topdown, photo, description });
   }
   return map;
 }
@@ -51,6 +56,8 @@ export function isPlaceholderImage(imageUrl: string | null | undefined): boolean
 export interface EnrichableRow {
   sku: string | null;
   imageUrl: string | null;
+  /** Designer-canvas plan asset — filled by enrichment when absent. */
+  topdownImageUrl?: string | null;
   description: string | null;
 }
 
@@ -58,6 +65,11 @@ export interface EnrichableRow {
  * Return a new array where rows with placeholder images / null descriptions
  * are enriched from the seed map on exact SKU match. Non-matching rows and
  * rows that already carry real data are returned unchanged.
+ *
+ * Contract (2026-07-26, WD directive 2): `imageUrl` is the SHOP-facing
+ * product PHOTO (photo preferred, top-down only as last resort so we never
+ * regress to a placeholder); `topdownImageUrl` is the designer-canvas plan
+ * asset and is filled independently.
  */
 export function enrichImagery<T extends EnrichableRow>(
   rows: T[],
@@ -66,13 +78,21 @@ export function enrichImagery<T extends EnrichableRow>(
   return rows.map((row) => {
     const entry = map.get(String(row.sku ?? '').toUpperCase());
     if (!entry) return row;
+    const bestShopImage = entry.photo ?? entry.topdown;
     const imageUrl =
-      isPlaceholderImage(row.imageUrl) && entry.topdown ? entry.topdown : row.imageUrl;
+      isPlaceholderImage(row.imageUrl) && bestShopImage ? bestShopImage : row.imageUrl;
+    const topdownImageUrl = row.topdownImageUrl ?? entry.topdown ?? null;
     const description =
       (!row.description || row.description.trim() === '') && entry.description
         ? entry.description
         : row.description;
-    if (imageUrl === row.imageUrl && description === row.description) return row;
-    return { ...row, imageUrl, description };
+    if (
+      imageUrl === row.imageUrl &&
+      description === row.description &&
+      topdownImageUrl === (row.topdownImageUrl ?? null)
+    ) {
+      return row;
+    }
+    return { ...row, imageUrl, topdownImageUrl, description };
   });
 }
