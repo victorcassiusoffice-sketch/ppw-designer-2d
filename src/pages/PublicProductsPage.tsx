@@ -47,6 +47,26 @@ const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest arrivals' },
 ] as const;
 
+/**
+ * Two-cart bridge (directive 4): count the DESIGNER's placed items straight
+ * from the persisted property (localStorage `ppw_property_v2`) so the shop
+ * can point at the room-design cart without importing any designer store
+ * (keeps the storefront chunk free of the Konva-side modules).
+ */
+function readDesignItemCount(): number {
+  try {
+    const raw = localStorage.getItem('ppw_property_v2');
+    if (!raw) return 0;
+    const parsed = JSON.parse(raw) as {
+      state?: { property?: { rooms?: Array<{ placedItems?: unknown[] }> } };
+    };
+    const rooms = parsed.state?.property?.rooms ?? [];
+    return rooms.reduce((sum, r) => sum + (Array.isArray(r.placedItems) ? r.placedItems.length : 0), 0);
+  } catch {
+    return 0;
+  }
+}
+
 function formatPrice(minor: number, currency: string): string {
   return `${currency} ${(minor / 100).toLocaleString('en-MU', { maximumFractionDigits: 2 })}`;
 }
@@ -70,6 +90,9 @@ export default function PublicProductsPage(): JSX.Element {
   const addToCart = useMarketplaceCart((s) => s.addItem);
   const cartItems = useMarketplaceCart((s) => s.items);
   const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
+  // Read once per mount — the designer runs on a different route, so the
+  // count can only change while this page is unmounted.
+  const [designItemCount] = useState(readDesignItemCount);
 
   const search = params.get('search') ?? '';
   const category = params.get('category') ?? '';
@@ -207,10 +230,19 @@ export default function PublicProductsPage(): JSX.Element {
             </button>
           </form>
 
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
             <Link to="/designer" data-testid="enter-designer" className="soft-pill">
               Design a room
             </Link>
+            {designItemCount > 0 && (
+              <Link
+                to="/cart"
+                className="soft-chip"
+                title="Items placed in your room design have their own cart"
+              >
+                Room design ({designItemCount})
+              </Link>
+            )}
             <Link to="/marketplace/cart" className="soft-pill soft-pill--primary">
               Cart{cartCount > 0 ? ` (${cartCount})` : ''}
             </Link>

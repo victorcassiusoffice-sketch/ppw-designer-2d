@@ -183,3 +183,52 @@ developer styling next to a polished navy/gold designer), **bridge the two carts
 7. **Paint/flooring** — build the Sims materials picker, or delete the dead stores?
 8. **Run migration 0026** (designer_referrals) — needed before any K1 commission is trackable. I cannot write to prod Neon; it's one paste in the Neon SQL editor.
 9. **Cart merge** — bridge copy now (safe), full single-cart later (money-path change)?
+
+---
+
+## PART 5 — Shop + Designer → ONE checkout (directive 4 follow-up, 2026-07-26 evening)
+
+### Verdict
+Keep **two carts** (they are different by nature) but make them meet at **one
+checkout rail** — the marketplace one. The designer's separate checkout page
+is the error surface: it duplicates the money path with a second set of code
+(Stripe env-gated → PayPal → a mailto fallback that reads like a broken shop).
+Route BOTH paths into `/marketplace/checkout` and every order flows through
+the same re-priced, split-aware, payout-recorded pipeline.
+
+### The two paths today (verified in code)
+
+| | Shop path | Designer path |
+|---|---|---|
+| Cart | `marketplaceCartStore` — explicit lines you add | `cartStore` — a LIVE PROJECTION of what's placed in the room (delete an item on canvas → it leaves the cart) |
+| Cart page | `/marketplace/cart` | `/cart` |
+| Checkout | `/marketplace/checkout` → `/api/cart-quote` (per-merchant split preview) → `createPaypalOrder` | `/checkout` (`CheckoutPage`) → Stripe (env-gated off) → PayPal → **mailto fallback** |
+| After capture | `orders` + `order_items` → `recordPayoutsForOrder` (5% commission, 14-day hold) | same tables IF PayPal used; mailto = no order at all |
+
+Why two carts is CORRECT: the designer cart mirrors the room (its quantity
+lives on the canvas); the shop cart is a normal basket. Merging their state
+would break the "cart = what's in my room" behaviour that makes the designer
+a shopping mode.
+
+### The unification (ranked, smallest-risk first)
+
+| # | Step | Status |
+|---|---|---|
+| 1 | **Cross-visibility**: shop top bar shows a "Room design (N)" chip when the designer cart has items (and the designer already links Shop + Cart). Customers always see both baskets. | ✅ shipped this pass |
+| 2 | **One checkout rail**: designer `/cart` "Checkout" converts the design lines into marketplace cart lines (match by product id / SKU, sum quantities, keep single-currency guard) and lands on `/marketplace/checkout`. The legacy `/checkout` page retires (redirect). One money path, one set of bugs, payouts always recorded. | ⚠ NEEDS VIC — retires the designer's Stripe/mailto path |
+| 3 | **Error-free mechanics** on the single rail (mostly already there): server-side re-pricing from the DB at PayPal-order creation, idempotency keys, webhook dedupe (`webhook_events`), single-currency-per-order guard (`split.ts`), payout recording per merchant. Add: an explicit "prices re-checked" step in the UI if the server total differs from the cart total. | mostly EXISTS |
+| 4 | Later: one visual cart page with two sections ("Your room" / "Your basket") feeding the same checkout button. Cosmetic once #2 lands. | future |
+
+### Why this is the efficient error-free shape
+- **One place money can go wrong** instead of two (the designer's mailto
+  fallback can never silently swallow an order again).
+- **Payouts always recorded** — today only the marketplace path is guaranteed
+  to hit `recordPayoutsForOrder`.
+- **No cart-state migration** — each cart keeps its nature; only the
+  handoff at checkout converts lines.
+- **Mauritius-rail ready** — when MIPS Essential/Peach replaces PayPal, it
+  is wired ONCE.
+
+### Vic decision (added to the list)
+10. Approve step 2: designer checkout hands off to the marketplace rail and
+    the legacy `/checkout` page retires. One-word yes = I build it next pass.
