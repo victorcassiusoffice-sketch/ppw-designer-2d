@@ -18,8 +18,9 @@
  *   3. Record the event in `webhook_events` (UNIQUE on source+event_id
  *      makes this idempotent under concurrent lambda).
  *   4. Branch on event_type:
- *       - CHECKOUT.ORDER.APPROVED        -> log + (capture endpoint
- *                                           handles the actual capture)
+ *       - CHECKOUT.ORDER.APPROVED        -> server-side capture fallback
+ *                                           (buyer may never hit the
+ *                                           return page — scenario d)
  *       - PAYMENT.CAPTURE.COMPLETED      -> mark order captured
  *       - PAYMENT.CAPTURE.DENIED         -> mark order failed
  *       - PAYMENT.CAPTURE.REFUNDED       -> mark order refunded
@@ -33,6 +34,7 @@
 import { withSentry, type MinReq, type MinRes } from '../sentry.js';
 import { readPaypalEnv, paypalFetch } from '../paypalClient.js';
 import { parsePaypalCustomId } from './customId.js';
+import { processCaptureRequest } from './captureOrder.js';
 import { recordWebhookEvent } from '../webhookDedupe.js';
 import { getDb } from '../../_db/client.js';
 import { sql } from 'drizzle-orm';
@@ -133,9 +135,59 @@ export interface PaypalEvent {
     invoice_id?: string;
     amount?: { currency_code?: string; value?: string };
     supplementary_data?: { related_ids?: { order_id?: string } };
-    purchase_units?: Array<{ reference_id?: string }>;
+    purchase_units?: Array<{ reference_id?: string; custom_id?: string }>;
   };
   [k: string]: unknown;
+}
+
+/**
+ * Server-side capture fallback (review P1, scenario d): a buyer who
+ * approves at PayPal but never lands back on our return page used to
+ * be silently lost — intent=CAPTURE orders are NOT auto-captured, so
+ * no PAYMENT.CAPTURE.COMPLETED ever fires and the approval expires in
+ * ~3 days with no order row, no email, no alert.
+ *
+ * On a verified, deduped CHECKOUT.ORDER.APPROVED we now capture
+ * server-side through the SAME processCaptureRequest pipeline the
+ * browser return leg uses. Racing the return leg is safe: whichever
+ * side captures second gets ORDER_ALREADY_CAPTURED → idempotent
+ * recovery (order_items `already_recorded` guard prevents double
+ * payouts/emails).
+ */
+export type ApprovedCaptureFn = (
+  payload: { paypalOrderId: string; ppwOrderId: string },
+) => Promise<unknown>;
+
+const defaultApprovedCapture: ApprovedCaptureFn = (payload) =>
+  processCaptureRequest(payload);
+
+export async function captureApprovedOrder(
+  event: PaypalEvent,
+  captureFn: ApprovedCaptureFn = defaultApprovedCapture,
+): Promise<{ attempted: boolean }> {
+  const r = event.resource ?? {};
+  // For CHECKOUT.ORDER.APPROVED the resource IS the order object.
+  const paypalOrderId = r.id ?? null;
+  const pu = r.purchase_units?.[0];
+  const ppwOrderId =
+    pu?.reference_id ||
+    parsePaypalCustomId(pu?.custom_id).orderRef ||
+    parsePaypalCustomId(r.custom_id).orderRef ||
+    r.invoice_id ||
+    null;
+  if (!paypalOrderId || !ppwOrderId) return { attempted: false };
+  try {
+    await captureFn({ paypalOrderId, ppwOrderId });
+    return { attempted: true };
+  } catch (err) {
+    // Best-effort — the browser return leg remains the primary path.
+    // eslint-disable-next-line no-console
+    console.error(
+      '[paypal-webhook] approved-order capture fallback failed:',
+      err instanceof Error ? err.message : String(err),
+    );
+    return { attempted: true };
+  }
 }
 
 /**
@@ -206,6 +258,7 @@ export async function applyEventToOrder(event: PaypalEvent): Promise<{ updated: 
  */
 export async function dispatchPaypalEvent(
   event: PaypalEvent,
+  approvedCaptureFn: ApprovedCaptureFn = defaultApprovedCapture,
 ): Promise<{ ok: true; alreadyProcessed: boolean; updated: boolean }> {
   const id = event.id;
   const type = event.event_type;
@@ -223,6 +276,11 @@ export async function dispatchPaypalEvent(
   }
   if (dedupe.alreadyProcessed) {
     return { ok: true, alreadyProcessed: true, updated: false };
+  }
+  if (type === 'CHECKOUT.ORDER.APPROVED') {
+    // Server-side capture fallback — see captureApprovedOrder docs.
+    await captureApprovedOrder(event, approvedCaptureFn);
+    return { ok: true, alreadyProcessed: false, updated: false };
   }
   const r = await applyEventToOrder(event);
   return { ok: true, alreadyProcessed: false, updated: r.updated };

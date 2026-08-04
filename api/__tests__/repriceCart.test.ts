@@ -193,6 +193,93 @@ describe('repriceCart — designer-rail items (seed catalog)', () => {
   });
 });
 
+describe('repriceCart — per-line currency normalisation (review P0)', () => {
+  it('overwrites a tampered line currency with the request currency (designer rail)', async () => {
+    // Attack: request USD, but the line claims MUR so Stripe would
+    // charge the USD-sized number as MUR (~1/45 the price).
+    const serverUsd = convertMinorFallback(SEED_MINOR_MUR, 'MUR', 'USD');
+    const r = await repriceCart(
+      [line({ productId: SEED_ID, currency: 'MUR', unitAmount: serverUsd })],
+      'USD',
+      marketplaceLookup({}),
+    );
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.cart[0].currency).toBe('USD'); // request currency wins
+      expect(r.cart[0].unitAmount).toBe(serverUsd);
+      expect(r.priceAdjusted).toBe(true); // mismatch flagged as tampering
+    }
+  });
+
+  it('overwrites a tampered line currency on the marketplace rail too', async () => {
+    const r = await repriceCart(
+      [line({ productId: '42', currency: 'USD' })],
+      'MUR',
+      marketplaceLookup({ 42: { priceMinor: 100000, currency: 'MUR', status: 'active' } }),
+    );
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.cart[0].currency).toBe('MUR');
+      expect(r.priceAdjusted).toBe(true);
+    }
+  });
+
+  it('leaves currency + flag untouched when line currency matches the request', async () => {
+    const r = await repriceCart(
+      [line({ productId: SEED_ID, unitAmount: SEED_MINOR_MUR, currency: 'MUR' })],
+      'MUR',
+      marketplaceLookup({}),
+    );
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.cart[0].currency).toBe('MUR');
+      expect(r.priceAdjusted).toBe(false);
+    }
+  });
+});
+
+describe('repriceCart — marketplace SKU attach (review P1)', () => {
+  it('attaches the real catalog SKU from the products row', async () => {
+    const r = await repriceCart(
+      [line({ productId: '42' })],
+      'MUR',
+      marketplaceLookup({
+        42: { priceMinor: 100000, currency: 'MUR', status: 'active', sku: 'K1-CDIO-NT2450' },
+      }),
+    );
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      // Without this, PayPal echoes item.sku = '42' (Neon numeric id),
+      // recordOrderItemsForOrder matches nothing, and the whole
+      // order_items → payouts → referrals → merchant-email pipeline
+      // no-ops on the marketplace rail.
+      expect(r.cart[0].sku).toBe('K1-CDIO-NT2450');
+    }
+  });
+
+  it('OVERWRITES a client-supplied sku with the server catalog sku', async () => {
+    const r = await repriceCart(
+      [line({ productId: '42', sku: 'FORGED-SKU' })],
+      'MUR',
+      marketplaceLookup({
+        42: { priceMinor: 100000, currency: 'MUR', status: 'active', sku: 'REAL-SKU' },
+      }),
+    );
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.cart[0].sku).toBe('REAL-SKU');
+  });
+
+  it('leaves sku undefined when the products row has none', async () => {
+    const r = await repriceCart(
+      [line({ productId: '42' })],
+      'MUR',
+      marketplaceLookup({ 42: { priceMinor: 100000, currency: 'MUR', status: 'active' } }),
+    );
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.cart[0].sku).toBeUndefined();
+  });
+});
+
 describe('convertMinorFallback', () => {
   it('MUR→USD uses the fallback rate (45 MUR = 1 USD)', () => {
     expect(convertMinorFallback(4500, 'MUR', 'USD')).toBe(100);

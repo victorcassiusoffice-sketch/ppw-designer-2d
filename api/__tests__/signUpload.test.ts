@@ -9,8 +9,28 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { signUpload, SIGN_UPLOAD_TOKEN_TTL_MS } from '../_lib/capture/signUpload';
+import {
+  signUpload,
+  SIGN_UPLOAD_TOKEN_TTL_MS,
+  SIGN_UPLOAD_MAX_BYTES,
+} from '../_lib/capture/signUpload';
 import merchantsRouter from '../merchants-router';
+import { signMerchantSession, DEFAULT_TTL_MS } from '../_lib/merchantSession';
+import { generateClientTokenFromReadWriteToken } from '@vercel/blob/client';
+
+/**
+ * Review P1 — the capture sign grant is now merchant-session gated
+ * (same gate as upload-image). In unit tests VERCEL_ENV is unset so
+ * the dev fallback secret signs verifiable tokens.
+ */
+function bearerFor(slug: string): Record<string, string> {
+  const token = signMerchantSession({
+    slug,
+    email: `info@${slug}.test`,
+    exp: Date.now() + DEFAULT_TTL_MS,
+  });
+  return { authorization: `Bearer ${token}` };
+}
 
 const FIXED_NOW_MS = 1748764800000; // 2025-06-01T08:00:00Z — pinned for deterministic blobKey
 const FIXED_SUFFIX = '8charsfx';
@@ -164,7 +184,7 @@ describe('DT-03 / merchants-router dispatch — sign-upload', () => {
       {
         method: 'POST',
         url: '/api/merchants/aurora-wellness/capture/sign-upload',
-        headers: {},
+        headers: bearerFor('aurora-wellness'),
         body: { filename: 'front.webp', contentType: 'image/webp', slot: 'front' },
       } as never,
       res as never,
@@ -177,6 +197,62 @@ describe('DT-03 / merchants-router dispatch — sign-upload', () => {
     expect(body.uploadUrl).toContain('blob.vercel-storage.com/');
     expect(body.token).toContain('vercel_blob_client_FAKE');
     expect(typeof body.expiresAt).toBe('string');
+  });
+
+  // Review P1 — unauthenticated Blob-token minting is closed.
+  it('POST with NO Authorization header returns 401 (no token minted)', async () => {
+    const mockGen = generateClientTokenFromReadWriteToken as unknown as ReturnType<typeof vi.fn>;
+    mockGen.mockClear();
+    const res: FakeRes = fakeRes();
+    await merchantsRouter(
+      {
+        method: 'POST',
+        url: '/api/merchants/aurora-wellness/capture/sign-upload',
+        headers: {},
+        body: { filename: 'front.webp', contentType: 'image/webp', slot: 'front' },
+      } as never,
+      res as never,
+    );
+    expect(res.statusCode).toBe(401);
+    expect(mockGen).not.toHaveBeenCalled();
+  });
+
+  it('POST with a DIFFERENT merchant\'s session returns 403 (cross-merchant blocked)', async () => {
+    const mockGen = generateClientTokenFromReadWriteToken as unknown as ReturnType<typeof vi.fn>;
+    mockGen.mockClear();
+    const res: FakeRes = fakeRes();
+    await merchantsRouter(
+      {
+        method: 'POST',
+        url: '/api/merchants/aurora-wellness/capture/sign-upload',
+        headers: bearerFor('other-merchant'),
+        body: { filename: 'front.webp', contentType: 'image/webp', slot: 'front' },
+      } as never,
+      res as never,
+    );
+    expect(res.statusCode).toBe(403);
+    expect(mockGen).not.toHaveBeenCalled();
+  });
+
+  it('minted token carries the 5 MiB maximumSizeInBytes cap', async () => {
+    const mockGen = generateClientTokenFromReadWriteToken as unknown as ReturnType<typeof vi.fn>;
+    mockGen.mockClear();
+    const res: FakeRes = fakeRes();
+    await merchantsRouter(
+      {
+        method: 'POST',
+        url: '/api/merchants/aurora-wellness/capture/sign-upload',
+        headers: bearerFor('aurora-wellness'),
+        body: { filename: 'front.webp', contentType: 'image/webp', slot: 'front' },
+      } as never,
+      res as never,
+    );
+    expect(res.statusCode).toBe(200);
+    expect(mockGen).toHaveBeenCalledTimes(1);
+    expect(mockGen.mock.calls[0][0]).toMatchObject({
+      maximumSizeInBytes: SIGN_UPLOAD_MAX_BYTES,
+    });
+    expect(SIGN_UPLOAD_MAX_BYTES).toBe(5 * 1024 * 1024);
   });
 
   it('GET on the sign-upload path returns 405', async () => {
@@ -198,7 +274,7 @@ describe('DT-03 / merchants-router dispatch — sign-upload', () => {
       {
         method: 'POST',
         url: '/api/merchants/aurora-wellness/capture/sign-upload',
-        headers: {},
+        headers: bearerFor('aurora-wellness'),
         body: { filename: 'front.png', contentType: 'image/png', slot: 'front' },
       } as never,
       res as never,
@@ -214,7 +290,7 @@ describe('DT-03 / merchants-router dispatch — sign-upload', () => {
       {
         method: 'POST',
         url: '/api/merchants/aurora-wellness/capture/sign-upload',
-        headers: {},
+        headers: bearerFor('aurora-wellness'),
         body: { filename: 'front.webp', contentType: 'image/webp', slot: 'front' },
       } as never,
       res as never,

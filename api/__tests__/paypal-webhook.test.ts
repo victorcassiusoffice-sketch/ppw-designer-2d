@@ -8,6 +8,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   dispatchPaypalEvent,
+  captureApprovedOrder,
   extractHeaders,
   applyEventToOrder,
   type PaypalEvent,
@@ -21,6 +22,7 @@ vi.mock('../_db/client', () => ({
   getDb: () => ({
     execute: vi.fn().mockResolvedValue([]),
   }),
+  schema: {},
 }));
 
 import { recordWebhookEvent } from '../_lib/webhookDedupe';
@@ -80,11 +82,13 @@ describe('dispatchPaypalEvent - idempotency', () => {
     expect(r.updated).toBe(true);
   });
 
-  it('treats CHECKOUT.ORDER.APPROVED as no-op (updated:false)', async () => {
+  it('CHECKOUT.ORDER.APPROVED does not update the orders row (updated:false) but fires the capture fallback', async () => {
     mockRecord.mockResolvedValue({ alreadyProcessed: false, rowId: 2 });
-    const r = await dispatchPaypalEvent(makeEvent('CHECKOUT.ORDER.APPROVED'));
+    const captureFn = vi.fn().mockResolvedValue({ status: 200 });
+    const r = await dispatchPaypalEvent(makeEvent('CHECKOUT.ORDER.APPROVED'), captureFn);
     expect(r.alreadyProcessed).toBe(false);
     expect(r.updated).toBe(false);
+    expect(captureFn).toHaveBeenCalledTimes(1);
   });
 
   it('throws when event has no id', async () => {
@@ -99,6 +103,80 @@ describe('dispatchPaypalEvent - idempotency', () => {
     expect(r.ok).toBe(true);
     expect(r.alreadyProcessed).toBe(false);
     expect(r.updated).toBe(false);
+  });
+});
+
+describe('captureApprovedOrder - server-side capture fallback (review P1, scenario d)', () => {
+  it('captures using reference_id + the order id from the APPROVED resource', async () => {
+    const captureFn = vi.fn().mockResolvedValue({ status: 200 });
+    const r = await captureApprovedOrder(
+      {
+        id: 'WH-1',
+        event_type: 'CHECKOUT.ORDER.APPROVED',
+        resource: {
+          id: 'PAYPAL-ORDER-1',
+          status: 'APPROVED',
+          purchase_units: [{ reference_id: 'PPW-REF-1' }],
+        },
+      },
+      captureFn,
+    );
+    expect(r.attempted).toBe(true);
+    expect(captureFn).toHaveBeenCalledWith({
+      paypalOrderId: 'PAYPAL-ORDER-1',
+      ppwOrderId: 'PPW-REF-1',
+    });
+  });
+
+  it('falls back to the packed custom_id orderRef when reference_id is missing', async () => {
+    const captureFn = vi.fn().mockResolvedValue({ status: 200 });
+    const r = await captureApprovedOrder(
+      {
+        id: 'WH-2',
+        event_type: 'CHECKOUT.ORDER.APPROVED',
+        resource: {
+          id: 'PAYPAL-ORDER-2',
+          purchase_units: [{ custom_id: 'PPW-REF-2|buyer@example.com' }],
+        },
+      },
+      captureFn,
+    );
+    expect(r.attempted).toBe(true);
+    expect(captureFn).toHaveBeenCalledWith({
+      paypalOrderId: 'PAYPAL-ORDER-2',
+      ppwOrderId: 'PPW-REF-2',
+    });
+  });
+
+  it('does not attempt capture when the order id or ppw ref cannot be resolved', async () => {
+    const captureFn = vi.fn();
+    const r = await captureApprovedOrder(
+      { id: 'WH-3', event_type: 'CHECKOUT.ORDER.APPROVED', resource: {} },
+      captureFn,
+    );
+    expect(r.attempted).toBe(false);
+    expect(captureFn).not.toHaveBeenCalled();
+  });
+
+  it('swallows capture-fn failures (best-effort — return leg is primary)', async () => {
+    const captureFn = vi.fn().mockRejectedValue(new Error('paypal down'));
+    const r = await captureApprovedOrder(
+      {
+        id: 'WH-4',
+        event_type: 'CHECKOUT.ORDER.APPROVED',
+        resource: { id: 'PAYPAL-ORDER-4', purchase_units: [{ reference_id: 'PPW-REF-4' }] },
+      },
+      captureFn,
+    );
+    expect(r.attempted).toBe(true);
+  });
+
+  it('a deduped APPROVED event does NOT re-fire the capture fallback', async () => {
+    mockRecord.mockResolvedValue({ alreadyProcessed: true });
+    const captureFn = vi.fn();
+    const r = await dispatchPaypalEvent(makeEvent('CHECKOUT.ORDER.APPROVED'), captureFn);
+    expect(r.alreadyProcessed).toBe(true);
+    expect(captureFn).not.toHaveBeenCalled();
   });
 });
 

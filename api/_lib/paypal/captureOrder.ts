@@ -175,17 +175,215 @@ export async function recordCapturedOrder(
 }
 
 /**
+ * Resolve the AUTHORITATIVE PPW order ref for a capture (review P2):
+ * the orderRef packed into `custom_id` at create-order time wins over
+ * the client-supplied ppwOrderId — a tampered client (or cross-tab ref
+ * swap) can no longer record a capture under an arbitrary order ref.
+ */
+export function resolveAuthoritativeOrderRef(
+  capture: PaypalCaptureResponse,
+  clientRef: string,
+): string {
+  const pu = capture.purchase_units?.[0];
+  const customId = pu?.payments?.captures?.[0]?.custom_id ?? pu?.custom_id;
+  const parsed = parsePaypalCustomId(customId);
+  if (parsed.orderRef && parsed.orderRef.length > 0) {
+    if (parsed.orderRef !== clientRef) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[paypal-capture] ppwOrderId mismatch: client sent ${clientRef}, custom_id says ${parsed.orderRef} — using custom_id`,
+      );
+    }
+    return parsed.orderRef;
+  }
+  return clientRef;
+}
+
+type CaptureRecorder = (
+  ppwOrderId: string,
+  paypalOrderId: string,
+  capture: PaypalCaptureResponse,
+) => Promise<{ ok: boolean; error?: string }>;
+
+/**
+ * Post-capture finalisation chain: orders row upsert → order_items →
+ * buyer email → merchant emails → payouts → referrals.
+ *
+ * IDEMPOTENT (review P1): recordOrderItemsForOrder now reports
+ * `already_recorded` when rows exist for the order — in that case the
+ * emails / payouts / referrals stages are SKIPPED (a previous
+ * invocation completed past the items stage, and re-running the payout
+ * recorder would double-pay merchants). This lets both the 422
+ * ORDER_ALREADY_CAPTURED recovery path and the webhook capture
+ * fallback re-invoke the chain safely.
+ *
+ * Residual gap (documented): if a previous invocation died BETWEEN the
+ * order_items insert and the payout stage, a re-run skips payouts too.
+ * Narrower than the original hole (die anywhere → nothing recorded);
+ * closing it fully needs a per-stage ledger.
+ *
+ * All stages are non-fatal — capture is the authoritative outcome.
+ */
+export async function finalizeCapturedOrder(
+  ppwOrderId: string,
+  paypalOrderId: string,
+  json: PaypalCaptureResponse,
+  recorder: CaptureRecorder = recordCapturedOrder,
+): Promise<void> {
+  // Recorder failures are non-fatal - the webhook will reconcile.
+  await recorder(ppwOrderId, paypalOrderId, json);
+
+  // Wellness-Designer-App (f) part 2 — populate order_items from the
+  // capture's purchase_units[].items[] so the payout + merchant-email
+  // pipelines have data to operate on. Non-fatal; capture authoritative.
+  let itemsAlreadyRecorded = false;
+  try {
+    const itemsSummary = await recordOrderItemsForOrder(ppwOrderId, json);
+    itemsAlreadyRecorded = itemsSummary.skippedReason === 'already_recorded';
+    if (!itemsSummary.ok) {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[wellness-designer-app (f) order-items-record] failed:',
+        itemsSummary.error ?? itemsSummary.skippedReason,
+      );
+    } else if (itemsSummary.skippedSkus && itemsSummary.skippedSkus.length > 0) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[wellness-designer-app (f) order-items-record] SKUs not in catalog:',
+        itemsSummary.skippedSkus.join(', '),
+      );
+    }
+  } catch (itemsErr) {
+    // eslint-disable-next-line no-console
+    console.error(
+      '[wellness-designer-app (f) order-items-record] unexpected:',
+      itemsErr instanceof Error ? itemsErr.message : String(itemsErr),
+    );
+  }
+  if (itemsAlreadyRecorded) {
+    // A previous invocation already ran past the items stage — its
+    // emails/payouts/referrals ran (or will not be doubled here).
+    return;
+  }
+
+  // M9.A.2 — order-confirmed email. Best-effort; capture is the
+  // authoritative outcome and the email is a courtesy. The dispatch
+  // helper itself never re-throws, but we still defensively wrap
+  // here in case the import path breaks.
+  try {
+    const cap = json.purchase_units?.[0]?.payments?.captures?.[0];
+    const amountStr = cap?.amount?.value ?? '0';
+    const currency = cap?.amount?.currency_code ?? 'USD';
+    // Minor units for ALL currencies (Phase 0 wire-contract).
+    const totalMinor = Math.round(parseFloat(amountStr) * 100);
+    // Prefer the email collected at OUR checkout (custom_id) over the
+    // PayPal account email.
+    const extracted = extractBuyerEmail(json);
+    const customerEmail = extracted.length > 0 ? extracted : null;
+    const givenName = json.payer?.name?.given_name?.trim();
+    const dispatch = await dispatchOrderConfirmedEmail({
+      ppwOrderId,
+      customerEmail,
+      totalMinor,
+      currency,
+      customerName: givenName && givenName.length > 0 ? givenName : undefined,
+    });
+    if (dispatch.skippedReason === 'caller_caught') {
+      // eslint-disable-next-line no-console
+      console.error('[M9.A.2 order-confirmed-email] caught:', dispatch.error);
+    }
+
+    // Wellness-Designer-App (g) — merchant-side dispatch. Per unique
+    // merchant in the order, fire a separate Resend email. Lookup
+    // failures are non-fatal — capture is the authoritative outcome.
+    try {
+      const merchantRows = await fetchMerchantNotifyRowsForOrder(ppwOrderId);
+      const customerGreetingName =
+        givenName && givenName.length > 0
+          ? givenName
+          : customerEmail
+            ? deriveGreetingName(customerEmail)
+            : 'a customer';
+      for (const row of merchantRows) {
+        const merchantDispatch = await dispatchMerchantOrderConfirmedEmail({
+          row,
+          orderRef: ppwOrderId,
+          customerGreetingName,
+          currency,
+        });
+        if (merchantDispatch.skippedReason === 'caller_caught') {
+          // eslint-disable-next-line no-console
+          console.error(
+            '[wellness-designer-app (g) merchant-order-confirmed-email] caught:',
+            merchantDispatch.error,
+          );
+        }
+      }
+    } catch (merchantErr) {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[wellness-designer-app (g) merchant-order-confirmed-email] lookup failed:',
+        merchantErr instanceof Error ? merchantErr.message : String(merchantErr),
+      );
+    }
+
+    // Wellness-Designer-App (f) — payout_queue 5% / 95% split. No-op
+    // when order_items is empty (current sandbox state); auto-fires
+    // once order_items population lands. Failures are non-fatal.
+    try {
+      const summary = await recordPayoutsForOrder(ppwOrderId);
+      if (!summary.ok) {
+        // eslint-disable-next-line no-console
+        console.error(
+          '[wellness-designer-app (f) payout-record] failed:',
+          summary.error ?? summary.skippedReason,
+        );
+      }
+    } catch (payoutErr) {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[wellness-designer-app (f) payout-record] unexpected:',
+        payoutErr instanceof Error ? payoutErr.message : String(payoutErr),
+      );
+    }
+
+    // Wellness-Designer-App (f) closure — designer_referrals rows for
+    // inbound Pattern-B cart purchases (one row per order line).
+    // Idempotent via deterministic refCode + DB unique constraint.
+    // Non-fatal — capture is the authoritative outcome.
+    try {
+      const refSummary = await recordReferralsForOrder(ppwOrderId);
+      if (!refSummary.ok) {
+        // eslint-disable-next-line no-console
+        console.error(
+          '[wellness-designer-app (f) referral-record] failed:',
+          refSummary.error ?? refSummary.skippedReason,
+        );
+      }
+    } catch (refErr) {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[wellness-designer-app (f) referral-record] unexpected:',
+        refErr instanceof Error ? refErr.message : String(refErr),
+      );
+    }
+  } catch (emailErr) {
+    // eslint-disable-next-line no-console
+    console.error(
+      '[M9.A.2 order-confirmed-email] unexpected:',
+      emailErr instanceof Error ? emailErr.message : String(emailErr),
+    );
+  }
+}
+
+/**
  * Public-for-tests core: take parsed body, optional fetch + recorder,
  * return the response shape.
  */
 export async function processCaptureRequest(
   payload: unknown,
   fetchFn: typeof fetch = fetch,
-  recorder: (
-    ppwOrderId: string,
-    paypalOrderId: string,
-    capture: PaypalCaptureResponse,
-  ) => Promise<{ ok: boolean; error?: string }> = recordCapturedOrder,
+  recorder: CaptureRecorder = recordCapturedOrder,
 ): Promise<
   | { status: 200; ok: true; paymentStatus: 'captured'; alreadyCaptured?: boolean }
   | { status: 400 | 500; error: string }
@@ -208,7 +406,12 @@ export async function processCaptureRequest(
     if (!res.ok) {
       // Idempotent retry path (IMPL-1 defect 1): a second capture call on
       // an already-captured order gets a 422 ORDER_ALREADY_CAPTURED from
-      // PayPal. The first capture recorded everything — report success.
+      // PayPal. Review P1 fix: do NOT assume "the first capture recorded
+      // everything" — the first invocation may have died between the
+      // PayPal capture succeeding and the recorder chain finishing
+      // (Vercel timeout). GET the order and re-run the recorder chain
+      // idempotently (the order_items `already_recorded` guard prevents
+      // double emails/payouts when the first run DID complete).
       if (res.status === 422) {
         let errBody: unknown = null;
         try {
@@ -217,6 +420,28 @@ export async function processCaptureRequest(
           errBody = null;
         }
         if (isAlreadyCapturedError(errBody)) {
+          try {
+            const getRes = await paypalFetch(
+              `/v2/checkout/orders/${encodeURIComponent(v.data.paypalOrderId)}`,
+              { method: 'GET' },
+              cfg,
+              fetchFn,
+            );
+            if (getRes.ok) {
+              const orderJson = (await getRes.json()) as PaypalCaptureResponse;
+              if (orderJson.status === 'COMPLETED') {
+                const orderRef = resolveAuthoritativeOrderRef(orderJson, v.data.ppwOrderId);
+                await finalizeCapturedOrder(orderRef, v.data.paypalOrderId, orderJson, recorder);
+              }
+            }
+          } catch (recoveryErr) {
+            // Recovery is best-effort — the capture itself IS complete.
+            // eslint-disable-next-line no-console
+            console.error(
+              '[paypal-capture] already-captured recovery failed:',
+              recoveryErr instanceof Error ? recoveryErr.message : String(recoveryErr),
+            );
+          }
           return { status: 200, ok: true, paymentStatus: 'captured', alreadyCaptured: true };
         }
       }
@@ -226,143 +451,10 @@ export async function processCaptureRequest(
     if (json.status !== 'COMPLETED') {
       return { status: 500, error: `PayPal capture status: ${json.status ?? 'unknown'}` };
     }
-    // Recorder failures are non-fatal - the webhook will reconcile.
-    await recorder(v.data.ppwOrderId, v.data.paypalOrderId, json);
-
-    // Wellness-Designer-App (f) part 2 — populate order_items from the
-    // capture's purchase_units[].items[] so the payout + merchant-email
-    // pipelines have data to operate on. Non-fatal; capture authoritative.
-    try {
-      const itemsSummary = await recordOrderItemsForOrder(v.data.ppwOrderId, json);
-      if (!itemsSummary.ok) {
-        // eslint-disable-next-line no-console
-        console.error(
-          '[wellness-designer-app (f) order-items-record] failed:',
-          itemsSummary.error ?? itemsSummary.skippedReason,
-        );
-      } else if (itemsSummary.skippedSkus && itemsSummary.skippedSkus.length > 0) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          '[wellness-designer-app (f) order-items-record] SKUs not in catalog:',
-          itemsSummary.skippedSkus.join(', '),
-        );
-      }
-    } catch (itemsErr) {
-      // eslint-disable-next-line no-console
-      console.error(
-        '[wellness-designer-app (f) order-items-record] unexpected:',
-        itemsErr instanceof Error ? itemsErr.message : String(itemsErr),
-      );
-    }
-
-    // M9.A.2 — order-confirmed email. Best-effort; capture is the
-    // authoritative outcome and the email is a courtesy. The dispatch
-    // helper itself never re-throws, but we still defensively wrap
-    // here in case the import path breaks.
-    try {
-      const cap = json.purchase_units?.[0]?.payments?.captures?.[0];
-      const amountStr = cap?.amount?.value ?? '0';
-      const currency = cap?.amount?.currency_code ?? 'USD';
-      // Minor units for ALL currencies (Phase 0 wire-contract).
-      const totalMinor = Math.round(parseFloat(amountStr) * 100);
-      // Prefer the email collected at OUR checkout (custom_id) over the
-      // PayPal account email.
-      const extracted = extractBuyerEmail(json);
-      const customerEmail = extracted.length > 0 ? extracted : null;
-      const givenName = json.payer?.name?.given_name?.trim();
-      const dispatch = await dispatchOrderConfirmedEmail({
-        ppwOrderId: v.data.ppwOrderId,
-        customerEmail,
-        totalMinor,
-        currency,
-        customerName: givenName && givenName.length > 0 ? givenName : undefined,
-      });
-      if (dispatch.skippedReason === 'caller_caught') {
-        // eslint-disable-next-line no-console
-        console.error('[M9.A.2 order-confirmed-email] caught:', dispatch.error);
-      }
-
-      // Wellness-Designer-App (g) — merchant-side dispatch. Per unique
-      // merchant in the order, fire a separate Resend email. Lookup
-      // failures are non-fatal — capture is the authoritative outcome.
-      try {
-        const merchantRows = await fetchMerchantNotifyRowsForOrder(v.data.ppwOrderId);
-        const customerGreetingName =
-          givenName && givenName.length > 0
-            ? givenName
-            : customerEmail
-              ? deriveGreetingName(customerEmail)
-              : 'a customer';
-        for (const row of merchantRows) {
-          const merchantDispatch = await dispatchMerchantOrderConfirmedEmail({
-            row,
-            orderRef: v.data.ppwOrderId,
-            customerGreetingName,
-            currency,
-          });
-          if (merchantDispatch.skippedReason === 'caller_caught') {
-            // eslint-disable-next-line no-console
-            console.error(
-              '[wellness-designer-app (g) merchant-order-confirmed-email] caught:',
-              merchantDispatch.error,
-            );
-          }
-        }
-      } catch (merchantErr) {
-        // eslint-disable-next-line no-console
-        console.error(
-          '[wellness-designer-app (g) merchant-order-confirmed-email] lookup failed:',
-          merchantErr instanceof Error ? merchantErr.message : String(merchantErr),
-        );
-      }
-
-      // Wellness-Designer-App (f) — payout_queue 5% / 95% split. No-op
-      // when order_items is empty (current sandbox state); auto-fires
-      // once order_items population lands. Failures are non-fatal.
-      try {
-        const summary = await recordPayoutsForOrder(v.data.ppwOrderId);
-        if (!summary.ok) {
-          // eslint-disable-next-line no-console
-          console.error(
-            '[wellness-designer-app (f) payout-record] failed:',
-            summary.error ?? summary.skippedReason,
-          );
-        }
-      } catch (payoutErr) {
-        // eslint-disable-next-line no-console
-        console.error(
-          '[wellness-designer-app (f) payout-record] unexpected:',
-          payoutErr instanceof Error ? payoutErr.message : String(payoutErr),
-        );
-      }
-
-      // Wellness-Designer-App (f) closure — designer_referrals rows for
-      // inbound Pattern-B cart purchases (one row per order line).
-      // Idempotent via deterministic refCode + DB unique constraint.
-      // Non-fatal — capture is the authoritative outcome.
-      try {
-        const refSummary = await recordReferralsForOrder(v.data.ppwOrderId);
-        if (!refSummary.ok) {
-          // eslint-disable-next-line no-console
-          console.error(
-            '[wellness-designer-app (f) referral-record] failed:',
-            refSummary.error ?? refSummary.skippedReason,
-          );
-        }
-      } catch (refErr) {
-        // eslint-disable-next-line no-console
-        console.error(
-          '[wellness-designer-app (f) referral-record] unexpected:',
-          refErr instanceof Error ? refErr.message : String(refErr),
-        );
-      }
-    } catch (emailErr) {
-      // eslint-disable-next-line no-console
-      console.error(
-        '[M9.A.2 order-confirmed-email] unexpected:',
-        emailErr instanceof Error ? emailErr.message : String(emailErr),
-      );
-    }
+    // Review P2: the orderRef packed in custom_id at create-order time
+    // is authoritative over the client-supplied ppwOrderId.
+    const orderRef = resolveAuthoritativeOrderRef(json, v.data.ppwOrderId);
+    await finalizeCapturedOrder(orderRef, v.data.paypalOrderId, json, recorder);
     return { status: 200, ok: true, paymentStatus: 'captured' };
   } catch (err) {
     const message = err instanceof Error ? err.message.slice(0, 200) : 'Capture failed.';

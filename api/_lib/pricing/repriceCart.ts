@@ -25,6 +25,16 @@
  * Wire contract note: `unitAmount` is MINOR units for ALL currencies
  * (MUR included — cents-of-MUR, matching the Neon `price_minor`
  * convention). See toPaypalAmount / buildLineItems.
+ *
+ * SECURITY (review P0, 2026-08-04): every repriced line's `currency` is
+ * OVERWRITTEN with the request currency. Before this, a tampered client
+ * could send a per-line `currency` differing from the request currency
+ * — the server computed `unitAmount` in the REQUEST currency but the
+ * Stripe rail (buildLineItems) charged in the CLIENT-supplied line
+ * currency, letting USD-priced goods be bought as the same number of
+ * MUR (~1/45 the price). A line-vs-request currency mismatch is treated
+ * as tampering: the amount and currency are normalised server-side and
+ * `priceAdjusted` is flagged.
  */
 
 import { inArray } from 'drizzle-orm';
@@ -78,6 +88,10 @@ export interface MarketplacePriceRow {
   priceMinor: number;
   currency: string;
   status: string;
+  /** Real catalog SKU from the products table — attached to repriced
+   *  lines so the capture-side order_items recorder (which looks
+   *  products up by SKU) matches marketplace purchases too. */
+  sku?: string;
 }
 
 export type MarketplaceLookup = (ids: number[]) => Promise<Map<number, MarketplacePriceRow>>;
@@ -94,6 +108,7 @@ export async function defaultMarketplaceLookup(
       priceMinor: schema.products.priceMinor,
       currency: schema.products.currency,
       status: schema.products.status,
+      sku: schema.products.sku,
     })
     .from(schema.products)
     .where(inArray(schema.products.id, ids));
@@ -102,6 +117,7 @@ export async function defaultMarketplaceLookup(
       priceMinor: Number(r.priceMinor),
       currency: String(r.currency).toUpperCase(),
       status: String(r.status),
+      sku: typeof r.sku === 'string' && r.sku.trim().length > 0 ? r.sku : undefined,
     });
   }
   return out;
@@ -152,6 +168,11 @@ export async function repriceCart(
   for (const li of cart) {
     const pid = (li.productId ?? '').trim();
 
+    // P0 currency-tamper guard: the per-line currency is NEVER trusted.
+    // All lines are charged in the request currency; a mismatch flags
+    // the cart as adjusted so the client must re-confirm.
+    if (li.currency !== requestCurrency) priceAdjusted = true;
+
     if (NUMERIC_ID_RE.test(pid)) {
       // ---- Marketplace item (Neon products table) ----
       const row = marketplaceRows.get(Number(pid));
@@ -166,7 +187,17 @@ export async function repriceCart(
       }
       const serverMinor = row.priceMinor;
       if (li.unitAmount !== serverMinor) priceAdjusted = true;
-      out.push({ ...li, unitAmount: serverMinor });
+      // Attach the REAL catalog SKU so the order_items recorder (SKU
+      // lookup) matches marketplace purchases — without this the whole
+      // order_items → payouts → referrals → merchant-email pipeline
+      // no-ops on the marketplace rail (review P1). Always assigned —
+      // a client-forged sku must never survive re-pricing.
+      out.push({
+        ...li,
+        unitAmount: serverMinor,
+        currency: requestCurrency,
+        sku: row.sku,
+      });
       continue;
     }
 
@@ -191,7 +222,7 @@ export async function repriceCart(
         priceAdjusted = true;
       }
     }
-    out.push({ ...li, unitAmount: serverMinor, sku: seed.sku });
+    out.push({ ...li, unitAmount: serverMinor, currency: requestCurrency, sku: seed.sku });
   }
 
   return { ok: true, cart: out, priceAdjusted };

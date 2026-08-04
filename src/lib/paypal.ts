@@ -22,6 +22,7 @@
 import type { Currency } from '../data/products.schema';
 import type { CartTotals } from '../store/cartStore';
 import type { CheckoutFormValues } from '../store/checkoutStore';
+import { confirmAdjustedPrices } from './priceAdjust';
 
 export function isPaypalEnabled(): boolean {
   // Direct dotted access - Vite inlines the literal at build time.
@@ -119,7 +120,12 @@ export async function startPaypalCheckout(
   if (!doFetch) {
     return { status: 'error', message: 'fetch is unavailable in this environment.' };
   }
-  let body: { paypalOrderId?: string; approvalUrl?: string; error?: string } | null = null;
+  let body: {
+    paypalOrderId?: string;
+    approvalUrl?: string;
+    priceAdjusted?: boolean;
+    error?: string;
+  } | null = null;
   try {
     const res = await doFetch('/api/createPaypalOrder', {
       method: 'POST',
@@ -151,13 +157,27 @@ export async function startPaypalCheckout(
         message: body?.error ?? `Server returned ${res.status} ${res.statusText}.`,
       };
     }
-    body = (await res.json()) as { paypalOrderId?: string; approvalUrl?: string };
+    body = (await res.json()) as {
+      paypalOrderId?: string;
+      approvalUrl?: string;
+      priceAdjusted?: boolean;
+    };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return { status: 'error', message: msg };
   }
   if (!body?.approvalUrl) {
     return { status: 'error', message: 'Server did not return a PayPal approval URL.' };
+  }
+  // Review P1 — the server flags priceAdjusted when its authoritative
+  // re-pricing changed any line. Never silently charge a different
+  // total than the checkout displayed: ask before redirecting.
+  if (body.priceAdjusted && !confirmAdjustedPrices()) {
+    return {
+      status: 'error',
+      message:
+        'Prices were updated on the server. Please review your cart and try again.',
+    };
   }
   if (typeof window !== 'undefined') {
     window.location.assign(body.approvalUrl);

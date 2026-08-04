@@ -144,8 +144,13 @@ describe('processCaptureRequest', () => {
     expect(res.status).toBe(200);
   });
 
-  it('treats 422 ORDER_ALREADY_CAPTURED as success (idempotent retry)', async () => {
-    const fakeFetch = vi.fn(async (url: string | URL) => {
+  it('422 ORDER_ALREADY_CAPTURED → 200 AND re-runs the recorder chain from a GET of the order (review P1)', async () => {
+    // Scenario: the FIRST capture invocation died between the PayPal
+    // capture succeeding and the recorders running (Vercel timeout).
+    // The retry must not assume "the first capture recorded everything"
+    // — it GETs the completed order and re-runs the (idempotent)
+    // recorder chain.
+    const fakeFetch = vi.fn(async (url: string | URL, init?: RequestInit) => {
       const u = String(url);
       if (u.endsWith('/v1/oauth2/token')) {
         return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }), {
@@ -153,15 +158,37 @@ describe('processCaptureRequest', () => {
           headers: { 'content-type': 'application/json' },
         });
       }
-      return new Response(
-        JSON.stringify({
-          name: 'UNPROCESSABLE_ENTITY',
-          details: [{ issue: 'ORDER_ALREADY_CAPTURED', description: 'Order already captured.' }],
-        }),
-        { status: 422, headers: { 'content-type': 'application/json' } },
-      );
+      if (u.includes('/capture')) {
+        return new Response(
+          JSON.stringify({
+            name: 'UNPROCESSABLE_ENTITY',
+            details: [{ issue: 'ORDER_ALREADY_CAPTURED', description: 'Order already captured.' }],
+          }),
+          { status: 422, headers: { 'content-type': 'application/json' } },
+        );
+      }
+      // GET /v2/checkout/orders/PAYPAL-X — the recovery read.
+      if ((init?.method ?? 'GET') === 'GET' && u.includes('/v2/checkout/orders/PAYPAL-X')) {
+        return new Response(
+          JSON.stringify({
+            id: 'PAYPAL-X',
+            status: 'COMPLETED',
+            purchase_units: [
+              {
+                payments: {
+                  captures: [
+                    { id: 'CAP-1', status: 'COMPLETED', amount: { currency_code: 'USD', value: '99.00' } },
+                  ],
+                },
+              },
+            ],
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        );
+      }
+      throw new Error('Unexpected: ' + u);
     }) as unknown as typeof fetch;
-    const recorder = vi.fn();
+    const recorder = vi.fn().mockResolvedValue({ ok: true });
     const res = await processCaptureRequest(
       { paypalOrderId: 'PAYPAL-X', ppwOrderId: 'PPW-Y' },
       fakeFetch,
@@ -172,8 +199,79 @@ describe('processCaptureRequest', () => {
       expect(res.paymentStatus).toBe('captured');
       expect(res.alreadyCaptured).toBe(true);
     }
-    // First capture recorded everything — no double-record on retry.
+    // Recovery ran: orders row upsert re-invoked idempotently.
+    expect(recorder).toHaveBeenCalledWith('PPW-Y', 'PAYPAL-X', expect.any(Object));
+  });
+
+  it('422 recovery is skipped (still 200) when the GET-order read fails', async () => {
+    const fakeFetch = vi.fn(async (url: string | URL) => {
+      const u = String(url);
+      if (u.endsWith('/v1/oauth2/token')) {
+        return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+      if (u.includes('/capture')) {
+        return new Response(
+          JSON.stringify({ details: [{ issue: 'ORDER_ALREADY_CAPTURED' }] }),
+          { status: 422, headers: { 'content-type': 'application/json' } },
+        );
+      }
+      return new Response('{}', { status: 500, headers: { 'content-type': 'application/json' } });
+    }) as unknown as typeof fetch;
+    const recorder = vi.fn();
+    const res = await processCaptureRequest(
+      { paypalOrderId: 'PAYPAL-X', ppwOrderId: 'PPW-Y' },
+      fakeFetch,
+      recorder,
+    );
+    expect(res.status).toBe(200);
+    if (res.status === 200) expect(res.alreadyCaptured).toBe(true);
     expect(recorder).not.toHaveBeenCalled();
+  });
+
+  it('records under the custom_id orderRef, not a mismatched client ppwOrderId (review P2)', async () => {
+    const packed = buildPaypalCustomId('PPW-REAL', 'buyer@example.com');
+    const fakeFetch = vi.fn(async (url: string | URL) => {
+      const u = String(url);
+      if (u.endsWith('/v1/oauth2/token')) {
+        return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+      return new Response(
+        JSON.stringify({
+          id: 'PAYPAL-X',
+          status: 'COMPLETED',
+          purchase_units: [
+            {
+              custom_id: packed,
+              payments: {
+                captures: [
+                  {
+                    id: 'CAP-1',
+                    status: 'COMPLETED',
+                    custom_id: packed,
+                    amount: { currency_code: 'USD', value: '99.00' },
+                  },
+                ],
+              },
+            },
+          ],
+        }),
+        { status: 201, headers: { 'content-type': 'application/json' } },
+      );
+    }) as unknown as typeof fetch;
+    const recorder = vi.fn().mockResolvedValue({ ok: true });
+    const res = await processCaptureRequest(
+      { paypalOrderId: 'PAYPAL-X', ppwOrderId: 'PPW-FORGED' },
+      fakeFetch,
+      recorder,
+    );
+    expect(res.status).toBe(200);
+    expect(recorder).toHaveBeenCalledWith('PPW-REAL', 'PAYPAL-X', expect.any(Object));
   });
 
   it('still 500s on a 422 that is NOT already-captured', async () => {

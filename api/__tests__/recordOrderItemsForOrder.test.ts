@@ -17,8 +17,9 @@ vi.mock('../_db/client.js', () => {
   const builder = {
     _orderLookup: [] as unknown[],
     _productLookup: [] as unknown[],
+    _orderItemsLookup: [] as unknown[],
     _activeTable: '',
-    _nextSelectMode: 'order' as 'order' | 'products',
+    _nextSelectMode: 'order' as 'order' | 'products' | 'orderItems',
     select(_cols?: unknown) {
       return this;
     },
@@ -26,6 +27,7 @@ vi.mock('../_db/client.js', () => {
       builder._activeTable = t._name;
       if (t._name === 'orders') builder._nextSelectMode = 'order';
       else if (t._name === 'products') builder._nextSelectMode = 'products';
+      else if (t._name === 'order_items') builder._nextSelectMode = 'orderItems';
       return builder;
     },
     where(_pred: unknown) {
@@ -35,6 +37,9 @@ vi.mock('../_db/client.js', () => {
       return builder;
     },
     limit(_n: number) {
+      if (builder._nextSelectMode === 'orderItems') {
+        return Promise.resolve(builder._orderItemsLookup);
+      }
       return Promise.resolve(builder._orderLookup);
     },
     insert(_t: unknown) {
@@ -51,7 +56,7 @@ vi.mock('../_db/client.js', () => {
     schema: {
       orders: { _name: 'orders', id: {}, ppwOrderId: {} },
       products: { _name: 'products', id: {}, sku: {}, merchantId: {}, name: {} },
-      orderItems: { _name: 'order_items' },
+      orderItems: { _name: 'order_items', id: {}, orderId: {} },
     },
     __fake: { builder },
   };
@@ -116,6 +121,7 @@ describe('recordOrderItemsForOrder DB path', () => {
     insertedRows.length = 0;
     fakeDb.builder._orderLookup = [];
     fakeDb.builder._productLookup = [];
+    fakeDb.builder._orderItemsLookup = [];
   });
 
   it('returns inserted:0 + order_not_found when ppwOrderId is empty', async () => {
@@ -196,7 +202,8 @@ describe('recordOrderItemsForOrder DB path', () => {
     fakeDb.builder._orderLookup = [{ id: 42 }];
     const insertSpy = vi
       .spyOn(fakeDb.builder, 'select')
-      .mockImplementationOnce(() => fakeDb.builder)
+      .mockImplementationOnce(() => fakeDb.builder) // orders lookup
+      .mockImplementationOnce(() => fakeDb.builder) // order_items idempotency guard
       .mockImplementationOnce(() => ({
         from: () => ({
           where: () =>
@@ -213,6 +220,27 @@ describe('recordOrderItemsForOrder DB path', () => {
     expect(r.ok).toBe(false);
     expect(r.skippedReason).toBe('schema_missing');
     insertSpy.mockRestore();
+  });
+
+  it('returns already_recorded + inserts NOTHING when order_items rows exist (review P1 idempotency guard)', async () => {
+    fakeDb.builder._orderLookup = [{ id: 42 }];
+    fakeDb.builder._orderItemsLookup = [{ id: 7 }]; // a previous invocation inserted rows
+    fakeDb.builder._productLookup = [
+      { id: 100, sku: 'K1-A', merchantId: 1, name: 'Treadmill' },
+    ];
+    const r = await recordOrderItemsForOrder('PPW-RETRY', {
+      purchase_units: [
+        {
+          items: [
+            { sku: 'K1-A', name: 'Treadmill', unit_amount: { currency_code: 'MUR', value: '250000.00' }, quantity: 1 },
+          ],
+        },
+      ],
+    });
+    expect(r.ok).toBe(true);
+    expect(r.inserted).toBe(0);
+    expect(r.skippedReason).toBe('already_recorded');
+    expect(insertedRows.length).toBe(0);
   });
 
   it('flattens items from multiple purchase_units', async () => {

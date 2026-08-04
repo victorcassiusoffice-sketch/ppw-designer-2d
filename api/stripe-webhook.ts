@@ -35,7 +35,7 @@ import {
   sendPaymentFailedAlertToVic,
 } from './_lib/email.js';
 import type { OrderSummary, CustomerInfo, Currency } from './_lib/orderTypes.js';
-import { recordWebhookEvent } from './_lib/webhookDedupe.js';
+import { recordWebhookEvent, deleteWebhookEvent } from './_lib/webhookDedupe.js';
 import {
   recordStripeCheckoutOrder,
   type StripeSessionLike,
@@ -70,6 +70,21 @@ function rememberEvent(id: string): void {
 /** Test-only: reset the dedupe Set. */
 export function _resetWebhookStateForTests(): void {
   PROCESSED_EVENTS.clear();
+}
+
+/**
+ * Thrown by dispatchEvent when the ORDER PERSISTENCE step of a paid
+ * checkout fails (review P1). The handler responds by un-recording the
+ * dedupe row and returning 500 so Stripe's ~3-day retry loop can heal
+ * the order — instead of the old behaviour (swallow + 200) which
+ * permanently lost the orders/order_items/payout rows on a transient
+ * Neon blip.
+ */
+export class OrderPersistError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'OrderPersistError';
+  }
 }
 
 interface NodeReadable {
@@ -220,9 +235,11 @@ async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
   // fall back to the in-memory Set so a transient outage degrades to the old
   // behaviour rather than processing nothing.
   let alreadyProcessed = false;
+  let dedupeInDb = false;
   try {
     const dedupe = await recordWebhookEvent('stripe', event.id, event.type, event);
     alreadyProcessed = dedupe.alreadyProcessed;
+    dedupeInDb = true;
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('[stripe-webhook] DB dedupe unavailable — in-memory fallback', err);
@@ -236,10 +253,12 @@ async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
     return;
   }
 
-  // The event is already recorded as processed above, so a throw here
-  // would 500 → Stripe retries → the retry gets deduped → the emails are
-  // silently lost with no signal. Capture to Sentry + return 200 instead:
-  // delivery outcome is the same, but the failure is observable.
+  // Non-money failures (emails): the event is already recorded as
+  // processed above, so a throw would 500 → Stripe retries → the retry
+  // gets deduped → the emails are silently lost with no signal. Capture
+  // to Sentry + return 200 instead. MONEY failures (OrderPersistError,
+  // review P1): un-record the dedupe row + 500 so Stripe redelivers and
+  // the order persistence is retried until Neon recovers.
   try {
     await dispatchEvent(event, stripe);
   } catch (err) {
@@ -247,6 +266,23 @@ async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
     console.error('[stripe-webhook] dispatchEvent failed after dedupe record', err);
     captureException(err, { eventId: event.id, eventType: event.type });
     await flushSentry(2000);
+    if (err instanceof OrderPersistError) {
+      // Roll back the dedupe record (DB row or in-memory) so the Stripe
+      // redelivery is NOT deduped, then 5xx to trigger it.
+      if (dedupeInDb) {
+        try {
+          await deleteWebhookEvent('stripe', event.id);
+        } catch {
+          // DB still down — the in-memory fallback below still lets a
+          // redelivery through on this instance; a different instance
+          // has no memory of the event at all.
+        }
+      }
+      PROCESSED_EVENTS.delete(event.id);
+      res.status(500);
+      res.json({ error: 'order persistence failed — retry' });
+      return;
+    }
     res.status(200);
     res.json({ ok: true, dispatch: 'failed' });
     return;
@@ -270,19 +306,29 @@ export async function dispatchEvent(
       const session = event.data.object as Stripe.Checkout.Session;
 
       // IMPL-1 defect 6 — persist the order (orders + order_items +
-      // payouts + referrals) BEFORE emails. Non-fatal: a DB hiccup must
-      // not block the confirmation emails; the failure is logged.
+      // payouts + referrals) BEFORE emails. Review P1 upgrade: order
+      // persistence failure is FATAL to the webhook response — throw
+      // OrderPersistError (before any email goes out) so the handler
+      // un-records the dedupe row and 5xxes for a Stripe redelivery.
+      // recordStripeCheckoutOrder returns ok:false ONLY when the orders
+      // upsert itself failed (transient DB error) — downstream
+      // items/payouts failures stay non-fatal inside the recorder.
       try {
         const rec = await orderRecorder(session as unknown as StripeSessionLike);
         if (!rec.ok) {
           // eslint-disable-next-line no-console
           console.error('[stripe-webhook] order record failed:', rec.error);
+          throw new OrderPersistError(rec.error ?? 'order upsert failed');
         }
       } catch (recErr) {
+        if (recErr instanceof OrderPersistError) throw recErr;
         // eslint-disable-next-line no-console
         console.error(
           '[stripe-webhook] order record unexpected:',
           recErr instanceof Error ? recErr.message : String(recErr),
+        );
+        throw new OrderPersistError(
+          recErr instanceof Error ? recErr.message : 'order recorder threw',
         );
       }
 

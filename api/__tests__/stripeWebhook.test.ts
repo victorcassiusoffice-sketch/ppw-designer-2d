@@ -13,6 +13,7 @@ import type Stripe from 'stripe';
 import {
   dispatchEvent,
   buildOrderSummaryFromSession,
+  OrderPersistError,
   _resetWebhookStateForTests,
 } from '../stripe-webhook';
 
@@ -77,6 +78,18 @@ function makePaymentIntent(): Stripe.PaymentIntent {
   } as unknown as Stripe.PaymentIntent;
 }
 
+/** Succeeding order recorder — dispatchEvent now treats a FAILING
+ *  order-persist as fatal (OrderPersistError), so tests that only care
+ *  about email behaviour inject this. */
+function okRecorder() {
+  return vi.fn().mockResolvedValue({
+    ok: true,
+    ppwOrderId: 'PPW-TEST-001',
+    orderUpserted: true,
+    itemsInserted: 0,
+  });
+}
+
 function makeStripe(linesData: Array<Partial<Stripe.LineItem>> = []): Pick<Stripe, 'checkout'> {
   return {
     checkout: {
@@ -124,7 +137,11 @@ describe('dispatchEvent', () => {
       type: 'checkout.session.completed',
       data: { object: makeSession() },
     } as unknown as Stripe.Event;
-    await dispatchEvent(event, makeStripe([{ description: 'Ice bath', quantity: 1, amount_total: 4999900, currency: 'mur' }]));
+    await dispatchEvent(
+      event,
+      makeStripe([{ description: 'Ice bath', quantity: 1, amount_total: 4999900, currency: 'mur' }]),
+      okRecorder(),
+    );
     expect(emailLib.sendOrderConfirmation).toHaveBeenCalledTimes(1);
     expect(emailLib.sendOrderAlertToVic).toHaveBeenCalledTimes(1);
   });
@@ -172,16 +189,35 @@ describe('dispatchEvent', () => {
     expect(emailLib.sendOrderConfirmation).toHaveBeenCalledTimes(1);
   });
 
-  it('order-record failure does NOT block the confirmation emails', async () => {
+  it('order-record THROW → OrderPersistError, no emails (review P1: 5xx path, Stripe will redeliver)', async () => {
     const recorder = vi.fn().mockRejectedValue(new Error('neon down'));
     const event = {
       id: 'evt_rec_2',
       type: 'checkout.session.completed',
       data: { object: makeSession() },
     } as unknown as Stripe.Event;
-    await dispatchEvent(event, makeStripe(), recorder);
-    expect(emailLib.sendOrderConfirmation).toHaveBeenCalledTimes(1);
-    expect(emailLib.sendOrderAlertToVic).toHaveBeenCalledTimes(1);
+    await expect(dispatchEvent(event, makeStripe(), recorder)).rejects.toThrow(OrderPersistError);
+    // Emails must NOT go out before persistence succeeds — otherwise the
+    // Stripe redelivery (post-500) would email the buyer twice.
+    expect(emailLib.sendOrderConfirmation).not.toHaveBeenCalled();
+    expect(emailLib.sendOrderAlertToVic).not.toHaveBeenCalled();
+  });
+
+  it('order-record {ok:false} → OrderPersistError too (recorder reports transient DB failure)', async () => {
+    const recorder = vi.fn().mockResolvedValue({
+      ok: false,
+      ppwOrderId: 'PPW-TEST-001',
+      orderUpserted: false,
+      itemsInserted: 0,
+      error: 'connection timeout',
+    });
+    const event = {
+      id: 'evt_rec_2b',
+      type: 'checkout.session.completed',
+      data: { object: makeSession() },
+    } as unknown as Stripe.Event;
+    await expect(dispatchEvent(event, makeStripe(), recorder)).rejects.toThrow(OrderPersistError);
+    expect(emailLib.sendOrderConfirmation).not.toHaveBeenCalled();
   });
 
   it('does not record orders for non-checkout events', async () => {
@@ -208,7 +244,7 @@ describe('dispatchEvent', () => {
       type: 'checkout.session.completed',
       data: { object: makeSession() },
     } as unknown as Stripe.Event;
-    await dispatchEvent(event, stripe);
+    await dispatchEvent(event, stripe, okRecorder());
     expect(emailLib.sendOrderConfirmation).toHaveBeenCalledTimes(1);
   });
 });

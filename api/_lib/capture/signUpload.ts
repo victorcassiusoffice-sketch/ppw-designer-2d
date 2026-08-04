@@ -2,6 +2,8 @@
  * Sims-Parity DT-03 — pre-signed Vercel Blob upload handler.
  *
  * POST /api/merchants/:slug/capture/sign-upload
+ *   headers: Authorization: Bearer <merchant magic-link session token>
+ *            (review P1 — slug must match the session; 401/403 otherwise)
  *   body: { filename, contentType, slot }
  *   ◀── { uploadUrl, token, blobKey, expiresAt }
  *
@@ -31,6 +33,7 @@
  */
 
 import { generateClientTokenFromReadWriteToken } from '@vercel/blob/client';
+import { authoriseMerchantSession } from '../merchantSession.js';
 
 const ALLOWED_CONTENT_TYPES = ['image/webp', 'image/jpeg'] as const;
 type AllowedContentType = (typeof ALLOWED_CONTENT_TYPES)[number];
@@ -40,6 +43,11 @@ export type CaptureSlot = (typeof ALLOWED_SLOTS)[number];
 
 /** Token lifetime — 60 seconds is plenty for one phone upload. */
 export const SIGN_UPLOAD_TOKEN_TTL_MS = 60_000;
+
+/** Hard byte cap enforced at the Blob-token layer (review P1 — the
+ *  endpoint previously minted UNCAPPED tokens; phone captures are
+ *  routinely 1–3 MB, so 5 MiB matches the product-image cap). */
+export const SIGN_UPLOAD_MAX_BYTES = 5 * 1024 * 1024;
 
 export interface SignUploadRequest {
   filename: string;
@@ -147,6 +155,7 @@ export async function signUpload(
     token: deps.readWriteToken,
     validUntil: nowMs + SIGN_UPLOAD_TOKEN_TTL_MS,
     allowedContentTypes: [raw.contentType],
+    maximumSizeInBytes: SIGN_UPLOAD_MAX_BYTES,
     addRandomSuffix: false,
   });
 
@@ -205,6 +214,18 @@ export async function handler(
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     res.status(405).end();
+    return;
+  }
+
+  // Review P1 security hardening — this endpoint used to mint Blob
+  // write tokens with NO auth (anyone could write into any merchant's
+  // capture namespace and burn the shared Blob quota). Require the same
+  // merchant Bearer session used by the upload-image path; the
+  // session's slug must match the :slug being uploaded to (401
+  // missing/invalid, 403 cross-merchant).
+  const auth = authoriseMerchantSession(req.headers, slug);
+  if (!auth.ok) {
+    res.status(auth.status).json({ error: auth.error });
     return;
   }
 

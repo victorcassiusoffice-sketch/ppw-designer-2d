@@ -19,11 +19,12 @@
  *   • Mixed currency in capture  → row skipped (defensive)
  *   • Schema not migrated        → returns ok:false + schema_missing
  *
- * Idempotency: order_items has no composite unique index on
- * `(order_id, sku)`, so calling this twice on the same order would
- * double-insert. The PayPal capture path itself is idempotent
- * (PayPal returns the same response on duplicate captures), but the
- * recorder runs once. We treat the helper as fire-once-per-capture.
+ * Idempotency (upgraded 2026-08-04, review P1): before inserting, the
+ * helper checks whether ANY order_items rows already exist for the
+ * order and returns `skippedReason: 'already_recorded'` if so. This
+ * makes the whole capture-finalisation chain safe to re-run (the 422
+ * ORDER_ALREADY_CAPTURED recovery path + the webhook capture fallback
+ * both re-invoke it), without a composite unique index.
  */
 
 import { eq, inArray } from 'drizzle-orm';
@@ -48,6 +49,7 @@ export interface OrderItemsInsertSummary {
   skippedReason?:
     | 'order_not_found'
     | 'no_items_in_capture'
+    | 'already_recorded'
     | 'schema_missing'
     | 'caller_caught';
   error?: string;
@@ -112,6 +114,18 @@ export async function recordOrderItemsForOrder(
       return { ok: true, inserted: 0, skippedReason: 'order_not_found' };
     }
     const orderId = Number(order.id);
+
+    // Idempotency guard — if rows already exist for this order the
+    // first invocation completed; re-running would double-insert (and
+    // downstream, double-pay merchants via the payout recorder).
+    const existingRows = await db
+      .select({ id: schema.orderItems.id })
+      .from(schema.orderItems)
+      .where(eq(schema.orderItems.orderId, orderId))
+      .limit(1);
+    if (existingRows.length > 0) {
+      return { ok: true, inserted: 0, skippedReason: 'already_recorded' };
+    }
 
     // Batch-lookup products by SKU. Skip items without an SKU.
     const skus = items

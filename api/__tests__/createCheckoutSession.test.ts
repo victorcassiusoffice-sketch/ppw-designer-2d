@@ -216,6 +216,36 @@ describe('processCheckoutRequest - server re-pricing (IMPL-1 defect 2)', () => {
     expect(create).not.toHaveBeenCalled();
   });
 
+  it('P0 currency-tamper: a MUR-labelled line in a USD request is charged in USD via the real repricer', async () => {
+    // Attack from the review: POST currency:'USD' with a line claiming
+    // currency:'MUR' + a USD-sized unitAmount. Before the fix
+    // buildLineItems charged the USD-sized number as MUR (~1/45 the
+    // price). The real repriceCart must normalise the line currency to
+    // the request currency so Stripe charges USD.
+    const { repriceCart, convertMinorFallback } = await import('../_lib/pricing/repriceCart');
+    const serverUsd = convertMinorFallback(15_000_000, 'MUR', 'USD'); // k1-nordictrack-2450
+    const { stripe, create } = stripeSpy();
+    const realRepricer: Repricer = (cart, currency) =>
+      repriceCart(cart, currency, async () => new Map());
+    const req = makeValidRequest();
+    req.currency = 'USD';
+    req.cart = [
+      {
+        productId: 'k1-nordictrack-2450',
+        name: 'Treadmill',
+        quantity: 1,
+        unitAmount: serverUsd,
+        currency: 'MUR', // tampered per-line currency
+      },
+    ];
+    const res = await processCheckoutRequest(req, stripe, realRepricer);
+    expect(res.status).toBe(200);
+    if (res.status === 200) expect(res.priceAdjusted).toBe(true); // mismatch flagged
+    const params = create.mock.calls[0][0] as Stripe.Checkout.SessionCreateParams;
+    expect(params.line_items?.[0]?.price_data?.currency).toBe('usd'); // NOT 'mur'
+    expect(params.line_items?.[0]?.price_data?.unit_amount).toBe(serverUsd);
+  });
+
   it('stashes the repriced cart snapshot + client_reference_id on the session (defect 6 feed)', async () => {
     const { stripe, create } = stripeSpy();
     const res = await processCheckoutRequest(makeValidRequest(), stripe, passRepricer);

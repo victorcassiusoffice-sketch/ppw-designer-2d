@@ -20,6 +20,7 @@
 
 import { useState } from 'react';
 import { uploadCaptureBlob, UploadBlobError } from '../../lib/capture/uploadBlob';
+import { readActiveMerchantSession } from '../RequireMerchant';
 import type { CapturedFrame } from './CameraStage';
 import type { ScaleFromMarkerOutput } from '../../lib/capture/scaleFromMarker';
 
@@ -56,12 +57,16 @@ export function ReviewSubmit(props: ReviewSubmitProps): JSX.Element {
     let blobUrl: string;
     try {
       const filename = `front-${Date.now()}.webp`;
+      // Review P1 — sign-upload now requires the merchant session
+      // Bearer; read it from the RequireMerchant stored session.
+      const session = readActiveMerchantSession(props.merchantSlug);
       const upload = await uploadCaptureBlob({
         merchantSlug: props.merchantSlug,
         file: props.frontFrame.blob,
         filename,
         contentType: 'image/webp',
         slot: 'front',
+        sessionToken: session?.token,
         deps: props.__testFetch ? { fetch: props.__testFetch } : undefined,
       });
       blobKey = upload.blobKey;

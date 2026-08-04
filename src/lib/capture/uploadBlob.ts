@@ -70,6 +70,13 @@ export async function uploadCaptureBlob(input: {
   filename: string;
   contentType: CaptureContentType;
   slot: CaptureSlot;
+  /**
+   * Merchant magic-link session token — the sign-grant endpoint now
+   * requires `Authorization: Bearer <token>` matching the merchant slug
+   * (review P1: unauthenticated Blob-token minting closed). Read from
+   * the RequireMerchant stored session.
+   */
+  sessionToken?: string;
   deps?: UploadBlobDeps;
 }): Promise<UploadCaptureBlobResult> {
   const fetchImpl = input.deps?.fetch ?? globalThis.fetch;
@@ -80,7 +87,10 @@ export async function uploadCaptureBlob(input: {
     `${origin}/api/merchants/${encodeURIComponent(input.merchantSlug)}/capture/sign-upload`,
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(input.sessionToken ? { Authorization: `Bearer ${input.sessionToken}` } : {}),
+      },
       body: JSON.stringify({
         filename: input.filename,
         contentType: input.contentType,

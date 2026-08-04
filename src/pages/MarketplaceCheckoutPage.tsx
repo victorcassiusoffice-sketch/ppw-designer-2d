@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMarketplaceCart } from '../store/marketplaceCartStore';
 import { PPW_COMMISSION_RATE } from '../lib/commission';
+import { confirmAdjustedPrices } from '../lib/priceAdjust';
 import '../styles/soft-shop.css';
 
 interface MerchantSubtotal {
@@ -110,6 +111,10 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
         body: JSON.stringify({
           cart: items.map((i) => ({
             productId: String(i.productId),
+            // Real catalog SKU — the server re-pricer overwrites this
+            // from the products table, but sending it keeps the payload
+            // self-describing (order_items are recorded by SKU).
+            sku: i.sku,
             name: i.name,
             quantity: i.quantity,
             unitAmount: i.unitPriceMinor,
@@ -137,10 +142,17 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
       const j = (await res.json().catch(() => ({}))) as {
         approvalUrl?: string;
         paypalOrderId?: string;
+        priceAdjusted?: boolean;
         error?: string;
       };
       if (!res.ok) {
         throw new Error(j.error ?? `HTTP ${res.status}`);
+      }
+      // Review P1 — server re-pricing changed a line (stale marketplace
+      // price / tampering). Disclose before charging a different total.
+      if (j.priceAdjusted && !confirmAdjustedPrices()) {
+        setError('Prices were updated on the server. Please review your cart and try again.');
+        return;
       }
       // IMPL-1 defect 4: do NOT clear the cart here. The buyer may cancel
       // at PayPal and come back via cancelUrl — the cart must survive.

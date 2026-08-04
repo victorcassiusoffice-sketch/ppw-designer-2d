@@ -58,6 +58,23 @@ export async function recordWebhookEvent(
 }
 
 /**
+ * Un-record a webhook event (review P1, Stripe order persistence).
+ *
+ * The dedupe row is inserted BEFORE side-effects run. If a MONEY
+ * side-effect (order persistence) fails transiently, the receiver must
+ * delete the dedupe row and return 5xx so the provider's retry loop can
+ * heal the order — otherwise the retry is deduped and the order is
+ * permanently lost. Best-effort: caller ignores failures (a DB that
+ * cannot delete also could not have inserted).
+ */
+export async function deleteWebhookEvent(source: string, eventId: string): Promise<void> {
+  const db = getDb();
+  await db.execute(
+    sql`DELETE FROM webhook_events WHERE source = ${source} AND event_id = ${eventId}`,
+  );
+}
+
+/**
  * Mark a previously-recorded event as processed. Optional - the table
  * is primarily for idempotency, but flipping the flag lets us surface
  * "stuck" events in admin dashboards later.

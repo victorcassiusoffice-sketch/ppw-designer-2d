@@ -18,6 +18,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import type { Currency } from '../data/products.schema';
 import type { CartTotals } from '../store/cartStore';
 import type { CheckoutFormValues } from '../store/checkoutStore';
+import { confirmAdjustedPrices } from './priceAdjust';
 
 /**
  * Read the publishable key from Vite's `import.meta.env`.
@@ -183,7 +184,7 @@ export async function startStripeCheckout(
   if (!doFetch) {
     return { status: 'error', message: 'fetch is unavailable in this environment.' };
   }
-  let session: { id?: string; url?: string } | null = null;
+  let session: { id?: string; url?: string; priceAdjusted?: boolean } | null = null;
   try {
     const res = await doFetch('/api/create-checkout-session', {
       method: 'POST',
@@ -220,13 +221,22 @@ export async function startStripeCheckout(
         message: body?.error ?? `Server returned ${res.status} ${res.statusText}.`,
       };
     }
-    session = (await res.json()) as { id?: string; url?: string };
+    session = (await res.json()) as { id?: string; url?: string; priceAdjusted?: boolean };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return { status: 'error', message: msg };
   }
   if (!session?.url) {
     return { status: 'error', message: 'Server did not return a Checkout Session URL.' };
+  }
+  // Review P1 — the server flags priceAdjusted when its authoritative
+  // re-pricing changed any line. Never silently charge a different
+  // total than the checkout displayed: ask before redirecting.
+  if (session.priceAdjusted && !confirmAdjustedPrices()) {
+    return {
+      status: 'error',
+      message: 'Prices were updated on the server. Please review your cart and try again.',
+    };
   }
   warmStripe();
   if (typeof window !== 'undefined') {
