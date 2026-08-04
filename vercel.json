@@ -21,6 +21,10 @@
     {
       "path": "/api/cron/escalate-orders",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/gumroad-reconcile",
+      "schedule": "30 9 * * *"
     }
   ],
   "headers": [
@@ -79,6 +83,7 @@
     { "source": "/api/designs", "destination": "/api/orders" },
     { "source": "/api/designs/(.*)", "destination": "/api/orders" },
     { "source": "/api/leads", "destination": "/api/orders" },
+    { "source": "/api/gumroad/(.*)", "destination": "/api/orders" },
     { "source": "/api/cron/(.*)", "destination": "/api/cron-router" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

@@ -2,8 +2,13 @@
  * /marketplace/checkout — OMS Wave 1.2 surface.
  *
  * Renders the per-merchant breakdown coming back from /api/cart-quote
- * with the PPW commission line transparent before checkout. Hands off
- * to the existing PayPal Standard rail (createPaypalOrder).
+ * with the PPW commission line transparent before checkout, then hands
+ * off to the ACTIVE payment rail behind the checkout-rail seam
+ * (src/lib/checkoutRails.ts):
+ *
+ *   gumroad → /api/gumroad/create-order  (interim live rail — USD PWYW)
+ *   paypal  → /api/createPaypalOrder     (env-gated off; account banned)
+ *   stripe  → /api/create-checkout-session (env-gated off)
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -11,6 +16,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useMarketplaceCart } from '../store/marketplaceCartStore';
 import { PPW_COMMISSION_RATE } from '../lib/commission';
 import { confirmAdjustedPrices } from '../lib/priceAdjust';
+import { activeCheckoutRail, railButtonLabel } from '../lib/checkoutRails';
+import { createGumroadOrder, saveGumroadPendingRef } from '../lib/gumroadCheckout';
 import '../styles/soft-shop.css';
 
 interface MerchantSubtotal {
@@ -89,7 +96,44 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
     };
   }, [quoteBody, items.length]);
 
-  async function payWithPaypal() {
+  const rail = activeCheckoutRail();
+
+  /** Shared payload across all rails (same wire contract). */
+  function buildRailPayload(orderRef: string) {
+    const origin = window.location.origin;
+    return {
+      cart: items.map((i) => ({
+        productId: String(i.productId),
+        // Real catalog SKU — the server re-pricer overwrites this
+        // from the products table, but sending it keeps the payload
+        // self-describing (order_items are recorded by SKU).
+        sku: i.sku,
+        name: i.name,
+        quantity: i.quantity,
+        unitAmount: i.unitPriceMinor,
+        currency: i.currency,
+        imageUrl: i.imageUrl ?? undefined,
+      })),
+      customer: {
+        name: customerEmail.split('@')[0] ?? 'Customer',
+        email: customerEmail,
+        phone: '',
+        addressLine1: '',
+        city: '',
+        postcode: '',
+        country: 'MU',
+      },
+      currency: quote!.currency,
+      successUrl: `${origin}/order/track/${orderRef}${rail === 'gumroad' ? '?rail=gumroad' : ''}`,
+      cancelUrl: `${origin}/marketplace/checkout`,
+      orderId: orderRef,
+      notes: `Marketplace cart, ${items.length} SKUs, ${
+        quote!.merchantBreakdown.length
+      } suppliers`,
+    };
+  }
+
+  async function pay() {
     if (!quote) return;
     if (!customerEmail || !customerEmail.includes('@')) {
       setError('Email required for order tracking.');
@@ -104,40 +148,45 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
       const orderRef = `mp_${Date.now().toString(36)}_${Math.random()
         .toString(36)
         .slice(2, 8)}`;
-      const origin = window.location.origin;
+      const payload = buildRailPayload(orderRef);
+
+      if (rail === 'gumroad') {
+        const j = await createGumroadOrder(payload);
+        // Server re-pricing changed a line — disclose before charging.
+        if (j.priceAdjusted && !confirmAdjustedPrices()) {
+          setError('Prices were updated on the server. Please review your cart and try again.');
+          return;
+        }
+        // The return leg resolves the order ref from localStorage —
+        // Gumroad's redirect-after-purchase URL is static per product.
+        saveGumroadPendingRef(orderRef);
+        // Cart is NOT cleared here — it survives a cancel-at-Gumroad and
+        // is cleared on the track page once the payment is captured.
+        window.location.href = j.checkoutUrl;
+        return;
+      }
+
+      if (rail === 'stripe') {
+        const res = await fetch('/api/create-checkout-session', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const j = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+        if (!res.ok) throw new Error(j.error ?? `HTTP ${res.status}`);
+        if (j.url) {
+          window.location.href = j.url;
+          return;
+        }
+        navigate(`/order/track/${orderRef}`);
+        return;
+      }
+
+      // Default: PayPal (legacy rail — code retained, env-gated).
       const res = await fetch('/api/createPaypalOrder', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          cart: items.map((i) => ({
-            productId: String(i.productId),
-            // Real catalog SKU — the server re-pricer overwrites this
-            // from the products table, but sending it keeps the payload
-            // self-describing (order_items are recorded by SKU).
-            sku: i.sku,
-            name: i.name,
-            quantity: i.quantity,
-            unitAmount: i.unitPriceMinor,
-            currency: i.currency,
-            imageUrl: i.imageUrl ?? undefined,
-          })),
-          customer: {
-            name: customerEmail.split('@')[0] ?? 'Customer',
-            email: customerEmail,
-            phone: '',
-            addressLine1: '',
-            city: '',
-            postcode: '',
-            country: 'MU',
-          },
-          currency: quote.currency,
-          successUrl: `${origin}/order/track/${orderRef}`,
-          cancelUrl: `${origin}/marketplace/checkout`,
-          orderId: orderRef,
-          notes: `Marketplace cart, ${items.length} SKUs, ${
-            quote.merchantBreakdown.length
-          } suppliers`,
-        }),
+        body: JSON.stringify(payload),
       });
       const j = (await res.json().catch(() => ({}))) as {
         approvalUrl?: string;
@@ -163,7 +212,7 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
       }
       navigate(`/order/track/${orderRef}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'PayPal handoff failed.');
+      setError(e instanceof Error ? e.message : 'Checkout handoff failed.');
     } finally {
       setSubmitting(false);
     }
@@ -316,14 +365,21 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
                 <button
                   type="button"
                   className="soft-pill soft-pill--primary"
-                  onClick={payWithPaypal}
+                  onClick={pay}
                   disabled={submitting}
                   style={{ marginTop: 16, width: '100%', cursor: submitting ? 'wait' : 'pointer' }}
                 >
-                  {submitting ? 'Redirecting to PayPal…' : 'Pay with PayPal'}
+                  {railButtonLabel(rail, submitting)}
                 </button>
+                {rail === 'gumroad' && (
+                  <p className="soft-muted" style={{ fontSize: 11, marginTop: 8 }}>
+                    Payment is processed securely by Gumroad in USD. Your cart total is
+                    converted at an indicative rate — your card statement will show the
+                    USD amount.
+                  </p>
+                )}
                 <p className="soft-muted" style={{ fontSize: 11, marginTop: 8 }}>
-                  Sandbox / live based on env. Order tracking link will be emailed.
+                  Order tracking link will be emailed.
                 </p>
               </>
             )}

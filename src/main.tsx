@@ -34,6 +34,7 @@ const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'));
 const MarketplaceCartPage = lazy(() => import('./pages/MarketplaceCartPage'));
 const MarketplaceCheckoutPage = lazy(() => import('./pages/MarketplaceCheckoutPage'));
 const OrderTrackPage = lazy(() => import('./pages/OrderTrackPage'));
+const GumroadReturnPage = lazy(() => import('./pages/GumroadReturnPage'));
 const MerchantAgentPage = lazy(() => import('./pages/MerchantAgentPage'));
 const MerchantDashboardPage = lazy(() => import('./pages/MerchantDashboardPage'));
 const MerchantOnboardingPage = lazy(() => import('./pages/MerchantOnboardingPage'));
@@ -114,6 +115,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/marketplace/cart" element={<MarketplaceCartPage />} />
         <Route path="/marketplace/checkout" element={<MarketplaceCheckoutPage />} />
         <Route path="/order/track/:orderRef" element={<OrderTrackPage />} />
+        {/* Gumroad interim rail — static redirect-after-purchase target */}
+        <Route path="/order/gumroad-return" element={<GumroadReturnPage />} />
         <Route path="/merchants/onboard" element={<MerchantOnboardingPage />} />
         <Route path="/merchants/onboard/:slug" element={<MerchantOnboardingPage />} />
         <Route

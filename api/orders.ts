@@ -20,6 +20,10 @@
  *   GET    /api/designs/:id                  → read design
  *   PUT    /api/designs/:id                  → update design
  *   POST   /api/leads                        → submit lead-capture form
+ *   POST   /api/gumroad/create-order         → Gumroad interim rail: reprice +
+ *                                              pending order + PWYW checkout URL
+ *   POST   /api/gumroad/ping                 → Gumroad account Ping webhook
+ *                                              (verify sale → capture/underpaid)
  */
 
 import { eq, desc, inArray } from 'drizzle-orm';
@@ -44,6 +48,8 @@ import {
 } from './_db/referralStore.js';
 import { Redis } from '@upstash/redis';
 import { sql } from 'drizzle-orm';
+import { processGumroadCreateRequest } from './_lib/gumroad/createOrder.js';
+import { processGumroadPing } from './_lib/gumroad/webhook.js';
 // Cowork OS Phase 0.5 — subscriptions feed reads the canonical Vic-edited
 // JSON from src/data. Vercel's bundler follows the relative path.
 import subscriptionsJson from '../src/data/subscriptions.json' with { type: 'json' };
@@ -1623,6 +1629,66 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
 
     res.status(404);
     res.json({ error: `unknown merchants action: ${action ?? '(empty)'}` });
+    return;
+  }
+
+  // Gumroad interim rail (2026-08-04) — create-order + account Ping.
+  // Folded here (rewrite /api/gumroad/(.*) → /api/orders) to hold the
+  // Vercel Hobby 12-fn cap.
+  if (resource === 'gumroad') {
+    const action = segments[0];
+    if (req.method !== 'POST') {
+      res.setHeader('Allow', 'POST, OPTIONS');
+      res.status(405).end();
+      return;
+    }
+    if (action === 'create-order') {
+      try {
+        const body = await readJsonBody(req);
+        if (body === null) {
+          res.status(400);
+          res.json({ error: 'Body must be valid JSON.' });
+          return;
+        }
+        const result = await processGumroadCreateRequest(body);
+        if (result.status === 200) {
+          res.status(200);
+          res.json({
+            orderRef: result.orderRef,
+            checkoutUrl: result.checkoutUrl,
+            usdMinor: result.usdMinor,
+            fxRateUsed: result.fxRateUsed,
+            fxIndicative: result.fxIndicative,
+            fxDisclosure: result.fxDisclosure,
+            priceAdjusted: result.priceAdjusted,
+          });
+          return;
+        }
+        res.status(result.status);
+        res.json({ error: result.error });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'gumroad create-order failed';
+        res.status(500);
+        res.json({ error: msg });
+      }
+      return;
+    }
+    if (action === 'ping') {
+      try {
+        // Ping bodies are x-www-form-urlencoded — hand the raw body to
+        // the parser (it handles object, string and Buffer forms).
+        const result = await processGumroadPing(req.body);
+        res.status(result.status);
+        res.json(result.body);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'gumroad ping failed';
+        res.status(500);
+        res.json({ error: msg });
+      }
+      return;
+    }
+    res.status(404);
+    res.json({ error: `unknown gumroad action: ${action ?? '(empty)'}` });
     return;
   }
 

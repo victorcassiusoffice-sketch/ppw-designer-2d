@@ -22,6 +22,11 @@ import {
   runPaypalReturnCapture,
   stripPaypalReturnParams,
 } from '../lib/paypalReturn';
+import {
+  readGumroadReturnFlag,
+  stripGumroadReturnParams,
+  clearGumroadPendingRef,
+} from '../lib/gumroadCheckout';
 
 interface OrderItem {
   id: number;
@@ -95,6 +100,15 @@ export default function OrderTrackPage(): JSX.Element {
     paypalTokenRef.current ? 'capturing' : 'done',
   );
   const [captureError, setCaptureError] = useState<string | null>(null);
+
+  // Gumroad return leg (?rail=gumroad): the order row already exists
+  // (written pending at create-order time) — no client-side capture call.
+  // The Ping webhook flips it pending → captured; we just poll faster and
+  // show a "confirming payment" state until it lands.
+  const gumroadReturnRef = useRef<boolean>(
+    typeof window !== 'undefined' ? readGumroadReturnFlag(window.location.search) : false,
+  );
+  const [gumroadSettled, setGumroadSettled] = useState(false);
 
   const runCapture = useCallback(async () => {
     const token = paypalTokenRef.current;
@@ -190,13 +204,31 @@ export default function OrderTrackPage(): JSX.Element {
     }
 
     void loadDetail();
-    interval = setInterval(() => void pollStatus(), 30_000);
+    // Gumroad return: the Ping webhook flips pending → captured server-side
+    // (typically seconds after redirect) — poll fast until it settles.
+    const pollMs = gumroadReturnRef.current && !gumroadSettled ? 5_000 : 30_000;
+    interval = setInterval(() => void pollStatus(), pollMs);
 
     return () => {
       cancelled = true;
       if (interval) clearInterval(interval);
     };
-  }, [orderRef, captureState]);
+  }, [orderRef, captureState, gumroadSettled]);
+
+  // Gumroad settle: once the webhook marks the order captured, clear the
+  // marketplace cart (same only-after-confirmed-payment rule as PayPal),
+  // drop the pending ref and strip the round-trip query params.
+  useEffect(() => {
+    if (!gumroadReturnRef.current || gumroadSettled) return;
+    if (order?.paymentStatus === 'captured') {
+      clearMarketplaceCart();
+      clearGumroadPendingRef();
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(null, '', stripGumroadReturnParams(window.location.href));
+      }
+      setGumroadSettled(true);
+    }
+  }, [order?.paymentStatus, gumroadSettled, clearMarketplaceCart]);
 
   if (captureState === 'capturing') {
     return (
@@ -259,8 +291,29 @@ export default function OrderTrackPage(): JSX.Element {
     );
   }
 
+  const gumroadConfirming =
+    gumroadReturnRef.current && !gumroadSettled && order.paymentStatus === 'pending';
+
   return (
     <div style={{ padding: 24, maxWidth: 1000, margin: '0 auto' }}>
+      {gumroadConfirming && (
+        <section
+          role="status"
+          style={{
+            padding: 16,
+            background: '#ecfeff',
+            border: '1px solid #a5f3fc',
+            borderRadius: 8,
+            marginBottom: 16,
+          }}
+        >
+          <strong>Confirming your payment…</strong>
+          <p style={{ margin: '4px 0 0', fontSize: 13, color: '#374151' }}>
+            Gumroad is notifying us of your payment. This usually takes a few
+            seconds — the page updates automatically. No further action needed.
+          </p>
+        </section>
+      )}
       <header style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 28, margin: 0 }}>Order {order.orderRef}</h1>
         <p style={{ color: '#6b7280', margin: '4px 0 0' }}>

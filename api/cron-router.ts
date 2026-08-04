@@ -14,6 +14,9 @@
  *   GET /api/cron/disburse-payouts         → payout scaffold: dry-run report
  *                                            (flag-gated, no rail adapters,
  *                                            unscheduled — see disbursePayouts.ts)
+ *   GET /api/cron/gumroad-reconcile        → recover lost Gumroad pings +
+ *                                            expire abandoned pending orders
+ *                                            (cancellations are never pinged)
  *
  * Future cron jobs (dep audit, KV cleanups, etc.) fold into this same
  * file to stay under the Vercel Hobby 12-fn cap.
@@ -27,6 +30,7 @@ import { emailMerchantApproved } from './_lib/merchantEmails.js';
 import { refreshSupplierRatingBatch } from './_lib/cron/refreshSupplierRating.js';
 import { reconcileEmailSendsBatch } from './_lib/cron/reconcileEmailSends.js';
 import { disbursePayoutsBatch } from './_lib/cron/disbursePayouts.js';
+import { reconcileGumroadPendingBatch } from './_lib/cron/reconcileGumroadPending.js';
 // NOTE (2026-07-26): `generateTopdownsBatch` is deliberately NOT imported.
 // It pulls in `sharp` + `@imgly/background-removal-node` (onnx runtime),
 // which ballooned this lambda to 553 MB — over Vercel's 250 MB uncompressed
@@ -214,6 +218,17 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
     return;
   }
 
+  if (action === 'gumroad-reconcile') {
+    try {
+      await handleGumroadReconcile(res);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'gumroad-reconcile failed';
+      res.status(500);
+      res.json({ error: msg });
+    }
+    return;
+  }
+
   if (action === 'email-send-reconcile') {
     try {
       await handleEmailSendReconcile(res);
@@ -272,6 +287,44 @@ async function handleDisbursePayouts(res: MinRes): Promise<void> {
   res.json({ ok: true, ...result });
 }
 
+
+// Gumroad stale-pending reconcile (2026-08-04): recovers sales whose ping
+// never landed and expires abandoned pending orders. Gumroad never pings
+// refunds/cancellations — this batch is the required backstop (skill §3).
+async function handleGumroadReconcile(res: MinRes): Promise<void> {
+  let result;
+  try {
+    result = await reconcileGumroadPendingBatch();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/relation .*orders.* does not exist|42P01/i.test(msg)) {
+      res.status(503);
+      res.json({ ok: false, error: 'Orders schema not migrated.' });
+      return;
+    }
+    res.status(500);
+    res.json({ ok: false, error: msg });
+    return;
+  }
+  if (result.recovered > 0 || result.underpaid > 0 || result.expired > 0) {
+    await recordAudit(
+      'system:cron',
+      'orders.gumroad_reconcile',
+      'orders',
+      String(result.recovered),
+      null,
+      {
+        scanned: result.scanned,
+        recovered: result.recovered,
+        underpaid: result.underpaid,
+        expired: result.expired,
+        skipped: result.skipped.slice(0, 20),
+      },
+    );
+  }
+  res.status(200);
+  res.json({ ok: true, ...result });
+}
 
 async function handleEmailSendReconcile(res: MinRes): Promise<void> {
   let result;

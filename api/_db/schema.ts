@@ -161,6 +161,7 @@ export const payoutStatusEnum = pgEnum('payout_status', [
 export const paymentRailEnum = pgEnum('payment_rail', [
   'stripe',
   'paypal',
+  'gumroad',
   'mips',
   'mcb_juice',
   'bank_transfer',
@@ -227,6 +228,7 @@ export const paymentStatusEnum = pgEnum('payment_status', [
   'pending',
   'authorised',
   'captured',
+  'underpaid',
   'failed',
   'refunded',
   'partially_refunded',
