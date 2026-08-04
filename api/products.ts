@@ -56,7 +56,7 @@ import { withSentry, type MinReq, type MinRes } from './_lib/sentry.js';
 import { getDb, schema } from './_db/client.js';
 import { and, eq, gte, gt, isNull, lte, notLike, ilike, or, sql, inArray, type SQL } from 'drizzle-orm';
 import { drizzleAuditWriter } from './_lib/auditLog.js';
-import { verifyMerchantSession } from './_lib/merchantSession.js';
+import { authoriseMerchantSession } from './_lib/merchantSession.js';
 import { buildSeedImageryMap, enrichImagery } from './_lib/products/seedImagery.js';
 import productsSeed from '../src/data/products.json' with { type: 'json' };
 
@@ -615,44 +615,14 @@ export async function createMerchantProduct(
   }
 }
 
-/**
- * Helper — extract + verify the merchant magic-link session bearer
- * token from an HTTP request. Returns the verified payload on success;
- * an HTTP-shaped error response on failure.
- */
-export interface SessionAuthOk {
-  ok: true;
-  email: string;
-}
-export interface SessionAuthErr {
-  ok: false;
-  status: 401 | 403;
-  error: 'missing_session' | 'invalid_session' | 'slug_mismatch';
-}
-
-export function authoriseMerchantSession(
-  headers: Record<string, string | string[] | undefined> | undefined,
-  slug: string,
-): SessionAuthOk | SessionAuthErr {
-  const raw = headers?.authorization ?? headers?.Authorization;
-  const header = Array.isArray(raw) ? raw[0] : raw;
-  if (!header || typeof header !== 'string') {
-    return { ok: false, status: 401, error: 'missing_session' };
-  }
-  const match = /^Bearer\s+(.+)$/i.exec(header);
-  if (!match) {
-    return { ok: false, status: 401, error: 'missing_session' };
-  }
-  const token = match[1].trim();
-  const result = verifyMerchantSession(token, slug);
-  if (!result.ok) {
-    if (result.reason === 'slug_mismatch') {
-      return { ok: false, status: 403, error: 'slug_mismatch' };
-    }
-    return { ok: false, status: 401, error: 'invalid_session' };
-  }
-  return { ok: true, email: result.payload.email };
-}
+// Merchant session bearer gate — moved to api/_lib/merchantSession.ts
+// (IMPL-2) so merchants-router + agent-chat can share it. Re-exported
+// here to keep existing import sites + tests working.
+export {
+  authoriseMerchantSession,
+  type SessionAuthOk,
+  type SessionAuthErr,
+} from './_lib/merchantSession.js';
 
 /**
  * V4 M9.B.3 — merchant-editable PATCH schema. Every field optional;

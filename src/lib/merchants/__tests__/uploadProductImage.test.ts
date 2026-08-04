@@ -46,6 +46,7 @@ describe('uploadProductImageBlob', () => {
       file,
       filename: 'product.png',
       contentType: 'image/png',
+      sessionToken: 'SESSION-TOKEN',
       deps: { fetch: fetchImpl as unknown as typeof globalThis.fetch },
     });
     expect(result.blobKey).toBe('merchants/k1-sport/products/abc.png');
@@ -60,6 +61,9 @@ describe('uploadProductImageBlob', () => {
         const sentBody = JSON.parse((init?.body as string) ?? '{}');
         expect(sentBody.filename).toBe('product.png');
         expect(sentBody.contentType).toBe('image/png');
+        // IMPL-2 — the sign grant is now merchant-session gated.
+        const headers = init?.headers as Record<string, string>;
+        expect(headers.Authorization).toBe('Bearer SESSION-TOKEN');
         return jsonRes(200, {
           uploadUrl: 'https://blob.vercel-storage.com/x',
           token: 't',
@@ -74,6 +78,7 @@ describe('uploadProductImageBlob', () => {
       file,
       filename: 'product.png',
       contentType: 'image/png',
+      sessionToken: 'SESSION-TOKEN',
       deps: { fetch: fetchImpl as unknown as typeof globalThis.fetch },
     });
   });
@@ -86,6 +91,7 @@ describe('uploadProductImageBlob', () => {
         file,
         filename: 'product.png',
         contentType: 'image/png',
+        sessionToken: 'SESSION-TOKEN',
         deps: { fetch: fetchImpl as unknown as typeof globalThis.fetch },
       }),
     ).rejects.toMatchObject({
@@ -116,6 +122,7 @@ describe('uploadProductImageBlob', () => {
         file,
         filename: 'product.png',
         contentType: 'image/png',
+        sessionToken: 'SESSION-TOKEN',
         deps: { fetch: fetchImpl as unknown as typeof globalThis.fetch },
       }),
     ).rejects.toBeInstanceOf(UploadProductImageError);
@@ -143,6 +150,7 @@ describe('uploadProductImageBlob', () => {
       file,
       filename: 'product.png',
       contentType: 'image/png',
+      sessionToken: 'SESSION-TOKEN',
       deps: { fetch: fetchImpl as unknown as typeof globalThis.fetch },
     });
   });

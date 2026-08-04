@@ -4,13 +4,20 @@
  * Phase 6 Merchant Integration Agent endpoint. Proxies to OpenRouter
  * with default Gemini Flash 2.0 → Claude Sonnet fallback on hard tasks.
  *
- * Body: { messages: [{role, content}, ...], model? }
+ * Body: { messages: [{role, content}, ...], model?, sessionId }
  * 200:  { content, model, usage: {...} }
  * 400:  { error: '...' }
+ * 401:  { error: 'missing_session' | 'invalid_session' }
+ * 403:  { error: 'session_merchant_mismatch' }
  * 503:  { error: 'OpenRouter not configured' }
  *
- * No auth gate yet — Phase 6 part 2 will add Clerk merchant auth +
- * per-merchant cost tracking (writes to admin dashboard).
+ * IMPL-2 security hardening (2026-08-04): POST is now gated by the
+ * merchant magic-link session Bearer (same token the merchant dashboard
+ * holds). The token's signed slug must match the merchant that owns the
+ * requested agent sessionId (agent_sessions.merchant_id → merchants,
+ * migration 0008), so one merchant cannot chat/spend on another
+ * merchant's session — and anonymous callers cannot burn OpenRouter
+ * credit at all. sessionId is therefore REQUIRED on POST.
  */
 
 import { withSentry, type MinReq, type MinRes } from './_lib/sentry.js';
@@ -25,6 +32,7 @@ import {
   type AgentModel,
 } from './_lib/agent/openrouter.js';
 import { applyAgentChatLockdown } from './_lib/agent/lockdown.js';
+import { authoriseMerchantBearer } from './_lib/merchantSession.js';
 import { getClientIp } from './_lib/rateLimit.js';
 import { eq, sql } from 'drizzle-orm';
 import { getDb, schema } from './_db/client.js';
@@ -148,6 +156,78 @@ export function validateChatRequest(
 }
 
 /**
+ * IMPL-2 — pure auth decision for POST /api/agent-chat, DB lookup
+ * injected so unit tests can exercise every path without a database.
+ *
+ * Rules:
+ *   400 — sessionId missing (auth is per-session; required on POST)
+ *   401 — Bearer missing / invalid / expired
+ *   404 — sessionId does not exist
+ *   403 — session exists but belongs to a different merchant
+ *   503 — agent tables not migrated
+ */
+export type AgentSessionMerchantLookup = (
+  sessionId: number,
+) => Promise<
+  | { ok: true; merchantSlug: string }
+  | { ok: false; status: 404 | 503; error: string }
+>;
+
+export async function authoriseAgentChatRequest(
+  headers: Record<string, string | string[] | undefined> | undefined,
+  sessionId: number | undefined,
+  lookup: AgentSessionMerchantLookup,
+): Promise<
+  | { ok: true; slug: string; email: string }
+  | { ok: false; status: 400 | 401 | 403 | 404 | 503; error: string }
+> {
+  if (sessionId === undefined) {
+    return { ok: false, status: 400, error: 'sessionId required.' };
+  }
+  const bearer = authoriseMerchantBearer(headers);
+  if (!bearer.ok) {
+    return { ok: false, status: bearer.status, error: bearer.error };
+  }
+  const owner = await lookup(sessionId);
+  if (!owner.ok) {
+    return { ok: false, status: owner.status, error: owner.error };
+  }
+  if (owner.merchantSlug !== bearer.slug) {
+    return { ok: false, status: 403, error: 'session_merchant_mismatch' };
+  }
+  return { ok: true, slug: bearer.slug, email: bearer.email };
+}
+
+/** Real DB lookup: agent_sessions.merchant_id → merchants.slug. */
+async function lookupAgentSessionMerchant(
+  sessionId: number,
+): Promise<
+  | { ok: true; merchantSlug: string }
+  | { ok: false; status: 404 | 503; error: string }
+> {
+  try {
+    const db = getDb();
+    const rows = await db
+      .select({ slug: schema.merchants.slug })
+      .from(schema.agentSessions)
+      .innerJoin(schema.merchants, eq(schema.agentSessions.merchantId, schema.merchants.id))
+      .where(eq(schema.agentSessions.id, sessionId))
+      .limit(1);
+    const row = rows[0];
+    if (!row) {
+      return { ok: false, status: 404, error: 'agent session not found' };
+    }
+    return { ok: true, merchantSlug: row.slug };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/relation .*(agent_sessions|merchants).* does not exist|42P01/i.test(msg)) {
+      return { ok: false, status: 503, error: 'agent sessions schema not migrated' };
+    }
+    throw err;
+  }
+}
+
+/**
  * M4 (RELENTLESS_GOAL 2026-05-19): GET cold-start health probe. Returns
  * the configured model slugs + whether OPENROUTER_API_KEY is wired,
  * without burning an LLM call. Used by uptime monitors + the merchant
@@ -202,6 +282,19 @@ async function rawHandler(req: ChatReq, res: MinRes): Promise<void> {
   if (!v.ok) {
     res.status(400);
     res.json({ error: v.error });
+    return;
+  }
+
+  // IMPL-2 — merchant-session gate BEFORE any OpenRouter config read or
+  // LLM spend. The Bearer's signed slug must own the agent session.
+  const auth = await authoriseAgentChatRequest(
+    req.headers,
+    v.sessionId,
+    lookupAgentSessionMerchant,
+  );
+  if (!auth.ok) {
+    res.status(auth.status);
+    res.json({ error: auth.error });
     return;
   }
 

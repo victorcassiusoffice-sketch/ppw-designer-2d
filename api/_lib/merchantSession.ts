@@ -144,6 +144,98 @@ export function verifyMerchantSession(
 }
 
 /**
+ * Helper — extract + verify the merchant magic-link session bearer
+ * token from an HTTP request. Returns the verified payload on success;
+ * an HTTP-shaped error response on failure.
+ *
+ * Moved here from `api/products.ts` (IMPL-2 security hardening) so the
+ * merchants-router upload-image handler + agent-chat can share the same
+ * gate without importing the whole products function module.
+ */
+export interface SessionAuthOk {
+  ok: true;
+  email: string;
+}
+export interface SessionAuthErr {
+  ok: false;
+  status: 401 | 403;
+  error: 'missing_session' | 'invalid_session' | 'slug_mismatch';
+}
+
+export function authoriseMerchantSession(
+  headers: Record<string, string | string[] | undefined> | undefined,
+  slug: string,
+): SessionAuthOk | SessionAuthErr {
+  const raw = headers?.authorization ?? headers?.Authorization;
+  const header = Array.isArray(raw) ? raw[0] : raw;
+  if (!header || typeof header !== 'string') {
+    return { ok: false, status: 401, error: 'missing_session' };
+  }
+  const match = /^Bearer\s+(.+)$/i.exec(header);
+  if (!match) {
+    return { ok: false, status: 401, error: 'missing_session' };
+  }
+  const token = match[1].trim();
+  const result = verifyMerchantSession(token, slug);
+  if (!result.ok) {
+    if (result.reason === 'slug_mismatch') {
+      return { ok: false, status: 403, error: 'slug_mismatch' };
+    }
+    return { ok: false, status: 401, error: 'invalid_session' };
+  }
+  return { ok: true, email: result.payload.email };
+}
+
+/**
+ * IMPL-2 agent-chat gate — extract + verify a merchant session Bearer
+ * WITHOUT a URL slug to check against (agent-chat is addressed by
+ * sessionId, not slug). The slug embedded in the signed payload is used
+ * as the expected slug, so this verifies signature + expiry and returns
+ * WHICH merchant the token authorises; the caller must then compare
+ * that slug against the resource's owning merchant.
+ */
+export type BearerAuthResult =
+  | { ok: true; slug: string; email: string }
+  | { ok: false; status: 401; error: 'missing_session' | 'invalid_session' };
+
+export function authoriseMerchantBearer(
+  headers: Record<string, string | string[] | undefined> | undefined,
+): BearerAuthResult {
+  const raw = headers?.authorization ?? headers?.Authorization;
+  const header = Array.isArray(raw) ? raw[0] : raw;
+  if (!header || typeof header !== 'string') {
+    return { ok: false, status: 401, error: 'missing_session' };
+  }
+  const match = /^Bearer\s+(.+)$/i.exec(header);
+  if (!match) {
+    return { ok: false, status: 401, error: 'missing_session' };
+  }
+  const token = match[1].trim();
+  // Read the (unverified) payload slug, then run the full HMAC +
+  // expiry verification against that same slug. A forged slug cannot
+  // pass because the signature covers the payload JSON.
+  const lastDot = token.lastIndexOf('.');
+  if (lastDot <= 0) {
+    return { ok: false, status: 401, error: 'invalid_session' };
+  }
+  let claimedSlug: string;
+  try {
+    const parsed = JSON.parse(base64UrlDecode(token.slice(0, lastDot))) as { slug?: unknown };
+    if (typeof parsed?.slug !== 'string' || !parsed.slug) {
+      return { ok: false, status: 401, error: 'invalid_session' };
+    }
+    claimedSlug = parsed.slug;
+  } catch {
+    return { ok: false, status: 401, error: 'invalid_session' };
+  }
+  const result = verifyMerchantSession(token, claimedSlug);
+  if (!result.ok) {
+    return { ok: false, status: 401, error: 'invalid_session' };
+  }
+  return { ok: true, slug: result.payload.slug, email: result.payload.email };
+}
+
+/**
  * Compose the magic-link URL the merchant clicks from their email.
  * Centralised so the email body + the test fixtures agree on shape.
  */

@@ -16,6 +16,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { readActiveMerchantSession } from '../components/RequireMerchant';
 
 interface AgentMessage {
   id?: number;
@@ -162,9 +163,15 @@ export default function MerchantAgentPage(): JSX.Element {
     setSending(true);
     setError(null);
     try {
+      // IMPL-2 — /api/agent-chat is merchant-session gated: send the
+      // magic-link Bearer stored by RequireMerchant for this slug.
+      const stored = slug ? readActiveMerchantSession(slug) : null;
       const res = await fetch('/api/agent-chat', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: {
+          'content-type': 'application/json',
+          ...(stored ? { Authorization: `Bearer ${stored.token}` } : {}),
+        },
         body: JSON.stringify({
           sessionId: session.id,
           messages: [...messages, userMessage].map((m) => ({ role: m.role, content: m.content })),

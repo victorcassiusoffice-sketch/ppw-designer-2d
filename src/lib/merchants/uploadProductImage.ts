@@ -58,6 +58,12 @@ export async function uploadProductImageBlob(input: {
   file: Blob;
   filename: string;
   contentType: ProductImageContentType;
+  /**
+   * Merchant magic-link session token (IMPL-2) — the sign-grant
+   * endpoint now requires `Authorization: Bearer <token>` matching the
+   * merchant slug. Read from the RequireMerchant stored session.
+   */
+  sessionToken: string;
   deps?: UploadDeps;
 }): Promise<UploadProductImageResult> {
   const fetchImpl = input.deps?.fetch ?? globalThis.fetch;
@@ -68,7 +74,10 @@ export async function uploadProductImageBlob(input: {
     `${origin}/api/merchants/${encodeURIComponent(input.merchantSlug)}/products/upload-image`,
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${input.sessionToken}`,
+      },
       body: JSON.stringify({
         filename: input.filename,
         contentType: input.contentType,

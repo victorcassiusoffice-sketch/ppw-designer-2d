@@ -162,3 +162,113 @@ describe('openRouterChat', () => {
     ).rejects.toThrow(/empty completion/);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// IMPL-2 — POST /api/agent-chat merchant-session auth gate.
+// ─────────────────────────────────────────────────────────────────────
+
+import { authoriseAgentChatRequest, type AgentSessionMerchantLookup } from '../agent-chat';
+import { signMerchantSession, DEFAULT_TTL_MS } from '../_lib/merchantSession';
+
+function bearerFor(slug: string): Record<string, string> {
+  const token = signMerchantSession({
+    slug,
+    email: `info@${slug}.test`,
+    exp: Date.now() + DEFAULT_TTL_MS,
+  });
+  return { authorization: `Bearer ${token}` };
+}
+
+function lookupReturning(slug: string): AgentSessionMerchantLookup {
+  return async () => ({ ok: true, merchantSlug: slug });
+}
+
+describe('authoriseAgentChatRequest (IMPL-2 auth gate)', () => {
+  it('400s when sessionId is missing (auth is per-session)', async () => {
+    const r = await authoriseAgentChatRequest(
+      bearerFor('k1-sport'),
+      undefined,
+      lookupReturning('k1-sport'),
+    );
+    expect(r).toMatchObject({ ok: false, status: 400, error: 'sessionId required.' });
+  });
+
+  it('401s when there is no Authorization header', async () => {
+    const r = await authoriseAgentChatRequest({}, 42, lookupReturning('k1-sport'));
+    expect(r).toMatchObject({ ok: false, status: 401, error: 'missing_session' });
+  });
+
+  it('401s on a garbage Bearer token', async () => {
+    const r = await authoriseAgentChatRequest(
+      { authorization: 'Bearer garbage.token' },
+      42,
+      lookupReturning('k1-sport'),
+    );
+    expect(r).toMatchObject({ ok: false, status: 401, error: 'invalid_session' });
+  });
+
+  it('401s on an expired session token', async () => {
+    const expired = signMerchantSession({
+      slug: 'k1-sport',
+      email: 'info@k1-sport.test',
+      exp: Date.now() - 1_000,
+    });
+    const r = await authoriseAgentChatRequest(
+      { authorization: `Bearer ${expired}` },
+      42,
+      lookupReturning('k1-sport'),
+    );
+    expect(r).toMatchObject({ ok: false, status: 401, error: 'invalid_session' });
+  });
+
+  it("403s when the session belongs to a DIFFERENT merchant", async () => {
+    const r = await authoriseAgentChatRequest(
+      bearerFor('other-merchant'),
+      42,
+      lookupReturning('k1-sport'),
+    );
+    expect(r).toMatchObject({ ok: false, status: 403, error: 'session_merchant_mismatch' });
+  });
+
+  it('404s when the sessionId does not exist', async () => {
+    const lookup: AgentSessionMerchantLookup = async () => ({
+      ok: false,
+      status: 404,
+      error: 'agent session not found',
+    });
+    const r = await authoriseAgentChatRequest(bearerFor('k1-sport'), 42, lookup);
+    expect(r).toMatchObject({ ok: false, status: 404 });
+  });
+
+  it('503s when the agent tables are not migrated', async () => {
+    const lookup: AgentSessionMerchantLookup = async () => ({
+      ok: false,
+      status: 503,
+      error: 'agent sessions schema not migrated',
+    });
+    const r = await authoriseAgentChatRequest(bearerFor('k1-sport'), 42, lookup);
+    expect(r).toMatchObject({ ok: false, status: 503 });
+  });
+
+  it('passes when the Bearer slug owns the session', async () => {
+    const r = await authoriseAgentChatRequest(
+      bearerFor('k1-sport'),
+      42,
+      lookupReturning('k1-sport'),
+    );
+    expect(r).toMatchObject({ ok: true, slug: 'k1-sport', email: 'info@k1-sport.test' });
+  });
+
+  it('cannot be forged by re-signing the payload with a wrong secret', async () => {
+    const forged = signMerchantSession(
+      { slug: 'k1-sport', email: 'attacker@x.test', exp: Date.now() + DEFAULT_TTL_MS },
+      'attacker-controlled-secret',
+    );
+    const r = await authoriseAgentChatRequest(
+      { authorization: `Bearer ${forged}` },
+      42,
+      lookupReturning('k1-sport'),
+    );
+    expect(r).toMatchObject({ ok: false, status: 401, error: 'invalid_session' });
+  });
+});

@@ -83,7 +83,7 @@ function apiToStaticShape(api: ApiProduct): { product: Product; raw: ApiProduct 
       value: api.priceMinor,
       currency: (api.currency as Product['price']['currency']) ?? 'USD',
     },
-    commission_pct: 0.07,
+    commission_pct: 0.05,
     shopify_ready: false,
     image_url: api.imageUrl ?? '',
     designer_status: 'Done',

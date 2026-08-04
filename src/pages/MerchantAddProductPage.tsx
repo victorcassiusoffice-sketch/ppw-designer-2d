@@ -278,6 +278,7 @@ export default function MerchantAddProductPage(
             file: decision.imageFile,
             filename: decision.imageFile.name,
             contentType: decision.imageFile.type as ProductImageContentType,
+            sessionToken: session.token,
           });
           imageUrl = blob.blobUrl;
         } catch (err) {

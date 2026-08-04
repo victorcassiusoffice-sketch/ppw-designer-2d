@@ -151,3 +151,114 @@ describe('buildMagicLinkEmail', () => {
     expect(html).not.toContain('<script>');
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// IMPL-2 — MERCHANT_SESSION_SECRET fail-closed + Bearer helpers.
+// ─────────────────────────────────────────────────────────────────────
+
+import { afterEach } from 'vitest';
+import {
+  readMerchantSessionSecret,
+  authoriseMerchantSession,
+  authoriseMerchantBearer,
+} from '../_lib/merchantSession';
+
+describe('readMerchantSessionSecret fail-closed (IMPL-2 check)', () => {
+  const ORIGINAL_SECRET = process.env.MERCHANT_SESSION_SECRET;
+  const ORIGINAL_VERCEL_ENV = process.env.VERCEL_ENV;
+
+  afterEach(() => {
+    if (ORIGINAL_SECRET === undefined) delete process.env.MERCHANT_SESSION_SECRET;
+    else process.env.MERCHANT_SESSION_SECRET = ORIGINAL_SECRET;
+    if (ORIGINAL_VERCEL_ENV === undefined) delete process.env.VERCEL_ENV;
+    else process.env.VERCEL_ENV = ORIGINAL_VERCEL_ENV;
+  });
+
+  it('THROWS in a deployed runtime (VERCEL_ENV set) when the secret is missing', () => {
+    delete process.env.MERCHANT_SESSION_SECRET;
+    process.env.VERCEL_ENV = 'production';
+    expect(() => readMerchantSessionSecret()).toThrow(/MERCHANT_SESSION_SECRET/);
+  });
+
+  it('THROWS in preview deployments too (any VERCEL_ENV counts as deployed)', () => {
+    delete process.env.MERCHANT_SESSION_SECRET;
+    process.env.VERCEL_ENV = 'preview';
+    expect(() => readMerchantSessionSecret()).toThrow(/MERCHANT_SESSION_SECRET/);
+  });
+
+  it('treats a whitespace-only secret as missing in prod', () => {
+    process.env.MERCHANT_SESSION_SECRET = '   ';
+    process.env.VERCEL_ENV = 'production';
+    expect(() => readMerchantSessionSecret()).toThrow(/MERCHANT_SESSION_SECRET/);
+  });
+
+  it('returns the env secret when set', () => {
+    process.env.MERCHANT_SESSION_SECRET = 'real-secret';
+    process.env.VERCEL_ENV = 'production';
+    expect(readMerchantSessionSecret()).toBe('real-secret');
+  });
+
+  it('falls back to the dev secret ONLY outside Vercel (local dev)', () => {
+    delete process.env.MERCHANT_SESSION_SECRET;
+    delete process.env.VERCEL_ENV;
+    expect(readMerchantSessionSecret()).toBe('ppw-merchant-session-dev');
+  });
+});
+
+describe('authoriseMerchantSession (moved to _lib — IMPL-2)', () => {
+  it('accepts a valid Bearer for the matching slug', () => {
+    const token = signMerchantSession(freshPayload());
+    const r = authoriseMerchantSession({ authorization: `Bearer ${token}` }, 'k1-sport');
+    expect(r).toMatchObject({ ok: true, email: 'info@k1-sport.com' });
+  });
+
+  it('401s with no header, 403s on cross-merchant token', () => {
+    expect(authoriseMerchantSession({}, 'k1-sport')).toMatchObject({
+      ok: false,
+      status: 401,
+      error: 'missing_session',
+    });
+    const token = signMerchantSession(freshPayload({ slug: 'other-merchant' }));
+    expect(
+      authoriseMerchantSession({ authorization: `Bearer ${token}` }, 'k1-sport'),
+    ).toMatchObject({ ok: false, status: 403, error: 'slug_mismatch' });
+  });
+});
+
+describe('authoriseMerchantBearer (slug-from-token — IMPL-2 agent-chat gate)', () => {
+  it('returns the signed slug + email for a valid token', () => {
+    const token = signMerchantSession(freshPayload());
+    const r = authoriseMerchantBearer({ authorization: `Bearer ${token}` });
+    expect(r).toMatchObject({ ok: true, slug: 'k1-sport', email: 'info@k1-sport.com' });
+  });
+
+  it('401s when the header is missing or not Bearer-shaped', () => {
+    expect(authoriseMerchantBearer({})).toMatchObject({ ok: false, status: 401 });
+    expect(authoriseMerchantBearer({ authorization: 'Basic abc' })).toMatchObject({
+      ok: false,
+      status: 401,
+    });
+  });
+
+  it('401s on expired and on signature-tampered tokens', () => {
+    const expired = signMerchantSession(freshPayload({ exp: Date.now() - 1 }));
+    expect(authoriseMerchantBearer({ authorization: `Bearer ${expired}` })).toMatchObject({
+      ok: false,
+      status: 401,
+      error: 'invalid_session',
+    });
+    const good = signMerchantSession(freshPayload());
+    const [, sig] = good.split('.');
+    const forgedBody = Buffer.from(
+      JSON.stringify(freshPayload({ slug: 'other-merchant' })),
+      'utf8',
+    )
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    expect(
+      authoriseMerchantBearer({ authorization: `Bearer ${forgedBody}.${sig}` }),
+    ).toMatchObject({ ok: false, status: 401, error: 'invalid_session' });
+  });
+});

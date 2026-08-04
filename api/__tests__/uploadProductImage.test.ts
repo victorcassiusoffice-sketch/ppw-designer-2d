@@ -15,6 +15,21 @@ import {
   UPLOAD_PRODUCT_IMAGE_MAX_BYTES,
 } from '../_lib/merchants/uploadProductImage';
 import merchantsRouter from '../merchants-router';
+import { signMerchantSession, DEFAULT_TTL_MS } from '../_lib/merchantSession';
+
+/**
+ * IMPL-2 — the upload-image sign grant is now merchant-session gated.
+ * In unit tests VERCEL_ENV is unset so the dev fallback secret signs
+ * verifiable tokens.
+ */
+function bearerFor(slug: string): Record<string, string> {
+  const token = signMerchantSession({
+    slug,
+    email: `info@${slug}.test`,
+    exp: Date.now() + DEFAULT_TTL_MS,
+  });
+  return { authorization: `Bearer ${token}` };
+}
 
 const FIXED_NOW_MS = 1748764800000; // 2025-06-01T08:00:00Z — pinned for deterministic blobKey
 const FIXED_SUFFIX = '8charsfx';
@@ -159,7 +174,7 @@ describe('Wellness-Designer-App (c) / merchants-router dispatch — upload-image
       {
         method: 'POST',
         url: '/api/merchants/k1-sport/products/upload-image',
-        headers: {},
+        headers: bearerFor('k1-sport'),
         body: { filename: 'treadmill.png', contentType: 'image/png' },
       } as never,
       res as never,
@@ -193,7 +208,7 @@ describe('Wellness-Designer-App (c) / merchants-router dispatch — upload-image
       {
         method: 'POST',
         url: '/api/merchants/k1-sport/products/upload-image',
-        headers: {},
+        headers: bearerFor('k1-sport'),
         body: { filename: 'foo.webp', contentType: 'image/webp' },
       } as never,
       res as never,
@@ -209,11 +224,78 @@ describe('Wellness-Designer-App (c) / merchants-router dispatch — upload-image
       {
         method: 'POST',
         url: '/api/merchants/k1-sport/products/upload-image',
-        headers: {},
+        headers: bearerFor('k1-sport'),
         body: { filename: 'foo.png', contentType: 'image/png' },
       } as never,
       res as never,
     );
     expect(res.statusCode).toBe(500);
+  });
+
+  // ─── IMPL-2 auth gate ──────────────────────────────────────────────
+
+  it('POST with NO Authorization header returns 401 missing_session', async () => {
+    const res: FakeRes = fakeRes();
+    await merchantsRouter(
+      {
+        method: 'POST',
+        url: '/api/merchants/k1-sport/products/upload-image',
+        headers: {},
+        body: { filename: 'treadmill.png', contentType: 'image/png' },
+      } as never,
+      res as never,
+    );
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toMatchObject({ error: 'missing_session' });
+  });
+
+  it('POST with a garbage Bearer token returns 401 invalid_session', async () => {
+    const res: FakeRes = fakeRes();
+    await merchantsRouter(
+      {
+        method: 'POST',
+        url: '/api/merchants/k1-sport/products/upload-image',
+        headers: { authorization: 'Bearer not-a-real.token' },
+        body: { filename: 'treadmill.png', contentType: 'image/png' },
+      } as never,
+      res as never,
+    );
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toMatchObject({ error: 'invalid_session' });
+  });
+
+  it("POST with ANOTHER merchant's valid session returns 403 slug_mismatch", async () => {
+    const res: FakeRes = fakeRes();
+    await merchantsRouter(
+      {
+        method: 'POST',
+        url: '/api/merchants/k1-sport/products/upload-image',
+        headers: bearerFor('other-merchant'),
+        body: { filename: 'treadmill.png', contentType: 'image/png' },
+      } as never,
+      res as never,
+    );
+    expect(res.statusCode).toBe(403);
+    expect(res.body).toMatchObject({ error: 'slug_mismatch' });
+  });
+
+  it('POST with an EXPIRED session returns 401 invalid_session', async () => {
+    const expired = signMerchantSession({
+      slug: 'k1-sport',
+      email: 'info@k1-sport.test',
+      exp: Date.now() - 1_000,
+    });
+    const res: FakeRes = fakeRes();
+    await merchantsRouter(
+      {
+        method: 'POST',
+        url: '/api/merchants/k1-sport/products/upload-image',
+        headers: { authorization: `Bearer ${expired}` },
+        body: { filename: 'treadmill.png', contentType: 'image/png' },
+      } as never,
+      res as never,
+    );
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toMatchObject({ error: 'invalid_session' });
   });
 });

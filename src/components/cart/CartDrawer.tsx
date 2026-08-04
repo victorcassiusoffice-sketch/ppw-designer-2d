@@ -14,8 +14,9 @@
  * DOM overlay over the canvas section.
  *
  * Brand canon (V4-AU-1): gold accent `#C0A67E`, ink `#0E0E10`, cream
- * `#F5EFE6`. Marketplace fee = 7% (existing platform rate; surfaced
- * here as a transparent line item).
+ * `#F5EFE6`. Marketplace fee = 5% (locked referral-commission rate,
+ * shared constant in src/lib/commission.ts; surfaced here as a
+ * transparent line item).
  */
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -24,8 +25,9 @@ import type { CartLine } from '../../store/cartStore';
 import { useCurrencyStore } from '../../store/currencyStore';
 import { useCartUIStore } from '../../store/cartUIStore';
 import { formatCurrency } from '../../lib/currency';
+import { PPW_COMMISSION_RATE, PPW_COMMISSION_PCT_LABEL } from '../../lib/commission';
 
-const MARKETPLACE_FEE_PCT = 0.07;
+const MARKETPLACE_FEE_PCT = PPW_COMMISSION_RATE;
 const PPW_MARKETPLACE = 'Peak Performance Wellness Marketplace';
 
 interface MerchantGroup {
@@ -171,7 +173,7 @@ export function CartDrawer() {
               </span>
             </div>
             <div className="mt-1 flex justify-between">
-              <span className="text-[#0E0E10]/70">Marketplace fee (7%)</span>
+              <span className="text-[#0E0E10]/70">Marketplace fee ({PPW_COMMISSION_PCT_LABEL})</span>
               <span
                 className="tabular-nums text-[#0E0E10]/80"
                 data-testid="marketplace-fee"

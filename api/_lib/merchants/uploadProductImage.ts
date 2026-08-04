@@ -32,6 +32,7 @@
  */
 
 import { generateClientTokenFromReadWriteToken } from '@vercel/blob/client';
+import { authoriseMerchantSession } from '../merchantSession.js';
 
 const ALLOWED_CONTENT_TYPES = ['image/png', 'image/jpeg'] as const;
 type AllowedContentType = (typeof ALLOWED_CONTENT_TYPES)[number];
@@ -208,6 +209,17 @@ export async function handler(
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     res.status(405).end();
+    return;
+  }
+
+  // IMPL-2 security hardening — this endpoint used to mint Blob upload
+  // tokens with NO auth. Require the same merchant Bearer session used
+  // by the product POST path (api/products.ts), and the session's slug
+  // must match the :slug being uploaded to (401 missing/invalid, 403
+  // cross-merchant).
+  const auth = authoriseMerchantSession(req.headers, slug);
+  if (!auth.ok) {
+    res.status(auth.status).json({ error: auth.error });
     return;
   }
 

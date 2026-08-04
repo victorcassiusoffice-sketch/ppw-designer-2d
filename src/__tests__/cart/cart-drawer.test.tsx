@@ -78,8 +78,8 @@ describe('CartDrawer — visibility', () => {
   });
 });
 
-describe('CartDrawer — totals + 7% marketplace fee', () => {
-  it('renders both subtotal and 7% marketplace-fee line', () => {
+describe('CartDrawer — totals + 5% marketplace fee', () => {
+  it('renders both subtotal and 5% marketplace-fee line (locked commission rate)', () => {
     const product = getAllProducts()[0];
     usePropertyStore.getState().addItem({
       productId: product.id,
@@ -89,7 +89,7 @@ describe('CartDrawer — totals + 7% marketplace fee', () => {
     });
     useCartUIStore.getState().open();
     const html = render();
-    expect(html).toContain('Marketplace fee (7%)');
+    expect(html).toContain('Marketplace fee (5%)');
     expect(html).toContain('data-testid="marketplace-fee"');
     expect(html).toContain('data-testid="cart-drawer-total"');
   });

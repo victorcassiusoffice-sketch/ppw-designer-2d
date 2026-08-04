@@ -9,6 +9,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMarketplaceCart } from '../store/marketplaceCartStore';
+import { PPW_COMMISSION_RATE } from '../lib/commission';
 import '../styles/soft-shop.css';
 
 interface MerchantSubtotal {
@@ -33,7 +34,7 @@ interface QuoteResponse {
   merchantBreakdown: MerchantSubtotal[];
 }
 
-const PPW_COMMISSION_RATE = 0.07;
+// 5% — locked business decision; shared constant in src/lib/commission.ts.
 
 function formatPrice(minor: number, currency: string): string {
   return `${currency} ${(minor / 100).toFixed(2)}`;

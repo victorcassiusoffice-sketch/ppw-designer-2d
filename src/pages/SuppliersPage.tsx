@@ -188,7 +188,7 @@ export default function SuppliersPage() {
             ship to the customer, and we handle payment routing via Stripe Connect.
           </p>
           <ul className="mt-5 grid gap-2 text-sm text-ppw-ink/80 sm:grid-cols-3">
-            <li className="rounded bg-ppw-sand px-3 py-2"><strong>10%</strong> platform commission</li>
+            <li className="rounded bg-ppw-sand px-3 py-2"><strong>5%</strong> referral commission</li>
             <li className="rounded bg-ppw-sand px-3 py-2"><strong>14-day</strong> payout hold for refund protection</li>
             <li className="rounded bg-ppw-sand px-3 py-2"><strong>You</strong> control pricing &amp; inventory</li>
           </ul>
