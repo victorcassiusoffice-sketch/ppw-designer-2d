@@ -35,7 +35,8 @@ export interface PaypalCheckoutLineItem {
   productId: string;
   name: string;
   quantity: number;
-  /** Smallest unit (cents for USD/EUR/GBP; rupees for MUR). */
+  /** Smallest unit for ALL currencies — cents for USD/EUR/GBP AND
+   *  cents-of-MUR for MUR (Phase 0 wire-contract 2026-08-04). */
   unitAmount: number;
   currency: Currency;
   imageUrl?: string;
@@ -75,10 +76,10 @@ export function buildPaypalCheckoutPayload(args: {
     productId: l.productId,
     name: l.product.name,
     quantity: l.quantity,
-    unitAmount:
-      args.cart.currency === 'MUR'
-        ? Math.round(l.unitPriceDisplay)
-        : Math.round(l.unitPriceDisplay * 100),
+    // MINOR units for every currency (MUR included — cents-of-MUR).
+    // The old MUR-as-major special case caused a 100× overcharge once
+    // the server standardised on minor units (IMPL-1 defect 3).
+    unitAmount: Math.round(l.unitPriceDisplay * 100),
     currency: args.cart.currency,
     imageUrl: l.product.image_url || undefined,
   }));

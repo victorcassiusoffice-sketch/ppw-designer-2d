@@ -25,11 +25,16 @@ export interface CartLineItemPayload {
   productId: string;
   name: string;
   quantity: number;
-  /** Smallest unit of currency (cents for USD/EUR/GBP; rupees for MUR). */
+  /** Smallest unit of currency for ALL currencies — cents for
+   *  USD/EUR/GBP AND cents-of-MUR for MUR (Phase 0 money-path 2026-08-04
+   *  standardisation; matches Neon `products.price_minor`). */
   unitAmount: number;
   currency: Currency;
   /** Public image URL (optional — Stripe will gracefully skip if missing). */
   imageUrl?: string;
+  /** Catalog SKU — filled server-side by re-pricing so PayPal items /
+   *  order_items carry the real SKU. Optional on the wire. */
+  sku?: string;
 }
 
 export interface RoomSnapshot {

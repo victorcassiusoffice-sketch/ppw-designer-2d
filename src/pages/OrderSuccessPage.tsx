@@ -12,13 +12,16 @@
  */
 
 import { Link, useSearchParams } from 'react-router-dom';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CartPageHeader } from '../components/CartPageHeader';
 import { useOrdersStore } from '../store/ordersStore';
 import { useCartMutations } from '../store/cartStore';
 import { formatCurrency } from '../lib/currency';
 import { generatePlanPdf, triggerPdfDownload } from '../lib/planPdf';
 import { readLastOrderSnapshot, type LastOrderSnapshot } from '../lib/orderSnapshot';
+import { runPaypalReturnCapture, stripPaypalReturnParams } from '../lib/paypalReturn';
+
+type CaptureState = 'capturing' | 'failed' | 'done';
 
 export default function OrderSuccessPage() {
   const [params] = useSearchParams();
@@ -31,20 +34,74 @@ export default function OrderSuccessPage() {
   const [pdfError, setPdfError] = useState<string | null>(null);
   const downloadedOnce = useRef(false);
 
+  // PayPal return leg (IMPL-1 defect 1b): PayPal redirects back with
+  // ?token=<paypalOrderId>&rail=paypal — the funds are only AUTHORISED
+  // at that point. Capture BEFORE marking the local order paid. Read
+  // once (the params are stripped after a successful capture).
+  const paypalReturnRef = useRef<{ token: string; orderRef: string } | null>(
+    (() => {
+      const token = params.get('token');
+      const rail = params.get('rail');
+      const id = params.get('id');
+      return token && rail === 'paypal' && id ? { token, orderRef: id } : null;
+    })(),
+  );
+  const [captureState, setCaptureState] = useState<CaptureState>(
+    paypalReturnRef.current ? 'capturing' : 'done',
+  );
+  const [captureError, setCaptureError] = useState<string | null>(null);
+
   const order = useMemo(() => {
     if (orderId) return orders.find((o) => o.id === orderId);
     return orders[0]; // newest first
   }, [orders, orderId]);
 
-  // Mark paid + wipe cart mutations once on mount.
+  const runCapture = useCallback(async () => {
+    const ret = paypalReturnRef.current;
+    if (!ret) {
+      setCaptureState('done');
+      return;
+    }
+    setCaptureState('capturing');
+    setCaptureError(null);
+    await runPaypalReturnCapture({
+      token: ret.token,
+      orderRef: ret.orderRef,
+      onSuccess: () => {
+        if (typeof window !== 'undefined') {
+          window.history.replaceState(
+            null,
+            '',
+            stripPaypalReturnParams(window.location.href),
+          );
+        }
+        setCaptureState('done');
+      },
+      onFailure: (msg) => {
+        setCaptureError(msg);
+        setCaptureState('failed');
+      },
+    });
+  }, []);
+
   useEffect(() => {
-    if (order && order.status !== 'paid') updateStatus(order.id, 'paid');
-    resetCart();
+    if (paypalReturnRef.current) void runCapture();
+    // Run once on mount — retries go through the button.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Build the PDF once we know which order to use.
+  // Mark paid + wipe cart mutations only once the payment is settled —
+  // a failed PayPal capture must NOT mark the order paid or wipe the cart.
   useEffect(() => {
+    if (captureState !== 'done') return;
+    if (order && order.status !== 'paid') updateStatus(order.id, 'paid');
+    resetCart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [captureState]);
+
+  // Build the PDF once we know which order to use (and payment settled).
+  useEffect(() => {
+    if (captureState !== 'done') return;
     if (!order) return;
     const snap = readLastOrderSnapshot();
     try {
@@ -60,10 +117,51 @@ export default function OrderSuccessPage() {
       setPdfError(msg);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order?.id]);
+  }, [order?.id, captureState]);
 
   function downloadAgain() {
     if (pdfBlob && order) triggerPdfDownload(pdfBlob, `PPWellness-Plan-${order.id}.pdf`);
+  }
+
+  if (captureState === 'capturing') {
+    return (
+      <div className="flex min-h-screen flex-col bg-ppw-sand text-ppw-ink">
+        <CartPageHeader />
+        <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center p-6 text-center">
+          <p className="text-xl font-semibold">Confirming your payment with PayPal…</p>
+          <p className="mt-2 text-xs text-ppw-slate">Please keep this page open.</p>
+        </main>
+      </div>
+    );
+  }
+
+  if (captureState === 'failed') {
+    return (
+      <div className="flex min-h-screen flex-col bg-ppw-sand text-ppw-ink">
+        <CartPageHeader />
+        <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center p-6 text-center">
+          <p className="text-xl font-semibold">Payment not confirmed yet</p>
+          <p className="mt-2 max-w-md text-sm text-ppw-slate">
+            Your PayPal approval went through but we could not confirm the
+            capture{captureError ? ` (${captureError})` : ''}. No money is
+            taken until the capture completes — please retry.
+          </p>
+          <button
+            type="button"
+            onClick={() => void runCapture()}
+            className="mt-4 rounded-md bg-ppw-teal px-5 py-2.5 text-sm font-semibold text-white hover:bg-ppw-teal/90"
+          >
+            Retry payment confirmation
+          </button>
+          <Link
+            to="/checkout"
+            className="mt-3 text-xs font-medium text-ppw-slate hover:text-ppw-teal"
+          >
+            Back to checkout
+          </Link>
+        </main>
+      </div>
+    );
   }
 
   return (

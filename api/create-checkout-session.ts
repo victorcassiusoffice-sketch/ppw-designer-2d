@@ -20,6 +20,7 @@
 
 import Stripe from 'stripe';
 import { withSentry } from "./_lib/sentry.js";
+import { repriceCart, type Repricer } from './_lib/pricing/repriceCart.js';
 import {
   hashBody,
   checkIdempotency,
@@ -220,32 +221,56 @@ export function buildLineItems(
 export async function processCheckoutRequest(
   payload: unknown,
   stripe: Pick<Stripe, 'checkout'>,
-): Promise<{ status: 200; url: string } | { status: 400 | 500; error: string }> {
+  repricer: Repricer = repriceCart,
+): Promise<
+  | { status: 200; url: string; priceAdjusted: boolean }
+  | { status: 400 | 500; error: string }
+> {
   const v = validateRequest(payload);
   if (!v.ok) return { status: 400, error: v.error };
   const { data } = v;
+
+  // Server-side re-pricing (IMPL-1 defect 2) — client amounts are
+  // advisory; the server price is authoritative. Mirrors the PayPal rail.
+  const rp = await repricer(data.cart, data.currency);
+  if (!rp.ok) return { status: rp.status, error: rp.error };
+  data.cart = rp.cart;
+
   try {
     // Stripe-native idempotency: a client retry with the identical payload
     // (same orderId + same cart) returns the SAME session instead of
     // minting a duplicate. The body hash is part of the key so a genuinely
     // changed cart gets a fresh session rather than a Stripe key-reuse 400.
     const idempotencyKey = `checkout:${data.orderId}:${hashBody(payload)}`;
+    const metadata = buildMetadata(data);
+    // Compact repriced-cart snapshot (sku/qty/unit-minor) so the webhook
+    // can write order_items rows (IMPL-1 defect 6). Omitted when it
+    // would blow Stripe's 500-char metadata value cap.
+    const cartMeta = JSON.stringify(
+      data.cart.map((li) => ({
+        s: li.sku ?? li.productId,
+        q: li.quantity,
+        u: li.unitAmount,
+      })),
+    );
+    if (cartMeta.length <= 490) metadata.cart = cartMeta;
     const session = await stripe.checkout.sessions.create(
       {
         mode: 'payment',
         payment_method_types: ['card'],
         customer_email: data.customer.email,
+        client_reference_id: data.orderId.slice(0, 200),
         line_items: buildLineItems(data.cart, data.currency),
         success_url: data.successUrl,
         cancel_url: data.cancelUrl,
-        metadata: buildMetadata(data),
+        metadata,
       },
       { idempotencyKey },
     );
     if (!session.url) {
       return { status: 500, error: 'Checkout session created without a URL.' };
     }
-    return { status: 200, url: session.url };
+    return { status: 200, url: session.url, priceAdjusted: rp.priceAdjusted };
   } catch (err) {
     // Sanitise Stripe errors — surface ONLY the safe `message` field. No
     // env-var names, no stack, no raw request id.
@@ -318,7 +343,7 @@ async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
       try {
         await storeIdempotency('create-checkout-session', idemKey, {
           status: 200,
-          body: { url: result.url },
+          body: { url: result.url, priceAdjusted: result.priceAdjusted },
           bodyHash,
         });
       } catch {
@@ -326,7 +351,7 @@ async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
       }
     }
     res.status(200);
-    res.json({ url: result.url });
+    res.json({ url: result.url, priceAdjusted: result.priceAdjusted });
     return;
   }
   res.status(result.status);

@@ -41,7 +41,6 @@ function formatPrice(minor: number, currency: string): string {
 
 export default function MarketplaceCheckoutPage(): JSX.Element {
   const items = useMarketplaceCart((s) => s.items);
-  const clear = useMarketplaceCart((s) => s.clear);
   const navigate = useNavigate();
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -142,8 +141,9 @@ export default function MarketplaceCheckoutPage(): JSX.Element {
       if (!res.ok) {
         throw new Error(j.error ?? `HTTP ${res.status}`);
       }
-      // Clear cart only after we have a confirmed PayPal token.
-      clear();
+      // IMPL-1 defect 4: do NOT clear the cart here. The buyer may cancel
+      // at PayPal and come back via cancelUrl — the cart must survive.
+      // The cart is cleared on CAPTURE SUCCESS (OrderTrackPage return leg).
       if (j.approvalUrl) {
         window.location.href = j.approvalUrl;
         return;

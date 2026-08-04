@@ -6,7 +6,10 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   processCaptureRequest,
   validateCaptureRequest,
+  extractBuyerEmail,
+  isAlreadyCapturedError,
 } from '../_lib/paypal/captureOrder';
+import { buildPaypalCustomId, parsePaypalCustomId } from '../_lib/paypal/customId';
 import { _resetPaypalTokenCacheForTests } from '../_lib/paypalClient';
 
 describe('validateCaptureRequest', () => {
@@ -139,5 +142,118 @@ describe('processCaptureRequest', () => {
       recorder,
     );
     expect(res.status).toBe(200);
+  });
+
+  it('treats 422 ORDER_ALREADY_CAPTURED as success (idempotent retry)', async () => {
+    const fakeFetch = vi.fn(async (url: string | URL) => {
+      const u = String(url);
+      if (u.endsWith('/v1/oauth2/token')) {
+        return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+      return new Response(
+        JSON.stringify({
+          name: 'UNPROCESSABLE_ENTITY',
+          details: [{ issue: 'ORDER_ALREADY_CAPTURED', description: 'Order already captured.' }],
+        }),
+        { status: 422, headers: { 'content-type': 'application/json' } },
+      );
+    }) as unknown as typeof fetch;
+    const recorder = vi.fn();
+    const res = await processCaptureRequest(
+      { paypalOrderId: 'PAYPAL-X', ppwOrderId: 'PPW-Y' },
+      fakeFetch,
+      recorder,
+    );
+    expect(res.status).toBe(200);
+    if (res.status === 200) {
+      expect(res.paymentStatus).toBe('captured');
+      expect(res.alreadyCaptured).toBe(true);
+    }
+    // First capture recorded everything — no double-record on retry.
+    expect(recorder).not.toHaveBeenCalled();
+  });
+
+  it('still 500s on a 422 that is NOT already-captured', async () => {
+    const fakeFetch = vi.fn(async (url: string | URL) => {
+      const u = String(url);
+      if (u.endsWith('/v1/oauth2/token')) {
+        return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+      return new Response(
+        JSON.stringify({ details: [{ issue: 'INSTRUMENT_DECLINED' }] }),
+        { status: 422, headers: { 'content-type': 'application/json' } },
+      );
+    }) as unknown as typeof fetch;
+    const res = await processCaptureRequest(
+      { paypalOrderId: 'PAYPAL-X', ppwOrderId: 'PPW-Y' },
+      fakeFetch,
+      vi.fn(),
+    );
+    expect(res.status).toBe(500);
+  });
+});
+
+describe('isAlreadyCapturedError', () => {
+  it('detects the ORDER_ALREADY_CAPTURED issue', () => {
+    expect(isAlreadyCapturedError({ details: [{ issue: 'ORDER_ALREADY_CAPTURED' }] })).toBe(true);
+  });
+  it('rejects other issues / malformed bodies', () => {
+    expect(isAlreadyCapturedError({ details: [{ issue: 'INSTRUMENT_DECLINED' }] })).toBe(false);
+    expect(isAlreadyCapturedError(null)).toBe(false);
+    expect(isAlreadyCapturedError({})).toBe(false);
+    expect(isAlreadyCapturedError('nope')).toBe(false);
+  });
+});
+
+describe('buyer email extraction (defect 5)', () => {
+  it('custom_id round-trips orderRef + email', () => {
+    const packed = buildPaypalCustomId('mp_abc123', 'buyer@example.com');
+    expect(parsePaypalCustomId(packed)).toEqual({
+      orderRef: 'mp_abc123',
+      email: 'buyer@example.com',
+    });
+  });
+
+  it('parse handles orderRef-only and empty values', () => {
+    expect(parsePaypalCustomId('mp_abc')).toEqual({ orderRef: 'mp_abc', email: null });
+    expect(parsePaypalCustomId('')).toEqual({ orderRef: null, email: null });
+    expect(parsePaypalCustomId(undefined)).toEqual({ orderRef: null, email: null });
+  });
+
+  it('prefers the checkout email from custom_id over the PayPal payer email', () => {
+    const email = extractBuyerEmail({
+      payer: { email_address: 'paypal-account@example.com' },
+      purchase_units: [
+        {
+          payments: {
+            captures: [
+              {
+                custom_id: buildPaypalCustomId('PPW-1', 'checkout@example.com'),
+                amount: { currency_code: 'MUR', value: '1000.00' },
+              },
+            ],
+          },
+        },
+      ],
+    });
+    expect(email).toBe('checkout@example.com');
+  });
+
+  it('falls back to the PayPal payer email when custom_id has no email', () => {
+    const email = extractBuyerEmail({
+      payer: { email_address: 'paypal-account@example.com' },
+      purchase_units: [{ payments: { captures: [{ custom_id: 'PPW-1' }] } }],
+    });
+    expect(email).toBe('paypal-account@example.com');
+  });
+
+  it('returns empty string when nothing is available', () => {
+    expect(extractBuyerEmail({})).toBe('');
   });
 });

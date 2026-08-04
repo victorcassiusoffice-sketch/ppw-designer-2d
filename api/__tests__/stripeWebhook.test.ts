@@ -103,6 +103,13 @@ describe('buildOrderSummaryFromSession', () => {
     const s = makeSession({ customer_email: null, customer_details: null });
     expect(buildOrderSummaryFromSession(s)).toBeNull();
   });
+
+  it('treats MUR amount_total as minor units (Phase 0 wire-contract)', () => {
+    const summary = buildOrderSummaryFromSession(makeSession());
+    // 4999900 minor (cents-of-MUR) → Rs 49,999.00 major.
+    expect(summary!.total).toBe(49999);
+    expect(summary!.currency).toBe('MUR');
+  });
 });
 
 describe('dispatchEvent', () => {
@@ -144,6 +151,48 @@ describe('dispatchEvent', () => {
     expect(emailLib.sendOrderConfirmation).not.toHaveBeenCalled();
     expect(emailLib.sendOrderAlertToVic).not.toHaveBeenCalled();
     expect(emailLib.sendPaymentFailedAlertToVic).not.toHaveBeenCalled();
+  });
+
+  it('on checkout.session.completed: records the order in Neon (IMPL-1 defect 6)', async () => {
+    const recorder = vi.fn().mockResolvedValue({
+      ok: true,
+      ppwOrderId: 'PPW-TEST-001',
+      orderUpserted: true,
+      itemsInserted: 2,
+    });
+    const event = {
+      id: 'evt_rec_1',
+      type: 'checkout.session.completed',
+      data: { object: makeSession() },
+    } as unknown as Stripe.Event;
+    await dispatchEvent(event, makeStripe(), recorder);
+    expect(recorder).toHaveBeenCalledTimes(1);
+    expect(recorder.mock.calls[0][0]).toMatchObject({ id: 'cs_test_abc' });
+    // Emails still fire after recording.
+    expect(emailLib.sendOrderConfirmation).toHaveBeenCalledTimes(1);
+  });
+
+  it('order-record failure does NOT block the confirmation emails', async () => {
+    const recorder = vi.fn().mockRejectedValue(new Error('neon down'));
+    const event = {
+      id: 'evt_rec_2',
+      type: 'checkout.session.completed',
+      data: { object: makeSession() },
+    } as unknown as Stripe.Event;
+    await dispatchEvent(event, makeStripe(), recorder);
+    expect(emailLib.sendOrderConfirmation).toHaveBeenCalledTimes(1);
+    expect(emailLib.sendOrderAlertToVic).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not record orders for non-checkout events', async () => {
+    const recorder = vi.fn();
+    const event = {
+      id: 'evt_rec_3',
+      type: 'payment_intent.payment_failed',
+      data: { object: makePaymentIntent() },
+    } as unknown as Stripe.Event;
+    await dispatchEvent(event, makeStripe(), recorder);
+    expect(recorder).not.toHaveBeenCalled();
   });
 
   it('tolerates listLineItems failure — still emails', async () => {

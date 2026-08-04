@@ -21,6 +21,7 @@
 
 import { withSentry, type MinReq, type MinRes } from '../sentry.js';
 import { readPaypalEnv, paypalFetch } from '../paypalClient.js';
+import { parsePaypalCustomId } from './customId.js';
 import { getDb } from '../../_db/client.js';
 import { orders } from '../../_db/schema.js';
 import { sql } from 'drizzle-orm';
@@ -97,14 +98,38 @@ interface PaypalCaptureResponse {
     // PayPal echoes the items[] array we sent at create-order time when it
     // returns the capture response — recordOrderItemsForOrder reads them.
     items?: PaypalCaptureItem[];
+    custom_id?: string;
     payments?: {
       captures?: Array<{
         id?: string;
         status?: string;
+        custom_id?: string;
         amount?: { currency_code?: string; value?: string };
       }>;
     };
   }>;
+}
+
+/**
+ * Buyer email precedence (IMPL-1 defect 5): the email collected at OUR
+ * checkout (packed into `custom_id` at create-order time) wins over the
+ * PayPal account email, which may be a different address entirely.
+ */
+export function extractBuyerEmail(capture: PaypalCaptureResponse): string {
+  const pu = capture.purchase_units?.[0];
+  const customId = pu?.payments?.captures?.[0]?.custom_id ?? pu?.custom_id;
+  const parsed = parsePaypalCustomId(customId);
+  if (parsed.email) return parsed.email;
+  return capture.payer?.email_address ?? '';
+}
+
+/** True when a PayPal error body says the order was ALREADY captured —
+ *  the retry-safe outcome of the client re-invoking capture. */
+export function isAlreadyCapturedError(body: unknown): boolean {
+  if (!body || typeof body !== 'object') return false;
+  const details = (body as { details?: Array<{ issue?: string }> }).details;
+  if (!Array.isArray(details)) return false;
+  return details.some((d) => d?.issue === 'ORDER_ALREADY_CAPTURED');
 }
 
 /**
@@ -123,13 +148,21 @@ export async function recordCapturedOrder(
     const cap = capture.purchase_units?.[0]?.payments?.captures?.[0];
     const amountStr = cap?.amount?.value ?? '0';
     const currency = cap?.amount?.currency_code ?? 'USD';
-    const totalMinor = Math.round(parseFloat(amountStr) * (currency === 'MUR' ? 1 : 100));
+    // Minor units for ALL currencies (Phase 0 wire-contract) — PayPal
+    // returns a 2-decimal major string, so ×100 unconditionally.
+    const totalMinor = Math.round(parseFloat(amountStr) * 100);
+    const customerEmail = extractBuyerEmail(capture);
     await db.execute(sql`
       INSERT INTO orders (ppw_order_id, customer_email, currency, total_minor, payment_rail, payment_rail_order_id, payment_status, raw_payload)
-      VALUES (${ppwOrderId}, ${''}, ${currency}, ${totalMinor}, ${'paypal'}, ${paypalOrderId}, ${'captured'}, ${JSON.stringify(capture)}::jsonb)
+      VALUES (${ppwOrderId}, ${customerEmail}, ${currency}, ${totalMinor}, ${'paypal'}, ${paypalOrderId}, ${'captured'}, ${JSON.stringify(capture)}::jsonb)
       ON CONFLICT (ppw_order_id) DO UPDATE
         SET payment_status = EXCLUDED.payment_status,
             payment_rail_order_id = EXCLUDED.payment_rail_order_id,
+            customer_email = CASE
+              WHEN orders.customer_email IS NULL OR orders.customer_email = ''
+                THEN EXCLUDED.customer_email
+              ELSE orders.customer_email
+            END,
             raw_payload = EXCLUDED.raw_payload,
             updated_at = NOW()
     `);
@@ -154,7 +187,7 @@ export async function processCaptureRequest(
     capture: PaypalCaptureResponse,
   ) => Promise<{ ok: boolean; error?: string }> = recordCapturedOrder,
 ): Promise<
-  | { status: 200; ok: true; paymentStatus: 'captured' }
+  | { status: 200; ok: true; paymentStatus: 'captured'; alreadyCaptured?: boolean }
   | { status: 400 | 500; error: string }
 > {
   const v = validateCaptureRequest(payload);
@@ -173,6 +206,20 @@ export async function processCaptureRequest(
       fetchFn,
     );
     if (!res.ok) {
+      // Idempotent retry path (IMPL-1 defect 1): a second capture call on
+      // an already-captured order gets a 422 ORDER_ALREADY_CAPTURED from
+      // PayPal. The first capture recorded everything — report success.
+      if (res.status === 422) {
+        let errBody: unknown = null;
+        try {
+          errBody = await res.json();
+        } catch {
+          errBody = null;
+        }
+        if (isAlreadyCapturedError(errBody)) {
+          return { status: 200, ok: true, paymentStatus: 'captured', alreadyCaptured: true };
+        }
+      }
       return { status: 500, error: `PayPal capture failed: ${res.status}` };
     }
     const json = (await res.json()) as PaypalCaptureResponse;
@@ -216,8 +263,12 @@ export async function processCaptureRequest(
       const cap = json.purchase_units?.[0]?.payments?.captures?.[0];
       const amountStr = cap?.amount?.value ?? '0';
       const currency = cap?.amount?.currency_code ?? 'USD';
-      const totalMinor = Math.round(parseFloat(amountStr) * (currency === 'MUR' ? 1 : 100));
-      const customerEmail = json.payer?.email_address ?? null;
+      // Minor units for ALL currencies (Phase 0 wire-contract).
+      const totalMinor = Math.round(parseFloat(amountStr) * 100);
+      // Prefer the email collected at OUR checkout (custom_id) over the
+      // PayPal account email.
+      const extracted = extractBuyerEmail(json);
+      const customerEmail = extracted.length > 0 ? extracted : null;
       const givenName = json.payer?.name?.given_name?.trim();
       const dispatch = await dispatchOrderConfirmedEmail({
         ppwOrderId: v.data.ppwOrderId,
@@ -344,7 +395,11 @@ async function rawHandler(req: MinReq, res: MinRes): Promise<void> {
   const result = await processCaptureRequest(body);
   if (result.status === 200) {
     res.status(200);
-    res.json({ ok: true, paymentStatus: 'captured' });
+    res.json({
+      ok: true,
+      paymentStatus: 'captured',
+      ...(result.alreadyCaptured ? { alreadyCaptured: true } : {}),
+    });
     return;
   }
   res.status(result.status);

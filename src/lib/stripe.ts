@@ -136,12 +136,11 @@ export function buildCheckoutPayload(args: {
     productId: l.productId,
     name: l.product.name,
     quantity: l.quantity,
-    // Stripe wants amounts in the smallest unit; for MUR (no minor unit)
-    // we use the integer value, for the others we multiply by 100.
-    unitAmount:
-      args.cart.currency === 'MUR'
-        ? Math.round(l.unitPriceDisplay)
-        : Math.round(l.unitPriceDisplay * 100),
+    // Stripe wants amounts in the smallest unit. MUR IS a 2-decimal
+    // currency in Stripe, so it gets ×100 like everything else (Phase 0
+    // wire-contract 2026-08-04 — the old MUR-as-major special case was
+    // part of the 100× unit bug, IMPL-1 defect 3).
+    unitAmount: Math.round(l.unitPriceDisplay * 100),
     currency: args.cart.currency,
     imageUrl: l.product.image_url || undefined,
   }));

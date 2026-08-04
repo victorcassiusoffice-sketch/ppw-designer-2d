@@ -19,6 +19,8 @@
 
 import { withSentry, type MinReq, type MinRes } from '../sentry.js';
 import { readPaypalEnv, paypalFetch } from '../paypalClient.js';
+import { buildPaypalCustomId } from './customId.js';
+import { repriceCart, type Repricer } from '../pricing/repriceCart.js';
 import type {
   CartLineItemPayload,
   CustomerInfo,
@@ -133,22 +135,23 @@ export function validatePaypalRequest(
 /**
  * Convert our internal minor-unit line items to PayPal's
  * decimal-string format. PayPal wants "value" as a string like "29.99",
- * always with 2 decimals for currencies that have minor units. MUR has
- * no minor unit (it's effectively integer rupees), so we send it with
- * 2 decimal zeros for PayPal's parser.
+ * always with 2 decimals.
+ *
+ * Phase 0 money-path (2026-08-04): the wire contract is MINOR units for
+ * ALL currencies — MUR included (cents-of-MUR, matching Neon
+ * `products.price_minor`). Previously MUR was treated as major units
+ * here while the marketplace client sent minor units, producing a 100×
+ * overcharge (IMPL-1 defect 3). Divide by 100 unconditionally.
  */
-export function toPaypalAmount(unitAmount: number, currency: Currency): string {
-  // For USD/EUR/GBP unitAmount is in cents - divide by 100.
-  // For MUR our payload uses integer rupees (no minor unit).
-  const rupeeMode = currency === 'MUR';
-  const major = rupeeMode ? unitAmount : unitAmount / 100;
-  return major.toFixed(2);
+export function toPaypalAmount(unitAmount: number, _currency: Currency): string {
+  return (unitAmount / 100).toFixed(2);
 }
 
 export function buildPaypalOrderBody(req: ValidatedPaypalRequest): {
   intent: 'CAPTURE';
   purchase_units: Array<{
     reference_id: string;
+    custom_id?: string;
     description?: string;
     amount: {
       currency_code: string;
@@ -187,7 +190,10 @@ export function buildPaypalOrderBody(req: ValidatedPaypalRequest): {
       quantity: String(li.quantity),
       unit_amount: { currency_code: currency, value: unit },
     };
-    if (li.productId) item.sku = li.productId.slice(0, 127);
+    // Prefer the server-resolved catalog SKU (set by re-pricing) — the
+    // capture-side order_items recorder looks products up by SKU.
+    const sku = li.sku ?? li.productId;
+    if (sku) item.sku = sku.slice(0, 127);
     return item;
   });
   const totalStr = runningTotal.toFixed(2);
@@ -199,6 +205,10 @@ export function buildPaypalOrderBody(req: ValidatedPaypalRequest): {
     purchase_units: [
       {
         reference_id: req.orderId.slice(0, 256),
+        // orderRef + checkout email — echoed back on capture responses
+        // and PAYMENT.CAPTURE.* webhooks (defect 5: buyer email; also
+        // lets the webhook resolve the PPW order for capture events).
+        custom_id: buildPaypalCustomId(req.orderId, req.customer.email),
         description: (req.notes ?? '').slice(0, 127) || undefined,
         amount: {
           currency_code: currency,
@@ -233,8 +243,9 @@ interface PaypalOrderResponse {
 export async function processPaypalOrderRequest(
   payload: unknown,
   fetchFn: typeof fetch = fetch,
+  repricer: Repricer = repriceCart,
 ): Promise<
-  | { status: 200; paypalOrderId: string; approvalUrl: string }
+  | { status: 200; paypalOrderId: string; approvalUrl: string; priceAdjusted: boolean }
   | { status: 400 | 500; error: string }
 > {
   const v = validatePaypalRequest(payload);
@@ -245,6 +256,13 @@ export async function processPaypalOrderRequest(
   } catch {
     return { status: 500, error: 'PayPal not configured' };
   }
+
+  // Server-side re-pricing (IMPL-1 defect 2) — client amounts are
+  // advisory; the server price is authoritative.
+  const rp = await repricer(v.data.cart, v.data.currency);
+  if (!rp.ok) return { status: rp.status, error: rp.error };
+  v.data.cart = rp.cart;
+
   try {
     const body = buildPaypalOrderBody(v.data);
     const res = await paypalFetch(
@@ -265,7 +283,12 @@ export async function processPaypalOrderRequest(
     if (!json.id) return { status: 500, error: 'PayPal returned no order id.' };
     const approve = (json.links ?? []).find((l) => l.rel === 'approve' || l.rel === 'payer-action');
     if (!approve?.href) return { status: 500, error: 'PayPal returned no approval URL.' };
-    return { status: 200, paypalOrderId: json.id, approvalUrl: approve.href };
+    return {
+      status: 200,
+      paypalOrderId: json.id,
+      approvalUrl: approve.href,
+      priceAdjusted: rp.priceAdjusted,
+    };
   } catch (err) {
     const message =
       err instanceof Error && typeof err.message === 'string'
@@ -300,7 +323,11 @@ async function rawHandler(req: MinReq, res: MinRes): Promise<void> {
   const result = await processPaypalOrderRequest(body);
   if (result.status === 200) {
     res.status(200);
-    res.json({ paypalOrderId: result.paypalOrderId, approvalUrl: result.approvalUrl });
+    res.json({
+      paypalOrderId: result.paypalOrderId,
+      approvalUrl: result.approvalUrl,
+      priceAdjusted: result.priceAdjusted,
+    });
     return;
   }
   res.status(result.status);

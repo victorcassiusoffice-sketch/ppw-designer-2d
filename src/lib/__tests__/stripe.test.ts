@@ -139,7 +139,7 @@ describe('buildCheckoutPayload', () => {
     expect(payload.notes).toBe('leave at gate');
   });
 
-  it('keeps MUR amounts as integer rupees (no minor unit)', () => {
+  it('sends MUR as minor units (×100 — Phase 0 wire-contract)', () => {
     const cart = fakeCart();
     cart.currency = 'MUR';
     cart.lines = [{ ...cart.lines[1], unitPriceDisplay: 5000, lineTotalDisplay: 5000 }];
@@ -152,8 +152,24 @@ describe('buildCheckoutPayload', () => {
       origin: 'http://x',
       orderId: 'PPW-X',
     });
-    expect(payload.lineItems[0].unitAmount).toBe(5000);
+    expect(payload.lineItems[0].unitAmount).toBe(500000);
     expect(payload.currency).toBe('MUR');
+  });
+
+  it('MUR regression (designer rail, Stripe): Rs 1,000 becomes 100000 minor on the wire', () => {
+    const cart = fakeCart();
+    cart.currency = 'MUR';
+    cart.lines = [{ ...cart.lines[1], unitPriceDisplay: 1000, lineTotalDisplay: 1000 }];
+    const payload = buildCheckoutPayload({
+      cart,
+      customer: {
+        name: 'Vic', email: 'v@ppw.co', phone: '+230', addressLine1: '1',
+        addressLine2: '', city: 'P-L', postcode: '0', country: 'MU', notes: '',
+      },
+      origin: 'http://x',
+      orderId: 'PPW-X',
+    });
+    expect(payload.lineItems[0].unitAmount).toBe(100000);
   });
 });
 

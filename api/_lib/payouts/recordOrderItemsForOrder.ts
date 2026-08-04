@@ -55,9 +55,10 @@ export interface OrderItemsInsertSummary {
 }
 
 /** Parse a PayPal `unit_amount.value` decimal string + currency_code
- *  into our minor-unit integer convention. MUR is stored as integer
- *  rupees (no minor unit per the existing `recordCapturedOrder`
- *  convention); USD/EUR/GBP get ×100. */
+ *  into our minor-unit integer convention. Phase 0 wire-contract
+ *  (2026-08-04): minor units for ALL currencies — MUR included
+ *  (cents-of-MUR, matching Neon `products.price_minor`) — so ×100
+ *  unconditionally. */
 export function paypalItemTotalMinor(item: PaypalCaptureItem): {
   unitMinor: number;
   lineMinor: number;
@@ -68,7 +69,7 @@ export function paypalItemTotalMinor(item: PaypalCaptureItem): {
   const valueStr = item.unit_amount?.value ?? '0';
   const parsed = parseFloat(valueStr);
   if (!Number.isFinite(parsed) || parsed < 0) return null;
-  const unitMinor = Math.round(parsed * (currency === 'MUR' ? 1 : 100));
+  const unitMinor = Math.round(parsed * 100);
   const quantity = Number(item.quantity ?? 1);
   if (!Number.isFinite(quantity) || quantity <= 0) return null;
   return {

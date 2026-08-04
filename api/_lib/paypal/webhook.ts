@@ -32,6 +32,7 @@
 
 import { withSentry, type MinReq, type MinRes } from '../sentry.js';
 import { readPaypalEnv, paypalFetch } from '../paypalClient.js';
+import { parsePaypalCustomId } from './customId.js';
 import { recordWebhookEvent } from '../webhookDedupe.js';
 import { getDb } from '../../_db/client.js';
 import { sql } from 'drizzle-orm';
@@ -148,13 +149,15 @@ export async function applyEventToOrder(event: PaypalEvent): Promise<{ updated: 
   const type = event.event_type;
   if (!type) return { updated: false };
   const r = event.resource ?? {};
-  // PayPal puts our orderId in `custom_id` or `invoice_id` for captures
-  // and as `purchase_units[0].reference_id` for orders.
+  // PayPal puts our custom_id (packed `orderRef|email` — see customId.ts)
+  // on capture resources, and `purchase_units[0].reference_id` on orders.
+  const fromCustomId = parsePaypalCustomId(r.custom_id);
   const ppwOrderId =
-    r.custom_id ||
+    fromCustomId.orderRef ||
     r.invoice_id ||
     r.purchase_units?.[0]?.reference_id ||
     null;
+  const customerEmail = fromCustomId.email ?? '';
   const paypalRailId = r.supplementary_data?.related_ids?.order_id || r.id || null;
 
   let nextStatus: 'captured' | 'failed' | 'refunded' | null = null;
@@ -179,10 +182,15 @@ export async function applyEventToOrder(event: PaypalEvent): Promise<{ updated: 
     const db = getDb();
     await db.execute(sql`
       INSERT INTO orders (ppw_order_id, customer_email, currency, total_minor, payment_rail, payment_rail_order_id, payment_status, raw_payload)
-      VALUES (${ppwOrderId}, ${''}, ${r.amount?.currency_code ?? 'USD'}, ${Math.round(parseFloat(r.amount?.value ?? '0') * 100)}, ${'paypal'}, ${paypalRailId}, ${nextStatus}, ${JSON.stringify(event)}::jsonb)
+      VALUES (${ppwOrderId}, ${customerEmail}, ${r.amount?.currency_code ?? 'USD'}, ${Math.round(parseFloat(r.amount?.value ?? '0') * 100)}, ${'paypal'}, ${paypalRailId}, ${nextStatus}, ${JSON.stringify(event)}::jsonb)
       ON CONFLICT (ppw_order_id) DO UPDATE
         SET payment_status = EXCLUDED.payment_status,
             payment_rail_order_id = COALESCE(EXCLUDED.payment_rail_order_id, orders.payment_rail_order_id),
+            customer_email = CASE
+              WHEN orders.customer_email IS NULL OR orders.customer_email = ''
+                THEN EXCLUDED.customer_email
+              ELSE orders.customer_email
+            END,
             raw_payload = EXCLUDED.raw_payload,
             updated_at = NOW()
     `);

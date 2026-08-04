@@ -4,10 +4,24 @@
  * Reads from /api/orders/:ref + polls /api/orders/:ref/status every 30s.
  * Renders the order's aggregate status + per-item status + tracking
  * data per item (from order_item_events).
+ *
+ * Phase 0 money-path (IMPL-1 defect 1a): this page is ALSO the PayPal
+ * return leg for the marketplace rail. When PayPal redirects back with
+ * `?token=<paypalOrderId>` we capture the funds via
+ * /api/capturePaypalOrder BEFORE loading the order, clear the
+ * marketplace cart on success (defect 4), strip the round-trip query
+ * params, and resume normal polling. On failure a retry button
+ * re-invokes the capture (idempotent server-side).
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useMarketplaceCart } from '../store/marketplaceCartStore';
+import {
+  readPaypalReturnParams,
+  runPaypalReturnCapture,
+  stripPaypalReturnParams,
+} from '../lib/paypalReturn';
 
 interface OrderItem {
   id: number;
@@ -61,14 +75,69 @@ function statusColor(status: string | null): string {
   }
 }
 
+type CaptureState = 'idle' | 'capturing' | 'failed' | 'done';
+
 export default function OrderTrackPage(): JSX.Element {
   const { orderRef } = useParams<{ orderRef: string }>();
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const clearMarketplaceCart = useMarketplaceCart((s) => s.clear);
+
+  // Read the PayPal return token ONCE — it is stripped from the URL after
+  // a successful capture, so it must not be re-read from location.
+  const paypalTokenRef = useRef<string | null>(
+    typeof window !== 'undefined'
+      ? readPaypalReturnParams(window.location.search).token
+      : null,
+  );
+  const [captureState, setCaptureState] = useState<CaptureState>(
+    paypalTokenRef.current ? 'capturing' : 'done',
+  );
+  const [captureError, setCaptureError] = useState<string | null>(null);
+
+  const runCapture = useCallback(async () => {
+    const token = paypalTokenRef.current;
+    if (!token || !orderRef) {
+      setCaptureState('done');
+      return;
+    }
+    setCaptureState('capturing');
+    setCaptureError(null);
+    await runPaypalReturnCapture({
+      token,
+      orderRef,
+      onSuccess: () => {
+        // Cart is cleared ONLY now — after a confirmed capture
+        // (IMPL-1 defect 4).
+        clearMarketplaceCart();
+        if (typeof window !== 'undefined') {
+          window.history.replaceState(
+            null,
+            '',
+            stripPaypalReturnParams(window.location.href),
+          );
+        }
+        setCaptureState('done');
+      },
+      onFailure: (msg) => {
+        setCaptureError(msg);
+        setCaptureState('failed');
+      },
+    });
+  }, [orderRef, clearMarketplaceCart]);
+
+  useEffect(() => {
+    if (paypalTokenRef.current) void runCapture();
+    // Run once on mount — retries go through the button.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!orderRef) return;
+    // Hold off order loading until the capture settles — the order row is
+    // written by the capture, so an early fetch would just 404.
+    if (captureState === 'capturing') return;
     let cancelled = false;
     let interval: ReturnType<typeof setInterval> | null = null;
 
@@ -127,7 +196,48 @@ export default function OrderTrackPage(): JSX.Element {
       cancelled = true;
       if (interval) clearInterval(interval);
     };
-  }, [orderRef]);
+  }, [orderRef, captureState]);
+
+  if (captureState === 'capturing') {
+    return (
+      <div style={{ padding: 24, maxWidth: 1000, margin: '0 auto' }}>
+        <p>Confirming your payment with PayPal…</p>
+      </div>
+    );
+  }
+
+  if (captureState === 'failed') {
+    return (
+      <div style={{ padding: 24, maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
+        <h1>Payment not confirmed yet</h1>
+        <p style={{ color: '#6b7280' }}>
+          Your PayPal approval went through but we could not confirm the
+          capture{captureError ? ` (${captureError})` : ''}. No money is
+          taken until the capture completes — please retry.
+        </p>
+        <button
+          type="button"
+          onClick={() => void runCapture()}
+          style={{
+            marginTop: 16,
+            padding: '10px 24px',
+            fontSize: 14,
+            fontWeight: 600,
+            background: '#0891b2',
+            color: 'white',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+          }}
+        >
+          Retry payment confirmation
+        </button>
+        <p style={{ marginTop: 16 }}>
+          <Link to="/marketplace/checkout">← Back to checkout</Link>
+        </p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

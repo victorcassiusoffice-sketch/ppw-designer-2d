@@ -36,6 +36,11 @@ import {
 } from './_lib/email.js';
 import type { OrderSummary, CustomerInfo, Currency } from './_lib/orderTypes.js';
 import { recordWebhookEvent } from './_lib/webhookDedupe.js';
+import {
+  recordStripeCheckoutOrder,
+  type StripeSessionLike,
+  type StripeOrderRecordSummary,
+} from './_lib/stripe/recordStripeOrder.js';
 
 // IMPORTANT — disables Vercel's default JSON body parser so we get the
 // raw bytes Stripe signed.
@@ -109,8 +114,9 @@ export function buildOrderSummaryFromSession(
     session.customer_email ||
     '';
   const currency = (session.currency ?? 'usd').toUpperCase() as Currency;
-  const isMUR = currency === 'MUR';
-  const total = (session.amount_total ?? 0) / (isMUR ? 1 : 100);
+  // Phase 0 wire-contract: amounts are minor units for ALL currencies
+  // (MUR is a 2-decimal currency in Stripe) — ÷100 unconditionally.
+  const total = (session.amount_total ?? 0) / 100;
 
   let property: OrderSummary['property'];
   if (md.property && typeof md.property === 'string' && md.property.length > 0) {
@@ -257,10 +263,29 @@ async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
 export async function dispatchEvent(
   event: Stripe.Event,
   stripe: Pick<Stripe, 'checkout'>,
+  orderRecorder: (session: StripeSessionLike) => Promise<StripeOrderRecordSummary> = recordStripeCheckoutOrder,
 ): Promise<void> {
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
+
+      // IMPL-1 defect 6 — persist the order (orders + order_items +
+      // payouts + referrals) BEFORE emails. Non-fatal: a DB hiccup must
+      // not block the confirmation emails; the failure is logged.
+      try {
+        const rec = await orderRecorder(session as unknown as StripeSessionLike);
+        if (!rec.ok) {
+          // eslint-disable-next-line no-console
+          console.error('[stripe-webhook] order record failed:', rec.error);
+        }
+      } catch (recErr) {
+        // eslint-disable-next-line no-console
+        console.error(
+          '[stripe-webhook] order record unexpected:',
+          recErr instanceof Error ? recErr.message : String(recErr),
+        );
+      }
+
       let lineItems: CheckoutSessionLineItem[] = [];
       try {
         const list = await stripe.checkout.sessions.listLineItems(session.id, { limit: 50 });
@@ -290,7 +315,8 @@ export async function dispatchEvent(
         pi.last_payment_error?.code ||
         'Unknown';
       const currency = (pi.currency ?? 'usd').toUpperCase() as Currency;
-      const amount = (pi.amount ?? 0) / (currency === 'MUR' ? 1 : 100);
+      // Minor units for ALL currencies (Phase 0 wire-contract).
+      const amount = (pi.amount ?? 0) / 100;
       await sendPaymentFailedAlertToVic({
         customerEmail:
           typeof pi.receipt_email === 'string'

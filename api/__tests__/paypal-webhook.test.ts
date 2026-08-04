@@ -127,4 +127,17 @@ describe('applyEventToOrder - status mapping', () => {
     });
     expect(r.updated).toBe(false);
   });
+  it('resolves the orderRef from a packed custom_id (orderRef|email)', async () => {
+    const r = await applyEventToOrder(
+      makeEvent('PAYMENT.CAPTURE.COMPLETED', {
+        resource: {
+          id: 'CAP-3',
+          status: 'COMPLETED',
+          custom_id: 'PPW-ORDER-002|buyer@example.com',
+          amount: { currency_code: 'MUR', value: '1000.00' },
+        },
+      }),
+    );
+    expect(r.updated).toBe(true);
+  });
 });

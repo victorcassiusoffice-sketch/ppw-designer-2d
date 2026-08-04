@@ -28,6 +28,8 @@ const API_REACHABLE_SRC_ENTRIES = [
   'src/lib/paintCalculator.ts',
   'src/lib/floorCalculator.ts',
   'src/lib/capture/types.ts',
+  // Phase 0 money-path: server re-pricing imports the fallback FX rates.
+  'src/lib/fx.ts',
 ];
 
 /** Match relative import/export specifiers, skipping `import type ...`. */

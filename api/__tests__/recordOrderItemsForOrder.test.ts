@@ -73,12 +73,12 @@ describe('paypalItemTotalMinor', () => {
     expect(r).toEqual({ unitMinor: 2999, lineMinor: 5998, currency: 'USD', quantity: 2 });
   });
 
-  it('treats MUR as integer rupees (no ×100)', () => {
+  it('treats MUR as a 2-decimal minor-unit currency (×100 — Phase 0 wire-contract)', () => {
     const r = paypalItemTotalMinor({
-      unit_amount: { currency_code: 'MUR', value: '1500' },
+      unit_amount: { currency_code: 'MUR', value: '1500.00' },
       quantity: 1,
     });
-    expect(r).toEqual({ unitMinor: 1500, lineMinor: 1500, currency: 'MUR', quantity: 1 });
+    expect(r).toEqual({ unitMinor: 150000, lineMinor: 150000, currency: 'MUR', quantity: 1 });
   });
 
   it('accepts quantity as a string (PayPal format)', () => {
@@ -155,8 +155,8 @@ describe('recordOrderItemsForOrder DB path', () => {
       purchase_units: [
         {
           items: [
-            { sku: 'K1-A', name: 'Treadmill', unit_amount: { currency_code: 'MUR', value: '250000' }, quantity: 1 },
-            { sku: 'K1-B', name: 'Bike', unit_amount: { currency_code: 'MUR', value: '90000' }, quantity: 2 },
+            { sku: 'K1-A', name: 'Treadmill', unit_amount: { currency_code: 'MUR', value: '250000.00' }, quantity: 1 },
+            { sku: 'K1-B', name: 'Bike', unit_amount: { currency_code: 'MUR', value: '90000.00' }, quantity: 2 },
           ],
         },
       ],
@@ -165,7 +165,9 @@ describe('recordOrderItemsForOrder DB path', () => {
     expect(r.inserted).toBe(2);
     expect(insertedRows.length).toBe(2);
     const second = insertedRows[1] as { lineTotalMinor: number; merchantId: number; productId: number; sku: string };
-    expect(second.lineTotalMinor).toBe(180_000); // 90k × 2
+    // Phase 0 wire-contract: MUR is minor units (×100) — Rs 90,000 × 2 =
+    // 18,000,000 cents-of-MUR.
+    expect(second.lineTotalMinor).toBe(18_000_000);
     expect(second.merchantId).toBe(1);
     expect(second.productId).toBe(200);
     expect(second.sku).toBe('K1-B');

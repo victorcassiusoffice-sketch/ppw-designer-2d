@@ -9,8 +9,13 @@ import {
   buildMetadata,
   buildLineItems,
 } from '../create-checkout-session';
+import type { Repricer } from '../_lib/pricing/repriceCart';
 import type { CreateCheckoutSessionRequest } from '../_lib/orderTypes';
 import type Stripe from 'stripe';
+
+/** Pass-through repricer for tests that target the Stripe plumbing —
+ *  pricing behaviour is covered in repriceCart.test.ts. */
+const passRepricer: Repricer = async (cart) => ({ ok: true, cart, priceAdjusted: false });
 
 function makeValidRequest(): CreateCheckoutSessionRequest {
   return {
@@ -138,10 +143,11 @@ describe('processCheckoutRequest - happy path', () => {
         },
       },
     } as unknown as Pick<Stripe, 'checkout'>;
-    const res = await processCheckoutRequest(makeValidRequest(), fakeStripe);
+    const res = await processCheckoutRequest(makeValidRequest(), fakeStripe, passRepricer);
     expect(res.status).toBe(200);
     if (res.status === 200) {
       expect(res.url).toContain('checkout.stripe.com');
+      expect(res.priceAdjusted).toBe(false);
     }
   });
 
@@ -153,7 +159,7 @@ describe('processCheckoutRequest - happy path', () => {
         },
       },
     } as unknown as Pick<Stripe, 'checkout'>;
-    const res = await processCheckoutRequest(makeValidRequest(), fakeStripe);
+    const res = await processCheckoutRequest(makeValidRequest(), fakeStripe, passRepricer);
     expect(res.status).toBe(500);
     if (res.status === 500) {
       expect(typeof res.error).toBe('string');
@@ -165,7 +171,65 @@ describe('processCheckoutRequest - happy path', () => {
     const fakeStripe = {
       checkout: { sessions: { create: vi.fn() } },
     } as unknown as Pick<Stripe, 'checkout'>;
-    const res = await processCheckoutRequest({ cart: [] }, fakeStripe);
+    const res = await processCheckoutRequest({ cart: [] }, fakeStripe, passRepricer);
     expect(res.status).toBe(400);
+  });
+});
+
+describe('processCheckoutRequest - server re-pricing (IMPL-1 defect 2)', () => {
+  function stripeSpy() {
+    const create = vi.fn().mockResolvedValue({
+      id: 'cs_test_456',
+      url: 'https://checkout.stripe.com/c/pay/cs_test_456',
+    });
+    const stripe = { checkout: { sessions: { create } } } as unknown as Pick<Stripe, 'checkout'>;
+    return { stripe, create };
+  }
+
+  it('charges the SERVER price when the client price is tampered and flags priceAdjusted', async () => {
+    const { stripe, create } = stripeSpy();
+    const correctingRepricer: Repricer = async (cart) => ({
+      ok: true,
+      cart: cart.map((li) => ({ ...li, unitAmount: 2999900, sku: 'K1-REAL' })),
+      priceAdjusted: true,
+    });
+    const req = makeValidRequest();
+    req.cart = [
+      { productId: 'sku-1', name: 'Ice bath barrel', quantity: 1, unitAmount: 1, currency: 'MUR' },
+    ];
+    const res = await processCheckoutRequest(req, stripe, correctingRepricer);
+    expect(res.status).toBe(200);
+    if (res.status === 200) expect(res.priceAdjusted).toBe(true);
+    const params = create.mock.calls[0][0] as Stripe.Checkout.SessionCreateParams;
+    expect(params.line_items?.[0]?.price_data?.unit_amount).toBe(2999900);
+  });
+
+  it('rejects when the repricer rejects (unknown id → 400) and never calls Stripe', async () => {
+    const { stripe, create } = stripeSpy();
+    const rejectingRepricer: Repricer = async () => ({
+      ok: false,
+      status: 400,
+      error: 'Unknown catalog item: ghost',
+    });
+    const res = await processCheckoutRequest(makeValidRequest(), stripe, rejectingRepricer);
+    expect(res.status).toBe(400);
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it('stashes the repriced cart snapshot + client_reference_id on the session (defect 6 feed)', async () => {
+    const { stripe, create } = stripeSpy();
+    const res = await processCheckoutRequest(makeValidRequest(), stripe, passRepricer);
+    expect(res.status).toBe(200);
+    const params = create.mock.calls[0][0] as Stripe.Checkout.SessionCreateParams;
+    expect(params.client_reference_id).toBe('PPW-TEST-001');
+    const cartMeta = JSON.parse((params.metadata as Record<string, string>).cart) as Array<{
+      s: string;
+      q: number;
+      u: number;
+    }>;
+    expect(cartMeta).toEqual([
+      { s: 'sku-1', q: 1, u: 2999900 },
+      { s: 'sku-2', q: 2, u: 4999900 },
+    ]);
   });
 });
