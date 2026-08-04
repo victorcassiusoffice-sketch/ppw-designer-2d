@@ -21,6 +21,9 @@
  *   • Idempotent: an already-captured order acks 200 without re-running
  *     the finalize chain; recordOrderItemsForOrder's `already_recorded`
  *     guard backstops races.
+ *   • TEST sales (sale.test — $0 collected) capture + email for the
+ *     smoke test, but NEVER queue merchant payouts or referral
+ *     commissions (see finalizeGumroadOrder).
  */
 
 import { sql } from 'drizzle-orm';
@@ -267,7 +270,10 @@ export async function writeGumroadOrderStatus(
   }
 }
 
-export type OrderFinalizer = (order: PendingGumroadOrderRow) => Promise<void>;
+export type OrderFinalizer = (
+  order: PendingGumroadOrderRow,
+  sale: VerifiedGumroadSale,
+) => Promise<void>;
 
 /**
  * Post-capture finalisation — mirrors the PayPal finalizeCapturedOrder
@@ -275,8 +281,19 @@ export type OrderFinalizer = (order: PendingGumroadOrderRow) => Promise<void>;
  * ORDER's currency) → buyer email → payouts → referrals. All stages
  * non-fatal; recordOrderItemsForOrder's `already_recorded` guard makes
  * replays skip the payout/referral stages.
+ *
+ * TEST SALES (`sale.test` — Vic buying his own product, $0 actually
+ * collected): the order still captures and order_items + the buyer email
+ * still run so the documented smoke test verifies the chain end-to-end,
+ * but the PAYOUT and REFERRAL stages are SKIPPED — no money changed
+ * hands, so no merchant payout_queue row and no referral commission may
+ * be created. `itemsAlreadyRecorded` early-return means a later replay
+ * of the same order can never queue them retroactively either.
  */
-export async function finalizeGumroadOrder(order: PendingGumroadOrderRow): Promise<void> {
+export async function finalizeGumroadOrder(
+  order: PendingGumroadOrderRow,
+  sale: VerifiedGumroadSale,
+): Promise<void> {
   let itemsAlreadyRecorded = false;
   try {
     if (order.cartMeta.length > 0) {
@@ -308,6 +325,14 @@ export async function finalizeGumroadOrder(order: PendingGumroadOrderRow): Promi
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('[gumroad-finalize] email unexpected:', err instanceof Error ? err.message : String(err));
+  }
+
+  if (sale.test) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[gumroad-finalize] TEST sale ${sale.saleId} on order ${order.ppwOrderId}: payouts + referrals SKIPPED ($0 collected)`,
+    );
+    return;
   }
 
   try {
@@ -373,7 +398,7 @@ export async function settleVerifiedSale(
 
   const marked = await markOrder(order.ppwOrderId, 'captured', sale);
   if (!marked.ok) return { outcome: 'error', error: marked.error ?? 'capture write failed' };
-  await finalize({ ...order, paymentStatus: 'captured' });
+  await finalize({ ...order, paymentStatus: 'captured' }, sale);
   return { outcome: 'captured' };
 }
 

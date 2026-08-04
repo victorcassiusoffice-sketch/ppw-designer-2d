@@ -106,7 +106,8 @@ underpaid orders.
 - [ ] Re-read the publish button after every save — Gumroad can flip
       draft → live on save (skill §5.10)
 - [ ] Test buy (Vic): pay the pre-filled price → order flips captured on
-      /order/track within ~2 min; then a second test lowering the PWYW
+      /order/track within ~2 min (test sales queue NO merchant payout —
+      payout_queue must stay empty); then a second test lowering the PWYW
       price → order shows 'underpaid' and is NOT fulfilled
 
 ## USD note (skill §9)
@@ -134,8 +135,12 @@ minimum, 7-day hold, Tuesday payout day.
 - **Underpaid orders** (`payment_status='underpaid'`): buyer edited the
   PWYW price below the cart total. Not fulfilled, no payouts recorded.
   Resolution is manual: refund in Gumroad, or invoice the difference.
-- **Test sales** (Vic buying his own product) flow through the normal
-  capture path with `testSale: true` recorded in `raw_payload`.
+- **Test sales** (Vic buying his own product, $0 actually collected)
+  capture normally (`testSale: true` in `raw_payload`), record
+  order_items and send the buyer email — so the smoke test verifies the
+  chain end-to-end — but **merchant payouts and referral commissions are
+  SKIPPED**: no `payout_queue` row is created for money that was never
+  collected.
 - **Rail rollback**: unset `VITE_GUMROAD_ENABLED` (client) and the
   `GUMROAD_*` vars (server → 503). Enum values from 0028 stay behind,
   inert (see the rollback file).

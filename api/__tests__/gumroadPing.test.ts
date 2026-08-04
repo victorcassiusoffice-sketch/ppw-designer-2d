@@ -4,12 +4,47 @@
  * wrong-product no-op, orderRef mismatch rejection).
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Mock the finalize-chain stages so finalizeGumroadOrder can be exercised
+// directly (no DB). importOriginal keeps sibling named exports intact —
+// recordStripeOrder.ts (buildCaptureShapeFromCartMeta) imports from the
+// payout modules too.
+vi.mock('../_lib/payouts/recordOrderItemsForOrder', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../_lib/payouts/recordOrderItemsForOrder')>();
+  return {
+    ...actual,
+    recordOrderItemsForOrder: vi.fn(async () => ({ ok: true, inserted: 1 })),
+  };
+});
+vi.mock('../_lib/payouts/recordPayoutsForOrder', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../_lib/payouts/recordPayoutsForOrder')>();
+  return {
+    ...actual,
+    recordPayoutsForOrder: vi.fn(async () => ({ ok: true, inserted: 1 })),
+  };
+});
+vi.mock('../_lib/payouts/recordReferralsForOrder', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../_lib/payouts/recordReferralsForOrder')>();
+  return {
+    ...actual,
+    recordReferralsForOrder: vi.fn(async () => ({ ok: true, inserted: 0 })),
+  };
+});
+vi.mock('../_lib/email/dispatch', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../_lib/email/dispatch')>();
+  return {
+    ...actual,
+    dispatchOrderConfirmedEmail: vi.fn(async () => ({ ok: true })),
+  };
+});
+
 import {
   processGumroadPing,
   parseGumroadPing,
   extractOrderRef,
   settleVerifiedSale,
+  finalizeGumroadOrder,
   type SaleVerifier,
   type OrderLoader,
   type OrderStatusWriter,
@@ -17,6 +52,10 @@ import {
   type PendingGumroadOrderRow,
   type VerifiedGumroadSale,
 } from '../_lib/gumroad/webhook';
+import { recordOrderItemsForOrder } from '../_lib/payouts/recordOrderItemsForOrder';
+import { recordPayoutsForOrder } from '../_lib/payouts/recordPayoutsForOrder';
+import { recordReferralsForOrder } from '../_lib/payouts/recordReferralsForOrder';
+import { dispatchOrderConfirmedEmail } from '../_lib/email/dispatch';
 
 const GUM_ENV = {
   GUMROAD_ACCESS_TOKEN: 'tok_test',
@@ -304,5 +343,59 @@ describe('settleVerifiedSale (shared with the reconcile cron)', () => {
       finalize: noopFinalizer,
     });
     expect(s.outcome).toBe('error');
+  });
+
+  it('passes the VERIFIED sale through to finalize (test flag preserved)', async () => {
+    const finalize = vi.fn(noopFinalizer);
+    const s = await settleVerifiedSale(makeOrder(), makeSale({ test: true }), {
+      markOrder: okMarker,
+      finalize,
+    });
+    expect(s.outcome).toBe('captured');
+    expect(finalize).toHaveBeenCalledOnce();
+    expect(finalize.mock.calls[0]![1]).toMatchObject({ saleId: 'sale_1', test: true });
+  });
+});
+
+describe('finalizeGumroadOrder — test-sale gate (P1: no phantom payouts)', () => {
+  beforeEach(() => {
+    vi.mocked(recordOrderItemsForOrder).mockClear();
+    vi.mocked(recordPayoutsForOrder).mockClear();
+    vi.mocked(recordReferralsForOrder).mockClear();
+    vi.mocked(dispatchOrderConfirmedEmail).mockClear();
+  });
+
+  it('REAL sale: order_items → email → payouts → referrals all run', async () => {
+    await finalizeGumroadOrder(makeOrder(), makeSale({ test: false }));
+    expect(recordOrderItemsForOrder).toHaveBeenCalledOnce();
+    expect(dispatchOrderConfirmedEmail).toHaveBeenCalledOnce();
+    expect(recordPayoutsForOrder).toHaveBeenCalledOnce();
+    expect(vi.mocked(recordPayoutsForOrder).mock.calls[0]![0]).toBe('mp_abc');
+    expect(recordReferralsForOrder).toHaveBeenCalledOnce();
+  });
+
+  it('TEST sale ($0 collected): order_items + email still run, but NO merchant payout and NO referral commission are queued', async () => {
+    await finalizeGumroadOrder(makeOrder(), makeSale({ test: true }));
+    expect(recordOrderItemsForOrder).toHaveBeenCalledOnce();
+    expect(dispatchOrderConfirmedEmail).toHaveBeenCalledOnce();
+    expect(recordPayoutsForOrder).not.toHaveBeenCalled();
+    expect(recordReferralsForOrder).not.toHaveBeenCalled();
+  });
+
+  it('TEST sale end-to-end via processGumroadPing (default finalizer): captures with test:true, payouts never touched', async () => {
+    const verify: SaleVerifier = async () => ({ ok: true, sale: makeSale({ test: true }) });
+    const r = await processGumroadPing(makePingBody({ test: 'true' }), {
+      env: GUM_ENV,
+      verifySale: verify,
+      loadOrder: okLoader,
+      markOrder: okMarker,
+      // finalize NOT injected — exercises the real finalizeGumroadOrder
+    });
+    expect(r.status).toBe(200);
+    expect(r.body).toMatchObject({ ok: true, captured: true, test: true });
+    expect(recordOrderItemsForOrder).toHaveBeenCalledOnce();
+    expect(dispatchOrderConfirmedEmail).toHaveBeenCalledOnce();
+    expect(recordPayoutsForOrder).not.toHaveBeenCalled();
+    expect(recordReferralsForOrder).not.toHaveBeenCalled();
   });
 });
