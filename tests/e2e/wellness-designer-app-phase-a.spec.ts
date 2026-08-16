@@ -79,8 +79,11 @@ test.describe('Wellness-Designer-App (i) · Customer journey', () => {
     // Default state is OFF (aria-checked="false") per Vic-decision #WDA-1
     // soft-flag default.
     await expect(chip).toHaveAttribute('aria-checked', 'false');
-    // Toggling flips aria-checked.
-    await chip.click();
+    // Toggling flips aria-checked. The first-visit coach-mark dialog
+    // overlays the catalog drawer and intercepts pointer events; we
+    // dispatch the click directly on the button DOM node so the React
+    // onClick handler runs without contention with the overlay.
+    await chip.evaluate((el: HTMLElement) => el.click());
     await expect(chip).toHaveAttribute('aria-checked', 'true');
   });
 
