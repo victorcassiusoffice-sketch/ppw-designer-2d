@@ -121,6 +121,14 @@ export interface Product {
    * a missing flag never sneaks into the eco-only view.
    */
   eco_certified?: boolean;
+  /**
+   * Sims-style wall-aware placement (2026-08-23) — which edge of the
+   * TOP-DOWN image is the object's FRONT at rotation 0. Drives the
+   * auto-orientation that turns an object to face into the room when
+   * it is dropped against a wall. Absent → 'bottom' (the top-down
+   * render convention: front toward the viewer).
+   */
+  front_edge?: 'top' | 'bottom' | 'left' | 'right';
 }
 
 export interface ProductCatalog {

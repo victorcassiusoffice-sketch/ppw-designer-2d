@@ -51,7 +51,20 @@ export function rotatedFootprint(fp: FootprintM, rotationDeg: number): { w: numb
   if (r === 90 || r === 270) {
     return { w: fp.widthM, h: fp.lengthM };
   }
-  return { w: fp.lengthM, h: fp.widthM };
+  if (r === 0 || r === 180) {
+    return { w: fp.lengthM, h: fp.widthM };
+  }
+  // Non-cardinal angle (free-rotate via the Shift handle): true rotated
+  // AABB. Before this, 45°-family angles fell through to the unrotated
+  // size, so the collision box was SMALLER than the drawn art — items
+  // overlapped walls/neighbours and looked mispositioned.
+  const rad = (r * Math.PI) / 180;
+  const c = Math.abs(Math.cos(rad));
+  const s = Math.abs(Math.sin(rad));
+  return {
+    w: fp.lengthM * c + fp.widthM * s,
+    h: fp.lengthM * s + fp.widthM * c,
+  };
 }
 
 export function snapToGrid(valueM: number, stepM: number = 0.5): number {

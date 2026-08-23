@@ -58,6 +58,20 @@ describe('rotatedFootprint', () => {
   it('handles wrap-around angles', () => {
     expect(rotatedFootprint(fp, 450)).toEqual({ w: 0.8, h: 1.7 });
   });
+  it('grows to the true rotated AABB at 45° (free-rotate)', () => {
+    // Previously fell through to the unrotated size, so the collision
+    // box was smaller than the drawn art at diagonal angles.
+    const d = (1.7 + 0.8) * Math.SQRT1_2;
+    const r = rotatedFootprint(fp, 45);
+    expect(r.w).toBeCloseTo(d, 6);
+    expect(r.h).toBeCloseTo(d, 6);
+  });
+  it('AABB at 30° matches |L·cos|+|W·sin| × |L·sin|+|W·cos|', () => {
+    const rad = (30 * Math.PI) / 180;
+    const r = rotatedFootprint(fp, 30);
+    expect(r.w).toBeCloseTo(1.7 * Math.cos(rad) + 0.8 * Math.sin(rad), 6);
+    expect(r.h).toBeCloseTo(1.7 * Math.sin(rad) + 0.8 * Math.cos(rad), 6);
+  });
 });
 
 describe('snapToGrid', () => {
