@@ -43,7 +43,6 @@ import {
   resolveDragTarget,
   rotatedFootprint,
   screenToRoom,
-  snapToGrid,
   validatePlacement,
 } from '../lib/geometry';
 import type { PlacedRect, Polygon, Vertex, Viewport } from '../lib/geometry';
@@ -61,6 +60,9 @@ import { usePlacementIntentStore } from '../store/placementIntentStore';
 import { FloatingCluster } from '../designer/FloatingCluster';
 import { useDesignerUIStore, PRECISION_STEP_M } from '../store/designerUIStore';
 import { haptic } from '../lib/haptics';
+// Sims wall-aware placement (2026-08-23) — objects dropped near a wall
+// snap flush against it and auto-rotate to face into the room.
+import { isCardinalRotation, resolveWallAwarePlacement } from '../designer/wallAwarePlacement';
 
 // M1.5: HTML5 DragEvent path retired (silently fails on `.konva-stage`
 // per K1 audit). DRAG_MIME stays in ProductPalette for legacy unit
@@ -183,6 +185,10 @@ export function RoomCanvas({
     | null
   >(null);
   const [ghostRotation, setGhostRotation] = useState(0);
+  // Sims wall-aware placement (2026-08-23) — auto-orientation only runs
+  // until the user rotates the armed ghost manually (R / Shift+R); after
+  // that their chosen facing wins, exactly like Sims build mode.
+  const [ghostManuallyRotated, setGhostManuallyRotated] = useState(false);
 
   // Designer polish (2026-05-29) — placement micro-feedback. When a NEW
   // item commits, its instanceId is captured here so the matching
@@ -237,12 +243,15 @@ export function RoomCanvas({
     if (!pendingProductId) {
       setDragGhost(null);
       setGhostRotation(0);
+      setGhostManuallyRotated(false);
     }
   }, [pendingProductId]);
 
-  // M1.5 pointer-FSM: R rotates the armed product by 45°, Shift+R goes
-  // the other way, Esc cancels the armed placement. Mirrors the Sims
-  // `.` / `,` rotate keys remapped to PPW's existing R-key convention.
+  // M1.5 pointer-FSM: R rotates the armed product by 90° (Sims build-mode
+  // step — footprint swaps with it), Shift+R goes the other way, Esc
+  // cancels the armed placement. Mirrors the Sims `.` / `,` rotate keys
+  // remapped to PPW's existing R-key convention. Rotating manually also
+  // disables wall auto-orientation for this armed session.
   useEffect(() => {
     if (!pendingProductId) return;
     function onKey(e: KeyboardEvent) {
@@ -255,7 +264,8 @@ export function RoomCanvas({
       }
       if (e.key === 'r' || e.key === 'R') {
         e.preventDefault();
-        const delta = e.shiftKey ? -45 : 45;
+        const delta = e.shiftKey ? -90 : 90;
+        setGhostManuallyRotated(true);
         setGhostRotation((r) => (((r + delta) % 360) + 360) % 360);
       }
     }
@@ -490,8 +500,10 @@ export function RoomCanvas({
   // 0.5 m grid, validates against the polygon + existing items, commits
   // with the given rotation. Returns true on success. Shared by the
   // pointer-FSM (via screen→room) and the mobile toolbar (room-centre).
+  // `userRotationDeg` null → Sims auto-orientation: near a wall the item
+  // snaps flush and faces into the room; mid-room it faces the viewer.
   const placeAtRoomPoint = useCallback(
-    (centreXm: number, centreYm: number, productId: string, rotationDeg: number) => {
+    (centreXm: number, centreYm: number, productId: string, userRotationDeg: number | null) => {
       const product = getProductById(productId);
       if (!product) {
         pushToast(`Unknown product: ${productId}`, 'error');
@@ -501,9 +513,16 @@ export function RoomCanvas({
         lengthM: cmToM(product.dimensions_cm.length),
         widthM: cmToM(product.dimensions_cm.width),
       };
-      const { w, h } = rotatedFootprint(fp, rotationDeg);
-      const snappedX = snapToGrid(centreXm - w / 2, snapStep);
-      const snappedY = snapToGrid(centreYm - h / 2, snapStep);
+      const resolved = resolveWallAwarePlacement({
+        centreXm,
+        centreYm,
+        fp,
+        polygon,
+        snapStep,
+        userRotationDeg,
+        frontEdge: product.front_edge,
+      });
+      const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
       const others = placedItems
         .map((it) => {
           const p = getProductById(it.productId);
@@ -517,7 +536,12 @@ export function RoomCanvas({
       // nearest free grid slot instead of rejecting when the preferred
       // point (the room centre for the mobile "+ Add to room" path) is
       // already occupied. Only reject when the room is genuinely full.
-      const slot = findFreeSlot({ preferredX: snappedX, preferredY: snappedY, w, h, others, polygon });
+      // The wall-snapped position is tried first via validatePlacement so
+      // a flush non-grid Y/X survives; findFreeSlot re-snaps to the grid.
+      const direct = validatePlacement({ x: resolved.x, y: resolved.y, w, h }, others, polygon);
+      const slot = direct.ok
+        ? { x: resolved.x, y: resolved.y }
+        : findFreeSlot({ preferredX: resolved.x, preferredY: resolved.y, w, h, others, polygon });
       if (!slot) {
         haptic('invalid');
         pushToast("Item won't fit — the room is full.", 'warn');
@@ -528,7 +552,7 @@ export function RoomCanvas({
         productId: product.id,
         x: slot.x,
         y: slot.y,
-        rotation: rotationDeg,
+        rotation: resolved.rotationDeg,
       });
       // Polish (2026-05-29) — flag this fresh instance for the settle tween.
       setJustPlacedId(instanceId);
@@ -548,7 +572,7 @@ export function RoomCanvas({
   );
 
   const placeProductAt = useCallback(
-    (clientX: number, clientY: number, productId: string, rotationOverride?: number) => {
+    (clientX: number, clientY: number, productId: string, rotationOverride?: number | null) => {
       const container = containerRef.current;
       if (!container) return false;
       const rect = container.getBoundingClientRect();
@@ -559,9 +583,17 @@ export function RoomCanvas({
         viewport,
         pxPerMetre,
       );
-      return placeAtRoomPoint(xM, yM, productId, rotationOverride ?? ghostRotation);
+      // Undefined override → the armed ghost's facing: the user's manual
+      // rotation when they used R, otherwise auto-orient (null).
+      const rotation =
+        rotationOverride !== undefined
+          ? rotationOverride
+          : ghostManuallyRotated
+            ? ghostRotation
+            : null;
+      return placeAtRoomPoint(xM, yM, productId, rotation);
     },
-    [viewport, pxPerMetre, ghostRotation, placeAtRoomPoint],
+    [viewport, pxPerMetre, ghostRotation, ghostManuallyRotated, placeAtRoomPoint],
   );
 
   // Mobile Sims toolbar bridge (Phase 2-4) — consume one-shot placement
@@ -579,14 +611,15 @@ export function RoomCanvas({
       consumeIntent();
       return;
     }
-    // Popup/drag placements always commit at rotation 0 (the user rotates
-    // after, via the on-canvas rotate handle).
+    // Popup/drag placements auto-orient (null): near a wall they snap
+    // flush facing into the room, mid-room they face the viewer. The user
+    // can still rotate after via the on-canvas rotate handle.
     if (placementIntent.target === 'center') {
       const cx = (bounds.minX + bounds.maxX) / 2;
       const cy = (bounds.minY + bounds.maxY) / 2;
-      placeAtRoomPoint(cx, cy, placementIntent.productId, 0);
+      placeAtRoomPoint(cx, cy, placementIntent.productId, null);
     } else {
-      placeProductAt(placementIntent.target.clientX, placementIntent.target.clientY, placementIntent.productId, 0);
+      placeProductAt(placementIntent.target.clientX, placementIntent.target.clientY, placementIntent.productId, null);
     }
     consumeIntent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -674,10 +707,19 @@ export function RoomCanvas({
         lengthM: cmToM(product.dimensions_cm.length),
         widthM: cmToM(product.dimensions_cm.width),
       };
-      const { w, h } = rotatedFootprint(fp, ghostRotation);
-      const snappedX = snapToGrid(xM - w / 2, snapStep);
-      const snappedY = snapToGrid(yM - h / 2, snapStep);
-      const candidate: PlacedRect = { x: snappedX, y: snappedY, w, h };
+      // Same wall-aware resolver as the commit path, so the ghost shows
+      // EXACTLY where (and at what facing) the item will land.
+      const resolved = resolveWallAwarePlacement({
+        centreXm: xM,
+        centreYm: yM,
+        fp,
+        polygon,
+        snapStep,
+        userRotationDeg: ghostManuallyRotated ? ghostRotation : null,
+        frontEdge: product.front_edge,
+      });
+      const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
+      const candidate: PlacedRect = { x: resolved.x, y: resolved.y, w, h };
       const others = placedItems
         .map((it) => {
           const p = getProductById(it.productId);
@@ -688,9 +730,9 @@ export function RoomCanvas({
         })
         .filter((r): r is PlacedRect => r !== null);
       const result = validatePlacement(candidate, others, polygon);
-      return { xM: snappedX, yM: snappedY, rotation: ghostRotation, valid: result.ok, w, h };
+      return { xM: resolved.x, yM: resolved.y, rotation: resolved.rotationDeg, valid: result.ok, w, h };
     },
-    [viewport, pxPerMetre, ghostRotation, placedItems, polygon, snapStep],
+    [viewport, pxPerMetre, ghostRotation, ghostManuallyRotated, placedItems, polygon, snapStep],
   );
 
   const handleDrawCommit = useCallback(
@@ -1482,17 +1524,46 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
             return { x: it.x, y: it.y, w: r.w, h: r.h, instanceId: it.instanceId };
           })
           .filter((r): r is PlacedRect & { instanceId: string } => r !== null);
-        const resolved = resolveDragTarget({
-          candidateX: newXm,
-          candidateY: newYm,
-          w,
-          h,
-          others,
-          room: polygon,
-          ignoreInstanceId: item.instanceId,
+        // Sims wall-aware drag (2026-08-23): released near a wall, the
+        // item snaps flush and turns to face into the room. Hold Shift
+        // to keep the current facing. Mid-room drags keep facing and
+        // grid-snap exactly as before (wallAware falls through to the
+        // plain grid path with userRotationDeg = current rotation).
+        const shiftHeld = 'shiftKey' in e.evt && (e.evt as MouseEvent).shiftKey;
+        const fpUnrotated = {
+          lengthM: cmToM(product.dimensions_cm.length),
+          widthM: cmToM(product.dimensions_cm.width),
+        };
+        const wallAware = resolveWallAwarePlacement({
+          centreXm: newXm + w / 2,
+          centreYm: newYm + h / 2,
+          fp: fpUnrotated,
+          polygon,
+          snapStep: 0.5,
+          userRotationDeg: shiftHeld || !isCardinalRotation(item.rotation) ? item.rotation : null,
+          frontEdge: product.front_edge,
         });
+        const wf = rotatedFootprint(fpUnrotated, wallAware.rotationDeg);
+        const wallOk = validatePlacement(
+          { x: wallAware.x, y: wallAware.y, w: wf.w, h: wf.h },
+          others,
+          polygon,
+          item.instanceId,
+        ).ok;
+        const resolved = wallOk
+          ? { ok: true as const, x: wallAware.x, y: wallAware.y }
+          : resolveDragTarget({
+              candidateX: newXm,
+              candidateY: newYm,
+              w,
+              h,
+              others,
+              room: polygon,
+              ignoreInstanceId: item.instanceId,
+            });
         if (resolved.ok) {
-          updateItem(item.instanceId, { x: resolved.x, y: resolved.y });
+          const rotation = wallOk ? wallAware.rotationDeg : item.rotation;
+          updateItem(item.instanceId, { x: resolved.x, y: resolved.y, rotation });
           e.target.position({
             x: resolved.x * pxPerMetre,
             y: resolved.y * pxPerMetre,
