@@ -618,6 +618,143 @@
       "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
       "eco_certified": false,
       "topdown_image_url": "/products/topdown/k1-floor-epdm-roll.png"
+    },
+    {
+      "supplier": "PPW Studio (demo)",
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "source_url": "",
+      "id": "demo-console-table",
+      "sku": "PPW-DEMO-TABLE",
+      "name": "Wellness Console Table",
+      "category": "decor",
+      "dimensions_cm": {
+        "length": 120,
+        "width": 40,
+        "height": 75
+      },
+      "weight_kg": 18,
+      "price": {
+        "value": 12500,
+        "currency": "MUR"
+      },
+      "is_surface": true,
+      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Console%0ATable",
+      "notes": "Slim console table for oils, diffusers and small decor. DEMO seed for surface-slot placement."
+    },
+    {
+      "supplier": "PPW Studio (demo)",
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "source_url": "",
+      "id": "demo-wall-shelf",
+      "sku": "PPW-DEMO-SHELF",
+      "name": "Floating Wall Shelf",
+      "category": "decor",
+      "dimensions_cm": {
+        "length": 80,
+        "width": 20,
+        "height": 18
+      },
+      "weight_kg": 6,
+      "price": {
+        "value": 3500,
+        "currency": "MUR"
+      },
+      "placement": "wall",
+      "mount_height_cm": 150,
+      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Wall%0AShelf",
+      "notes": "Wall-mounted floating shelf. DEMO seed for wall-mounted placement."
+    },
+    {
+      "supplier": "PPW Studio (demo)",
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "source_url": "",
+      "id": "demo-wall-mirror",
+      "sku": "PPW-DEMO-MIRROR",
+      "name": "Studio Wall Mirror",
+      "category": "decor",
+      "dimensions_cm": {
+        "length": 120,
+        "width": 5,
+        "height": 180
+      },
+      "weight_kg": 22,
+      "price": {
+        "value": 9800,
+        "currency": "MUR"
+      },
+      "placement": "wall",
+      "mount_height_cm": 20,
+      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Wall%0AMirror",
+      "notes": "Full-length studio mirror, wall-mounted. DEMO seed for wall-mounted placement."
+    },
+    {
+      "supplier": "PPW Studio (demo)",
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "source_url": "",
+      "id": "demo-aroma-diffuser",
+      "sku": "PPW-DEMO-DIFFUSER",
+      "name": "Aroma Diffuser",
+      "category": "decor",
+      "dimensions_cm": {
+        "length": 15,
+        "width": 15,
+        "height": 25
+      },
+      "weight_kg": 0.8,
+      "price": {
+        "value": 1800,
+        "currency": "MUR"
+      },
+      "placement": "surface",
+      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Aroma%0ADiffuser",
+      "notes": "Ultrasonic aroma diffuser. Sits on a table. DEMO seed for surface-slot placement."
+    },
+    {
+      "supplier": "PPW Studio (demo)",
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "source_url": "",
+      "id": "demo-potted-plant",
+      "sku": "PPW-DEMO-PLANT-S",
+      "name": "Potted Plant (small)",
+      "category": "plant",
+      "dimensions_cm": {
+        "length": 25,
+        "width": 25,
+        "height": 40
+      },
+      "weight_kg": 2.5,
+      "price": {
+        "value": 950,
+        "currency": "MUR"
+      },
+      "placement": "surface",
+      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Potted%0APlant",
+      "notes": "Small potted plant for tabletops. DEMO seed for surface-slot placement."
     }
   ]
 }
