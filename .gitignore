@@ -78,3 +78,7 @@ tests/e2e/auto-dig-*.spec.ts
 
 # /goal runner sentinels (local run state, never source)
 .goal-status/
+
+# Raw incoming AI renders (slotted via scripts/slot-topdown.mjs, never committed raw)
+scripts/incoming/*
+!scripts/incoming/.gitkeep

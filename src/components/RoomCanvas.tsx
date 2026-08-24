@@ -63,6 +63,8 @@ import { haptic } from '../lib/haptics';
 // Sims wall-aware placement (2026-08-23) — objects dropped near a wall
 // snap flush against it and auto-rotate to face into the room.
 import { isCardinalRotation, resolveWallAwarePlacement } from '../designer/wallAwarePlacement';
+// Aspect fix (2026-08-24) — contain-fit product art to its footprint.
+import { fitImageToFootprint } from '../designer/imageFit';
 
 // M1.5: HTML5 DragEvent path retired (silently fails on `.konva-stage`
 // per K1 audit). DRAG_MIME stays in ProductPalette for legacy unit
@@ -1608,7 +1610,32 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         listening={false}
       >
         {image ? (
-          <KonvaImage image={image} width={unrotatedWPx} height={unrotatedHPx} opacity={0.95} />
+          // Aspect fix (2026-08-24): contain-fit the art to the footprint
+          // instead of stretching it to the rect — the image keeps its
+          // TRUE proportions, centred, auto-rotated 90° when its long
+          // axis disagrees with the footprint. Correctly-authored
+          // top-downs (canvas ratio == length:width) still fill exactly.
+          (() => {
+            const fit = fitImageToFootprint(
+              image.naturalWidth,
+              image.naturalHeight,
+              unrotatedWPx,
+              unrotatedHPx,
+            );
+            return (
+              <KonvaImage
+                image={image}
+                x={unrotatedWPx / 2}
+                y={unrotatedHPx / 2}
+                width={fit.drawW}
+                height={fit.drawH}
+                offsetX={fit.drawW / 2}
+                offsetY={fit.drawH / 2}
+                rotation={fit.rotationDeg}
+                opacity={0.95}
+              />
+            );
+          })()
         ) : isHydrating ? (
           // Polish (2026-05-29) — brand-styled loading skeleton while the
           // product image hydrates via useImageCache. Navy base + a soft
