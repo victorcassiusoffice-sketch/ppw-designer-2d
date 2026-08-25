@@ -221,3 +221,73 @@ Width **0.5667 → 1.0**. Height **0.7546 → 0.8722**.
 npx vitest run  → Test Files 147 passed (147) · Tests 1626 passed (1626)
 npx eslint <8 changed files> → clean (exit 0)
 ```
+
+---
+
+## §5 P3 — Measurement chips
+
+Complaint 3: *"While drawing walls, the live measurement numbers are too
+small to read."*
+
+Root cause: a Konva `fontSize` lives in STAGE space, so the Stage's scale
+transform shrinks it along with the room. `RoomDrawMode` used
+`fontSize={11}` and `WallDrawMode` used `fontSize={13}` — at the app's 0.3
+minimum zoom those render at **3.3 px** and **3.9 px** on screen.
+
+New `src/designer/MeasurementChip.tsx` authors the chip in SCREEN px and
+divides every dimension (font, plate width/height, corner radius, stroke)
+by the live viewport scale, so it renders at a constant
+`MEASURE_MIN_SCREEN_PX = 16` at every zoom. Gold numerals on a near-black
+plate at 0.85 opacity — the dimension-callout style from `Designer.jpeg`.
+
+Applied to both tools:
+
+* `RoomDrawMode` — a chip at every committed segment's midpoint, plus the
+  running length parked 26 px above the cursor for the segment in progress.
+* `WallDrawMode` — the imperative live label (updated per pointer-move, not
+  per React render, so it tracks at 60 fps) now sizes and positions its
+  text AND a new backing plate from `measureChipMetrics(scale)`.
+
+**GATE — unit test**
+
+```
+npx vitest run src/designer/__tests__/blueprintTheme.test.ts
+ ✓ src/designer/__tests__/blueprintTheme.test.ts (22 tests)
+```
+
+The screen-space property is pinned directly: for every scale in
+`[0.3, 0.5, 0.75, 1, 1.5, 2, 2.5, 3]`, `measureFontSize(scale) * scale ===
+MEASURE_MIN_SCREEN_PX`, and all eight rendered sizes are asserted to be the
+same value. Degenerate scales (0, −1, NaN, Infinity — a Konva Stage can
+report 0 for one frame during a ResizeObserver race) fall back to the
+target instead of dividing by zero. There is also a test that the new chip
+beats the old `fontSize={11}` at every zoom below 100 %.
+
+**GATE — screenshot**
+
+```
+node tools/shoot-draw-measure.mjs http://localhost:5187
+saved draw-measure.png (100%) and draw-measure-zoomed-out.png (63%)
+```
+
+`docs/ui-modernize-2026-08-25/after/draw-measure.png` — draw mode with 2
+committed vertices and a live third segment. A second shot at 63 % zoom is
+included deliberately: the room is visibly smaller, the chips are visibly
+the SAME size. That side-by-side is the proof the fix works.
+
+### Two more defects found by looking at the render
+
+3. The draw-mode help strip sat on top of the sticky Clear products /
+   Clear all row (both are bottom-left). Raised 46 px to stack above it.
+4. The live segment printed its length TWICE — once at its midpoint, once
+   at the cursor. The midpoint chip is now skipped for the preview segment.
+
+```
+npx vitest run  → Test Files 148 passed (148) · Tests 1648 passed (1648)
+npx eslint <5 changed files> → 0 errors
+```
+
+The 4 `react-refresh/only-export-components` **warnings** on
+`WallDrawMode.tsx` are PRE-EXISTING — verified by `git stash` + lint on the
+baseline, which reports the identical 4 warnings at line 37 (they moved to
+line 47 only because this branch adds import lines above them).

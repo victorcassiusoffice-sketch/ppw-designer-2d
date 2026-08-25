@@ -1374,7 +1374,9 @@ export function RoomCanvas({
       {drawMode && (
         <div
           className="pointer-events-none absolute left-3 max-w-xs rounded-md bg-white/85 px-3 py-2 text-[11px] leading-snug text-ppw-slate shadow-sm ring-1 ring-ppw-stone hidden md:block"
-          style={{ bottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+          // Stacks ABOVE the sticky Clear products / Clear all row, which
+          // also lives bottom-left. They used to overlap each other.
+          style={{ bottom: 'calc(max(0.75rem, env(safe-area-inset-bottom)) + 46px)' }}
         >
           <span className="font-semibold text-ppw-ink">Draw mode:</span> click to place wall vertices - click first vertex or press <kbd>Enter</kbd> to close - <kbd>Ctrl+Z</kbd> undo - <kbd>Esc</kbd> cancel.
         </div>

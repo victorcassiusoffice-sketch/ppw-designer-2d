@@ -17,7 +17,17 @@
  */
 
 import { useEffect, useMemo, useRef } from 'react';
-import { Layer, Line, Circle, Group, Text } from 'react-konva';
+import { Layer, Line, Circle, Group, Rect, Text } from 'react-konva';
+// Blueprint reskin + legible measurements (Vic 2026-08-25, complaints 3+5).
+import {
+  MEASURE_BG,
+  MEASURE_BG_OPACITY,
+  MEASURE_MIN_SCREEN_PX,
+  MEASURE_TEXT,
+  WALL_GOLD,
+  WALL_GOLD_BRIGHT,
+  measureChipMetrics,
+} from './blueprintTheme';
 import type Konva from 'konva';
 import { screenToRoom } from '../lib/geometry';
 import type { Viewport } from '../lib/geometry';
@@ -68,6 +78,7 @@ export function WallDrawLayer({
   const cursorRef = useRef<{ x_mm: number; y_mm: number } | null>(null);
   const cursorLineRef = useRef<Konva.Line | null>(null);
   const lengthLabelRef = useRef<Konva.Text | null>(null);
+  const lengthPlateRef = useRef<Konva.Rect | null>(null);
 
   // Stage event wiring: only while enabled. Tagged namespace `.walldraw`.
   useEffect(() => {
@@ -124,14 +135,31 @@ export function WallDrawLayer({
           (cur.x_mm / 1000) * pxPerMetre,
           (cur.y_mm / 1000) * pxPerMetre,
         ]);
-        // Live length label at the segment midpoint (Sims "wall grows as you
+        // Live length chip at the segment midpoint (Sims "wall grows as you
         // drag" feel). Updated imperatively alongside the cursor line.
+        //
+        // 2026-08-25 (complaint 3): sized in SCREEN px. A Konva fontSize is
+        // in stage space, so the old fixed 13 rendered at 3.9 px at the
+        // 0.3 minimum zoom. Everything below divides by the live viewport
+        // scale, so the number is always ~16 px on screen.
         const label = lengthLabelRef.current;
+        const plate = lengthPlateRef.current;
         if (label) {
           const midX = ((anchor.x_mm + cur.x_mm) / 2 / 1000) * pxPerMetre;
           const midY = ((anchor.y_mm + cur.y_mm) / 2 / 1000) * pxPerMetre;
+          const sc = viewportRef.current.scale;
+          const cm = measureChipMetrics(sc);
           label.text(formatWallLengthM(anchor, cur));
-          label.position({ x: midX + 8, y: midY - 20 });
+          label.fontSize(cm.fontSize);
+          label.width(cm.halfWidth * 2);
+          label.position({ x: midX - cm.halfWidth, y: midY - cm.fontSize * 0.58 });
+          if (plate) {
+            plate.position({ x: midX - cm.halfWidth, y: midY - cm.height / 2 });
+            plate.width(cm.halfWidth * 2);
+            plate.height(cm.height);
+            plate.cornerRadius(cm.cornerRadius);
+            plate.visible(true);
+          }
         }
         node.getLayer()?.batchDraw();
       }
@@ -261,7 +289,7 @@ export function WallDrawLayer({
             (w.end.x_mm / 1000) * pxPerMetre,
             (w.end.y_mm / 1000) * pxPerMetre,
           ]}
-          stroke="#232C3B"
+          stroke={WALL_GOLD}
           strokeWidth={Math.max(3, (w.thickness_mm / 1000) * pxPerMetre)}
           lineCap="round"
         />
@@ -276,7 +304,7 @@ export function WallDrawLayer({
               (draw.anchor.x_mm / 1000) * pxPerMetre,
               (draw.anchor.y_mm / 1000) * pxPerMetre,
             ]}
-            stroke="#FFBB58"
+            stroke={WALL_GOLD_BRIGHT}
             strokeWidth={4}
             dash={[8, 8]}
           />
@@ -284,21 +312,29 @@ export function WallDrawLayer({
             x={(draw.anchor.x_mm / 1000) * pxPerMetre}
             y={(draw.anchor.y_mm / 1000) * pxPerMetre}
             radius={6}
-            fill="#FFBB58"
-            stroke="#232C3B"
+            fill={WALL_GOLD_BRIGHT}
+            stroke={MEASURE_BG}
             strokeWidth={1.5}
+          />
+          {/* Measurement chip: dark plate + gold numerals, both positioned
+              and sized imperatively in handleMove so they track the cursor
+              at 60 fps without a React render per pointer move. Hidden
+              until the first move gives it a position. */}
+          <Rect
+            ref={lengthPlateRef}
+            visible={false}
+            fill={MEASURE_BG}
+            opacity={MEASURE_BG_OPACITY}
+            listening={false}
           />
           <Text
             ref={lengthLabelRef}
             text=""
-            fontSize={13}
+            fontSize={MEASURE_MIN_SCREEN_PX}
             fontStyle="bold"
             fontFamily="Inter, sans-serif"
-            fill="#232C3B"
-            // White halo so the length reads over any floor colour.
-            stroke="#FFFFFF"
-            strokeWidth={3}
-            fillAfterStrokeEnabled
+            fill={MEASURE_TEXT}
+            align="center"
             listening={false}
           />
         </Group>
@@ -328,8 +364,8 @@ export interface CommittedWallsLayerProps {
 
 /**
  * Always-on render of committed walls. Styling matches the committed-wall
- * render inside `WallDrawLayer` (navy #232C3B, round cap) so there is no
- * visual jump between drawing and idle.
+ * render inside `WallDrawLayer` (blueprint WALL_GOLD, round cap) so there is
+ * no visual jump between drawing and idle.
  */
 export function CommittedWallsLayer({ walls, pxPerMetre }: CommittedWallsLayerProps): JSX.Element {
   return (
@@ -338,7 +374,7 @@ export function CommittedWallsLayer({ walls, pxPerMetre }: CommittedWallsLayerPr
         <Line
           key={w.id}
           points={wallLinePoints(w, pxPerMetre)}
-          stroke="#232C3B"
+          stroke={WALL_GOLD}
           strokeWidth={wallStrokeWidthPx(w, pxPerMetre)}
           lineCap="round"
         />
