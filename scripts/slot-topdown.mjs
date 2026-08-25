@@ -30,6 +30,11 @@ import sharp from 'sharp';
 
 const PX_PER_CM = 10;
 const CONFORM_TOLERANCE = 0.05;
+// Asset-weight guard: a 10 m roll at 10 px/cm is a 10,000-px canvas and a
+// ~27 MB PNG. The canvas renders items at ~100-200 CSS px, so cap the long
+// side and keep the aspect — footprint exactness lives in dimensions_cm,
+// not in the pixel count.
+const MAX_CANVAS_PX = 4096;
 
 function parseArgs(argv) {
   const out = { frontEdge: 'bottom', rotate: 0, dryRun: false, whiteThreshold: 235 };
@@ -135,8 +140,13 @@ if (artW >= artH !== footAspect >= 1 && Math.abs(artW / artH - 1) > 0.02) {
 }
 
 // 3 — conform or pad onto the exact footprint canvas.
-const canvasW = Math.round(lengthCm * PX_PER_CM);
-const canvasH = Math.round(widthCm * PX_PER_CM);
+let canvasW = Math.round(lengthCm * PX_PER_CM);
+let canvasH = Math.round(widthCm * PX_PER_CM);
+const overshoot = Math.max(canvasW, canvasH) / MAX_CANVAS_PX;
+if (overshoot > 1) {
+  canvasW = Math.round(canvasW / overshoot);
+  canvasH = Math.round(canvasH / overshoot);
+}
 const artAspect = artW / artH;
 const aspectError = Math.abs(artAspect - footAspect) / footAspect;
 const mode = args.forceConform || aspectError <= CONFORM_TOLERANCE ? 'conform' : 'pad';
