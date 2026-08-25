@@ -71,3 +71,56 @@ Measured BEFORE numbers (the P2 gate's baseline):
 Complaint 2 quantified: on desktop the drawing surface is **56.7 % of the
 viewport width**, and drops to **75.5 % of height** the moment the CartStrip
 appears. Targets are ≥ 0.80 and ≥ 0.85.
+
+---
+
+## §3 P1 — Blank start
+
+Complaint 1: *"A default room appears already drawn — confusing."*
+
+Five separate code paths could put a 5 × 4 m rectangle on a canvas the user
+never drew. All five now open BLANK:
+
+| # | path | before | after |
+|---|---|---|---|
+| 1 | `designStore.projectFromProperty()` — no active room | `rectToPolygon({5,4})` | `EMPTY_POLYGON` |
+| 2 | `designStore` mirror subscription — `active?.polygon ??` | `rectToPolygon({5,4})` | `EMPTY_POLYGON` |
+| 3 | `propertyStore.removeRoom` — last-room re-seed | `makeDefaultRoom()` | `makeBlankRoom()` |
+| 4 | `normaliseLoadedProperty` — zero-rooms repair | `makeDefaultRoom()` | `makeBlankRoom()` |
+| 5 | `normaliseLoadedRoom` — no polygon on a loaded room | always `rectToPolygon` | rect **only** for a genuine legacy payload (`lengthM`/`widthM`/`roomDimensions` present); otherwise blank |
+
+`makeDefaultRoom` is deleted — `makeBlankRoom` is now the only room factory.
+`addRoom()` called with no polygon also defaults to `[]` (in practice it is
+only ever called with an explicit polygon from the draw commit).
+
+Path 5 was the subtle one: a persisted blank room round-tripping through
+Load/`normaliseLoadedRoom` silently acquired a rectangle.
+
+Preserved exactly as the brief requires: the "Start by drawing your room"
+prompt, the `data-testid="start-quick-rectangle"` **Quick 5 × 4 m room**
+button (the only no-draw route to a rectangle), and the TopBar L/W inputs
+staying disabled until a room exists (`isActiveRoomRectangle()` is false for
+a 0-vertex polygon, so TopBar renders its "Draw a room →" hint).
+
+**GATE**
+
+```
+npx tsc --noEmit   → clean (exit 0)
+npx vitest run     → Test Files 147 passed (147)
+                     Tests     1626 passed (1626)
+```
+
+1618 → 1626 tests (+8): the two re-seed assertions were changed from
+"a room exists" to "the room is blank", and a new
+`src/store/__tests__/designStore.test.ts` (6 tests) proves the façade
+exposes an EMPTY polygon with no user-drawn room — including the
+unresolvable-active-room branch the old 5×4 fallback used to serve.
+
+Note: the `fx.test.ts` flake from the baseline passed on this run — the full
+suite is 1626/1626 green.
+
+```
+npx eslint src/store/designStore.ts src/store/propertyStore.ts \
+           src/store/__tests__/designStore.test.ts \
+           src/store/__tests__/propertyStore.test.ts   → clean (no output)
+```

@@ -27,6 +27,22 @@ import type { Polygon, RoomDims } from '../lib/geometry';
 export type RoomDimensions = RoomDims;
 export type { PlacedItem };
 
+/**
+ * Blank start (Vic 2026-08-25). When there is no active room, the façade
+ * projects an EMPTY polygon — never a 5×4 m rectangle. `RoomCanvas` guards
+ * on `polygon.length >= 3`, so an empty polygon renders a truly blank
+ * canvas and the start-state prompt takes over. Frozen module singletons
+ * so identity is stable across renders (no spurious re-subscribes).
+ */
+// `Object.freeze` widens an array to a readonly tuple type that TS will not
+// assign back to the mutable `Polygon` alias; the double assertion is the
+// standard escape and is safe here — the value is empty and never mutated.
+export const EMPTY_POLYGON: Polygon = Object.freeze([]) as unknown as Polygon;
+export const EMPTY_ROOM_DIMENSIONS: RoomDimensions = Object.freeze({
+  lengthM: 0,
+  widthM: 0,
+});
+
 export interface DesignState {
   roomDimensions: RoomDimensions;
   polygon: Polygon;
@@ -57,9 +73,13 @@ function projectFromProperty(): {
   const ps = usePropertyStore.getState();
   const active: Room | undefined = selectActiveRoom(ps);
   if (!active) {
+    // Blank start (Vic 2026-08-25, complaint 1): with no active room the
+    // canvas must render NOTHING. The old 5×4 m fallback drew a room the
+    // user never created. `polygonBounds([])` is all-zero, so the L/W
+    // readout reports 0 and TopBar shows its "Draw a room →" hint.
     return {
-      roomDimensions: { lengthM: 5, widthM: 4 },
-      polygon: rectToPolygon({ lengthM: 5, widthM: 4 }),
+      roomDimensions: EMPTY_ROOM_DIMENSIONS,
+      polygon: EMPTY_POLYGON,
       placedItems: [],
       selectedInstanceId: null,
       showGrid: ps.showGrid,
@@ -122,7 +142,7 @@ export const useDesignStore = create<DesignState>((set) => {
 
   _unsubscribeMirror = usePropertyStore.subscribe((ps) => {
     const active = selectActiveRoom(ps);
-    const polygon = active?.polygon ?? rectToPolygon({ lengthM: 5, widthM: 4 });
+    const polygon = active?.polygon ?? EMPTY_POLYGON;
     const b = polygonBounds(polygon);
     set({
       polygon,

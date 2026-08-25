@@ -10,6 +10,7 @@
  *   - addItem / removeItem / updateItem only touch the active room
  *   - loadProperty migrates a legacy rectangle room shape to a polygon
  *   - normaliseLoadedRoom auto-fills polygon from {lengthM,widthM}
+ *   - every re-seed path opens BLANK (Vic 2026-08-25, complaint 1)
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
@@ -92,12 +93,16 @@ describe('removeRoom', () => {
     expect(after.activeRoomId).toBe(idB);
   });
 
-  it('re-seeds a fresh room when the last room is deleted (never goes to zero)', () => {
+  // Blank start (Vic 2026-08-25, complaint 1): deleting the last room must
+  // re-seed a BLANK room, not the old 5×4 m rectangle. A rectangle here put
+  // a room on the canvas that the customer never drew.
+  it('re-seeds a BLANK room when the last room is deleted (never goes to zero)', () => {
     const { property } = usePropertyStore.getState();
     expect(property.rooms).toHaveLength(1);
     usePropertyStore.getState().removeRoom(property.rooms[0].id);
     const after = usePropertyStore.getState().property;
     expect(after.rooms).toHaveLength(1);
+    expect(after.rooms[0].polygon).toHaveLength(0);
     expect(after.rooms[0].placedItems).toEqual([]);
   });
 });
@@ -187,10 +192,22 @@ describe('loadProperty + normaliseLoadedRoom — rectangle→polygon migration o
     expect(migrated.polygon).toEqual(triangle);
   });
 
-  it('normaliseLoadedProperty re-seeds a default room when rooms list is empty', () => {
+  it('normaliseLoadedProperty re-seeds a BLANK room when rooms list is empty', () => {
     const p = normaliseLoadedProperty({ id: 'x', name: 'Empty', rooms: [] });
     expect(p.rooms).toHaveLength(1);
-    expect(p.rooms[0].polygon).toHaveLength(4);
+    expect(p.rooms[0].polygon).toHaveLength(0);
+  });
+
+  // A persisted blank room round-tripping through Load must STAY blank.
+  it('normaliseLoadedRoom keeps a blank room blank (no phantom 5×4 rectangle)', () => {
+    const r = normaliseLoadedRoom({ id: 'b', name: 'Blank', polygon: [], placedItems: [] });
+    expect(r.polygon).toHaveLength(0);
+  });
+
+  it('normaliseLoadedRoom still migrates a genuine legacy rectangle payload', () => {
+    const r = normaliseLoadedRoom({ id: 'l', name: 'Legacy', lengthM: 6, widthM: 3 });
+    expect(r.polygon).toHaveLength(4);
+    expect(polygonArea(r.polygon)).toBeCloseTo(18, 6);
   });
 
   it('loadProperty replaces the active store property', () => {
