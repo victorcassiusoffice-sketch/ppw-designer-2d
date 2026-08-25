@@ -197,7 +197,8 @@
       "notes": "Magnetic + air resistance rower; 22-inch HD touchscreen; iFit-ready. Distributor stock at K1-Sport.",
       "source_url": "https://www.k1-sport.com/shop-online",
       "topdown_image_url": "/products/topdown/k1-nordictrack-rw900.png",
-      "photo_image_url": "/products/photos/k1-nordictrack-rw900.png"
+      "photo_image_url": "/products/photos/k1-nordictrack-rw900.png",
+      "front_edge": "bottom"
     },
     {
       "id": "k1-vision-t600-03",
