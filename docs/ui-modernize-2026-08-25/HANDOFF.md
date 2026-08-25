@@ -291,3 +291,74 @@ The 4 `react-refresh/only-export-components` **warnings** on
 `WallDrawMode.tsx` are PRE-EXISTING — verified by `git stash` + lint on the
 baseline, which reports the identical 4 warnings at line 37 (they moved to
 line 47 only because this branch adds import lines above them).
+
+---
+
+## §6 P4 — Blueprint canvas reskin
+
+Complaints 4 + 5: *"the general look is dated"* / *"the canvas must look
+like `Designer.jpeg`: a premium dark architectural blueprint."*
+
+All §4 tokens live in ONE new module, `src/designer/blueprintTheme.ts`.
+Nothing re-declares a hex — that is exactly what let the old canvas drift
+into five different greys.
+
+| surface | before | after |
+|---|---|---|
+| stage ground | `bg-ppw-mist` cream `#E9EDEF` | `CANVAS_GROUND` `#152430` |
+| room floor | `#FAF7F1` | `ROOM_FILL` `#1D3140` |
+| room outline | `#0E1B1F` @ 6 px | `WALL_GOLD` `#E8A33D` @ **10 px** + drop shadow + `WALL_INNER_STROKE` hairline |
+| interior walls | navy `#232C3B` | `WALL_GOLD` (both `WallDrawLayer` and the always-on `CommittedWallsLayer`) |
+| grid | `#C4CBCD` @ 0.9/0.55 | `GRID_LINE` `#2B4254` @ 0.9/0.5 |
+| selection / rotate handle | cyan `#06B6D4` | `WALL_GOLD_BRIGHT` `#FFBB58` |
+| on-canvas labels | ink `#0E1B1F` / slate | `LABEL_TEXT` / `LABEL_TEXT_MUTED` + dark halo |
+| ghost preview | gold / `#DC2828` | `GHOST_VALID_*` gold dashed / `GHOST_INVALID` `#E05252` |
+| draw-mode preview | teal `#0F766E` on teal wash | gold on `ROOM_FILL` |
+
+Also added: the active room's name rendered on the floor in uppercase,
+letter-spaced, light — the callout style the reference uses — anchored just
+inside the top-left wall so it never fights the centred empty-room hint.
+
+Per the brief, product art stays **PHOTOREAL** (it is the shop's selling
+surface), and app chrome outside the canvas + build toolbar keeps the
+cream/navy brand register. The cream overlay cards (start prompt,
+empty-room hint, draw tip, Clear pills, top-right buttons) read with strong
+contrast against the dark ground and were deliberately left alone.
+
+### The e2e trap, handled
+
+`tests/e2e/wall-aware-placement.spec.ts` locates the room by scanning the
+first Konva canvas for its border, previously `r<40 && g<50 && b<50` — a
+DARK stroke. After the reskin that predicate matches the **ground**, not
+the wall, and would have silently returned a nonsense origin rather than
+failing loudly. The spec now imports `ROOM_BORDER_SCAN` from
+`blueprintTheme` and passes it into the page, so tolerance and colour live
+in one place and cannot drift. The inset also moved from a hardcoded `+3`
+to `WALL_STROKE_PX / 2` — the stroke is centred on the polygon path, and it
+is now 10 px, not 6.
+
+### Two more defects found in the render
+
+5. Toasts stacked ON TOP of the dock (`bottom-6`, fixed). Now offset by
+   `--sims-dock-h` / `--sims-toolbar-h`.
+6. The build stamp was slate `#3B4A52` — near-invisible on `#152430`. Now
+   `#E9EDEF` at 0.45. Vic uses it to confirm a fresh bundle landed.
+
+**GATE**
+
+```
+PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test wall-aware-placement
+Running 2 tests using 2 workers
+  ok 2 …› manual R rotation during armed phase overrides auto-orientation (7.2s)
+  ok 1 …› drops near each wall auto-orient into the room and sit flush (10.8s)
+  2 passed (11.5s)
+
+npx vitest run  → Test Files 148 passed (148) · Tests 1648 passed (1648)
+npm run build   → ✓ built in 9.05s (clean)
+npx eslint <5 changed files> → 0 errors (4 pre-existing warnings, see §5)
+```
+
+The e2e passing is the meaningful signal here: both tests locate the room
+by scanning canvas pixels for a GOLD border and then assert exact
+flush-against-wall placement geometry, so a 2/2 pass proves the walls
+really did render gold AND that the reskin did not disturb placement.

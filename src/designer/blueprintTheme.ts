@@ -136,6 +136,24 @@ export function measureChipMetrics(scale: number, targetPx = MEASURE_MIN_SCREEN_
  * and narrow enough to exclude the ground `#152430`, the room fill
  * `#1D3140` and the grid `#2B4254`.
  */
+export const ROOM_BORDER_SCAN = {
+  rMin: 200,
+  gMin: 120,
+  gMax: 190,
+  bMax: 90,
+  /**
+   * Inward nudge from the scanned minimum, in canvas px: the stroke is
+   * CENTRED on the polygon path, so the outermost gold pixel sits half a
+   * stroke outside the true wall line.
+   */
+  inset: WALL_STROKE_PX / 2,
+} as const;
+
 export function isRoomBorderPixel(r: number, g: number, b: number): boolean {
-  return r > 200 && g >= 120 && g <= 190 && b < 90;
+  return (
+    r > ROOM_BORDER_SCAN.rMin
+    && g >= ROOM_BORDER_SCAN.gMin
+    && g <= ROOM_BORDER_SCAN.gMax
+    && b < ROOM_BORDER_SCAN.bMax
+  );
 }

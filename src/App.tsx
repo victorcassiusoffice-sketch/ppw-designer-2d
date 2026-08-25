@@ -230,8 +230,10 @@ export default function App() {
           left: 'max(6px, env(safe-area-inset-left))',
           fontSize: 9,
           lineHeight: 1,
-          color: '#3B4A52',
-          opacity: 0.5,
+          // Light on the blueprint ground (was slate #3B4A52, which is
+          // near-invisible against CANVAS_GROUND).
+          color: '#E9EDEF',
+          opacity: 0.45,
           fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
           pointerEvents: 'none',
           zIndex: 40,

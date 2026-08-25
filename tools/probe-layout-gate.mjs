@@ -90,6 +90,9 @@ if (cardVisible) {
     const ctx2 = c.getContext('2d');
     const img = ctx2.getImageData(0, 0, c.width, c.height).data;
     let minX = Infinity, minY = Infinity;
+    // Accepts BOTH borders so the same harness can shoot before/ (dark
+    // stroke on cream) and after/ (blueprint gold on dark). Kept in sync
+    // with blueprintTheme.ROOM_BORDER_SCAN.
     const isBorder = (r, g, b) =>
       (r < 40 && g < 50 && b < 50) || (r > 200 && g >= 120 && g <= 190 && b < 90);
     for (let y = 0; y < c.height; y += 2) {

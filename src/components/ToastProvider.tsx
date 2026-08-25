@@ -33,7 +33,14 @@ export function ToastProvider() {
 
   return (
     <div
-      className="pointer-events-none fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 flex-col gap-2"
+      className="pointer-events-none fixed left-1/2 z-50 flex -translate-x-1/2 flex-col gap-2"
+      // 2026-08-25: was a bare `bottom-6`, which stacked the toasts over the
+      // Sims catalog dock. Both the desktop dock and the mobile toolbar
+      // publish their live height; each resolves to 0 px when unmounted, so
+      // every other page keeps the original 1.5rem offset.
+      style={{
+        bottom: 'calc(1.5rem + var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))',
+      }}
       role="status"
       aria-live="polite"
     >
