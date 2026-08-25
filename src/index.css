@@ -61,3 +61,17 @@ body,
   background-color: theme('colors.ppw.stone');
   border-radius: 4px;
 }
+
+/* Designer details overlay (2026-08-25) — the right panel is no longer a
+   permanent rail, so it needs an entrance or it appears to teleport in.
+   Honours reduced-motion: no slide, just present. */
+@keyframes ppw-details-in {
+  from { transform: translateX(16px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes ppw-details-in {
+    from { transform: none; opacity: 1; }
+    to   { transform: none; opacity: 1; }
+  }
+}

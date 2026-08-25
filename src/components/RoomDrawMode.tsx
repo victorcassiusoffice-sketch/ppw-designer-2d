@@ -27,7 +27,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Layer, Line, Circle, Text, Group, Rect } from 'react-konva';
+import { Layer, Line, Circle, Group } from 'react-konva';
 import type Konva from 'konva';
 import {
   distance,
@@ -39,6 +39,14 @@ import {
 } from '../lib/geometry';
 import type { Polygon, Vertex, Viewport } from '../lib/geometry';
 import { useToastStore, type ToastKind } from '../store/toastStore';
+// Blueprint reskin + legible measurements (Vic 2026-08-25, complaints 3+5).
+import { MeasurementChip } from '../designer/MeasurementChip';
+import {
+  MEASURE_TEXT,
+  ROOM_FILL,
+  WALL_GOLD,
+  WALL_GOLD_BRIGHT,
+} from '../designer/blueprintTheme';
 
 function pushDrawToast(message: string, kind: ToastKind = 'info'): void {
   try {
@@ -283,6 +291,12 @@ export function RoomDrawLayer({
     return segs;
   }, [vertices, hover]);
 
+  /** Length of the in-progress segment (last committed vertex → cursor). */
+  const liveSegmentLengthM = useMemo(() => {
+    if (!hover || vertices.length === 0) return 0;
+    return distance(vertices[vertices.length - 1], hover);
+  }, [vertices, hover]);
+
   const closeCandidate = useMemo(() => {
     if (vertices.length < 3 || !hover) return false;
     return isClosingPolygon(vertices, hover, CLOSE_THRESHOLD_M);
@@ -301,7 +315,11 @@ export function RoomDrawLayer({
   void onCancel;
   void setVertices;
   void setHover;
-  void viewport;
+
+  // Measurement text lives in SCREEN space: everything the chip draws is
+  // divided by this so the numbers stay ~16 px however far the user has
+  // zoomed. See `measureFontSize` in blueprintTheme.
+  const scale = viewport.scale;
 
   return (
     <Layer listening={false}>
@@ -309,9 +327,9 @@ export function RoomDrawLayer({
         <Line
           points={previewPolygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre])}
           closed
-          fill="rgba(20, 184, 166, 0.08)"
-          stroke="#0F766E"
-          strokeWidth={1}
+          fill={`${ROOM_FILL}CC`}
+          stroke={WALL_GOLD}
+          strokeWidth={1.5}
           dash={[6, 4]}
         />
       )}
@@ -331,29 +349,40 @@ export function RoomDrawLayer({
                 s.to.x * pxPerMetre,
                 s.to.y * pxPerMetre,
               ]}
-              stroke={isPreview ? '#06B6D4' : '#0E1B1F'}
-              strokeWidth={isPreview ? 1.5 : 3}
-              dash={isPreview ? [4, 4] : undefined}
+              stroke={isPreview ? WALL_GOLD_BRIGHT : WALL_GOLD}
+              strokeWidth={isPreview ? 2 : 5}
+              dash={isPreview ? [6, 5] : undefined}
               lineCap="round"
             />
-            {s.lengthM > 0.05 && (
-              <Group x={mid.x * pxPerMetre} y={mid.y * pxPerMetre}>
-                <Rect x={-26} y={-9} width={52} height={18} cornerRadius={3} fill="#0E1B1F" opacity={0.85} />
-                <Text
-                  x={-26}
-                  y={-5}
-                  width={52}
-                  text={`${s.lengthM.toFixed(2)} m`}
-                  fontSize={11}
-                  fontFamily="Inter, sans-serif"
-                  fill="#FFFFFF"
-                  align="center"
-                />
-              </Group>
+            {/* Legible dimension callout at the segment midpoint. Screen-
+                space sized, so it reads the same at 30 % and 300 % zoom.
+                Skipped for the PREVIEW segment — the cursor chip below
+                already shows that length, and two chips reading the same
+                number on one line is noise. */}
+            {s.lengthM > 0.05 && !isPreview && (
+              <MeasurementChip
+                x={mid.x * pxPerMetre}
+                y={mid.y * pxPerMetre}
+                text={`${s.lengthM.toFixed(2)} m`}
+                scale={scale}
+              />
             )}
           </Group>
         );
       })}
+
+      {/* Running length of the segment being drawn, parked just above the
+          cursor so the number is where the user is actually looking. */}
+      {hover && liveSegmentLengthM > 0.05 && (
+        <MeasurementChip
+          x={hover.x * pxPerMetre}
+          y={hover.y * pxPerMetre}
+          text={`${liveSegmentLengthM.toFixed(2)} m`}
+          scale={scale}
+          offsetYPx={-26}
+          live
+        />
+      )}
 
       {vertices.map((v, i) => (
         <Group key={`v-${i}`}>
@@ -361,8 +390,8 @@ export function RoomDrawLayer({
             x={v.x * pxPerMetre}
             y={v.y * pxPerMetre}
             radius={i === 0 ? 7 : 5}
-            fill={i === 0 ? '#06B6D4' : '#0E1B1F'}
-            stroke="#FFFFFF"
+            fill={i === 0 ? WALL_GOLD_BRIGHT : WALL_GOLD}
+            stroke="#0E1B1F"
             strokeWidth={2}
           />
           {i === vertices.length - 1 && vertices.length >= 1 && (
@@ -370,7 +399,7 @@ export function RoomDrawLayer({
               x={v.x * pxPerMetre}
               y={v.y * pxPerMetre}
               radius={11}
-              stroke="#06B6D4"
+              stroke={WALL_GOLD_BRIGHT}
               strokeWidth={1.5}
               dash={[3, 3]}
             />
@@ -383,9 +412,9 @@ export function RoomDrawLayer({
           x={vertices[0].x * pxPerMetre}
           y={vertices[0].y * pxPerMetre}
           radius={14}
-          stroke="#06B6D4"
+          stroke={WALL_GOLD_BRIGHT}
           strokeWidth={2.5}
-          fill="rgba(6, 182, 212, 0.15)"
+          fill="rgba(255, 187, 88, 0.2)"
         />
       )}
 
@@ -394,7 +423,7 @@ export function RoomDrawLayer({
           x={hover.x * pxPerMetre}
           y={hover.y * pxPerMetre}
           radius={4}
-          fill="#06B6D4"
+          fill={MEASURE_TEXT}
           opacity={closeCandidate ? 1 : 0.7}
         />
       )}

@@ -1,5 +1,11 @@
 /**
- * DetailsPanel — right rail (desktop) / bottom modal (mobile, < 768 px).
+ * DetailsPanel — right-side OVERLAY (desktop) / bottom modal (mobile).
+ *
+ * 2026-08-25 (Vic complaint 2): the permanent 320 px right rail is gone.
+ * The panel now slides in over the canvas ONLY while a placed item is
+ * selected and closes on deselect (Esc / click empty floor) or its X. It
+ * costs the drawing surface nothing when nothing is selected — which is
+ * most of the time, including the entire first-run experience.
  *
  * Week 2 build:
  *   - Full product info (dimensions, price, supplier, commission %,
@@ -82,6 +88,7 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
   const placedItems = useDesignStore((s) => s.placedItems);
   const selectedInstanceId = useDesignStore((s) => s.selectedInstanceId);
   const clearDesign = useDesignStore((s) => s.clearDesign);
+  const selectItem = useDesignStore((s) => s.selectItem);
   const roomDimensions = useDesignStore((s) => s.roomDimensions);
 
   const selected = placedItems.find((i) => i.instanceId === selectedInstanceId);
@@ -115,13 +122,28 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
       <div className="border-b border-ppw-stone px-4 py-3 flex items-center justify-between">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-ppw-slate">Details</h2>
         {selected && (
-          <button
-            type="button"
-            onClick={() => setInfoOpen(false)}
-            className="md:hidden rounded-md border border-ppw-stone bg-white px-2 py-0.5 text-xs text-ppw-slate"
-          >
-            Close
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={() => setInfoOpen(false)}
+              className="md:hidden rounded-md border border-ppw-stone bg-white px-2 py-0.5 text-xs text-ppw-slate"
+            >
+              Close
+            </button>
+            {/* Desktop: the panel IS the selection, so its X deselects.
+                (Mobile keeps the sheet-only Close above so the on-canvas
+                FloatingCluster survives.) */}
+            <button
+              type="button"
+              data-testid="details-overlay-close"
+              onClick={() => selectItem(null)}
+              aria-label="Close details"
+              title="Close details (Esc also deselects)"
+              className="hidden md:flex h-7 w-7 items-center justify-center rounded-md border border-ppw-stone bg-white text-sm text-ppw-slate hover:border-ppw-coral hover:text-ppw-coral"
+            >
+              ×
+            </button>
+          </>
         )}
       </div>
 
@@ -282,9 +304,25 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
 
   return (
     <>
-      <aside className="hidden md:flex h-full w-80 flex-col border-l border-ppw-stone bg-white">
-        {body}
-      </aside>
+      {/* Desktop overlay. `absolute` inside <main>'s relative-positioned
+          flex row would need a positioned ancestor; the panel is instead
+          pinned to the canvas region with `fixed` + the dock height, so it
+          never covers the build toolbar. Pointer events stay on the panel
+          only, so the canvas underneath keeps panning/zooming. */}
+      {selected && (
+        <aside
+          data-testid="details-overlay"
+          className="hidden md:flex fixed right-0 top-14 z-30 w-80 flex-col border-l border-ppw-stone bg-white shadow-2xl"
+          style={{
+            // Sits between the TopBar and the Sims dock. `--sims-dock-h` is
+            // published by SimsDock; 0 px until it mounts.
+            bottom: 'var(--sims-dock-h, 0px)',
+            animation: 'ppw-details-in 160ms ease-out',
+          }}
+        >
+          {body}
+        </aside>
+      )}
 
       {selected && infoOpen && (
         <>

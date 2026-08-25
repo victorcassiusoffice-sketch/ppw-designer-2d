@@ -57,28 +57,20 @@ const LEGACY_KEY = 'ppw_design_v1';
 
 const DEFAULT_ROOM_DIMS: RoomDims = { lengthM: 5, widthM: 4 };
 
-function makeDefaultRoom(name = 'Main Room'): Room {
-  return {
-    id: nanoid(8),
-    name,
-    polygon: rectToPolygon(DEFAULT_ROOM_DIMS),
-    placedItems: [],
-  };
-}
-
 /**
- * Blank-canvas-on-open (2026-06-09, Vic): a FRESH start (no saved data)
- * and "New" / "Clear all" now open onto an EMPTY room — no polygon, no
- * items — so the customer draws their own room first, Sims build-mode
- * style. An empty polygon (`[]`) renders nothing on the canvas (the
- * Konva layer guards `polygon.length >= 3`) and is safe across every
+ * Blank-canvas-on-open (2026-06-09, Vic; hardened 2026-08-25): the ONLY
+ * room factory. A FRESH start, "New", "Clear all", the last-room-deleted
+ * re-seed and the zero-rooms load repair ALL open onto an EMPTY room — no
+ * polygon, no items — so the customer draws their own room first, Sims
+ * build-mode style. An empty polygon (`[]`) renders nothing on the canvas
+ * (the Konva layer guards `polygon.length >= 3`) and is safe across every
  * geometry helper (`polygonBounds([])` / `polygonArea([])` return zero).
  *
- * Deliberately distinct from `makeDefaultRoom` (a 5×4 rectangle). The
- * rectangle is still the DEFENSIVE re-seed when a loaded/persisted
- * property turns out to have zero rooms or the last room is removed —
- * there we want a usable room, not a forced redraw. Only the user-facing
- * "start fresh" entry points open blank.
+ * The 5×4 m rectangle used to be a "defensive" re-seed here. It was the
+ * source of Vic's complaint 1 (2026-08-25): a room the user never drew
+ * appearing on the canvas. The ONLY way a rectangle now appears without
+ * drawing is the explicit "Quick 5 × 4 m room" button on the start prompt
+ * (`data-testid="start-quick-rectangle"`) or the Add-room rectangle mode.
  */
 function makeBlankRoom(name = 'Main Room'): Room {
   return {
@@ -194,7 +186,7 @@ export const usePropertyStore = create<PropertyState>()(
         const newRoom: Room = {
           id: nanoid(8),
           name: partial?.name ?? `Room ${get().property.rooms.length + 1}`,
-          polygon: partial?.polygon ?? rectToPolygon(DEFAULT_ROOM_DIMS),
+          polygon: partial?.polygon ?? [],
           placedItems: [],
         };
         set((s) => ({
@@ -228,9 +220,10 @@ export const usePropertyStore = create<PropertyState>()(
       removeRoom: (roomId) =>
         set((s) => {
           const remaining = s.property.rooms.filter((r) => r.id !== roomId);
-          // Never let a property have zero rooms — re-seed with a default.
+          // Never let a property have zero rooms — re-seed BLANK so the
+          // canvas never shows a room the user did not draw.
           if (remaining.length === 0) {
-            const fresh = makeDefaultRoom();
+            const fresh = makeBlankRoom();
             return {
               property: { ...s.property, rooms: [fresh], activeRoomId: fresh.id },
               selectedInstanceId: null,
@@ -395,7 +388,7 @@ export const usePropertyStore = create<PropertyState>()(
 export function normaliseLoadedProperty(property: Property | RawProperty): Property {
   const rooms: Room[] = (property.rooms ?? []).map((r) => normaliseLoadedRoom(r));
   if (rooms.length === 0) {
-    rooms.push(makeDefaultRoom());
+    rooms.push(makeBlankRoom());
   }
   const activeRoomId =
     property.activeRoomId && rooms.some((r) => r.id === property.activeRoomId)
@@ -433,13 +426,24 @@ interface RawProperty {
 }
 
 export function normaliseLoadedRoom(r: RawRoom): Room {
+  // A room that carries Week 1/2 rectangle fields is a LEGACY payload and
+  // is migrated to a polygon. A room with neither a polygon nor rect
+  // fields is a BLANK room (Vic 2026-08-25) — it must stay blank, not
+  // silently acquire a 5×4 m rectangle the user never drew.
+  const hasLegacyRect =
+    typeof r.lengthM === 'number'
+    || typeof r.widthM === 'number'
+    || typeof r.roomDimensions?.lengthM === 'number'
+    || typeof r.roomDimensions?.widthM === 'number';
   const polygon: Polygon =
-    (r.polygon && r.polygon.length >= 3 && r.polygon) ||
-    (r.vertices && r.vertices.length >= 3 && r.vertices) ||
-    rectToPolygon({
-      lengthM: r.lengthM ?? r.roomDimensions?.lengthM ?? DEFAULT_ROOM_DIMS.lengthM,
-      widthM: r.widthM ?? r.roomDimensions?.widthM ?? DEFAULT_ROOM_DIMS.widthM,
-    });
+    (r.polygon && r.polygon.length >= 3 && r.polygon)
+    || (r.vertices && r.vertices.length >= 3 && r.vertices)
+    || (hasLegacyRect
+      ? rectToPolygon({
+        lengthM: r.lengthM ?? r.roomDimensions?.lengthM ?? DEFAULT_ROOM_DIMS.lengthM,
+        widthM: r.widthM ?? r.roomDimensions?.widthM ?? DEFAULT_ROOM_DIMS.widthM,
+      })
+      : []);
   return {
     id: r.id ?? nanoid(8),
     name: r.name ?? 'Room',

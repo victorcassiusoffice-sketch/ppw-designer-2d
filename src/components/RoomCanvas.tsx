@@ -65,6 +65,28 @@ import { haptic } from '../lib/haptics';
 import { isCardinalRotation, resolveWallAwarePlacement } from '../designer/wallAwarePlacement';
 // Aspect fix (2026-08-24) — contain-fit product art to its footprint.
 import { fitImageToFootprint } from '../designer/imageFit';
+// Blueprint reskin (Vic 2026-08-25, complaint 5) — the canvas becomes a
+// premium dark architectural drawing. Every colour comes from ONE module.
+import {
+  CANVAS_GROUND,
+  GHOST_INVALID,
+  GHOST_INVALID_FILL,
+  GHOST_VALID_FILL,
+  GHOST_VALID_STROKE,
+  GRID_LINE,
+  GRID_MAJOR_OPACITY,
+  GRID_MAJOR_WIDTH_PX,
+  GRID_MINOR_OPACITY,
+  GRID_MINOR_WIDTH_PX,
+  LABEL_TEXT,
+  LABEL_TEXT_MUTED,
+  ROOM_FILL,
+  WALL_GOLD,
+  WALL_GOLD_BRIGHT,
+  WALL_INNER_STROKE,
+  WALL_INNER_STROKE_PX,
+  WALL_STROKE_PX,
+} from '../designer/blueprintTheme';
 
 // M1.5: HTML5 DragEvent path retired (silently fails on `.konva-stage`
 // per K1 audit). DRAG_MIME stays in ProductPalette for legacy unit
@@ -171,6 +193,23 @@ export function RoomCanvas({
   }, [pushToast]);
 
   const [viewport, setViewport] = useState<Viewport>(INITIAL_VIEWPORT);
+  /**
+   * True once the user has deliberately panned / zoomed / pinched. Until
+   * then the room stays auto-centred in the stage.
+   *
+   * 2026-08-25: the old guard was `viewport.x !== 0 || y !== 0 || scale !== 1`
+   * — "pristine". That broke as soon as the effect fired ONCE, which it
+   * always did on mount against the 800×600 default stageSize (before the
+   * ResizeObserver reports the real size) and against an EMPTY polygon.
+   * The viewport locked at x = 800/2 = 400 and never re-centred, so a room
+   * drawn afterwards sat far left of centre. Barely noticeable when the
+   * canvas was 1088 px wide; glaring now that it is the full 1920.
+   *
+   * An explicit interaction flag keeps the original intent (never undo a
+   * user's zoom) while letting the room re-centre when the stage resizes
+   * or the room itself appears/changes.
+   */
+  const userMovedViewportRef = useRef(false);
   const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
   const itemDragRef = useRef<{ instanceId: string | null; moved: boolean }>({
     instanceId: null,
@@ -374,7 +413,10 @@ export function RoomCanvas({
   }, []);
 
   useEffect(() => {
-    if (viewport.x !== 0 || viewport.y !== 0 || viewport.scale !== 1) return;
+    if (userMovedViewportRef.current) return;
+    // Nothing to centre on until a room exists — leave the viewport alone
+    // so the blank-canvas prompt is not fighting a pointless transform.
+    if (roomWpx <= 0 || roomHpx <= 0) return;
     setViewport({
       x: Math.max(40, (stageSize.width - roomWpx) / 2 - bounds.minX * pxPerMetre),
       y: Math.max(40, (stageSize.height - roomHpx) / 2 - bounds.minY * pxPerMetre),
@@ -387,6 +429,7 @@ export function RoomCanvas({
     e.evt.preventDefault();
     const stage = stageRef.current;
     if (!stage) return;
+    userMovedViewportRef.current = true;
     const pointer = stage.getPointerPosition();
     if (!pointer) return;
     // M5 (Customer-UI fix 2026-05-31) — use a FUNCTIONAL setViewport so the
@@ -466,6 +509,7 @@ export function RoomCanvas({
       if (startDist <= 0) return;
       let newScale = startScale * (d / startDist);
       newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+      userMovedViewportRef.current = true;
       setViewport({
         x: centerStage.x - centerWorld.x * newScale,
         y: centerStage.y - centerWorld.y * newScale,
@@ -628,6 +672,10 @@ export function RoomCanvas({
   }, [placementIntent?.nonce]);
 
   function resetView() {
+    // Clearing the flag hands the room back to the auto-centring effect, so
+    // Reset now RE-CENTRES rather than slamming the room's origin into the
+    // stage's top-left corner (which is what {0,0,scale:1} literally means).
+    userMovedViewportRef.current = false;
     setViewport(INITIAL_VIEWPORT);
   }
 
@@ -852,9 +900,17 @@ export function RoomCanvas({
   return (
     <div
       ref={containerRef}
-      className={`relative h-full w-full bg-ppw-mist transition-colors ${
-        pendingProductId && !drawMode ? 'bg-ppw-teal/5 ring-2 ring-inset ring-ppw-teal/40' : ''
+      className={`relative h-full w-full transition-colors ${
+        pendingProductId && !drawMode ? 'ring-2 ring-inset' : ''
       } ${drawMode ? 'cursor-crosshair' : ''} ${pendingProductId && !drawMode ? 'cursor-crosshair' : ''}`}
+      // Blueprint ground. Was the cream `bg-ppw-mist`; the reference is a
+      // deep desaturated navy that lets the gold walls carry the drawing.
+      style={{
+        background: CANVAS_GROUND,
+        ...(pendingProductId && !drawMode
+          ? { '--tw-ring-color': `${WALL_GOLD_BRIGHT}66` } as React.CSSProperties
+          : {}),
+      }}
       data-armed={pendingProductId ? 'true' : 'false'}
       // Designer 3-Bug Fix (2026-05-28, Bug 1) — long-press on a placed
       // item (Konva.Image on the canvas) popped the browser "Save image"
@@ -1018,6 +1074,7 @@ export function RoomCanvas({
         draggable={!drawMode && !pendingProductId && !wallDrawEnabled}
         onDragMove={(e) => {
           if (e.target === e.target.getStage()) {
+            userMovedViewportRef.current = true;
             setViewport((v) => ({ ...v, x: e.target.x(), y: e.target.y() }));
           }
         }}
@@ -1091,8 +1148,27 @@ export function RoomCanvas({
         <Layer listening>
           {polygon.length >= 3 && (
             <Group listening={false}>
-              <Line points={polygonPoints} closed fill="#FAF7F1" stroke="#0E1B1F" strokeWidth={6} lineJoin="miter" />
-              <Line points={polygonPoints} closed stroke="#3B4A52" strokeWidth={1} />
+              {/* Reference `Design/Designer.jpeg`: the walls ARE the drawing.
+                  A thick amber stroke over a slightly lighter floor, with a
+                  hairline inside the stroke for the drafted edge. */}
+              <Line
+                points={polygonPoints}
+                closed
+                fill={ROOM_FILL}
+                stroke={WALL_GOLD}
+                strokeWidth={WALL_STROKE_PX}
+                lineJoin="miter"
+                shadowColor="#000000"
+                shadowBlur={18}
+                shadowOpacity={0.45}
+                shadowOffsetY={4}
+              />
+              <Line
+                points={polygonPoints}
+                closed
+                stroke={WALL_INNER_STROKE}
+                strokeWidth={WALL_INNER_STROKE_PX}
+              />
             </Group>
           )}
 
@@ -1102,12 +1178,31 @@ export function RoomCanvas({
                 <Line
                   key={l.key}
                   points={l.points}
-                  stroke="#C4CBCD"
-                  strokeWidth={l.major ? 1 : 0.5}
-                  opacity={l.major ? 0.9 : 0.55}
+                  stroke={GRID_LINE}
+                  strokeWidth={l.major ? GRID_MAJOR_WIDTH_PX : GRID_MINOR_WIDTH_PX}
+                  opacity={l.major ? GRID_MAJOR_OPACITY : GRID_MINOR_OPACITY}
                 />
               ))}
             </Group>
+          )}
+
+          {/* Room name, set the way the reference plan sets its callouts:
+              uppercase, letter-spaced, light on the dark floor. Anchored
+              just inside the top-left wall so it never fights the centred
+              empty-room hint or a placed item's own label. */}
+          {hasRoom && activeRoom?.name && (
+            <Text
+              listening={false}
+              x={bounds.minX * pxPerMetre + 14}
+              y={bounds.minY * pxPerMetre + 12}
+              text={activeRoom.name.toUpperCase()}
+              fontSize={13}
+              fontStyle="bold"
+              fontFamily="Inter, sans-serif"
+              letterSpacing={2.5}
+              fill={LABEL_TEXT}
+              opacity={0.8}
+            />
           )}
 
           {/* M4 (Customer-UI fix 2026-05-31) — the on-canvas "0,0 - W x H m
@@ -1167,8 +1262,8 @@ export function RoomCanvas({
                 y={dragGhost.yM * pxPerMetre}
                 width={wPx}
                 height={hPx}
-                fill={dragGhost.valid ? 'rgba(255,187,88,0.35)' : 'rgba(220,40,40,0.45)'}
-                stroke={dragGhost.valid ? '#FFBB58' : '#DC2828'}
+                fill={dragGhost.valid ? GHOST_VALID_FILL : GHOST_INVALID_FILL}
+                stroke={dragGhost.valid ? GHOST_VALID_STROKE : GHOST_INVALID}
                 strokeWidth={2}
                 dash={[6, 4]}
               />
@@ -1176,9 +1271,10 @@ export function RoomCanvas({
                 x={dragGhost.xM * pxPerMetre + 6}
                 y={dragGhost.yM * pxPerMetre + 6}
                 text={product.name}
-                fontSize={11}
+                fontSize={12}
                 fontFamily="Inter, sans-serif"
-                fill="#232C3B"
+                fontStyle="bold"
+                fill={dragGhost.valid ? GHOST_VALID_STROKE : GHOST_INVALID}
               />
             </Layer>
           );
@@ -1347,7 +1443,12 @@ export function RoomCanvas({
       {drawMode && (
         <div
           className="pointer-events-none absolute left-3 max-w-xs rounded-md bg-white/85 px-3 py-2 text-[11px] leading-snug text-ppw-slate shadow-sm ring-1 ring-ppw-stone hidden md:block"
-          style={{ bottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+          // Stacks ABOVE the sticky Clear products / Clear all row, which
+          // also lives bottom-left. They used to overlap each other.
+          style={{
+            bottom:
+              'calc(max(1.25rem, env(safe-area-inset-bottom)) + var(--sims-toolbar-h, 0px) + 46px)',
+          }}
         >
           <span className="font-semibold text-ppw-ink">Draw mode:</span> click to place wall vertices - click first vertex or press <kbd>Enter</kbd> to close - <kbd>Ctrl+Z</kbd> undo - <kbd>Esc</kbd> cancel.
         </div>
@@ -1647,7 +1748,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
           <HydratingSkeleton
             width={unrotatedWPx}
             height={unrotatedHPx}
-            stroke={isSelected ? '#FFBB58' : '#232C3B'}
+            stroke={isSelected ? WALL_GOLD_BRIGHT : GRID_LINE}
             strokeWidth={isSelected ? 2.5 : 1}
           />
         ) : (
@@ -1656,7 +1757,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
             height={unrotatedHPx}
             fill={colors.fill}
             opacity={0.55}
-            stroke={isSelected ? '#06B6D4' : colors.stroke}
+            stroke={isSelected ? WALL_GOLD_BRIGHT : colors.stroke}
             strokeWidth={isSelected ? 2.5 : 1}
             cornerRadius={3}
           />
@@ -1666,7 +1767,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
             width={unrotatedWPx}
             height={unrotatedHPx}
             fill="transparent"
-            stroke="#06B6D4"
+            stroke={WALL_GOLD_BRIGHT}
             strokeWidth={2.5}
             cornerRadius={3}
           />
@@ -1684,7 +1785,12 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         text={product.name}
         fontSize={Math.min(12, Math.max(8, wPx / 14))}
         fontFamily="Inter, sans-serif"
-        fill="#0E1B1F"
+        fill={LABEL_TEXT}
+        // Dark halo so the name stays readable over pale product art as
+        // well as over the dark floor.
+        stroke="#0E1B1F"
+        strokeWidth={2.5}
+        fillAfterStrokeEnabled
         listening={false}
         ellipsis
         wrap="word"
@@ -1695,15 +1801,18 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         text={CATEGORY_LABELS[product.category]}
         fontSize={9}
         fontFamily="Inter, sans-serif"
-        fill="#3B4A52"
+        fill={LABEL_TEXT_MUTED}
+        stroke="#0E1B1F"
+        strokeWidth={2}
+        fillAfterStrokeEnabled
         listening={false}
       />
       {isSelected && (
         <>
-          <Circle x={0} y={0} radius={4} fill="#06B6D4" />
-          <Circle x={wPx} y={0} radius={4} fill="#06B6D4" />
-          <Circle x={0} y={hPx} radius={4} fill="#06B6D4" />
-          <Circle x={wPx} y={hPx} radius={4} fill="#06B6D4" />
+          <Circle x={0} y={0} radius={4} fill={WALL_GOLD_BRIGHT} />
+          <Circle x={wPx} y={0} radius={4} fill={WALL_GOLD_BRIGHT} />
+          <Circle x={0} y={hPx} radius={4} fill={WALL_GOLD_BRIGHT} />
+          <Circle x={wPx} y={hPx} radius={4} fill={WALL_GOLD_BRIGHT} />
           {/* Tweak 01 / Phase B — rotate handle. A draggable Circle
               floating ~18 px above the AABB centre; the user drags it
               around the item centre to rotate. Cursor angle (relative
@@ -1716,8 +1825,8 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
             x={wPx / 2}
             y={-18}
             radius={9}
-            fill="#06B6D4"
-            stroke="#fff"
+            fill={WALL_GOLD_BRIGHT}
+            stroke="#0E1B1F"
             strokeWidth={2}
             draggable
             data-testid="rotate-handle"

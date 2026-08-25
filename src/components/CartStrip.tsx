@@ -1,9 +1,14 @@
 /**
  * CartStrip - Week 3 build.
  *
- * Bottom strip on desktop, floating chip on mobile. Shows aggregated
- * cart in the user's selected display currency and links through to
- * the full /cart page.
+ * 2026-08-25 (Vic complaint 2): the desktop full-width bottom strip is
+ * GONE. It was the single most expensive piece of chrome on the canvas —
+ * 209 px of always-expanded line-item table that dropped the drawing
+ * surface from 94.8 % to 75.5 % of viewport height the moment one product
+ * was placed. It is now a floating PILL at bottom-right (above the Sims
+ * dock) at EVERY width; clicking it expands the exact same cart UI as a
+ * sheet. Nothing was removed — the table, the FX line, View cart and
+ * Checkout are all still one tap away.
  *
  * "Checkout" button at the right edge jumps straight to /checkout.
  *
@@ -23,6 +28,7 @@ export function CartStrip() {
   const cart = useCart();
   const currency = useCurrencyStore((s) => s.currency);
   const navigate = useNavigate();
+  // The sheet is opened deliberately, so show the line items straight away.
   const [expanded, setExpanded] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -138,27 +144,46 @@ export function CartStrip() {
 
   return (
     <>
-      <div className="hidden md:flex shrink-0 flex-col border-t border-ppw-stone bg-white">
-        {body}
-      </div>
-
+      {/* Collapsed state: a pill. Parked bottom-right, clear of the Sims
+          dock (desktop `--sims-dock-h`) and the mobile toolbar
+          (`--sims-toolbar-h`), both published by those components and 0 px
+          when they are not mounted. */}
       <button
         type="button"
+        data-testid="cart-pill"
         onClick={() => setMobileOpen(true)}
-        className={`md:hidden fixed right-4 z-30 min-h-[44px] rounded-full bg-ppw-ink px-3 py-2 text-xs font-semibold text-white shadow-lg ring-1 ring-white/20 ${mobileOpen ? 'hidden' : ''}`}
-        style={{ bottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+        aria-label={`Open cart — ${cart.totalItemCount} items, ${formatCurrency(cart.subtotal, currency)}`}
+        aria-expanded={mobileOpen}
+        className={`fixed right-4 z-30 flex min-h-[44px] items-center gap-2 rounded-full bg-ppw-ink px-3.5 py-2 text-xs font-semibold text-white shadow-lg ring-1 ring-white/20 transition hover:brightness-110 ${
+          mobileOpen ? 'hidden' : ''
+        }`}
+        style={{
+          bottom:
+            'calc(max(1rem, env(safe-area-inset-bottom)) + var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))',
+        }}
       >
-        Cart - {cart.totalItemCount} - {formatCurrency(cart.subtotal, currency)}
+        <svg viewBox="0 0 20 20" className="h-4 w-4 text-[#FFBB58]" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M3 4h2l1.5 9.5A2 2 0 0 0 8.5 15h6.5a2 2 0 0 0 2-1.5L18 7H6.2l-.4-2.4A1 1 0 0 0 4.8 4H3v0Zm6 13a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"
+          />
+        </svg>
+        <span className="rounded-full bg-[#FFBB58] px-1.5 py-[1px] text-[10px] font-bold text-ppw-ink">
+          {cart.totalItemCount}
+        </span>
+        <span className="tabular-nums">{formatCurrency(cart.subtotal, currency)}</span>
       </button>
 
+      {/* Expanded state: the SAME cart body, as a bottom sheet. */}
       {mobileOpen && (
         <>
           <div
-            className="md:hidden fixed inset-0 z-40 bg-black/30"
+            className="fixed inset-0 z-40 bg-black/30"
             onClick={() => setMobileOpen(false)}
           />
           <div
-            className="md:hidden fixed bottom-0 left-0 right-0 z-40 rounded-t-2xl border-t border-ppw-stone bg-white shadow-2xl"
+            data-testid="cart-sheet"
+            className="fixed bottom-0 left-0 right-0 z-40 rounded-t-2xl border-t border-ppw-stone bg-white shadow-2xl md:left-auto md:w-[min(96vw,720px)] md:rounded-t-2xl"
             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
             <button

@@ -5,8 +5,12 @@
  * Each row shows: room name (inline-rename), area (m²), placed-item
  * count, active indicator, delete button (with confirm).
  *
- * Desktop (≥ 768 px): vertical column to the left of ProductPalette.
- * Mobile (< 768 px):    collapses to a dropdown above the canvas.
+ * 2026-08-25 (Vic complaint 2): the permanent 224 px desktop rail is GONE.
+ * At EVERY viewport width this is now a compact dropdown hung off the
+ * TopBar's Rooms trigger — same rows, same store calls (setActiveRoom /
+ * renameRoom / removeRoom / renameProperty), same live draw counters. The
+ * rail was the single biggest fixed cost on the drawing surface and its
+ * content is glanced at, not worked in.
  *
  * fix/mobile-ux-v1 (May 2026): the mobile trigger button used to live
  * here as an absolute `left-2 top-2 z-30` element. That overlapped the
@@ -319,30 +323,26 @@ export function RoomList({
     </>
   );
 
+  // The TopBar hosts the trigger (at every width since 2026-08-25) and
+  // tells us when to open via `mobileOpen`. Nothing is rendered until then
+  // — no rail, no reserved space, zero cost to the canvas.
+  if (!mobileOpen) return null;
+
   return (
     <>
-      <aside className="hidden md:flex h-full w-56 flex-col border-r border-ppw-stone bg-white">
+      <div
+        className="fixed inset-0 z-40 bg-black/30"
+        onClick={() => setMobileOpen(false)}
+        data-testid="rooms-dropdown-scrim"
+      />
+      <aside
+        data-testid="rooms-dropdown"
+        // Full-bleed on a phone; a compact 320 px dropdown anchored under
+        // the TopBar trigger on desktop.
+        className="fixed left-0 right-0 top-14 z-40 mx-2 flex max-h-[70vh] flex-col rounded-lg border border-ppw-stone bg-white shadow-2xl sm:right-auto sm:w-[320px] sm:max-h-[76vh]"
+      >
         {body}
       </aside>
-
-      {/*
-        fix/mobile-ux-v1: the standalone absolute Rooms trigger button
-        is GONE — it overlapped the TopBar's currency picker on small
-        viewports. The TopBar now hosts the inline trigger and tells us
-        when to open via the `mobileOpen` prop.
-      */}
-
-      {mobileOpen && (
-        <>
-          <div
-            className="md:hidden fixed inset-0 z-40 bg-black/30"
-            onClick={() => setMobileOpen(false)}
-          />
-          <aside className="md:hidden fixed left-0 right-0 top-14 z-40 mx-2 flex max-h-[70vh] flex-col rounded-lg border border-ppw-stone bg-white shadow-2xl">
-            {body}
-          </aside>
-        </>
-      )}
     </>
   );
 }

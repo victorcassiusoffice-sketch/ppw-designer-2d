@@ -12,6 +12,10 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
+// Blueprint reskin (2026-08-25): the room border is now GOLD on a dark
+// ground, not a dark stroke on cream. The scan tolerance is imported from
+// the theme module that owns the colour, so the two can never drift apart.
+import { ROOM_BORDER_SCAN } from '../../src/designer/blueprintTheme';
 
 // Treadmill seed: 205 × 95 cm footprint (length along X at rotation 0).
 const PRODUCT_ID = 'k1-nordictrack-2450';
@@ -27,12 +31,20 @@ interface StoredItem {
 
 /**
  * Find the room's on-screen origin EMPIRICALLY: scan the first Konva
- * layer canvas (room polygon + grid — items live on a later layer) for
- * the dark #0E1B1F room border and return its top-left in page pixels.
- * Immune to the app's viewport-centring races — recomputed per placement.
+ * layer canvas (room polygon + grid — items live on a later layer) for the
+ * room border and return its top-left in page pixels. Immune to the app's
+ * viewport-centring races — recomputed per placement.
+ *
+ * 2026-08-25: the border used to be a dark `#0E1B1F` stroke on a cream
+ * floor and was matched with `r<40 && g<50 && b<50`. After the blueprint
+ * reskin it is GOLD (`WALL_GOLD` #E8A33D) on a dark ground — that old test
+ * would now match the GROUND instead of the wall and silently return a
+ * nonsense origin. The tolerance lives in `blueprintTheme.ROOM_BORDER_SCAN`
+ * next to the colour it tracks, and is passed into the page rather than
+ * duplicated here.
  */
 async function roomOrigin(page: Page): Promise<{ x: number; y: number }> {
-  const found = await page.evaluate(() => {
+  const found = await page.evaluate((scan) => {
     const c = document.querySelector('.konvajs-content canvas') as HTMLCanvasElement | null;
     if (!c) return null;
     const ctx = c.getContext('2d');
@@ -43,7 +55,13 @@ async function roomOrigin(page: Page): Promise<{ x: number; y: number }> {
     for (let y = 0; y < c.height; y += 2) {
       for (let x = 0; x < c.width; x += 2) {
         const i = (y * c.width + x) * 4;
-        if (img[i + 3] > 200 && img[i] < 40 && img[i + 1] < 50 && img[i + 2] < 50) {
+        if (
+          img[i + 3] > 200
+          && img[i] > scan.rMin
+          && img[i + 1] >= scan.gMin
+          && img[i + 1] <= scan.gMax
+          && img[i + 2] < scan.bMax
+        ) {
           if (x < minX) minX = x;
           if (y < minY) minY = y;
         }
@@ -52,9 +70,13 @@ async function roomOrigin(page: Page): Promise<{ x: number; y: number }> {
     if (!Number.isFinite(minX)) return null;
     const rect = c.getBoundingClientRect();
     const scale = c.width / rect.width;
-    // The 6px border stroke is centred on the polygon path → +3px inward.
-    return { x: rect.x + minX / scale + 3, y: rect.y + minY / scale + 3 };
-  });
+    // The stroke is centred on the polygon path, so step half a stroke
+    // inward to land on the true wall line.
+    return {
+      x: rect.x + minX / scale + scan.inset,
+      y: rect.y + minY / scale + scan.inset,
+    };
+  }, ROOM_BORDER_SCAN);
   if (!found) throw new Error('Room border not found on the Konva layer canvas');
   return found;
 }
