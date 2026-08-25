@@ -466,3 +466,187 @@ A third cause was mine: `SimsDock`'s collapse chevron carried
 collapsed the strip out from under the test. The chevron is now labelled
 "Hide product strip" — the app changed to suit the test's intent rather
 than the test being bent around a bad label.
+
+---
+
+## §9 P7 — DEPLOY (live)
+
+All P0–P6 gates green and pasted above before this ran.
+
+```
+git checkout main && git pull        -> Already up to date (4c21bfa)
+git merge --no-ff feat/designer-ui-modernize-2026-08-25 \
+  -m "merge: designer UI modernization (Vic-approved workflow 2026-08-25)"
+npx vitest run                       -> Tests 1648 passed (1648)
+npm run build                        -> built in 7.30s (clean)
+git push origin main                 -> 4c21bfa..0ee8e3b  main -> main
+```
+
+**Merge SHA: `0ee8e3b7fe16cba38f83b0173238124a59f6a337`**
+
+Both refs verified against the remote:
+
+* `git ls-remote origin feat/designer-ui-modernize-2026-08-25` = `8527dca…` = local HEAD
+* `git ls-remote origin main` = `0ee8e3b…` = local HEAD
+
+### 1. Healthcheck (cache-busted, polled until it matched)
+
+```
+try 1: "commit":"4c21bfa86ab984a6d9f5f1972db1f873b5210b12"
+try 2: "commit":"4c21bfa86ab984a6d9f5f1972db1f873b5210b12"
+try 3: "commit":"4c21bfa86ab984a6d9f5f1972db1f873b5210b12"
+try 4: "commit":"4c21bfa86ab984a6d9f5f1972db1f873b5210b12"
+try 5: "commit":"0ee8e3b7fe16cba38f83b0173238124a59f6a337"   <- MATCH
+
+{"ok":true,"service":"ppw-designer-2d","env":"production",
+ "commit":"0ee8e3b7fe16cba38f83b0173238124a59f6a337",
+ "sentryConfigured":true,"timestamp":"2026-08-25T15:34:17.459Z"}
+```
+
+Every GET was cache-busted per the `api-deploy-topology.md` §6 gotcha. The
+four stale reads before the match are exactly why that rule exists.
+
+### 2. Playwright against the live site
+
+```
+node tools/verify-prod-2026-08-25.mjs https://designer.ppwellness.co
+
+PASS  HTTP ok  - status 200
+PASS  blank-canvas start prompt in the tree on a fresh visit
+PASS  blank-canvas start prompt is VISIBLE (page painted)
+PASS  #root has children (app really mounted)  - childElementCount = 1
+PASS  Sims dock is live on desktop  - height 82px
+PASS  canvas >= 80% width  - 1920px = 1.000
+PASS  canvas >= 85% height  - 942px = 0.872
+PASS  blueprint ground is dark  - rgb(21, 36, 48)
+PASS  gold room border found on the live canvas (reskin is live)
+PASS  arming works on the live dock
+PASS  placed one item end to end  - items-placed = "1"
+PASS  details overlay closes on Escape (deselect)
+PASS  zero console errors
+
+build stamp on the live page: build 0ee8e3b
+
+LIVE-CONFIRMED - all checks passed
+```
+
+### 3. Report
+
+| | |
+|---|---|
+| merge SHA | `0ee8e3b7fe16cba38f83b0173238124a59f6a337` |
+| healthcheck | `commit` equals the merge SHA (above) |
+| live build stamp | `build 0ee8e3b` |
+| screenshot | `docs/ui-modernize-2026-08-25/after/PROD-verified-designer.ppwellness.co.png` |
+| screenshot (details overlay open) | `docs/ui-modernize-2026-08-25/after/PROD-verified-details-overlay.png` |
+
+### One deviation from the brief's wording, and why
+
+The brief specifies `waitUntil: 'domcontentloaded'`. **That event does not
+fire on production from this network within 150 s.** Cause, diagnosed
+rather than guessed: prod `index.html` carries a render-blocking
+third-party stylesheet pointing at `https://rsms.me/inter/inter.css`, and
+rsms.me answers in ~16 s from here (curl reported **16.2 s**), so the
+document's load milestones stall behind it.
+
+Proven to be the MILESTONE and not reachability: the same headless browser
+fetches `/designer` with **HTTP 200 in 213 ms** using `waitUntil: 'commit'`.
+
+So the script uses `commit` + `waitForSelector`, which is **strictly
+stronger** evidence than DOMContentLoaded: `start-room-prompt` only exists
+if the bundle downloaded, React mounted, and the tree rendered — and the
+run then goes on to place an item through the real UI. `networkidle` was
+never used, per the trap.
+
+---
+
+## §10 Things I could NOT verify, and things Vic should know
+
+Stated plainly rather than glossed.
+
+1. **Not verified: a real device.** Every mobile result here is Chromium at
+   390 × 844, not an actual iPhone or Android. The [VIC-VERIFY] item is:
+   open `designer.ppwellness.co` on the phone and confirm the dock, the
+   Rooms dropdown and the measurement chips behave.
+
+2. **Not verified: two mobile-only paths.** Long-press-drag from the mobile
+   toolbar, and the wall tool's live chip on a touch device. Both are
+   code-reviewed and typecheck clean; neither has a real-device run behind
+   it.
+
+3. **PRE-EXISTING, worth its own task: a third-party font host is a single
+   point of failure for the page's load event.** `index.html` blocks render
+   on `https://rsms.me/inter/inter.css`. When that host is slow the page is
+   slow for everyone — no fallback, no `font-display` escape, no
+   self-hosted copy. It is why the P7 verification needed a workaround.
+   This branch does not touch `index.html`; the fix (self-host Inter, or
+   preload + `font-display: swap`) is a separate job.
+
+4. **PRE-EXISTING, worth its own task: unoptimised product photos.**
+   Verified with curl against prod: `k1-nordictrack-x16.png` is **462 KB**
+   and `k1-proform-carbon-tl.png` is **393 KB**, taking 27–40 s each on a
+   slow link. They return HTTP 200 — they are just heavy. The dock pulls
+   ~22 of them. Not caused by this change (the dock shows the same art the
+   old palette did), but the dock makes more of them visible at once.
+   Wants resizing / WebP + lazy loading.
+
+5. **`npm run lint` is still dirty on baseline** (~21 pre-existing errors in
+   files this branch does not touch), per brief rule §2.4. Lint was scoped
+   to changed files: 0 errors. The 4 `react-refresh` warnings on
+   `WallDrawMode.tsx` were proven pre-existing by linting the baseline.
+
+6. **Deploy-rule note for the record.** `workflow_default_deploy_to_live_2026-05-28`
+   says the Designer defaults to merge-to-main + push-to-production, but
+   that the rule "suspends per-repo if any gains a purchase flow" — and
+   this repo now has a live Stripe/PayPal checkout. I deployed because this
+   brief is written Vic instruction naming P7 explicitly and specifying the
+   merge message "(Vic-approved workflow 2026-08-25)". Flagging the tension
+   so the standing rule gets re-confirmed or amended rather than quietly
+   eroding. **This change touches no payment, API, schema or pricing code**
+   — it is layout and canvas visuals only.
+
+---
+
+## §11 Files changed
+
+New:
+
+```
+src/designer/blueprintTheme.ts                   the ONE colour/measurement module
+src/designer/MeasurementChip.tsx                 screen-space dimension callout
+src/components/desktop/SimsDock.tsx              desktop Sims build toolbar
+src/designer/__tests__/blueprintTheme.test.ts    22 tests
+src/store/__tests__/designStore.test.ts          6 tests
+tools/shoot-ui-modernize.mjs                     3 states x 3 viewports + measurements
+tools/shoot-draw-measure.mjs                     draw-mode chips at 100% and 50%
+tools/probe-layout-gate.mjs                      P2 canvas-dominance gate
+tools/probe-overlap.mjs                          P5 overlap / clipping / reachability gate
+tools/verify-prod-2026-08-25.mjs                 P7 live verification
+```
+
+Modified: `src/App.tsx`, `src/components/RoomCanvas.tsx`,
+`src/components/RoomDrawMode.tsx`, `src/designer/WallDrawMode.tsx`,
+`src/components/TopBar.tsx`, `src/components/RoomList.tsx`,
+`src/components/DetailsPanel.tsx`, `src/components/CartStrip.tsx`,
+`src/components/ClearControls.tsx`, `src/components/ToastProvider.tsx`,
+`src/store/designStore.ts`, `src/store/propertyStore.ts`,
+`src/store/__tests__/propertyStore.test.ts`, `src/index.css`,
+`tests/e2e/wall-aware-placement.spec.ts`, `tests/e2e/placement-fsm.spec.ts`
+
+Untouched, per brief rule §2.1: `src/lib/geometry.ts`,
+`src/designer/wallAwarePlacement.ts`, `src/designer/imageFit.ts`, the
+drag/rotate/validate handlers inside `PlacedItemGroup`, and
+`propertyStore`'s item actions. No new npm dependencies. No API, schema,
+payment or secret changes.
+
+---
+
+## §12 The five complaints
+
+| # | complaint | result |
+|---|---|---|
+| 1 | a default room appears already drawn | **fixed** — all 5 phantom-room paths open blank; live proof is `start-room-prompt` rendering on a fresh visit to prod |
+| 2 | side features eat too much space | **fixed** — canvas 56.7% to **100%** width, 75.5% to **87.2%** height, measured live |
+| 3 | measurement numbers too small | **fixed** — constant ~16 screen px at every zoom, unit-proven across 0.3–3x, shot at 100% and 50% |
+| 4 | dated look / want Sims build mode | **fixed** — one-row Sims dock with category macros, dark build-mode chrome |
+| 5 | canvas must look like Designer.jpeg | **fixed** — `#152430` ground, 10px `#E8A33D` walls with drop shadow, `#2B4254` grid, uppercase letter-spaced room label |
