@@ -650,3 +650,72 @@ payment or secret changes.
 | 3 | measurement numbers too small | **fixed** — constant ~16 screen px at every zoom, unit-proven across 0.3–3x, shot at 100% and 50% |
 | 4 | dated look / want Sims build mode | **fixed** — one-row Sims dock with category macros, dark build-mode chrome |
 | 5 | canvas must look like Designer.jpeg | **fixed** — `#152430` ground, 10px `#E8A33D` walls with drop shadow, `#2B4254` grid, uppercase letter-spaced room label |
+
+---
+
+## §13 Conformance check against the brief (re-read post-deploy)
+
+The brief was re-read end to end after the deploy and every HARD RULE and
+DESIGN SPEC value checked by command rather than by recollection.
+
+### §4 palette — all values exact
+
+```
+OK  CANVAS_GROUND = '#152430'          OK  LABEL_TEXT = '#E9EDEF'
+OK  ROOM_FILL = '#1D3140'              OK  MEASURE_BG = '#0E1B1F'
+OK  WALL_GOLD = '#E8A33D'              OK  MEASURE_TEXT = '#FFBB58'
+OK  WALL_GOLD_BRIGHT = '#FFBB58'       OK  MEASURE_BG_OPACITY = 0.85
+OK  GRID_LINE = '#2B4254'              OK  WALL_STROKE_PX = 10
+OK  GHOST_INVALID = '#E05252'
+```
+
+All in the single `src/designer/blueprintTheme.ts` the brief asked for; no
+consumer re-declares a hex.
+
+### §2 HARD RULES
+
+| rule | check | result |
+|---|---|---|
+| §2.1 no placement/geometry logic | `git diff 4c21bfa..HEAD -- src/lib/geometry.ts src/designer/wallAwarePlacement.ts src/designer/imageFit.ts` | all three **UNTOUCHED** |
+| §2.1 propertyStore item actions | changed lines touching `addItem:` / `removeItem:` / `updateItem:` / `selectItem:` / `clearActiveRoomItems:` | **0** |
+| §2.1 PlacedItemGroup drag/rotate/validate | changed lines touching `onDragStart` / `onDragEnd` / `validatePlacement` / `resolveWallAwarePlacement` / `rotatedFootprint` | **0** |
+| §2.2 keep every `data-testid` mounted | `git grep -ho 'data-testid="[^"]*"'` on baseline vs HEAD, `comm -23` | baseline 118 → HEAD 130; **0 dropped**, 12 added |
+| §2.3 no new npm dependencies | `git diff 4c21bfa..HEAD -- package.json package-lock.json` | **empty** |
+| §2.3 no API / schema / payment changes | no file under `api/` or `src/lib/{stripe,paypal,checkoutRails,commission}.ts` in the diff | **none touched** |
+| §2.3 no secrets in code | no key/token literals added | **none** |
+| §2.4 lint scoped to changed files | `npx eslint` over the 19 changed `.ts`/`.tsx` | **0 errors** |
+| §2.5 branch only until P7 | all work on `feat/designer-ui-modernize-2026-08-25`; `main` touched only at P7 | **held** |
+| §2.6 log undecided calls | 3 logged in §4, 4 more surfaced in §7 | **logged** |
+
+### Phase-gate artefact inventory
+
+`before/` — 6 files (3 states × 2 viewports), exactly the P0 gate:
+
+```
+draw-measure-desktop-1920.png   fresh-desktop-1920.png   placed-desktop-1920.png
+draw-measure-mobile-390.png     fresh-mobile-390.png     placed-mobile-390.png
+```
+
+`after/` — 13 files. The P5 gate asks for 3 states × 2 viewports; this is a
+superset (1366 added because the P5 checklist names that width, plus the
+two zoom-comparison shots for P3 and the two live production shots for P7):
+
+```
+fresh-desktop-1920.png          placed-desktop-1920.png    draw-measure-desktop-1920.png
+fresh-desktop-1366.png          placed-desktop-1366.png    draw-measure-desktop-1366.png
+fresh-mobile-390.png            placed-mobile-390.png      draw-measure-mobile-390.png
+draw-measure.png (100% zoom)    draw-measure-zoomed-out.png (50% zoom)
+PROD-verified-designer.ppwellness.co.png                   PROD-verified-details-overlay.png
+```
+
+### §7 KNOWN TRAPS — how each was handled
+
+| trap | handling |
+|---|---|
+| coach dialog eats clicks | `ppw_designer_coach_v1='1'` seeded via `addInitScript` in every harness context; also the fix for the pre-existing `placement-fsm` failure |
+| Konva centring races the ResizeObserver | never computed the room position from layout math — every harness uses the canvas pixel-scan. Also found and fixed the *root* race: the auto-centre effect firing once against the 800×600 default `stageSize` |
+| 5 m room = 500 px needs 1920×1080 | wall-aware e2e keeps its `test.use({ viewport: 1920×1080 })`; the layout probe measures at 1920 |
+| vitest tinypool flake | the one baseline failure (`fx.test.ts`) was re-run in isolation and passed — recorded as a flake, not a regression, before any edit |
+| lint dirty on baseline | scoped to changed files; the 4 `react-refresh` warnings proven pre-existing by linting the stashed baseline |
+| placing auto-opens cart/details UI | `Escape` pressed between placements in every multi-placement harness |
+| images hydrate async | 2.5 s settle locally; against prod, waited on actual image decode (bounded to 3 images / 25 s after demanding all 22 caused connection resets on this link) |
