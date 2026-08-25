@@ -362,3 +362,107 @@ The e2e passing is the meaningful signal here: both tests locate the room
 by scanning canvas pixels for a GOLD border and then assert exact
 flush-against-wall placement geometry, so a 2/2 pass proves the walls
 really did render gold AND that the reskin did not disturb placement.
+
+---
+
+## §7 P5 — Visual critique loop
+
+Captures re-run into `after/` at **three** viewports (1920 / 1366 / 390 —
+1366 added because the checklist names it) for all three states.
+
+Added `tools/probe-overlap.mjs` for the machine-checkable half of the
+checklist, because "looks fine to me" is not evidence. At each viewport ×
+state it measures: horizontal page overflow, chrome clipped off-viewport,
+pairwise overlap of the canvas overlays, TopBar controls escaping the bar,
+whether anything covers the room centre, and whether the Rooms trigger is
+actually reachable.
+
+**It found four real defects.** (Two of my own probe's first-run failures
+were false positives — the Konva wrapper is an *ancestor* of the canvas,
+and the blank-state prompt is *supposed* to sit centre when there is no
+room. Both were fixed in the probe, not papered over in the app.)
+
+| # | defect | cause | fix |
+|---|---|---|---|
+| 7 | **1366: TopBar overflowed** — "Custom shape" clipped, "Save as…" and "Grid 0.5 m" wrapped | I added the Rooms trigger to the desktop bar without taking anything out | title + property-rename block is now `xl:`-only; below 1280 the Rooms trigger carries the identity and its dropdown still hosts the rename |
+| 8 | **390: the Rooms trigger was UNREACHABLE** — the left cluster collapsed to zero width | pre-existing (identical in `before/fresh-mobile-390.png`), but it matters now that the dropdown is the only route to the rooms list | `min-w-[92px]` on the trigger, short "Custom" label under `md`, and the secondary **+ Walls** tool moved into the mobile overflow menu (same handler, `data-testid="wall-tool-toggle-mobile"`) |
+| 9 | **mobile Clear products / Clear all covered the canvas readout badges** | they were pinned `top-16` on mobile only | bottom-left at every width, offset by the live `--sims-toolbar-h` |
+| 10 | **a regression of my own**: `shrink-0` on the right cluster starved the left one, deleting the logo + Rooms trigger at 390 | over-eager fix for #7 | reverted; #7 solved by removing width instead of refusing to yield it |
+
+### Checklist verdicts
+
+| item | verdict | evidence |
+|---|---|---|
+| canvas dominates | **PASS** | 1920 × 942 = **100 % width, 87.2 % height** (was 56.7 % / 75.5 %) |
+| dark ground / gold walls read premium | **PASS** | `after/placed-desktop-1920.png` vs `Design/Designer.jpeg`: same deep navy ground, same amber wall carrying the drawing with a drop shadow, thin cool grid, uppercase letter-spaced room label |
+| no clipped/overlapping chrome at 1920, 1366, 390 | **PASS** | `probe-overlap.mjs` — 30/30 checks, both blank and placed |
+| measurement chips legible at 100 % and 50 % zoom | **PASS** | `after/draw-measure.png` (100 %) and `after/draw-measure-zoomed-out.png` (readout shows exactly **50 %**) — the room is visibly smaller, the chips are visibly identical. Unit-proven constant across the whole 0.3–3 zoom range |
+| dock usable | **PASS** | `probe-layout-gate.mjs` places an item through it; strip + 8 categories fit at 1920 and 1366 without clipping |
+| nothing floats over the room centre | **PASS** | `elementsFromPoint` at the stage centre finds nothing but the canvas, at all three widths |
+
+```
+node tools/probe-overlap.mjs http://localhost:5187
+… 30 checks …
+ALL CHECKS PASSED
+```
+
+---
+
+## §8 P6 — Full regression
+
+```
+npx tsc --noEmit   → clean
+
+npx vitest run     → Test Files 148 passed (148)
+                     Tests     1648 passed (1648)
+
+PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test placement-fsm wall-aware-placement
+Running 4 tests using 4 workers
+  ok 2 …placement-fsm.spec.ts:105 › Escape during armed phase cancels without committing (7.7s)
+  ok 1 …placement-fsm.spec.ts:57  › click catalog card to arm, click floor to commit → items-placed = 1 (8.0s)
+  ok 3 …wall-aware-placement.spec.ts:169 › manual R rotation overrides auto-orientation (8.2s)
+  ok 4 …wall-aware-placement.spec.ts:121 › drops near each wall auto-orient and sit flush (13.9s)
+  4 passed (15.1s)
+
+npm run build      → ✓ built in 11.77s (clean)
+
+npx eslint <19 changed .ts/.tsx files> → 0 errors
+  (4 react-refresh WARNINGS on WallDrawMode.tsx, pre-existing — proven by
+   `git stash` + lint on the baseline, which reports the same 4 at line 37)
+```
+
+### `placement-fsm` was RED on `main` — proven, then repaired
+
+The brief's P6 gate requires this spec green. It was failing 2/2 before any
+edit on this branch. I did not assume that — I verified it:
+
+```
+git checkout main
+PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test placement-fsm
+  2 failed
+    …› click catalog card to arm, click floor to commit → items-placed = 1
+    …› Escape during armed phase cancels without committing
+  (both: "<div role=dialog aria-labelledby=ppw-coach-title> intercepts pointer events")
+```
+
+Two setup bugs, neither related to what the spec asserts:
+
+1. It never seeded `ppw_designer_coach_v1`, so the first-visit coach dialog
+   swallowed the first `card.click()` — trap #1 in the brief, which every
+   other spec in the suite already handles.
+2. It assumed a room was on the canvas. Since blank-canvas-on-open
+   (2026-06-09) a fresh context opens with an EMPTY polygon, so
+   `validatePlacement` correctly refuses every drop and `items-placed` can
+   never increment. The `?fresh=1` param it passed is read nowhere in the
+   app — it did nothing.
+
+Repaired in SETUP ONLY, via a shared `openDesignerWithRoom(page)` helper
+(seed the coach flag → goto → click the documented "Quick 5 × 4 m room").
+**Every assertion in both tests is byte-identical to before.**
+
+A third cause was mine: `SimsDock`'s collapse chevron carried
+`aria-label="Hide catalog"`, and the spec's legacy
+`getByRole('button', { name: /catalog/i })` line matched it on desktop and
+collapsed the strip out from under the test. The chevron is now labelled
+"Hide product strip" — the app changed to suit the test's intent rather
+than the test being bent around a bad label.

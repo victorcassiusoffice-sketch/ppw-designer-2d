@@ -282,12 +282,16 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
         <button
           type="button"
           data-testid="dock-collapse"
-          aria-label={collapsed ? 'Show catalog' : 'Hide catalog'}
+          // Deliberately NOT "…catalog": placement-fsm.spec.ts opens the
+          // mobile catalog with getByRole('button', {name: /catalog/i}),
+          // which would otherwise match this chevron on desktop and
+          // collapse the strip out from under the test.
+          aria-label={collapsed ? 'Show product strip' : 'Hide product strip'}
           aria-expanded={!collapsed}
           onClick={() => setCollapsed((v) => !v)}
           className="flex min-h-[56px] w-9 shrink-0 items-center justify-center self-center rounded-md"
           style={{ color: DOCK_TEXT, background: DOCK_BG_RAISED }}
-          title={collapsed ? 'Show the catalog strip' : 'Hide the catalog strip (more canvas)'}
+          title={collapsed ? 'Show the product strip' : 'Hide the product strip (more canvas)'}
         >
           <svg
             viewBox="0 0 24 24"
