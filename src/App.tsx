@@ -1,11 +1,24 @@
 /**
- * App shell — Week 2.5 multi-room layout.
+ * App shell — Sims build-mode layout (Vic 2026-08-25, complaint 2).
  *
- * Desktop: [RoomList] [Palette] [Canvas] [DetailsPanel]
- *          + CartStrip at bottom + Toasts overlay.
- * Mobile:  [Canvas only] with floating RoomList dropdown,
- *          Palette bottom-sheet, DetailsPanel slide-up,
- *          CartStrip chip.
+ * Desktop AND mobile now share one shape:
+ *
+ *   [ TopBar (rooms dropdown lives here) ]
+ *   [ ============ CANVAS ============= ]   <- full width, ~88% height
+ *   [ Sims catalog dock                 ]
+ *
+ * The old desktop row — [RoomList 224px][Palette 288px][Canvas][Details
+ * 320px] + a 209px CartStrip — left the drawing surface at 56.7% of the
+ * viewport width and 75.5% of its height once the cart appeared. All four
+ * chrome blocks are gone from the flow:
+ *
+ *   RoomList     -> compact dropdown hung off the TopBar trigger
+ *   Palette      -> SimsDock, a one-row build toolbar at the bottom
+ *   DetailsPanel -> right-side overlay, only while an item is selected
+ *   CartStrip    -> floating pill above the dock, expands on click
+ *
+ * Everything is the SAME component with the SAME store calls; only where
+ * it is mounted changed.
  *
  * Draw mode is a top-level UI state that the TopBar toggles; the
  * canvas reads it and routes through RoomDrawMode.
@@ -26,20 +39,22 @@
 import { useState, useEffect, useCallback } from 'react';
 import { TopBar } from './components/TopBar';
 import { CoachMark } from './components/uxKit';
-import { ProductPalette } from './components/ProductPalette';
 import { RoomCanvas } from './components/RoomCanvas';
 import { DetailsPanel } from './components/DetailsPanel';
 import { ToastProvider } from './components/ToastProvider';
 import { RoomList } from './components/RoomList';
 import { CartStrip } from './components/CartStrip';
-import { MiniCartPill } from './components/cart/MiniCartPill';
 import { CartDrawer } from './components/cart/CartDrawer';
 import { AddRoomChooser } from './components/AddRoomChooser';
 import { CanvasErrorBoundary } from './components/CanvasErrorBoundary';
 // Mobile Sims rebuild (2026-05-23) — persistent sticky catalog toolbar
 // for viewports < 1024 px. Replaces the old mobile bottom-sheet + the
-// "Catalog" button. Desktop (≥ 1024 px) keeps the ProductPalette sidebar.
+// "Catalog" button. Desktop (>= 1024 px) uses SimsDock (below).
 import { SimsBottomToolbar } from './components/mobile/SimsBottomToolbar';
+// Desktop Sims rebuild (2026-08-25) — the >= 1024 px counterpart of
+// SimsBottomToolbar. Replaces the ProductPalette sidebar; arms the SAME
+// `pendingProductId` the palette did, so the placement FSM is unchanged.
+import { SimsDock } from './components/desktop/SimsDock';
 import { useKeyboardShortcuts } from './lib/useKeyboardShortcuts';
 import { useAutoSave } from './lib/useAutoSave';
 import {
@@ -114,8 +129,8 @@ export default function App() {
   // "3D Preview at the top is pointless. 2D can work but better to show
   // images of the products."). The TopBar prop is left undefined so its
   // toggle is hidden; the canvas wrapper below no longer applies the
-  // perspective transform. ProductPalette's Sims-style hover DetailCard
-  // (P0-ζ) replaces the "show what you're placing" need.
+  // perspective transform. The Sims-style hover DetailCard (P0-ζ, now on
+  // SimsDock) replaces the "show what you're placing" need.
 
   // P3-2 — paint/flooring estimate beta panel; OFF unless ?paint=1.
   const paintEstimateActive = isPaintEstimateActive();
@@ -128,20 +143,23 @@ export default function App() {
         roomsMenuOpen={roomsMenuOpen}
         setRoomsMenuOpen={setRoomsMenuOpen}
       />
+      {/* RoomList now renders ONLY its dropdown overlay — the permanent
+          224 px rail is gone. The TopBar hosts its trigger at every
+          viewport width. Same store calls (setActiveRoom / renameRoom /
+          removeRoom / renameProperty), same rows, no rail. */}
+      <RoomList
+        onRequestAddRoom={() => setAddRoomOpen(true)}
+        mobileOpen={roomsMenuOpen}
+        setMobileOpen={setRoomsMenuOpen}
+      />
       <main className="flex flex-1 overflow-hidden">
-        <RoomList
-          onRequestAddRoom={() => setAddRoomOpen(true)}
-          mobileOpen={roomsMenuOpen}
-          setMobileOpen={setRoomsMenuOpen}
-        />
-        <ProductPalette
-          pendingProductId={pendingProductId}
-          setPendingProductId={setPendingProductId}
-        />
         <section className="relative flex-1 overflow-hidden">
-          {/* Polish B (V4 Driver tick 35): MiniCartPill owns the canvas
-              top-right slot. */}
-          <MiniCartPill />
+          {/* 2026-08-25: MiniCartPill un-mounted. It sat at `right-3 top-3`
+              and OVERLAPPED RoomCanvas's own top-right Reset/Share/Capture
+              row (visible in docs/ui-modernize-2026-08-25/before/), and now
+              that CartStrip is itself a pill it was a second cart readout on
+              the same screen. The cart lives at bottom-right. The component
+              and its unit test are untouched on disk. */}
           <CanvasErrorBoundary onReset={() => setDrawMode(false)}>
             <div style={{ width: '100%', height: '100%' }}>
               <div style={{ width: '100%', height: '100%' }}>
@@ -161,8 +179,18 @@ export default function App() {
               clear buttons pinned to the canvas (Clear products / Clear all). */}
           <ClearControls />
         </section>
+        {/* Overlay, not a rail — slides in from the right only while an
+            item is selected (see DetailsPanel). */}
         <DetailsPanel armedProductId={pendingProductId} />
       </main>
+      {/* Desktop Sims catalog dock (>= 1024 px). Mounted BEFORE
+          SimsBottomToolbar so a `[data-product-id=...]` .first() in the e2e
+          suite resolves to the VISIBLE desktop tile, not the hidden mobile
+          thumbnail. */}
+      <SimsDock
+        pendingProductId={pendingProductId}
+        setPendingProductId={setPendingProductId}
+      />
       <CartStrip />
       <CartDrawer />
       {/* Mobile/tablet Sims catalog — sticky bottom toolbar (< 1024 px). */}
@@ -195,7 +223,10 @@ export default function App() {
         title="Build identifier"
         style={{
           position: 'fixed',
-          bottom: 'max(6px, env(safe-area-inset-bottom))',
+          // Clears the Sims dock (desktop) / toolbar (mobile); both publish
+          // their live height and resolve to 0 px when not mounted.
+          bottom:
+            'calc(max(6px, env(safe-area-inset-bottom)) + var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))',
           left: 'max(6px, env(safe-area-inset-left))',
           fontSize: 9,
           lineHeight: 1,

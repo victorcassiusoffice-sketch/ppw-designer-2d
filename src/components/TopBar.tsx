@@ -296,11 +296,16 @@ export function TopBar({
           )}
         </div>
 
-        {/* Mobile Rooms trigger (replaces RoomList's old absolute-positioned button). */}
+        {/* Rooms trigger. Was mobile-only; since 2026-08-25 (Vic complaint
+            2) it is the ONLY way into the rooms list at every width — the
+            permanent 224 px desktop rail was deleted and its dropdown hangs
+            off this button. Capped width on desktop so it stays a control,
+            not a rail. */}
         <button
           type="button"
+          data-testid="rooms-trigger"
           onClick={() => setRoomsMenuOpen && setRoomsMenuOpen(!roomsMenuOpen)}
-          className="md:hidden flex min-h-[40px] min-w-0 flex-1 items-center gap-1 truncate rounded-md border border-ppw-stone bg-white px-2.5 text-left text-xs font-medium text-ppw-ink hover:border-ppw-teal"
+          className="flex min-h-[40px] min-w-0 flex-1 items-center gap-1 truncate rounded-md border border-ppw-stone bg-white px-2.5 text-left text-xs font-medium text-ppw-ink hover:border-ppw-teal md:max-w-[200px] md:flex-none"
           aria-label="Open rooms list"
           aria-expanded={roomsMenuOpen}
         >

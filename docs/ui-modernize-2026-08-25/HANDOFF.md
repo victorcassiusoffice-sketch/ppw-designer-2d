@@ -124,3 +124,100 @@ npx eslint src/store/designStore.ts src/store/propertyStore.ts \
            src/store/__tests__/designStore.test.ts \
            src/store/__tests__/propertyStore.test.ts   → clean (no output)
 ```
+
+---
+
+## §4 P2 — Layout maximisation + Sims dock + details overlay + cart pill
+
+Complaint 2: *"Side features eat too much space — the drawing grid must
+dominate the screen."*
+
+Four permanent chrome blocks were costing the canvas 832 px of width and
+209 px of height. All four moved; none were deleted:
+
+| was | cost | now |
+|---|---|---|
+| `RoomList` left rail | 224 px wide | dropdown hung off the TopBar Rooms trigger (`data-testid="rooms-dropdown"`), same store calls, same rows, same live draw counters |
+| `ProductPalette` column | 288 px wide | **`SimsDock`** — one-row build toolbar, `src/components/desktop/SimsDock.tsx` |
+| `DetailsPanel` right rail | 320 px wide | right-side overlay (`data-testid="details-overlay"`), mounts only while an item is selected, closes on deselect or its × |
+| `CartStrip` bottom strip | 209 px tall | floating pill bottom-right (`data-testid="cart-pill"`), expands to the identical cart body as a sheet |
+
+**SimsDock** adapts the mobile `SimsBottomToolbar` Vic already approved.
+The one adaptation: a phone has to stack categories ABOVE a double-row
+strip, a 1920 px desktop does not — so the same parts lie down in a single
+row (`[category icons | product strip | collapse chevron]`) and cost 82 px
+instead of ~190 px. Placement is **not forked**: a tile click toggles
+`pendingProductId` exactly as the ProductPalette card did, carrying the
+same `data-product-id` / `data-macro` / `data-armed` attributes the e2e
+suite asserts on, and `RoomCanvas`'s pointer-FSM commits it. The P0-ζ hover
+DetailCard moved to the dock with its `product-hover-card` testid intact.
+
+`SimsDock` publishes its live height as `--sims-dock-h`, so the details
+overlay, the cart pill and the build stamp all park above it and resolve to
+0 px on mobile where the dock is `display:none`.
+
+### Two defects found and fixed by looking at the render
+
+1. **The room was not centred.** `RoomCanvas`'s auto-centring effect was
+   guarded on the viewport being "pristine" (`x===0 && y===0 && scale===1`).
+   It always fired once on mount against the 800×600 *default* `stageSize`
+   — before the ResizeObserver reports the real size, and against an EMPTY
+   polygon — which locked `viewport.x` at `800/2 = 400` and made the guard
+   false forever. Any room drawn afterwards sat 310 px left of centre. This
+   was pre-existing and barely visible in a 1088 px canvas; it is glaring in
+   a 1920 px one. Replaced with an explicit `userMovedViewportRef` set by
+   wheel / stage-drag / pinch, which keeps the original intent (never undo a
+   user's zoom) while letting the room re-centre when the stage resizes or
+   the room appears. Bonus: **Reset now re-centres** instead of slamming the
+   room's origin into the stage's top-left corner.
+2. **The build stamp rendered on top of the dock** (`position: fixed;
+   bottom: 6px; z-index: 40`). Now offset by `--sims-dock-h`.
+
+### Decisions taken under brief rule §2.6
+
+* **`MiniCartPill` un-mounted from `App.tsx`** (file and its unit test left
+  untouched on disk). It sat at `right-3 top-3` and *overlapped* RoomCanvas's
+  own Reset/Share/Capture row — visible in `before/placed-desktop-1920.png` —
+  and with `CartStrip` now being a pill it was a second cart readout on the
+  same screen. Checked before removing: `wellness-designer-app-phase-a.spec.ts`
+  is the only e2e that references `mini-cart-pill`; A.C.4 asserts
+  `toHaveCount(0)` on an empty cart (still true), and its other use is one
+  selector in an OR-list that also contains `.konvajs-content` (still
+  resolves). Nothing breaks.
+* **The dock's product strip is visible by default**, filtered by the active
+  category, rather than hidden until a category is clicked. This is exactly
+  how the approved mobile toolbar behaves, matches Sims build mode (the tray
+  is open), and keeps `[data-product-id]` clickable for the e2e suite.
+* **The details overlay opens on SELECTION only**, per the brief. The
+  consequence: the armed-product preview that used to fill the idle right
+  rail no longer has a home there. Product info before placement is still
+  reachable — the dock's hover DetailCard shows photo, price, dimensions and
+  a "Place on floor" action.
+
+**GATE** — `node tools/probe-layout-gate.mjs http://localhost:5187`
+
+```
+PASS  testid visible (blank state): share-render
+PASS  testid visible (blank state): start-quick-rectangle
+stage 1920 x 942   topbar 56px   dock 82px
+PASS  stageBox.width / 1920 >= 0.8  = 1
+PASS  stageBox.height / 1080 >= 0.85  = 0.8722
+PASS  testid visible (room state): items-placed
+PASS  items-placed starts at 0
+PASS  dock exposes the product card
+PASS  arming sets data-armed on canvas + card  count = 2
+PASS  room origin found by canvas pixel-scan
+PASS  click card -> click floor -> items-placed = 1  got "1"
+PASS  zero console errors
+
+GATE: stageBox.width/1920 >= 0.8 && stageBox.height/1080 >= 0.85  ->  true
+
+ALL CHECKS PASSED
+```
+
+Width **0.5667 → 1.0**. Height **0.7546 → 0.8722**.
+
+```
+npx vitest run  → Test Files 147 passed (147) · Tests 1626 passed (1626)
+npx eslint <8 changed files> → clean (exit 0)
+```

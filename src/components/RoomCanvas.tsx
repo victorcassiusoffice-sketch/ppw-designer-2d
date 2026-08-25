@@ -171,6 +171,23 @@ export function RoomCanvas({
   }, [pushToast]);
 
   const [viewport, setViewport] = useState<Viewport>(INITIAL_VIEWPORT);
+  /**
+   * True once the user has deliberately panned / zoomed / pinched. Until
+   * then the room stays auto-centred in the stage.
+   *
+   * 2026-08-25: the old guard was `viewport.x !== 0 || y !== 0 || scale !== 1`
+   * — "pristine". That broke as soon as the effect fired ONCE, which it
+   * always did on mount against the 800×600 default stageSize (before the
+   * ResizeObserver reports the real size) and against an EMPTY polygon.
+   * The viewport locked at x = 800/2 = 400 and never re-centred, so a room
+   * drawn afterwards sat far left of centre. Barely noticeable when the
+   * canvas was 1088 px wide; glaring now that it is the full 1920.
+   *
+   * An explicit interaction flag keeps the original intent (never undo a
+   * user's zoom) while letting the room re-centre when the stage resizes
+   * or the room itself appears/changes.
+   */
+  const userMovedViewportRef = useRef(false);
   const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
   const itemDragRef = useRef<{ instanceId: string | null; moved: boolean }>({
     instanceId: null,
@@ -374,7 +391,10 @@ export function RoomCanvas({
   }, []);
 
   useEffect(() => {
-    if (viewport.x !== 0 || viewport.y !== 0 || viewport.scale !== 1) return;
+    if (userMovedViewportRef.current) return;
+    // Nothing to centre on until a room exists — leave the viewport alone
+    // so the blank-canvas prompt is not fighting a pointless transform.
+    if (roomWpx <= 0 || roomHpx <= 0) return;
     setViewport({
       x: Math.max(40, (stageSize.width - roomWpx) / 2 - bounds.minX * pxPerMetre),
       y: Math.max(40, (stageSize.height - roomHpx) / 2 - bounds.minY * pxPerMetre),
@@ -387,6 +407,7 @@ export function RoomCanvas({
     e.evt.preventDefault();
     const stage = stageRef.current;
     if (!stage) return;
+    userMovedViewportRef.current = true;
     const pointer = stage.getPointerPosition();
     if (!pointer) return;
     // M5 (Customer-UI fix 2026-05-31) — use a FUNCTIONAL setViewport so the
@@ -466,6 +487,7 @@ export function RoomCanvas({
       if (startDist <= 0) return;
       let newScale = startScale * (d / startDist);
       newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+      userMovedViewportRef.current = true;
       setViewport({
         x: centerStage.x - centerWorld.x * newScale,
         y: centerStage.y - centerWorld.y * newScale,
@@ -628,6 +650,10 @@ export function RoomCanvas({
   }, [placementIntent?.nonce]);
 
   function resetView() {
+    // Clearing the flag hands the room back to the auto-centring effect, so
+    // Reset now RE-CENTRES rather than slamming the room's origin into the
+    // stage's top-left corner (which is what {0,0,scale:1} literally means).
+    userMovedViewportRef.current = false;
     setViewport(INITIAL_VIEWPORT);
   }
 
@@ -1018,6 +1044,7 @@ export function RoomCanvas({
         draggable={!drawMode && !pendingProductId && !wallDrawEnabled}
         onDragMove={(e) => {
           if (e.target === e.target.getStage()) {
+            userMovedViewportRef.current = true;
             setViewport((v) => ({ ...v, x: e.target.x(), y: e.target.y() }));
           }
         }}
