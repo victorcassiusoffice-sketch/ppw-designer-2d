@@ -17,6 +17,9 @@ mkdirSync(OUT, { recursive: true });
 
 const VIEWPORTS = [
   { name: 'desktop-1920', width: 1920, height: 1080 },
+  // 1366 is the laptop width the P5 checklist calls out — the dock's 8
+  // category buttons + strip have to survive it without clipping.
+  { name: 'desktop-1366', width: 1366, height: 768 },
   { name: 'mobile-390', width: 390, height: 844 },
 ];
 
@@ -89,7 +92,7 @@ for (const vp of VIEWPORTS) {
   // ---- state 2: draw mode with 2 vertices ----
   const canvas = page.locator('.konvajs-content canvas').first();
   const cb = await canvas.boundingBox();
-  const drawBtn = page.locator('button', { hasText: /^Custom shape$/ }).first();
+  const drawBtn = page.locator('[data-testid="room-draw-toggle"]').first();
   if (await drawBtn.count()) {
     await drawBtn.click();
     await page.waitForTimeout(300);

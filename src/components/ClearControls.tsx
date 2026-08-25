@@ -78,8 +78,17 @@ export function ClearControls(): JSX.Element {
   return (
     <>
       <div
-        className="pointer-events-none absolute z-30 flex items-center gap-2 top-16 lg:top-auto lg:bottom-4"
-        style={{ left: 'max(0.75rem, env(safe-area-inset-left))' }}
+        className="pointer-events-none absolute z-30 flex items-center gap-2"
+        // 2026-08-25: mobile used to pin these at `top-16`, where they
+        // covered the canvas readout badges. They are now bottom-left at
+        // EVERY width — the same place desktop already put them. The mobile
+        // Sims toolbar is `fixed` (outside this section's flow), so its live
+        // height is added back; on desktop the dock IS in flow, so the
+        // section already ends above it and `--sims-toolbar-h` is 0.
+        style={{
+          left: 'max(0.75rem, env(safe-area-inset-left))',
+          bottom: 'calc(max(1.25rem, env(safe-area-inset-bottom)) + var(--sims-toolbar-h, 0px))',
+        }}
         data-testid="clear-controls"
       >
         <button

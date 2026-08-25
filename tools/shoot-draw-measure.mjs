@@ -26,7 +26,7 @@ const page = await ctx.newPage();
 await page.goto(`${BASE}/designer`, { waitUntil: 'domcontentloaded' });
 await page.waitForSelector('.konvajs-content canvas', { timeout: 20000 });
 
-await page.locator('button', { hasText: /^Custom shape$/ }).first().click();
+await page.locator('[data-testid="room-draw-toggle"]').first().click();
 await page.waitForTimeout(300);
 
 const box = await page.locator('.konvajs-content canvas').first().boundingBox();
@@ -42,9 +42,16 @@ await page.evaluate(() => document.fonts?.ready).catch(() => {});
 await page.screenshot({ path: `${OUT}/draw-measure.png`, timeout: 30000, animations: 'disabled' });
 
 // Same state at ~50 % zoom — the chips must be the SAME on-screen size.
-for (let i = 0; i < 6; i++) {
+// Wheel until the readout actually reports <= 50 %, rather than guessing a
+// step count (the zoom curve is multiplicative, see lib/zoom).
+for (let i = 0; i < 24; i++) {
+  const pct = await page.evaluate(() => {
+    const m = document.body.innerText.match(/(\d+)%/);
+    return m ? Number(m[1]) : 100;
+  });
+  if (pct <= 50) break;
   await page.mouse.wheel(0, 240);
-  await page.waitForTimeout(60);
+  await page.waitForTimeout(70);
 }
 await page.mouse.move(...P(0.58, 0.62), { steps: 6 });
 await page.waitForTimeout(500);

@@ -262,8 +262,13 @@ export function TopBar({
           <img src="/brand/ppw-mark-512.png" alt="PPWellness" width={24} height={24} className="block" />
         </Link>
 
-        {/* Desktop: title + property rename. Hidden on mobile to save room. */}
-        <div className="hidden md:block leading-tight min-w-0">
+        {/* Title + property rename. `xl:` since 2026-08-25 — the Rooms
+            trigger now lives in this cluster at every width, and at 1366 the
+            two together overflowed the bar (buttons on the right clipped
+            and wrapped). Below 1280 the Rooms trigger shows the active room
+            + room count, and its dropdown still hosts the property rename,
+            so nothing is lost. */}
+        <div className="hidden xl:block leading-tight min-w-0">
           <p className="truncate text-sm font-semibold text-ppw-ink">Wellness Room Designer</p>
           {editingProperty ? (
             <input
@@ -305,7 +310,7 @@ export function TopBar({
           type="button"
           data-testid="rooms-trigger"
           onClick={() => setRoomsMenuOpen && setRoomsMenuOpen(!roomsMenuOpen)}
-          className="flex min-h-[40px] min-w-0 flex-1 items-center gap-1 truncate rounded-md border border-ppw-stone bg-white px-2.5 text-left text-xs font-medium text-ppw-ink hover:border-ppw-teal md:max-w-[200px] md:flex-none"
+          className="flex min-h-[40px] min-w-[92px] flex-1 items-center gap-1 truncate rounded-md border border-ppw-stone bg-white px-2 text-left text-xs font-medium text-ppw-ink hover:border-ppw-teal md:max-w-[190px] md:flex-none md:px-2.5"
           aria-label="Open rooms list"
           aria-expanded={roomsMenuOpen}
         >
@@ -322,7 +327,7 @@ export function TopBar({
         </button>
       </div>
 
-      <div className="flex items-center gap-2 md:gap-2 text-xs">
+      <div className="flex min-w-0 items-center gap-1.5 text-xs md:gap-2">
         <div className="hidden md:flex items-center gap-1.5 rounded-md border border-ppw-stone bg-ppw-sand px-2 py-1">
           {activeRoomIsRect ? (
             <>
@@ -383,11 +388,13 @@ export function TopBar({
           <button
             type="button"
             onClick={() => setDrawMode(true)}
+            data-testid="room-draw-toggle"
             className={`min-h-[40px] px-3 text-xs font-medium ${drawMode ? 'bg-ppw-teal text-white' : 'text-ppw-slate hover:text-ppw-teal'}`}
             title="Custom-shaped room — click corner by corner to sketch the outline (starts a fresh room)"
             aria-pressed={drawMode}
           >
-            Custom shape
+            <span className="md:hidden">Custom</span>
+            <span className="hidden md:inline">Custom shape</span>
           </button>
         </div>
         {/* Interior walls — its own control, not a third "room shape". */}
@@ -395,7 +402,7 @@ export function TopBar({
           type="button"
           onClick={handleToggleWall}
           data-testid="wall-tool-toggle"
-          className={`min-h-[40px] rounded-md border px-3 text-xs font-medium ${
+          className={`hidden md:inline-block min-h-[40px] rounded-md border px-3 text-xs font-medium ${
             wallActive
               ? 'border-ppw-teal bg-ppw-teal text-white'
               : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
@@ -595,6 +602,26 @@ export function TopBar({
                   {cart.uniqueProductCount}
                 </span>
               </Link>
+              {/* Interior walls — moved off the phone TopBar (2026-08-25) so
+                  the Rooms trigger fits; identical handler. */}
+              <button
+                type="button"
+                data-testid="wall-tool-toggle-mobile"
+                onClick={() => {
+                  handleToggleWall();
+                  setShowMobileMenu(false);
+                }}
+                aria-pressed={wallActive}
+                className={`flex min-h-[44px] items-center justify-between rounded-md border px-3 text-sm font-medium ${
+                  wallActive
+                    ? 'border-ppw-teal bg-ppw-teal text-white'
+                    : 'border-ppw-stone bg-white text-ppw-ink hover:border-ppw-teal'
+                }`}
+              >
+                <span>Interior walls</span>
+                <span className="text-[10px] opacity-80">{wallActive ? 'on' : 'off'}</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => {
