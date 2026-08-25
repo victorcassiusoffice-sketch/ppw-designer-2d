@@ -93,3 +93,21 @@ renders undistorted on the canvas.
 Dispatch prompt pack: vault `06-Roadmap/_handoff/TOPDOWN-SAMPLE-PROMPT-2026-08-24.md`.
 When the render lands: run the slot command above, then verify on the
 canvas (place the bench, confirm likeness + aspect) before any batch.
+
+## Batch learnings (2026-08-25 — locked into the pipeline)
+
+1. **Never quote cm numbers in the prompt** — the model draws them as
+   spec-sheet dimension callouts. Say "much longer than wide" instead.
+   (Cost one re-roll wave.)
+2. **Flood-key is not enough for AI studio slabs** — near-white gradients
+   and enclosed frame-gaps survive any threshold. The pipeline step is
+   now: `scripts/matte-topdown.mjs` (imgly ML matte) → slot with
+   `--white-threshold 256`.
+3. **Uniform textures conform, never pad** — `--force-conform` on
+   flooring swatches (stretch is invisible on granule/vinyl texture).
+4. Judge every batch with fresh-eyes agents before commit; ~40% of a
+   20-image batch failed first pass for the reasons above.
+5. Known outstanding: `k1-matrix-versa-adabd` + `k1-vision-smith` kept
+   their pre-batch clipart (2 img2img attempts each failed on geometry /
+   elevation-view) — candidates for a Nano Banana Pro retry (~40 cr each,
+   Vic-gated). Bench still needs a REAL product photo before regen.

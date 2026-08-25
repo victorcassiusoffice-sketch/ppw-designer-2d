@@ -32,7 +32,7 @@ const PX_PER_CM = 10;
 const CONFORM_TOLERANCE = 0.05;
 
 function parseArgs(argv) {
-  const out = { frontEdge: 'bottom', rotate: 0, dryRun: false };
+  const out = { frontEdge: 'bottom', rotate: 0, dryRun: false, whiteThreshold: 235 };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--product') out.product = argv[++i];
@@ -40,6 +40,15 @@ function parseArgs(argv) {
     else if (a === '--front-edge') out.frontEdge = argv[++i];
     else if (a === '--rotate') out.rotate = Number(argv[++i]);
     else if (a === '--dry-run') out.dryRun = true;
+    // Batch fix (2026-08-25): AI renders often sit on a NEAR-white studio
+    // slab with soft gradients (RGB ~215-247) that the default 235 key
+    // can't flood through — the canvas then shows an opaque white plate
+    // around the product. Lower for those renders, e.g. 215.
+    else if (a === '--white-threshold') out.whiteThreshold = Number(argv[++i]);
+    // For UNIFORM texture swatches (flooring rolls/mats) stretching is
+    // invisible — force the exact footprint fill even beyond the 5%
+    // tolerance instead of padding with transparent bars.
+    else if (a === '--force-conform') out.forceConform = true;
     else throw new Error(`Unknown arg: ${a}`);
   }
   if (!out.product || !out.file) {
@@ -60,7 +69,9 @@ function floodFillBackground(data, width, height, whiteThreshold = 235) {
     const b = data[idx + 2];
     const min = Math.min(r, g, b);
     const max = Math.max(r, g, b);
-    return min >= whiteThreshold && max - min <= 12;
+    // Grey-tolerance scales with the threshold: a lowered threshold is
+    // asking to punch through soft studio shadows, which are grey-ish.
+    return min >= whiteThreshold && max - min <= (whiteThreshold < 235 ? 20 : 12);
   };
   const visited = new Uint8Array(width * height);
   const queue = [];
@@ -108,7 +119,7 @@ const footAspect = lengthCm / widthCm;
 let img = sharp(await readFile(args.file)).ensureAlpha();
 if (args.rotate) img = img.rotate(args.rotate);
 const { data, info } = await img.raw().toBuffer({ resolveWithObject: true });
-floodFillBackground(data, info.width, info.height);
+floodFillBackground(data, info.width, info.height, args.whiteThreshold);
 
 // 2 — trim to the silhouette.
 const keyed = sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png();
@@ -128,7 +139,7 @@ const canvasW = Math.round(lengthCm * PX_PER_CM);
 const canvasH = Math.round(widthCm * PX_PER_CM);
 const artAspect = artW / artH;
 const aspectError = Math.abs(artAspect - footAspect) / footAspect;
-const mode = aspectError <= CONFORM_TOLERANCE ? 'conform' : 'pad';
+const mode = args.forceConform || aspectError <= CONFORM_TOLERANCE ? 'conform' : 'pad';
 const finalPng = await sharp(artBuf)
   .resize(canvasW, canvasH, {
     fit: mode === 'conform' ? 'fill' : 'contain',
