@@ -296,3 +296,68 @@ actioned.
 **GATE P3: PASS.**
 
 ---
+
+## P4 — Point-routed placement + cross-room selection (D4 + D5) ✅
+
+### Changed — `src/components/RoomCanvas.tsx`
+
+- `placeAtRoomPoint` routes through `findRoomAt(point, rooms, activeRoomId)`.
+  Rooms + activeRoomId are read via `usePropertyStore.getState()` INSIDE the
+  callback — the memoised callback does not re-create on a store change, so a
+  captured `rooms` would be stale the instant a room is added. `rooms` is
+  correspondingly NOT in the deps array, which also keeps the callback
+  identity stable for the wiring effects that depend on it.
+  `target === null` → haptic + warn toast + return false.
+  `resolveWallAwarePlacement` / `validatePlacement` / `findFreeSlot` all
+  receive the TARGET room's polygon and items.
+- Commit goes through `usePropertyStore.getState().addItem(item, target.id)`.
+  The `designStore` facade signature is untouched; RoomCanvas simply stops
+  subscribing to the facade's `addItem` (noted inline where it was).
+- `computeGhost` makes the IDENTICAL `findRoomAt` call, so ghost validity can
+  never disagree with the commit. Outside every room it renders an invalid
+  ghost at the cursor rather than previewing a drop that would be rejected.
+- `placementIntent === 'center'` routes BY INTENT to the ACTIVE room's own
+  bounds centre — never through `findRoomAt`. The mobile "+ Add to room"
+  contract is "into the room I'm looking at".
+- Selection bound to `usePropertyStore.selectItemAcrossRooms` — both as the
+  `selectItem` prop passed into `PlacedItemGroup` (the bound VALUE changes,
+  the facade does not widen) and after a placement commit.
+
+### Gate
+
+```
+$ npx tsc --noEmit             → TSC_EXIT=0 (clean)
+$ npx eslint src/components/RoomCanvas.tsx  → ESLINT_EXIT=0
+$ npx vitest run               → Test Files 149 passed (149) · Tests 1701 passed (1701)
+```
+
+```
+$ PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test multiroom-placement
+Running 2 tests using 2 workers
+  ok 1 › a drop inside the ACTIVE room still lands there (single-room path unchanged) (5.3s)
+ROOM_ROUTE=true
+  ok 2 › a drop inside a NON-active room lands in that room and moves focus (6.1s)
+  2 passed (7.0s)
+```
+
+With r1 ACTIVE, an armed click at world (7, 2) — inside r2 — asserted
+immediately from localStorage: `r2.placedItems` +1, `r1.placedItems`
+untouched, `activeRoomId` flipped to `r2` (D5 moved focus), and the item's x
+inside r2's walls. Then `Escape`, then a drop at world (−1, −1): total
+unchanged at 1, and the "outside the plan" toast visible.
+
+**Single-room regression — the existing suite, unchanged:**
+
+```
+$ PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test placement-fsm wall-aware-placement
+Running 4 tests using 4 workers
+  ok 2 › placement-fsm › click catalog card to arm, click floor to commit → items-placed = 1 (4.1s)
+  ok 3 › placement-fsm › Escape during armed phase cancels without committing (5.3s)
+  ok 4 › wall-aware-placement › drops near each wall auto-orient into the room and sit flush (6.0s)
+  ok 1 › wall-aware-placement › manual R rotation during armed phase overrides auto-orientation (6.9s)
+  4 passed (7.9s)
+```
+
+**GATE P4: PASS.**
+
+---

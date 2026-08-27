@@ -94,6 +94,7 @@ import {
 // drawn attached to existing ones, products routed into whichever room they
 // were dropped in. All the geometry is pure and lives in roomLayout.
 import {
+  findRoomAt,
   isDrawnPolygon,
   nextRectanglePosition,
   translatePolygon,
@@ -140,7 +141,10 @@ export function RoomCanvas({
   const showGrid = useDesignStore((s) => s.showGrid);
   const placedItems = useDesignStore((s) => s.placedItems);
   const selectedInstanceId = useDesignStore((s) => s.selectedInstanceId);
-  const addItem = useDesignStore((s) => s.addItem);
+  // NOTE: the designStore `addItem` facade is no longer subscribed here —
+  // placement commits go through `usePropertyStore.getState().addItem(item,
+  // roomId)` so the item lands in the ROUTED room, not the active one. The
+  // facade signature itself is untouched for every other call site.
   const removeItem = useDesignStore((s) => s.removeItem);
   const selectItem = useDesignStore((s) => s.selectItem);
   const updateItem = useDesignStore((s) => s.updateItem);
@@ -609,17 +613,33 @@ export function RoomCanvas({
         lengthM: cmToM(product.dimensions_cm.length),
         widthM: cmToM(product.dimensions_cm.width),
       };
+      // Attached multi-room (D4) — route the drop to WHICHEVER room the
+      // point is in. Rooms are read via getState() INSIDE the callback: the
+      // memoised callback does not re-create on a store change, so a
+      // captured `rooms` would go stale the moment a room is added.
+      const target = findRoomAt(
+        { x: centreXm, y: centreYm },
+        usePropertyStore.getState().property.rooms,
+        usePropertyStore.getState().property.activeRoomId,
+      );
+      if (!target) {
+        haptic('invalid');
+        pushToast('Drop it inside a room — that spot is outside the plan.', 'warn');
+        return false;
+      }
+      const targetPolygon = target.polygon;
+      const targetItems = target.placedItems;
       const resolved = resolveWallAwarePlacement({
         centreXm,
         centreYm,
         fp,
-        polygon,
+        polygon: targetPolygon,
         snapStep,
         userRotationDeg,
         frontEdge: product.front_edge,
       });
       const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
-      const others = placedItems
+      const others = targetItems
         .map((it) => {
           const p = getProductById(it.productId);
           if (!p) return null;
@@ -634,27 +654,33 @@ export function RoomCanvas({
       // already occupied. Only reject when the room is genuinely full.
       // The wall-snapped position is tried first via validatePlacement so
       // a flush non-grid Y/X survives; findFreeSlot re-snaps to the grid.
-      const direct = validatePlacement({ x: resolved.x, y: resolved.y, w, h }, others, polygon);
+      const direct = validatePlacement({ x: resolved.x, y: resolved.y, w, h }, others, targetPolygon);
       const slot = direct.ok
         ? { x: resolved.x, y: resolved.y }
-        : findFreeSlot({ preferredX: resolved.x, preferredY: resolved.y, w, h, others, polygon });
+        : findFreeSlot({ preferredX: resolved.x, preferredY: resolved.y, w, h, others, polygon: targetPolygon });
       if (!slot) {
         haptic('invalid');
         pushToast("Item won't fit — the room is full.", 'warn');
         return false;
       }
       haptic('place');
-      const instanceId = addItem({
-        productId: product.id,
-        x: slot.x,
-        y: slot.y,
-        rotation: resolved.rotationDeg,
-      });
+      // Commit into the ROUTED room, not the active one.
+      const instanceId = usePropertyStore.getState().addItem(
+        {
+          productId: product.id,
+          x: slot.x,
+          y: slot.y,
+          rotation: resolved.rotationDeg,
+        },
+        target.id,
+      );
       // Polish (2026-05-29) — flag this fresh instance for the settle tween.
       setJustPlacedId(instanceId);
       // M1 — the just-placed item becomes selected so the on-canvas
-      // floating cluster appears around it (Sims "placed → selected").
-      selectItem(instanceId);
+      // floating cluster appears around it (Sims "placed → selected"). D5:
+      // selecting ACROSS rooms also moves focus, so the follow-up rotate /
+      // delete resolves through the right room's facade.
+      selectItemAcrossRooms(instanceId);
       pushToast(`Added "${product.name}" to cart`, 'success', {
         ttlMs: 5000,
         action: {
@@ -664,7 +690,10 @@ export function RoomCanvas({
       });
       return true;
     },
-    [placedItems, polygon, addItem, removeItem, pushToast, snapStep, selectItem],
+    // `rooms` is deliberately NOT a dep — it is read via getState() inside
+    // the callback precisely so this identity stays stable and the wiring
+    // effects that depend on it do not re-fire on every room mutation.
+    [removeItem, pushToast, snapStep, selectItemAcrossRooms],
   );
 
   const placeProductAt = useCallback(
@@ -711,6 +740,10 @@ export function RoomCanvas({
     // flush facing into the room, mid-room they face the viewer. The user
     // can still rotate after via the on-canvas rotate handle.
     if (placementIntent.target === 'center') {
+      // D4 — 'center' routes BY INTENT to the ACTIVE room's own bounds
+      // centre, never through findRoomAt. The mobile "+ Add to room"
+      // contract is "into the room I'm looking at", and `bounds` here is
+      // already the active room's; findFreeSlot pulls edge cases inside.
       const cx = (bounds.minX + bounds.maxX) / 2;
       const cy = (bounds.minY + bounds.maxY) / 2;
       placeAtRoomPoint(cx, cy, placementIntent.productId, null);
@@ -807,20 +840,37 @@ export function RoomCanvas({
         lengthM: cmToM(product.dimensions_cm.length),
         widthM: cmToM(product.dimensions_cm.width),
       };
+      // D4 — the IDENTICAL routing call as the commit path (same helper,
+      // same active-first tie-break, same getState() read), so ghost
+      // validity can never disagree with what actually lands. Outside every
+      // room the ghost renders invalid rather than silently previewing a
+      // drop that the commit will reject.
+      const target = findRoomAt(
+        { x: xM, y: yM },
+        usePropertyStore.getState().property.rooms,
+        usePropertyStore.getState().property.activeRoomId,
+      );
+      if (!target) {
+        const { w: gw, h: gh } = rotatedFootprint(
+          fp,
+          ghostManuallyRotated ? ghostRotation : 0,
+        );
+        return { xM: xM - gw / 2, yM: yM - gh / 2, rotation: ghostManuallyRotated ? ghostRotation : 0, valid: false, w: gw, h: gh };
+      }
       // Same wall-aware resolver as the commit path, so the ghost shows
       // EXACTLY where (and at what facing) the item will land.
       const resolved = resolveWallAwarePlacement({
         centreXm: xM,
         centreYm: yM,
         fp,
-        polygon,
+        polygon: target.polygon,
         snapStep,
         userRotationDeg: ghostManuallyRotated ? ghostRotation : null,
         frontEdge: product.front_edge,
       });
       const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
       const candidate: PlacedRect = { x: resolved.x, y: resolved.y, w, h };
-      const others = placedItems
+      const others = target.placedItems
         .map((it) => {
           const p = getProductById(it.productId);
           if (!p) return null;
@@ -829,10 +879,11 @@ export function RoomCanvas({
           return { x: it.x, y: it.y, w: r.w, h: r.h };
         })
         .filter((r): r is PlacedRect => r !== null);
-      const result = validatePlacement(candidate, others, polygon);
+      const result = validatePlacement(candidate, others, target.polygon);
       return { xM: resolved.x, yM: resolved.y, rotation: resolved.rotationDeg, valid: result.ok, w, h };
     },
-    [viewport, pxPerMetre, ghostRotation, ghostManuallyRotated, placedItems, polygon, snapStep],
+    // `rooms` read via getState() inside — see placeAtRoomPoint.
+    [viewport, pxPerMetre, ghostRotation, ghostManuallyRotated, snapStep],
   );
 
   const handleDrawCommit = useCallback(
