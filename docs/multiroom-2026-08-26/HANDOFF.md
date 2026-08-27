@@ -785,3 +785,30 @@ module (`designer/roomLayout.ts`), 5 test files (1 new), 5 e2e files
 - **Legacy un-stack against a real customer save** — covered by unit tests
   and the pure helper's idempotence, but no production payload with stacked
   legacy rooms was available to run it against.
+
+---
+
+## Conformance check against the brief's HARD RULES (§2)
+
+Run after P7. §2.1's byte-identical requirement had been respected in
+practice but never *proven* with a diff until this pass — so it is proven
+here rather than asserted.
+
+| Rule | Check | Result |
+|---|---|---|
+| §2.1 protected files | `git diff c8c385d..HEAD` on `src/lib/geometry.ts`, `src/designer/wallAwarePlacement.ts`, `src/designer/imageFit.ts` | all three **UNCHANGED** |
+| §2.1 `PlacedItemGroup` body | extracted `function PlacedItemGroup(` → its closing brace on both sides, sha256'd | **422 lines both**, `sha256 = fe776cda57734b30` on `main` AND `HEAD` — **byte-identical** |
+| §2.2 testids | `git grep -ho 'data-testid="[^"]*"' \| sort -u` diffed main vs HEAD | 133 = 133, **0 dropped, 0 added** |
+| §2.3 no new deps | `git diff c8c385d..HEAD -- package.json package-lock.json` | **0 diff lines** |
+| §2.3 persist version | `propertyStore.ts:446` | `version: 2` — **unchanged** |
+| §2.3 no API/schema/payment | changed-file list filtered for `api/`, `vercel.json`, `vite.config` | **none**; `api/*.ts` count still **11** (cap 12) |
+| §2.3 no secrets | added lines matching `(api_key\|secret\|token\|password)\s*=` | **0** |
+| §2.4 lint scope | `npx eslint` on the 20 changed `.ts`/`.tsx` files | **0 errors** |
+| §2.5 source pins | 2 of 3 files untouched and green; the 3rd rewritten under the ONE sanctioned exception, documented in P5 | conforms |
+| §2.6 branch-until-deploy | 6 feature commits on the branch; `main` touched only by the merge + the docs record | conforms |
+| §2.8 commit trailer | all 8 commits carry `Co-Authored-By: Claude <noreply@anthropic.com>` | conforms |
+
+**D2 export surface**, as specified: `SNAP_TOL_M` · `STRICT_EPS_M` ·
+`translatePolygon` · `unionBounds` · `findRoomAt` · `strictPolygonsOverlap` ·
+`snapVertexToRooms` · `nextRectanglePosition` · `unstackLegacyRooms` — all
+present, plus `isDrawnPolygon`, the one addition, logged under §2.7 in P1.
