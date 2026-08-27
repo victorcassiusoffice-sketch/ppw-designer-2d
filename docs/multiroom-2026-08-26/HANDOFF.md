@@ -664,3 +664,124 @@ that the whole plan is fitted smaller. Flagged, not actioned.
 **GATE P6: PASS.**
 
 ---
+
+## P7 — DEPLOY ✅
+
+Deploy touches NO API, config or dependency surface — verified before
+merging (`git diff --name-only main...HEAD` filtered for `api/`,
+`vercel.json`, `package.json`, `vite.config`): **none**. `api/*.ts` count
+stays **11**, under the 12-function Hobby cap.
+
+```
+$ git checkout main && git pull            → Already up to date (c8c385d)
+$ git merge --no-ff feat/designer-multiroom-attach-2026-08-26 \
+    -m "merge: designer attached multi-room (Vic-approved workflow 2026-08-26)"
+=== MERGE SHA ===  4a1b7b6b74946aaa6509750809b7547c6c3b3fff
+
+$ npx vitest run    → Test Files 149 passed (149) · Tests 1716 passed (1716)
+$ npm run build     → ✓ built in 8.89s (clean)
+$ npx tsc --noEmit  → TSC=0
+
+$ git push origin main
+   c8c385d..4a1b7b6  main -> main
+local  main: 4a1b7b6b74946aaa6509750809b7547c6c3b3fff
+origin main: 4a1b7b6b74946aaa6509750809b7547c6c3b3fff
+```
+
+### 1. Cache-busted healthcheck
+
+Polled `?cb=<random>` every 15 s. Fourteen reads returned the OLD commit
+(`c8c385d`) before the deploy landed — exactly the stale-read the brief
+warns about, which is why the cache-bust is mandatory:
+
+```
+[1]  "commit":"c8c385de83920c10f936ede533cd3ea8af12803d"
+ ...
+[14] "commit":"c8c385de83920c10f936ede533cd3ea8af12803d"
+[15] "commit":"4a1b7b6b74946aaa6509750809b7547c6c3b3fff"
+
+{"ok":true,"service":"ppw-designer-2d","env":"production",
+ "commit":"4a1b7b6b74946aaa6509750809b7547c6c3b3fff",
+ "sentryConfigured":true,"timestamp":"2026-08-27T18:58:46.148Z"}
+```
+
+### 2. Playwright against PRODUCTION
+
+`tools/verify-prod-multiroom-2026-08-26.mjs` — `waitUntil: 'commit'` +
+`waitForSelector` (attached, then visible), never `networkidle` and never
+`domcontentloaded`, per the documented `rsms.me` render-blocking-font trap
+in `verify-prod-2026-08-25.mjs`.
+
+```
+=== LIVE VERIFICATION ===
+url        : https://designer.ppwellness.co/designer
+PASS  HTTP ok  — status 200
+PASS  canvas mounted
+PASS  #root has children (render gate)  — childElementCount=1
+PASS  [multi-room] rendered=2  — saw [2]
+PASS  gold wall pixels found
+PASS  two-room union span ~9 m  — 8.98 m
+PASS  item landed in the NON-active room r2  — {"activeRoomId":"r2","r1":0,"r2":1}
+PASS  active room r1 untouched  — {"activeRoomId":"r2","r1":0,"r2":1}
+PASS  focus followed the item to r2  — activeRoomId=r2
+PASS  zero console errors  — none
+ALL CHECKS PASSED   (exit 0)
+```
+
+### 3. Report
+
+- **Merge SHA:** `4a1b7b6b74946aaa6509750809b7547c6c3b3fff`
+- **Healthcheck:** `commit` = the merge SHA (output above)
+- **Screenshot:** `docs/multiroom-2026-08-26/after/prod-verify-1920x1080.png`
+
+The production shot corroborates every machine check independently: the
+build stamp bottom-left reads **`build 4a1b7b6`**; both rooms render on one
+plan sharing the gold wall; the bike sits in **ROOM 2** at **6.50 m, 1.50 m**
+(inside r2's x 5 → 9 span); the TopBar reads **"Room 2 · 2"** and
+"Prod Verify - 2 rooms" — focus followed the placement; ROOM 2 carries the
+active fill while ROOM 1 is inactive; and the DetailsPanel opened on the
+selected item, which is the proof that cross-room selection resolves through
+the active-room facade (D5's whole purpose).
+
+**GATE P7: PASS. LIVE-CONFIRMED at `4a1b7b6`.**
+
+---
+
+## D9 — Deliberate cuts (NOT built, per the brief)
+
+Listed so nothing here reads as an oversight:
+
+- Room-move / drag tool — v1 remedy is delete + redraw
+- Click-floor-to-activate (activation is the RoomList dropdown + item selection)
+- Door / opening cutouts, and shared-wall stroke dedupe — the doubled gold
+  stroke is coincident and reads as a load-bearing wall; accepted
+- Per-room keying of walls / floorZones / wallTreatments
+- Cross-room item drag re-parenting — bounce-back is intended; move = delete + re-place
+- **Pan / zoom while inside draw mode** — see the P6 mobile finding: this is
+  the one cut that visibly bites on a phone
+- Fit-all-rooms share capture (viewport capture retained)
+- Feature flag — the wipe removal is last and atomic; a flag's legacy path
+  would itself destroy multi-room data
+
+## Files changed
+
+31 files: 10 source (`App.tsx`, `RoomCanvas.tsx`, `RoomDrawMode.tsx`,
+`AddRoomChooser.tsx`, `TopBar.tsx`, `propertyStore.ts`, `designStore.ts`,
+`historyStore.ts`, `useKeyboardShortcuts.ts`, `blueprintTheme.ts`) + 1 new
+module (`designer/roomLayout.ts`), 5 test files (1 new), 5 e2e files
+(4 new incl. helpers), 2 tools, 9 docs/screenshots.
+
+## Anything I could not verify
+
+- **Mobile draw-attach COMMIT at 390×844** — not captured, and not faked.
+  The viewport auto-fits the EXISTING plan, so a new room drawn beside it
+  lands off-screen (world x = 9 → page x = 574 on a 390 px canvas, measured),
+  and the mobile catalog (`lg:hidden fixed bottom-0`, top = 636 px) leaves
+  only a ~70 px band below the room. Reaching further needs draw-mode
+  pan/zoom, which D9 cuts from v1. Desktop attach is fully verified.
+- **Real-device touch** — everything mobile here is Chromium at a 390×844
+  viewport, not a physical phone. Per the machine-verifiable-gate rule that
+  is a `[VIC-VERIFY]` item, never an autonomous stop clause.
+- **Legacy un-stack against a real customer save** — covered by unit tests
+  and the pure helper's idempotence, but no production payload with stacked
+  legacy rooms was available to run it against.
