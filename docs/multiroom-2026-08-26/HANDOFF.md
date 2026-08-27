@@ -512,3 +512,155 @@ load-bearing, not passing by accident. The probe was then fully removed
 **GATE P5: PASS.**
 
 ---
+
+## P6 — Full regression + push ✅
+
+### The one real problem this phase found, and what it turned out to be
+
+The first full-suite run came back **11 passed / 1 failed**:
+`wall-aware-placement › manual R rotation during armed phase overrides
+auto-orientation`. It had been 4/4 at P4, so this was investigated properly
+rather than re-run until green.
+
+**It was not a flake.** It failed deterministically in the 5-spec run, at
+`--workers=1` as well as in parallel, and passed deterministically when the
+file ran alone. Pairwise bisection showed it failed alongside ANY second
+spec — including `placement-fsm`, which this change never touches.
+
+The failure snapshot showed my own P4 toast: *"Drop it inside a room — that
+spot is outside the plan."* So `findRoomAt` returned null: the click landed
+outside the room.
+
+Three hypotheses were tested and **falsified** before the real one was found:
+CPU throttling to 8× did not move the origin; arming a product does not
+resize the stage (1920×942 before and after); and it was not concurrency
+(it fails serially too).
+
+Reproduced with a harness that opens N warm-up contexts in the same browser
+first. At **PRELOADS=2** the spec's `roomOrigin()` returns `{x:5, y:61}`
+instead of `{x:711, y:327}` — the room's **un-centred** position. The spec
+reads the origin once, immediately after `start-quick-rectangle`, and under
+load that scan beats the auto-centre effect's paint.
+
+**Then the decisive test: the same harness against `main`.**
+
+```
+--- MAIN PRELOADS=2 ---
+origin : {"x":5,"y":61}          <-- identical bogus origin
+store  : items:[{... x:0, y:0, rotation:180 ...}]   <-- but it PLACES
+```
+
+So:
+1. **The race is pre-existing** — `main` produces the identical bogus origin.
+   Nothing in this change caused it.
+2. **The old code masked it.** Every click used the ACTIVE room's polygon
+   regardless of where it landed, so `findFreeSlot` rescued the out-of-room
+   point and dumped the item at the room's **top-left corner** — `x:0, y:0`.
+   The test's `y ≈ 0` assertion passed *because of the corner dump*, not
+   because the wall snap worked.
+3. Attached multi-room routes a drop to the room actually under the pointer
+   and rejects a drop outside every room (D4, and P4's own gate asserts the
+   rejection). That is specified behaviour, so the stale origin stopped
+   being papered over.
+
+**Fix: the spec's SETUP, not any assertion, and not the app.** The origin
+read moved to after arming — the same "re-read before every click sequence"
+rule the sibling `placeAt` helper in that very file already follows and
+documents. Verified at PRELOADS 2/3/4: origin `{711, 327}` every time, and
+the item now lands at **`x:1.5, y:0`** — a genuine wall snap positioned by
+the click, where `main` gave `x:0, y:0`. The assertion is *strengthened*, not
+weakened: `y ≈ 0` now actually verifies the wall snap.
+
+Changing the app to keep rescuing out-of-room clicks was considered and
+rejected: it contradicts D4 outright and would fail P4's gate.
+
+Stability after the fix — **12/12 on three consecutive runs**, parallel and
+serial:
+
+```
+=== parallel run 1 ===  12 passed (14.1s)
+=== parallel run 2 ===  12 passed (14.8s)
+=== serial (workers=1) === 12 passed (33.8s)
+```
+
+### Gate
+
+```
+$ npx tsc --noEmit                                   → TSC=0 (clean)
+$ npx vitest run   → Test Files 149 passed (149) · Tests 1716 passed (1716)
+$ npm run build                                      → ✓ built in 9.11s (clean)
+$ npx eslint <20 changed .ts/.tsx files>             → ESLINT=0
+```
+
+```
+$ PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test \
+    wall-aware-placement placement-fsm multiroom-render multiroom-placement multiroom-attach
+ROOM_ROUTE=true
+DRAW_ATTACH=true
+MULTIROOM_RENDER=true
+  12 passed (14.1s)
+```
+
+Testid inventory, diffed against `main` (not just counted):
+
+```
+$ git grep -ho 'data-testid="[^"]*"' main | sort -u   → 133
+$ git grep -ho 'data-testid="[^"]*"'      | sort -u   → 133
+DROPPED: (none)
+ADDED:   (none)
+```
+
+### After-shots
+
+Six captures, all with `pageerrors: (none)`, via
+`tools/multiroom-shot-2026-08-26.mjs` (now self-calibrating: it derives the
+viewport scale from the on-screen span of a known world width, because below
+1024 px the whole-plan fit clamps scale under 1 and a fixed
+`origin + world × 100` mapping puts the clicks in the wrong place).
+
+| Shot | Result |
+|---|---|
+| `fixture-1920x1080.png` | both rooms, shared gold wall, `rendered=2` |
+| `fixture-390x844.png` | both rooms, fit to 34 %, `rendered=2` |
+| `placement-1920x1080.png` | item routed into r2 (the NON-active room) |
+| `placement-390x844.png` | item added to r1 — the ACTIVE room, correctly |
+| `attach-1920x1080.png` | second room committed at `minX = 5.13` |
+| `attach-390x844.png` | draw mode with room + item INTACT, snap ring visible |
+| `render-two-rooms.png` | the P3 spec's own artifact |
+
+### Two honest mobile findings (both reported, neither faked)
+
+**1. Cross-room POINTER routing is a desktop flow by design.** Below 1024 px
+there is no pointer ghost at all: tapping a catalog tile opens
+`mobile-product-popup` → `popup-add-to-room`, which publishes a placement
+INTENT. Per D4 an intent routes to the ACTIVE room's centre by design
+("into the room I'm looking at"). Verified by probe: after a mobile tap
+`[data-armed="true"]` count is **0**. So `placement-390x844.png` correctly
+shows the item landing in r1, and the mobile shot is NOT a cross-room
+routing demo — because that is not a mobile flow in v1.
+
+**2. Drawing an attached room on a phone is very constrained in v1.** The
+viewport auto-fits the EXISTING plan, so a new room drawn beside it extends
+off-screen: at 390 px, world x = 9 maps to page x = 574 on a 390 px-wide
+canvas, and those clicks are simply not on the canvas (measured). Drawing
+BELOW instead is also tight — the mobile catalog is
+`lg:hidden fixed bottom-0` with **top = 636 px**, so it covers the lower
+canvas and leaves roughly a **70 px band** under the room. Reaching anything
+further needs pan/zoom INSIDE draw mode, which **D9 lists as out of scope for
+v1**. The mobile attach shot therefore captures draw mode entered with the
+plan intact and the snap ring on the shared wall, and stops short of a
+commit rather than pretending one happened. Not a defect in this change —
+but if Vic wants draw-attach to be usable on a phone, draw-mode pan/zoom is
+the thing to unpark.
+
+### Visual note (evidence, not a gate)
+
+At 390 px the `empty-room-hint` card ("Your room is empty") is large relative
+to the fitted plan and covers most of both rooms — visible in
+`fixture-390x844.png`. It is `pointer-events-none` so it never blocks a tap,
+and it disappears on first placement. Pre-existing card, newly noticeable now
+that the whole plan is fitted smaller. Flagged, not actioned.
+
+**GATE P6: PASS.**
+
+---
