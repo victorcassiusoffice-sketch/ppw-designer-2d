@@ -242,3 +242,167 @@ describe('loadProperty + normaliseLoadedRoom — rectangle→polygon migration o
     expect(reloadedB?.placedItems[0].productId).toBe('plunge-aurora-tub');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Attached multi-room (2026-08-26) — D4 routing, D8 migration, anchors.
+// ---------------------------------------------------------------------------
+
+describe('propertyStore — attached multi-room routing', () => {
+  const R1 = [{ x: 0, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 4 }, { x: 0, y: 4 }];
+  const R2 = [{ x: 5, y: 0 }, { x: 9, y: 0 }, { x: 9, y: 4 }, { x: 5, y: 4 }];
+
+  /** Two attached rooms, room A active. Returns their ids. */
+  function twoRooms(): { a: string; b: string } {
+    const ps = usePropertyStore.getState();
+    const a = ps.property.activeRoomId;
+    ps.setRoomPolygon(a, R1);
+    const b = ps.addRoom({ name: 'Room B', polygon: R2 });
+    usePropertyStore.getState().setActiveRoom(a);
+    return { a, b };
+  }
+
+  it('addItem with no roomId still targets the ACTIVE room (back-compat)', () => {
+    const { a, b } = twoRooms();
+    usePropertyStore.getState().addItem({ productId: 'p1', x: 1, y: 1, rotation: 0 });
+    const p = usePropertyStore.getState().property;
+    expect(p.rooms.find((r) => r.id === a)?.placedItems).toHaveLength(1);
+    expect(p.rooms.find((r) => r.id === b)?.placedItems).toHaveLength(0);
+  });
+
+  it('addItem with an explicit roomId routes into THAT room, active untouched', () => {
+    const { a, b } = twoRooms();
+    usePropertyStore.getState().addItem({ productId: 'p1', x: 6, y: 1, rotation: 0 }, b);
+    const p = usePropertyStore.getState().property;
+    expect(p.rooms.find((r) => r.id === a)?.placedItems).toHaveLength(0);
+    expect(p.rooms.find((r) => r.id === b)?.placedItems).toHaveLength(1);
+    // addItem itself does NOT move focus — selectItemAcrossRooms does.
+    expect(p.activeRoomId).toBe(a);
+  });
+
+  it('addItem with an unknown roomId is a no-op', () => {
+    twoRooms();
+    const before = JSON.stringify(usePropertyStore.getState().property);
+    usePropertyStore.getState().addItem({ productId: 'p1', x: 1, y: 1, rotation: 0 }, 'nope');
+    expect(JSON.stringify(usePropertyStore.getState().property)).toBe(before);
+  });
+
+  it('removeItem reaches an item in a NON-active room', () => {
+    const { a, b } = twoRooms();
+    const id = usePropertyStore.getState().addItem({ productId: 'p1', x: 6, y: 1, rotation: 0 }, b);
+    usePropertyStore.getState().setActiveRoom(a);
+    usePropertyStore.getState().removeItem(id);
+    const p = usePropertyStore.getState().property;
+    expect(p.rooms.find((r) => r.id === b)?.placedItems).toHaveLength(0);
+  });
+
+  it('updateItem reaches an item in a NON-active room', () => {
+    const { a, b } = twoRooms();
+    const id = usePropertyStore.getState().addItem({ productId: 'p1', x: 6, y: 1, rotation: 0 }, b);
+    usePropertyStore.getState().setActiveRoom(a);
+    usePropertyStore.getState().updateItem(id, { rotation: 90 });
+    const p = usePropertyStore.getState().property;
+    expect(p.rooms.find((r) => r.id === b)?.placedItems[0].rotation).toBe(90);
+  });
+
+  it('selectItemAcrossRooms selects AND moves focus in one atomic set', () => {
+    const { a, b } = twoRooms();
+    const id = usePropertyStore.getState().addItem({ productId: 'p1', x: 6, y: 1, rotation: 0 }, b);
+    usePropertyStore.getState().setActiveRoom(a);
+    expect(usePropertyStore.getState().selectedInstanceId).toBeNull();
+    usePropertyStore.getState().selectItemAcrossRooms(id);
+    const s = usePropertyStore.getState();
+    // Both landed — a split setActiveRoom + selectItem would have nulled
+    // the selection on the way through.
+    expect(s.property.activeRoomId).toBe(b);
+    expect(s.selectedInstanceId).toBe(id);
+  });
+
+  it('selectItemAcrossRooms(null) deselects WITHOUT changing the active room', () => {
+    const { a, b } = twoRooms();
+    const id = usePropertyStore.getState().addItem({ productId: 'p1', x: 6, y: 1, rotation: 0 }, b);
+    usePropertyStore.getState().selectItemAcrossRooms(id);
+    expect(usePropertyStore.getState().property.activeRoomId).toBe(b);
+    usePropertyStore.getState().selectItemAcrossRooms(null);
+    const s = usePropertyStore.getState();
+    expect(s.selectedInstanceId).toBeNull();
+    expect(s.property.activeRoomId).toBe(b);
+    expect(a).not.toBe(b);
+  });
+
+  it('selectItemAcrossRooms on an item in the ACTIVE room leaves focus alone', () => {
+    const { a } = twoRooms();
+    const id = usePropertyStore.getState().addItem({ productId: 'p1', x: 1, y: 1, rotation: 0 }, a);
+    usePropertyStore.getState().selectItemAcrossRooms(id);
+    const s = usePropertyStore.getState();
+    expect(s.property.activeRoomId).toBe(a);
+    expect(s.selectedInstanceId).toBe(id);
+  });
+});
+
+describe('propertyStore — addRectangleRoom anchor', () => {
+  it('with no anchor the rectangle is pinned at the origin (unchanged)', () => {
+    const id = usePropertyStore.getState().addRectangleRoom('R', { lengthM: 5, widthM: 4 });
+    const room = usePropertyStore.getState().property.rooms.find((r) => r.id === id);
+    expect(room?.polygon).toEqual(rectToPolygon({ lengthM: 5, widthM: 4 }));
+  });
+
+  it('with an anchor the whole rectangle is translated into place', () => {
+    const id = usePropertyStore
+      .getState()
+      .addRectangleRoom('R', { lengthM: 4, widthM: 3 }, { x: 5, y: 0 });
+    const room = usePropertyStore.getState().property.rooms.find((r) => r.id === id);
+    expect(room?.polygon).toEqual([
+      { x: 5, y: 0 }, { x: 9, y: 0 }, { x: 9, y: 3 }, { x: 5, y: 3 },
+    ]);
+  });
+});
+
+describe('propertyStore — unstackIfLegacy (D8)', () => {
+  it('re-lays a 3-rooms-at-origin legacy save and reports true', () => {
+    const ps = usePropertyStore.getState();
+    ps.setRoomPolygon(ps.property.activeRoomId, rectToPolygon({ lengthM: 5, widthM: 4 }));
+    usePropertyStore
+      .getState()
+      .addRoom({ name: 'B', polygon: rectToPolygon({ lengthM: 4, widthM: 3 }) });
+    usePropertyStore
+      .getState()
+      .addRoom({ name: 'C', polygon: rectToPolygon({ lengthM: 3, widthM: 3 }) });
+
+    expect(usePropertyStore.getState().unstackIfLegacy()).toBe(true);
+    const rooms = usePropertyStore.getState().property.rooms;
+    expect(rooms[0].polygon[0]).toEqual({ x: 0, y: 0 });
+    expect(rooms[1].polygon[0]).toEqual({ x: 5, y: 0 });
+    expect(rooms[2].polygon[0]).toEqual({ x: 9, y: 0 });
+  });
+
+  it('carries placed items along with their room', () => {
+    const ps = usePropertyStore.getState();
+    ps.setRoomPolygon(ps.property.activeRoomId, rectToPolygon({ lengthM: 5, widthM: 4 }));
+    const b = usePropertyStore
+      .getState()
+      .addRoom({ name: 'B', polygon: rectToPolygon({ lengthM: 4, widthM: 3 }) });
+    usePropertyStore.getState().addItem({ productId: 'p', x: 1, y: 1, rotation: 0 }, b);
+
+    usePropertyStore.getState().unstackIfLegacy();
+    const room = usePropertyStore.getState().property.rooms.find((r) => r.id === b);
+    expect(room?.placedItems[0]).toMatchObject({ x: 6, y: 1 });
+  });
+
+  it('is false (and a no-op) on an already-attached property — idempotent', () => {
+    const ps = usePropertyStore.getState();
+    ps.setRoomPolygon(ps.property.activeRoomId, rectToPolygon({ lengthM: 5, widthM: 4 }));
+    usePropertyStore
+      .getState()
+      .addRoom({ name: 'B', polygon: rectToPolygon({ lengthM: 4, widthM: 3 }) });
+    expect(usePropertyStore.getState().unstackIfLegacy()).toBe(true);
+    const after = JSON.stringify(usePropertyStore.getState().property);
+    expect(usePropertyStore.getState().unstackIfLegacy()).toBe(false);
+    expect(JSON.stringify(usePropertyStore.getState().property)).toBe(after);
+  });
+
+  it('is false on a single-room property', () => {
+    const ps = usePropertyStore.getState();
+    ps.setRoomPolygon(ps.property.activeRoomId, rectToPolygon({ lengthM: 5, widthM: 4 }));
+    expect(usePropertyStore.getState().unstackIfLegacy()).toBe(false);
+  });
+});

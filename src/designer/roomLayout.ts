@@ -307,22 +307,24 @@ export function nextRectanglePosition(
 // Legacy un-stack
 // ---------------------------------------------------------------------------
 
+/**
+ * Structural minimums only — deliberately NO index signature. An index
+ * signature would make the concrete `Room` / `PlacedItem` interfaces
+ * unassignable here, and this helper has to accept the real store types.
+ * Extra properties ride along untouched (spread preserves them).
+ */
 interface UnstackItem {
   x: number;
   y: number;
-  [k: string]: unknown;
 }
 
 interface UnstackRoom {
-  id: string;
   polygon: Polygon;
   placedItems: UnstackItem[];
-  [k: string]: unknown;
 }
 
 interface UnstackProperty {
   rooms: UnstackRoom[];
-  [k: string]: unknown;
 }
 
 /**
@@ -365,8 +367,9 @@ export function unstackLegacyRooms<P extends UnstackProperty>(property: P): P {
       union = { minX: b.minX, minY: b.minY, maxX: b.maxX, maxY: b.maxY };
       return r;
     }
-    const dx = union.maxX - b.minX;
-    const dy = union.minY - b.minY;
+    const u: Bounds = union;
+    const dx = u.maxX - b.minX;
+    const dy = u.minY - b.minY;
     const polygon = translatePolygon(r.polygon, dx, dy);
     const placedItems = (r.placedItems ?? []).map((it) => ({
       ...it,
@@ -375,13 +378,16 @@ export function unstackLegacyRooms<P extends UnstackProperty>(property: P): P {
     }));
     const nb = polygonBounds(polygon);
     union = {
-      minX: Math.min(union.minX, nb.minX),
-      minY: Math.min(union.minY, nb.minY),
-      maxX: Math.max(union.maxX, nb.maxX),
-      maxY: Math.max(union.maxY, nb.maxY),
+      minX: Math.min(u.minX, nb.minX),
+      minY: Math.min(u.minY, nb.minY),
+      maxX: Math.max(u.maxX, nb.maxX),
+      maxY: Math.max(u.maxY, nb.maxY),
     };
     return { ...r, polygon, placedItems };
   });
 
-  return { ...property, rooms: nextRooms };
+  // The spread preserves every extra property on the concrete store types
+  // (Room.id/name, PlacedItem.instanceId/productId/rotation); the cast just
+  // tells TS the widened structural result is still the caller's own shape.
+  return { ...property, rooms: nextRooms } as P;
 }

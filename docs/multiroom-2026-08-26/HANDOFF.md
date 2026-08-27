@@ -129,3 +129,73 @@ overlap-strip case that the P5 e2e turns red on:
 **GATE P1: PASS.**
 
 ---
+
+## P2 — Store routing + migration + guards ✅
+
+### Changed
+
+**`src/store/propertyStore.ts`**
+- `addItem(item, roomId?)` — optional room target. Omitted → active room, so
+  every pre-existing call site compiles AND behaves unchanged. Unknown id → no-op.
+- `removeItem` / `updateItem` — now locate the owning room by scanning ALL
+  rooms for the `instanceId` (new `findRoomByInstanceId` helper; ids are
+  `nanoid(10)`, globally unique) instead of `getActiveRoom` only. Without this
+  an item in a non-active room is visible but un-editable and un-deletable.
+- `selectItemAcrossRooms(id | null)` — NEW. `null` → plain deselect with
+  `activeRoomId` deliberately untouched (the Stage deselect paths pass null on
+  every empty-space click). An id in another room → ONE atomic `set` carrying
+  both the new `activeRoomId` and the selection, because a split
+  `setActiveRoom` + `selectItem` loses the race against setActiveRoom's own
+  selection-nulling.
+- `addRectangleRoom(name, dims, anchor?)` — anchor translates the rectangle in
+  the shared world frame; omitted → (0,0), i.e. today's behaviour exactly.
+- `unstackIfLegacy()` — NEW action (D8), returns whether it changed anything.
+- `selectItem` left ALONE (already a plain flat set, per the brief).
+
+**`src/store/designStore.ts`**
+- `setRoomDimensions` (D7a) rebuilds at the room's CURRENT `minX`/`minY`
+  instead of `rectToPolygon`'s origin pin — the old behaviour teleported an
+  attached room across the plan and through its neighbours on every L/W edit.
+- `setRoomDimensions` (D7b) refuses outright, with a warn toast and no state
+  change, when the resized polygon would overlap another room.
+- `loadSnapshot` (D7c) refuses + `console.warn` when >1 drawn room exists.
+
+**`src/App.tsx`**
+- D8 one-shot mount effect. Uses the pure helper's reference-identity return
+  as the cheap "is there anything to do?" check; when walls or floor-zones
+  exist it only `console.warn`s and changes nothing (those are keyed in the
+  same world frame but are NOT per-room, so moving rooms would strand them).
+
+### Gate
+
+```
+$ npx tsc --noEmit
+TSC_EXIT=0        (clean)
+
+$ npx vitest run
+ Test Files  149 passed (149)
+      Tests  1701 passed (1701)
+   Duration  32.91s
+```
+
+Baseline was 148 files / 1648 tests → **+1 file, +53 tests, 0 regressions.**
+(33 roomLayout + 15 propertyStore + 5 designStore.)
+
+```
+$ npx eslint src/store/propertyStore.ts src/store/designStore.ts src/App.tsx \
+    src/designer/roomLayout.ts src/store/__tests__/propertyStore.test.ts \
+    src/store/__tests__/designStore.test.ts
+ESLINT_EXIT=0     (0 errors, 0 warnings)
+```
+
+New store coverage: addItem back-compat / explicit-roomId / unknown-id no-op ·
+removeItem + updateItem reaching a non-active room · selectItemAcrossRooms
+atomicity, null-deselect keeping focus, same-room no-op · addRectangleRoom with
+and without an anchor · unstackIfLegacy re-lay + items-travel + idempotence +
+single-room no-op · setRoomDimensions corner-preservation, overlap rejection
+(polygon unchanged + warn toast + neighbour untouched), shrink still allowed ·
+loadSnapshot multi-room refusal and single-room pass-through.
+
+**GATE P2: PASS.**
+
+---

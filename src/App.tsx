@@ -69,6 +69,8 @@ import { useWallStore } from './store/wallStore';
 import { useFloorZoneStore } from './store/floorZoneStore';
 import { useWallTreatmentStore } from './store/wallTreatmentStore';
 import { useDrawProgressStore } from './store/drawProgressStore';
+import { useToastStore } from './store/toastStore';
+import { unstackLegacyRooms } from './designer/roomLayout';
 // Sims-Parity Gaming Layer 1 (V4 default-ON 2026-05-18) — additive overlays
 // mounted on top of the existing Konva render-core. Konva stable-lock 26c144c
 // untouched; classic UI surfaces via `?ui=classic`.
@@ -95,6 +97,35 @@ export default function App() {
   // don't bother re-running the effect (idempotent inside the store).
   useEffect(() => {
     return installHistorySubscriptions();
+  }, []);
+  // D8 (attached multi-room 2026-08-26) — one-shot legacy un-stack.
+  // Pre-2026-08-26 every rectangle room was pinned at the origin by
+  // `rectToPolygon`, so a legacy multi-room save has all its rooms STACKED.
+  // Single-room rendering hid it; the attached canvas would draw them on
+  // top of each other. This can NOT live in `normaliseLoadedProperty` —
+  // that does not run on a normal reload (persist `migrate()` early-returns
+  // for version >= 2), so it hangs off app mount.
+  //
+  // Walls / zones are keyed in the SAME world frame but are NOT per-room,
+  // so moving rooms out from under them would strand them. When any exist,
+  // the overlap is left in place and only warned about.
+  useEffect(() => {
+    const property = usePropertyStore.getState().property;
+    // Reference-identity check: the pure helper returns its input unchanged
+    // when nothing overlaps, so this is a cheap "is there anything to do?".
+    if (unstackLegacyRooms(property) === property) return;
+    const hasWorldGeometry =
+      useWallStore.getState().walls.length > 0
+      || useFloorZoneStore.getState().zones.length > 0;
+    if (hasWorldGeometry) {
+      console.warn('[multi-room] legacy overlap left in place (walls/zones present)');
+      return;
+    }
+    if (usePropertyStore.getState().unstackIfLegacy()) {
+      useToastStore
+        .getState()
+        .push('Your rooms were un-stacked into an attached layout', 'info');
+    }
   }, []);
   const [drawMode, setDrawModeRaw] = useState(false);
   // Batch 3 Fix 3.1 — wrapped setDrawMode that, on entry, snapshots the

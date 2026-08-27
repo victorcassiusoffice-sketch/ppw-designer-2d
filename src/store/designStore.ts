@@ -23,6 +23,10 @@ import {
 } from './propertyStore';
 import { rectToPolygon, polygonBounds } from '../lib/geometry';
 import type { Polygon, RoomDims } from '../lib/geometry';
+// Attached multi-room (2026-08-26) — resizing a room must not teleport it
+// to the origin or eat its neighbour.
+import { isDrawnPolygon, strictPolygonsOverlap, translatePolygon } from '../designer/roomLayout';
+import { useToastStore } from './toastStore';
 
 export type RoomDimensions = RoomDims;
 export type { PlacedItem };
@@ -169,7 +173,24 @@ export const useDesignStore = create<DesignState>((set) => {
       const ps = usePropertyStore.getState();
       const active = selectActiveRoom(ps);
       if (!active) return;
-      ps.setRoomPolygon(active.id, rectToPolygon(clamped));
+      // D7a — rebuild AT THE ROOM'S CURRENT CORNER. `rectToPolygon` always
+      // pins at the origin, which used to teleport an attached room across
+      // the plan (and straight through its neighbours) on every L/W edit.
+      const b = polygonBounds(active.polygon);
+      const next = translatePolygon(rectToPolygon(clamped), b.minX, b.minY);
+      // D7b — a resize that would eat a neighbour is refused outright, so
+      // the no-overlap invariant holds no matter which surface edits the
+      // room. Toast + no state change: nothing silently half-applies.
+      const clash = ps.property.rooms.some(
+        (r) => r.id !== active.id && isDrawnPolygon(r.polygon) && strictPolygonsOverlap(next, r.polygon),
+      );
+      if (clash) {
+        useToastStore
+          .getState()
+          .push("That size would overlap another room — walls can be shared, not crossed.", 'warn');
+        return;
+      }
+      ps.setRoomPolygon(active.id, next);
     },
 
     addItem: (item) => usePropertyStore.getState().addItem(item),
@@ -183,6 +204,13 @@ export const useDesignStore = create<DesignState>((set) => {
 
     loadSnapshot: (snapshot) => {
       const ps = usePropertyStore.getState();
+      // D7c — loadSnapshot is the single-room legacy path: it flattens the
+      // property to one rectangle + one item list. Against a multi-room
+      // plan that is silent data loss, so it refuses.
+      if (ps.property.rooms.filter((r) => isDrawnPolygon(r.polygon)).length > 1) {
+        console.warn('[loadSnapshot] multi-room property — refusing legacy flatten');
+        return;
+      }
       const active = selectActiveRoom(ps);
       if (!active) return;
       ps.setRoomPolygon(active.id, rectToPolygon(snapshot.roomDimensions));
