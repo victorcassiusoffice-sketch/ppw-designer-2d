@@ -306,25 +306,112 @@ describe('RoomDrawMode source - Hotfix 7 invariants', () => {
   });
 });
 
-describe('RoomCanvas source - Hotfix 7 always-add-new-room', () => {
+/**
+ * SUPERSEDES `RoomCanvas source - Hotfix 7 always-add-new-room`.
+ *
+ * Hotfix 7's contract was "every commit adds a NEW room, and the commit
+ * body must never touch setRoomPolygon". Attached multi-room (Vic
+ * 2026-08-26) deliberately replaces it:
+ *
+ *   - the commit still calls `addRoom({ name, polygon: newPolygon })` — the
+ *     Hotfix-7 behaviour survives, in the else branch;
+ *   - but a BLANK active room is now FILLED in place rather than orphaned,
+ *     so `setRoomPolygon` inside the commit body is now REQUIRED, not
+ *     forbidden. The two Hotfix-7 negative pins asserted the opposite of
+ *     the new contract and are removed here — the only sanctioned pin
+ *     rewrite in this change (see the brief, rule §2.5).
+ *   - and the commit now REJECTS an overlapping polygon before it mutates
+ *     anything, which gets its own positive pin.
+ *
+ * Everything else in this file is untouched: the behaviour tests below
+ * drive a store-level `simulateCommit` and needed no change.
+ */
+describe('RoomCanvas source - attached multi-room commit contract', () => {
   const RC_SOURCE = (() => {
     const p = join(__dirname, '..', 'RoomCanvas.tsx');
     return readFileSync(p, 'utf8');
   })();
-  it('handleDrawCommit always calls addRoom', () => {
+
+  // The body-extraction regex requires `[addRoom` in the useCallback deps.
+  const commitFnBody = (() => {
+    const m = RC_SOURCE.match(/const\s+handleDrawCommit[\s\S]*?\[addRoom[\s\S]*?\]\s*\);/);
+    expect(m).not.toBeNull();
+    return m![0];
+  })();
+
+  it('still calls addRoom with the drawn polygon (Hotfix 7 path survives)', () => {
     expect(RC_SOURCE).toMatch(/addRoom\(\{\s*name,\s*polygon:\s*newPolygon\s*\}\)/);
-    const commitFnMatch = RC_SOURCE.match(
-      /const\s+handleDrawCommit[\s\S]*?\[addRoom[\s\S]*?\]\s*\);/,
-    );
-    expect(commitFnMatch).not.toBeNull();
-    const commitFnBody = commitFnMatch![0];
-    expect(commitFnBody).not.toMatch(/placedItems\.length\s*===\s*0/);
-    expect(commitFnBody).not.toMatch(/setRoomPolygon\(/);
+    expect(commitFnBody).toMatch(/addRoom\(\{\s*name,\s*polygon:\s*newPolygon\s*\}\)/);
   });
+
+  it('FILLS a blank active room in place instead of orphaning it', () => {
+    // The predicate is "the ACTIVE room is blank" (isDrawnPolygon is the
+    // shared `polygon.length >= 3` test), never "do rooms exist" — every
+    // property always holds >= 1 room object, so the latter is always true.
+    expect(commitFnBody).toMatch(/!isDrawnPolygon\(active\.polygon\)/);
+    expect(commitFnBody).toMatch(/setRoomPolygon\(active\.id,\s*newPolygon\)/);
+  });
+
+  it('REJECTS an overlapping polygon before mutating anything', () => {
+    expect(commitFnBody).toMatch(/strictPolygonsOverlap\(newPolygon,\s*r\.polygon\)/);
+    expect(commitFnBody).toMatch(/reason:\s*'rejected-overlap'/);
+  });
+
+  it('no longer destroys the other rooms on commit', () => {
+    // The "Batch 3 Fix 3.1" removeRoom loop is what made drawing a second
+    // room delete the first. It must never come back.
+    expect(commitFnBody).not.toMatch(/removeRoom\(/);
+  });
+
+  it('ends the draw transaction explicitly so the commit is one undo frame', () => {
+    expect(commitFnBody).toMatch(/endDrawTransaction\(\)/);
+  });
+
   it('handleDrawCommit emits [draw-close] diagnostics', () => {
     expect(RC_SOURCE).toContain("'[draw-close]'");
     expect(RC_SOURCE).toMatch(/reason:\s*'commit-start'/);
     expect(RC_SOURCE).toMatch(/reason:\s*'commit-success'/);
     expect(RC_SOURCE).toMatch(/reason:\s*'commit-error'/);
+  });
+});
+
+/**
+ * Attached multi-room — the entry-clear deletion (App.tsx). Draw mode used
+ * to mass-clear items / walls / zones / treatments so the user drew onto an
+ * empty stage; that, plus the commit-side removeRoom loop, is what made a
+ * second room destroy the first. Both had to go in the SAME change —
+ * removing only one still destroys rooms.
+ */
+describe('App source - draw mode no longer destroys the canvas', () => {
+  const APP_SOURCE = (() => {
+    const p = join(__dirname, '..', '..', 'App.tsx');
+    return readFileSync(p, 'utf8');
+  })();
+
+  const setDrawModeBody = (() => {
+    const m = APP_SOURCE.match(/const\s+setDrawMode\s*=\s*useCallback[\s\S]*?\}\s*,\s*\[\]\s*\);/);
+    expect(m).not.toBeNull();
+    return m![0];
+  })();
+
+  it('drops the four entry clears', () => {
+    expect(setDrawModeBody).not.toMatch(/clearActiveRoomItems\(\)/);
+    expect(setDrawModeBody).not.toMatch(/clearWalls\(\)/);
+    expect(setDrawModeBody).not.toMatch(/clearZones\(\)/);
+    expect(setDrawModeBody).not.toMatch(/clearTreatments\(\)/);
+  });
+
+  it('still opens the history transaction, and nulls the SELECTION on entry', () => {
+    // The entry-wipe used to null the selection as a side effect. A
+    // selection surviving into draw mode leaves DetailsPanel/FloatingCluster
+    // over the canvas eating vertex clicks, and lets item shortcut keys
+    // mutate the property inside the suppressed transaction.
+    expect(setDrawModeBody).toMatch(/beginDrawTransaction\('draw new room'\)/);
+    expect(setDrawModeBody).toMatch(/selectItem\(null\)/);
+  });
+
+  it('ABORTS rather than ends the transaction on exit', () => {
+    expect(setDrawModeBody).toMatch(/abortDrawTransaction\(\)/);
+    expect(setDrawModeBody).not.toMatch(/endDrawTransaction\(\)/);
   });
 });

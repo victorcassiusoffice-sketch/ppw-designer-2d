@@ -39,6 +39,10 @@ import {
 } from '../lib/geometry';
 import type { Polygon, Vertex, Viewport } from '../lib/geometry';
 import { useToastStore, type ToastKind } from '../store/toastStore';
+import { usePropertyStore } from '../store/propertyStore';
+// Attached multi-room (2026-08-26) — new vertices snap onto the walls of
+// rooms that already exist, so adjacent rooms share exact geometry.
+import { SNAP_TOL_M, snapVertexToRooms, type SnapHit } from '../designer/roomLayout';
 // Blueprint reskin + legible measurements (Vic 2026-08-25, complaints 3+5).
 import { MeasurementChip } from '../designer/MeasurementChip';
 import {
@@ -65,6 +69,13 @@ const DBG = '[draw-mode]';
 // RoomDrawLayer - Konva-only. MUST be rendered as a direct child of <Stage>.
 // ---------------------------------------------------------------------------
 
+/**
+ * A hover point plus, when it landed on an existing room's geometry, WHICH
+ * kind of feature it snapped to. Committed polygon vertices are always the
+ * plain `Vertex` — this extra key never reaches `Room.polygon`.
+ */
+export type HoverVertex = Vertex & { snap?: 'vertex' | 'edge' };
+
 export interface RoomDrawLayerProps {
   enabled: boolean;
   stageRef: React.RefObject<Konva.Stage>;
@@ -73,8 +84,9 @@ export interface RoomDrawLayerProps {
   pxPerMetre: number;
   vertices: Polygon;
   setVertices: (next: Polygon | ((v: Polygon) => Polygon)) => void;
-  hover: Vertex | null;
-  setHover: (v: Vertex | null) => void;
+  /** Hover carries the snap KIND so the layer can draw the snap ring. */
+  hover: HoverVertex | null;
+  setHover: (v: HoverVertex | null) => void;
   name: string;
   onCommit: (polygon: Polygon, name: string) => void;
   onCancel: () => void;
@@ -124,7 +136,26 @@ export function RoomDrawLayer({
     }
     console.log(DBG, 'layer effect: wiring Stage handlers');
 
+    /**
+     * Attached multi-room (2026-08-26): wall-snap runs FIRST and its output
+     * is NEVER re-grid-snapped — re-snapping would drift a vertex off the
+     * wall it was just attached to (5.13 m → 5.0 m) and open the exact
+     * overlap strip the snap exists to prevent.
+     *
+     * Returns a CLEAN `{x, y}`. Any extra key on a vertex object would
+     * JSON-persist straight into `Room.polygon` — a silent schema leak —
+     * because this feeds BOTH the hover path and the click path that pushes
+     * committed vertices. The snap KIND is computed separately in
+     * `handleMove` and attached only to the hover value.
+     */
     function getRoomPoint(evt: { clientX: number; clientY: number }): Vertex {
+      const hit = snapHitFor(evt);
+      if (hit) return { x: hit.v.x, y: hit.v.y };
+      const raw = rawRoomPoint(evt);
+      return { x: snapToGrid(raw.x, GRID_STEP_M), y: snapToGrid(raw.y, GRID_STEP_M) };
+    }
+
+    function rawRoomPoint(evt: { clientX: number; clientY: number }): Vertex {
       const rect = container!.getBoundingClientRect();
       const { xM, yM } = screenToRoom(
         evt.clientX,
@@ -133,7 +164,20 @@ export function RoomDrawLayer({
         viewportRef.current,
         pxPerMetre,
       );
-      return { x: snapToGrid(xM, GRID_STEP_M), y: snapToGrid(yM, GRID_STEP_M) };
+      return { x: xM, y: yM };
+    }
+
+    /**
+     * Rooms are read via `getState()` INSIDE the handler — the wiring effect
+     * below must NOT gain store deps, or it would tear down and re-attach
+     * every Stage handler on every room mutation.
+     */
+    function snapHitFor(evt: { clientX: number; clientY: number }): SnapHit | null {
+      return snapVertexToRooms(
+        rawRoomPoint(evt),
+        usePropertyStore.getState().property.rooms,
+        SNAP_TOL_M,
+      );
     }
 
     function readClient(evt: MouseEvent | TouchEvent): { x: number; y: number } | null {
@@ -154,7 +198,10 @@ export function RoomDrawLayer({
       const c = readClient(e.evt as MouseEvent | TouchEvent);
       if (!c) return;
       const p = getRoomPoint({ clientX: c.x, clientY: c.y });
-      setHoverRef.current(p);
+      // The snap KIND rides on the HOVER value only — it drives the gold
+      // ring below and must never reach a committed polygon vertex.
+      const hit = snapHitFor({ clientX: c.x, clientY: c.y });
+      setHoverRef.current({ ...p, snap: hit?.kind });
     }
 
     function handleClickOrTap(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
@@ -370,6 +417,22 @@ export function RoomDrawLayer({
           </Group>
         );
       })}
+
+      {/* Attached multi-room (2026-08-26) — the snap ring. When the cursor
+          has been pulled onto an existing room's corner or wall, a gold ring
+          says so BEFORE the click, which is the only feedback that the new
+          room is about to share that wall exactly. Screen-space radius, so
+          it stays the same size at any zoom. */}
+      {hover?.snap && (
+        <Circle
+          x={hover.x * pxPerMetre}
+          y={hover.y * pxPerMetre}
+          radius={8 / viewport.scale}
+          stroke={WALL_GOLD_BRIGHT}
+          strokeWidth={2 / viewport.scale}
+          listening={false}
+        />
+      )}
 
       {/* Running length of the segment being drawn, parked just above the
           cursor so the number is where the user is actually looking. */}

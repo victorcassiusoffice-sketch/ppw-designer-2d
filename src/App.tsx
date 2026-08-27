@@ -58,16 +58,15 @@ import { SimsDock } from './components/desktop/SimsDock';
 import { useKeyboardShortcuts } from './lib/useKeyboardShortcuts';
 import { useAutoSave } from './lib/useAutoSave';
 import {
+  abortDrawTransaction,
   beginDrawTransaction,
-  endDrawTransaction,
   installHistorySubscriptions,
 } from './store/historyStore';
-// Batch 3 Fix 3.1 — DRAW button click destroys the canvas atomically so
-// the user gets a fresh slate to draw into; Ctrl+Z restores everything.
 import { usePropertyStore } from './store/propertyStore';
 import { useWallStore } from './store/wallStore';
 import { useFloorZoneStore } from './store/floorZoneStore';
-import { useWallTreatmentStore } from './store/wallTreatmentStore';
+// (wallTreatmentStore's import went with the draw-mode entry-clear — draw
+// mode no longer destroys anything, so there is nothing here to clear.)
 import { useDrawProgressStore } from './store/drawProgressStore';
 import { useToastStore } from './store/toastStore';
 import { unstackLegacyRooms } from './designer/roomLayout';
@@ -128,19 +127,29 @@ export default function App() {
     }
   }, []);
   const [drawMode, setDrawModeRaw] = useState(false);
-  // Batch 3 Fix 3.1 — wrapped setDrawMode that, on entry, snapshots the
-  // canvas into a single undo frame then wipes items / walls / zones /
-  // wall treatments so the user draws onto an empty stage. On exit it
-  // closes the history transaction. The downstream RoomDrawLayer +
-  // RoomList consume `drawMode` exactly as before.
+  // Attached multi-room (Vic 2026-08-26) — draw mode NO LONGER destroys the
+  // canvas on entry. The old wrapper mass-cleared items / walls / zones /
+  // treatments so the user drew onto an empty stage; the whole point now is
+  // that a new room is drawn ATTACHED to the rooms already there, which you
+  // cannot do if they have just been wiped.
+  //
+  // The one clear that stays is the SELECTION, which the entry-wipe used to
+  // do as a side effect. Selection is not part of the history snapshot, so a
+  // selection surviving into draw mode would (a) leave DetailsPanel /
+  // FloatingCluster mounted over the canvas eating vertex clicks and (b) let
+  // the item shortcut keys mutate the property inside the suppressed
+  // transaction — permanently, and un-undoably, under the new abort
+  // semantics.
+  //
+  // On exit we ABORT rather than end: a draw that changed nothing must leave
+  // history exactly as it found it. A committed draw has already called
+  // `endDrawTransaction`, so the abort here no-ops — one convention covers
+  // commit, Esc-cancel, and the TopBar "Rectangle" mid-draw exit (which used
+  // to strand a phantom undo frame).
   const setDrawMode = useCallback((next: boolean) => {
     if (next) {
       beginDrawTransaction('draw new room');
-      // Mass-clear all stores that contribute visible canvas state.
-      usePropertyStore.getState().clearActiveRoomItems();
-      useWallStore.getState().clearWalls();
-      useFloorZoneStore.getState().clearZones();
-      useWallTreatmentStore.getState().clearTreatments();
+      usePropertyStore.getState().selectItem(null);
       const dp = useDrawProgressStore.getState();
       dp.setEnabled(true);
       dp.setVertices([]);
@@ -148,7 +157,7 @@ export default function App() {
       const dp = useDrawProgressStore.getState();
       dp.setEnabled(false);
       dp.setVertices([]);
-      endDrawTransaction();
+      abortDrawTransaction();
     }
     setDrawModeRaw(next);
   }, []);

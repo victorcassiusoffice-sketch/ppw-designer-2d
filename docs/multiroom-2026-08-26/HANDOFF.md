@@ -361,3 +361,154 @@ Running 4 tests using 4 workers
 **GATE P4: PASS.**
 
 ---
+
+## P5 — Draw-attach (D6, atomic) ✅
+
+Everything below is ONE commit. The two wipe stages live in different files
+and removing only one still destroys rooms (entry-clear alone → the commit
+loop massacres; loop alone → entry wipes items).
+
+### Changed
+
+**`src/store/historyStore.ts`** — NEW `abortDrawTransaction()`. Lifts
+suppression, POPS the entry frame `beginDrawTransaction` pushed WITHOUT
+applying it, rebaselines, and calls `writeSessionFrames(newPast)` so the
+`sessionStorage 'ppw_history_top10_v1'` mirror tracks the pop. That last call
+is required, not decorative — the P5 gate reads that mirror, so without it a
+CORRECT implementation false-fails. Safe no-op when no transaction is active.
+
+**`src/App.tsx`** — `setDrawMode(true)` keeps `beginDrawTransaction` and
+DELETES all four clears (`clearActiveRoomItems` / `clearWalls` / `clearZones`
+/ `clearTreatments`), adding `usePropertyStore.getState().selectItem(null)` in
+their place. `setDrawMode(false)` calls `abortDrawTransaction()` instead of
+`endDrawTransaction()`. The `useWallTreatmentStore` import went with the
+clears.
+
+**`src/components/RoomCanvas.tsx`**
+- `handleDrawCommit`: `removeRoom` loop and the redundant `setActiveRoom`
+  DELETED. Overlap check runs FIRST (`strictPolygonsOverlap` vs every drawn
+  room) → toast + `[draw-close] rejected-overlap` + reset vertices + STAY in
+  draw mode, before anything is mutated. On pass: blank ACTIVE room → fill it
+  (`setRoomPolygon` + `renameRoom`); else the existing
+  `addRoom({ name, polygon: newPolygon })` call, verbatim. Then
+  `endDrawTransaction()` explicitly, THEN `onDrawComplete()`.
+- `handleDrawCancel`: body is now just `onDrawComplete()`. The old global
+  `undo()` would, with the wipe gone, revert the user's last REAL action.
+
+**`src/lib/useKeyboardShortcuts.ts`** — while `isDrawTransactionActive()`,
+undo/redo (Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y) AND every selection-mutation key
+(R, `<`, `>`, D, Delete, Backspace) no-op. `RoomDrawMode`'s own Ctrl+Z
+interceptor is UNTOUCHED — it already yields when vertices are empty, which
+is exactly why the post-commit single Ctrl+Z still reaches the global handler.
+
+**`src/components/RoomDrawMode.tsx`** — `getRoomPoint` now snaps to existing
+room geometry FIRST and returns a CLEAN `{x, y}` (any extra key would
+JSON-persist into `Room.polygon`); grid-snap only when nothing is in range,
+and a snapped point is never re-grid-snapped. The snap KIND is computed
+separately in `handleMove` and attached only to the hover value (new exported
+`HoverVertex` type). Rooms read via `getState()` INSIDE the handler so the
+`:211` wiring effect gains no deps. A gold ring (`8 / viewport.scale`,
+`WALL_GOLD_BRIGHT`) renders at a snapped hover. `RoomDrawHUD` untouched.
+
+**`src/components/AddRoomChooser.tsx`** — rectangle path gets the SAME branch
+as quick-rect: active room blank → `setRoomPolygon` in place at the
+`nextRectanglePosition` anchor + `renameRoom`; else
+`addRectangleRoom(name, dims, anchor)`. Copy updated.
+
+**`src/components/TopBar.tsx`** — Custom-shape title →
+"Draw a room — attaches to existing rooms, walls snap together".
+
+### Sanctioned source-pin rewrite (rule §2.5)
+
+`RoomDrawMode.test.ts` :309–330 pinned the OLD always-add-new-room contract
+that this phase deliberately replaces. Rewritten as documented:
+- KEPT the positive `addRoom({ name, polygon: newPolygon })` pin (it survives
+  in the else branch) and the `[draw-close]` diagnostics pins.
+- DELETED `not.toMatch(/setRoomPolygon\(/)` and
+  `not.toMatch(/placedItems\.length\s*===\s*0/)` — `setRoomPolygon` inside the
+  commit body is now REQUIRED (blank-fill), so those pins asserted the
+  opposite of the new contract.
+- ADDED positive pins for the overlap reject
+  (`strictPolygonsOverlap(newPolygon, r.polygon)` + `reason: 'rejected-overlap'`),
+  the blank-fill branch, a negative pin that `removeRoom(` never returns, and
+  `endDrawTransaction()`.
+- `addRoom` KEPT in the useCallback deps — the test's body-extraction regex
+  requires `[addRoom`.
+
+  ⚠ **One deviation from the brief's wording, logged per §2.7.** The brief
+  said to pin the blank-fill branch on `polygon.length < 3`. The implementation
+  uses the shared `isDrawnPolygon()` helper (which IS `polygon.length >= 3`)
+  rather than an inline copy, so the pin is
+  `/!isDrawnPolygon\(active\.polygon\)/` — the same contract, pinned on the
+  code that actually exists.
+
+Also ADDED a new `App source - draw mode no longer destroys the canvas`
+describe: the four entry clears are gone, `beginDrawTransaction` +
+`selectItem(null)` remain, and the exit branch aborts rather than ends. The
+entry-clear deletion had no source-level guard at all before this.
+
+The other two source-pin files (`roomCanvasRenderBind.test.ts`,
+`customer-ui-fixes-2026-05-31.test.ts`) are UNTOUCHED and green.
+
+### Gate
+
+```
+$ npx tsc --noEmit          → TSC=0 (clean)
+$ npm run build             → ✓ built in 8.57s (clean)
+$ npx vitest run            → Test Files 149 passed (149) · Tests 1716 passed (1716)
+$ npx eslint <11 changed files>  → ESLINT=0
+$ git grep -ho 'data-testid="[^"]*"' | sort -u | wc -l  → 133 (baseline held)
+```
+
+```
+$ PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test multiroom-attach
+Running 4 tests using 4 workers
+  ok 2 › the FIRST draw on a fresh blank canvas fills the seed room (4.3s)
+  ok 1 › phantom-frame check, behavioural: a visit to draw mode does not eat a Ctrl+Z (4.7s)
+  ok 4 › an OVERLAPPING draw is rejected and the plan is untouched (4.7s)
+DRAW_ATTACH=true
+  ok 3 › a drawn room attaches on an exact shared wall and destroys nothing (5.7s)
+  4 passed (6.8s)
+```
+
+All seven required assertions:
+1. Seed = ONE drawn room OFF-GRID (east wall x = 5.13) + 1 item; wall store
+   empty (`ppw_walls_v1` — note it is a hand-rolled BARE ARRAY, not a zustand
+   persist envelope).
+2. Entering draw mode leaves item count AND room count unchanged — the wipe
+   is gone.
+3. Four vertices drawn with the left edge within SNAP_TOL_M of x = 5.13 →
+   persisted `rooms.length === 2`, room 2's west edge x **=== 5.13 exactly**,
+   room 1's polygon AND items deep-equal unchanged.
+4. ONE Ctrl+Z → `rooms.length === 1`, item still there.
+5. Phantom-frame, BOTH ways: (a) session-mirror count before draw-entry ===
+   after Esc; (b) behavioural — place an extra item (badge 2), Escape, visit
+   draw mode, Esc, then ONE Ctrl+Z drops the badge back to 1.
+6. An overlapping draw is rejected: room count unchanged, polygon untouched,
+   "can't overlap" toast visible.
+7. Fresh-blank-canvas as a SEPARATE `test()` with only the coach-flag init
+   (no fixture seed — `addInitScript` re-runs on every navigation, so
+   clear-and-reload inside a seeded test just re-seeds) → first draw yields
+   `rooms.length === 1`, blank seed FILLED not orphaned.
+
+### Adversarial verification of the snap assertion
+
+A passing test proves nothing unless it can fail. Wall-snap was temporarily
+disabled (`getRoomPoint` forced down the grid-snap path) and the spec re-run:
+
+```
+  x  1 › a drawn room attaches on an exact shared wall and destroys nothing (3.4s)
+    Expected length: 2
+    Received length: 1
+    Received array:  [{"id": "r1", ... "polygon": [{"x":0,"y":0},{"x":5.13,"y":0},{"x":5.13,"y":4},{"x":0,"y":4}]}]
+```
+
+Exactly the predicted chain: the vertex grid-snapped to 5.0, that opened a
+0.13 m overlap strip, `strictPolygonsOverlap` rejected the commit, and
+`rooms.length` stayed 1. Both the snap AND the overlap predicate are proven
+load-bearing, not passing by accident. The probe was then fully removed
+(`grep -c FALSIFY_SNAP_PROBE` → 0) and the spec re-run green.
+
+**GATE P5: PASS.**
+
+---

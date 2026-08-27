@@ -196,6 +196,43 @@ export async function goldSpanPx(page: Page): Promise<number | null> {
   }, ROOM_BORDER_SCAN);
 }
 
+/**
+ * Page-pixel position of world (0, 0) on a canvas with NO room drawn.
+ *
+ * `roomOrigin` scans for gold wall pixels and therefore cannot work on a
+ * blank canvas. With no drawn room the auto-centre effect returns early
+ * (there is no union to fit), so the viewport is the identity transform and
+ * world (0, 0) is simply the canvas element's top-left corner.
+ */
+export async function canvasOrigin(page: Page): Promise<{ x: number; y: number }> {
+  const found = await page.evaluate(() => {
+    const c = document.querySelector('.konvajs-content canvas') as HTMLCanvasElement | null;
+    if (!c) return null;
+    const rect = c.getBoundingClientRect();
+    return { x: rect.x, y: rect.y };
+  });
+  if (!found) throw new Error('Konva layer canvas not found');
+  return found;
+}
+
+/**
+ * Committed interior walls. NOTE: wallStore does NOT use zustand's persist
+ * middleware — it hand-rolls localStorage under `ppw_walls_v1` and stores a
+ * BARE ARRAY, not a `{state, version}` envelope.
+ */
+export async function storedWallCount(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    try {
+      const raw = localStorage.getItem('ppw_walls_v1');
+      if (!raw) return 0;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.length : 0;
+    } catch {
+      return 0;
+    }
+  });
+}
+
 /** The persisted property, read straight out of localStorage. */
 export async function storedProperty(page: Page): Promise<SeedProperty | null> {
   return page.evaluate(() => {

@@ -10,8 +10,12 @@
  */
 
 import { useState } from 'react';
-import { usePropertyStore } from '../store/propertyStore';
+import { usePropertyStore, selectActiveRoom } from '../store/propertyStore';
 import { useToastStore } from '../store/toastStore';
+import { rectToPolygon } from '../lib/geometry';
+// Attached multi-room (2026-08-26) — a new rectangle attaches flush-right
+// of the plan instead of landing on top of it at the origin.
+import { isDrawnPolygon, nextRectanglePosition, translatePolygon } from '../designer/roomLayout';
 
 export interface AddRoomChooserProps {
   open: boolean;
@@ -39,7 +43,23 @@ export function AddRoomChooser({ open, onClose, onRequestDrawMode }: AddRoomChoo
     const L = clampDim(lengthM);
     const W = clampDim(widthM);
     const trimmed = name.trim() || 'New Room';
-    addRectangleRoom(trimmed, { lengthM: L, widthM: W });
+    const ps = usePropertyStore.getState();
+    // Anchor flush-right of everything already drawn, so the new rectangle
+    // SHARES the plan's east wall instead of stacking at the origin.
+    const anchor = nextRectanglePosition(ps.property.rooms, { lengthM: L, widthM: W });
+    const active = selectActiveRoom(ps);
+    // The predicate is "the ACTIVE room is blank", never "do rooms exist" —
+    // every property always holds >= 1 room object, so the latter is always
+    // true and would orphan the blank seed room forever.
+    if (active && !isDrawnPolygon(active.polygon)) {
+      ps.setRoomPolygon(
+        active.id,
+        translatePolygon(rectToPolygon({ lengthM: L, widthM: W }), anchor.x, anchor.y),
+      );
+      ps.renameRoom(active.id, trimmed);
+    } else {
+      addRectangleRoom(trimmed, { lengthM: L, widthM: W }, anchor);
+    }
     pushToast(`Room "${trimmed}" added (${L} × ${W} m)`, 'success');
     onClose();
   }
@@ -55,6 +75,7 @@ export function AddRoomChooser({ open, onClose, onRequestDrawMode }: AddRoomChoo
         <p className="text-sm font-semibold text-ppw-ink">Add a room</p>
         <p className="mt-1 text-xs text-ppw-slate">
           Pick a quick rectangle or sketch a custom polygon on the canvas.
+          New rooms attach to the ones you already have and share their walls.
         </p>
 
         <div className="mt-4 flex gap-2 text-xs">
@@ -126,7 +147,8 @@ export function AddRoomChooser({ open, onClose, onRequestDrawMode }: AddRoomChoo
             <p className="rounded-md border border-dashed border-ppw-stone bg-ppw-mist p-2 text-[11px] leading-snug text-ppw-slate">
               The canvas will switch to Draw mode. Click to drop vertices,
               click the first vertex (or land within 0.4 m of it) to close
-              the polygon. Cancel with Esc.
+              the polygon. Cancel with Esc. Vertices snap onto the walls of
+              rooms you have already drawn, so the rooms share those walls.
             </p>
           )}
         </div>

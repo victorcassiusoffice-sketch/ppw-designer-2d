@@ -45,12 +45,12 @@ import {
   screenToRoom,
   validatePlacement,
 } from '../lib/geometry';
-import type { PlacedRect, Polygon, Vertex, Viewport } from '../lib/geometry';
+import type { PlacedRect, Polygon, Viewport } from '../lib/geometry';
 import { computeZoomScale } from '../lib/zoom';
-import { RoomDrawLayer } from './RoomDrawMode';
+import { RoomDrawLayer, type HoverVertex } from './RoomDrawMode';
 import { WallDrawLayer, WallDrawHUD, CommittedWallsLayer } from '../designer/WallDrawMode';
 import { useWallStore } from '../store/wallStore';
-import { useHistoryStore } from '../store/historyStore';
+import { useHistoryStore, endDrawTransaction } from '../store/historyStore';
 // Batch 3 Fix 3.2 — vertices live in a tiny shared store so the
 // RoomList sidebar can render the live counters next to the room.
 import { useDrawProgressStore } from '../store/drawProgressStore';
@@ -97,6 +97,7 @@ import {
   findRoomAt,
   isDrawnPolygon,
   nextRectanglePosition,
+  strictPolygonsOverlap,
   translatePolygon,
   unionBounds,
 } from '../designer/roomLayout';
@@ -294,7 +295,7 @@ export function RoomCanvas({
   // signature (accepts value or updater fn).
   const drawVertices = useDrawProgressStore((s) => s.vertices);
   const setDrawVertices = useDrawProgressStore((s) => s.setVertices);
-  const [drawHover, setDrawHover] = useState<Vertex | null>(null);
+  const [drawHover, setDrawHover] = useState<HoverVertex | null>(null);
   const [drawName, setDrawName] = useState('New Room');
 
   // M2: wall draw mode FSM phase comes from wallStore. Layer + HUD are
@@ -888,14 +889,11 @@ export function RoomCanvas({
 
   const handleDrawCommit = useCallback(
     (newPolygon: Polygon, name: string) => {
-      // Hotfix 7: Draw mode ALWAYS adds a new room. The pre-Hotfix-7
-      // behaviour overwrote the active room's polygon when it had no
-      // placed items, which silently swallowed the second "Add room ->
-      // Draw" attempt (the new polygon replaced the empty active room
-      // instead of being committed as a new room). Net effect: user
-      // couldn't add a second room via Draw mode. Now: every Close /
-      // Enter commit produces a new Room in the Property and the new
-      // room becomes active.
+      // Attached multi-room (Vic 2026-08-26): a commit ADDS a room to the
+      // plan. The pre-2026-08-26 path added the room and then looped
+      // `removeRoom` over every OTHER room ("Batch 3 Fix 3.1") — that loop,
+      // together with App's entry-clear, is what made drawing a second room
+      // destroy the first. Both are gone; rooms now share walls instead.
       if (newPolygon.length < 3) {
         console.log('[draw-close]', {
           reason: 'guard-too-few-vertices',
@@ -905,6 +903,24 @@ export function RoomCanvas({
         pushToast('Need at least 3 walls to close the room.', 'warn');
         return;
       }
+      // Overlap check FIRST — nothing is mutated until the new polygon is
+      // known to be legal. Shared walls pass; a genuine overlap is refused
+      // and the user STAYS in draw mode with a clean slate to retry.
+      const psNow = usePropertyStore.getState();
+      const clash = psNow.property.rooms.some(
+        (r) => isDrawnPolygon(r.polygon) && strictPolygonsOverlap(newPolygon, r.polygon),
+      );
+      if (clash) {
+        pushToast("Rooms can't overlap — walls can be shared", 'warn');
+        console.log('[draw-close]', {
+          reason: 'rejected-overlap',
+          vertices: newPolygon.length,
+          success: false,
+        });
+        setDrawVertices([]);
+        setDrawHover(null);
+        return;
+      }
       console.log('[draw-close]', {
         reason: 'commit-start',
         vertices: newPolygon.length,
@@ -912,30 +928,36 @@ export function RoomCanvas({
         success: null,
       });
       try {
-        const id = addRoom({ name, polygon: newPolygon });
-        const ps = usePropertyStore.getState();
-        ps.setActiveRoom(id);
-        // Batch 3 Fix 3.1 — drop the pre-DRAW rooms so the new polygon
-        // is the only canvas content. The history transaction wrapper
-        // around setDrawMode keeps these mutations in the same undo
-        // frame as the entry-clear, so one Ctrl+Z restores everything.
-        const otherIds = ps.property.rooms
-          .filter((r) => r.id !== id)
-          .map((r) => r.id);
-        for (const otherId of otherIds) {
-          usePropertyStore.getState().removeRoom(otherId);
+        // The predicate is "the ACTIVE room is blank", never "do rooms
+        // exist": every property always holds >= 1 room object, so the
+        // latter is always true and would orphan the blank seed room
+        // forever. Filling it keeps a fresh start's first draw at
+        // rooms.length === 1.
+        const active = selectActiveRoom(psNow);
+        if (active && !isDrawnPolygon(active.polygon)) {
+          psNow.setRoomPolygon(active.id, newPolygon);
+          psNow.renameRoom(active.id, name);
+          console.log('[draw-close]', {
+            reason: 'commit-success',
+            vertices: newPolygon.length,
+            roomId: active.id,
+            filledBlank: true,
+            success: true,
+          });
+        } else {
+          const id = addRoom({ name, polygon: newPolygon });
+          console.log('[draw-close]', {
+            reason: 'commit-success',
+            vertices: newPolygon.length,
+            roomId: id,
+            filledBlank: false,
+            success: true,
+          });
         }
         pushToast(
           `New room "${name}" created (${polygonArea(newPolygon).toFixed(2)} m2)`,
           'success',
         );
-        console.log('[draw-close]', {
-          reason: 'commit-success',
-          vertices: newPolygon.length,
-          roomId: id,
-          dropped: otherIds.length,
-          success: true,
-        });
       } catch (err) {
         console.error('[draw-close]', {
           reason: 'commit-error',
@@ -946,21 +968,24 @@ export function RoomCanvas({
         pushToast('Could not add room. See console for details.', 'error');
         return;
       }
+      // End the transaction EXPLICITLY here, so the committed room is one
+      // real undo frame. App's exit branch then calls abortDrawTransaction,
+      // which no-ops because the transaction has already ended.
+      endDrawTransaction();
       if (onDrawComplete) onDrawComplete();
     },
-    [addRoom, pushToast, onDrawComplete],
+    [addRoom, pushToast, onDrawComplete, setDrawVertices],
   );
 
   void activeRoom;
 
   const handleDrawCancel = useCallback(() => {
     console.log('[draw-mode]', 'cancel');
-    // Batch 3 Fix 3.1 — Esc / Cancel restores the pre-DRAW canvas. The
-    // setDrawMode wrapper opened a history transaction on entry; we end
-    // it here and immediately invoke undo() to pop that snapshot and
-    // apply it, so the user goes back to where they were before DRAW.
+    // Attached multi-room (2026-08-26): entering draw mode no longer wipes
+    // anything, so there is nothing to restore. The abort happens in App's
+    // exit branch (one convention for every exit path). The old global
+    // `undo()` here would now revert the user's last REAL action.
     if (onDrawComplete) onDrawComplete();
-    useHistoryStore.getState().undo();
   }, [onDrawComplete]);
 
   // Attached multi-room: the grid is generated PER ROOM, not just clipped

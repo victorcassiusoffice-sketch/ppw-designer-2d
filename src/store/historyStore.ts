@@ -374,6 +374,36 @@ export function endDrawTransaction(): void {
   lastSeenSnapshot = takeSnapshot();
 }
 
+/**
+ * Attached multi-room (2026-08-26) — close a draw transaction WITHOUT
+ * leaving its entry frame behind.
+ *
+ * Entering draw mode used to wipe the canvas, so the entry frame was a real
+ * user-perceived action worth undoing. Now that draw mode changes nothing on
+ * entry, a cancelled (or abandoned) draw must leave the history exactly as
+ * it found it — otherwise every visit to draw mode strands a phantom frame
+ * and the user's next Ctrl+Z silently does nothing.
+ *
+ * Pops the frame `beginDrawTransaction` pushed WITHOUT applying it, lifts
+ * suppression, and rebaselines. The `writeSessionFrames` call is required,
+ * not decorative: the sessionStorage mirror is the only in-page view of the
+ * history, so without it a CORRECT implementation still fails the P5 gate.
+ *
+ * Safe no-op when no transaction is active — which is what makes the single
+ * "App's exit branch always aborts" convention work for commit (already
+ * ended), Esc-cancel, AND the TopBar "Rectangle" mid-draw exit.
+ */
+export function abortDrawTransaction(): void {
+  if (!inDrawTransaction) return;
+  inDrawTransaction = false;
+  suppressRecording = false;
+  const past = useHistoryStore.getState().past;
+  const newPast = past.slice(0, -1);
+  useHistoryStore.setState({ past: newPast });
+  writeSessionFrames(newPast);
+  lastSeenSnapshot = takeSnapshot();
+}
+
 export function isDrawTransactionActive(): boolean {
   return inDrawTransaction;
 }

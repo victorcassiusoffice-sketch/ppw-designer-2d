@@ -390,7 +390,7 @@ export function TopBar({
             onClick={() => setDrawMode(true)}
             data-testid="room-draw-toggle"
             className={`min-h-[40px] px-3 text-xs font-medium ${drawMode ? 'bg-ppw-teal text-white' : 'text-ppw-slate hover:text-ppw-teal'}`}
-            title="Custom-shaped room — click corner by corner to sketch the outline (starts a fresh room)"
+            title="Draw a room — attaches to existing rooms, walls snap together"
             aria-pressed={drawMode}
           >
             <span className="md:hidden">Custom</span>
