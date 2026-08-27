@@ -25,6 +25,16 @@
 export const CANVAS_GROUND = '#152430';
 /** Room polygon interior. Replaces `#FAF7F1`. */
 export const ROOM_FILL = '#1D3140';
+/**
+ * Attached multi-room (2026-08-26) — every room renders on one canvas, so
+ * the ACTIVE room (the one the TopBar L/W and DetailsPanel describe) needs
+ * to read as focused without shouting. A slightly lifted floor plus a
+ * brighter label is enough; the gold walls stay identical so the plan still
+ * reads as one continuous drawing rather than a set of cards.
+ */
+export const ROOM_FILL_ACTIVE = '#234156';
+export const ROOM_LABEL_ACTIVE_OPACITY = 0.9;
+export const ROOM_LABEL_INACTIVE_OPACITY = 0.5;
 /** Room outline + interior walls. Replaces the `#0E1B1F` stroke. */
 export const WALL_GOLD = '#E8A33D';
 /** Selected / hover wall, selection outlines, rotate handle. Replaces cyan. */
