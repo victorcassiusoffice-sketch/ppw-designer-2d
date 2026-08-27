@@ -45,12 +45,12 @@ import {
   screenToRoom,
   validatePlacement,
 } from '../lib/geometry';
-import type { PlacedRect, Polygon, Vertex, Viewport } from '../lib/geometry';
+import type { PlacedRect, Polygon, Viewport } from '../lib/geometry';
 import { computeZoomScale } from '../lib/zoom';
-import { RoomDrawLayer } from './RoomDrawMode';
+import { RoomDrawLayer, type HoverVertex } from './RoomDrawMode';
 import { WallDrawLayer, WallDrawHUD, CommittedWallsLayer } from '../designer/WallDrawMode';
 import { useWallStore } from '../store/wallStore';
-import { useHistoryStore } from '../store/historyStore';
+import { useHistoryStore, endDrawTransaction } from '../store/historyStore';
 // Batch 3 Fix 3.2 — vertices live in a tiny shared store so the
 // RoomList sidebar can render the live counters next to the room.
 import { useDrawProgressStore } from '../store/drawProgressStore';
@@ -81,12 +81,26 @@ import {
   LABEL_TEXT,
   LABEL_TEXT_MUTED,
   ROOM_FILL,
+  ROOM_FILL_ACTIVE,
+  ROOM_LABEL_ACTIVE_OPACITY,
+  ROOM_LABEL_INACTIVE_OPACITY,
   WALL_GOLD,
   WALL_GOLD_BRIGHT,
   WALL_INNER_STROKE,
   WALL_INNER_STROKE_PX,
   WALL_STROKE_PX,
 } from '../designer/blueprintTheme';
+// Attached multi-room (Vic 2026-08-26) — all rooms on one canvas, new rooms
+// drawn attached to existing ones, products routed into whichever room they
+// were dropped in. All the geometry is pure and lives in roomLayout.
+import {
+  findRoomAt,
+  isDrawnPolygon,
+  nextRectanglePosition,
+  strictPolygonsOverlap,
+  translatePolygon,
+  unionBounds,
+} from '../designer/roomLayout';
 
 // M1.5: HTML5 DragEvent path retired (silently fails on `.konva-stage`
 // per K1 audit). DRAG_MIME stays in ProductPalette for legacy unit
@@ -128,7 +142,10 @@ export function RoomCanvas({
   const showGrid = useDesignStore((s) => s.showGrid);
   const placedItems = useDesignStore((s) => s.placedItems);
   const selectedInstanceId = useDesignStore((s) => s.selectedInstanceId);
-  const addItem = useDesignStore((s) => s.addItem);
+  // NOTE: the designStore `addItem` facade is no longer subscribed here —
+  // placement commits go through `usePropertyStore.getState().addItem(item,
+  // roomId)` so the item lands in the ROUTED room, not the active one. The
+  // facade signature itself is untouched for every other call site.
   const removeItem = useDesignStore((s) => s.removeItem);
   const selectItem = useDesignStore((s) => s.selectItem);
   const updateItem = useDesignStore((s) => s.updateItem);
@@ -167,12 +184,29 @@ export function RoomCanvas({
   const activeRoom = usePropertyStore(selectActiveRoom);
   const addRoom = usePropertyStore((s) => s.addRoom);
 
+  // Attached multi-room (2026-08-26) — the canvas renders EVERY room, so it
+  // subscribes to the rooms array directly. The `useDesignStore` active-room
+  // projections above are kept: they still drive the active-room chrome
+  // (TopBar L/W readout, DetailsPanel, the draw-mode name).
+  const rooms = usePropertyStore((s) => s.property.rooms);
+  const activeRoomId = usePropertyStore((s) => s.property.activeRoomId);
+  // D5 — selecting an item in ANY room must also move focus to that room,
+  // or the Sims loop (place → rotate / delete) is dead everywhere except
+  // the active room: DetailsPanel, FloatingCluster and placementActions all
+  // resolve the selection through the active-room facade. This is wired by
+  // changing the VALUE passed to PlacedItemGroup, never by widening the
+  // designStore facade.
+  const selectItemAcrossRooms = usePropertyStore((s) => s.selectItemAcrossRooms);
+  const drawnRooms = useMemo(() => rooms.filter((r) => isDrawnPolygon(r.polygon)), [rooms]);
+  /** Every placed item across every room — badge + cost aggregate over this. */
+  const allItems = useMemo(() => rooms.flatMap((r) => r.placedItems), [rooms]);
+
   const pushToast = useToastStore((s) => s.push);
 
-  // Blank-canvas-on-open (2026-06-09) — "no room drawn yet" iff the active
-  // room's polygon has fewer than 3 vertices (the empty-on-fresh-start
-  // state, or after Clear all). Drives the start-state prompt below.
-  const hasRoom = polygon.length >= 3;
+  // "No room drawn yet" is now a PROPERTY-wide question, not an active-room
+  // one: with a blank room active and two rooms drawn beside it, the old
+  // active-room-only test put the start prompt on top of a full plan.
+  const hasRoom = drawnRooms.length > 0;
 
   // Quick-rectangle escape hatch from the start-state prompt: gives the
   // active (empty) room a default 5×4 m rectangle so the customer can
@@ -183,12 +217,23 @@ export function RoomCanvas({
     const ps = usePropertyStore.getState();
     const active = selectActiveRoom(ps);
     if (!active) return;
-    ps.setRoomPolygon(active.id, [
-      { x: 0, y: 0 },
-      { x: 5, y: 0 },
-      { x: 5, y: 4 },
-      { x: 0, y: 4 },
-    ]);
+    // Attached multi-room: anchor flush-right of whatever is already drawn.
+    // On a fresh canvas that is (0, 0), so this is byte-identical to the
+    // pre-2026-08-26 behaviour the placement-fsm / wall-aware e2e assert.
+    const anchor = nextRectanglePosition(ps.property.rooms, { lengthM: 5, widthM: 4 });
+    const rect = translatePolygon(
+      [{ x: 0, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 4 }, { x: 0, y: 4 }],
+      anchor.x,
+      anchor.y,
+    );
+    // The predicate is always "is the ACTIVE room blank", never "do rooms
+    // exist" — every property always holds >= 1 room object, so the latter
+    // is always true and would orphan the blank seed room forever.
+    if (!isDrawnPolygon(active.polygon)) {
+      ps.setRoomPolygon(active.id, rect);
+    } else {
+      ps.addRectangleRoom(`Room ${ps.property.rooms.length + 1}`, { lengthM: 5, widthM: 4 }, anchor);
+    }
     pushToast('Added a 5 × 4 m room — adjust the size in the top bar or place products.', 'info');
   }, [pushToast]);
 
@@ -250,7 +295,7 @@ export function RoomCanvas({
   // signature (accepts value or updater fn).
   const drawVertices = useDrawProgressStore((s) => s.vertices);
   const setDrawVertices = useDrawProgressStore((s) => s.setVertices);
-  const [drawHover, setDrawHover] = useState<Vertex | null>(null);
+  const [drawHover, setDrawHover] = useState<HoverVertex | null>(null);
   const [drawName, setDrawName] = useState('New Room');
 
   // M2: wall draw mode FSM phase comes from wallStore. Layer + HUD are
@@ -379,26 +424,29 @@ export function RoomCanvas({
   // adaptation: there is no budget ceiling (it's a real shop), so this is
   // a live spend readout, not a remaining-balance gauge. Currency is taken
   // from the first priced item (catalog is single-currency per market).
+  // Attached multi-room: the shopping total is the WHOLE plan's, not the
+  // active room's — the cart it mirrors has never been per-room. (RoomList
+  // keeps the per-room values.)
   const costReadout = useMemo(() => {
     let total = 0;
     let currency = 'MUR';
-    for (const it of placedItems) {
+    for (const it of allItems) {
       const p = getProductById(it.productId);
       if (!p?.price) continue;
       total += p.price.value;
       currency = p.price.currency || currency;
     }
     return { total, currency };
-  }, [placedItems]);
+  }, [allItems]);
 
   const bounds = useMemo(() => polygonBounds(polygon), [polygon]);
-  const roomWpx = (bounds.maxX - bounds.minX) * pxPerMetre;
-  const roomHpx = (bounds.maxY - bounds.minY) * pxPerMetre;
+  /** AABB over EVERY drawn room — what the viewport centres and fits on. */
+  const union = useMemo(() => unionBounds(rooms), [rooms]);
+  const unionWpx = union ? (union.maxX - union.minX) * pxPerMetre : 0;
+  const unionHpx = union ? (union.maxY - union.minY) * pxPerMetre : 0;
+  // Area readout stays the ACTIVE room's — it pairs with the TopBar L/W
+  // inputs, which are active-room controls.
   const area = useMemo(() => polygonArea(polygon), [polygon]);
-  const polygonPoints = useMemo(
-    () => polygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre]),
-    [polygon, pxPerMetre],
-  );
 
   useEffect(() => {
     const el = containerRef.current;
@@ -416,14 +464,21 @@ export function RoomCanvas({
     if (userMovedViewportRef.current) return;
     // Nothing to centre on until a room exists — leave the viewport alone
     // so the blank-canvas prompt is not fighting a pointless transform.
-    if (roomWpx <= 0 || roomHpx <= 0) return;
+    if (!union || unionWpx <= 0 || unionHpx <= 0) return;
+    // Attached multi-room: centre + FIT the whole plan, not the active room.
+    // This used to hardcode scale 1 with a 40 px minimum clamp, which pinned
+    // a union wider than the stage off-screen with no way back except Reset.
+    const scale = Math.max(
+      MIN_SCALE,
+      Math.min(1, (stageSize.width - 80) / unionWpx, (stageSize.height - 80) / unionHpx),
+    );
     setViewport({
-      x: Math.max(40, (stageSize.width - roomWpx) / 2 - bounds.minX * pxPerMetre),
-      y: Math.max(40, (stageSize.height - roomHpx) / 2 - bounds.minY * pxPerMetre),
-      scale: 1,
+      x: (stageSize.width - unionWpx * scale) / 2 - union.minX * pxPerMetre * scale,
+      y: (stageSize.height - unionHpx * scale) / 2 - union.minY * pxPerMetre * scale,
+      scale,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stageSize.width, stageSize.height, roomWpx, roomHpx, bounds.minX, bounds.minY, pxPerMetre]);
+  }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, pxPerMetre]);
 
   function handleWheel(e: Konva.KonvaEventObject<WheelEvent>) {
     e.evt.preventDefault();
@@ -559,17 +614,33 @@ export function RoomCanvas({
         lengthM: cmToM(product.dimensions_cm.length),
         widthM: cmToM(product.dimensions_cm.width),
       };
+      // Attached multi-room (D4) — route the drop to WHICHEVER room the
+      // point is in. Rooms are read via getState() INSIDE the callback: the
+      // memoised callback does not re-create on a store change, so a
+      // captured `rooms` would go stale the moment a room is added.
+      const target = findRoomAt(
+        { x: centreXm, y: centreYm },
+        usePropertyStore.getState().property.rooms,
+        usePropertyStore.getState().property.activeRoomId,
+      );
+      if (!target) {
+        haptic('invalid');
+        pushToast('Drop it inside a room — that spot is outside the plan.', 'warn');
+        return false;
+      }
+      const targetPolygon = target.polygon;
+      const targetItems = target.placedItems;
       const resolved = resolveWallAwarePlacement({
         centreXm,
         centreYm,
         fp,
-        polygon,
+        polygon: targetPolygon,
         snapStep,
         userRotationDeg,
         frontEdge: product.front_edge,
       });
       const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
-      const others = placedItems
+      const others = targetItems
         .map((it) => {
           const p = getProductById(it.productId);
           if (!p) return null;
@@ -584,27 +655,33 @@ export function RoomCanvas({
       // already occupied. Only reject when the room is genuinely full.
       // The wall-snapped position is tried first via validatePlacement so
       // a flush non-grid Y/X survives; findFreeSlot re-snaps to the grid.
-      const direct = validatePlacement({ x: resolved.x, y: resolved.y, w, h }, others, polygon);
+      const direct = validatePlacement({ x: resolved.x, y: resolved.y, w, h }, others, targetPolygon);
       const slot = direct.ok
         ? { x: resolved.x, y: resolved.y }
-        : findFreeSlot({ preferredX: resolved.x, preferredY: resolved.y, w, h, others, polygon });
+        : findFreeSlot({ preferredX: resolved.x, preferredY: resolved.y, w, h, others, polygon: targetPolygon });
       if (!slot) {
         haptic('invalid');
         pushToast("Item won't fit — the room is full.", 'warn');
         return false;
       }
       haptic('place');
-      const instanceId = addItem({
-        productId: product.id,
-        x: slot.x,
-        y: slot.y,
-        rotation: resolved.rotationDeg,
-      });
+      // Commit into the ROUTED room, not the active one.
+      const instanceId = usePropertyStore.getState().addItem(
+        {
+          productId: product.id,
+          x: slot.x,
+          y: slot.y,
+          rotation: resolved.rotationDeg,
+        },
+        target.id,
+      );
       // Polish (2026-05-29) — flag this fresh instance for the settle tween.
       setJustPlacedId(instanceId);
       // M1 — the just-placed item becomes selected so the on-canvas
-      // floating cluster appears around it (Sims "placed → selected").
-      selectItem(instanceId);
+      // floating cluster appears around it (Sims "placed → selected"). D5:
+      // selecting ACROSS rooms also moves focus, so the follow-up rotate /
+      // delete resolves through the right room's facade.
+      selectItemAcrossRooms(instanceId);
       pushToast(`Added "${product.name}" to cart`, 'success', {
         ttlMs: 5000,
         action: {
@@ -614,7 +691,10 @@ export function RoomCanvas({
       });
       return true;
     },
-    [placedItems, polygon, addItem, removeItem, pushToast, snapStep, selectItem],
+    // `rooms` is deliberately NOT a dep — it is read via getState() inside
+    // the callback precisely so this identity stays stable and the wiring
+    // effects that depend on it do not re-fire on every room mutation.
+    [removeItem, pushToast, snapStep, selectItemAcrossRooms],
   );
 
   const placeProductAt = useCallback(
@@ -661,6 +741,10 @@ export function RoomCanvas({
     // flush facing into the room, mid-room they face the viewer. The user
     // can still rotate after via the on-canvas rotate handle.
     if (placementIntent.target === 'center') {
+      // D4 — 'center' routes BY INTENT to the ACTIVE room's own bounds
+      // centre, never through findRoomAt. The mobile "+ Add to room"
+      // contract is "into the room I'm looking at", and `bounds` here is
+      // already the active room's; findFreeSlot pulls edge cases inside.
       const cx = (bounds.minX + bounds.maxX) / 2;
       const cy = (bounds.minY + bounds.maxY) / 2;
       placeAtRoomPoint(cx, cy, placementIntent.productId, null);
@@ -757,20 +841,37 @@ export function RoomCanvas({
         lengthM: cmToM(product.dimensions_cm.length),
         widthM: cmToM(product.dimensions_cm.width),
       };
+      // D4 — the IDENTICAL routing call as the commit path (same helper,
+      // same active-first tie-break, same getState() read), so ghost
+      // validity can never disagree with what actually lands. Outside every
+      // room the ghost renders invalid rather than silently previewing a
+      // drop that the commit will reject.
+      const target = findRoomAt(
+        { x: xM, y: yM },
+        usePropertyStore.getState().property.rooms,
+        usePropertyStore.getState().property.activeRoomId,
+      );
+      if (!target) {
+        const { w: gw, h: gh } = rotatedFootprint(
+          fp,
+          ghostManuallyRotated ? ghostRotation : 0,
+        );
+        return { xM: xM - gw / 2, yM: yM - gh / 2, rotation: ghostManuallyRotated ? ghostRotation : 0, valid: false, w: gw, h: gh };
+      }
       // Same wall-aware resolver as the commit path, so the ghost shows
       // EXACTLY where (and at what facing) the item will land.
       const resolved = resolveWallAwarePlacement({
         centreXm: xM,
         centreYm: yM,
         fp,
-        polygon,
+        polygon: target.polygon,
         snapStep,
         userRotationDeg: ghostManuallyRotated ? ghostRotation : null,
         frontEdge: product.front_edge,
       });
       const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
       const candidate: PlacedRect = { x: resolved.x, y: resolved.y, w, h };
-      const others = placedItems
+      const others = target.placedItems
         .map((it) => {
           const p = getProductById(it.productId);
           if (!p) return null;
@@ -779,22 +880,20 @@ export function RoomCanvas({
           return { x: it.x, y: it.y, w: r.w, h: r.h };
         })
         .filter((r): r is PlacedRect => r !== null);
-      const result = validatePlacement(candidate, others, polygon);
+      const result = validatePlacement(candidate, others, target.polygon);
       return { xM: resolved.x, yM: resolved.y, rotation: resolved.rotationDeg, valid: result.ok, w, h };
     },
-    [viewport, pxPerMetre, ghostRotation, ghostManuallyRotated, placedItems, polygon, snapStep],
+    // `rooms` read via getState() inside — see placeAtRoomPoint.
+    [viewport, pxPerMetre, ghostRotation, ghostManuallyRotated, snapStep],
   );
 
   const handleDrawCommit = useCallback(
     (newPolygon: Polygon, name: string) => {
-      // Hotfix 7: Draw mode ALWAYS adds a new room. The pre-Hotfix-7
-      // behaviour overwrote the active room's polygon when it had no
-      // placed items, which silently swallowed the second "Add room ->
-      // Draw" attempt (the new polygon replaced the empty active room
-      // instead of being committed as a new room). Net effect: user
-      // couldn't add a second room via Draw mode. Now: every Close /
-      // Enter commit produces a new Room in the Property and the new
-      // room becomes active.
+      // Attached multi-room (Vic 2026-08-26): a commit ADDS a room to the
+      // plan. The pre-2026-08-26 path added the room and then looped
+      // `removeRoom` over every OTHER room ("Batch 3 Fix 3.1") — that loop,
+      // together with App's entry-clear, is what made drawing a second room
+      // destroy the first. Both are gone; rooms now share walls instead.
       if (newPolygon.length < 3) {
         console.log('[draw-close]', {
           reason: 'guard-too-few-vertices',
@@ -804,6 +903,24 @@ export function RoomCanvas({
         pushToast('Need at least 3 walls to close the room.', 'warn');
         return;
       }
+      // Overlap check FIRST — nothing is mutated until the new polygon is
+      // known to be legal. Shared walls pass; a genuine overlap is refused
+      // and the user STAYS in draw mode with a clean slate to retry.
+      const psNow = usePropertyStore.getState();
+      const clash = psNow.property.rooms.some(
+        (r) => isDrawnPolygon(r.polygon) && strictPolygonsOverlap(newPolygon, r.polygon),
+      );
+      if (clash) {
+        pushToast("Rooms can't overlap — walls can be shared", 'warn');
+        console.log('[draw-close]', {
+          reason: 'rejected-overlap',
+          vertices: newPolygon.length,
+          success: false,
+        });
+        setDrawVertices([]);
+        setDrawHover(null);
+        return;
+      }
       console.log('[draw-close]', {
         reason: 'commit-start',
         vertices: newPolygon.length,
@@ -811,30 +928,36 @@ export function RoomCanvas({
         success: null,
       });
       try {
-        const id = addRoom({ name, polygon: newPolygon });
-        const ps = usePropertyStore.getState();
-        ps.setActiveRoom(id);
-        // Batch 3 Fix 3.1 — drop the pre-DRAW rooms so the new polygon
-        // is the only canvas content. The history transaction wrapper
-        // around setDrawMode keeps these mutations in the same undo
-        // frame as the entry-clear, so one Ctrl+Z restores everything.
-        const otherIds = ps.property.rooms
-          .filter((r) => r.id !== id)
-          .map((r) => r.id);
-        for (const otherId of otherIds) {
-          usePropertyStore.getState().removeRoom(otherId);
+        // The predicate is "the ACTIVE room is blank", never "do rooms
+        // exist": every property always holds >= 1 room object, so the
+        // latter is always true and would orphan the blank seed room
+        // forever. Filling it keeps a fresh start's first draw at
+        // rooms.length === 1.
+        const active = selectActiveRoom(psNow);
+        if (active && !isDrawnPolygon(active.polygon)) {
+          psNow.setRoomPolygon(active.id, newPolygon);
+          psNow.renameRoom(active.id, name);
+          console.log('[draw-close]', {
+            reason: 'commit-success',
+            vertices: newPolygon.length,
+            roomId: active.id,
+            filledBlank: true,
+            success: true,
+          });
+        } else {
+          const id = addRoom({ name, polygon: newPolygon });
+          console.log('[draw-close]', {
+            reason: 'commit-success',
+            vertices: newPolygon.length,
+            roomId: id,
+            filledBlank: false,
+            success: true,
+          });
         }
         pushToast(
           `New room "${name}" created (${polygonArea(newPolygon).toFixed(2)} m2)`,
           'success',
         );
-        console.log('[draw-close]', {
-          reason: 'commit-success',
-          vertices: newPolygon.length,
-          roomId: id,
-          dropped: otherIds.length,
-          success: true,
-        });
       } catch (err) {
         console.error('[draw-close]', {
           reason: 'commit-error',
@@ -845,43 +968,38 @@ export function RoomCanvas({
         pushToast('Could not add room. See console for details.', 'error');
         return;
       }
+      // End the transaction EXPLICITLY here, so the committed room is one
+      // real undo frame. App's exit branch then calls abortDrawTransaction,
+      // which no-ops because the transaction has already ended.
+      endDrawTransaction();
       if (onDrawComplete) onDrawComplete();
     },
-    [addRoom, pushToast, onDrawComplete],
+    [addRoom, pushToast, onDrawComplete, setDrawVertices],
   );
 
   void activeRoom;
 
   const handleDrawCancel = useCallback(() => {
     console.log('[draw-mode]', 'cancel');
-    // Batch 3 Fix 3.1 — Esc / Cancel restores the pre-DRAW canvas. The
-    // setDrawMode wrapper opened a history transaction on entry; we end
-    // it here and immediately invoke undo() to pop that snapshot and
-    // apply it, so the user goes back to where they were before DRAW.
+    // Attached multi-room (2026-08-26): entering draw mode no longer wipes
+    // anything, so there is nothing to restore. The abort happens in App's
+    // exit branch (one convention for every exit path). The old global
+    // `undo()` here would now revert the user's last REAL action.
     if (onDrawComplete) onDrawComplete();
-    useHistoryStore.getState().undo();
   }, [onDrawComplete]);
 
-  const gridLines = useMemo(() => {
-    const out: { points: number[]; key: string; major: boolean }[] = [];
-    if (!showGrid) return out;
-    const stepPx = 0.5 * pxPerMetre;
-    const minX = bounds.minX * pxPerMetre;
-    const minY = bounds.minY * pxPerMetre;
-    const maxX = bounds.maxX * pxPerMetre;
-    const maxY = bounds.maxY * pxPerMetre;
-    for (let i = 0; i * stepPx <= maxX - minX + 0.001; i++) {
-      const x = minX + i * stepPx;
-      const major = i % 2 === 0;
-      out.push({ points: [x, minY, x, maxY], key: `vx-${i}`, major });
-    }
-    for (let j = 0; j * stepPx <= maxY - minY + 0.001; j++) {
-      const y = minY + j * stepPx;
-      const major = j % 2 === 0;
-      out.push({ points: [minX, y, maxX, y], key: `hy-${j}`, major });
+  // Attached multi-room: the grid is generated PER ROOM, not just clipped
+  // per room. The old single memo spanned only the active room's bounds, so
+  // reusing it inside another room's clip yields a BLANK grid in every room
+  // but one.
+  const gridByRoom = useMemo(() => {
+    if (!showGrid) return new Map<string, GridLine[]>();
+    const out = new Map<string, GridLine[]>();
+    for (const r of drawnRooms) {
+      out.set(r.id, gridLinesForBounds(polygonBounds(r.polygon), pxPerMetre));
     }
     return out;
-  }, [showGrid, pxPerMetre, bounds.minX, bounds.minY, bounds.maxX, bounds.maxY]);
+  }, [showGrid, pxPerMetre, drawnRooms]);
 
   // Designer 3-Bug Fix (2026-05-28, Bug 3) — "Clear leaves ghost items on
   // the canvas". Confirmed via a live dev-server probe: when `placedItems`
@@ -895,7 +1013,17 @@ export function RoomCanvas({
   // an already-reconciled layer.
   useEffect(() => {
     itemsLayerRef.current?.draw();
-  }, [placedItems, drawMode]);
+  }, [rooms, drawMode]);
+
+  // Attached multi-room render breadcrumb. Counts MOUNTED Konva nodes via
+  // the `room-poly` name, NOT store rooms — a store-side count would go
+  // green even if the canvas still drew one room, which is exactly the bug
+  // this feature fixes. Fires on mount and on room MUTATIONS (add / rename /
+  // polygon change); grid toggles and pan/zoom do not re-trigger it.
+  useEffect(() => {
+    const mounted = stageRef.current?.find('.room-poly').length ?? 0;
+    console.log('[multi-room]', `rendered=${mounted}`);
+  }, [rooms]);
 
   return (
     <div
@@ -979,7 +1107,7 @@ export function RoomCanvas({
             className="rounded-md bg-ppw-teal/90 px-2 py-1 text-[11px] font-medium text-white shadow-sm"
             data-testid="items-placed"
           >
-            {placedItems.length}
+            {allItems.length}
           </span>
         </div>
         {/* D21 — live cost total of placed items. Kept as its own prominent
@@ -1146,64 +1274,95 @@ export function RoomCanvas({
         className="konva-stage touch-none"
       >
         <Layer listening>
-          {polygon.length >= 3 && (
-            <Group listening={false}>
-              {/* Reference `Design/Designer.jpeg`: the walls ARE the drawing.
-                  A thick amber stroke over a slightly lighter floor, with a
-                  hairline inside the stroke for the drafted edge. */}
-              <Line
-                points={polygonPoints}
-                closed
-                fill={ROOM_FILL}
-                stroke={WALL_GOLD}
-                strokeWidth={WALL_STROKE_PX}
-                lineJoin="miter"
-                shadowColor="#000000"
-                shadowBlur={18}
-                shadowOpacity={0.45}
-                shadowOffsetY={4}
-              />
-              <Line
-                points={polygonPoints}
-                closed
-                stroke={WALL_INNER_STROKE}
-                strokeWidth={WALL_INNER_STROKE_PX}
-              />
-            </Group>
-          )}
-
-          {showGrid && hasRoom && (
-            <Group listening={false} clipFunc={polygonClipFunc(polygon, pxPerMetre)}>
-              {gridLines.map((l) => (
+          {/* Attached multi-room (Vic 2026-08-26): EVERY room renders, in one
+              shared world-metre frame, so the plan reads like the reference
+              — many rooms, one drawing, gold walls shared where they touch.
+              `listening={false}` on the floors is deliberate: the Stage's
+              onClick/onTap commit handlers guard `e.target !== stage`, so a
+              listening floor would swallow every armed placement click.
+              Activation lives on the RoomList dropdown + item selection. */}
+          {drawnRooms.map((room) => {
+            const pts = room.polygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre]);
+            const isActive = room.id === activeRoomId;
+            return (
+              <Group key={room.id} name="room-poly" listening={false}>
+                {/* Reference `Design/Designer.jpeg`: the walls ARE the drawing.
+                    A thick amber stroke over a slightly lighter floor, with a
+                    hairline inside the stroke for the drafted edge. */}
                 <Line
-                  key={l.key}
-                  points={l.points}
-                  stroke={GRID_LINE}
-                  strokeWidth={l.major ? GRID_MAJOR_WIDTH_PX : GRID_MINOR_WIDTH_PX}
-                  opacity={l.major ? GRID_MAJOR_OPACITY : GRID_MINOR_OPACITY}
+                  points={pts}
+                  closed
+                  fill={isActive ? ROOM_FILL_ACTIVE : ROOM_FILL}
+                  stroke={WALL_GOLD}
+                  strokeWidth={WALL_STROKE_PX}
+                  lineJoin="miter"
+                  shadowColor="#000000"
+                  shadowBlur={18}
+                  shadowOpacity={0.45}
+                  shadowOffsetY={4}
                 />
-              ))}
-            </Group>
-          )}
+                <Line
+                  points={pts}
+                  closed
+                  stroke={WALL_INNER_STROKE}
+                  strokeWidth={WALL_INNER_STROKE_PX}
+                />
+              </Group>
+            );
+          })}
 
-          {/* Room name, set the way the reference plan sets its callouts:
+          {/* Per-room grid: its OWN line set inside its OWN clip. Sharing one
+              line set across rooms leaves every room but the active one
+              blank, because the generator only spans the bounds it was
+              given. */}
+          {showGrid
+            && drawnRooms.map((room) => (
+              <Group
+                key={`grid-${room.id}`}
+                listening={false}
+                clipFunc={polygonClipFunc(room.polygon, pxPerMetre)}
+              >
+                {(gridByRoom.get(room.id) ?? []).map((l) => (
+                  <Line
+                    key={l.key}
+                    points={l.points}
+                    stroke={GRID_LINE}
+                    strokeWidth={l.major ? GRID_MAJOR_WIDTH_PX : GRID_MINOR_WIDTH_PX}
+                    opacity={l.major ? GRID_MAJOR_OPACITY : GRID_MINOR_OPACITY}
+                  />
+                ))}
+              </Group>
+            ))}
+
+          {/* Room names, set the way the reference plan sets its callouts:
               uppercase, letter-spaced, light on the dark floor. Anchored
-              just inside the top-left wall so it never fights the centred
-              empty-room hint or a placed item's own label. */}
-          {hasRoom && activeRoom?.name && (
-            <Text
-              listening={false}
-              x={bounds.minX * pxPerMetre + 14}
-              y={bounds.minY * pxPerMetre + 12}
-              text={activeRoom.name.toUpperCase()}
-              fontSize={13}
-              fontStyle="bold"
-              fontFamily="Inter, sans-serif"
-              letterSpacing={2.5}
-              fill={LABEL_TEXT}
-              opacity={0.8}
-            />
-          )}
+              just inside each room's top-left wall so they never fight the
+              centred hints or a placed item's own label. The active room's
+              label is brighter — that plus the lifted floor is the whole
+              active-room affordance. */}
+          {drawnRooms.map((room) => {
+            if (!room.name) return null;
+            const b = polygonBounds(room.polygon);
+            return (
+              <Text
+                key={`label-${room.id}`}
+                listening={false}
+                x={b.minX * pxPerMetre + 14}
+                y={b.minY * pxPerMetre + 12}
+                text={room.name.toUpperCase()}
+                fontSize={13}
+                fontStyle="bold"
+                fontFamily="Inter, sans-serif"
+                letterSpacing={2.5}
+                fill={LABEL_TEXT}
+                opacity={
+                  room.id === activeRoomId
+                    ? ROOM_LABEL_ACTIVE_OPACITY
+                    : ROOM_LABEL_INACTIVE_OPACITY
+                }
+              />
+            );
+          })}
 
           {/* M4 (Customer-UI fix 2026-05-31) — the on-canvas "0,0 - W x H m
               bbox" debug Text was removed; it was developer instrumentation
@@ -1211,38 +1370,52 @@ export function RoomCanvas({
         </Layer>
 
         <Layer ref={itemsLayerRef}>
-          {!drawMode && placedItems.map((item) => {
-            const product = getProductById(item.productId);
-            if (!product) return null;
-            const fp = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
-            const { w, h } = rotatedFootprint(fp, item.rotation);
-            const wPx = w * pxPerMetre;
-            const hPx = h * pxPerMetre;
-            const colors = CATEGORY_FILL[product.category];
-            const isSelected = item.instanceId === selectedInstanceId;
-            return (
-              <PlacedItemGroup
-                key={item.instanceId}
-                item={item}
-                product={product}
-                wPx={wPx}
-                hPx={hPx}
-                w={w}
-                h={h}
-                colors={colors}
-                isSelected={isSelected}
-                justPlaced={item.instanceId === justPlacedId}
-                pxPerMetre={pxPerMetre}
-                polygon={polygon}
-                placedItems={placedItems}
-                selectItem={selectItem}
-                updateItem={updateItem}
-                pushToast={pushToast}
-                itemDragRef={itemDragRef}
-                activatePlacedItem={activatePlacedItem}
-              />
-            );
-          })}
+          {/* Items stay VISIBLE while drawing (Sims context — you draw the
+              new room against the furniture you already own) but the wrapper
+              kills their handlers. Konva `opacity` does NOT disable
+              `listening`, and PlacedItemGroup's own handlers do not check
+              drawMode, so without this a vertex click would select / drag /
+              sledgehammer-delete an item — silently, inside a suppressed
+              history transaction. */}
+          <Group listening={!drawMode}>
+            {rooms.map((room) =>
+              room.placedItems.map((item) => {
+                const product = getProductById(item.productId);
+                if (!product) return null;
+                const fp = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
+                const { w, h } = rotatedFootprint(fp, item.rotation);
+                const wPx = w * pxPerMetre;
+                const hPx = h * pxPerMetre;
+                const colors = CATEGORY_FILL[product.category];
+                const isSelected = item.instanceId === selectedInstanceId;
+                return (
+                  <PlacedItemGroup
+                    key={item.instanceId}
+                    item={item}
+                    product={product}
+                    wPx={wPx}
+                    hPx={hPx}
+                    w={w}
+                    h={h}
+                    colors={colors}
+                    isSelected={isSelected}
+                    justPlaced={item.instanceId === justPlacedId}
+                    pxPerMetre={pxPerMetre}
+                    // THAT room's polygon and items — the drag/validate math
+                    // inside PlacedItemGroup is unchanged, it just finally
+                    // sees the room the item actually lives in.
+                    polygon={room.polygon}
+                    placedItems={room.placedItems}
+                    selectItem={selectItemAcrossRooms}
+                    updateItem={updateItem}
+                    pushToast={pushToast}
+                    itemDragRef={itemDragRef}
+                    activatePlacedItem={activatePlacedItem}
+                  />
+                );
+              }),
+            )}
+          </Group>
         </Layer>
 
         {/* M1.5 ghost-preview Layer. Renders only while the pointer-FSM
@@ -1405,7 +1578,7 @@ export function RoomCanvas({
           active). Auto-hides the moment the first item lands. Brand register:
           navy ink + gold accent + cream card. Pointer-events off so it never
           blocks a tap-to-place on the floor beneath it. */}
-      {!drawMode && !wallDrawEnabled && !pendingProductId && hasRoom && placedItems.length === 0 && (
+      {!drawMode && !wallDrawEnabled && !pendingProductId && hasRoom && allItems.length === 0 && (
         <div
           className="pointer-events-none absolute inset-0 flex items-center justify-center"
           data-testid="empty-room-hint"
@@ -2009,6 +2182,43 @@ function HydratingSkeleton({
       />
     </Group>
   );
+}
+
+interface GridLine {
+  points: number[];
+  key: string;
+  major: boolean;
+}
+
+/**
+ * Attached multi-room (2026-08-26) — grid lines for ONE room's bounds.
+ *
+ * Extracted from the old single `gridLines` memo, which spanned only the
+ * active room. Rendering it inside another room's clip produced a BLANK
+ * grid, because the lines simply did not reach that far: per-room clipping
+ * is not enough, each room needs its own generated line set.
+ */
+function gridLinesForBounds(
+  bounds: { minX: number; minY: number; maxX: number; maxY: number },
+  pxPerMetre: number,
+): GridLine[] {
+  const out: GridLine[] = [];
+  const stepPx = 0.5 * pxPerMetre;
+  const minX = bounds.minX * pxPerMetre;
+  const minY = bounds.minY * pxPerMetre;
+  const maxX = bounds.maxX * pxPerMetre;
+  const maxY = bounds.maxY * pxPerMetre;
+  for (let i = 0; i * stepPx <= maxX - minX + 0.001; i++) {
+    const x = minX + i * stepPx;
+    const major = i % 2 === 0;
+    out.push({ points: [x, minY, x, maxY], key: `vx-${i}`, major });
+  }
+  for (let j = 0; j * stepPx <= maxY - minY + 0.001; j++) {
+    const y = minY + j * stepPx;
+    const major = j % 2 === 0;
+    out.push({ points: [minX, y, maxX, y], key: `hy-${j}`, major });
+  }
+  return out;
 }
 
 function polygonClipFunc(polygon: Polygon, pxPerMetre: number) {

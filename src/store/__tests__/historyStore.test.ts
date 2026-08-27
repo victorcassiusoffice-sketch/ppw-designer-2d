@@ -21,6 +21,10 @@ import {
   HISTORY_LIMIT,
   SESSION_PERSIST_LIMIT,
   SESSION_KEY,
+  abortDrawTransaction,
+  beginDrawTransaction,
+  endDrawTransaction,
+  isDrawTransactionActive,
   __test,
 } from '../historyStore';
 import { usePropertyStore } from '../propertyStore';
@@ -200,5 +204,104 @@ describe('historyStore — redo cleared by a new action (standard semantics)', (
 
     ps.addItem({ productId: 'c', x: 3, y: 3, rotation: 0 });
     expect(useHistoryStore.getState().future.length).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Attached multi-room (2026-08-26) — abortDrawTransaction.
+//
+// Entering draw mode no longer wipes the canvas, so a draw that changes
+// nothing must leave history EXACTLY as it found it. Otherwise every visit
+// to draw mode strands a phantom frame and the user's next Ctrl+Z silently
+// does nothing.
+// ---------------------------------------------------------------------------
+
+describe('historyStore — abortDrawTransaction', () => {
+  it('begin → abort leaves past.length unchanged', () => {
+    const before = useHistoryStore.getState().past.length;
+    beginDrawTransaction('draw new room');
+    // begin pushes its entry frame up front...
+    expect(useHistoryStore.getState().past.length).toBe(before + 1);
+    abortDrawTransaction();
+    // ...and abort pops it back off WITHOUT applying it.
+    expect(useHistoryStore.getState().past.length).toBe(before);
+  });
+
+  it('abort re-writes the sessionStorage mirror so it tracks the pop', () => {
+    beginDrawTransaction('draw new room');
+    const during = JSON.parse(sessionStorage.getItem(SESSION_KEY) ?? '[]');
+    abortDrawTransaction();
+    const after = JSON.parse(sessionStorage.getItem(SESSION_KEY) ?? '[]');
+    // The mirror is the only in-page view of history; without the rewrite a
+    // correct implementation still looks wrong from the outside.
+    expect(after.length).toBe(during.length - 1);
+  });
+
+  it('abort does NOT apply the popped frame (state is left alone)', () => {
+    const roomId = usePropertyStore.getState().property.activeRoomId;
+    usePropertyStore.getState().setRoomPolygon(roomId, [
+      { x: 0, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 4 }, { x: 0, y: 4 },
+    ]);
+    beginDrawTransaction('draw new room');
+    // A mutation inside the transaction is suppressed, not reverted.
+    usePropertyStore.getState().renameRoom(roomId, 'Renamed Mid Draw');
+    abortDrawTransaction();
+    expect(
+      usePropertyStore.getState().property.rooms.find((r) => r.id === roomId)?.name,
+    ).toBe('Renamed Mid Draw');
+  });
+
+  it('begin → mutate → end keeps exactly ONE new frame', () => {
+    const before = useHistoryStore.getState().past.length;
+    beginDrawTransaction('draw new room');
+    usePropertyStore.getState().addRoom({
+      name: 'Drawn',
+      polygon: [{ x: 0, y: 0 }, { x: 3, y: 0 }, { x: 3, y: 3 }],
+    });
+    endDrawTransaction();
+    expect(useHistoryStore.getState().past.length).toBe(before + 1);
+  });
+
+  it('abort AFTER end is a no-op (the commit path convention)', () => {
+    // handleDrawCommit ends the transaction explicitly, then App's exit
+    // branch aborts. That second call must not eat the committed frame.
+    const before = useHistoryStore.getState().past.length;
+    beginDrawTransaction('draw new room');
+    usePropertyStore.getState().addRoom({
+      name: 'Drawn',
+      polygon: [{ x: 0, y: 0 }, { x: 3, y: 0 }, { x: 3, y: 3 }],
+    });
+    endDrawTransaction();
+    abortDrawTransaction();
+    expect(useHistoryStore.getState().past.length).toBe(before + 1);
+  });
+
+  it('abort with NO transaction open is a safe no-op', () => {
+    const before = useHistoryStore.getState().past.length;
+    abortDrawTransaction();
+    abortDrawTransaction();
+    expect(useHistoryStore.getState().past.length).toBe(before);
+  });
+
+  it('after an abort, later mutations still record normally', () => {
+    beginDrawTransaction('draw new room');
+    abortDrawTransaction();
+    const before = useHistoryStore.getState().past.length;
+    usePropertyStore.getState().addRoom({
+      name: 'After',
+      polygon: [{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 2, y: 2 }],
+    });
+    expect(useHistoryStore.getState().past.length).toBe(before + 1);
+  });
+
+  it('isDrawTransactionActive tracks begin / end / abort', () => {
+    expect(isDrawTransactionActive()).toBe(false);
+    beginDrawTransaction('draw new room');
+    expect(isDrawTransactionActive()).toBe(true);
+    abortDrawTransaction();
+    expect(isDrawTransactionActive()).toBe(false);
+    beginDrawTransaction('draw new room');
+    endDrawTransaction();
+    expect(isDrawTransactionActive()).toBe(false);
   });
 });

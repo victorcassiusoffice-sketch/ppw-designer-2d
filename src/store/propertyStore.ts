@@ -28,6 +28,10 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
 import type { Polygon, RoomDims, Vertex } from '../lib/geometry';
 import { rectToPolygon } from '../lib/geometry';
+// Attached multi-room (2026-08-26) — every room lives in ONE shared world
+// frame, so a new rectangle needs an anchor and a legacy all-at-origin
+// save needs un-stacking. Both are pure helpers.
+import { translatePolygon, unstackLegacyRooms } from '../designer/roomLayout';
 
 export interface PlacedItem {
   instanceId: string;
@@ -135,19 +139,39 @@ export interface PropertyState {
 
   // ---- room-level actions ----
   addRoom: (room?: Partial<Pick<Room, 'name' | 'polygon'>>) => string;
-  /** Add a rectangle room (helper used by TopBar quick-mode). */
-  addRectangleRoom: (name: string, dims: RoomDims) => string;
+  /**
+   * Add a rectangle room (helper used by TopBar quick-mode).
+   *
+   * Attached multi-room (2026-08-26): `anchor` translates the rectangle in
+   * the shared world frame. Omitted → (0, 0), i.e. exactly the pre-2026-08-26
+   * behaviour, which is what keeps the fresh-canvas e2e flows byte-compatible.
+   */
+  addRectangleRoom: (name: string, dims: RoomDims, anchor?: Vertex) => string;
   removeRoom: (roomId: string) => void;
   renameRoom: (roomId: string, name: string) => void;
   setActiveRoom: (roomId: string) => void;
   setRoomPolygon: (roomId: string, polygon: Polygon) => void;
 
-  // ---- active-room (placed-item) actions ----
-  addItem: (item: Omit<PlacedItem, 'instanceId'>) => string;
+  // ---- placed-item actions ----
+  /**
+   * Add an item. `roomId` omitted → the ACTIVE room (every pre-2026-08-26
+   * call site compiles and behaves unchanged). The attached-multi-room
+   * canvas passes the room the pointer was actually over.
+   */
+  addItem: (item: Omit<PlacedItem, 'instanceId'>, roomId?: string) => string;
+  /** Removes by instanceId from WHICHEVER room owns it (ids are global). */
   removeItem: (instanceId: string) => void;
+  /** Patches by instanceId in WHICHEVER room owns it (ids are global). */
   updateItem: (instanceId: string, patch: Partial<Omit<PlacedItem, 'instanceId'>>) => void;
   selectItem: (instanceId: string | null) => void;
+  /**
+   * Select an item in ANY room and move focus to its room in ONE atomic
+   * set. Two separate sets would race `setActiveRoom`'s selection-nulling.
+   */
+  selectItemAcrossRooms: (instanceId: string | null) => void;
   clearActiveRoomItems: () => void;
+  /** D8 — one-shot legacy un-stack; safe to call on every app mount. */
+  unstackIfLegacy: () => boolean;
 
   // ---- view ----
   toggleGrid: () => void;
@@ -169,6 +193,17 @@ function makeInstanceId(): string {
  */
 function getActiveRoom(property: Property): Room | undefined {
   return property.rooms.find((r) => r.id === property.activeRoomId);
+}
+
+/**
+ * Locate the room that owns a placed item. `instanceId` is `nanoid(10)`
+ * and globally unique across the whole property, so the first hit is THE
+ * hit. Attached multi-room (2026-08-26) — before this, item mutations went
+ * through `getActiveRoom` only and an item in a non-active room was
+ * visible but un-editable.
+ */
+function findRoomByInstanceId(property: Property, instanceId: string): Room | undefined {
+  return property.rooms.find((r) => r.placedItems.some((i) => i.instanceId === instanceId));
 }
 
 export const usePropertyStore = create<PropertyState>()(
@@ -200,9 +235,13 @@ export const usePropertyStore = create<PropertyState>()(
         return newRoom.id;
       },
 
-      addRectangleRoom: (name, dims) => {
+      addRectangleRoom: (name, dims, anchor) => {
         const id = nanoid(8);
-        const polygon = rectToPolygon(dims);
+        // rectToPolygon always pins at the origin; the anchor moves the
+        // whole rectangle into place in the shared world frame.
+        const polygon = anchor
+          ? translatePolygon(rectToPolygon(dims), anchor.x, anchor.y)
+          : rectToPolygon(dims);
         set((s) => ({
           property: {
             ...s.property,
@@ -263,17 +302,22 @@ export const usePropertyStore = create<PropertyState>()(
           },
         })),
 
-      addItem: (item) => {
+      addItem: (item, roomId) => {
         const instanceId = makeInstanceId();
         set((s) => {
-          const active = getActiveRoom(s.property);
-          if (!active) return s;
+          // Attached multi-room: an explicit roomId routes the item into
+          // whichever room the pointer was over. No roomId → active room,
+          // exactly as before.
+          const target = roomId
+            ? s.property.rooms.find((r) => r.id === roomId)
+            : getActiveRoom(s.property);
+          if (!target) return s;
           const newItem: PlacedItem = { ...item, instanceId };
           return {
             property: {
               ...s.property,
               rooms: s.property.rooms.map((r) =>
-                r.id === active.id ? { ...r, placedItems: [...r.placedItems, newItem] } : r,
+                r.id === target.id ? { ...r, placedItems: [...r.placedItems, newItem] } : r,
               ),
             },
             selectedInstanceId: instanceId,
@@ -282,15 +326,19 @@ export const usePropertyStore = create<PropertyState>()(
         return instanceId;
       },
 
+      // removeItem / updateItem scan EVERY room for the instanceId rather
+      // than only the active one. instanceIds are nanoid(10) and globally
+      // unique, so the scan is unambiguous — and without it an item in a
+      // non-active room could be seen but never edited or deleted.
       removeItem: (instanceId) =>
         set((s) => {
-          const active = getActiveRoom(s.property);
-          if (!active) return s;
+          const owner = findRoomByInstanceId(s.property, instanceId);
+          if (!owner) return s;
           return {
             property: {
               ...s.property,
               rooms: s.property.rooms.map((r) =>
-                r.id === active.id
+                r.id === owner.id
                   ? { ...r, placedItems: r.placedItems.filter((i) => i.instanceId !== instanceId) }
                   : r,
               ),
@@ -302,13 +350,13 @@ export const usePropertyStore = create<PropertyState>()(
 
       updateItem: (instanceId, patch) =>
         set((s) => {
-          const active = getActiveRoom(s.property);
-          if (!active) return s;
+          const owner = findRoomByInstanceId(s.property, instanceId);
+          if (!owner) return s;
           return {
             property: {
               ...s.property,
               rooms: s.property.rooms.map((r) =>
-                r.id === active.id
+                r.id === owner.id
                   ? {
                       ...r,
                       placedItems: r.placedItems.map((i) =>
@@ -322,6 +370,25 @@ export const usePropertyStore = create<PropertyState>()(
         }),
 
       selectItem: (instanceId) => set(() => ({ selectedInstanceId: instanceId })),
+
+      selectItemAcrossRooms: (instanceId) =>
+        set((s) => {
+          // null → plain deselect. activeRoomId is deliberately UNTOUCHED:
+          // the Stage deselect paths pass null through on every empty-space
+          // click and must not yank the user's focus to another room.
+          if (instanceId === null) return { selectedInstanceId: null };
+          const owner = findRoomByInstanceId(s.property, instanceId);
+          if (!owner) return { selectedInstanceId: instanceId };
+          if (owner.id === s.property.activeRoomId) {
+            return { selectedInstanceId: instanceId };
+          }
+          // ONE atomic set — splitting this into setActiveRoom + selectItem
+          // would let setActiveRoom's selection-nulling win the race.
+          return {
+            property: { ...s.property, activeRoomId: owner.id },
+            selectedInstanceId: instanceId,
+          };
+        }),
 
       clearActiveRoomItems: () =>
         set((s) => {
@@ -337,6 +404,26 @@ export const usePropertyStore = create<PropertyState>()(
             selectedInstanceId: null,
           };
         }),
+
+      /**
+       * D8 — legacy un-stack. Every rectangle-authored room before
+       * 2026-08-26 was pinned at the origin by `rectToPolygon`, so a legacy
+       * multi-room save has its rooms STACKED. Single-room rendering hid
+       * that; the attached canvas would draw them on top of each other.
+       *
+       * `normaliseLoadedProperty` can NOT do this — it does not run on a
+       * normal reload (the persist `migrate()` early-returns for version
+       * >= 2), which is why this hangs off app mount instead.
+       *
+       * Returns true iff the property changed. The caller owns the toast.
+       */
+      unstackIfLegacy: () => {
+        const current = get().property;
+        const next = unstackLegacyRooms(current);
+        if (next === current) return false;
+        set(() => ({ property: next }));
+        return true;
+      },
 
       toggleGrid: () => set((s) => ({ showGrid: !s.showGrid })),
       setPxPerMetre: (px) => set(() => ({ pxPerMetre: Math.max(20, Math.min(400, px)) })),

@@ -25,7 +25,7 @@ import {
   ROTATION_STEP_FINE_DEG,
 } from './placementActions';
 import { useDesignStore } from '../store/designStore';
-import { useHistoryStore } from '../store/historyStore';
+import { useHistoryStore, isDrawTransactionActive } from '../store/historyStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
 
 function isTypingTarget(target: EventTarget | null): boolean {
@@ -41,12 +41,27 @@ export function useKeyboardShortcuts(): void {
     function onKey(e: KeyboardEvent) {
       if (isTypingTarget(e.target)) return;
       const hasSelection = !!useDesignStore.getState().selectedInstanceId;
+      // Attached multi-room (2026-08-26) — while a draw transaction is open,
+      // BOTH history and item mutations are inert here.
+      //
+      // Undo/redo: mid-draw Ctrl+Z with zero vertices would pop the
+      // transaction's own suppressed entry frame out from under it.
+      // (RoomDrawMode's own Ctrl+Z interceptor already handles the
+      // vertices-remaining case and deliberately yields when there are none
+      // — which is exactly how the POST-commit Ctrl+Z still reaches this
+      // handler and pops the one committed frame.)
+      //
+      // Item mutations (R, <, >, D, Delete, Backspace): recording is
+      // suppressed inside the transaction, so anything they changed would be
+      // permanent and un-undoable under the new abort semantics.
+      const inDraw = isDrawTransactionActive();
 
       // Tweak 07 (Phase A.0) — undo / redo. Checked BEFORE the per-key
       // switch so Ctrl/Cmd+Z always wins regardless of key case, and so
       // browser tab-undo / form-undo doesn't intercept them outside of
       // typing targets (handled above).
       if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+        if (inDraw) return;
         e.preventDefault();
         if (e.shiftKey) {
           useHistoryStore.getState().redo();
@@ -58,6 +73,7 @@ export function useKeyboardShortcuts(): void {
       // D18 — Ctrl/Cmd+Y is the conventional Windows redo alias (spec lists
       // Ctrl+Y for redo alongside Ctrl+Shift+Z above).
       if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || e.key === 'Y')) {
+        if (inDraw) return;
         e.preventDefault();
         useHistoryStore.getState().redo();
         return;
@@ -73,7 +89,7 @@ export function useKeyboardShortcuts(): void {
       switch (e.key) {
         case 'r':
         case 'R': {
-          if (!hasSelection) return;
+          if (inDraw || !hasSelection) return;
           e.preventDefault();
           // Tweak 01 (Phase B): R = 90° CW, Shift+R = 15° CW (fine
           // step matching the brief's 15° snap default), Alt+R = 90°
@@ -95,21 +111,21 @@ export function useKeyboardShortcuts(): void {
         // shifted glyph or the bare comma/period so it works regardless.
         case '<':
         case ',': {
-          if (!hasSelection) return;
+          if (inDraw || !hasSelection) return;
           e.preventDefault();
           rotateSelected(-ROTATION_STEP_COARSE_DEG);
           break;
         }
         case '>':
         case '.': {
-          if (!hasSelection) return;
+          if (inDraw || !hasSelection) return;
           e.preventDefault();
           rotateSelected(ROTATION_STEP_COARSE_DEG);
           break;
         }
         case 'd':
         case 'D':
-          if (!hasSelection) return;
+          if (inDraw || !hasSelection) return;
           // OMS Wave 2.3 — Ctrl/Cmd+D should override the browser's
           // bookmark shortcut. Bare D also works (back-compat).
           e.preventDefault();
@@ -117,7 +133,7 @@ export function useKeyboardShortcuts(): void {
           break;
         case 'Delete':
         case 'Backspace':
-          if (!hasSelection) return;
+          if (inDraw || !hasSelection) return;
           e.preventDefault();
           deleteSelected();
           break;

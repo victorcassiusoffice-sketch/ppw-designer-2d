@@ -175,10 +175,30 @@ test.describe('Sims wall-aware placement', () => {
     await page.goto('/designer');
     await page.locator('[data-testid="start-quick-rectangle"]').click();
 
-    const origin = await roomOrigin(page);
     const card = page.locator(`[data-product-id="${PRODUCT_ID}"]`).first();
     await card.click();
     await expect(page.locator('[data-armed="true"]')).toHaveCount(2);
+    // Origin read AFTER arming — the same "re-read before every click
+    // sequence" rule `placeAt` above already follows, and for the same
+    // reason: the auto-centre effect runs a frame or more AFTER the room
+    // polygon first paints. Reading it immediately after
+    // `start-quick-rectangle` catches the room at its UN-CENTRED position
+    // (origin ~{5, 61} instead of ~{711, 327}) whenever the machine is
+    // busy — reproducible with 2+ prior page loads in the same browser,
+    // which is exactly what happens when this file runs alongside others.
+    //
+    // This was a latent bug in the test, not the app: it reproduces
+    // identically on the pre-2026-08-26 build. It stayed invisible because
+    // the old placement path fed EVERY click through the active room's
+    // polygon, so `findFreeSlot` silently rescued the out-of-room point and
+    // dumped the item at the room's top-left corner — which happens to
+    // satisfy this test's `y ≈ 0` assertion. Attached multi-room routes a
+    // drop to the room actually under the pointer and rejects a drop that
+    // is outside every room, so the stale origin now surfaces instead of
+    // being papered over. With the origin read here, `y ≈ 0` finally
+    // verifies a real WALL SNAP (the item lands at x = 1.5, positioned by
+    // the click) rather than a corner dump at x = 0.
+    const origin = await roomOrigin(page);
 
     // Rotate twice (90° per press → 180) then drop near the TOP wall:
     // the user's facing must win over the wall's auto-orientation (0),
