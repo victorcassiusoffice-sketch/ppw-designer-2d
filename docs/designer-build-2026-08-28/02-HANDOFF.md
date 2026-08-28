@@ -11,7 +11,7 @@ Findings + evidence: `00-FINDINGS.md`. Plan: `01-BUILD-PLAN.md`.
 | 2 | "check all functionalities" | **PARTIAL** — audit done, defects logged below |
 | 3 | "the flooring doesn't work" | **DONE** — per-room floor finish, renders |
 | 4 | "place things on top of the flooring" | **DONE** — layer bands + the dead-click fix |
-| 5 | "no need for room 2, 3 — different pages" | **naming DONE**, pages IN PROGRESS |
+| 5 | "no need for room 2, 3 — different pages" | **DONE** — real names + Plans tab strip |
 | 6 | "undo button doesn't work mid-draw" | **DONE** — one ladder, both controls |
 
 ## Commits
@@ -25,15 +25,20 @@ Findings + evidence: `00-FINDINGS.md`. Plan: `01-BUILD-PLAN.md`.
 | `9c6b01e` | P3+P4 — flooring, layer bands, dead-click fix |
 | `a0086b2` | P5 — undo ladder + three latent history defects |
 | `a88d8aa` | P6a — one naming scheme, real room names |
+| `10c50b2` | P6b — Pages: separate plans that don't leak |
 
 ## Gate outputs
 
 - `npx tsc --noEmit` — clean at every commit.
-- `npx vitest run` — **1824 passed / 156 files** (baseline on `main` was 1791/153 after P2;
+- `npm run build` — clean (the >500 kB chunk warning is pre-existing). Verified the
+  DEV-only geometry bridge does not ship: `__ppwGeom` and `installGeomBridge` appear
+  **0 times** in `dist/assets/*.js` (one hit in a `.js.map`, which is just the embedded
+  source text).
+- `npx vitest run` — **1837 passed / 157 files** (baseline on `main` was 1791/153 after P2;
   1648+ at the original brief).
 - `npx eslint <changed files>` — 0 errors throughout (`npm run lint` has ~21 pre-existing
   errors in untouched files, so it is scoped per the rule).
-- Playwright, local dev server on `:5187`: **29 passed** across geom-bridge, door-openings,
+- Playwright, local dev server on `:5187`: **25 passed / 3 skipped** across geom-bridge, door-openings,
   flooring, undo-mid-draw, multiroom-render/attach/placement, wall-aware-placement,
   placement-fsm, clear-button, in-room-render, designer-3bug-fix.
 
@@ -49,6 +54,8 @@ Key measured evidence rather than assertions:
 - **on top of flooring** — a room pre-carpeted with 3 mats accepts a bike at (1.5, 0.5)
   instead of refusing it or teleporting it away.
 - **undo mid-draw** — 3 vertices, the BUTTON takes it 3 → 2 → 1, then Ctrl+Z → 0.
+- **plans do not leak** — plan A's interior wall does not follow the user onto plan B,
+  and edits survive switching away and back.
 
 ## Deliberate cuts (not built, and why)
 
