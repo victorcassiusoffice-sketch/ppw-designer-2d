@@ -83,7 +83,14 @@ test.describe('K1 critical paths — desktop', () => {
 });
 
 test.describe('K1 critical paths — mobile (390 px)', () => {
-  test.use({ ...devices['iPhone 12'] });
+  // `devices[...]` carries `defaultBrowserType: 'webkit'`, and Playwright
+  // REFUSES a browser-type change inside a describe ("forces a new worker") —
+  // which aborted the ENTIRE suite run before a single test executed, hiding
+  // every other failure in the repo. Emulate the device without the browser
+  // switch: the configured project is chromium-desktop, so webkit was never
+  // going to be honoured here anyway.
+  const { defaultBrowserType: _ignored, ...iPhone12 } = devices['iPhone 12'];
+  test.use(iPhone12);
 
   test('PCF-4: V4 banner visible on iPhone 12 viewport', async ({ page }) => {
     await page.goto(BASE_URL);
