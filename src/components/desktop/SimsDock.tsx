@@ -254,9 +254,13 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                 }}
                 className="flex min-h-[56px] min-w-[58px] flex-col items-center justify-center gap-0.5 rounded-md px-1 transition"
                 style={{
-                  color: active ? DOCK_ACCENT : DOCK_TEXT,
-                  background: active ? 'rgba(255,187,88,0.13)' : 'transparent',
-                  boxShadow: active ? `inset 0 0 0 1px ${DOCK_ACCENT}55` : 'none',
+                  // Shop soft-neumorphic selected style: dark ink on a mint
+                  // tint with a mint rim (NOT mint text, which is illegible
+                  // on the light dock). Matches the shop side-item.
+                  color: DOCK_TEXT,
+                  fontWeight: active ? 700 : 600,
+                  background: active ? 'rgba(121,199,173,0.20)' : 'transparent',
+                  boxShadow: active ? `inset 0 0 0 1px ${DOCK_ACCENT}` : 'none',
                 }}
                 title={`${MACRO_CATEGORY_LABEL[mc]} — show this category`}
               >
@@ -340,9 +344,11 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                       className="ppw-no-callout flex h-[68px] w-[68px] cursor-pointer touch-none items-center justify-center rounded-lg transition focus-visible:outline focus-visible:outline-2"
                       style={{
                         background: DOCK_BG_RAISED,
+                        // Raised soft-neumorphic tile (shop --raise-sm dual
+                        // light) at rest; mint ring + halo when armed.
                         boxShadow: isPending
-                          ? `inset 0 0 0 2px ${DOCK_ACCENT}, 0 0 0 3px rgba(255,187,88,0.25)`
-                          : `inset 0 0 0 1px ${DOCK_BORDER}`,
+                          ? `inset 0 0 0 2px ${DOCK_ACCENT}, 0 0 0 3px rgba(121,199,173,0.35)`
+                          : `4px 4px 9px rgba(167,160,144,0.42), -4px -4px 9px rgba(255,255,255,0.95), inset 0 0 0 1px ${DOCK_BORDER}`,
                         outlineColor: DOCK_ACCENT,
                       }}
                     >

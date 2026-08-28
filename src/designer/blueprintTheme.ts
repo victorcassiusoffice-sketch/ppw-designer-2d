@@ -88,13 +88,18 @@ export const GHOST_INVALID_FILL = 'rgba(224,82,82,0.32)';
 /** Secondary on-canvas text (SKU/size sublabels under a product name). */
 export const LABEL_TEXT_MUTED = 'rgba(233,237,239,0.62)';
 
-/** Dock / build-toolbar chrome — the dark half of the two registers. */
-export const DOCK_BG = '#101C26';
-export const DOCK_BG_RAISED = '#1B2C3A';
-export const DOCK_BORDER = '#2B4254';
-export const DOCK_TEXT = '#E9EDEF';
-export const DOCK_TEXT_MUTED = 'rgba(233,237,239,0.62)';
-export const DOCK_ACCENT = WALL_GOLD_BRIGHT;
+/**
+ * Dock / build-toolbar chrome. Matched to the PPWellness Shop skin
+ * (src/styles/soft-shop.css) per Vic 2026-08-28 — warm off-white ground,
+ * near-white raised surfaces, hairline rims, dark warm ink, mint accent —
+ * so the designer menus read as the same product as the storefront.
+ */
+export const DOCK_BG = '#efede8'; /* shop --sg ground */
+export const DOCK_BG_RAISED = '#faf9f5'; /* shop --ss surface */
+export const DOCK_BORDER = '#dcd9d0'; /* shop --rim */
+export const DOCK_TEXT = '#37362f'; /* shop --ink */
+export const DOCK_TEXT_MUTED = '#85826f'; /* shop --ink2 */
+export const DOCK_ACCENT = '#79c7ad'; /* shop --mint-deep */
 
 // ---------------------------------------------------------------------------
 // Measurement legibility (complaint 3).
