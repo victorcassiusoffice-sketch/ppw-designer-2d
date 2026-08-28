@@ -141,3 +141,30 @@ state still satisfies them:
 
 The brief's gates also still pass on THIS branch (its three multiroom specs are in the
 25-test run above), so the doors/flooring/undo/naming/pages work does not regress it.
+
+---
+
+## DEPLOY — merged and live, 2026-08-28 (Vic-approved)
+
+Merge SHA **`c512997389d0514783a3deceef4446b50e428345`**.
+
+Gates on merged `main` before push: `tsc` clean · `vitest` **1837 passed / 157 files** ·
+`npm run build` clean · **20/20** e2e.
+
+Live verification on `https://designer.ppwellness.co`:
+
+- Cache-busted healthcheck: `{"commit":"c512997…","env":"production"}` — reached on the
+  7th poll (6 stale reads first, as expected).
+- Playwright against production, seeded with a two-room plan:
+
+  | Check | Result |
+  |---|---|
+  | rooms rendered | `[multi-room] rendered=2` |
+  | door in the SHARED wall | openings `[1, 0]` |
+  | floor finish, per-room | `["rubber-composite", null]` |
+  | product placed ON the floored room | items `[1, 0]` |
+  | room names | `["Treatment Room", "Sauna"]` — no ordinals |
+  | Plans tab strip | visible |
+  | console errors | **0** |
+
+- Evidence shot: `after/prod-live-c512997.png`.
