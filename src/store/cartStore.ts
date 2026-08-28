@@ -25,6 +25,11 @@ import { useCurrencyStore } from './currencyStore';
 import { getProductById } from '../data/products';
 import type { Product, Currency } from '../data/products.schema';
 import { type FxSnapshot, FALLBACK_RATES_USD, convert } from '../lib/fx';
+// Painted floors (floor-painting brief 2026-08-28) become real cart lines:
+// tiles are sold as whole units, so the customer is billed per tile/roll/
+// pack/mat and told how many surplus units the offcuts force them to buy.
+import { roomFloorOrders } from '../designer/floorTiles';
+import { findFloorMaterialById } from '../data/floorMaterials';
 
 /** Static fallback retained for tests that don't want to load the FX module. */
 export const MUR_PER_USD = FALLBACK_RATES_USD.MUR;
@@ -46,13 +51,51 @@ export interface CartLine {
   perRoom: Array<{ roomId: string; roomName: string; count: number }>;
 }
 
+/**
+ * A painted-floor line. Floors are NOT products: they are sold by the
+ * whole unit (tile / roll / pack / mat), so a floor line carries the unit
+ * count to ORDER (whole tiles + cut tiles + offcut allowance) and, crucially,
+ * the `surplusUnits` the customer is buying purely to cover the cut edges —
+ * the "how much extra you'll need" the brief asks us to surface.
+ */
+export interface FloorCartLine {
+  /** Stable synthetic id, aggregated across rooms: `floor:${materialId}`. */
+  lineId: string;
+  materialId: string;
+  materialName: string;
+  /** Sold-by unit label: 'tile' | 'roll' | 'pack' | 'mat'. */
+  unit: string;
+  /** Units the customer must BUY (whole + cut + offcut allowance). Billed. */
+  unitsToOrder: number;
+  /** Tiles wholly inside the room. */
+  wholeTiles: number;
+  /** Boundary tiles that must be cut to fit. */
+  cutTiles: number;
+  /** Extra units bought purely as offcut/breakage allowance (10% of cuts). */
+  surplusUnits: number;
+  /** Approximate m² actually covered — context, never the price basis. */
+  coveredM2: number;
+  unitPriceMur: number;
+  unitCurrency: Currency;
+  /** Unit price in the active display currency. */
+  unitPriceDisplay: number;
+  /** Line total (unitsToOrder * unit) in the active display currency. */
+  lineTotalDisplay: number;
+  /** Per-room breakdown: roomId -> units to order in that room. */
+  perRoom: Array<{ roomId: string; roomName: string; unitsToOrder: number }>;
+}
+
 export interface CartTotals {
   lines: CartLine[];
+  /** Painted-floor lines, kept separate from product lines (different unit). */
+  floorLines: FloorCartLine[];
   uniqueProductCount: number;
   totalItemCount: number;
-  /** Subtotal in the active display currency. */
+  /** Combined product + floor subtotal in the active display currency. */
   subtotal: number;
-  /** Same subtotal expressed in each supported currency. */
+  /** Floor-only subtotal in the active display currency. */
+  floorSubtotal: number;
+  /** Same (combined) subtotal expressed in each supported currency. */
   subtotalByCurrency: Record<Currency, number>;
   /** Active display currency at the time of derivation. */
   currency: Currency;
@@ -117,6 +160,69 @@ export const useCartMutations = create<CartMutationsState>()(
 );
 
 /**
+ * Pure derivation of painted-floor cart lines. Aggregates every room's
+ * `roomFloorOrders` by material (a material painted across two rooms is one
+ * line with a per-room breakdown), resolves price + unit from the floor
+ * catalog, and computes the surplus (offcut) units the customer must buy.
+ * Returns [] when nothing is painted, so it is purely additive to the cart.
+ */
+export function deriveFloorLines(
+  property: Property,
+  fx: FxSnapshot,
+  displayCurrency: Currency,
+): FloorCartLine[] {
+  interface Agg {
+    wholeTiles: number;
+    cutTiles: number;
+    unitsToOrder: number;
+    coveredM2: number;
+    perRoom: Array<{ roomId: string; roomName: string; unitsToOrder: number }>;
+  }
+  const byMaterial = new Map<string, Agg>();
+
+  for (const room of property.rooms) {
+    for (const { materialId, order } of roomFloorOrders(room)) {
+      const cur =
+        byMaterial.get(materialId) ??
+        { wholeTiles: 0, cutTiles: 0, unitsToOrder: 0, coveredM2: 0, perRoom: [] };
+      cur.wholeTiles += order.wholeTiles;
+      cur.cutTiles += order.cutTiles;
+      cur.unitsToOrder += order.unitsToOrder;
+      cur.coveredM2 += order.coveredM2;
+      cur.perRoom.push({ roomId: room.id, roomName: room.name, unitsToOrder: order.unitsToOrder });
+      byMaterial.set(materialId, cur);
+    }
+  }
+
+  const out: FloorCartLine[] = [];
+  for (const [materialId, a] of byMaterial.entries()) {
+    const m = findFloorMaterialById(materialId);
+    if (!m) continue;
+    const unitPriceDisplay = convert(m.price_per_unit_mur, 'MUR', displayCurrency, fx);
+    out.push({
+      lineId: `floor:${materialId}`,
+      materialId,
+      materialName: m.name,
+      unit: m.unit,
+      unitsToOrder: a.unitsToOrder,
+      wholeTiles: a.wholeTiles,
+      cutTiles: a.cutTiles,
+      // unitsToOrder = whole + cut + ceil(cut*0.1) per zone, so the remainder
+      // after removing whole+cut is exactly the offcut allowance summed.
+      surplusUnits: Math.max(0, a.unitsToOrder - a.wholeTiles - a.cutTiles),
+      coveredM2: a.coveredM2,
+      unitPriceMur: m.price_per_unit_mur,
+      unitCurrency: 'MUR',
+      unitPriceDisplay,
+      lineTotalDisplay: unitPriceDisplay * a.unitsToOrder,
+      perRoom: a.perRoom,
+    });
+  }
+  out.sort((x, y) => y.lineTotalDisplay - x.lineTotalDisplay);
+  return out;
+}
+
+/**
  * Pure derivation - used by tests.
  */
 export function deriveCart(
@@ -172,7 +278,11 @@ export function deriveCart(
 
   lines.sort((a, b) => b.lineTotalDisplay - a.lineTotalDisplay);
 
-  const subtotal = lines.reduce((acc, l) => acc + l.lineTotalDisplay, 0);
+  const floorLines = deriveFloorLines(property, fx, displayCurrency);
+  const floorSubtotal = floorLines.reduce((acc, l) => acc + l.lineTotalDisplay, 0);
+
+  const productSubtotal = lines.reduce((acc, l) => acc + l.lineTotalDisplay, 0);
+  const subtotal = productSubtotal + floorSubtotal;
   const totalItemCount = lines.reduce((acc, l) => acc + l.quantity, 0);
 
   const subtotalByCurrency: Record<Currency, number> = {
@@ -184,9 +294,11 @@ export function deriveCart(
 
   return {
     lines,
+    floorLines,
     uniqueProductCount: lines.length,
     totalItemCount,
     subtotal,
+    floorSubtotal,
     subtotalByCurrency,
     currency: displayCurrency,
   };

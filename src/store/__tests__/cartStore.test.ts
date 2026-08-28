@@ -16,6 +16,7 @@ import { describe, it, expect } from 'vitest';
 import { nanoid } from 'nanoid';
 import { deriveCart, MUR_PER_USD } from '../cartStore';
 import type { Property } from '../propertyStore';
+import { roomFloorOrders } from '../../designer/floorTiles';
 import { rectToPolygon } from '../../lib/geometry';
 import { FALLBACK_RATES_USD, type FxSnapshot } from '../../lib/fx';
 
@@ -208,5 +209,102 @@ describe('deriveCart - cart mutations', () => {
 describe('deriveCart - MUR_PER_USD constant', () => {
   it('exposes the static fallback rate', () => {
     expect(MUR_PER_USD).toBe(45);
+  });
+});
+
+describe('deriveCart - painted floors become cart lines', () => {
+  // eva-combat: 1×1 m tile, MUR 850/tile. Two whole tiles well inside a
+  // 5×4 m room (no cuts → no surplus) makes the math deterministic.
+  const FLOOR_MAT = 'eva-combat';
+  const FLOOR_PRICE = 850;
+
+  function propertyWithPaintedFloor(): Property {
+    return {
+      id: 'p',
+      name: 'Floor Test',
+      activeRoomId: 'r0',
+      rooms: [
+        {
+          id: 'r0',
+          name: 'Studio',
+          polygon: rectToPolygon({ lengthM: 5, widthM: 4 }),
+          placedItems: [],
+          floorTiles: [
+            {
+              materialId: FLOOR_MAT,
+              tileWm: 1,
+              tileHm: 1,
+              originM: { x: 0, y: 0 },
+              // row 1, cols 1..2 → tiles at x[1,3] y[1,2], fully inside.
+              runs: [1, 1, 2],
+            },
+          ],
+        },
+      ],
+    };
+  }
+
+  it('emits one floor line matching roomFloorOrders, with the material price', () => {
+    const property = propertyWithPaintedFloor();
+    const expected = roomFloorOrders(property.rooms[0]);
+    expect(expected).toHaveLength(1);
+    const expectedUnits = expected[0].order.unitsToOrder;
+
+    const cart = deriveCart(property, EMPTY_MUT, STUB_FX, 'MUR');
+    expect(cart.floorLines).toHaveLength(1);
+    const line = cart.floorLines[0];
+    expect(line.materialId).toBe(FLOOR_MAT);
+    expect(line.unit).toBe('tile');
+    expect(line.unitsToOrder).toBe(expectedUnits);
+    expect(line.unitPriceMur).toBe(FLOOR_PRICE);
+    // In MUR display, line total = units * price, exactly.
+    expect(line.lineTotalDisplay).toBe(expectedUnits * FLOOR_PRICE);
+    // surplus is the offcut allowance: units beyond whole + cut.
+    expect(line.surplusUnits).toBe(
+      Math.max(0, line.unitsToOrder - line.wholeTiles - line.cutTiles),
+    );
+    // These two whole tiles have no cuts, so no surplus is forced.
+    expect(line.cutTiles).toBe(0);
+    expect(line.surplusUnits).toBe(0);
+  });
+
+  it('folds the floor subtotal into the cart subtotal', () => {
+    const property = propertyWithPaintedFloor();
+    const cart = deriveCart(property, EMPTY_MUT, STUB_FX, 'MUR');
+    expect(cart.floorSubtotal).toBeGreaterThan(0);
+    // No products placed, so the whole subtotal is the floor subtotal.
+    expect(cart.subtotal).toBe(cart.floorSubtotal);
+    expect(cart.subtotal).toBe(cart.floorLines[0].lineTotalDisplay);
+  });
+
+  it('is additive: a property with no painted floor has no floor lines', () => {
+    const cart = deriveCart(makeProperty([[{ productId: BENCH_ID }]]), EMPTY_MUT, STUB_FX, 'MUR');
+    expect(cart.floorLines).toHaveLength(0);
+    expect(cart.floorSubtotal).toBe(0);
+    // product subtotal is untouched by the floor machinery.
+    expect(cart.subtotal).toBe(cart.lines[0].lineTotalDisplay);
+  });
+
+  it('aggregates one material painted across two rooms into a single line', () => {
+    const property = propertyWithPaintedFloor();
+    // second room, same material painted.
+    property.rooms.push({
+      id: 'r1',
+      name: 'Annex',
+      polygon: rectToPolygon({ lengthM: 5, widthM: 4 }),
+      placedItems: [],
+      floorTiles: [
+        {
+          materialId: FLOOR_MAT,
+          tileWm: 1,
+          tileHm: 1,
+          originM: { x: 0, y: 0 },
+          runs: [1, 1, 1],
+        },
+      ],
+    });
+    const cart = deriveCart(property, EMPTY_MUT, STUB_FX, 'MUR');
+    expect(cart.floorLines).toHaveLength(1);
+    expect(cart.floorLines[0].perRoom).toHaveLength(2);
   });
 });

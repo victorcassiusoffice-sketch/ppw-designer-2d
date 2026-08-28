@@ -68,9 +68,11 @@ function fakeCart(): CartTotals {
         perRoom: [],
       },
     ],
+    floorLines: [],
     uniqueProductCount: 2,
     totalItemCount: 3,
     subtotal: 311,
+    floorSubtotal: 0,
     subtotalByCurrency: { MUR: 13995, USD: 311, EUR: 286.12, GBP: 245.69 },
     currency: 'USD',
   };
