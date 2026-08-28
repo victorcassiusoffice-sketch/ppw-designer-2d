@@ -111,3 +111,33 @@ re-running — not assumed.
   existing item dies with no ghost, no toast and no placement.
 - No new API routes: the deploy is at 12/12 Vercel functions. Nothing here needs one —
   the server stores `property` as opaque JSON.
+
+---
+
+## Appendix — DESIGNER-MULTIROOM-ATTACH-2026-08-26 brief: gates re-executed 2026-08-28
+
+The attached-multi-room brief's implementation phases were completed and merged
+before this session (`bd230e1`…`4a1b7b6`, deploy record `07e883d`). Its gates were
+re-run **verbatim in this session** against `main` @ `b7a735f` to confirm the shipped
+state still satisfies them:
+
+| Phase | Gate | Result |
+|---|---|---|
+| §1 | clean tree · `tsc --noEmit` | clean · exit 0 |
+| P0 | testid inventory (brief expects 133) | **133** |
+| P0 | before/after captures on disk | present (1 before, 8 after) |
+| P1 | `roomLayout.test.ts` | **33/33** |
+| P2 | FULL `vitest run` | **1716 passed / 149 files** |
+| P3 | `npm run build` | clean |
+| P3 | `multiroom-render` | pass · `MULTIROOM_RENDER=true` |
+| P4 | `multiroom-placement` + `placement-fsm` + `wall-aware-placement` | pass · `ROOM_ROUTE=true` |
+| P5 | `multiroom-attach` | pass · `DRAW_ATTACH=true` |
+| P6 | `git ls-remote` vs local for `feat/designer-multiroom-attach-2026-08-26` | both `fa69c72` |
+| P7 | merge `4a1b7b6` ancestor of `main` | true |
+| P7 | cache-busted healthcheck ×3 | `b7a735f` (main HEAD) all three |
+| P7 | Playwright vs PRODUCTION | `rendered=2`; drop into non-active room → `r1=0, r2=1`; focus followed to `r2`; **0 console errors** |
+
+12/12 e2e green. Evidence shot: `after/p7-prod-reverify-2026-08-28.png`.
+
+The brief's gates also still pass on THIS branch (its three multiroom specs are in the
+25-test run above), so the doors/flooring/undo/naming/pages work does not regress it.
