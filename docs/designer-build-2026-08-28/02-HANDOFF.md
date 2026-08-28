@@ -168,3 +168,101 @@ Live verification on `https://designer.ppwellness.co`:
   | console errors | **0** |
 
 - Evidence shot: `after/prod-live-c512997.png`.
+
+---
+
+## E2E SUITE REPAIR — merged and live, 2026-08-28 (Vic-approved)
+
+Merge SHA **`4f2ef75`**, live on production (6th poll, stale reads first).
+Branch `fix/e2e-suite-red-2026-08-28`.
+
+### The blocker
+
+`k1-critical-paths.spec.ts` had `test.use({ ...devices['iPhone 12'] })` inside a
+`describe`. The spread carries `defaultBrowserType: 'webkit'`, and Playwright refuses a
+browser-type change inside a describe — which **aborted the entire run before a single
+test executed**. That is why nobody saw the suite had gone red: it never reported
+failures, it reported a parse-time error. One line; it revealed ~35 failing tests.
+
+### Triage — 10 read-only diagnosticians, one per spec
+
+| Verdict | Count |
+|---|---|
+| STALE_TEST | 22 |
+| RETIRE | 2 |
+| ENVIRONMENT_ONLY | 2 |
+| PASSES_NOW | 1 |
+| **REAL_APP_BUG** | **1** |
+
+Two root causes explain most of it, neither an app defect:
+
+1. **Blank canvas on open** (2026-06-09, hardened by `80fe1c5`) — a fresh designer holds
+   one room with an EMPTY polygon, so `findRoomAt()` correctly refuses every drop. Older
+   specs assumed a 5×4 m room was already there and were placing into nothing.
+2. **Route moved** (`2026-07-26`, Vic directive 5) — `/` is the SHOP; the designer is at
+   `/designer`. Five k1 PCFs and four auto-dig journeys asserted designer surfaces
+   against the shop page.
+
+Plus: the CoachMark modal intercepts TopBar clicks unless its flag is seeded; the wall
+toggle is `+ Walls` (`wall-tool-toggle`), not `Wall`; the catalog moved from
+ProductPalette to SimsDock (`role=tab`, not `button`); and the precision figure moved out
+of the cost badge into the area/zoom/snap chip.
+
+### No assertion was weakened. Three were strengthened.
+
+- **A.C.2** now pins the dock **and** that it lists product tiles — the old search-input
+  probe never checked the "shows products" its own title claimed.
+- **A.API.3** pins `401 missing_session` exactly. The old `[400,404,405,500]` tolerated
+  statuses that would mean an unauthenticated caller had reached the Blob token-minting
+  branch, and was loose enough to pass against a vite `404` — proving nothing.
+- **PCF-1** pins the `m-` API namespace instead of a SKU name the BUNDLED seeds also
+  satisfy, so it would have gone green with the API completely dead.
+
+### Retired, with reasons
+
+- **V4 banner** — `V4Banner.tsx` was deleted in `ef5817c`; nothing to recover, so deleted.
+- **Babylon acceptance** — `test.skip`, NOT deleted: the 3D toggle still exists in
+  `TopBar.tsx` (~:632) and is merely unwired in `App.tsx`. Dormant, not removed.
+
+### Environment gating that never masks a real failure
+
+- Specs needing Vercel functions skip **only** on localhost (`vite dev` serves no `/api/*`).
+- Specs needing the dev geometry bridge (`window.__ppwGeom`, absent from production by
+  design) skip **only** where it is absent.
+- `customer-ui-mobile` needs `VITE_TEST_HOOKS=1`; **verified 2/2 green** against a
+  hooks-enabled server before the guard was added, so it is not dead coverage.
+
+Every skip names the exact command that runs it.
+
+### One genuine app fix
+
+`testHooks.hitReselect` left a Konva drag ARMED in `_dragElements` after its synthetic
+mousedown. The next real pointer move dragged the item and swallowed the click. Disarmed.
+
+### Result — 0 failures, both environments
+
+| Target | Passed | Skipped | Failed |
+|---|---|---|---|
+| production `4f2ef75` | **97** | 30 | **0** |
+| dev server | 96 | 31 | **0** |
+
+`tsc` clean · `vitest` 1837/157 · `build` clean · eslint 0 errors on changed files.
+
+### ⚠ FLAGGED FOR VIC — a real regression, deliberately NOT fixed here
+
+The **eco-only filter chip** shipped in `d38075a` (2026-05-23, "default OFF per Vic
+#WDA-1") and lived in `ProductPalette.tsx` until the 2026-08-25 Sims rebuild unmounted
+that component. `SimsDock` and `SimsBottomToolbar` have no eco filter, and a live probe
+finds zero eco chips on `/designer` **or** `/products`. No rebuild commit mentions
+dropping it, so it reads as collateral loss rather than a decision.
+
+Test `A.C.9` was hiding it behind a false `"not in prod build yet (pre-PR #20)"` skip.
+Restore-or-retire is a product call — it was a Vic decision and it matters for the
+Sustainability Dept eco-bar.
+
+### ⚠ Scope note: the auto-dig specs are GITIGNORED
+
+`.gitignore:77` ignores `tests/e2e/auto-dig-*.spec.ts`. Those 5 fixes (4 route moves +
+1 timeout) are **on this machine only** and are not in the repo, so a fresh clone or CI
+will not have those specs at all. That matches their design as local diagnostic audits,
+but it means "0 failures" for the committed suite excludes them.
