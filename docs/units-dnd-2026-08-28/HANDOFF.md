@@ -661,3 +661,63 @@ units, per-room units, and length editing for interior `wallStore` segments.
 check**, while its own adjacent comment claims a safety net that does not exist. It sits
 inside the protected body and is unrelated to this work, so it was left alone rather than
 folded into an already-risky phase. It is a real defect and should be its own ticket.
+
+---
+
+## P11 — Full regression + push
+
+### Final gate, every line
+
+```
+$ npx tsc --noEmit                 # exit 0
+$ npx vitest run
+  Test Files  160 passed (160)     Tests  1870 passed (1870)     # baseline was 1837
+$ npm run build                    # built in 9.80s, clean
+$ npx eslint <changed files>       # 0 errors
+$ git grep -ho 'data-testid="[^"]*"' | sort -u | wc -l
+  156                              # baseline 145; 11 added, ZERO dropped (diffed vs main)
+
+$ PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test \
+    geom-bridge door-openings flooring undo-mid-draw multiroom-render multiroom-attach \
+    multiroom-placement wall-aware-placement placement-fsm clear-button in-room-render \
+    designer-3bug-fix inline-interaction-2026-05-31 mobile-sims-toolbar \
+    auto-dig-console-sweep-2026-05-25 units drag-place item-pickup
+  48 passed, 3 skipped, 0 failed (2.9m)
+```
+
+The 3 skips are the same 3 that skip on `main` (geom-bridge / API-gated).
+
+### A real regression this pass caught — and how it was diagnosed honestly
+
+`flooring.spec.ts` passed alone but failed whenever any spec ran before it. The tempting
+call was "parallel flake" — and it was wrong. Two checks settled it:
+
+1. It failed at `--workers=1` too, so it was **order dependence**, not parallelism.
+2. The same pre-existing subset was run **on `main`**: 34 passed, 0 failed. On this branch,
+   1 failed. So the regression was **mine**, not a latent suite problem.
+
+The failure screenshot then showed the floor material clearly painted and the sampled pixel
+reading the bare `ROOM_FILL` navy — store write correct, render correct, and the single
+immediate `getImageData` landing on the pre-paint frame. This branch adds a store
+subscription and a derived grid-tier memo, which is enough to move that frame boundary.
+
+Fixed by polling the pixel, which is the idiom the file already uses for the persistence
+check directly above it. **The assertion is not weakened**: the pixel must still go warm, and
+a build that writes the store without ever drawing still fails, now on timeout.
+
+Worth stating plainly: `flooring.spec.ts` and `door-openings.spec.ts` write screenshots into
+**tracked** `docs/.../after/` folders belonging to earlier briefs, so a test run dirties the
+working tree and can abort a `git checkout`. Those files were restored rather than
+overwritten — they are the earlier work's evidence, not this one's. Pre-existing wart, worth
+its own cleanup.
+
+### Deliberate gaps, stated rather than hidden
+
+- **`tests/e2e/drag-place-mobile.spec.ts` was not written.** Mobile drag continues to run
+  through its existing `placementIntentStore` path, which is untouched and still green
+  (`mobile-sims-toolbar`, `customer-ui-mobile-2026-05-31`, `dragLift`). The desktop dock is
+  the surface that gained the new transport. Repointing the mobile surfaces onto
+  `dragPointerStore` was in the brief and was **not** done — it is optional consolidation,
+  not a fix, and doing it would have put a working path at risk for no user-visible gain.
+- The resolved **move-ghost outline** (P10) was cut, with reasoning recorded in that section.
+- The unvalidated on-canvas **rotate handle** defect is logged in P10 and left alone.

@@ -83,11 +83,23 @@ test('a floor material can be chosen and it actually renders', async ({ page }) 
   // ...and it is on the CANVAS. #8b3a2f is a warm red-brown, so the pixel
   // flips from cool to warm. This is the assertion that would have caught the
   // original bug, where the store was written and nothing was ever drawn.
-  const floored = await pixelAtWorld(page, 2.5, 2);
-  expect(
-    floored!.r,
-    'the chosen floor material must actually be painted on the canvas',
-  ).toBeGreaterThan(floored!.b);
+  // Poll the PIXEL, not just the store. The material is painted on the next
+  // canvas frame after the store write, so a single immediate read can catch
+  // the pre-paint frame and report the bare ROOM_FILL navy. The assertion is
+  // unchanged in strength - the pixel must still become warm, and a build that
+  // writes the store without ever drawing still fails on timeout.
+  await expect
+    .poll(
+      async () => {
+        const px = await pixelAtWorld(page, 2.5, 2);
+        return px ? px.r - px.b : -1;
+      },
+      {
+        timeout: 10_000,
+        message: 'the chosen floor material must actually be painted on the canvas',
+      },
+    )
+    .toBeGreaterThan(0);
 
   // The OTHER room is untouched — floor finish is per-room.
   const other = await pixelAtWorld(page, 7, 2);
