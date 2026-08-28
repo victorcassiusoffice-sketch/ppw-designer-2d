@@ -149,6 +149,7 @@ export function TopBar({
   const toggleDoorFacing = useDesignerUIStore((s) => s.toggleDoorFacing);
   const toggleDoorHand = useDesignerUIStore((s) => s.toggleDoorHand);
   const doorActive = tool === 'door';
+  const measureActive = tool === 'measure';
 
   // Floor finish (2026-08-28). Applies to the FOCUSED room — the one the
   // L/W boxes and the details panel already describe — so there is one
@@ -170,6 +171,16 @@ export function TopBar({
     if (drawMode) setDrawMode(false);
     if (wallActive) setWallDraw({ phase: 'idle' });
     setTool(doorActive ? 'hand' : 'door');
+  }
+
+  function handleToggleMeasure() {
+    // Same three exclusions as the door tool. Wall mode lives on
+    // wallStore.draw.phase, room-draw on App-level drawMode, and the door
+    // tool on designerUIStore.tool - miss one and two tools fight the same
+    // Stage click.
+    if (drawMode) setDrawMode(false);
+    if (wallActive) setWallDraw({ phase: 'idle' });
+    setTool(measureActive ? 'hand' : 'measure');
   }
 
   function handleToggleWall() {
@@ -468,6 +479,22 @@ export function TopBar({
 
         {/* Openings — doors, doorways and windows. Cut into a wall rather than
             placed in space, so this is a wall tool, not a catalog product. */}
+        {/* Measure (units brief D10) - click a wall, retype its length. */}
+        <button
+          type="button"
+          onClick={handleToggleMeasure}
+          data-testid="measure-tool-toggle"
+          className={`hidden md:inline-block min-h-[40px] rounded-md border px-3 text-xs font-medium ${
+            measureActive
+              ? 'border-ppw-teal bg-ppw-teal text-white'
+              : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
+          }`}
+          title="Measure (M) — click any wall to retype its exact length"
+          aria-pressed={measureActive}
+        >
+          Measure
+        </button>
+
         <button
           type="button"
           onClick={handleToggleDoor}

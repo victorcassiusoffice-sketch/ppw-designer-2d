@@ -40,7 +40,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { DEFAULT_DOOR_WIDTH_M, type OpeningKind } from '../designer/openings';
 
 export type SnapPrecision = 'cm1' | 'cm10' | 'quarter' | 'full' | 'm1' | 'm10';
-export type BuildTool = 'hand' | 'eyedropper' | 'sledgehammer' | 'door';
+export type BuildTool = 'hand' | 'eyedropper' | 'sledgehammer' | 'door' | 'measure';
 
 /** localStorage key for the persisted unit preference. */
 export const DESIGNER_UI_KEY = 'ppw_designer_ui_v1';

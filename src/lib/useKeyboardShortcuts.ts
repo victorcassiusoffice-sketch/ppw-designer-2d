@@ -117,6 +117,13 @@ export function useKeyboardShortcuts(): void {
       // Ctrl+1 etc. stay with the browser. isTypingTarget above has already
       // early-returned for INPUT/TEXTAREA/SELECT/contenteditable, so typing a
       // length into the new fields never hijacks the unit.
+      // Units brief D10 - M toggles the measure tool (retype a wall length).
+      if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'm' || e.key === 'M')) {
+        e.preventDefault();
+        const ui = useDesignerUIStore.getState();
+        ui.setTool(ui.tool === 'measure' ? 'hand' : 'measure');
+        return;
+      }
       if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key >= '1' && e.key <= '6') {
         const unit = SNAP_UNIT_ORDER[Number(e.key) - 1];
         if (unit) {

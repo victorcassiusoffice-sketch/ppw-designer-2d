@@ -389,3 +389,76 @@ discovered again later.
 Note that the two assertions that would have caught a missing arbitration — vertex count 4,
 and `rooms.length` unchanged — both passed on the first run, which is how I know the capture
 fix works rather than merely believing it.
+
+---
+
+## P6 — U6: edge length editing (the measure tool)
+
+**Done.** You can now click any existing wall and retype its exact length.
+
+- **`src/designer/edgeResize.ts`** (new, 9 unit tests) — `resizeRoomEdge` returning either the
+  new rooms or a typed refusal (`overlap` · `shared-conflict` · `degenerate` · `out-of-range`
+  · `not-found`). **Refuses rather than half-applying**, leaving the input untouched by
+  reference; a partial apply on a shared wall silently opens a gap between two rooms that
+  previously shared geometry exactly.
+- **Shared corners propagate.** Moving a corner that another room also carries moves it in
+  *every* room carrying it, in one commit. A T-junction — the corner sitting mid-wall on a
+  neighbour rather than on its corner — is **refused by name** ("That wall is shared with
+  {room}; move the corner instead") because moving it would tear the neighbour's wall open.
+- **`'measure'` build tool** — TopBar toggle (`measure-tool-toggle`), `M` hotkey, and a
+  listening Konva layer mounted **only while the tool is live**. Tool-gating is mandatory,
+  not stylistic: the Stage commit path bails on `e.target !== e.target.getStage()`, so a
+  permanently-listening layer would swallow every armed placement click. All three tool
+  exclusions are handled (room-draw on App `drawMode`, wall on `wallStore.draw.phase`, door
+  on `designerUIStore.tool`).
+- **Popover** with the length input, an anchor toggle (which corner stays put), and honest
+  copy: *"Moves the corner; the adjoining wall changes length too."* That is unavoidable in a
+  polygon, and the alternative — translating the edge perpendicular — changes two lengths as
+  well AND moves a wall the user did not point at.
+- **No `recordSnapshot`.** `historyStore` documents that call as "one user-perceived action —
+  no coalescing", so calling it *and* letting the store subscription queue its own snapshot
+  pushes two identical frames and the user needs two Ctrl+Z for one edit. The per-room
+  `setRoomPolygon` calls land inside one coalesce window instead.
+
+### P6 GATE
+
+```
+$ npx vitest run src/designer/__tests__/edgeResize.test.ts
+  9 passed
+
+$ npx vitest run
+  Test Files  159 passed (159)   Tests  1858 passed (1858)
+
+$ PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test \
+    units multiroom-attach multiroom-render multiroom-placement undo-mid-draw \
+    placement-fsm wall-draw wall-aware-placement door-openings inline-interaction
+  31 passed (41.0s)
+
+$ npx tsc --noEmit   # exit 0
+$ npm run build      # clean
+$ npx eslint <7>     # 0 errors
+$ testids            # 154, none dropped
+```
+
+### Two real bugs the gates caught
+
+**1. `You may only add layers to the stage`.** The edge-hit layer was first written as a
+`<Group>` inserted at Stage level. Konva rejects that, the error propagated to the canvas
+error boundary, and **activating the measure tool unmounted the whole canvas**. It surfaced
+as the e2e's geom-bridge readiness wait timing out; a browser-console probe named the real
+cause in one run. Fixed by making it a `<Layer>`. This is precisely why the render gate
+exists — every unit test still passed while the canvas was dead.
+
+**2. The first shared-wall assertion was too literal.** It assumed the click would land on
+r1's hit line, but *both* rooms draw a line on the shared wall and either may be on top. The
+assertion now checks the property that actually matters and is click-order independent: the
+wall is exactly 3 m, **both rooms describe its endpoints identically**, and it is not still
+the seeded 4 m. If only the clicked room had moved, the two rooms would have silently stopped
+sharing the wall — which the equality check catches.
+
+### Also recorded: a parallel-run flake
+
+During one 8-worker run, `the room tool draws on the selected unit` failed while passing in
+isolation and passing every serial run since. Not investigated further because it has not
+recurred; noting it rather than pretending the suite has always been clean. If it returns,
+the seed sentinel (`__ppw_seeded`) shared across contexts is the first thing to check.

@@ -26,7 +26,13 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
-import { storedProperty, worldToScreen, type SeedProperty } from './multiroom-helpers';
+import {
+  historyFrameCount,
+  storedProperty,
+  worldToScreen,
+  TWO_ROOM_FIXTURE,
+  type SeedProperty,
+} from './multiroom-helpers';
 
 /** One on-grid 5 × 4 m room. The new room is drawn clear to its east. */
 const ONE_ROOM_FIXTURE: SeedProperty = {
@@ -98,6 +104,20 @@ async function livePxPerMetre(page: Page): Promise<number> {
   const b = await worldToScreen(page, 1, 0);
   if (!a || !b) throw new Error('geom bridge unavailable — run against a DEV server');
   return b.x - a.x;
+}
+
+/**
+ * Wait for the DEV geom bridge to report ready.
+ *
+ * `worldToScreen` returns null until the Konva stage is mounted AND the
+ * bridge has been wired to it. Calling it too early yields a null that reads
+ * as "bridge unavailable" when the truth is "not yet".
+ */
+async function waitForGeom(page: Page): Promise<void> {
+  await page.waitForFunction(() => {
+    const g = (window as unknown as { __ppwGeom?: { ready: () => boolean } }).__ppwGeom;
+    return !!g && g.ready();
+  }, undefined, { timeout: 15_000 });
 }
 
 async function clickWorld(page: Page, xM: number, yM: number): Promise<void> {
@@ -373,5 +393,71 @@ test.describe('Selectable snap units', () => {
     expect(verts).toHaveLength(4);
     const d = Math.hypot(verts[3].x - verts[2].x, verts[3].y - verts[2].y);
     expect(d).toBeCloseTo(3.5, 6);
+  });
+  test('retyping a shared wall moves both rooms and costs exactly one undo', async ({
+    page,
+  }) => {
+    await seedWithUnit(page, JSON.parse(JSON.stringify(TWO_ROOM_FIXTURE)), 'full');
+    await page.goto('/designer');
+    await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    await page.waitForTimeout(600);
+
+    const seeded = await storedProperty(page);
+    expect(seeded.rooms).toHaveLength(2);
+    const framesBefore = await historyFrameCount(page);
+
+    await page.locator('[data-testid="measure-tool-toggle"]').click();
+    // AFTER the toggle: switching tools re-renders the canvas, so a bridge
+    // that was ready a moment ago can briefly report no live stage.
+    await waitForGeom(page);
+
+    // The shared wall is r1 edge 1: (5,0)->(5,4). Click its midpoint.
+    const mid = await worldToScreen(page, 5, 2);
+    if (!mid) throw new Error('geom bridge unavailable');
+    await page.mouse.click(mid.x, mid.y);
+
+    const input = page.locator('[data-testid="edge-length-input"]');
+    await expect(input).toBeVisible();
+    await input.fill('3');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(500);
+
+    // 1 - the shared corner moved to IDENTICAL coordinates in both rooms.
+    const after = await storedProperty(page);
+    const r1 = after.rooms.find((r) => r.id === 'r1');
+    const r2 = after.rooms.find((r) => r.id === 'r2');
+    // Both rooms carry the shared wall at x = 5, so the click may land on
+    // either room's hit line - and it must not matter. What matters is that
+    // the wall is now 3 m long and that BOTH rooms describe it identically.
+    const onWall = (poly) =>
+      poly
+        .filter((v) => Math.abs(v.x - 5) < 1e-9)
+        .map((v) => v.y)
+        .sort((a, b) => a - b);
+
+    const w1 = onWall(r1.polygon);
+    const w2 = onWall(r2.polygon);
+    expect(w1).toHaveLength(2);
+    // Identical in both rooms - if only the clicked room moved, the two have
+    // silently stopped sharing the wall and a gap or overlap now exists.
+    expect(w2).toEqual(w1);
+    // And it is exactly the typed length.
+    expect(Math.abs(w1[1] - w1[0])).toBeCloseTo(3, 6);
+    // The seed was 4 m, so this cannot pass on a no-op.
+    expect(Math.abs(w1[1] - w1[0])).not.toBeCloseTo(4, 6);
+
+    // 2 - ONE Ctrl+Z restores both polygons byte-identically.
+    await page.keyboard.press('Control+z');
+    await page.waitForTimeout(500);
+    const undone = await storedProperty(page);
+    expect(undone.rooms[0].polygon).toEqual(seeded.rooms[0].polygon);
+    expect(undone.rooms[1].polygon).toEqual(seeded.rooms[1].polygon);
+
+    // 3 - and the frame count is back where it started. THIS is the one that
+    //     catches a phantom duplicate frame: an implementation that calls
+    //     recordSnapshot AND lets the subscription coalesce pushes two
+    //     identical frames, and assertion 2 still passes because both hold
+    //     the same state. Only the count exposes it.
+    expect(await historyFrameCount(page)).toBe(framesBefore);
   });
 });

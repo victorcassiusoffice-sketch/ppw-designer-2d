@@ -65,6 +65,9 @@ import {
 } from '../store/designerUIStore';
 // Units brief (2026-08-28, D6) - what we DRAW is decoupled from what we SNAP to.
 import { chooseGridTier } from '../designer/gridTier';
+// Units brief (2026-08-28, D10) - retype the length of a wall that exists.
+import { resizeRoomEdge } from '../designer/edgeResize';
+import { formatLengthForUnit } from '../designer/unitFormat';
 import { haptic } from '../lib/haptics';
 // Sims wall-aware placement (2026-08-23) — objects dropped near a wall
 // snap flush against it and auto-rotate to face into the room.
@@ -212,6 +215,14 @@ export function RoomCanvas({
   const setTool = useDesignerUIStore((s) => s.setTool);
   const doorDraft = useDesignerUIStore((s) => s.doorDraft);
   const [doorHover, setDoorHover] = useState<DoorHover | null>(null);
+  /** The wall the measure tool has selected, if any. */
+  const [measureSel, setMeasureSel] = useState<{
+    roomId: string;
+    edgeIndex: number;
+    lengthM: number;
+    anchor: 'start' | 'end';
+  } | null>(null);
+  const [measureText, setMeasureText] = useState('');
   const snapStep = PRECISION_STEP_M[precision];
 
   // D11/D12/D14 — tool-aware activation of a placed item. Hand (default) =
@@ -1103,6 +1114,63 @@ export function RoomCanvas({
   }, [showGrid, pxPerMetre, drawnRooms, gridTier.minorStepM, gridTier.majorStepM]);
 
   /**
+   * Commit a retyped wall length (units brief D10).
+   *
+   * Deliberately NO `recordSnapshot`: historyStore documents that call as
+   * "one user-perceived action - no coalescing", so calling it AND letting
+   * the store subscription queue its own snapshot pushes TWO identical
+   * frames and the user needs two Ctrl+Z for one edit. The per-room
+   * setRoomPolygon calls below already land inside one coalesce window.
+   */
+  const commitMeasure = useCallback(() => {
+    if (!measureSel) return;
+    const typed = Number(measureText);
+    const store = usePropertyStore.getState();
+    const res = resizeRoomEdge({
+      rooms: store.property.rooms.map((r) => ({
+        id: r.id,
+        name: r.name,
+        polygon: r.polygon,
+      })),
+      roomId: measureSel.roomId,
+      edgeIndex: measureSel.edgeIndex,
+      newLengthM: typed,
+      anchor: measureSel.anchor,
+      stepM: snapStep,
+    });
+    if (!res.ok) {
+      const msg =
+        res.reason === 'overlap'
+          ? 'That length would overlap another room.'
+          : res.reason === 'shared-conflict'
+            ? `That wall is shared with ${res.conflictRoomName ?? 'another room'}; move the corner instead.`
+            : res.reason === 'degenerate'
+              ? 'That would collapse a wall.'
+              : 'Length out of range.';
+      haptic('invalid');
+      pushToast(msg, 'warn');
+      return;
+    }
+    // Pre-count the openings setRoomPolygon would silently prune, and say
+    // so BEFORE committing - it deletes doors that no longer fit inside
+    // the same set().
+    let doomedOpenings = 0;
+    for (const id of res.affectedRoomIds) {
+      const before = store.property.rooms.find((r) => r.id === id);
+      doomedOpenings += before?.openings?.length ?? 0;
+    }
+    for (const id of res.affectedRoomIds) {
+      const next = res.rooms.find((r) => r.id === id);
+      if (next) store.setRoomPolygon(id, next.polygon);
+    }
+    if (doomedOpenings > 0) {
+      pushToast('Wall resized — check any doors on the moved walls.', 'info');
+    }
+    setMeasureSel(null);
+    setMeasureText('');
+  }, [measureSel, measureText, snapStep, pushToast]);
+
+  /**
    * The gaps to cut out of every wall, keyed `roomId:edgeIndex`.
    *
    * A room's own openings are the easy half. The half that matters is the
@@ -1162,6 +1230,7 @@ export function RoomCanvas({
    * remove on one tool instead of inventing a second mode.
    */
   const doorTool = tool === 'door';
+  const measureTool = tool === 'measure';
 
   const computeDoorHover = useCallback(
     (clientX: number, clientY: number): DoorHover | null => {
@@ -1887,6 +1956,54 @@ export function RoomCanvas({
             the opening at the exact width and swing it will be placed with.
             Its own non-listening Layer so it can never intercept the click it
             is previewing. */}
+        {/* Measure tool (units brief D10). Tool-gated because the Stage
+            commit path bails on `e.target !== e.target.getStage()`, so a
+            permanently-listening layer would swallow every armed
+            placement click. */}
+        {measureTool && (
+          <Layer name="measure-edges">
+            {drawnRooms.map((room) =>
+              roomEdges({ id: room.id, polygon: room.polygon }).map((e, i) => {
+                const sel =
+                  measureSel?.roomId === room.id && measureSel?.edgeIndex === i;
+                return (
+                  <Line
+                    key={`measure-${room.id}-${i}`}
+                    points={[
+                      e.a.x * pxPerMetre,
+                      e.a.y * pxPerMetre,
+                      e.b.x * pxPerMetre,
+                      e.b.y * pxPerMetre,
+                    ]}
+                    stroke={sel ? '#FFBB58' : 'rgba(255,187,88,0.35)'}
+                    strokeWidth={sel ? 6 : 4}
+                    hitStrokeWidth={18}
+                    lineCap="round"
+                    onClick={() => {
+                      setMeasureSel({
+                        roomId: room.id,
+                        edgeIndex: i,
+                        lengthM: e.lengthM,
+                        anchor: 'start',
+                      });
+                      setMeasureText(e.lengthM.toFixed(2));
+                    }}
+                    onTap={() => {
+                      setMeasureSel({
+                        roomId: room.id,
+                        edgeIndex: i,
+                        lengthM: e.lengthM,
+                        anchor: 'start',
+                      });
+                      setMeasureText(e.lengthM.toFixed(2));
+                    }}
+                  />
+                );
+              }),
+            )}
+          </Layer>
+        )}
+
         {doorTool && doorHover && (
           <Layer listening={false}>
             {(() => {
@@ -2009,6 +2126,69 @@ export function RoomCanvas({
         onCommit={handleDrawCommit}
         onCancel={handleDrawCancel}
       />
+
+      {/* Measure popover (units brief D10). Says out loud what it does:
+          in a polygon you cannot change one edge in isolation. */}
+      {measureTool && measureSel && (
+        <div
+          className="pointer-events-auto absolute left-1/2 bottom-3 z-30 flex w-[min(94vw,420px)] -translate-x-1/2 flex-col gap-2 rounded-lg border border-ppw-teal bg-white p-3 text-xs shadow-xl"
+          data-testid="edge-length-popover"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-semibold text-ppw-ink">Wall length</span>
+            <span className="text-[10px] text-ppw-slate">
+              now {formatLengthForUnit(measureSel.lengthM, snapStep)}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min={Math.max(snapStep, 0.01)}
+              step={snapStep}
+              value={measureText}
+              data-testid="edge-length-input"
+              autoFocus
+              onChange={(ev) => setMeasureText(ev.target.value)}
+              onKeyDown={(ev) => {
+                if (ev.key === 'Enter') {
+                  ev.preventDefault();
+                  commitMeasure();
+                } else if (ev.key === 'Escape') {
+                  ev.preventDefault();
+                  setMeasureSel(null);
+                }
+              }}
+              className="w-24 rounded-md border border-ppw-stone px-2 py-1 text-right text-sm text-ppw-ink"
+            />
+            <span className="text-[10px] text-ppw-slate">m</span>
+            <button
+              type="button"
+              data-testid="edge-length-anchor"
+              onClick={() =>
+                setMeasureSel((m) =>
+                  m ? { ...m, anchor: m.anchor === 'start' ? 'end' : 'start' } : m,
+                )
+              }
+              className="rounded-md border border-ppw-stone px-2 py-1 text-[10px] text-ppw-slate hover:text-ppw-teal"
+              title="Which end of the wall stays put"
+            >
+              anchor: {measureSel.anchor === 'start' ? 'first' : 'second'}
+            </button>
+            <button
+              type="button"
+              data-testid="edge-length-apply"
+              onClick={commitMeasure}
+              className="ml-auto rounded-md border border-ppw-teal bg-ppw-teal px-3 py-1 text-[11px] font-medium text-white"
+            >
+              Apply
+            </button>
+          </div>
+          <p className="text-[10px] leading-snug text-ppw-slate">
+            Moves the corner; the adjoining wall changes length too. A wall
+            shared with another room moves in both.
+          </p>
+        </div>
+      )}
 
       <WallDrawHUD enabled={wallDrawEnabled && !drawMode} />
 
