@@ -32,6 +32,11 @@ import { rectToPolygon } from '../lib/geometry';
 // frame, so a new rectangle needs an anchor and a legacy all-at-origin
 // save needs un-stacking. Both are pure helpers.
 import { translatePolygon, unstackLegacyRooms } from '../designer/roomLayout';
+// Wall-hosted openings (2026-08-28) — doors/doorways/windows live on the Room
+// so history and persistence pick them up with no extra plumbing.
+import type { Opening } from '../designer/openings';
+import { openingSpan, validateOpening } from '../designer/openings';
+import { roomEdges } from '../designer/wallEdges';
 
 export interface PlacedItem {
   instanceId: string;
@@ -47,6 +52,19 @@ export interface Room {
   /** Closed polygon in metres (no repeated end vertex). */
   polygon: Polygon;
   placedItems: PlacedItem[];
+  /**
+   * Doors, doorways and windows cut into this room's walls (2026-08-28).
+   *
+   * Hosted PARAMETRICALLY on a polygon edge — `{ edgeIndex, offsetM, widthM }`
+   * — never in free space, so an opening cannot drift off its wall. Nested on
+   * the Room rather than kept in a side store on purpose: `historyStore`
+   * snapshots `property` whole, so undo/redo covers openings for free, and the
+   * API stores `property` as opaque JSON so no endpoint or migration is needed.
+   *
+   * Optional because every property persisted before this shipped lacks it.
+   * Read it through `roomOpenings(room)`, never `room.openings!`.
+   */
+  openings?: Opening[];
 }
 
 export interface Property {
@@ -170,6 +188,23 @@ export interface PropertyState {
    */
   selectItemAcrossRooms: (instanceId: string | null) => void;
   clearActiveRoomItems: () => void;
+
+  // ---- opening (door / doorway / window) actions ----
+  /**
+   * Cut an opening into a room's wall. Returns the new opening's id, or null
+   * if the placement is illegal (wall too short, past the jamb margin, or
+   * overlapping an opening already on that wall) — callers surface the reason
+   * from `validateOpening` rather than silently dropping it.
+   */
+  addOpening: (roomId: string, opening: Omit<Opening, 'id'> & { id?: string }) => string | null;
+  /** Removes by opening id from WHICHEVER room owns it (ids are global). */
+  removeOpening: (openingId: string) => void;
+  /**
+   * Patches by opening id in WHICHEVER room owns it. Re-validates against the
+   * host wall and returns false (changing nothing) if the patch is illegal, so
+   * dragging a door past its jamb cannot corrupt the plan.
+   */
+  updateOpening: (openingId: string, patch: Partial<Omit<Opening, 'id'>>) => boolean;
   /** D8 — one-shot legacy un-stack; safe to call on every app mount. */
   unstackIfLegacy: () => boolean;
 
@@ -293,14 +328,25 @@ export const usePropertyStore = create<PropertyState>()(
         }),
 
       setRoomPolygon: (roomId, polygon) =>
-        set((s) => ({
-          property: {
-            ...s.property,
-            rooms: s.property.rooms.map((r) =>
-              r.id === roomId ? { ...r, polygon: cleanPolygon(polygon) } : r,
-            ),
-          },
-        })),
+        set((s) => {
+          const clean = cleanPolygon(polygon);
+          return {
+            property: {
+              ...s.property,
+              rooms: s.property.rooms.map((r) =>
+                r.id === roomId
+                  // Reshaping a room can delete a wall or shorten it below the
+                  // door it was hosting. An opening has no independent
+                  // existence — it is a hole in a wall — so it cascades with
+                  // its host, in the SAME set() and therefore the same undo
+                  // frame. Leaving it behind would render a swing arc floating
+                  // in space with no wall under it.
+                  ? { ...r, polygon: clean, openings: pruneOpenings(r.openings, clean) }
+                  : r,
+              ),
+            },
+          };
+        }),
 
       addItem: (item, roomId) => {
         const instanceId = makeInstanceId();
@@ -405,6 +451,75 @@ export const usePropertyStore = create<PropertyState>()(
           };
         }),
 
+      // ---- openings ----------------------------------------------------
+
+      addOpening: (roomId, opening) => {
+        const s = get();
+        const room = s.property.rooms.find((r) => r.id === roomId);
+        if (!room) return null;
+        const edge = roomEdges(room)[opening.edgeIndex];
+        if (!edge) return null;
+
+        const others = roomOpenings(room).filter((o) => o.edgeIndex === opening.edgeIndex);
+        if (!validateOpening(edge.lengthM, opening, others).ok) return null;
+
+        const id = opening.id ?? nanoid(10);
+        const next: Opening = { ...opening, id };
+        set((st) => ({
+          property: {
+            ...st.property,
+            rooms: st.property.rooms.map((r) =>
+              r.id === roomId ? { ...r, openings: [...roomOpenings(r), next] } : r,
+            ),
+          },
+        }));
+        return id;
+      },
+
+      removeOpening: (openingId) =>
+        set((s) => ({
+          property: {
+            ...s.property,
+            rooms: s.property.rooms.map((r) => {
+              const existing = roomOpenings(r);
+              if (!existing.some((o) => o.id === openingId)) return r;
+              return { ...r, openings: existing.filter((o) => o.id !== openingId) };
+            }),
+          },
+        })),
+
+      updateOpening: (openingId, patch) => {
+        const s = get();
+        const room = s.property.rooms.find((r) =>
+          roomOpenings(r).some((o) => o.id === openingId),
+        );
+        if (!room) return false;
+
+        const current = roomOpenings(room).find((o) => o.id === openingId)!;
+        const merged: Opening = { ...current, ...patch, id: current.id };
+        const edge = roomEdges(room)[merged.edgeIndex];
+        if (!edge) return false;
+
+        // Re-validate against the (possibly new) host wall, excluding itself,
+        // so a drag past the jamb margin is refused rather than committed.
+        const others = roomOpenings(room).filter(
+          (o) => o.id !== openingId && o.edgeIndex === merged.edgeIndex,
+        );
+        if (!validateOpening(edge.lengthM, merged, others).ok) return false;
+
+        set((st) => ({
+          property: {
+            ...st.property,
+            rooms: st.property.rooms.map((r) =>
+              r.id === room.id
+                ? { ...r, openings: roomOpenings(r).map((o) => (o.id === openingId ? merged : o)) }
+                : r,
+            ),
+          },
+        }));
+        return true;
+      },
+
       /**
        * D8 — legacy un-stack. Every rectangle-authored room before
        * 2026-08-26 was pinned at the origin by `rectToPolygon`, so a legacy
@@ -503,6 +618,7 @@ interface RawRoom {
   widthM?: number;
   roomDimensions?: RoomDims;
   placedItems?: PlacedItem[];
+  openings?: Opening[];
 }
 
 interface RawProperty {
@@ -531,12 +647,49 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
         widthM: r.widthM ?? r.roomDimensions?.widthM ?? DEFAULT_ROOM_DIMS.widthM,
       })
       : []);
+  const clean = cleanPolygon(polygon);
   return {
     id: r.id ?? nanoid(8),
     name: r.name ?? 'Room',
-    polygon: cleanPolygon(polygon),
+    polygon: clean,
     placedItems: Array.isArray(r.placedItems) ? r.placedItems : [],
+    // This function WHITELISTS fields — anything not named here is dropped on
+    // every Save/Load round trip. Openings survive a reload without this (the
+    // persist blob is restored verbatim) but would silently vanish the first
+    // time a design was saved and re-loaded, which is the nastiest possible
+    // shape for a data-loss bug. Pruned against the CLEANED polygon so a
+    // migrated room can never carry an opening hosted on an edge that no
+    // longer exists.
+    openings: pruneOpenings(r.openings, clean),
   };
+}
+
+/**
+ * Openings whose host wall still exists and can still hold them.
+ *
+ * Used both on load and after any polygon edit. An opening on an edge that has
+ * been removed, or on a wall that has become too short, is DROPPED rather than
+ * kept in an invalid state — a door hanging off a wall that is no longer there
+ * would render as a stray arc floating in space.
+ */
+export function pruneOpenings(
+  openings: Opening[] | undefined,
+  polygon: Polygon,
+): Opening[] {
+  if (!Array.isArray(openings) || openings.length === 0) return [];
+  const edges = roomEdges({ id: '_', polygon });
+  return openings.filter((o) => {
+    if (!o || typeof o.edgeIndex !== 'number' || typeof o.offsetM !== 'number') return false;
+    const edge = edges[o.edgeIndex];
+    if (!edge) return false;
+    const { t0, t1 } = openingSpan(o);
+    return t0 >= -1e-9 && t1 <= edge.lengthM + 1e-9;
+  });
+}
+
+/** Openings on a room, tolerating properties persisted before openings existed. */
+export function roomOpenings(room: Pick<Room, 'openings'>): Opening[] {
+  return room.openings ?? [];
 }
 
 /**

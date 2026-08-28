@@ -19,7 +19,13 @@
  * baffling off-by-hundreds-of-pixels e2e failure weeks later.
  */
 import { describe, it, expect } from 'vitest';
-import { isRoomBorderPixel, ROOM_BORDER_SCAN, WALL_GOLD, WALL_GOLD_BRIGHT } from '../blueprintTheme';
+import {
+  isRoomBorderPixel,
+  ROOM_BORDER_SCAN,
+  WALL_GOLD,
+  WALL_GOLD_BRIGHT,
+  DOOR_LEAF,
+} from '../blueprintTheme';
 import { ECO_FLOORING_CATALOG, ECO_PAINT_PALETTE } from '../../data/paintPalette';
 import { FLOOR_MATERIALS } from '../../data/floorMaterials';
 
@@ -59,6 +65,15 @@ describe('ROOM_BORDER_SCAN guard', () => {
         + `instead of the wall and silently shift every click coordinate. Either pick a colour `
         + `outside the band, or delete the pixel-scan fallback now that geomBridge exists.`,
     ).toEqual([]);
+  });
+
+  it('does NOT match the door symbol colours', () => {
+    // A gold-toned leaf or swing arc would be picked up as "the leftmost wall"
+    // by the e2e origin fallback, silently shifting every click coordinate.
+    const [lr, lg, lb] = hexToRgb(DOOR_LEAF);
+    expect(isRoomBorderPixel(lr, lg, lb), `${DOOR_LEAF} must stay outside the wall band`).toBe(false);
+    // DOOR_ARC is the same hue at lower alpha; check its solid form too.
+    expect(isRoomBorderPixel(242, 228, 206)).toBe(false);
   });
 
   it('does NOT match any paint swatch', () => {

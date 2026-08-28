@@ -31,6 +31,7 @@ import { usePropertyStore } from '../store/propertyStore';
 import { useDesignsStore } from '../store/designsStore';
 import { useToastStore } from '../store/toastStore';
 import { useHistoryStore } from '../store/historyStore';
+import { useDesignerUIStore } from '../store/designerUIStore';
 import { useWallStore } from '../store/wallStore';
 import { useCart } from '../store/cartStore';
 import { CurrencySwitcher } from './CurrencySwitcher';
@@ -119,6 +120,24 @@ export function TopBar({
   const wallDrawPhase = useWallStore((s) => s.draw.phase);
   const setWallDraw = useWallStore((s) => s.setDraw);
   const wallActive = wallDrawPhase !== 'idle';
+
+  // Openings tool (2026-08-28). Lives on designerUIStore.tool so it is
+  // mutually exclusive with the other build tools by construction.
+  const tool = useDesignerUIStore((s) => s.tool);
+  const setTool = useDesignerUIStore((s) => s.setTool);
+  const doorDraft = useDesignerUIStore((s) => s.doorDraft);
+  const setDoorDraft = useDesignerUIStore((s) => s.setDoorDraft);
+  const toggleDoorFacing = useDesignerUIStore((s) => s.toggleDoorFacing);
+  const toggleDoorHand = useDesignerUIStore((s) => s.toggleDoorHand);
+  const doorActive = tool === 'door';
+
+  function handleToggleDoor() {
+    // Room-draw and wall-draw own the canvas pointer while they are live, so
+    // stand them down rather than letting two tools fight over the same click.
+    if (drawMode) setDrawMode(false);
+    if (wallActive) setWallDraw({ phase: 'idle' });
+    setTool(doorActive ? 'hand' : 'door');
+  }
 
   function handleToggleWall() {
     if (wallActive) {
@@ -412,6 +431,66 @@ export function TopBar({
         >
           + Walls
         </button>
+
+        {/* Openings — doors, doorways and windows. Cut into a wall rather than
+            placed in space, so this is a wall tool, not a catalog product. */}
+        <button
+          type="button"
+          onClick={handleToggleDoor}
+          data-testid="door-tool-toggle"
+          className={`hidden md:inline-block min-h-[40px] rounded-md border px-3 text-xs font-medium ${
+            doorActive
+              ? 'border-ppw-teal bg-ppw-teal text-white'
+              : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
+          }`}
+          title="Add a door, doorway or window — hover a wall to place it, click an existing one to remove it. F flips which way it opens, H swaps the hinge."
+          aria-pressed={doorActive}
+        >
+          + Door
+        </button>
+
+        {/* Door options — only while the door tool is live, so the top bar
+            stays quiet the rest of the time. */}
+        {doorActive && (
+          <div
+            className="hidden md:flex items-center gap-1 rounded-md border border-ppw-stone bg-white px-2 py-1"
+            data-testid="door-options"
+          >
+            {(['door', 'doorway', 'window'] as const).map((k) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setDoorDraft({ kind: k })}
+                data-testid={`door-kind-${k}`}
+                className={`rounded px-2 py-1 text-[11px] font-medium capitalize ${
+                  doorDraft.kind === k ? 'bg-ppw-teal text-white' : 'text-ppw-slate hover:text-ppw-teal'
+                }`}
+                aria-pressed={doorDraft.kind === k}
+              >
+                {k}
+              </button>
+            ))}
+            <span className="mx-1 h-4 w-px bg-ppw-stone" aria-hidden />
+            <button
+              type="button"
+              onClick={toggleDoorFacing}
+              data-testid="door-flip-facing"
+              className="rounded px-2 py-1 text-[11px] font-medium text-ppw-slate hover:text-ppw-teal"
+              title="Flip which side the door opens toward (F)"
+            >
+              Flip side
+            </button>
+            <button
+              type="button"
+              onClick={toggleDoorHand}
+              data-testid="door-flip-hand"
+              className="rounded px-2 py-1 text-[11px] font-medium text-ppw-slate hover:text-ppw-teal"
+              title="Swap the hinge to the other end (H)"
+            >
+              Flip hinge
+            </button>
+          </div>
+        )}
 
         {/* Tweak 07 (Phase A.0) — UNDO / REDO buttons. Visible on both
             mobile and desktop. The undo button arms-then-fires on

@@ -22,9 +22,25 @@
  *                  D11/M11, D12, D14.
  */
 import { create } from 'zustand';
+import { DEFAULT_DOOR_WIDTH_M, type OpeningKind } from '../designer/openings';
 
 export type SnapPrecision = 'full' | 'quarter';
-export type BuildTool = 'hand' | 'eyedropper' | 'sledgehammer';
+export type BuildTool = 'hand' | 'eyedropper' | 'sledgehammer' | 'door';
+
+/**
+ * Settings the door tool carries between placements (2026-08-28).
+ *
+ * Transient chrome, not design content — the placed Opening records its own
+ * kind/width/flips on the Room, so this is only "what the NEXT door will be".
+ * Keeping it out of the history snapshot means flipping the ghost before you
+ * click is not an undoable action, which is what users expect.
+ */
+export interface DoorDraft {
+  kind: OpeningKind;
+  widthM: number;
+  flipFacing: boolean;
+  flipHand: boolean;
+}
 
 /** Snap step in metres for each precision mode. */
 export const PRECISION_STEP_M: Record<SnapPrecision, number> = {
@@ -36,11 +52,17 @@ interface DesignerUIState {
   infoOpen: boolean;
   precision: SnapPrecision;
   tool: BuildTool;
+  doorDraft: DoorDraft;
 
   setInfoOpen: (open: boolean) => void;
   togglePrecision: () => void;
   setPrecision: (p: SnapPrecision) => void;
   setTool: (t: BuildTool) => void;
+  setDoorDraft: (patch: Partial<DoorDraft>) => void;
+  /** Flip which side of the wall the next door swings toward. */
+  toggleDoorFacing: () => void;
+  /** Flip which end of the opening the next door hinges on. */
+  toggleDoorHand: () => void;
   /** Reset transient tool/info state (e.g. on deselect or Esc). */
   resetTransient: () => void;
 }
@@ -49,12 +71,23 @@ export const useDesignerUIStore = create<DesignerUIState>((set) => ({
   infoOpen: false,
   precision: 'full',
   tool: 'hand',
+  doorDraft: {
+    kind: 'door',
+    widthM: DEFAULT_DOOR_WIDTH_M,
+    flipFacing: false,
+    flipHand: false,
+  },
 
   setInfoOpen: (open) => set({ infoOpen: open }),
   togglePrecision: () =>
     set((s) => ({ precision: s.precision === 'full' ? 'quarter' : 'full' })),
   setPrecision: (precision) => set({ precision }),
   setTool: (tool) => set({ tool }),
+  setDoorDraft: (patch) => set((s) => ({ doorDraft: { ...s.doorDraft, ...patch } })),
+  toggleDoorFacing: () =>
+    set((s) => ({ doorDraft: { ...s.doorDraft, flipFacing: !s.doorDraft.flipFacing } })),
+  toggleDoorHand: () =>
+    set((s) => ({ doorDraft: { ...s.doorDraft, flipHand: !s.doorDraft.flipHand } })),
   resetTransient: () => set({ infoOpen: false, tool: 'hand' }),
 }));
 
