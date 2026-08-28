@@ -82,3 +82,6 @@ tests/e2e/auto-dig-*.spec.ts
 # Raw incoming AI renders (slotted via scripts/slot-topdown.mjs, never committed raw)
 scripts/incoming/*
 !scripts/incoming/.gitkeep
+
+# Triage/report JSON emitted alongside the e2e specs (diagnostic output, not source).
+tests/e2e/*.json
