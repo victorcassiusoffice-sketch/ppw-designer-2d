@@ -51,7 +51,12 @@ import {
 // Units brief (2026-08-28) — the snap step is user-selectable, so it is read
 // live INSIDE each handler via this non-React accessor. It must never become
 // a dep of the wiring effect below.
-import { currentSnapStepM } from '../store/designerUIStore';
+import {
+  currentSnapStepM,
+  useDesignerUIStore,
+  PRECISION_STEP_M,
+} from '../store/designerUIStore';
+import { formatLengthForUnit, chipVisibleAt } from '../designer/unitFormat';
 // Blueprint reskin + legible measurements (Vic 2026-08-25, complaints 3+5).
 import { MeasurementChip } from '../designer/MeasurementChip';
 import {
@@ -115,6 +120,10 @@ export function RoomDrawLayer({
   onCommit,
   onCancel,
 }: RoomDrawLayerProps) {
+  // Units brief (2026-08-28, D8) - the measurement chips are RENDER output,
+  // so unlike the pointer handlers they subscribe reactively: picking a new
+  // unit must re-label the chips without needing a mouse move.
+  const stepM = useDesignerUIStore((s) => PRECISION_STEP_M[s.precision]);
   const verticesRef = useRef(vertices);
   verticesRef.current = vertices;
   const nameRef = useRef(name);
@@ -416,11 +425,11 @@ export function RoomDrawLayer({
                 Skipped for the PREVIEW segment — the cursor chip below
                 already shows that length, and two chips reading the same
                 number on one line is noise. */}
-            {s.lengthM > 0.05 && !isPreview && (
+            {chipVisibleAt(s.lengthM, stepM) && !isPreview && (
               <MeasurementChip
                 x={mid.x * pxPerMetre}
                 y={mid.y * pxPerMetre}
-                text={`${s.lengthM.toFixed(2)} m`}
+                text={formatLengthForUnit(s.lengthM, stepM)}
                 scale={scale}
               />
             )}
@@ -446,11 +455,11 @@ export function RoomDrawLayer({
 
       {/* Running length of the segment being drawn, parked just above the
           cursor so the number is where the user is actually looking. */}
-      {hover && liveSegmentLengthM > 0.05 && (
+      {hover && chipVisibleAt(liveSegmentLengthM, stepM) && (
         <MeasurementChip
           x={hover.x * pxPerMetre}
           y={hover.y * pxPerMetre}
-          text={`${liveSegmentLengthM.toFixed(2)} m`}
+          text={formatLengthForUnit(liveSegmentLengthM, stepM)}
           scale={scale}
           offsetYPx={-26}
           live

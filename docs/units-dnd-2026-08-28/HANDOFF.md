@@ -183,3 +183,68 @@ changes size and the auto-centre fit re-clamps the scale.
 The units engine is complete and proven, but there is **no UI to select a unit yet** — the
 picker, the unit-aware readouts, the adaptive grid, typed lengths and the measure tool are
 P3–P7. Today a unit can only be chosen with the digit keys 1–6 or Ctrl+F.
+
+---
+
+## P3 — U3: unit selector UI, unit-aware readouts, typed-dimension unblock
+
+**Done.** Units are now selectable and legible in the product, not just from the keyboard.
+
+- **Desktop picker** — `snap-unit-toggle` reading `Snap {label}` plus a six-row
+  `snap-unit-picker` popover (`snap-unit-{id}`, `aria-pressed`, digit hotkey shown on each
+  row). Deliberately a popover copying the proven floor-picker pattern, **not** a six-way
+  segmented control: `TopBar.tsx` records that this bar already overflowed at 1366 px, which
+  is why its title is `hidden xl:block`. A six-segment inline control would reintroduce that.
+- **Mobile** — the same six units as ≥44 px rows (`snap-unit-mobile-{id}`) in the overflow
+  menu. Not polish: the desktop popover is `md:`-only, so without these rows a phone user
+  cannot choose a unit at all.
+- **Explicit labels everywhere** — the grid button and mobile row now read
+  `Grid {SNAP_UNIT_LABEL[precision]}`. A derived label would render `1 cm` as `0.01 m`; the
+  e2e assertion below is what pins that.
+- **`src/designer/unitFormat.ts`** (new, 6 unit tests) — one shared `formatLengthForUnit`
+  replacing four hardcoded `${m.toFixed(2)} m` sites, plus `chipVisibleAt` replacing the two
+  hardcoded `> 0.05` floors (which at the 1 cm unit hid precisely the lengths that unit
+  exists to draw). Output is **byte-identical at 0.5 m and 0.25 m**; cm output is capped
+  below 1 m so the longest string is `99 cm`, inside the measurement plate's documented
+  `"12.34 m"` budget.
+- **Typed dimensions unblocked (D11 / Vic Q3)** — both TopBar L/W inputs move to
+  `step={snapStepM}` / `min={Math.max(0.1, snapStepM)}`, and `designStore.setRoomDimensions`
+  relaxes its clamp from `Math.max(1, ...)` to `Math.max(0.1, ...)`. Both layers had to
+  change: the browser spinner stepped in half-metres AND the store re-clamped to a 1 m
+  floor, so changing one alone leaves the UI silently snapping back. This is literally the
+  ".50cm to 1m" Vic named.
+- The measurement chips subscribe to the unit **reactively** (`useDesignerUIStore` selector
+  in `RoomDrawLayer`) rather than through the non-React accessor the pointer handlers use —
+  a chip is render output and must re-label on a unit change without needing a mouse move.
+
+### P3 GATE
+
+```
+$ PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test \
+    units inline-interaction-2026-05-31 auto-dig-console-sweep-2026-05-25 \
+    multiroom-attach placement-fsm wall-draw
+  17 passed (26.4s)
+
+$ npx vitest run
+  Test Files  157 passed (157)   Tests  1842 passed (1842)
+
+$ npx tsc --noEmit        # exit 0
+$ npm run build           # built in 7.51s, clean
+$ npx eslint <6 changed>  # 0 errors
+$ git grep -ho 'data-testid="[^"]*"' | sort -u | wc -l
+  148        # was 145; three added (snap-unit-toggle/-picker/-{id}), none dropped
+```
+
+`inline-interaction-2026-05-31` is the load-bearing one here: it pins the canvas badge
+reading `· 0.5 m` and then `· 0.25 m` after Ctrl+F. It stays green because `SNAP_UNIT_LABEL`
+reproduces those strings character-for-character — a derived `${step} m` label would too, at
+those two units, which is exactly why the new toggle assertion checks `Snap 1 cm` instead.
+
+### A trap worth recording
+
+The reload-persistence assertion failed on first run with `Received: "Snap 0.5 m"`. Not a
+product bug: Playwright's `addInitScript` **re-runs on every navigation**, so the reload was
+re-seeding `ppw_designer_ui_v1` back to its seeded value and overwriting the very preference
+the test was observing. Fixed with a `__ppw_seeded` sentinel that makes the seed
+first-load-only. The multiroom brief documents this same trap for its blank-canvas test;
+it bites any spec that reloads.

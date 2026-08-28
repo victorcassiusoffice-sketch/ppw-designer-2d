@@ -61,7 +61,12 @@ async function seedWithUnit(
 ): Promise<void> {
   await page.addInitScript(
     ([p, unit]) => {
+      // addInitScript re-runs on EVERY navigation, so an unguarded seed makes
+      // a reload silently re-write the very preference a persistence test is
+      // trying to observe. The sentinel makes the seed first-load-only.
+      if (localStorage.getItem('__ppw_seeded') === '1') return;
       localStorage.clear();
+      localStorage.setItem('__ppw_seeded', '1');
       localStorage.setItem('ppw_designer_coach_v1', '1');
       localStorage.setItem(
         'ppw_designer_ui_v1',
@@ -189,5 +194,50 @@ test.describe('Selectable snap units', () => {
     const dx = Math.abs(w.end.x_mm - w.start.x_mm);
     expect(dx).toBeGreaterThan(0);
     expect(dx % 500).not.toBe(0);
+  });
+  test('the picker selects a unit, labels it explicitly, and survives a reload', async ({
+    page,
+  }) => {
+    await seedWithUnit(page, JSON.parse(JSON.stringify(ONE_ROOM_FIXTURE)), 'full');
+    await page.goto('/designer');
+    await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+
+    const toggle = page.locator('[data-testid="snap-unit-toggle"]');
+    await expect(toggle).toHaveText('Snap 0.5 m');
+
+    await toggle.click();
+    await page.locator('[data-testid="snap-unit-cm1"]').click();
+
+    // A DERIVED label would render this as "Snap 0.01 m". The explicit
+    // SNAP_UNIT_LABEL table is what makes it read as a unit a human picked.
+    await expect(toggle).toHaveText('Snap 1 cm');
+
+    // Both halves of the Ctrl+F pair must persist. Storing only `precision`
+    // means a reload on 1 cm then Ctrl+F swaps to the module default rather
+    // than the unit the user was actually alternating with.
+    const persisted = await page.evaluate(() =>
+      JSON.parse(localStorage.getItem('ppw_designer_ui_v1') ?? 'null'),
+    );
+    expect(persisted).toEqual({
+      state: { precision: 'cm1', lastPrecision: 'full' },
+      version: 1,
+    });
+
+    // Catches a store that was widened but never wrapped in persist.
+    await page.reload();
+    await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    await expect(page.locator('[data-testid="snap-unit-toggle"]')).toHaveText('Snap 1 cm');
+  });
+
+  test('a fine unit unblocks the typed room dimensions', async ({ page }) => {
+    await seedWithUnit(page, JSON.parse(JSON.stringify(ONE_ROOM_FIXTURE)), 'cm10');
+    await page.goto('/designer');
+    await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+
+    // Vic Q3: the floor was 1 m at BOTH layers - the input`s min AND the
+    // designStore clamp - so a sub-metre room was impossible to type.
+    const lengthInput = page.locator('input[type="number"]').first();
+    await expect(lengthInput).toHaveAttribute('min', '0.1');
+    await expect(lengthInput).toHaveAttribute('step', '0.1');
   });
 });
