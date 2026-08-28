@@ -15,6 +15,8 @@ import {
   seedProperty,
   worldToScreen,
   renderedRoomCount,
+  requireGeomBridge,
+  GEOM_BRIDGE_SKIP,
 } from './multiroom-helpers';
 
 test.use({ viewport: { width: 1920, height: 1080 } });
@@ -81,7 +83,8 @@ test.describe('Wall openings', () => {
     await seedProperty(page, TWO_ROOM_FIXTURE);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-    await expect.poll(() => renderedRoomCount(page), { timeout: 15_000 }).toBe(2);
+    test.skip(!(await requireGeomBridge(page)), GEOM_BRIDGE_SKIP);
+  await expect.poll(() => renderedRoomCount(page), { timeout: 15_000 }).toBe(2);
 
     // The shared wall runs world (5,0)-(5,4). Measure the gold on it BEFORE.
     const top = (await worldToScreen(page, 5, 0.3))!;
@@ -118,7 +121,8 @@ test.describe('Wall openings', () => {
     await seedProperty(page, TWO_ROOM_FIXTURE);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-    await expect.poll(() => renderedRoomCount(page), { timeout: 15_000 }).toBe(2);
+    test.skip(!(await requireGeomBridge(page)), GEOM_BRIDGE_SKIP);
+  await expect.poll(() => renderedRoomCount(page), { timeout: 15_000 }).toBe(2);
 
     await page.getByTestId('door-tool-toggle').click();
 
@@ -141,7 +145,8 @@ test.describe('Wall openings', () => {
     await seedProperty(page, TWO_ROOM_FIXTURE);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-    await expect.poll(() => renderedRoomCount(page), { timeout: 15_000 }).toBe(2);
+    test.skip(!(await requireGeomBridge(page)), GEOM_BRIDGE_SKIP);
+  await expect.poll(() => renderedRoomCount(page), { timeout: 15_000 }).toBe(2);
 
     await page.getByTestId('door-tool-toggle').click();
     const mid = (await worldToScreen(page, 5, 2))!;
@@ -163,7 +168,8 @@ test.describe('Wall openings', () => {
     await seedProperty(page, TWO_ROOM_FIXTURE);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-    await expect.poll(() => renderedRoomCount(page), { timeout: 15_000 }).toBe(2);
+    test.skip(!(await requireGeomBridge(page)), GEOM_BRIDGE_SKIP);
+  await expect.poll(() => renderedRoomCount(page), { timeout: 15_000 }).toBe(2);
 
     await page.getByTestId('door-tool-toggle').click();
     const mid = (await worldToScreen(page, 5, 2))!;

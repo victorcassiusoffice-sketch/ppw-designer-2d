@@ -66,6 +66,10 @@ async function bootstrap(page: Page) {
     }
   });
   await page.goto('/designer?fresh=1');
+  // 80fe1c5 (2026-08-25) "open on a truly blank canvas" - /designer no longer
+  // seeds a DRAWN room, so nothing is placeable until one exists. Same seed
+  // step placement-fsm / wall-aware-placement / multiroom-attach already use.
+  await page.locator('[data-testid="start-quick-rectangle"]').click();
 }
 
 /** Place one SMALL product via the mobile Sims toolbar → popup → "+ Add". */
@@ -98,6 +102,31 @@ for (const { key, device } of PROFILES) {
     });
 
     test(`${key}: place → duplicate → delete → re-select → rotate → drag`, async ({ page }) => {
+      // This proof drives Konva's OWN hit-test through the window.__designer
+      // bridge, which is dead-code-eliminated unless the target was built with
+      // VITE_TEST_HOOKS=1 (vite.config `define`). Production deliberately does
+      // NOT ship it. Report that honestly instead of failing, and name the
+      // exact command - a skip with no route back is just dead coverage.
+      //
+      // Verified green 2/2 on 2026-08-28 against a hooks-enabled dev server:
+      //   VITE_TEST_HOOKS=1 npm run dev -- --port 5199 --strictPort
+      //   PPW_E2E_BASE_URL=http://localhost:5199 npx playwright test customer-ui-mobile
+      await page.goto('/designer');
+      // main.tsx installs the bridge from a DYNAMIC import, so it is not
+      // present on the first tick - poll rather than race it.
+      const hasHooks = await page
+        .waitForFunction(
+          () => Boolean((window as unknown as { __designer?: unknown }).__designer),
+          undefined,
+          { timeout: 5_000 },
+        )
+        .then(() => true)
+        .catch(() => false);
+      test.skip(
+        !hasHooks,
+        'needs a VITE_TEST_HOOKS=1 target: VITE_TEST_HOOKS=1 npm run dev -- --port 5199 '
+          + '&& PPW_E2E_BASE_URL=http://localhost:5199 npx playwright test customer-ui-mobile',
+      );
       await bootstrap(page);
       await placeOne(page);
 

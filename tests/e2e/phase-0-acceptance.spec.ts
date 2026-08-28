@@ -42,6 +42,14 @@ test('c) M1 — click catalog card + click canvas → ITEMS PLACED = 1', async (
   const itemsPlaced = page.locator('[data-testid="items-placed"]');
   await expect(itemsPlaced).toBeVisible({ timeout: 15_000 });
 
+  // Blank-canvas-on-open (Vic 2026-06-09, hardened 2026-08-25 - see
+  // propertyStore.makeBlankRoom): a fresh designer has no DRAWN room, so a
+  // placement click is correctly refused with "Drop it inside a room". Seed
+  // the room via the app's own one-click affordance, then assert the start
+  // prompt is gone - that is the room actually existing.
+  await page.locator('[data-testid="start-quick-rectangle"]').click();
+  await expect(page.locator('[data-testid="start-room-prompt"]')).toHaveCount(0);
+
   const card = page.locator('[data-product-id]').first();
   await expect(card).toBeVisible();
   await card.click();
@@ -83,7 +91,14 @@ test('d) M5+M5.b — /merchant/demo-supplier-cn renders sign-in form (not design
   await page.screenshot({ path: path.join(SHOT_DIR, 'd-m5b-signin.png'), fullPage: true });
 });
 
-test('e) M3 — place 1 item in 2D, switch to BABYLON → 1 product mesh', async ({ page }) => {
+// RETIRED (2026-08-28): the 3D preview toggle still EXISTS in TopBar.tsx
+// (~:632) but renders only when a `setThreeDPreview` prop is supplied, and
+// App.tsx no longer supplies one - so the control is unwired at the call site
+// and `design-tweak-1-phase-a0.spec.ts` now asserts it has count 0 (Tweak 06,
+// deliberate). Skipped rather than deleted: the Babylon path is dormant, not
+// removed, so this acceptance criterion is recoverable the moment the toggle
+// is wired back up. Un-skip then; do not weaken it.
+test.skip('e) M3 — place 1 item in 2D, switch to BABYLON → 1 product mesh', async ({ page }) => {
   await page.goto('/designer?fresh=1');
   const card = page.locator('[data-product-id]').first();
   await expect(card).toBeVisible({ timeout: 15_000 });
@@ -125,7 +140,7 @@ test('f) M2 — wallStore persists 4 walls, HUD displays count + room area on re
   await page.goto('/designer');
   await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
 
-  await page.getByRole('button', { name: /^Wall$/ }).click();
+  await page.locator('[data-testid="wall-tool-toggle"]').click();
   await expect(page.locator('[data-testid="wall-draw-hud"]')).toBeVisible({ timeout: 10_000 });
   await expect(page.locator('[data-testid="wall-count"]')).toHaveText('4');
   await expect(page.locator('[data-testid="room-area"]')).toContainText(/m²/);
@@ -134,13 +149,21 @@ test('f) M2 — wallStore persists 4 walls, HUD displays count + room area on re
   // from localStorage and the count stays at 4.
   await page.reload();
   await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
-  await page.getByRole('button', { name: /^Wall$/ }).click();
+  await page.locator('[data-testid="wall-tool-toggle"]').click();
   await expect(page.locator('[data-testid="wall-count"]')).toHaveText('4');
 
   await page.screenshot({ path: path.join(SHOT_DIR, 'f-m2-walls.png'), fullPage: true });
 });
 
-test('a/b) capture API health screenshots', async ({ page }) => {
+test('a/b) capture API health screenshots', async ({ page, baseURL }) => {
+  // vite dev does not run Vercel functions - it serves api/*.ts as raw source,
+  // so /api/agent-chat returns TypeScript, not JSON. These are PRODUCTION
+  // acceptance criteria; route them rather than weakening them, so a localhost
+  // run reports "skipped for lack of an API" instead of a false failure.
+  test.skip(
+    /localhost|127\.0\.0\.1/.test(baseURL ?? ''),
+    'API acceptance needs a deployed target (PPW_E2E_BASE_URL=https://designer.ppwellness.co)',
+  );
   // Acceptance a — /api/agent-chat
   const agentRes = await page.request.get('/api/agent-chat');
   expect(agentRes.status()).toBe(200);

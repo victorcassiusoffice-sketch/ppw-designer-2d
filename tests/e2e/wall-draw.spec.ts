@@ -18,6 +18,17 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('M2 wall draw', () => {
+  // The first-visit CoachMark (App.tsx, flag `ppw_designer_coach_v1`) is a
+  // fixed inset-0 role="dialog" at z-index 9999 and INTERCEPTS pointer events
+  // on the TopBar, so the wall toggle click times out. Every other designer
+  // spec pre-dismisses it; this one never did. (`?fresh=1` below was always
+  // inert — nothing in src/ reads that param.)
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      try { localStorage.setItem('ppw_designer_coach_v1', '1'); } catch { /* ignore */ }
+    });
+  });
+
   test('4-click closed rectangle → 4 walls + room area populated', async ({ page }) => {
     await page.goto('/designer?fresh=1');
 
@@ -27,8 +38,9 @@ test.describe('M2 wall draw', () => {
     });
     await page.reload();
 
-    // Engage Wall mode from the TopBar "Wall" toggle.
-    await page.getByRole('button', { name: /^Wall$/ }).click();
+    // Engage Wall mode from the TopBar toggle (labelled "+ Walls" since the
+    // 2026-07-26 regroup; pinned by testid so a label change cannot break it).
+    await page.locator('[data-testid="wall-tool-toggle"]').click();
     await expect(page.locator('[data-testid="wall-draw-hud"]')).toBeVisible();
     await expect(page.locator('[data-testid="wall-count"]')).toHaveText('0');
 
@@ -49,12 +61,18 @@ test.describe('M2 wall draw', () => {
     await drop(0.30, 0.65); // → 3 segments
     await drop(0.30, 0.30); // → 4 segments (closes onto anchor, FSM idles)
 
+    // Closing the loop lifts the pen (phase → idle), which UNMOUNTS the HUD by
+    // design. This assertion pair could never have passed as written — it read
+    // a HUD the closing click had just dismissed. Re-engage the tool to read
+    // the committed sketch back.
+    await expect(page.locator('[data-testid="wall-draw-hud"]')).toHaveCount(0);
+    await page.locator('[data-testid="wall-tool-toggle"]').click();
     await expect(page.locator('[data-testid="wall-count"]')).toHaveText('4');
     await expect(page.locator('[data-testid="room-area"]')).toContainText(/m²/);
 
     // Persistence: reload and verify the sketch survives.
     await page.reload();
-    await page.getByRole('button', { name: /^Wall$/ }).click();
+    await page.locator('[data-testid="wall-tool-toggle"]').click();
     await expect(page.locator('[data-testid="wall-count"]')).toHaveText('4');
     await expect(page.locator('[data-testid="room-area"]')).toContainText(/m²/);
   });
@@ -66,7 +84,7 @@ test.describe('M2 wall draw', () => {
     });
     await page.reload();
 
-    await page.getByRole('button', { name: /^Wall$/ }).click();
+    await page.locator('[data-testid="wall-tool-toggle"]').click();
     const stage = page.locator('.konva-stage').first();
     const box = await stage.boundingBox();
     if (!box) throw new Error('Stage has no layout box');

@@ -29,6 +29,11 @@ test.beforeEach(async ({ page }) => {
 async function placeFirstProduct(page: import('@playwright/test').Page) {
   const stage = page.locator('.konva-stage').first();
   await expect(stage).toBeVisible({ timeout: 10_000 });
+  // Blank-canvas-on-open (2026-06-09): a fresh context has an EMPTY room
+  // polygon, so findRoomAt() correctly refuses every drop and nothing can ever
+  // be placed. Seed the 5 x 4 m quick rectangle first - the same repair
+  // placement-fsm.spec.ts already took. ('?fresh=1' is read nowhere in src/.)
+  await page.locator('[data-testid="start-quick-rectangle"]').click();
   const box = await stage.boundingBox();
   if (!box) throw new Error('no stage box');
   const card = page.locator('[data-product-id]').first();
@@ -50,8 +55,11 @@ test.describe('Inline interaction — desktop', () => {
 
     // Three Shift+clicks at distinct points → 3 placements, still armed.
     for (let i = 0; i < 3; i++) {
-      const x = box.x + box.width * (0.3 + i * 0.15);
-      const y = box.y + box.height * 0.5;
+      // The seeded room is 5 x 4 m at 100 px/m = 500 x 400 px, centred, so
+      // only stage-centre +/-250 px is inside it. 0.3 * width landed OUTSIDE
+      // the room; the refusal disarmed the ghost and cost every stamp after it.
+      const x = box.x + box.width / 2 + (i - 1) * 80;
+      const y = box.y + box.height / 2;
       await page.mouse.move(x, y, { steps: 4 });
       await page.keyboard.down('Shift');
       await page.mouse.click(x, y);
@@ -79,11 +87,16 @@ test.describe('Inline interaction — desktop', () => {
 
   test('Ctrl+F toggles the precision badge', async ({ page }) => {
     await page.goto('/designer?fresh=1');
-    const readout = page.locator('[data-testid="cost-readout"]');
+    // The precision figure MOVED out of the cost badge - that testid is now
+    // the MUR total only ("0 MUR") - into the combined "area · zoom · snap"
+    // chip, the span immediately before the items-placed badge.
+    const readout = page
+      .locator('[data-testid="items-placed"]')
+      .locator('xpath=preceding-sibling::span[1]');
     await expect(readout).toBeVisible({ timeout: 10_000 });
-    await expect(readout).toContainText('0.5 m');
+    await expect(readout).toContainText('· 0.5 m');
     await page.keyboard.press('Control+f');
-    await expect(readout).toContainText('0.25 m');
+    await expect(readout).toContainText('· 0.25 m');
   });
 });
 
@@ -93,6 +106,10 @@ test.describe('Inline interaction — mobile cluster', () => {
   test('placing via the mobile catalog shows the on-canvas cluster, not a modal', async ({ page }) => {
     await page.goto('/designer?fresh=1');
     // Mobile flow: sticky bottom toolbar → tap a thumbnail → popup → "+ Add".
+    // Same blank-canvas root cause: "+ Add to room" places at the ACTIVE
+    // room's centre, and with no drawn polygon that placement is refused, so
+    // nothing is selected and no cluster mounts.
+    await page.locator('[data-testid="start-quick-rectangle"]').click();
     const toolbar = page.locator('[data-testid="sims-bottom-toolbar"]');
     await expect(toolbar).toBeVisible({ timeout: 10_000 });
     const thumb = page.locator('[data-testid="sims-thumb"]').first();

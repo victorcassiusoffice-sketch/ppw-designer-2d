@@ -47,6 +47,12 @@ test.describe('Mobile Sims toolbar', () => {
 
   test('M.S.2 — tap a thumbnail opens the product popup, "+" places it', async ({ page }) => {
     await toolbarOrSkip(page);
+    // The designer opens on a BLANK canvas (416080c, 2026-06-09): there is no
+    // room until the user makes one, and "+ Add to room" then correctly
+    // refuses to place outside the plan. Lay the starter room so this spec
+    // still pins what it was written to pin - that "+" PLACES.
+    await page.locator('[data-testid="start-quick-rectangle"]').click();
+    await expect(page.locator('[data-testid="start-room-prompt"]')).toBeHidden();
     const placedBefore = Number((await page.locator('[data-testid="items-placed"]').first().textContent()) ?? '0');
     await page.locator('[data-testid="sims-thumb"]').first().click();
     const popup = page.locator('[data-testid="mobile-product-popup"]');

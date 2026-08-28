@@ -2,13 +2,14 @@
  * Phase 5 — full customer journey + 6 screenshots.
  *
  * Verifies on https://designer.ppwellness.co:
- *   arrive → place K1 product → draw walls → toggle 3D → 3D click-to-place
+ *   arrive → draw room → place K1 product → draw walls
  *   → BUY routes to k1-sport.com with Pattern C attribution → mobile 390 px
  *   variant of the same flow green.
  *
  * Outputs to `_handoff/preview/sims-level-pass-complete-2026-05-21/`.
  */
 import { test, expect, devices } from '@playwright/test';
+import { targetHasNoApi, NO_API_SKIP } from './multiroom-helpers';
 import * as path from 'node:path';
 
 const SHOT_DIR =
@@ -35,7 +36,8 @@ async function dismissCoach(page: import('@playwright/test').Page): Promise<void
 }
 
 test.describe('Phase 5 — desktop journey', () => {
-  test('customer arrives → place K1 → walls → BABYLON 3D → BUY → k1-sport attribution', async ({ page }) => {
+  test('customer arrives → draw room → place K1 → walls → BUY → k1-sport attribution', async ({ page, baseURL }) => {
+    test.skip(targetHasNoApi(baseURL), NO_API_SKIP);
     await dismissCoach(page);
 
     // Seed 4 walls + clear merchant session in init script so they survive
@@ -57,6 +59,14 @@ test.describe('Phase 5 — desktop journey', () => {
     await page.goto('/designer');
     await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
 
+    // A fresh customer now arrives on a BLANK canvas: makeBlankRoom() returns
+    // `polygon: []` (2026-08-25 - a room the user never drew must not appear).
+    // findRoomAt() therefore refuses every drop until a room exists, so
+    // drawing one is step 0 of the journey, not a precondition. Asserting 0
+    // here keeps the later `1` a proof of the PLACEMENT, not of the seed.
+    await page.locator('[data-testid="start-quick-rectangle"]').click();
+    await expect(page.locator('[data-testid="items-placed"]')).toHaveText('0');
+
     // 1. Arrive screenshot
     await page.screenshot({ path: path.join(SHOT_DIR, '01-arrive-desktop.png'), fullPage: true });
 
@@ -74,7 +84,7 @@ test.describe('Phase 5 — desktop journey', () => {
     await page.screenshot({ path: path.join(SHOT_DIR, '02-placed-desktop.png'), fullPage: true });
 
     // 3. Engage Wall mode to verify the 4 seeded walls render + close the room.
-    await page.getByRole('button', { name: /^Wall$/ }).click();
+    await page.locator('[data-testid="wall-tool-toggle"]').click();
     await expect(page.locator('[data-testid="wall-count"]')).toHaveText('4', { timeout: 5_000 });
     await expect(page.locator('[data-testid="room-area"]')).toContainText(/m²/);
     await page.screenshot({ path: path.join(SHOT_DIR, '03-walls-desktop.png'), fullPage: true });
@@ -95,8 +105,11 @@ test.describe('Phase 5 — desktop journey', () => {
     expect(res.headers().location).toContain('k1-sport.com');
     expect(res.headers().location).toMatch(/ref=PPW-/);
 
-    // Back to 2D to capture the BUY button screenshot.
-    await page.goto('/designer?engine=konva');
+    // Reload to capture the BUY button screenshot - also proves the drawn room
+    // and the placed item survive a round-trip through localStorage.
+    // (`?engine=konva` pointed at an engine switch removed 2026-06-04; nothing
+    // in src/ has read that param since.)
+    await page.goto('/designer');
     await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
     // Place a fresh item so the BUY button has something to attach to.
     await page.locator('[data-product-id]').first().click();
@@ -116,7 +129,8 @@ test.describe('Phase 5 — desktop journey', () => {
 });
 
 test.describe('Phase 5 — mobile 390 px journey', () => {
-  test('mobile 390 px: designer renders + BUY-from-K1 redirect works for the mobile UA', async ({ browser }) => {
+  test('mobile 390 px: designer renders + BUY-from-K1 redirect works for the mobile UA', async ({ browser, baseURL }) => {
+    test.skip(targetHasNoApi(baseURL), NO_API_SKIP);
     const ctx = await browser.newContext({ ...devices['iPhone 13'] });
     const page = await ctx.newPage();
     await dismissCoach(page);

@@ -121,6 +121,30 @@ export function installTestHooks(): void {
       };
       fireAll(hit);
       if (typeof hit.getParent === 'function') fireAll(hit.getParent());
+      // The synthetic mousedown/touchstart above trips Konva's OWN
+      // `mousedown.konva` drag listener on the draggable placed Group, which
+      // registers the node in DragAndDrop._dragElements. The mouseup/touchend
+      // fired on the NODE cannot clear that - Konva ends a drag from a
+      // DOCUMENT-level pointerup. Left armed, the next real pointer movement
+      // (Playwright travelling to the rotate button) DRAGS the item and
+      // swallows the click. Disarm so hitReselect has no side effect.
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const dd: any = (Konva as any).DD;
+        if (dd?._dragElements) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          dd._dragElements.forEach((el: any) => {
+            try {
+              el.node?.stopDrag();
+            } catch {
+              /* already stopped */
+            }
+          });
+          dd._dragElements.clear();
+        }
+      } catch {
+        /* Konva internals moved - the reselect result is still valid */
+      }
       const sel = useDesignStore.getState().selectedInstanceId;
       return { hitFound: true, listening, selected: !!sel, stages, via };
     },
