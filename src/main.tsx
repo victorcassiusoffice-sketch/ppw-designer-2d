@@ -67,6 +67,22 @@ if (__TEST_HOOKS__) {
     });
 }
 
+// DEV-ONLY — expose window.__ppwGeom, the canvas's live world→screen transform,
+// so e2e specs derive click coordinates from GEOMETRY rather than by pixel-
+// scanning for gold. Once floor materials and door symbols land, a colour scan
+// can latch onto the wrong pixel and fail silently (specs still green, wrong
+// coordinate frame). `import.meta.env.DEV` is a build-time literal: false in a
+// production build, so this block and the module both tree-shake away. Unlike
+// __TEST_HOOKS__ it needs no env var on the dev server — a forgotten flag here
+// would mean silently falling back to the colour scan. Read-only API.
+if (import.meta.env.DEV) {
+  import('./lib/geomBridge')
+    .then((m) => m.installGeomBridge())
+    .catch(() => {
+      /* dev-only convenience; ignore load failures */
+    });
+}
+
 // OMS Wave 1B / Wave 1.10 — Sentry browser init, gated on the DSN env.
 // Release-tagged with the Vercel commit SHA so source-maps map back.
 // Free-tier-safe: traces + replays off.
