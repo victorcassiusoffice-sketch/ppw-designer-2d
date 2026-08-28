@@ -34,6 +34,7 @@
  */
 import Konva from 'konva';
 import { usePropertyStore } from '../store/propertyStore';
+import { useDrawProgressStore } from '../store/drawProgressStore';
 import { polygonBounds } from './geometry';
 
 export interface GeomPoint {
@@ -75,6 +76,8 @@ export interface GeomBridgeApi {
   rooms: () => GeomRoomBounds[];
   /** Count of MOUNTED `.room-poly` Konva nodes — the render-side room count. */
   renderedRoomCount: () => number;
+  /** Vertices currently in flight in room-draw mode. */
+  drawVertexCount: () => number;
 }
 
 /**
@@ -151,6 +154,10 @@ export function installGeomBridge(): void {
           vertices: r.polygon.length,
         };
       });
+    },
+
+    drawVertexCount() {
+      return useDrawProgressStore.getState().vertices.length;
     },
 
     renderedRoomCount() {

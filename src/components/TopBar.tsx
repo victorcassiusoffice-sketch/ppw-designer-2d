@@ -32,6 +32,8 @@ import { useDesignsStore } from '../store/designsStore';
 import { useToastStore } from '../store/toastStore';
 import { useHistoryStore } from '../store/historyStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
+import { useDrawProgressStore } from '../store/drawProgressStore';
+import { performUndo, performRedo } from '../lib/undoIntent';
 import { FLOOR_MATERIALS } from '../data/floorMaterials';
 import { useWallStore } from '../store/wallStore';
 import { useCart } from '../store/cartStore';
@@ -91,8 +93,11 @@ export function TopBar({
   // so disabled-states track the stack length.
   const pastLength = useHistoryStore((s) => s.past.length);
   const futureLength = useHistoryStore((s) => s.future.length);
-  const undo = useHistoryStore((s) => s.undo);
-  const redo = useHistoryStore((s) => s.redo);
+  // Live in-flight draw state, so the undo button reflects the SHARED ladder
+  // rather than only the history stack. Without this the button sits disabled
+  // while a polygon is being drawn on an empty history - looking dead at the
+  // exact moment undo is most useful.
+  const drawInFlight = useDrawProgressStore((s) => s.enabled && s.vertices.length > 0);
   // Mobile Safari long-press confirm — Tweak 07 §7. A first tap arms;
   // a second tap within 1500ms fires. Desktop fires immediately.
   const [mobileUndoArmed, setMobileUndoArmed] = useState(false);
@@ -106,7 +111,11 @@ export function TopBar({
       return;
     }
     setMobileUndoArmed(false);
-    undo();
+    // Route through the shared undo ladder, NOT straight into the history
+    // store. Mid-draw this steps back one vertex instead of reaching past the
+    // in-flight polygon into the global history - which is what made the
+    // button and Ctrl+Z disagree.
+    performUndo();
   }
 
   // 2026-06-01 — Wall tool, folded in from the removed ModeStrip. Wall
@@ -568,7 +577,7 @@ export function TopBar({
           <button
             type="button"
             onClick={handleUndoClick}
-            disabled={pastLength === 0}
+            disabled={!drawInFlight && wallActive === false && pastLength === 0}
             aria-label={mobileUndoArmed ? 'Tap to confirm undo' : 'Undo (Ctrl+Z)'}
             title={mobileUndoArmed ? 'Tap again to confirm' : 'Undo (Ctrl+Z)'}
             className={`min-h-[40px] px-2.5 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed ${
@@ -588,7 +597,7 @@ export function TopBar({
           </button>
           <button
             type="button"
-            onClick={redo}
+            onClick={() => performRedo()}
             disabled={futureLength === 0}
             aria-label="Redo (Ctrl+Shift+Z)"
             title="Redo (Ctrl+Shift+Z)"

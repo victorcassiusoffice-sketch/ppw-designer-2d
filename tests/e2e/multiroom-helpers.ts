@@ -172,6 +172,17 @@ export async function renderedRoomCount(page: Page): Promise<number> {
   });
 }
 
+/** Vertices currently in flight in room-draw mode, via the dev bridge. */
+export async function drawVertexCount(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    const g = (window as unknown as {
+      __ppwGeom?: { ready: () => boolean; drawVertexCount: () => number };
+    }).__ppwGeom;
+    if (!g) return -1;
+    return g.drawVertexCount();
+  });
+}
+
 /**
  * Find the leftmost/topmost gold wall pixel on the first Konva layer
  * canvas and return it in page pixels. Ported verbatim in behaviour from
