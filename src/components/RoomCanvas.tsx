@@ -25,7 +25,7 @@
  * strip is desktop-only on mobile (clipped by Android nav otherwise).
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Stage, Layer, Line, Group, Text, Circle, Rect, Image as KonvaImage } from 'react-konva';
 import { useImageCache, useImageCacheStatus } from '../hooks/useImageCache';
 import type Konva from 'konva';
@@ -101,6 +101,12 @@ import {
   translatePolygon,
   unionBounds,
 } from '../designer/roomLayout';
+// Addressable walls (2026-08-28). The room outline is no longer one closed
+// Line: the fill and the gold stroke are separate, and the stroke is drawn
+// EDGE BY EDGE so an opening can cut a gap in a wall without cutting the
+// floor. With no openings this renders exactly what the single closed Line
+// did — see the square-cap note at the call site.
+import { pointAlongEdge, roomEdges, splitEdgeSpans } from '../designer/wallEdges';
 
 // M1.5: HTML5 DragEvent path retired (silently fails on `.konva-stage`
 // per K1 audit). DRAG_MIME stays in ProductPalette for legacy unit
@@ -1288,25 +1294,66 @@ export function RoomCanvas({
               <Group key={room.id} name="room-poly" listening={false}>
                 {/* Reference `Design/Designer.jpeg`: the walls ARE the drawing.
                     A thick amber stroke over a slightly lighter floor, with a
-                    hairline inside the stroke for the drafted edge. */}
+                    hairline inside the stroke for the drafted edge.
+
+                    FLOOR — fill only, no stroke. Split from the wall so an
+                    opening can cut the wall without cutting the floor away
+                    underneath it. */}
                 <Line
                   points={pts}
                   closed
                   fill={isActive ? ROOM_FILL_ACTIVE : ROOM_FILL}
-                  stroke={WALL_GOLD}
-                  strokeWidth={WALL_STROKE_PX}
-                  lineJoin="miter"
                   shadowColor="#000000"
                   shadowBlur={18}
                   shadowOpacity={0.45}
                   shadowOffsetY={4}
                 />
-                <Line
-                  points={pts}
-                  closed
-                  stroke={WALL_INNER_STROKE}
-                  strokeWidth={WALL_INNER_STROKE_PX}
-                />
+                {/* WALLS — one stroke per EDGE rather than one closed Line, so
+                    a door can remove a span from a single wall. `splitEdgeSpans`
+                    returns the solid runs left once openings are cut out; with
+                    no openings that is the whole edge and this draws exactly
+                    what the closed Line drew.
+
+                    lineCap="square" extends each run by half a stroke at both
+                    ends. At a CORNER that is what fills the mitre the closed
+                    Line used to join for us. At an OPENING it would overshoot
+                    into the gap, so an opening-side end is pulled back by the
+                    same half-stroke and the cap puts it back exactly on the
+                    jamb — the gap ends up the true width of the door. */}
+                {roomEdges(room).map((edge) => {
+                  const halfStrokeM = WALL_STROKE_PX / 2 / pxPerMetre;
+                  return splitEdgeSpans(edge.lengthM, []).map((span, si) => {
+                    const atStartCorner = span.t0 <= 0;
+                    const atEndCorner = span.t1 >= edge.lengthM;
+                    const t0 = atStartCorner ? 0 : span.t0 + halfStrokeM;
+                    const t1 = atEndCorner ? edge.lengthM : span.t1 - halfStrokeM;
+                    if (t1 - t0 <= 0) return null;
+                    const p0 = pointAlongEdge(edge, t0);
+                    const p1 = pointAlongEdge(edge, t1);
+                    const seg = [
+                      p0.x * pxPerMetre,
+                      p0.y * pxPerMetre,
+                      p1.x * pxPerMetre,
+                      p1.y * pxPerMetre,
+                    ];
+                    return (
+                      <Fragment key={`w-${edge.index}-${si}`}>
+                        <Line
+                          points={seg}
+                          stroke={WALL_GOLD}
+                          strokeWidth={WALL_STROKE_PX}
+                          lineCap="square"
+                        />
+                        <Line
+                          points={seg}
+                          stroke={WALL_INNER_STROKE}
+                          strokeWidth={WALL_INNER_STROKE_PX}
+                          lineCap="square"
+                        />
+                      </Fragment>
+                    );
+                  });
+                })}
               </Group>
             );
           })}
