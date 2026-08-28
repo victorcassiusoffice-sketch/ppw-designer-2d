@@ -3435,12 +3435,16 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
               // negate before atan2 for natural CW=positive semantics.
               const rad = Math.atan2(dx, -dy);
               let deg = (rad * 180) / Math.PI;
-              // F2/F3 — 90° detents by default (Sims build-mode parity);
-              // hold Shift or Alt for a free angle. (Was 15° — corrected
-              // to match the desktop+mobile interaction specs.)
+              // "More angles" (Vic 2026-08-28): the drag handle snaps to 15°
+              // detents by default — 24 orientations, and because 0/90/180/270
+              // are all multiples of 15 the cardinal facings still snap cleanly
+              // for square-to-wall alignment. Hold Shift or Alt for a fully
+              // free angle. (90° quarter-turns stay available on the ⟳ cluster
+              // button + the R key.)
+              const HANDLE_DETENT_DEG = 15;
               const free = e.evt.shiftKey || e.evt.altKey;
               if (!free) {
-                deg = Math.round(deg / 90) * 90;
+                deg = Math.round(deg / HANDLE_DETENT_DEG) * HANDLE_DETENT_DEG;
               }
               // Normalise to [0, 360).
               deg = ((deg % 360) + 360) % 360;
