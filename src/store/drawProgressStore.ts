@@ -20,16 +20,30 @@ export interface DrawProgressState {
   enabled: boolean;
   /** Live polygon vertices being placed; reset to [] on entry + close + cancel. */
   vertices: Polygon;
+  /**
+   * "Keep drawing after this one closes" (units brief 2026-08-28, D12).
+   *
+   * An in-flight INTENT, not design content, which is why it lives in this
+   * ephemeral store and not in the property or the history snapshot. It is
+   * read and cleared by an App-level effect AFTER the commit, deliberately
+   * not inside setDrawMode or handleDrawCommit: two source-pin tests
+   * extract those functions by regex and require their dep arrays to stay
+   * literally `[]` and to begin with `[addRoom`.
+   */
+  continueAfterCommit: boolean;
   setEnabled: (next: boolean) => void;
   setVertices: (next: Polygon | ((prev: Polygon) => Polygon)) => void;
+  setContinueAfterCommit: (next: boolean) => void;
   reset: () => void;
 }
 
 export const useDrawProgressStore = create<DrawProgressState>((set) => ({
   enabled: false,
   vertices: [],
+  continueAfterCommit: false,
   setEnabled: (next) => set({ enabled: next }),
   setVertices: (next) =>
     set((s) => ({ vertices: typeof next === 'function' ? next(s.vertices) : next })),
-  reset: () => set({ enabled: false, vertices: [] }),
+  setContinueAfterCommit: (next) => set({ continueAfterCommit: next }),
+  reset: () => set({ enabled: false, vertices: [], continueAfterCommit: false }),
 }));

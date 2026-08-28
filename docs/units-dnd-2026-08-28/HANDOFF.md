@@ -462,3 +462,58 @@ During one 8-worker run, `the room tool draws on the selected unit` failed while
 isolation and passing every serial run since. Not investigated further because it has not
 recurred; noting it rather than pretending the suite has always been clean. If it returns,
 the seed sentinel (`__ppw_seeded`) shared across contexts is the first thing to check.
+
+---
+
+## P7 — U7: keep-drawing flow + copy sweep
+
+**Done.** The units half of the brief is complete.
+
+- **`continueAfterCommit`** added to `drawProgressStore` — ephemeral, outside the history
+  snapshot, because it is an in-flight *intention* rather than design content. Set by
+  **Shift+Enter** or the new `room-draw-close-continue` ("Close + new") HUD button.
+- Consumed by its **own App-level effect**, deliberately not by a branch inside
+  `setDrawMode` or `handleDrawCommit`. Two source-pin tests extract those functions by regex
+  and require `setDrawMode`'s dep array to stay literally `[]` and the commit body's to begin
+  with `[addRoom`; routing the flag through either surfaces as a confusing null-match error
+  rather than an honest behaviour failure.
+- Plain Enter and click-first-vertex behaviour are unchanged.
+- **Copy sweep complete** — the scoped grep for rendered `0.5 m` / `50 cm` strings returns
+  **0**. `DetailsPanel.tsx`'s `"Duplicate (+0.5 m offset)"` is deliberately excluded and
+  left alone: it is a true statement about a constant this work did not change, so
+  "fixing" it would make the UI lie.
+
+### P7 GATE
+
+```
+$ npx vitest run RoomDrawMode customer-ui-fixes roomCanvasRenderBind
+  54 passed        <- incl. the `[]` and `[addRoom` extraction regexes
+
+$ npx vitest run
+  Tests  1858 passed (1858)
+
+$ PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test units multiroom-attach undo-mid-draw
+  14 passed (21.1s)
+
+$ grep -rnE '"[^"]*(0\.5 m|50 cm)|>[^<]*(0\.5 m|50 cm)' src/components src/designer \
+    --include=*.tsx | grep -v '__tests__' | grep -v 'Duplicate (+0.5 m offset)' | wc -l
+  0
+
+$ npm run build   # clean      $ npx eslint <4>   # 0 errors
+```
+
+The e2e proves all three things that could each break separately: the room committed, the
+in-flight polygon is empty, **and a further canvas click raises the vertex count to 1** —
+i.e. draw mode is genuinely still live rather than the click being swallowed.
+
+---
+
+# UNITS COMPLETE — P1 through P7
+
+Vic's first ask is delivered end to end: select a unit from 1 cm to 10 m, draw rooms and
+walls on it, see lengths written in it, type an exact length while drawing, retype an
+existing wall's length, and keep drawing without re-entering the tool.
+
+**Still to come:** the Sims drag-drop half — P8 (drag transport seam + the rotate listener
+collision), P9 (desktop dock drag to drop to commit), P10 (pick up a placed item and move it
+between rooms), then P11 regression and P12 deploy.

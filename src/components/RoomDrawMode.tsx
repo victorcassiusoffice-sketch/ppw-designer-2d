@@ -39,6 +39,7 @@ import {
 import type { Polygon, Vertex, Viewport } from '../lib/geometry';
 import { useToastStore, type ToastKind } from '../store/toastStore';
 import { usePropertyStore } from '../store/propertyStore';
+import { useDrawProgressStore } from '../store/drawProgressStore';
 // Attached multi-room (2026-08-26) — new vertices snap onto the walls of
 // rooms that already exist, so adjacent rooms share exact geometry.
 import {
@@ -309,6 +310,11 @@ export function RoomDrawLayer({
         e.preventDefault();
         if (current.length >= 3) {
           console.log(DBG, 'keydown Enter -> close', { vertices: current.length });
+          // Units brief D12 - Shift+Enter closes AND stays in draw mode, so a
+          // plan of several rooms is one continuous gesture.
+          if (e.shiftKey) {
+            useDrawProgressStore.getState().setContinueAfterCommit(true);
+          }
           console.log('[draw-close]', {
             reason: 'enter-key',
             vertices: current.length,
@@ -584,7 +590,10 @@ export function RoomDrawHUD({
     onCancel();
   }, [setVertices, setHover, onCancel]);
 
-  const handleClose = useCallback(() => {
+  const handleCloseAnd = useCallback((keepDrawing: boolean) => {
+    if (keepDrawing) {
+      useDrawProgressStore.getState().setContinueAfterCommit(true);
+    }
     if (vertices.length < 3) {
       console.log('[draw-close]', {
         reason: 'hud-close-button-too-few-vertices',
@@ -603,6 +612,9 @@ export function RoomDrawHUD({
     setVertices([]);
     setHover(null);
   }, [vertices, name, onCommit, setVertices, setHover]);
+
+  const handleClose = useCallback(() => handleCloseAnd(false), [handleCloseAnd]);
+  const handleCloseContinue = useCallback(() => handleCloseAnd(true), [handleCloseAnd]);
 
   if (!enabled) return null;
 
@@ -686,6 +698,16 @@ export function RoomDrawHUD({
             data-testid="room-draw-undo"
           >
             Undo
+          </button>
+          <button
+            type="button"
+            onClick={handleCloseContinue}
+            disabled={vertices.length < 3}
+            data-testid="room-draw-close-continue"
+            className="pointer-events-auto min-h-[44px] flex-1 rounded-md border border-ppw-stone bg-white px-3 text-xs font-medium text-ppw-slate hover:border-ppw-teal disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
+            title="Close this room and keep drawing another (Shift+Enter)"
+          >
+            Close + new
           </button>
           <button
             type="button"

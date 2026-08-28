@@ -460,4 +460,40 @@ test.describe('Selectable snap units', () => {
     //     the same state. Only the count exposes it.
     expect(await historyFrameCount(page)).toBe(framesBefore);
   });
+  test('Shift+Enter closes the room and keeps drawing', async ({ page }) => {
+    await seedWithUnit(page, JSON.parse(JSON.stringify(ONE_ROOM_FIXTURE)), 'full');
+    await page.goto('/designer');
+    await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    await waitForGeom(page);
+
+    await page.locator('[data-testid="room-draw-toggle"]').click();
+    await clickWorld(page, 6.5, 0.5);
+    await clickWorld(page, 9, 0.5);
+    await clickWorld(page, 9, 3);
+    await clickWorld(page, 6.5, 3);
+    await page.keyboard.press('Shift+Enter');
+    await page.waitForTimeout(600);
+
+    // The room committed...
+    const after = await storedProperty(page);
+    expect(after.rooms).toHaveLength(2);
+
+    // ...the in-flight polygon is empty...
+    const count = await page.evaluate(() => {
+      const g = window.__ppwGeom;
+      return g && g.ready() ? g.drawVertexCount() : -1;
+    });
+    expect(count).toBe(0);
+
+    // ...and draw mode is STILL live, so the next click starts room three
+    // rather than being swallowed. This is the assertion that fails if the
+    // re-arm effect never runs.
+    await clickWorld(page, 11, 0.5);
+    await page.waitForTimeout(200);
+    const after2 = await page.evaluate(() => {
+      const g = window.__ppwGeom;
+      return g && g.ready() ? g.drawVertexCount() : -1;
+    });
+    expect(after2).toBe(1);
+  });
 });
