@@ -55,6 +55,13 @@ export interface PlacedItem {
   x: number;
   y: number;
   rotation: number;
+  /**
+   * Surface slots (2026-08-24) — set on `placement: 'surface'` items:
+   * the instanceId of the surface (table/console) they sit on. Children
+   * move with their parent (see updateItem) and are removed with it
+   * (see removeItem). Optional → absent on every pre-existing save.
+   */
+  parentInstanceId?: string;
 }
 
 export interface Room {
@@ -515,17 +522,26 @@ export const usePropertyStore = create<PropertyState>()(
         set((s) => {
           const owner = findRoomByInstanceId(s.property, instanceId);
           if (!owner) return s;
+          // Surface slots — deleting a table also deletes what sits on it
+          // (Sims build-mode behaviour: the surface carries its contents).
+          const doomed = (i: PlacedItem) =>
+            i.instanceId === instanceId || i.parentInstanceId === instanceId;
           return {
             property: {
               ...s.property,
               rooms: s.property.rooms.map((r) =>
                 r.id === owner.id
-                  ? { ...r, placedItems: r.placedItems.filter((i) => i.instanceId !== instanceId) }
+                  ? { ...r, placedItems: r.placedItems.filter((i) => !doomed(i)) }
                   : r,
               ),
             },
             selectedInstanceId:
-              s.selectedInstanceId === instanceId ? null : s.selectedInstanceId,
+              s.selectedInstanceId &&
+              owner.placedItems.some(
+                (i) => i.instanceId === s.selectedInstanceId && doomed(i),
+              )
+                ? null
+                : s.selectedInstanceId,
           };
         }),
 
@@ -583,6 +599,12 @@ export const usePropertyStore = create<PropertyState>()(
         set((s) => {
           const owner = findRoomByInstanceId(s.property, instanceId);
           if (!owner) return s;
+          // Surface slots — moving a table carries the items sitting on it
+          // (Sims behaviour). Delta computed from the parent's old position.
+          const target = owner.placedItems.find((i) => i.instanceId === instanceId);
+          const dx = target && typeof patch.x === 'number' ? patch.x - target.x : 0;
+          const dy = target && typeof patch.y === 'number' ? patch.y - target.y : 0;
+          const shiftChildren = dx !== 0 || dy !== 0;
           return {
             property: {
               ...s.property,
@@ -590,9 +612,13 @@ export const usePropertyStore = create<PropertyState>()(
                 r.id === owner.id
                   ? {
                       ...r,
-                      placedItems: r.placedItems.map((i) =>
-                        i.instanceId === instanceId ? { ...i, ...patch } : i,
-                      ),
+                      placedItems: r.placedItems.map((i) => {
+                        if (i.instanceId === instanceId) return { ...i, ...patch };
+                        if (shiftChildren && i.parentInstanceId === instanceId) {
+                          return { ...i, x: i.x + dx, y: i.y + dy };
+                        }
+                        return i;
+                      }),
                     }
                   : r,
               ),

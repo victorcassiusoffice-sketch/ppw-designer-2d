@@ -164,6 +164,18 @@ import {
 import { findFloorMaterialById } from '../data/floorMaterials';
 import { nextRoomName } from '../designer/roomNaming';
 import { obstaclesFor } from '../designer/layerBands';
+// Surface slots + wall-mounted items (2026-08-24) — placement:'wall'
+// products hang on walls; placement:'surface' products sit on is_surface
+// items. Each layer collides only within itself.
+import {
+  findSurfaceUnder,
+  placementKind,
+  resolveSurfaceItemPlacement,
+  resolveWallItemPlacement,
+  type PlacementKind,
+  type SurfaceRect,
+} from '../designer/attachmentPlacement';
+import { collidesWithAny } from '../lib/geometry';
 
 /** How close the pointer must be to a wall for the door tool to snap to it. */
 const DOOR_SNAP_TOL_M = 0.6;
@@ -181,6 +193,54 @@ interface DoorHover {
   offsetM: number;
   openingId?: string;
   message?: string;
+}
+
+/**
+ * Footprint rects of the placed items on ONE placement layer ('floor' |
+ * 'wall' | 'surface'), for layer-scoped collision. For 'surface', pass
+ * `parentId` to keep only siblings on that surface.
+ */
+function layerRects(
+  placedItems: PlacedItem[],
+  layer: PlacementKind,
+  opts?: { parentId?: string; ignoreId?: string },
+): Array<PlacedRect & { instanceId: string }> {
+  const out: Array<PlacedRect & { instanceId: string }> = [];
+  for (const it of placedItems) {
+    if (opts?.ignoreId && it.instanceId === opts.ignoreId) continue;
+    const p = getProductById(it.productId);
+    if (!p || placementKind(p) !== layer) continue;
+    if (layer === 'surface' && opts?.parentId && it.parentInstanceId !== opts.parentId) continue;
+    const fp = { lengthM: cmToM(p.dimensions_cm.length), widthM: cmToM(p.dimensions_cm.width) };
+    const r = rotatedFootprint(fp, it.rotation);
+    out.push({ x: it.x, y: it.y, w: r.w, h: r.h, instanceId: it.instanceId });
+  }
+  return out;
+}
+
+/** Footprint rects of every placed item whose product is a surface. */
+function surfaceRects(placedItems: PlacedItem[]): SurfaceRect[] {
+  const out: SurfaceRect[] = [];
+  for (const it of placedItems) {
+    const p = getProductById(it.productId);
+    if (!p?.is_surface) continue;
+    const fp = { lengthM: cmToM(p.dimensions_cm.length), widthM: cmToM(p.dimensions_cm.width) };
+    const r = rotatedFootprint(fp, it.rotation);
+    out.push({ instanceId: it.instanceId, x: it.x, y: it.y, w: r.w, h: r.h });
+  }
+  return out;
+}
+
+// Surface + wall items draw ABOVE floor items (Konva z = array order): a
+// diffuser renders on top of its table, a mirror on top of the wall line.
+// Stable sort keeps within-layer placement order. Applied per room so the
+// attached multi-room render preserves the same z-order everywhere.
+function sortItemsForRender(items: PlacedItem[]): PlacedItem[] {
+  const rank = (it: PlacedItem) => {
+    const k = placementKind(getProductById(it.productId));
+    return k === 'floor' ? 0 : k === 'surface' ? 1 : 2;
+  };
+  return [...items].sort((a, b) => rank(a) - rank(b));
 }
 
 // M1.5: HTML5 DragEvent path retired (silently fails on `.konva-stage`
@@ -753,6 +813,97 @@ export function RoomCanvas({
       }
       const targetPolygon = target.polygon;
       const targetItems = target.placedItems;
+
+      const kind = placementKind(product);
+
+      // ---- Wall-mounted items (shelves, mirrors) --------------------
+      // Routed into the dropped-in room (targetPolygon/targetItems) like
+      // every other kind, per the attached multi-room model.
+      if (kind === 'wall') {
+        const r = resolveWallItemPlacement({
+          centreXm,
+          centreYm,
+          fp,
+          polygon: targetPolygon,
+          snapStep,
+          frontEdge: product.front_edge,
+        });
+        if (!r.ok) {
+          haptic('invalid');
+          pushToast('This item hangs on a wall — drop it closer to one.', 'warn');
+          return false;
+        }
+        const wf = rotatedFootprint(fp, r.rotationDeg);
+        const wallOthers = layerRects(targetItems, 'wall');
+        if (!validatePlacement({ x: r.x, y: r.y, w: wf.w, h: wf.h }, wallOthers, targetPolygon).ok) {
+          haptic('invalid');
+          pushToast("No space on that bit of wall.", 'warn');
+          return false;
+        }
+        haptic('place');
+        // Commit into the ROUTED room, not the active one (same as the floor path).
+        const wallId = usePropertyStore
+          .getState()
+          .addItem({ productId: product.id, x: r.x, y: r.y, rotation: r.rotationDeg }, target.id);
+        setJustPlacedId(wallId);
+        selectItemAcrossRooms(wallId);
+        pushToast(`Added "${product.name}" to cart`, 'success', {
+          ttlMs: 5000,
+          action: { label: 'Undo', onClick: () => removeItem(wallId) },
+        });
+        return true;
+      }
+
+      // ---- Surface items (sit ON a table/console) -------------------
+      if (kind === 'surface') {
+        const under = findSurfaceUnder({ x: centreXm, y: centreYm }, surfaceRects(targetItems));
+        if (!under) {
+          haptic('invalid');
+          pushToast('This item sits on a surface — drop it onto a table.', 'warn');
+          return false;
+        }
+        const rot = userRotationDeg ?? 0;
+        const res = resolveSurfaceItemPlacement({
+          centreXm,
+          centreYm,
+          fp,
+          rotationDeg: rot,
+          surface: under,
+        });
+        if (!res.ok) {
+          haptic('invalid');
+          pushToast('Too big for that surface.', 'warn');
+          return false;
+        }
+        const sf = rotatedFootprint(fp, rot);
+        const sibs = layerRects(targetItems, 'surface', { parentId: under.instanceId });
+        if (collidesWithAny({ x: res.x, y: res.y, w: sf.w, h: sf.h }, sibs)) {
+          haptic('invalid');
+          pushToast('No space left on that surface.', 'warn');
+          return false;
+        }
+        haptic('place');
+        // Commit into the ROUTED room (the table's room), not the active one.
+        const surfId = usePropertyStore.getState().addItem(
+          {
+            productId: product.id,
+            x: res.x,
+            y: res.y,
+            rotation: rot,
+            parentInstanceId: res.parentInstanceId,
+          },
+          target.id,
+        );
+        setJustPlacedId(surfId);
+        selectItemAcrossRooms(surfId);
+        pushToast(`Added "${product.name}" to cart`, 'success', {
+          ttlMs: 5000,
+          action: { label: 'Undo', onClick: () => removeItem(surfId) },
+        });
+        return true;
+      }
+
+      // ---- Floor items (the existing Sims wall-aware path) ----------
       const resolved = resolveWallAwarePlacement({
         centreXm,
         centreYm,
@@ -763,11 +914,14 @@ export function RoomCanvas({
         frontEdge: product.front_edge,
       });
       const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
-      // Layer bands (2026-08-28): only same-band items are obstacles, so a
-      // treadmill ignores the mats under it. Before this, a flooring SKU laid
-      // as an item blocked everything on top of it and findFreeSlot silently
-      // teleported the blocked product elsewhere.
-      const others = obstaclesFor(product.id, targetItems)
+      // Floor items collide with floor items only (wall items hang above,
+      // surface items sit on a tabletop) AND only within the same layer
+      // band — so a treadmill still ignores the mats laid under it.
+      const floorItems = targetItems.filter((it) => {
+        const p = getProductById(it.productId);
+        return p ? placementKind(p) === 'floor' : true;
+      });
+      const others = obstaclesFor(product.id, floorItems)
         .map((it) => {
           const p = getProductById(it.productId);
           if (!p) return null;
@@ -1007,6 +1161,55 @@ export function RoomCanvas({
         );
         return { xM: xM - gw / 2, yM: yM - gh / 2, rotation: ghostManuallyRotated ? ghostRotation : 0, valid: false, w: gw, h: gh };
       }
+
+      const kind = placementKind(product);
+
+      // Wall-mounted ghost: snaps to the nearest wall in range; out of
+      // range it follows the cursor in red so the user sees "not here".
+      if (kind === 'wall') {
+        const r = resolveWallItemPlacement({
+          centreXm: xM,
+          centreYm: yM,
+          fp,
+          polygon: target.polygon,
+          snapStep,
+          frontEdge: product.front_edge,
+        });
+        const { w, h } = rotatedFootprint(fp, r.rotationDeg);
+        if (!r.ok) {
+          return { xM: xM - w / 2, yM: yM - h / 2, rotation: 0, valid: false, w, h };
+        }
+        const ok = validatePlacement(
+          { x: r.x, y: r.y, w, h },
+          layerRects(target.placedItems, 'wall'),
+          target.polygon,
+        ).ok;
+        return { xM: r.x, yM: r.y, rotation: r.rotationDeg, valid: ok, w, h };
+      }
+
+      // Surface-item ghost: green only over a table with room for it.
+      if (kind === 'surface') {
+        const rot = ghostManuallyRotated ? ghostRotation : 0;
+        const { w, h } = rotatedFootprint(fp, rot);
+        const under = findSurfaceUnder({ x: xM, y: yM }, surfaceRects(target.placedItems));
+        if (!under) {
+          return { xM: xM - w / 2, yM: yM - h / 2, rotation: rot, valid: false, w, h };
+        }
+        const res = resolveSurfaceItemPlacement({
+          centreXm: xM,
+          centreYm: yM,
+          fp,
+          rotationDeg: rot,
+          surface: under,
+        });
+        if (!res.ok) {
+          return { xM: xM - w / 2, yM: yM - h / 2, rotation: rot, valid: false, w, h };
+        }
+        const sibs = layerRects(target.placedItems, 'surface', { parentId: under.instanceId });
+        const ok = !collidesWithAny({ x: res.x, y: res.y, w, h }, sibs);
+        return { xM: res.x, yM: res.y, rotation: rot, valid: ok, w, h };
+      }
+
       // Same wall-aware resolver as the commit path, so the ghost shows
       // EXACTLY where (and at what facing) the item will land.
       const resolved = resolveWallAwarePlacement({
@@ -1020,9 +1223,13 @@ export function RoomCanvas({
       });
       const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
       const candidate: PlacedRect = { x: resolved.x, y: resolved.y, w, h };
-      // Same band filter as the commit path — the ghost must predict the
-      // commit exactly, or the preview lies.
-      const others = obstaclesFor(product.id, target.placedItems)
+      // Same combined filter as the commit path — floor-kind items only,
+      // in the same band — so the ghost predicts the commit exactly.
+      const floorItems = target.placedItems.filter((it) => {
+        const p = getProductById(it.productId);
+        return p ? placementKind(p) === 'floor' : true;
+      });
+      const others = obstaclesFor(product.id, floorItems)
         .map((it) => {
           const p = getProductById(it.productId);
           if (!p) return null;
@@ -2227,11 +2434,15 @@ export function RoomCanvas({
               no ghost, no toast, no placement. That is what made "put a bench
               on the mat" impossible even once collisions became band-aware:
               the mat swallowed the click before placement was ever consulted.
+              It is ALSO what lets a surface item be dropped on top of its
+              table without the table swallowing the commit click.
               Konva `opacity` does not disable listening; this prop is the
               only thing that does. */}
           <Group listening={!drawMode && !pendingProductId}>
             {rooms.map((room) =>
-              room.placedItems.map((item) => {
+              // Sorted per room so surface/wall items draw above floor items
+              // (a diffuser on top of its table) everywhere, not just active.
+              sortItemsForRender(room.placedItems).map((item) => {
                 const product = getProductById(item.productId);
                 if (!product) return null;
                 const fp = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
@@ -2851,7 +3062,6 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         if (stage) stage.container().style.cursor = 'grab';
         const newXm = e.target.x() / pxPerMetre;
         const newYm = e.target.y() / pxPerMetre;
-
         /**
          * Sims drag-drop (2026-08-28, D-B15) — where did it actually land?
          *
@@ -2877,9 +3087,15 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         const targetPolygon = crossRoom && dropRoom ? dropRoom.polygon : polygon;
         const targetItems = crossRoom && dropRoom ? dropRoom.placedItems : placedItems;
 
-        // Band filter, matching the placement paths: dragging a bench ONTO a
-        // mat must land, not bounce back.
-        const others = obstaclesFor(item.productId, targetItems)
+        // Band + placement-kind filter, matching the placement paths: a floor
+        // item dragged ONTO a mat must land (band), and must ignore the
+        // wall/surface items that live above it (kind). Wall + surface drags
+        // return early below, so this only governs the floor drag path.
+        const floorItems = targetItems.filter((it) => {
+          const p = getProductById(it.productId);
+          return p ? placementKind(p) === 'floor' : true;
+        });
+        const others = obstaclesFor(item.productId, floorItems)
           .map((it) => {
             const p = getProductById(it.productId);
             if (!p) return null;
@@ -2901,6 +3117,80 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
           lengthM: cmToM(product.dimensions_cm.length),
           widthM: cmToM(product.dimensions_cm.width),
         };
+        const revert = (msg: string) => {
+          e.target.position({ x: item.x * pxPerMetre, y: item.y * pxPerMetre });
+          pushToast(msg, 'warn');
+        };
+        const kind = placementKind(product);
+
+        // Wall item drag: re-snap to the nearest wall (it may be a
+        // different wall — re-orient with it) or bounce back.
+        if (kind === 'wall') {
+          const cur = rotatedFootprint(fpUnrotated, item.rotation);
+          const r = resolveWallItemPlacement({
+            centreXm: newXm + cur.w / 2,
+            centreYm: newYm + cur.h / 2,
+            fp: fpUnrotated,
+            polygon,
+            snapStep: 0.5,
+            frontEdge: product.front_edge,
+          });
+          const wfW = rotatedFootprint(fpUnrotated, r.rotationDeg);
+          const ok =
+            r.ok &&
+            validatePlacement(
+              { x: r.x, y: r.y, w: wfW.w, h: wfW.h },
+              layerRects(placedItems, 'wall', { ignoreId: item.instanceId }),
+              polygon,
+            ).ok;
+          if (ok) {
+            updateItem(item.instanceId, { x: r.x, y: r.y, rotation: r.rotationDeg });
+            e.target.position({ x: r.x * pxPerMetre, y: r.y * pxPerMetre });
+          } else {
+            revert('Wall items need a free bit of wall.');
+          }
+          return;
+        }
+
+        // Surface item drag: must land on a surface (same or another —
+        // it reparents) with room for it, else bounce back.
+        if (kind === 'surface') {
+          const cur = rotatedFootprint(fpUnrotated, item.rotation);
+          const centre = { x: newXm + cur.w / 2, y: newYm + cur.h / 2 };
+          const under = findSurfaceUnder(centre, surfaceRects(placedItems));
+          if (!under) {
+            revert('This item sits on a surface — drop it onto a table.');
+            return;
+          }
+          const res = resolveSurfaceItemPlacement({
+            centreXm: centre.x,
+            centreYm: centre.y,
+            fp: fpUnrotated,
+            rotationDeg: item.rotation,
+            surface: under,
+          });
+          const sibs = layerRects(placedItems, 'surface', {
+            parentId: under.instanceId,
+            ignoreId: item.instanceId,
+          });
+          if (!res.ok || collidesWithAny({ x: res.x, y: res.y, w: cur.w, h: cur.h }, sibs)) {
+            revert('No space on that surface.');
+            return;
+          }
+          updateItem(item.instanceId, {
+            x: res.x,
+            y: res.y,
+            parentInstanceId: res.parentInstanceId,
+          });
+          e.target.position({ x: res.x * pxPerMetre, y: res.y * pxPerMetre });
+          return;
+        }
+
+        // Sims wall-aware drag (2026-08-23): released near a wall, the
+        // item snaps flush and turns to face into the room. Hold Shift
+        // to keep the current facing. Mid-room drags keep facing and
+        // grid-snap exactly as before (wallAware falls through to the
+        // plain grid path with userRotationDeg = current rotation).
         const wallAware = resolveWallAwarePlacement({
           centreXm: newXm + w / 2,
           centreYm: newYm + h / 2,

@@ -129,6 +129,21 @@ export interface Product {
    * render convention: front toward the viewer).
    */
   front_edge?: 'top' | 'bottom' | 'left' | 'right';
+  /**
+   * Surface slots + wall-mounted (2026-08-24) — where this product may
+   * be placed. 'floor' (default when absent) = the normal floor path;
+   * 'wall' = shelves/mirrors that snap flush to a wall and auto-orient;
+   * 'surface' = small items that can only sit ON a placed item whose
+   * product has `is_surface: true`.
+   */
+  placement?: 'floor' | 'surface' | 'wall';
+  /** True when this (floor) product offers a tabletop that `placement:
+   * 'surface'` items can sit on (tables, consoles, desks). */
+  is_surface?: boolean;
+  /** Wall items: mounting height of the underside above the floor (cm).
+   * Informational in the 2D top-down (shown in details); drives the 3D
+   * mirror later. */
+  mount_height_cm?: number;
 }
 
 export interface ProductCatalog {

@@ -164,6 +164,60 @@ describe('addItem / removeItem / updateItem', () => {
   });
 });
 
+describe('surface slots — parent/child behaviour (2026-08-24)', () => {
+  function activeItems() {
+    const s = usePropertyStore.getState();
+    return s.property.rooms.find((r) => r.id === s.property.activeRoomId)!.placedItems;
+  }
+
+  it('moving a table carries the items sitting on it', () => {
+    const ps = usePropertyStore.getState();
+    const tableId = ps.addItem({ productId: 'demo-console-table', x: 1, y: 2, rotation: 0 });
+    const childId = usePropertyStore.getState().addItem({
+      productId: 'demo-aroma-diffuser',
+      x: 1.2,
+      y: 2.1,
+      rotation: 0,
+      parentInstanceId: tableId,
+    });
+    usePropertyStore.getState().updateItem(tableId, { x: 2, y: 3 });
+    const child = activeItems().find((i) => i.instanceId === childId)!;
+    expect(child.x).toBeCloseTo(2.2); // shifted by the parent's delta (+1, +1)
+    expect(child.y).toBeCloseTo(3.1);
+  });
+
+  it('non-positional parent updates leave children untouched', () => {
+    const ps = usePropertyStore.getState();
+    const tableId = ps.addItem({ productId: 'demo-console-table', x: 1, y: 2, rotation: 0 });
+    const childId = usePropertyStore.getState().addItem({
+      productId: 'demo-aroma-diffuser',
+      x: 1.2,
+      y: 2.1,
+      rotation: 0,
+      parentInstanceId: tableId,
+    });
+    usePropertyStore.getState().updateItem(tableId, { rotation: 90 });
+    const child = activeItems().find((i) => i.instanceId === childId)!;
+    expect(child.x).toBeCloseTo(1.2);
+    expect(child.y).toBeCloseTo(2.1);
+  });
+
+  it('removing a table removes what sits on it', () => {
+    const ps = usePropertyStore.getState();
+    const tableId = ps.addItem({ productId: 'demo-console-table', x: 1, y: 2, rotation: 0 });
+    usePropertyStore.getState().addItem({
+      productId: 'demo-aroma-diffuser',
+      x: 1.2,
+      y: 2.1,
+      rotation: 0,
+      parentInstanceId: tableId,
+    });
+    const before = activeItems().length;
+    usePropertyStore.getState().removeItem(tableId);
+    expect(activeItems().length).toBe(before - 2);
+  });
+});
+
 describe('loadProperty + normaliseLoadedRoom — rectangle→polygon migration on load', () => {
   it('upgrades a legacy room with only {lengthM,widthM} to a 4-vertex polygon', () => {
     const migrated = normaliseLoadedRoom({
