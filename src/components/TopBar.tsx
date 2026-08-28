@@ -33,6 +33,7 @@ import { useToastStore } from '../store/toastStore';
 import { useHistoryStore } from '../store/historyStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
 import { useDrawProgressStore } from '../store/drawProgressStore';
+import { isDrawnPolygon } from '../designer/roomLayout';
 import { performUndo, performRedo } from '../lib/undoIntent';
 import { FLOOR_MATERIALS } from '../data/floorMaterials';
 import { useWallStore } from '../store/wallStore';
@@ -98,6 +99,9 @@ export function TopBar({
   // while a polygon is being drawn on an empty history - looking dead at the
   // exact moment undo is most useful.
   const drawInFlight = useDrawProgressStore((s) => s.enabled && s.vertices.length > 0);
+  // DRAWN rooms only — a fresh canvas always holds one blank seed room, and
+  // reporting "1 room" over an empty plan is wrong.
+  const drawnRoomCount = property.rooms.filter((r) => isDrawnPolygon(r.polygon)).length;
   // Mobile Safari long-press confirm — Tweak 07 §7. A first tap arms;
   // a second tap within 1500ms fires. Desktop fires immediately.
   const [mobileUndoArmed, setMobileUndoArmed] = useState(false);
@@ -332,7 +336,7 @@ export function TopBar({
               className="block truncate text-[11px] text-ppw-slate hover:text-ppw-teal"
               title="Rename property"
             >
-              {property.name} - {property.rooms.length} room{property.rooms.length === 1 ? '' : 's'}
+              {property.name} - {drawnRoomCount} room{drawnRoomCount === 1 ? '' : 's'}
             </button>
           )}
         </div>
@@ -358,7 +362,7 @@ export function TopBar({
           </svg>
           <span className="truncate">
             <span className="font-semibold">{activeRoom?.name ?? property.name}</span>
-            <span className="ml-1 text-ppw-slate">· {property.rooms.length}</span>
+            <span className="ml-1 text-ppw-slate">· {drawnRoomCount}</span>
           </span>
         </button>
       </div>

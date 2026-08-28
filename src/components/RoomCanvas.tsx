@@ -129,6 +129,7 @@ import {
   type Opening,
 } from '../designer/openings';
 import { roomFloorMaterial } from '../designer/floorFinish';
+import { nextRoomName } from '../designer/roomNaming';
 import { obstaclesFor } from '../designer/layerBands';
 
 /** How close the pointer must be to a wall for the door tool to snap to it. */
@@ -281,7 +282,7 @@ export function RoomCanvas({
     if (!isDrawnPolygon(active.polygon)) {
       ps.setRoomPolygon(active.id, rect);
     } else {
-      ps.addRectangleRoom(`Room ${ps.property.rooms.length + 1}`, { lengthM: 5, widthM: 4 }, anchor);
+      ps.addRectangleRoom(nextRoomName(ps.property.rooms), { lengthM: 5, widthM: 4 }, anchor);
     }
     pushToast('Added a 5 × 4 m room — adjust the size in the top bar or place products.', 'info');
   }, [pushToast]);
@@ -362,11 +363,15 @@ export function RoomCanvas({
       console.log('[draw-mode]', 'enter Draw mode, reset local state');
       setDrawVertices([]);
       setDrawHover(null);
-      // Batch 3 Fix 3.1 — after Vic's `setDrawMode` wrapper clears all
-      // rooms' items + walls + zones, the property still holds one
-      // empty-active-room placeholder. Auto-name "Room 1" since the
-      // user is starting fresh; rename inline in the sidebar after.
-      setDrawName('Room 1');
+      // Name the room being drawn from the SHARED naming helper.
+      //
+      // This used to be the constant 'Room 1' — a leftover from when entering
+      // draw mode wiped every other room, so there only ever WAS one. Since
+      // the attached-multi-room merge that stopped being true and the constant
+      // silently named every drawn room "Room 1": draw three, get three rows
+      // all reading the same thing. That is the actual cause of Vic's
+      // "no need for room 2, 3".
+      setDrawName(nextRoomName(usePropertyStore.getState().property.rooms));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drawMode]);

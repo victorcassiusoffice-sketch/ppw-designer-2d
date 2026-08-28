@@ -37,6 +37,7 @@ import { translatePolygon, unstackLegacyRooms } from '../designer/roomLayout';
 import type { Opening } from '../designer/openings';
 import { openingSpan, validateOpening } from '../designer/openings';
 import { roomEdges } from '../designer/wallEdges';
+import { nextRoomName } from '../designer/roomNaming';
 
 export interface PlacedItem {
   instanceId: string;
@@ -270,7 +271,7 @@ export const usePropertyStore = create<PropertyState>()(
       addRoom: (partial) => {
         const newRoom: Room = {
           id: nanoid(8),
-          name: partial?.name ?? `Room ${get().property.rooms.length + 1}`,
+          name: partial?.name ?? nextRoomName(get().property.rooms),
           polygon: partial?.polygon ?? [],
           placedItems: [],
         };
@@ -297,7 +298,7 @@ export const usePropertyStore = create<PropertyState>()(
             ...s.property,
             rooms: [
               ...s.property.rooms,
-              { id, name: name.trim() || `Room ${s.property.rooms.length + 1}`, polygon, placedItems: [] },
+              { id, name: name.trim() || nextRoomName(s.property.rooms), polygon, placedItems: [] },
             ],
             activeRoomId: id,
           },
