@@ -665,6 +665,7 @@
       },
       "is_surface": true,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Console%0ATable",
+      "topdown_image_url": "/products/topdown/demo-console-table.jpg",
       "notes": "Slim console table for oils, diffusers and small decor. DEMO seed for surface-slot placement."
     },
     {
@@ -693,6 +694,7 @@
       "placement": "wall",
       "mount_height_cm": 150,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Wall%0AShelf",
+      "topdown_image_url": "/products/topdown/demo-wall-shelf.jpg",
       "notes": "Wall-mounted floating shelf. DEMO seed for wall-mounted placement."
     },
     {
@@ -721,6 +723,7 @@
       "placement": "wall",
       "mount_height_cm": 20,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Wall%0AMirror",
+      "topdown_image_url": "/products/topdown/demo-wall-mirror.jpg",
       "notes": "Full-length studio mirror, wall-mounted. DEMO seed for wall-mounted placement."
     },
     {
@@ -748,6 +751,7 @@
       },
       "placement": "surface",
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Aroma%0ADiffuser",
+      "topdown_image_url": "/products/topdown/demo-aroma-diffuser.jpg",
       "notes": "Ultrasonic aroma diffuser. Sits on a table. DEMO seed for surface-slot placement."
     },
     {
@@ -775,6 +779,7 @@
       },
       "placement": "surface",
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Potted%0APlant",
+      "topdown_image_url": "/products/topdown/demo-potted-plant.jpg",
       "notes": "Small potted plant for tabletops. DEMO seed for surface-slot placement."
     }
   ]
