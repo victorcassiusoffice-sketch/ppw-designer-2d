@@ -2618,9 +2618,35 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         if (stage) stage.container().style.cursor = 'grab';
         const newXm = e.target.x() / pxPerMetre;
         const newYm = e.target.y() / pxPerMetre;
+
+        /**
+         * Sims drag-drop (2026-08-28, D-B15) — where did it actually land?
+         *
+         * PlacedItemGroup is handed its OWNING room polygon, so before this
+         * a release over an attached neighbour failed isRectInsidePolygon
+         * and bounced back with a toast, while a FRESH placement at the same
+         * point routed correctly. That asymmetry was the bug.
+         *
+         * Rooms are read via getState() INSIDE the handler: this component
+         * memoises and must not gain store subscriptions.
+         */
+        const allRooms = usePropertyStore.getState().property.rooms;
+        const ownerRoom = allRooms.find((r) =>
+          r.placedItems.some((i) => i.instanceId === item.instanceId),
+        );
+        const dropRoom = findRoomAt(
+          { x: newXm + w / 2, y: newYm + h / 2 },
+          allRooms,
+          ownerRoom?.id ?? null,
+        );
+        const crossRoom = !!(dropRoom && ownerRoom && dropRoom.id !== ownerRoom.id);
+        // Resolve against whichever room it was dropped in.
+        const targetPolygon = crossRoom && dropRoom ? dropRoom.polygon : polygon;
+        const targetItems = crossRoom && dropRoom ? dropRoom.placedItems : placedItems;
+
         // Band filter, matching the placement paths: dragging a bench ONTO a
         // mat must land, not bounce back.
-        const others = obstaclesFor(item.productId, placedItems)
+        const others = obstaclesFor(item.productId, targetItems)
           .map((it) => {
             const p = getProductById(it.productId);
             if (!p) return null;
@@ -2646,7 +2672,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
           centreXm: newXm + w / 2,
           centreYm: newYm + h / 2,
           fp: fpUnrotated,
-          polygon,
+          polygon: targetPolygon,
           snapStep,
           userRotationDeg: shiftHeld || !isCardinalRotation(item.rotation) ? item.rotation : null,
           frontEdge: product.front_edge,
@@ -2655,7 +2681,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         const wallOk = validatePlacement(
           { x: wallAware.x, y: wallAware.y, w: wf.w, h: wf.h },
           others,
-          polygon,
+          targetPolygon,
           item.instanceId,
         ).ok;
         const resolved = wallOk
@@ -2666,13 +2692,29 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
               w,
               h,
               others,
-              room: polygon,
+              room: targetPolygon,
               ignoreInstanceId: item.instanceId,
               snapStep,
             });
         if (resolved.ok) {
           const rotation = wallOk ? wallAware.rotationDeg : item.rotation;
-          updateItem(item.instanceId, { x: resolved.x, y: resolved.y, rotation });
+          if (crossRoom && dropRoom) {
+            // One atomic action, preserving the instanceId. A remove+add
+            // would mint a fresh id and orphan the selection, the history
+            // reference and the cart line item.
+            usePropertyStore
+              .getState()
+              .moveItemToRoom(item.instanceId, dropRoom.id, resolved.x, resolved.y, rotation);
+            console.log('[drag-move]', {
+              reason: 'cross-room',
+              from: ownerRoom?.id,
+              to: dropRoom.id,
+              instanceId: item.instanceId,
+            });
+          } else {
+            updateItem(item.instanceId, { x: resolved.x, y: resolved.y, rotation });
+            console.log('[drag-move]', { reason: 'same-room' });
+          }
           e.target.position({
             x: resolved.x * pxPerMetre,
             y: resolved.y * pxPerMetre,
@@ -2682,6 +2724,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
             x: item.x * pxPerMetre,
             y: item.y * pxPerMetre,
           });
+          console.log('[drag-move]', { reason: 'rejected', cause: resolved.reason });
           pushToast(
             resolved.reason === 'collision' ? "Item won't fit there." : 'Out of room bounds.',
             'warn',

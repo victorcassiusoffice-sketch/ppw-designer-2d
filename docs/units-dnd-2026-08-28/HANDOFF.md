@@ -601,3 +601,63 @@ could not.
 **Still outstanding:** P10 — pick up an already-placed item and move it, including between
 attached rooms. That is the last Sims mechanic and the riskiest change in the brief, since it
 is the only one that alters drag ALGORITHM logic inside the protected `PlacedItemGroup` body.
+
+---
+
+## P10 — B3: pick up a placed item (riskiest, atomic)
+
+**Done.** The last Sims mechanic.
+
+**The asymmetry fixed:** `PlacedItemGroup` receives its OWNING room's polygon, so a release
+over an attached neighbour failed `isRectInsidePolygon` and bounced back with a toast — while
+a **fresh** placement at the identical pixel routed correctly through `findRoomAt`. Same
+point, two different answers.
+
+- **`propertyStore.moveItemToRoom`** (new, 4 unit tests) — one atomic `set()` removing the
+  item from its owner and adding it to the target **preserving the `instanceId`**, moving
+  `activeRoomId` and the selection with it. Focus has to follow: every manipulation surface
+  resolves through the active room, so without it the place → rotate → delete loop is dead
+  the moment an item crosses a wall.
+- **Not a remove-then-add.** `addItem` mints a fresh id, which would silently orphan the
+  selection, the history reference and the cart line item pointing at the old one.
+- `onDragEnd` routes through `findRoomAt` and resolves wall-aware placement, validation and
+  the fallback against whichever room the item landed in. A same-room drag still goes through
+  `updateItem` exactly as before.
+
+### P10 GATE
+
+```
+$ npx vitest run src/store/__tests__/propertyStore.test.ts
+  37 passed (incl. 4 new moveItemToRoom cases)
+
+$ PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test \
+    item-pickup multiroom-placement multiroom-attach multiroom-render \
+    drag-place units placement-fsm wall-aware-placement
+  26 passed (37.6s)
+
+$ npx vitest run   # 1870 passed (1870)
+$ npx tsc --noEmit # exit 0     $ npm run build # clean     $ npx eslint <4> # 0 errors
+```
+
+The unit test runs **first**, deliberately, so the e2e is not where anyone discovers the
+action does not exist. The e2e's `instanceId` assertion is the load-bearing one: it is
+**unsatisfiable by a remove+add composition**, so the obvious wrong implementation goes red
+immediately instead of corrupting quietly.
+
+### Deliberate cut, recorded not dropped
+
+The brief's separate **resolved move-ghost outline** was not built. The dragged item already
+follows the cursor 1:1 and is its own preview; a second outline drawn over it would be noise,
+and a `dragBoundFunc` that hard-snapped the node would fight the feel the rest of this work
+exists to create. If it turns out to be wanted, it is additive and isolated.
+
+Also carried forward from the brief's own out-of-scope list, unchanged: HTML5 drag-and-drop
+in any form, multi-select drag, copy-stamp-with-Alt, sub-90° free rotation mid-drag, imperial
+units, per-room units, and length editing for interior `wallStore` segments.
+
+### One defect found and NOT fixed here
+
+`RoomCanvas.tsx` has an on-canvas rotate handle that writes a rotation **with no collision
+check**, while its own adjacent comment claims a safety net that does not exist. It sits
+inside the protected body and is unrelated to this work, so it was left alone rather than
+folded into an already-risky phase. It is a real defect and should be its own ticket.
