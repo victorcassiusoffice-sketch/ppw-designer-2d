@@ -33,7 +33,8 @@ beforeEach(() => {
       { x: 0, y: 12 },
     ]);
   }
-  useDesignerUIStore.setState({ infoOpen: false, precision: 'full', tool: 'hand' });
+  if (typeof localStorage !== 'undefined') localStorage.removeItem('ppw_designer_ui_v1');
+  useDesignerUIStore.setState({ infoOpen: false, precision: 'full', lastPrecision: 'quarter', tool: 'hand' });
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);

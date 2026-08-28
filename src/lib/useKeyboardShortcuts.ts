@@ -26,7 +26,7 @@ import {
 } from './placementActions';
 import { useDesignStore } from '../store/designStore';
 import { isDrawTransactionActive } from '../store/historyStore';
-import { useDesignerUIStore } from '../store/designerUIStore';
+import { useDesignerUIStore, SNAP_UNIT_ORDER } from '../store/designerUIStore';
 import { performUndo, performRedo } from './undoIntent';
 
 function isTypingTarget(target: EventTarget | null): boolean {
@@ -109,6 +109,20 @@ export function useKeyboardShortcuts(): void {
       if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
         e.preventDefault();
         useDesignerUIStore.getState().togglePrecision();
+        return;
+      }
+
+      // D2 (units 2026-08-28) - bare digits 1-6 select a snap unit directly
+      // from SNAP_UNIT_ORDER (1 cm to 10 m). Guarded against every modifier so
+      // Ctrl+1 etc. stay with the browser. isTypingTarget above has already
+      // early-returned for INPUT/TEXTAREA/SELECT/contenteditable, so typing a
+      // length into the new fields never hijacks the unit.
+      if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key >= '1' && e.key <= '6') {
+        const unit = SNAP_UNIT_ORDER[Number(e.key) - 1];
+        if (unit) {
+          e.preventDefault();
+          useDesignerUIStore.getState().setPrecision(unit);
+        }
         return;
       }
 

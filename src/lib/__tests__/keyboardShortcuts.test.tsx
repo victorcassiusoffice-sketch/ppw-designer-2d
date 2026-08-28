@@ -42,7 +42,8 @@ beforeEach(() => {
       { x: 0, y: 12 },
     ]);
   }
-  useDesignerUIStore.setState({ infoOpen: false, precision: 'full', tool: 'hand' });
+  if (typeof localStorage !== 'undefined') localStorage.removeItem('ppw_designer_ui_v1');
+  useDesignerUIStore.setState({ infoOpen: false, precision: 'full', lastPrecision: 'quarter', tool: 'hand' });
   if (typeof sessionStorage !== 'undefined') sessionStorage.clear();
   teardown = installHistorySubscriptions({ coalesceMs: 0 });
   container = document.createElement('div');
