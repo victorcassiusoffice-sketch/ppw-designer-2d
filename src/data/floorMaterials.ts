@@ -23,6 +23,22 @@ export interface FloorMaterial {
   unit: FloorUnit;
   /** Placeholder MUR price per 1 unit — Mauritius market (K1 seed feed). */
   price_per_unit_mur: number;
+  /**
+   * The real-world size of ONE tile, in metres — the unit the floor painter
+   * paints in (floor-painting brief 2026-08-28, D1).
+   *
+   * `null` marks a NON-TILEABLE good. The EPDM roll is 10 m x 1.25 m: it is
+   * laid as a continuous run, not a lattice, so painting it tile-by-tile
+   * would put a fictional unit on a customer's quote. Null-sized materials
+   * are excluded from the tile picker and stay on the whole-room,
+   * area-priced path (Vic 2026-08-28).
+   *
+   * EXPLICIT rather than derived from `coverage_m2_per_unit`: a square root
+   * cannot tell a 0.92 x 0.92 tile from a 0.5 x 1.69 plank, and getting that
+   * wrong lays the floor in the wrong direction.
+   */
+  tile_w_m: number | null;
+  tile_h_m: number | null;
 }
 
 export const FLOOR_MATERIALS: FloorMaterial[] = [
@@ -34,6 +50,8 @@ export const FLOOR_MATERIALS: FloorMaterial[] = [
     coverage_m2_per_unit: 0.92 * 0.92, // 0.8464
     unit: 'tile',
     price_per_unit_mur: 1600,
+    tile_w_m: 0.92,
+    tile_h_m: 0.92,
   },
   {
     id: 'eva-combat',
@@ -43,6 +61,8 @@ export const FLOOR_MATERIALS: FloorMaterial[] = [
     coverage_m2_per_unit: 1.0,
     unit: 'tile',
     price_per_unit_mur: 850,
+    tile_w_m: 1.0,
+    tile_h_m: 1.0,
   },
   {
     id: 'rubber-composite',
@@ -52,6 +72,8 @@ export const FLOOR_MATERIALS: FloorMaterial[] = [
     coverage_m2_per_unit: 0.5 * 0.5, // 0.25
     unit: 'tile',
     price_per_unit_mur: 500,
+    tile_w_m: 0.5,
+    tile_h_m: 0.5,
   },
   {
     id: 'outdoor-1m',
@@ -61,6 +83,8 @@ export const FLOOR_MATERIALS: FloorMaterial[] = [
     coverage_m2_per_unit: 1.0,
     unit: 'tile',
     price_per_unit_mur: 1500,
+    tile_w_m: 1.0,
+    tile_h_m: 1.0,
   },
   {
     id: 'outdoor-50',
@@ -70,6 +94,8 @@ export const FLOOR_MATERIALS: FloorMaterial[] = [
     coverage_m2_per_unit: 0.5 * 0.5, // 0.25
     unit: 'tile',
     price_per_unit_mur: 375,
+    tile_w_m: 0.5,
+    tile_h_m: 0.5,
   },
   {
     id: 'epdm-roll',
@@ -79,8 +105,17 @@ export const FLOOR_MATERIALS: FloorMaterial[] = [
     coverage_m2_per_unit: 10.0 * 1.25, // 1000 cm × 125 cm = 12.5 m²/roll
     unit: 'roll',
     price_per_unit_mur: 13500,
+    // Not a tile. 10 m x 1.25 m of sheet goods, laid in runs, so it stays on
+    // the whole-room area-priced path (Vic 2026-08-28).
+    tile_w_m: null,
+    tile_h_m: null,
   },
 ];
+
+/** Materials the tile painter can paint. Rolls and sheet goods are excluded. */
+export function tileableFloorMaterials(): FloorMaterial[] {
+  return FLOOR_MATERIALS.filter((m) => m.tile_w_m !== null && m.tile_h_m !== null);
+}
 
 export function findFloorMaterialById(id: string): FloorMaterial | undefined {
   return FLOOR_MATERIALS.find((m) => m.id === id);
