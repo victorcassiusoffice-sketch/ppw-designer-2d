@@ -37,6 +37,16 @@ import { translatePolygon, unstackLegacyRooms } from '../designer/roomLayout';
 import type { Opening } from '../designer/openings';
 import { openingSpan, validateOpening } from '../designer/openings';
 import { roomEdges } from '../designer/wallEdges';
+// Per-tile floor painting (floor-painting brief 2026-08-28).
+import {
+  pruneZone,
+  runsToSet,
+  setToRuns,
+  zoneForMaterial,
+  tilesCoveringPolygon,
+  type FloorZone,
+} from '../designer/floorTiles';
+import { findFloorMaterialById } from '../data/floorMaterials';
 import { nextRoomName } from '../designer/roomNaming';
 
 export interface PlacedItem {
@@ -67,17 +77,36 @@ export interface Room {
    */
   openings?: Opening[];
   /**
-   * The floor finish covering this room (2026-08-28).
+   * A single floor finish covering the WHOLE room (2026-08-28).
    *
-   * PER-ROOM, not per-tile. Every consumer floor planner converges on
-   * "click a room, pick a material, it fills the polygon" — per-tile painting
-   * is a game mechanic that buys nothing when the output is a shopping list.
+   * Still the right model for sheet goods: the EPDM roll is 10 x 1.25 m of
+   * material laid in continuous runs, so it has no tile count and is priced
+   * by area. It is also what every design saved before per-tile painting
+   * shipped carries, and those must keep opening and rendering unchanged.
+   *
    * `materialId` is a `FLOOR_MATERIALS` id; absent/null = bare floor.
    *
-   * Nested on Room for the same reason openings are: undo and persistence
-   * come free, and no API change is needed.
+   * SUPERSEDED for tileable materials by `floorTiles` below. The two are
+   * mutually exclusive per room; `floorTiles` wins when present.
    */
   floorFinish?: { materialId: string } | null;
+  /**
+   * Per-tile floor painting (floor-painting brief 2026-08-28).
+   *
+   * Vic asked for The Sims' flooring workflow: click a tile, drag a
+   * rectangle, fill a room. That needs the floor to be a set of TILES
+   * rather than one material id, because the customer buys whole tiles and
+   * a part-painted room is a legitimate design.
+   *
+   * One zone per material, so a room can mix finishes. Optional, because
+   * every property saved before this shipped lacks it.
+   *
+   * Nested on Room exactly as `openings` is: `historyStore` snapshots
+   * `property` whole so undo covers painting for free, and the API stores
+   * `property` as opaque JSON so no endpoint or migration is needed. The
+   * persist key stays `ppw_property_v2` at version 2.
+   */
+  floorTiles?: FloorZone[];
 }
 
 export interface Property {
@@ -191,6 +220,13 @@ export interface PropertyState {
    */
   addItem: (item: Omit<PlacedItem, 'instanceId'>, roomId?: string) => string;
   /** Removes by instanceId from WHICHEVER room owns it (ids are global). */
+  /** Commit one floor-paint stroke as a single undo frame. */
+  paintFloorTiles: (
+    roomId: string,
+    zone: FloorZone,
+    keys: string[],
+    erase?: boolean,
+  ) => void;
   removeItem: (instanceId: string) => void;
   /** Move an item to another room, keeping its instanceId. */
   moveItemToRoom: (
@@ -365,7 +401,82 @@ export const usePropertyStore = create<PropertyState>()(
                   // its host, in the SAME set() and therefore the same undo
                   // frame. Leaving it behind would render a swing arc floating
                   // in space with no wall under it.
-                  ? { ...r, polygon: clean, openings: pruneOpenings(r.openings, clean) }
+                  // Floor tiles are polygon-coupled exactly as openings are:
+                  // shrink a room and the tiles outside it are no longer real.
+                  // Without this they persist invisibly AND stay in the quote.
+                  ? {
+                    ...r,
+                    polygon: clean,
+                    openings: pruneOpenings(r.openings, clean),
+                    floorTiles: decodeFloorZones(r.floorTiles, clean),
+                  }
+                  : r,
+              ),
+            },
+          };
+        }),
+
+      /**
+       * Commit ONE floor-paint stroke (floor-painting brief).
+       *
+       * A whole stroke - a click, a drag rectangle, or a room fill - is one
+       * call and therefore ONE undo frame, which is what The Sims does and
+       * what anyone who has used a paint tool expects. Committing per tile
+       * would make Ctrl+Z walk backwards one tile at a time.
+       */
+      paintFloorTiles: (roomId, zone, keys, erase = false) =>
+        set((s) => {
+          const room = s.property.rooms.find((r) => r.id === roomId);
+          if (!room || keys.length === 0) return s;
+
+          const existing = room.floorTiles ? room.floorTiles.map((z) => ({ ...z })) : [];
+          // Lazy conversion: the first stroke in a room that already has a
+          // whole-room finish seeds a zone covering the room in that same
+          // material, so the user paints ON TOP of the floor they had
+          // rather than watching it vanish.
+          const seeded =
+            existing.length === 0 && room.floorFinish
+              ? seedZoneFromWholeRoom(room)
+              : existing;
+
+          const target = new Set(keys);
+          const next: FloorZone[] = [];
+          let placed = false;
+
+          for (const z of seeded) {
+            const tiles = runsToSet(z.runs);
+            // A tile can only carry ONE material, so painting removes it
+            // from every other zone before adding it to this one.
+            for (const k of target) tiles.delete(k);
+            if (
+              !erase
+              && z.materialId === zone.materialId
+              && z.tileWm === zone.tileWm
+              && z.tileHm === zone.tileHm
+              && z.originM.x === zone.originM.x
+              && z.originM.y === zone.originM.y
+            ) {
+              for (const k of target) tiles.add(k);
+              placed = true;
+            }
+            const runs = setToRuns(tiles);
+            if (runs.length > 0) next.push({ ...z, runs });
+          }
+          if (!erase && !placed) next.push({ ...zone, runs: setToRuns(target) });
+
+          return {
+            property: {
+              ...s.property,
+              rooms: s.property.rooms.map((r) =>
+                r.id === roomId
+                  ? {
+                    ...r,
+                    floorTiles: next.length > 0 ? next : undefined,
+                    // Once a room is painted per tile the whole-room finish
+                    // is no longer the truth about its floor. Cleared rather
+                    // than left to shadow it in the price calculator.
+                    floorFinish: null,
+                  }
                   : r,
               ),
             },
@@ -706,6 +817,7 @@ interface RawRoom {
   placedItems?: PlacedItem[];
   openings?: Opening[];
   floorFinish?: { materialId: string } | null;
+  floorTiles?: FloorZone[];
 }
 
 interface RawProperty {
@@ -754,8 +866,68 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
       r.floorFinish && typeof r.floorFinish.materialId === 'string'
         ? { materialId: r.floorFinish.materialId }
         : null,
+    // Same whitelist trap again: omit this and a painted floor silently
+    // vanishes on the first save/load round trip. Validated field by field
+    // rather than passed through, because a malformed zone from a
+    // hand-edited payload would otherwise reach the renderer AND the price
+    // calculator. Pruned against the CLEANED polygon.
+    floorTiles: decodeFloorZones(r.floorTiles, clean),
   };
 }
+
+/** Validate and prune persisted floor zones. Unknown shapes are dropped. */
+export function decodeFloorZones(
+  zones: FloorZone[] | undefined,
+  polygon: Polygon,
+): FloorZone[] | undefined {
+  if (!Array.isArray(zones) || zones.length === 0) return undefined;
+  const out: FloorZone[] = [];
+  for (const z of zones) {
+    if (!z || typeof z.materialId !== 'string') continue;
+    if (typeof z.tileWm !== 'number' || typeof z.tileHm !== 'number') continue;
+    if (!(z.tileWm > 0) || !(z.tileHm > 0)) continue;
+    if (!z.originM || typeof z.originM.x !== 'number' || typeof z.originM.y !== 'number') {
+      continue;
+    }
+    if (!Array.isArray(z.runs) || z.runs.length % 3 !== 0) continue;
+    if (!z.runs.every((n) => Number.isFinite(n))) continue;
+    const pruned = pruneZone(
+      {
+        materialId: z.materialId,
+        tileWm: z.tileWm,
+        tileHm: z.tileHm,
+        originM: { x: z.originM.x, y: z.originM.y },
+        runs: z.runs,
+      },
+      polygon,
+    );
+    if (pruned.runs.length > 0) out.push(pruned);
+  }
+  return out.length > 0 ? out : undefined;
+}
+
+/**
+ * Seed a full-room zone from an existing whole-room finish.
+ *
+ * The first paint stroke in a room that already has a floor should ADD to
+ * that floor, not replace it with a single tile. Returns [] when the
+ * material has no tile size (a roll), so sheet goods never acquire a fake
+ * tile count.
+ */
+function seedZoneFromWholeRoom(room: Room): FloorZone[] {
+  const mat = room.floorFinish
+    ? findFloorMaterialById(room.floorFinish.materialId)
+    : undefined;
+  if (!mat || mat.tile_w_m === null || mat.tile_h_m === null) return [];
+  const zone = zoneForMaterial(mat.id, mat.tile_w_m, mat.tile_h_m, room.polygon);
+  const keys = tilesCoveringPolygon(zone, room.polygon).map(
+    (t) => String(t.row) + Q + String(t.col),
+  );
+  return [{ ...zone, runs: setToRuns(new Set(keys)) }];
+}
+
+/** Tile-key separator. Kept in one place so the codec cannot drift. */
+const Q = ',';
 
 /**
  * Openings whose host wall still exists and can still hold them.

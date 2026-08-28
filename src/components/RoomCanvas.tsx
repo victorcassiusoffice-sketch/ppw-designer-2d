@@ -26,7 +26,17 @@
  */
 
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Stage, Layer, Line, Group, Text, Circle, Rect, Image as KonvaImage } from 'react-konva';
+import {
+  Stage,
+  Layer,
+  Line,
+  Group,
+  Text,
+  Circle,
+  Rect,
+  Shape,
+  Image as KonvaImage,
+} from 'react-konva';
 import { useImageCache, useImageCacheStatus } from '../hooks/useImageCache';
 import type Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
@@ -141,6 +151,17 @@ import {
   type Opening,
 } from '../designer/openings';
 import { roomFloorMaterial } from '../designer/floorFinish';
+// Per-tile floor painting (floor-painting brief 2026-08-28).
+import {
+  tileRect,
+  tileAt,
+  zoneForMaterial,
+  tilesInDragRect,
+  tilesCoveringPolygon,
+  dragRectTileCount,
+  type FloorZone,
+} from '../designer/floorTiles';
+import { findFloorMaterialById } from '../data/floorMaterials';
 import { nextRoomName } from '../designer/roomNaming';
 import { obstaclesFor } from '../designer/layerBands';
 
@@ -1274,6 +1295,71 @@ export function RoomCanvas({
    */
   const doorTool = tool === 'door';
   const measureTool = tool === 'measure';
+  const floorTool = tool === 'floor';
+  const floorDraft = useDesignerUIStore((st) => st.floorDraft);
+  /** Anchor of an in-progress paint drag, in world metres. */
+  const floorAnchorRef = useRef<{ x: number; y: number; roomId: string } | null>(null);
+  const [floorPreview, setFloorPreview] = useState<{
+    zone: FloorZone;
+    keys: string[];
+    erase: boolean;
+  } | null>(null);
+
+  /**
+   * Above this a single stroke is refused rather than attempted.
+   *
+   * The count is computed O(1) from the index range BEFORE any tile list
+   * is built, so a wild drag across an open plan cannot lock the tab up
+   * while it enumerates a million tiles it was never going to paint.
+   */
+  const MAX_TILES_PER_STROKE = 20000;
+
+  /** The zone descriptor the brush is currently painting with. */
+  const floorZoneFor = useCallback(
+    (room: { id: string; polygon: Polygon }): FloorZone | null => {
+      const mat = findFloorMaterialById(floorDraft.materialId);
+      if (!mat || mat.tile_w_m === null || mat.tile_h_m === null) return null;
+      const existing = usePropertyStore
+        .getState()
+        .property.rooms.find((r) => r.id === room.id)
+        ?.floorTiles?.find((z) => z.materialId === mat.id);
+      // Reuse the zone lattice already in the room so repeated strokes
+      // land on the same grid instead of each starting a new one.
+      return existing ?? zoneForMaterial(mat.id, mat.tile_w_m, mat.tile_h_m, room.polygon);
+    },
+    [floorDraft.materialId],
+  );
+
+  /** World point -> the room under it, via the same routing placement uses. */
+  const floorRoomAt = useCallback((xM: number, yM: number) => {
+    const rooms2 = usePropertyStore.getState().property.rooms;
+    return findRoomAt({ x: xM, y: yM }, rooms2, activeRoomId);
+  }, [activeRoomId]);
+
+  const floorWorldPoint = useCallback(
+    (clientX: number, clientY: number) => {
+      const container = containerRef.current;
+      if (!container) return null;
+      const rect = container.getBoundingClientRect();
+      return screenToRoom(clientX, clientY, { left: rect.left, top: rect.top }, viewport, pxPerMetre);
+    },
+    [viewport, pxPerMetre],
+  );
+
+  /** Commit one stroke. Whole strokes, so one undo frame. */
+  const commitFloorStroke = useCallback(
+    (roomId: string, zone: FloorZone, keys: string[], erase: boolean) => {
+      if (keys.length === 0) return;
+      usePropertyStore.getState().paintFloorTiles(roomId, zone, keys, erase);
+      console.log('[floor-paint]', {
+        reason: erase ? 'erase' : 'paint',
+        tiles: keys.length,
+        materialId: zone.materialId,
+        roomId,
+      });
+    },
+    [],
+  );
 
   /**
    * Sims drag-drop, effect (a) - a live drag ARMS the existing FSM.
@@ -1647,7 +1733,11 @@ export function RoomCanvas({
         // pointer-move updates the ghost instead of panning.
         // M2: also disable during wall mode so clicks land on the
         // wall-draw layer instead of dragging the canvas.
-        draggable={!drawMode && !pendingProductId && !wallDrawEnabled}
+        // The floor tool is in this guard for the same reason wall mode is:
+        // its headline gesture is a press-and-drag rectangle, and a
+        // draggable Stage would swallow it as a canvas pan. Single clicks
+        // would still work, so the failure would look like "mostly fine".
+        draggable={!drawMode && !pendingProductId && !wallDrawEnabled && !floorTool}
         onDragMove={(e) => {
           if (e.target === e.target.getStage()) {
             userMovedViewportRef.current = true;
@@ -1657,14 +1747,100 @@ export function RoomCanvas({
         onWheel={handleWheel}
         onMouseDown={(e) => {
           if (drawMode) return;
+          if (floorTool) {
+            const evt = e.evt as MouseEvent;
+            const w = floorWorldPoint(evt.clientX, evt.clientY);
+            if (!w) return;
+            const room = floorRoomAt(w.xM, w.yM);
+            if (!room) return;
+            floorAnchorRef.current = { x: w.xM, y: w.yM, roomId: room.id };
+            return;
+          }
           if (e.target === e.target.getStage() && e.evt.button === PAN_BTN) {
             selectItem(null);
           }
+        }}
+        onMouseUp={(e) => {
+          if (!floorTool) return;
+          const anchor = floorAnchorRef.current;
+          floorAnchorRef.current = null;
+          setFloorPreview(null);
+          if (!anchor) return;
+          const evt = e.evt as MouseEvent;
+          const w = floorWorldPoint(evt.clientX, evt.clientY);
+          if (!w) return;
+          const rooms2 = usePropertyStore.getState().property.rooms;
+          const room = rooms2.find((r) => r.id === anchor.roomId);
+          if (!room) return;
+          const zone = floorZoneFor(room);
+          if (!zone) return;
+          const erase = evt.ctrlKey || evt.metaKey || floorDraft.erase;
+
+          // Shift, or the 'room' scope, fills the whole polygon - the Sims
+          // room-fill, which is what Vic asked for by name.
+          const fillRoom = evt.shiftKey || floorDraft.scope === 'room';
+          const tiles = fillRoom
+            ? tilesCoveringPolygon(zone, room.polygon)
+            : (() => {
+              const pending = dragRectTileCount(zone, { x: anchor.x, y: anchor.y }, { x: w.xM, y: w.yM });
+              if (pending > MAX_TILES_PER_STROKE) {
+                pushToast('That area is too large to paint in one go.', 'warn');
+                console.log('[floor-paint]', { reason: 'refused', cause: 'too-many-tiles', pending });
+                return [];
+              }
+              return tilesInDragRect(zone, { x: anchor.x, y: anchor.y }, { x: w.xM, y: w.yM }, room.polygon);
+            })();
+          commitFloorStroke(
+            room.id,
+            zone,
+            tiles.map((t) => String(t.row) + ',' + String(t.col)),
+            erase,
+          );
         }}
         onPointerMove={(e) => {
           // M1.5 pointer-FSM: while armed, track snapped pointer position
           // and update the ghost preview every frame.
           if (drawMode) return;
+          if (floorTool) {
+            const evt = e.evt as PointerEvent;
+            const w = floorWorldPoint(evt.clientX, evt.clientY);
+            if (!w) return;
+            const rooms2 = usePropertyStore.getState().property.rooms;
+            const anchor = floorAnchorRef.current;
+            const room = anchor
+              ? rooms2.find((r) => r.id === anchor.roomId)
+              : floorRoomAt(w.xM, w.yM);
+            if (!room) {
+              setFloorPreview(null);
+              return;
+            }
+            const zone = floorZoneFor(room);
+            if (!zone) {
+              setFloorPreview(null);
+              return;
+            }
+            const erase = evt.ctrlKey || evt.metaKey || floorDraft.erase;
+            const fillRoom = evt.shiftKey || floorDraft.scope === 'room';
+            // Preview exactly what a release would commit, so the number of
+            // tiles the customer is about to buy is visible BEFORE the click.
+            const tiles = fillRoom
+              ? tilesCoveringPolygon(zone, room.polygon)
+              : anchor
+                ? (dragRectTileCount(zone, { x: anchor.x, y: anchor.y }, { x: w.xM, y: w.yM })
+                  > MAX_TILES_PER_STROKE
+                  ? []
+                  : tilesInDragRect(zone, { x: anchor.x, y: anchor.y }, { x: w.xM, y: w.yM }, room.polygon))
+                : (() => {
+                  const t = tileAt(zone, { x: w.xM, y: w.yM });
+                  return tileRect(zone, t.row, t.col) && [t];
+                })();
+            setFloorPreview({
+              zone,
+              keys: tiles.map((t) => String(t.row) + ',' + String(t.col)),
+              erase,
+            });
+            return;
+          }
           if (wallDrawEnabled) return; // M2: wall layer owns pointer-move
           if (!pendingProductId) {
             if (dragGhost) setDragGhost(null);
@@ -1788,6 +1964,63 @@ export function RoomCanvas({
                     />
                   );
                 })()}
+
+                {/* PAINT PREVIEW — what a release would commit, drawn before
+                    the click so the number of tiles the customer is about to
+                    buy is visible while they are still aiming. */}
+                {floorTool && floorPreview && floorPreview.keys.length > 0 && (
+                  <Group name="floor-preview-clip" listening={false} clipFunc={polygonClipFunc(room.polygon, pxPerMetre)}>
+                    {floorPreview.keys.map((k) => {
+                      const [pr, pc] = k.split(',').map(Number);
+                      const rr = tileRect(floorPreview.zone, pr, pc);
+                      return (
+                        <Rect
+                          key={`fp-${room.id}-${k}`}
+                          name="floor-preview"
+                          x={rr.x * pxPerMetre}
+                          y={rr.y * pxPerMetre}
+                          width={rr.w * pxPerMetre}
+                          height={rr.h * pxPerMetre}
+                          fill={floorPreview.erase ? GHOST_INVALID_FILL : GHOST_VALID_FILL}
+                          listening={false}
+                        />
+                      );
+                    })}
+                  </Group>
+                )}
+
+                {/* PAINTED FLOOR TILES (floor-painting brief, D8).
+
+                    The clip lives on this GROUP, not on the Shapes inside
+                    it: clipFunc is a Konva Container property and is
+                    silently ignored on a Shape, which would let boundary
+                    tiles render out over the walls with nothing failing. */}
+                {(room.floorTiles?.length ?? 0) > 0 && (
+                  <Group
+                    name="room-floor-clip"
+                    listening={false}
+                    clipFunc={polygonClipFunc(room.polygon, pxPerMetre)}
+                  >
+                    {room.floorTiles!.map((zone, zi) => {
+                      const zm = findFloorMaterialById(zone.materialId);
+                      if (!zm) return null;
+                      return (
+                        <Shape
+                          key={`floor-${room.id}-${zi}`}
+                          name="room-floor-tiles"
+                          listening={false}
+                          opacity={0.92}
+                          sceneFunc={floorZoneSceneFunc(
+                            zone,
+                            pxPerMetre,
+                            viewport.scale,
+                            zm.hex,
+                          )}
+                        />
+                      );
+                    })}
+                  </Group>
+                )}
 
                 {/* WALLS — one stroke per EDGE rather than one closed Line, so
                     a door can remove a span from a single wall. `splitEdgeSpans`
@@ -3118,6 +3351,70 @@ function gridLinesForBounds(
     out.push({ points: [minX, y, maxX, y], key: `hy-${Math.round(ym / minorStepM)}`, major: isMajor(ym) });
   }
   return out;
+}
+
+/**
+ * Minimum on-screen tile edge before seams are worth drawing.
+ *
+ * Same reasoning as the grid tier: below this a seam is visual noise that
+ * costs a path segment per tile.
+ */
+const MIN_SEAM_PX = 6;
+
+/**
+ * Draw one material zone as a SINGLE Konva node (floor-painting brief, D8).
+ *
+ * One node per tile would put thousands of nodes on the canvas for a normal
+ * room - exactly the mistake the adaptive-grid work just fixed for grid
+ * lines. Instead every run in the zone becomes one rect in one path, filled
+ * once. A 400-tile room is ~20 rects in a single node.
+ *
+ * Seams are a second path in the SAME node, and are skipped entirely when a
+ * tile is too small on screen to read.
+ */
+function floorZoneSceneFunc(
+  zone: FloorZone,
+  pxPerMetre: number,
+  viewportScale: number,
+  fill: string,
+) {
+  return (ctx: Konva.Context, shape: Konva.Shape): void => {
+    const runs = zone.runs;
+    ctx.beginPath();
+    for (let i = 0; i + 2 < runs.length; i += 3) {
+      const row = runs[i];
+      const col = runs[i + 1];
+      const len = runs[i + 2];
+      const r = tileRect(zone, row, col);
+      ctx.rect(r.x * pxPerMetre, r.y * pxPerMetre, r.w * len * pxPerMetre, r.h * pxPerMetre);
+    }
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+
+    const edgePx = Math.min(zone.tileWm, zone.tileHm) * pxPerMetre * viewportScale;
+    if (edgePx >= MIN_SEAM_PX) {
+      // Seams make a tiled floor read as tiles rather than a colour wash,
+      // which is what tells the customer what they are buying. One fixed
+      // cool grey, never derived from the material colour - a derived seam
+      // disappears on a mid-grey material.
+      ctx.beginPath();
+      for (let i = 0; i + 2 < runs.length; i += 3) {
+        const row = runs[i];
+        const col = runs[i + 1];
+        const len = runs[i + 2];
+        for (let k = 0; k < len; k++) {
+          const r = tileRect(zone, row, col + k);
+          ctx.rect(r.x * pxPerMetre, r.y * pxPerMetre, r.w * pxPerMetre, r.h * pxPerMetre);
+        }
+      }
+      ctx.strokeStyle = 'rgba(20,26,34,0.28)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    // Konva needs this to associate the path with the node for hit/caching.
+    ctx.fillStrokeShape(shape);
+  };
 }
 
 function polygonClipFunc(polygon: Polygon, pxPerMetre: number) {

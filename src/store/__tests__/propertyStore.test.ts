@@ -468,3 +468,135 @@ describe('moveItemToRoom — pick a placed item up and put it in another room', 
     expect(JSON.stringify(usePropertyStore.getState().property)).toBe(before);
   });
 });
+
+describe('floor painting - per-tile floors', () => {
+  function room5x4() {
+    const ps = usePropertyStore.getState();
+    ps.setRoomPolygon(ps.property.activeRoomId, rectToPolygon({ lengthM: 5, widthM: 4 }));
+    return usePropertyStore.getState().property.activeRoomId;
+  }
+  const ZONE = {
+    materialId: 'outdoor-1m',
+    tileWm: 1,
+    tileHm: 1,
+    originM: { x: 0, y: 0 },
+    runs: [] as number[],
+  };
+  const tileCount = (runs: number[]): number => {
+    let n = 0;
+    for (let i = 2; i < runs.length; i += 3) n += runs[i];
+    return n;
+  };
+
+  it('paints tiles and stores them run-length encoded', () => {
+    const id = room5x4();
+    usePropertyStore.getState().paintFloorTiles(id, ZONE, ['0,0', '0,1', '0,2']);
+    const r = usePropertyStore.getState().property.rooms.find((x) => x.id === id)!;
+    expect(r.floorTiles).toHaveLength(1);
+    // three contiguous tiles compress to ONE run of three numbers
+    expect(r.floorTiles![0].runs).toEqual([0, 0, 3]);
+  });
+
+  it('takes a whole stroke in one call, so it is one undo frame', () => {
+    const id = room5x4();
+    const keys = ['0,0', '0,1', '0,2', '0,3', '0,4'];
+    // Committing per tile would make Ctrl+Z walk backwards one tile at a time.
+    usePropertyStore.getState().paintFloorTiles(id, ZONE, keys);
+    const r = usePropertyStore.getState().property.rooms.find((x) => x.id === id)!;
+    expect(r.floorTiles![0].runs).toEqual([0, 0, 5]);
+  });
+
+  it('a tile carries only one material - repainting moves it between zones', () => {
+    const id = room5x4();
+    usePropertyStore.getState().paintFloorTiles(id, ZONE, ['0,0', '0,1']);
+    const other = { ...ZONE, materialId: 'eva-combat' };
+    usePropertyStore.getState().paintFloorTiles(id, other, ['0,1']);
+    const r = usePropertyStore.getState().property.rooms.find((x) => x.id === id)!;
+    const outdoor = r.floorTiles!.find((z) => z.materialId === 'outdoor-1m')!;
+    const eva = r.floorTiles!.find((z) => z.materialId === 'eva-combat')!;
+    expect(outdoor.runs).toEqual([0, 0, 1]);
+    expect(eva.runs).toEqual([0, 1, 1]);
+  });
+
+  it('erase removes tiles and drops an emptied zone', () => {
+    const id = room5x4();
+    usePropertyStore.getState().paintFloorTiles(id, ZONE, ['0,0', '0,1']);
+    usePropertyStore.getState().paintFloorTiles(id, ZONE, ['0,0', '0,1'], true);
+    const r = usePropertyStore.getState().property.rooms.find((x) => x.id === id)!;
+    expect(r.floorTiles).toBeUndefined();
+  });
+
+  it('the first stroke on a whole-room floor keeps that floor underneath', () => {
+    const id = room5x4();
+    usePropertyStore.getState().setRoomFloor(id, 'outdoor-1m');
+    const eva = { ...ZONE, materialId: 'eva-combat' };
+    usePropertyStore.getState().paintFloorTiles(id, eva, ['0,0']);
+    const r = usePropertyStore.getState().property.rooms.find((x) => x.id === id)!;
+    // The existing floor is seeded as tiles (20 for a 5x4 room at 1 m) minus
+    // the one just repainted, so the user paints ON TOP of the floor they
+    // had rather than watching it disappear.
+    const outdoor = r.floorTiles!.find((z) => z.materialId === 'outdoor-1m')!;
+    const evaZone = r.floorTiles!.find((z) => z.materialId === 'eva-combat')!;
+    expect(tileCount(outdoor.runs)).toBe(19);
+    expect(evaZone.runs).toEqual([0, 0, 1]);
+    // and the whole-room finish is cleared so it cannot shadow the tiles
+    expect(r.floorFinish).toBeNull();
+  });
+
+  it('reshaping the room prunes tiles that fall outside it', () => {
+    const id = room5x4();
+    usePropertyStore.getState().paintFloorTiles(id, ZONE, ['0,0', '0,1', '0,2', '0,3', '0,4']);
+    usePropertyStore.getState().setRoomPolygon(id, rectToPolygon({ lengthM: 3, widthM: 4 }));
+    const r = usePropertyStore.getState().property.rooms.find((x) => x.id === id)!;
+    // Without the cascade those two tiles persist invisibly AND stay priced.
+    expect(tileCount(r.floorTiles![0].runs)).toBe(3);
+  });
+});
+
+describe('floor painting - backwards compatibility', () => {
+  it('a design saved with only a whole-room floor still loads unchanged', () => {
+    const loaded = normaliseLoadedRoom({
+      id: 'r1',
+      name: 'Old Room',
+      polygon: rectToPolygon({ lengthM: 5, widthM: 4 }),
+      placedItems: [],
+      floorFinish: { materialId: 'outdoor-1m' },
+    });
+    expect(loaded.floorFinish).toEqual({ materialId: 'outdoor-1m' });
+    expect(loaded.floorTiles).toBeUndefined();
+  });
+
+  it('painted tiles survive a save/load round trip', () => {
+    const loaded = normaliseLoadedRoom({
+      id: 'r1',
+      name: 'R',
+      polygon: rectToPolygon({ lengthM: 5, widthM: 4 }),
+      placedItems: [],
+      floorTiles: [
+        {
+          materialId: 'outdoor-1m',
+          tileWm: 1,
+          tileHm: 1,
+          originM: { x: 0, y: 0 },
+          runs: [0, 0, 3],
+        },
+      ],
+    });
+    expect(loaded.floorTiles).toHaveLength(1);
+    expect(loaded.floorTiles![0].runs).toEqual([0, 0, 3]);
+  });
+
+  it('a malformed zone is dropped before it reaches the renderer or the price', () => {
+    const loaded = normaliseLoadedRoom({
+      id: 'r1',
+      name: 'R',
+      polygon: rectToPolygon({ lengthM: 5, widthM: 4 }),
+      placedItems: [],
+      floorTiles: [
+        { materialId: 'x', tileWm: 1, tileHm: 1, originM: { x: 0, y: 0 }, runs: [0, 0] },
+        { materialId: 'y', tileWm: 0, tileHm: 1, originM: { x: 0, y: 0 }, runs: [0, 0, 1] },
+      ] as never,
+    });
+    expect(loaded.floorTiles).toBeUndefined();
+  });
+});
