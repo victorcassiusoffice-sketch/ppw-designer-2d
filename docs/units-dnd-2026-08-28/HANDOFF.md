@@ -248,3 +248,70 @@ re-seeding `ppw_designer_ui_v1` back to its seeded value and overwriting the ver
 the test was observing. Fixed with a `__ppw_seeded` sentinel that makes the seed
 first-load-only. The multiroom brief documents this same trap for its blank-canvas test;
 it bites any spec that reloads.
+
+---
+
+## P4 — U4: adaptive grid rendering
+
+**Done.** What the canvas DRAWS is now decoupled from what the tool SNAPS to.
+
+- **`src/designer/gridTier.ts`** (new, 7 unit tests) — `chooseGridTier(snapStepM,
+  pxPerMetre, viewportScale, spanM)` picks the finest candidate that is both legible
+  (>= `MIN_GRID_PX` = 8 on screen) and affordable (<= `MAX_GRID_LINES_PER_AXIS` = 400 across
+  the span), returning `{0, 0}` when nothing on the ladder satisfies both.
+- **`MAJOR_FOR_MINOR` is an explicit table, never derived.** This is the reviewer blocker
+  worth remembering: a plausible "smallest candidate >= minor x 5" rule turns a 0.5 m minor
+  into `2.5` → the smallest candidate >= 2.5 is **10 m**, which silently removes every major
+  line inside a normal room. A lookup cannot drift that way. `gridTier.test.ts` pins
+  `chooseGridTier(0.5, 100, 1, 20)` deep-equal `{0.5, 1}` — today's exact output.
+- **`gridLinesForBounds`** widened to take the tier, and **re-anchored** at
+  `Math.ceil(bounds.minX / minorStepM) * minorStepM` instead of `bounds.minX`. That fixes a
+  live bug independent of units: lines were anchored at each room's own min corner while
+  snapping is anchored at world zero, so on the off-grid 5.13 m fixture the drawn grid and
+  the snap targets already disagreed. `major` is now a modulo of the world coordinate, not
+  `i % 2 === 0`, which silently changes meaning the moment the minor step changes.
+- **Memo split** — a `gridTier` memo recomputes on zoom (pure arithmetic), while
+  `gridByRoom` depends only on the two derived primitives, so panning and zooming *within* a
+  tier rebuild nothing.
+- Canvas badge shows the snap unit and, only when the drawn tier differs, a muted
+  `· grid 10 cm`. The `mobile-precision` button keeps its testid and aria-label; only its
+  label becomes the unit and its `aria-pressed` becomes `precision !== 'full'`. The
+  empty-room hint no longer hardcodes "0.5 m grid".
+- Added `name="room-grid"` to the per-room grid Group so the e2e can count MOUNTED nodes.
+
+### P4 GATE
+
+```
+$ npx vitest run src/designer/__tests__/gridTier.test.ts
+  7 passed
+
+$ PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test \
+    units multiroom-render multiroom-attach multiroom-placement designer-visual inline-interaction
+  17 passed, 1 skipped (12.6s)
+
+$ npx vitest run
+  Test Files  158 passed (158)   Tests  1849 passed (1849)
+
+$ npx tsc --noEmit   # exit 0
+$ npm run build      # built in 7.44s, clean
+$ npx eslint <4>     # 0 errors
+$ testids            # 148, unchanged, none dropped
+```
+
+### The exact-count assertion, and why it moved
+
+The new e2e seeds a **12 x 8 m** room at the 1 cm unit and asserts the mounted grid-line
+count is **exactly 202** (121 vertical + 81 horizontal at the 0.1 m tier). Wrong builds land
+elsewhere and are individually identifiable: ignoring the tier entirely gives 42, drawing one
+line per snap step gives 2002.
+
+It was first written against the brief's 20 x 15 m room expecting 352, and **failed with
+142**. That was the test being wrong, not the code: at 1920x1080 a 20 x 15 m room is
+2000 x 1500 px, so the auto-centre fit clamps the scale to ~0.667, at which the 0.1 m tier
+is 6.67 px — under the 8 px floor — and the 0.25 m tier is correctly chosen (81 + 61 = 142).
+Retargeted to 12 x 8 m, which fits at scale exactly 1, and the spec now **pins the scale
+first** so the count can never drift silently if the fit ever changes.
+
+Practical consequence, and it is correct rather than a defect: at `pxPerMetre = 100` inside
+the 0.3–3 zoom clamp, a 1 cm grid is at most 3 px, so the finest grid anyone will ever SEE
+is 10 cm while snapping at 1 cm. The dual badge is what makes that legible.

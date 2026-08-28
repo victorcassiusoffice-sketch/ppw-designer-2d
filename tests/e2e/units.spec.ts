@@ -240,4 +240,54 @@ test.describe('Selectable snap units', () => {
     await expect(lengthInput).toHaveAttribute('min', '0.1');
     await expect(lengthInput).toHaveAttribute('step', '0.1');
   });
+  test('the drawn grid steps up so a fine unit cannot flood the canvas', async ({
+    page,
+  }) => {
+    // A 12 x 8 m room. At 1920x1080 that union is 1200 x 800 px, so the
+    // auto-centre fit clamps the scale to exactly 1 - which the assertion
+    // below pins, so the line count can never drift silently if the fit
+    // changes.
+    //
+    // At the 1 cm SNAP unit the DRAWN grid must step up to the 0.1 m tier
+    // (1 cm would be 1 screen px, under the 8 px floor): 121 vertical +
+    // 81 horizontal = 202 lines. Every wrong build lands elsewhere:
+    //   - ignoring the tier entirely (0.5 m)    ->  25 +  17 =   42
+    //   - one line per snap step (1 cm)         -> 1201 + 801 = 2002
+    const BIG_ROOM = {
+      id: 'prop-grid',
+      name: 'Grid Property',
+      activeRoomId: 'r1',
+      rooms: [
+        {
+          id: 'r1',
+          name: 'Hall',
+          polygon: [
+            { x: 0, y: 0 },
+            { x: 12, y: 0 },
+            { x: 12, y: 8 },
+            { x: 0, y: 8 },
+          ],
+          placedItems: [],
+        },
+      ],
+    };
+
+    await seedWithUnit(page, BIG_ROOM, 'cm1');
+    await page.goto('/designer');
+    await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    await page.waitForTimeout(800);
+
+    const pxPerM = await livePxPerMetre(page);
+    expect(pxPerM).toBeCloseTo(100, 3);
+
+    // Count MOUNTED Konva nodes, not store arithmetic: a tier computed
+    // correctly but never threaded into the render would still pass a
+    // store-side assertion.
+    const lineCount = await page.evaluate(() => {
+      const stage = window.Konva?.stages?.[0];
+      if (!stage) return -1;
+      return stage.find('.room-grid').reduce((n, g) => n + g.getChildren().length, 0);
+    });
+    expect(lineCount).toBe(202);
+  });
 });

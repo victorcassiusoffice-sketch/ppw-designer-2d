@@ -58,7 +58,13 @@ import { usePlacementIntentStore } from '../store/placementIntentStore';
 // Sims feature-finish (2026-05-30) — inline floating cluster (flagship),
 // precision snap step, haptics. All additive; Konva stable-lock untouched.
 import { FloatingCluster } from '../designer/FloatingCluster';
-import { useDesignerUIStore, PRECISION_STEP_M } from '../store/designerUIStore';
+import {
+  useDesignerUIStore,
+  PRECISION_STEP_M,
+  SNAP_UNIT_LABEL,
+} from '../store/designerUIStore';
+// Units brief (2026-08-28, D6) - what we DRAW is decoupled from what we SNAP to.
+import { chooseGridTier } from '../designer/gridTier';
 import { haptic } from '../lib/haptics';
 // Sims wall-aware placement (2026-08-23) — objects dropped near a wall
 // snap flush against it and auto-rotate to face into the room.
@@ -1062,14 +1068,39 @@ export function RoomCanvas({
   // per room. The old single memo spanned only the active room's bounds, so
   // reusing it inside another room's clip yields a BLANK grid in every room
   // but one.
+  /**
+   * The DRAWN grid tier. Recomputed on zoom (it is pure arithmetic), but
+   * `gridByRoom` below depends only on the two derived PRIMITIVES, so
+   * panning and zooming WITHIN a tier rebuild nothing.
+   *
+   * Span is the largest drawn-room dimension: the line cap is per room,
+   * so sizing the tier off the biggest one is the conservative choice.
+   */
+  const gridTier = useMemo(() => {
+    let spanM = 0;
+    for (const r of drawnRooms) {
+      const b = polygonBounds(r.polygon);
+      spanM = Math.max(spanM, b.maxX - b.minX, b.maxY - b.minY);
+    }
+    return chooseGridTier(snapStep, pxPerMetre, viewport.scale, spanM || 20);
+  }, [snapStep, pxPerMetre, viewport.scale, drawnRooms]);
+
   const gridByRoom = useMemo(() => {
     if (!showGrid) return new Map<string, GridLine[]>();
     const out = new Map<string, GridLine[]>();
     for (const r of drawnRooms) {
-      out.set(r.id, gridLinesForBounds(polygonBounds(r.polygon), pxPerMetre));
+      out.set(
+        r.id,
+        gridLinesForBounds(
+          polygonBounds(r.polygon),
+          pxPerMetre,
+          gridTier.minorStepM,
+          gridTier.majorStepM,
+        ),
+      );
     }
     return out;
-  }, [showGrid, pxPerMetre, drawnRooms]);
+  }, [showGrid, pxPerMetre, drawnRooms, gridTier.minorStepM, gridTier.majorStepM]);
 
   /**
    * The gaps to cut out of every wall, keyed `roomId:edgeIndex`.
@@ -1322,7 +1353,13 @@ export function RoomCanvas({
             (M1.5 Playwright hook) — it is just inlined here now. */}
         <div className="pointer-events-none flex items-center gap-1.5">
           <span className="rounded-md bg-ppw-ink/80 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
-            {area.toFixed(1)} m² · {Math.round(viewport.scale * 100)}% · {precision === 'full' ? '0.5' : '0.25'} m
+            {area.toFixed(1)} m² · {Math.round(viewport.scale * 100)}% ·{' '}
+            {SNAP_UNIT_LABEL[precision]}
+            {gridTier.minorStepM > 0 && Math.abs(gridTier.minorStepM - snapStep) > 1e-9 && (
+              <span className="opacity-60"> · grid {gridTier.minorStepM >= 1
+                ? `${gridTier.minorStepM} m`
+                : `${Math.round(gridTier.minorStepM * 100)} cm`}</span>
+            )}
           </span>
           <span
             className="rounded-md bg-ppw-teal/90 px-2 py-1 text-[11px] font-medium text-white shadow-sm"
@@ -1395,15 +1432,15 @@ export function RoomCanvas({
             type="button"
             data-testid="mobile-precision"
             aria-label="Toggle snap precision"
-            aria-pressed={precision === 'quarter'}
+            aria-pressed={precision !== 'full'}
             onClick={togglePrecision}
             className="pointer-events-auto flex h-11 min-w-[64px] items-center justify-center rounded-lg px-2 text-[11px] font-semibold shadow-sm active:scale-95"
             style={{
-              background: precision === 'quarter' ? '#FFBB58' : 'rgba(255,255,255,0.9)',
+              background: precision !== 'full' ? '#FFBB58' : 'rgba(255,255,255,0.9)',
               color: '#232C3B',
             }}
           >
-            {precision === 'quarter' ? '¼ tile' : '½ tile'}
+            {SNAP_UNIT_LABEL[precision]}
           </button>
         </div>
       )}
@@ -1699,6 +1736,9 @@ export function RoomCanvas({
             && drawnRooms.map((room) => (
               <Group
                 key={`grid-${room.id}`}
+                // Named so an e2e can count MOUNTED grid nodes rather than
+                // trusting the tier arithmetic. Mirrors `room-poly`.
+                name="room-grid"
                 listening={false}
                 clipFunc={polygonClipFunc(room.polygon, pxPerMetre)}
               >
@@ -2070,7 +2110,8 @@ export function RoomCanvas({
             </p>
             <p className="text-[11px] leading-snug" style={{ color: '#3B4A52' }}>
               Drag a product onto the floor — or tap a catalog item, then tap
-              the room — to place your first piece. Items snap to the 0.5 m grid.
+              the room — to place your first piece. Items snap to the{' '}
+              {SNAP_UNIT_LABEL[precision]} grid.
             </p>
           </div>
         </div>
@@ -2676,25 +2717,48 @@ interface GridLine {
  * grid, because the lines simply did not reach that far: per-room clipping
  * is not enough, each room needs its own generated line set.
  */
+/**
+ * Grid lines for one room, at the DRAWN tier (units brief 2026-08-28, D6).
+ *
+ * Two changes from the old hardcoded version, both load-bearing:
+ *
+ *  1. The step comes from `chooseGridTier`, not a literal 0.5, so a fine
+ *     snap unit cannot emit thousands of Konva nodes per room.
+ *  2. Lines are anchored at the first multiple of the step at or after
+ *     `bounds.minX`, NOT at `bounds.minX` itself. Snapping is anchored at
+ *     world zero, so anchoring the drawing at each room own min corner
+ *     made the visible grid and the snap targets disagree on any off-grid
+ *     room - visible today on the 5.13 m fixture.
+ *
+ * `major` is a modulo of the world coordinate for the same reason: an
+ * index-parity test (`i % 2 === 0`) silently changes meaning the moment the
+ * minor step changes.
+ */
 function gridLinesForBounds(
   bounds: { minX: number; minY: number; maxX: number; maxY: number },
   pxPerMetre: number,
+  minorStepM: number,
+  majorStepM: number,
 ): GridLine[] {
   const out: GridLine[] = [];
-  const stepPx = 0.5 * pxPerMetre;
+  if (minorStepM <= 0) return out;
   const minX = bounds.minX * pxPerMetre;
   const minY = bounds.minY * pxPerMetre;
   const maxX = bounds.maxX * pxPerMetre;
   const maxY = bounds.maxY * pxPerMetre;
-  for (let i = 0; i * stepPx <= maxX - minX + 0.001; i++) {
-    const x = minX + i * stepPx;
-    const major = i % 2 === 0;
-    out.push({ points: [x, minY, x, maxY], key: `vx-${i}`, major });
+  const ratio = majorStepM > 0 ? Math.round(majorStepM / minorStepM) : 0;
+  const isMajor = (worldM: number): boolean =>
+    ratio > 0 && Math.abs((Math.round(worldM / minorStepM) % ratio + ratio) % ratio) < 1e-9;
+
+  const startXm = Math.ceil(bounds.minX / minorStepM - 1e-9) * minorStepM;
+  for (let xm = startXm; xm <= bounds.maxX + 1e-9; xm += minorStepM) {
+    const x = xm * pxPerMetre;
+    out.push({ points: [x, minY, x, maxY], key: `vx-${Math.round(xm / minorStepM)}`, major: isMajor(xm) });
   }
-  for (let j = 0; j * stepPx <= maxY - minY + 0.001; j++) {
-    const y = minY + j * stepPx;
-    const major = j % 2 === 0;
-    out.push({ points: [minX, y, maxX, y], key: `hy-${j}`, major });
+  const startYm = Math.ceil(bounds.minY / minorStepM - 1e-9) * minorStepM;
+  for (let ym = startYm; ym <= bounds.maxY + 1e-9; ym += minorStepM) {
+    const y = ym * pxPerMetre;
+    out.push({ points: [minX, y, maxX, y], key: `hy-${Math.round(ym / minorStepM)}`, major: isMajor(ym) });
   }
   return out;
 }
