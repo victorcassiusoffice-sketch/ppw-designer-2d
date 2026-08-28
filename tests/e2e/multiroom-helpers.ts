@@ -110,6 +110,80 @@ export async function seedCoachFlagOnly(page: Page): Promise<void> {
 }
 
 /**
+ * World metres → page pixels, read from the canvas's live Konva transform via
+ * the DEV-only `window.__ppwGeom` bridge (`src/lib/geomBridge.ts`).
+ *
+ * This is the coordinate basis every spec should use. It supersedes the gold
+ * pixel-scan below, which breaks SILENTLY once the canvas gains warm floor
+ * materials or gold door symbols: the scan latches onto the wrong pixel, the
+ * spec still passes, and it asserts against a coordinate frame that is quietly
+ * wrong. Geometry cannot drift that way.
+ *
+ * Returns null when the bridge is absent (a production build) so callers can
+ * fall back to the scan.
+ */
+export async function worldToScreen(
+  page: Page,
+  xM: number,
+  yM: number,
+): Promise<{ x: number; y: number } | null> {
+  return page.evaluate(
+    ([x, y]) => {
+      const g = (window as unknown as {
+        __ppwGeom?: {
+          ready: () => boolean;
+          worldToScreen: (a: number, b: number) => { x: number; y: number } | null;
+        };
+      }).__ppwGeom;
+      if (!g || !g.ready()) return null;
+      return g.worldToScreen(x as number, y as number);
+    },
+    [xM, yM],
+  );
+}
+
+/** Every room's world-metre AABB, straight from the store via the dev bridge. */
+export async function geomRooms(page: Page): Promise<
+  Array<{ id: string; name: string; minX: number; minY: number; maxX: number; maxY: number; vertices: number }>
+> {
+  return page.evaluate(() => {
+    const g = (window as unknown as {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      __ppwGeom?: { ready: () => boolean; rooms: () => any[] };
+    }).__ppwGeom;
+    if (!g || !g.ready()) return [];
+    return g.rooms();
+  });
+}
+
+/**
+ * Count of MOUNTED `.room-poly` Konva nodes — the render-side room count,
+ * which is what the `[multi-room] rendered=N` breadcrumb reports. Reading the
+ * mounted nodes (rather than the store) is the whole point: a store-side count
+ * goes green even when the canvas still draws one room.
+ */
+export async function renderedRoomCount(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    const g = (window as unknown as {
+      __ppwGeom?: { ready: () => boolean; renderedRoomCount: () => number };
+    }).__ppwGeom;
+    if (!g || !g.ready()) return -1;
+    return g.renderedRoomCount();
+  });
+}
+
+/** Vertices currently in flight in room-draw mode, via the dev bridge. */
+export async function drawVertexCount(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    const g = (window as unknown as {
+      __ppwGeom?: { ready: () => boolean; drawVertexCount: () => number };
+    }).__ppwGeom;
+    if (!g) return -1;
+    return g.drawVertexCount();
+  });
+}
+
+/**
  * Find the leftmost/topmost gold wall pixel on the first Konva layer
  * canvas and return it in page pixels. Ported verbatim in behaviour from
  * `wall-aware-placement.spec.ts:46` (which owns the original), so the two
@@ -123,6 +197,12 @@ export async function seedCoachFlagOnly(page: Page): Promise<void> {
  * the viewport between placements.
  */
 export async function roomOrigin(page: Page): Promise<{ x: number; y: number }> {
+  // Preferred path: ask the canvas for its OWN world→screen transform.
+  // Exact by construction and immune to palette changes. The colour scan
+  // below stays only as a fallback for a build without the dev bridge.
+  const viaGeom = await worldToScreen(page, 0, 0);
+  if (viaGeom) return viaGeom;
+
   const found = await page.evaluate((scan) => {
     const c = document.querySelector('.konvajs-content canvas') as HTMLCanvasElement | null;
     if (!c) return null;

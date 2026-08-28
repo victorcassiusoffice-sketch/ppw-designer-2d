@@ -11,6 +11,7 @@
 
 import { useState } from 'react';
 import { usePropertyStore, selectActiveRoom } from '../store/propertyStore';
+import { nextRoomName, ROOM_TYPES } from '../designer/roomNaming';
 import { useToastStore } from '../store/toastStore';
 import { rectToPolygon } from '../lib/geometry';
 // Attached multi-room (2026-08-26) — a new rectangle attaches flush-right
@@ -28,7 +29,12 @@ export function AddRoomChooser({ open, onClose, onRequestDrawMode }: AddRoomChoo
   const addRectangleRoom = usePropertyStore((s) => s.addRectangleRoom);
   const pushToast = useToastStore((s) => s.push);
 
-  const [name, setName] = useState('New Room');
+  // Seeded from the shared vocabulary rather than the placeholder "New Room",
+  // so the field opens with a real, usable name the customer can accept or
+  // replace instead of a label nobody would ship.
+  const [name, setName] = useState(() =>
+    nextRoomName(usePropertyStore.getState().property.rooms),
+  );
   const [lengthM, setLengthM] = useState(5);
   const [widthM, setWidthM] = useState(4);
   const [mode, setMode] = useState<'rect' | 'draw'>('rect');
@@ -42,8 +48,8 @@ export function AddRoomChooser({ open, onClose, onRequestDrawMode }: AddRoomChoo
   function commitRectangle() {
     const L = clampDim(lengthM);
     const W = clampDim(widthM);
-    const trimmed = name.trim() || 'New Room';
     const ps = usePropertyStore.getState();
+    const trimmed = name.trim() || nextRoomName(ps.property.rooms);
     // Anchor flush-right of everything already drawn, so the new rectangle
     // SHARES the plan's east wall instead of stacking at the origin.
     const anchor = nextRectanglePosition(ps.property.rooms, { lengthM: L, widthM: W });
@@ -104,6 +110,32 @@ export function AddRoomChooser({ open, onClose, onRequestDrawMode }: AddRoomChoo
         </div>
 
         <div className="mt-4 space-y-2">
+          {/* Room TYPE, not a number. Professional planners never ship
+              "Room 1" as a final label, and the type is what will let the
+              catalog filter itself to what belongs in that kind of space. */}
+          <div>
+            <span className="block text-[10px] uppercase tracking-wide text-ppw-slate">
+              Room type
+            </span>
+            <div className="mt-1 flex flex-wrap gap-1" data-testid="room-type-picker">
+              {ROOM_TYPES.slice(0, 8).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setName(t)}
+                  data-testid={`room-type-${t.toLowerCase().replace(/\s+/g, '-')}`}
+                  className={`rounded-full border px-2 py-0.5 text-[11px] ${
+                    name === t
+                      ? 'border-ppw-teal bg-ppw-teal text-white'
+                      : 'border-ppw-stone bg-white text-ppw-slate hover:border-ppw-teal hover:text-ppw-teal'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <label className="block text-[10px] uppercase tracking-wide text-ppw-slate">
             Room name
             <input

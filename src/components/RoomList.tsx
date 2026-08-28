@@ -30,6 +30,7 @@ import { useToastStore } from '../store/toastStore';
 // room receives all zones today since zones aren't yet roomId-scoped).
 import { getProductById } from '../data/products';
 import { useFloorZoneStore, type FloorZone } from '../store/floorZoneStore';
+import { isDrawnPolygon } from '../designer/roomLayout';
 import { findFlooringById } from '../data/paintPalette';
 import type { PlacedItem } from '../store/propertyStore';
 // Batch 3 Fix 3.2 — live draw-mode counters (vertex / perim / area)
@@ -97,6 +98,7 @@ export function RoomList({
   const drawArea = useMemo(() => polygonArea(drawVertices), [drawVertices]);
 
   const pushToast = useToastStore((s) => s.push);
+  const drawnRoomCount = property.rooms.filter((r) => isDrawnPolygon(r.polygon)).length;
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState('');
@@ -172,7 +174,10 @@ export function RoomList({
           </button>
         )}
         <p className="mt-0.5 text-[10px] text-ppw-slate">
-          {property.rooms.length} room{property.rooms.length === 1 ? '' : 's'}
+          {/* DRAWN rooms only. A fresh canvas always holds one blank seed room
+              so the model never has zero, but reporting "1 room" over an empty
+              plan is simply wrong. */}
+          {drawnRoomCount} room{drawnRoomCount === 1 ? '' : 's'}
         </p>
       </div>
 

@@ -25,12 +25,12 @@
  * strip is desktop-only on mobile (clipped by Android nav otherwise).
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Stage, Layer, Line, Group, Text, Circle, Rect, Image as KonvaImage } from 'react-konva';
 import { useImageCache, useImageCacheStatus } from '../hooks/useImageCache';
 import type Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
-import { usePropertyStore, selectActiveRoom } from '../store/propertyStore';
+import { usePropertyStore, selectActiveRoom, roomOpenings } from '../store/propertyStore';
 import type { PlacedItem } from '../store/propertyStore';
 import { useToastStore } from '../store/toastStore';
 import { CATEGORY_FILL, CATEGORY_LABELS, getProductById, productTopDownUrl } from '../data/products';
@@ -82,6 +82,9 @@ import {
   LABEL_TEXT_MUTED,
   ROOM_FILL,
   ROOM_FILL_ACTIVE,
+  DOOR_ARC,
+  DOOR_LEAF,
+  DOOR_TARGET_WALL,
   ROOM_LABEL_ACTIVE_OPACITY,
   ROOM_LABEL_INACTIVE_OPACITY,
   WALL_GOLD,
@@ -101,6 +104,51 @@ import {
   translatePolygon,
   unionBounds,
 } from '../designer/roomLayout';
+// Addressable walls (2026-08-28). The room outline is no longer one closed
+// Line: the fill and the gold stroke are separate, and the stroke is drawn
+// EDGE BY EDGE so an opening can cut a gap in a wall without cutting the
+// floor. With no openings this renders exactly what the single closed Line
+// did — see the square-cap note at the call site.
+import {
+  edgeKey,
+  pointAlongEdge,
+  projectOntoEdge,
+  nearestEdge,
+  roomEdges,
+  sharedEdgeMap,
+  splitEdgeSpans,
+  type RoomEdge,
+  type Span,
+} from '../designer/wallEdges';
+import {
+  clampOpeningOffset,
+  doorSymbol,
+  jambTicks,
+  openingSpan,
+  validateOpening,
+  type Opening,
+} from '../designer/openings';
+import { roomFloorMaterial } from '../designer/floorFinish';
+import { nextRoomName } from '../designer/roomNaming';
+import { obstaclesFor } from '../designer/layerBands';
+
+/** How close the pointer must be to a wall for the door tool to snap to it. */
+const DOOR_SNAP_TOL_M = 0.6;
+
+/**
+ * What the door tool is currently pointing at.
+ *  place   — a legal spot on a wall; click commits
+ *  remove  — an existing opening under the cursor; click deletes it
+ *  invalid — a wall, but the opening will not fit there
+ */
+interface DoorHover {
+  mode: 'place' | 'remove' | 'invalid';
+  roomId: string;
+  edge: RoomEdge;
+  offsetM: number;
+  openingId?: string;
+  message?: string;
+}
 
 // M1.5: HTML5 DragEvent path retired (silently fails on `.konva-stage`
 // per K1 audit). DRAG_MIME stays in ProductPalette for legacy unit
@@ -156,6 +204,8 @@ export function RoomCanvas({
   const togglePrecision = useDesignerUIStore((s) => s.togglePrecision);
   const tool = useDesignerUIStore((s) => s.tool);
   const setTool = useDesignerUIStore((s) => s.setTool);
+  const doorDraft = useDesignerUIStore((s) => s.doorDraft);
+  const [doorHover, setDoorHover] = useState<DoorHover | null>(null);
   const snapStep = PRECISION_STEP_M[precision];
 
   // D11/D12/D14 — tool-aware activation of a placed item. Hand (default) =
@@ -232,7 +282,7 @@ export function RoomCanvas({
     if (!isDrawnPolygon(active.polygon)) {
       ps.setRoomPolygon(active.id, rect);
     } else {
-      ps.addRectangleRoom(`Room ${ps.property.rooms.length + 1}`, { lengthM: 5, widthM: 4 }, anchor);
+      ps.addRectangleRoom(nextRoomName(ps.property.rooms), { lengthM: 5, widthM: 4 }, anchor);
     }
     pushToast('Added a 5 × 4 m room — adjust the size in the top bar or place products.', 'info');
   }, [pushToast]);
@@ -313,11 +363,15 @@ export function RoomCanvas({
       console.log('[draw-mode]', 'enter Draw mode, reset local state');
       setDrawVertices([]);
       setDrawHover(null);
-      // Batch 3 Fix 3.1 — after Vic's `setDrawMode` wrapper clears all
-      // rooms' items + walls + zones, the property still holds one
-      // empty-active-room placeholder. Auto-name "Room 1" since the
-      // user is starting fresh; rename inline in the sidebar after.
-      setDrawName('Room 1');
+      // Name the room being drawn from the SHARED naming helper.
+      //
+      // This used to be the constant 'Room 1' — a leftover from when entering
+      // draw mode wiped every other room, so there only ever WAS one. Since
+      // the attached-multi-room merge that stopped being true and the constant
+      // silently named every drawn room "Room 1": draw three, get three rows
+      // all reading the same thing. That is the actual cause of Vic's
+      // "no need for room 2, 3".
+      setDrawName(nextRoomName(usePropertyStore.getState().property.rooms));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drawMode]);
@@ -640,7 +694,11 @@ export function RoomCanvas({
         frontEdge: product.front_edge,
       });
       const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
-      const others = targetItems
+      // Layer bands (2026-08-28): only same-band items are obstacles, so a
+      // treadmill ignores the mats under it. Before this, a flooring SKU laid
+      // as an item blocked everything on top of it and findFreeSlot silently
+      // teleported the blocked product elsewhere.
+      const others = obstaclesFor(product.id, targetItems)
         .map((it) => {
           const p = getProductById(it.productId);
           if (!p) return null;
@@ -871,7 +929,9 @@ export function RoomCanvas({
       });
       const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
       const candidate: PlacedRect = { x: resolved.x, y: resolved.y, w, h };
-      const others = target.placedItems
+      // Same band filter as the commit path — the ghost must predict the
+      // commit exactly, or the preview lies.
+      const others = obstaclesFor(product.id, target.placedItems)
         .map((it) => {
           const p = getProductById(it.productId);
           if (!p) return null;
@@ -1000,6 +1060,157 @@ export function RoomCanvas({
     }
     return out;
   }, [showGrid, pxPerMetre, drawnRooms]);
+
+  /**
+   * The gaps to cut out of every wall, keyed `roomId:edgeIndex`.
+   *
+   * A room's own openings are the easy half. The half that matters is the
+   * SHARED wall: when two rooms are attached, the wall between them exists in
+   * BOTH polygons, so a door hosted by one room must also cut the other room's
+   * stroke — otherwise the neighbour's gold line still runs straight across
+   * the doorway and the "door into the second room" reads as a wall.
+   *
+   * Neighbour spans are mapped across by converting to WORLD points and
+   * projecting onto this edge, rather than by reasoning about direction signs.
+   * The two rooms traverse their shared wall in opposite directions, and going
+   * through world space makes that irrelevant instead of a bug waiting to
+   * happen.
+   */
+  const wallGapsByEdge = useMemo(() => {
+    const out = new Map<string, Span[]>();
+    if (drawnRooms.length === 0) return out;
+
+    const shared = sharedEdgeMap(drawnRooms.map((r) => ({ id: r.id, polygon: r.polygon })));
+    const edgesByRoom = new Map(drawnRooms.map((r) => [r.id, roomEdges(r)]));
+    const roomsById = new Map(drawnRooms.map((r) => [r.id, r]));
+
+    for (const room of drawnRooms) {
+      for (const edge of edgesByRoom.get(room.id) ?? []) {
+        const gaps: Span[] = roomOpenings(room)
+          .filter((o) => o.edgeIndex === edge.index)
+          .map(openingSpan);
+
+        for (const ref of shared.get(edgeKey(room.id, edge.index)) ?? []) {
+          const nRoom = roomsById.get(ref.roomId);
+          const nEdge = edgesByRoom.get(ref.roomId)?.[ref.edgeIndex];
+          if (!nRoom || !nEdge) continue;
+          for (const o of roomOpenings(nRoom)) {
+            if (o.edgeIndex !== ref.edgeIndex) continue;
+            const s = openingSpan(o);
+            const w0 = pointAlongEdge(nEdge, s.t0);
+            const w1 = pointAlongEdge(nEdge, s.t1);
+            gaps.push({
+              t0: projectOntoEdge(edge, w0),
+              t1: projectOntoEdge(edge, w1),
+            });
+          }
+        }
+
+        if (gaps.length) out.set(edgeKey(room.id, edge.index), gaps);
+      }
+    }
+    return out;
+  }, [drawnRooms]);
+
+  /* ---------------- DOOR TOOL (2026-08-28) ----------------
+   * Vic: "what if I wanted to add a door going into the second room."
+   *
+   * Hover snaps the ghost to the nearest WALL rather than to the grid — an
+   * opening has no meaning off its host, so there is no free-space state to
+   * represent. Clicking an existing door removes it, which keeps add and
+   * remove on one tool instead of inventing a second mode.
+   */
+  const doorTool = tool === 'door';
+
+  const computeDoorHover = useCallback(
+    (clientX: number, clientY: number): DoorHover | null => {
+      const container = containerRef.current;
+      if (!container) return null;
+      const rect = container.getBoundingClientRect();
+      const { xM, yM } = screenToRoom(
+        clientX,
+        clientY,
+        { left: rect.left, top: rect.top },
+        viewport,
+        pxPerMetre,
+      );
+      // Read rooms through getState(): this callback is memoised on the
+      // viewport, so a closure over `drawnRooms` would go stale the moment a
+      // door is placed.
+      const live = usePropertyStore
+        .getState()
+        .property.rooms.filter((r) => isDrawnPolygon(r.polygon));
+      if (live.length === 0) return null;
+
+      // Is the pointer over an EXISTING opening? Generous radius so a door is
+      // easy to hit at any zoom.
+      for (const room of live) {
+        for (const o of roomOpenings(room)) {
+          const edge = roomEdges(room)[o.edgeIndex];
+          if (!edge) continue;
+          const c = pointAlongEdge(edge, o.offsetM);
+          if (Math.hypot(c.x - xM, c.y - yM) <= Math.max(o.widthM / 2, 0.35)) {
+            return { mode: 'remove', roomId: room.id, openingId: o.id, edge, offsetM: o.offsetM };
+          }
+        }
+      }
+
+      const hit = nearestEdge({ x: xM, y: yM }, live, DOOR_SNAP_TOL_M);
+      if (!hit) return null;
+
+      const draft = useDesignerUIStore.getState().doorDraft;
+      const offsetM = clampOpeningOffset(hit.edge.lengthM, draft.widthM, hit.offsetM);
+      if (offsetM === null) {
+        return { mode: 'invalid', roomId: hit.edge.roomId, edge: hit.edge, offsetM: hit.offsetM };
+      }
+      const room = live.find((r) => r.id === hit.edge.roomId)!;
+      const others = roomOpenings(room).filter((o) => o.edgeIndex === hit.edge.index);
+      const v = validateOpening(hit.edge.lengthM, { offsetM, widthM: draft.widthM }, others);
+      return {
+        mode: v.ok ? 'place' : 'invalid',
+        roomId: hit.edge.roomId,
+        edge: hit.edge,
+        offsetM,
+        message: v.message,
+      };
+    },
+    [viewport, pxPerMetre],
+  );
+
+  const commitDoorAt = useCallback(
+    (clientX: number, clientY: number) => {
+      const h = computeDoorHover(clientX, clientY);
+      if (!h) return;
+      const ps = usePropertyStore.getState();
+
+      if (h.mode === 'remove' && h.openingId) {
+        ps.removeOpening(h.openingId);
+        pushToast('Opening removed', 'info');
+        setDoorHover(null);
+        return;
+      }
+      if (h.mode !== 'place') {
+        pushToast(h.message ?? 'That opening will not fit on this wall.', 'warn');
+        return;
+      }
+      const draft = useDesignerUIStore.getState().doorDraft;
+      const id = ps.addOpening(h.roomId, {
+        edgeIndex: h.edge.index,
+        offsetM: h.offsetM,
+        widthM: draft.widthM,
+        kind: draft.kind,
+        flipFacing: draft.flipFacing,
+        flipHand: draft.flipHand,
+      });
+      if (!id) {
+        pushToast('That opening will not fit on this wall.', 'warn');
+        return;
+      }
+      const label = draft.kind === 'window' ? 'Window' : draft.kind === 'doorway' ? 'Doorway' : 'Door';
+      pushToast(`${label} added`, 'success');
+    },
+    [computeDoorHover, pushToast],
+  );
 
   // Designer 3-Bug Fix (2026-05-28, Bug 3) — "Clear leaves ghost items on
   // the canvas". Confirmed via a live dev-server probe: when `placedItems`
@@ -1224,6 +1435,10 @@ export function RoomCanvas({
           }
           const evt = e.evt as PointerEvent;
           if (typeof evt.clientX !== 'number') return;
+          if (doorTool) {
+            setDoorHover(computeDoorHover(evt.clientX, evt.clientY));
+            return;
+          }
           const next = computeGhost(evt.clientX, evt.clientY, pendingProductId);
           if (next) {
             setDragGhost({ xM: next.xM, yM: next.yM, rotation: next.rotation, valid: next.valid });
@@ -1239,6 +1454,11 @@ export function RoomCanvas({
         onTap={(e) => {
           if (drawMode) return;
           if (wallDrawEnabled) return; // M2: wall layer owns tap
+          if (doorTool) {
+            const t = (e.evt as TouchEvent).changedTouches?.[0];
+            if (t) commitDoorAt(t.clientX, t.clientY);
+            return;
+          }
           if (e.target !== e.target.getStage()) return;
           if (pendingProductId && setPendingProductId) {
             const touch = (e.evt as TouchEvent).changedTouches?.[0];
@@ -1255,6 +1475,10 @@ export function RoomCanvas({
         onClick={(e) => {
           if (drawMode) return;
           if (wallDrawEnabled) return; // M2: wall layer owns click
+          if (doorTool) {
+            commitDoorAt(e.evt.clientX, e.evt.clientY);
+            return;
+          }
           if (e.target !== e.target.getStage()) return;
           if (pendingProductId && setPendingProductId) {
             const placed = placeProductAt(e.evt.clientX, e.evt.clientY, pendingProductId);
@@ -1288,25 +1512,171 @@ export function RoomCanvas({
               <Group key={room.id} name="room-poly" listening={false}>
                 {/* Reference `Design/Designer.jpeg`: the walls ARE the drawing.
                     A thick amber stroke over a slightly lighter floor, with a
-                    hairline inside the stroke for the drafted edge. */}
+                    hairline inside the stroke for the drafted edge.
+
+                    FLOOR — fill only, no stroke. Split from the wall so an
+                    opening can cut the wall without cutting the floor away
+                    underneath it. */}
                 <Line
                   points={pts}
                   closed
                   fill={isActive ? ROOM_FILL_ACTIVE : ROOM_FILL}
-                  stroke={WALL_GOLD}
-                  strokeWidth={WALL_STROKE_PX}
-                  lineJoin="miter"
                   shadowColor="#000000"
                   shadowBlur={18}
                   shadowOpacity={0.45}
                   shadowOffsetY={4}
                 />
-                <Line
-                  points={pts}
-                  closed
-                  stroke={WALL_INNER_STROKE}
-                  strokeWidth={WALL_INNER_STROKE_PX}
-                />
+                {/* FLOOR FINISH — the material the customer actually buys,
+                    drawn over the room fill and UNDER the walls, the grid and
+                    every placed item. Per-room, one material, filling the
+                    polygon: that is the convention every consumer floor
+                    planner lands on, and per-tile painting buys nothing when
+                    the output is a shopping list.
+
+                    Slightly translucent so the active-room tint still reads
+                    through, and non-listening like everything else in this
+                    layer — a listening floor would swallow the placement
+                    clicks the Stage handlers depend on. */}
+                {(() => {
+                  const mat = roomFloorMaterial(room);
+                  if (!mat) return null;
+                  return (
+                    <Line
+                      points={pts}
+                      closed
+                      fill={mat.hex}
+                      opacity={0.9}
+                      listening={false}
+                      name="room-floor"
+                    />
+                  );
+                })()}
+
+                {/* WALLS — one stroke per EDGE rather than one closed Line, so
+                    a door can remove a span from a single wall. `splitEdgeSpans`
+                    returns the solid runs left once openings are cut out; with
+                    no openings that is the whole edge and this draws exactly
+                    what the closed Line drew.
+
+                    lineCap="square" extends each run by half a stroke at both
+                    ends. At a CORNER that is what fills the mitre the closed
+                    Line used to join for us. At an OPENING it would overshoot
+                    into the gap, so an opening-side end is pulled back by the
+                    same half-stroke and the cap puts it back exactly on the
+                    jamb — the gap ends up the true width of the door. */}
+                {roomEdges(room).map((edge) => {
+                  const halfStrokeM = WALL_STROKE_PX / 2 / pxPerMetre;
+                  const gaps = wallGapsByEdge.get(edgeKey(room.id, edge.index)) ?? [];
+                  return splitEdgeSpans(edge.lengthM, gaps).map((span, si) => {
+                    const atStartCorner = span.t0 <= 0;
+                    const atEndCorner = span.t1 >= edge.lengthM;
+                    const t0 = atStartCorner ? 0 : span.t0 + halfStrokeM;
+                    const t1 = atEndCorner ? edge.lengthM : span.t1 - halfStrokeM;
+                    if (t1 - t0 <= 0) return null;
+                    const p0 = pointAlongEdge(edge, t0);
+                    const p1 = pointAlongEdge(edge, t1);
+                    const seg = [
+                      p0.x * pxPerMetre,
+                      p0.y * pxPerMetre,
+                      p1.x * pxPerMetre,
+                      p1.y * pxPerMetre,
+                    ];
+                    return (
+                      <Fragment key={`w-${edge.index}-${si}`}>
+                        <Line
+                          points={seg}
+                          stroke={WALL_GOLD}
+                          strokeWidth={WALL_STROKE_PX}
+                          lineCap="square"
+                        />
+                        <Line
+                          points={seg}
+                          stroke={WALL_INNER_STROKE}
+                          strokeWidth={WALL_INNER_STROKE_PX}
+                          lineCap="square"
+                        />
+                      </Fragment>
+                    );
+                  });
+                })}
+
+                {/* DOOR SYMBOLS — the architectural convention, not a top-down
+                    render of a 3D door. A leaf line at 90 degrees from the
+                    hinge plus a quarter-circle swing arc says at a glance which
+                    way the door opens and how much floor it sweeps, which is
+                    what a fitter or a merchant reads a plan for.
+
+                    Drawn per HOST room only: a door in a shared wall cuts both
+                    rooms' strokes (see wallGapsByEdge) but draws ONE symbol. */}
+                {roomOpenings(room).map((o) => {
+                  const edge = roomEdges(room)[o.edgeIndex];
+                  if (!edge) return null;
+                  const halfWallM = WALL_STROKE_PX / 2 / pxPerMetre;
+                  const toPx = (pt: { x: number; y: number }) => [
+                    pt.x * pxPerMetre,
+                    pt.y * pxPerMetre,
+                  ];
+
+                  // Jamb ticks close the wall off at both ends of the gap so
+                  // the opening stays legible when it is only a few px wide.
+                  const ticks = jambTicks(edge, o, halfWallM);
+                  const tickNodes = ticks.map((t, ti) => (
+                    <Line
+                      key={`jamb-${o.id}-${ti}`}
+                      points={[...toPx(t[0]), ...toPx(t[1])]}
+                      stroke={WALL_GOLD}
+                      strokeWidth={2}
+                    />
+                  ));
+
+                  if (o.kind === 'window') {
+                    // A window keeps the wall line but reads as a thin double
+                    // line across the span.
+                    const s = openingSpan(o);
+                    const a = pointAlongEdge(edge, s.t0);
+                    const b = pointAlongEdge(edge, s.t1);
+                    return (
+                      <Fragment key={`op-${o.id}`}>
+                        <Line
+                          points={[...toPx(a), ...toPx(b)]}
+                          stroke={WALL_GOLD}
+                          strokeWidth={3}
+                        />
+                        {tickNodes}
+                      </Fragment>
+                    );
+                  }
+
+                  if (o.kind === 'doorway') {
+                    // An open doorway is a gap and nothing else — no leaf, no
+                    // arc. The ticks are what stop it reading as a mistake.
+                    return <Fragment key={`op-${o.id}`}>{tickNodes}</Fragment>;
+                  }
+
+                  const sym = doorSymbol(edge, o);
+                  return (
+                    <Fragment key={`op-${o.id}`}>
+                      {tickNodes}
+                      {/* swing arc */}
+                      <Line
+                        // arc is a flat [x,y,x,y,...] world-metre polyline;
+                        // pxPerMetre scales both axes equally.
+                        points={sym.arc.map((v) => v * pxPerMetre)}
+                        stroke={DOOR_ARC}
+                        strokeWidth={1.5}
+                        dash={[4, 3]}
+                        listening={false}
+                      />
+                      {/* the leaf itself */}
+                      <Line
+                        points={[...toPx(sym.hinge), ...toPx(sym.leafEnd)]}
+                        stroke={DOOR_LEAF}
+                        strokeWidth={3}
+                        lineCap="round"
+                      />
+                    </Fragment>
+                  );
+                })}
               </Group>
             );
           })}
@@ -1377,7 +1747,16 @@ export function RoomCanvas({
               drawMode, so without this a vertex click would select / drag /
               sledgehammer-delete an item — silently, inside a suppressed
               history transaction. */}
-          <Group listening={!drawMode}>
+          {/* Items stop listening while a product is ARMED as well as during
+              draw. Otherwise an armed click that lands on an existing item
+              hits that item's hit-rect, so the Stage's commit handler sees
+              `e.target !== stage` and returns — the click dies silently with
+              no ghost, no toast, no placement. That is what made "put a bench
+              on the mat" impossible even once collisions became band-aware:
+              the mat swallowed the click before placement was ever consulted.
+              Konva `opacity` does not disable listening; this prop is the
+              only thing that does. */}
+          <Group listening={!drawMode && !pendingProductId}>
             {rooms.map((room) =>
               room.placedItems.map((item) => {
                 const product = getProductById(item.productId);
@@ -1452,6 +1831,84 @@ export function RoomCanvas({
             </Layer>
           );
         })()}
+
+        {/* DOOR TOOL ghost — highlights the wall about to be cut and previews
+            the opening at the exact width and swing it will be placed with.
+            Its own non-listening Layer so it can never intercept the click it
+            is previewing. */}
+        {doorTool && doorHover && (
+          <Layer listening={false}>
+            {(() => {
+              const h = doorHover;
+              const px = (n: number) => n * pxPerMetre;
+              const wall = [
+                px(h.edge.a.x), px(h.edge.a.y),
+                px(h.edge.b.x), px(h.edge.b.y),
+              ];
+              if (h.mode === 'remove') {
+                const c = pointAlongEdge(h.edge, h.offsetM);
+                return (
+                  <>
+                    <Line points={wall} stroke={GHOST_INVALID} strokeWidth={3} dash={[6, 4]} />
+                    <Circle
+                      x={px(c.x)}
+                      y={px(c.y)}
+                      radius={Math.max(10, px(0.2))}
+                      stroke={GHOST_INVALID}
+                      strokeWidth={2}
+                      fill={GHOST_INVALID_FILL}
+                    />
+                  </>
+                );
+              }
+
+              const ok = h.mode === 'place';
+              const stroke = ok ? DOOR_TARGET_WALL : GHOST_INVALID;
+              const preview: Opening = {
+                id: '__ghost__',
+                edgeIndex: h.edge.index,
+                offsetM: h.offsetM,
+                widthM: doorDraft.widthM,
+                kind: doorDraft.kind,
+                flipFacing: doorDraft.flipFacing,
+                flipHand: doorDraft.flipHand,
+              };
+              const span = openingSpan(preview);
+              const a = pointAlongEdge(h.edge, Math.max(0, span.t0));
+              const b = pointAlongEdge(h.edge, Math.min(h.edge.lengthM, span.t1));
+              const sym = doorSymbol(h.edge, preview);
+              return (
+                <>
+                  <Line points={wall} stroke={stroke} strokeWidth={2} dash={[8, 6]} opacity={0.7} />
+                  {/* the span the opening will occupy */}
+                  <Line
+                    points={[px(a.x), px(a.y), px(b.x), px(b.y)]}
+                    stroke={stroke}
+                    strokeWidth={WALL_STROKE_PX}
+                    opacity={0.45}
+                    lineCap="butt"
+                  />
+                  {ok && doorDraft.kind === 'door' && (
+                    <>
+                      <Line
+                        points={sym.arc.map((v) => v * pxPerMetre)}
+                        stroke={stroke}
+                        strokeWidth={1.5}
+                        dash={[4, 3]}
+                      />
+                      <Line
+                        points={[px(sym.hinge.x), px(sym.hinge.y), px(sym.leafEnd.x), px(sym.leafEnd.y)]}
+                        stroke={stroke}
+                        strokeWidth={3}
+                        lineCap="round"
+                      />
+                    </>
+                  )}
+                </>
+              );
+            })()}
+          </Layer>
+        )}
 
         <RoomDrawLayer
           enabled={drawMode}
@@ -1788,7 +2245,9 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         if (stage) stage.container().style.cursor = 'grab';
         const newXm = e.target.x() / pxPerMetre;
         const newYm = e.target.y() / pxPerMetre;
-        const others = placedItems
+        // Band filter, matching the placement paths: dragging a bench ONTO a
+        // mat must land, not bounce back.
+        const others = obstaclesFor(item.productId, placedItems)
           .map((it) => {
             const p = getProductById(it.productId);
             if (!p) return null;

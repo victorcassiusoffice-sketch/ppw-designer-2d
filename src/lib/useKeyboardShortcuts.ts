@@ -25,8 +25,9 @@ import {
   ROTATION_STEP_FINE_DEG,
 } from './placementActions';
 import { useDesignStore } from '../store/designStore';
-import { useHistoryStore, isDrawTransactionActive } from '../store/historyStore';
+import { isDrawTransactionActive } from '../store/historyStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
+import { performUndo, performRedo } from './undoIntent';
 
 function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -61,21 +62,46 @@ export function useKeyboardShortcuts(): void {
       // browser tab-undo / form-undo doesn't intercept them outside of
       // typing targets (handled above).
       if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
-        if (inDraw) return;
         e.preventDefault();
+        // Same ladder the TopBar button uses. RoomDrawMode's own interceptor
+        // handles the vertex case first and only yields when there are no
+        // vertices, so this cannot double-pop.
         if (e.shiftKey) {
-          useHistoryStore.getState().redo();
+          performRedo();
         } else {
-          useHistoryStore.getState().undo();
+          performUndo();
         }
         return;
       }
+      // Door tool (2026-08-28) — F flips which side the next opening swings
+      // toward, H swaps the hinge end. Only while the tool is live, so these
+      // letters stay free for everything else.
+      if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+        const ui = useDesignerUIStore.getState();
+        if (ui.tool === 'door') {
+          if (e.key === 'f' || e.key === 'F') {
+            e.preventDefault();
+            ui.toggleDoorFacing();
+            return;
+          }
+          if (e.key === 'h' || e.key === 'H') {
+            e.preventDefault();
+            ui.toggleDoorHand();
+            return;
+          }
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            ui.setTool('hand');
+            return;
+          }
+        }
+      }
+
       // D18 — Ctrl/Cmd+Y is the conventional Windows redo alias (spec lists
       // Ctrl+Y for redo alongside Ctrl+Shift+Z above).
       if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || e.key === 'Y')) {
-        if (inDraw) return;
         e.preventDefault();
-        useHistoryStore.getState().redo();
+        performRedo();
         return;
       }
       // D15 / M13 — Ctrl/Cmd+F toggles full-tile (0.5 m) ↔ quarter-tile

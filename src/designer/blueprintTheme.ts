@@ -59,6 +59,21 @@ export const WALL_STROKE_PX = 10;
 export const WALL_INNER_STROKE_PX = 1;
 export const WALL_INNER_STROKE = 'rgba(255,187,88,0.35)';
 
+/**
+ * Openings (2026-08-28) — doors, doorways and windows.
+ *
+ * Deliberately PALE rather than gold. Two reasons: on a plan the door leaf and
+ * its swing arc are annotation over the wall, so they should read as a lighter
+ * weight than the structure; and gold-toned door symbols would fall inside
+ * `ROOM_BORDER_SCAN`'s tolerance band, which the e2e origin fallback uses to
+ * locate the leftmost WALL. `roomBorderScanGuard.test.ts` pins both colours
+ * outside that band.
+ */
+export const DOOR_LEAF = '#F2E4CE';
+export const DOOR_ARC = 'rgba(242,228,206,0.55)';
+/** Highlight on the wall the door tool is about to cut. */
+export const DOOR_TARGET_WALL = '#7FD4C1';
+
 export const GRID_MAJOR_WIDTH_PX = 1;
 export const GRID_MINOR_WIDTH_PX = 0.5;
 export const GRID_MAJOR_OPACITY = 0.9;

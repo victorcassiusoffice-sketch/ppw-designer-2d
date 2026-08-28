@@ -135,6 +135,12 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   canRedo: () => get().future.length > 0,
 
   undo: () => {
+    // Guarded HERE, not at the call site. The keyboard path checked
+    // `isDrawTransactionActive()` but the TopBar button called straight into
+    // the store, so the same gesture behaved differently depending on which
+    // control you used - which is exactly what Vic hit mid-draw. One guard,
+    // both entry paths.
+    if (inDrawTransaction) return;
     flushPendingPush();
     const { past } = get();
     if (past.length === 0) return;
@@ -150,6 +156,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   },
 
   redo: () => {
+    if (inDrawTransaction) return;
     flushPendingPush();
     const { future } = get();
     if (future.length === 0) return;
@@ -210,6 +217,12 @@ let coalesceMsActive = DEFAULT_COALESCE_MS;
 let unsubscribers: Array<() => void> = [];
 
 function applySnapshotInternal(snap: Snapshot): void {
+  // SAVE and RESTORE rather than clearing unconditionally. If this ever runs
+  // while a draw transaction holds suppression (an undo fired mid-draw), a
+  // blind `= false` in the finally would silently END that suppression, and
+  // every subsequent draw mutation would start recording real undo frames
+  // inside a transaction that is supposed to be atomic.
+  const prevSuppress = suppressRecording;
   suppressRecording = true;
   try {
     usePropertyStore.setState({
@@ -221,7 +234,7 @@ function applySnapshotInternal(snap: Snapshot): void {
     useWallTreatmentStore.getState().replace(clone(snap.wallTreatments ?? {}));
     lastSeenSnapshot = takeSnapshot();
   } finally {
-    suppressRecording = false;
+    suppressRecording = prevSuppress;
   }
 }
 
@@ -354,10 +367,21 @@ function uninstallHistorySubscriptions(): void {
 // ---------------------------------------------------------------------------
 
 let inDrawTransaction = false;
+/**
+ * The exact frame `beginDrawTransaction` pushed, held by REFERENCE.
+ *
+ * `abortDrawTransaction` used to blind-pop `past[-1]`, which is only correct
+ * while nothing else can push during a transaction. That assumption is one bug
+ * away from being false, and when it is false the abort silently destroys a
+ * REAL user action instead of its own bookkeeping frame. Popping by identity
+ * cannot make that mistake.
+ */
+let drawEntryFrame: Snapshot | null = null;
 
 export function beginDrawTransaction(label = 'draw new room'): void {
   flushPendingPush();
   const snap = takeSnapshot(label);
+  drawEntryFrame = snap;
   useHistoryStore.setState((s) => ({
     past: capPast([...s.past, snap]),
     future: [],
@@ -370,6 +394,7 @@ export function beginDrawTransaction(label = 'draw new room'): void {
 export function endDrawTransaction(): void {
   if (!inDrawTransaction) return;
   inDrawTransaction = false;
+  drawEntryFrame = null;
   suppressRecording = false;
   lastSeenSnapshot = takeSnapshot();
 }
@@ -398,7 +423,12 @@ export function abortDrawTransaction(): void {
   inDrawTransaction = false;
   suppressRecording = false;
   const past = useHistoryStore.getState().past;
-  const newPast = past.slice(0, -1);
+  // Remove THIS transaction's own frame, by identity. If `capPast` already
+  // aged it out, `idx` is -1 and we correctly leave the history alone rather
+  // than eating somebody else's frame off the end.
+  const idx = drawEntryFrame ? past.lastIndexOf(drawEntryFrame) : -1;
+  const newPast = idx >= 0 ? [...past.slice(0, idx), ...past.slice(idx + 1)] : past;
+  drawEntryFrame = null;
   useHistoryStore.setState({ past: newPast });
   writeSessionFrames(newPast);
   lastSeenSnapshot = takeSnapshot();

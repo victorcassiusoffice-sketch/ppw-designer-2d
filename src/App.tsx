@@ -37,6 +37,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { PageTabs } from './components/PageTabs';
 import { TopBar } from './components/TopBar';
 import { CoachMark } from './components/uxKit';
 import { RoomCanvas } from './components/RoomCanvas';
@@ -183,6 +184,10 @@ export default function App() {
         roomsMenuOpen={roomsMenuOpen}
         setRoomsMenuOpen={setRoomsMenuOpen}
       />
+      {/* Separate PLANS (Vic 2026-08-28). Rooms are areas on one canvas; a
+          page is a different space or client. Hidden until there is something
+          to switch between. */}
+      <PageTabs />
       {/* RoomList now renders ONLY its dropdown overlay — the permanent
           224 px rail is gone. The TopBar hosts its trigger at every
           viewport width. Same store calls (setActiveRoom / renameRoom /
