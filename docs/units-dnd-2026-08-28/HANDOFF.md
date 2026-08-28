@@ -90,3 +90,96 @@ $ npx vitest run
 **Deliberate non-work in P1:** no UI, no call-site threading. The store is widened but the
 step still reaches only product placement — wall drawing, room drawing, the visible grid and
 the item drag-end are all still on their own hardcoded 0.5 m. That is P2.
+
+---
+
+## P2 — U2: thread the step into every snap call site
+
+**Done.** P1 widened the table; this is the phase that makes picking a unit actually change
+what the tool draws.
+
+- `roomLayout.ts` — two new exported pure helpers, `wallSnapTolM(stepM)` = clamp(step/2,
+  0.05, 0.25) and `closeThresholdM(stepM)` = clamp(step*0.8, 0.15, 0.4). `SNAP_TOL_M` and
+  `CLOSE_THRESHOLD_M` both stay exported and unchanged as the defaults/ceilings. **Both
+  helpers return exactly today's constant at a 0.5 m step**, which is what keeps the
+  off-grid 5.13 m fixture in `multiroom-attach.spec.ts` behaviourally identical.
+- `RoomDrawMode.tsx` — `currentSnapStepM()` is read **inside** each handler (grid branch of
+  `getRoomPoint`, `snapHitFor`'s tolerance, both close-threshold sites). Deliberately NOT an
+  effect dep: the wiring effect's own comment warns that store deps there tear down and
+  re-attach every Stage handler on each room mutation. Wall-snap still runs first and its
+  output is still never re-grid-snapped.
+- `wallStore.snapToWallEndpointOrGrid` — widened **additively** to `(point, walls, stepMm =
+  WALL_SNAP_MM)`, with the endpoint magnet clamped to [50, 250] mm. `WALL_SNAP_MM` and
+  `ENDPOINT_TOLERANCE_MM` are untouched and still exported, so `wallStore.test.ts`'s
+  `expect(WALL_SNAP_MM).toBe(500)` needed no edit. `WallDrawMode.tsx` passes
+  `currentSnapStepMm()`.
+- `RoomCanvas.tsx` — `findFreeSlot` now receives `step: Math.max(snapStep, 0.5)` (D15). The
+  floor matters: the call passed no step before, so it defaulted to 0.5; `Math.max` keeps the
+  cost byte-identical at every unit instead of quadrupling it at fine ones.
+
+### The protected-body breach — exactly as authorised, audited
+
+Vic lifted the `PlacedItemGroup` freeze on 2026-08-28 for an enumerated list. Every changed
+line inside `RoomCanvas.tsx` this phase:
+
+| Line | Change |
+|---|---|
+| `PlacedItemGroupProps` | `+ snapStep: number;` (+ a doc comment) |
+| destructure | `+ snapStep,` |
+| render site | `+ snapStep={snapStep}` |
+| drag resolver | `- snapStep: 0.5,` → `+ snapStep,` |
+| `resolveDragTarget` call | `+ snapStep,` |
+| `placeAtRoomPoint` (OUTSIDE the protected body) | the `findFreeSlot` step floor |
+
+No algorithm moved. The `placed-hit` Rect and `width={Math.max(wPx - 8, 20)}` were not
+touched. **The three protected files — `geometry.ts`, `wallAwarePlacement.ts`,
+`imageFit.ts` — have zero diff against `8a41eab`**, confirmed by `git diff --stat`.
+
+### P2 GATE
+
+```
+$ npx vitest run wallStore roomLayout RoomDrawMode customer-ui-fixes roomCanvasRenderBind
+  Test Files  5 passed (5)      Tests  102 passed (102)      <- all source pins hold
+
+$ npx vitest run                     # full suite
+  Test Files  156 passed (156)  Tests  1836 passed (1836)
+
+$ npx tsc --noEmit                   # exit 0
+$ npm run build                      # built in 7.38s, clean
+$ npx eslint <5 changed files>       # 0 errors (4 baseline WallDrawMode react-refresh warnings)
+
+$ PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test \
+    units multiroom-attach wall-draw wall-aware-placement placement-fsm
+  12 passed (10.3s)
+```
+
+### The new gate is PROVEN falsifiable
+
+`tests/e2e/units.spec.ts` was run against a deliberately sabotaged build (the grid branch of
+`getRoomPoint` reverted to the hardcoded `GRID_STEP_M`, i.e. the "widened the store but never
+threaded it" build):
+
+```
+Expected: 6.47
+Received: 6.5
+    > 140 |     expect(westX).toBeCloseTo(6.47, 6);
+  1 failed
+```
+
+The sabotage was reverted with `git checkout` immediately after and the suite re-run green.
+This matters because the obvious assertion — "every vertex is a whole number of centimetres" —
+**passes on a completely untouched build**, since 0.5 is itself an exact multiple of 0.01
+(brief blocker A3). The wall assertion is falsifiable by construction for the same reason:
+the segment is 1.37 m, and 1370 is not a multiple of 500, so a build still snapping to
+`WALL_SNAP_MM` would land both endpoints on the 500 lattice and their difference could not
+be 1370.
+
+Both specs derive px-per-metre from the canvas's live Konva transform via the `__ppwGeom`
+dev bridge rather than assuming 100, so the click aim cannot silently drift if a fixture
+changes size and the auto-centre fit re-clamps the scale.
+
+### Still outstanding after P2
+
+The units engine is complete and proven, but there is **no UI to select a unit yet** — the
+picker, the unit-aware readouts, the adaptive grid, typed lengths and the measure tool are
+P3–P7. Today a unit can only be chosen with the digit keys 1–6 or Ctrl+F.
