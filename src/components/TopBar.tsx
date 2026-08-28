@@ -40,7 +40,7 @@ import {
 import { useDrawProgressStore } from '../store/drawProgressStore';
 import { isDrawnPolygon } from '../designer/roomLayout';
 import { performUndo, performRedo } from '../lib/undoIntent';
-import { FLOOR_MATERIALS } from '../data/floorMaterials';
+import { FLOOR_MATERIALS, tileableFloorMaterials } from '../data/floorMaterials';
 import { useWallStore } from '../store/wallStore';
 import { useCart } from '../store/cartStore';
 import { CurrencySwitcher } from './CurrencySwitcher';
@@ -150,6 +150,9 @@ export function TopBar({
   const toggleDoorHand = useDesignerUIStore((s) => s.toggleDoorHand);
   const doorActive = tool === 'door';
   const measureActive = tool === 'measure';
+  const floorPaintActive = tool === 'floor';
+  const floorDraft = useDesignerUIStore((st) => st.floorDraft);
+  const setFloorDraft = useDesignerUIStore((st) => st.setFloorDraft);
 
   // Floor finish (2026-08-28). Applies to the FOCUSED room — the one the
   // L/W boxes and the details panel already describe — so there is one
@@ -171,6 +174,15 @@ export function TopBar({
     if (drawMode) setDrawMode(false);
     if (wallActive) setWallDraw({ phase: 'idle' });
     setTool(doorActive ? 'hand' : 'door');
+  }
+
+  function handleToggleFloorPaint() {
+    // Same three exclusions every other tool takes: wall mode lives on
+    // wallStore.draw.phase, room-draw on App-level drawMode, and door/measure
+    // on designerUIStore.tool. Miss one and two tools fight the same click.
+    if (drawMode) setDrawMode(false);
+    if (wallActive) setWallDraw({ phase: 'idle' });
+    setTool(floorPaintActive ? 'hand' : 'floor');
   }
 
   function handleToggleMeasure() {
@@ -552,6 +564,91 @@ export function TopBar({
             </button>
           </div>
         )}
+
+        {/* Floor PAINTER (floor-painting brief 2026-08-28) — the Sims
+            workflow: click a tile, drag a rectangle, Shift to fill the room,
+            Ctrl to erase. Distinct from the whole-room Floor picker beside
+            it, which still exists for sheet goods that have no tile count. */}
+        <div className="relative hidden md:inline-block">
+          <button
+            type="button"
+            onClick={handleToggleFloorPaint}
+            data-testid="floor-paint-toggle"
+            className={`min-h-[40px] rounded-md border px-3 text-xs font-medium ${
+              floorPaintActive
+                ? 'border-ppw-teal bg-ppw-teal text-white'
+                : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
+            }`}
+            title="Paint the floor — click a tile, drag a rectangle, Shift to fill the room, Ctrl to erase"
+            aria-pressed={floorPaintActive}
+          >
+            Paint floor
+          </button>
+          {floorPaintActive && (
+            <div
+              className="absolute left-0 top-full z-40 mt-1 w-64 rounded-md border border-ppw-stone bg-white p-2 shadow-lg"
+              data-testid="floor-paint-palette"
+            >
+              {tileableFloorMaterials().map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setFloorDraft({ materialId: m.id, erase: false })}
+                  data-testid={`floor-paint-${m.id}`}
+                  aria-pressed={floorDraft.materialId === m.id && !floorDraft.erase}
+                  className={`flex w-full items-center gap-2 rounded px-2 py-1 text-left text-[11px] ${
+                    floorDraft.materialId === m.id && !floorDraft.erase
+                      ? 'bg-ppw-mist font-semibold'
+                      : 'text-ppw-slate hover:bg-ppw-mist'
+                  }`}
+                >
+                  <span
+                    className="h-4 w-4 shrink-0 rounded-sm border border-ppw-stone"
+                    style={{ background: m.hex }}
+                  />
+                  <span className="flex-1">{m.name}</span>
+                  <span className="text-[10px] opacity-60">
+                    {m.tile_w_m}×{m.tile_h_m} m
+                  </span>
+                </button>
+              ))}
+
+              <div className="mt-2 flex gap-1 border-t border-ppw-stone pt-2">
+                <button
+                  type="button"
+                  onClick={() => setFloorDraft({ scope: floorDraft.scope === 'room' ? 'tile' : 'room' })}
+                  data-testid="floor-paint-scope"
+                  aria-pressed={floorDraft.scope === 'room'}
+                  className={`flex-1 rounded px-2 py-1 text-[10px] ${
+                    floorDraft.scope === 'room'
+                      ? 'bg-ppw-teal text-white'
+                      : 'border border-ppw-stone text-ppw-slate'
+                  }`}
+                  title="Fill the whole room in one click (or hold Shift)"
+                >
+                  {floorDraft.scope === 'room' ? 'Whole room' : 'By tile'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFloorDraft({ erase: !floorDraft.erase })}
+                  data-testid="floor-paint-erase"
+                  aria-pressed={floorDraft.erase}
+                  className={`flex-1 rounded px-2 py-1 text-[10px] ${
+                    floorDraft.erase
+                      ? 'bg-ppw-clay text-white'
+                      : 'border border-ppw-stone text-ppw-slate'
+                  }`}
+                  title="Remove floor (or hold Ctrl)"
+                >
+                  Erase
+                </button>
+              </div>
+              <p className="mt-1 text-[10px] leading-snug text-ppw-slate">
+                Click a tile · drag a rectangle · Shift fills the room · Ctrl erases
+              </p>
+            </div>
+          )}
+        </div>
 
         {/* Floor finish — the material the customer buys for this room. */}
         <div className="relative hidden md:inline-block">

@@ -377,3 +377,25 @@ export function floorTileOrder(zone: FloorZone, polygon: Polygon): FloorTileOrde
     coveredM2: Number((wholeTiles * tileArea + cutTiles * tileArea * 0.5).toFixed(2)),
   };
 }
+
+export interface RoomFloorLine {
+  materialId: string;
+  order: FloorTileOrder;
+}
+
+/**
+ * Every painted material in a room, as purchase lines.
+ *
+ * This is what the customer actually designed, as opposed to the estimate
+ * panel's hypothetical "what if the whole room were material X". Returns []
+ * for a room on the whole-room path, which keeps the legacy area calculator
+ * as the single source of truth for sheet goods.
+ */
+export function roomFloorOrders(
+  room: { polygon: Polygon; floorTiles?: FloorZone[] },
+): RoomFloorLine[] {
+  if (!room.floorTiles || room.floorTiles.length === 0) return [];
+  return room.floorTiles
+    .map((z) => ({ materialId: z.materialId, order: floorTileOrder(z, room.polygon) }))
+    .filter((l) => l.order.unitsToOrder > 0);
+}

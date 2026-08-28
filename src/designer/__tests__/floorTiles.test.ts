@@ -13,6 +13,7 @@ import {
   countTiles,
   pruneZone,
   floorTileOrder,
+  roomFloorOrders,
   type FloorZone,
 } from '../floorTiles';
 import type { Polygon } from '../../lib/geometry';
@@ -224,5 +225,26 @@ describe('floorTileOrder — what the customer is billed', () => {
     };
     // 20 whole 1 m tiles over a 20 m2 room.
     expect(floorTileOrder(zone, ROOM).coveredM2).toBeCloseTo(20, 2);
+  });
+});
+
+describe('roomFloorOrders', () => {
+  it('returns one purchase line per painted material', () => {
+    const z1 = oneMetreZone();
+    const room = {
+      polygon: ROOM,
+      floorTiles: [
+        { ...z1, runs: setToRuns(new Set(['0,0', '0,1', '0,2'])) },
+        { ...z1, materialId: 'eva-combat', runs: setToRuns(new Set(['1,0', '1,1'])) },
+      ],
+    };
+    const lines = roomFloorOrders(room);
+    expect(lines).toHaveLength(2);
+    expect(lines[0].order.unitsToOrder).toBe(3);
+    expect(lines[1].order.unitsToOrder).toBe(2);
+  });
+
+  it('is empty for a room on the whole-room path, so the area calculator still owns it', () => {
+    expect(roomFloorOrders({ polygon: ROOM })).toEqual([]);
   });
 });

@@ -17,7 +17,10 @@ import { polygonArea } from '../lib/geometry';
 import { calculatePaint } from '../lib/paintCalculator';
 import { ECO_PAINT_PALETTE } from '../data/paintPalette';
 import { calculateFloor } from '../lib/floorCalculator';
-import { FLOOR_MATERIALS } from '../data/floorMaterials';
+import { FLOOR_MATERIALS, findFloorMaterialById } from '../data/floorMaterials';
+// Painted per-tile floors price by TILES TO ORDER, not by area (Vic 2026-08-28).
+import { roomFloorOrders } from '../designer/floorTiles';
+import { usePropertyStore } from '../store/propertyStore';
 
 const fmtMur = (n: number) => `MUR ${Math.round(n).toLocaleString('en-MU')}`;
 
@@ -78,6 +81,17 @@ function PaintSection() {
 function FloorSection() {
   const polygon = useDesignStore((s) => s.polygon);
   const areaM2 = useMemo(() => polygonArea(polygon), [polygon]);
+
+  // The ACTUAL painted floor, if this room has one. Distinct from the
+  // hypothetical calculator below, which answers "what if the whole room
+  // were material X" and stays the right tool for sheet goods.
+  const activeRoom = usePropertyStore((st) =>
+    st.property.rooms.find((r) => r.id === st.property.activeRoomId),
+  );
+  const paintedLines = useMemo(
+    () => (activeRoom ? roomFloorOrders(activeRoom) : []),
+    [activeRoom],
+  );
   const [materialId, setMaterialId] = useState<string>(FLOOR_MATERIALS[0]?.id ?? '');
   const result = useMemo(
     () => calculateFloor({ areaM2, materialId: materialId || undefined }),
@@ -88,6 +102,41 @@ function FloorSection() {
   return (
     <section data-testid="floor-section" className="mt-3 border-t border-ppw-stone pt-2">
       <h3 className="text-[10px] font-bold uppercase tracking-wide text-ppw-slate">Flooring (floor)</h3>
+      {paintedLines.length > 0 && (
+        <div className="mb-2 rounded border border-ppw-teal/40 bg-ppw-mist p-2" data-testid="painted-floor-order">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-ppw-slate">
+            Painted floor
+          </p>
+          {paintedLines.map((line) => {
+            const m = findFloorMaterialById(line.materialId);
+            if (!m) return null;
+            const total = line.order.unitsToOrder * m.price_per_unit_mur;
+            return (
+              <div key={line.materialId} className="mt-1 text-[11px]">
+                <span className="font-semibold text-ppw-ink">{m.name}</span>
+                <br />
+                {/* Vic 2026-08-28: the quote is built on TILES TO ORDER -
+                    whole purchasable units, what K1 ships in boxes - with
+                    covered m2 alongside as context. A customer billed for
+                    an area but sent a tile count cannot reconcile the two. */}
+                <span data-testid={`painted-units-${line.materialId}`} className="font-semibold">
+                  {line.order.unitsToOrder} {line.order.unitsToOrder === 1 ? m.unit : `${m.unit}s`}
+                </span>
+                <span className="opacity-70">
+                  {' '}to order · {line.order.wholeTiles} whole
+                  {line.order.cutTiles > 0 ? ` · ${line.order.cutTiles} cut` : ''}
+                </span>
+                <br />
+                <span className="opacity-70">covers ~{line.order.coveredM2} m²</span>
+                {' · '}
+                <span className="font-bold text-ppw-teal" data-testid={`painted-price-${line.materialId}`}>
+                  {fmtMur(total)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
       {areaM2 <= 0 ? (
         <p className="text-[11px] text-ppw-slate">Define a room to estimate flooring.</p>
       ) : (

@@ -40,7 +40,13 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { DEFAULT_DOOR_WIDTH_M, type OpeningKind } from '../designer/openings';
 
 export type SnapPrecision = 'cm1' | 'cm10' | 'quarter' | 'full' | 'm1' | 'm10';
-export type BuildTool = 'hand' | 'eyedropper' | 'sledgehammer' | 'door' | 'measure';
+export type BuildTool =
+  | 'hand'
+  | 'eyedropper'
+  | 'sledgehammer'
+  | 'door'
+  | 'measure'
+  | 'floor';
 
 /** localStorage key for the persisted unit preference. */
 export const DESIGNER_UI_KEY = 'ppw_designer_ui_v1';
@@ -53,6 +59,21 @@ export const DESIGNER_UI_KEY = 'ppw_designer_ui_v1';
  * Keeping it out of the history snapshot means flipping the ghost before you
  * click is not an undoable action, which is what users expect.
  */
+/**
+ * What the NEXT floor stroke will paint (floor-painting brief, D10).
+ *
+ * Transient chrome, exactly like DoorDraft: the painted tiles live on the
+ * Room, so this is only "which material is on the brush". Keeping it out
+ * of the history snapshot means switching material is not an undoable
+ * action, which is what anyone who has used a paint tool expects.
+ */
+export interface FloorDraft {
+  materialId: string;
+  /** 'tile' paints what you touch; 'room' fills the whole polygon. */
+  scope: 'tile' | 'room';
+  erase: boolean;
+}
+
 export interface DoorDraft {
   kind: OpeningKind;
   widthM: number;
@@ -108,6 +129,7 @@ interface DesignerUIState {
   lastPrecision: SnapPrecision;
   tool: BuildTool;
   doorDraft: DoorDraft;
+  floorDraft: FloorDraft;
 
   setInfoOpen: (open: boolean) => void;
   /** Swap precision ↔ lastPrecision (Ctrl+F). */
@@ -115,6 +137,7 @@ interface DesignerUIState {
   setPrecision: (p: SnapPrecision) => void;
   setTool: (t: BuildTool) => void;
   setDoorDraft: (patch: Partial<DoorDraft>) => void;
+  setFloorDraft: (patch: Partial<FloorDraft>) => void;
   /** Flip which side of the wall the next door swings toward. */
   toggleDoorFacing: () => void;
   /** Flip which end of the opening the next door hinges on. */
@@ -136,6 +159,11 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         flipFacing: false,
         flipHand: false,
       },
+      floorDraft: {
+        materialId: 'gym-interlock',
+        scope: 'tile',
+        erase: false,
+      },
 
       setInfoOpen: (open) => set({ infoOpen: open }),
       // A/B swap, not a 6-way cycle: from the default state this is still
@@ -150,6 +178,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         ),
       setTool: (tool) => set({ tool }),
       setDoorDraft: (patch) => set((s) => ({ doorDraft: { ...s.doorDraft, ...patch } })),
+      setFloorDraft: (patch) => set((s) => ({ floorDraft: { ...s.floorDraft, ...patch } })),
       toggleDoorFacing: () =>
         set((s) => ({ doorDraft: { ...s.doorDraft, flipFacing: !s.doorDraft.flipFacing } })),
       toggleDoorHand: () =>
