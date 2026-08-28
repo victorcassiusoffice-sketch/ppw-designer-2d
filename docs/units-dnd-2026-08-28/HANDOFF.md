@@ -517,3 +517,87 @@ existing wall's length, and keep drawing without re-entering the tool.
 **Still to come:** the Sims drag-drop half — P8 (drag transport seam + the rotate listener
 collision), P9 (desktop dock drag to drop to commit), P10 (pick up a placed item and move it
 between rooms), then P11 regression and P12 deploy.
+
+---
+
+## P8 — B1: drag transport seam + the rotate collision fix
+
+**Done.** No visible change; this is the plumbing plus one live bug fix.
+
+- **Rotate collision fixed FIRST.** While a product is armed, RoomCanvas mounts its own
+  keydown handler for `r`, and the global shortcut hook binds `r` to `rotateSelected`.
+  Nothing deselects on arm, so **from the second placement onward a single keypress rotated
+  both the ghost and a bystander item** — the latter into a real undo frame. The armed
+  handler can never win on registration order (it short-circuits until something is armed, so
+  it always registers second); it now registers in **capture phase** and calls
+  `stopImmediatePropagation`. Only then were the Sims-native `,` / `.` aliases added.
+- Two jsdom tests pin the mechanism, **including a control** asserting the same keypress DOES
+  rotate without the capture handler — without which the first test would prove nothing.
+- **`dragPointerStore`** (new, 6 tests) — a 4-field transport seam, deliberately not one of
+  the stores `installHistorySubscriptions` watches, so dragging costs zero undo frames while
+  the eventual `addItem` still yields exactly one through the existing coalescer. Drops carry
+  a **nonce** so two identical consecutive drops both fire.
+- Three RoomCanvas effects: a drag **arms the existing FSM** (which is what switches on the
+  ghost layer, non-listening items, pan-drag suppression and the rotate handler, all in
+  lockstep); an **imperative** store subscription drives the ghost, because a render-driven
+  one costs two renders per pointer move in a 2,700-line component; a nonce-keyed effect
+  commits.
+- `placeAtRoomPoint` gains `relocateIfBlocked`, **defaulting true** so every existing caller
+  is byte-identical. Only the drag passes false.
+
+---
+
+## P9 — B2: desktop dock drag → drop → commit
+
+**Done. This is the headline feature working.**
+
+**Why it was missing:** the dock already armed on pointerdown, but the only desktop commit
+path was the Stage's `onClick`, and a DOM click requires pointerdown *and* pointerup on the
+same element. Press a tile, release over the canvas, and no click ever fires. That single
+fact was the entire bug.
+
+- `useDragToPlace` gains five optional options and becomes the desktop mechanism too. **One
+  hook serves mouse and touch.** Defaults untouched, so the pinned mobile lift behaviour is
+  byte-identical (`dragLift.test.tsx` green).
+- Desktop passes `mode:'immediate'` (mandatory — in longpress mode pre-arm movement cancels
+  the gesture as a strip scroll, so a quick mouse press-drag would silently do nothing),
+  `liftPx: 0`, `moveThresholdPx: 14`.
+- `endPointer` now releases pointer capture, which it never did — an Escape-driven cancel
+  left the source tile holding the pointer until the browser's implicit release.
+
+### P9 GATE
+
+```
+$ PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test \
+    drag-place placement-fsm wall-aware-placement multiroom-placement \
+    designer-3bug-fix-2026-05-28 mobile-sims-toolbar customer-ui-mobile-2026-05-31 units
+  25 passed, 2 skipped (37.1s)
+
+$ npx vitest run     # 1866 passed (1866)
+$ npx tsc --noEmit   # exit 0        $ npm run build   # clean
+$ npx eslint <3>     # 0 errors      $ testids # 156, none dropped
+```
+
+`tests/e2e/drag-place.spec.ts` asserts the ghost **PAINTS** — a non-zero pixel count in the
+exact `GHOST_VALID_FILL` amber on the last Konva canvas — and that its **bounding box MOVES**
+between two pointer positions. Store and breadcrumb assertions alone would pass on a build
+with no on-canvas ghost at all: the ghost Layer has its own independent mount guard, and the
+breadcrumb only proves `computeGhost` ran. The invalid-drop test scans for the exact
+`GHOST_INVALID_FILL` red, because a builder looking for "green" finds nothing and fixes the
+wrong thing.
+
+### Two bugs the gates caught
+
+**1. The wobble test failed** because the release handler disarmed the product the same press
+had just armed. Fixed by remembering whether the tile was armed *before* the press: toggle-off
+is only correct when the user pressed an already-armed tile.
+
+**2. The hover detail card stayed open during the drag**, covering the plan being aimed at —
+visible in the very first screenshot taken of the feature, not in any assertion. Now
+suppressed while a drag is in flight. Worth recording: the pixel gates proved the ghost was
+correct while the screen was still cluttered. Looking at the thing found what asserting on it
+could not.
+
+**Still outstanding:** P10 — pick up an already-placed item and move it, including between
+attached rooms. That is the last Sims mechanic and the riskiest change in the brief, since it
+is the only one that alters drag ALGORITHM logic inside the protected `PlacedItemGroup` body.
