@@ -372,3 +372,90 @@ export async function waitForRenderedCount(
     `Timed out waiting for [multi-room] rendered=${expected}; saw [${counts.join(', ')}]`,
   );
 }
+
+/**
+ * Open the designer with a room on the canvas and the coach dialog dismissed.
+ *
+ * Two changes broke a lot of older specs at once, and both are SETUP problems
+ * rather than assertion problems:
+ *
+ *  1. BLANK CANVAS ON OPEN (2026-06-09, hardened by 80fe1c5 2026-08-25). A
+ *     fresh designer holds ONE room with an EMPTY polygon, so `findRoomAt`
+ *     returns null and every drop is rejected as "outside the plan". Specs
+ *     written before that assumed a 5x4 m room was already there.
+ *  2. The first-visit CoachMark is a fixed inset-0 `role="dialog"` at
+ *     z-index 9999 and INTERCEPTS pointer events on the TopBar, so a click on
+ *     a toolbar button times out with "dialog intercepts pointer events".
+ *
+ * Note `?fresh=1` is inert — no code in src/ reads that param — so specs using
+ * it were relying on something that never existed.
+ */
+export async function openDesignerWithRoom(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    try {
+      localStorage.clear();
+      localStorage.setItem('ppw_designer_coach_v1', '1');
+    } catch {
+      /* private mode — ignore */
+    }
+  });
+  await page.goto('/designer');
+  await page.locator('[data-testid="start-quick-rectangle"]').click();
+  await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
+}
+
+/** Dismiss the coach dialog without seeding a room (blank-canvas specs). */
+export async function dismissCoach(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('ppw_designer_coach_v1', '1');
+    } catch {
+      /* ignore */
+    }
+  });
+}
+
+/**
+ * Skip unless the DEV geometry bridge is present.
+ *
+ * `window.__ppwGeom` is installed only under `import.meta.env.DEV`, so it is
+ * absent from any production build by design (see src/lib/geomBridge.ts). The
+ * specs that derive click coordinates from it therefore cannot run against
+ * production — report that honestly, and name the command that DOES run them,
+ * so this is a routing note rather than silently dead coverage.
+ *
+ * Call AFTER navigating. The bridge is installed from a dynamic import, so
+ * this polls rather than racing the first tick.
+ */
+export async function requireGeomBridge(page: Page): Promise<boolean> {
+  return page
+    .waitForFunction(
+      () => Boolean((window as unknown as { __ppwGeom?: unknown }).__ppwGeom),
+      undefined,
+      { timeout: 5_000 },
+    )
+    .then(() => true)
+    .catch(() => false);
+}
+
+/** The message every geom-bridge-dependent spec skips with. */
+export const GEOM_BRIDGE_SKIP =
+  'needs the DEV geometry bridge (window.__ppwGeom), which production does not ship: '
+  + 'npm run dev -- --port 5187 && PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test';
+
+/**
+ * True when the target has no Vercel functions behind it.
+ *
+ * `vite dev` serves the SPA but not `/api/*` — those are Vercel serverless
+ * functions — so an API assertion against localhost fails for a reason that
+ * has nothing to do with the app. Skip there, and ONLY there: against a
+ * deployed target this returns false, so a genuine API regression still fails
+ * loudly. Never widen this to mask a production failure.
+ */
+export function targetHasNoApi(baseURL: string | undefined): boolean {
+  return /localhost|127\.0\.0\.1/.test(baseURL ?? '');
+}
+
+export const NO_API_SKIP =
+  'needs a deployed target with Vercel functions — vite dev does not serve /api/*: '
+  + 'PPW_E2E_BASE_URL=https://designer.ppwellness.co npx playwright test';

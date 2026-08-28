@@ -156,7 +156,10 @@ test.describe('Design Tweak 1 — Phase A surface checks', () => {
     // The catalog sidebar mounts the tab bar on desktop. Each macro
     // label appears as a CategoryChip button.
     for (const label of ['All', 'Furniture', 'Cardio', 'Recovery', 'Sauna', 'Flooring', 'Walls', 'Decor']) {
-      const tab = page.getByRole('button', { name: new RegExp(`^${label}$`) }).first();
+      // The catalog moved from ProductPalette's plain <button> chips to
+      // SimsDock, whose macro tabs carry role="tab". The label text is
+      // unchanged; only the ROLE moved.
+      const tab = page.getByRole('tab', { name: new RegExp(`^${label}$`) }).first();
       await expect(tab).toBeVisible({ timeout: 10_000 });
     }
   });

@@ -2,9 +2,15 @@ import { test, expect } from '@playwright/test';
 
 test('P0-ε — BUY button visible for K1 product + /api/k1/redirect 302 with attribution', async ({ page }) => {
   await page.addInitScript(() => {
-    try { localStorage.setItem('ppw_designer_coach_v1', '1'); localStorage.removeItem('ppw_walls_v1'); } catch {}
+    try { localStorage.setItem('ppw_designer_coach_v1', '1'); localStorage.removeItem('ppw_walls_v1'); } catch { /* private mode */ }
   });
-  await page.goto('/designer?fresh=1');
+  await page.goto('/designer');
+  // A fresh canvas holds ONE room with an EMPTY polygon (makeBlankRoom), so
+  // findRoomAt returns null and every drop is rejected as "outside the plan".
+  // Give it the explicit quick 5 x 4 m rectangle - the same precondition
+  // placement-fsm and wall-aware-placement use. (The old `?fresh=1` was never
+  // read by the app.)
+  await page.locator('[data-testid="start-quick-rectangle"]').click();
   await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
 
   await page.locator('[data-product-id]').first().click();

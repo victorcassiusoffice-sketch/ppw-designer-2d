@@ -27,6 +27,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { targetHasNoApi, NO_API_SKIP } from './multiroom-helpers';
 
 const TEST_SLUG = process.env.PPW_E2E_MERCHANT_SLUG ?? 'k1-sport';
 const HAS_SEED = process.env.PPW_E2E_HAVE_SEED === '1';
@@ -50,8 +51,15 @@ test.describe('Wellness-Designer-App (i) · Customer journey', () => {
     // ProductPalette renders a search input with placeholder "Search
     // products…" — a stable + brittleness-resistant signal that the
     // catalog drawer mounted.
-    const searchPalette = page.locator('input[placeholder*="Search products" i]').first();
-    await expect(searchPalette).toBeVisible({ timeout: 15_000 });
+    // The 2026-08-25 Sims build-mode rebuild (bae63c0) retired the
+    // ProductPalette sidebar and its "Search products…" input; the desktop
+    // catalog is now SimsDock (ProductPalette.tsx has zero importers left).
+    // Pin the dock AND that it really lists product tiles - what this test's
+    // title always claimed but the old search-input probe never checked.
+    await expect(page.locator('[data-testid="sims-dock"]')).toBeVisible({ timeout: 15_000 });
+    await expect(
+      page.locator('[data-testid="dock-strip"] [data-product-id]').first(),
+    ).toBeVisible({ timeout: 15_000 });
   });
 
   test('A.C.3 — Customer can search/filter the catalog', async ({ page }) => {
@@ -177,7 +185,8 @@ test.describe('Wellness-Designer-App (i) · Merchant journey', () => {
     await expect(gateOrFormOrDesigner).toBeVisible({ timeout: 15_000 });
   });
 
-  test('A.M.4 — POST /api/merchants/:slug/magic-link returns privacy-preserving 200', async ({ request }) => {
+  test('A.M.4 — POST /api/merchants/:slug/magic-link returns privacy-preserving 200', async ({ request, baseURL }) => {
+    test.skip(targetHasNoApi(baseURL), NO_API_SKIP);
     const res = await request.post(`/api/merchants/${TEST_SLUG}/magic-link`, {
       data: { email: 'e2e+phase-a@example.com' },
       headers: { 'Content-Type': 'application/json' },
@@ -192,7 +201,8 @@ test.describe('Wellness-Designer-App (i) · Merchant journey', () => {
 // ─── API smokes (4 specs) ─────────────────────────────────────────────
 
 test.describe('Wellness-Designer-App (i) · API smokes', () => {
-  test('A.API.1 — GET /api/healthcheck returns ok:true with prod commit SHA', async ({ request }) => {
+  test('A.API.1 — GET /api/healthcheck returns ok:true with prod commit SHA', async ({ request, baseURL }) => {
+    test.skip(targetHasNoApi(baseURL), NO_API_SKIP);
     const res = await request.get('/api/healthcheck');
     expect(res.status()).toBe(200);
     const body = (await res.json()) as { ok?: boolean; commit?: string };
@@ -200,7 +210,8 @@ test.describe('Wellness-Designer-App (i) · API smokes', () => {
     expect(body.commit).toMatch(/^[a-f0-9]{7,40}$/);
   });
 
-  test('A.API.2 — GET /api/products returns paginated catalog', async ({ request }) => {
+  test('A.API.2 — GET /api/products returns paginated catalog', async ({ request, baseURL }) => {
+    test.skip(targetHasNoApi(baseURL), NO_API_SKIP);
     const res = await request.get('/api/products?limit=10');
     expect(res.status()).toBe(200);
     const body = (await res.json()) as {
@@ -212,17 +223,22 @@ test.describe('Wellness-Designer-App (i) · API smokes', () => {
     expect(typeof body.total).toBe('number');
   });
 
-  test('A.API.3 — POST /api/merchants/:slug/products/upload-image route status (pre- or post-#13)', async ({ request }) => {
+  test('A.API.3 — POST /api/merchants/:slug/products/upload-image is merchant-session gated', async ({ request, baseURL }) => {
+    test.skip(targetHasNoApi(baseURL), NO_API_SKIP);
     const res = await request.post(`/api/merchants/${TEST_SLUG}/products/upload-image`, {
       data: { filename: 'noop.png' },
       headers: { 'Content-Type': 'application/json' },
     });
-    // Valid statuses by merge state:
-    //   • Pre-#13: 404 (route doesn't exist) or 405 (matched a sibling)
-    //   • Post-#13 missing contentType: 400 invalid_content_type
-    //   • Post-#13 BLOB_READ_WRITE_TOKEN unset: 500 blob_token_missing
-    // After #13 ships, this assertion tightens to [400] only.
-    expect([400, 404, 405, 500]).toContain(res.status());
+    // IMPL-2 (920673e, 2026-08-04) closed the hole where this endpoint minted
+    // Vercel Blob read-write tokens with NO auth. The merchant Bearer gate now
+    // runs BEFORE body/content-type validation, so an unauthenticated POST
+    // must be 401 missing_session. A 400 or 500 here would mean the caller
+    // reached the token-minting branch unauthenticated - the exact regression
+    // this now guards. (The old list was loose enough to pass against a vite
+    // dev server's 404, so it proved nothing.)
+    expect(res.status()).toBe(401);
+    const body = (await res.json()) as { error?: string };
+    expect(body.error).toBe('missing_session');
   });
 
   test('A.API.4 — POST /api/merchants/:slug/products without Bearer returns 401', async ({ request }) => {
@@ -235,7 +251,8 @@ test.describe('Wellness-Designer-App (i) · API smokes', () => {
     expect([400, 401, 404, 405]).toContain(res.status());
   });
 
-  test('A.API.5 — POST /api/cart-quote with empty body returns 400-shaped', async ({ request }) => {
+  test('A.API.5 — POST /api/cart-quote with empty body returns 400-shaped', async ({ request, baseURL }) => {
+    test.skip(targetHasNoApi(baseURL), NO_API_SKIP);
     const res = await request.post('/api/cart-quote', {
       data: {},
       headers: { 'Content-Type': 'application/json' },
@@ -259,7 +276,8 @@ test.describe('Wellness-Designer-App (i) · API smokes', () => {
     expect([200, 301, 302, 303, 307, 308]).toContain(res.status());
   });
 
-  test('A.API.7 — GET /api/products?category=fitness returns filtered subset', async ({ request }) => {
+  test('A.API.7 — GET /api/products?category=fitness returns filtered subset', async ({ request, baseURL }) => {
+    test.skip(targetHasNoApi(baseURL), NO_API_SKIP);
     const res = await request.get('/api/products?category=fitness&limit=50');
     expect(res.status()).toBe(200);
     const body = (await res.json()) as {
