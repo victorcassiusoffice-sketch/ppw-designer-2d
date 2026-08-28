@@ -721,3 +721,53 @@ its own cleanup.
   not a fix, and doing it would have put a working path at risk for no user-visible gain.
 - The resolved **move-ghost outline** (P10) was cut, with reasoning recorded in that section.
 - The unvalidated on-canvas **rotate handle** defect is logged in P10 and left alone.
+
+---
+
+## P12 — DEPLOY (Vic-approved 2026-08-28)
+
+```
+$ git checkout main && git pull && git merge --no-ff feat/designer-units-and-dnd-2026-08-28
+$ npx vitest run
+  1 failed | 1869 passed (1870)   <- src/lib/__tests__/fx.test.ts
+$ npx vitest run src/lib/__tests__/fx.test.ts      # the documented flake, in isolation
+  9 passed (9)                                     # confirmed flake, not a regression
+$ npm run build     # built in 12.65s, clean
+$ npx tsc --noEmit  # exit 0
+$ git push origin main
+  8a41eab..641a9a4  main -> main
+```
+
+Merge SHA **`641a9a4e5e398fc9483f44d0dd20b0a7cae5a06b`**, `git ls-remote origin main` equal.
+
+### Live verification
+
+```
+$ curl -s "https://designer.ppwellness.co/api/healthcheck?cb=<nonce>"   # polled, cache-busted
+  try 1: 8a41eab2e1a2      <- stale, as expected
+  try 2: 8a41eab2e1a2
+  try 3: 8a41eab2e1a2
+  try 4: 641a9a4e5e39      <- live
+  {"ok":true,"service":"ppw-designer-2d","env":"production",
+   "commit":"641a9a4e5e398fc9483f44d0dd20b0a7cae5a06b","sentryConfigured":true,
+   "timestamp":"2026-08-28T15:24:41.981Z"}
+```
+
+Then Playwright **against production** (`waitUntil:'commit'` + `waitForSelector`, never
+`networkidle` — `domcontentloaded` can stall behind the render-blocking `rsms.me` font
+stylesheet):
+
+| Check | Result |
+|---|---|
+| Snap toggle default | `"Snap 0.5 m"` |
+| Picker opens | yes |
+| Pick 1 cm → toggle | `"Snap 1 cm"` |
+| Measure tool present | yes |
+| `data-armed` mid-drag | 2 |
+| Items placed by a real drag | **1** |
+| Console errors | **0** |
+
+Screenshot: `docs/units-dnd-2026-08-28/after/prod-verify-1920x1080.png`.
+
+**Shipped.** The `fx.test.ts` failure on the merged run was re-run in isolation before the
+push rather than waved through — it is one of the two flakes the brief documents.
