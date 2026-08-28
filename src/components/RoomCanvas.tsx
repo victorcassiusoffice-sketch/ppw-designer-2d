@@ -716,7 +716,17 @@ export function RoomCanvas({
       const direct = validatePlacement({ x: resolved.x, y: resolved.y, w, h }, others, targetPolygon);
       const slot = direct.ok
         ? { x: resolved.x, y: resolved.y }
-        : findFreeSlot({ preferredX: resolved.x, preferredY: resolved.y, w, h, others, polygon: targetPolygon });
+        : findFreeSlot({
+            preferredX: resolved.x,
+            preferredY: resolved.y,
+            w,
+            h,
+            others,
+            polygon: targetPolygon,
+            // D15 — floored at 0.5 m so a fine unit cannot turn the fallback
+            // scan into a quadratic sweep. Same cost as today at every unit.
+            step: Math.max(snapStep, 0.5),
+          });
       if (!slot) {
         haptic('invalid');
         pushToast("Item won't fit — the room is full.", 'warn');
@@ -1771,6 +1781,7 @@ export function RoomCanvas({
                   <PlacedItemGroup
                     key={item.instanceId}
                     item={item}
+                    snapStep={snapStep}
                     product={product}
                     wPx={wPx}
                     hPx={hPx}
@@ -2098,6 +2109,12 @@ export function RoomCanvas({
  */
 interface PlacedItemGroupProps {
   item: PlacedItem;
+  /**
+   * Live snap step in metres (units brief 2026-08-28, D14). Threaded in so
+   * that dragging an ALREADY-PLACED item honours the unit the user picked;
+   * without it the drag silently re-snapped to a hardcoded 0.5 m.
+   */
+  snapStep: number;
   product: ReturnType<typeof getProductById> & object;
   wPx: number;
   hPx: number;
@@ -2123,6 +2140,7 @@ interface PlacedItemGroupProps {
 function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
   const {
     item,
+    snapStep,
     product,
     wPx,
     hPx,
@@ -2274,7 +2292,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
           centreYm: newYm + h / 2,
           fp: fpUnrotated,
           polygon,
-          snapStep: 0.5,
+          snapStep,
           userRotationDeg: shiftHeld || !isCardinalRotation(item.rotation) ? item.rotation : null,
           frontEdge: product.front_edge,
         });
@@ -2295,6 +2313,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
               others,
               room: polygon,
               ignoreInstanceId: item.instanceId,
+              snapStep,
             });
         if (resolved.ok) {
           const rotation = wallOk ? wallAware.rotationDeg : item.rotation;

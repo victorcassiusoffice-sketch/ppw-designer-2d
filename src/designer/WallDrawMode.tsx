@@ -40,6 +40,8 @@ import {
   polygonAreaM2,
   type WallSegment,
 } from '../store/wallStore';
+// Units brief (2026-08-28) — wall drawing honours the selected snap unit.
+import { currentSnapStepMm } from '../store/designerUIStore';
 import { useToastStore } from '../store/toastStore';
 import { useHistoryStore } from '../store/historyStore';
 import { wallLinePoints, wallStrokeWidthPx, formatWallLengthM } from './wallGeometry';
@@ -114,7 +116,11 @@ export function WallDrawLayer({
     }
 
     function snapPoint(point: { x_mm: number; y_mm: number }): { x_mm: number; y_mm: number } {
-      const out = snapToWallEndpointOrGrid(point, useWallStore.getState().walls);
+      const out = snapToWallEndpointOrGrid(
+        point,
+        useWallStore.getState().walls,
+        currentSnapStepMm(),
+      );
       return { x_mm: out.x_mm, y_mm: out.y_mm };
     }
 

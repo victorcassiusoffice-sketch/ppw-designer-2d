@@ -42,7 +42,16 @@ import { useToastStore, type ToastKind } from '../store/toastStore';
 import { usePropertyStore } from '../store/propertyStore';
 // Attached multi-room (2026-08-26) — new vertices snap onto the walls of
 // rooms that already exist, so adjacent rooms share exact geometry.
-import { SNAP_TOL_M, snapVertexToRooms, type SnapHit } from '../designer/roomLayout';
+import {
+  snapVertexToRooms,
+  wallSnapTolM,
+  closeThresholdM,
+  type SnapHit,
+} from '../designer/roomLayout';
+// Units brief (2026-08-28) — the snap step is user-selectable, so it is read
+// live INSIDE each handler via this non-React accessor. It must never become
+// a dep of the wiring effect below.
+import { currentSnapStepM } from '../store/designerUIStore';
 // Blueprint reskin + legible measurements (Vic 2026-08-25, complaints 3+5).
 import { MeasurementChip } from '../designer/MeasurementChip';
 import {
@@ -152,7 +161,8 @@ export function RoomDrawLayer({
       const hit = snapHitFor(evt);
       if (hit) return { x: hit.v.x, y: hit.v.y };
       const raw = rawRoomPoint(evt);
-      return { x: snapToGrid(raw.x, GRID_STEP_M), y: snapToGrid(raw.y, GRID_STEP_M) };
+      const stepM = currentSnapStepM();
+      return { x: snapToGrid(raw.x, stepM), y: snapToGrid(raw.y, stepM) };
     }
 
     function rawRoomPoint(evt: { clientX: number; clientY: number }): Vertex {
@@ -176,7 +186,7 @@ export function RoomDrawLayer({
       return snapVertexToRooms(
         rawRoomPoint(evt),
         usePropertyStore.getState().property.rooms,
-        SNAP_TOL_M,
+        wallSnapTolM(currentSnapStepM()),
       );
     }
 
@@ -216,7 +226,7 @@ export function RoomDrawLayer({
         candidate: p,
         verticesBefore: current.length,
       });
-      if (isClosingPolygon(current, p, CLOSE_THRESHOLD_M)) {
+      if (isClosingPolygon(current, p, closeThresholdM(currentSnapStepM()))) {
         if (current.length >= 3) {
           console.log(DBG, 'close via click', { vertices: current.length });
           console.log('[draw-close]', {
@@ -346,7 +356,7 @@ export function RoomDrawLayer({
 
   const closeCandidate = useMemo(() => {
     if (vertices.length < 3 || !hover) return false;
-    return isClosingPolygon(vertices, hover, CLOSE_THRESHOLD_M);
+    return isClosingPolygon(vertices, hover, closeThresholdM(currentSnapStepM()));
   }, [vertices, hover]);
 
   const previewPolygon: Polygon = useMemo(() => {
