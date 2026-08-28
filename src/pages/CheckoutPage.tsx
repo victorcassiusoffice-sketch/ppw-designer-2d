@@ -44,6 +44,8 @@ import {
 import { formatCurrency } from '../lib/currency';
 import { COUNTRY_OPTIONS } from '../lib/region';
 import { CATEGORY_LABELS, getProductById } from '../data/products';
+import { roomFloorOrders } from '../designer/floorTiles';
+import { findFloorMaterialById } from '../data/floorMaterials';
 import {
   saveLastOrderSnapshot,
   type LastOrderSnapshot,
@@ -117,7 +119,7 @@ export default function CheckoutPage() {
     [form, submitted],
   );
 
-  if (cart.totalItemCount === 0) {
+  if (cart.totalItemCount === 0 && cart.floorLines.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-ppw-sand text-ppw-ink">
         <CartPageHeader />
@@ -162,6 +164,29 @@ export default function CheckoutPage() {
         })
         .filter((x): x is NonNullable<typeof x> => x !== null);
 
+      // Painted floors are billed by the whole unit (tile/roll/pack/mat)
+      // with an offcut allowance, so they belong on the order + plan PDF
+      // as room product rows next to the furniture.
+      const floorRows = roomFloorOrders(r).map(({ materialId, order }) => {
+        const m = findFloorMaterialById(materialId);
+        const priced = cart.floorLines.find((f) => f.materialId === materialId);
+        const unitPriceDisplay = priced?.unitPriceDisplay ?? m?.price_per_unit_mur ?? 0;
+        const unitLabel = m?.unit ?? 'unit';
+        const dims =
+          m?.tile_w_m && m?.tile_h_m
+            ? `${m.tile_w_m} x ${m.tile_h_m} m ${unitLabel}`
+            : unitLabel;
+        return {
+          sku: m?.sku ?? materialId,
+          name: `${m?.name ?? materialId} (flooring)`,
+          quantity: order.unitsToOrder,
+          dimensions: dims,
+          supplier: 'Flooring',
+          unitPriceDisplay,
+          lineTotalDisplay: unitPriceDisplay * order.unitsToOrder,
+        };
+      });
+
       const placedItems: SnapshotPlacedItem[] = r.placedItems.map((it) => {
         const p = getProductById(it.productId);
         const lengthCm = p?.dimensions_cm.length ?? 50;
@@ -185,7 +210,7 @@ export default function CheckoutPage() {
         name: r.name,
         polygon: r.polygon.map((v) => ({ x: v.x, y: v.y })),
         placedItems,
-        products,
+        products: [...products, ...floorRows],
       };
     });
 
@@ -227,7 +252,7 @@ export default function CheckoutPage() {
     setServerMessage(null);
 
     const orderId = makeOrderId();
-    const lines: OrderLine[] = cart.lines.map((l) => ({
+    const productLines: OrderLine[] = cart.lines.map((l) => ({
       productId: l.productId,
       name: l.product.name,
       category: CATEGORY_LABELS[l.product.category],
@@ -237,6 +262,22 @@ export default function CheckoutPage() {
       unitPriceDisplay: l.unitPriceDisplay,
       lineTotalDisplay: l.lineTotalDisplay,
     }));
+    // Painted-floor order lines: billed by the whole unit; the name carries
+    // the surplus so the invoice reads "…, incl. N spare tiles".
+    const floorOrderLines: OrderLine[] = cart.floorLines.map((f) => ({
+      productId: f.lineId,
+      name:
+        f.surplusUnits > 0
+          ? `${f.materialName} — ${f.unitsToOrder} ${f.unit}${f.unitsToOrder > 1 ? 's' : ''} (incl. ${f.surplusUnits} spare for cut edges)`
+          : `${f.materialName} — ${f.unitsToOrder} ${f.unit}${f.unitsToOrder > 1 ? 's' : ''}`,
+      category: 'Flooring',
+      quantity: f.unitsToOrder,
+      unitPrice: f.unitPriceMur,
+      unitCurrency: f.unitCurrency,
+      unitPriceDisplay: f.unitPriceDisplay,
+      lineTotalDisplay: f.lineTotalDisplay,
+    }));
+    const lines: OrderLine[] = [...productLines, ...floorOrderLines];
     const order: Order = {
       id: orderId,
       timestamp: Date.now(),
@@ -451,6 +492,21 @@ export default function CheckoutPage() {
                   </span>
                   <span className="shrink-0 text-ppw-ink">
                     {formatCurrency(l.lineTotalDisplay, currency)}
+                  </span>
+                </li>
+              ))}
+              {cart.floorLines.map((f) => (
+                <li key={f.lineId} className="flex justify-between gap-2" data-testid="checkout-floor-line">
+                  <span className="truncate text-ppw-slate">
+                    {f.materialName}{' '}
+                    <span className="text-[10px]">
+                      x {f.unitsToOrder} {f.unit}
+                      {f.unitsToOrder > 1 ? 's' : ''}
+                      {f.surplusUnits > 0 ? ` (incl. ${f.surplusUnits} spare)` : ''}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-ppw-ink">
+                    {formatCurrency(f.lineTotalDisplay, currency)}
                   </span>
                 </li>
               ))}

@@ -76,7 +76,7 @@ export function CartDrawer() {
   const groups = groupLinesByMerchant(cart.lines);
   const marketplaceFee = cart.subtotal * MARKETPLACE_FEE_PCT;
   const total = cart.subtotal + marketplaceFee;
-  const isEmpty = cart.lines.length === 0;
+  const isEmpty = cart.lines.length === 0 && cart.floorLines.length === 0;
 
   function handleCheckout() {
     // Route to the cartStore-backed checkout — the SAME store this drawer
@@ -160,6 +160,40 @@ export function CartDrawer() {
                   </ul>
                 </li>
               ))}
+
+              {cart.floorLines.length > 0 && (
+                <li data-testid="floor-group">
+                  <div className="flex items-baseline justify-between border-b border-[#C0A67E]/30 pb-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#C0A67E]">
+                      Painted flooring
+                    </p>
+                    <p className="text-[11px] font-medium text-[#0E0E10]">
+                      {formatCurrency(cart.floorSubtotal, currency)}
+                    </p>
+                  </div>
+                  <ul className="mt-1.5 space-y-1.5">
+                    {cart.floorLines.map((f) => (
+                      <li key={f.lineId} className="text-xs" data-testid="floor-line">
+                        <div className="flex items-baseline justify-between">
+                          <span className="truncate pr-2 text-[#0E0E10]">
+                            <b className="text-[#0E0E10]">{f.unitsToOrder}</b>{' '}
+                            <span className="text-[#0E0E10]/80">×</span> {f.materialName}
+                          </span>
+                          <span className="tabular-nums text-[#0E0E10]/80">
+                            {formatCurrency(f.lineTotalDisplay, currency)}
+                          </span>
+                        </div>
+                        {f.surplusUnits > 0 && (
+                          <p className="text-[10px] leading-snug text-[#0E0E10]/55">
+                            incl. {f.surplusUnits} spare {f.unit}
+                            {f.surplusUnits > 1 ? 's' : ''} to cover cut edges
+                          </p>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              )}
             </ul>
           )}
         </div>
