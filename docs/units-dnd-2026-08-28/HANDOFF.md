@@ -315,3 +315,77 @@ first** so the count can never drift silently if the fit ever changes.
 Practical consequence, and it is correct rather than a defect: at `pxPerMetre = 100` inside
 the 0.3–3 zoom clamp, a 1 cm grid is at most 3 px, so the finest grid anyone will ever SEE
 is 10 cm while snapping at 1 cm. The dual badge is what makes that legible.
+
+---
+
+## P5 — U5: typed segment length while drawing
+
+**Done.** You can now point the cursor and type an exact wall length.
+
+- **`src/designer/drawLength.ts`** (new) — `nextVertexAtLength(last, hover, lengthM, stepM)`
+  and `quantiseVertex(v, stepM)`. Semantics: **the cursor supplies the DIRECTION, the field
+  supplies the MAGNITUDE.** No angle-entry UI invented; the mouse keeps doing what a mouse is
+  good at.
+- **4-dp rounding at commit**, applied to the typed path AND the ordinary click path via
+  `quantiseVertex`. Not cosmetic: `Math.round(5.13 / 0.01) * 0.01` is `5.130000000000001` in
+  IEEE754 and `cleanPolygon` does no quantisation at all, so that float tail would persist
+  into `Room.polygon` and from there into every saved plan and quote payload. Applied to the
+  **grid branch only** — a wall-snapped vertex is still returned verbatim.
+- **`RoomDrawHUD` re-mounted** as the home for the field. It was removed in Batch 3 Fix 3.2
+  for covering the canvas, so it returns on stricter terms: panel root `pointer-events-none`,
+  only its controls `pointer-events-auto`, and moved from `top-3` to `bottom-3`, out of the
+  band where the first row of plan vertices renders.
+- The field disables with an explanatory title when there is no vertex to measure from or
+  the cursor sits on the last vertex — it does not guess an axis.
+- Added `drawVertices()` to the DEV-only geom bridge so the e2e can assert real geometry
+  rather than a vertex count.
+
+### ⚠ The arbitration — the fix that makes the field shippable
+
+Without this, the feature is not merely broken, it is destructive. `RoomDrawMode` registers
+its key handler as **capture phase** (`window.addEventListener('keydown', onKey, true)`), and
+the `Escape` and `Enter` branches both `return` **before** the `if (inTextField) return;`
+guard. So typing in a length field and pressing Enter would **commit the room**, and Escape
+would **discard every vertex placed so far**.
+
+The fix is an additive early return at the very top of `onKey`, keyed on
+`target.dataset.testid === 'draw-segment-length'`. Additive lines only — `const inTextField =`
+is unchanged, the "Enter MUST close the polygon" comment is unchanged, and all three
+`[draw-close]` reason strings are unchanged, so **all 54 source-pin assertions across the
+three pin files stay green**.
+
+### P5 GATE
+
+```
+$ npx vitest run RoomDrawMode customer-ui-fixes roomCanvasRenderBind
+  3 passed (3)   54 passed (54)      <- every source pin survives the HUD remount
+
+$ PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test \
+    units multiroom-attach undo-mid-draw multiroom-render placement-fsm wall-draw
+  18 passed (12.0s)
+
+$ npx vitest run
+  Test Files  158 passed (158)   Tests  1849 passed (1849)
+
+$ npx tsc --noEmit   # exit 0
+$ npm run build      # built in 7.40s, clean
+$ npx eslint <5>     # 0 errors
+$ testids            # 149 (draw-segment-length added), none dropped
+```
+
+`multiroom-attach` and `undo-mid-draw` are the load-bearing pair here — they are the two
+specs that click canvas coordinates *during* draw mode, so they go red if the re-mounted HUD
+swallows a vertex click. Both green.
+
+### The gate caught a real spec error, twice over
+
+First run failed `Expected 3.25 / Received 3.5`. That was the **test** being wrong: the seed
+was the 0.5 m unit, where a typed 3.25 correctly quantises to 3.5 — typing a length works
+*in* the active unit, it does not escape it. Retargeted the assertion to the 1 cm unit where
+3.25 is exactly representable, and **added a second test pinning the coarse-unit behaviour**
+(type 3.25 at 0.5 m, get 3.5) so the quantisation contract is documented rather than
+discovered again later.
+
+Note that the two assertions that would have caught a missing arbitration — vertex count 4,
+and `rooms.length` unchanged — both passed on the first run, which is how I know the capture
+fix works rather than merely believing it.

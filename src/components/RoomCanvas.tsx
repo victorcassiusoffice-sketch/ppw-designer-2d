@@ -47,7 +47,7 @@ import {
 } from '../lib/geometry';
 import type { PlacedRect, Polygon, Viewport } from '../lib/geometry';
 import { computeZoomScale } from '../lib/zoom';
-import { RoomDrawLayer, type HoverVertex } from './RoomDrawMode';
+import { RoomDrawLayer, RoomDrawHUD, type HoverVertex } from './RoomDrawMode';
 import { WallDrawLayer, WallDrawHUD, CommittedWallsLayer } from '../designer/WallDrawMode';
 import { useWallStore } from '../store/wallStore';
 import { useHistoryStore, endDrawTransaction } from '../store/historyStore';
@@ -1992,10 +1992,23 @@ export function RoomCanvas({
         />
       </Stage>
 
-      {/* Batch 3 Fix 3.2 — the floating RoomDrawHUD panel was removed.
-          Vertex / perim / area counters now live in the LEFT RoomList
-          sidebar (active room row). Keyboard remains the only commit
-          path: Enter close · Esc cancel · Ctrl+Z undo last vertex. */}
+      {/* Units brief (2026-08-28, D9) — the HUD is back, as the home for the
+          typed segment-length field. It was removed in Batch 3 Fix 3.2 for
+          covering the canvas, so it returns on stricter terms: the panel
+          itself is pointer-events-none and only its controls are clickable,
+          and it sits at bottom-3, out of the band where the first row of
+          plan vertices renders. */}
+      <RoomDrawHUD
+        enabled={drawMode}
+        vertices={drawVertices}
+        setVertices={setDrawVertices}
+        hover={drawHover}
+        setHover={setDrawHover}
+        name={drawName}
+        setName={setDrawName}
+        onCommit={handleDrawCommit}
+        onCancel={handleDrawCancel}
+      />
 
       <WallDrawHUD enabled={wallDrawEnabled && !drawMode} />
 

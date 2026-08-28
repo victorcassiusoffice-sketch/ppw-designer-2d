@@ -290,4 +290,88 @@ test.describe('Selectable snap units', () => {
     });
     expect(lineCount).toBe(202);
   });
+  test('a typed length places the next vertex without committing the room', async ({
+    page,
+  }) => {
+    // At the 1 cm unit a typed 3.25 is exactly representable. The coarse-unit
+    // behaviour - the typed value quantising to the chosen step - is pinned by
+    // its own test below.
+    await seedWithUnit(page, JSON.parse(JSON.stringify(ONE_ROOM_FIXTURE)), 'cm1');
+    await page.goto('/designer');
+    await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+
+    const before = await storedProperty(page);
+    expect(before.rooms).toHaveLength(1);
+
+    await page.locator('[data-testid="room-draw-toggle"]').click();
+
+    // THREE vertices, deliberately. At two the capture handler takes the
+    // "<3" branch, toasts "Need at least 3 walls" and returns WITHOUT
+    // stopping propagation - so the event still reaches the field and the
+    // collision stays invisible. At three, a build without the arbitration
+    // early return COMMITS THE ROOM on Enter.
+    await clickWorld(page, 7, 1);
+    await clickWorld(page, 9, 1);
+    await clickWorld(page, 9, 3);
+
+    // Point the cursor to give a direction, then type the magnitude.
+    const dir = await worldToScreen(page, 6, 3);
+    if (!dir) throw new Error('geom bridge unavailable');
+    await page.mouse.move(dir.x, dir.y, { steps: 4 });
+
+    const field = page.locator('[data-testid="draw-segment-length"]');
+    await expect(field).toBeEnabled();
+    await field.click();
+    await field.fill('3.25');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(300);
+
+    // 1 - a fourth vertex exists.
+    const verts = await page.evaluate(() => {
+      const g = window.__ppwGeom;
+      return g && g.ready() ? g.drawVertices() : null;
+    });
+    expect(verts).not.toBeNull();
+    expect(verts).toHaveLength(4);
+
+    // 2 - it is exactly 3.25 m from the third, along the cursor direction.
+    const d = Math.hypot(verts[3].x - verts[2].x, verts[3].y - verts[2].y);
+    expect(d).toBeCloseTo(3.25, 6);
+
+    // 3 - and the room was NOT committed. This is the assertion that fails
+    //     loudly on a build missing the capture-phase early return.
+    const after = await storedProperty(page);
+    expect(after.rooms).toHaveLength(1);
+  });
+  test('a typed length quantises to the chosen unit', async ({ page }) => {
+    await seedWithUnit(page, JSON.parse(JSON.stringify(ONE_ROOM_FIXTURE)), 'full');
+    await page.goto('/designer');
+    await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+
+    await page.locator('[data-testid="room-draw-toggle"]').click();
+    await clickWorld(page, 7, 1);
+    await clickWorld(page, 9, 1);
+    await clickWorld(page, 9, 3);
+
+    const dir = await worldToScreen(page, 6, 3);
+    if (!dir) throw new Error('geom bridge unavailable');
+    await page.mouse.move(dir.x, dir.y, { steps: 4 });
+
+    const field = page.locator('[data-testid="draw-segment-length"]');
+    await field.click();
+    await field.fill('3.25');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(300);
+
+    // At the 0.5 m unit, 3.25 is off-lattice and snaps to 3.5. That is the
+    // contract: the field types a length IN the active unit, it does not
+    // escape it. Typing 3.25 at 1 cm gives exactly 3.25 (test above).
+    const verts = await page.evaluate(() => {
+      const g = window.__ppwGeom;
+      return g && g.ready() ? g.drawVertices() : null;
+    });
+    expect(verts).toHaveLength(4);
+    const d = Math.hypot(verts[3].x - verts[2].x, verts[3].y - verts[2].y);
+    expect(d).toBeCloseTo(3.5, 6);
+  });
 });
