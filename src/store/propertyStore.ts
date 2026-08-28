@@ -65,6 +65,18 @@ export interface Room {
    * Read it through `roomOpenings(room)`, never `room.openings!`.
    */
   openings?: Opening[];
+  /**
+   * The floor finish covering this room (2026-08-28).
+   *
+   * PER-ROOM, not per-tile. Every consumer floor planner converges on
+   * "click a room, pick a material, it fills the polygon" — per-tile painting
+   * is a game mechanic that buys nothing when the output is a shopping list.
+   * `materialId` is a `FLOOR_MATERIALS` id; absent/null = bare floor.
+   *
+   * Nested on Room for the same reason openings are: undo and persistence
+   * come free, and no API change is needed.
+   */
+  floorFinish?: { materialId: string } | null;
 }
 
 export interface Property {
@@ -196,6 +208,9 @@ export interface PropertyState {
    * overlapping an opening already on that wall) — callers surface the reason
    * from `validateOpening` rather than silently dropping it.
    */
+  /** Set (or clear, with null) a room's floor finish. */
+  setRoomFloor: (roomId: string, materialId: string | null) => void;
+
   addOpening: (roomId: string, opening: Omit<Opening, 'id'> & { id?: string }) => string | null;
   /** Removes by opening id from WHICHEVER room owns it (ids are global). */
   removeOpening: (openingId: string) => void;
@@ -451,6 +466,18 @@ export const usePropertyStore = create<PropertyState>()(
           };
         }),
 
+      setRoomFloor: (roomId, materialId) =>
+        set((s) => ({
+          property: {
+            ...s.property,
+            rooms: s.property.rooms.map((r) =>
+              r.id === roomId
+                ? { ...r, floorFinish: materialId ? { materialId } : null }
+                : r,
+            ),
+          },
+        })),
+
       // ---- openings ----------------------------------------------------
 
       addOpening: (roomId, opening) => {
@@ -619,6 +646,7 @@ interface RawRoom {
   roomDimensions?: RoomDims;
   placedItems?: PlacedItem[];
   openings?: Opening[];
+  floorFinish?: { materialId: string } | null;
 }
 
 interface RawProperty {
@@ -661,6 +689,12 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
     // migrated room can never carry an opening hosted on an edge that no
     // longer exists.
     openings: pruneOpenings(r.openings, clean),
+    // Same whitelist trap as `openings`: omit this and a room's floor silently
+    // disappears on the first save/load round trip.
+    floorFinish:
+      r.floorFinish && typeof r.floorFinish.materialId === 'string'
+        ? { materialId: r.floorFinish.materialId }
+        : null,
   };
 }
 

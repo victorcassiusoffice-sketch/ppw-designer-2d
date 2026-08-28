@@ -32,6 +32,7 @@ import { useDesignsStore } from '../store/designsStore';
 import { useToastStore } from '../store/toastStore';
 import { useHistoryStore } from '../store/historyStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
+import { FLOOR_MATERIALS } from '../data/floorMaterials';
 import { useWallStore } from '../store/wallStore';
 import { useCart } from '../store/cartStore';
 import { CurrencySwitcher } from './CurrencySwitcher';
@@ -131,6 +132,12 @@ export function TopBar({
   const toggleDoorHand = useDesignerUIStore((s) => s.toggleDoorHand);
   const doorActive = tool === 'door';
 
+  // Floor finish (2026-08-28). Applies to the FOCUSED room — the one the
+  // L/W boxes and the details panel already describe — so there is one
+  // consistent answer to "which room am I editing".
+  const [floorOpen, setFloorOpen] = useState(false);
+  const setRoomFloor = usePropertyStore((s) => s.setRoomFloor);
+
   function handleToggleDoor() {
     // Room-draw and wall-draw own the canvas pointer while they are live, so
     // stand them down rather than letting two tools fight over the same click.
@@ -158,6 +165,7 @@ export function TopBar({
   const [propertyDraft, setPropertyDraft] = useState(property.name);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const activeRoom = property.rooms.find((r) => r.id === property.activeRoomId);
+  const currentFloorId = activeRoom?.floorFinish?.materialId ?? null;
 
   const savedList = Object.values(designs)
     .filter((d) => d.id !== '__draft__')
@@ -491,6 +499,67 @@ export function TopBar({
             </button>
           </div>
         )}
+
+        {/* Floor finish — the material the customer buys for this room. */}
+        <div className="relative hidden md:inline-block">
+          <button
+            type="button"
+            onClick={() => setFloorOpen((v) => !v)}
+            data-testid="floor-tool-toggle"
+            className={`min-h-[40px] rounded-md border px-3 text-xs font-medium ${
+              currentFloorId
+                ? 'border-ppw-teal bg-ppw-teal text-white'
+                : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
+            }`}
+            title="Choose the floor material for this room"
+            aria-expanded={floorOpen}
+          >
+            Floor
+          </button>
+          {floorOpen && (
+            <div
+              className="absolute left-0 top-full z-40 mt-1 w-56 rounded-md border border-ppw-stone bg-white p-2 shadow-lg"
+              data-testid="floor-picker"
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  if (activeRoom) setRoomFloor(activeRoom.id, null);
+                  setFloorOpen(false);
+                }}
+                data-testid="floor-none"
+                className={`mb-1 flex w-full items-center gap-2 rounded px-2 py-1 text-left text-[11px] ${
+                  currentFloorId ? 'text-ppw-slate hover:bg-ppw-mist' : 'bg-ppw-mist font-semibold'
+                }`}
+              >
+                <span className="h-4 w-4 rounded-sm border border-ppw-stone bg-white" />
+                No floor finish
+              </button>
+              {FLOOR_MATERIALS.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => {
+                    if (activeRoom) setRoomFloor(activeRoom.id, m.id);
+                    setFloorOpen(false);
+                  }}
+                  data-testid={`floor-material-${m.id}`}
+                  className={`flex w-full items-center gap-2 rounded px-2 py-1 text-left text-[11px] ${
+                    currentFloorId === m.id
+                      ? 'bg-ppw-mist font-semibold'
+                      : 'text-ppw-slate hover:bg-ppw-mist'
+                  }`}
+                >
+                  <span
+                    className="h-4 w-4 shrink-0 rounded-sm border border-ppw-stone"
+                    style={{ background: m.hex }}
+                  />
+                  <span className="truncate">{m.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Tweak 07 (Phase A.0) — UNDO / REDO buttons. Visible on both
             mobile and desktop. The undo button arms-then-fires on

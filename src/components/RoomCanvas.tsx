@@ -128,6 +128,8 @@ import {
   validateOpening,
   type Opening,
 } from '../designer/openings';
+import { roomFloorMaterial } from '../designer/floorFinish';
+import { obstaclesFor } from '../designer/layerBands';
 
 /** How close the pointer must be to a wall for the door tool to snap to it. */
 const DOOR_SNAP_TOL_M = 0.6;
@@ -687,7 +689,11 @@ export function RoomCanvas({
         frontEdge: product.front_edge,
       });
       const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
-      const others = targetItems
+      // Layer bands (2026-08-28): only same-band items are obstacles, so a
+      // treadmill ignores the mats under it. Before this, a flooring SKU laid
+      // as an item blocked everything on top of it and findFreeSlot silently
+      // teleported the blocked product elsewhere.
+      const others = obstaclesFor(product.id, targetItems)
         .map((it) => {
           const p = getProductById(it.productId);
           if (!p) return null;
@@ -918,7 +924,9 @@ export function RoomCanvas({
       });
       const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
       const candidate: PlacedRect = { x: resolved.x, y: resolved.y, w, h };
-      const others = target.placedItems
+      // Same band filter as the commit path — the ghost must predict the
+      // commit exactly, or the preview lies.
+      const others = obstaclesFor(product.id, target.placedItems)
         .map((it) => {
           const p = getProductById(it.productId);
           if (!p) return null;
@@ -1513,6 +1521,32 @@ export function RoomCanvas({
                   shadowOpacity={0.45}
                   shadowOffsetY={4}
                 />
+                {/* FLOOR FINISH — the material the customer actually buys,
+                    drawn over the room fill and UNDER the walls, the grid and
+                    every placed item. Per-room, one material, filling the
+                    polygon: that is the convention every consumer floor
+                    planner lands on, and per-tile painting buys nothing when
+                    the output is a shopping list.
+
+                    Slightly translucent so the active-room tint still reads
+                    through, and non-listening like everything else in this
+                    layer — a listening floor would swallow the placement
+                    clicks the Stage handlers depend on. */}
+                {(() => {
+                  const mat = roomFloorMaterial(room);
+                  if (!mat) return null;
+                  return (
+                    <Line
+                      points={pts}
+                      closed
+                      fill={mat.hex}
+                      opacity={0.9}
+                      listening={false}
+                      name="room-floor"
+                    />
+                  );
+                })()}
+
                 {/* WALLS — one stroke per EDGE rather than one closed Line, so
                     a door can remove a span from a single wall. `splitEdgeSpans`
                     returns the solid runs left once openings are cut out; with
@@ -1708,7 +1742,16 @@ export function RoomCanvas({
               drawMode, so without this a vertex click would select / drag /
               sledgehammer-delete an item — silently, inside a suppressed
               history transaction. */}
-          <Group listening={!drawMode}>
+          {/* Items stop listening while a product is ARMED as well as during
+              draw. Otherwise an armed click that lands on an existing item
+              hits that item's hit-rect, so the Stage's commit handler sees
+              `e.target !== stage` and returns — the click dies silently with
+              no ghost, no toast, no placement. That is what made "put a bench
+              on the mat" impossible even once collisions became band-aware:
+              the mat swallowed the click before placement was ever consulted.
+              Konva `opacity` does not disable listening; this prop is the
+              only thing that does. */}
+          <Group listening={!drawMode && !pendingProductId}>
             {rooms.map((room) =>
               room.placedItems.map((item) => {
                 const product = getProductById(item.productId);
@@ -2197,7 +2240,9 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         if (stage) stage.container().style.cursor = 'grab';
         const newXm = e.target.x() / pxPerMetre;
         const newYm = e.target.y() / pxPerMetre;
-        const others = placedItems
+        // Band filter, matching the placement paths: dragging a bench ONTO a
+        // mat must land, not bounce back.
+        const others = obstaclesFor(item.productId, placedItems)
           .map((it) => {
             const p = getProductById(it.productId);
             if (!p) return null;
