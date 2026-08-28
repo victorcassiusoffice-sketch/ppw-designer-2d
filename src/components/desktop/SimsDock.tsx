@@ -37,6 +37,10 @@ import {
   type MacroCategory,
 } from '../mobile/catalogMacros';
 import { MacroIcon } from '../mobile/MacroIcon';
+// Sims drag-drop (2026-08-28, D-B1) - the SAME pointer hook the mobile
+// surfaces use. One mechanism for mouse and touch; two would drift.
+import { useDragToPlace } from '../mobile/useDragToPlace';
+import { useDragPointerStore } from '../../store/dragPointerStore';
 import { DetailCard } from '../../designer/DetailCard';
 import {
   DOCK_ACCENT,
@@ -144,6 +148,56 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
     hoverTimer.current = setTimeout(() => setHover(null), 80);
   }
 
+  /**
+   * Arm WITHOUT toggling off (Sims drag-drop, D-B9).
+   *
+   * `toggleArm` disarms when the tile is already armed. On pointerdown that
+   * is wrong for a drag: pressing an armed tile to drag it would drop the
+   * `data-armed="true"` count from 2 to 1 mid-gesture and race every count
+   * assertion in five e2e specs. Pointerdown arms idempotently; the
+   * toggle-off is deferred to a release that never became a drag.
+   */
+  function armOnly(p: Product): void {
+    if (!setPendingProductId) return;
+    if (pendingProductId !== p.id) setPendingProductId(p.id);
+  }
+
+  /**
+   * Desktop drag. `mode: immediate` is mandatory - in longpress mode any
+   * pre-arm movement cancels the gesture as a strip scroll, so a quick
+   * mouse press-drag would silently do nothing. `liftPx: 0` because the 56 px
+   * anti-occlusion lift is a finger affordance. 14 px threshold so a
+   * trackpad wobble does not promote a click into a drag.
+   */
+  const dragPointer = useDragPointerStore();
+  /**
+   * Was this tile ALREADY armed when the press started?
+   *
+   * Pointerdown arms idempotently, so without this a release that never
+   * became a drag would immediately disarm the product the same press just
+   * armed - a wobble on an unarmed tile would leave nothing in hand.
+   * Toggle-off is only correct when the user pressed a tile that was
+   * already armed.
+   */
+  const armedBeforePress = useRef(false);
+  // Scalar selector: subscribing to the whole store object would re-render
+  // the dock on every pointer move.
+  const overCanvas = useDragPointerStore((st) => st.overCanvas);
+  const dockDrag = useDragToPlace({
+    mode: 'immediate',
+    liftPx: 0,
+    moveThresholdPx: 14,
+    onDragStart: (productId, x, y) => {
+      const p = allProducts.find((q: Product) => q.id === productId);
+      if (p) armOnly(p);
+      disarmHover();
+      dragPointer.begin(productId, x, y);
+    },
+    onDragMove: (productId, x, y) => dragPointer.move(productId, x, y),
+    onDrop: (_productId, _x, _y, shiftKey) => dragPointer.release(shiftKey),
+    onCancel: () => dragPointer.cancel(),
+  });
+
   function toggleArm(p: Product): void {
     if (!setPendingProductId) return;
     setPendingProductId(pendingProductId === p.id ? null : p.id);
@@ -171,6 +225,11 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
           paddingBottom: 6,
         }}
       >
+        {/* The DOM thumbnail ghost shows only while the pointer is OUTSIDE
+            the canvas. Over the canvas the Konva footprint ghost is the
+            single truth, so exactly one preview is ever visible. */}
+        {!overCanvas && dockDrag.ghost}
+
         {/* Category macro icons — the Sims build-mode "what am I placing"
             rail. Left of the row (not stacked above it) so the dock costs
             one row of height instead of two. */}
@@ -242,7 +301,24 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                       // card — the placement FSM is untouched.
                       onPointerDown={(e) => {
                         if (e.button !== 0) return;
-                        toggleArm(p);
+                        // Arm immediately so the ghost and data-armed are live
+                        // from the first pixel of movement; the drag hook takes
+                        // over from here.
+                        armedBeforePress.current = pendingProductId === p.id;
+                        armOnly(p);
+                        dockDrag.start(e, p.id, productImageUrl(p));
+                      }}
+                      onPointerUp={() => {
+                        // A press that never became a drag is still a click, and
+                        // clicking an armed tile should disarm it.
+                        if (
+                          !dockDrag.dragging &&
+                          armedBeforePress.current &&
+                          pendingProductId === p.id
+                        ) {
+                          toggleArm(p);
+                        }
+                        armedBeforePress.current = false;
                       }}
                       onKeyDown={(e) => {
                         if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -261,7 +337,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                       data-category={p.category}
                       data-macro={macroOf(p)}
                       data-armed={isPending ? 'true' : 'false'}
-                      className="ppw-no-callout flex h-[68px] w-[68px] cursor-pointer items-center justify-center rounded-lg transition focus-visible:outline focus-visible:outline-2"
+                      className="ppw-no-callout flex h-[68px] w-[68px] cursor-pointer touch-none items-center justify-center rounded-lg transition focus-visible:outline focus-visible:outline-2"
                       style={{
                         background: DOCK_BG_RAISED,
                         boxShadow: isPending
@@ -316,7 +392,10 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
       {/* Sims-style floating detail card on hover. Carries the same testid
           the P0-zeta e2e asserts on — the card moved from the sidebar to the
           dock, it did not disappear. */}
-      {hover && (
+      {/* The hover detail card is suppressed while a drag is in flight - it
+          is a browsing affordance, and during a drag it is just clutter over
+          the plan the user is aiming at. */}
+      {hover && !dockDrag.dragging && (
         <div
           data-testid="product-hover-card"
           className="hidden lg:block"

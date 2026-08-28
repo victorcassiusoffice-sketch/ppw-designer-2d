@@ -47,7 +47,7 @@ import {
 } from '../lib/geometry';
 import type { PlacedRect, Polygon, Viewport } from '../lib/geometry';
 import { computeZoomScale } from '../lib/zoom';
-import { RoomDrawLayer, type HoverVertex } from './RoomDrawMode';
+import { RoomDrawLayer, RoomDrawHUD, type HoverVertex } from './RoomDrawMode';
 import { WallDrawLayer, WallDrawHUD, CommittedWallsLayer } from '../designer/WallDrawMode';
 import { useWallStore } from '../store/wallStore';
 import { useHistoryStore, endDrawTransaction } from '../store/historyStore';
@@ -58,7 +58,19 @@ import { usePlacementIntentStore } from '../store/placementIntentStore';
 // Sims feature-finish (2026-05-30) — inline floating cluster (flagship),
 // precision snap step, haptics. All additive; Konva stable-lock untouched.
 import { FloatingCluster } from '../designer/FloatingCluster';
-import { useDesignerUIStore, PRECISION_STEP_M } from '../store/designerUIStore';
+import {
+  useDesignerUIStore,
+  PRECISION_STEP_M,
+  SNAP_UNIT_LABEL,
+} from '../store/designerUIStore';
+// Units brief (2026-08-28, D6) - what we DRAW is decoupled from what we SNAP to.
+import { chooseGridTier } from '../designer/gridTier';
+// Sims drag-drop (2026-08-28, D-B3) - the transport seam between a catalog
+// drag gesture and this canvas.
+import { useDragPointerStore } from '../store/dragPointerStore';
+// Units brief (2026-08-28, D10) - retype the length of a wall that exists.
+import { resizeRoomEdge } from '../designer/edgeResize';
+import { formatLengthForUnit } from '../designer/unitFormat';
 import { haptic } from '../lib/haptics';
 // Sims wall-aware placement (2026-08-23) — objects dropped near a wall
 // snap flush against it and auto-rotate to face into the room.
@@ -206,6 +218,14 @@ export function RoomCanvas({
   const setTool = useDesignerUIStore((s) => s.setTool);
   const doorDraft = useDesignerUIStore((s) => s.doorDraft);
   const [doorHover, setDoorHover] = useState<DoorHover | null>(null);
+  /** The wall the measure tool has selected, if any. */
+  const [measureSel, setMeasureSel] = useState<{
+    roomId: string;
+    edgeIndex: number;
+    lengthM: number;
+    anchor: 'start' | 'end';
+  } | null>(null);
+  const [measureText, setMeasureText] = useState('');
   const snapStep = PRECISION_STEP_M[precision];
 
   // D11/D12/D14 — tool-aware activation of a placed item. Hand (default) =
@@ -402,15 +422,26 @@ export function RoomCanvas({
         if (setPendingProductId) setPendingProductId(null);
         return;
       }
-      if (e.key === 'r' || e.key === 'R') {
+      // ',' and '.' are the Sims-native rotate keys; R is PPW's existing
+      // convention. All three do the same thing while a product is armed.
+      if (e.key === 'r' || e.key === 'R' || e.key === ',' || e.key === '.') {
         e.preventDefault();
-        const delta = e.shiftKey ? -90 : 90;
+        // The global shortcut hook ALSO binds r / , / . to rotateSelected.
+        // Nothing deselects on arm, so from the second placement onward a
+        // selection exists and one keypress would rotate BOTH the ghost and
+        // a bystander item - the latter into a real undo frame. This handler
+        // is registered in capture phase (see the listener below), so
+        // stopping immediate propagation here wins regardless of which
+        // listener was registered first.
+        e.stopImmediatePropagation();
+        const delta = e.key === ',' ? -90 : e.shiftKey ? -90 : 90;
         setGhostManuallyRotated(true);
         setGhostRotation((r) => (((r + delta) % 360) + 360) % 360);
+        console.log('[drag-place]', { reason: 'rotate' });
       }
     }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
   }, [pendingProductId, setPendingProductId]);
 
   // D19 / D20 — viewport keyboard controls (zoom +/- and WASD/arrow pan).
@@ -658,7 +689,24 @@ export function RoomCanvas({
   // `userRotationDeg` null → Sims auto-orientation: near a wall the item
   // snaps flush and faces into the room; mid-room it faces the viewer.
   const placeAtRoomPoint = useCallback(
-    (centreXm: number, centreYm: number, productId: string, userRotationDeg: number | null) => {
+    (
+      centreXm: number,
+      centreYm: number,
+      productId: string,
+      userRotationDeg: number | null,
+      /**
+       * Sims drag-drop (D-B9 / Vic Q2). When the exact point is blocked,
+       * should we relocate to the nearest free slot?
+       *
+       * TRUE by default so every existing caller is byte-identical. Only
+       * the DRAG drop passes false: you physically carried the object to a
+       * spot, so silently teleporting it metres away reads as a bug. The
+       * mobile "+ Add to room" button and the click commit KEEP relocation
+       * - the popup centre-place is a deliberate 2026-05-28 fix with its
+       * own spec asserting two taps both land.
+       */
+      relocateIfBlocked: boolean = true,
+    ) => {
       const product = getProductById(productId);
       if (!product) {
         pushToast(`Unknown product: ${productId}`, 'error');
@@ -714,9 +762,25 @@ export function RoomCanvas({
       // The wall-snapped position is tried first via validatePlacement so
       // a flush non-grid Y/X survives; findFreeSlot re-snaps to the grid.
       const direct = validatePlacement({ x: resolved.x, y: resolved.y, w, h }, others, targetPolygon);
+      if (!direct.ok && !relocateIfBlocked) {
+        haptic('invalid');
+        pushToast("That spot is blocked — try somewhere else.", 'warn');
+        console.log('[drag-place]', { reason: 'drop-rejected', cause: 'blocked' });
+        return false;
+      }
       const slot = direct.ok
         ? { x: resolved.x, y: resolved.y }
-        : findFreeSlot({ preferredX: resolved.x, preferredY: resolved.y, w, h, others, polygon: targetPolygon });
+        : findFreeSlot({
+            preferredX: resolved.x,
+            preferredY: resolved.y,
+            w,
+            h,
+            others,
+            polygon: targetPolygon,
+            // D15 — floored at 0.5 m so a fine unit cannot turn the fallback
+            // scan into a quadratic sweep. Same cost as today at every unit.
+            step: Math.max(snapStep, 0.5),
+          });
       if (!slot) {
         haptic('invalid');
         pushToast("Item won't fit — the room is full.", 'warn');
@@ -756,7 +820,13 @@ export function RoomCanvas({
   );
 
   const placeProductAt = useCallback(
-    (clientX: number, clientY: number, productId: string, rotationOverride?: number | null) => {
+    (
+      clientX: number,
+      clientY: number,
+      productId: string,
+      rotationOverride?: number | null,
+      relocateIfBlocked: boolean = true,
+    ) => {
       const container = containerRef.current;
       if (!container) return false;
       const rect = container.getBoundingClientRect();
@@ -775,7 +845,7 @@ export function RoomCanvas({
           : ghostManuallyRotated
             ? ghostRotation
             : null;
-      return placeAtRoomPoint(xM, yM, productId, rotation);
+      return placeAtRoomPoint(xM, yM, productId, rotation, relocateIfBlocked);
     },
     [viewport, pxPerMetre, ghostRotation, ghostManuallyRotated, placeAtRoomPoint],
   );
@@ -1052,14 +1122,96 @@ export function RoomCanvas({
   // per room. The old single memo spanned only the active room's bounds, so
   // reusing it inside another room's clip yields a BLANK grid in every room
   // but one.
+  /**
+   * The DRAWN grid tier. Recomputed on zoom (it is pure arithmetic), but
+   * `gridByRoom` below depends only on the two derived PRIMITIVES, so
+   * panning and zooming WITHIN a tier rebuild nothing.
+   *
+   * Span is the largest drawn-room dimension: the line cap is per room,
+   * so sizing the tier off the biggest one is the conservative choice.
+   */
+  const gridTier = useMemo(() => {
+    let spanM = 0;
+    for (const r of drawnRooms) {
+      const b = polygonBounds(r.polygon);
+      spanM = Math.max(spanM, b.maxX - b.minX, b.maxY - b.minY);
+    }
+    return chooseGridTier(snapStep, pxPerMetre, viewport.scale, spanM || 20);
+  }, [snapStep, pxPerMetre, viewport.scale, drawnRooms]);
+
   const gridByRoom = useMemo(() => {
     if (!showGrid) return new Map<string, GridLine[]>();
     const out = new Map<string, GridLine[]>();
     for (const r of drawnRooms) {
-      out.set(r.id, gridLinesForBounds(polygonBounds(r.polygon), pxPerMetre));
+      out.set(
+        r.id,
+        gridLinesForBounds(
+          polygonBounds(r.polygon),
+          pxPerMetre,
+          gridTier.minorStepM,
+          gridTier.majorStepM,
+        ),
+      );
     }
     return out;
-  }, [showGrid, pxPerMetre, drawnRooms]);
+  }, [showGrid, pxPerMetre, drawnRooms, gridTier.minorStepM, gridTier.majorStepM]);
+
+  /**
+   * Commit a retyped wall length (units brief D10).
+   *
+   * Deliberately NO `recordSnapshot`: historyStore documents that call as
+   * "one user-perceived action - no coalescing", so calling it AND letting
+   * the store subscription queue its own snapshot pushes TWO identical
+   * frames and the user needs two Ctrl+Z for one edit. The per-room
+   * setRoomPolygon calls below already land inside one coalesce window.
+   */
+  const commitMeasure = useCallback(() => {
+    if (!measureSel) return;
+    const typed = Number(measureText);
+    const store = usePropertyStore.getState();
+    const res = resizeRoomEdge({
+      rooms: store.property.rooms.map((r) => ({
+        id: r.id,
+        name: r.name,
+        polygon: r.polygon,
+      })),
+      roomId: measureSel.roomId,
+      edgeIndex: measureSel.edgeIndex,
+      newLengthM: typed,
+      anchor: measureSel.anchor,
+      stepM: snapStep,
+    });
+    if (!res.ok) {
+      const msg =
+        res.reason === 'overlap'
+          ? 'That length would overlap another room.'
+          : res.reason === 'shared-conflict'
+            ? `That wall is shared with ${res.conflictRoomName ?? 'another room'}; move the corner instead.`
+            : res.reason === 'degenerate'
+              ? 'That would collapse a wall.'
+              : 'Length out of range.';
+      haptic('invalid');
+      pushToast(msg, 'warn');
+      return;
+    }
+    // Pre-count the openings setRoomPolygon would silently prune, and say
+    // so BEFORE committing - it deletes doors that no longer fit inside
+    // the same set().
+    let doomedOpenings = 0;
+    for (const id of res.affectedRoomIds) {
+      const before = store.property.rooms.find((r) => r.id === id);
+      doomedOpenings += before?.openings?.length ?? 0;
+    }
+    for (const id of res.affectedRoomIds) {
+      const next = res.rooms.find((r) => r.id === id);
+      if (next) store.setRoomPolygon(id, next.polygon);
+    }
+    if (doomedOpenings > 0) {
+      pushToast('Wall resized — check any doors on the moved walls.', 'info');
+    }
+    setMeasureSel(null);
+    setMeasureText('');
+  }, [measureSel, measureText, snapStep, pushToast]);
 
   /**
    * The gaps to cut out of every wall, keyed `roomId:edgeIndex`.
@@ -1121,6 +1273,85 @@ export function RoomCanvas({
    * remove on one tool instead of inventing a second mode.
    */
   const doorTool = tool === 'door';
+  const measureTool = tool === 'measure';
+
+  /**
+   * Sims drag-drop, effect (a) - a live drag ARMS the existing FSM.
+   *
+   * Arming is what turns on, in lockstep and for free: the canvas ring and
+   * data-armed, ghost-Layer eligibility, placed items going non-listening so
+   * the drop cannot be swallowed, Stage pan-drag disabling, and the
+   * rotate/Escape key handler. Rotate-in-hand comes free from this.
+   */
+  const dragProductId = useDragPointerStore((s) => s.drag?.productId ?? null);
+  useEffect(() => {
+    if (!setPendingProductId) return;
+    if (dragProductId) setPendingProductId(dragProductId);
+  }, [dragProductId, setPendingProductId]);
+
+  /**
+   * Effect (b) - drive the on-canvas ghost IMPERATIVELY.
+   *
+   * A render-driven effect would cost TWO RoomCanvas renders per pointer
+   * move (store set -> render -> effect -> setDragGhost -> render), and this
+   * component re-maps every room and every placed item on each pass. The
+   * subscription reads computeGhost off a ref so the effect can mount once.
+   */
+  const computeGhostRef = useRef(computeGhost);
+  computeGhostRef.current = computeGhost;
+  useEffect(() => {
+    const unsub = useDragPointerStore.subscribe((st, prev) => {
+      if (st.drag === prev.drag) return;
+      const d = st.drag;
+      if (!d) return;
+      const container = containerRef.current;
+      if (container) {
+        const r = container.getBoundingClientRect();
+        useDragPointerStore.getState().setOverCanvas(
+          d.clientX >= r.left && d.clientX <= r.right && d.clientY >= r.top && d.clientY <= r.bottom,
+        );
+      }
+      const g = computeGhostRef.current(d.clientX, d.clientY, d.productId);
+      setDragGhost(g ? { xM: g.xM, yM: g.yM, rotation: g.rotation, valid: g.valid } : null);
+    });
+    return unsub;
+  }, []);
+
+  /**
+   * Effect (c) - commit the drop.
+   *
+   * Keyed on the nonce so two identical consecutive drops both fire.
+   */
+  const dropNonce = useDragPointerStore((s) => s.drop?.nonce ?? 0);
+  useEffect(() => {
+    if (!dropNonce) return;
+    const st = useDragPointerStore.getState();
+    const d = st.drop;
+    if (!d) return;
+    st.consumeDrop();
+
+    // Released outside the canvas: silently put the gesture back rather
+    // than committing or disarming - the user aborted, they did not aim.
+    if (!st.overCanvas) {
+      console.log('[drag-place]', { reason: 'drop-cancelled', cause: 'off-canvas' });
+      return;
+    }
+    if (drawMode || wallDrawEnabled || doorTool || measureTool) {
+      pushToast('Finish the current tool first.', 'warn');
+      console.log('[drag-place]', { reason: 'drop-rejected', cause: 'tool-busy' });
+      return;
+    }
+
+    // rotationOverride left undefined so the armed ghost rotation applies -
+    // that is what makes rotate-in-hand actually reach the committed item.
+    const ok = placeProductAt(d.clientX, d.clientY, d.productId, undefined, false);
+    console.log('[drag-place]', { reason: ok ? 'drop-commit' : 'drop-rejected' });
+    // Vic Q2: the hand empties after a successful drop; Shift at release
+    // keeps it to stamp again.
+    if (ok && !d.shiftKey && setPendingProductId) setPendingProductId(null);
+    setDragGhost(null);
+  }, [dropNonce, drawMode, wallDrawEnabled, doorTool, measureTool, placeProductAt, setPendingProductId, pushToast]);
+
 
   const computeDoorHover = useCallback(
     (clientX: number, clientY: number): DoorHover | null => {
@@ -1312,7 +1543,13 @@ export function RoomCanvas({
             (M1.5 Playwright hook) — it is just inlined here now. */}
         <div className="pointer-events-none flex items-center gap-1.5">
           <span className="rounded-md bg-ppw-ink/80 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
-            {area.toFixed(1)} m² · {Math.round(viewport.scale * 100)}% · {precision === 'full' ? '0.5' : '0.25'} m
+            {area.toFixed(1)} m² · {Math.round(viewport.scale * 100)}% ·{' '}
+            {SNAP_UNIT_LABEL[precision]}
+            {gridTier.minorStepM > 0 && Math.abs(gridTier.minorStepM - snapStep) > 1e-9 && (
+              <span className="opacity-60"> · grid {gridTier.minorStepM >= 1
+                ? `${gridTier.minorStepM} m`
+                : `${Math.round(gridTier.minorStepM * 100)} cm`}</span>
+            )}
           </span>
           <span
             className="rounded-md bg-ppw-teal/90 px-2 py-1 text-[11px] font-medium text-white shadow-sm"
@@ -1385,15 +1622,15 @@ export function RoomCanvas({
             type="button"
             data-testid="mobile-precision"
             aria-label="Toggle snap precision"
-            aria-pressed={precision === 'quarter'}
+            aria-pressed={precision !== 'full'}
             onClick={togglePrecision}
             className="pointer-events-auto flex h-11 min-w-[64px] items-center justify-center rounded-lg px-2 text-[11px] font-semibold shadow-sm active:scale-95"
             style={{
-              background: precision === 'quarter' ? '#FFBB58' : 'rgba(255,255,255,0.9)',
+              background: precision !== 'full' ? '#FFBB58' : 'rgba(255,255,255,0.9)',
               color: '#232C3B',
             }}
           >
-            {precision === 'quarter' ? '¼ tile' : '½ tile'}
+            {SNAP_UNIT_LABEL[precision]}
           </button>
         </div>
       )}
@@ -1689,6 +1926,9 @@ export function RoomCanvas({
             && drawnRooms.map((room) => (
               <Group
                 key={`grid-${room.id}`}
+                // Named so an e2e can count MOUNTED grid nodes rather than
+                // trusting the tier arithmetic. Mirrors `room-poly`.
+                name="room-grid"
                 listening={false}
                 clipFunc={polygonClipFunc(room.polygon, pxPerMetre)}
               >
@@ -1771,6 +2011,7 @@ export function RoomCanvas({
                   <PlacedItemGroup
                     key={item.instanceId}
                     item={item}
+                    snapStep={snapStep}
                     product={product}
                     wPx={wPx}
                     hPx={hPx}
@@ -1836,6 +2077,54 @@ export function RoomCanvas({
             the opening at the exact width and swing it will be placed with.
             Its own non-listening Layer so it can never intercept the click it
             is previewing. */}
+        {/* Measure tool (units brief D10). Tool-gated because the Stage
+            commit path bails on `e.target !== e.target.getStage()`, so a
+            permanently-listening layer would swallow every armed
+            placement click. */}
+        {measureTool && (
+          <Layer name="measure-edges">
+            {drawnRooms.map((room) =>
+              roomEdges({ id: room.id, polygon: room.polygon }).map((e, i) => {
+                const sel =
+                  measureSel?.roomId === room.id && measureSel?.edgeIndex === i;
+                return (
+                  <Line
+                    key={`measure-${room.id}-${i}`}
+                    points={[
+                      e.a.x * pxPerMetre,
+                      e.a.y * pxPerMetre,
+                      e.b.x * pxPerMetre,
+                      e.b.y * pxPerMetre,
+                    ]}
+                    stroke={sel ? '#FFBB58' : 'rgba(255,187,88,0.35)'}
+                    strokeWidth={sel ? 6 : 4}
+                    hitStrokeWidth={18}
+                    lineCap="round"
+                    onClick={() => {
+                      setMeasureSel({
+                        roomId: room.id,
+                        edgeIndex: i,
+                        lengthM: e.lengthM,
+                        anchor: 'start',
+                      });
+                      setMeasureText(e.lengthM.toFixed(2));
+                    }}
+                    onTap={() => {
+                      setMeasureSel({
+                        roomId: room.id,
+                        edgeIndex: i,
+                        lengthM: e.lengthM,
+                        anchor: 'start',
+                      });
+                      setMeasureText(e.lengthM.toFixed(2));
+                    }}
+                  />
+                );
+              }),
+            )}
+          </Layer>
+        )}
+
         {doorTool && doorHover && (
           <Layer listening={false}>
             {(() => {
@@ -1941,10 +2230,86 @@ export function RoomCanvas({
         />
       </Stage>
 
-      {/* Batch 3 Fix 3.2 — the floating RoomDrawHUD panel was removed.
-          Vertex / perim / area counters now live in the LEFT RoomList
-          sidebar (active room row). Keyboard remains the only commit
-          path: Enter close · Esc cancel · Ctrl+Z undo last vertex. */}
+      {/* Units brief (2026-08-28, D9) — the HUD is back, as the home for the
+          typed segment-length field. It was removed in Batch 3 Fix 3.2 for
+          covering the canvas, so it returns on stricter terms: the panel
+          itself is pointer-events-none and only its controls are clickable,
+          and it sits at bottom-3, out of the band where the first row of
+          plan vertices renders. */}
+      <RoomDrawHUD
+        enabled={drawMode}
+        vertices={drawVertices}
+        setVertices={setDrawVertices}
+        hover={drawHover}
+        setHover={setDrawHover}
+        name={drawName}
+        setName={setDrawName}
+        onCommit={handleDrawCommit}
+        onCancel={handleDrawCancel}
+      />
+
+      {/* Measure popover (units brief D10). Says out loud what it does:
+          in a polygon you cannot change one edge in isolation. */}
+      {measureTool && measureSel && (
+        <div
+          className="pointer-events-auto absolute left-1/2 bottom-3 z-30 flex w-[min(94vw,420px)] -translate-x-1/2 flex-col gap-2 rounded-lg border border-ppw-teal bg-white p-3 text-xs shadow-xl"
+          data-testid="edge-length-popover"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-semibold text-ppw-ink">Wall length</span>
+            <span className="text-[10px] text-ppw-slate">
+              now {formatLengthForUnit(measureSel.lengthM, snapStep)}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min={Math.max(snapStep, 0.01)}
+              step={snapStep}
+              value={measureText}
+              data-testid="edge-length-input"
+              autoFocus
+              onChange={(ev) => setMeasureText(ev.target.value)}
+              onKeyDown={(ev) => {
+                if (ev.key === 'Enter') {
+                  ev.preventDefault();
+                  commitMeasure();
+                } else if (ev.key === 'Escape') {
+                  ev.preventDefault();
+                  setMeasureSel(null);
+                }
+              }}
+              className="w-24 rounded-md border border-ppw-stone px-2 py-1 text-right text-sm text-ppw-ink"
+            />
+            <span className="text-[10px] text-ppw-slate">m</span>
+            <button
+              type="button"
+              data-testid="edge-length-anchor"
+              onClick={() =>
+                setMeasureSel((m) =>
+                  m ? { ...m, anchor: m.anchor === 'start' ? 'end' : 'start' } : m,
+                )
+              }
+              className="rounded-md border border-ppw-stone px-2 py-1 text-[10px] text-ppw-slate hover:text-ppw-teal"
+              title="Which end of the wall stays put"
+            >
+              anchor: {measureSel.anchor === 'start' ? 'first' : 'second'}
+            </button>
+            <button
+              type="button"
+              data-testid="edge-length-apply"
+              onClick={commitMeasure}
+              className="ml-auto rounded-md border border-ppw-teal bg-ppw-teal px-3 py-1 text-[11px] font-medium text-white"
+            >
+              Apply
+            </button>
+          </div>
+          <p className="text-[10px] leading-snug text-ppw-slate">
+            Moves the corner; the adjoining wall changes length too. A wall
+            shared with another room moves in both.
+          </p>
+        </div>
+      )}
 
       <WallDrawHUD enabled={wallDrawEnabled && !drawMode} />
 
@@ -2059,7 +2424,8 @@ export function RoomCanvas({
             </p>
             <p className="text-[11px] leading-snug" style={{ color: '#3B4A52' }}>
               Drag a product onto the floor — or tap a catalog item, then tap
-              the room — to place your first piece. Items snap to the 0.5 m grid.
+              the room — to place your first piece. Items snap to the{' '}
+              {SNAP_UNIT_LABEL[precision]} grid.
             </p>
           </div>
         </div>
@@ -2098,6 +2464,12 @@ export function RoomCanvas({
  */
 interface PlacedItemGroupProps {
   item: PlacedItem;
+  /**
+   * Live snap step in metres (units brief 2026-08-28, D14). Threaded in so
+   * that dragging an ALREADY-PLACED item honours the unit the user picked;
+   * without it the drag silently re-snapped to a hardcoded 0.5 m.
+   */
+  snapStep: number;
   product: ReturnType<typeof getProductById> & object;
   wPx: number;
   hPx: number;
@@ -2123,6 +2495,7 @@ interface PlacedItemGroupProps {
 function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
   const {
     item,
+    snapStep,
     product,
     wPx,
     hPx,
@@ -2245,9 +2618,35 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         if (stage) stage.container().style.cursor = 'grab';
         const newXm = e.target.x() / pxPerMetre;
         const newYm = e.target.y() / pxPerMetre;
+
+        /**
+         * Sims drag-drop (2026-08-28, D-B15) — where did it actually land?
+         *
+         * PlacedItemGroup is handed its OWNING room polygon, so before this
+         * a release over an attached neighbour failed isRectInsidePolygon
+         * and bounced back with a toast, while a FRESH placement at the same
+         * point routed correctly. That asymmetry was the bug.
+         *
+         * Rooms are read via getState() INSIDE the handler: this component
+         * memoises and must not gain store subscriptions.
+         */
+        const allRooms = usePropertyStore.getState().property.rooms;
+        const ownerRoom = allRooms.find((r) =>
+          r.placedItems.some((i) => i.instanceId === item.instanceId),
+        );
+        const dropRoom = findRoomAt(
+          { x: newXm + w / 2, y: newYm + h / 2 },
+          allRooms,
+          ownerRoom?.id ?? null,
+        );
+        const crossRoom = !!(dropRoom && ownerRoom && dropRoom.id !== ownerRoom.id);
+        // Resolve against whichever room it was dropped in.
+        const targetPolygon = crossRoom && dropRoom ? dropRoom.polygon : polygon;
+        const targetItems = crossRoom && dropRoom ? dropRoom.placedItems : placedItems;
+
         // Band filter, matching the placement paths: dragging a bench ONTO a
         // mat must land, not bounce back.
-        const others = obstaclesFor(item.productId, placedItems)
+        const others = obstaclesFor(item.productId, targetItems)
           .map((it) => {
             const p = getProductById(it.productId);
             if (!p) return null;
@@ -2273,8 +2672,8 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
           centreXm: newXm + w / 2,
           centreYm: newYm + h / 2,
           fp: fpUnrotated,
-          polygon,
-          snapStep: 0.5,
+          polygon: targetPolygon,
+          snapStep,
           userRotationDeg: shiftHeld || !isCardinalRotation(item.rotation) ? item.rotation : null,
           frontEdge: product.front_edge,
         });
@@ -2282,7 +2681,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         const wallOk = validatePlacement(
           { x: wallAware.x, y: wallAware.y, w: wf.w, h: wf.h },
           others,
-          polygon,
+          targetPolygon,
           item.instanceId,
         ).ok;
         const resolved = wallOk
@@ -2293,12 +2692,29 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
               w,
               h,
               others,
-              room: polygon,
+              room: targetPolygon,
               ignoreInstanceId: item.instanceId,
+              snapStep,
             });
         if (resolved.ok) {
           const rotation = wallOk ? wallAware.rotationDeg : item.rotation;
-          updateItem(item.instanceId, { x: resolved.x, y: resolved.y, rotation });
+          if (crossRoom && dropRoom) {
+            // One atomic action, preserving the instanceId. A remove+add
+            // would mint a fresh id and orphan the selection, the history
+            // reference and the cart line item.
+            usePropertyStore
+              .getState()
+              .moveItemToRoom(item.instanceId, dropRoom.id, resolved.x, resolved.y, rotation);
+            console.log('[drag-move]', {
+              reason: 'cross-room',
+              from: ownerRoom?.id,
+              to: dropRoom.id,
+              instanceId: item.instanceId,
+            });
+          } else {
+            updateItem(item.instanceId, { x: resolved.x, y: resolved.y, rotation });
+            console.log('[drag-move]', { reason: 'same-room' });
+          }
           e.target.position({
             x: resolved.x * pxPerMetre,
             y: resolved.y * pxPerMetre,
@@ -2308,6 +2724,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
             x: item.x * pxPerMetre,
             y: item.y * pxPerMetre,
           });
+          console.log('[drag-move]', { reason: 'rejected', cause: resolved.reason });
           pushToast(
             resolved.reason === 'collision' ? "Item won't fit there." : 'Out of room bounds.',
             'warn',
@@ -2657,25 +3074,48 @@ interface GridLine {
  * grid, because the lines simply did not reach that far: per-room clipping
  * is not enough, each room needs its own generated line set.
  */
+/**
+ * Grid lines for one room, at the DRAWN tier (units brief 2026-08-28, D6).
+ *
+ * Two changes from the old hardcoded version, both load-bearing:
+ *
+ *  1. The step comes from `chooseGridTier`, not a literal 0.5, so a fine
+ *     snap unit cannot emit thousands of Konva nodes per room.
+ *  2. Lines are anchored at the first multiple of the step at or after
+ *     `bounds.minX`, NOT at `bounds.minX` itself. Snapping is anchored at
+ *     world zero, so anchoring the drawing at each room own min corner
+ *     made the visible grid and the snap targets disagree on any off-grid
+ *     room - visible today on the 5.13 m fixture.
+ *
+ * `major` is a modulo of the world coordinate for the same reason: an
+ * index-parity test (`i % 2 === 0`) silently changes meaning the moment the
+ * minor step changes.
+ */
 function gridLinesForBounds(
   bounds: { minX: number; minY: number; maxX: number; maxY: number },
   pxPerMetre: number,
+  minorStepM: number,
+  majorStepM: number,
 ): GridLine[] {
   const out: GridLine[] = [];
-  const stepPx = 0.5 * pxPerMetre;
+  if (minorStepM <= 0) return out;
   const minX = bounds.minX * pxPerMetre;
   const minY = bounds.minY * pxPerMetre;
   const maxX = bounds.maxX * pxPerMetre;
   const maxY = bounds.maxY * pxPerMetre;
-  for (let i = 0; i * stepPx <= maxX - minX + 0.001; i++) {
-    const x = minX + i * stepPx;
-    const major = i % 2 === 0;
-    out.push({ points: [x, minY, x, maxY], key: `vx-${i}`, major });
+  const ratio = majorStepM > 0 ? Math.round(majorStepM / minorStepM) : 0;
+  const isMajor = (worldM: number): boolean =>
+    ratio > 0 && Math.abs((Math.round(worldM / minorStepM) % ratio + ratio) % ratio) < 1e-9;
+
+  const startXm = Math.ceil(bounds.minX / minorStepM - 1e-9) * minorStepM;
+  for (let xm = startXm; xm <= bounds.maxX + 1e-9; xm += minorStepM) {
+    const x = xm * pxPerMetre;
+    out.push({ points: [x, minY, x, maxY], key: `vx-${Math.round(xm / minorStepM)}`, major: isMajor(xm) });
   }
-  for (let j = 0; j * stepPx <= maxY - minY + 0.001; j++) {
-    const y = minY + j * stepPx;
-    const major = j % 2 === 0;
-    out.push({ points: [minX, y, maxX, y], key: `hy-${j}`, major });
+  const startYm = Math.ceil(bounds.minY / minorStepM - 1e-9) * minorStepM;
+  for (let ym = startYm; ym <= bounds.maxY + 1e-9; ym += minorStepM) {
+    const y = ym * pxPerMetre;
+    out.push({ points: [minX, y, maxX, y], key: `hy-${Math.round(ym / minorStepM)}`, major: isMajor(ym) });
   }
   return out;
 }

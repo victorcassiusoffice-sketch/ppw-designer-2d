@@ -165,9 +165,12 @@ export const useDesignStore = create<DesignState>((set) => {
     ...initial,
 
     setRoomDimensions: (dims) => {
+      // Units brief (2026-08-28, D11 / Vic Q3): the floor was 1 m, which made
+      // the 1 cm and 10 cm units incoherent for a typed room size - exactly the
+      // ".50cm to 1m" limitation Vic named. Ceiling unchanged at 50 m.
       const clamped = {
-        lengthM: Math.max(1, Math.min(50, dims.lengthM)),
-        widthM: Math.max(1, Math.min(50, dims.widthM)),
+        lengthM: Math.max(0.1, Math.min(50, dims.lengthM)),
+        widthM: Math.max(0.1, Math.min(50, dims.widthM)),
       };
       if (!isActiveRoomRectangle()) return;
       const ps = usePropertyStore.getState();

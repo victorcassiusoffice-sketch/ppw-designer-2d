@@ -36,6 +36,39 @@ import type { Polygon, RoomDims, Vertex } from '../lib/geometry';
 export const SNAP_TOL_M = 0.25;
 
 /**
+ * Wall-snap radius for a given snap step (units brief 2026-08-28, D4).
+ *
+ * `SNAP_TOL_M` above encodes the step/2 identity for the 0.5 m default. Once
+ * the step is user-selectable that identity has to be computed, with two
+ * deliberate departures from it:
+ *
+ *  • FLOOR 0.05 m — at a 1 cm step, step/2 would be 5 mm and the magnet
+ *    would be unusable. The floor keeps walls catchable at fine units.
+ *  • CEILING 0.25 m — at the 10 m step, step/2 would be a 5 m magnet that
+ *    swallows the whole plan. The identity is abandoned above 0.5 m on
+ *    purpose.
+ *
+ * At stepM = 0.5 this returns exactly 0.25, so every existing test and the
+ * off-grid 5.13 m fixture in `multiroom-attach.spec.ts` are unchanged.
+ */
+export function wallSnapTolM(stepM: number): number {
+  return Math.min(Math.max(stepM / 2, 0.05), 0.25);
+}
+
+/**
+ * Click-to-close radius for the room polygon at a given snap step (D5).
+ *
+ * Same shape of argument as `wallSnapTolM`: proportional in the middle,
+ * clamped at both ends. Below 0.15 m the click-to-close gesture is
+ * unreliable at any unit, so that is the floor and Enter is the documented
+ * close path at fine units. At stepM = 0.5 this returns exactly 0.4, which
+ * is today's `CLOSE_THRESHOLD_M`.
+ */
+export function closeThresholdM(stepM: number): number {
+  return Math.min(Math.max(stepM * 0.8, 0.15), 0.4);
+}
+
+/**
  * Tolerance for "strictly inside" tests. Deliberately tiny: a point ON a
  * shared boundary must NOT read as strictly interior, or every legal
  * attached room would be rejected as an overlap.

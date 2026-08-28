@@ -162,6 +162,21 @@ export default function App() {
     }
     setDrawModeRaw(next);
   }, []);
+  /**
+   * "Keep drawing" (units brief D12). Deliberately its OWN effect rather
+   * than a branch inside setDrawMode or handleDrawCommit: two source-pin
+   * tests extract those by regex and require setDrawMode's deps to stay
+   * literally `[]` and the commit body's to begin with `[addRoom`. Adding a
+   * store dep to either produces a confusing null-match failure rather
+   * than an honest behaviour one.
+   */
+  const continueAfterCommit = useDrawProgressStore((s) => s.continueAfterCommit);
+  useEffect(() => {
+    if (!continueAfterCommit || drawMode) return;
+    useDrawProgressStore.getState().setContinueAfterCommit(false);
+    setDrawMode(true);
+  }, [continueAfterCommit, drawMode, setDrawMode]);
+
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [roomsMenuOpen, setRoomsMenuOpen] = useState(false);
   const [pendingProductId, setPendingProductId] = useState<string | null>(null);

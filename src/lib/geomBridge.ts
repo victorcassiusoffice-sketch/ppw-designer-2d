@@ -78,6 +78,8 @@ export interface GeomBridgeApi {
   renderedRoomCount: () => number;
   /** Vertices currently in flight in room-draw mode. */
   drawVertexCount: () => number;
+  /** The in-flight draw vertices themselves, for geometry assertions. */
+  drawVertices: () => GeomPoint[];
 }
 
 /**
@@ -158,6 +160,10 @@ export function installGeomBridge(): void {
 
     drawVertexCount() {
       return useDrawProgressStore.getState().vertices.length;
+    },
+
+    drawVertices() {
+      return useDrawProgressStore.getState().vertices.map((v) => ({ x: v.x, y: v.y }));
     },
 
     renderedRoomCount() {

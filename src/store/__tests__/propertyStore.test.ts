@@ -406,3 +406,65 @@ describe('propertyStore — unstackIfLegacy (D8)', () => {
     expect(usePropertyStore.getState().unstackIfLegacy()).toBe(false);
   });
 });
+
+describe('moveItemToRoom — pick a placed item up and put it in another room', () => {
+  function twoRooms() {
+    const ps = usePropertyStore.getState();
+    ps.setRoomPolygon(ps.property.activeRoomId, rectToPolygon({ lengthM: 5, widthM: 4 }));
+    usePropertyStore.getState().addRoom({ name: 'B', polygon: rectToPolygon({ lengthM: 4, widthM: 4 }) });
+    const rooms = usePropertyStore.getState().property.rooms;
+    return { a: rooms[0].id, b: rooms[1].id };
+  }
+
+  it('moves the item and keeps its instanceId byte-identical', () => {
+    const { a, b } = twoRooms();
+    const id = usePropertyStore.getState().addItem({ productId: 'p1', x: 1, y: 1, rotation: 0 }, a);
+
+    usePropertyStore.getState().moveItemToRoom(id, b, 2, 2, 90);
+
+    const rooms = usePropertyStore.getState().property.rooms;
+    const roomA = rooms.find((r) => r.id === a)!;
+    const roomB = rooms.find((r) => r.id === b)!;
+    expect(roomA.placedItems).toHaveLength(0);
+    expect(roomB.placedItems).toHaveLength(1);
+    // THE assertion. A remove-then-add composition cannot satisfy this:
+    // addItem mints a fresh id, which would silently orphan the selection,
+    // any history reference and the cart line item pointing at the old one.
+    expect(roomB.placedItems[0].instanceId).toBe(id);
+    expect(roomB.placedItems[0]).toMatchObject({ x: 2, y: 2, rotation: 90 });
+  });
+
+  it('moves focus and selection with the item', () => {
+    const { a, b } = twoRooms();
+    const id = usePropertyStore.getState().addItem({ productId: 'p1', x: 1, y: 1, rotation: 0 }, a);
+    usePropertyStore.getState().setActiveRoom(a);
+
+    usePropertyStore.getState().moveItemToRoom(id, b, 2, 2);
+
+    // Without this the Sims loop (place, rotate, delete) is dead the moment
+    // an item crosses a wall - every manipulation surface resolves through
+    // the ACTIVE room.
+    expect(usePropertyStore.getState().property.activeRoomId).toBe(b);
+    expect(usePropertyStore.getState().selectedInstanceId).toBe(id);
+  });
+
+  it('keeps the existing rotation when none is given', () => {
+    const { a, b } = twoRooms();
+    const id = usePropertyStore.getState().addItem({ productId: 'p1', x: 1, y: 1, rotation: 270 }, a);
+    usePropertyStore.getState().moveItemToRoom(id, b, 2, 2);
+    const roomB = usePropertyStore.getState().property.rooms.find((r) => r.id === b)!;
+    expect(roomB.placedItems[0].rotation).toBe(270);
+  });
+
+  it('is a no-op for a same-room move, an unknown item or an unknown room', () => {
+    const { a, b } = twoRooms();
+    const id = usePropertyStore.getState().addItem({ productId: 'p1', x: 1, y: 1, rotation: 0 }, a);
+    const before = JSON.stringify(usePropertyStore.getState().property);
+
+    usePropertyStore.getState().moveItemToRoom(id, a, 3, 3);
+    usePropertyStore.getState().moveItemToRoom('nope', b, 3, 3);
+    usePropertyStore.getState().moveItemToRoom(id, 'nope', 3, 3);
+
+    expect(JSON.stringify(usePropertyStore.getState().property)).toBe(before);
+  });
+});

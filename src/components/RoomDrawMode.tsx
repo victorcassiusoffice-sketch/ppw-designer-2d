@@ -26,7 +26,7 @@
  * already in place from Hotfix 5; verified on Android Chrome.
  */
 
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Layer, Line, Circle, Group } from 'react-konva';
 import type Konva from 'konva';
 import {
@@ -35,14 +35,29 @@ import {
   polygonArea,
   polygonPerimeter,
   screenToRoom,
-  snapToGrid,
 } from '../lib/geometry';
 import type { Polygon, Vertex, Viewport } from '../lib/geometry';
 import { useToastStore, type ToastKind } from '../store/toastStore';
 import { usePropertyStore } from '../store/propertyStore';
+import { useDrawProgressStore } from '../store/drawProgressStore';
 // Attached multi-room (2026-08-26) — new vertices snap onto the walls of
 // rooms that already exist, so adjacent rooms share exact geometry.
-import { SNAP_TOL_M, snapVertexToRooms, type SnapHit } from '../designer/roomLayout';
+import {
+  snapVertexToRooms,
+  wallSnapTolM,
+  closeThresholdM,
+  type SnapHit,
+} from '../designer/roomLayout';
+// Units brief (2026-08-28) — the snap step is user-selectable, so it is read
+// live INSIDE each handler via this non-React accessor. It must never become
+// a dep of the wiring effect below.
+import {
+  currentSnapStepM,
+  useDesignerUIStore,
+  PRECISION_STEP_M,
+} from '../store/designerUIStore';
+import { formatLengthForUnit, chipVisibleAt } from '../designer/unitFormat';
+import { quantiseVertex, nextVertexAtLength } from '../designer/drawLength';
 // Blueprint reskin + legible measurements (Vic 2026-08-25, complaints 3+5).
 import { MeasurementChip } from '../designer/MeasurementChip';
 import {
@@ -106,6 +121,10 @@ export function RoomDrawLayer({
   onCommit,
   onCancel,
 }: RoomDrawLayerProps) {
+  // Units brief (2026-08-28, D8) - the measurement chips are RENDER output,
+  // so unlike the pointer handlers they subscribe reactively: picking a new
+  // unit must re-label the chips without needing a mouse move.
+  const stepM = useDesignerUIStore((s) => PRECISION_STEP_M[s.precision]);
   const verticesRef = useRef(vertices);
   verticesRef.current = vertices;
   const nameRef = useRef(name);
@@ -152,7 +171,9 @@ export function RoomDrawLayer({
       const hit = snapHitFor(evt);
       if (hit) return { x: hit.v.x, y: hit.v.y };
       const raw = rawRoomPoint(evt);
-      return { x: snapToGrid(raw.x, GRID_STEP_M), y: snapToGrid(raw.y, GRID_STEP_M) };
+      const stepM = currentSnapStepM();
+      // Grid branch ONLY. The wall-snap branch above returns its hit verbatim.
+      return quantiseVertex(raw, stepM);
     }
 
     function rawRoomPoint(evt: { clientX: number; clientY: number }): Vertex {
@@ -176,7 +197,7 @@ export function RoomDrawLayer({
       return snapVertexToRooms(
         rawRoomPoint(evt),
         usePropertyStore.getState().property.rooms,
-        SNAP_TOL_M,
+        wallSnapTolM(currentSnapStepM()),
       );
     }
 
@@ -216,7 +237,7 @@ export function RoomDrawLayer({
         candidate: p,
         verticesBefore: current.length,
       });
-      if (isClosingPolygon(current, p, CLOSE_THRESHOLD_M)) {
+      if (isClosingPolygon(current, p, closeThresholdM(currentSnapStepM()))) {
         if (current.length >= 3) {
           console.log(DBG, 'close via click', { vertices: current.length });
           console.log('[draw-close]', {
@@ -261,6 +282,13 @@ export function RoomDrawLayer({
     if (!enabled) return;
     function onKey(e: KeyboardEvent) {
       const target = e.target as HTMLElement | null;
+      // Units brief (2026-08-28, D9): the segment-length field owns its own
+      // Enter (commit the length) and Escape (revert the field). This window
+      // listener is CAPTURE phase, and the Escape and Enter branches below
+      // both return BEFORE the inTextField guard - so without this early
+      // return the field could never win: Enter would close the polygon and
+      // Escape would discard every vertex the user had placed.
+      if (target?.dataset?.testid === 'draw-segment-length') return;
       const inTextField =
         !!target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA');
 
@@ -282,6 +310,11 @@ export function RoomDrawLayer({
         e.preventDefault();
         if (current.length >= 3) {
           console.log(DBG, 'keydown Enter -> close', { vertices: current.length });
+          // Units brief D12 - Shift+Enter closes AND stays in draw mode, so a
+          // plan of several rooms is one continuous gesture.
+          if (e.shiftKey) {
+            useDrawProgressStore.getState().setContinueAfterCommit(true);
+          }
           console.log('[draw-close]', {
             reason: 'enter-key',
             vertices: current.length,
@@ -346,7 +379,7 @@ export function RoomDrawLayer({
 
   const closeCandidate = useMemo(() => {
     if (vertices.length < 3 || !hover) return false;
-    return isClosingPolygon(vertices, hover, CLOSE_THRESHOLD_M);
+    return isClosingPolygon(vertices, hover, closeThresholdM(currentSnapStepM()));
   }, [vertices, hover]);
 
   const previewPolygon: Polygon = useMemo(() => {
@@ -406,11 +439,11 @@ export function RoomDrawLayer({
                 Skipped for the PREVIEW segment — the cursor chip below
                 already shows that length, and two chips reading the same
                 number on one line is noise. */}
-            {s.lengthM > 0.05 && !isPreview && (
+            {chipVisibleAt(s.lengthM, stepM) && !isPreview && (
               <MeasurementChip
                 x={mid.x * pxPerMetre}
                 y={mid.y * pxPerMetre}
-                text={`${s.lengthM.toFixed(2)} m`}
+                text={formatLengthForUnit(s.lengthM, stepM)}
                 scale={scale}
               />
             )}
@@ -436,11 +469,11 @@ export function RoomDrawLayer({
 
       {/* Running length of the segment being drawn, parked just above the
           cursor so the number is where the user is actually looking. */}
-      {hover && liveSegmentLengthM > 0.05 && (
+      {hover && chipVisibleAt(liveSegmentLengthM, stepM) && (
         <MeasurementChip
           x={hover.x * pxPerMetre}
           y={hover.y * pxPerMetre}
-          text={`${liveSegmentLengthM.toFixed(2)} m`}
+          text={formatLengthForUnit(liveSegmentLengthM, stepM)}
           scale={scale}
           offsetYPx={-26}
           live
@@ -514,11 +547,34 @@ export function RoomDrawHUD({
   enabled,
   vertices,
   setVertices,
+  hover,
   setHover,
   name,
   onCommit,
   onCancel,
 }: RoomDrawHUDProps) {
+  const stepM = useDesignerUIStore((s) => PRECISION_STEP_M[s.precision]);
+  const [lengthText, setLengthText] = useState('');
+
+  const last = vertices.length > 0 ? vertices[vertices.length - 1] : null;
+  // The field needs a vertex to measure FROM and a cursor to take the
+  // direction from. Sitting exactly on the last vertex gives no direction,
+  // so the control disables rather than guessing an axis.
+  const lengthReady =
+    last !== null &&
+    hover !== null &&
+    Math.hypot(hover.x - last.x, hover.y - last.y) > 1e-9;
+
+  const commitLength = useCallback(() => {
+    if (!last) return;
+    const typed = Number(lengthText);
+    if (!Number.isFinite(typed) || typed <= 0) return;
+    const next = nextVertexAtLength(last, hover, typed, stepM);
+    if (!next) return;
+    console.log(DBG, 'HUD typed length', { lengthM: typed, next });
+    setVertices((v) => [...v, next]);
+    setLengthText('');
+  }, [last, hover, lengthText, stepM, setVertices]);
   const livePerimeter = useMemo(() => polygonPerimeter(vertices), [vertices]);
   const liveArea = useMemo(() => polygonArea(vertices), [vertices]);
 
@@ -534,7 +590,10 @@ export function RoomDrawHUD({
     onCancel();
   }, [setVertices, setHover, onCancel]);
 
-  const handleClose = useCallback(() => {
+  const handleCloseAnd = useCallback((keepDrawing: boolean) => {
+    if (keepDrawing) {
+      useDrawProgressStore.getState().setContinueAfterCommit(true);
+    }
     if (vertices.length < 3) {
       console.log('[draw-close]', {
         reason: 'hud-close-button-too-few-vertices',
@@ -554,11 +613,14 @@ export function RoomDrawHUD({
     setHover(null);
   }, [vertices, name, onCommit, setVertices, setHover]);
 
+  const handleClose = useCallback(() => handleCloseAnd(false), [handleCloseAnd]);
+  const handleCloseContinue = useCallback(() => handleCloseAnd(true), [handleCloseAnd]);
+
   if (!enabled) return null;
 
   return (
     <div
-      className="pointer-events-auto absolute left-1/2 top-3 z-30 flex w-[min(94vw,520px)] -translate-x-1/2 flex-col gap-2 rounded-lg border border-ppw-teal bg-white p-3 text-xs shadow-xl ring-1 ring-ppw-teal/40"
+      className="pointer-events-none absolute left-1/2 bottom-3 z-30 flex w-[min(94vw,520px)] -translate-x-1/2 flex-col gap-2 rounded-lg border border-ppw-teal bg-white p-3 text-xs shadow-xl ring-1 ring-ppw-teal/40"
       data-testid="room-draw-hud"
     >
       <div className="flex items-center justify-between gap-2">
@@ -566,7 +628,8 @@ export function RoomDrawHUD({
           Draw mode
         </span>
         <span className="hidden text-[10px] text-ppw-slate sm:inline">
-          Click to drop vertices &middot; click first vertex or press Enter to close
+          Click to drop vertices &middot;{' '}
+          {stepM <= 0.1 ? 'press Enter to close' : 'click first vertex or press Enter to close'}
         </span>
         <span className="text-[10px] text-ppw-slate sm:hidden">
           Tap to drop &middot; tap first vertex to close
@@ -582,18 +645,55 @@ export function RoomDrawHUD({
             <b className="text-ppw-ink">{vertices.length}</b> vertices
           </span>
           <span>
-            perim <b className="text-ppw-ink">{livePerimeter.toFixed(2)} m</b>
+            perim <b className="text-ppw-ink">{formatLengthForUnit(livePerimeter, stepM)}</b>
           </span>
           <span>
             area <b className="text-ppw-ink">{liveArea.toFixed(2)} m&sup2;</b>
           </span>
         </div>
+        {/* Typed segment length (units brief D9). The cursor gives the
+            direction, this gives the magnitude. */}
+        <div className="pointer-events-auto flex items-center gap-1.5">
+          <label className="text-[10px] uppercase tracking-wide text-ppw-slate">
+            Length
+          </label>
+          <input
+            type="number"
+            min={0}
+            step={stepM}
+            value={lengthText}
+            disabled={!lengthReady}
+            data-testid="draw-segment-length"
+            onChange={(e) => setLengthText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                commitLength();
+              } else if (e.key === 'Escape') {
+                e.preventDefault();
+                setLengthText('');
+                e.currentTarget.blur();
+              }
+            }}
+            placeholder={lengthReady ? formatLengthForUnit(0, stepM) : undefined}
+            title={
+              lengthReady
+                ? 'Type an exact length and press Enter'
+                : 'Point the cursor, then type a length'
+            }
+            className="w-20 rounded-md border border-ppw-stone bg-white px-2 py-1 text-right text-xs text-ppw-ink disabled:cursor-not-allowed disabled:opacity-50"
+          />
+          <span className="text-[10px] text-ppw-slate">
+            {stepM >= 1 ? 'm' : stepM <= 0.1 ? 'm (cm grid)' : 'm'}
+          </span>
+        </div>
+
         <div className="flex flex-1 gap-1.5 sm:flex-initial">
           <button
             type="button"
             onClick={handleUndo}
             disabled={vertices.length === 0}
-            className="min-h-[44px] flex-1 rounded-md border border-ppw-stone bg-white px-3 text-xs font-medium text-ppw-slate hover:border-ppw-ink disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
+            className="pointer-events-auto min-h-[44px] flex-1 rounded-md border border-ppw-stone bg-white px-3 text-xs font-medium text-ppw-slate hover:border-ppw-ink disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
             title="Undo last wall (Ctrl+Z)"
             data-testid="room-draw-undo"
           >
@@ -601,9 +701,19 @@ export function RoomDrawHUD({
           </button>
           <button
             type="button"
+            onClick={handleCloseContinue}
+            disabled={vertices.length < 3}
+            data-testid="room-draw-close-continue"
+            className="pointer-events-auto min-h-[44px] flex-1 rounded-md border border-ppw-stone bg-white px-3 text-xs font-medium text-ppw-slate hover:border-ppw-teal disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
+            title="Close this room and keep drawing another (Shift+Enter)"
+          >
+            Close + new
+          </button>
+          <button
+            type="button"
             onClick={handleClose}
             disabled={vertices.length < 3}
-            className="min-h-[44px] flex-1 rounded-md border border-ppw-teal bg-ppw-teal px-3 text-xs font-medium text-white hover:bg-ppw-teal/90 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
+            className="pointer-events-auto min-h-[44px] flex-1 rounded-md border border-ppw-teal bg-ppw-teal px-3 text-xs font-medium text-white hover:bg-ppw-teal/90 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
             title={
               vertices.length < 3
                 ? 'Need at least 3 walls'

@@ -55,23 +55,64 @@ interface ActivePointer {
 export interface UseDragToPlaceOptions {
   mode?: 'longpress' | 'immediate';
   longPressMs?: number;
-  onDrop: (productId: string, clientX: number, clientY: number) => void;
+  onDrop: (productId: string, clientX: number, clientY: number, shiftKey: boolean) => void;
   onTap?: (productId: string) => void;
+  /**
+   * Pixels to lift the reported point ABOVE the pointer. Defaults to
+   * DRAG_LIFT_PX, which is correct for a finger and wrong for a mouse -
+   * the desktop dock passes 0.
+   *
+   * Deliberately an option rather than a `pointerType === "mouse"` branch:
+   * jsdom synthetic PointerEvents carry no meaningful pointerType, so such
+   * a branch could silently flip the behaviour the existing dragLift test
+   * pins without that test noticing.
+   */
+  liftPx?: number;
+  /**
+   * Distance before a press becomes a drag. The 8 px default was tuned
+   * for a finger on a scrolling strip; a trackpad wobble would promote a
+   * click to a drag, so the desktop dock passes a larger value.
+   */
+  moveThresholdPx?: number;
+  /** Fired once, when the gesture actually becomes a drag. */
+  onDragStart?: (productId: string, clientX: number, clientY: number) => void;
+  /** Fired per move while dragging, with the lift already applied. */
+  onDragMove?: (productId: string, clientX: number, clientY: number) => void;
+  /** pointercancel, or a release that never became a drag. */
+  onCancel?: () => void;
 }
 
 export function useDragToPlace(opts: UseDragToPlaceOptions) {
-  const { mode = 'longpress', longPressMs = DEFAULT_LONGPRESS_MS, onDrop, onTap } = opts;
+  const {
+    mode = 'longpress',
+    longPressMs = DEFAULT_LONGPRESS_MS,
+    onDrop,
+    onTap,
+    liftPx = DRAG_LIFT_PX,
+    moveThresholdPx = MOVE_THRESHOLD_PX,
+    onDragStart,
+    onDragMove,
+    onCancel,
+  } = opts;
   const [drag, setDrag] = useState<DragState | null>(null);
   const ptr = useRef<ActivePointer | null>(null);
   // Keep the latest callbacks without re-binding the window listeners.
-  const cbs = useRef({ onDrop, onTap });
-  cbs.current = { onDrop, onTap };
+  const cbs = useRef({ onDrop, onTap, onDragStart, onDragMove, onCancel });
+  cbs.current = { onDrop, onTap, onDragStart, onDragMove, onCancel };
 
   const endPointer = useCallback(() => {
     const p = ptr.current;
     if (p?.timer) clearTimeout(p.timer);
+    // Without this an Escape-driven cancel leaves the source tile holding
+    // the pointer until the browser implicitly releases it.
+    try {
+      p?.el.releasePointerCapture(p.pointerId);
+    } catch {
+      /* never captured, or already released */
+    }
     ptr.current = null;
     setDrag(null);
+    cbs.current.onCancel?.();
   }, []);
 
   useEffect(() => {
@@ -86,14 +127,14 @@ export function useDragToPlace(opts: UseDragToPlaceOptions) {
         if (mode === 'longpress' && !p.armed) {
           // Finger moved before the hold fired → user is scrolling the
           // strip, not picking up. Cancel this gesture entirely.
-          if (moved > MOVE_THRESHOLD_PX) {
+          if (moved > moveThresholdPx) {
             if (p.timer) clearTimeout(p.timer);
             ptr.current = null;
           }
           return;
         }
         // immediate mode (or longpress already armed): a real move starts drag.
-        if (moved > MOVE_THRESHOLD_PX) {
+        if (moved > moveThresholdPx) {
           p.dragging = true;
           try {
             p.el.setPointerCapture(p.pointerId);
@@ -101,12 +142,14 @@ export function useDragToPlace(opts: UseDragToPlaceOptions) {
             /* no-op */
           }
           setDrag({ productId: p.productId, imgUrl: p.imgUrl, x: e.clientX, y: e.clientY });
+          cbs.current.onDragStart?.(p.productId, e.clientX, e.clientY - liftPx);
         }
         return;
       }
       // Dragging: follow the finger, suppress scroll/zoom.
       e.preventDefault();
       setDrag({ productId: p.productId, imgUrl: p.imgUrl, x: e.clientX, y: e.clientY });
+      cbs.current.onDragMove?.(p.productId, e.clientX, e.clientY - liftPx);
     }
 
     function onUp(e: PointerEvent) {
@@ -115,10 +158,14 @@ export function useDragToPlace(opts: UseDragToPlaceOptions) {
       if (p.timer) clearTimeout(p.timer);
       if (p.dragging) {
         // Drop at the LIFTED point (matches the rendered ghost centre).
-        cbs.current.onDrop(p.productId, e.clientX, e.clientY - DRAG_LIFT_PX);
+        cbs.current.onDrop(p.productId, e.clientX, e.clientY - liftPx, e.shiftKey);
       } else if (!p.armed && mode === 'longpress') {
         // Released before the hold fired and without scrolling → a tap.
         cbs.current.onTap?.(p.productId);
+      } else {
+        // Pressed and released without ever becoming a drag (a click, or a
+        // trackpad wobble under the threshold). Not a drop.
+        cbs.current.onCancel?.();
       }
       ptr.current = null;
       setDrag(null);
@@ -132,7 +179,7 @@ export function useDragToPlace(opts: UseDragToPlaceOptions) {
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onUp);
     };
-  }, [mode]);
+  }, [mode, liftPx, moveThresholdPx]);
 
   const start = useCallback(
     (e: React.PointerEvent, productId: string, imgUrl: string) => {
@@ -160,24 +207,26 @@ export function useDragToPlace(opts: UseDragToPlaceOptions) {
               /* no-op */
             }
             setDrag({ productId, imgUrl, x: p.startX, y: p.startY });
+            cbs.current.onDragStart?.(productId, p.startX, p.startY - liftPx);
           }
         }, longPressMs);
       }
       ptr.current = p;
     },
-    [mode, longPressMs],
+    [mode, longPressMs, liftPx],
   );
 
   const ghost = drag ? (
     <div
       aria-hidden="true"
+      data-testid="drag-ghost-dom"
       style={{
         position: 'fixed',
         left: drag.x,
         // M2 anti-occlusion — render the ghost lifted above the fingertip
         // (centre sits at the reported drop point), so the finger never
         // covers the object or its target cell.
-        top: drag.y - DRAG_LIFT_PX,
+        top: drag.y - liftPx,
         width: 72,
         height: 72,
         marginLeft: -36,

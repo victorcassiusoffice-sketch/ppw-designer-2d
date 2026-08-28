@@ -155,14 +155,20 @@ export const useWallStore = create<WallStore>((set) => ({
 export function snapToWallEndpointOrGrid(
   point: { x_mm: number; y_mm: number },
   walls: WallSegment[],
+  stepMm: number = WALL_SNAP_MM,
 ): { x_mm: number; y_mm: number; snappedTo?: 'endpoint' } {
-  const gx = snapMm(point.x_mm);
-  const gy = snapMm(point.y_mm);
+  // Units brief (2026-08-28, D4): the endpoint magnet co-varies with the
+  // chosen step, clamped the same way the metre-space wallSnapTolM is.
+  // ENDPOINT_TOLERANCE_MM stays exported and unchanged — it is a
+  // module-load constant and so can never follow a runtime step.
+  const tolMm = Math.min(Math.max(stepMm / 2, 50), 250);
+  const gx = snapMm(point.x_mm, stepMm);
+  const gy = snapMm(point.y_mm, stepMm);
   for (const w of walls) {
     for (const ep of [w.start, w.end]) {
       const dx = ep.x_mm - point.x_mm;
       const dy = ep.y_mm - point.y_mm;
-      if (Math.hypot(dx, dy) <= ENDPOINT_TOLERANCE_MM) {
+      if (Math.hypot(dx, dy) <= tolMm) {
         return { x_mm: ep.x_mm, y_mm: ep.y_mm, snappedTo: 'endpoint' };
       }
     }

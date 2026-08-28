@@ -31,7 +31,12 @@ import { usePropertyStore } from '../store/propertyStore';
 import { useDesignsStore } from '../store/designsStore';
 import { useToastStore } from '../store/toastStore';
 import { useHistoryStore } from '../store/historyStore';
-import { useDesignerUIStore } from '../store/designerUIStore';
+import {
+  useDesignerUIStore,
+  PRECISION_STEP_M,
+  SNAP_UNIT_ORDER,
+  SNAP_UNIT_LABEL,
+} from '../store/designerUIStore';
 import { useDrawProgressStore } from '../store/drawProgressStore';
 import { isDrawnPolygon } from '../designer/roomLayout';
 import { performUndo, performRedo } from '../lib/undoIntent';
@@ -144,11 +149,20 @@ export function TopBar({
   const toggleDoorFacing = useDesignerUIStore((s) => s.toggleDoorFacing);
   const toggleDoorHand = useDesignerUIStore((s) => s.toggleDoorHand);
   const doorActive = tool === 'door';
+  const measureActive = tool === 'measure';
 
   // Floor finish (2026-08-28). Applies to the FOCUSED room — the one the
   // L/W boxes and the details panel already describe — so there is one
   // consistent answer to "which room am I editing".
   const [floorOpen, setFloorOpen] = useState(false);
+  // Units brief (2026-08-28, D7). A popover, not a six-way segmented
+  // control: this bar already overflowed at 1366 px, which is why the
+  // title is hidden below xl. The floor picker below is the proven
+  // width-safe dropdown pattern in this exact bar.
+  const [unitOpen, setUnitOpen] = useState(false);
+  const precision = useDesignerUIStore((s) => s.precision);
+  const setPrecision = useDesignerUIStore((s) => s.setPrecision);
+  const snapStepM = PRECISION_STEP_M[precision];
   const setRoomFloor = usePropertyStore((s) => s.setRoomFloor);
 
   function handleToggleDoor() {
@@ -157,6 +171,16 @@ export function TopBar({
     if (drawMode) setDrawMode(false);
     if (wallActive) setWallDraw({ phase: 'idle' });
     setTool(doorActive ? 'hand' : 'door');
+  }
+
+  function handleToggleMeasure() {
+    // Same three exclusions as the door tool. Wall mode lives on
+    // wallStore.draw.phase, room-draw on App-level drawMode, and the door
+    // tool on designerUIStore.tool - miss one and two tools fight the same
+    // Stage click.
+    if (drawMode) setDrawMode(false);
+    if (wallActive) setWallDraw({ phase: 'idle' });
+    setTool(measureActive ? 'hand' : 'measure');
   }
 
   function handleToggleWall() {
@@ -374,9 +398,9 @@ export function TopBar({
               <label className="text-[11px] uppercase tracking-wide text-ppw-slate">L</label>
               <input
                 type="number"
-                min={1}
+                min={Math.max(0.1, snapStepM)}
                 max={50}
-                step={0.5}
+                step={snapStepM}
                 value={room.lengthM}
                 onChange={(e) =>
                   setRoom({ lengthM: Number(e.target.value) || room.lengthM, widthM: room.widthM })
@@ -388,9 +412,9 @@ export function TopBar({
               <label className="text-[11px] uppercase tracking-wide text-ppw-slate">W</label>
               <input
                 type="number"
-                min={1}
+                min={Math.max(0.1, snapStepM)}
                 max={50}
-                step={0.5}
+                step={snapStepM}
                 value={room.widthM}
                 onChange={(e) =>
                   setRoom({ lengthM: room.lengthM, widthM: Number(e.target.value) || room.widthM })
@@ -455,6 +479,22 @@ export function TopBar({
 
         {/* Openings — doors, doorways and windows. Cut into a wall rather than
             placed in space, so this is a wall tool, not a catalog product. */}
+        {/* Measure (units brief D10) - click a wall, retype its length. */}
+        <button
+          type="button"
+          onClick={handleToggleMeasure}
+          data-testid="measure-tool-toggle"
+          className={`hidden md:inline-block min-h-[40px] rounded-md border px-3 text-xs font-medium ${
+            measureActive
+              ? 'border-ppw-teal bg-ppw-teal text-white'
+              : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
+          }`}
+          title="Measure (M) — click any wall to retype its exact length"
+          aria-pressed={measureActive}
+        >
+          Measure
+        </button>
+
         <button
           type="button"
           onClick={handleToggleDoor}
@@ -620,13 +660,53 @@ export function TopBar({
           </button>
         </div>
 
+        {/* Snap unit (units brief 2026-08-28, D7). Digits 1-6 pick the same
+            units from the keyboard; Ctrl+F swaps back to the last one. */}
+        <div className="relative hidden md:inline-block">
+          <button
+            type="button"
+            onClick={() => setUnitOpen((v) => !v)}
+            data-testid="snap-unit-toggle"
+            className="min-h-[40px] rounded-md border border-ppw-stone bg-white px-3 text-xs font-medium text-ppw-slate hover:text-ppw-teal"
+            title="Choose the snap unit for drawing rooms and walls"
+            aria-expanded={unitOpen}
+          >
+            Snap {SNAP_UNIT_LABEL[precision]}
+          </button>
+          {unitOpen && (
+            <div
+              className="absolute left-0 top-full z-40 mt-1 w-56 rounded-md border border-ppw-stone bg-white p-2 shadow-lg"
+              data-testid="snap-unit-picker"
+            >
+              {SNAP_UNIT_ORDER.map((u, i) => (
+                <button
+                  key={u}
+                  type="button"
+                  onClick={() => {
+                    setPrecision(u);
+                    setUnitOpen(false);
+                  }}
+                  data-testid={`snap-unit-${u}`}
+                  aria-pressed={precision === u}
+                  className={`flex w-full items-center justify-between rounded px-2 py-1 text-left text-[11px] ${
+                    precision === u ? 'bg-ppw-mist font-semibold' : 'text-ppw-slate hover:bg-ppw-mist'
+                  }`}
+                >
+                  <span>{SNAP_UNIT_LABEL[u]}</span>
+                  <span className="text-[10px] opacity-60">{i + 1}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         <button
           type="button"
           onClick={toggleGrid}
           className={`hidden md:inline-block rounded-md border px-2.5 py-1 text-xs font-medium transition ${showGrid ? 'border-ppw-teal bg-ppw-teal text-white' : 'border-ppw-stone bg-white text-ppw-slate hover:border-ppw-teal'}`}
-          title="Toggle 0.5 m grid overlay"
+          title="Toggle grid overlay"
         >
-          Grid 0.5 m
+          Grid {SNAP_UNIT_LABEL[precision]}
         </button>
 
         {/* Polish B / V4-AU-1: 3D preview toggle relocated from canvas
@@ -783,6 +863,28 @@ export function TopBar({
                 <span className="text-[10px] opacity-80">{wallActive ? 'on' : 'off'}</span>
               </button>
 
+              {/* Units brief D7 - without these six rows a phone user has no
+                  way to choose a unit at all (the desktop popover is md-only). */}
+              {SNAP_UNIT_ORDER.map((u) => (
+                <button
+                  key={u}
+                  type="button"
+                  onClick={() => {
+                    setPrecision(u);
+                    setShowMobileMenu(false);
+                  }}
+                  data-testid={`snap-unit-mobile-${u}`}
+                  aria-pressed={precision === u}
+                  className={`flex min-h-[44px] items-center justify-between rounded-md border px-3 text-sm font-medium hover:border-ppw-teal ${
+                    precision === u
+                      ? 'border-ppw-teal bg-ppw-teal text-white'
+                      : 'border-ppw-stone bg-white text-ppw-ink'
+                  }`}
+                >
+                  <span>Snap {SNAP_UNIT_LABEL[u]}</span>
+                  {precision === u && <span className="text-[10px] opacity-80">on</span>}
+                </button>
+              ))}
               <button
                 type="button"
                 onClick={() => {
@@ -795,7 +897,7 @@ export function TopBar({
                     : 'border-ppw-stone bg-white text-ppw-ink'
                 }`}
               >
-                <span>Grid 0.5 m</span>
+                <span>Grid {SNAP_UNIT_LABEL[precision]}</span>
                 <span className="text-[10px] opacity-80">{showGrid ? 'on' : 'off'}</span>
               </button>
               {setThreeDPreview && (

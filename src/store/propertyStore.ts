@@ -192,6 +192,14 @@ export interface PropertyState {
   addItem: (item: Omit<PlacedItem, 'instanceId'>, roomId?: string) => string;
   /** Removes by instanceId from WHICHEVER room owns it (ids are global). */
   removeItem: (instanceId: string) => void;
+  /** Move an item to another room, keeping its instanceId. */
+  moveItemToRoom: (
+    instanceId: string,
+    toRoomId: string,
+    x: number,
+    y: number,
+    rotation?: number,
+  ) => void;
   /** Patches by instanceId in WHICHEVER room owns it (ids are global). */
   updateItem: (instanceId: string, patch: Partial<Omit<PlacedItem, 'instanceId'>>) => void;
   selectItem: (instanceId: string | null) => void;
@@ -407,6 +415,56 @@ export const usePropertyStore = create<PropertyState>()(
             },
             selectedInstanceId:
               s.selectedInstanceId === instanceId ? null : s.selectedInstanceId,
+          };
+        }),
+
+      /**
+       * Move an existing item into another room, PRESERVING its instanceId
+       * (Sims drag-drop 2026-08-28, D-B15).
+       *
+       * A single set(), and deliberately not a remove-then-add: `addItem`
+       * mints a fresh id, so that composition would silently orphan the
+       * selection, any history reference and the cart line item that point
+       * at the old id. Identity is the whole point of a MOVE.
+       *
+       * A no-op when the item is already in the target room, so a same-room
+       * drag keeps using updateItem and costs no extra work.
+       */
+      moveItemToRoom: (instanceId, toRoomId, x, y, rotation) =>
+        set((s) => {
+          const owner = findRoomByInstanceId(s.property, instanceId);
+          if (!owner || owner.id === toRoomId) return s;
+          const target = s.property.rooms.find((r) => r.id === toRoomId);
+          if (!target) return s;
+          const moving = owner.placedItems.find((i) => i.instanceId === instanceId);
+          if (!moving) return s;
+          const moved: PlacedItem = {
+            ...moving,
+            x,
+            y,
+            rotation: rotation ?? moving.rotation,
+          };
+          return {
+            property: {
+              ...s.property,
+              // The item follows the pointer into the room it was dropped in,
+              // so focus follows it too - otherwise the Sims loop (place ->
+              // rotate -> delete) is dead the moment it crosses a wall.
+              activeRoomId: toRoomId,
+              rooms: s.property.rooms.map((r) => {
+                if (r.id === owner.id) {
+                  return {
+                    ...r,
+                    placedItems: r.placedItems.filter((i) => i.instanceId !== instanceId),
+                  };
+                }
+                if (r.id === toRoomId) {
+                  return { ...r, placedItems: [...r.placedItems, moved] };
+                }
+                return r;
+              }),
+            },
+            selectedInstanceId: instanceId,
           };
         }),
 
