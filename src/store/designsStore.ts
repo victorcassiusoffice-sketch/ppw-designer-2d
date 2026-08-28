@@ -29,6 +29,18 @@ export interface SavedDesign {
   savedAt: string;
   /** v2 payload - the whole Property (multi-room). */
   property: Property;
+  /**
+   * Pages (2026-08-28) — a saved design is a whole PLAN, not just a Property.
+   *
+   * `wallStore` / `floorZoneStore` / `wallTreatmentStore` are global
+   * singletons with no room or page key, so without carrying them here,
+   * switching plans drags the previous plan's interior walls onto the new one.
+   * Optional because every design saved before this lacks them; absent is
+   * read as empty, never as "leave what is already on the canvas".
+   */
+  walls?: unknown[];
+  floorZones?: unknown[];
+  wallTreatments?: Record<string, unknown>;
   /** v1 mirror - derived from `property.rooms[0]`. */
   roomDimensions: RoomDims;
   placedItems: PlacedItem[];
@@ -42,6 +54,16 @@ interface DesignsState {
 
   savePropertyAs: (name: string, property: Property) => string;
   savePropertyDraft: (property: Property) => void;
+  /** Pages — write a whole plan bundle into a slot, creating it if needed. */
+  savePageBundle: (
+    id: string,
+    bundle: {
+      property: Property;
+      walls?: unknown[];
+      floorZones?: unknown[];
+      wallTreatments?: Record<string, unknown>;
+    },
+  ) => void;
 
   saveAs: (name: string, snapshot: { roomDimensions: RoomDims; placedItems: PlacedItem[] }) => string;
   saveDraft: (snapshot: { roomDimensions: RoomDims; placedItems: PlacedItem[] }) => void;
@@ -136,6 +158,24 @@ export const useDesignsStore = create<DesignsState>()(
           ...proj,
         };
         set((s) => ({ designs: { ...s.designs, [DRAFT_ID]: draft } }));
+      },
+
+      savePageBundle: (id, bundle) => {
+        set((s) => {
+          const existing = s.designs[id];
+          const proj = projectToV1(bundle.property);
+          const next: SavedDesign = {
+            id,
+            name: existing?.name ?? (id === DRAFT_ID ? '(unsaved draft)' : bundle.property.name),
+            savedAt: new Date().toISOString(),
+            property: bundle.property,
+            walls: bundle.walls ?? [],
+            floorZones: bundle.floorZones ?? [],
+            wallTreatments: bundle.wallTreatments ?? {},
+            ...proj,
+          };
+          return { designs: { ...s.designs, [id]: next } };
+        });
       },
 
       saveAs: (name, snapshot) => {
