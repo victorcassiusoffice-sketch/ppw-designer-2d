@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('P0-ε — BUY button visible for K1 product + /api/k1/redirect 302 with attribution', async ({ page }) => {
   await page.addInitScript(() => {
-    try { localStorage.setItem('ppw_designer_coach_v1', '1'); localStorage.removeItem('ppw_walls_v1'); } catch {}
+    try { localStorage.setItem('ppw_designer_coach_v1', '1'); localStorage.removeItem('ppw_walls_v1'); } catch { /* private mode */ }
   });
   await page.goto('/designer');
   // A fresh canvas holds ONE room with an EMPTY polygon (makeBlankRoom), so
