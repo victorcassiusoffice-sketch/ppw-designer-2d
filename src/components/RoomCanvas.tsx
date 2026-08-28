@@ -65,6 +65,9 @@ import {
 } from '../store/designerUIStore';
 // Units brief (2026-08-28, D6) - what we DRAW is decoupled from what we SNAP to.
 import { chooseGridTier } from '../designer/gridTier';
+// Sims drag-drop (2026-08-28, D-B3) - the transport seam between a catalog
+// drag gesture and this canvas.
+import { useDragPointerStore } from '../store/dragPointerStore';
 // Units brief (2026-08-28, D10) - retype the length of a wall that exists.
 import { resizeRoomEdge } from '../designer/edgeResize';
 import { formatLengthForUnit } from '../designer/unitFormat';
@@ -419,15 +422,26 @@ export function RoomCanvas({
         if (setPendingProductId) setPendingProductId(null);
         return;
       }
-      if (e.key === 'r' || e.key === 'R') {
+      // ',' and '.' are the Sims-native rotate keys; R is PPW's existing
+      // convention. All three do the same thing while a product is armed.
+      if (e.key === 'r' || e.key === 'R' || e.key === ',' || e.key === '.') {
         e.preventDefault();
-        const delta = e.shiftKey ? -90 : 90;
+        // The global shortcut hook ALSO binds r / , / . to rotateSelected.
+        // Nothing deselects on arm, so from the second placement onward a
+        // selection exists and one keypress would rotate BOTH the ghost and
+        // a bystander item - the latter into a real undo frame. This handler
+        // is registered in capture phase (see the listener below), so
+        // stopping immediate propagation here wins regardless of which
+        // listener was registered first.
+        e.stopImmediatePropagation();
+        const delta = e.key === ',' ? -90 : e.shiftKey ? -90 : 90;
         setGhostManuallyRotated(true);
         setGhostRotation((r) => (((r + delta) % 360) + 360) % 360);
+        console.log('[drag-place]', { reason: 'rotate' });
       }
     }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
   }, [pendingProductId, setPendingProductId]);
 
   // D19 / D20 — viewport keyboard controls (zoom +/- and WASD/arrow pan).
@@ -675,7 +689,24 @@ export function RoomCanvas({
   // `userRotationDeg` null → Sims auto-orientation: near a wall the item
   // snaps flush and faces into the room; mid-room it faces the viewer.
   const placeAtRoomPoint = useCallback(
-    (centreXm: number, centreYm: number, productId: string, userRotationDeg: number | null) => {
+    (
+      centreXm: number,
+      centreYm: number,
+      productId: string,
+      userRotationDeg: number | null,
+      /**
+       * Sims drag-drop (D-B9 / Vic Q2). When the exact point is blocked,
+       * should we relocate to the nearest free slot?
+       *
+       * TRUE by default so every existing caller is byte-identical. Only
+       * the DRAG drop passes false: you physically carried the object to a
+       * spot, so silently teleporting it metres away reads as a bug. The
+       * mobile "+ Add to room" button and the click commit KEEP relocation
+       * - the popup centre-place is a deliberate 2026-05-28 fix with its
+       * own spec asserting two taps both land.
+       */
+      relocateIfBlocked: boolean = true,
+    ) => {
       const product = getProductById(productId);
       if (!product) {
         pushToast(`Unknown product: ${productId}`, 'error');
@@ -731,6 +762,12 @@ export function RoomCanvas({
       // The wall-snapped position is tried first via validatePlacement so
       // a flush non-grid Y/X survives; findFreeSlot re-snaps to the grid.
       const direct = validatePlacement({ x: resolved.x, y: resolved.y, w, h }, others, targetPolygon);
+      if (!direct.ok && !relocateIfBlocked) {
+        haptic('invalid');
+        pushToast("That spot is blocked — try somewhere else.", 'warn');
+        console.log('[drag-place]', { reason: 'drop-rejected', cause: 'blocked' });
+        return false;
+      }
       const slot = direct.ok
         ? { x: resolved.x, y: resolved.y }
         : findFreeSlot({
@@ -783,7 +820,13 @@ export function RoomCanvas({
   );
 
   const placeProductAt = useCallback(
-    (clientX: number, clientY: number, productId: string, rotationOverride?: number | null) => {
+    (
+      clientX: number,
+      clientY: number,
+      productId: string,
+      rotationOverride?: number | null,
+      relocateIfBlocked: boolean = true,
+    ) => {
       const container = containerRef.current;
       if (!container) return false;
       const rect = container.getBoundingClientRect();
@@ -802,7 +845,7 @@ export function RoomCanvas({
           : ghostManuallyRotated
             ? ghostRotation
             : null;
-      return placeAtRoomPoint(xM, yM, productId, rotation);
+      return placeAtRoomPoint(xM, yM, productId, rotation, relocateIfBlocked);
     },
     [viewport, pxPerMetre, ghostRotation, ghostManuallyRotated, placeAtRoomPoint],
   );
@@ -1231,6 +1274,84 @@ export function RoomCanvas({
    */
   const doorTool = tool === 'door';
   const measureTool = tool === 'measure';
+
+  /**
+   * Sims drag-drop, effect (a) - a live drag ARMS the existing FSM.
+   *
+   * Arming is what turns on, in lockstep and for free: the canvas ring and
+   * data-armed, ghost-Layer eligibility, placed items going non-listening so
+   * the drop cannot be swallowed, Stage pan-drag disabling, and the
+   * rotate/Escape key handler. Rotate-in-hand comes free from this.
+   */
+  const dragProductId = useDragPointerStore((s) => s.drag?.productId ?? null);
+  useEffect(() => {
+    if (!setPendingProductId) return;
+    if (dragProductId) setPendingProductId(dragProductId);
+  }, [dragProductId, setPendingProductId]);
+
+  /**
+   * Effect (b) - drive the on-canvas ghost IMPERATIVELY.
+   *
+   * A render-driven effect would cost TWO RoomCanvas renders per pointer
+   * move (store set -> render -> effect -> setDragGhost -> render), and this
+   * component re-maps every room and every placed item on each pass. The
+   * subscription reads computeGhost off a ref so the effect can mount once.
+   */
+  const computeGhostRef = useRef(computeGhost);
+  computeGhostRef.current = computeGhost;
+  useEffect(() => {
+    const unsub = useDragPointerStore.subscribe((st, prev) => {
+      if (st.drag === prev.drag) return;
+      const d = st.drag;
+      if (!d) return;
+      const container = containerRef.current;
+      if (container) {
+        const r = container.getBoundingClientRect();
+        useDragPointerStore.getState().setOverCanvas(
+          d.clientX >= r.left && d.clientX <= r.right && d.clientY >= r.top && d.clientY <= r.bottom,
+        );
+      }
+      const g = computeGhostRef.current(d.clientX, d.clientY, d.productId);
+      setDragGhost(g ? { xM: g.xM, yM: g.yM, rotation: g.rotation, valid: g.valid } : null);
+    });
+    return unsub;
+  }, []);
+
+  /**
+   * Effect (c) - commit the drop.
+   *
+   * Keyed on the nonce so two identical consecutive drops both fire.
+   */
+  const dropNonce = useDragPointerStore((s) => s.drop?.nonce ?? 0);
+  useEffect(() => {
+    if (!dropNonce) return;
+    const st = useDragPointerStore.getState();
+    const d = st.drop;
+    if (!d) return;
+    st.consumeDrop();
+
+    // Released outside the canvas: silently put the gesture back rather
+    // than committing or disarming - the user aborted, they did not aim.
+    if (!st.overCanvas) {
+      console.log('[drag-place]', { reason: 'drop-cancelled', cause: 'off-canvas' });
+      return;
+    }
+    if (drawMode || wallDrawEnabled || doorTool || measureTool) {
+      pushToast('Finish the current tool first.', 'warn');
+      console.log('[drag-place]', { reason: 'drop-rejected', cause: 'tool-busy' });
+      return;
+    }
+
+    // rotationOverride left undefined so the armed ghost rotation applies -
+    // that is what makes rotate-in-hand actually reach the committed item.
+    const ok = placeProductAt(d.clientX, d.clientY, d.productId, undefined, false);
+    console.log('[drag-place]', { reason: ok ? 'drop-commit' : 'drop-rejected' });
+    // Vic Q2: the hand empties after a successful drop; Shift at release
+    // keeps it to stamp again.
+    if (ok && !d.shiftKey && setPendingProductId) setPendingProductId(null);
+    setDragGhost(null);
+  }, [dropNonce, drawMode, wallDrawEnabled, doorTool, measureTool, placeProductAt, setPendingProductId, pushToast]);
+
 
   const computeDoorHover = useCallback(
     (clientX: number, clientY: number): DoorHover | null => {

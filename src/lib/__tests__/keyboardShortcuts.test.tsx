@@ -111,3 +111,47 @@ describe('useKeyboardShortcuts — new keys', () => {
     expect(useDesignStore.getState().placedItems.find((i) => i.instanceId === id)?.rotation).toBe(90);
   });
 });
+
+/**
+ * Sims drag-drop (2026-08-28, D-B8 / blockers B1+B2).
+ *
+ * While a product is armed, RoomCanvas mounts its OWN keydown handler that
+ * rotates the ghost on r / , / . - and the global hook above binds the same
+ * keys to rotateSelected. Nothing deselects on arm, so from the second
+ * placement onward a selection exists and one keypress would rotate BOTH the
+ * ghost and a bystander item, the latter into a real undo frame.
+ *
+ * The armed handler cannot win by registration order: it short-circuits until
+ * a product is armed and therefore always registers SECOND. It wins by being
+ * registered in CAPTURE phase and calling stopImmediatePropagation. These two
+ * tests pin that mechanism; the armed handler itself is exercised end-to-end
+ * in tests/e2e/drag-place.spec.ts ('r' mid-drag commits at rotation 90).
+ */
+describe('rotate-key collision between the armed canvas handler and the global hook', () => {
+  it('a capture-phase handler that stops immediate propagation wins', () => {
+    const id = placeAndSelect();
+    const armed = (e: KeyboardEvent) => {
+      if (e.key === 'r') e.stopImmediatePropagation();
+    };
+    window.addEventListener('keydown', armed, true);
+    try {
+      key('r');
+    } finally {
+      window.removeEventListener('keydown', armed, true);
+    }
+    // The global hook never saw it, so the bystander item did NOT rotate.
+    expect(
+      useDesignStore.getState().placedItems.find((i) => i.instanceId === id)?.rotation,
+    ).toBe(0);
+  });
+
+  it('control: without the capture handler the same keypress DOES rotate', () => {
+    // Falsifiability. If this went green too, the test above would be
+    // proving nothing.
+    const id = placeAndSelect();
+    key('r');
+    expect(
+      useDesignStore.getState().placedItems.find((i) => i.instanceId === id)?.rotation,
+    ).toBe(90);
+  });
+});
