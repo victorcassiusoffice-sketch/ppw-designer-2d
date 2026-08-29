@@ -19,6 +19,7 @@ import {
   collectWallCandidates,
   findFreeSlotAlongWall,
   freeWallObstacleRects,
+  insideInnerFaces,
   isCardinalRotation,
   nearestEdge,
   resolveWallAwarePlacement,
@@ -668,3 +669,134 @@ describe('freeWallObstacleRects', () => {
     expect(rectsOverlap({ x: 2.05, y: 1, w: 0.6, h: 0.4 }, band)).toBe(false);
   });
 });
+
+/**
+ * Vic 2026-08-29: "The snap on feature of the objects doesn't align
+ * horizontally flush to the wall, only vertical and therefore you can't
+ * align an object in the corner." Root cause (verified by real drags): the
+ * engage test measured the gap with the object's depth AFTER auto-orient
+ * (its short side) while the user drags it at its CURRENT facing. These
+ * pin the fix: engage on the current extent, corners keep the facing,
+ * free-standing drops never sit in the wall band.
+ */
+describe('engage on the object as dragged (2026-08-29 corner fix)', () => {
+  // 2.05 × 0.95 treadmill — the K1 NordicTrack footprint.
+  const TREADMILL = { lengthM: 2.05, widthM: 0.95 };
+
+  it('a landscape item pushed against the LEFT wall engages and flushes to x = 0.05', () => {
+    // Current rotation 0: long side along X. Left edge touching the wall
+    // line → centre x = 1.025. Old backGap = 1.025 − 0.475 = 0.55 > 0.45.
+    const r = resolveWallAwarePlacement({
+      centreXm: 1.025,
+      centreYm: 2,
+      fp: TREADMILL,
+      polygon: ROOM,
+      snapStep: 0.5,
+      currentRotationDeg: 0,
+    });
+    expect(r.wallSnapped).toBe(true);
+    expect(r.primaryAxis).toBe('y');
+    expect(r.x).toBeCloseTo(WALL_HALF_M, 6);
+    // Turned to face into the room from the left wall.
+    expect(r.rotationDeg === 90 || r.rotationDeg === 270).toBe(true);
+  });
+
+  it('… and with its edge 0.2 m off the wall (the gesture Vic makes)', () => {
+    const r = resolveWallAwarePlacement({
+      centreXm: 0.2 + 1.025,
+      centreYm: 2,
+      fp: TREADMILL,
+      polygon: ROOM,
+      snapStep: 0.5,
+      currentRotationDeg: 0,
+    });
+    expect(r.wallSnapped).toBe(true);
+    expect(r.x).toBeCloseTo(WALL_HALF_M, 6);
+  });
+
+  it('the same push on the RIGHT wall flushes to the far inner face', () => {
+    const r = resolveWallAwarePlacement({
+      centreXm: 5 - 0.2 - 1.025,
+      centreYm: 2,
+      fp: TREADMILL,
+      polygon: ROOM,
+      snapStep: 0.5,
+      currentRotationDeg: 0,
+    });
+    expect(r.wallSnapped).toBe(true);
+    const { w } = rotatedFootprintOf(TREADMILL, r.rotationDeg);
+    expect(r.x + w).toBeCloseTo(5 - WALL_HALF_M, 6);
+  });
+
+  it('a portrait item (rotation 90) pushed against the TOP wall engages too', () => {
+    const r = resolveWallAwarePlacement({
+      centreXm: 2.5,
+      centreYm: 0.2 + 1.025,
+      fp: TREADMILL,
+      polygon: ROOM,
+      snapStep: 0.5,
+      currentRotationDeg: 90,
+    });
+    expect(r.wallSnapped).toBe(true);
+    expect(r.y).toBeCloseTo(WALL_HALF_M, 6);
+  });
+
+  it('pushing a wall-flush item into the corner keeps its facing (corner never spins it)', () => {
+    // Flush on the TOP wall at rotation 0 (2.05 wide), slid into the
+    // top-left corner: both walls are within reach. The wall it already
+    // faces (top → rotation 0) stays primary; the left wall is secondary.
+    const r = resolveWallAwarePlacement({
+      centreXm: 0.05 + 1.025 - 0.1,
+      centreYm: 0.05 + 0.475,
+      fp: TREADMILL,
+      polygon: ROOM,
+      snapStep: 0.5,
+      currentRotationDeg: 0,
+    });
+    expect(r.cornerSnapped).toBe(true);
+    expect(r.rotationDeg).toBe(0);
+    expect(r.x).toBeCloseTo(WALL_HALF_M, 6);
+    expect(r.y).toBeCloseTo(WALL_HALF_M, 6);
+  });
+
+  it('a free-standing drop is clamped inside the inner faces, never in the wall band', () => {
+    // Mid-room in y, but the grid would put x at 0 (5 cm into the wall)
+    // for a drop whose gap is beyond the engage distance? Use a SMALL item
+    // 1 m from the wall: free-standing, and the grid says x = 0.3 → fine.
+    // Then a drop whose grid position overruns the far wall.
+    const r = resolveWallAwarePlacement({
+      centreXm: 5 - 0.6 - 0.3, // grid → x = 3.5, x + 2.05 = 5.55 > 4.95
+      centreYm: 2,
+      fp: TREADMILL,
+      polygon: ROOM,
+      snapStep: 0.5,
+      currentRotationDeg: 0,
+      userRotationDeg: 0, // Shift held: no auto-orient, may stay free-standing
+    });
+    expect(r.x + 2.05).toBeLessThanOrEqual(5 - WALL_HALF_M + 1e-6);
+    expect(r.x).toBeGreaterThanOrEqual(WALL_HALF_M - 1e-6);
+  });
+
+  it('insideInnerFaces: edge-touching is NOT inside (5 cm wall band)', () => {
+    expect(insideInnerFaces({ x: 0, y: 1, w: 1, h: 1 }, ROOM)).toBe(false);
+    expect(insideInnerFaces({ x: 0.05, y: 1, w: 1, h: 1 }, ROOM)).toBe(true);
+    expect(insideInnerFaces({ x: 3.95, y: 1, w: 1, h: 1 }, ROOM)).toBe(true);
+    expect(insideInnerFaces({ x: 3.96, y: 1, w: 1, h: 1 }, ROOM)).toBe(false);
+    expect(insideInnerFaces({ x: -5, y: -5, w: 1, h: 1 }, [])).toBe(true);
+  });
+
+  it('an edge exactly 1e-4 off-axis is still axis-aligned', () => {
+    const edgeCase: Polygon = [
+      { x: 0, y: 0 },
+      { x: 5, y: 0.0001 },
+      { x: 5, y: 4 },
+      { x: 0, y: 4 },
+    ];
+    expect(nearestEdge(edgeCase, { x: 2.5, y: 0.3 })!.alignment).toBe('horizontal');
+  });
+});
+
+function rotatedFootprintOf(fp: { lengthM: number; widthM: number }, deg: number) {
+  const r = ((deg % 360) + 360) % 360;
+  return r === 90 || r === 270 ? { w: fp.widthM, h: fp.lengthM } : { w: fp.lengthM, h: fp.widthM };
+}

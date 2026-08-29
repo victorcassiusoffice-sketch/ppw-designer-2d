@@ -15,6 +15,7 @@ import { getProductById } from '../data/products';
 import {
   cmToM,
   collidesWithAny,
+  polygonBounds,
   rotatedFootprint,
   snapToGrid,
   validatePlacement,
@@ -24,7 +25,13 @@ import type { PlacedItem } from '../store/designStore';
 import { haptic } from './haptics';
 import { currentSnapStepM } from '../store/designerUIStore';
 import { emitsLight } from '../designer/lighting';
-import { isOutdoorRoom } from '../designer/levels';
+import { activeLevelIdOf, isOutdoorRoom } from '../designer/levels';
+import { wallsOnLevel } from '../designer/freeWalls';
+import {
+  WALL_HALF_M,
+  insideInnerFaces,
+  resolveWallAwarePlacement,
+} from '../designer/wallAwarePlacement';
 import {
   adjacentTileSlots,
   fillLatticeInside,
@@ -93,7 +100,7 @@ function parentSurfaceRect(items: PlacedItem[], parentInstanceId?: string) {
  * Tweak 07 hook: labels the resulting history frame "rotate" so the
  * undo toast reads "Undid: rotate" instead of the generic default.
  */
-export function rotateSelected(deltaDeg: number): void {
+export function rotateSelected(deltaDeg: number, opts: { snapshot?: boolean } = {}): void {
   const state = useDesignStore.getState();
   const id = state.selectedInstanceId;
   if (!id) return;
@@ -158,16 +165,49 @@ export function rotateSelected(deltaDeg: number): void {
     .getState()
     .property.rooms.find((r) => r.id === usePropertyStore.getState().property.activeRoomId);
   const unbounded = !!activeRoom && isOutdoorRoom(activeRoom) && state.polygon.length < 3;
+  // Inside the polygon AND inside the wall faces — `validatePlacement`
+  // alone let a corner item rotate into the 5 cm wall band.
   const fits = (x: number, y: number): boolean =>
     unbounded
       ? !collidesWithAny({ x, y, w, h }, others)
-      : validatePlacement({ x, y, w, h }, others, state.polygon).ok;
+      : validatePlacement({ x, y, w, h }, others, state.polygon).ok &&
+        insideInnerFaces({ x, y, w, h }, state.polygon);
+  const candidates: Array<[number, number]> = [];
+  // Vic 2026-08-29: an item flush on a wall (or in a corner) stays flush
+  // after a quarter turn — re-seat it through the SAME wall-aware resolver
+  // a drop uses, at the new rotation, from the same centre. Only when that
+  // does not fit fall back to the centre-preserving nearby slots.
+  if (!unbounded) {
+    const property = usePropertyStore.getState().property;
+    // Pivot about the wall faces the item touches, not the free centre: a
+    // corner item turns IN the corner (both faces kept), a wall-flush item
+    // stays on its wall. Spinning about the centre moved a treadmill's
+    // edge (2.05 − 0.95)/2 = 0.55 m off the second wall — past the reach.
+    const b = polygonBounds(state.polygon);
+    const inset = WALL_HALF_M;
+    const tol = 1e-3;
+    let pivotX = cx;
+    let pivotY = cy;
+    if (Math.abs(item.x - (b.minX + inset)) < tol) pivotX = b.minX + inset + w / 2;
+    else if (Math.abs(item.x + cur.w - (b.maxX - inset)) < tol) pivotX = b.maxX - inset - w / 2;
+    if (Math.abs(item.y - (b.minY + inset)) < tol) pivotY = b.minY + inset + h / 2;
+    else if (Math.abs(item.y + cur.h - (b.maxY - inset)) < tol) pivotY = b.maxY - inset - h / 2;
+    const reseat = resolveWallAwarePlacement({
+      centreXm: pivotX,
+      centreYm: pivotY,
+      fp,
+      polygon: state.polygon,
+      snapStep: step,
+      userRotationDeg: newRotation,
+      currentRotationDeg: newRotation,
+      frontEdge: product.front_edge,
+      freeWalls: wallsOnLevel(property.walls ?? [], activeLevelIdOf(property)),
+    });
+    candidates.push([reseat.x, reseat.y]);
+  }
   const baseX = cx - w / 2;
   const baseY = cy - h / 2;
-  const candidates: Array<[number, number]> = [
-    [baseX, baseY],
-    [snapToGrid(baseX, step), snapToGrid(baseY, step)],
-  ];
+  candidates.push([baseX, baseY], [snapToGrid(baseX, step), snapToGrid(baseY, step)]);
   for (const d of [step, -step, 2 * step, -2 * step]) {
     candidates.push([baseX + d, baseY], [baseX, baseY + d], [baseX + d, baseY + d]);
   }
@@ -179,7 +219,9 @@ export function rotateSelected(deltaDeg: number): void {
   }
   // Snapshot the prior state explicitly so the upcoming updateItem
   // triggers a labelled history frame instead of the unlabelled default.
-  useHistoryStore.getState().recordSnapshot('rotate');
+  // (The rotate HANDLE records its own frame at drag start and re-seats
+  // through here at drag end with snapshot:false.)
+  if (opts.snapshot !== false) useHistoryStore.getState().recordSnapshot('rotate');
   state.updateItem(id, {
     rotation: newRotation,
     x: Number(slot[0].toFixed(4)),

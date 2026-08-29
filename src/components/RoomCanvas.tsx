@@ -109,6 +109,8 @@ import { runToFreeWalls, wallsOnLevel } from '../designer/freeWalls';
 import { emitsLight, lightRadiusM, planSymbolOf } from '../designer/lighting';
 // Sims flooring (2026-08-29): tiles snap to their own lattice, edge to edge.
 import { isFlooringProduct, snapToTileLattice, tileLatticeFor } from '../designer/flooringLattice';
+// Rotate-handle re-seat (2026-08-29): same wall-aware path as the R key.
+import { rotateSelected } from '../lib/placementActions';
 import { pointInPolygon, isRectInsidePolygon } from '../lib/geometry';
 import { SnapUnitStepper } from './RoomDrawMode';
 // Architectural paper theme (2026-08-29): cream paper, charcoal poche walls
@@ -4263,6 +4265,12 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
               // next drag picks up cleanly.
               e.target.position({ x: wPx / 2, y: -18 });
               e.target.getLayer()?.batchDraw();
+              // Vic 2026-08-29: the live rotation above only wrote the
+              // angle — the AABB re-shaped around its top-left, so a
+              // flush item ended up in the wall or past it with no check.
+              // Re-seat about the centre through the wall-aware resolver
+              // (snapshot:false — the frame was recorded at drag start).
+              rotateSelected(0, { snapshot: false });
             }}
           />
           <Circle

@@ -29,7 +29,7 @@
  * __tests__/wallAwarePlacement.test.ts.
  */
 
-import { pointInPolygon, rotatedFootprint, snapToGrid } from '../lib/geometry';
+import { pointInPolygon, polygonBounds, rotatedFootprint, snapToGrid } from '../lib/geometry';
 import type { FootprintM, PlacedRect, Polygon, Vertex } from '../lib/geometry';
 
 export type FrontEdge = 'top' | 'bottom' | 'left' | 'right';
@@ -139,8 +139,10 @@ function probeSegment(a: Vertex, b: Vertex, p: Vertex, axisTol: number): Segment
   const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq));
   const distance = Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
   const len = Math.sqrt(lenSq);
+  // `<=`: an edge exactly AXIS_ALIGN_TOL_M off-axis is still axis-aligned
+  // (a strict `<` classed it slanted and refused every drop on that wall).
   const alignment: WallAlignment =
-    Math.abs(dy) < axisTol ? 'horizontal' : Math.abs(dx) < axisTol ? 'vertical' : 'slanted';
+    Math.abs(dy) <= axisTol ? 'horizontal' : Math.abs(dx) <= axisTol ? 'vertical' : 'slanted';
   return { distance, nx: -dy / len, ny: dx / len, alignment };
 }
 
@@ -251,6 +253,30 @@ export function wallFlushOrigin(c: WallCandidate, extent: number): number {
 }
 
 /**
+ * True when `rect` sits inside the room's INNER wall faces — the polygon's
+ * bounding box shrunk by the wall inset on every side. `isRectInsidePolygon`
+ * accepts an edge-touching rect, which is 5 cm inside the drawn wall band;
+ * placement paths that bypass the wall snap (rotate, nudge, grid fallback)
+ * use this so nothing is ever seated in the wall. Bounding-box based, so
+ * it is exact for rectangular rooms and conservative-only on L-shapes.
+ */
+export function insideInnerFaces(
+  rect: PlacedRect,
+  polygon: Polygon,
+  insetM: number = WALL_HALF_M,
+  tol: number = 1e-6,
+): boolean {
+  if (polygon.length < 3) return true;
+  const b = polygonBounds(polygon);
+  return (
+    rect.x >= b.minX + insetM - tol &&
+    rect.y >= b.minY + insetM - tol &&
+    rect.x + rect.w <= b.maxX - insetM + tol &&
+    rect.y + rect.h <= b.maxY - insetM + tol
+  );
+}
+
+/**
  * Rotation (deg, 90°-snapped) that points the object's front along the
  * given inward normal — i.e. back to the wall, front into the room.
  */
@@ -311,6 +337,11 @@ interface ScoredCandidate {
   rotationDeg: number;
   /** Gap between the object's back edge and the wall edge line (m). */
   backGap: number;
+  /**
+   * Gap measured with the object's CURRENT footprint as well (min of the
+   * two) — the reach test. Absent = same as backGap.
+   */
+  engageGap?: number;
 }
 
 /** Smallest backGap; ties → smaller distance; then earliest (polygon order). */
@@ -349,21 +380,61 @@ export function resolveWallAwarePlacement(input: WallAwareInput): WallAwareResul
 
   // Each wall would induce its own auto-orient rotation, hence its own
   // footprint depth along that wall's normal — score them individually.
-  const primary = pickClosest(
-    candidates.map((c) => {
-      const rotationDeg = userRot ?? autoOrientDeg(c.inwardNormal, frontEdge);
-      const { w, h } = rotatedFootprint(fp, rotationDeg);
-      return { c, rotationDeg, backGap: c.distance - (c.alignment === 'horizontal' ? h : w) / 2 };
-    }),
-  );
+  //
+  // Vic 2026-08-29 ("doesn't align horizontally flush to the wall, only
+  // vertically, so you can't align an object in the corner"): the ENGAGE
+  // test used to measure the gap with the depth the object would have
+  // AFTER auto-orient (its short side), while the user drags the object
+  // at its CURRENT facing. A landscape treadmill (2.05 × 0.95) pushed
+  // against the left wall had backGap = 1.225 − 0.475 = 0.75 m > 0.45 →
+  // never engaged, while the same push on the top wall engaged at touch.
+  // The gap the user sees is the object's current edge to the wall, so
+  // engage on min(current-extent gap, oriented gap); the flush POSITION
+  // still uses the oriented depth below.
+  const currentRot = input.currentRotationDeg ?? userRot ?? 0;
+  const currentFp = rotatedFootprint(fp, currentRot);
+  const scored: ScoredCandidate[] = candidates.map((c) => {
+    const rotationDeg = userRot ?? autoOrientDeg(c.inwardNormal, frontEdge);
+    const { w, h } = rotatedFootprint(fp, rotationDeg);
+    const horizontal = c.alignment === 'horizontal';
+    const orientedGap = c.distance - (horizontal ? h : w) / 2;
+    const currentGap = c.distance - (horizontal ? currentFp.h : currentFp.w) / 2;
+    // backGap (oriented) keeps ORDERING exactly as before — the nearest
+    // wall by its flush depth is still primary; engageGap only decides
+    // whether the wall is within reach at all.
+    return { c, rotationDeg, backGap: orientedGap, engageGap: Math.min(orientedGap, currentGap) };
+  });
+  const within = scored.filter((s) => (s.engageGap ?? s.backGap) <= WALL_SNAP_GAP_M + EPS);
+  // An EXISTING item pushed into a corner has both walls within reach;
+  // which one is PRIMARY decides the facing. Prefer the wall it already
+  // faces so the corner never spins it — the user rotates, the corner does
+  // not. Fresh drops keep "nearest wall decides"; free rotations never match.
+  const facing =
+    userRot == null && input.currentRotationDeg != null && within.length > 1
+      ? pickClosest(within.filter((s) => s.rotationDeg === mod360(currentRot)))
+      : null;
+  const primary = facing ?? pickClosest(within);
 
-  if (!primary || primary.backGap > WALL_SNAP_GAP_M + EPS) {
+  if (!primary) {
     // Free-standing: keep an existing item's facing; a new drop faces the viewer.
     const rotationDeg = userRot ?? input.currentRotationDeg ?? 0;
     const { w, h } = rotatedFootprint(fp, rotationDeg);
+    let x = snapToGrid(centre.x - w / 2, snapStep);
+    let y = snapToGrid(centre.y - h / 2, snapStep);
+    // Never inside the wall band, never past the far wall: clamp to the
+    // room's inner faces (bounding box). A grid position of x = 0 sat 5 cm
+    // into the wall; one near the far wall bounced with "Out of room
+    // bounds." Callers still validate against the true polygon.
+    if (polygon.length >= 3) {
+      const b = polygonBounds(polygon);
+      const lo = { x: b.minX + wallInsetM, y: b.minY + wallInsetM };
+      const hi = { x: b.maxX - wallInsetM - w, y: b.maxY - wallInsetM - h };
+      if (hi.x >= lo.x - EPS) x = Math.min(hi.x, Math.max(lo.x, x));
+      if (hi.y >= lo.y - EPS) y = Math.min(hi.y, Math.max(lo.y, y));
+    }
     return {
-      x: snapToGrid(centre.x - w / 2, snapStep),
-      y: snapToGrid(centre.y - h / 2, snapStep),
+      x: Number(x.toFixed(6)),
+      y: Number(y.toFixed(6)),
       rotationDeg,
       wallSnapped: false,
       snappedEdges: 0,

@@ -183,6 +183,28 @@ export const DOCK_TEXT = '#37362f'; /* shop --ink */
 export const DOCK_TEXT_MUTED = '#85826f'; /* shop --ink2 */
 export const DOCK_ACCENT = '#79c7ad'; /* shop --mint-deep */
 
+/**
+ * Designer CHROME tokens (toolbar pass, Vic 2026-08-29 "make the toolbars
+ * more user-friendly and aesthetic"). One language for every bar, sheet,
+ * HUD and pill: paper ground, hairline rim, charcoal ink; the PRESSED /
+ * tool-on state is the same ink-on-paper the measurement chip and cost
+ * badge already use; ONE call-to-action colour (brand gold); terracotta
+ * only for destructive rims/icons, never as small text. Contrast: ink on
+ * paper 14.5:1, charcoal on chrome 9.0:1, navy on gold 8.4:1.
+ */
+export const CHROME_BG = DOCK_BG_RAISED;
+export const CHROME_RAIL_BG = DOCK_BG;
+export const CHROME_RIM = DOCK_BORDER;
+export const CHROME_TEXT = DOCK_TEXT;
+export const CHROME_TEXT_2 = '#3D4655';
+export const CHROME_ACTIVE_BG = WALL_INK;
+export const CHROME_ACTIVE_TEXT = MEASURE_TEXT;
+export const CHROME_CTA_BG = '#FFBB58';
+export const CHROME_CTA_TEXT = '#232C3B';
+export const CHROME_DANGER = GHOST_INVALID;
+export const CHROME_FOCUS_RING = 'rgba(121,199,173,0.45)';
+export const CHROME_HOVER_BG = '#f3f1ec';
+
 // ---------------------------------------------------------------------------
 // Measurement legibility (complaint 3, 2026-08-25).
 // ---------------------------------------------------------------------------

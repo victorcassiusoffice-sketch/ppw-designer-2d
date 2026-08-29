@@ -401,7 +401,10 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
       {/* The hover detail card is suppressed while a drag is in flight - it
           is a browsing affordance, and during a drag it is just clutter over
           the plan the user is aiming at. */}
-      {hover && !dockDrag.dragging && (
+      {/* Also hidden while a product is ARMED: the card used to stay open
+          after the arming click and swallowed the placement click on the
+          canvas beneath it (bottom-right corner drops never landed). */}
+      {hover && !dockDrag.dragging && !pendingProductId && (
         <div
           data-testid="product-hover-card"
           className="hidden lg:block"
