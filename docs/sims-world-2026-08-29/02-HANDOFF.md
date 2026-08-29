@@ -138,3 +138,66 @@ PlacedItem.lightOn? (absent = on)
   close on its own first point to become a room). Documented as the next step if Vic wants it.
 - Regenerating the wall-mirror art as a true top-down strip — wall items now draw as plan bars.
 - Re-indexing level names after a mid-stack delete (names can skip a number; ids stay stable).
+
+## Follow-ups (same day, after Vic tested the preview)
+
+Three more asks, all on the same branch, commits `3e6c612` + `4eb403b` (pushed; `git ls-remote`
+= local HEAD `4eb403b`).
+
+### 1. "The draw wall is forcing a full circuit"
+
+- Any run of 2+ points is now KEPT as free walls on every exit: Esc, the toolbar toggle, the
+  HUD's **Done**. **Discard** is the only exit that throws points away. Closing on the first
+  point still makes a room (**Make room** / **Room + next**).
+- `src/lib/wallPen.ts` → `keepOpenRunAsWalls(vertices)` (plot check, active level, toast);
+  wired in `App.setDrawMode` (transaction ends instead of aborting) and `RoomDrawMode` Escape.
+- Found on the way: the HUD's Discard button had no `pointer-events-auto` inside the
+  `pointer-events-none` HUD, so a mouse could never click it. Fixed.
+- e2e: `wall-draw.spec.ts` "two points then Esc KEEPS the wall" (Esc · toggle · Discard).
+
+### 2. "The Sims lets you drag and duplicate flooring so it fits tight"
+
+- `src/designer/flooringLattice.ts`: a flooring product (category `flooring`) snaps to its OWN
+  lattice — pitch = the tile footprint, origin = the first tile of that product in the room,
+  else the inner wall corner (`WALL_HALF_M`). Used on drop, ghost and drag-end in `RoomCanvas`
+  (flooring skips the wall-aware resolver and the 0.5 m grid).
+- Duplicate (D / cluster ⧉) lands exactly one tile away: right, below, left, above
+  (`adjacentTileSlots`). New **Fill floor** (`details-fill-floor`, `cluster-fill-floor`) lays
+  every free whole cell in one undo frame (`fillFloorWithSelected`, `fillLatticeInside`).
+- Paint floor reaches the phone: hamburger menu row (toggle · 5 materials · brush scope) and an
+  on-canvas **Paint floor on · Done** chip (`floor-paint-hud`) that switches back to the hand.
+- Proof: 12 EVA tiles at x 0.05/1.05/2.05/3.05 × y 0.05/1.05/2.05 in a 5×4 room (captures
+  `after-followups/tiles-*.png`); unit tests `flooringLattice.test.ts` (6);
+  e2e `sims-flooring.spec.ts` test 3.
+
+### 3. "Adding the floor / full room floor cover does not calculate the cost"
+
+Two real causes, both fixed:
+- The room **Floor** finish picker wrote `room.floorFinish` but `roomFloorOrders` only priced
+  PAINTED zones. `floorTiles.ts` → `wholeRoomFinishOrder(room)`: tileables by polygon coverage
+  (whole + cut + 10 % cut surplus), rolls by area + waste. Painted zones still win when present.
+  Unit tests `floorFinishOrder.test.ts` (7).
+- `CartStrip` returned `null` while `totalItemCount === 0` — product count only — so a
+  floor-only design showed no cart at all. Now gated on products OR floor lines, lists floor
+  lines (units to order, "+n for cuts", unit, line), pill count = items + floor units. The
+  on-canvas cost badge now reads `useCart().subtotal` (products + floors), not products only.
+- Proof: painted 5×4 room = 20 tiles → cart `0 unique - 0 placed - 20 floor units`, £526.67,
+  badge `527 GBP` (`after-followups/painted-floor-cart-desktop-1366.png`);
+  e2e `sims-flooring.spec.ts` tests 1 + 2 (paint path and finish-picker path, incl. clearing).
+
+### Gate (this run, dev server 127.0.0.1:5188)
+
+tsc 0 · eslint 0 on every touched file · vitest **2218/2218** · `npm run build` clean ·
+Playwright **124 passed / 0 failed / 38 env-gated skips** (full suite) · captures
+`tools/sims-flooring-shot-2026-08-29.mjs` → `after-followups/` with **0 console errors**.
+Historical PNGs the spec runs overwrite (`docs/designer-build-2026-08-28`,
+`docs/multiroom-2026-08-26`) were restored with `git checkout --` before committing.
+
+### Preview
+
+Same branch URL; still preview-only, nothing merged or promoted.
+- Verified live: cache-busted `GET /api/healthcheck?cb=…` on
+  `ppw-designer-2d-git-feat-sims-world-2026-08-29-victor-ppw.vercel.app` →
+  `{"ok":true,"env":"preview","commit":"4eb403bf23781ff49c7cc22dfc802873f0113860"}` (6th poll,
+  2026-08-29T13:06Z; polls 1–5 still served `3e6c612`). Production (`designer.ppwellness.co`)
+  untouched.
