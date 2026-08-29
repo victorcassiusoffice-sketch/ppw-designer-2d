@@ -10,6 +10,7 @@
 import { useEffect } from 'react';
 import { useToastStore } from '../store/toastStore';
 import type { ToastKind } from '../store/toastStore';
+import { useDrawProgressStore } from '../store/drawProgressStore';
 
 const KIND_CLASSES: Record<ToastKind, string> = {
   info: 'bg-ppw-ink text-white',
@@ -21,6 +22,11 @@ const KIND_CLASSES: Record<ToastKind, string> = {
 export function ToastProvider() {
   const toasts = useToastStore((s) => s.toasts);
   const dismiss = useToastStore((s) => s.dismiss);
+  // Sims world (2026-08-29): while the wall pen is live its HUD owns the
+  // bottom-centre band. A toast there sat right on top of the HUD's buttons
+  // and swallowed the click meant for "Finish walls" / "Close", so during a
+  // draw the stack moves to the top-centre instead.
+  const drawing = useDrawProgressStore((s) => s.enabled);
 
   useEffect(() => {
     const timers = toasts.map((t) => window.setTimeout(() => dismiss(t.id), t.ttlMs));
@@ -38,9 +44,11 @@ export function ToastProvider() {
       // Sims catalog dock. Both the desktop dock and the mobile toolbar
       // publish their live height; each resolves to 0 px when unmounted, so
       // every other page keeps the original 1.5rem offset.
-      style={{
-        bottom: 'calc(1.5rem + var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))',
-      }}
+      style={
+        drawing
+          ? { top: 'calc(4.75rem + env(safe-area-inset-top))' }
+          : { bottom: 'calc(1.5rem + var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))' }
+      }
       role="status"
       aria-live="polite"
     >
