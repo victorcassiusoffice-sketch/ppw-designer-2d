@@ -2289,7 +2289,9 @@ export function RoomCanvas({
             type="button"
             onClick={() => setTool('hand')}
             data-testid="floor-paint-hud"
-            className="pointer-events-auto min-h-[36px] rounded-md bg-ppw-teal px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm ring-1 ring-white/40 hover:bg-ppw-teal/90"
+            // mr-12 on the phone: the round ? help button sits at this
+            // height on the right edge and would cover "Done".
+            className="pointer-events-auto mr-12 min-h-[36px] rounded-md bg-ppw-teal px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm ring-1 ring-white/40 hover:bg-ppw-teal/90 md:mr-0"
             title="Paint floor is on: tap a tile, drag a rectangle, Shift fills the room. Tap here to stop painting."
           >
             Paint floor on · Done
