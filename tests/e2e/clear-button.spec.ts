@@ -70,22 +70,33 @@ async function seed(page: Page) {
   );
 }
 
+/**
+ * Sims world (2026-08-29): walls live ON the property now
+ * (`state.property.walls`, metres). The mm `ppw_walls_v1` store seeded above
+ * is a LEGACY input — the app migrates it onto the property on mount and
+ * empties it — so the count that matters is the property's. `legacyCount`
+ * is read too, so the spec can pin that the migration drained it rather
+ * than duplicating walls across two stores.
+ */
 function readState(page: Page) {
   return page.evaluate(() => {
     let items = -1;
     let wallCount = -1;
+    let legacyCount = -1;
     try {
       const p = JSON.parse(localStorage.getItem('ppw_property_v2') || '{}');
       items = p?.state?.property?.rooms?.[0]?.placedItems?.length ?? -1;
+      const walls = p?.state?.property?.walls;
+      wallCount = Array.isArray(walls) ? walls.length : 0;
     } catch {
       /* ignore */
     }
     try {
-      wallCount = JSON.parse(localStorage.getItem('ppw_walls_v1') || '[]').length;
+      legacyCount = JSON.parse(localStorage.getItem('ppw_walls_v1') || '[]').length;
     } catch {
       /* ignore */
     }
-    return { items, wallCount };
+    return { items, wallCount, legacyCount };
   });
 }
 
@@ -99,9 +110,13 @@ for (const vp of [
     await page.goto('/designer');
     await page.waitForSelector('header', { timeout: 15_000 });
 
+    // The legacy seed is folded onto the property on mount — poll, since the
+    // migration effect writes a beat after first paint.
+    await expect.poll(async () => (await readState(page)).wallCount).toBe(1);
     const before = await readState(page);
     expect(before.items).toBe(2);
     expect(before.wallCount).toBe(1);
+    expect(before.legacyCount, 'legacy ppw_walls_v1 drained by the migration').toBe(0);
 
     // Clear moved from the removed ModeStrip into the TopBar (2026-06-01).
     // Desktop: a visible "Clear" button in the toolbar. Mobile (<768px):
@@ -123,6 +138,7 @@ for (const vp of [
 
     const after = await readState(page);
     expect(after.items, 'placed products cleared').toBe(0);
-    expect(after.wallCount, 'walls cleared (full reset)').toBe(0);
+    expect(after.wallCount, 'property.walls cleared (full reset)').toBe(0);
+    expect(after.legacyCount, 'legacy store still empty').toBe(0);
   });
 }

@@ -1,12 +1,19 @@
 /**
- * Proves the dev geometry bridge is a valid replacement for the gold
+ * Proves the dev geometry bridge is a valid replacement for the wall
  * pixel-scan as the e2e coordinate basis.
  *
  * The two methods are completely independent — one reads the Konva Stage's
- * transform matrix, the other counts warm pixels on a canvas — so agreement
- * between them is real evidence, not a tautology. Once this passes, later
- * render work (floor materials, gold door symbols) can no longer silently
- * shift the coordinate frame out from under every other spec.
+ * transform matrix, the other counts near-black pixels on a canvas — so
+ * agreement between them is real evidence, not a tautology. Once this passes,
+ * later render work (floor materials, door symbols, light pools, greenery)
+ * can no longer silently shift the coordinate frame out from under every
+ * other spec.
+ *
+ * Paper theme (2026-08-29): walls are CHARCOAL (`WALL_INK` #2A2926 → r,g,b
+ * all < 50) on cream paper. The scan below spells that predicate out
+ * literally — it is deliberately NOT the shared helper, so the comparison
+ * stays independent of `roomOrigin()`'s own fallback code path. The numbers
+ * mirror `blueprintTheme.ROOM_BORDER_SCAN` (max 50, minAlpha 200, inset 5).
  */
 import { test, expect } from '@playwright/test';
 import {
@@ -23,10 +30,20 @@ import {
 
 test.use({ viewport: { width: 1920, height: 1080 } });
 
-test('geom bridge agrees with the gold pixel-scan on world (0,0)', async ({ page }) => {
+test('geom bridge agrees with the charcoal wall pixel-scan on world (0,0)', async ({ page }) => {
   await seedProperty(page, TWO_ROOM_FIXTURE);
   await page.goto('/designer');
   await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+  // The bridge is installed from a dynamic import in main.tsx. With six
+  // workers hammering one vite dev server that import can take longer than
+  // the helper's 5 s probe, which then reads as "no bridge" and SKIPS the one
+  // spec whose whole job is to prove the bridge. Give it a generous head
+  // start first; the helper's own probe (and its skip message) still decide.
+  await page
+    .waitForFunction(() => Boolean((window as unknown as { __ppwGeom?: unknown }).__ppwGeom), undefined, {
+      timeout: 20_000,
+    })
+    .catch(() => undefined);
   test.skip(!(await requireGeomBridge(page)), GEOM_BRIDGE_SKIP);
 
   // Let the auto-centre effect settle before measuring either way.
@@ -48,7 +65,10 @@ test('geom bridge agrees with the gold pixel-scan on world (0,0)', async ({ page
     for (let y = 0; y < c.height; y += 2) {
       for (let x = 0; x < c.width; x += 2) {
         const i = (y * c.width + x) * 4;
-        if (img[i + 3] > 200 && img[i] > 200 && img[i + 1] >= 120 && img[i + 1] <= 190 && img[i + 2] < 90) {
+        // Charcoal wall ink: opaque and every channel below 50. The cream
+        // ground, the paper floor, the grid (ink at <= 0.12 opacity) and the
+        // wall's own soft shadow (0.38 alpha at most) never get there.
+        if (img[i + 3] > 200 && img[i] < 50 && img[i + 1] < 50 && img[i + 2] < 50) {
           if (x < minX) minX = x;
           if (y < minY) minY = y;
         }
@@ -57,9 +77,11 @@ test('geom bridge agrees with the gold pixel-scan on world (0,0)', async ({ page
     if (!Number.isFinite(minX)) return null;
     const rect = c.getBoundingClientRect();
     const scale = c.width / rect.width;
+    // The 10 px stroke is centred on the polygon edge: step half a stroke
+    // (5 px) inward from the outermost ink pixel to reach the wall line.
     return { x: rect.x + minX / scale + 5, y: rect.y + minY / scale + 5 };
   });
-  expect(viaScan, 'the legacy scan should still find a gold wall today').not.toBeNull();
+  expect(viaScan, 'the legacy scan should still find a charcoal wall today').not.toBeNull();
 
   // Antialiasing on a 10 px stroke plus the 2 px scan stride: a few px of slack
   // is expected. Anything larger means the two disagree about where world

@@ -40,8 +40,11 @@ test.describe('Phase 5 — desktop journey', () => {
     test.skip(targetHasNoApi(baseURL), NO_API_SKIP);
     await dismissCoach(page);
 
-    // Seed 4 walls + clear merchant session in init script so they survive
-    // the inevitable engine-toggle navigations.
+    // Seed 4 LEGACY (mm, ppw_walls_v1) walls + clear merchant session in an
+    // init script so they survive the later navigations. The `!getItem`
+    // guard is load-bearing since 2026-08-29: the app migrates these onto
+    // the property on mount and leaves `ppw_walls_v1` as an EMPTY array, so
+    // the guard must not re-plant them on the reload below.
     await page.addInitScript(() => {
       try {
         if (!window.localStorage.getItem('ppw_walls_v1')) {
@@ -83,10 +86,37 @@ test.describe('Phase 5 — desktop journey', () => {
     await expect(page.locator('[data-testid="items-placed"]')).toHaveText('1', { timeout: 10_000 });
     await page.screenshot({ path: path.join(SHOT_DIR, '02-placed-desktop.png'), fullPage: true });
 
-    // 3. Engage Wall mode to verify the 4 seeded walls render + close the room.
-    await page.locator('[data-testid="wall-tool-toggle"]').click();
-    await expect(page.locator('[data-testid="wall-count"]')).toHaveText('4', { timeout: 5_000 });
-    await expect(page.locator('[data-testid="room-area"]')).toContainText(/m²/);
+    // 3. Walls. Sims world (2026-08-29): the M2 interior-wall tool + its HUD
+    //    (`wall-draw-hud` / `wall-count` / `room-area`) are RETIRED; "+ Walls"
+    //    is now the room pen. The 4 legacy mm segments seeded above are
+    //    MIGRATED onto the property on mount as free walls in METRES and the
+    //    legacy store is emptied — that is the contract a returning customer
+    //    with an old sketch depends on, so it is what this step pins.
+    const readWalls = () =>
+      page.evaluate(() => {
+        let walls: Array<{ a: { x: number; y: number }; b: { x: number; y: number } }> = [];
+        let legacy = -1;
+        try {
+          const parsed = JSON.parse(window.localStorage.getItem('ppw_property_v2') ?? '{}');
+          const w = parsed?.state?.property?.walls;
+          walls = Array.isArray(w) ? w : [];
+        } catch { /* ignore */ }
+        try {
+          const raw = window.localStorage.getItem('ppw_walls_v1');
+          const parsed = raw ? JSON.parse(raw) : [];
+          legacy = Array.isArray(parsed) ? parsed.length : -1;
+        } catch { /* ignore */ }
+        return { walls, legacy };
+      });
+    await expect.poll(async () => (await readWalls()).walls.length, { timeout: 5_000 }).toBe(4);
+    const migrated = await readWalls();
+    expect(migrated.walls.map((w) => [w.a.x, w.a.y, w.b.x, w.b.y])).toEqual([
+      [0, 0, 4, 0],
+      [4, 0, 4, 3],
+      [4, 3, 0, 3],
+      [0, 3, 0, 0],
+    ]);
+    expect(migrated.legacy).toBe(0);
     await page.screenshot({ path: path.join(SHOT_DIR, '03-walls-desktop.png'), fullPage: true });
 
     // 4. (Babylon 3D engine-swap step removed with the 3D viewer — P1-1 2026-06-04.

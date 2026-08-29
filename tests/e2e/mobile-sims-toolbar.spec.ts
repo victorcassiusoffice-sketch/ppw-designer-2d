@@ -39,10 +39,17 @@ test.describe('Mobile Sims toolbar', () => {
     expect(box).not.toBeNull();
     // Anchored to the bottom of the viewport.
     if (box) expect(box.y + box.height).toBeGreaterThan(844 - 4);
-    // All eight macro category tabs render.
-    for (const cat of ['all', 'furniture', 'cardio', 'recovery', 'sauna', 'flooring', 'walls', 'decor']) {
-      await expect(page.locator(`[data-testid="sims-cat-${cat}"]`)).toBeVisible();
+    // All ten macro category tabs render — the original eight plus the
+    // Sims-world (2026-08-29) Lighting and Outdoor tabs. The tab row scrolls
+    // horizontally at 390 px, so each tab is scrolled into view before the
+    // visibility check rather than asserted at rest.
+    const cats = ['all', 'furniture', 'cardio', 'recovery', 'sauna', 'flooring', 'walls', 'decor', 'lighting', 'outdoor'];
+    for (const cat of cats) {
+      const tab = page.locator(`[data-testid="sims-cat-${cat}"]`);
+      await tab.scrollIntoViewIfNeeded();
+      await expect(tab).toBeVisible();
     }
+    await expect(page.locator('[data-testid^="sims-cat-"]')).toHaveCount(cats.length);
   });
 
   test('M.S.2 — tap a thumbnail opens the product popup, "+" places it', async ({ page }) => {

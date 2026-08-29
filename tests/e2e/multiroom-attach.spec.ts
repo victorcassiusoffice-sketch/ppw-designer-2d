@@ -48,6 +48,15 @@ const OFF_GRID_FIXTURE: SeedProperty = {
 
 const EAST_WALL_X = 5.13;
 
+/**
+ * Free-standing walls on the persisted property (`property.walls`, world
+ * metres). `SeedProperty` predates the field, so read it through a cast.
+ */
+function freeWalls(prop: SeedProperty | null): unknown[] {
+  const walls = (prop as (SeedProperty & { walls?: unknown }) | null)?.walls;
+  return Array.isArray(walls) ? walls : [];
+}
+
 async function enterDrawMode(page: Page): Promise<void> {
   await page.locator('[data-testid="room-draw-toggle"]').click();
 }
@@ -80,13 +89,15 @@ test.describe('Attached multi-room — draw-attach', () => {
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
 
-    // 1 — the seed is one room + one item, and no interior walls exist.
+    // 1 — the seed is one room + one item, and no free walls exist.
     await expect(page.locator('[data-testid="items-placed"]')).toHaveText('1');
     const seeded = await storedProperty(page);
     expect(seeded!.rooms).toHaveLength(1);
-    // wallStore is empty: the seed clears localStorage, and walls are the
-    // ONLY thing restored from `ppw_walls_v1`. Asserted so that a wall
-    // appearing later can only have come from the app itself.
+    // Free walls live in `property.walls` (Sims world, 2026-08-29); the seed
+    // carries none. The legacy `ppw_walls_v1` wallStore is retired and is
+    // emptied on mount after its segments migrate — so BOTH must read empty,
+    // and a wall appearing later can only have come from the app itself.
+    expect(freeWalls(seeded)).toHaveLength(0);
     expect(await storedWallCount(page)).toBe(0);
 
     const framesBeforeDraw = await historyFrameCount(page);
@@ -121,6 +132,10 @@ test.describe('Attached multi-room — draw-attach', () => {
     // Room 1 is byte-identical, polygon AND items.
     expect(afterDraw!.rooms[0].polygon).toEqual(OFF_GRID_FIXTURE.rooms[0].polygon);
     expect(afterDraw!.rooms[0].placedItems).toEqual(OFF_GRID_FIXTURE.rooms[0].placedItems);
+    // A CLOSED run commits a room and nothing else. The wall pen keeps an
+    // OPEN run as free walls (`room-draw-finish-walls` / Alt+Enter); a closed
+    // one must not leave a stray free-wall copy of its edges behind.
+    expect(freeWalls(afterDraw)).toHaveLength(0);
 
     // 4 — ONE Ctrl+Z undoes exactly the new room. RoomDrawMode's own Ctrl+Z
     //     interceptor yields when there are no vertices left, so this

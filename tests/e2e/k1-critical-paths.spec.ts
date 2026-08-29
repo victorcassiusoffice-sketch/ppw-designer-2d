@@ -9,13 +9,22 @@
  *   PCF-3: merchant agent surface walkable.
  *   PCF-4: mobile (390 px) viewport doesn't break any of the above.
  *
- * Skipped on CI until Vic provides PPW_E2E_DESIGNER_URL (defaults
- * to https://designer.ppwellness.co for production smokes).
+ * Target resolution: PPW_E2E_DESIGNER_URL wins (historic knob), then the
+ * suite-wide PPW_E2E_BASE_URL, then production. Before 2026-08-29 this file
+ * read ONLY the first, so a `PPW_E2E_BASE_URL=http://127.0.0.1:5188` run of
+ * the whole suite silently smoked PRODUCTION here and proved nothing about
+ * the working tree. The /api-dependent PCFs skip on localhost with the exact
+ * command (vite dev serves api/*.ts as raw source, not as functions).
  */
 
 import { test, expect, devices } from '@playwright/test';
+import { targetHasNoApi, NO_API_SKIP } from './multiroom-helpers';
 
-const BASE_URL = process.env.PPW_E2E_DESIGNER_URL ?? 'https://designer.ppwellness.co';
+const BASE_URL =
+  process.env.PPW_E2E_DESIGNER_URL
+  ?? process.env.PPW_E2E_BASE_URL
+  ?? 'https://designer.ppwellness.co';
+const NO_API = targetHasNoApi(BASE_URL);
 const DEMO_SLUG = 'demo-supplier-cn';
 // 2026-07-26 (WD rework, Vic directive 5): "/" is now the SHOP
 // (PublicProductsPage). The room designer these PCFs cover moved to /designer,
@@ -64,6 +73,7 @@ test.describe('K1 critical paths — desktop', () => {
     // check would go green with the API completely dead, proving nothing.
     // Pin the `m-<dbId>` namespace instead, which ONLY apiCatalogAdapter
     // produces: that is a real proof the blend happened.
+    test.skip(NO_API, NO_API_SKIP);
     await seedReturningUser(page);
     await page.goto(DESIGNER_URL);
     await expect(page.locator('[data-product-id^="m-"]').first())
@@ -71,6 +81,7 @@ test.describe('K1 critical paths — desktop', () => {
   });
 
   test('PCF-1: /api/products returns >= 5 active rows', async ({ request }) => {
+    test.skip(NO_API, NO_API_SKIP);
     // include_demo=1 since 412913e (2026-07-05): DEMO-* rows are hidden from
     // the public catalog. limit=100 (endpoint max) because the sort is
     // created_at DESC and the DEMO rows are the oldest - at limit=20 they fall
@@ -86,6 +97,7 @@ test.describe('K1 critical paths — desktop', () => {
   });
 
   test('PCF-3: merchant agent page loads + session bootstraps', async ({ page, request }) => {
+    test.skip(NO_API, NO_API_SKIP);
     const sessionRes = await request.get(`${BASE_URL}/api/merchants/${DEMO_SLUG}/agent-session`);
     expect(sessionRes.ok()).toBe(true);
     const body = (await sessionRes.json()) as { session: { merchantId: number } };
@@ -96,6 +108,7 @@ test.describe('K1 critical paths — desktop', () => {
   });
 
   test('PCF-3: reference PDF endpoints serve PDF bytes', async ({ request }) => {
+    test.skip(NO_API, NO_API_SKIP);
     const v1 = await request.get(`${BASE_URL}/api/capture/reference-page.pdf`);
     expect(v1.status()).toBe(200);
     expect(v1.headers()['content-type']).toContain('application/pdf');
@@ -127,6 +140,7 @@ test.describe('K1 critical paths — mobile (390 px)', () => {
     // Was asserted via the V4 banner's "N merchant SKUs" text; that banner was
     // deleted in ef5817c. Assert the blended rows directly instead - stronger,
     // because it reads the catalog itself rather than a label about it.
+    test.skip(NO_API, NO_API_SKIP);
     await seedReturningUser(page);
     await page.goto(DESIGNER_URL);
     // toBeAttached, not toBeVisible: the mobile strip scrolls horizontally, so

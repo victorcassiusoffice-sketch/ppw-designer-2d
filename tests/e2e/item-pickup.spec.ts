@@ -13,7 +13,7 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
-import { TWO_ROOM_FIXTURE, worldToScreen, type SeedProperty } from './multiroom-helpers';
+import { TWO_ROOM_FIXTURE, renderedRoomCount, worldToScreen, type SeedProperty } from './multiroom-helpers';
 
 /** One item sitting in room r1, well clear of the shared x = 5 wall. */
 function fixtureWithItem(): SeedProperty {
@@ -56,6 +56,28 @@ async function waitForGeom(page: Page): Promise<void> {
   );
 }
 
+/**
+ * Wait until both rooms are mounted AND the auto-centre fit has stopped
+ * moving the stage: two reads of world (0,0) 150 ms apart must agree. A
+ * fixed sleep is not load-proof — with several Playwright runs sharing one
+ * vite dev server the fit can land well after 600 ms, and a grab computed
+ * from the pre-fit transform misses the item entirely.
+ */
+async function waitForViewportSettled(page: Page): Promise<void> {
+  await expect.poll(() => renderedRoomCount(page), { timeout: 15_000 }).toBe(2);
+  await expect
+    .poll(
+      async () => {
+        const a = await worldToScreen(page, 0, 0);
+        await page.waitForTimeout(150);
+        const b = await worldToScreen(page, 0, 0);
+        return !!a && !!b && a.x === b.x && a.y === b.y;
+      },
+      { timeout: 15_000 },
+    )
+    .toBe(true);
+}
+
 test.describe('Sims drag-drop — pick up a placed item', () => {
   test.use({ viewport: { width: 1920, height: 1080 } });
 
@@ -69,7 +91,7 @@ test.describe('Sims drag-drop — pick up a placed item', () => {
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
     await waitForGeom(page);
-    await page.waitForTimeout(600);
+    await waitForViewportSettled(page);
 
     const before = await rooms(page);
     expect(before[0].placedItems).toHaveLength(1);
@@ -88,7 +110,9 @@ test.describe('Sims drag-drop — pick up a placed item', () => {
       await page.mouse.move(from.x + (to.x - from.x) * (i / 6), from.y + (to.y - from.y) * (i / 6));
     }
     await page.mouse.up();
-    await page.waitForTimeout(600);
+    // The drag-end commit is synchronous in the handler, but poll the
+    // persisted store rather than sleeping a fixed 600 ms.
+    await expect.poll(async () => (await rooms(page))[1].placedItems.length, { timeout: 10_000 }).toBe(1);
 
     const after = await rooms(page);
 
@@ -106,7 +130,7 @@ test.describe('Sims drag-drop — pick up a placed item', () => {
 
     // And one undo puts it back.
     await page.keyboard.press('Control+z');
-    await page.waitForTimeout(600);
+    await expect.poll(async () => (await rooms(page))[0].placedItems.length, { timeout: 10_000 }).toBe(1);
     const undone = await rooms(page);
     expect(undone[0].placedItems).toHaveLength(1);
     expect(undone[1].placedItems).toHaveLength(0);
@@ -118,7 +142,7 @@ test.describe('Sims drag-drop — pick up a placed item', () => {
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
     await waitForGeom(page);
-    await page.waitForTimeout(600);
+    await waitForViewportSettled(page);
 
     const from = await worldToScreen(page, 1.3, 1.3);
     const to = await worldToScreen(page, 3.2, 2.6);
@@ -130,7 +154,7 @@ test.describe('Sims drag-drop — pick up a placed item', () => {
       await page.mouse.move(from.x + (to.x - from.x) * (i / 6), from.y + (to.y - from.y) * (i / 6));
     }
     await page.mouse.up();
-    await page.waitForTimeout(600);
+    await expect.poll(async () => (await rooms(page))[0].placedItems[0]?.x, { timeout: 10_000 }).not.toBe(1);
 
     const after = await rooms(page);
     // Still one item, still in room A, still the same identity.

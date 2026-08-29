@@ -12,6 +12,9 @@
  *      teleported elsewhere by findFreeSlot.
  *
  * These assert the FIX for both, on the real canvas.
+ *
+ * Run against a local dev server (needs the DEV geometry bridge):
+ *   PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test flooring
  */
 import { test, expect } from '@playwright/test';
 import {
@@ -25,6 +28,47 @@ import {
 } from './multiroom-helpers';
 
 test.use({ viewport: { width: 1600, height: 900 } });
+
+/**
+ * Colour contract for the paper theme (2026-08-29, blueprintTheme.ts).
+ *
+ * BARE floor is paper-white — ROOM_FILL #F8F5EE / ROOM_FILL_ACTIVE #FDFBF6 —
+ * so every channel is far above 200. The rubber floor `outdoor-1m` is
+ * #8b3a2f painted at 0.9 opacity over that paper, which lands at roughly
+ * rgb(150,77,67): clearly red-dominant and dark in blue. The two predicates
+ * below are mutually exclusive, so a floor that is stored but never painted
+ * (the original bug) cannot satisfy the "painted" one by accident.
+ */
+const isLightPaper = (p: { r: number; g: number; b: number }) => Math.min(p.r, p.g, p.b) > 200;
+const isDarkRed = (p: { r: number; g: number; b: number }) =>
+  p.r > 100 && p.b < 80 && p.r - p.b > 40;
+
+/**
+ * Sample points sit OFF the grid: the quiet charcoal grid is drawn over the
+ * floor at 0.06 / 0.12 opacity, and a major-line crossing pulls the paper
+ * down to ~208, which is too close to the 200 floor to be deterministic.
+ * x.x5 / y.x5 metres is mid-cell for every grid tier the canvas can pick
+ * (0.1 / 0.25 / 0.5 / 1 m).
+ */
+const R1_SAMPLE = { x: 2.55, y: 2.05 };
+const R2_SAMPLE = { x: 7.05, y: 2.05 };
+
+/**
+ * Give the DEV geometry bridge a fair chance to arrive before deciding: it is
+ * a dynamic import from main.tsx and on a loaded machine lands after the
+ * canvas mounts, while `requireGeomBridge` polls for only 5 s. Without this
+ * a slow run SKIPS instead of running. The skip decision is unchanged.
+ */
+async function bridgeOrSkip(page: import('@playwright/test').Page): Promise<boolean> {
+  await page
+    .waitForFunction(
+      () => Boolean((window as unknown as { __ppwGeom?: unknown }).__ppwGeom),
+      undefined,
+      { timeout: 20_000 },
+    )
+    .catch(() => undefined);
+  return requireGeomBridge(page);
+}
 
 /** The rendered pixel colour at a world point. */
 async function pixelAtWorld(page: import('@playwright/test').Page, xM: number, yM: number) {
@@ -62,12 +106,14 @@ test('a floor material can be chosen and it actually renders', async ({ page }) 
   await seedProperty(page, TWO_ROOM_FIXTURE);
   await page.goto('/designer');
   await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-  test.skip(!(await requireGeomBridge(page)), GEOM_BRIDGE_SKIP);
+  test.skip(!(await bridgeOrSkip(page)), GEOM_BRIDGE_SKIP);
   await expect.poll(() => renderedRoomCount(page), { timeout: 15_000 }).toBe(2);
 
-  // Bare floor: the room reads as the blueprint fill, a cool navy (b > r).
-  const bare = await pixelAtWorld(page, 2.5, 2);
-  expect(bare!.b).toBeGreaterThan(bare!.r);
+  // Bare floor: the room reads as paper-white (every channel > 200), and is
+  // NOT already dark red — otherwise the "painted" assertion below is vacuous.
+  const bare = (await pixelAtWorld(page, R1_SAMPLE.x, R1_SAMPLE.y))!;
+  expect(isLightPaper(bare), `bare floor should be paper-white, got ${JSON.stringify(bare)}`).toBe(true);
+  expect(isDarkRed(bare)).toBe(false);
 
   // Choose a floor for the ACTIVE room (r1).
   await page.getByTestId('floor-tool-toggle').click();
@@ -80,34 +126,38 @@ test('a floor material can be chosen and it actually renders', async ({ page }) 
     })
     .toBe('outdoor-1m');
 
-  // ...and it is on the CANVAS. #8b3a2f is a warm red-brown, so the pixel
-  // flips from cool to warm. This is the assertion that would have caught the
-  // original bug, where the store was written and nothing was ever drawn.
-  // Poll the PIXEL, not just the store. The material is painted on the next
-  // canvas frame after the store write, so a single immediate read can catch
-  // the pre-paint frame and report the bare ROOM_FILL navy. The assertion is
-  // unchanged in strength - the pixel must still become warm, and a build that
-  // writes the store without ever drawing still fails on timeout.
+  // ...and it is on the CANVAS. #8b3a2f is a dark red-brown, so the pixel
+  // flips from paper-white to dark red. This is the assertion that would have
+  // caught the original bug, where the store was written and nothing was ever
+  // drawn. Poll the PIXEL, not just the store: the material is painted on the
+  // next canvas frame after the store write, so a single immediate read can
+  // catch the pre-paint frame and report bare paper. A build that writes the
+  // store without ever drawing still fails on timeout.
   await expect
     .poll(
       async () => {
-        const px = await pixelAtWorld(page, 2.5, 2);
-        return px ? px.r - px.b : -1;
+        const px = await pixelAtWorld(page, R1_SAMPLE.x, R1_SAMPLE.y);
+        return px ? isDarkRed(px) : false;
       },
       {
         timeout: 10_000,
         message: 'the chosen floor material must actually be painted on the canvas',
       },
     )
-    .toBeGreaterThan(0);
+    .toBe(true);
+  const painted = (await pixelAtWorld(page, R1_SAMPLE.x, R1_SAMPLE.y))!;
 
   // The OTHER room is untouched — floor finish is per-room.
-  const other = await pixelAtWorld(page, 7, 2);
-  expect(other!.b).toBeGreaterThan(other!.r);
+  const other = (await pixelAtWorld(page, R2_SAMPLE.x, R2_SAMPLE.y))!;
+  expect(
+    isLightPaper(other),
+    `the neighbouring room must stay bare paper, got ${JSON.stringify(other)}`,
+  ).toBe(true);
+  expect(isDarkRed(other)).toBe(false);
   expect((await persistedRoom(page, 'r2'))?.floorFinish ?? null).toBeFalsy();
 
   await page.screenshot({ path: 'docs/designer-build-2026-08-28/after/flooring.png' });
-  console.log('FLOORING=true');
+  console.log('FLOORING=true', JSON.stringify({ bare, painted, other }));
 });
 
 test('equipment can be placed ON TOP of a flooring product', async ({ page }) => {
@@ -122,7 +172,7 @@ test('equipment can be placed ON TOP of a flooring product', async ({ page }) =>
   await seedProperty(page, f);
   await page.goto('/designer');
   await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-  test.skip(!(await requireGeomBridge(page)), GEOM_BRIDGE_SKIP);
+  test.skip(!(await bridgeOrSkip(page)), GEOM_BRIDGE_SKIP);
   await expect.poll(() => renderedRoomCount(page), { timeout: 15_000 }).toBe(2);
 
   const before = (await persistedRoom(page, 'r1'))!.placedItems.length;

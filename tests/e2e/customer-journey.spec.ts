@@ -8,13 +8,27 @@
  * Skipped on CI until Vic runs `npx playwright install` and seeds the
  * Neon test DB with two suppliers + at least one product each. The
  * smoke values below are placeholders the seed should match.
+ *
+ * Cannot run on a vite dev server: `/products` and `/api/createPaypalOrder`
+ * are Vercel functions. Run it against a deployed target that has the seed:
+ *   PPW_E2E_HAVE_SEED=1 PPW_E2E_BASE_URL=https://designer.ppwellness.co \
+ *     npx playwright test customer-journey
  */
 
 import { test, expect } from '@playwright/test';
+import { NO_API_SKIP, targetHasNoApi } from './multiroom-helpers';
+
+const RUN_CMD =
+  'PPW_E2E_HAVE_SEED=1 PPW_E2E_BASE_URL=https://designer.ppwellness.co '
+  + 'npx playwright test customer-journey';
 
 test.describe('Marketplace customer journey', () => {
-  test('anonymous browse → cart → checkout → order tracking', async ({ page }) => {
-    test.skip(!process.env.PPW_E2E_HAVE_SEED, 'Seed data required (PPW_E2E_HAVE_SEED=1).');
+  test('anonymous browse → cart → checkout → order tracking', async ({ page, baseURL }) => {
+    test.skip(targetHasNoApi(baseURL), NO_API_SKIP);
+    test.skip(
+      !process.env.PPW_E2E_HAVE_SEED,
+      `Seed data required (two suppliers + one product each in the Neon test DB): ${RUN_CMD}`,
+    );
 
     await page.goto('/products');
     await expect(page.getByRole('heading', { name: 'Marketplace' })).toBeVisible();

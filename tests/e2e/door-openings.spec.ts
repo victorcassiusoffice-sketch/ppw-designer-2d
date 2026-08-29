@@ -8,8 +8,12 @@
  * runs straight across the doorway — the door looks like a wall, which is
  * exactly the bug this feature exists to avoid. That is measured in PIXELS on
  * the real canvas, not inferred from the store.
+ *
+ * Run against a local dev server (needs the DEV geometry bridge):
+ *   PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test door-openings
  */
 import { test, expect } from '@playwright/test';
+import { ROOM_BORDER_SCAN } from '../../src/designer/blueprintTheme';
 import {
   TWO_ROOM_FIXTURE,
   seedProperty,
@@ -20,6 +24,27 @@ import {
 } from './multiroom-helpers';
 
 test.use({ viewport: { width: 1920, height: 1080 } });
+
+/**
+ * Give the DEV geometry bridge a fair chance to arrive before deciding.
+ *
+ * `window.__ppwGeom` is installed by a dynamic import from main.tsx, and on a
+ * loaded machine (parallel workers, vite transforming on demand) that import
+ * can land well after the canvas mounts. `requireGeomBridge` polls for only
+ * 5 s, so without this a slow run SKIPS instead of running — a silent
+ * coverage leak. The skip decision itself is unchanged: a build that never
+ * ships the bridge still skips with the run command.
+ */
+async function bridgeOrSkip(page: import('@playwright/test').Page): Promise<boolean> {
+  await page
+    .waitForFunction(
+      () => Boolean((window as unknown as { __ppwGeom?: unknown }).__ppwGeom),
+      undefined,
+      { timeout: 20_000 },
+    )
+    .catch(() => undefined);
+  return requireGeomBridge(page);
+}
 
 /** Persisted openings for a room, straight out of localStorage. */
 async function persistedOpenings(page: import('@playwright/test').Page, roomId: string) {
@@ -33,19 +58,30 @@ async function persistedOpenings(page: import('@playwright/test').Page, roomId: 
 }
 
 /**
- * Count WALL pixels down a vertical scan line at a given page-x.
+ * Half-width, in canvas px, of the strip scanned either side of the wall line.
+ * The wall band is 10 px (0.1 m at 100 px/m) centred on the polygon edge, so
+ * +-3 px stays well inside the ink on both sides.
+ */
+const WALL_SCAN_HALF_WIDTH_PX = 3;
+
+/**
+ * Count WALL rows down a vertical scan strip centred on a given page-x.
  *
- * Deliberately NOT the strict gold predicate the other specs use. A wall's
- * INNER half renders blended with the room fill (~rgba(146,119,71) rather than
- * the pure #E8A33D) — verified identical on `main`, so it is long-standing
- * behaviour, not something this feature introduced. On the SHARED wall between
- * two attached rooms BOTH halves are "inner", so not a single pixel there
- * satisfies `r > 200` and a gold-based count reads zero on a perfectly good
- * wall.
+ * Paper theme (2026-08-29): walls are CHARCOAL ink (#2A2926) on cream paper,
+ * so a wall pixel is one where every channel sits under `ROOM_BORDER_SCAN.max`
+ * (50) — the same predicate `isRoomBorderPixel` in blueprintTheme.ts uses, and
+ * the one thing on the plan the paper floor, the grid, the wall shadow and the
+ * door arc can never reach. (The old warm-vs-cool hue test read zero here: the
+ * wall is now neutral, and so is the floor.)
  *
- * What separates wall from floor at any brightness is HUE: the wall is warm
- * (r > b) and the floor is cool (r < b, it is navy). That predicate holds for
- * pure gold, for the blended inner half, and for the shared wall alike.
+ * Why a STRIP rather than a single column: the wall carries a 1 px paper
+ * hairline (`WALL_INNER_STROKE`, 0.18 alpha) straight down its centre, which
+ * lifts that exact pixel to ~79 in the red channel. A single column that lands
+ * on the hairline would report a solid wall as empty. Each ROW counts once if
+ * ANY pixel within +-3 px of the line is ink, which is robust to the hairline
+ * and to sub-pixel alignment, and still reads ZERO through a door gap — the
+ * gap removes the whole 10 px band, and the leaf + jamb ticks that remain are
+ * only a few px tall.
  */
 async function wallPixelsOnColumn(
   page: import('@playwright/test').Page,
@@ -54,7 +90,7 @@ async function wallPixelsOnColumn(
   y1: number,
 ) {
   return page.evaluate(
-    ([x, ya, yb]) => {
+    ([x, ya, yb, scanMax, scanMinAlpha, halfW]) => {
       const c = document.querySelector('.konvajs-content canvas') as HTMLCanvasElement | null;
       if (!c) return -1;
       const ctx = c.getContext('2d');
@@ -63,16 +99,31 @@ async function wallPixelsOnColumn(
       const scale = c.width / rect.width;
       const cx = Math.round((x - rect.x) * scale);
       if (cx < 0 || cx >= c.width) return -1;
+      const left = Math.max(0, cx - halfW);
+      const right = Math.min(c.width - 1, cx + halfW);
+      const w = right - left + 1;
       const top = Math.max(0, Math.round((ya - rect.y) * scale));
       const bot = Math.min(c.height - 1, Math.round((yb - rect.y) * scale));
-      const img = ctx.getImageData(cx, top, 1, Math.max(1, bot - top + 1)).data;
-      let n = 0;
-      for (let i = 0; i < img.length; i += 4) {
-        if (img[i + 3] > 200 && img[i] > img[i + 2] + 30) n++;
+      const h = Math.max(1, bot - top + 1);
+      const img = ctx.getImageData(left, top, w, h).data;
+      let rows = 0;
+      for (let row = 0; row < h; row++) {
+        for (let col = 0; col < w; col++) {
+          const i = (row * w + col) * 4;
+          if (
+            img[i + 3] > scanMinAlpha
+            && img[i] < scanMax
+            && img[i + 1] < scanMax
+            && img[i + 2] < scanMax
+          ) {
+            rows++;
+            break;
+          }
+        }
       }
-      return n;
+      return rows;
     },
-    [pageX, y0, y1],
+    [pageX, y0, y1, ROOM_BORDER_SCAN.max, ROOM_BORDER_SCAN.minAlpha, WALL_SCAN_HALF_WIDTH_PX],
   );
 }
 
@@ -83,10 +134,11 @@ test.describe('Wall openings', () => {
     await seedProperty(page, TWO_ROOM_FIXTURE);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-    test.skip(!(await requireGeomBridge(page)), GEOM_BRIDGE_SKIP);
+    test.skip(!(await bridgeOrSkip(page)), GEOM_BRIDGE_SKIP);
   await expect.poll(() => renderedRoomCount(page), { timeout: 15_000 }).toBe(2);
 
-    // The shared wall runs world (5,0)-(5,4). Measure the gold on it BEFORE.
+    // The shared wall runs world (5,0)-(5,4). Measure the ink on it BEFORE.
+    // 0.3 -> 3.7 m is 340 rows; every one of them is wall.
     const top = (await worldToScreen(page, 5, 0.3))!;
     const bottom = (await worldToScreen(page, 5, 3.7))!;
     const wallBefore = await wallPixelsOnColumn(page, top.x, top.y, bottom.y);
@@ -105,13 +157,20 @@ test.describe('Wall openings', () => {
     expect((await persistedOpenings(page, 'r2'))?.length ?? 0).toBe(0);
 
     // ...but the GAP must appear in the rendered wall, which is the real test.
+    // The default door is 0.838 m = ~84 rows of band removed; the jamb ticks
+    // and the leaf hinge that stay inside the gap are only a few rows, so a
+    // real cut drops the count by ~75+. Poll: the cut paints on the frame
+    // after the store write.
+    await expect
+      .poll(() => wallPixelsOnColumn(page, top.x, top.y, bottom.y), {
+        timeout: 10_000,
+        message:
+          'the door must cut a visible gap through the shared wall. If room 2 still '
+          + 'strokes its own copy of that wall, the count barely moves - which is '
+          + 'exactly the "door that looks like a wall" bug this feature exists to fix.',
+      })
+      .toBeLessThan(wallBefore - 60);
     const wallAfter = await wallPixelsOnColumn(page, top.x, top.y, bottom.y);
-    expect(
-      wallAfter,
-      'the door must cut a visible gap through the shared wall. If room 2 still '
-        + 'strokes its own copy of that wall, the count barely moves - which is '
-        + 'exactly the "door that looks like a wall" bug this feature exists to fix.',
-    ).toBeLessThan(wallBefore - 60);
 
     await page.screenshot({ path: 'docs/designer-build-2026-08-28/after/door-shared-wall.png' });
     console.log('DOOR_SHARED_WALL=true', JSON.stringify({ wallBefore, wallAfter }));
@@ -121,7 +180,7 @@ test.describe('Wall openings', () => {
     await seedProperty(page, TWO_ROOM_FIXTURE);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-    test.skip(!(await requireGeomBridge(page)), GEOM_BRIDGE_SKIP);
+    test.skip(!(await bridgeOrSkip(page)), GEOM_BRIDGE_SKIP);
   await expect.poll(() => renderedRoomCount(page), { timeout: 15_000 }).toBe(2);
 
     await page.getByTestId('door-tool-toggle').click();
@@ -145,7 +204,7 @@ test.describe('Wall openings', () => {
     await seedProperty(page, TWO_ROOM_FIXTURE);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-    test.skip(!(await requireGeomBridge(page)), GEOM_BRIDGE_SKIP);
+    test.skip(!(await bridgeOrSkip(page)), GEOM_BRIDGE_SKIP);
   await expect.poll(() => renderedRoomCount(page), { timeout: 15_000 }).toBe(2);
 
     await page.getByTestId('door-tool-toggle').click();
@@ -168,7 +227,7 @@ test.describe('Wall openings', () => {
     await seedProperty(page, TWO_ROOM_FIXTURE);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-    test.skip(!(await requireGeomBridge(page)), GEOM_BRIDGE_SKIP);
+    test.skip(!(await bridgeOrSkip(page)), GEOM_BRIDGE_SKIP);
   await expect.poll(() => renderedRoomCount(page), { timeout: 15_000 }).toBe(2);
 
     await page.getByTestId('door-tool-toggle').click();

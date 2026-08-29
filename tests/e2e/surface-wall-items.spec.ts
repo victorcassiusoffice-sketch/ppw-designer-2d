@@ -1,19 +1,29 @@
 /**
- * Surface slots + wall-mounted items (2026-08-24) — real-browser
- * acceptance. Drives the pointer-FSM with CDP mouse events and asserts
- * the committed `ppw_property_v2` store:
+ * Surface slots + wall-mounted items (2026-08-24; inner-face flush
+ * 2026-08-29) — real-browser acceptance. Drives the pointer-FSM with CDP
+ * mouse events and asserts the committed `ppw_property_v2` store:
  *   • a console table placed mid-room (floor path),
  *   • a diffuser dropped ONTO the table → parented + inside its rect,
- *   • a shelf near the top wall → flush y=0, rotation 0,
- *   • a mirror near the right wall → flush right, rotation 90,
+ *   • a shelf near the top wall → flush on the wall's inner face (y = 0.05),
+ *     rotation 0,
+ *   • a mirror near the right wall → flush on the inner face, rotation 90,
  *   • dragging the table carries the diffuser with it.
+ *
+ * Walls are 0.1 m thick and stroked centred on the polygon edge, so a
+ * wall-mounted item hangs on the INNER FACE 0.05 m (`WALL_HALF_M`) inside
+ * the edge — the same contract wall-aware-placement.spec pins for floor
+ * items.
  *
  * Run: PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test surface-wall-items
  */
 
 import { test, expect, type Page } from '@playwright/test';
-
-const PX_PER_M = 100;
+import { WALL_HALF_M } from '../../src/designer/wallAwarePlacement';
+// Room origin via the DEV geometry bridge, falling back to the charcoal
+// wall pixel-scan driven by `blueprintTheme.ROOM_BORDER_SCAN`. The scan
+// this spec used to inline looked for the pre-reskin `r < 40` border — the
+// paper theme's wall is (42, 41, 38), so that predicate finds nothing.
+import { PX_PER_M, roomOrigin } from './multiroom-helpers';
 
 interface StoredItem {
   instanceId: string;
@@ -22,34 +32,6 @@ interface StoredItem {
   y: number;
   rotation: number;
   parentInstanceId?: string;
-}
-
-/** Empirical room origin: pixel-scan the room-layer canvas for the dark border. */
-async function roomOrigin(page: Page): Promise<{ x: number; y: number }> {
-  const found = await page.evaluate(() => {
-    const c = document.querySelector('.konvajs-content canvas') as HTMLCanvasElement | null;
-    if (!c) return null;
-    const ctx = c.getContext('2d');
-    if (!ctx) return null;
-    const img = ctx.getImageData(0, 0, c.width, c.height).data;
-    let minX = Infinity;
-    let minY = Infinity;
-    for (let y = 0; y < c.height; y += 2) {
-      for (let x = 0; x < c.width; x += 2) {
-        const i = (y * c.width + x) * 4;
-        if (img[i + 3] > 200 && img[i] < 40 && img[i + 1] < 50 && img[i + 2] < 50) {
-          if (x < minX) minX = x;
-          if (y < minY) minY = y;
-        }
-      }
-    }
-    if (!Number.isFinite(minX)) return null;
-    const rect = c.getBoundingClientRect();
-    const scale = c.width / rect.width;
-    return { x: rect.x + minX / scale + 3, y: rect.y + minY / scale + 3 };
-  });
-  if (!found) throw new Error('Room border not found on the Konva layer canvas');
-  return found;
 }
 
 async function placeAt(page: Page, productId: string, xM: number, yM: number) {
@@ -119,13 +101,17 @@ test.describe('surface slots + wall-mounted items', () => {
     expect(diffuser.y).toBeGreaterThanOrEqual(table.y - 1e-9);
     expect(diffuser.y + 0.15).toBeLessThanOrEqual(table.y + 0.4 + 1e-9);
 
-    // Shelf: flush on the top wall, facing into the room.
+    // Shelf (0.8×0.2): back on the top wall's inner face, facing into the
+    // room, grid-snapped along the wall.
     expect(shelf.rotation).toBe(0);
-    expect(shelf.y).toBeCloseTo(0, 5);
+    expect(shelf.y).toBeCloseTo(WALL_HALF_M, 5);
+    expect(shelf.x).toBeCloseTo(1.5, 5);
 
-    // Mirror: flush on the right wall, rotated 90 (0.05 deep at 90°).
+    // Mirror (1.2×0.05): on the right wall's inner face, rotated 90 so it is
+    // 0.05 deep → x = 5 − 0.05 − 0.05.
     expect(mirror.rotation).toBe(90);
-    expect(mirror.x).toBeCloseTo(5 - 0.05, 5);
+    expect(mirror.x).toBeCloseTo(5 - WALL_HALF_M - 0.05, 5);
+    expect(mirror.y).toBeCloseTo(1.5, 5);
 
     // 5 — drag the table +1 m right, +1 m down: the diffuser rides along.
     const origin = await roomOrigin(page);
@@ -136,11 +122,23 @@ test.describe('surface slots + wall-mounted items', () => {
     await page.mouse.move(grabX + 1.0 * PX_PER_M, grabY + 1.0 * PX_PER_M, { steps: 12 });
     await page.mouse.up();
 
+    // Poll the persisted store for the drag-end commit rather than reading
+    // it on the very next tick — load-proof, and no weaker.
+    await expect
+      .poll(
+        async () =>
+          (await storedItems(page)).find((i) => i.productId === 'demo-console-table')?.x ?? null,
+        { timeout: 10_000 },
+      )
+      .not.toBe(table.x);
+
     items = await storedItems(page);
     const movedTable = items.find((i) => i.productId === 'demo-console-table')!;
     const movedDiffuser = items.find((i) => i.productId === 'demo-aroma-diffuser')!;
     expect(movedTable.x).toBeCloseTo(3.0, 5);
     expect(movedTable.y).toBeCloseTo(3.0, 5);
+    // Mid-room drag keeps the facing (no reset to 0 — it already was 0).
+    expect(movedTable.rotation).toBe(0);
     expect(movedDiffuser.x - diffuser.x).toBeCloseTo(movedTable.x - table.x, 5);
     expect(movedDiffuser.y - diffuser.y).toBeCloseTo(movedTable.y - table.y, 5);
 

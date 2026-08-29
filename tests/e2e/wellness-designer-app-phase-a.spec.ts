@@ -64,9 +64,13 @@ test.describe('Wellness-Designer-App (i) · Customer journey', () => {
 
   test('A.C.3 — Customer can search/filter the catalog', async ({ page }) => {
     await page.goto('/designer');
+    // The "Search products…" input lived in ProductPalette, which the
+    // 2026-08-25 Sims build-mode rebuild (bae63c0) retired (zero importers
+    // left); SimsDock has no search box. The probe is kept, not deleted, so
+    // the test resumes by itself the day the dock grows one.
     const searchInput = page.locator('input[type="search"]').first();
     if (await searchInput.count() === 0) {
-      test.skip(true, 'Search input not visible in this layout — skipping.');
+      test.skip(true, 'catalog search input retired with ProductPalette (bae63c0); SimsDock has none yet — resumes automatically when a type="search" input returns to /designer.');
       return;
     }
     await searchInput.fill('treadmill');
@@ -77,10 +81,13 @@ test.describe('Wellness-Designer-App (i) · Customer journey', () => {
   test('A.C.9 — Eco-only filter chip is visible and toggles state (h)', async ({ page }) => {
     await page.goto('/designer');
     const chip = page.locator('[data-testid="catalog-eco-filter"]');
-    // After PR #20 lands, the chip is rendered. Pre-merge: chip count 0.
+    // PR #20 DID land the chip — inside ProductPalette, which the 2026-08-25
+    // Sims build-mode rebuild (bae63c0) retired. SimsDock carries no eco
+    // filter, so the chip is unmounted on /designer today. Probe kept so the
+    // test resumes by itself when the dock grows one.
     const count = await chip.count();
     if (count === 0) {
-      test.skip(true, 'Eco filter chip not in prod build yet (pre-PR #20).');
+      test.skip(true, 'eco filter chip unmounted since ProductPalette was retired (bae63c0); SimsDock has none yet — resumes automatically when [data-testid="catalog-eco-filter"] returns to /designer.');
       return;
     }
     await expect(chip).toBeVisible();
@@ -241,7 +248,11 @@ test.describe('Wellness-Designer-App (i) · API smokes', () => {
     expect(body.error).toBe('missing_session');
   });
 
-  test('A.API.4 — POST /api/merchants/:slug/products without Bearer returns 401', async ({ request }) => {
+  test('A.API.4 — POST /api/merchants/:slug/products without Bearer returns 401', async ({ request, baseURL }) => {
+    // vite dev answers this POST with a bare 404 (no route at all), which the
+    // accepted-status list below would read as "route exists" — a vacuous
+    // pass. Route it to a deployed target instead.
+    test.skip(targetHasNoApi(baseURL), NO_API_SKIP);
     const res = await request.post(`/api/merchants/${TEST_SLUG}/products`, {
       data: { name: 'Test', category: 'cardio', priceMinor: 100, currency: 'MUR' },
       headers: { 'Content-Type': 'application/json' },
@@ -262,7 +273,11 @@ test.describe('Wellness-Designer-App (i) · API smokes', () => {
     expect([400, 422, 503]).toContain(res.status());
   });
 
-  test('A.API.6 — GET /api/k1/redirect with required params returns 302 with ref-code', async ({ request }) => {
+  test('A.API.6 — GET /api/k1/redirect with required params returns 302 with ref-code', async ({ request, baseURL }) => {
+    // vite dev serves the SPA index (200 text/html) for this path — inside
+    // the accepted list below, so localhost would pass without any redirect
+    // function behind it. Route it to a deployed target instead.
+    test.skip(targetHasNoApi(baseURL), NO_API_SKIP);
     // Use redirect: 'manual' equivalent — Playwright's APIRequest follows
     // redirects by default; we inspect the URL chain via the redirect
     // response chain. Simpler: check the FINAL URL still contains the

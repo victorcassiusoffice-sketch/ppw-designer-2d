@@ -21,7 +21,16 @@ import {
   waitForRenderedCount,
 } from './multiroom-helpers';
 
-/** Union of the two-room fixture: x 0 → 9 m = 900 px at scale 1. */
+/**
+ * Union of the two-room fixture: x 0 → 9 m = 900 px at scale 1.
+ *
+ * `goldSpanPx` (the name is historical — it now scans for the CHARCOAL wall
+ * ink of the 2026-08-29 paper theme via `ROOM_BORDER_SCAN`) measures between
+ * the outermost ink pixels and trims `inset` (half the 0.1 m / 10 px wall
+ * band) off each side, so the number it returns is wall-LINE to wall-line.
+ * Verified 2026-08-29 at 898 px — the scan strides 2 px, so each end is
+ * quantised by up to 1 px; well inside the tolerance below.
+ */
 const UNION_SPAN_PX = 9 * PX_PER_M;
 /** A single-room render spans ~500 px, so this tolerance cannot pass one. */
 const SPAN_TOLERANCE_PX = 12;
@@ -49,7 +58,7 @@ test.describe('Attached multi-room — render', () => {
     await waitForRenderedCount(page, rendered, 2);
     expect(rendered).toContain(2);
 
-    // 2 — gold wall pixels must span the whole two-room union. One room
+    // 2 — wall-ink pixels must span the whole two-room union. One room
     //     spans ~500 px; both span 900.
     const span = await goldSpanPx(page);
     expect(span).not.toBeNull();
@@ -64,7 +73,7 @@ test.describe('Attached multi-room — render', () => {
       fullPage: false,
     });
 
-    console.log('MULTIROOM_RENDER=true');
+    console.log('MULTIROOM_RENDER=true', JSON.stringify({ spanPx: span }));
   });
 
   test('start prompt stays hidden when a BLANK room is active beside drawn rooms', async ({
@@ -86,7 +95,7 @@ test.describe('Attached multi-room — render', () => {
     await page.waitForTimeout(1200);
 
     await expect(page.locator('[data-testid="start-room-prompt"]')).toHaveCount(0);
-    // The two drawn rooms are still on the canvas.
+    // The two drawn rooms are still on the canvas (wall-ink span, see above).
     const span = await goldSpanPx(page);
     expect(span).not.toBeNull();
     expect(Math.abs((span as number) - UNION_SPAN_PX)).toBeLessThanOrEqual(SPAN_TOLERANCE_PX);

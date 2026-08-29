@@ -184,10 +184,11 @@ export async function drawVertexCount(page: Page): Promise<number> {
 }
 
 /**
- * Find the leftmost/topmost gold wall pixel on the first Konva layer
- * canvas and return it in page pixels. Ported verbatim in behaviour from
- * `wall-aware-placement.spec.ts:46` (which owns the original), so the two
- * can never drift on the colour tolerance.
+ * Find the leftmost/topmost WALL pixel on the first Konva layer canvas and
+ * return it in page pixels. Since the paper theme (2026-08-29) the wall is
+ * charcoal, the predicate is `ROOM_BORDER_SCAN` from blueprintTheme, and
+ * every spec (wall-aware-placement included) imports THIS helper rather than
+ * carrying its own scan, so the tolerance can never drift.
  *
  * For every fixture in this suite the union fit clamps scale to 1 and
  * room 1's min corner is world (0, 0), so the scanned origin IS world
@@ -214,12 +215,14 @@ export async function roomOrigin(page: Page): Promise<{ x: number; y: number }> 
     for (let y = 0; y < c.height; y += 2) {
       for (let x = 0; x < c.width; x += 2) {
         const i = (y * c.width + x) * 4;
+        // Paper theme (2026-08-29): walls are CHARCOAL — all three channels
+        // below the band max; the cream ground / paper floor / grid never
+        // get there.
         if (
-          img[i + 3] > 200
-          && img[i] > scan.rMin
-          && img[i + 1] >= scan.gMin
-          && img[i + 1] <= scan.gMax
-          && img[i + 2] < scan.bMax
+          img[i + 3] > scan.minAlpha
+          && img[i] < scan.max
+          && img[i + 1] < scan.max
+          && img[i + 2] < scan.max
         ) {
           if (x < minX) minX = x;
           if (y < minY) minY = y;
@@ -256,11 +259,10 @@ export async function goldSpanPx(page: Page): Promise<number | null> {
       for (let x = 0; x < c.width; x += 2) {
         const i = (y * c.width + x) * 4;
         if (
-          img[i + 3] > 200
-          && img[i] > scan.rMin
-          && img[i + 1] >= scan.gMin
-          && img[i + 1] <= scan.gMax
-          && img[i + 2] < scan.bMax
+          img[i + 3] > scan.minAlpha
+          && img[i] < scan.max
+          && img[i + 1] < scan.max
+          && img[i + 2] < scan.max
         ) {
           if (x < minX) minX = x;
           if (x > maxX) maxX = x;

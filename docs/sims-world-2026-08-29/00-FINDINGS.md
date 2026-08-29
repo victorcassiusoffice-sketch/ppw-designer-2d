@@ -42,6 +42,18 @@ Every K1 top-down PNG is footprint-exact (2050×950 px for 205×95 cm → 0 % mi
 
 `wall-aware-placement.spec` (gold scan only), `multiroom-helpers.goldSpanPx` (no geom fallback), `geom-bridge.spec` (literal gold RGB), `door-openings.spec` (`r > b + 30` warm-wall predicate), `flooring.spec` (bare floor must be `b > r`), `drag-place.spec` (ghost RGB literals), `surface-wall-items.spec` (pre-reskin dark scan). Two vitest suites pin `ROOM_BORDER_SCAN`.
 
+## 4b. Adversarial verification of the snap root causes
+
+Three independent hunters (geometry / rotation-footprint / corner-collision lenses) proposed 17
+root causes; each was handed to two verifiers told to refute it. **All 17 were CONFIRMED against
+`main` @ `040a9f6` by re-executing the real modules with fresh numbers** (one verifier noted a
+claim was already fixed in the uncommitted tree by the time it ran). Beyond §1 they also pinned:
+the nearest-edge tie-break decided by float noise + polygon order, the snap gap measured on the
+post-auto-orient footprint (so a long item approaching a perpendicular wall had to be pushed INTO
+it to engage), and `findFreeSlot` re-snapping the flush coordinate. Every one is addressed on the
+branch (`wallAwarePlacement.ts` candidates + primary/secondary walls + clamp + slide, `placementActions.ts`
+centre pivot, `RoomCanvas.tsx` absolute-transform pivot + `currentRotationDeg`).
+
 ## 5. Deploy reality (verified via Vercel API this run)
 
 - Project `prj_NDw29vwldFyaA2GVsfnQHqdR8hre`, team `team_bptfse7K2LapV0JdqPKKuRiM`, framework vite, node 22.

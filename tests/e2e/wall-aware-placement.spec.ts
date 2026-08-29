@@ -1,84 +1,48 @@
 /**
- * Sims-style wall-aware placement (2026-08-23) — real-browser acceptance.
+ * Sims-style wall-aware placement (2026-08-23; inner-face flush + corner
+ * snap 2026-08-29) — real-browser acceptance.
  *
  * Drives the actual pointer-FSM with CDP mouse events (never synthetic
  * DragEvent — see placement-fsm.spec.ts) and asserts the COMMITTED store
  * state (`ppw_property_v2` in localStorage): an object dropped near each
- * wall must land FLUSH against it and ROTATED to face into the room;
- * a mid-room drop must keep the default facing and stay on the grid.
+ * wall must land FLUSH against that wall's INNER FACE and ROTATED to face
+ * into the room; a drop near a corner must touch BOTH walls; a mid-room
+ * drop must keep the default facing and stay on the grid.
+ *
+ * WALL THICKNESS (Sims world, FINDINGS section 1.1): the wall band is
+ * `WALL_THICKNESS_M` = 0.1 m and is stroked CENTRED on the room polygon
+ * edge, so its inner face sits `WALL_HALF_M` = 0.05 m inside the edge. An
+ * item flush on the top wall therefore has y = 0.05 (not 0), one flush on
+ * the right wall has x = 5 - 0.05 - depth, and so on. Flushing to the edge
+ * itself — the pre-2026-08-29 contract this spec used to pin — left every
+ * item overlapping the inner 5 cm of the wall band.
  *
  * Run against a local dev server:
  *   PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test wall-aware-placement
  */
 
 import { test, expect, type Page } from '@playwright/test';
-// Blueprint reskin (2026-08-25): the room border is now GOLD on a dark
-// ground, not a dark stroke on cream. The scan tolerance is imported from
-// the theme module that owns the colour, so the two can never drift apart.
-import { ROOM_BORDER_SCAN } from '../../src/designer/blueprintTheme';
+import { WALL_HALF_M } from '../../src/designer/wallAwarePlacement';
+// Room origin via the DEV geometry bridge (`window.__ppwGeom`, exact by
+// construction), falling back to the charcoal wall pixel-scan that shares
+// `blueprintTheme.ROOM_BORDER_SCAN` with the theme it tracks. Both live in
+// the shared helper so this spec can never drift onto a stale palette.
+import { PX_PER_M, roomOrigin } from './multiroom-helpers';
 
-// Treadmill seed: 205 × 95 cm footprint (length along X at rotation 0).
+// Treadmill seed: 205 x 95 cm footprint (length along X at rotation 0).
 const PRODUCT_ID = 'k1-nordictrack-2450';
-const WID = 0.95; // footprint depth (m); length is 2.05 m along X at rotation 0
-const PX_PER_M = 100; // propertyStore default; fresh session never zooms.
+const LEN = 2.05; // footprint length (m) along X at rotation 0
+const WID = 0.95; // footprint depth (m)
+
+/** Quick 5 x 4 m rectangle room the `start-quick-rectangle` button seeds. */
+const ROOM_W = 5;
+const ROOM_H = 4;
 
 interface StoredItem {
   productId: string;
   x: number;
   y: number;
   rotation: number;
-}
-
-/**
- * Find the room's on-screen origin EMPIRICALLY: scan the first Konva
- * layer canvas (room polygon + grid — items live on a later layer) for the
- * room border and return its top-left in page pixels. Immune to the app's
- * viewport-centring races — recomputed per placement.
- *
- * 2026-08-25: the border used to be a dark `#0E1B1F` stroke on a cream
- * floor and was matched with `r<40 && g<50 && b<50`. After the blueprint
- * reskin it is GOLD (`WALL_GOLD` #E8A33D) on a dark ground — that old test
- * would now match the GROUND instead of the wall and silently return a
- * nonsense origin. The tolerance lives in `blueprintTheme.ROOM_BORDER_SCAN`
- * next to the colour it tracks, and is passed into the page rather than
- * duplicated here.
- */
-async function roomOrigin(page: Page): Promise<{ x: number; y: number }> {
-  const found = await page.evaluate((scan) => {
-    const c = document.querySelector('.konvajs-content canvas') as HTMLCanvasElement | null;
-    if (!c) return null;
-    const ctx = c.getContext('2d');
-    if (!ctx) return null;
-    const img = ctx.getImageData(0, 0, c.width, c.height).data;
-    let minX = Infinity;
-    let minY = Infinity;
-    for (let y = 0; y < c.height; y += 2) {
-      for (let x = 0; x < c.width; x += 2) {
-        const i = (y * c.width + x) * 4;
-        if (
-          img[i + 3] > 200
-          && img[i] > scan.rMin
-          && img[i + 1] >= scan.gMin
-          && img[i + 1] <= scan.gMax
-          && img[i + 2] < scan.bMax
-        ) {
-          if (x < minX) minX = x;
-          if (y < minY) minY = y;
-        }
-      }
-    }
-    if (!Number.isFinite(minX)) return null;
-    const rect = c.getBoundingClientRect();
-    const scale = c.width / rect.width;
-    // The stroke is centred on the polygon path, so step half a stroke
-    // inward to land on the true wall line.
-    return {
-      x: rect.x + minX / scale + scan.inset,
-      y: rect.y + minY / scale + scan.inset,
-    };
-  }, ROOM_BORDER_SCAN);
-  if (!found) throw new Error('Room border not found on the Konva layer canvas');
-  return found;
 }
 
 async function placeAt(page: Page, xM: number, yM: number) {
@@ -112,13 +76,15 @@ async function storedItems(page: Page): Promise<StoredItem[]> {
 }
 
 test.describe('Sims wall-aware placement', () => {
-  // The 5×4 m quick room is 500×400 px at scale 1 — a 1280-wide window's
+  // The 5x4 m quick room is 500x400 px at scale 1 — a 1280-wide window's
   // stage (minus catalog + details rails) clips the right wall, so clicks
   // there would land on DOM chrome. A desktop-large viewport keeps every
   // wall of the room on the actual Konva stage.
   test.use({ viewport: { width: 1920, height: 1080 } });
 
-  test('drops near each wall auto-orient into the room and sit flush', async ({ page }) => {
+  test('drops near each wall, a corner and mid-room land flush on the inner face, facing in', async ({
+    page,
+  }) => {
     await page.addInitScript(() => {
       localStorage.clear();
       // First-visit coach-marks dialog intercepts canvas clicks — mark seen.
@@ -126,39 +92,78 @@ test.describe('Sims wall-aware placement', () => {
     });
     await page.goto('/designer');
 
-    // Fresh canvas → give it the quick 5×4 m rectangle room.
+    // Fresh canvas → give it the quick 5x4 m rectangle room.
     await page.locator('[data-testid="start-quick-rectangle"]').click();
     await expect(page.locator('[data-testid="items-placed"]')).toHaveText('0');
 
-    // 1 — near the TOP wall → rotation 0 (faces down/into room), flush y=0.
-    await placeAt(page, 2.5, 0.6);
+    // Six drops, laid out so no two footprints overlap (a collision would
+    // trigger the free-slot relocation and hide what the resolver did).
+    // Every drop point keeps >= 0.1 m of margin from a grid-snap boundary
+    // and from the 0.45 m WALL_SNAP_GAP_M threshold, so a half-pixel of
+    // pointer rounding can never flip an outcome.
+    //
+    // 1 — near the TOP wall → rotation 0 (faces down/into room), flush y.
+    //     Along-wall snap of (3.4 - LEN/2) = 2.5 keeps it clear of the
+    //     corner item (x 0.05 → 2.1) placed last.
+    await placeAt(page, 3.4, 0.6);
     // 2 — near the RIGHT wall → rotation 90 (faces left), flush right.
-    await placeAt(page, 4.5, 2.0);
+    await placeAt(page, 4.5, 2.4);
     // 3 — near the BOTTOM wall → rotation 180 (faces up), flush bottom.
     await placeAt(page, 2.5, 3.5);
     // 4 — mid-room → default facing 0, plain grid snap, no wall pull.
-    await placeAt(page, 1.5, 2.0);
+    await placeAt(page, 2.5, 2.0);
+    // 5 — near the LEFT wall → rotation 270 (faces right), flush left.
+    await placeAt(page, 0.5, 2.4);
+    // 6 — near the TOP-LEFT CORNER → flush on BOTH faces at once. The top
+    //     wall is the closer one (0.55 vs 0.7), so it decides the facing.
+    await placeAt(page, 0.7, 0.55);
 
-    await expect(page.locator('[data-testid="items-placed"]')).toHaveText('4');
+    await expect(page.locator('[data-testid="items-placed"]')).toHaveText('6');
 
     const items = await storedItems(page);
-    expect(items).toHaveLength(4);
-    const [top, right, bottom, mid] = items;
+    expect(items).toHaveLength(6);
+    const [top, right, bottom, mid, left, corner] = items;
 
+    // Top wall: back on the inner face (y = 0.05), grid-snapped along x.
     expect(top.rotation).toBe(0);
-    expect(top.y).toBeCloseTo(0, 5); // flush against the top wall
+    expect(top.y).toBeCloseTo(WALL_HALF_M, 5);
+    expect(top.x).toBeCloseTo(2.5, 5);
 
+    // Right wall: at 90 deg the footprint is WID wide; flush → x = 5 - 0.05 - WID.
     expect(right.rotation).toBe(90);
-    // At 90° the footprint is WID wide; flush → x = 5 − WID.
-    expect(right.x).toBeCloseTo(5 - WID, 5);
+    expect(right.x).toBeCloseTo(ROOM_W - WALL_HALF_M - WID, 5);
+    expect(right.y).toBeCloseTo(1.5, 5);
 
+    // Bottom wall: flush → y = 4 - 0.05 - WID.
     expect(bottom.rotation).toBe(180);
-    expect(bottom.y).toBeCloseTo(4 - WID, 5); // flush against the bottom wall
+    expect(bottom.y).toBeCloseTo(ROOM_H - WALL_HALF_M - WID, 5);
+    expect(bottom.x).toBeCloseTo(1.5, 5);
 
+    // Mid-room: plain 0.5 m grid snap of (2.5 - LEN/2, 2.0 - WID/2), no wall pull.
     expect(mid.rotation).toBe(0);
-    // Plain 0.5 m grid snap of (1.5 − LEN/2, 2.0 − WID/2).
-    expect(mid.x).toBeCloseTo(0.5, 5);
+    expect(mid.x).toBeCloseTo(1.5, 5);
     expect(mid.y).toBeCloseTo(1.5, 5);
+
+    // Left wall: at 270 deg the footprint is WID wide; flush → x = 0.05.
+    expect(left.rotation).toBe(270);
+    expect(left.x).toBeCloseTo(WALL_HALF_M, 5);
+    expect(left.y).toBeCloseTo(1.5, 5);
+
+    // Corner: touches the top face AND the left face — the two-wall snap
+    // that used to be reachable only when the grid happened to line up.
+    expect(corner.rotation).toBe(0);
+    expect(corner.x).toBeCloseTo(WALL_HALF_M, 5);
+    expect(corner.y).toBeCloseTo(WALL_HALF_M, 5);
+
+    // Nothing may sit inside the wall band or outside the room.
+    for (const it of items) {
+      expect(it.x).toBeGreaterThanOrEqual(WALL_HALF_M - 1e-6);
+      expect(it.y).toBeGreaterThanOrEqual(WALL_HALF_M - 1e-6);
+      const w = it.rotation % 180 === 0 ? LEN : WID;
+      const h = it.rotation % 180 === 0 ? WID : LEN;
+      expect(it.x + w).toBeLessThanOrEqual(ROOM_W - WALL_HALF_M + 1e-6);
+      expect(it.y + h).toBeLessThanOrEqual(ROOM_H - WALL_HALF_M + 1e-6);
+    }
 
     await page.screenshot({
       path: 'test-results/wall-aware-placement.png',
@@ -192,15 +197,15 @@ test.describe('Sims wall-aware placement', () => {
     // the old placement path fed EVERY click through the active room's
     // polygon, so `findFreeSlot` silently rescued the out-of-room point and
     // dumped the item at the room's top-left corner — which happens to
-    // satisfy this test's `y ≈ 0` assertion. Attached multi-room routes a
-    // drop to the room actually under the pointer and rejects a drop that
-    // is outside every room, so the stale origin now surfaces instead of
-    // being papered over. With the origin read here, `y ≈ 0` finally
-    // verifies a real WALL SNAP (the item lands at x = 1.5, positioned by
-    // the click) rather than a corner dump at x = 0.
+    // satisfy a "flush on the top wall" assertion. Attached multi-room
+    // routes a drop to the room actually under the pointer (and since the
+    // Sims world, an off-room drop lands OUTDOORS), so the stale origin now
+    // surfaces instead of being papered over. With the origin read here,
+    // `y = 0.05` verifies a real WALL SNAP (the item lands at x = 1.5,
+    // positioned by the click) rather than a corner dump at x = 0.
     const origin = await roomOrigin(page);
 
-    // Rotate twice (90° per press → 180) then drop near the TOP wall:
+    // Rotate twice (90 deg per press → 180) then drop near the TOP wall:
     // the user's facing must win over the wall's auto-orientation (0),
     // but the flush wall snap still applies.
     const sx = origin.x + 2.5 * PX_PER_M;
@@ -214,6 +219,8 @@ test.describe('Sims wall-aware placement', () => {
     const items = await storedItems(page);
     expect(items).toHaveLength(1);
     expect(items[0].rotation).toBe(180);
-    expect(items[0].y).toBeCloseTo(0, 5);
+    // Flush on the top wall's INNER FACE, at the click's along-wall snap.
+    expect(items[0].y).toBeCloseTo(WALL_HALF_M, 5);
+    expect(items[0].x).toBeCloseTo(1.5, 5);
   });
 });

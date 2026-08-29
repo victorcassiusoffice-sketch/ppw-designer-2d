@@ -136,6 +136,9 @@ test.describe('Selectable snap units', () => {
     await seedWithUnit(page, JSON.parse(JSON.stringify(ONE_ROOM_FIXTURE)), 'cm1');
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    // The canvas being ATTACHED is not the bridge being READY — under load
+    // the first worldToScreen can land before the Stage is wired. Wait.
+    await waitForGeom(page);
 
     const seeded = await storedProperty(page);
     expect(seeded!.rooms).toHaveLength(1);
@@ -166,54 +169,118 @@ test.describe('Selectable snap units', () => {
     expect(northY).toBeCloseTo(0.31, 6);
   });
 
-  test('the wall tool commits endpoints finer than the 500 mm lattice', async ({ page }) => {
-    await seedWithUnit(page, null, 'cm1');
-    await page.goto('/designer?fresh=1');
+  test('the wall pen commits endpoints finer than the 500 mm lattice', async ({ page }) => {
+    // Sims world (2026-08-29): the mm `wallStore` tool is retired. "+ Walls"
+    // opens the SAME pen as the room tool, and an OPEN run finished with
+    // "Finish walls" becomes free-standing walls on the property:
+    //   ppw_property_v2 -> state.property.walls[{ a:{x,y}, b:{x,y} }]  (metres)
+    //
+    // Start on the 0.5 m unit and switch to 1 cm MID-DRAW with the digit key,
+    // reading the change back off the HUD's own stepper label — so this pins
+    // the unit really changing under the pen, not a pre-seeded preference.
+    await seedWithUnit(page, null, 'full');
+    await page.goto('/designer');
     await page.locator('[data-testid="start-quick-rectangle"]').click();
     await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
-
-    const pxPerM = await livePxPerMetre(page);
-    expect(pxPerM).toBeGreaterThan(1);
+    await waitForGeom(page);
 
     await page.locator('[data-testid="wall-tool-toggle"]').click();
-    await expect(page.locator('[data-testid="wall-draw-hud"]')).toBeVisible();
+    const hud = page.locator('[data-testid="room-draw-hud"]');
+    await expect(hud).toBeVisible();
+    // Two steppers mount in draw mode (the HUD's and the mobile bottom-left
+    // one); read the HUD's so the locator is unambiguous.
+    const unitLabel = hud.locator('[data-testid="snap-unit-current"]');
+    await expect(unitLabel).toHaveText('0.5 m');
+    await page.keyboard.press('1');
+    await expect(unitLabel).toHaveText('1 cm');
 
-    // One segment, 1.37 m long BY CONSTRUCTION. 1370 is not a multiple of
-    // 500, so if the wall tool were still snapping to WALL_SNAP_MM both
-    // endpoints would land on the 500 lattice and the difference would be
-    // 1000 or 1500 — the modulo below cannot pass by accident.
-    const start = await worldToScreen(page, 1.5, 1.5);
-    if (!start) throw new Error('geom bridge unavailable');
-    await page.mouse.click(start.x, start.y);
-    await page.mouse.click(start.x + 1.37 * pxPerM, start.y);
-    await page.waitForTimeout(300);
+    // One open segment, endpoints chosen OFF the 0.5 m lattice on both axes:
+    // (1.53, 1.27) → (2.90, 1.27), i.e. 1.37 m long. A build still snapping
+    // walls to the half-metre would land these on 1.5 / 3.0 / 1.5 and the
+    // "not a multiple of 0.5" checks below cannot pass by luck.
+    //
+    // At the 1 cm unit one snap step is ONE screen pixel (100 px/m, scale
+    // 1), and the browser hands the app INTEGER clientX/Y — so a fractional
+    // page coordinate can round onto the neighbouring centimetre. Click at
+    // integer pixels and take the expected metres from the bridge's own
+    // inverse transform of those exact pixels, quantised the way the pen
+    // quantises: what is asserted is still an exact value, never "roughly".
+    const clickWorldExact = async (xM: number, yM: number) => {
+      const pt = await worldToScreen(page, xM, yM);
+      if (!pt) throw new Error('geom bridge unavailable');
+      const px = Math.round(pt.x);
+      const py = Math.round(pt.y);
+      const world = await page.evaluate(
+        ([x, y]) => {
+          const g = window.__ppwGeom;
+          return g && g.ready() ? g.screenToWorld(x, y) : null;
+        },
+        [px, py] as [number, number],
+      );
+      if (!world) throw new Error('geom bridge unavailable');
+      await page.mouse.move(px, py, { steps: 4 });
+      await page.mouse.click(px, py);
+      const q = (v: number) => Number((Math.round(v / 0.01) * 0.01).toFixed(4));
+      return { x: q(world.x), y: q(world.y) };
+    };
+    const A = await clickWorldExact(1.53, 1.27);
+    const B = await clickWorldExact(2.9, 1.27);
+    // Whatever the pixel rounding did, the targets stay off the half-metre
+    // lattice (the nearest 0.5 multiples are >= 3 cm away on every axis).
+    expect(Math.abs(A.x - 1.53)).toBeLessThanOrEqual(0.011);
+    expect(Math.abs(A.y - 1.27)).toBeLessThanOrEqual(0.011);
+    expect(Math.abs(B.x - 2.9)).toBeLessThanOrEqual(0.011);
+    expect(Math.abs(B.y - 1.27)).toBeLessThanOrEqual(0.011);
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const g = window.__ppwGeom;
+          return g && g.ready() ? g.drawVertexCount() : -1;
+        }),
+      )
+      .toBe(2);
 
-    const walls = await page.evaluate(() => {
-      try {
-        return JSON.parse(localStorage.getItem('ppw_walls_v1') ?? '[]') as Array<{
-          start: { x_mm: number; y_mm: number };
-          end: { x_mm: number; y_mm: number };
-        }>;
-      } catch {
-        return [];
-      }
-    });
-    expect(walls.length).toBeGreaterThan(0);
+    // Finish the OPEN run as walls — no room is closed.
+    await page.locator('[data-testid="room-draw-finish-walls"]').click();
+    await expect(hud).toHaveCount(0);
 
-    const w = walls[0];
-    const coords = [w.start.x_mm, w.start.y_mm, w.end.x_mm, w.end.y_mm];
+    const readWalls = () =>
+      page.evaluate(() => {
+        try {
+          const parsed = JSON.parse(localStorage.getItem('ppw_property_v2') ?? '{}') as {
+            state?: { property?: { walls?: Array<{ a: { x: number; y: number }; b: { x: number; y: number } }> } };
+          };
+          return parsed.state?.property?.walls ?? [];
+        } catch {
+          return [];
+        }
+      });
+    await expect.poll(async () => (await readWalls()).length).toBe(1);
 
-    // Every endpoint is a whole number of centimetres — the integer-mm
-    // invariant the ladder guarantees, which detectClosedRoomVertices
-    // depends on for its exact `${x_mm},${y_mm}` endpoint matching.
+    const w = (await readWalls())[0];
+    const coords = [w.a.x, w.a.y, w.b.x, w.b.y];
+
+    // Every endpoint is a whole number of centimetres (the 1 cm unit)...
     for (const c of coords) {
-      expect(Math.abs(c % 10)).toBeLessThan(1e-9);
+      expect(Math.abs(c * 100 - Math.round(c * 100))).toBeLessThan(1e-6);
     }
+    // ...and NOT on the old 0.5 m lattice — the assertion that fails on a
+    // build that widened the store but left the wall pen on WALL_SNAP_MM.
+    for (const c of coords) {
+      expect(Math.abs(c * 2 - Math.round(c * 2))).toBeGreaterThan(1e-6);
+    }
+    // The exact values the clicks resolved to, so a build that mis-aims by a
+    // step (or re-snaps the committed run) is caught too.
+    expect(w.a.x).toBeCloseTo(A.x, 6);
+    expect(w.a.y).toBeCloseTo(A.y, 6);
+    expect(w.b.x).toBeCloseTo(B.x, 6);
+    expect(w.b.y).toBeCloseTo(B.y, 6);
+    expect(Math.abs(w.b.x - w.a.x)).toBeCloseTo(B.x - A.x, 6);
+    expect(Math.abs(w.b.x - w.a.x)).toBeGreaterThan(1.3);
 
-    // And the segment is finer than the old lattice.
-    const dx = Math.abs(w.end.x_mm - w.start.x_mm);
-    expect(dx).toBeGreaterThan(0);
-    expect(dx % 500).not.toBe(0);
+    // The retired mm store must not have received anything.
+    const legacy = await page.evaluate(() => localStorage.getItem('ppw_walls_v1'));
+    expect(legacy === null || JSON.parse(legacy).length === 0).toBe(true);
   });
   test('the picker selects a unit, labels it explicitly, and survives a reload', async ({
     page,
@@ -295,6 +362,7 @@ test.describe('Selectable snap units', () => {
     await seedWithUnit(page, BIG_ROOM, 'cm1');
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    await waitForGeom(page);
     await page.waitForTimeout(800);
 
     const pxPerM = await livePxPerMetre(page);
@@ -319,6 +387,7 @@ test.describe('Selectable snap units', () => {
     await seedWithUnit(page, JSON.parse(JSON.stringify(ONE_ROOM_FIXTURE)), 'cm1');
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    await waitForGeom(page);
 
     const before = await storedProperty(page);
     expect(before.rooms).toHaveLength(1);
@@ -367,6 +436,7 @@ test.describe('Selectable snap units', () => {
     await seedWithUnit(page, JSON.parse(JSON.stringify(ONE_ROOM_FIXTURE)), 'full');
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    await waitForGeom(page);
 
     await page.locator('[data-testid="room-draw-toggle"]').click();
     await clickWorld(page, 7, 1);

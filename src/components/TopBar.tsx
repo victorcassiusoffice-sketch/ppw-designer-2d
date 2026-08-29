@@ -40,7 +40,14 @@ import {
 import { useDrawProgressStore } from '../store/drawProgressStore';
 import { isDrawnPolygon } from '../designer/roomLayout';
 // Sims world (2026-08-29): storeys + land plot live on the property.
-import { activeLevelIdOf, levelsOf, nextLevelName, visibleRooms, roomsOnLevel } from '../designer/levels';
+import {
+  activeLevelIdOf,
+  isOutdoorRoom,
+  levelsOf,
+  nextLevelName,
+  visibleRooms,
+  roomsOnLevel,
+} from '../designer/levels';
 import { performUndo, performRedo } from '../lib/undoIntent';
 import { FLOOR_MATERIALS, tileableFloorMaterials } from '../data/floorMaterials';
 import { useWallStore } from '../store/wallStore';
@@ -506,9 +513,15 @@ export function TopBar({
               />
               <span className="text-[11px] text-ppw-slate">m</span>
             </>
+          ) : activeRoom && isOutdoorRoom(activeRoom) ? (
+            // Sims world (2026-08-29): focus follows a selected garden item
+            // into the Outdoors container, which has no walls to measure.
+            <span className="text-[11px] italic text-ppw-slate">Outdoors · garden</span>
           ) : room.lengthM < 0.5 ? (
             // Blank-canvas-on-open (2026-06-09) — no room drawn yet.
-            <span className="text-[11px] italic text-ppw-slate">Draw a room →</span>
+            <span className="text-[11px] italic text-ppw-slate">
+              {drawnRoomCount === 0 ? 'Draw a room →' : 'Pick a room'}
+            </span>
           ) : (
             <span className="text-[11px] italic text-ppw-slate">(polygon)</span>
           )}

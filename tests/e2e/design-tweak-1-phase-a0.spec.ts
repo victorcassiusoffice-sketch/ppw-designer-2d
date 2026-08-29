@@ -152,16 +152,21 @@ test.describe('Design Tweak 1 — Phase A surface checks', () => {
     }
   });
 
-  test('catalog renders the 7 macro tabs (Tweak 05)', async ({ page }) => {
+  test('catalog renders the macro tabs (Tweak 05 + Sims-world Lighting/Outdoor)', async ({ page }) => {
     // The catalog sidebar mounts the tab bar on desktop. Each macro
     // label appears as a CategoryChip button.
-    for (const label of ['All', 'Furniture', 'Cardio', 'Recovery', 'Sauna', 'Flooring', 'Walls', 'Decor']) {
+    // Sims world (2026-08-29) added two tabs to Tweak 05's seven (+ All):
+    // Lighting (the `lighting` category) and Outdoor (any `outdoor` product).
+    // The dock is exactly these 10 — no more, no fewer.
+    const labels = ['All', 'Furniture', 'Cardio', 'Recovery', 'Sauna', 'Flooring', 'Walls', 'Decor', 'Lighting', 'Outdoor'];
+    for (const label of labels) {
       // The catalog moved from ProductPalette's plain <button> chips to
       // SimsDock, whose macro tabs carry role="tab". The label text is
       // unchanged; only the ROLE moved.
       const tab = page.getByRole('tab', { name: new RegExp(`^${label}$`) }).first();
       await expect(tab).toBeVisible({ timeout: 10_000 });
     }
+    await expect(page.locator('[data-testid^="dock-cat-"]')).toHaveCount(labels.length);
   });
 
   test.skip('catalog tiles render in a grid with ≥4 columns at 320 px width (Tweak 05)', async ({ page }) => {

@@ -114,43 +114,77 @@ test.skip('e) M3 — place 1 item in 2D, switch to BABYLON → 1 product mesh', 
   // (Babylon 3D mirror probe removed with the 3D viewer — P1-1 2026-06-04.)
 });
 
-test('f) M2 — wallStore persists 4 walls, HUD displays count + room area on reload', async ({ page }) => {
-  // CDP rapid-click 5-point polyline produces non-deterministic wall counts
-  // because react-konva's first event listener attaches a paint cycle after
-  // the WALL mode-strip click commits — and intermittent "lost" clicks
-  // afterwards (probe9 saw clicks 1 + 3 silently dropped while click 4
-  // committed). The wall-store-internal phase race is fixed in commit
-  // df8dc05 (`useWallStore.getState()` reads in handlers, no stale refs),
-  // but the react-konva listener-attach race persists for synthetic clicks.
-  //
-  // Acceptance therefore verifies the durable M2 contract — wallStore
-  // persists 4 walls to localStorage, hydrates on load, HUD shows count=4
-  // + room-area > 0 (polygon reconstruction), survives reload. Manual
-  // click-driven draw works for human-paced input in production.
+test('f) M2 — legacy ppw_walls_v1 walls migrate onto property.walls on mount and survive a reload', async ({ page }) => {
+  // Sims world (2026-08-29): the M2 interior-wall tool (`wallStore`, mm,
+  // `ppw_walls_v1`, the `wall-draw-hud` / `wall-count` / `room-area` HUD) is
+  // RETIRED. "+ Walls" is now the room pen. What remains of the M2 contract
+  // is the DATA: anything a customer drew with the old tool must not be lost,
+  // so on app mount every legacy mm segment is folded onto the property as a
+  // free wall in METRES —
+  //   ppw_property_v2 -> state.property.walls[{ a:{x,y}, b:{x,y}, thicknessM }]
+  // — and `ppw_walls_v1` is emptied so nothing renders twice.
   const fourWalls = [
     { id: 'w1', start: { x_mm: 0, y_mm: 0 }, end: { x_mm: 4000, y_mm: 0 }, thickness_mm: 100, height_mm: 2700, type: 'full' },
     { id: 'w2', start: { x_mm: 4000, y_mm: 0 }, end: { x_mm: 4000, y_mm: 3000 }, thickness_mm: 100, height_mm: 2700, type: 'full' },
     { id: 'w3', start: { x_mm: 4000, y_mm: 3000 }, end: { x_mm: 0, y_mm: 3000 }, thickness_mm: 100, height_mm: 2700, type: 'full' },
     { id: 'w4', start: { x_mm: 0, y_mm: 3000 }, end: { x_mm: 0, y_mm: 0 }, thickness_mm: 100, height_mm: 2700, type: 'full' },
   ];
+  // FIRST-LOAD-ONLY seed. addInitScript re-runs on every navigation, so an
+  // unguarded seed would re-plant the legacy store on the reload below and
+  // the "ppw_walls_v1 is empty afterwards" assertion would be testing the
+  // seed, not the migration.
   await page.addInitScript((walls) => {
-    try { window.localStorage.setItem('ppw_walls_v1', JSON.stringify(walls)); } catch { /* ignore */ }
+    try {
+      if (window.localStorage.getItem('__ppw_phase0_walls_seeded') === '1') return;
+      window.localStorage.setItem('__ppw_phase0_walls_seeded', '1');
+      window.localStorage.setItem('ppw_walls_v1', JSON.stringify(walls));
+    } catch { /* ignore */ }
   }, fourWalls);
+
+  const readWalls = () =>
+    page.evaluate(() => {
+      let walls: Array<{ a: { x: number; y: number }; b: { x: number; y: number }; thicknessM: number }> = [];
+      let legacy = -1;
+      try {
+        const parsed = JSON.parse(window.localStorage.getItem('ppw_property_v2') ?? '{}');
+        const w = parsed?.state?.property?.walls;
+        walls = Array.isArray(w) ? w : [];
+      } catch { /* ignore */ }
+      try {
+        const raw = window.localStorage.getItem('ppw_walls_v1');
+        const parsed = raw ? JSON.parse(raw) : [];
+        legacy = Array.isArray(parsed) ? parsed.length : -1;
+      } catch { /* ignore */ }
+      return { walls, legacy };
+    });
+  const EXPECTED_EDGES = [
+    [0, 0, 4, 0],
+    [4, 0, 4, 3],
+    [4, 3, 0, 3],
+    [0, 3, 0, 0],
+  ];
+  const asEdges = (walls: Awaited<ReturnType<typeof readWalls>>['walls']) =>
+    walls.map((w) => [w.a.x, w.a.y, w.b.x, w.b.y]);
 
   await page.goto('/designer');
   await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
 
-  await page.locator('[data-testid="wall-tool-toggle"]').click();
-  await expect(page.locator('[data-testid="wall-draw-hud"]')).toBeVisible({ timeout: 10_000 });
-  await expect(page.locator('[data-testid="wall-count"]')).toHaveText('4');
-  await expect(page.locator('[data-testid="room-area"]')).toContainText(/m²/);
+  // Migrated on mount: 4 walls in metres, in the legacy order, 100 mm → 0.1 m.
+  await expect.poll(async () => (await readWalls()).walls.length).toBe(4);
+  const migrated = await readWalls();
+  expect(asEdges(migrated.walls)).toEqual(EXPECTED_EDGES);
+  for (const w of migrated.walls) expect(w.thicknessM).toBeCloseTo(0.1, 6);
+  // ...and the legacy store was emptied, not merely copied.
+  expect(migrated.legacy).toBe(0);
 
-  // Persistence — reload the page and re-engage Wall mode; the store hydrates
-  // from localStorage and the count stays at 4.
+  // Persistence — reload; the property store re-hydrates the 4 walls and the
+  // legacy store STAYS empty (the seed above does not re-run).
   await page.reload();
   await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
-  await page.locator('[data-testid="wall-tool-toggle"]').click();
-  await expect(page.locator('[data-testid="wall-count"]')).toHaveText('4');
+  await expect.poll(async () => (await readWalls()).walls.length).toBe(4);
+  const reloaded = await readWalls();
+  expect(asEdges(reloaded.walls)).toEqual(EXPECTED_EDGES);
+  expect(reloaded.legacy).toBe(0);
 
   await page.screenshot({ path: path.join(SHOT_DIR, 'f-m2-walls.png'), fullPage: true });
 });
