@@ -307,6 +307,18 @@ export function RoomDrawLayer({
 
       if (e.key === 'Escape') {
         e.preventDefault();
+        // Sims world (Vic 2026-08-29): Esc lifts the pen and KEEPS what was
+        // drawn — walls do not need to connect to anything. With two or more
+        // points the run is kept as free walls; a lone point is dropped.
+        // Discard (the HUD button) is the only path that throws a run away.
+        const current = verticesRef.current;
+        if (current.length >= 2 && onCommitWallsRef.current) {
+          console.log(DBG, 'keydown Escape -> keep open run as walls', { vertices: current.length });
+          onCommitWallsRef.current(current);
+          setVerticesRef.current([]);
+          setHoverRef.current(null);
+          return;
+        }
         console.log(DBG, 'keydown Escape -> cancel');
         setVerticesRef.current([]);
         setHoverRef.current(null);
@@ -740,12 +752,11 @@ export function RoomDrawHUD({
           Wall pen
         </span>
         <span className="hidden text-[10px] text-ppw-slate sm:inline">
-          Click to drop wall points &middot;{' '}
-          {stepM <= 0.1 ? 'Enter closes a room' : 'click the first point or Enter to close a room'}{' '}
-          &middot; Finish keeps open walls
+          Click to drop wall points &middot; walls stay where you stop &middot;{' '}
+          {stepM <= 0.1 ? 'Enter closes a room' : 'click the first point or Enter to close a room'}
         </span>
         <span className="text-[10px] text-ppw-slate sm:hidden">
-          Tap to drop &middot; tap first point to close
+          Tap to drop &middot; Done keeps the walls &middot; tap the first point for a room
         </span>
         {/* The unit stepper lives INSIDE the HUD so it is reachable mid-draw
             on a phone with a thumb; +/- keys step the same ladder. */}
@@ -815,25 +826,21 @@ export function RoomDrawHUD({
           >
             Undo
           </button>
+          {/* DONE keeps the run as walls — the Sims contract: walls are real
+              the moment you stop. Primary on the phone, where it is the
+              button a thumb reaches first. */}
           <button
             type="button"
-            onClick={handleFinishWalls}
-            disabled={vertices.length < 2 || !onCommitWalls}
+            onClick={vertices.length >= 2 && onCommitWalls ? handleFinishWalls : handleCancel}
             data-testid="room-draw-finish-walls"
-            className="pointer-events-auto min-h-[44px] flex-1 rounded-md border border-ppw-stone bg-white px-3 text-xs font-medium text-ppw-slate hover:border-ppw-ink disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
-            title="Keep these as free-standing walls without closing a room (Alt+Enter)"
+            className="pointer-events-auto min-h-[44px] flex-1 rounded-md border border-ppw-ink bg-ppw-ink px-3 text-xs font-semibold text-white hover:bg-ppw-ink/90 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
+            title={
+              vertices.length >= 2
+                ? 'Done — keep these walls as they are (Esc or Alt+Enter)'
+                : 'Done — leave the pen'
+            }
           >
-            Finish walls
-          </button>
-          <button
-            type="button"
-            onClick={handleCloseContinue}
-            disabled={vertices.length < 3}
-            data-testid="room-draw-close-continue"
-            className="pointer-events-auto min-h-[44px] flex-1 rounded-md border border-ppw-stone bg-white px-3 text-xs font-medium text-ppw-slate hover:border-ppw-teal disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
-            title="Close this room and keep drawing another (Shift+Enter)"
-          >
-            Close + new
+            Done
           </button>
           <button
             type="button"
@@ -842,21 +849,31 @@ export function RoomDrawHUD({
             className="pointer-events-auto min-h-[44px] flex-1 rounded-md border border-ppw-teal bg-ppw-teal px-3 text-xs font-medium text-white hover:bg-ppw-teal/90 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
             title={
               vertices.length < 3
-                ? 'Need at least 3 walls'
-                : 'Close polygon and commit as new room (Enter)'
+                ? 'A room needs at least 3 points'
+                : 'Close the shape and make it a room (Enter)'
             }
             data-testid="room-draw-close"
           >
-            Close
+            Make room
+          </button>
+          <button
+            type="button"
+            onClick={handleCloseContinue}
+            disabled={vertices.length < 3}
+            data-testid="room-draw-close-continue"
+            className="pointer-events-auto hidden min-h-[44px] flex-1 rounded-md border border-ppw-stone bg-white px-3 text-xs font-medium text-ppw-slate hover:border-ppw-teal disabled:cursor-not-allowed disabled:opacity-50 sm:inline-flex sm:flex-initial sm:items-center sm:justify-center"
+            title="Make the room and keep drawing another (Shift+Enter)"
+          >
+            Room + next
           </button>
           <button
             type="button"
             onClick={handleCancel}
-            className="min-h-[44px] flex-1 rounded-md border border-ppw-coral bg-white px-3 text-xs font-medium text-ppw-coral hover:bg-ppw-coral hover:text-white sm:flex-initial"
-            title="Cancel (Esc)"
+            className="pointer-events-auto min-h-[44px] flex-1 rounded-md border border-ppw-coral bg-white px-3 text-xs font-medium text-ppw-coral hover:bg-ppw-coral hover:text-white sm:flex-initial"
+            title="Throw these points away (the only exit that does)"
             data-testid="room-draw-cancel"
           >
-            Cancel
+            Discard
           </button>
         </div>
       </div>

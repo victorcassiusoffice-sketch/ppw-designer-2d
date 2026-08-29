@@ -410,8 +410,19 @@ describe('App source - draw mode no longer destroys the canvas', () => {
     expect(setDrawModeBody).toMatch(/selectItem\(null\)/);
   });
 
-  it('ABORTS rather than ends the transaction on exit', () => {
+  it('ABORTS the transaction on an empty exit, and only ENDS it when an open run is kept as walls', () => {
+    // Sims world (Vic 2026-08-29): leaving the pen keeps the walls drawn so
+    // far. The exit branch therefore has TWO outcomes: nothing in flight →
+    // abort (history untouched, as before); >= 2 points in flight →
+    // keepOpenRunAsWalls + end (one undo frame). endDrawTransaction must
+    // never appear without the keep call beside it.
     expect(setDrawModeBody).toMatch(/abortDrawTransaction\(\)/);
-    expect(setDrawModeBody).not.toMatch(/endDrawTransaction\(\)/);
+    expect(setDrawModeBody).toMatch(/keepOpenRunAsWalls\(dp\.vertices\)/);
+    expect(setDrawModeBody).toMatch(/isDrawTransactionActive\(\) && dp\.vertices\.length >= 2/);
+    const ends = setDrawModeBody.match(/endDrawTransaction\(\)/g) ?? [];
+    expect(ends).toHaveLength(1);
+    expect(setDrawModeBody.indexOf('keepOpenRunAsWalls(')).toBeLessThan(
+      setDrawModeBody.indexOf('endDrawTransaction()'),
+    );
   });
 });

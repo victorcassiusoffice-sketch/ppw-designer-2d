@@ -61,8 +61,11 @@ import { useAutoSave } from './lib/useAutoSave';
 import {
   abortDrawTransaction,
   beginDrawTransaction,
+  endDrawTransaction,
   installHistorySubscriptions,
+  isDrawTransactionActive,
 } from './store/historyStore';
+import { keepOpenRunAsWalls } from './lib/wallPen';
 import { usePropertyStore } from './store/propertyStore';
 import { useWallStore } from './store/wallStore';
 import { useFloorZoneStore } from './store/floorZoneStore';
@@ -172,9 +175,23 @@ export default function App() {
       dp.setVertices([]);
     } else {
       const dp = useDrawProgressStore.getState();
-      dp.setEnabled(false);
-      dp.setVertices([]);
-      abortDrawTransaction();
+      // Sims world (Vic 2026-08-29): leaving the pen KEEPS the walls that
+      // were drawn. Any exit path that reaches here with points still in
+      // flight — Rectangle, another tool, the + Walls toggle — turns the run
+      // into free walls and ends the transaction as ONE undo frame. A commit
+      // (room or walls) has already ended the transaction and emptied the
+      // run, so this cannot double-commit; an explicit Discard empties the
+      // run first, so this keeps nothing.
+      if (isDrawTransactionActive() && dp.vertices.length >= 2) {
+        keepOpenRunAsWalls(dp.vertices);
+        dp.setEnabled(false);
+        dp.setVertices([]);
+        endDrawTransaction();
+      } else {
+        dp.setEnabled(false);
+        dp.setVertices([]);
+        abortDrawTransaction();
+      }
     }
     setDrawModeRaw(next);
   }, []);

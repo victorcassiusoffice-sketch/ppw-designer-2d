@@ -250,6 +250,50 @@ test.describe('Wall pen — free-standing walls', () => {
     expect(await renderedFreeWallCount(page)).toBe(0);
   });
 
+  test('two points then Esc KEEPS the wall (Vic 2026-08-29: walls need not close a circuit)', async ({
+    page,
+  }) => {
+    const toggle = page.locator('[data-testid="wall-tool-toggle"]');
+    await toggle.click();
+    const hud = page.locator('[data-testid="room-draw-hud"]');
+    await expect(hud).toBeVisible();
+
+    await clickWorld(page, 6, 1);
+    await clickWorld(page, 8, 1);
+    await expect.poll(() => drawVertexCount(page)).toBe(2);
+
+    // Escape used to throw the run away; a run of 2+ points is now kept as
+    // free walls on every exit except Discard.
+    await page.keyboard.press('Escape');
+    await expect(hud).toHaveCount(0);
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+
+    await expect.poll(async () => (await storedFreeWalls(page)).length).toBe(1);
+    const [w] = await storedFreeWalls(page);
+    expect([w.a.x, w.a.y, w.b.x, w.b.y]).toEqual([6, 1, 8, 1]);
+    expect((await storedProperty(page))!.rooms).toHaveLength(1);
+    await expect.poll(() => renderedFreeWallCount(page)).toBe(1);
+
+    // And the same run through the toolbar toggle (not Esc) is also kept.
+    await toggle.click();
+    await expect(hud).toBeVisible();
+    await clickWorld(page, 6, 3);
+    await clickWorld(page, 8, 3);
+    await expect.poll(() => drawVertexCount(page)).toBe(2);
+    await toggle.click();
+    await expect(hud).toHaveCount(0);
+    await expect.poll(async () => (await storedFreeWalls(page)).length).toBe(2);
+
+    // Discard is the ONLY exit that drops a run.
+    await toggle.click();
+    await expect(hud).toBeVisible();
+    await clickWorld(page, 6, 3.5);
+    await clickWorld(page, 8, 3.5);
+    await page.locator('[data-testid="room-draw-cancel"]').click();
+    await expect(hud).toHaveCount(0);
+    expect((await storedFreeWalls(page)).length).toBe(2);
+  });
+
   test('a run that closes on its first point still commits a room, not walls', async ({ page }) => {
     await page.locator('[data-testid="wall-tool-toggle"]').click();
     const hud = page.locator('[data-testid="room-draw-hud"]');

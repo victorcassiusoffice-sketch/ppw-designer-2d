@@ -27,8 +27,10 @@ import {
   duplicateSelected,
   deleteSelected,
   toggleSelectedLight,
+  fillFloorWithSelected,
 } from '../lib/placementActions';
 import { emitsLight } from '../designer/lighting';
+import { isFlooringProduct } from '../designer/flooringLattice';
 
 /**
  * P0-ε — Pattern C attribution: stable per-browser sessionId so the
@@ -247,6 +249,19 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
                 >
                   Duplicate (+0.5 m offset)
                 </button>
+                {/* Sims flooring (2026-08-29): lay this tile over the whole
+                    room, edge to edge. Duplicate (D) lays ONE next to it. */}
+                {isFlooringProduct(selectedProduct) && (
+                  <button
+                    type="button"
+                    onClick={fillFloorWithSelected}
+                    data-testid="details-fill-floor"
+                    className="col-span-2 rounded-md border border-ppw-stone bg-white px-2 py-1.5 text-xs font-medium text-ppw-ink hover:border-ppw-teal hover:text-ppw-teal"
+                    title="Lay copies of this tile over every free part of the room"
+                  >
+                    Fill floor with this tile
+                  </button>
+                )}
                 {/* Sims world (2026-08-29): lights cast a pool on the plan;
                     this is the switch. Only shown for products that emit. */}
                 {emitsLight(selectedProduct) && (

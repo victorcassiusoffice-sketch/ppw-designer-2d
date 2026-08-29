@@ -14,8 +14,11 @@
  * offcut allowance in `floorTileOrder`.
  */
 
-import { pointInPolygon, polygonBounds } from '../lib/geometry';
+import { pointInPolygon, polygonArea, polygonBounds } from '../lib/geometry';
 import type { Polygon, Vertex } from '../lib/geometry';
+// Whole-room finish pricing (2026-08-29). floorFinish.ts imports data only,
+// so this is not a cycle.
+import { resolveFloorMaterial } from './floorFinish';
 
 /**
  * A painted region of ONE material inside ONE room.
@@ -392,10 +395,51 @@ export interface RoomFloorLine {
  * as the single source of truth for sheet goods.
  */
 export function roomFloorOrders(
-  room: { polygon: Polygon; floorTiles?: FloorZone[] },
+  room: { polygon: Polygon; floorTiles?: FloorZone[]; floorFinish?: { materialId: string } | null },
 ): RoomFloorLine[] {
-  if (!room.floorTiles || room.floorTiles.length === 0) return [];
-  return room.floorTiles
-    .map((z) => ({ materialId: z.materialId, order: floorTileOrder(z, room.polygon) }))
-    .filter((l) => l.order.unitsToOrder > 0);
+  if (room.floorTiles && room.floorTiles.length > 0) {
+    return room.floorTiles
+      .map((z) => ({ materialId: z.materialId, order: floorTileOrder(z, room.polygon) }))
+      .filter((l) => l.order.unitsToOrder > 0);
+  }
+  // Vic 2026-08-29: the whole-room "Floor" picker never reached the cart —
+  // this used to return [] for a room on the finish path, so the material
+  // rendered on the plan and priced at nothing. A finish is an order too:
+  // tileable goods get the same tile count a full-room paint would give;
+  // sheet goods (rolls) are ordered by covered area + the offcut allowance.
+  const finish = wholeRoomFinishOrder(room);
+  return finish ? [finish] : [];
+}
+
+/**
+ * The purchase line for a room covered edge-to-edge by its `floorFinish`.
+ * Null for a bare floor, an unknown material, or an undrawn room.
+ */
+export function wholeRoomFinishOrder(
+  room: { polygon: Polygon; floorFinish?: { materialId: string } | null },
+): RoomFloorLine | null {
+  if (!room.floorFinish || !room.polygon || room.polygon.length < 3) return null;
+  const mat = resolveFloorMaterial(room.floorFinish.materialId);
+  if (!mat) return null;
+  if (mat.tile_w_m !== null && mat.tile_h_m !== null) {
+    const zone = zoneForMaterial(mat.id, mat.tile_w_m, mat.tile_h_m, room.polygon);
+    const keys = new Set(
+      tilesCoveringPolygon(zone, room.polygon).map((t) => `${t.row},${t.col}`),
+    );
+    const order = floorTileOrder({ ...zone, runs: setToRuns(keys) }, room.polygon);
+    return order.unitsToOrder > 0 ? { materialId: mat.id, order } : null;
+  }
+  // Rolls: no lattice, so whole units of coverage with the same 10 % waste.
+  const areaM2 = polygonArea(room.polygon);
+  if (areaM2 <= 0) return null;
+  const units = Math.ceil((areaM2 * (1 + CUT_WASTE_FRACTION)) / mat.coverage_m2_per_unit);
+  return {
+    materialId: mat.id,
+    order: {
+      wholeTiles: units,
+      cutTiles: 0,
+      unitsToOrder: units,
+      coveredM2: Number(areaM2.toFixed(2)),
+    },
+  };
 }

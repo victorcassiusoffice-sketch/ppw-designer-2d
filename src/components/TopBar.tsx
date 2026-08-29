@@ -1202,6 +1202,59 @@ export function TopBar({
                 <span className="text-[10px] opacity-80">{drawMode || wallActive ? 'on' : 'off'}</span>
               </button>
 
+              {/* Paint floor on the phone (Vic 2026-08-29: The Sims lets you
+                  drag and fill flooring). Was desktop-only. Same handler as
+                  the md+ toolbar button; the material rows arm the brush. */}
+              <div className="rounded-md border border-ppw-stone bg-white p-1.5" data-testid="floor-paint-mobile">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleToggleFloorPaint();
+                    setShowMobileMenu(false);
+                  }}
+                  data-testid="floor-paint-toggle-mobile"
+                  aria-pressed={floorPaintActive}
+                  className={`flex min-h-[44px] w-full items-center justify-between rounded-md px-2 text-sm font-medium ${
+                    floorPaintActive ? 'bg-ppw-teal text-white' : 'text-ppw-ink'
+                  }`}
+                >
+                  <span>Paint floor</span>
+                  <span className="text-[10px] opacity-80">{floorPaintActive ? 'on · tap tiles' : 'off'}</span>
+                </button>
+                <div className="mt-1 grid grid-cols-2 gap-1">
+                  {tileableFloorMaterials().map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => {
+                        setFloorDraft({ materialId: m.id, erase: false });
+                        if (!floorPaintActive) handleToggleFloorPaint();
+                        setShowMobileMenu(false);
+                      }}
+                      data-testid={`floor-paint-mobile-${m.id}`}
+                      aria-pressed={floorDraft.materialId === m.id}
+                      className={`flex min-h-[40px] items-center gap-2 rounded-md border px-2 text-left text-[11px] ${
+                        floorDraft.materialId === m.id ? 'border-ppw-teal bg-ppw-mist' : 'border-ppw-stone'
+                      }`}
+                    >
+                      <span className="h-4 w-4 shrink-0 rounded-sm" style={{ background: m.hex }} />
+                      <span className="truncate">{m.name}</span>
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFloorDraft({ scope: floorDraft.scope === 'room' ? 'tile' : 'room' });
+                    }}
+                    data-testid="floor-paint-scope-mobile"
+                    className="col-span-2 flex min-h-[40px] items-center justify-between rounded-md border border-ppw-stone px-2 text-[11px]"
+                  >
+                    <span>Brush</span>
+                    <span className="font-semibold">{floorDraft.scope === 'room' ? 'Fill whole room' : 'Tile by tile · drag a rectangle'}</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Storeys on the phone: one row per floor + add. */}
               <div className="rounded-md border border-ppw-stone bg-white p-1.5" data-testid="levels-mobile">
                 <p className="px-1 pb-1 text-[10px] uppercase tracking-wide text-ppw-slate">Floors</p>

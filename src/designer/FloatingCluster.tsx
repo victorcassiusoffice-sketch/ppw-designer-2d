@@ -32,10 +32,12 @@ import {
   deleteSelected,
   deselect,
   toggleSelectedLight,
+  fillFloorWithSelected,
   ROTATION_STEP_COARSE_DEG,
 } from '../lib/placementActions';
 import { haptic } from '../lib/haptics';
 import { emitsLight } from './lighting';
+import { isFlooringProduct } from './flooringLattice';
 
 // Paper register (Sims world 2026-08-29): charcoal ink on paper, teal accent.
 const NAVY = '#2A2926';
@@ -98,6 +100,19 @@ export function FloatingCluster({
       testid: 'cluster-duplicate',
       onClick: () => duplicateSelected(),
     },
+    ...(isFlooringProduct(product)
+      ? [
+          {
+            key: 'fill',
+            label: 'Fill floor',
+            glyph: '▦',
+            testid: 'cluster-fill-floor',
+            onClick: () => {
+              fillFloorWithSelected();
+            },
+          } satisfies ClusterBtn,
+        ]
+      : []),
     ...(emitsLight(product)
       ? [
           {

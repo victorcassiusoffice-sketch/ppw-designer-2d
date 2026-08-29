@@ -43,6 +43,7 @@ import { useDesignStore } from '../store/designStore';
 import { usePropertyStore, selectActiveRoom, roomOpenings } from '../store/propertyStore';
 import type { PlacedItem } from '../store/propertyStore';
 import { useToastStore } from '../store/toastStore';
+import { useCart } from '../store/cartStore';
 import { CATEGORY_FILL, CATEGORY_LABELS, getProductById, productTopDownUrl } from '../data/products';
 import { dataUrlToBlob, triggerDownload, safeStageDataUrl } from '../lib/shareImage';
 import {
@@ -106,6 +107,8 @@ import {
 } from '../designer/levels';
 import { runToFreeWalls, wallsOnLevel } from '../designer/freeWalls';
 import { emitsLight, lightRadiusM, planSymbolOf } from '../designer/lighting';
+// Sims flooring (2026-08-29): tiles snap to their own lattice, edge to edge.
+import { isFlooringProduct, snapToTileLattice, tileLatticeFor } from '../designer/flooringLattice';
 import { pointInPolygon, isRectInsidePolygon } from '../lib/geometry';
 import { SnapUnitStepper } from './RoomDrawMode';
 // Architectural paper theme (2026-08-29): cream paper, charcoal poche walls
@@ -693,17 +696,17 @@ export function RoomCanvas({
   // Attached multi-room: the shopping total is the WHOLE plan's, not the
   // active room's — the cart it mirrors has never been per-room. (RoomList
   // keeps the per-room values.)
-  const costReadout = useMemo(() => {
-    let total = 0;
-    let currency = 'MUR';
-    for (const it of allItems) {
-      const p = getProductById(it.productId);
-      if (!p?.price) continue;
-      total += p.price.value;
-      currency = p.price.currency || currency;
-    }
-    return { total, currency };
-  }, [allItems]);
+  // Vic 2026-08-29: "adding the floor … does not calculate the cost". The
+  // badge used to sum product prices only, so a floor finish never moved
+  // it. It now reads the SAME derivation the cart pill and checkout use —
+  // products + floor lines, in the display currency — so the three can
+  // never disagree.
+  const cartTotals = useCart();
+  const costReadout = useMemo(
+    () => ({ total: cartTotals.subtotal, currency: cartTotals.currency }),
+    [cartTotals.subtotal, cartTotals.currency],
+  );
+  void allItems;
 
   const bounds = useMemo(() => polygonBounds(polygon), [polygon]);
   /**
@@ -1138,7 +1141,11 @@ export function RoomCanvas({
       // ---- Floor + ceiling items (the Sims wall-aware path) --------
       // A ceiling-hung light never snaps to a wall: it sits where it is
       // dropped, on the grid, colliding only with other ceiling items.
+      // A FLOOR TILE (flooring product) snaps to its own lattice — pitch =
+      // the tile, anchored on the first tile of that product in the room —
+      // so tiles fit tight edge-to-edge the way The Sims lays flooring.
       const ceiling = kind === 'ceiling';
+      const flooring = isFlooringProduct(product);
       const resolved = ceiling
         ? (() => {
             const rot = userRotationDeg ?? 0;
@@ -1153,6 +1160,28 @@ export function RoomCanvas({
               primaryAxis: null,
             };
           })()
+        : flooring
+          ? (() => {
+              const rot = userRotationDeg ?? 0;
+              const f = rotatedFootprint(fp, rot);
+              const lat = tileLatticeFor({
+                productId: product.id,
+                fp,
+                rotationDeg: rot,
+                polygon: outdoor ? [] : targetPolygon,
+                items: targetItems,
+              });
+              const s = snapToTileLattice(centreXm - f.w / 2, centreYm - f.h / 2, lat);
+              return {
+                x: s.x,
+                y: s.y,
+                rotationDeg: rot,
+                wallSnapped: false,
+                snappedEdges: 0,
+                cornerSnapped: false,
+                primaryAxis: null,
+              };
+            })()
         : resolveWallAwarePlacement({
             centreXm,
             centreYm,
@@ -1202,7 +1231,8 @@ export function RoomCanvas({
         console.log('[drag-place]', { reason: 'drop-rejected', cause: 'blocked' });
         return false;
       }
-      const relocateStep = Math.max(snapStep, 0.25);
+      // A tile relocates along its own lattice so the copy still fits tight.
+      const relocateStep = flooring ? Math.max(w, h) : Math.max(snapStep, 0.25);
       const slot = directOk
         ? { x: resolved.x, y: resolved.y }
         : (resolved.wallSnapped
@@ -1505,6 +1535,7 @@ export function RoomCanvas({
       // Same wall-aware resolver as the commit path, so the ghost shows
       // EXACTLY where (and at what facing) the item will land.
       const ceiling = kind === 'ceiling';
+      const flooring = isFlooringProduct(product);
       const userRot = ghostManuallyRotated ? ghostRotation : null;
       const resolved = ceiling
         ? (() => {
@@ -1516,6 +1547,20 @@ export function RoomCanvas({
               rotationDeg: rot,
             };
           })()
+        : flooring
+          ? (() => {
+              const rot = userRot ?? 0;
+              const f = rotatedFootprint(fp, rot);
+              const lat = tileLatticeFor({
+                productId: product.id,
+                fp,
+                rotationDeg: rot,
+                polygon: outdoor ? [] : target.polygon,
+                items: target.placedItems,
+              });
+              const s = snapToTileLattice(xM - f.w / 2, yM - f.h / 2, lat);
+              return { x: s.x, y: s.y, rotationDeg: rot };
+            })()
         : resolveWallAwarePlacement({
             centreXm: xM,
             centreYm: yM,
@@ -2234,6 +2279,22 @@ export function RoomCanvas({
         >
           {costReadout.total.toLocaleString('en-MU', { maximumFractionDigits: 0 })} {costReadout.currency}
         </div>
+        {/* Sims flooring (2026-08-29): the brush is ON. On the phone the
+            toolbar's teal Paint-floor button is hidden, so without this chip
+            nothing says why taps paint instead of select. Tap = hand tool.
+            Lives in this right-hand column so it never covers the desktop
+            material palette (which drops down from the toolbar). */}
+        {floorTool && !drawMode && (
+          <button
+            type="button"
+            onClick={() => setTool('hand')}
+            data-testid="floor-paint-hud"
+            className="pointer-events-auto min-h-[36px] rounded-md bg-ppw-teal px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm ring-1 ring-white/40 hover:bg-ppw-teal/90"
+            title="Paint floor is on: tap a tile, drag a rectangle, Shift fills the room. Tap here to stop painting."
+          >
+            Paint floor on · Done
+          </button>
+        )}
       </div>
 
       {pendingProductId && !drawMode && (() => {
@@ -3834,6 +3895,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         // grid-snap exactly as before (wallAware falls through to the
         // plain grid path with userRotationDeg = current rotation).
         const ceilingItem = kind === 'ceiling';
+        const flooringItem = isFlooringProduct(product);
         const wallAware = ceilingItem
           ? {
               x: Math.round(newXm / snapStep) * snapStep,
@@ -3841,6 +3903,20 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
               rotationDeg: item.rotation,
               wallSnapped: false,
             }
+          : flooringItem
+            ? (() => {
+                // Drag a tile and it lands on its lattice next to its
+                // siblings — never a half-tile gap.
+                const lat = tileLatticeFor({
+                  productId: item.productId,
+                  fp: fpUnrotated,
+                  rotationDeg: item.rotation,
+                  polygon: targetOutdoor ? [] : targetPolygon,
+                  items: targetItems.filter((it) => it.instanceId !== item.instanceId),
+                });
+                const s = snapToTileLattice(newXm, newYm, lat);
+                return { x: s.x, y: s.y, rotationDeg: item.rotation, wallSnapped: false };
+              })()
           : resolveWallAwarePlacement({
               centreXm: newXm + w / 2,
               centreYm: newYm + h / 2,

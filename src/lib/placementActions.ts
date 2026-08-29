@@ -25,6 +25,12 @@ import { haptic } from './haptics';
 import { currentSnapStepM } from '../store/designerUIStore';
 import { emitsLight } from '../designer/lighting';
 import { isOutdoorRoom } from '../designer/levels';
+import {
+  adjacentTileSlots,
+  fillLatticeInside,
+  isFlooringProduct,
+  tileLatticeFor,
+} from '../designer/flooringLattice';
 // Surface slots + wall-mounted (2026-08-24) — rotation/duplication are
 // layer-scoped: wall items follow their wall, surface items stay on
 // their table, floor items ignore the other two layers.
@@ -282,6 +288,29 @@ export function duplicateSelected(): void {
   }
 
   const others = buildOthers(state.placedItems, undefined, 'floor');
+  const activeRoomNow = usePropertyStore
+    .getState()
+    .property.rooms.find((r) => r.id === usePropertyStore.getState().property.activeRoomId);
+  const unboundedNow = !!activeRoomNow && isOutdoorRoom(activeRoomNow) && state.polygon.length < 3;
+  const fitsHere = (x: number, y: number): boolean =>
+    unboundedNow
+      ? !collidesWithAny({ x, y, w, h }, others)
+      : validatePlacement({ x, y, w, h }, others, state.polygon).ok;
+
+  // Sims flooring (2026-08-29): a tile duplicates EDGE TO EDGE — right,
+  // below, left, above, one tile away — so a floor is laid by tapping
+  // Duplicate along a row, never by nudging copies into place.
+  if (isFlooringProduct(product)) {
+    for (const slot of adjacentTileSlots({ x: item.x, y: item.y, w, h })) {
+      if (fitsHere(slot.x, slot.y)) {
+        commit(slot.x, slot.y, item.rotation);
+        return;
+      }
+    }
+    haptic('invalid');
+    useToastStore.getState().push('No free space next to this tile — try Fill floor.', 'warn');
+    return;
+  }
 
   // Try +0.5 right, then +0.5 down, then +0.5 both, then -0.5 right.
   const offsets: Array<[number, number]> = [
@@ -293,15 +322,60 @@ export function duplicateSelected(): void {
     [1, 0],
   ];
   for (const [dx, dy] of offsets) {
-    const candidate: PlacedRect = { x: item.x + dx, y: item.y + dy, w, h };
-    const result = validatePlacement(candidate, others, state.polygon);
-    if (result.ok) {
-      commit(candidate.x, candidate.y, item.rotation);
+    if (fitsHere(item.x + dx, item.y + dy)) {
+      commit(item.x + dx, item.y + dy, item.rotation);
       return;
     }
   }
   haptic('invalid');
   useToastStore.getState().push("No room to duplicate here.", 'warn');
+}
+
+/**
+ * Sims flooring (2026-08-29): lay copies of the selected floor tile over
+ * every free lattice cell that fits WHOLLY inside the room — the "drag to
+ * fill" gesture, as one action and one undo frame. Returns the number laid.
+ * No-op for anything that is not a flooring product.
+ */
+export function fillFloorWithSelected(): number {
+  const state = useDesignStore.getState();
+  const id = state.selectedInstanceId;
+  if (!id) return 0;
+  const item = state.placedItems.find((i) => i.instanceId === id);
+  if (!item) return 0;
+  const product = getProductById(item.productId);
+  if (!product || !isFlooringProduct(product)) return 0;
+  if (state.polygon.length < 3) {
+    useToastStore.getState().push('Fill floor works inside a room.', 'warn');
+    return 0;
+  }
+  const fp = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
+  const lat = tileLatticeFor({
+    productId: product.id,
+    fp,
+    rotationDeg: item.rotation,
+    polygon: state.polygon,
+    items: state.placedItems,
+  });
+  // Only same-band items block a tile (a bench standing on the floor does
+  // not — tiles go under it, exactly as the paint tool paints under it).
+  const others = buildOthers(state.placedItems, undefined, 'floor');
+  const cells = fillLatticeInside({ lat, polygon: state.polygon, others });
+  if (cells.length === 0) {
+    useToastStore.getState().push('The floor is already covered.', 'info');
+    return 0;
+  }
+  const ps = usePropertyStore.getState();
+  useHistoryStore.getState().recordSnapshot('fill floor');
+  const roomId = ps.property.activeRoomId;
+  for (const c of cells) {
+    ps.addItem({ productId: product.id, x: c.x, y: c.y, rotation: item.rotation }, roomId);
+  }
+  // Keep the ORIGINAL selected so the cluster stays put.
+  state.selectItem(id);
+  haptic('place');
+  useToastStore.getState().push(`Laid ${cells.length} more tile${cells.length === 1 ? '' : 's'}`, 'success');
+  return cells.length;
 }
 
 /** Delete the currently-selected item (no confirm — caller wraps if needed). */

@@ -32,7 +32,11 @@ export function CartStrip() {
   const [expanded, setExpanded] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  if (cart.totalItemCount === 0) {
+  // Vic 2026-08-29: a painted / whole-room floor with no product yet is
+  // STILL a cart — the strip used to hide until the first product landed,
+  // which read as "the floor does not cost anything".
+  const floorUnits = cart.floorLines.reduce((acc, f) => acc + f.unitsToOrder, 0);
+  if (cart.totalItemCount === 0 && cart.floorLines.length === 0) {
     return null;
   }
 
@@ -51,6 +55,11 @@ export function CartStrip() {
           </span>
           <span className="text-ppw-slate">
             <b className="text-ppw-ink">{cart.uniqueProductCount}</b> unique - <b className="text-ppw-ink">{cart.totalItemCount}</b> placed
+            {cart.floorLines.length > 0 && (
+              <>
+                {' '}- <b className="text-ppw-ink" data-testid="cart-floor-units">{floorUnits}</b> floor units
+              </>
+            )}
           </span>
         </div>
         <div className="flex items-baseline gap-3">
@@ -91,6 +100,31 @@ export function CartStrip() {
                   </td>
                   <td className="py-1 text-right font-semibold text-ppw-ink">
                     {formatCurrency(l.lineTotalDisplay, currency)}
+                  </td>
+                </tr>
+              ))}
+              {/* Floor lines: sold by the unit (tile / roll / pack), so the
+                  Qty is units to ORDER incl. the cut-edge surplus. */}
+              {cart.floorLines.map((f) => (
+                <tr key={f.lineId} className="border-t border-ppw-stone/60" data-testid="cart-floor-line">
+                  <td className="py-1 pr-2 font-medium text-ppw-ink truncate max-w-[200px]">
+                    {f.materialName}
+                    {f.surplusUnits > 0 && (
+                      <span className="ml-1 text-[10px] font-normal text-ppw-slate">
+                        (+{f.surplusUnits} for cuts)
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-1 pr-2 text-ppw-slate">Floor</td>
+                  <td className="py-1 text-right text-ppw-ink">
+                    {f.unitsToOrder} {f.unit}
+                    {f.unitsToOrder === 1 ? '' : 's'}
+                  </td>
+                  <td className="py-1 text-right text-ppw-slate">
+                    {formatCurrency(f.unitPriceDisplay, currency)}
+                  </td>
+                  <td className="py-1 text-right font-semibold text-ppw-ink">
+                    {formatCurrency(f.lineTotalDisplay, currency)}
                   </td>
                 </tr>
               ))}
@@ -169,7 +203,7 @@ export function CartStrip() {
           />
         </svg>
         <span className="rounded-full bg-[#FFBB58] px-1.5 py-[1px] text-[10px] font-bold text-ppw-ink">
-          {cart.totalItemCount}
+          {cart.totalItemCount + floorUnits}
         </span>
         <span className="tabular-nums">{formatCurrency(cart.subtotal, currency)}</span>
       </button>
