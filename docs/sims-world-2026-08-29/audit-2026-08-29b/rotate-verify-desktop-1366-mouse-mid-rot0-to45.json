@@ -1,0 +1,52 @@
+{
+ "scenario": "mid-rot0-to45",
+ "viewport": "desktop-1366",
+ "gesture": "mouse",
+ "ppm": 100,
+ "stageScale": 1,
+ "before": {
+  "instanceId": "it-1",
+  "productId": "k1-nordictrack-2450",
+  "x": 1.475,
+  "y": 1.525,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "centre": {
+   "x": 2.5,
+   "y": 2
+  },
+  "right": 3.525,
+  "bottom": 2.475
+ },
+ "handlePx": {
+  "x": 683,
+  "y": 323
+ },
+ "arcRadiusPx": 65.5,
+ "afterRotate": {
+  "instanceId": "it-1",
+  "productId": "k1-nordictrack-2450",
+  "x": 1.475,
+  "y": 1.525,
+  "rotation": 30,
+  "w": 2.2504,
+  "h": 1.8477,
+  "centre": {
+   "x": 2.6001760388790496,
+   "y": 2.4488620667976084
+  },
+  "right": 3.7254,
+  "bottom": 3.3727,
+  "rightBeyondInnerFace": false,
+  "bottomBeyondInnerFace": false,
+  "rightBeyondPolygon": false,
+  "bottomBeyondPolygon": false,
+  "centreMoved": true,
+  "xyChanged": false
+ },
+ "toastsAfterRotate": [],
+ "midSnaps": [],
+ "selectedShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify-desktop-1366-mouse-mid-rot0-to45-selected.png",
+ "rotShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify-desktop-1366-mouse-mid-rot0-to45-rotated.png"
+}

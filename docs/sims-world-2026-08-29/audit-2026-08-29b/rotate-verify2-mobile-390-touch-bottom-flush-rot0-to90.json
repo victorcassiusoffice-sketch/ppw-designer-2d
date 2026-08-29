@@ -1,0 +1,114 @@
+{
+ "scenario": "bottom-flush-rot0-to90",
+ "viewport": "mobile-390",
+ "gesture": "touch",
+ "ppm": 60,
+ "handlePx": {
+  "x": 196.5,
+  "y": 509.5
+ },
+ "elementAtHandle": "div[floating-cluster]",
+ "floatingClusterBox": {
+  "x": 58.5,
+  "y": 453.5,
+  "width": 280,
+  "height": 64
+ },
+ "before": {
+  "x": 1.5,
+  "y": 3,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "centre": {
+   "x": 2.525,
+   "y": 3.475
+  },
+  "right": 3.55,
+  "bottom": 3.95
+ },
+ "trace": [
+  {
+   "iter": 0,
+   "rotation": 0,
+   "x": 1.5,
+   "y": 3
+  },
+  {
+   "iter": 1,
+   "rotation": 0,
+   "x": 1.5,
+   "y": 3
+  },
+  {
+   "iter": 2,
+   "rotation": 0,
+   "x": 1.5,
+   "y": 3
+  },
+  {
+   "iter": 3,
+   "rotation": 0,
+   "x": 1.5,
+   "y": 3
+  },
+  {
+   "iter": 4,
+   "rotation": 0,
+   "x": 1.5,
+   "y": 3
+  },
+  {
+   "iter": 5,
+   "rotation": 0,
+   "x": 1.5,
+   "y": 3
+  },
+  {
+   "iter": 6,
+   "rotation": 0,
+   "x": 1.5,
+   "y": 3
+  },
+  {
+   "iter": 7,
+   "rotation": 0,
+   "x": 1.5,
+   "y": 3
+  },
+  {
+   "iter": 8,
+   "rotation": 0,
+   "x": 1.5,
+   "y": 3
+  },
+  {
+   "iter": 9,
+   "rotation": 0,
+   "x": 1.5,
+   "y": 3
+  }
+ ],
+ "afterRotate": {
+  "x": 1.5,
+  "y": 3,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "centre": {
+   "x": 2.525,
+   "y": 3.475
+  },
+  "right": 3.55,
+  "bottom": 3.95,
+  "rightBeyondInnerFace": false,
+  "bottomBeyondInnerFace": false,
+  "rightBeyondPolygon": false,
+  "bottomBeyondPolygon": false,
+  "centreMoved": false,
+  "xyChanged": false,
+  "reachedTarget": false
+ },
+ "toastsAfterRotate": [],
+ "rotShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify2-mobile-390-touch-bottom-flush-rot0-to90-rotated.png"
+}

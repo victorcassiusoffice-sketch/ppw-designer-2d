@@ -85,3 +85,6 @@ scripts/incoming/*
 
 # Triage/report JSON emitted alongside the e2e specs (diagnostic output, not source).
 tests/e2e/*.json
+
+# agent scratch scripts + logs (never product code)
+tools/_scratch/

@@ -1,0 +1,51 @@
+{
+ "steps": [
+  {
+   "action": "seeded",
+   "x": 0.05,
+   "y": 1.525,
+   "rotation": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "flushX": true,
+   "flushY": false,
+   "inBandX": false,
+   "inBandY": false,
+   "offLeft": 0,
+   "offTop": 1.475,
+   "toastsSoFar": []
+  },
+  {
+   "action": "R#1",
+   "x": 0.6,
+   "y": 0.975,
+   "rotation": 90,
+   "w": 0.95,
+   "h": 2.05,
+   "flushX": false,
+   "flushY": false,
+   "inBandX": false,
+   "inBandY": false,
+   "offLeft": 0.55,
+   "offTop": 0.925,
+   "toastsSoFar": [],
+   "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rkey-leftwall-1-R.png"
+  },
+  {
+   "action": "R#2",
+   "x": 0.05,
+   "y": 1.525,
+   "rotation": 180,
+   "w": 2.05,
+   "h": 0.95,
+   "flushX": true,
+   "flushY": false,
+   "inBandX": false,
+   "inBandY": false,
+   "offLeft": 0,
+   "offTop": 1.475,
+   "toastsSoFar": [],
+   "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rkey-leftwall-2-R.png"
+  }
+ ]
+}

@@ -69,6 +69,12 @@ import {
   WALL_INK,
   SELECT_STROKE,
   LABEL_HALO,
+  CHROME_BG,
+  CHROME_RIM,
+  CHROME_TEXT,
+  CHROME_TEXT_2,
+  CHROME_ACTIVE_BG,
+  CHROME_ACTIVE_TEXT,
 } from '../designer/blueprintTheme';
 
 function pushDrawToast(message: string, kind: ToastKind = 'info'): void {
@@ -276,10 +282,45 @@ export function RoomDrawLayer({
       setVerticesRef.current(next);
     }
 
+    /**
+     * Polish (2026-08-29) — touch double-vertex. A finger tap reaches the
+     * Stage TWICE: Konva's `tap` (from touchend) and then the browser's
+     * compatibility `click` (a synthesised MouseEvent at the same point,
+     * a few ms later). Both used to run `handleClickOrTap`, so every tap on
+     * a phone dropped TWO vertices (4 taps → 8). Konva also fires `click`
+     * for a real mouse, so the tap handler cannot simply own the gesture:
+     * instead the tap records where + when it landed, and a click arriving
+     * within TAP_CLICK_DEDUPE_MS of that point is the ghost and is dropped.
+     * A mouse click never has a recent tap on record, so it still adds
+     * exactly one vertex.
+     */
+    const TAP_CLICK_DEDUPE_MS = 500;
+    const TAP_CLICK_DEDUPE_PX = 16;
+    let lastTap: { t: number; x: number; y: number } | null = null;
+
+    function handleTap(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+      const c = readClient(e.evt as MouseEvent | TouchEvent);
+      if (c) lastTap = { t: performance.now(), x: c.x, y: c.y };
+      handleClickOrTap(e);
+    }
+
+    function handleClick(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+      const c = readClient(e.evt as MouseEvent | TouchEvent);
+      if (c && lastTap) {
+        const dt = performance.now() - lastTap.t;
+        const dist = Math.hypot(c.x - lastTap.x, c.y - lastTap.y);
+        if (dt < TAP_CLICK_DEDUPE_MS && dist < TAP_CLICK_DEDUPE_PX) {
+          console.log(DBG, 'click after tap ignored (compat click)', { dt: Math.round(dt), dist });
+          return;
+        }
+      }
+      handleClickOrTap(e);
+    }
+
     stage.on('mousemove.roomdraw', handleMove);
     stage.on('touchmove.roomdraw', handleMove);
-    stage.on('click.roomdraw', handleClickOrTap);
-    stage.on('tap.roomdraw', handleClickOrTap);
+    stage.on('click.roomdraw', handleClick);
+    stage.on('tap.roomdraw', handleTap);
 
     return () => {
       console.log(DBG, 'layer effect: cleanup Stage handlers');
@@ -593,7 +634,51 @@ export interface RoomDrawHUDProps {
   /** Finish the run as free-standing walls (>= 2 vertices). */
   onCommitWalls?: (vertices: Polygon) => void;
   onCancel: () => void;
+  /**
+   * Repair round 1 (2026-08-29): whether the HUD hosts the unit stepper.
+   * RoomCanvas passes `false` below sm (640 px), where it mounts its own
+   * bottom-left copy (`mobile-draw-unit-stepper`) instead — so exactly one
+   * `snap-unit-stepper` / `-coarser` / `-current` / `-finer` set is in the
+   * DOM at any width (Playwright strict mode). Defaults to `true`.
+   */
+  showUnitStepper?: boolean;
+  /**
+   * Polish (2026-08-29): below sm (390 px phones) the card is COMPACT —
+   * badge + readout on one line, the unit stepper inline with the Length
+   * field, Undo as an icon. The stepper is hosted HERE on the phone (the old
+   * separate fixed strip is gone), inside the `mobile-draw-unit-stepper`
+   * wrapper. RoomCanvas passes `useBelowSm()`.
+   */
+  phone?: boolean;
+  /** Parent ref onto the card element (RoomCanvas fit-to-view reads its rect). */
+  cardRef?: React.MutableRefObject<HTMLDivElement | null>;
+  /** Live card height (0 when closed) — the CSS var `--draw-hud-h` as a callback. */
+  onHeightChange?: (heightPx: number) => void;
 }
+
+/**
+ * Designer chrome (toolbar pass, 2026-08-29) — the ONE control language every
+ * HUD button speaks: 120 ms colour transition (none under reduced-motion),
+ * mint focus ring, inset press, 40 % disabled. Colours come from
+ * `blueprintTheme` CHROME_* via the matching Tailwind `ppw-*` entries.
+ */
+const CTRL =
+  'pointer-events-auto inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-3 text-[12px] font-medium leading-none transition-colors duration-[120ms] ease-out motion-reduce:transition-none focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] disabled:cursor-not-allowed disabled:opacity-40';
+/** Rest: paper ground + hairline rim. Hover deepens both. */
+const CTRL_REST =
+  'bg-ppw-chrome border-ppw-rim text-[#37362f] hover:bg-[#f3f1ec] hover:border-[rgba(42,41,38,0.35)]';
+/** Primary: ink fill, paper text — the same pressed/tool-on state as the bars. */
+const CTRL_PRIMARY = 'bg-ppw-inkDeep border-ppw-inkDeep text-ppw-paper hover:bg-[#3a3835]';
+/** Secondary: outlined ink. */
+const CTRL_OUTLINED = 'bg-ppw-chrome border-ppw-inkDeep text-ppw-inkDeep hover:bg-[#f3f1ec]';
+/**
+ * Destructive: ink label, terracotta icon + rim; hover fills terracotta with
+ * white text. Terracotta is never used as small text (3.9:1 on paper).
+ */
+const CTRL_DANGER =
+  'group bg-ppw-chrome border-ppw-clay text-ppw-inkDeep hover:bg-ppw-clay hover:border-ppw-clay hover:text-white';
+/** 44 px targets on the phone, 40 px from sm up. */
+const CTRL_H = 'min-h-[44px] sm:min-h-[40px]';
 
 /**
  * The unit stepper chip: [-] 0.5 m [+]. Shared by the draw HUD (desktop +
@@ -605,8 +690,7 @@ export function SnapUnitStepper({ compact = false }: { compact?: boolean }): JSX
   const idx = SNAP_UNIT_ORDER.indexOf(precision);
   const canFiner = idx > 0;
   const canCoarser = idx < SNAP_UNIT_ORDER.length - 1;
-  const btn =
-    'pointer-events-auto flex h-11 w-11 items-center justify-center rounded-md border border-ppw-stone bg-white text-base font-semibold text-ppw-ink hover:border-ppw-ink disabled:cursor-not-allowed disabled:opacity-40';
+  const btn = `${CTRL} ${CTRL_REST} h-11 w-11 !px-0 text-base font-semibold sm:h-10 sm:w-10`;
   return (
     <div
       className="pointer-events-auto flex items-center gap-1"
@@ -626,9 +710,10 @@ export function SnapUnitStepper({ compact = false }: { compact?: boolean }): JSX
         −
       </button>
       <span
-        className={`min-w-[52px] rounded-md bg-ppw-ink px-2 py-1 text-center text-[11px] font-semibold text-white ${
-          compact ? '' : 'min-w-[60px]'
+        className={`flex h-11 items-center justify-center rounded-lg px-2 text-center text-[12px] font-semibold tabular-nums sm:h-10 ${
+          compact ? 'min-w-[52px]' : 'min-w-[60px]'
         }`}
+        style={{ background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT }}
         data-testid="snap-unit-current"
         aria-live="polite"
       >
@@ -659,9 +744,57 @@ export function RoomDrawHUD({
   onCommit,
   onCommitWalls,
   onCancel,
+  showUnitStepper = true,
+  phone = false,
+  cardRef,
+  onHeightChange,
 }: RoomDrawHUDProps) {
   const stepM = useDesignerUIStore((s) => PRECISION_STEP_M[s.precision]);
   const [lengthText, setLengthText] = useState('');
+  const hudRef = useRef<HTMLDivElement | null>(null);
+  const onHeightChangeRef = useRef(onHeightChange);
+  onHeightChangeRef.current = onHeightChange;
+  // One element, two owners: the local ResizeObserver below and the parent's
+  // `cardRef` (RoomCanvas reads the card's rect inside its fit-to-view).
+  const setHudEl = useCallback(
+    (el: HTMLDivElement | null) => {
+      hudRef.current = el;
+      if (cardRef) cardRef.current = el;
+    },
+    [cardRef],
+  );
+
+  // Toolbar pass (2026-08-29): the card publishes its live height as
+  // `--draw-hud-h` (and the older alias `--room-draw-hud-h`) so anything
+  // bottom-anchored can park itself ABOVE the card instead of guessing.
+  // Polish: it also reports the height to the parent (`onHeightChange`) so
+  // RoomCanvas can subtract it from the fit-to-view height while the pen is
+  // open. Resolves to 0 px the moment the pen closes. ResizeObserver is
+  // absent in jsdom — there the one-shot apply is all that runs.
+  useEffect(() => {
+    const root = document.documentElement;
+    const el = hudRef.current;
+    const publish = (h: number) => {
+      root.style.setProperty('--draw-hud-h', `${h}px`);
+      root.style.setProperty('--room-draw-hud-h', `${h}px`);
+      onHeightChangeRef.current?.(h);
+    };
+    if (!enabled || !el) {
+      publish(0);
+      return undefined;
+    }
+    const apply = () => publish(el.offsetHeight);
+    apply();
+    if (typeof ResizeObserver === 'undefined') {
+      return () => publish(0);
+    }
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      publish(0);
+    };
+  }, [enabled]);
 
   const last = vertices.length > 0 ? vertices[vertices.length - 1] : null;
   // The field needs a vertex to measure FROM and a cursor to take the
@@ -742,49 +875,121 @@ export function RoomDrawHUD({
 
   if (!enabled) return null;
 
+  const unitSuffix = stepM >= 1 ? 'm' : stepM <= 0.1 ? 'm (cm grid)' : 'm';
+
+  // ONE readout element at any width (the `room-draw-vertices-count` testid
+  // must exist exactly once). On the phone it shares the badge's line with
+  // short labels; from sm it heads the second row with the long ones.
+  const readout = (
+    <div
+      className={`flex items-center text-[12px] font-medium tabular-nums ${
+        phone ? 'min-w-0 flex-1 gap-x-1.5 overflow-hidden whitespace-nowrap' : 'flex-wrap gap-x-3 gap-y-1'
+      }`}
+      style={{ color: CHROME_TEXT_2 }}
+    >
+      <span data-testid="room-draw-vertices-count">
+        <b className="font-semibold" style={{ color: CHROME_TEXT }}>{vertices.length}</b>{' '}
+        {phone ? 'pts' : 'vertices'}
+      </span>
+      {phone && <span aria-hidden="true">&middot;</span>}
+      <span>
+        {!phone && 'perim '}
+        <b className="font-semibold" style={{ color: CHROME_TEXT }}>{formatLengthForUnit(livePerimeter, stepM)}</b>
+      </span>
+      {phone && <span aria-hidden="true">&middot;</span>}
+      <span>
+        {!phone && 'area '}
+        <b className="font-semibold" style={{ color: CHROME_TEXT }}>{liveArea.toFixed(2)} m&sup2;</b>
+      </span>
+    </div>
+  );
+
   return (
     <div
-      className="pointer-events-none absolute left-1/2 bottom-3 z-30 flex w-[min(94vw,560px)] -translate-x-1/2 flex-col gap-2 rounded-lg border border-ppw-stone bg-white p-3 text-xs shadow-xl ring-1 ring-ppw-ink/10"
+      ref={setHudEl}
+      // Toolbar pass (2026-08-29): FIXED, not absolute. The card used to sit
+      // at `absolute bottom-3` inside the canvas section, which on a phone
+      // put every button UNDER the fixed Sims toolbar (the audit's
+      // elementFromPoint at Done / Make room / Discard returned the
+      // toolbar). Below lg it now clears the toolbar's live height plus the
+      // 56 px band the Clear pills / cart pill occupy; from lg up it sits
+      // 12 px above the desktop dock (`--sims-dock-h`) — exactly where the
+      // old `bottom-3` put it.
+      // Polish (2026-08-29): below sm the card is COMPACT — three rows
+      // (badge + readout · stepper + length · actions), 8 px padding, 6 px
+      // gaps — so the phone keeps its drawable canvas.
+      className={`pointer-events-auto fixed left-1/2 z-30 flex w-[min(94vw,600px)] -translate-x-1/2 flex-col rounded-xl text-xs bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-toolbar-h,0px)_+_56px)] lg:bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-dock-h,0px))] ${
+        phone ? 'gap-1.5 p-2' : 'gap-2 p-3'
+      }`}
+      style={{
+        background: CHROME_BG,
+        border: `1px solid ${CHROME_RIM}`,
+        boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
+        color: CHROME_TEXT,
+      }}
       data-testid="room-draw-hud"
+      data-compact={phone ? 'true' : 'false'}
     >
-      <div className="flex items-center justify-between gap-2">
-        <span className="rounded-md bg-ppw-ink px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+      <div className={`flex items-center gap-2 ${phone ? 'flex-nowrap' : 'flex-wrap'}`}>
+        <span
+          className={`shrink-0 rounded-lg px-2 text-[11px] font-semibold uppercase leading-none tracking-[0.06em] ${
+            phone ? 'py-1' : 'py-1.5'
+          }`}
+          style={{ background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT }}
+          title={phone ? 'Tap to drop wall points · Done keeps the walls · tap the first point for a room' : undefined}
+        >
           Wall pen
         </span>
-        <span className="hidden text-[10px] text-ppw-slate sm:inline">
-          Click to drop wall points &middot; walls stay where you stop &middot;{' '}
-          {stepM <= 0.1 ? 'Enter closes a room' : 'click the first point or Enter to close a room'}
-        </span>
-        <span className="text-[10px] text-ppw-slate sm:hidden">
-          Tap to drop &middot; Done keeps the walls &middot; tap the first point for a room
-        </span>
+        {/* ONE instruction line (the duplicate bottom-left tip card is gone).
+            The compact phone card has no room for it — the badge's title
+            carries the same words. */}
+        {!phone && (
+          <span
+            className="hidden min-w-0 flex-1 text-[12px] font-medium leading-snug sm:inline"
+            style={{ color: CHROME_TEXT_2 }}
+          >
+            Click to drop wall points &middot; walls stay where you stop &middot;{' '}
+            {stepM <= 0.1 ? 'Enter closes a room' : 'click the first point or Enter to close a room'}
+          </span>
+        )}
+        {phone && readout}
         {/* The unit stepper lives INSIDE the HUD so it is reachable mid-draw
-            on a phone with a thumb; +/- keys step the same ladder. */}
-        <SnapUnitStepper compact />
+            with a thumb; +/- keys step the same ladder. On the phone it
+            heads the second row (below) instead — one `snap-unit-*` set in
+            the DOM at any width. */}
+        {!phone && showUnitStepper && (
+          <div className="ml-auto">
+            <SnapUnitStepper compact />
+          </div>
+        )}
       </div>
       {/* Fix 2.4 (Vic 2026-05-22): the ROOM name input was removed from
           the HUD — auto-named "Room N", renamed inline from the left
           sidebar after close. The HUD now shows only vertex/perim/area
           counters + instruction + action buttons. */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-ppw-slate">
-          <span data-testid="room-draw-vertices-count">
-            <b className="text-ppw-ink">{vertices.length}</b> vertices
-          </span>
-          <span>
-            perim <b className="text-ppw-ink">{formatLengthForUnit(livePerimeter, stepM)}</b>
-          </span>
-          <span>
-            area <b className="text-ppw-ink">{liveArea.toFixed(2)} m&sup2;</b>
-          </span>
-        </div>
+      <div className={`flex items-center justify-between gap-2 ${phone ? 'flex-nowrap' : 'flex-wrap'}`}>
+        {!phone && readout}
+        {/* Polish (2026-08-29): the phone's unit stepper used to be a
+            separate fixed strip parked above this card (RoomCanvas); it now
+            sits INLINE here so the card is the only thing over the canvas.
+            Same wrapper testid, same control. */}
+        {phone && (
+          <div className="pointer-events-auto shrink-0" data-testid="mobile-draw-unit-stepper">
+            <SnapUnitStepper compact />
+          </div>
+        )}
         {/* Typed segment length (units brief D9). The cursor gives the
             direction, this gives the magnitude. */}
-        <div className="pointer-events-auto flex items-center gap-1.5">
-          <label className="text-[10px] uppercase tracking-wide text-ppw-slate">
+        <div className="pointer-events-auto flex min-w-0 items-center gap-2">
+          <label
+            htmlFor="draw-segment-length"
+            className="text-[11px] font-semibold uppercase tracking-[0.06em]"
+            style={{ color: CHROME_TEXT_2 }}
+          >
             Length
           </label>
           <input
+            id="draw-segment-length"
             type="number"
             min={0}
             step={stepM}
@@ -808,74 +1013,105 @@ export function RoomDrawHUD({
                 ? 'Type an exact length and press Enter'
                 : 'Point the cursor, then type a length'
             }
-            className="w-20 rounded-md border border-ppw-stone bg-white px-2 py-1 text-right text-xs text-ppw-ink disabled:cursor-not-allowed disabled:opacity-50"
+            className={`h-11 rounded-lg border border-ppw-rim bg-ppw-chrome px-2 text-right text-[12px] font-semibold tabular-nums text-[#37362f] transition-colors duration-[120ms] ease-out placeholder:text-[#3D4655]/60 focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none sm:h-10 ${
+              phone ? 'w-[76px]' : 'w-24'
+            }`}
           />
-          <span className="text-[10px] text-ppw-slate">
-            {stepM >= 1 ? 'm' : stepM <= 0.1 ? 'm (cm grid)' : 'm'}
+          <span className="text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>
+            {phone ? 'm' : unitSuffix}
           </span>
         </div>
+      </div>
 
-        <div className="flex flex-1 gap-1.5 sm:flex-initial">
-          <button
-            type="button"
-            onClick={handleUndo}
-            disabled={vertices.length === 0}
-            className="pointer-events-auto min-h-[44px] flex-1 rounded-md border border-ppw-stone bg-white px-3 text-xs font-medium text-ppw-slate hover:border-ppw-ink disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
-            title="Undo last wall (Ctrl+Z)"
-            data-testid="room-draw-undo"
+      {/* Actions. Hierarchy: Done (the ONE ink button) · Make room (ink
+          rim) · Room + next (rest, sm+ only) · Undo (rest; icon-only on the
+          phone) · Discard (terracotta rim). Polish (2026-08-29): Room + next
+          and Undo were ghost buttons (no rim) between rimmed siblings — they
+          now wear the rest recipe like every other control. */}
+      <div className="flex flex-wrap items-center gap-2">
+        {/* DONE keeps the run as walls — the Sims contract: walls are real
+            the moment you stop. Primary on the phone, where it is the
+            button a thumb reaches first. */}
+        <button
+          type="button"
+          onClick={vertices.length >= 2 && onCommitWalls ? handleFinishWalls : handleCancel}
+          data-testid="room-draw-finish-walls"
+          className={`${CTRL} ${CTRL_PRIMARY} ${CTRL_H} flex-1 sm:flex-initial`}
+          title={
+            vertices.length >= 2
+              ? 'Done — keep these walls as they are (Esc or Alt+Enter)'
+              : 'Done — leave the pen'
+          }
+        >
+          Done
+        </button>
+        <button
+          type="button"
+          onClick={handleClose}
+          disabled={vertices.length < 3}
+          className={`${CTRL} ${CTRL_OUTLINED} ${CTRL_H} flex-1 sm:flex-initial`}
+          title={
+            vertices.length < 3
+              ? 'A room needs at least 3 points'
+              : 'Close the shape and make it a room (Enter)'
+          }
+          data-testid="room-draw-close"
+        >
+          Make room
+        </button>
+        <button
+          type="button"
+          onClick={handleCloseContinue}
+          disabled={vertices.length < 3}
+          data-testid="room-draw-close-continue"
+          className={`${CTRL} ${CTRL_REST} ${CTRL_H} hidden sm:inline-flex`}
+          title="Make the room and keep drawing another (Shift+Enter)"
+        >
+          Room + next
+        </button>
+        <button
+          type="button"
+          onClick={handleUndo}
+          disabled={vertices.length === 0}
+          className={`${CTRL} ${CTRL_REST} ${CTRL_H} w-11 shrink-0 !px-0 sm:w-auto sm:!px-3`}
+          title="Undo last wall (Ctrl+Z)"
+          aria-label="Undo last wall point"
+          data-testid="room-draw-undo"
+        >
+          <svg viewBox="0 0 16 16" className="h-4 w-4 sm:hidden" aria-hidden="true">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 4.5L3 7.5l3 3M3.5 7.5H10a3 3 0 0 1 0 6H7"
+            />
+          </svg>
+          <span className="hidden sm:inline">Undo</span>
+        </button>
+        <button
+          type="button"
+          onClick={handleCancel}
+          className={`${CTRL} ${CTRL_DANGER} ${CTRL_H} flex-1 sm:ml-auto sm:flex-initial`}
+          title="Throw these points away (the only exit that does)"
+          data-testid="room-draw-cancel"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            className="h-4 w-4 text-ppw-clay transition-colors duration-[120ms] group-hover:text-white motion-reduce:transition-none"
+            aria-hidden="true"
           >
-            Undo
-          </button>
-          {/* DONE keeps the run as walls — the Sims contract: walls are real
-              the moment you stop. Primary on the phone, where it is the
-              button a thumb reaches first. */}
-          <button
-            type="button"
-            onClick={vertices.length >= 2 && onCommitWalls ? handleFinishWalls : handleCancel}
-            data-testid="room-draw-finish-walls"
-            className="pointer-events-auto min-h-[44px] flex-1 rounded-md border border-ppw-ink bg-ppw-ink px-3 text-xs font-semibold text-white hover:bg-ppw-ink/90 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
-            title={
-              vertices.length >= 2
-                ? 'Done — keep these walls as they are (Esc or Alt+Enter)'
-                : 'Done — leave the pen'
-            }
-          >
-            Done
-          </button>
-          <button
-            type="button"
-            onClick={handleClose}
-            disabled={vertices.length < 3}
-            className="pointer-events-auto min-h-[44px] flex-1 rounded-md border border-ppw-teal bg-ppw-teal px-3 text-xs font-medium text-white hover:bg-ppw-teal/90 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
-            title={
-              vertices.length < 3
-                ? 'A room needs at least 3 points'
-                : 'Close the shape and make it a room (Enter)'
-            }
-            data-testid="room-draw-close"
-          >
-            Make room
-          </button>
-          <button
-            type="button"
-            onClick={handleCloseContinue}
-            disabled={vertices.length < 3}
-            data-testid="room-draw-close-continue"
-            className="pointer-events-auto hidden min-h-[44px] flex-1 rounded-md border border-ppw-stone bg-white px-3 text-xs font-medium text-ppw-slate hover:border-ppw-teal disabled:cursor-not-allowed disabled:opacity-50 sm:inline-flex sm:flex-initial sm:items-center sm:justify-center"
-            title="Make the room and keep drawing another (Shift+Enter)"
-          >
-            Room + next
-          </button>
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="pointer-events-auto min-h-[44px] flex-1 rounded-md border border-ppw-coral bg-white px-3 text-xs font-medium text-ppw-coral hover:bg-ppw-coral hover:text-white sm:flex-initial"
-            title="Throw these points away (the only exit that does)"
-            data-testid="room-draw-cancel"
-          >
-            Discard
-          </button>
-        </div>
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              d="M3.5 3.5l9 9M12.5 3.5l-9 9"
+            />
+          </svg>
+          Discard
+        </button>
       </div>
     </div>
   );

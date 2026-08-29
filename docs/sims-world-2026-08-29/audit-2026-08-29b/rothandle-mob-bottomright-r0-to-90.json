@@ -1,0 +1,120 @@
+{
+ "case": "bottomright-r0-to-90",
+ "tag": "mob",
+ "gesture": "touch",
+ "ppm": 60,
+ "wasSelected": true,
+ "before": {
+  "x": 2.9,
+  "y": 3,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "xPlusW": 4.95,
+  "yPlusH": 3.95,
+  "centre": {
+   "x": 3.925,
+   "y": 3.475
+  },
+  "flush": {
+   "left": false,
+   "right": true,
+   "top": false,
+   "bottom": true
+  },
+  "inBounds": true
+ },
+ "trace": [
+  {
+   "deg": 15,
+   "rotation": 0,
+   "x": 2.9,
+   "y": 3
+  },
+  {
+   "deg": 30,
+   "rotation": 0,
+   "x": 2.9,
+   "y": 3
+  },
+  {
+   "deg": 45,
+   "rotation": 0,
+   "x": 2.9,
+   "y": 3
+  },
+  {
+   "deg": 60,
+   "rotation": 0,
+   "x": 2.9,
+   "y": 3
+  },
+  {
+   "deg": 75,
+   "rotation": 0,
+   "x": 2.9,
+   "y": 3
+  },
+  {
+   "deg": 90,
+   "rotation": 0,
+   "x": 2.9,
+   "y": 3
+  }
+ ],
+ "afterRotate": {
+  "x": 2.9,
+  "y": 3,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "xPlusW": 4.95,
+  "yPlusH": 3.95,
+  "centre": {
+   "x": 3.925,
+   "y": 3.475
+  },
+  "flush": {
+   "left": false,
+   "right": true,
+   "top": false,
+   "bottom": true
+  },
+  "inBounds": true,
+  "centreShift": {
+   "dx": 0,
+   "dy": 0
+  }
+ },
+ "toastsAfterRotate": [],
+ "followDrag": {
+  "dropCentre": {
+   "x": 3.625,
+   "y": 3.1750000000000003
+  },
+  "result": {
+   "x": 2.9000000000000004,
+   "y": 3,
+   "rotation": 180,
+   "w": 2.05,
+   "h": 0.95,
+   "xPlusW": 4.95,
+   "yPlusH": 3.95,
+   "centre": {
+    "x": 3.925,
+    "y": 3.475
+   },
+   "flush": {
+    "left": false,
+    "right": true,
+    "top": false,
+    "bottom": true
+   },
+   "inBounds": true
+  },
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ }
+}

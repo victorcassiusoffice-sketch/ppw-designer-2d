@@ -6,7 +6,7 @@
  * < 1024 px (the desktop 3-column layout is unchanged at ≥ 1024 px).
  *
  * Layout, left → right (per Vic's Sims-3 screenshot):
- *   • category icons (macro groups), active highlighted gold
+ *   • category icons (macro groups), active = ink on a mint tint (shop skin)
  *   • a double-row, horizontally-scrollable thumbnail strip filtered by
  *     the active category
  *   • a minimize chevron that collapses the strip (icons stay visible)
@@ -24,6 +24,9 @@ import { getAllProducts, productImageUrl } from '../../data/products';
 import { fetchApiProducts } from '../../data/apiCatalogAdapter';
 import type { Product } from '../../data/products.schema';
 import { usePlacementIntentStore } from '../../store/placementIntentStore';
+// Polish (2026-08-29): the toolbar folds to its category row while the wall
+// pen is open (the phone needs the canvas back), and unfolds on exit.
+import { useDrawProgressStore } from '../../store/drawProgressStore';
 import {
   MACRO_CATEGORY_ORDER,
   MACRO_CATEGORY_LABEL,
@@ -33,11 +36,27 @@ import {
 import { MacroIcon } from './MacroIcon';
 import { MobileProductPopup } from './MobileProductPopup';
 import { useDragToPlace } from './useDragToPlace';
+// Toolbar pass (2026-08-29): the phone toolbar wears the SAME PPWellness
+// Shop skin as the desktop SimsDock — warm off-white ground, hairline rims,
+// dark warm ink, mint accent. The navy/gold constants it used to carry were
+// the one place the two docks disagreed.
+import {
+  DOCK_ACCENT,
+  DOCK_BG,
+  DOCK_BG_RAISED,
+  DOCK_BORDER,
+  DOCK_TEXT,
+} from '../../designer/blueprintTheme';
 
-const NAVY = '#232C3B';
-const NAVY_2 = '#2C3849';
-const CREAM = '#F5EBD7';
-const GOLD = '#FFBB58';
+/** Cream photo plate behind every thumbnail — unchanged (product art is shot on it). */
+const THUMB_PLATE = '#F5EBD7';
+
+/**
+ * Shared control chrome: 120 ms colour transition (none under
+ * reduced-motion) + the mint focus ring. Same string the desktop dock uses.
+ */
+const DOCK_CONTROL =
+  'transition-colors duration-[120ms] ease-out motion-reduce:transition-none focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]';
 
 export function SimsBottomToolbar() {
   const [activeCategory, setActiveCategory] = useState<MacroCategory>('all');
@@ -48,6 +67,28 @@ export function SimsBottomToolbar() {
   const placeAtCenter = usePlacementIntentStore((s) => s.placeAtCenter);
   const placeAt = usePlacementIntentStore((s) => s.placeAt);
   const sectionRef = useRef<HTMLElement>(null);
+
+  // Polish (2026-08-29): while the wall pen is open on a phone the thumbnail
+  // strip (~150 px) plus the HUD card left ~190 px of drawable canvas. The
+  // strip auto-MINIMISES for the pen (the category row + chevron stay, so a
+  // thumb can still unfold it) and the previous state comes back on exit.
+  // The user's own chevron taps mid-draw are respected until the pen closes.
+  const penOpen = useDrawProgressStore((s) => s.enabled);
+  const minimizedBeforePenRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (penOpen) {
+      setMinimized((v) => {
+        minimizedBeforePenRef.current = v;
+        return true;
+      });
+      return;
+    }
+    const prev = minimizedBeforePenRef.current;
+    if (prev !== null) {
+      minimizedBeforePenRef.current = null;
+      setMinimized(prev);
+    }
+  }, [penOpen]);
 
   // Publish the toolbar's live height as a CSS var so other bottom-anchored
   // overlays (ModeStrip, CartStrip) can sit above it. When the toolbar is
@@ -112,15 +153,15 @@ export function SimsBottomToolbar() {
         aria-label="Product catalog"
         className="lg:hidden fixed bottom-0 left-0 right-0 z-30 flex flex-col"
         style={{
-          background: NAVY,
-          borderTop: `2px solid ${GOLD}`,
+          background: DOCK_BG,
+          borderTop: `2px solid ${DOCK_ACCENT}`,
           maxHeight: '30vh',
           paddingBottom: 'env(safe-area-inset-bottom)',
-          boxShadow: '0 -6px 20px rgba(14,14,16,0.35)',
+          boxShadow: '0 -8px 24px rgba(42,41,38,0.18)',
         }}
       >
         {/* Category bar + minimize chevron */}
-        <div className="flex items-center gap-1 px-1.5 py-1.5" style={{ borderBottom: `1px solid ${NAVY_2}` }}>
+        <div className="flex items-center gap-2 px-2 py-1" style={{ borderBottom: `1px solid ${DOCK_BORDER}` }}>
           <div
             role="tablist"
             aria-label="Product category"
@@ -139,14 +180,22 @@ export function SimsBottomToolbar() {
                     setActiveCategory(mc);
                     setMinimized(false);
                   }}
-                  className="flex min-w-[52px] shrink-0 flex-col items-center gap-0.5 rounded-md px-1.5 py-1 transition"
+                  className={`flex h-11 min-w-[60px] shrink-0 flex-col items-center justify-center gap-1 rounded-lg px-1.5 ${DOCK_CONTROL} ${
+                    active ? '' : 'hover:bg-[#faf9f5]'
+                  }`}
                   style={{
-                    color: active ? GOLD : CREAM,
-                    background: active ? '#FFBB5818' : 'transparent',
+                    // Shop selected style: dark ink on a mint tint with a
+                    // mint rim — never mint (or gold) TEXT, which fails
+                    // contrast on the light ground.
+                    color: DOCK_TEXT,
+                    background: active ? 'rgba(121,199,173,0.20)' : 'transparent',
+                    boxShadow: active ? `inset 0 0 0 1px ${DOCK_ACCENT}` : 'none',
                   }}
                 >
-                  <MacroIcon macro={mc} />
-                  <span className="text-[9px] font-semibold leading-none">
+                  <MacroIcon macro={mc} size={20} />
+                  {/* Caption: 11/600 uppercase, .06em — the contract floor
+                      (was 9 px). */}
+                  <span className="text-[11px] font-semibold uppercase leading-none tracking-[0.06em]">
                     {MACRO_CATEGORY_LABEL[mc]}
                   </span>
                 </button>
@@ -159,20 +208,25 @@ export function SimsBottomToolbar() {
             aria-label={minimized ? 'Expand catalog' : 'Minimize catalog'}
             aria-expanded={!minimized}
             onClick={() => setMinimized((v) => !v)}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
-            style={{ color: CREAM, background: NAVY_2 }}
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-[#f3f1ec] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] ${DOCK_CONTROL}`}
+            style={{
+              color: DOCK_TEXT,
+              background: DOCK_BG_RAISED,
+              boxShadow: `inset 0 0 0 1px ${DOCK_BORDER}`,
+            }}
           >
             <svg
               viewBox="0 0 24 24"
-              width={18}
-              height={18}
+              width={20}
+              height={20}
               fill="none"
               stroke="currentColor"
               strokeWidth={2.2}
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
-              style={{ transform: minimized ? 'rotate(180deg)' : 'none', transition: 'transform 150ms' }}
+              className="motion-reduce:transition-none"
+              style={{ transform: minimized ? 'rotate(180deg)' : 'none', transition: 'transform 120ms ease-out' }}
             >
               <path d="M6 15l6-6 6 6" />
             </svg>
@@ -186,7 +240,7 @@ export function SimsBottomToolbar() {
             className="overflow-x-auto overflow-y-hidden px-2 py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {filtered.length === 0 ? (
-              <p className="px-2 py-4 text-center text-xs" style={{ color: `${CREAM}aa` }}>
+              <p className="px-2 py-4 text-center text-[12px] font-medium" style={{ color: DOCK_TEXT }}>
                 No products in this category yet.
               </p>
             ) : (
@@ -211,8 +265,8 @@ export function SimsBottomToolbar() {
                     // Bug 1 (2026-05-28) — long-press should drag, not pop the
                     // browser "Save image" menu over the catalog thumbnail.
                     onContextMenu={(e) => e.preventDefault()}
-                    className="ppw-no-callout relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg"
-                    style={{ background: CREAM, border: `1px solid ${NAVY_2}` }}
+                    className={`ppw-no-callout relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg ${DOCK_CONTROL}`}
+                    style={{ background: THUMB_PLATE, boxShadow: `inset 0 0 0 1px ${DOCK_BORDER}` }}
                   >
                     {/* Polish (2026-05-29) — brand shimmer skeleton while the
                         thumbnail hydrates; fades out on load (or on error,
@@ -244,7 +298,7 @@ export function SimsBottomToolbar() {
 
 /**
  * Polish (2026-05-29) — catalog thumbnail with a brand-styled loading
- * skeleton. While the <img> is hydrating, a navy→gold→cream shimmer fills
+ * skeleton. While the <img> is hydrating, a cream→mint→cream shimmer fills
  * the tile so it reads as "loading" rather than an empty cream square;
  * the shimmer fades the moment the image loads. On error the shimmer is
  * removed and the cream tile (set on the parent button) shows through,
@@ -263,9 +317,9 @@ function ThumbImage({ src }: { src: string }) {
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 animate-pulse motion-reduce:animate-none"
           style={{
-            // Brand register: cream base with a soft gold sheen over navy
-            // edges. Subtle (low-contrast) so it never looks like an error.
-            background: `linear-gradient(110deg, ${CREAM} 0%, ${GOLD}55 45%, ${CREAM} 90%)`,
+            // Cream plate with a soft mint sheen (the dock accent). Subtle
+            // (low-contrast) so it never looks like an error.
+            background: `linear-gradient(110deg, ${THUMB_PLATE} 0%, ${DOCK_ACCENT}55 45%, ${THUMB_PLATE} 90%)`,
           }}
         />
       )}

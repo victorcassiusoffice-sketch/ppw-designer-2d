@@ -1,0 +1,29 @@
+{
+ "handleAfterClick": {
+  "circles": 6,
+  "handles": [
+   {
+    "pageX": 683,
+    "pageY": 470.5,
+    "absRadiusPx": 9,
+    "visible": true
+   }
+  ],
+  "stageScale": 1
+ },
+ "midDrag": {
+  "instanceId": "it-1",
+  "productId": "k1-nordictrack-2450",
+  "x": 1.475,
+  "y": 3,
+  "rotation": 60
+ },
+ "afterHandleDrag": {
+  "instanceId": "it-1",
+  "productId": "k1-nordictrack-2450",
+  "x": 1.475,
+  "y": 3,
+  "rotation": 75
+ },
+ "toasts": []
+}

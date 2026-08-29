@@ -1,0 +1,134 @@
+[
+ {
+  "corner": "top-left",
+  "unit": "full",
+  "precisionStored": "full",
+  "clusterVisibleAfterSelect": 1,
+  "seeded": {
+   "x": 0.05,
+   "y": 0.05,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "afterR1": {
+   "x": 0.6,
+   "y": 0,
+   "rot": 90,
+   "w": 0.95,
+   "h": 2.05,
+   "fx": false,
+   "fy": false
+  },
+  "afterR2": {
+   "x": 0.05,
+   "y": 0.55,
+   "rot": 180,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": true,
+   "fy": false
+  },
+  "toasts": [],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\ROT-desk-full-rot0-top-left.png"
+ },
+ {
+  "corner": "top-right",
+  "unit": "full",
+  "precisionStored": "full",
+  "clusterVisibleAfterSelect": 1,
+  "seeded": {
+   "x": 2.9,
+   "y": 0.05,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "afterR1": {
+   "x": 3.45,
+   "y": 0,
+   "rot": 90,
+   "w": 0.95,
+   "h": 2.05,
+   "fx": false,
+   "fy": false
+  },
+  "afterR2": {
+   "x": 2.9,
+   "y": 0.55,
+   "rot": 180,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": true,
+   "fy": false
+  },
+  "toasts": [],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\ROT-desk-full-rot0-top-right.png"
+ },
+ {
+  "corner": "bottom-left",
+  "unit": "full",
+  "precisionStored": "full",
+  "clusterVisibleAfterSelect": 1,
+  "seeded": {
+   "x": 0.05,
+   "y": 3,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "afterR1": {
+   "x": 0.6,
+   "y": 1.95,
+   "rot": 90,
+   "w": 0.95,
+   "h": 2.05,
+   "fx": false,
+   "fy": false
+  },
+  "afterR2": {
+   "x": 0.05,
+   "y": 2.5,
+   "rot": 180,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": true,
+   "fy": false
+  },
+  "toasts": [],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\ROT-desk-full-rot0-bottom-left.png"
+ },
+ {
+  "corner": "bottom-right",
+  "unit": "full",
+  "precisionStored": "full",
+  "clusterVisibleAfterSelect": 1,
+  "seeded": {
+   "x": 2.9,
+   "y": 3,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "afterR1": {
+   "x": 3.45,
+   "y": 1.95,
+   "rot": 90,
+   "w": 0.95,
+   "h": 2.05,
+   "fx": false,
+   "fy": false
+  },
+  "afterR2": {
+   "x": 2.9,
+   "y": 2.5,
+   "rot": 180,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": true,
+   "fy": false
+  },
+  "toasts": [],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\ROT-desk-full-rot0-bottom-right.png"
+ }
+]

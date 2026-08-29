@@ -1,0 +1,50 @@
+{
+ "slug": "mob/bottom-r0-to-90",
+ "mode": "touch",
+ "seeded": {
+  "x": 1.475,
+  "y": 3,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "xPlusW": 3.525,
+  "yPlusH": 3.95,
+  "flushLeft": false,
+  "flushRight": false,
+  "flushTop": false,
+  "flushBottom": true,
+  "outOfBounds": false,
+  "centre": {
+   "x": 2.5,
+   "y": 3.475
+  }
+ },
+ "handleFrom": {
+  "x": 195,
+  "y": 518.34
+ },
+ "handleTo": {
+  "x": 395,
+  "y": 558.95
+ },
+ "afterHandle": {
+  "x": 1.475,
+  "y": 3,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "xPlusW": 3.525,
+  "yPlusH": 3.95,
+  "flushLeft": false,
+  "flushRight": false,
+  "flushTop": false,
+  "flushBottom": true,
+  "outOfBounds": false,
+  "centre": {
+   "x": 2.5,
+   "y": 3.475
+  }
+ },
+ "toastsAfterHandle": [],
+ "follow": []
+}

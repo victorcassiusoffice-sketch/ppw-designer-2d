@@ -67,6 +67,7 @@ import {
 } from './store/historyStore';
 import { keepOpenRunAsWalls } from './lib/wallPen';
 import { usePropertyStore } from './store/propertyStore';
+import { useDesignsStore, DRAFT_ID } from './store/designsStore';
 import { useWallStore } from './store/wallStore';
 import { useFloorZoneStore } from './store/floorZoneStore';
 // (wallTreatmentStore's import went with the draw-mode entry-clear — draw
@@ -224,6 +225,17 @@ export default function App() {
   // P3-2 — paint/flooring estimate beta panel; OFF unless ?paint=1.
   const paintEstimateActive = isPaintEstimateActive();
 
+  // Toolbar pass (2026-08-29): PageTabs honours its own "hidden until there
+  // is something to switch between" contract. The strip used to appear the
+  // moment a room was drawn — with ONE plan, a tab bar is pure chrome (and a
+  // second header line on a 390 px phone). Plans = the named pages plus the
+  // unsaved draft when that is what is on the canvas.
+  const namedPageCount = useDesignsStore(
+    (st) => Object.keys(st.designs).filter((id) => id !== DRAFT_ID).length,
+  );
+  const onDraftPage = useDesignsStore((st) => (st.currentId ?? DRAFT_ID) === DRAFT_ID);
+  const planCount = namedPageCount + (onDraftPage ? 1 : 0);
+
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#efede8] text-ppw-ink">
       <TopBar
@@ -234,8 +246,8 @@ export default function App() {
       />
       {/* Separate PLANS (Vic 2026-08-28). Rooms are areas on one canvas; a
           page is a different space or client. Hidden until there is something
-          to switch between. */}
-      <PageTabs />
+          to switch between — i.e. at least two plans. */}
+      {planCount >= 2 && <PageTabs />}
       {/* RoomList now renders ONLY its dropdown overlay — the permanent
           224 px rail is gone. The TopBar hosts its trigger at every
           viewport width. Same store calls (setActiveRoom / renameRoom /
@@ -245,7 +257,13 @@ export default function App() {
         mobileOpen={roomsMenuOpen}
         setMobileOpen={setRoomsMenuOpen}
       />
-      <main className="flex flex-1 overflow-hidden">
+      {/* Toolbar pass (2026-08-29): below lg the Sims catalog toolbar is
+          `fixed` over the bottom of the viewport, so the canvas section pads
+          by its live height (`--sims-toolbar-h`, published by the toolbar,
+          0 px when it is not mounted). The section — and therefore the
+          Konva stage the ResizeObserver measures — is then exactly the
+          VISIBLE area; nothing sits under the toolbar any more. */}
+      <main className="flex flex-1 overflow-hidden pb-[var(--sims-toolbar-h,0px)] lg:pb-0">
         <section className="relative flex-1 overflow-hidden">
           {/* 2026-08-25: MiniCartPill un-mounted. It sat at `right-3 top-3`
               and OVERLAPPED RoomCanvas's own top-right Reset/Share/Capture
@@ -269,8 +287,10 @@ export default function App() {
           {/* P3-2 — room estimate: paint + flooring (beta, OFF by default; ?paint=1). */}
           {paintEstimateActive && <RoomEstimatePanel />}
           {/* Blank-canvas + clear (2026-06-09) — two sticky, always-visible
-              clear buttons pinned to the canvas (Clear products / Clear all). */}
-          <ClearControls />
+              clear buttons pinned to the canvas (Clear products / Clear all).
+              Toolbar pass (2026-08-29): hidden while the wall pen is open so
+              the HUD owns the bottom band (Discard is the pen's own clear). */}
+          {!drawMode && <ClearControls />}
         </section>
         {/* Overlay, not a rail — slides in from the right only while an
             item is selected (see DetailsPanel). */}
@@ -284,7 +304,10 @@ export default function App() {
         pendingProductId={pendingProductId}
         setPendingProductId={setPendingProductId}
       />
-      <CartStrip />
+      {/* Toolbar pass (2026-08-29): the cart pill leaves the bottom band
+          while the wall pen is open — the HUD owns it. Conditional at the
+          render site; CartStrip itself is untouched. */}
+      {!drawMode && <CartStrip />}
       <CartDrawer />
       {/* Mobile/tablet Sims catalog — sticky bottom toolbar (< 1024 px). */}
       <SimsBottomToolbar />
@@ -302,39 +325,47 @@ export default function App() {
       <CoachMark
         flagKey="ppw_designer_coach_v1"
         steps={[
-          { title: 'Draw your walls', body: 'Tap + Walls, then click to drop wall points. Close the shape for a room, or Finish walls to leave them open. Change the unit mid-draw with − / +.' },
-          { title: 'Furnish inside and out', body: 'Drag products from the dock onto any floor — inside a room or out in the garden. Items sit flush to walls and tuck into corners.' },
-          { title: 'Floors, land, quote', body: 'Add storeys with Floors, lock the plot with Land, then Save and Request quote to send the layout to the PPW team.' },
+          { title: 'Draw your walls', body: 'Tap Walls (or Box | Custom for a shape), then tap to drop wall points. Close the shape for a room, or Done to leave the walls open. Change the unit mid-draw with − / +. Add a Door, Paint the floor, or Measure a wall from the same bar.' },
+          { title: 'Furnish inside and out', body: 'Drag products from the dock onto any floor — inside a room or out in the garden. Items sit flush to walls and tuck into corners. Finish picks the room\'s floor finish.' },
+          { title: 'Storeys, plot, quote', body: 'Add levels with Storeys, lock the plot with Plot, then Request quote to send the layout to the PPW team. New, Save as… and Load live under More.' },
         ]}
       />
       {/* V-RENDER-3 (2026-05-27) — unobtrusive build-stamp pinned
           bottom-left so Vic can confirm a fresh bundle landed on his
           iPhone after the index.html no-cache header change. Short commit
-          SHA on Vercel; dev-timestamp locally (see vite.config define). */}
-      <span
-        data-testid="build-stamp"
-        title="Build identifier"
-        style={{
-          position: 'fixed',
-          // Clears the Sims dock (desktop) / toolbar (mobile); both publish
-          // their live height and resolve to 0 px when not mounted.
-          bottom:
-            'calc(max(6px, env(safe-area-inset-bottom)) + var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))',
-          left: 'max(6px, env(safe-area-inset-left))',
-          fontSize: 9,
-          lineHeight: 1,
-          // Light on the blueprint ground (was slate #3B4A52, which is
-          // near-invisible against CANVAS_GROUND).
-          color: '#E9EDEF',
-          opacity: 0.45,
-          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-          pointerEvents: 'none',
-          zIndex: 40,
-          userSelect: 'all',
-        }}
-      >
-        build {__APP_BUILD__}
-      </span>
+          SHA on Vercel; dev-timestamp locally (see vite.config define).
+          Polish (2026-08-29): DEV-only (`import.meta.env.DEV` is a build-
+          time literal, so the span is dead code in a production bundle),
+          hidden below md (it sat under the Clear pills on the phone), and
+          z 20 — below the cart pill (30), the launcher (35) and every
+          sheet / popover (40+), so it never paints over an open sheet. */}
+      {import.meta.env.DEV && (
+        <span
+          data-testid="build-stamp"
+          title="Build identifier"
+          className="hidden md:block"
+          style={{
+            position: 'fixed',
+            // Clears the Sims dock (desktop) / toolbar (mobile); both publish
+            // their live height and resolve to 0 px when not mounted.
+            bottom:
+              'calc(max(6px, env(safe-area-inset-bottom)) + var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))',
+            left: 'max(6px, env(safe-area-inset-left))',
+            // 11 px: the contract floor (was 9). Charcoal on the paper ground
+            // at low opacity — legible when looked for, invisible otherwise.
+            fontSize: 11,
+            lineHeight: 1,
+            color: '#3D4655',
+            opacity: 0.55,
+            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+            pointerEvents: 'none',
+            zIndex: 20,
+            userSelect: 'all',
+          }}
+        >
+          build {__APP_BUILD__}
+        </span>
+      )}
       {/* 3e (2026-07-26): the dark-mode toggle was removed — it flipped a
           Tailwind `dark` class that almost nothing consumed (2 dark:
           variants app-wide), so it visibly did nothing. A real dark

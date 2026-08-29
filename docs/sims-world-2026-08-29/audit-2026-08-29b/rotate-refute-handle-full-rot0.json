@@ -1,0 +1,106 @@
+[
+ {
+  "corner": "top-left",
+  "stageScale": 1,
+  "handleScreen": {
+   "x": 540.5,
+   "y": 175.5
+  },
+  "seeded": {
+   "x": 0.05,
+   "y": 0.05,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "afterHandle": {
+   "x": 0.05,
+   "y": 0.05,
+   "rot": 45,
+   "w": 2.1213203435596424,
+   "h": 2.1213203435596424,
+   "fx": true,
+   "fy": true
+  },
+  "toasts": [],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\ROT-handle-full-rot0-top-left.png"
+ },
+ {
+  "corner": "top-right",
+  "stageScale": 1,
+  "handleScreen": {
+   "x": 825.5,
+   "y": 175.5
+  },
+  "seeded": {
+   "x": 2.9,
+   "y": 0.05,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "afterHandle": {
+   "x": 2.9,
+   "y": 0.05,
+   "rot": 45,
+   "w": 2.1213203435596424,
+   "h": 2.1213203435596424,
+   "fx": false,
+   "fy": true
+  },
+  "toasts": [],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\ROT-handle-full-rot0-top-right.png"
+ },
+ {
+  "corner": "bottom-left",
+  "stageScale": 1,
+  "handleScreen": {
+   "x": 540.5,
+   "y": 470.5
+  },
+  "seeded": {
+   "x": 0.05,
+   "y": 3,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "afterHandle": {
+   "x": 0.05,
+   "y": 3,
+   "rot": 45,
+   "w": 2.1213203435596424,
+   "h": 2.1213203435596424,
+   "fx": true,
+   "fy": false
+  },
+  "toasts": [],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\ROT-handle-full-rot0-bottom-left.png"
+ },
+ {
+  "corner": "bottom-right",
+  "stageScale": 1,
+  "handleScreen": {
+   "x": 825.5,
+   "y": 470.5
+  },
+  "seeded": {
+   "x": 2.9,
+   "y": 3,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "afterHandle": {
+   "x": 2.9,
+   "y": 3,
+   "rot": 45,
+   "w": 2.1213203435596424,
+   "h": 2.1213203435596424,
+   "fx": false,
+   "fy": false
+  },
+  "toasts": [],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\ROT-handle-full-rot0-bottom-right.png"
+ }
+]

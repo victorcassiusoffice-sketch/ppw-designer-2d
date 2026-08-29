@@ -1,0 +1,61 @@
+{
+  "loadOpen": true,
+  "loadClosedByEsc": false,
+  "loadClosedByOutsideClick": false,
+  "loadClosedBySecondToggle": true,
+  "helpOpen": true,
+  "helpClosedByOutsideClick": false,
+  "newModalOpen": true,
+  "newModalRole": {
+    "role": null,
+    "modal": null,
+    "focusedInside": false
+  },
+  "newModalClosedByEsc": false,
+  "detailsOpen": false,
+  "detailsClosedByEsc": true,
+  "undoDisabled": true,
+  "t1024": {
+    "roomBtn": true,
+    "viewBtn": true,
+    "wallsVisible": true,
+    "drawVisible": true,
+    "labels": [
+      "Room 1· 1",
+      "Room",
+      "View",
+      "Request quote"
+    ],
+    "roomPopoverRows": [
+      "Finish",
+      "Storeys",
+      "Plot"
+    ],
+    "viewPopoverRows": [
+      "Snap 0.5 m",
+      "Grid · 0.5 m",
+      "Undo",
+      "Redo"
+    ]
+  },
+  "t1920labels": [
+    "[]",
+    "Room 1· 1",
+    "Walls",
+    "Door",
+    "Paint",
+    "Measure",
+    "Box",
+    "Custom",
+    "Finish",
+    "Storeys",
+    "Plot",
+    "Snap 0.5 m",
+    "[Grid]",
+    "[Undo (Ctrl+Z)]",
+    "[Redo (Ctrl+Shift+Z)]",
+    "Cart 1",
+    "Request quote",
+    "[More]"
+  ]
+}

@@ -1,0 +1,138 @@
+[
+ {
+  "label": "mob-toolbar-touch-drag-k1-nordictrack-2450-full/top-left",
+  "viewport": "mobile 390x844 (hasTouch,isMobile)",
+  "gesture": "toolbar-touch-drag",
+  "product": "k1-nordictrack-2450",
+  "rotationPre": 0,
+  "snapUnit": "0.5 m",
+  "target": "top-left",
+  "dropCentre": "(0.2, 0.2)",
+  "dropScreen": "(57, 360) finger +56px",
+  "elementAtDrop": "canvas",
+  "resultXY": "(-2, -7)",
+  "rotationApplied": 0,
+  "wh": "2.05 x 0.95",
+  "flushX": false,
+  "flushY": false,
+  "needX": true,
+  "needY": true,
+  "pass": false,
+  "moved": true,
+  "resolverExpectedXY": "(0.05, 0.05)",
+  "resolverExpectedRot": 0,
+  "resolverFlush": "x:true y:true edges:2",
+  "matchesResolver": false,
+  "toasts": [
+   "Added \"NordicTrack Commercial 2450 Treadmill\" to cartUndo"
+  ],
+  "consoleDragMove": [
+   "log: [place] {outdoor: true, wallSnapped: false, corner: false, x: -2, y: -7}"
+  ],
+  "precisionStored": "full",
+  "note": "items after drop: 1",
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\FAIL-mob-toolbar-touch-drag-k1-nordictrack-2450-full-top-left.png"
+ },
+ {
+  "label": "mob-toolbar-touch-drag-k1-nordictrack-2450-full/top-right",
+  "viewport": "mobile 390x844 (hasTouch,isMobile)",
+  "gesture": "toolbar-touch-drag",
+  "product": "k1-nordictrack-2450",
+  "rotationPre": 0,
+  "snapUnit": "0.5 m",
+  "target": "top-right",
+  "dropCentre": "(4.8, 0.2)",
+  "dropScreen": "(333, 360) finger +56px",
+  "elementAtDrop": "canvas",
+  "resultXY": "(-2, -7)",
+  "rotationApplied": 0,
+  "wh": "2.05 x 0.95",
+  "flushX": false,
+  "flushY": false,
+  "needX": true,
+  "needY": true,
+  "pass": false,
+  "moved": true,
+  "resolverExpectedXY": "(2.9000000000000004, 0.05)",
+  "resolverExpectedRot": 0,
+  "resolverFlush": "x:true y:true edges:2",
+  "matchesResolver": false,
+  "toasts": [
+   "Added \"NordicTrack Commercial 2450 Treadmill\" to cartUndo"
+  ],
+  "consoleDragMove": [
+   "log: [place] {outdoor: true, wallSnapped: false, corner: false, x: -2, y: -7}"
+  ],
+  "precisionStored": "full",
+  "note": "items after drop: 1",
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\FAIL-mob-toolbar-touch-drag-k1-nordictrack-2450-full-top-right.png"
+ },
+ {
+  "label": "mob-toolbar-touch-drag-k1-nordictrack-2450-full/bottom-left",
+  "viewport": "mobile 390x844 (hasTouch,isMobile)",
+  "gesture": "toolbar-touch-drag",
+  "product": "k1-nordictrack-2450",
+  "rotationPre": 0,
+  "snapUnit": "0.5 m",
+  "target": "bottom-left",
+  "dropCentre": "(0.2, 3.8)",
+  "dropScreen": "(57, 576) finger +56px",
+  "elementAtDrop": "canvas",
+  "resultXY": "(-2, -7)",
+  "rotationApplied": 0,
+  "wh": "2.05 x 0.95",
+  "flushX": false,
+  "flushY": false,
+  "needX": true,
+  "needY": true,
+  "pass": false,
+  "moved": true,
+  "resolverExpectedXY": "(0.05, 3)",
+  "resolverExpectedRot": 180,
+  "resolverFlush": "x:true y:true edges:2",
+  "matchesResolver": false,
+  "toasts": [
+   "Added \"NordicTrack Commercial 2450 Treadmill\" to cartUndo"
+  ],
+  "consoleDragMove": [
+   "log: [place] {outdoor: true, wallSnapped: false, corner: false, x: -2, y: -7}"
+  ],
+  "precisionStored": "full",
+  "note": "items after drop: 1",
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\FAIL-mob-toolbar-touch-drag-k1-nordictrack-2450-full-bottom-left.png"
+ },
+ {
+  "label": "mob-toolbar-touch-drag-k1-nordictrack-2450-full/bottom-right",
+  "viewport": "mobile 390x844 (hasTouch,isMobile)",
+  "gesture": "toolbar-touch-drag",
+  "product": "k1-nordictrack-2450",
+  "rotationPre": 0,
+  "snapUnit": "0.5 m",
+  "target": "bottom-right",
+  "dropCentre": "(4.8, 3.8)",
+  "dropScreen": "(333, 576) finger +56px",
+  "elementAtDrop": "canvas",
+  "resultXY": "(-2, -7)",
+  "rotationApplied": 0,
+  "wh": "2.05 x 0.95",
+  "flushX": false,
+  "flushY": false,
+  "needX": true,
+  "needY": true,
+  "pass": false,
+  "moved": true,
+  "resolverExpectedXY": "(4, 1.9000000000000004)",
+  "resolverExpectedRot": 90,
+  "resolverFlush": "x:true y:true edges:2",
+  "matchesResolver": false,
+  "toasts": [
+   "Added \"NordicTrack Commercial 2450 Treadmill\" to cartUndo"
+  ],
+  "consoleDragMove": [
+   "log: [place] {outdoor: true, wallSnapped: false, corner: false, x: -2, y: -7}"
+  ],
+  "precisionStored": "full",
+  "note": "items after drop: 1",
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\FAIL-mob-toolbar-touch-drag-k1-nordictrack-2450-full-bottom-right.png"
+ }
+]

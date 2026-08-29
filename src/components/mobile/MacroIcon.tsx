@@ -5,11 +5,21 @@
  */
 import type { MacroCategory } from './catalogMacros';
 
-export function MacroIcon({ macro }: { macro: MacroCategory }): JSX.Element {
+export interface MacroIconProps {
+  macro: MacroCategory;
+  /**
+   * Rendered size in CSS px. Defaults to the mobile toolbar's 22; the desktop
+   * dock tabs pass 20 (toolbar contract 2026-08-29: 16 px icons in bars,
+   * 20 px in dock tabs).
+   */
+  size?: number;
+}
+
+export function MacroIcon({ macro, size = 22 }: MacroIconProps): JSX.Element {
   const common = {
     viewBox: '0 0 24 24',
-    width: 22,
-    height: 22,
+    width: size,
+    height: size,
     fill: 'none',
     stroke: 'currentColor',
     strokeWidth: 1.8,

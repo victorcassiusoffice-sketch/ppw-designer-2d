@@ -1,0 +1,135 @@
+{
+ "scenario": "right-flush-rot0-to90",
+ "viewport": "mobile-390",
+ "gesture": "touch",
+ "ppm": 60,
+ "handlePx": {
+  "x": 280.5,
+  "y": 419.5
+ },
+ "elementAtHandle": "div[floating-cluster]",
+ "floatingClusterBox": {
+  "x": 106,
+  "y": 363.5,
+  "width": 280,
+  "height": 64
+ },
+ "before": {
+  "x": 2.9000000000000004,
+  "y": 1.5,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "centre": {
+   "x": 3.9250000000000003,
+   "y": 1.975
+  },
+  "right": 4.95,
+  "bottom": 2.45
+ },
+ "trace": [
+  {
+   "iter": 0,
+   "rotation": 0,
+   "x": 2.9000000000000004,
+   "y": 1.5
+  },
+  {
+   "iter": 1,
+   "rotation": 0,
+   "x": 2.9000000000000004,
+   "y": 1.5
+  },
+  {
+   "iter": 2,
+   "rotation": 0,
+   "x": 2.9000000000000004,
+   "y": 1.5
+  },
+  {
+   "iter": 3,
+   "rotation": 0,
+   "x": 2.9000000000000004,
+   "y": 1.5
+  },
+  {
+   "iter": 4,
+   "rotation": 0,
+   "x": 2.9000000000000004,
+   "y": 1.5
+  },
+  {
+   "iter": 5,
+   "rotation": 0,
+   "x": 2.9000000000000004,
+   "y": 1.5
+  },
+  {
+   "iter": 6,
+   "rotation": 0,
+   "x": 2.9000000000000004,
+   "y": 1.5
+  },
+  {
+   "iter": 7,
+   "rotation": 0,
+   "x": 2.9000000000000004,
+   "y": 1.5
+  },
+  {
+   "iter": 8,
+   "rotation": 0,
+   "x": 2.9000000000000004,
+   "y": 1.5
+  },
+  {
+   "iter": 9,
+   "rotation": 0,
+   "x": 2.9000000000000004,
+   "y": 1.5
+  }
+ ],
+ "afterRotate": {
+  "x": 2.9000000000000004,
+  "y": 1.5,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "centre": {
+   "x": 3.9250000000000003,
+   "y": 1.975
+  },
+  "right": 4.95,
+  "bottom": 2.45,
+  "rightBeyondInnerFace": false,
+  "bottomBeyondInnerFace": false,
+  "rightBeyondPolygon": false,
+  "bottomBeyondPolygon": false,
+  "centreMoved": false,
+  "xyChanged": false,
+  "reachedTarget": false
+ },
+ "toastsAfterRotate": [],
+ "rotShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify2-mobile-390-touch-right-flush-rot0-to90-rotated.png",
+ "clusterRotate": {
+  "before": {
+   "x": 2.9000000000000004,
+   "y": 1.5,
+   "rotation": 0,
+   "centre": {
+    "x": 3.9250000000000003,
+    "y": 1.975
+   }
+  },
+  "after": {
+   "x": 3.45,
+   "y": 0.95,
+   "rotation": 90,
+   "centre": {
+    "x": 3.9250000000000003,
+    "y": 1.9749999999999999
+   }
+  },
+  "toasts": []
+ }
+}

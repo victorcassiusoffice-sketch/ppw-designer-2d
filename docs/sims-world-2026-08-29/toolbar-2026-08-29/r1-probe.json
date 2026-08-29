@@ -1,0 +1,314 @@
+{
+  "desktop-1920": {
+    "fresh": {
+      "dupes": [
+        "sims-thumb x33"
+      ],
+      "rects": {
+        "snap-unit-stepper": [],
+        "snap-unit-current": []
+      }
+    },
+    "help": {
+      "w": 40,
+      "h": 40,
+      "x": 1864,
+      "y": 886
+    },
+    "draw": {
+      "dupes": [
+        "sims-thumb x33"
+      ],
+      "rects": {
+        "snap-unit-stepper": [
+          {
+            "x": 1107,
+            "y": 837,
+            "w": 140,
+            "h": 40,
+            "inHud": true
+          }
+        ],
+        "snap-unit-coarser": [
+          {
+            "x": 1107,
+            "y": 837,
+            "w": 40,
+            "h": 40,
+            "inHud": true
+          }
+        ],
+        "snap-unit-current": [
+          {
+            "x": 1151,
+            "y": 837,
+            "w": 52,
+            "h": 40,
+            "inHud": true
+          }
+        ],
+        "snap-unit-finer": [
+          {
+            "x": 1207,
+            "y": 837,
+            "w": 40,
+            "h": 40,
+            "inHud": true
+          }
+        ],
+        "mobile-draw-unit-stepper": [],
+        "room-draw-hud": [
+          {
+            "x": 660,
+            "y": 824,
+            "w": 600,
+            "h": 162,
+            "inHud": true
+          }
+        ]
+      }
+    },
+    "drawHelp": null,
+    "step": {
+      "before": "0.5 m",
+      "after": "0.25 m"
+    },
+    "consoleErrors": []
+  },
+  "desktop-1366": {
+    "fresh": {
+      "dupes": [
+        "sims-thumb x33"
+      ],
+      "rects": {
+        "snap-unit-stepper": [],
+        "snap-unit-current": []
+      }
+    },
+    "help": {
+      "w": 40,
+      "h": 40,
+      "x": 1310,
+      "y": 574
+    },
+    "draw": {
+      "dupes": [
+        "sims-thumb x33"
+      ],
+      "rects": {
+        "snap-unit-stepper": [
+          {
+            "x": 830,
+            "y": 525,
+            "w": 140,
+            "h": 40,
+            "inHud": true
+          }
+        ],
+        "snap-unit-coarser": [
+          {
+            "x": 830,
+            "y": 525,
+            "w": 40,
+            "h": 40,
+            "inHud": true
+          }
+        ],
+        "snap-unit-current": [
+          {
+            "x": 874,
+            "y": 525,
+            "w": 52,
+            "h": 40,
+            "inHud": true
+          }
+        ],
+        "snap-unit-finer": [
+          {
+            "x": 930,
+            "y": 525,
+            "w": 40,
+            "h": 40,
+            "inHud": true
+          }
+        ],
+        "mobile-draw-unit-stepper": [],
+        "room-draw-hud": [
+          {
+            "x": 383,
+            "y": 512,
+            "w": 600,
+            "h": 162,
+            "inHud": true
+          }
+        ]
+      }
+    },
+    "drawHelp": null,
+    "step": {
+      "before": "0.5 m",
+      "after": "0.25 m"
+    },
+    "consoleErrors": []
+  },
+  "tablet-1024": {
+    "fresh": {
+      "dupes": [
+        "sims-thumb x33"
+      ],
+      "rects": {
+        "snap-unit-stepper": [],
+        "snap-unit-current": []
+      }
+    },
+    "help": {
+      "w": 40,
+      "h": 40,
+      "x": 968,
+      "y": 626
+    },
+    "draw": {
+      "dupes": [
+        "sims-thumb x33"
+      ],
+      "rects": {
+        "snap-unit-stepper": [
+          {
+            "x": 659,
+            "y": 577,
+            "w": 140,
+            "h": 40,
+            "inHud": true
+          }
+        ],
+        "snap-unit-coarser": [
+          {
+            "x": 659,
+            "y": 577,
+            "w": 40,
+            "h": 40,
+            "inHud": true
+          }
+        ],
+        "snap-unit-current": [
+          {
+            "x": 703,
+            "y": 577,
+            "w": 52,
+            "h": 40,
+            "inHud": true
+          }
+        ],
+        "snap-unit-finer": [
+          {
+            "x": 759,
+            "y": 577,
+            "w": 40,
+            "h": 40,
+            "inHud": true
+          }
+        ],
+        "mobile-draw-unit-stepper": [],
+        "room-draw-hud": [
+          {
+            "x": 212,
+            "y": 564,
+            "w": 600,
+            "h": 162,
+            "inHud": true
+          }
+        ]
+      }
+    },
+    "drawHelp": null,
+    "step": {
+      "before": "0.5 m",
+      "after": "0.25 m"
+    },
+    "consoleErrors": []
+  },
+  "mobile-390": {
+    "fresh": {
+      "dupes": [
+        "sims-thumb x33"
+      ],
+      "rects": {
+        "snap-unit-stepper": [],
+        "snap-unit-current": []
+      }
+    },
+    "help": {
+      "w": 44,
+      "h": 44,
+      "x": 330,
+      "y": 521
+    },
+    "draw": {
+      "dupes": [
+        "sims-thumb x33"
+      ],
+      "rects": {
+        "snap-unit-stepper": [
+          {
+            "x": 12,
+            "y": 299,
+            "w": 148,
+            "h": 44,
+            "inHud": false
+          }
+        ],
+        "snap-unit-coarser": [
+          {
+            "x": 12,
+            "y": 299,
+            "w": 44,
+            "h": 44,
+            "inHud": false
+          }
+        ],
+        "snap-unit-current": [
+          {
+            "x": 60,
+            "y": 299,
+            "w": 52,
+            "h": 44,
+            "inHud": false
+          }
+        ],
+        "snap-unit-finer": [
+          {
+            "x": 116,
+            "y": 299,
+            "w": 44,
+            "h": 44,
+            "inHud": false
+          }
+        ],
+        "mobile-draw-unit-stepper": [
+          {
+            "x": 12,
+            "y": 299,
+            "w": 148,
+            "h": 44,
+            "inHud": false
+          }
+        ],
+        "room-draw-hud": [
+          {
+            "x": 12,
+            "y": 351,
+            "w": 367,
+            "h": 218,
+            "inHud": true
+          }
+        ]
+      }
+    },
+    "drawHelp": null,
+    "step": {
+      "before": "0.5 m",
+      "after": "0.25 m"
+    },
+    "consoleErrors": []
+  }
+}

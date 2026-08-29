@@ -1,0 +1,142 @@
+[
+ {
+  "corner": "top-left",
+  "unit": "cm10",
+  "precisionStored": "cm10",
+  "clusterVisibleAfterSelect": 1,
+  "seeded": {
+   "x": 0.05,
+   "y": 0.05,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "afterR1": {
+   "x": 0.05,
+   "y": 0.05,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": true,
+   "fy": true
+  },
+  "afterR2": {
+   "x": 0.05,
+   "y": 0.05,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": true,
+   "fy": true
+  },
+  "toasts": [
+   "Item won't fit here."
+  ],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\ROT-desk-cm10-rot0-top-left.png"
+ },
+ {
+  "corner": "top-right",
+  "unit": "cm10",
+  "precisionStored": "cm10",
+  "clusterVisibleAfterSelect": 1,
+  "seeded": {
+   "x": 2.9,
+   "y": 0.05,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "afterR1": {
+   "x": 2.9,
+   "y": 0.05,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": true,
+   "fy": true
+  },
+  "afterR2": {
+   "x": 2.9,
+   "y": 0.05,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": true,
+   "fy": true
+  },
+  "toasts": [
+   "Item won't fit here."
+  ],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\ROT-desk-cm10-rot0-top-right.png"
+ },
+ {
+  "corner": "bottom-left",
+  "unit": "cm10",
+  "precisionStored": "cm10",
+  "clusterVisibleAfterSelect": 1,
+  "seeded": {
+   "x": 0.05,
+   "y": 3,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "afterR1": {
+   "x": 0.05,
+   "y": 3,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": true,
+   "fy": true
+  },
+  "afterR2": {
+   "x": 0.05,
+   "y": 3,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": true,
+   "fy": true
+  },
+  "toasts": [
+   "Item won't fit here."
+  ],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\ROT-desk-cm10-rot0-bottom-left.png"
+ },
+ {
+  "corner": "bottom-right",
+  "unit": "cm10",
+  "precisionStored": "cm10",
+  "clusterVisibleAfterSelect": 1,
+  "seeded": {
+   "x": 2.9,
+   "y": 3,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "afterR1": {
+   "x": 2.9,
+   "y": 3,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": true,
+   "fy": true
+  },
+  "afterR2": {
+   "x": 2.9,
+   "y": 3,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": true,
+   "fy": true
+  },
+  "toasts": [
+   "Item won't fit here."
+  ],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\ROT-desk-cm10-rot0-bottom-right.png"
+ }
+]

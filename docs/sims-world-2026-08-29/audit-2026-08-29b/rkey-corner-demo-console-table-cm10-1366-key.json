@@ -1,0 +1,137 @@
+{
+ "matrix": {
+  "pid": "demo-console-table",
+  "unit": "cm10",
+  "viewport": {
+   "width": 1366,
+   "height": 768
+  },
+  "via": "key"
+ },
+ "steps": [
+  {
+   "action": "seeded",
+   "x": 0.05,
+   "y": 0.05,
+   "rotation": 0,
+   "w": 1.2,
+   "h": 0.4,
+   "flushX": true,
+   "flushY": true,
+   "inBandX": false,
+   "inBandY": false,
+   "offLeft": 0,
+   "offTop": 0,
+   "toastsSoFar": [],
+   "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rkey-corner-demo-console-table-cm10-1366-key-0-seeded.png"
+  },
+  {
+   "action": "R#1",
+   "x": 0.05,
+   "y": 0.05,
+   "rotation": 0,
+   "w": 1.2,
+   "h": 0.4,
+   "flushX": true,
+   "flushY": true,
+   "inBandX": false,
+   "inBandY": false,
+   "offLeft": 0,
+   "offTop": 0,
+   "toastsSoFar": [
+    "Item won't fit here."
+   ],
+   "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rkey-corner-demo-console-table-cm10-1366-key-1-R.png"
+  },
+  {
+   "action": "R#2",
+   "x": 0.05,
+   "y": 0.05,
+   "rotation": 0,
+   "w": 1.2,
+   "h": 0.4,
+   "flushX": true,
+   "flushY": true,
+   "inBandX": false,
+   "inBandY": false,
+   "offLeft": 0,
+   "offTop": 0,
+   "toastsSoFar": [
+    "Item won't fit here."
+   ],
+   "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rkey-corner-demo-console-table-cm10-1366-key-2-R.png"
+  },
+  {
+   "action": "R#3",
+   "x": 0.05,
+   "y": 0.05,
+   "rotation": 0,
+   "w": 1.2,
+   "h": 0.4,
+   "flushX": true,
+   "flushY": true,
+   "inBandX": false,
+   "inBandY": false,
+   "offLeft": 0,
+   "offTop": 0,
+   "toastsSoFar": [
+    "Item won't fit here."
+   ],
+   "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rkey-corner-demo-console-table-cm10-1366-key-3-R.png"
+  },
+  {
+   "action": "R#4",
+   "x": 0.05,
+   "y": 0.05,
+   "rotation": 0,
+   "w": 1.2,
+   "h": 0.4,
+   "flushX": true,
+   "flushY": true,
+   "inBandX": false,
+   "inBandY": false,
+   "offLeft": 0,
+   "offTop": 0,
+   "toastsSoFar": [
+    "Item won't fit here."
+   ],
+   "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rkey-corner-demo-console-table-cm10-1366-key-4-R.png"
+  },
+  {
+   "action": "drag back to corner (edge 0.2 off both walls)",
+   "x": 0.05,
+   "y": 0.05,
+   "rotation": 0,
+   "w": 1.2,
+   "h": 0.4,
+   "flushX": true,
+   "flushY": true,
+   "inBandX": false,
+   "inBandY": false,
+   "offLeft": 0,
+   "offTop": 0,
+   "toastsSoFar": [
+    "Item won't fit here."
+   ],
+   "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rkey-corner-demo-console-table-cm10-1366-key-5-dragback.png"
+  },
+  {
+   "action": "R after drag-back",
+   "x": 0.05,
+   "y": 0.05,
+   "rotation": 0,
+   "w": 1.2,
+   "h": 0.4,
+   "flushX": true,
+   "flushY": true,
+   "inBandX": false,
+   "inBandY": false,
+   "offLeft": 0,
+   "offTop": 0,
+   "toastsSoFar": [
+    "Item won't fit here."
+   ],
+   "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rkey-corner-demo-console-table-cm10-1366-key-6-R-after-dragback.png"
+  }
+ ]
+}

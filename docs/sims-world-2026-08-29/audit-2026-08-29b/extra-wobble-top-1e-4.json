@@ -1,0 +1,84 @@
+[
+ {
+  "label": "wobble-top-1e-4/left",
+  "dropCentre": "(0.2, 2)",
+  "resultXY": "(0.05, 1)",
+  "rotationApplied": 270,
+  "flushX": true,
+  "flushY": false,
+  "pass": true,
+  "toasts": []
+ },
+ {
+  "label": "wobble-top-1e-4/right",
+  "dropCentre": "(4.8, 2)",
+  "resultXY": "(4, 1)",
+  "rotationApplied": 90,
+  "flushX": true,
+  "flushY": false,
+  "pass": true,
+  "toasts": []
+ },
+ {
+  "label": "wobble-top-1e-4/top",
+  "dropCentre": "(2.5, 0.2)",
+  "resultXY": "(1.475, 1.525)",
+  "rotationApplied": 0,
+  "flushX": false,
+  "flushY": false,
+  "pass": false,
+  "toasts": [
+   "Out of room bounds."
+  ]
+ },
+ {
+  "label": "wobble-top-1e-4/bottom",
+  "dropCentre": "(2.5, 3.8)",
+  "resultXY": "(1.5, 3)",
+  "rotationApplied": 180,
+  "flushX": false,
+  "flushY": true,
+  "pass": true,
+  "toasts": []
+ },
+ {
+  "label": "wobble-top-1e-4/top-left",
+  "dropCentre": "(0.2, 0.2)",
+  "resultXY": "(0.05, 0.05)",
+  "rotationApplied": 270,
+  "flushX": true,
+  "flushY": true,
+  "pass": true,
+  "toasts": []
+ },
+ {
+  "label": "wobble-top-1e-4/top-right",
+  "dropCentre": "(4.8, 0.2)",
+  "resultXY": "(4, 0.050100000000000006)",
+  "rotationApplied": 90,
+  "flushX": true,
+  "flushY": true,
+  "pass": true,
+  "toasts": []
+ },
+ {
+  "label": "wobble-top-1e-4/bottom-left",
+  "dropCentre": "(0.2, 3.8)",
+  "resultXY": "(0.05, 3)",
+  "rotationApplied": 180,
+  "flushX": true,
+  "flushY": true,
+  "pass": true,
+  "toasts": []
+ },
+ {
+  "label": "wobble-top-1e-4/bottom-right",
+  "dropCentre": "(4.8, 3.8)",
+  "resultXY": "(4, 1.9000000000000004)",
+  "rotationApplied": 90,
+  "flushX": true,
+  "flushY": true,
+  "pass": true,
+  "toasts": []
+ }
+]

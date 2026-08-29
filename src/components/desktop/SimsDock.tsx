@@ -23,8 +23,11 @@
  * asserts on), and `RoomCanvas`'s pointer-FSM commits it. No new store, no
  * new intent path, no touch of the Konva stable-lock.
  *
- * Register: DARK (blueprint) — this is build-mode chrome sitting against
- * the blueprint canvas. Everything outside the designer keeps cream/navy.
+ * Register: the PPWellness Shop skin (`DOCK_*` tokens — Vic's shop-match
+ * decision 2026-08-28) with the 2026-08-29 toolbar contract on top: 82 px
+ * bar, 56 px category tabs (20 px icon + 11/600 uppercase label), 68 px
+ * tiles, radius 8, mint ring ONLY for the armed product, focus ring
+ * `CHROME_FOCUS_RING`, no text below 11 px.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getAllProducts, productImageUrl, thumbnailFor } from '../../data/products';
@@ -43,13 +46,22 @@ import { useDragToPlace } from '../mobile/useDragToPlace';
 import { useDragPointerStore } from '../../store/dragPointerStore';
 import { DetailCard } from '../../designer/DetailCard';
 import {
+  CHROME_TEXT_2,
   DOCK_ACCENT,
   DOCK_BG,
   DOCK_BG_RAISED,
   DOCK_BORDER,
   DOCK_TEXT,
-  DOCK_TEXT_MUTED,
 } from '../../designer/blueprintTheme';
+
+/**
+ * Toolbar contract (2026-08-29): the ONE motion + focus recipe every dock
+ * control shares. 120 ms ease-out, none under reduced-motion, 3 px
+ * `CHROME_FOCUS_RING` (rgba(121,199,173,.45)) on focus-visible. Tailwind
+ * arbitrary values because the ring colour has no utility of its own.
+ */
+const DOCK_CONTROL =
+  'transition-colors duration-[120ms] ease-out motion-reduce:transition-none focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]';
 
 export interface SimsDockProps {
   pendingProductId?: string | null;
@@ -216,11 +228,13 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
         // so the measured stage height is honest: the canvas really is the
         // remaining height, rather than being overlapped by a floating bar
         // and only appearing to be full-height.
-        className="hidden lg:flex shrink-0 items-stretch gap-2 px-2"
+        className="hidden lg:flex shrink-0 items-stretch gap-3 px-3"
         style={{
+          // 82 px: 2 rim + 6 + 68 tile + 6. Unchanged from the shop reskin.
+          height: 82,
           background: DOCK_BG,
           borderTop: `2px solid ${DOCK_ACCENT}`,
-          boxShadow: '0 -8px 24px rgba(0,0,0,0.35)',
+          boxShadow: '0 -8px 24px rgba(42,41,38,0.18)',
           paddingTop: 6,
           paddingBottom: 6,
         }}
@@ -236,7 +250,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
         <div
           role="tablist"
           aria-label="Product category"
-          className="flex shrink-0 items-center gap-1 pr-2"
+          className="flex shrink-0 items-center gap-2 pr-3"
           style={{ borderRight: `1px solid ${DOCK_BORDER}` }}
         >
           {MACRO_CATEGORY_ORDER.map((mc) => {
@@ -252,20 +266,23 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                   setActiveCategory(mc);
                   setCollapsed(false);
                 }}
-                className="flex min-h-[56px] min-w-[58px] flex-col items-center justify-center gap-0.5 rounded-md px-1 transition"
+                className={`flex h-14 min-w-[64px] flex-col items-center justify-center gap-1 rounded-lg px-1.5 ${DOCK_CONTROL} ${
+                  active ? '' : 'hover:bg-[#faf9f5]'
+                }`}
                 style={{
                   // Shop soft-neumorphic selected style: dark ink on a mint
                   // tint with a mint rim (NOT mint text, which is illegible
                   // on the light dock). Matches the shop side-item.
                   color: DOCK_TEXT,
-                  fontWeight: active ? 700 : 600,
-                  background: active ? 'rgba(121,199,173,0.20)' : 'transparent',
+                  background: active ? 'rgba(121,199,173,0.20)' : undefined,
                   boxShadow: active ? `inset 0 0 0 1px ${DOCK_ACCENT}` : 'none',
                 }}
                 title={`${MACRO_CATEGORY_LABEL[mc]} — show this category`}
               >
-                <MacroIcon macro={mc} />
-                <span className="text-[9px] font-semibold uppercase leading-none tracking-wide">
+                <MacroIcon macro={mc} size={20} />
+                {/* Caption: 11/600 uppercase, .06em — the contract floor.
+                    (Was 9 px, below the 11 px minimum.) */}
+                <span className="text-[11px] font-semibold uppercase leading-none tracking-[0.06em]">
                   {MACRO_CATEGORY_LABEL[mc]}
                 </span>
               </button>
@@ -276,8 +293,10 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
         {/* Product strip — horizontally scrollable, one row of tiles. */}
         {collapsed ? (
           <div
-            className="flex flex-1 items-center px-2 text-[11px]"
-            style={{ color: DOCK_TEXT_MUTED }}
+            // 12 px copy: CHROME_TEXT_2, not the muted ink (that is only
+            // legible enough at >= 14 px).
+            className="flex flex-1 items-center px-2 text-[12px] font-medium"
+            style={{ color: CHROME_TEXT_2 }}
           >
             Catalog hidden. Click a category or the chevron to reopen.
           </div>
@@ -287,7 +306,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
             className="scroll-pane flex flex-1 items-center gap-2 overflow-x-auto overflow-y-hidden"
           >
             {filtered.length === 0 ? (
-              <li className="px-3 text-[11px]" style={{ color: DOCK_TEXT_MUTED }}>
+              <li className="px-3 text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>
                 No products in {emptyLabel} yet.
               </li>
             ) : (
@@ -341,15 +360,16 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                       data-category={p.category}
                       data-macro={macroOf(p)}
                       data-armed={isPending ? 'true' : 'false'}
-                      className="ppw-no-callout flex h-[68px] w-[68px] cursor-pointer touch-none items-center justify-center rounded-lg transition focus-visible:outline focus-visible:outline-2"
+                      className={`ppw-no-callout flex h-[68px] w-[68px] cursor-pointer touch-none items-center justify-center rounded-lg ${DOCK_CONTROL}`}
                       style={{
                         background: DOCK_BG_RAISED,
                         // Raised soft-neumorphic tile (shop --raise-sm dual
-                        // light) at rest; mint ring + halo when armed.
+                        // light) at rest; mint ring + halo when armed (the
+                        // ONE place mint is an active state — Vic's
+                        // shop-match decision).
                         boxShadow: isPending
                           ? `inset 0 0 0 2px ${DOCK_ACCENT}, 0 0 0 3px rgba(121,199,173,0.35)`
                           : `4px 4px 9px rgba(167,160,144,0.42), -4px -4px 9px rgba(255,255,255,0.95), inset 0 0 0 1px ${DOCK_BORDER}`,
-                        outlineColor: DOCK_ACCENT,
                       }}
                     >
                       <DockThumb product={p} />
@@ -371,23 +391,29 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
           aria-label={collapsed ? 'Show product strip' : 'Hide product strip'}
           aria-expanded={!collapsed}
           onClick={() => setCollapsed((v) => !v)}
-          className="flex min-h-[56px] w-9 shrink-0 items-center justify-center self-center rounded-md"
-          style={{ color: DOCK_TEXT, background: DOCK_BG_RAISED }}
+          // 44 x 56 (contract): a full-height control, wide enough to hit.
+          className={`flex h-14 w-11 shrink-0 items-center justify-center self-center rounded-lg hover:bg-[#f3f1ec] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] ${DOCK_CONTROL}`}
+          style={{
+            color: DOCK_TEXT,
+            background: DOCK_BG_RAISED,
+            boxShadow: `inset 0 0 0 1px ${DOCK_BORDER}`,
+          }}
           title={collapsed ? 'Show the product strip' : 'Hide the product strip (more canvas)'}
         >
           <svg
             viewBox="0 0 24 24"
-            width={18}
-            height={18}
+            width={16}
+            height={16}
             fill="none"
             stroke="currentColor"
             strokeWidth={2.2}
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden="true"
+            className="motion-reduce:transition-none"
             style={{
               transform: collapsed ? 'rotate(180deg)' : 'none',
-              transition: 'transform 150ms',
+              transition: 'transform 120ms ease-out',
             }}
           >
             <path d="M6 15l6-6 6 6" />

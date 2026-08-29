@@ -1,0 +1,50 @@
+{
+ "slug": "desk/tl-corner-r0-to-90",
+ "mode": "mouse",
+ "seeded": {
+  "x": 0.05,
+  "y": 0.05,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "xPlusW": 2.1,
+  "yPlusH": 1,
+  "flushLeft": true,
+  "flushRight": false,
+  "flushTop": true,
+  "flushBottom": false,
+  "outOfBounds": false,
+  "centre": {
+   "x": 1.075,
+   "y": 0.525
+  }
+ },
+ "handleFrom": {
+  "x": 540.5,
+  "y": 175.5
+ },
+ "handleTo": {
+  "x": 740.5,
+  "y": 241
+ },
+ "afterHandle": {
+  "x": 0.05,
+  "y": 0.05,
+  "rotation": 75,
+  "w": 1.4482085774347824,
+  "h": 2.2260260367399844,
+  "xPlusW": 1.4982,
+  "yPlusH": 2.276,
+  "flushLeft": true,
+  "flushRight": false,
+  "flushTop": true,
+  "flushBottom": false,
+  "outOfBounds": false,
+  "centre": {
+   "x": 0.7741,
+   "y": 1.163
+  }
+ },
+ "toastsAfterHandle": [],
+ "follow": []
+}

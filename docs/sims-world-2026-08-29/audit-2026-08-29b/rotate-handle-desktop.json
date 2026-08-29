@@ -1,0 +1,59 @@
+[
+ {
+  "case": "right-r0-to-90",
+  "viewport": "desktop 1366x768",
+  "gesture": "mouse",
+  "before": {
+   "x": 2.9000000000000004,
+   "y": 1.525,
+   "rotation": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "flush": {
+    "left": false,
+    "right": true,
+    "top": false,
+    "bottom": false
+   },
+   "inBounds": true
+  },
+  "afterRotate": {
+   "x": 2.9000000000000004,
+   "y": 1.525,
+   "rotation": 45,
+   "w": 2.1213203435596424,
+   "h": 2.1213203435596424,
+   "flush": {
+    "left": false,
+    "right": false,
+    "top": false,
+    "bottom": false
+   },
+   "inBounds": false,
+   "centreShift": "(0.036, 0.586)"
+  },
+  "toastsAfterRotate": [],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-handle-right-r0-to-90.png",
+  "followUpDrag": {
+   "dropCentre": "(3.661, 2.586)",
+   "result": {
+    "x": 2.828679656440358,
+    "y": 1.8286796564403578,
+    "rotation": 45,
+    "w": 2.1213203435596424,
+    "h": 2.1213203435596424,
+    "flush": {
+     "left": false,
+     "right": true,
+     "top": false,
+     "bottom": true
+    },
+    "inBounds": true
+   },
+   "toasts": [],
+   "console": [
+    "log: [drag-move] {reason: same-room}"
+   ]
+  }
+ }
+]

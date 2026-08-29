@@ -1,30 +1,49 @@
 /**
- * TopBar - Week 3 build (was Week 2.5).
+ * TopBar — designer chrome, rebuilt to the toolbar contract (2026-08-29).
  *
- * Additions vs Week 2.5:
- *   - CurrencySwitcher (MUR / USD / EUR / GBP) in the right cluster.
- *   - Cart badge is a Link to /cart.
+ * Audit: docs/sims-world-2026-08-29/audit-2026-08-29b/ — at 1366 the
+ * Rectangle|Draw segment was flex-shrunk to 9 px and Draw was unclickable;
+ * with the door tool on, Save/Load/Quote/Help fell off the right edge.
  *
- * Carryover from W2.5:
- *   - Property name (inline rename) on the left.
- *   - Mode toggle (Rectangle / Draw) for the canvas.
- *   - L/W inputs only edit the active room AND only when polygon is rectangular.
- *   - Save/Load v2 - properties (multi-room) saved under `ppw_properties_v2`.
+ * Layout (md+): ONE 52 px row, flex-nowrap, five groups left → right:
+ *   1 IDENTITY   brand tile · rooms trigger (the only group that may shrink)
+ *   2 BUILD      Walls · Door · Paint · Measure   (segmented, ink when on)
+ *   3 ROOM&PLAN  Box | Custom · Finish · Storeys · Plot
+ *   4 VIEW       Snap · Grid · 3D · Undo/Redo
+ *   5 COMMERCE   Currency · Cart · Request quote (the ONE gold CTA) · More
+ * Door options live in a 40 px sub-bar under the row while the door tool
+ * is on. Every popover is portaled to <body> and positioned from its
+ * anchor's rect, so the middle rail can fall back to `overflow-x:auto`
+ * without ever clipping a dropdown.
  *
- * fix/mobile-ux-v1 (May 2026):
- *   - Right-cluster Save/Load/Help/Cart/Grid hidden on mobile behind a
- *     hamburger overflow menu (the screenshot Vic sent showed all those
- *     buttons wrapping and overflowing on a ~390px viewport).
- *   - Rect/Draw mode toggle is now ALSO visible on mobile (was hidden
- *     md:flex — the reason Vic couldn't enter Draw mode on his phone).
- *   - The RoomList mobile trigger used to be an absolute-positioned
- *     button rendered by RoomList itself; it overlapped the currency
- *     picker. It now lives inline as the left-side button in this bar
- *     and toggles `roomsMenuOpen` (lifted to App.tsx).
- *   - All tap targets ≥40px on mobile.
+ * Responsive tiers: ≥1536 all labels · 1280–1535 ROOM&PLAN + VIEW icon-only
+ * (labels → title tooltips) · 768–1279 ROOM&PLAN collapses into a "Room"
+ * popover and VIEW into a "View" popover (BUILD goes icon-only too — at
+ * 1024 the labels do not fit). The Box|Custom segment stays inline at every
+ * width so `room-draw-toggle` is always directly clickable.
+ *
+ * <md: a 56 px strip — brand · rooms · Walls (the Custom half) · hamburger —
+ * and a full-height right sheet (portal) holding every mobile control.
+ *
+ * Invariants (Playwright strict mode): every data-testid renders ONCE. The
+ * collapsed Room / View groups render the SAME fragment either inline or
+ * inside their popover, decided by a JS media query, never both.
+ *
+ * Carryover: CurrencySwitcher · Cart badge Link · Save/Load v2 under
+ * `ppw_properties_v2` · L/W inputs only edit the active room AND only when
+ * its polygon is rectangular · rooms dropdown state lifted to App.
  */
 
-import { useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useDesignStore, isActiveRoomRectangle } from '../store/designStore';
 import { usePropertyStore } from '../store/propertyStore';
@@ -49,6 +68,9 @@ import {
   roomsOnLevel,
 } from '../designer/levels';
 import { performUndo, performRedo } from '../lib/undoIntent';
+// Polish (2026-08-29): "New plan" under More — PageTabs is hidden while there
+// is a single plan, so this is how a second plan gets started.
+import { createPage, switchToPage } from '../lib/pages';
 import { FLOOR_MATERIALS, tileableFloorMaterials } from '../data/floorMaterials';
 import { useWallStore } from '../store/wallStore';
 import { useCart } from '../store/cartStore';
@@ -58,6 +80,13 @@ import {
   promptForCustomerEmail,
 } from '../lib/customerIdentity';
 import { saveDesignToApi, submitLead } from '../lib/designsApi';
+import {
+  CHROME_BG,
+  CHROME_RAIL_BG,
+  CHROME_RIM,
+  CHROME_TEXT,
+  CHROME_TEXT_2,
+} from '../designer/blueprintTheme';
 
 export interface TopBarProps {
   drawMode: boolean;
@@ -74,6 +103,275 @@ export interface TopBarProps {
   setThreeDPreview?: (v: boolean) => void;
 }
 
+// ---------------------------------------------------------------------------
+// Class recipes — literal strings so Tailwind's scanner sees every utility.
+// ---------------------------------------------------------------------------
+
+/** 40 px control: rim at rest, hover wash, inset press, focus ring. */
+const BTN =
+  'inline-flex h-10 min-w-[40px] shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-[12px] font-medium leading-none transition-colors duration-[120ms] ease-out motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] disabled:cursor-not-allowed disabled:opacity-40';
+const BTN_REST =
+  'border-ppw-rim bg-ppw-chrome text-[#37362f] hover:border-[rgba(42,41,38,0.35)] hover:bg-[#f3f1ec]';
+const BTN_ON = 'border-ppw-inkDeep bg-ppw-inkDeep text-ppw-paper';
+const BTN_CTA =
+  'border-ppw-gold bg-ppw-gold font-semibold text-ppw-navy hover:brightness-105 disabled:opacity-60';
+/** Square 40 icon button (Grid, Undo, Redo, More). */
+const BTN_ICON = 'w-10 px-0';
+/** Segment inside a rimmed group: no own rim, inset focus ring. */
+const SEG =
+  'inline-flex h-10 min-w-[40px] shrink-0 items-center justify-center gap-1.5 whitespace-nowrap px-2 text-[12px] font-medium leading-none transition-colors duration-[120ms] ease-out motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-inset focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] disabled:cursor-not-allowed disabled:opacity-40';
+const SEG_REST = 'bg-ppw-chrome text-[#37362f] hover:bg-[#f3f1ec]';
+const SEG_ON = 'bg-ppw-inkDeep text-ppw-paper';
+/** Radio half that is CHECKED but not live (Box at rest): rail wash + semibold,
+    never ink — ink is reserved for a tool that is on / a popover that is open. */
+const SEG_CHECKED = 'bg-ppw-rail font-semibold text-[#37362f] hover:bg-[#f3f1ec]';
+/** Ink primary — commits a setting (Lock plot). Same recipe as CartStrip's
+    CTRL_INK so the two surfaces are one control set; gold stays for Request quote. */
+const BTN_INK = 'border-ppw-inkDeep bg-ppw-inkDeep font-semibold text-ppw-paper hover:brightness-110';
+const SEG_GROUP = 'inline-flex shrink-0 overflow-hidden rounded-lg border border-ppw-rim divide-x divide-ppw-rim';
+/** 36 px popover row. Colour is inherited from the popover (CHROME_TEXT) so
+    the ON state's paper text is the only colour utility on the row. */
+const ROW =
+  'flex min-h-[36px] w-full items-center gap-2 rounded-lg px-2 text-left text-[12px] font-medium transition-colors duration-[120ms] ease-out motion-reduce:transition-none hover:bg-[#f3f1ec] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]';
+const ROW_ON = 'bg-ppw-inkDeep text-ppw-paper hover:bg-ppw-inkDeep';
+/** 48 px sheet row (mobile). */
+const SHEET_ROW =
+  'flex min-h-[48px] w-full items-center gap-3 rounded-lg px-3 text-left text-[14px] font-medium transition-colors duration-[120ms] ease-out motion-reduce:transition-none hover:bg-[#f3f1ec] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]';
+const SHEET_ROW_ON = 'bg-ppw-inkDeep text-ppw-paper hover:bg-ppw-inkDeep';
+const CAPTION = 'px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-[0.06em]';
+/** Group divider: a 1 px rim with 4 px either side up to xl, 8 from 2xl,
+    12 from 1700 (all on the 4/8/12 spacing ladder). Polish (2026-08-29):
+    measured at 1366 the six ROOM&PLAN / VIEW labels + Walls + Quote need
+    every one of the 5 × 8 px the old `mx-2` spent. */
+const DIVIDER = 'mx-1 h-6 w-px shrink-0 bg-ppw-rim 2xl:mx-2 min-[1700px]:mx-3';
+const INPUT =
+  'h-10 rounded-lg border border-ppw-rim bg-ppw-chrome px-2 text-right text-[12px] font-semibold tabular-nums text-[#37362f] focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]';
+
+// ---------------------------------------------------------------------------
+// Icons — inline 16 px SVGs, stroke currentColor 1.6, round caps.
+// ---------------------------------------------------------------------------
+
+type IconName =
+  | 'list'
+  | 'pen'
+  | 'door'
+  | 'roller'
+  | 'ruler'
+  | 'box'
+  | 'polygon'
+  | 'swatch'
+  | 'storeys'
+  | 'plot'
+  | 'snap'
+  | 'grid'
+  | 'cube'
+  | 'undo'
+  | 'redo'
+  | 'cart'
+  | 'more'
+  | 'menu'
+  | 'close'
+  | 'view'
+  | 'room'
+  | 'send';
+
+const ICON_PATHS: Record<IconName, string> = {
+  list: 'M3 4h10M3 8h10M3 12h10',
+  pen: 'M3 13l1-3.5L11 2.5l2.5 2.5-7 7L3 13zM9.5 4l2.5 2.5',
+  door: 'M4 14V2h8v12M4 14h8M10 8.5v.5',
+  roller: 'M2.5 3.5h9a1 1 0 011 1v1.5a1 1 0 01-1 1h-9a1 1 0 01-1-1V4.5a1 1 0 011-1zM12.5 5h1.5v3H8v2M8 10v3.5',
+  ruler: 'M2 11l9-9 3 3-9 9-3-3zM5 8l1.5 1.5M7 6l1.5 1.5M9 4l1.5 1.5',
+  box: 'M2.5 3.5h11v9h-11z',
+  polygon: 'M3 3h6l4 4v6H3zM9 3v4h4',
+  swatch: 'M2.5 2.5h11v11h-11zM2.5 8h11M8 2.5v11',
+  storeys: 'M2 5l6-3 6 3-6 3-6-3zM2 8l6 3 6-3M2 11l6 3 6-3',
+  plot: 'M2.5 2.5h3M10.5 2.5h3M2.5 13.5h3M10.5 13.5h3M2.5 2.5v3M2.5 10.5v3M13.5 2.5v3M13.5 10.5v3',
+  snap: 'M4 2v6a4 4 0 008 0V2M4 2h2M10 2h2M4 6h2M10 6h2',
+  grid: 'M2 6h12M2 10h12M6 2v12M10 2v12',
+  cube: 'M8 2l5.5 3v6L8 14l-5.5-3V5L8 2zM8 8l5.5-3M8 8v6M8 8L2.5 5',
+  undo: 'M3 7h7a3 3 0 010 6H7M3 7l3-3M3 7l3 3',
+  redo: 'M13 7H6a3 3 0 000 6h3M13 7l-3-3M13 7l-3 3',
+  cart: 'M2 3h2l1.5 7h6.5l1.5-5H5M6.5 13a.5.5 0 100 .01M11.5 13a.5.5 0 100 .01',
+  more: 'M8 3.5v.01M8 8v.01M8 12.5v.01',
+  menu: 'M2 4h12M2 8h12M2 12h12',
+  close: 'M4 4l8 8M12 4l-8 8',
+  view: 'M2 8s2.5-4 6-4 6 4 6 4-2.5 4-6 4-6-4-6-4zM8 9.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z',
+  room: 'M2.5 13.5v-8l5.5-3 5.5 3v8h-11zM6.5 13.5v-4h3v4',
+  send: 'M2.5 8l11-5.5-3 11-2.5-4.5L2.5 8z',
+};
+
+function Icon({ name, size = 16, className = '' }: { name: IconName; size?: number; className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      width={size}
+      height={size}
+      className={`shrink-0 ${className}`}
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d={ICON_PATHS[name]}
+      />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tiny helpers — media query + portal popover. Kept in this file (P1 owns
+// only TopBar.tsx).
+// ---------------------------------------------------------------------------
+
+function useMedia(query: string): boolean {
+  const [matches, setMatches] = useState<boolean>(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia(query).matches
+      : false,
+  );
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const mq = window.matchMedia(query);
+    const sync = () => setMatches(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, [query]);
+  return matches;
+}
+
+interface PopoverProps {
+  anchor: RefObject<HTMLElement>;
+  open: boolean;
+  /** Outside-click + Esc close. Omit for popovers tied to tool state. */
+  onClose?: () => void;
+  width: number;
+  align?: 'left' | 'right';
+  children: ReactNode;
+  className?: string;
+  /** DOM id — the trigger points at it with `aria-controls`. */
+  id: string;
+  /** `dialog` for pickers / panels, `menu` for the More list. */
+  role?: 'dialog' | 'menu';
+  /** Accessible name for the dialog / menu. */
+  label: string;
+  /**
+   * `mounted`: render in place (fixed-positioned, so an `overflow` rail never
+   * clips it) and keep it in the DOM with `hidden` while closed — used for the
+   * Room-size popover so the L/W inputs stay the first number inputs on the
+   * page (units.spec reads their min/step without opening anything).
+   */
+  mode?: 'portal' | 'mounted';
+}
+
+/**
+ * Portal popover: fixed-positioned from the anchor's rect, radius 12, rim,
+ * 8 px padding, drop shadow. Re-measures on resize/scroll. Clicks inside ANY
+ * popover or the sheet never count as "outside" so nested pickers (a Snap
+ * picker inside the collapsed View popover) do not close their parent.
+ */
+function Popover({
+  anchor,
+  open,
+  onClose,
+  width,
+  align = 'left',
+  children,
+  className = '',
+  mode = 'portal',
+  id,
+  role = 'dialog',
+  label,
+}: PopoverProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setPos(null);
+      return;
+    }
+    const measure = () => {
+      const r = anchor.current?.getBoundingClientRect();
+      // Polish (2026-08-29): an anchor that is `display:none` at this width
+      // (the md+ Paint segment on the phone) reports a 0×0 rect at 0,0 — a
+      // popover glued to the top-left corner is worse than none. Stay unmounted.
+      if (!r || (r.width === 0 && r.height === 0)) {
+        setPos(null);
+        return;
+      }
+      const vw = window.innerWidth;
+      let left = align === 'right' ? r.right - width : r.left;
+      left = Math.max(8, Math.min(left, vw - width - 8));
+      setPos({ top: r.bottom + 4, left });
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    window.addEventListener('scroll', measure, true);
+    return () => {
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('scroll', measure, true);
+    };
+  }, [open, anchor, width, align]);
+
+  useEffect(() => {
+    if (!open || !onClose) return;
+    const onDown = (e: MouseEvent | TouchEvent) => {
+      const t = e.target as Element | null;
+      if (!t) return;
+      if (anchor.current?.contains(t)) return;
+      if (t.closest('[data-ppw-popover],[data-ppw-sheet]')) return;
+      onClose();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('touchstart', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('touchstart', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open, onClose, anchor]);
+
+  const shown = open && !!pos;
+  if (mode === 'portal' && (!shown || typeof document === 'undefined')) return null;
+  const node = (
+    <div
+      ref={ref}
+      id={id}
+      role={role}
+      aria-label={label}
+      data-ppw-popover=""
+      hidden={!shown}
+      style={{
+        position: 'fixed',
+        top: pos?.top ?? 0,
+        left: pos?.left ?? 0,
+        width,
+        zIndex: 40,
+        background: CHROME_BG,
+        color: CHROME_TEXT,
+        borderColor: CHROME_RIM,
+        boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
+      }}
+      className={`max-h-[calc(100vh-80px)] overflow-y-auto rounded-xl border p-2 ${className}`}
+    >
+      {children}
+    </div>
+  );
+  if (mode === 'mounted') return node;
+  return createPortal(node, document.body);
+}
+
+// ---------------------------------------------------------------------------
+
 export function TopBar({
   drawMode,
   setDrawMode,
@@ -89,7 +387,6 @@ export function TopBar({
   const placedItems = useDesignStore((s) => s.placedItems);
 
   const property = usePropertyStore((s) => s.property);
-  const renameProperty = usePropertyStore((s) => s.renameProperty);
   const resetToDefault = usePropertyStore((s) => s.resetToDefault);
   const loadProperty = usePropertyStore((s) => s.loadProperty);
 
@@ -231,9 +528,7 @@ export function TopBar({
   // consistent answer to "which room am I editing".
   const [floorOpen, setFloorOpen] = useState(false);
   // Units brief (2026-08-28, D7). A popover, not a six-way segmented
-  // control: this bar already overflowed at 1366 px, which is why the
-  // title is hidden below xl. The floor picker below is the proven
-  // width-safe dropdown pattern in this exact bar.
+  // control on desktop; the phone sheet shows the six chips in one row.
   const [unitOpen, setUnitOpen] = useState(false);
   const precision = useDesignerUIStore((s) => s.precision);
   const setPrecision = useDesignerUIStore((s) => s.setPrecision);
@@ -270,23 +565,21 @@ export function TopBar({
   function handleToggleWall() {
     // Sims world (2026-08-29): ONE wall pen. The old interior-wall tool
     // (wallStore, mm, never saved to the server, invisible to placement)
-    // is retired; "+ Walls" now enters the same draw mode as "Custom shape".
-    // A run that closes becomes a room; a run that stops where it stops is
-    // kept as free-standing walls (Finish walls / Alt+Enter).
+    // is retired; "Walls" enters the same draw mode as "Custom". A run that
+    // closes becomes a room; a run that stops where it stops is kept as
+    // free-standing walls (Finish walls / Alt+Enter). The canvas HUD carries
+    // the instruction, so there is no entry toast (toolbar pass 2026-08-29).
     if (wallActive) setWallDraw({ phase: 'idle' });
     if (drawMode) {
       setDrawMode(false);
       return;
     }
     setDrawMode(true);
-    pushToast('Wall pen: click to drop points. Close a shape for a room, or Finish walls to leave them open.', 'info');
   }
 
   const [showHelp, setShowHelp] = useState(false);
   const [showLoad, setShowLoad] = useState(false);
   const [confirmingNew, setConfirmingNew] = useState(false);
-  const [editingProperty, setEditingProperty] = useState(false);
-  const [propertyDraft, setPropertyDraft] = useState(property.name);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const activeRoom = property.rooms.find((r) => r.id === property.activeRoomId);
   const currentFloorId = activeRoom?.floorFinish?.materialId ?? null;
@@ -393,659 +686,382 @@ export function TopBar({
     pushToast('New property started.', 'info');
   }
 
-  function commitPropertyRename() {
-    renameProperty(propertyDraft);
-    setEditingProperty(false);
+  // -------------------------------------------------------------------------
+  // Toolbar pass (2026-08-29): responsive tiers + popover plumbing.
+  // -------------------------------------------------------------------------
+  const isXl = useMedia('(min-width: 1280px)');
+  // Polish (2026-08-29): the desktop Paint palette is anchored to the md+
+  // Paint segment; on the phone that segment is display:none, so the palette
+  // must not mount at all (the sheet's material rows arm the brush instead).
+  const isMd = useMedia('(min-width: 768px)');
+  const [roomGroupOpen, setRoomGroupOpen] = useState(false);
+  const [viewGroupOpen, setViewGroupOpen] = useState(false);
+  const [sizeOpen, setSizeOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  const boxRef = useRef<HTMLButtonElement>(null);
+  const paintRef = useRef<HTMLButtonElement>(null);
+  const finishRef = useRef<HTMLButtonElement>(null);
+  const levelsRef = useRef<HTMLButtonElement>(null);
+  const landRef = useRef<HTMLButtonElement>(null);
+  const snapRef = useRef<HTMLButtonElement>(null);
+  const moreRef = useRef<HTMLButtonElement>(null);
+  const roomGroupRef = useRef<HTMLButtonElement>(null);
+  const viewGroupRef = useRef<HTMLButtonElement>(null);
+  // Phone: the hamburger anchors Help / Load (More is display:none there) and
+  // gets focus back when the sheet closes.
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
+  const sheetCloseRef = useRef<HTMLButtonElement>(null);
+  const helpAnchor = isMd ? moreRef : menuBtnRef;
+
+  // The collapsed group popovers only exist below xl; drop them on the way up
+  // so the same fragment is never asked to render in two places.
+  useEffect(() => {
+    if (isXl) {
+      setRoomGroupOpen(false);
+      setViewGroupOpen(false);
+    }
+  }, [isXl]);
+
+  // Mobile sheet: Esc closes, body scroll locked while open. Focus moves to
+  // the sheet's Close button on open and returns to the hamburger on close.
+  useEffect(() => {
+    if (!showMobileMenu) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowMobileMenu(false);
+    };
+    document.addEventListener('keydown', onKey);
+    const opener = menuBtnRef.current;
+    sheetCloseRef.current?.focus();
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener('keydown', onKey);
+      opener?.focus();
+    };
+  }, [showMobileMenu]);
+
+  // "Start a new property?" — Esc cancels (Cancel also takes autoFocus).
+  useEffect(() => {
+    if (!confirmingNew) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setConfirmingNew(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [confirmingNew]);
+
+  const closeSize = useCallback(() => setSizeOpen(false), []);
+  const closeFinish = useCallback(() => setFloorOpen(false), []);
+  const closeLevels = useCallback(() => setLevelsOpen(false), []);
+  const closeLand = useCallback(() => setLandOpen(false), []);
+  const closeUnit = useCallback(() => setUnitOpen(false), []);
+  const closeMore = useCallback(() => setMoreOpen(false), []);
+  const closeRoomGroup = useCallback(() => setRoomGroupOpen(false), []);
+  const closeViewGroup = useCallback(() => setViewGroupOpen(false), []);
+  const closeHelp = useCallback(() => setShowHelp(false), []);
+  const closeLoad = useCallback(() => setShowLoad(false), []);
+
+  // "New plan" — the same call PageTabs makes from its "+" (PageTabs.tsx:52-54):
+  // createPage promotes an unsaved draft to a real tab first, so the work on
+  // screen is never stranded, then the canvas switches to the empty plan.
+  function handleNewPlan() {
+    const id = createPage(`Plan ${savedList.length + 2}`);
+    switchToPage(id);
+    pushToast('New plan started', 'success');
   }
 
-  return (
-    // Soft-skin frame (2026-07-26): warm surface + hairline rim, matching
-    // the shop's neumorphic register instead of stark white.
-    <header className="relative z-20 flex h-14 shrink-0 items-center justify-between border-b border-[#dcd9d0] bg-[#faf9f5] px-2 md:px-4 gap-2">
-      <div className="flex items-center gap-2 min-w-0 flex-1 md:flex-initial">
-        {/* PPW brand mark — same tile as the shop header (was a placeholder
-            teal triangle). Links back to the storefront. */}
-        <Link
-          to="/products"
-          title="Back to PPWellness Shop"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#dcd9d0] bg-[#faf9f5] shadow-[3px_3px_7px_rgba(167,160,144,0.42),-3px_-3px_7px_rgba(255,255,255,0.95)]"
-        >
-          <img src="/brand/ppw-mark-512.png" alt="PPWellness" width={24} height={24} className="block" />
-        </Link>
+  const storeysLabel =
+    levels.length > 1
+      ? `${activeLevel?.index === 0 ? 'Ground' : `Floor ${activeLevel?.index ?? 0}`} · ${levels.length}`
+      : 'Storeys';
+  const plotLabel = site ? `Plot ${site.widthM}×${site.depthM}` : 'Plot';
+  const snapUnit = SNAP_UNIT_LABEL[precision];
 
-        {/* Title + property rename. `xl:` since 2026-08-25 — the Rooms
-            trigger now lives in this cluster at every width, and at 1366 the
-            two together overflowed the bar (buttons on the right clipped
-            and wrapped). Below 1280 the Rooms trigger shows the active room
-            + room count, and its dropdown still hosts the property rename,
-            so nothing is lost. */}
-        <div className="hidden xl:block leading-tight min-w-0">
-          <p className="truncate text-sm font-semibold text-ppw-ink">Wellness Room Designer</p>
-          {editingProperty ? (
-            <input
-              autoFocus
-              type="text"
-              value={propertyDraft}
-              onChange={(e) => setPropertyDraft(e.target.value)}
-              onBlur={commitPropertyRename}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') commitPropertyRename();
-                if (e.key === 'Escape') {
-                  setPropertyDraft(property.name);
-                  setEditingProperty(false);
-                }
-              }}
-              className="block w-44 rounded-sm border-b border-ppw-teal bg-transparent text-[11px] text-ppw-slate focus:outline-none"
-            />
-          ) : (
+  /** Label span: always shown when the group is stacked in a popover,
+   *  otherwise only at the tier that has room for it. */
+  const lbl = (stacked: boolean, tier: 'xl' | '1366' | '2xl' | '3xl') =>
+    stacked
+      ? 'inline'
+      : tier === 'xl'
+        ? 'hidden xl:inline'
+        : tier === '1366'
+          ? 'hidden min-[1366px]:inline'
+          : tier === '2xl'
+            ? 'hidden 2xl:inline'
+            : 'hidden min-[1700px]:inline';
+
+  // -------------------------------------------------------------------------
+  // ROOM & PLAN group body — Finish · Storeys · Plot. Rendered ONCE: inline
+  // at xl+, inside the "Room" popover below xl.
+  // -------------------------------------------------------------------------
+  const roomPlanGroup = (stacked: boolean) => {
+    const btn = (on: boolean) =>
+      stacked ? `${ROW} ${on ? ROW_ON : ''}` : `${BTN} ${on ? BTN_ON : BTN_REST}`;
+    return (
+      <>
+        {/* Finish — the material the customer buys for this room. */}
+        <button
+          ref={finishRef}
+          type="button"
+          onClick={() => setFloorOpen((v) => !v)}
+          data-testid="floor-tool-toggle"
+          className={btn(!!currentFloorId)}
+          title="Finish — choose the floor material for this room"
+          aria-expanded={floorOpen}
+          aria-controls="ppw-pop-finish"
+          aria-label="Finish"
+        >
+          <Icon name="swatch" />
+          <span className={lbl(stacked, '1366')}>Finish</span>
+        </button>
+        <Popover anchor={finishRef} open={floorOpen} onClose={closeFinish} width={224} id="ppw-pop-finish" label="Floor finish">
+          <div data-testid="floor-picker" className="flex flex-col gap-0.5">
+          <button
+            type="button"
+            onClick={() => {
+              if (activeRoom) setRoomFloor(activeRoom.id, null);
+              setFloorOpen(false);
+            }}
+            data-testid="floor-none"
+            className={`${ROW} ${currentFloorId ? '' : ROW_ON}`}
+          >
+            <span className="h-6 w-6 shrink-0 rounded border border-ppw-rim bg-ppw-paper" />
+            No floor finish
+          </button>
+          {FLOOR_MATERIALS.map((m) => (
             <button
+              key={m.id}
               type="button"
               onClick={() => {
-                setPropertyDraft(property.name);
-                setEditingProperty(true);
+                if (activeRoom) setRoomFloor(activeRoom.id, m.id);
+                setFloorOpen(false);
               }}
-              className="block truncate text-[11px] text-ppw-slate hover:text-ppw-teal"
-              title="Rename property"
+              data-testid={`floor-material-${m.id}`}
+              className={`${ROW} ${currentFloorId === m.id ? ROW_ON : ''}`}
             >
-              {property.name} - {drawnRoomCount} room{drawnRoomCount === 1 ? '' : 's'}
+              <span
+                className="h-6 w-6 shrink-0 rounded border border-ppw-rim"
+                style={{ background: m.hex }}
+              />
+              <span className="truncate">{m.name}</span>
             </button>
-          )}
+          ))}
         </div>
+        </Popover>
 
-        {/* Rooms trigger. Was mobile-only; since 2026-08-25 (Vic complaint
-            2) it is the ONLY way into the rooms list at every width — the
-            permanent 224 px desktop rail was deleted and its dropdown hangs
-            off this button. Capped width on desktop so it stays a control,
-            not a rail. */}
+        {/* Storeys — which floor of the building the canvas shows. */}
         <button
+          ref={levelsRef}
           type="button"
-          data-testid="rooms-trigger"
-          onClick={() => setRoomsMenuOpen && setRoomsMenuOpen(!roomsMenuOpen)}
-          className="flex min-h-[40px] min-w-[92px] flex-1 items-center gap-1 truncate rounded-md border border-ppw-stone bg-white px-2 text-left text-xs font-medium text-ppw-ink hover:border-ppw-teal md:max-w-[190px] md:flex-none md:px-2.5"
-          aria-label="Open rooms list"
-          aria-expanded={roomsMenuOpen}
+          onClick={() => setLevelsOpen((v) => !v)}
+          data-testid="levels-toggle"
+          className={btn(levelsOpen)}
+          title={`Storeys — now on ${activeLevel?.name ?? 'Ground floor'} (PageUp / PageDown to switch)`}
+          aria-expanded={levelsOpen}
+          aria-controls="ppw-pop-levels"
+          aria-label="Storeys"
         >
-          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 shrink-0 text-ppw-slate" aria-hidden="true">
-            <path
-              fill="currentColor"
-              d="M2 3h12v3H2zM2 7h12v3H2zM2 11h12v2H2z"
-            />
-          </svg>
-          <span className="truncate">
-            <span className="font-semibold">{activeRoom?.name ?? property.name}</span>
-            <span className="ml-1 text-ppw-slate">· {drawnRoomCount}</span>
-          </span>
-        </button>
-      </div>
-
-      <div className="flex min-w-0 items-center gap-1.5 text-xs md:gap-2">
-        {/* L/W box: 2xl+ only since the Sims-world controls (Floors, Land)
-            joined the bar — at 1366/1920 it pushed Save/Load/Quote off the
-            right edge. The Measure tool retypes any wall length at every width. */}
-        <div className="hidden 2xl:flex items-center gap-1.5 rounded-md border border-ppw-stone bg-ppw-sand px-2 py-1">
-          {activeRoomIsRect ? (
-            <>
-              <label className="text-[11px] uppercase tracking-wide text-ppw-slate">L</label>
-              <input
-                type="number"
-                min={Math.max(0.1, snapStepM)}
-                max={50}
-                step={snapStepM}
-                value={room.lengthM}
-                onChange={(e) =>
-                  setRoom({ lengthM: Number(e.target.value) || room.lengthM, widthM: room.widthM })
-                }
-                className="w-14 bg-transparent text-right text-sm font-medium text-ppw-ink focus:outline-none"
-              />
-              <span className="text-[11px] text-ppw-slate">m</span>
-              <span className="px-1 text-ppw-stone">.</span>
-              <label className="text-[11px] uppercase tracking-wide text-ppw-slate">W</label>
-              <input
-                type="number"
-                min={Math.max(0.1, snapStepM)}
-                max={50}
-                step={snapStepM}
-                value={room.widthM}
-                onChange={(e) =>
-                  setRoom({ lengthM: room.lengthM, widthM: Number(e.target.value) || room.widthM })
-                }
-                className="w-14 bg-transparent text-right text-sm font-medium text-ppw-ink focus:outline-none"
-              />
-              <span className="text-[11px] text-ppw-slate">m</span>
-            </>
-          ) : activeRoom && isOutdoorRoom(activeRoom) ? (
-            // Sims world (2026-08-29): focus follows a selected garden item
-            // into the Outdoors container, which has no walls to measure.
-            <span className="text-[11px] italic text-ppw-slate">Outdoors · garden</span>
-          ) : room.lengthM < 0.5 ? (
-            // Blank-canvas-on-open (2026-06-09) — no room drawn yet.
-            <span className="text-[11px] italic text-ppw-slate">
-              {drawnRoomCount === 0 ? 'Draw a room →' : 'Pick a room'}
-            </span>
-          ) : (
-            <span className="text-[11px] italic text-ppw-slate">(polygon)</span>
+          <Icon name="storeys" />
+          <span className={`${lbl(stacked, '1366')} tabular-nums`}>{storeysLabel}</span>
+          {!stacked && levels.length > 1 && (
+            <span className="font-semibold tabular-nums min-[1366px]:hidden">{levels.length}</span>
           )}
-        </div>
-
-        {/* 3c (2026-07-26): the old Rect|Draw|Wall triple read as three
-            identical mystery tools. Regrouped with intent labels:
-            ROOM SHAPE (rectangle via the L×W inputs vs custom polygon
-            sketch) — then a separate WALLS tool for interior walls. Same
-            handlers, clearer names. Visible on mobile + desktop. */}
-        <div className="flex items-stretch overflow-hidden rounded-md border border-ppw-stone bg-white">
-          <span className="hidden lg:flex items-center px-2 text-[9px] font-bold uppercase tracking-wider text-ppw-slate/70 border-r border-ppw-stone bg-[#efede8]">
-            Room
-          </span>
-          <button
-            type="button"
-            onClick={() => setDrawMode(false)}
-            className={`min-h-[40px] px-3 text-xs font-medium ${!drawMode ? 'bg-ppw-teal text-white' : 'text-ppw-slate hover:text-ppw-teal'}`}
-            title="Rectangle room — set its size with the L × W boxes"
-            aria-pressed={!drawMode}
-          >
-            Rectangle
-          </button>
-          <button
-            type="button"
-            onClick={() => setDrawMode(true)}
-            data-testid="room-draw-toggle"
-            className={`min-h-[40px] px-3 text-xs font-medium ${drawMode ? 'bg-ppw-teal text-white' : 'text-ppw-slate hover:text-ppw-teal'}`}
-            title="Draw walls — close the shape for a room, or Finish walls to leave them open"
-            aria-pressed={drawMode}
-          >
-            <span className="md:hidden">Draw</span>
-            <span className="hidden md:inline">Draw</span>
-          </button>
-        </div>
-        {/* Walls — the same pen as Custom shape; walls do not have to join. */}
-        <button
-          type="button"
-          onClick={handleToggleWall}
-          data-testid="wall-tool-toggle"
-          className={`hidden md:inline-block min-h-[40px] rounded-md border px-3 text-xs font-medium ${
-            drawMode || wallActive
-              ? 'border-ppw-teal bg-ppw-teal text-white'
-              : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
-          }`}
-          title="Draw walls — click to drop points. Close the shape for a room, or press Finish walls to leave them open. +/- change the unit mid-draw."
-          aria-pressed={drawMode || wallActive}
-        >
-          + Walls
         </button>
-
-        {/* Storeys (Sims world 2026-08-29): which floor of the building the
-            canvas shows. Popover pattern, same as Snap / Floor pickers. */}
-        <div className="relative hidden md:block">
-          <button
-            type="button"
-            onClick={() => setLevelsOpen((v) => !v)}
-            data-testid="levels-toggle"
-            className={`min-h-[40px] rounded-md border px-3 text-xs font-medium ${
-              levelsOpen ? 'border-ppw-teal bg-ppw-teal text-white' : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
-            }`}
-            title={`Floors of the building — now on ${activeLevel?.name ?? 'Ground floor'} (PageUp / PageDown to switch)`}
-            aria-expanded={levelsOpen}
-          >
-            {levels.length > 1
-              ? `${activeLevel?.index === 0 ? 'Ground' : `Floor ${activeLevel?.index ?? 0}`} · ${levels.length}`
-              : 'Floors'}
-          </button>
-          {levelsOpen && (
-            <div
-              className="absolute left-0 top-full z-40 mt-1 w-56 rounded-lg border border-ppw-stone bg-white p-1.5 shadow-lg"
-              data-testid="levels-picker"
-            >
-              {[...levels].sort((a, b) => b.index - a.index).map((l) => (
-                <div key={l.id} className="flex items-center gap-1">
-                  {levelEditId === l.id ? (
-                    <input
-                      autoFocus
-                      value={levelDraft}
-                      onChange={(e) => setLevelDraft(e.target.value)}
-                      onBlur={commitLevelRename}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') commitLevelRename();
-                        if (e.key === 'Escape') { setLevelEditId(null); setLevelDraft(''); }
-                      }}
-                      data-testid={`level-rename-${l.id}`}
-                      className="min-w-0 flex-1 rounded-md border border-ppw-teal px-2 py-1 text-xs"
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => { setActiveLevel(l.id); setLevelsOpen(false); }}
-                      onDoubleClick={() => { setLevelEditId(l.id); setLevelDraft(l.name); }}
-                      data-testid={`level-${l.id}`}
-                      aria-pressed={l.id === activeLevelId}
-                      className={`flex min-h-[36px] min-w-0 flex-1 items-center justify-between rounded-md px-2 text-left text-xs ${
-                        l.id === activeLevelId ? 'bg-ppw-mist font-semibold' : 'text-ppw-slate hover:bg-ppw-mist'
-                      }`}
-                      title="Click to switch · double-click to rename"
-                    >
-                      <span className="truncate">{l.name}</span>
-                      <span className="ml-2 text-[10px] text-ppw-slate">
-                        {roomsOnLevel(visibleRooms(property.rooms), l.id).filter((r) => isDrawnPolygon(r.polygon)).length} rm
-                      </span>
-                    </button>
-                  )}
-                  {l.id !== 'ground' && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveLevel(l.id)}
-                      data-testid={`level-remove-${l.id}`}
-                      className="h-8 w-8 shrink-0 rounded-md text-ppw-slate hover:bg-ppw-mist hover:text-ppw-coral"
-                      title="Remove this floor (must be empty)"
-                      aria-label={`Remove ${l.name}`}
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => { handleAddLevel(); setLevelsOpen(false); }}
-                data-testid="level-add"
-                className="mt-1 flex min-h-[36px] w-full items-center justify-center rounded-md border border-dashed border-ppw-stone px-2 text-xs font-semibold text-ppw-slate hover:border-ppw-teal hover:text-ppw-teal"
-              >
-                + Add floor above
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Land plot (Sims world 2026-08-29): lock the scale + capacity. */}
-        <div className="relative hidden md:block">
-          <button
-            type="button"
-            onClick={() => setLandOpen((v) => !v)}
-            data-testid="land-toggle"
-            className={`min-h-[40px] rounded-md border px-3 text-xs font-medium ${
-              site ? 'border-ppw-teal bg-ppw-teal text-white' : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
-            }`}
-            title={
-              site
-                ? `Land plot locked at ${site.widthM} × ${site.depthM} m — click to change or clear`
-                : 'Land plot — set the width and depth of the site to lock the scale and the maximum you can build'
-            }
-            aria-expanded={landOpen}
-          >
-            {site ? `Land ${site.widthM}×${site.depthM}` : 'Land'}
-          </button>
-          {landOpen && (
-            <div
-              className="absolute left-0 top-full z-40 mt-1 w-64 rounded-lg border border-ppw-stone bg-white p-3 shadow-lg"
-              data-testid="land-picker"
-            >
-              <p className="mb-2 text-[11px] leading-snug text-ppw-slate">
-                The plot is the outer boundary: rooms, walls and items stay inside it.
-              </p>
-              <div className="flex items-center gap-2">
-                <label className="text-[10px] uppercase tracking-wide text-ppw-slate">W</label>
+        <Popover anchor={levelsRef} open={levelsOpen} onClose={closeLevels} width={224} id="ppw-pop-levels" label="Storeys">
+          <div data-testid="levels-picker" className="flex flex-col gap-0.5">
+          {[...levels].sort((a, b) => b.index - a.index).map((l) => (
+            <div key={l.id} className="flex items-center gap-1">
+              {levelEditId === l.id ? (
                 <input
-                  type="number"
-                  min={1}
-                  max={500}
-                  step={0.5}
-                  value={landW}
-                  onChange={(e) => setLandW(e.target.value)}
-                  data-testid="land-width"
-                  className="w-16 rounded-md border border-ppw-stone px-2 py-1 text-right text-xs"
+                  autoFocus
+                  value={levelDraft}
+                  onChange={(e) => setLevelDraft(e.target.value)}
+                  onBlur={commitLevelRename}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') commitLevelRename();
+                    if (e.key === 'Escape') { setLevelEditId(null); setLevelDraft(''); }
+                  }}
+                  data-testid={`level-rename-${l.id}`}
+                  className={`${INPUT} min-w-0 flex-1 text-left`}
                 />
-                <span className="text-[10px] text-ppw-slate">m</span>
-                <label className="text-[10px] uppercase tracking-wide text-ppw-slate">D</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={500}
-                  step={0.5}
-                  value={landD}
-                  onChange={(e) => setLandD(e.target.value)}
-                  data-testid="land-depth"
-                  className="w-16 rounded-md border border-ppw-stone px-2 py-1 text-right text-xs"
-                  onKeyDown={(e) => { if (e.key === 'Enter') applyLand(); }}
-                />
-                <span className="text-[10px] text-ppw-slate">m</span>
-              </div>
-              <div className="mt-2 flex items-center justify-end gap-1.5">
-                {site && (
-                  <button
-                    type="button"
-                    onClick={clearLand}
-                    data-testid="land-clear"
-                    className="rounded-md border border-ppw-stone px-2 py-1 text-[11px] text-ppw-slate hover:border-ppw-coral hover:text-ppw-coral"
-                  >
-                    Clear
-                  </button>
-                )}
+              ) : (
                 <button
                   type="button"
-                  onClick={applyLand}
-                  data-testid="land-apply"
-                  className="rounded-md border border-ppw-teal bg-ppw-teal px-3 py-1 text-[11px] font-semibold text-white"
+                  onClick={() => { setActiveLevel(l.id); setLevelsOpen(false); }}
+                  onDoubleClick={() => { setLevelEditId(l.id); setLevelDraft(l.name); }}
+                  data-testid={`level-${l.id}`}
+                  aria-pressed={l.id === activeLevelId}
+                  className={`${ROW} min-w-0 flex-1 justify-between ${l.id === activeLevelId ? ROW_ON : ''}`}
+                  title="Click to switch · double-click to rename"
                 >
-                  Lock plot
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Openings — doors, doorways and windows. Cut into a wall rather than
-            placed in space, so this is a wall tool, not a catalog product. */}
-        {/* Measure (units brief D10) - click a wall, retype its length. */}
-        <button
-          type="button"
-          onClick={handleToggleMeasure}
-          data-testid="measure-tool-toggle"
-          className={`hidden md:inline-block min-h-[40px] rounded-md border px-3 text-xs font-medium ${
-            measureActive
-              ? 'border-ppw-teal bg-ppw-teal text-white'
-              : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
-          }`}
-          title="Measure (M) — click any wall to retype its exact length"
-          aria-pressed={measureActive}
-        >
-          Measure
-        </button>
-
-        <button
-          type="button"
-          onClick={handleToggleDoor}
-          data-testid="door-tool-toggle"
-          className={`hidden md:inline-block min-h-[40px] rounded-md border px-3 text-xs font-medium ${
-            doorActive
-              ? 'border-ppw-teal bg-ppw-teal text-white'
-              : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
-          }`}
-          title="Add a door, doorway or window — hover a wall to place it, click an existing one to remove it. F flips which way it opens, H swaps the hinge."
-          aria-pressed={doorActive}
-        >
-          + Door
-        </button>
-
-        {/* Door options — only while the door tool is live, so the top bar
-            stays quiet the rest of the time. */}
-        {doorActive && (
-          <div
-            className="hidden md:flex items-center gap-1 rounded-md border border-ppw-stone bg-white px-2 py-1"
-            data-testid="door-options"
-          >
-            {(['door', 'doorway', 'window'] as const).map((k) => (
-              <button
-                key={k}
-                type="button"
-                onClick={() => setDoorDraft({ kind: k })}
-                data-testid={`door-kind-${k}`}
-                className={`rounded px-2 py-1 text-[11px] font-medium capitalize ${
-                  doorDraft.kind === k ? 'bg-ppw-teal text-white' : 'text-ppw-slate hover:text-ppw-teal'
-                }`}
-                aria-pressed={doorDraft.kind === k}
-              >
-                {k}
-              </button>
-            ))}
-            <span className="mx-1 h-4 w-px bg-ppw-stone" aria-hidden />
-            <button
-              type="button"
-              onClick={toggleDoorFacing}
-              data-testid="door-flip-facing"
-              className="rounded px-2 py-1 text-[11px] font-medium text-ppw-slate hover:text-ppw-teal"
-              title="Flip which side the door opens toward (F)"
-            >
-              Flip side
-            </button>
-            <button
-              type="button"
-              onClick={toggleDoorHand}
-              data-testid="door-flip-hand"
-              className="rounded px-2 py-1 text-[11px] font-medium text-ppw-slate hover:text-ppw-teal"
-              title="Swap the hinge to the other end (H)"
-            >
-              Flip hinge
-            </button>
-          </div>
-        )}
-
-        {/* Floor PAINTER (floor-painting brief 2026-08-28) — the Sims
-            workflow: click a tile, drag a rectangle, Shift to fill the room,
-            Ctrl to erase. Distinct from the whole-room Floor picker beside
-            it, which still exists for sheet goods that have no tile count. */}
-        <div className="relative hidden md:inline-block">
-          <button
-            type="button"
-            onClick={handleToggleFloorPaint}
-            data-testid="floor-paint-toggle"
-            className={`min-h-[40px] rounded-md border px-3 text-xs font-medium ${
-              floorPaintActive
-                ? 'border-ppw-teal bg-ppw-teal text-white'
-                : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
-            }`}
-            title="Paint the floor — click a tile, drag a rectangle, Shift to fill the room, Ctrl to erase"
-            aria-pressed={floorPaintActive}
-          >
-            Paint floor
-          </button>
-          {floorPaintActive && (
-            <div
-              className="absolute left-0 top-full z-40 mt-1 w-64 rounded-md border border-ppw-stone bg-white p-2 shadow-lg"
-              data-testid="floor-paint-palette"
-            >
-              {tileableFloorMaterials().map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setFloorDraft({ materialId: m.id, erase: false })}
-                  data-testid={`floor-paint-${m.id}`}
-                  aria-pressed={floorDraft.materialId === m.id && !floorDraft.erase}
-                  className={`flex w-full items-center gap-2 rounded px-2 py-1 text-left text-[11px] ${
-                    floorDraft.materialId === m.id && !floorDraft.erase
-                      ? 'bg-ppw-mist font-semibold'
-                      : 'text-ppw-slate hover:bg-ppw-mist'
-                  }`}
-                >
-                  <span
-                    className="h-4 w-4 shrink-0 rounded-sm border border-ppw-stone"
-                    style={{ background: m.hex }}
-                  />
-                  <span className="flex-1">{m.name}</span>
-                  <span className="text-[10px] opacity-60">
-                    {m.tile_w_m}×{m.tile_h_m} m
+                  <span className="truncate">{l.name}</span>
+                  <span className="ml-2 text-[11px] font-semibold tabular-nums opacity-80">
+                    {roomsOnLevel(visibleRooms(property.rooms), l.id).filter((r) => isDrawnPolygon(r.polygon)).length} rm
                   </span>
                 </button>
-              ))}
-
-              <div className="mt-2 flex gap-1 border-t border-ppw-stone pt-2">
+              )}
+              {l.id !== 'ground' && (
                 <button
                   type="button"
-                  onClick={() => setFloorDraft({ scope: floorDraft.scope === 'room' ? 'tile' : 'room' })}
-                  data-testid="floor-paint-scope"
-                  aria-pressed={floorDraft.scope === 'room'}
-                  className={`flex-1 rounded px-2 py-1 text-[10px] ${
-                    floorDraft.scope === 'room'
-                      ? 'bg-ppw-teal text-white'
-                      : 'border border-ppw-stone text-ppw-slate'
-                  }`}
-                  title="Fill the whole room in one click (or hold Shift)"
+                  onClick={() => handleRemoveLevel(l.id)}
+                  data-testid={`level-remove-${l.id}`}
+                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-transparent text-ppw-clay transition-colors duration-[120ms] ease-out motion-reduce:transition-none hover:border-ppw-clay hover:bg-ppw-clay hover:text-white focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]"
+                  title="Remove this floor (must be empty)"
+                  aria-label={`Remove ${l.name}`}
                 >
-                  {floorDraft.scope === 'room' ? 'Whole room' : 'By tile'}
+                  <Icon name="close" />
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setFloorDraft({ erase: !floorDraft.erase })}
-                  data-testid="floor-paint-erase"
-                  aria-pressed={floorDraft.erase}
-                  className={`flex-1 rounded px-2 py-1 text-[10px] ${
-                    floorDraft.erase
-                      ? 'bg-ppw-clay text-white'
-                      : 'border border-ppw-stone text-ppw-slate'
-                  }`}
-                  title="Remove floor (or hold Ctrl)"
-                >
-                  Erase
-                </button>
-              </div>
-              <p className="mt-1 text-[10px] leading-snug text-ppw-slate">
-                Click a tile · drag a rectangle · Shift fills the room · Ctrl erases
-              </p>
+              )}
             </div>
-          )}
-        </div>
-
-        {/* Floor finish — the material the customer buys for this room. */}
-        <div className="relative hidden md:inline-block">
+          ))}
           <button
             type="button"
-            onClick={() => setFloorOpen((v) => !v)}
-            data-testid="floor-tool-toggle"
-            className={`min-h-[40px] rounded-md border px-3 text-xs font-medium ${
-              currentFloorId
-                ? 'border-ppw-teal bg-ppw-teal text-white'
-                : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
-            }`}
-            title="Choose the floor material for this room"
-            aria-expanded={floorOpen}
+            onClick={() => { handleAddLevel(); setLevelsOpen(false); }}
+            data-testid="level-add"
+            className={`${ROW} mt-1 justify-center border border-dashed border-ppw-rim font-semibold`}
           >
-            Floor
+            + Add floor above
           </button>
-          {floorOpen && (
-            <div
-              className="absolute left-0 top-full z-40 mt-1 w-56 rounded-md border border-ppw-stone bg-white p-2 shadow-lg"
-              data-testid="floor-picker"
-            >
+        </div>
+        </Popover>
+
+        {/* Plot — lock the scale + capacity. */}
+        <button
+          ref={landRef}
+          type="button"
+          onClick={() => setLandOpen((v) => !v)}
+          data-testid="land-toggle"
+          className={btn(landOpen || !!site)}
+          title={
+            site
+              ? `Plot locked at ${site.widthM} × ${site.depthM} m — click to change or clear`
+              : 'Plot — set the width and depth of the site to lock the scale and the maximum you can build'
+          }
+          aria-expanded={landOpen}
+          aria-controls="ppw-pop-land"
+          aria-label="Plot"
+        >
+          <Icon name="plot" />
+          <span className={`${lbl(stacked, '1366')} tabular-nums`}>{plotLabel}</span>
+          {!stacked && site && (
+            <span className="font-semibold tabular-nums min-[1366px]:hidden">{site.widthM}×{site.depthM}</span>
+          )}
+        </button>
+        <Popover anchor={landRef} open={landOpen} onClose={closeLand} width={272} id="ppw-pop-land" label="Plot">
+          <div data-testid="land-picker" className="flex flex-col gap-0.5">
+          <p className="px-1 pb-2 text-[11px] leading-snug" style={{ color: CHROME_TEXT_2 }}>
+            The plot is the outer boundary: rooms, walls and items stay inside it.
+          </p>
+          <div className="flex items-center gap-2 px-1">
+            <label className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>W</label>
+            <input
+              type="number"
+              min={1}
+              max={500}
+              step={0.5}
+              value={landW}
+              onChange={(e) => setLandW(e.target.value)}
+              data-testid="land-width"
+              className={`${INPUT} w-16`}
+            />
+            <span className="text-[11px]" style={{ color: CHROME_TEXT_2 }}>m</span>
+            <label className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>D</label>
+            <input
+              type="number"
+              min={1}
+              max={500}
+              step={0.5}
+              value={landD}
+              onChange={(e) => setLandD(e.target.value)}
+              data-testid="land-depth"
+              className={`${INPUT} w-16`}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyLand(); }}
+            />
+            <span className="text-[11px]" style={{ color: CHROME_TEXT_2 }}>m</span>
+          </div>
+          <div className="mt-2 flex items-center justify-end gap-2 px-1">
+            {site && (
               <button
                 type="button"
-                onClick={() => {
-                  if (activeRoom) setRoomFloor(activeRoom.id, null);
-                  setFloorOpen(false);
-                }}
-                data-testid="floor-none"
-                className={`mb-1 flex w-full items-center gap-2 rounded px-2 py-1 text-left text-[11px] ${
-                  currentFloorId ? 'text-ppw-slate hover:bg-ppw-mist' : 'bg-ppw-mist font-semibold'
-                }`}
+                onClick={clearLand}
+                data-testid="land-clear"
+                className={`${BTN} h-9 border-ppw-clay bg-ppw-chrome text-ppw-clay hover:bg-ppw-clay hover:text-white`}
               >
-                <span className="h-4 w-4 rounded-sm border border-ppw-stone bg-white" />
-                No floor finish
+                Clear
               </button>
-              {FLOOR_MATERIALS.map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => {
-                    if (activeRoom) setRoomFloor(activeRoom.id, m.id);
-                    setFloorOpen(false);
-                  }}
-                  data-testid={`floor-material-${m.id}`}
-                  className={`flex w-full items-center gap-2 rounded px-2 py-1 text-left text-[11px] ${
-                    currentFloorId === m.id
-                      ? 'bg-ppw-mist font-semibold'
-                      : 'text-ppw-slate hover:bg-ppw-mist'
-                  }`}
-                >
-                  <span
-                    className="h-4 w-4 shrink-0 rounded-sm border border-ppw-stone"
-                    style={{ background: m.hex }}
-                  />
-                  <span className="truncate">{m.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
+            )}
+            <button
+              type="button"
+              onClick={applyLand}
+              data-testid="land-apply"
+              className={`${BTN} ${BTN_INK} h-9`}
+            >
+              Lock plot
+            </button>
+          </div>
         </div>
+        </Popover>
+      </>
+    );
+  };
 
-        {/* Tweak 07 (Phase A.0) — UNDO / REDO buttons. Visible on both
-            mobile and desktop. The undo button arms-then-fires on
-            coarse-pointer devices per §7 (long-press confirm). */}
-        <div className="flex overflow-hidden rounded-md border border-ppw-stone bg-white">
-          <button
-            type="button"
-            onClick={handleUndoClick}
-            disabled={!drawInFlight && wallActive === false && pastLength === 0}
-            aria-label={mobileUndoArmed ? 'Tap to confirm undo' : 'Undo (Ctrl+Z)'}
-            title={mobileUndoArmed ? 'Tap again to confirm' : 'Undo (Ctrl+Z)'}
-            className={`min-h-[40px] px-2.5 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed ${
-              mobileUndoArmed ? 'bg-ppw-coral text-white' : 'text-ppw-slate hover:text-ppw-teal'
-            }`}
-          >
-            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
-              <path
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3 7h7a3 3 0 010 6H7M3 7l3-3M3 7l3 3"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => performRedo()}
-            disabled={futureLength === 0}
-            aria-label="Redo (Ctrl+Shift+Z)"
-            title="Redo (Ctrl+Shift+Z)"
-            className="min-h-[40px] border-l border-ppw-stone px-2.5 text-xs font-medium text-ppw-slate hover:text-ppw-teal disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
-              <path
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13 7H6a3 3 0 000 6h3M13 7l-3-3M13 7l-3 3"
-              />
-            </svg>
-          </button>
-        </div>
-
+  // -------------------------------------------------------------------------
+  // VIEW group body — Snap · Grid · 3D · Undo/Redo. Rendered ONCE.
+  // -------------------------------------------------------------------------
+  const viewGroup = (stacked: boolean) => {
+    const btn = (on: boolean) =>
+      stacked ? `${ROW} ${on ? ROW_ON : ''}` : `${BTN} ${on ? BTN_ON : BTN_REST}`;
+    return (
+      <>
         {/* Snap unit (units brief 2026-08-28, D7). Digits 1-6 pick the same
             units from the keyboard; Ctrl+F swaps back to the last one. */}
-        <div className="relative hidden md:inline-block">
-          <button
-            type="button"
-            onClick={() => setUnitOpen((v) => !v)}
-            data-testid="snap-unit-toggle"
-            className="min-h-[40px] rounded-md border border-ppw-stone bg-white px-3 text-xs font-medium text-ppw-slate hover:text-ppw-teal"
-            title="Choose the snap unit for drawing rooms and walls"
-            aria-expanded={unitOpen}
-          >
-            Snap {SNAP_UNIT_LABEL[precision]}
-          </button>
-          {unitOpen && (
-            <div
-              className="absolute left-0 top-full z-40 mt-1 w-56 rounded-md border border-ppw-stone bg-white p-2 shadow-lg"
-              data-testid="snap-unit-picker"
+        <button
+          ref={snapRef}
+          type="button"
+          onClick={() => setUnitOpen((v) => !v)}
+          data-testid="snap-unit-toggle"
+          className={btn(unitOpen)}
+          title={`Snap ${snapUnit} — choose the snap unit for drawing rooms and walls`}
+          aria-expanded={unitOpen}
+          aria-controls="ppw-pop-snap"
+        >
+          <Icon name="snap" />
+          <span className={lbl(stacked, 'xl')}>{'Snap '}</span>
+          <span className="font-semibold tabular-nums">{snapUnit}</span>
+        </button>
+        <Popover anchor={snapRef} open={unitOpen} onClose={closeUnit} width={200} id="ppw-pop-snap" label="Snap unit">
+          <div data-testid="snap-unit-picker" className="flex flex-col gap-0.5">
+          {SNAP_UNIT_ORDER.map((u, i) => (
+            <button
+              key={u}
+              type="button"
+              onClick={() => {
+                setPrecision(u);
+                setUnitOpen(false);
+              }}
+              data-testid={`snap-unit-${u}`}
+              aria-pressed={precision === u}
+              className={`${ROW} justify-between ${precision === u ? ROW_ON : ''}`}
             >
-              {SNAP_UNIT_ORDER.map((u, i) => (
-                <button
-                  key={u}
-                  type="button"
-                  onClick={() => {
-                    setPrecision(u);
-                    setUnitOpen(false);
-                  }}
-                  data-testid={`snap-unit-${u}`}
-                  aria-pressed={precision === u}
-                  className={`flex w-full items-center justify-between rounded px-2 py-1 text-left text-[11px] ${
-                    precision === u ? 'bg-ppw-mist font-semibold' : 'text-ppw-slate hover:bg-ppw-mist'
-                  }`}
-                >
-                  <span>{SNAP_UNIT_LABEL[u]}</span>
-                  <span className="text-[10px] opacity-60">{i + 1}</span>
-                </button>
-              ))}
-            </div>
-          )}
+              <span className="tabular-nums">{SNAP_UNIT_LABEL[u]}</span>
+              <span className="text-[11px] font-semibold tabular-nums opacity-70">{i + 1}</span>
+            </button>
+          ))}
         </div>
+        </Popover>
 
         <button
           type="button"
           onClick={toggleGrid}
-          className={`hidden md:inline-block rounded-md border px-2.5 py-1 text-xs font-medium transition ${showGrid ? 'border-ppw-teal bg-ppw-teal text-white' : 'border-ppw-stone bg-white text-ppw-slate hover:border-ppw-teal'}`}
-          title="Toggle grid overlay"
+          aria-pressed={showGrid}
+          aria-label="Grid"
+          className={`${btn(showGrid)} ${stacked ? '' : BTN_ICON}`}
+          title={`Grid · ${snapUnit}`}
         >
-          Grid {SNAP_UNIT_LABEL[precision]}
+          <Icon name="grid" />
+          {stacked && <span>Grid · {snapUnit}</span>}
         </button>
 
         {/* Polish B / V4-AU-1: 3D preview toggle relocated from canvas
@@ -1057,171 +1073,641 @@ export function TopBar({
             aria-pressed={threeDPreview}
             aria-label="Toggle 3D preview"
             title="Toggle 3D preview"
-            className={`hidden md:inline-block rounded-md border px-2.5 py-1 text-xs font-medium transition ${threeDPreview ? 'border-ppw-teal bg-ppw-teal text-white' : 'border-ppw-stone bg-white text-ppw-slate hover:border-ppw-teal'}`}
+            className={`${btn(threeDPreview)} ${stacked ? '' : BTN_ICON}`}
           >
-            {threeDPreview ? '2D' : '3D preview'}
+            <Icon name="cube" />
+            {stacked && <span>{threeDPreview ? '2D' : '3D'}</span>}
           </button>
         )}
 
-        <div className="hidden sm:block">
-          <CurrencySwitcher compact />
+        {/* Tweak 07 (Phase A.0) — UNDO / REDO. Desktop only: the canvas
+            carries mobile-undo / mobile-redo. The undo button arms-then-fires
+            on coarse-pointer devices per §7 (long-press confirm). */}
+        <div
+          className={stacked ? 'mt-1 flex gap-2 border-t border-ppw-rim pt-2' : `${SEG_GROUP} hidden md:inline-flex`}
+          role="group"
+          aria-label="History"
+        >
+          <button
+            type="button"
+            onClick={handleUndoClick}
+            disabled={!drawInFlight && wallActive === false && pastLength === 0}
+            aria-label={mobileUndoArmed ? 'Tap to confirm undo' : 'Undo (Ctrl+Z)'}
+            title={mobileUndoArmed ? 'Tap again to confirm' : 'Undo (Ctrl+Z)'}
+            className={
+              stacked
+                ? `${BTN} flex-1 ${mobileUndoArmed ? 'border-ppw-clay bg-ppw-clay text-white' : BTN_REST}`
+                : `${SEG} w-10 px-0 ${mobileUndoArmed ? 'bg-ppw-clay text-white' : SEG_REST}`
+            }
+          >
+            <Icon name="undo" />
+            {stacked && <span>Undo</span>}
+          </button>
+          <button
+            type="button"
+            onClick={() => performRedo()}
+            disabled={futureLength === 0}
+            aria-label="Redo (Ctrl+Shift+Z)"
+            title="Redo (Ctrl+Shift+Z)"
+            className={stacked ? `${BTN} ${BTN_REST} flex-1` : `${SEG} ${SEG_REST} w-10 px-0`}
+          >
+            <Icon name="redo" />
+            {stacked && <span>Redo</span>}
+          </button>
+        </div>
+      </>
+    );
+  };
+
+  const segOn = (on: boolean) => `${SEG} ${on ? SEG_ON : SEG_REST}`;
+
+  return (
+    <header
+      className="relative z-20 shrink-0 border-b"
+      style={{ background: CHROME_BG, borderColor: CHROME_RIM }}
+    >
+      {/* ------------------------------------------------------------------ */}
+      {/* THE ROW: 56 px strip on the phone, 52 px bar from md up.            */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex h-14 flex-nowrap items-center gap-2 px-2 md:h-[52px] md:gap-0 md:px-1 lg:px-2">
+        {/* 1 IDENTITY — the only group allowed to shrink. md (768–1023) runs
+            4 px tighter everywhere it can: measured at 768 the Walls + Quote
+            labels and the in-control cart count need those pixels. */}
+        <div className="flex min-w-0 flex-1 shrink items-center gap-2 md:flex-initial md:gap-1 lg:gap-2">
+          {/* PPW brand mark — same tile as the shop header. Links back to the
+              storefront. 44 on the phone, 40 on desktop (contract control sizes). */}
+          <Link
+            to="/products"
+            title="Back to PPWellness Shop"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-ppw-rim bg-ppw-chrome shadow-[3px_3px_7px_rgba(167,160,144,0.42),-3px_-3px_7px_rgba(255,255,255,0.95)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] md:h-10 md:w-10"
+          >
+            <img src="/brand/ppw-mark-512.png" alt="PPWellness" width={24} height={24} className="block" />
+          </Link>
+
+          {/* Rooms trigger — the ONLY way into the rooms list at every width
+              (the permanent rail was deleted 2026-08-25). The property rename
+              lives in that dropdown (RoomList.tsx). */}
+          <button
+            type="button"
+            data-testid="rooms-trigger"
+            onClick={() => setRoomsMenuOpen && setRoomsMenuOpen(!roomsMenuOpen)}
+            className={`${BTN} ${roomsMenuOpen ? BTN_ON : BTN_REST} h-11 min-w-[128px] flex-1 justify-start md:h-10 md:min-w-[80px] md:max-w-[190px] md:flex-none lg:min-w-[104px] xl:min-w-[128px] xl:max-w-[190px] 2xl:max-w-[190px] min-[1700px]:max-w-[260px]`}
+            style={{ justifyContent: 'flex-start' }}
+            aria-label="Open rooms list"
+            aria-expanded={roomsMenuOpen}
+          >
+            <Icon name="list" />
+            {/* Polish (2026-08-29): the property name is visible at rest again
+                (the rename block left with the rail). xl+: "property · room";
+                below xl the shorter "room · n". The room end truncates. */}
+            <span className="hidden min-w-0 items-baseline xl:flex">
+              <span className="min-w-0 truncate font-semibold">{property.name}</span>
+              {activeRoom && (
+                <span className="ml-1 max-w-[55%] shrink-0 truncate opacity-80">· {activeRoom.name}</span>
+              )}
+              <span className="ml-1 hidden shrink-0 tabular-nums opacity-80 2xl:inline">· {drawnRoomCount}</span>
+            </span>
+            <span className="min-w-0 truncate xl:hidden">
+              <span className="font-semibold">{activeRoom?.name ?? property.name}</span>
+              <span className="ml-1 tabular-nums opacity-80 max-md:inline md:hidden lg:inline">· {drawnRoomCount}</span>
+            </span>
+          </button>
         </div>
 
-        {/* Shop entry — surfaces the Amazon-style storefront (/products) so
-            customers can browse + buy without designing a room (WD rework). */}
-        <Link
-          to="/products"
-          className="hidden md:flex items-center gap-1.5 rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs text-ppw-slate hover:border-ppw-teal"
-          title="Browse the full product shop"
-        >
-          Shop
-        </Link>
+        {/* ---- md+: rail A — BUILD. shrink-0; the Box|Custom segment follows
+            OUTSIDE the rails because its Custom half is the phone strip's
+            "Walls" button too (one node, one testid, every width). ---- */}
+        <div className="hidden shrink-0 items-center md:flex">
+          <span className={DIVIDER} aria-hidden="true" />
 
-        <Link
-          to="/cart"
-          className="hidden md:flex items-center gap-1.5 rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs hover:border-ppw-teal"
-          title={`Cart: ${cart.uniqueProductCount} unique products`}
-        >
-          <span className="text-ppw-slate">Cart</span>
-          <span className="rounded-full bg-ppw-teal px-1.5 py-[1px] text-[10px] font-bold text-white">
-            {cart.uniqueProductCount}
-          </span>
-        </Link>
+          {/* 2 BUILD — segmented: Walls · Door · Paint · Measure. Walls keeps
+              its label at every width; Measure drops first, then Door. */}
+          <div className={SEG_GROUP} role="group" aria-label="Build tools">
+            <button
+              type="button"
+              onClick={handleToggleWall}
+              data-testid="wall-tool-toggle"
+              className={segOn(drawMode || wallActive)}
+              title="Walls — click to drop points. Close the shape for a room, or press Finish walls to leave them open. +/- change the unit mid-draw."
+              aria-pressed={drawMode || wallActive}
+              aria-label="Walls"
+            >
+              <Icon name="pen" />
+              <span>Walls</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleToggleDoor}
+              data-testid="door-tool-toggle"
+              className={segOn(doorActive)}
+              title="Door — hover a wall to place a door, doorway or window; click an existing one to remove it. F flips which way it opens, H swaps the hinge."
+              aria-pressed={doorActive}
+              aria-label="Door"
+            >
+              <Icon name="door" />
+              <span className="hidden min-[1700px]:inline">Door</span>
+            </button>
+            <button
+              ref={paintRef}
+              type="button"
+              onClick={handleToggleFloorPaint}
+              data-testid="floor-paint-toggle"
+              className={segOn(floorPaintActive)}
+              title="Paint the floor — click a tile, drag a rectangle, Shift to fill the room, Ctrl to erase"
+              aria-pressed={floorPaintActive}
+              aria-controls="ppw-pop-paint"
+              aria-label="Paint"
+            >
+              <Icon name="roller" />
+              <span className="hidden 2xl:inline">Paint</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleToggleMeasure}
+              data-testid="measure-tool-toggle"
+              className={segOn(measureActive)}
+              title="Measure (M) — click any wall to retype its exact length"
+              aria-pressed={measureActive}
+              aria-label="Measure"
+            >
+              <Icon name="ruler" />
+              <span className="hidden min-[1700px]:inline">Measure</span>
+            </button>
+          </div>
 
+          <span className={`${DIVIDER} mr-0`} aria-hidden="true" />
+        </div>
+
+        {/* 3 ROOM & PLAN — Box | Custom. Always inline, every width. On the
+            phone only the Custom half shows and reads "Walls" (the strip's
+            wall pen); from md the Box half joins it as one segmented control.
+            `room-draw-toggle` is THIS node and no other. */}
+        {/* Polish (2026-08-29): a radiogroup, not two toggles. Neither half is
+            ink at rest — Box goes ink only while its size popover is open,
+            Custom only while the pen is open; Walls in BUILD is the pen-on
+            indicator. The checked-at-rest half reads as a rail wash. */}
+        <div
+          className="inline-flex shrink-0 overflow-hidden rounded-lg border border-ppw-rim md:ml-1 lg:ml-2 2xl:ml-3"
+          role="radiogroup"
+          aria-label="Room shape"
+        >
+          <button
+            ref={boxRef}
+            type="button"
+            role="radio"
+            onClick={() => {
+              setDrawMode(false);
+              setSizeOpen((v) => !v);
+            }}
+            className={`${SEG} ${sizeOpen ? SEG_ON : !drawMode ? SEG_CHECKED : SEG_REST} hidden md:inline-flex`}
+            title="Box — a rectangular room; set its size"
+            aria-checked={!drawMode}
+            aria-expanded={sizeOpen}
+            aria-controls="ppw-pop-size"
+            aria-label="Box"
+          >
+            <Icon name="box" />
+            <span className="hidden xl:inline">Box</span>
+          </button>
+          <button
+            type="button"
+            role="radio"
+            onClick={() => setDrawMode(true)}
+            data-testid="room-draw-toggle"
+            className={`${SEG} ${drawMode ? SEG_CHECKED : SEG_REST} h-11 md:h-10 md:border-l md:border-ppw-rim`}
+            title="Custom — draw walls: close the shape for a room, or Finish walls to leave them open"
+            aria-checked={drawMode}
+          >
+            <Icon name="pen" className="md:hidden" />
+            <Icon name="polygon" className="hidden md:block" />
+            <span className="md:hidden">Walls</span>
+            <span className="hidden xl:inline">Custom</span>
+          </button>
+        </div>
+
+        {/* Phone hamburger → full-height sheet. */}
         <button
-          type="button"
-          onClick={handleNew}
-          className="hidden md:inline-block rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs font-medium text-ppw-slate hover:border-ppw-teal"
-          title="New property"
-        >
-          New
-        </button>
-
-        {/* Clear moved to the canvas as two always-visible sticky buttons
-            (ClearControls — 2026-06-09): "Clear products" / "Clear all". */}
-
-        <button
-          type="button"
-          onClick={handleSaveAs}
-          className="hidden md:inline-block rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs font-medium text-ppw-slate hover:border-ppw-teal"
-          title="Save the current property under a name (syncs to cloud once you've entered an email)"
-        >
-          Save as...
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setShowLoad((v) => !v)}
-          className="hidden md:inline-block rounded-md border border-ppw-stone bg-white px-2.5 py-1 text-xs font-medium text-ppw-slate hover:border-ppw-teal"
-          title="Load a saved property"
-        >
-          Load ({savedList.length})
-        </button>
-
-        {/* M1.C.7 — Request Quote. Primary lead CTA on the Designer. */}
-        <button
-          type="button"
-          onClick={handleRequestQuote}
-          disabled={submittingQuote}
-          className="hidden md:inline-block rounded-full border border-[#79c7ad] bg-[#a9e2cf] px-3 py-1 text-xs font-semibold text-[#1e3a30] shadow-sm hover:brightness-105 disabled:opacity-60"
-          title="Send the current property + cart to the PPW team for a quote"
-        >
-          {submittingQuote ? 'Sending…' : 'Request quote'}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setShowHelp((v) => !v)}
-          className="hidden md:flex h-7 w-7 items-center justify-center rounded-full border border-ppw-stone bg-white text-sm font-bold text-ppw-slate hover:border-ppw-teal hover:text-ppw-teal"
-          title="Help"
-          aria-label="Help"
-        >
-          ?
-        </button>
-
-        {/* Mobile hamburger — overflow menu for buttons that don't fit on a ~390px viewport. */}
-        <button
+          ref={menuBtnRef}
           type="button"
           onClick={() => setShowMobileMenu((v) => !v)}
-          className="md:hidden flex h-10 w-10 items-center justify-center rounded-md border border-ppw-stone bg-white text-ppw-slate hover:border-ppw-teal"
+          className={`${BTN} ${BTN_REST} h-11 w-11 px-0 md:hidden`}
           aria-label="Open menu"
           aria-expanded={showMobileMenu}
+          aria-controls="ppw-sheet"
         >
-          <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
-            <path fill="currentColor" d="M2 4h12v1.5H2zM2 7.25h12v1.5H2zM2 10.5h12v1.5H2z" />
-          </svg>
+          <Icon name="menu" />
         </button>
-      </div>
 
-      {/* Mobile overflow menu (drawer below the TopBar). */}
-      {showMobileMenu && (
-        <>
-          <div
-            className="md:hidden fixed inset-0 z-30 bg-black/30"
-            onClick={() => setShowMobileMenu(false)}
-            aria-hidden="true"
-          />
-          <div className="md:hidden absolute right-2 top-full z-40 mt-1 w-64 rounded-lg border border-ppw-stone bg-white p-2 shadow-2xl">
-            <div className="flex flex-col gap-1.5">
-              {/* 3b (2026-07-26): mobile route back to the storefront — the
-                  desktop Shop pill was md:-only, stranding phone users. */}
-              <Link
-                to="/products"
-                onClick={() => setShowMobileMenu(false)}
-                className="flex min-h-[44px] items-center rounded-md border border-ppw-stone bg-white px-3 text-sm font-medium text-ppw-ink hover:border-ppw-teal"
+        {/* ---- md+: rail B — the rest of ROOM&PLAN + VIEW. `overflow-x:auto`
+            is the last resort so nothing is ever clipped; every popover is
+            portaled so the rail can never clip one. ---- */}
+        <div className="hidden min-w-0 flex-1 items-center md:flex md:overflow-x-auto md:overflow-y-hidden md:[scrollbar-width:thin]">
+          <Popover anchor={boxRef} open={sizeOpen} onClose={closeSize} width={232} mode="mounted" id="ppw-pop-size" label="Room size">
+          <div data-testid="room-size-popover" className="flex flex-col gap-0.5">
+            <p className="px-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>
+              Room size
+            </p>
+            {activeRoomIsRect ? (
+              <div className="flex items-center gap-2 px-1">
+                <label className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>L</label>
+                <input
+                  type="number"
+                  min={Math.max(0.1, snapStepM)}
+                  max={50}
+                  step={snapStepM}
+                  value={room.lengthM}
+                  onChange={(e) =>
+                    setRoom({ lengthM: Number(e.target.value) || room.lengthM, widthM: room.widthM })
+                  }
+                  aria-label="Room length (m)"
+                  className={`${INPUT} w-16`}
+                />
+                <span className="text-[11px]" style={{ color: CHROME_TEXT_2 }}>m</span>
+                <label className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>W</label>
+                <input
+                  type="number"
+                  min={Math.max(0.1, snapStepM)}
+                  max={50}
+                  step={snapStepM}
+                  value={room.widthM}
+                  onChange={(e) =>
+                    setRoom({ lengthM: room.lengthM, widthM: Number(e.target.value) || room.widthM })
+                  }
+                  aria-label="Room width (m)"
+                  className={`${INPUT} w-16`}
+                />
+                <span className="text-[11px]" style={{ color: CHROME_TEXT_2 }}>m</span>
+              </div>
+            ) : activeRoom && isOutdoorRoom(activeRoom) ? (
+              // Sims world (2026-08-29): focus follows a selected garden item
+              // into the Outdoors container, which has no walls to measure.
+              <p className="px-1 text-[12px]" style={{ color: CHROME_TEXT_2 }}>Outdoors · garden</p>
+            ) : room.lengthM < 0.5 ? (
+              // Blank-canvas-on-open (2026-06-09) — no room drawn yet.
+              <p className="px-1 text-[12px]" style={{ color: CHROME_TEXT_2 }}>
+                {drawnRoomCount === 0 ? 'Draw a room first — Walls or Custom.' : 'Pick a room from the rooms list.'}
+              </p>
+            ) : (
+              <p className="px-1 text-[12px]" style={{ color: CHROME_TEXT_2 }}>
+                This room is a custom shape — use Measure to retype a wall.
+              </p>
+            )}
+          </div>
+        </Popover>
+
+          {isXl ? (
+            <div className="ml-2 flex items-center gap-2">{roomPlanGroup(false)}</div>
+          ) : (
+            <>
+              <button
+                ref={roomGroupRef}
+                type="button"
+                onClick={() => setRoomGroupOpen((v) => !v)}
+                className={`${BTN} ${roomGroupOpen ? BTN_ON : BTN_REST} ml-1 lg:ml-2`}
+                title="Room — finish, storeys, plot"
+                aria-expanded={roomGroupOpen}
+                aria-controls="ppw-pop-room"
+                aria-label="Room"
               >
-                ← Back to Shop
-              </Link>
-              <Link
-                to="/cart"
-                onClick={() => setShowMobileMenu(false)}
-                className="flex min-h-[44px] items-center justify-between rounded-md border border-ppw-stone bg-white px-3 text-sm font-medium text-ppw-ink hover:border-ppw-teal"
+                <Icon name="room" />
+                <span className="hidden lg:inline">Room</span>
+              </button>
+              <Popover anchor={roomGroupRef} open={roomGroupOpen} onClose={closeRoomGroup} width={232} id="ppw-pop-room" label="Room">
+                <div className="flex flex-col gap-1">{roomPlanGroup(true)}</div>
+              </Popover>
+            </>
+          )}
+
+          <span className={DIVIDER} aria-hidden="true" />
+
+          {/* 4 VIEW — Snap · Grid · 3D · Undo/Redo. */}
+          {isXl ? (
+            <div className="flex items-center gap-2">{viewGroup(false)}</div>
+          ) : (
+            <>
+              <button
+                ref={viewGroupRef}
+                type="button"
+                onClick={() => setViewGroupOpen((v) => !v)}
+                className={`${BTN} ${viewGroupOpen ? BTN_ON : BTN_REST}`}
+                title="View — snap unit, grid, undo / redo"
+                aria-expanded={viewGroupOpen}
+                aria-controls="ppw-pop-view"
+                aria-label="View"
               >
-                <span>Cart</span>
-                <span className="rounded-full bg-ppw-teal px-2 py-[1px] text-[10px] font-bold text-white">
-                  {cart.uniqueProductCount}
-                </span>
-              </Link>
-              {/* Interior walls — moved off the phone TopBar (2026-08-25) so
-                  the Rooms trigger fits; identical handler. */}
+                <Icon name="view" />
+                <span className="hidden lg:inline">View</span>
+              </button>
+              <Popover anchor={viewGroupRef} open={viewGroupOpen} onClose={closeViewGroup} width={232} id="ppw-pop-view" label="View">
+                <div className="flex flex-col gap-1">{viewGroup(true)}</div>
+              </Popover>
+            </>
+          )}
+        </div>
+
+        {/* 5 COMMERCE — Currency · Cart · Request quote · More. Never shrinks. */}
+        <div className="hidden shrink-0 items-center md:flex">
+          <span className={DIVIDER} aria-hidden="true" />
+          <div className="flex items-center gap-1 lg:gap-2">
+            <CurrencySwitcher compact />
+
+            {/* Polish (2026-08-29): the count sits INSIDE the control — "Cart · 3"
+                where the label fits, icon + "3" at narrower tiers. No badge
+                floating into the bar padding. */}
+            <Link
+              to="/cart"
+              className={`${BTN} ${BTN_REST} min-[1700px]:px-3`}
+              title={`Cart: ${cart.uniqueProductCount} unique products`}
+              aria-label={`Cart, ${cart.uniqueProductCount} products`}
+            >
+              <Icon name="cart" />
+              <span className="hidden min-[1700px]:inline">Cart ·</span>
+              <span className="font-semibold tabular-nums">{cart.uniqueProductCount}</span>
+            </Link>
+
+            {/* M1.C.7 — Request Quote. THE call-to-action on the Designer —
+                never icon-only: "Quote" from md, "Request quote" from 2xl. */}
+            <button
+              type="button"
+              onClick={handleRequestQuote}
+              disabled={submittingQuote}
+              className={`${BTN} ${BTN_CTA} 2xl:px-3`}
+              title="Send the current property + cart to the PPW team for a quote"
+              aria-label={submittingQuote ? 'Sending…' : 'Request quote'}
+            >
+              <Icon name="send" className="hidden 2xl:block" />
+              <span className="2xl:hidden">{submittingQuote ? 'Sending…' : 'Quote'}</span>
+              <span className="hidden 2xl:inline">{submittingQuote ? 'Sending…' : 'Request quote'}</span>
+            </button>
+
+            {/* More — New · Save as… · Load (n) · Shop · Help. */}
+            <button
+              ref={moreRef}
+              type="button"
+              onClick={() => setMoreOpen((v) => !v)}
+              data-testid="more-menu-toggle"
+              className={`${BTN} ${moreOpen ? BTN_ON : BTN_REST} ${BTN_ICON}`}
+              aria-label="More"
+              title="More"
+              aria-expanded={moreOpen}
+              aria-haspopup="menu"
+              aria-controls="ppw-pop-more"
+            >
+              <Icon name="more" />
+            </button>
+            <Popover anchor={moreRef} open={moreOpen} onClose={closeMore} width={208} align="right" id="ppw-pop-more" role="menu" label="More">
               <button
                 type="button"
-                data-testid="wall-tool-toggle-mobile"
-                onClick={() => {
-                  handleToggleWall();
-                  setShowMobileMenu(false);
-                }}
-                aria-pressed={drawMode || wallActive}
-                className={`flex min-h-[44px] items-center justify-between rounded-md border px-3 text-sm font-medium ${
-                  drawMode || wallActive
-                    ? 'border-ppw-teal bg-ppw-teal text-white'
-                    : 'border-ppw-stone bg-white text-ppw-ink hover:border-ppw-teal'
-                }`}
+                role="menuitem"
+                onClick={() => { setMoreOpen(false); handleNew(); }}
+                className={ROW}
+                title="New property"
               >
-                <span>Draw walls</span>
-                <span className="text-[10px] opacity-80">{drawMode || wallActive ? 'on' : 'off'}</span>
+                New
               </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => { setMoreOpen(false); handleNewPlan(); }}
+                data-testid="new-plan"
+                className={ROW}
+                title="Start a second plan (a different space or client) — the current one is kept as a tab"
+              >
+                New plan
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => { setMoreOpen(false); handleSaveAs(); }}
+                className={ROW}
+                title="Save the current property under a name (syncs to cloud once you've entered an email)"
+              >
+                Save as…
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => { setMoreOpen(false); setShowLoad((v) => !v); }}
+                className={`${ROW} justify-between`}
+                title="Load a saved property"
+                aria-expanded={showLoad}
+                aria-controls="ppw-pop-load"
+              >
+                <span>Load</span>
+                <span className="tabular-nums opacity-80">{savedList.length}</span>
+              </button>
+              <div className="my-1 h-px bg-ppw-rim" aria-hidden="true" />
+              <Link
+                to="/products"
+                role="menuitem"
+                onClick={() => setMoreOpen(false)}
+                className={ROW}
+                title="Browse the full product shop"
+              >
+                Shop
+              </Link>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => { setMoreOpen(false); setShowHelp((v) => !v); }}
+                className={ROW}
+                title="Help"
+                aria-label="Help"
+                aria-expanded={showHelp}
+                aria-controls="ppw-pop-help"
+              >
+                Help
+              </button>
+            </Popover>
+          </div>
+        </div>
+      </div>
 
-              {/* Paint floor on the phone (Vic 2026-08-29: The Sims lets you
-                  drag and fill flooring). Was desktop-only. Same handler as
-                  the md+ toolbar button; the material rows arm the brush. */}
-              <div className="rounded-md border border-ppw-stone bg-white p-1.5" data-testid="floor-paint-mobile">
+      {/* ------------------------------------------------------------------ */}
+      {/* Tool options sub-bar — 52 px strip / 40 px controls, door tool only. */}
+      {/* ------------------------------------------------------------------ */}
+      {doorActive && (
+        <div
+          className="hidden h-[52px] items-center gap-3 border-t px-3 md:flex"
+          style={{ background: CHROME_RAIL_BG, borderColor: CHROME_RIM }}
+          data-testid="door-options"
+        >
+          <span className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>
+            Door
+          </span>
+          <div className={SEG_GROUP} role="group" aria-label="Door kind">
+            {(['door', 'doorway', 'window'] as const).map((k) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setDoorDraft({ kind: k })}
+                data-testid={`door-kind-${k}`}
+                className={`${segOn(doorDraft.kind === k)} capitalize`}
+                aria-pressed={doorDraft.kind === k}
+              >
+                {k}
+              </button>
+            ))}
+          </div>
+          <span className="h-5 w-px bg-ppw-rim" aria-hidden="true" />
+          <button
+            type="button"
+            onClick={toggleDoorFacing}
+            data-testid="door-flip-facing"
+            className={`${BTN} ${BTN_REST}`}
+            title="Flip which side the door opens toward (F)"
+          >
+            Flip side
+          </button>
+          <button
+            type="button"
+            onClick={toggleDoorHand}
+            data-testid="door-flip-hand"
+            className={`${BTN} ${BTN_REST}`}
+            title="Swap the hinge to the other end (H)"
+          >
+            Flip hinge
+          </button>
+        </div>
+      )}
+
+      {/* Paint palette — anchored to Paint, tied to the tool (no auto-close:
+          the canvas clicks that paint must not dismiss it). Erase active =
+          ink fill + paper text; scope + erase are two 36 px chips. */}
+      {isMd && (
+      <Popover anchor={paintRef} open={floorPaintActive} width={288} id="ppw-pop-paint" label="Paint palette">
+          <div data-testid="floor-paint-palette" className="flex flex-col gap-0.5">
+        {tileableFloorMaterials().map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            onClick={() => setFloorDraft({ materialId: m.id, erase: false })}
+            data-testid={`floor-paint-${m.id}`}
+            aria-pressed={floorDraft.materialId === m.id && !floorDraft.erase}
+            className={`${ROW} ${floorDraft.materialId === m.id && !floorDraft.erase ? ROW_ON : ''}`}
+          >
+            <span
+              className="h-6 w-6 shrink-0 rounded border border-ppw-rim"
+              style={{ background: m.hex }}
+            />
+            <span className="flex-1 truncate">{m.name}</span>
+            <span
+              className="text-[11px] tabular-nums"
+              style={{ color: floorDraft.materialId === m.id && !floorDraft.erase ? undefined : CHROME_TEXT_2 }}
+            >
+              {m.tile_w_m}×{m.tile_h_m} m
+            </span>
+          </button>
+        ))}
+        <div className="mt-2 flex gap-2 border-t border-ppw-rim pt-2">
+          <button
+            type="button"
+            onClick={() => setFloorDraft({ scope: floorDraft.scope === 'room' ? 'tile' : 'room' })}
+            data-testid="floor-paint-scope"
+            aria-pressed={floorDraft.scope === 'room'}
+            className={`${BTN} h-9 flex-1 ${floorDraft.scope === 'room' ? BTN_ON : BTN_REST}`}
+            title="Fill the whole room in one click (or hold Shift)"
+          >
+            {floorDraft.scope === 'room' ? 'Whole room' : 'By tile'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setFloorDraft({ erase: !floorDraft.erase })}
+            data-testid="floor-paint-erase"
+            aria-pressed={floorDraft.erase}
+            className={`${BTN} h-9 flex-1 ${floorDraft.erase ? BTN_ON : BTN_REST}`}
+            title="Remove floor (or hold Ctrl)"
+          >
+            Erase
+          </button>
+        </div>
+        <p className="mt-2 px-1 text-[11px] leading-snug" style={{ color: CHROME_TEXT_2 }}>
+          Click a tile · drag a rectangle · Shift fills the room · Ctrl erases
+        </p>
+      </div>
+        </Popover>
+      )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Phone sheet — full-height, right, portaled; scrim closes.           */}
+      {/* ------------------------------------------------------------------ */}
+      {showMobileMenu &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div className="md:hidden">
+            <div
+              className="fixed inset-0 z-40 bg-black/30"
+              onClick={() => setShowMobileMenu(false)}
+              aria-hidden="true"
+            />
+            <div
+              id="ppw-sheet"
+              data-ppw-sheet=""
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu"
+              className="fixed inset-y-0 right-0 z-50 flex w-[min(88vw,360px)] flex-col overflow-y-auto border-l"
+              style={{
+                background: CHROME_BG,
+                color: CHROME_TEXT,
+                borderColor: CHROME_RIM,
+                paddingBottom: 'env(safe-area-inset-bottom)',
+                boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
+                scrollPaddingTop: 56,
+                scrollPaddingBottom: 80,
+              }}
+            >
+              <div
+                className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b px-3"
+                style={{ background: CHROME_BG, borderColor: CHROME_RIM }}
+              >
+                <span className="text-[14px] font-semibold text-[#37362f]">Menu</span>
+                <button
+                  ref={sheetCloseRef}
+                  type="button"
+                  onClick={() => setShowMobileMenu(false)}
+                  className={`${BTN} ${BTN_REST} h-11 w-11 px-0`}
+                  aria-label="Close menu"
+                >
+                  <Icon name="close" />
+                </button>
+              </div>
+
+              <div className="flex flex-1 flex-col px-2 pb-4">
+                {/* 1 BUILD */}
+                <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>Build</p>
+                {/* Interior walls — the same pen as Custom; identical handler. */}
                 <button
                   type="button"
+                  data-testid="wall-tool-toggle-mobile"
                   onClick={() => {
-                    handleToggleFloorPaint();
+                    handleToggleWall();
                     setShowMobileMenu(false);
                   }}
-                  data-testid="floor-paint-toggle-mobile"
-                  aria-pressed={floorPaintActive}
-                  className={`flex min-h-[44px] w-full items-center justify-between rounded-md px-2 text-sm font-medium ${
-                    floorPaintActive ? 'bg-ppw-teal text-white' : 'text-ppw-ink'
-                  }`}
+                  aria-pressed={drawMode || wallActive}
+                  className={`${SHEET_ROW} justify-between ${drawMode || wallActive ? SHEET_ROW_ON : ''}`}
                 >
-                  <span>Paint floor</span>
-                  <span className="text-[10px] opacity-80">{floorPaintActive ? 'on · tap tiles' : 'off'}</span>
+                  <span className="flex items-center gap-3"><Icon name="pen" size={20} />Walls</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{drawMode || wallActive ? 'on' : 'off'}</span>
                 </button>
-                <div className="mt-1 grid grid-cols-2 gap-1">
+
+                {/* Paint floor on the phone (Vic 2026-08-29: The Sims lets you
+                    drag and fill flooring). Same handler as the md+ toolbar
+                    button; the material rows arm the brush. */}
+                <div data-testid="floor-paint-mobile">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleToggleFloorPaint();
+                      setShowMobileMenu(false);
+                    }}
+                    data-testid="floor-paint-toggle-mobile"
+                    aria-pressed={floorPaintActive}
+                    className={`${SHEET_ROW} justify-between ${floorPaintActive ? SHEET_ROW_ON : ''}`}
+                  >
+                    <span className="flex items-center gap-3"><Icon name="roller" size={20} />Paint</span>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{floorPaintActive ? 'on · tap tiles' : 'off'}</span>
+                  </button>
                   {tileableFloorMaterials().map((m) => (
                     <button
                       key={m.id}
@@ -1233,11 +1719,9 @@ export function TopBar({
                       }}
                       data-testid={`floor-paint-mobile-${m.id}`}
                       aria-pressed={floorDraft.materialId === m.id}
-                      className={`flex min-h-[40px] items-center gap-2 rounded-md border px-2 text-left text-[11px] ${
-                        floorDraft.materialId === m.id ? 'border-ppw-teal bg-ppw-mist' : 'border-ppw-stone'
-                      }`}
+                      className={`${SHEET_ROW} pl-6 ${floorPaintActive && floorDraft.materialId === m.id ? SHEET_ROW_ON : ''}`}
                     >
-                      <span className="h-4 w-4 shrink-0 rounded-sm" style={{ background: m.hex }} />
+                      <span className="h-6 w-6 shrink-0 rounded border border-ppw-rim" style={{ background: m.hex }} />
                       <span className="truncate">{m.name}</span>
                     </button>
                   ))}
@@ -1247,243 +1731,331 @@ export function TopBar({
                       setFloorDraft({ scope: floorDraft.scope === 'room' ? 'tile' : 'room' });
                     }}
                     data-testid="floor-paint-scope-mobile"
-                    className="col-span-2 flex min-h-[40px] items-center justify-between rounded-md border border-ppw-stone px-2 text-[11px]"
+                    className={`${SHEET_ROW} justify-between pl-6`}
                   >
                     <span>Brush</span>
-                    <span className="font-semibold">{floorDraft.scope === 'room' ? 'Fill whole room' : 'Tile by tile · drag a rectangle'}</span>
+                    <span className="text-[12px] font-semibold" style={{ color: CHROME_TEXT_2 }}>
+                      {floorDraft.scope === 'room' ? 'Fill whole room' : 'Tile by tile'}
+                    </span>
                   </button>
                 </div>
-              </div>
 
-              {/* Storeys on the phone: one row per floor + add. */}
-              <div className="rounded-md border border-ppw-stone bg-white p-1.5" data-testid="levels-mobile">
-                <p className="px-1 pb-1 text-[10px] uppercase tracking-wide text-ppw-slate">Floors</p>
-                {[...levels].sort((a, b) => b.index - a.index).map((l) => (
-                  <button
-                    key={l.id}
-                    type="button"
-                    onClick={() => { setActiveLevel(l.id); setShowMobileMenu(false); }}
-                    data-testid={`level-mobile-${l.id}`}
-                    aria-pressed={l.id === activeLevelId}
-                    className={`flex min-h-[40px] w-full items-center justify-between rounded-md px-2 text-sm ${
-                      l.id === activeLevelId ? 'bg-ppw-mist font-semibold text-ppw-ink' : 'text-ppw-slate'
-                    }`}
-                  >
-                    <span>{l.name}</span>
-                    {l.id === activeLevelId && <span className="text-[10px] opacity-80">here</span>}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => { handleAddLevel(); setShowMobileMenu(false); }}
-                  data-testid="level-add-mobile"
-                  className="mt-1 flex min-h-[40px] w-full items-center justify-center rounded-md border border-dashed border-ppw-stone text-sm font-semibold text-ppw-slate"
-                >
-                  + Add floor above
-                </button>
-              </div>
-
-              {/* Land plot on the phone. */}
-              <div className="rounded-md border border-ppw-stone bg-white p-2" data-testid="land-mobile">
-                <p className="pb-1 text-[10px] uppercase tracking-wide text-ppw-slate">
-                  Land plot {site ? `· ${site.widthM} × ${site.depthM} m` : '· unlimited'}
-                </p>
-                <div className="flex items-center gap-1.5">
-                  <input
-                    type="number"
-                    min={1}
-                    max={500}
-                    step={0.5}
-                    value={landW}
-                    onChange={(e) => setLandW(e.target.value)}
-                    aria-label="Plot width (m)"
-                    className="w-16 rounded-md border border-ppw-stone px-2 py-1 text-right text-sm"
-                  />
-                  <span className="text-[10px] text-ppw-slate">×</span>
-                  <input
-                    type="number"
-                    min={1}
-                    max={500}
-                    step={0.5}
-                    value={landD}
-                    onChange={(e) => setLandD(e.target.value)}
-                    aria-label="Plot depth (m)"
-                    className="w-16 rounded-md border border-ppw-stone px-2 py-1 text-right text-sm"
-                  />
+                {/* 2 ROOM & PLAN */}
+                <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>Room &amp; plan</p>
+                {/* Polish (2026-08-29): plain radios — the Walls row above is the
+                    pen indicator, so neither half here goes ink. Below md the
+                    pen half reads "Walls", same word as the strip. */}
+                <div className={`${SEG_GROUP} mx-3 mb-1`} role="radiogroup" aria-label="Room shape">
                   <button
                     type="button"
-                    onClick={() => { applyLand(); setShowMobileMenu(false); }}
-                    className="ml-auto min-h-[40px] rounded-md bg-ppw-teal px-3 text-sm font-semibold text-white"
+                    role="radio"
+                    onClick={() => { setDrawMode(false); setShowMobileMenu(false); }}
+                    className={`${SEG} ${!drawMode ? SEG_CHECKED : SEG_REST} h-11 flex-1`}
+                    aria-checked={!drawMode}
                   >
-                    Lock
+                    <Icon name="box" />
+                    Box
                   </button>
-                  {site && (
+                  <button
+                    type="button"
+                    role="radio"
+                    onClick={() => { setDrawMode(true); setShowMobileMenu(false); }}
+                    className={`${SEG} ${drawMode ? SEG_CHECKED : SEG_REST} h-11 flex-1`}
+                    aria-checked={drawMode}
+                  >
+                    <Icon name="polygon" />
+                    Custom
+                  </button>
+                </div>
+
+                {/* Storeys on the phone: one row per floor + add. */}
+                <div data-testid="levels-mobile">
+                  <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>Storeys</p>
+                  {[...levels].sort((a, b) => b.index - a.index).map((l) => (
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() => { setActiveLevel(l.id); setShowMobileMenu(false); }}
+                      data-testid={`level-mobile-${l.id}`}
+                      aria-pressed={l.id === activeLevelId}
+                      className={`${SHEET_ROW} justify-between ${l.id === activeLevelId ? SHEET_ROW_ON : ''}`}
+                    >
+                      <span>{l.name}</span>
+                      {l.id === activeLevelId && <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">here</span>}
+                    </button>
+                  ))}
+                  <div className="px-3 pt-1">
                     <button
                       type="button"
-                      onClick={() => { clearLand(); setShowMobileMenu(false); }}
-                      className="min-h-[40px] rounded-md border border-ppw-stone px-2 text-sm text-ppw-slate"
+                      onClick={() => { handleAddLevel(); setShowMobileMenu(false); }}
+                      data-testid="level-add-mobile"
+                      className={`${SHEET_ROW} justify-center border border-dashed border-ppw-rim`}
                     >
-                      Clear
+                      + Add floor above
                     </button>
-                  )}
+                  </div>
                 </div>
+
+                {/* Land plot on the phone. */}
+                <div data-testid="land-mobile" className="px-3 pt-2">
+                  <p className="pb-2 text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>
+                    Plot {site ? `· ${site.widthM} × ${site.depthM} m` : '· unlimited'}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={1}
+                      max={500}
+                      step={0.5}
+                      value={landW}
+                      onChange={(e) => setLandW(e.target.value)}
+                      aria-label="Plot width (m)"
+                      className={`${INPUT} h-11 w-full min-w-0 flex-1 text-[14px]`}
+                    />
+                    <span className="text-[12px]" style={{ color: CHROME_TEXT_2 }}>×</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={500}
+                      step={0.5}
+                      value={landD}
+                      onChange={(e) => setLandD(e.target.value)}
+                      aria-label="Plot depth (m)"
+                      className={`${INPUT} h-11 w-full min-w-0 flex-1 text-[14px]`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { applyLand(); setShowMobileMenu(false); }}
+                      className={`${BTN} ${BTN_INK} h-11`}
+                    >
+                      Lock
+                    </button>
+                    {site && (
+                      <button
+                        type="button"
+                        onClick={() => { clearLand(); setShowMobileMenu(false); }}
+                        className={`${BTN} h-11 border-ppw-clay bg-ppw-chrome text-ppw-clay hover:bg-ppw-clay hover:text-white`}
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* 3 VIEW */}
+                <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>View</p>
+                <p className="px-3 pb-1 text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>Snap unit</p>
+                {/* Units brief D7 - without these six chips a phone user has no
+                    way to choose a unit at all (the desktop popover is md-only). */}
+                <div className={`${SEG_GROUP} mx-3 mb-1 w-auto`}>
+                  {SNAP_UNIT_ORDER.map((u) => (
+                    <button
+                      key={u}
+                      type="button"
+                      onClick={() => {
+                        setPrecision(u);
+                        setShowMobileMenu(false);
+                      }}
+                      data-testid={`snap-unit-mobile-${u}`}
+                      aria-pressed={precision === u}
+                      className={`${segOn(precision === u)} h-11 min-w-0 flex-1 px-1 text-[11px] tabular-nums`}
+                      aria-label={`Snap ${SNAP_UNIT_LABEL[u]}`}
+                    >
+                      {SNAP_UNIT_LABEL[u]}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    toggleGrid();
+                    setShowMobileMenu(false);
+                  }}
+                  aria-pressed={showGrid}
+                  className={`${SHEET_ROW} justify-between ${showGrid ? SHEET_ROW_ON : ''}`}
+                >
+                  <span className="flex items-center gap-3"><Icon name="grid" size={20} />Grid · {snapUnit}</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{showGrid ? 'on' : 'off'}</span>
+                </button>
+                {setThreeDPreview && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setThreeDPreview(!threeDPreview);
+                      setShowMobileMenu(false);
+                    }}
+                    aria-pressed={threeDPreview}
+                    className={`${SHEET_ROW} justify-between ${threeDPreview ? SHEET_ROW_ON : ''}`}
+                  >
+                    <span className="flex items-center gap-3"><Icon name="cube" size={20} />3D preview</span>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{threeDPreview ? 'on' : 'off'}</span>
+                  </button>
+                )}
+
+                {/* 4 PLAN FILES */}
+                <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>Plan files</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleNew();
+                    setShowMobileMenu(false);
+                  }}
+                  className={SHEET_ROW}
+                >
+                  New property
+                </button>
+                {/* Clear moved to the canvas sticky ClearControls (2026-06-09). */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSaveAs();
+                    setShowMobileMenu(false);
+                  }}
+                  className={SHEET_ROW}
+                >
+                  Save as…
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMobileMenu(false);
+                    setShowLoad((v) => !v);
+                  }}
+                  className={`${SHEET_ROW} justify-between`}
+                >
+                  <span>Load</span>
+                  <span className="tabular-nums" style={{ color: CHROME_TEXT_2 }}>{savedList.length}</span>
+                </button>
+                <Link
+                  to="/my-designs"
+                  onClick={() => setShowMobileMenu(false)}
+                  className={SHEET_ROW}
+                >
+                  My designs (cloud)
+                </Link>
+
+                {/* 5 SHOP */}
+                <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>Shop</p>
+                <div className="flex min-h-[48px] items-center justify-between px-3">
+                  <span className="text-[14px] font-medium text-[#37362f]">Currency</span>
+                  <CurrencySwitcher compact />
+                </div>
+                <Link
+                  to="/cart"
+                  onClick={() => setShowMobileMenu(false)}
+                  className={`${SHEET_ROW} justify-between`}
+                >
+                  <span className="flex items-center gap-3"><Icon name="cart" size={20} />Cart</span>
+                  <span className="inline-flex h-6 min-w-[24px] items-center justify-center rounded-full bg-ppw-inkDeep px-1.5 text-[11px] font-semibold tabular-nums text-ppw-paper">
+                    {cart.uniqueProductCount}
+                  </span>
+                </Link>
+                {/* 3b (2026-07-26): mobile route back to the storefront. */}
+                <Link
+                  to="/products"
+                  onClick={() => setShowMobileMenu(false)}
+                  className={SHEET_ROW}
+                >
+                  ← Back to Shop
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMobileMenu(false);
+                    setShowHelp((v) => !v);
+                  }}
+                  className={SHEET_ROW}
+                >
+                  Help
+                </button>
               </div>
 
-              {/* Units brief D7 - without these six rows a phone user has no
-                  way to choose a unit at all (the desktop popover is md-only). */}
-              {SNAP_UNIT_ORDER.map((u) => (
-                <button
-                  key={u}
-                  type="button"
-                  onClick={() => {
-                    setPrecision(u);
-                    setShowMobileMenu(false);
-                  }}
-                  data-testid={`snap-unit-mobile-${u}`}
-                  aria-pressed={precision === u}
-                  className={`flex min-h-[44px] items-center justify-between rounded-md border px-3 text-sm font-medium hover:border-ppw-teal ${
-                    precision === u
-                      ? 'border-ppw-teal bg-ppw-teal text-white'
-                      : 'border-ppw-stone bg-white text-ppw-ink'
-                  }`}
-                >
-                  <span>Snap {SNAP_UNIT_LABEL[u]}</span>
-                  {precision === u && <span className="text-[10px] opacity-80">on</span>}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => {
-                  toggleGrid();
-                  setShowMobileMenu(false);
-                }}
-                className={`flex min-h-[44px] items-center justify-between rounded-md border px-3 text-sm font-medium hover:border-ppw-teal ${
-                  showGrid
-                    ? 'border-ppw-teal bg-ppw-teal text-white'
-                    : 'border-ppw-stone bg-white text-ppw-ink'
-                }`}
+              {/* Sticky footer — THE call-to-action. */}
+              <div
+                className="sticky bottom-0 z-10 border-t p-3"
+                style={{ background: CHROME_BG, borderColor: CHROME_RIM }}
               >
-                <span>Grid {SNAP_UNIT_LABEL[precision]}</span>
-                <span className="text-[10px] opacity-80">{showGrid ? 'on' : 'off'}</span>
-              </button>
-              {setThreeDPreview && (
                 <button
                   type="button"
                   onClick={() => {
-                    setThreeDPreview(!threeDPreview);
                     setShowMobileMenu(false);
+                    void handleRequestQuote();
                   }}
-                  aria-pressed={threeDPreview}
-                  className={`flex min-h-[44px] items-center justify-between rounded-md border px-3 text-sm font-medium hover:border-ppw-teal ${
-                    threeDPreview
-                      ? 'border-ppw-teal bg-ppw-teal text-white'
-                      : 'border-ppw-stone bg-white text-ppw-ink'
-                  }`}
+                  disabled={submittingQuote}
+                  className={`${BTN} ${BTN_CTA} h-12 w-full text-[14px]`}
                 >
-                  <span>3D preview</span>
-                  <span className="text-[10px] opacity-80">{threeDPreview ? 'on' : 'off'}</span>
+                  <Icon name="send" />
+                  {submittingQuote ? 'Sending…' : 'Request quote'}
                 </button>
-              )}
-              <div className="flex items-center justify-between rounded-md border border-ppw-stone bg-white px-3 py-1.5">
-                <span className="text-[10px] uppercase tracking-wide text-ppw-slate">Currency</span>
-                <CurrencySwitcher compact />
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  handleNew();
-                  setShowMobileMenu(false);
-                }}
-                className="min-h-[44px] rounded-md border border-ppw-stone bg-white px-3 text-left text-sm font-medium text-ppw-ink hover:border-ppw-teal"
-              >
-                New property
-              </button>
-              {/* Clear moved to the canvas sticky ClearControls (2026-06-09). */}
-              <button
-                type="button"
-                onClick={() => {
-                  handleSaveAs();
-                  setShowMobileMenu(false);
-                }}
-                className="min-h-[44px] rounded-md border border-ppw-stone bg-white px-3 text-left text-sm font-medium text-ppw-ink hover:border-ppw-teal"
-              >
-                Save as...
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowMobileMenu(false);
-                  setShowLoad((v) => !v);
-                }}
-                className="min-h-[44px] rounded-md border border-ppw-stone bg-white px-3 text-left text-sm font-medium text-ppw-ink hover:border-ppw-teal"
-              >
-                Load ({savedList.length})
-              </button>
-              <Link
-                to="/my-designs"
-                onClick={() => setShowMobileMenu(false)}
-                className="flex min-h-[44px] items-center rounded-md border border-ppw-stone bg-white px-3 text-sm font-medium text-ppw-ink hover:border-ppw-teal"
-              >
-                My designs (cloud)
-              </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowMobileMenu(false);
-                  void handleRequestQuote();
-                }}
-                disabled={submittingQuote}
-                className="min-h-[44px] rounded-md bg-ppw-coral px-3 text-left text-sm font-semibold text-white shadow-sm hover:bg-ppw-coral/90 disabled:opacity-60"
-              >
-                {submittingQuote ? 'Sending…' : 'Request quote'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowMobileMenu(false);
-                  setShowHelp((v) => !v);
-                }}
-                className="min-h-[44px] rounded-md border border-ppw-stone bg-white px-3 text-left text-sm font-medium text-ppw-ink hover:border-ppw-teal"
-              >
-                Help
-              </button>
             </div>
-          </div>
-        </>
-      )}
+          </div>,
+          document.body,
+        )}
 
-      {showHelp && (
-        <div className="absolute right-2 top-full z-40 mt-1 w-[min(20rem,calc(100vw-1rem))] rounded-lg border border-ppw-stone bg-white p-4 text-xs leading-snug text-ppw-slate shadow-lg">
-          <p className="mb-1 font-semibold text-ppw-ink">Quick start</p>
+      {/* Help + Load ride the same Popover as everything else (Esc + outside
+          click close them). Anchored to More on desktop, the hamburger on the
+          phone — the only two triggers that can open them at each width. */}
+      <Popover
+        anchor={helpAnchor}
+        open={showHelp}
+        onClose={closeHelp}
+        width={Math.min(320, typeof window !== 'undefined' ? window.innerWidth - 16 : 320)}
+        align="right"
+        id="ppw-pop-help"
+        label="Quick start"
+        className="p-4 text-[12px] leading-snug"
+      >
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <p className="font-semibold">Quick start</p>
+            <button
+              type="button"
+              onClick={() => setShowHelp(false)}
+              className={`${BTN} ${BTN_REST} h-9 w-9 px-0`}
+              aria-label="Close help"
+            >
+              <Icon name="close" />
+            </button>
+          </div>
           <ol className="ml-4 list-decimal space-y-1">
-            <li><em>+ Walls</em> or <em>Custom shape</em>: click to drop wall points. Close the shape for a room, or <em>Finish walls</em> to leave them open.</li>
+            <li><em>Walls</em> or <em>Custom</em>: click to drop wall points. Close the shape for a room, or <em>Finish walls</em> to leave them open.</li>
             <li>Change the unit mid-draw with the − / + chips (keys + and −, or 1–6).</li>
             <li>Drag a product from the dock onto the floor — inside a room or outside in the garden. Items sit flush to walls and tuck into corners.</li>
-            <li><em>Land</em> locks the plot size; <em>Floors</em> adds storeys (PageUp / PageDown).</li>
+            <li><em>Plot</em> locks the plot size; <em>Storeys</em> adds storeys (PageUp / PageDown).</li>
             <li>Click a placed item to rotate, duplicate, delete, or switch a light on/off.</li>
-            <li><em>Save as...</em> stores the whole property (all floors, rooms, walls + items).</li>
+            <li><em>Save as…</em> (under More) stores the whole property (all storeys, rooms, walls + items).</li>
           </ol>
-          <p className="mt-2 text-[10px] text-ppw-slate">
+          <p className="mt-2 text-[11px]" style={{ color: CHROME_TEXT_2 }}>
             Keys: R rotate; D duplicate; Del delete; Esc deselect; Ctrl+Z undo; M measure;
-            [ / ] unit; PageUp / PageDown floor; Shift+P clear products; Shift+X clear all.
+            [ / ] unit; PageUp / PageDown storey; Shift+P clear products; Shift+X clear all.
           </p>
         </div>
-      )}
+      </Popover>
 
-      {showLoad && (
-        <div className="absolute right-2 top-full z-40 mt-1 w-[min(20rem,calc(100vw-1rem))] max-h-[70vh] overflow-y-auto rounded-lg border border-ppw-stone bg-white p-3 text-xs shadow-lg">
+      <Popover
+        anchor={helpAnchor}
+        open={showLoad}
+        onClose={closeLoad}
+        width={Math.min(320, typeof window !== 'undefined' ? window.innerWidth - 16 : 320)}
+        align="right"
+        id="ppw-pop-load"
+        label="Saved properties"
+        className="p-3 text-[12px]"
+      >
+        <div>
           <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="font-semibold text-ppw-ink">Saved properties</p>
+            <p className="font-semibold text-[#37362f]">Saved properties</p>
             <Link
               to="/my-designs"
               onClick={() => setShowLoad(false)}
-              className="text-[11px] font-medium text-ppw-teal hover:underline"
+              className="text-[11px] font-semibold text-[#37362f] underline underline-offset-2"
             >
               My designs (cloud)
             </Link>
           </div>
           {savedList.length === 0 ? (
-            <p className="text-ppw-slate py-2">No saved properties yet. Use <em>Save as...</em></p>
+            <p className="py-2" style={{ color: CHROME_TEXT_2 }}>No saved properties yet. Use <em>Save as…</em></p>
           ) : (
             <ul className="space-y-1.5">
               {savedList.map((d) => {
@@ -1493,16 +2065,16 @@ export function TopBar({
                 );
                 const roomCount = d.property?.rooms?.length ?? 0;
                 return (
-                  <li key={d.id} className="flex items-center justify-between gap-2 rounded-md border border-ppw-stone bg-white p-2">
+                  <li key={d.id} className="flex items-center justify-between gap-2 rounded-lg border border-ppw-rim p-2">
                     <button
                       type="button"
                       onClick={() => handleLoad(d.id)}
-                      className="flex-1 text-left"
+                      className="min-w-0 flex-1 text-left"
                     >
-                      <p className={`text-sm font-medium ${currentId === d.id ? 'text-ppw-teal' : 'text-ppw-ink'}`}>
+                      <p className={`truncate text-[14px] font-medium ${currentId === d.id ? 'text-ppw-inkDeep' : 'text-[#37362f]'}`}>
                         {d.name}{currentId === d.id ? ' (current)' : ''}
                       </p>
-                      <p className="text-[10px] text-ppw-slate">
+                      <p className="text-[11px]" style={{ color: CHROME_TEXT_2 }}>
                         {roomCount} room{roomCount === 1 ? '' : 's'} - {itemCount} item{itemCount === 1 ? '' : 's'} - {new Date(d.savedAt).toLocaleString()}
                       </p>
                     </button>
@@ -1514,10 +2086,11 @@ export function TopBar({
                           pushToast(`Deleted "${d.name}"`, 'info');
                         }
                       }}
-                      className="rounded-md border border-ppw-stone bg-white px-1.5 py-0.5 text-[10px] text-ppw-slate hover:border-ppw-coral hover:text-ppw-coral"
+                      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-ppw-clay text-ppw-clay transition-colors duration-[120ms] ease-out motion-reduce:transition-none hover:bg-ppw-clay hover:text-white"
                       title="Delete saved property"
+                      aria-label={`Delete ${d.name}`}
                     >
-                      x
+                      <Icon name="close" />
                     </button>
                   </li>
                 );
@@ -1525,27 +2098,34 @@ export function TopBar({
             </ul>
           )}
         </div>
-      )}
+      </Popover>
 
       {confirmingNew && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-80 rounded-lg bg-white p-5 shadow-2xl">
-            <p className="text-sm font-semibold text-ppw-ink">Start a new property?</p>
-            <p className="mt-1 text-xs text-ppw-slate">
-              Current property has {property.rooms.length} room{property.rooms.length === 1 ? '' : 's'} and {cart.totalItemCount} placed item{cart.totalItemCount === 1 ? '' : 's'}. The auto-draft is kept, but un-named work will be lost. Save as... first if you want to keep it.
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ppw-confirm-new-title"
+            className="w-80 rounded-xl border p-5"
+            style={{ background: CHROME_BG, borderColor: CHROME_RIM, boxShadow: '0 12px 32px rgba(42,41,38,0.18)' }}
+          >
+            <p id="ppw-confirm-new-title" className="text-[14px] font-semibold text-[#37362f]">Start a new property?</p>
+            <p className="mt-1 text-[12px]" style={{ color: CHROME_TEXT_2 }}>
+              Current property has {property.rooms.length} room{property.rooms.length === 1 ? '' : 's'} and {cart.totalItemCount} placed item{cart.totalItemCount === 1 ? '' : 's'}. The auto-draft is kept, but un-named work will be lost. Save as… first if you want to keep it.
             </p>
             <div className="mt-4 flex gap-2">
               <button
                 type="button"
                 onClick={confirmNew}
-                className="flex-1 rounded-md bg-ppw-coral px-3 py-1.5 text-sm font-semibold text-white hover:bg-ppw-coral/90"
+                className={`${BTN} flex-1 border-ppw-clay bg-ppw-clay font-semibold text-white hover:brightness-95`}
               >
                 Yes, start new
               </button>
               <button
                 type="button"
+                autoFocus
                 onClick={() => setConfirmingNew(false)}
-                className="flex-1 rounded-md border border-ppw-stone bg-white px-3 py-1.5 text-sm font-semibold text-ppw-slate hover:border-ppw-ink"
+                className={`${BTN} ${BTN_REST} flex-1`}
               >
                 Cancel
               </button>

@@ -1,0 +1,127 @@
+[
+ {
+  "name": "desk-tread-r0-left-edge-at-0.05",
+  "viewport": "desktop 1366x768",
+  "product": "k1-nordictrack-2450",
+  "rotationPre": 0,
+  "releasedAABB": "(0.05, 1.5)",
+  "screenFrom": {
+   "x": 683,
+   "y": 388.5
+  },
+  "screenTo": {
+   "x": 540.5,
+   "y": 386
+  },
+  "stored": {
+   "x": 0,
+   "y": 1.5,
+   "rotation": 0
+  },
+  "toasts": [],
+  "logs": [
+   "[drag-move] {reason: same-room}"
+  ],
+  "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\VERIFY-readcode-desk-tread-r0-left-edge-at-0.05.png"
+ },
+ {
+  "name": "desk-tread-r0-top-edge-at-0.05",
+  "viewport": "desktop 1366x768",
+  "product": "k1-nordictrack-2450",
+  "rotationPre": 0,
+  "releasedAABB": "(1.5, 0.05)",
+  "screenFrom": {
+   "x": 683,
+   "y": 388.5
+  },
+  "screenTo": {
+   "x": 685.5,
+   "y": 241
+  },
+  "stored": {
+   "x": 1.5,
+   "y": 0.05,
+   "rotation": 0
+  },
+  "toasts": [],
+  "logs": [
+   "[drag-move] {reason: same-room}"
+  ],
+  "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\VERIFY-readcode-desk-tread-r0-top-edge-at-0.05.png"
+ },
+ {
+  "name": "desk-tread-r0-left-edge-0.1-past-wall",
+  "viewport": "desktop 1366x768",
+  "product": "k1-nordictrack-2450",
+  "rotationPre": 0,
+  "releasedAABB": "(-0.1, 1.5)",
+  "screenFrom": {
+   "x": 683,
+   "y": 388.5
+  },
+  "screenTo": {
+   "x": 525.5,
+   "y": 386
+  },
+  "stored": {
+   "x": 0.05,
+   "y": 1,
+   "rotation": 270
+  },
+  "toasts": [],
+  "logs": [
+   "[drag-move] {reason: same-room}"
+  ],
+  "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\VERIFY-readcode-desk-tread-r0-left-edge-0.1-past-wall.png"
+ },
+ {
+  "name": "desk-tread-r0-left-edge-at-0.05-SHIFT",
+  "viewport": "desktop 1366x768",
+  "product": "k1-nordictrack-2450",
+  "rotationPre": 0,
+  "releasedAABB": "(0.05, 1.5)",
+  "screenFrom": {
+   "x": 683,
+   "y": 388.5
+  },
+  "screenTo": {
+   "x": 540.5,
+   "y": 386
+  },
+  "stored": {
+   "x": 0.05,
+   "y": 1.5,
+   "rotation": 0
+  },
+  "toasts": [],
+  "logs": [
+   "[drag-move] {reason: same-room}"
+  ],
+  "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\VERIFY-readcode-desk-tread-r0-left-edge-at-0.05-SHIFT.png"
+ },
+ {
+  "name": "desk-tread-r90-top-edge-at-0.05",
+  "viewport": "desktop 1366x768",
+  "product": "k1-nordictrack-2450",
+  "rotationPre": 90,
+  "releasedAABB": "(2, 0.05)",
+  "screenFrom": {
+   "x": 683,
+   "y": 388.5
+  },
+  "screenTo": {
+   "x": 680.5,
+   "y": 296
+  },
+  "stored": {
+   "x": 2,
+   "y": 0,
+   "rotation": 90
+  },
+  "toasts": [],
+  "logs": [
+   "[drag-move] {reason: same-room}"
+  ],
+  "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\VERIFY-readcode-desk-tread-r90-top-edge-at-0.05.png"
+ }
+]

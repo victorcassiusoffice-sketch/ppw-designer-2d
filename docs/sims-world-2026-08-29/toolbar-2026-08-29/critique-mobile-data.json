@@ -1,0 +1,390 @@
+{
+  "j2": {
+    "steps": [
+      "tap thumb (touch)",
+      "click thumb (mouse fallback)",
+      "tap Add to room",
+      "touch-drag item to corner (0.3,0.3)"
+    ],
+    "clearIcons": [
+      {
+        "label": "Clear products",
+        "title": "Remove all placed products, keep the room (Shift+P)",
+        "visibleText": "",
+        "w": 44
+      },
+      {
+        "label": "Clear all",
+        "title": "Delete the whole room + products, start blank (Shift+X)",
+        "visibleText": "",
+        "w": 44
+      }
+    ],
+    "popupAfterTouch": 0,
+    "popupAfterMouse": 1,
+    "popupBox": {
+      "text": "drag onto the floor ↘NordicTrack Commercial 2450 Treadmill150,000 MUR205 × 95 × 165 cm · K1-Sport (NordicTrack — Mauriti",
+      "pressed": null,
+      "expanded": null,
+      "title": null,
+      "bg": "rgba(14, 14, 16, 0.55)",
+      "color": "rgb(14, 27, 31)",
+      "w": 390,
+      "h": 844,
+      "x": 0,
+      "y": 0
+    },
+    "addBtn": {
+      "text": "+ Add to room",
+      "pressed": null,
+      "expanded": null,
+      "title": null,
+      "bg": "rgb(35, 44, 59)",
+      "color": "rgb(245, 235, 215)",
+      "w": 224,
+      "h": 42,
+      "x": 42,
+      "y": 568
+    },
+    "placedAfterAdd": [
+      {
+        "id": "k1-nordictrack-2450",
+        "x": 1.5,
+        "y": 1.5,
+        "rot": 0
+      }
+    ],
+    "selectedAfterAdd": [
+      "mobile-undo",
+      "mobile-redo",
+      "mobile-precision",
+      "cluster-rotate"
+    ],
+    "placedAfterDrag": [
+      {
+        "id": "k1-nordictrack-2450",
+        "x": 0.05,
+        "y": 0.05,
+        "rot": 0
+      }
+    ],
+    "itemsPlaced": "1",
+    "cartPill": {
+      "text": "1£2,633.33",
+      "pressed": null,
+      "expanded": "false",
+      "title": null,
+      "bg": "rgb(42, 41, 38)",
+      "color": "rgb(248, 245, 238)",
+      "w": 144,
+      "h": 44,
+      "x": 230,
+      "y": 577
+    },
+    "detailsSheet": null,
+    "totalTaps": 4,
+    "toastColor": "rgb(15, 118, 110)"
+  },
+  "j3": {
+    "steps": [
+      "tap menu",
+      "tap Brush row → whole room",
+      "tap material",
+      "tap floor 2.5,2",
+      "tap cart pill"
+    ],
+    "sheet": {
+      "role": "dialog",
+      "label": "Menu",
+      "modal": null,
+      "w": 343,
+      "scrollH": 1471,
+      "clientH": 844
+    },
+    "sheetFocus": "Open menu",
+    "sheetRows": [
+      {
+        "t": "",
+        "h": 44,
+        "font": "12px",
+        "pressed": null
+      },
+      {
+        "t": "wall-tool-toggle-mobile",
+        "h": 48,
+        "font": "14px",
+        "pressed": "false"
+      },
+      {
+        "t": "floor-paint-toggle-mobile",
+        "h": 48,
+        "font": "14px",
+        "pressed": "false"
+      },
+      {
+        "t": "floor-paint-mobile-gym-interlock",
+        "h": 48,
+        "font": "14px",
+        "pressed": "true"
+      },
+      {
+        "t": "floor-paint-mobile-eva-combat",
+        "h": 48,
+        "font": "14px",
+        "pressed": "false"
+      },
+      {
+        "t": "floor-paint-mobile-rubber-composite",
+        "h": 48,
+        "font": "14px",
+        "pressed": "false"
+      },
+      {
+        "t": "floor-paint-mobile-outdoor-1m",
+        "h": 48,
+        "font": "14px",
+        "pressed": "false"
+      },
+      {
+        "t": "floor-paint-mobile-outdoor-50",
+        "h": 48,
+        "font": "14px",
+        "pressed": "false"
+      },
+      {
+        "t": "floor-paint-scope-mobile",
+        "h": 48,
+        "font": "14px",
+        "pressed": null
+      },
+      {
+        "t": "Box",
+        "h": 44,
+        "font": "12px",
+        "pressed": "true"
+      },
+      {
+        "t": "Custom",
+        "h": 44,
+        "font": "12px",
+        "pressed": "false"
+      },
+      {
+        "t": "level-mobile-ground",
+        "h": 48,
+        "font": "14px",
+        "pressed": "true"
+      },
+      {
+        "t": "level-add-mobile",
+        "h": 48,
+        "font": "14px",
+        "pressed": null
+      },
+      {
+        "t": "Lock",
+        "h": 44,
+        "font": "12px",
+        "pressed": null
+      },
+      {
+        "t": "snap-unit-mobile-cm1",
+        "h": 44,
+        "font": "12px",
+        "pressed": "false"
+      },
+      {
+        "t": "snap-unit-mobile-cm10",
+        "h": 44,
+        "font": "12px",
+        "pressed": "false"
+      },
+      {
+        "t": "snap-unit-mobile-quarter",
+        "h": 44,
+        "font": "12px",
+        "pressed": "false"
+      },
+      {
+        "t": "snap-unit-mobile-full",
+        "h": 44,
+        "font": "12px",
+        "pressed": "true"
+      },
+      {
+        "t": "snap-unit-mobile-m1",
+        "h": 44,
+        "font": "12px",
+        "pressed": "false"
+      },
+      {
+        "t": "snap-unit-mobile-m10",
+        "h": 44,
+        "font": "12px",
+        "pressed": "false"
+      },
+      {
+        "t": "Grid · 0.5 mon",
+        "h": 48,
+        "font": "14px",
+        "pressed": "true"
+      },
+      {
+        "t": "New property",
+        "h": 48,
+        "font": "14px",
+        "pressed": null
+      },
+      {
+        "t": "Save as…",
+        "h": 48,
+        "font": "14px",
+        "pressed": null
+      },
+      {
+        "t": "Load0",
+        "h": 48,
+        "font": "14px",
+        "pressed": null
+      },
+      {
+        "t": "My designs (cloud)",
+        "h": 48,
+        "font": "14px",
+        "pressed": null
+      },
+      {
+        "t": "Cart0",
+        "h": 48,
+        "font": "14px",
+        "pressed": null
+      },
+      {
+        "t": "← Back to Shop",
+        "h": 48,
+        "font": "14px",
+        "pressed": null
+      },
+      {
+        "t": "Help",
+        "h": 48,
+        "font": "14px",
+        "pressed": null
+      },
+      {
+        "t": "Request quote",
+        "h": 48,
+        "font": "14px",
+        "pressed": null
+      }
+    ],
+    "mobileTestids": [
+      "wall-tool-toggle-mobile",
+      "floor-paint-mobile",
+      "floor-paint-toggle-mobile",
+      "floor-paint-mobile-gym-interlock",
+      "floor-paint-mobile-eva-combat",
+      "floor-paint-mobile-rubber-composite",
+      "floor-paint-mobile-outdoor-1m",
+      "floor-paint-mobile-outdoor-50",
+      "floor-paint-scope-mobile",
+      "levels-mobile",
+      "level-mobile-ground",
+      "level-add-mobile",
+      "land-mobile",
+      "snap-unit-mobile-cm1",
+      "snap-unit-mobile-cm10",
+      "snap-unit-mobile-quarter",
+      "snap-unit-mobile-full",
+      "snap-unit-mobile-m1",
+      "snap-unit-mobile-m10"
+    ],
+    "fontsBelow11": [],
+    "scopeText": "BrushFill whole room",
+    "sheetOpenAfterScope": 1,
+    "firstMaterial": "floor-paint-mobile-gym-interlock",
+    "sheetAfterMaterial": 0,
+    "hudChip": {
+      "text": "Paint on · Done",
+      "pressed": null,
+      "expanded": null,
+      "title": "Paint is on: tap a tile, drag a rectangle, Shift fills the room. Tap here to stop painting.",
+      "bg": "rgb(42, 41, 38)",
+      "color": "rgb(248, 245, 238)",
+      "w": 113,
+      "h": 44,
+      "x": 213,
+      "y": 221
+    },
+    "helpLauncherWhilePaint": {
+      "text": "?",
+      "pressed": null,
+      "expanded": null,
+      "title": "Keyboard shortcuts (?)",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(55, 54, 47)",
+      "w": 44,
+      "h": 44,
+      "x": 330,
+      "y": 521
+    },
+    "paletteVisible": true,
+    "paintToggleMobilePressed": null,
+    "costAfterPaint": "£870.76",
+    "cartPill": {
+      "text": "31£870.76",
+      "pressed": null,
+      "expanded": "false",
+      "title": null,
+      "bg": "rgb(42, 41, 38)",
+      "color": "rgb(248, 245, 238)",
+      "w": 140,
+      "h": 44,
+      "x": 234,
+      "y": 577
+    },
+    "floorZones": "ppw_fx_v1,ppw_properties_v2,ppw_designer_ui_v1,ppw_designer_coach_v1,ppw_designer_session_v1,ppw_property_v2",
+    "cartSheet": {
+      "text": "CloseCart0 unique - 0 placed - 31 floor units£870.76~ Rs 49,600ProductCat.QtyUnitLineGym Interlock Tile 92×92(+1 for cut",
+      "pressed": null,
+      "expanded": null,
+      "title": null,
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(14, 27, 31)",
+      "w": 390,
+      "h": 320,
+      "x": 0,
+      "y": 524
+    },
+    "cartFloorLine": 1,
+    "cartTable": {
+      "tableW": 440,
+      "wrapW": 358,
+      "overflowX": "auto",
+      "sheetH": 320
+    },
+    "cartButtons": [
+      {
+        "t": "Close",
+        "h": 44
+      },
+      {
+        "t": "Cart0 unique",
+        "h": 48
+      },
+      {
+        "t": "View cart",
+        "h": 44
+      },
+      {
+        "t": "Checkout",
+        "h": 44
+      }
+    ],
+    "cartClosedByEsc": false,
+    "totalTaps": 5
+  },
+  "sheetClosedByEsc": true,
+  "sheetClosedByScrimTap": true,
+  "errors": []
+}

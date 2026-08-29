@@ -1,0 +1,81 @@
+{
+ "scenario": "bottom-flush-rot0-to90",
+ "viewport": "desktop-1366",
+ "gesture": "mouse",
+ "ppm": 100,
+ "stageScale": 1,
+ "before": {
+  "instanceId": "it-1",
+  "productId": "k1-nordictrack-2450",
+  "x": 1.5,
+  "y": 3,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "centre": {
+   "x": 2.525,
+   "y": 3.475
+  },
+  "right": 3.55,
+  "bottom": 3.95
+ },
+ "handlePx": {
+  "x": 685.5,
+  "y": 470.5
+ },
+ "arcRadiusPx": 65.5,
+ "afterRotate": {
+  "instanceId": "it-1",
+  "productId": "k1-nordictrack-2450",
+  "x": 1.5,
+  "y": 3,
+  "rotation": 45,
+  "w": 2.1213,
+  "h": 2.1213,
+  "centre": {
+   "x": 2.560660171779821,
+   "y": 4.060660171779821
+  },
+  "right": 3.6213,
+  "bottom": 5.1213,
+  "rightBeyondInnerFace": false,
+  "bottomBeyondInnerFace": true,
+  "rightBeyondPolygon": false,
+  "bottomBeyondPolygon": true,
+  "centreMoved": true,
+  "xyChanged": false
+ },
+ "toastsAfterRotate": [],
+ "midSnaps": [],
+ "selectedShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify-desktop-1366-mouse-bottom-flush-rot0-to90-selected.png",
+ "rotShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify-desktop-1366-mouse-bottom-flush-rot0-to90-rotated.png",
+ "postDrag": {
+  "delta": {
+   "dx": 0,
+   "dy": -0.3
+  },
+  "dropCentre": {
+   "x": 2.560660171779821,
+   "y": 3.760660171779821
+  },
+  "after": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 1.5,
+   "y": 1.8286796564403578,
+   "rotation": 45,
+   "w": 2.1213203435596424,
+   "h": 2.1213203435596424,
+   "right": 3.6213,
+   "bottom": 3.95
+  },
+  "flushRight": false,
+  "flushBottom": true,
+  "moved": true,
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ],
+  "dragShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify-desktop-1366-mouse-bottom-flush-rot0-to90-dragged.png"
+ }
+}

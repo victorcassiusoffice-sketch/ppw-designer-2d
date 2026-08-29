@@ -19,10 +19,17 @@
  * Buttons are ≥48 px (Android) touch targets (spec §9 / M17).
  *
  * Button set (commit-with-undo reconciliation, see PARITY-MATRIX adaptation
- * #2): ⟳ rotate 90° · ⧉ duplicate · 🗑 delete · ⓘ details · ✓ confirm.
- * The spec's ✗ cancel maps to 🗑 for a just-placed item (it is already
+ * #2): ⟳ rotate 90° · ⧉ duplicate · trash delete · ⓘ details · ✓ confirm.
+ * The spec's ✗ cancel maps to delete for a just-placed item (it is already
  * committed with a 5 s Undo); ✓ keeps + deselects.
+ *
+ * Chrome register (toolbar contract 2026-08-29): the cluster is a chrome
+ * popover (CHROME_BG + CHROME_RIM, radius 12, popover shadow) carrying the
+ * SAME control recipes as CartStrip / DetailsPanel — rest = charcoal glyph
+ * on chrome, active/confirm = ink fill + paper glyph, destructive = clay rim
+ * (hover fills clay + white). Nothing else in the designer's palette.
  */
+import type { ReactNode } from 'react';
 import { useDesignStore } from '../store/designStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
 import { getProductById } from '../data/products';
@@ -38,12 +45,55 @@ import {
 import { haptic } from '../lib/haptics';
 import { emitsLight } from './lighting';
 import { isFlooringProduct } from './flooringLattice';
+import { CHROME_BG, CHROME_RIM } from './blueprintTheme';
 
-// Paper register (Sims world 2026-08-29): charcoal ink on paper, teal accent.
-const NAVY = '#2A2926';
-const GOLD = '#3D8F79';
-const CREAM = '#F8F5EE';
-const CORAL = '#C9553F';
+// ---------------------------------------------------------------------------
+// Chrome recipe (toolbar contract 2026-08-29) — same strings as CartStrip /
+// DetailsPanel so the cluster is the same control set as every other
+// surface. Icon-only variant: the shared CTRL_BASE minus its px-3 (the
+// 48 px square comes from the inline width/height the M17 test reads).
+// ---------------------------------------------------------------------------
+const CTRL_BASE =
+  'inline-flex items-center justify-center rounded-lg text-[12px] font-medium leading-none ' +
+  'transition-colors duration-[120ms] ease-out motion-reduce:transition-none ' +
+  'focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] ' +
+  'active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] disabled:opacity-40';
+/** Rest: chrome ground + rim; hover: CHROME_HOVER_BG + darker rim. */
+const CTRL_REST =
+  `${CTRL_BASE} border border-ppw-rim bg-ppw-chrome text-ppw-charcoal ` +
+  'hover:bg-[#f3f1ec] hover:border-[rgba(42,41,38,0.35)]';
+/** Active / tool-on: ink fill, paper text. */
+const CTRL_ACTIVE = `${CTRL_BASE} border border-ppw-inkDeep bg-ppw-inkDeep text-ppw-paper`;
+/** Destructive: terracotta rim; hover fills terracotta with white text. */
+const CTRL_DANGER =
+  `${CTRL_BASE} border border-ppw-clay bg-ppw-chrome text-ppw-charcoal ` +
+  'hover:bg-ppw-clay hover:text-white';
+
+/** Popover shadow from the contract (12 px blur, ink at 18 %). */
+const POPOVER_SHADOW = '0 12px 32px rgba(42,41,38,0.18)';
+
+/**
+ * Same stroke drawing as DetailsPanel's TrashIcon, scaled to the 48 px
+ * button. The old `🗑` was a COLOUR emoji: it ignores CSS `color`, so the
+ * destructive rim/glyph contract could never apply to it on a real phone.
+ */
+function TrashIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={20}
+      height={20}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
+    </svg>
+  );
+}
 
 export interface FloatingClusterProps {
   /** Selected item AABB top-left, in CSS px relative to the canvas container. */
@@ -58,13 +108,35 @@ export interface FloatingClusterProps {
 const BTN = 48; // ≥48 dp touch target (spec §9 / M17)
 const GAP = 14;
 
+/**
+ * Flip-below threshold. On phones (<md) the top-right readout chip sits at
+ * y≈125–165 and the top-left mode buttons above it, so a cluster whose
+ * computed top would land above 176 px would overlap that chip by a few px
+ * (measured ~5 px at 390 wide, 2026-08-29). Flipping below the item at that
+ * height keeps the cluster clear. Tablets (≥md) keep the original 8 px
+ * safe-area threshold. Read at render (the cluster re-renders on every
+ * selection / drag frame); guarded for jsdom + SSR where matchMedia is
+ * absent.
+ */
+const FLIP_THRESHOLD_PHONE = 176;
+const FLIP_THRESHOLD_TABLET = 8;
+
+function flipThreshold(): number {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return FLIP_THRESHOLD_PHONE;
+  }
+  return window.matchMedia('(min-width: 768px)').matches
+    ? FLIP_THRESHOLD_TABLET
+    : FLIP_THRESHOLD_PHONE;
+}
+
 interface ClusterBtn {
   key: string;
   label: string;
-  glyph: string;
+  glyph: ReactNode;
   testid: string;
   onClick: () => void;
-  tone?: 'default' | 'danger' | 'confirm';
+  tone?: 'default' | 'danger' | 'confirm' | 'active';
 }
 
 export function FloatingCluster({
@@ -82,6 +154,8 @@ export function FloatingCluster({
   if (!selected) return null;
   const product = getProductById(selected.productId);
   if (!product) return null;
+
+  const lightOn = selected.lightOn ?? true;
 
   const buttons: ClusterBtn[] = [
     {
@@ -117,9 +191,11 @@ export function FloatingCluster({
       ? [
           {
             key: 'light',
-            label: (selected.lightOn ?? true) ? 'Light off' : 'Light on',
+            label: lightOn ? 'Light off' : 'Light on',
             glyph: '☼',
             testid: 'cluster-light',
+            // Tool-on state = the ONE pressed look (ink fill + paper glyph).
+            tone: lightOn ? 'active' : 'default',
             onClick: () => {
               toggleSelectedLight();
             },
@@ -136,7 +212,7 @@ export function FloatingCluster({
     {
       key: 'delete',
       label: 'Delete',
-      glyph: '🗑',
+      glyph: <TrashIcon />,
       testid: 'cluster-delete',
       tone: 'danger',
       onClick: () => deleteSelected(),
@@ -159,13 +235,14 @@ export function FloatingCluster({
   const clusterH = BTN + 12;
 
   // Anchor above the object's AABB centre; flip below if it would clip the
-  // top safe area; clamp horizontally inside the container.
+  // top safe area (phones: the readout-chip band, see flipThreshold);
+  // clamp horizontally inside the container.
   const centreX = itemLeftPx + itemWidthPx / 2;
   let left = centreX - clusterW / 2;
   left = Math.max(8, Math.min(left, containerW - clusterW - 8));
 
   const aboveTop = itemTopPx - GAP - clusterH;
-  const flipBelow = aboveTop < 8;
+  const flipBelow = aboveTop < flipThreshold();
   const top = flipBelow ? itemTopPx - GAP + GAP * 2 : aboveTop;
   // When flipping below, sit just under the AABB top + a little (we don't
   // have the precise height here, so a fixed offset keeps it clear of the
@@ -189,17 +266,30 @@ export function FloatingCluster({
   const leftCss = `max(calc(8px + env(safe-area-inset-left)), min(${left}px, calc(${containerW - clusterW}px - 8px - env(safe-area-inset-right))))`;
   const topCss = `max(calc(8px + env(safe-area-inset-top)), min(${clampedTop}px, calc(${containerH - clusterH}px - 8px - env(safe-area-inset-bottom))))`;
 
+  const toneClass = (tone: ClusterBtn['tone']): string => {
+    switch (tone) {
+      case 'danger':
+        return CTRL_DANGER;
+      case 'confirm':
+      case 'active':
+        return CTRL_ACTIVE;
+      default:
+        return CTRL_REST;
+    }
+  };
+
   return (
     <div
       data-testid="floating-cluster"
       role="toolbar"
       aria-label="Selected item controls"
-      className="pointer-events-auto absolute z-40 flex items-center gap-1.5 rounded-2xl px-1.5 py-1.5 shadow-xl"
+      className="pointer-events-auto absolute z-40 flex items-center gap-1.5 rounded-xl px-1.5 py-1.5"
       style={{
         left: leftCss,
         top: topCss,
-        background: NAVY,
-        border: `2px solid ${GOLD}`,
+        background: CHROME_BG,
+        border: `1px solid ${CHROME_RIM}`,
+        boxShadow: POPOVER_SHADOW,
         // Keep clear of notch / home-indicator if the cluster lands near an
         // edge (RoomCanvas clamps within the container, this is belt-and-braces).
         touchAction: 'none',
@@ -219,13 +309,10 @@ export function FloatingCluster({
             e.stopPropagation();
             b.onClick();
           }}
-          className="flex items-center justify-center rounded-xl text-lg font-semibold transition active:scale-95"
+          className={`${toneClass(b.tone)} text-lg font-semibold active:scale-95`}
           style={{
             width: BTN,
             height: BTN,
-            color: b.tone === 'danger' ? '#fff' : b.tone === 'confirm' ? NAVY : CREAM,
-            background:
-              b.tone === 'danger' ? CORAL : b.tone === 'confirm' ? GOLD : '#2C3849',
             lineHeight: 1,
           }}
         >

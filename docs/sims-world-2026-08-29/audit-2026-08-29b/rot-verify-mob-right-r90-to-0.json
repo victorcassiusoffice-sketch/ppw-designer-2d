@@ -1,0 +1,50 @@
+{
+ "slug": "mob/right-r90-to-0",
+ "mode": "touch",
+ "seeded": {
+  "x": 4,
+  "y": 0.975,
+  "rotation": 90,
+  "w": 0.95,
+  "h": 2.05,
+  "xPlusW": 4.95,
+  "yPlusH": 3.025,
+  "flushLeft": false,
+  "flushRight": true,
+  "flushTop": false,
+  "flushBottom": false,
+  "outOfBounds": false,
+  "centre": {
+   "x": 4.475,
+   "y": 2
+  }
+ },
+ "handleFrom": {
+  "x": 317.45,
+  "y": 392.78999999999996
+ },
+ "handleTo": {
+  "x": 317.45,
+  "y": 267.5
+ },
+ "afterHandle": {
+  "x": 4,
+  "y": 0.975,
+  "rotation": 90,
+  "w": 0.95,
+  "h": 2.05,
+  "xPlusW": 4.95,
+  "yPlusH": 3.025,
+  "flushLeft": false,
+  "flushRight": true,
+  "flushTop": false,
+  "flushBottom": false,
+  "outOfBounds": false,
+  "centre": {
+   "x": 4.475,
+   "y": 2
+  }
+ },
+ "toastsAfterHandle": [],
+ "follow": []
+}

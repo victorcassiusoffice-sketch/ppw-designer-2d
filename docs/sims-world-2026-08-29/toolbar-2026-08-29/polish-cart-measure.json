@@ -1,0 +1,470 @@
+{
+  "390": {
+    "vw": 390,
+    "vh": 844,
+    "sheet": {
+      "x": 0,
+      "w": 390,
+      "top": 360,
+      "bottom": 844
+    },
+    "scrollerW": 358,
+    "scrollW": 358,
+    "tableW": 358,
+    "cells": [
+      {
+        "t": "Product",
+        "x": 16,
+        "r": 236,
+        "w": 220,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Qty",
+        "x": 236,
+        "r": 289,
+        "w": 54,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Line",
+        "x": 289,
+        "r": 374,
+        "w": 85,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "NordicTrack Commercial 2450 ",
+        "x": 16,
+        "r": 236,
+        "w": 220,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "1",
+        "x": 236,
+        "r": 289,
+        "w": 54,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "£2,633.33",
+        "x": 289,
+        "r": 374,
+        "w": 85,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Wellness Console Table£219.4",
+        "x": 16,
+        "r": 236,
+        "w": 220,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "1",
+        "x": 236,
+        "r": 289,
+        "w": 54,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "£219.44",
+        "x": 289,
+        "r": 374,
+        "w": 85,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Arc Floor Lamp£79 each · Lig",
+        "x": 16,
+        "r": 236,
+        "w": 220,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "1",
+        "x": 236,
+        "r": 289,
+        "w": 54,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "£79",
+        "x": 289,
+        "r": 374,
+        "w": 85,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Outdoor Rubber 1×1 m£26.33 e",
+        "x": 16,
+        "r": 236,
+        "w": 220,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "20 tiles",
+        "x": 236,
+        "r": 289,
+        "w": 54,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "£526.67",
+        "x": 289,
+        "r": 374,
+        "w": 85,
+        "inSheet": true,
+        "inVp": true
+      }
+    ],
+    "subtotal": {
+      "t": "£3,458.44",
+      "x": 308,
+      "right": 374,
+      "y": 700,
+      "font": "13px",
+      "visible": true
+    },
+    "subLabel": {
+      "t": "Subtotal",
+      "x": 230,
+      "right": 292,
+      "y": 702,
+      "font": "11px",
+      "visible": true
+    },
+    "alt": {
+      "t": "Rs 197,000",
+      "x": 307,
+      "right": 374,
+      "y": 728,
+      "font": "12px",
+      "visible": true
+    },
+    "altLabel": {
+      "t": "~ MUR",
+      "x": 252,
+      "right": 291,
+      "y": 729,
+      "font": "11px",
+      "visible": true
+    },
+    "minFont": 11,
+    "floorLines": 1,
+    "floorUnits": "20",
+    "closeText": "Close",
+    "btns": [
+      {
+        "n": "View cart",
+        "h": 44,
+        "y": 832
+      },
+      {
+        "n": "Checkout",
+        "h": 44,
+        "y": 832
+      },
+      {
+        "n": "Close",
+        "h": 44,
+        "y": 413
+      }
+    ],
+    "testids": [
+      "cart-pill",
+      "cart-sheet",
+      "cart-floor-units",
+      "cart-floor-line"
+    ]
+  },
+  "1366": {
+    "vw": 1366,
+    "vh": 768,
+    "sheet": {
+      "x": 646,
+      "w": 720,
+      "top": 390,
+      "bottom": 768
+    },
+    "scrollerW": 688,
+    "scrollW": 688,
+    "tableW": 688,
+    "cells": [
+      {
+        "t": "Product",
+        "x": 662,
+        "r": 982,
+        "w": 320,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Cat.",
+        "x": 982,
+        "r": 1069,
+        "w": 87,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Qty",
+        "x": 1069,
+        "r": 1139,
+        "w": 70,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Unit",
+        "x": 1139,
+        "r": 1239,
+        "w": 100,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Line",
+        "x": 1239,
+        "r": 1350,
+        "w": 111,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "NordicTrack Commercial 2450 ",
+        "x": 662,
+        "r": 982,
+        "w": 320,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Fitness",
+        "x": 982,
+        "r": 1069,
+        "w": 87,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "1",
+        "x": 1069,
+        "r": 1139,
+        "w": 70,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "£2,633.33",
+        "x": 1139,
+        "r": 1239,
+        "w": 100,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "£2,633.33",
+        "x": 1239,
+        "r": 1350,
+        "w": 111,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Wellness Console Table£219.4",
+        "x": 662,
+        "r": 982,
+        "w": 320,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Decor",
+        "x": 982,
+        "r": 1069,
+        "w": 87,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "1",
+        "x": 1069,
+        "r": 1139,
+        "w": 70,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "£219.44",
+        "x": 1139,
+        "r": 1239,
+        "w": 100,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "£219.44",
+        "x": 1239,
+        "r": 1350,
+        "w": 111,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Arc Floor Lamp£79 each · Lig",
+        "x": 662,
+        "r": 982,
+        "w": 320,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Lighting",
+        "x": 982,
+        "r": 1069,
+        "w": 87,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "1",
+        "x": 1069,
+        "r": 1139,
+        "w": 70,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "£79",
+        "x": 1139,
+        "r": 1239,
+        "w": 100,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "£79",
+        "x": 1239,
+        "r": 1350,
+        "w": 111,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Outdoor Rubber 1×1 m£26.33 e",
+        "x": 662,
+        "r": 982,
+        "w": 320,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "Floor",
+        "x": 982,
+        "r": 1069,
+        "w": 87,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "20 tiles",
+        "x": 1069,
+        "r": 1139,
+        "w": 70,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "£26.33",
+        "x": 1139,
+        "r": 1239,
+        "w": 100,
+        "inSheet": true,
+        "inVp": true
+      },
+      {
+        "t": "£526.67",
+        "x": 1239,
+        "r": 1350,
+        "w": 111,
+        "inSheet": true,
+        "inVp": true
+      }
+    ],
+    "subtotal": {
+      "t": "£3,458.44",
+      "x": 1284,
+      "right": 1350,
+      "y": 657,
+      "font": "13px",
+      "visible": true
+    },
+    "subLabel": {
+      "t": "Subtotal",
+      "x": 1206,
+      "right": 1268,
+      "y": 659,
+      "font": "11px",
+      "visible": true
+    },
+    "alt": {
+      "t": "Rs 197,000",
+      "x": 1283,
+      "right": 1350,
+      "y": 684,
+      "font": "12px",
+      "visible": true
+    },
+    "altLabel": {
+      "t": "~ MUR",
+      "x": 1228,
+      "right": 1267,
+      "y": 685,
+      "font": "11px",
+      "visible": true
+    },
+    "minFont": 11,
+    "floorLines": 1,
+    "floorUnits": "20",
+    "closeText": "Close",
+    "btns": [
+      {
+        "n": "View cart",
+        "h": 40,
+        "y": 756
+      },
+      {
+        "n": "Checkout",
+        "h": 40,
+        "y": 756
+      },
+      {
+        "n": "Close",
+        "h": 40,
+        "y": 439
+      }
+    ],
+    "testids": [
+      "cart-pill",
+      "cart-sheet",
+      "cart-floor-units",
+      "cart-floor-line"
+    ]
+  }
+}

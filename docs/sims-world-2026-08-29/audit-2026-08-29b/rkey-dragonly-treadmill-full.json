@@ -1,0 +1,50 @@
+{
+ "left-edge-0.2": {
+  "action": "drag left-edge-0.2",
+  "x": 0,
+  "y": 1.5,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "flushX": false,
+  "flushY": false,
+  "inBandX": true,
+  "inBandY": false,
+  "offLeft": -0.05,
+  "offTop": 1.45,
+  "toastsSoFar": [],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rkey-dragonly-left-edge-0.2.png"
+ },
+ "top-edge-0.2": {
+  "action": "drag top-edge-0.2",
+  "x": 1.5,
+  "y": 0.05,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "flushX": false,
+  "flushY": true,
+  "inBandX": false,
+  "inBandY": false,
+  "offLeft": 1.45,
+  "offTop": 0,
+  "toastsSoFar": [],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rkey-dragonly-top-edge-0.2.png"
+ },
+ "corner-top-left-edge-0.2": {
+  "action": "drag corner-top-left-edge-0.2",
+  "x": 0.05,
+  "y": 0.05,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "flushX": true,
+  "flushY": true,
+  "inBandX": false,
+  "inBandY": false,
+  "offLeft": 0,
+  "offTop": 0,
+  "toastsSoFar": [],
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rkey-dragonly-corner-top-left-edge-0.2.png"
+ }
+}

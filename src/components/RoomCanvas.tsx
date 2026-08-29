@@ -60,6 +60,13 @@ import { RoomDrawLayer, RoomDrawHUD, type HoverVertex } from './RoomDrawMode';
 import { WallDrawLayer, WallDrawHUD, CommittedWallsLayer } from '../designer/WallDrawMode';
 import { useWallStore } from '../store/wallStore';
 import { useHistoryStore, endDrawTransaction } from '../store/historyStore';
+// Toolbar pass (2026-08-29): the phone's undo/redo buttons route through the
+// SAME ladder as Ctrl+Z / the TopBar buttons (vertex → wall segment → history),
+// instead of hitting the history store directly and disagreeing mid-draw.
+import { performRedo, performUndo } from '../lib/undoIntent';
+// Cost badge formats with the cart pill's formatter, so "2,932 GBP" can never
+// sit beside "£2,931.78" again (toolbar audit 2026-08-29).
+import { formatCurrency } from '../lib/currency';
 // Batch 3 Fix 3.2 — vertices live in a tiny shared store so the
 // RoomList sidebar can render the live counters next to the room.
 import { useDrawProgressStore } from '../store/drawProgressStore';
@@ -112,10 +119,15 @@ import { isFlooringProduct, snapToTileLattice, tileLatticeFor } from '../designe
 // Rotate-handle re-seat (2026-08-29): same wall-aware path as the R key.
 import { rotateSelected } from '../lib/placementActions';
 import { pointInPolygon, isRectInsidePolygon } from '../lib/geometry';
-import { SnapUnitStepper } from './RoomDrawMode';
 // Architectural paper theme (2026-08-29): cream paper, charcoal poche walls
 // with a soft shadow, quiet grid. Every colour comes from ONE module.
 import {
+  CHROME_BG,
+  CHROME_RIM,
+  CHROME_TEXT,
+  CHROME_TEXT_2,
+  CHROME_ACTIVE_BG,
+  CHROME_ACTIVE_TEXT,
   CANVAS_GROUND,
   GHOST_INVALID,
   GHOST_INVALID_FILL,
@@ -306,6 +318,24 @@ export interface RoomCanvasProps {
   onRequestDraw?: () => void;
 }
 
+/**
+ * Designer chrome (toolbar pass, 2026-08-29) — DOM overlay controls on the
+ * canvas share ONE language with the bars and the wall-pen HUD: paper ground,
+ * hairline rim, charcoal ink; ink fill + paper text for the pressed / tool-on
+ * state; 120 ms colour transition (none under reduced-motion), mint focus
+ * ring, inset press. 44 px targets on the phone, 40 px from md up.
+ */
+const OVL_CTRL =
+  'pointer-events-auto inline-flex items-center justify-center gap-1.5 rounded-lg border text-[12px] font-medium leading-none transition-colors duration-[120ms] ease-out motion-reduce:transition-none focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] disabled:cursor-not-allowed disabled:opacity-40';
+const OVL_REST =
+  'bg-ppw-chrome border-ppw-rim text-[#37362f] shadow-sm hover:bg-[#f3f1ec] hover:border-[rgba(42,41,38,0.35)]';
+const OVL_ACTIVE = 'bg-ppw-inkDeep border-ppw-inkDeep text-ppw-paper shadow-sm hover:bg-[#3a3835]';
+/** Top-right row: icon-only 44 px squares on the phone, 40 px labelled from md. */
+const OVL_TOPRIGHT = 'h-11 w-11 px-0 md:h-10 md:w-auto md:px-3';
+/** Readout chip (not a control): ink plate, paper numerals, 12/600 tabular. */
+const OVL_CHIP =
+  'pointer-events-none inline-flex min-h-[40px] items-center gap-2 rounded-lg px-3 text-[12px] font-semibold tabular-nums shadow-sm';
+
 export function RoomCanvas({
   drawMode = false,
   onDrawComplete,
@@ -336,6 +366,9 @@ export function RoomCanvas({
   // Toggled by Ctrl+F (desktop) / the precision button (mobile). Spec D15/M13.
   const precision = useDesignerUIStore((s) => s.precision);
   const togglePrecision = useDesignerUIStore((s) => s.togglePrecision);
+  // Repair round 1 (2026-08-29): the phone draw-unit strip mounts ONLY below
+  // sm; the HUD hosts the stepper at sm+ (`showUnitStepper={!belowSm}`).
+  const belowSm = useBelowSm();
   const tool = useDesignerUIStore((s) => s.tool);
   const setTool = useDesignerUIStore((s) => s.setTool);
   const doorDraft = useDesignerUIStore((s) => s.doorDraft);
@@ -512,6 +545,11 @@ export function RoomCanvas({
    */
   const userMovedViewportRef = useRef(false);
   const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
+  // Polish (2026-08-29): the wall-pen HUD card. Its live height (state, so
+  // the fit effect below re-runs when it changes) + a ref onto the element
+  // (so the fit reads WHERE the card sits over the stage, at any width).
+  const drawHudRef = useRef<HTMLDivElement | null>(null);
+  const [drawHudH, setDrawHudH] = useState(0);
   const itemDragRef = useRef<{ instanceId: string | null; moved: boolean }>({
     instanceId: null,
     moved: false,
@@ -708,6 +746,10 @@ export function RoomCanvas({
     () => ({ total: cartTotals.subtotal, currency: cartTotals.currency }),
     [cartTotals.subtotal, cartTotals.currency],
   );
+  // The cart pill (App: `{!drawMode && <CartStrip />}`) is on screen exactly
+  // when there is a product or a floor line and the pen is closed.
+  const costChipHidden =
+    !drawMode && cartTotals.totalItemCount + cartTotals.floorLines.length > 0;
   void allItems;
 
   const bounds = useMemo(() => polygonBounds(polygon), [polygon]);
@@ -762,20 +804,34 @@ export function RoomCanvas({
     // Nothing to centre on until a room exists — leave the viewport alone
     // so the blank-canvas prompt is not fighting a pointless transform.
     if (!union || unionWpx <= 0 || unionHpx <= 0) return;
+    // Polish (2026-08-29): while the wall pen is open the HUD card covers
+    // the bottom of the stage (on a 390 px phone it used to hide the lower
+    // half of the room). The fit treats the band from the card's top edge
+    // down as unavailable — measured from the card's live rect, so it is
+    // right at every width (below lg the card also clears the 56 px pill
+    // band + the catalog toolbar; from lg it sits 12 px above the dock).
+    // `drawHudH` is a dep so a card that grows (row wrap) re-fits.
+    let bottomInset = 0;
+    if (drawMode && drawHudH > 0 && drawHudRef.current && containerRef.current) {
+      const hud = drawHudRef.current.getBoundingClientRect();
+      const box = containerRef.current.getBoundingClientRect();
+      bottomInset = Math.max(0, Math.min(box.height - 120, box.bottom - hud.top + 12));
+    }
+    const availH = stageSize.height - bottomInset;
     // Attached multi-room: centre + FIT the whole plan, not the active room.
     // This used to hardcode scale 1 with a 40 px minimum clamp, which pinned
     // a union wider than the stage off-screen with no way back except Reset.
     const scale = Math.max(
       MIN_SCALE,
-      Math.min(1, (stageSize.width - 80) / unionWpx, (stageSize.height - 80) / unionHpx),
+      Math.min(1, (stageSize.width - 80) / unionWpx, (availH - 80) / unionHpx),
     );
     setViewport({
       x: (stageSize.width - unionWpx * scale) / 2 - union.minX * pxPerMetre * scale,
-      y: (stageSize.height - unionHpx * scale) / 2 - union.minY * pxPerMetre * scale,
+      y: (availH - unionHpx * scale) / 2 - union.minY * pxPerMetre * scale,
       scale,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, pxPerMetre]);
+  }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, pxPerMetre, drawMode, drawHudH]);
 
   function handleWheel(e: Konva.KonvaEventObject<WheelEvent>) {
     e.evt.preventDefault();
@@ -2205,14 +2261,29 @@ export function RoomCanvas({
             6-deep VERTICAL stack of full-width buttons + badges that crowded
             the canvas. Actions now sit in ONE compact horizontal row with
             short labels; every data-testid stays mounted so e2e is unaffected. */}
-        <div className="pointer-events-auto flex items-center gap-1.5">
+        {/* Toolbar pass (2026-08-29): ONE 40 px row (44 px icon-only squares
+            on the phone). Polish: all three wear the SAME rest rim — Share
+            used to carry an ink rim, which read as pressed next to its
+            siblings. The gold call-to-action is reserved for Request quote. */}
+        <div className="pointer-events-auto flex items-center gap-2">
           <button
             type="button"
             onClick={resetView}
-            className="min-h-[36px] rounded-md bg-white/90 px-2.5 text-[11px] font-medium text-ppw-ink shadow-sm ring-1 ring-ppw-stone hover:bg-white"
+            aria-label="Reset view"
+            className={`${OVL_CTRL} ${OVL_REST} ${OVL_TOPRIGHT}`}
             title="Reset pan/zoom"
           >
-            Reset
+            <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M2.5 8a5.5 5.5 0 1 0 1.6-3.9M2.5 2.5v3h3"
+              />
+            </svg>
+            <span className="hidden md:inline">Reset</span>
           </button>
           {/* V-RENDER-4 — share / capture the current room render. Primary
               uses the Konva stage (sharp, canvas-only); secondary snapshots
@@ -2221,19 +2292,42 @@ export function RoomCanvas({
             type="button"
             onClick={handleShareRender}
             data-testid="share-render"
-            className="min-h-[36px] rounded-md bg-ppw-teal px-2.5 text-[11px] font-semibold text-white shadow-sm ring-1 ring-ppw-teal/60 hover:bg-ppw-teal/90"
+            aria-label="Share a picture of your room"
+            className={`${OVL_CTRL} ${OVL_REST} ${OVL_TOPRIGHT}`}
             title="Share or download a picture of your room"
           >
-            Share
+            <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8 10V2.5M5 5.5L8 2.5l3 3M3 9.5v3a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-3"
+              />
+            </svg>
+            <span className="hidden md:inline">Share</span>
           </button>
           <button
             type="button"
             onClick={handleCaptureFullScreen}
             data-testid="capture-screen"
-            className="min-h-[36px] rounded-md bg-white/90 px-2.5 text-[11px] font-medium text-ppw-ink shadow-sm ring-1 ring-ppw-stone hover:bg-white"
+            aria-label="Capture the full screen"
+            className={`${OVL_CTRL} ${OVL_REST} ${OVL_TOPRIGHT}`}
             title="Capture the full screen (with toolbars)"
           >
-            Capture
+            <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M2.5 5.5v-2a1 1 0 0 1 1-1h2M10.5 2.5h2a1 1 0 0 1 1 1v2M13.5 10.5v2a1 1 0 0 1-1 1h-2M5.5 13.5h-2a1 1 0 0 1-1-1v-2"
+              />
+              <circle cx="8" cy="8" r="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+            <span className="hidden md:inline">Capture</span>
           </button>
         </div>
         {/* Room size + zoom readout (P2-1: trimmed the developer-looking
@@ -2242,44 +2336,59 @@ export function RoomCanvas({
         {/* One combined readout instead of three stacked badges: room size,
             zoom, snap and item count. `items-placed` stays a discrete element
             (M1.5 Playwright hook) — it is just inlined here now. */}
-        <div className="pointer-events-none flex items-center gap-1.5">
-          <span className="rounded-md bg-ppw-ink/80 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
+        {/* Toolbar pass (2026-08-29): the three stacked badges (readout ·
+            teal count · plot) are ONE ink chip. `items-placed` stays its own
+            element (M1.5 Playwright hook), as do `level-readout` and
+            `plot-capacity`; they now sit INSIDE the chip. Wraps on a phone
+            rather than running off the right edge. */}
+        <div
+          className={`${OVL_CHIP} max-w-[calc(100vw-2rem)] flex-wrap justify-end py-1.5`}
+          style={{ background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT }}
+        >
+          <span>
             {levels.length > 1 && (
               <span data-testid="level-readout">{activeLevel?.name ?? 'Ground floor'} · </span>
             )}
             {area.toFixed(1)} m² · {Math.round(viewport.scale * 100)}% ·{' '}
             {SNAP_UNIT_LABEL[precision]}
             {gridTier.minorStepM > 0 && Math.abs(gridTier.minorStepM - snapStep) > 1e-9 && (
-              <span className="opacity-60"> · grid {gridTier.minorStepM >= 1
+              <span className="opacity-70"> · grid {gridTier.minorStepM >= 1
                 ? `${gridTier.minorStepM} m`
                 : `${Math.round(gridTier.minorStepM * 100)} cm`}</span>
             )}
           </span>
+          {/* Land capacity (Sims world 2026-08-29): how much of the locked
+              plot is built on this level. Only while a plot is locked. */}
+          {site && (
+            <span
+              className="border-l border-white/25 pl-2"
+              data-testid="plot-capacity"
+            >
+              Plot {capacity.plot.toFixed(0)} m² · built {capacity.built.toFixed(1)} m² ({capacity.pct}%)
+            </span>
+          )}
           <span
-            className="rounded-md bg-ppw-teal/90 px-2 py-1 text-[11px] font-medium text-white shadow-sm"
+            className="inline-flex min-w-[24px] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold"
+            style={{ background: CHROME_ACTIVE_TEXT, color: CHROME_ACTIVE_BG }}
             data-testid="items-placed"
+            title="Items placed"
           >
             {allItems.length}
           </span>
         </div>
-        {/* Land capacity (Sims world 2026-08-29): how much of the locked
-            plot is built on this level. Only while a plot is locked. */}
-        {site && (
-          <span
-            className="pointer-events-none rounded-md bg-white/85 px-2.5 py-1 text-[11px] font-medium text-ppw-ink shadow-sm ring-1 ring-ppw-stone"
-            data-testid="plot-capacity"
-          >
-            Plot {capacity.plot.toFixed(0)} m² · built {capacity.built.toFixed(1)} m² ({capacity.pct}%)
-          </span>
-        )}
-        {/* D21 — live cost total of placed items. Kept as its own prominent
-            badge: it is the running shopping total, not chrome. */}
+        {/* D21 — live cost total of placed items. Same formatter + derivation
+            as the cart pill (2026-08-29). Polish: the pill already shows this
+            number whenever it is mounted (any product or floor line, pen
+            closed), so the chip then HIDES rather than print the price twice.
+            The element stays in the DOM — specs read its textContent — and
+            shows again when the cart is empty. */}
         <div
-          className="pointer-events-none rounded-md px-2.5 py-1 text-[11px] font-semibold shadow-sm"
-          style={{ background: WALL_INK, color: '#F8F5EE' }}
+          className={`${OVL_CHIP} ${costChipHidden ? 'hidden' : ''}`}
+          style={{ background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT }}
           data-testid="cost-readout"
+          hidden={costChipHidden}
         >
-          {costReadout.total.toLocaleString('en-MU', { maximumFractionDigits: 0 })} {costReadout.currency}
+          {formatCurrency(costReadout.total, costReadout.currency)}
         </div>
         {/* Sims flooring (2026-08-29): the brush is ON. On the phone the
             toolbar's teal Paint-floor button is hidden, so without this chip
@@ -2293,10 +2402,10 @@ export function RoomCanvas({
             data-testid="floor-paint-hud"
             // mr-12 on the phone: the round ? help button sits at this
             // height on the right edge and would cover "Done".
-            className="pointer-events-auto mr-12 min-h-[36px] rounded-md bg-ppw-teal px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm ring-1 ring-white/40 hover:bg-ppw-teal/90 md:mr-0"
-            title="Paint floor is on: tap a tile, drag a rectangle, Shift fills the room. Tap here to stop painting."
+            className={`${OVL_CTRL} ${OVL_ACTIVE} mr-12 h-11 px-3 md:mr-0 md:h-10`}
+            title="Paint is on: tap a tile, drag a rectangle, Shift fills the room. Tap here to stop painting."
           >
-            Paint floor on · Done
+            Paint on · Done
           </button>
         )}
       </div>
@@ -2305,17 +2414,25 @@ export function RoomCanvas({
         const pendingProduct = getProductById(pendingProductId);
         if (!pendingProduct) return null;
         return (
-          <div className="pointer-events-auto absolute left-1/2 top-3 z-20 flex w-[min(92vw,420px)] -translate-x-1/2 items-center justify-between gap-2 rounded-lg border border-ppw-teal bg-white px-3 py-2 text-xs shadow-xl ring-1 ring-ppw-teal/40">
+          <div
+            className="pointer-events-auto absolute left-1/2 top-3 z-20 flex w-[min(92vw,420px)] -translate-x-1/2 items-center justify-between gap-2 rounded-xl px-3 py-2 text-xs"
+            style={{
+              background: CHROME_BG,
+              border: `1px solid ${CHROME_RIM}`,
+              boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
+              color: CHROME_TEXT,
+            }}
+          >
             <div className="min-w-0">
-              <p className="font-semibold text-ppw-ink truncate">
+              <p className="truncate text-[12px] font-semibold">
                 Tap the floor to place &ldquo;{pendingProduct.name}&rdquo;
               </p>
-              <p className="text-[10px] text-ppw-slate">Or hit Cancel.</p>
+              <p className="text-[11px] font-medium" style={{ color: CHROME_TEXT_2 }}>Or hit Cancel.</p>
             </div>
             <button
               type="button"
               onClick={() => setPendingProductId && setPendingProductId(null)}
-              className="shrink-0 min-h-[36px] rounded-md border border-ppw-coral bg-white px-3 text-[11px] font-semibold text-ppw-coral hover:bg-ppw-coral hover:text-white"
+              className={`${OVL_CTRL} ${OVL_REST} h-11 shrink-0 px-3 md:h-10`}
             >
               Cancel
             </button>
@@ -2336,19 +2453,37 @@ export function RoomCanvas({
             type="button"
             data-testid="mobile-undo"
             aria-label="Undo"
-            onClick={() => useHistoryStore.getState().undo()}
-            className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-lg bg-white/90 text-lg text-ppw-ink shadow-sm ring-1 ring-ppw-stone active:scale-95"
+            onClick={() => performUndo()}
+            className={`${OVL_CTRL} ${OVL_REST} h-11 w-11`}
           >
-            ↶
+            <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 4.5L3 7.5l3 3M3.5 7.5H10a3 3 0 0 1 0 6H7"
+              />
+            </svg>
           </button>
           <button
             type="button"
             data-testid="mobile-redo"
             aria-label="Redo"
-            onClick={() => useHistoryStore.getState().redo()}
-            className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-lg bg-white/90 text-lg text-ppw-ink shadow-sm ring-1 ring-ppw-stone active:scale-95"
+            onClick={() => performRedo()}
+            className={`${OVL_CTRL} ${OVL_REST} h-11 w-11`}
           >
-            ↷
+            <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10 4.5l3 3-3 3M12.5 7.5H6a3 3 0 0 0 0 6h3"
+              />
+            </svg>
           </button>
           <button
             type="button"
@@ -2356,11 +2491,7 @@ export function RoomCanvas({
             aria-label="Toggle snap precision"
             aria-pressed={precision !== 'full'}
             onClick={togglePrecision}
-            className="pointer-events-auto flex h-11 min-w-[64px] items-center justify-center rounded-lg px-2 text-[11px] font-semibold shadow-sm active:scale-95"
-            style={{
-              background: precision !== 'full' ? SELECT_STROKE : 'rgba(255,255,255,0.9)',
-              color: precision !== 'full' ? '#F8F5EE' : '#2A2926',
-            }}
+            className={`${OVL_CTRL} ${precision !== 'full' ? OVL_ACTIVE : OVL_REST} h-11 min-w-[64px] px-2 font-semibold tabular-nums`}
           >
             {SNAP_UNIT_LABEL[precision]}
           </button>
@@ -2368,21 +2499,11 @@ export function RoomCanvas({
       )}
 
       {/* Sims world (2026-08-29): the unit stepper is reachable MID-DRAW on
-          a phone. Bottom-left, above the sticky clear row, only while the
-          wall pen is live (the HUD shows it too at sm+, but the HUD's row
-          wraps on a 390 px screen and the stepper must never be off-screen). */}
-      {drawMode && (
-        <div
-          className="sm:hidden pointer-events-none absolute left-3 z-30"
-          style={{
-            bottom:
-              'calc(max(1.25rem, env(safe-area-inset-bottom)) + var(--sims-toolbar-h, 0px) + 150px)',
-          }}
-          data-testid="mobile-draw-unit-stepper"
-        >
-          <SnapUnitStepper compact />
-        </div>
-      )}
+          a phone. Polish: the phone copy used to be a separate fixed strip
+          parked above the HUD; it now lives INSIDE the compact HUD card
+          (RoomDrawHUD `phone` → `mobile-draw-unit-stepper` wrapper), so the
+          card is the only thing over the canvas and the `snap-unit-*`
+          testids still exist exactly once at any width. */}
 
       <Stage
         ref={stageRef}
@@ -3341,6 +3462,9 @@ export function RoomCanvas({
           and it sits at bottom-3, out of the band where the first row of
           plan vertices renders. */}
       <RoomDrawHUD
+        phone={belowSm}
+        cardRef={drawHudRef}
+        onHeightChange={setDrawHudH}
         enabled={drawMode}
         vertices={drawVertices}
         setVertices={setDrawVertices}
@@ -3540,21 +3664,9 @@ export function RoomCanvas({
       {/* M4 (Customer-UI fix 2026-05-31) — the persistent "Tip:" banner that
           sat over the bottom-left of the play area was removed from normal
           use; the centred empty-room hint already coaches first placement.
-          The draw-mode instructions remain (they're only shown while the
-          draw tool owns the canvas, and never overlap a placed design). */}
-      {drawMode && (
-        <div
-          className="pointer-events-none absolute left-3 max-w-xs rounded-md bg-white/85 px-3 py-2 text-[11px] leading-snug text-ppw-slate shadow-sm ring-1 ring-ppw-stone hidden md:block"
-          // Stacks ABOVE the sticky Clear products / Clear all row, which
-          // also lives bottom-left. They used to overlap each other.
-          style={{
-            bottom:
-              'calc(max(1.25rem, env(safe-area-inset-bottom)) + var(--sims-toolbar-h, 0px) + 46px)',
-          }}
-        >
-          <span className="font-semibold text-ppw-ink">Wall pen:</span> click to drop wall points · click the first point or <kbd>Enter</kbd> to close a room · <kbd>Finish walls</kbd> / <kbd>Alt+Enter</kbd> keeps them open · <kbd>+</kbd> / <kbd>−</kbd> change the unit · <kbd>Ctrl+Z</kbd> undo · <kbd>Esc</kbd> cancel.
-        </div>
-      )}
+          Toolbar pass (2026-08-29): the draw-mode tip card that replaced it
+          bottom-left is gone too — it duplicated the ONE instruction line
+          the wall-pen HUD carries (and the CoachMark's first step). */}
     </div>
   );
 }
@@ -4655,4 +4767,30 @@ function polygonClipFunc(polygon: Polygon, pxPerMetre: number) {
     }
     ctx.closePath();
   };
+}
+
+/**
+ * Repair round 1 (2026-08-29): `true` below Tailwind's `sm` (640 px). Gates
+ * WHICH host mounts the draw-mode unit stepper — the HUD (sm+) or the phone's
+ * bottom-left strip (<sm) — so the `snap-unit-*` testids exist exactly once
+ * in the DOM. Module-private: exporting a hook from this component file would
+ * trip react-refresh/only-export-components. Falls back to "not below sm"
+ * where `matchMedia` is missing (jsdom / SSR), i.e. the HUD keeps its copy.
+ */
+function useBelowSm(): boolean {
+  const query = '(max-width: 639.98px)';
+  const [matches, setMatches] = useState<boolean>(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia(query).matches
+      : false,
+  );
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const mq = window.matchMedia(query);
+    const sync = () => setMatches(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, [query]);
+  return matches;
 }

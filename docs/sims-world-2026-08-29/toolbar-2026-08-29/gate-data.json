@@ -1,0 +1,4654 @@
+{
+  "viewports": {
+    "390": {
+      "states": {
+        "rest": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-rest-390.png",
+          "header": {
+            "right": 390,
+            "height": 57,
+            "count": 4,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 0,
+              "clientW": 0
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "other",
+              "el": "button{Open keyboard shortcuts help}\"?\"",
+              "h": 40,
+              "w": 40
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 47,
+          "errors": []
+        },
+        "selected": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-selected-390.png",
+          "header": {
+            "right": 390,
+            "height": 57,
+            "count": 4,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 0,
+              "clientW": 0
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 40,
+              "w": 40
+            }
+          ],
+          "smallText": [],
+          "contrast": [
+            {
+              "surface": "canvas-overlay",
+              "el": "span[cluster-delete]{Delete}\"🗑\"",
+              "fg": "#ffffff",
+              "bg": "#c9553f",
+              "ratio": 4.33,
+              "fontSize": 18,
+              "opacity": 1,
+              "disabled": false
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "span[cluster-confirm]{Done}\"✓\"",
+              "fg": "#2a2926",
+              "bg": "#3d8f79",
+              "ratio": 3.74,
+              "fontSize": 18,
+              "opacity": 1,
+              "disabled": false
+            }
+          ],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 56,
+          "errors": []
+        },
+        "wallpen": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-wallpen-390.png",
+          "header": {
+            "right": 390,
+            "height": 57,
+            "count": 4,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 0,
+              "clientW": 0
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 40,
+              "w": 40
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "snap-unit-stepperx2",
+            "snap-unit-coarserx2",
+            "snap-unit-currentx2",
+            "snap-unit-finerx2",
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 53,
+          "errors": []
+        },
+        "wallpen-2pts": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-wallpen-2pts-390.png",
+          "header": {
+            "right": 390,
+            "height": 57,
+            "count": 4,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 0,
+              "clientW": 0
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 40,
+              "w": 40
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "snap-unit-stepperx2",
+            "snap-unit-coarserx2",
+            "snap-unit-currentx2",
+            "snap-unit-finerx2",
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 53,
+          "errors": []
+        },
+        "sheet-top": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-sheet-top-390.png",
+          "header": {
+            "right": 390,
+            "height": 57,
+            "count": 4,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 0,
+              "clientW": 0
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "other",
+              "el": "button{Open keyboard shortcuts help}\"?\"",
+              "h": 40,
+              "w": 40
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 66,
+          "errors": []
+        },
+        "sheet-bottom": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-sheet-bottom-390.png",
+          "header": {
+            "right": 390,
+            "height": 57,
+            "count": 4,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 0,
+              "clientW": 0
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "other",
+              "el": "button{Open keyboard shortcuts help}\"?\"",
+              "h": 40,
+              "w": 40
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 66,
+          "errors": []
+        }
+      },
+      "probes": {
+        "b_rest": {
+          "room-draw-toggle": {
+            "status": "hit",
+            "box": [
+              260,
+              6,
+              69,
+              44
+            ]
+          },
+          "rooms-trigger": {
+            "status": "hit",
+            "box": [
+              56,
+              6,
+              195,
+              44
+            ]
+          }
+        },
+        "f_cta": {
+          "buy-from-k1-sport": {
+            "status": "zero-size"
+          },
+          "details-overlay-close": {
+            "status": "zero-size"
+          }
+        },
+        "c_hud_open": {
+          "room-draw-finish-walls": {
+            "status": "hit",
+            "box": [
+              25,
+              512,
+              67,
+              44
+            ]
+          },
+          "room-draw-close": {
+            "status": "hit",
+            "box": [
+              100,
+              512,
+              91,
+              44
+            ]
+          },
+          "room-draw-cancel": {
+            "status": "hit",
+            "box": [
+              273,
+              512,
+              92,
+              44
+            ]
+          },
+          "snap-unit-stepper": {
+            "status": "hit",
+            "box": [
+              12,
+              299,
+              148,
+              44
+            ]
+          },
+          "snap-unit-coarser": {
+            "status": "hit",
+            "box": [
+              12,
+              299,
+              44,
+              44
+            ]
+          },
+          "snap-unit-finer": {
+            "status": "hit",
+            "box": [
+              116,
+              299,
+              44,
+              44
+            ]
+          },
+          "room-draw-undo": {
+            "status": "hit",
+            "box": [
+              198,
+              512,
+              67,
+              44
+            ]
+          },
+          "mobile-draw-unit-stepper": {
+            "status": "hit",
+            "box": [
+              12,
+              299,
+              148,
+              44
+            ]
+          }
+        },
+        "c_stepperBoxes": [
+          {
+            "box": [
+              12,
+              299,
+              148,
+              44
+            ],
+            "parent": "mobile-draw-unit-stepper"
+          },
+          {
+            "box": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "parent": "ml-auto hidden sm:block"
+          }
+        ],
+        "c_hud": {
+          "room-draw-finish-walls": {
+            "status": "hit",
+            "box": [
+              25,
+              512,
+              67,
+              44
+            ]
+          },
+          "room-draw-close": {
+            "status": "hit",
+            "box": [
+              100,
+              512,
+              91,
+              44
+            ]
+          },
+          "room-draw-cancel": {
+            "status": "hit",
+            "box": [
+              273,
+              512,
+              92,
+              44
+            ]
+          },
+          "snap-unit-stepper": {
+            "status": "hit",
+            "box": [
+              12,
+              299,
+              148,
+              44
+            ]
+          },
+          "snap-unit-coarser": {
+            "status": "hit",
+            "box": [
+              12,
+              299,
+              44,
+              44
+            ]
+          },
+          "snap-unit-finer": {
+            "status": "hit",
+            "box": [
+              116,
+              299,
+              44,
+              44
+            ]
+          },
+          "room-draw-undo": {
+            "status": "hit",
+            "box": [
+              198,
+              512,
+              67,
+              44
+            ]
+          }
+        },
+        "sheetBox": {
+          "top": 0,
+          "h": 844,
+          "scrollH": 1471,
+          "clientH": 844
+        },
+        "d_sheet": {
+          "wall-tool-toggle-mobile": {
+            "status": "hit",
+            "h": 48,
+            "inSheet": true
+          },
+          "floor-paint-mobile": {
+            "status": "hit",
+            "h": 336,
+            "inSheet": true
+          },
+          "floor-paint-toggle-mobile": {
+            "status": "hit",
+            "h": 48,
+            "inSheet": true
+          },
+          "floor-paint-mobile-gym-interlock": {
+            "status": "hit",
+            "h": 48,
+            "inSheet": true
+          },
+          "floor-paint-mobile-eva-combat": {
+            "status": "hit",
+            "h": 48,
+            "inSheet": true
+          },
+          "floor-paint-mobile-rubber-composite": {
+            "status": "hit",
+            "h": 48,
+            "inSheet": true
+          },
+          "floor-paint-mobile-outdoor-1m": {
+            "status": "hit",
+            "h": 48,
+            "inSheet": true
+          },
+          "floor-paint-mobile-outdoor-50": {
+            "status": "hit",
+            "h": 48,
+            "inSheet": true
+          },
+          "floor-paint-scope-mobile": {
+            "status": "hit",
+            "h": 48,
+            "inSheet": true
+          },
+          "levels-mobile": {
+            "status": "hit",
+            "h": 129,
+            "inSheet": true
+          },
+          "level-mobile-ground": {
+            "status": "hit",
+            "h": 48,
+            "inSheet": true
+          },
+          "level-add-mobile": {
+            "status": "hit",
+            "h": 48,
+            "inSheet": true
+          },
+          "land-mobile": {
+            "status": "hit",
+            "h": 77,
+            "inSheet": true
+          },
+          "snap-unit-mobile-cm1": {
+            "status": "hit",
+            "h": 44,
+            "inSheet": true
+          },
+          "snap-unit-mobile-cm10": {
+            "status": "hit",
+            "h": 44,
+            "inSheet": true
+          },
+          "snap-unit-mobile-quarter": {
+            "status": "hit",
+            "h": 44,
+            "inSheet": true
+          },
+          "snap-unit-mobile-full": {
+            "status": "hit",
+            "h": 44,
+            "inSheet": true
+          },
+          "snap-unit-mobile-m1": {
+            "status": "hit",
+            "h": 44,
+            "inSheet": true
+          },
+          "snap-unit-mobile-m10": {
+            "status": "hit",
+            "h": 44,
+            "inSheet": true
+          }
+        },
+        "d_paintSwatchCount": 5
+      },
+      "errors": []
+    },
+    "820": {
+      "states": {
+        "rest": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-rest-820.png",
+          "header": {
+            "right": 820,
+            "height": 53,
+            "count": 14,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 113,
+              "clientW": 113
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "header",
+              "el": "button[rooms-trigger]{Open rooms list}\"Room 1· 1\"",
+              "h": 40,
+              "w": 128
+            },
+            {
+              "surface": "header",
+              "el": "button[wall-tool-toggle]{Walls}\"Walls\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[door-tool-toggle]{Door}\"Door\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[floor-paint-toggle]{Paint}\"Paint\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[measure-tool-toggle]{Measure}\"Measure\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Box}\"Box\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[room-draw-toggle]\"WallsCustom\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Room}\"Room\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{View}\"View\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "a{Cart, 3 products}\"Cart3\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Request quote}\"Request quote\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[more-menu-toggle]{More}\"\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button{Reset view}\"Reset\"",
+              "h": 40,
+              "w": 80
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[share-render]{Share a picture of your room}\"Share\"",
+              "h": 40,
+              "w": 82
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[capture-screen]{Capture the full screen}\"Capture\"",
+              "h": 40,
+              "w": 94
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-products-button]{Clear products}\"Clear products\"",
+              "h": 40,
+              "w": 133
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-all-button]{Clear all}\"Clear all\"",
+              "h": 40,
+              "w": 96
+            },
+            {
+              "surface": "other",
+              "el": "button[cart-pill]{Open cart — 3 items, £2,931.78}\"3£2,931.78\"",
+              "h": 40,
+              "w": 144
+            },
+            {
+              "surface": "other",
+              "el": "button{Open keyboard shortcuts help}\"?\"",
+              "h": 40,
+              "w": 40
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 47,
+          "errors": []
+        },
+        "selected": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-selected-820.png",
+          "header": {
+            "right": 820,
+            "height": 53,
+            "count": 14,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 113,
+              "clientW": 113
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "header",
+              "el": "button[rooms-trigger]{Open rooms list}\"Room 1· 1\"",
+              "h": 40,
+              "w": 128
+            },
+            {
+              "surface": "header",
+              "el": "button[wall-tool-toggle]{Walls}\"Walls\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[door-tool-toggle]{Door}\"Door\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[floor-paint-toggle]{Paint}\"Paint\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[measure-tool-toggle]{Measure}\"Measure\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Box}\"Box\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[room-draw-toggle]\"WallsCustom\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Room}\"Room\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{View}\"View\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "a{Cart, 3 products}\"Cart3\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Request quote}\"Request quote\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[more-menu-toggle]{More}\"\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button{Reset view}\"Reset\"",
+              "h": 40,
+              "w": 80
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[share-render]{Share a picture of your room}\"Share\"",
+              "h": 40,
+              "w": 82
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[capture-screen]{Capture the full screen}\"Capture\"",
+              "h": 40,
+              "w": 94
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-products-button]{Clear products}\"Clear products\"",
+              "h": 40,
+              "w": 133
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-all-button]{Clear all}\"Clear all\"",
+              "h": 40,
+              "w": 96
+            },
+            {
+              "surface": "details",
+              "el": "button[details-overlay-close]{Close details}\"\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "details",
+              "el": "a[details-overlay]\"https://www.k1-sport.com/shop-\"",
+              "h": 18,
+              "w": 287
+            },
+            {
+              "surface": "details",
+              "el": "button[details-overlay]\"↺ 90° CCW\"",
+              "h": 40,
+              "w": 127
+            },
+            {
+              "surface": "details",
+              "el": "button[details-overlay]\"↻ 90° CW\"",
+              "h": 40,
+              "w": 127
+            },
+            {
+              "surface": "details",
+              "el": "button[details-overlay]\"Duplicate (+0.5 m offset)\"",
+              "h": 40,
+              "w": 261
+            },
+            {
+              "surface": "details",
+              "el": "button[details-overlay]\"Delete\"",
+              "h": 40,
+              "w": 261
+            },
+            {
+              "surface": "details",
+              "el": "a[buy-from-k1-sport]\"Buy from K1-Sport →\"",
+              "h": 40,
+              "w": 287
+            },
+            {
+              "surface": "other",
+              "el": "button[cart-pill]{Open cart — 3 items, £2,931.78}\"3£2,931.78\"",
+              "h": 40,
+              "w": 144
+            }
+          ],
+          "smallText": [],
+          "contrast": [
+            {
+              "surface": "canvas-overlay",
+              "el": "span[cluster-delete]{Delete}\"🗑\"",
+              "fg": "#ffffff",
+              "bg": "#c9553f",
+              "ratio": 4.33,
+              "fontSize": 18,
+              "opacity": 1,
+              "disabled": false
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "span[cluster-confirm]{Done}\"✓\"",
+              "fg": "#2a2926",
+              "bg": "#3d8f79",
+              "ratio": 3.74,
+              "fontSize": 18,
+              "opacity": 1,
+              "disabled": false
+            }
+          ],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 56,
+          "errors": []
+        },
+        "wallpen": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-wallpen-820.png",
+          "header": {
+            "right": 820,
+            "height": 53,
+            "count": 14,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 113,
+              "clientW": 113
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "header",
+              "el": "button[rooms-trigger]{Open rooms list}\"Room 1· 1\"",
+              "h": 40,
+              "w": 128
+            },
+            {
+              "surface": "header",
+              "el": "button[wall-tool-toggle]{Walls}\"Walls\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[door-tool-toggle]{Door}\"Door\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[floor-paint-toggle]{Paint}\"Paint\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[measure-tool-toggle]{Measure}\"Measure\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Box}\"Box\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[room-draw-toggle]\"WallsCustom\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Room}\"Room\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{View}\"View\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "a{Cart, 3 products}\"Cart3\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Request quote}\"Request quote\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[more-menu-toggle]{More}\"\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button{Reset view}\"Reset\"",
+              "h": 40,
+              "w": 80
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[share-render]{Share a picture of your room}\"Share\"",
+              "h": 40,
+              "w": 82
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[capture-screen]{Capture the full screen}\"Capture\"",
+              "h": 40,
+              "w": 94
+            },
+            {
+              "surface": "draw-hud",
+              "el": "button[snap-unit-coarser]{Coarser unit}\"−\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "draw-hud",
+              "el": "button[snap-unit-finer]{Finer unit}\"+\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "draw-hud",
+              "el": "button[room-draw-finish-walls]\"Done\"",
+              "h": 40,
+              "w": 56
+            },
+            {
+              "surface": "draw-hud",
+              "el": "button[room-draw-close]\"Make room\"",
+              "h": 40,
+              "w": 91
+            },
+            {
+              "surface": "draw-hud",
+              "el": "button[room-draw-close-continue]\"Room + next\"",
+              "h": 40,
+              "w": 98
+            },
+            {
+              "surface": "draw-hud",
+              "el": "button[room-draw-undo]\"Undo\"",
+              "h": 40,
+              "w": 57
+            },
+            {
+              "surface": "draw-hud",
+              "el": "button[room-draw-cancel]\"Discard\"",
+              "h": 40,
+              "w": 92
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "snap-unit-stepperx2",
+            "snap-unit-coarserx2",
+            "snap-unit-currentx2",
+            "snap-unit-finerx2",
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 53,
+          "errors": []
+        },
+        "paint": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-paint-820.png",
+          "header": {
+            "right": 820,
+            "height": 53,
+            "count": 14,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 113,
+              "clientW": 113
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "header",
+              "el": "button[rooms-trigger]{Open rooms list}\"Room 1· 1\"",
+              "h": 40,
+              "w": 128
+            },
+            {
+              "surface": "header",
+              "el": "button[wall-tool-toggle]{Walls}\"Walls\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[door-tool-toggle]{Door}\"Door\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[floor-paint-toggle]{Paint}\"Paint\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[measure-tool-toggle]{Measure}\"Measure\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Box}\"Box\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[room-draw-toggle]\"WallsCustom\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Room}\"Room\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{View}\"View\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "a{Cart, 3 products}\"Cart3\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Request quote}\"Request quote\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[more-menu-toggle]{More}\"\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button{Reset view}\"Reset\"",
+              "h": 40,
+              "w": 80
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[share-render]{Share a picture of your room}\"Share\"",
+              "h": 40,
+              "w": 82
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[capture-screen]{Capture the full screen}\"Capture\"",
+              "h": 40,
+              "w": 94
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[floor-paint-hud]\"Paint on · Done\"",
+              "h": 40,
+              "w": 113
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-products-button]{Clear products}\"Clear products\"",
+              "h": 40,
+              "w": 133
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-all-button]{Clear all}\"Clear all\"",
+              "h": 40,
+              "w": 96
+            },
+            {
+              "surface": "other",
+              "el": "button[cart-pill]{Open cart — 3 items, £2,931.78}\"3£2,931.78\"",
+              "h": 40,
+              "w": 144
+            },
+            {
+              "surface": "other",
+              "el": "button{Open keyboard shortcuts help}\"?\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-gym-interlock]\"Gym Interlock Tile 92×920.92×0\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-eva-combat]\"EVA Combat Mat 1×1 m1×1 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-rubber-composite]\"Rubber Composite 50×500.5×0.5 \"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-outdoor-1m]\"Outdoor Rubber 1×1 m1×1 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-outdoor-50]\"Outdoor Rubber 50×500.5×0.5 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-scope]\"By tile\"",
+              "h": 36,
+              "w": 131
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-erase]\"Erase\"",
+              "h": 36,
+              "w": 131
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 56,
+          "errors": []
+        },
+        "door": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-door-820.png",
+          "header": {
+            "right": 820,
+            "height": 93,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 113,
+              "clientW": 113
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "header",
+              "el": "button[rooms-trigger]{Open rooms list}\"Room 1· 1\"",
+              "h": 40,
+              "w": 128
+            },
+            {
+              "surface": "header",
+              "el": "button[wall-tool-toggle]{Walls}\"Walls\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[door-tool-toggle]{Door}\"Door\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[floor-paint-toggle]{Paint}\"Paint\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[measure-tool-toggle]{Measure}\"Measure\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Box}\"Box\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[room-draw-toggle]\"WallsCustom\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Room}\"Room\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{View}\"View\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "a{Cart, 3 products}\"Cart3\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Request quote}\"Request quote\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[more-menu-toggle]{More}\"\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-door]\"door\"",
+              "h": 28,
+              "w": 44
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-doorway]\"doorway\"",
+              "h": 28,
+              "w": 69
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-window]\"window\"",
+              "h": 28,
+              "w": 64
+            },
+            {
+              "surface": "header",
+              "el": "button[door-flip-facing]\"Flip side\"",
+              "h": 28,
+              "w": 66
+            },
+            {
+              "surface": "header",
+              "el": "button[door-flip-hand]\"Flip hinge\"",
+              "h": 28,
+              "w": 74
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button{Reset view}\"Reset\"",
+              "h": 40,
+              "w": 80
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[share-render]{Share a picture of your room}\"Share\"",
+              "h": 40,
+              "w": 82
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[capture-screen]{Capture the full screen}\"Capture\"",
+              "h": 40,
+              "w": 94
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-products-button]{Clear products}\"Clear products\"",
+              "h": 40,
+              "w": 133
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-all-button]{Clear all}\"Clear all\"",
+              "h": 40,
+              "w": 96
+            },
+            {
+              "surface": "other",
+              "el": "button[cart-pill]{Open cart — 3 items, £2,931.78}\"3£2,931.78\"",
+              "h": 40,
+              "w": 144
+            },
+            {
+              "surface": "other",
+              "el": "button{Open keyboard shortcuts help}\"?\"",
+              "h": 40,
+              "w": 40
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 53,
+          "errors": []
+        }
+      },
+      "probes": {
+        "b_rest": {
+          "room-draw-toggle": {
+            "status": "hit",
+            "box": [
+              417,
+              6,
+              40,
+              40
+            ]
+          },
+          "wall-tool-toggle": {
+            "status": "hit",
+            "box": [
+              198,
+              6,
+              40,
+              40
+            ]
+          },
+          "floor-paint-toggle": {
+            "status": "hit",
+            "box": [
+              278,
+              6,
+              40,
+              40
+            ]
+          },
+          "snap-unit-toggle": {
+            "status": "missing"
+          },
+          "more-menu-toggle": {
+            "status": "hit",
+            "box": [
+              772,
+              6,
+              40,
+              40
+            ]
+          }
+        },
+        "b_snap_in_view_popover": {
+          "snap-unit-toggle": {
+            "status": "hit",
+            "box": [
+              532,
+              59,
+              214,
+              36
+            ]
+          }
+        },
+        "f_cta": {
+          "buy-from-k1-sport": {
+            "status": "hit",
+            "box": [
+              517,
+              849,
+              287,
+              40
+            ]
+          },
+          "details-overlay-close": {
+            "status": "hit",
+            "box": [
+              764,
+              64,
+              40,
+              40
+            ]
+          }
+        },
+        "c_hud": {
+          "room-draw-finish-walls": {
+            "status": "hit",
+            "box": [
+              123,
+              852,
+              56,
+              40
+            ]
+          },
+          "room-draw-close": {
+            "status": "hit",
+            "box": [
+              187,
+              852,
+              91,
+              40
+            ]
+          },
+          "room-draw-cancel": {
+            "status": "hit",
+            "box": [
+              605,
+              852,
+              92,
+              40
+            ]
+          },
+          "snap-unit-stepper": {
+            "status": "zero-size"
+          },
+          "snap-unit-coarser": {
+            "status": "zero-size"
+          },
+          "snap-unit-finer": {
+            "status": "zero-size"
+          },
+          "room-draw-undo": {
+            "status": "hit",
+            "box": [
+              392,
+              852,
+              57,
+              40
+            ]
+          }
+        },
+        "e_palette": {
+          "floor-paint-outdoor-1m": {
+            "status": "hit",
+            "box": [
+              287,
+              173,
+              270,
+              36
+            ]
+          },
+          "floor-paint-palette": {
+            "status": "hit",
+            "box": [
+              287,
+              59,
+              270,
+              283
+            ]
+          },
+          "floor-paint-erase": {
+            "status": "hit",
+            "box": [
+              426,
+              266,
+              131,
+              36
+            ]
+          },
+          "floor-paint-scope": {
+            "status": "hit",
+            "box": [
+              287,
+              266,
+              131,
+              36
+            ]
+          }
+        },
+        "door": {
+          "door-options": {
+            "status": "hit",
+            "box": [
+              0,
+              52,
+              820,
+              40
+            ]
+          },
+          "door-flip-facing": {
+            "status": "hit",
+            "box": [
+              262,
+              59,
+              66,
+              28
+            ]
+          },
+          "door-flip-hand": {
+            "status": "hit",
+            "box": [
+              340,
+              59,
+              74,
+              28
+            ]
+          }
+        }
+      },
+      "errors": []
+    },
+    "1024": {
+      "states": {
+        "rest": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-rest-1024.png",
+          "header": {
+            "right": 1024,
+            "height": 53,
+            "count": 14,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 255,
+              "clientW": 255
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "header",
+              "el": "button[rooms-trigger]{Open rooms list}\"Room 1· 1\"",
+              "h": 40,
+              "w": 128
+            },
+            {
+              "surface": "header",
+              "el": "button[wall-tool-toggle]{Walls}\"Walls\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[door-tool-toggle]{Door}\"Door\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[floor-paint-toggle]{Paint}\"Paint\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[measure-tool-toggle]{Measure}\"Measure\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Box}\"Box\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[room-draw-toggle]\"WallsCustom\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Room}\"Room\"",
+              "h": 40,
+              "w": 73
+            },
+            {
+              "surface": "header",
+              "el": "button{View}\"View\"",
+              "h": 40,
+              "w": 68
+            },
+            {
+              "surface": "header",
+              "el": "a{Cart, 3 products}\"Cart3\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Request quote}\"Request quote\"",
+              "h": 40,
+              "w": 102
+            },
+            {
+              "surface": "header",
+              "el": "button[more-menu-toggle]{More}\"\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button{Reset view}\"Reset\"",
+              "h": 40,
+              "w": 80
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[share-render]{Share a picture of your room}\"Share\"",
+              "h": 40,
+              "w": 82
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[capture-screen]{Capture the full screen}\"Capture\"",
+              "h": 40,
+              "w": 94
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-products-button]{Clear products}\"Clear products\"",
+              "h": 40,
+              "w": 133
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-all-button]{Clear all}\"Clear all\"",
+              "h": 40,
+              "w": 96
+            },
+            {
+              "surface": "other",
+              "el": "button[cart-pill]{Open cart — 3 items, £2,931.78}\"3£2,931.78\"",
+              "h": 40,
+              "w": 144
+            },
+            {
+              "surface": "other",
+              "el": "button{Open keyboard shortcuts help}\"?\"",
+              "h": 40,
+              "w": 40
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 47,
+          "errors": []
+        },
+        "selected": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-selected-1024.png",
+          "header": {
+            "right": 1024,
+            "height": 53,
+            "count": 14,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 255,
+              "clientW": 255
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "header",
+              "el": "button[rooms-trigger]{Open rooms list}\"Room 1· 1\"",
+              "h": 40,
+              "w": 128
+            },
+            {
+              "surface": "header",
+              "el": "button[wall-tool-toggle]{Walls}\"Walls\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[door-tool-toggle]{Door}\"Door\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[floor-paint-toggle]{Paint}\"Paint\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[measure-tool-toggle]{Measure}\"Measure\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Box}\"Box\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[room-draw-toggle]\"WallsCustom\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Room}\"Room\"",
+              "h": 40,
+              "w": 73
+            },
+            {
+              "surface": "header",
+              "el": "button{View}\"View\"",
+              "h": 40,
+              "w": 68
+            },
+            {
+              "surface": "header",
+              "el": "a{Cart, 3 products}\"Cart3\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Request quote}\"Request quote\"",
+              "h": 40,
+              "w": 102
+            },
+            {
+              "surface": "header",
+              "el": "button[more-menu-toggle]{More}\"\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button{Reset view}\"Reset\"",
+              "h": 40,
+              "w": 80
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[share-render]{Share a picture of your room}\"Share\"",
+              "h": 40,
+              "w": 82
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[capture-screen]{Capture the full screen}\"Capture\"",
+              "h": 40,
+              "w": 94
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-products-button]{Clear products}\"Clear products\"",
+              "h": 40,
+              "w": 133
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-all-button]{Clear all}\"Clear all\"",
+              "h": 40,
+              "w": 96
+            },
+            {
+              "surface": "details",
+              "el": "button[details-overlay-close]{Close details}\"\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "details",
+              "el": "a[buy-from-k1-sport]\"Buy from K1-Sport →\"",
+              "h": 40,
+              "w": 287
+            },
+            {
+              "surface": "other",
+              "el": "button[cart-pill]{Open cart — 3 items, £2,931.78}\"3£2,931.78\"",
+              "h": 40,
+              "w": 144
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 56,
+          "errors": []
+        },
+        "wallpen": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-wallpen-1024.png",
+          "header": {
+            "right": 1024,
+            "height": 53,
+            "count": 14,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 255,
+              "clientW": 255
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "header",
+              "el": "button[rooms-trigger]{Open rooms list}\"Room 1· 1\"",
+              "h": 40,
+              "w": 128
+            },
+            {
+              "surface": "header",
+              "el": "button[wall-tool-toggle]{Walls}\"Walls\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[door-tool-toggle]{Door}\"Door\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[floor-paint-toggle]{Paint}\"Paint\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[measure-tool-toggle]{Measure}\"Measure\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Box}\"Box\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[room-draw-toggle]\"WallsCustom\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Room}\"Room\"",
+              "h": 40,
+              "w": 73
+            },
+            {
+              "surface": "header",
+              "el": "button{View}\"View\"",
+              "h": 40,
+              "w": 68
+            },
+            {
+              "surface": "header",
+              "el": "a{Cart, 3 products}\"Cart3\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Request quote}\"Request quote\"",
+              "h": 40,
+              "w": 102
+            },
+            {
+              "surface": "header",
+              "el": "button[more-menu-toggle]{More}\"\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button{Reset view}\"Reset\"",
+              "h": 40,
+              "w": 80
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[share-render]{Share a picture of your room}\"Share\"",
+              "h": 40,
+              "w": 82
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[capture-screen]{Capture the full screen}\"Capture\"",
+              "h": 40,
+              "w": 94
+            },
+            {
+              "surface": "draw-hud",
+              "el": "button[snap-unit-coarser]{Coarser unit}\"−\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "draw-hud",
+              "el": "button[snap-unit-finer]{Finer unit}\"+\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "draw-hud",
+              "el": "button[room-draw-finish-walls]\"Done\"",
+              "h": 40,
+              "w": 56
+            },
+            {
+              "surface": "draw-hud",
+              "el": "button[room-draw-close]\"Make room\"",
+              "h": 40,
+              "w": 91
+            },
+            {
+              "surface": "draw-hud",
+              "el": "button[room-draw-close-continue]\"Room + next\"",
+              "h": 40,
+              "w": 98
+            },
+            {
+              "surface": "draw-hud",
+              "el": "button[room-draw-undo]\"Undo\"",
+              "h": 40,
+              "w": 57
+            },
+            {
+              "surface": "draw-hud",
+              "el": "button[room-draw-cancel]\"Discard\"",
+              "h": 40,
+              "w": 92
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "snap-unit-stepperx2",
+            "snap-unit-coarserx2",
+            "snap-unit-currentx2",
+            "snap-unit-finerx2",
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 53,
+          "errors": []
+        },
+        "paint": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-paint-1024.png",
+          "header": {
+            "right": 1024,
+            "height": 53,
+            "count": 14,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 255,
+              "clientW": 255
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "header",
+              "el": "button[rooms-trigger]{Open rooms list}\"Room 1· 1\"",
+              "h": 40,
+              "w": 128
+            },
+            {
+              "surface": "header",
+              "el": "button[wall-tool-toggle]{Walls}\"Walls\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[door-tool-toggle]{Door}\"Door\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[floor-paint-toggle]{Paint}\"Paint\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[measure-tool-toggle]{Measure}\"Measure\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Box}\"Box\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[room-draw-toggle]\"WallsCustom\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Room}\"Room\"",
+              "h": 40,
+              "w": 73
+            },
+            {
+              "surface": "header",
+              "el": "button{View}\"View\"",
+              "h": 40,
+              "w": 68
+            },
+            {
+              "surface": "header",
+              "el": "a{Cart, 3 products}\"Cart3\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Request quote}\"Request quote\"",
+              "h": 40,
+              "w": 102
+            },
+            {
+              "surface": "header",
+              "el": "button[more-menu-toggle]{More}\"\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button{Reset view}\"Reset\"",
+              "h": 40,
+              "w": 80
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[share-render]{Share a picture of your room}\"Share\"",
+              "h": 40,
+              "w": 82
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[capture-screen]{Capture the full screen}\"Capture\"",
+              "h": 40,
+              "w": 94
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[floor-paint-hud]\"Paint on · Done\"",
+              "h": 40,
+              "w": 113
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-products-button]{Clear products}\"Clear products\"",
+              "h": 40,
+              "w": 133
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-all-button]{Clear all}\"Clear all\"",
+              "h": 40,
+              "w": 96
+            },
+            {
+              "surface": "other",
+              "el": "button[cart-pill]{Open cart — 3 items, £2,931.78}\"3£2,931.78\"",
+              "h": 40,
+              "w": 144
+            },
+            {
+              "surface": "other",
+              "el": "button{Open keyboard shortcuts help}\"?\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-gym-interlock]\"Gym Interlock Tile 92×920.92×0\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-eva-combat]\"EVA Combat Mat 1×1 m1×1 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-rubber-composite]\"Rubber Composite 50×500.5×0.5 \"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-outdoor-1m]\"Outdoor Rubber 1×1 m1×1 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-outdoor-50]\"Outdoor Rubber 50×500.5×0.5 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-scope]\"By tile\"",
+              "h": 36,
+              "w": 131
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-erase]\"Erase\"",
+              "h": 36,
+              "w": 131
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 56,
+          "errors": []
+        },
+        "door": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-door-1024.png",
+          "header": {
+            "right": 1024,
+            "height": 93,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 255,
+              "clientW": 255
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "header",
+              "el": "button[rooms-trigger]{Open rooms list}\"Room 1· 1\"",
+              "h": 40,
+              "w": 128
+            },
+            {
+              "surface": "header",
+              "el": "button[wall-tool-toggle]{Walls}\"Walls\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[door-tool-toggle]{Door}\"Door\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[floor-paint-toggle]{Paint}\"Paint\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[measure-tool-toggle]{Measure}\"Measure\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Box}\"Box\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[room-draw-toggle]\"WallsCustom\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Room}\"Room\"",
+              "h": 40,
+              "w": 73
+            },
+            {
+              "surface": "header",
+              "el": "button{View}\"View\"",
+              "h": 40,
+              "w": 68
+            },
+            {
+              "surface": "header",
+              "el": "a{Cart, 3 products}\"Cart3\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button{Request quote}\"Request quote\"",
+              "h": 40,
+              "w": 102
+            },
+            {
+              "surface": "header",
+              "el": "button[more-menu-toggle]{More}\"\"",
+              "h": 40,
+              "w": 40
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-door]\"door\"",
+              "h": 28,
+              "w": 44
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-doorway]\"doorway\"",
+              "h": 28,
+              "w": 69
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-window]\"window\"",
+              "h": 28,
+              "w": 64
+            },
+            {
+              "surface": "header",
+              "el": "button[door-flip-facing]\"Flip side\"",
+              "h": 28,
+              "w": 66
+            },
+            {
+              "surface": "header",
+              "el": "button[door-flip-hand]\"Flip hinge\"",
+              "h": 28,
+              "w": 74
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button{Reset view}\"Reset\"",
+              "h": 40,
+              "w": 80
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[share-render]{Share a picture of your room}\"Share\"",
+              "h": 40,
+              "w": 82
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[capture-screen]{Capture the full screen}\"Capture\"",
+              "h": 40,
+              "w": 94
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-products-button]{Clear products}\"Clear products\"",
+              "h": 40,
+              "w": 133
+            },
+            {
+              "surface": "canvas-overlay",
+              "el": "button[clear-all-button]{Clear all}\"Clear all\"",
+              "h": 40,
+              "w": 96
+            },
+            {
+              "surface": "other",
+              "el": "button[cart-pill]{Open cart — 3 items, £2,931.78}\"3£2,931.78\"",
+              "h": 40,
+              "w": 144
+            },
+            {
+              "surface": "other",
+              "el": "button{Open keyboard shortcuts help}\"?\"",
+              "h": 40,
+              "w": 40
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 53,
+          "errors": []
+        }
+      },
+      "probes": {
+        "b_rest": {
+          "room-draw-toggle": {
+            "status": "hit",
+            "box": [
+              417,
+              6,
+              40,
+              40
+            ]
+          },
+          "wall-tool-toggle": {
+            "status": "hit",
+            "box": [
+              198,
+              6,
+              40,
+              40
+            ]
+          },
+          "floor-paint-toggle": {
+            "status": "hit",
+            "box": [
+              278,
+              6,
+              40,
+              40
+            ]
+          },
+          "snap-unit-toggle": {
+            "status": "missing"
+          },
+          "more-menu-toggle": {
+            "status": "hit",
+            "box": [
+              976,
+              6,
+              40,
+              40
+            ]
+          }
+        },
+        "b_snap_in_view_popover": {
+          "snap-unit-toggle": {
+            "status": "hit",
+            "box": [
+              565,
+              59,
+              214,
+              36
+            ]
+          }
+        },
+        "f_cta": {
+          "buy-from-k1-sport": {
+            "status": "hit",
+            "box": [
+              721,
+              562,
+              287,
+              40
+            ]
+          },
+          "details-overlay-close": {
+            "status": "hit",
+            "box": [
+              968,
+              64,
+              40,
+              40
+            ]
+          }
+        },
+        "c_hud": {
+          "room-draw-finish-walls": {
+            "status": "hit",
+            "box": [
+              225,
+              621,
+              56,
+              40
+            ]
+          },
+          "room-draw-close": {
+            "status": "hit",
+            "box": [
+              289,
+              621,
+              91,
+              40
+            ]
+          },
+          "room-draw-cancel": {
+            "status": "hit",
+            "box": [
+              707,
+              621,
+              92,
+              40
+            ]
+          },
+          "snap-unit-stepper": {
+            "status": "zero-size"
+          },
+          "snap-unit-coarser": {
+            "status": "zero-size"
+          },
+          "snap-unit-finer": {
+            "status": "zero-size"
+          },
+          "room-draw-undo": {
+            "status": "hit",
+            "box": [
+              494,
+              621,
+              57,
+              40
+            ]
+          }
+        },
+        "e_palette": {
+          "floor-paint-outdoor-1m": {
+            "status": "hit",
+            "box": [
+              287,
+              173,
+              270,
+              36
+            ]
+          },
+          "floor-paint-palette": {
+            "status": "hit",
+            "box": [
+              287,
+              59,
+              270,
+              283
+            ]
+          },
+          "floor-paint-erase": {
+            "status": "hit",
+            "box": [
+              426,
+              266,
+              131,
+              36
+            ]
+          },
+          "floor-paint-scope": {
+            "status": "hit",
+            "box": [
+              287,
+              266,
+              131,
+              36
+            ]
+          }
+        },
+        "door": {
+          "door-options": {
+            "status": "hit",
+            "box": [
+              0,
+              52,
+              1024,
+              40
+            ]
+          },
+          "door-flip-facing": {
+            "status": "hit",
+            "box": [
+              262,
+              59,
+              66,
+              28
+            ]
+          },
+          "door-flip-hand": {
+            "status": "hit",
+            "box": [
+              340,
+              59,
+              74,
+              28
+            ]
+          }
+        }
+      },
+      "errors": []
+    },
+    "1280": {
+      "states": {
+        "rest": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-rest-1280.png",
+          "header": {
+            "right": 1280,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 377,
+              "clientW": 377
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 51,
+          "errors": []
+        },
+        "selected": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-selected-1280.png",
+          "header": {
+            "right": 1280,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 377,
+              "clientW": 377
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 60,
+          "errors": []
+        },
+        "wallpen": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-wallpen-1280.png",
+          "header": {
+            "right": 1280,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 377,
+              "clientW": 377
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "snap-unit-stepperx2",
+            "snap-unit-coarserx2",
+            "snap-unit-currentx2",
+            "snap-unit-finerx2",
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 57,
+          "errors": []
+        },
+        "paint": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-paint-1280.png",
+          "header": {
+            "right": 1280,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 377,
+              "clientW": 377
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-gym-interlock]\"Gym Interlock Tile 92×920.92×0\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-eva-combat]\"EVA Combat Mat 1×1 m1×1 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-rubber-composite]\"Rubber Composite 50×500.5×0.5 \"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-outdoor-1m]\"Outdoor Rubber 1×1 m1×1 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-outdoor-50]\"Outdoor Rubber 50×500.5×0.5 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-scope]\"By tile\"",
+              "h": 36,
+              "w": 131
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-erase]\"Erase\"",
+              "h": 36,
+              "w": 131
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 60,
+          "errors": []
+        },
+        "door": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-door-1280.png",
+          "header": {
+            "right": 1280,
+            "height": 93,
+            "count": 24,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 377,
+              "clientW": 377
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-door]\"door\"",
+              "h": 28,
+              "w": 44
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-doorway]\"doorway\"",
+              "h": 28,
+              "w": 69
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-window]\"window\"",
+              "h": 28,
+              "w": 64
+            },
+            {
+              "surface": "header",
+              "el": "button[door-flip-facing]\"Flip side\"",
+              "h": 28,
+              "w": 66
+            },
+            {
+              "surface": "header",
+              "el": "button[door-flip-hand]\"Flip hinge\"",
+              "h": 28,
+              "w": 74
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 57,
+          "errors": []
+        }
+      },
+      "probes": {
+        "b_rest": {
+          "room-draw-toggle": {
+            "status": "hit",
+            "box": [
+              551,
+              6,
+              40,
+              40
+            ]
+          },
+          "wall-tool-toggle": {
+            "status": "hit",
+            "box": [
+              198,
+              6,
+              69,
+              40
+            ]
+          },
+          "floor-paint-toggle": {
+            "status": "hit",
+            "box": [
+              334,
+              6,
+              68,
+              40
+            ]
+          },
+          "snap-unit-toggle": {
+            "status": "hit",
+            "box": [
+              753,
+              6,
+              73,
+              40
+            ]
+          },
+          "more-menu-toggle": {
+            "status": "hit",
+            "box": [
+              1232,
+              6,
+              40,
+              40
+            ]
+          }
+        },
+        "f_cta": {
+          "buy-from-k1-sport": {
+            "status": "hit",
+            "box": [
+              977,
+              594,
+              287,
+              40
+            ]
+          },
+          "details-overlay-close": {
+            "status": "hit",
+            "box": [
+              1224,
+              64,
+              40,
+              40
+            ]
+          }
+        },
+        "c_hud": {
+          "room-draw-finish-walls": {
+            "status": "hit",
+            "box": [
+              353,
+              653,
+              56,
+              40
+            ]
+          },
+          "room-draw-close": {
+            "status": "hit",
+            "box": [
+              417,
+              653,
+              91,
+              40
+            ]
+          },
+          "room-draw-cancel": {
+            "status": "hit",
+            "box": [
+              835,
+              653,
+              92,
+              40
+            ]
+          },
+          "snap-unit-stepper": {
+            "status": "zero-size"
+          },
+          "snap-unit-coarser": {
+            "status": "zero-size"
+          },
+          "snap-unit-finer": {
+            "status": "zero-size"
+          },
+          "room-draw-undo": {
+            "status": "hit",
+            "box": [
+              622,
+              653,
+              57,
+              40
+            ]
+          }
+        },
+        "e_palette": {
+          "floor-paint-outdoor-1m": {
+            "status": "hit",
+            "box": [
+              343,
+              173,
+              270,
+              36
+            ]
+          },
+          "floor-paint-palette": {
+            "status": "hit",
+            "box": [
+              343,
+              59,
+              270,
+              283
+            ]
+          },
+          "floor-paint-erase": {
+            "status": "hit",
+            "box": [
+              482,
+              266,
+              131,
+              36
+            ]
+          },
+          "floor-paint-scope": {
+            "status": "hit",
+            "box": [
+              343,
+              266,
+              131,
+              36
+            ]
+          }
+        },
+        "door": {
+          "door-options": {
+            "status": "hit",
+            "box": [
+              0,
+              52,
+              1280,
+              40
+            ]
+          },
+          "door-flip-facing": {
+            "status": "hit",
+            "box": [
+              262,
+              59,
+              66,
+              28
+            ]
+          },
+          "door-flip-hand": {
+            "status": "hit",
+            "box": [
+              340,
+              59,
+              74,
+              28
+            ]
+          }
+        }
+      },
+      "errors": []
+    },
+    "1366": {
+      "states": {
+        "rest": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-rest-1366.png",
+          "header": {
+            "right": 1366,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 463,
+              "clientW": 463
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 51,
+          "errors": []
+        },
+        "selected": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-selected-1366.png",
+          "header": {
+            "right": 1366,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 463,
+              "clientW": 463
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 60,
+          "errors": []
+        },
+        "wallpen": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-wallpen-1366.png",
+          "header": {
+            "right": 1366,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 463,
+              "clientW": 463
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "snap-unit-stepperx2",
+            "snap-unit-coarserx2",
+            "snap-unit-currentx2",
+            "snap-unit-finerx2",
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 57,
+          "errors": []
+        },
+        "paint": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-paint-1366.png",
+          "header": {
+            "right": 1366,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 463,
+              "clientW": 463
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-gym-interlock]\"Gym Interlock Tile 92×920.92×0\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-eva-combat]\"EVA Combat Mat 1×1 m1×1 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-rubber-composite]\"Rubber Composite 50×500.5×0.5 \"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-outdoor-1m]\"Outdoor Rubber 1×1 m1×1 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-outdoor-50]\"Outdoor Rubber 50×500.5×0.5 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-scope]\"By tile\"",
+              "h": 36,
+              "w": 131
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-erase]\"Erase\"",
+              "h": 36,
+              "w": 131
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 60,
+          "errors": []
+        },
+        "door": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-door-1366.png",
+          "header": {
+            "right": 1366,
+            "height": 93,
+            "count": 24,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 463,
+              "clientW": 463
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-door]\"door\"",
+              "h": 28,
+              "w": 44
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-doorway]\"doorway\"",
+              "h": 28,
+              "w": 69
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-window]\"window\"",
+              "h": 28,
+              "w": 64
+            },
+            {
+              "surface": "header",
+              "el": "button[door-flip-facing]\"Flip side\"",
+              "h": 28,
+              "w": 66
+            },
+            {
+              "surface": "header",
+              "el": "button[door-flip-hand]\"Flip hinge\"",
+              "h": 28,
+              "w": 74
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 57,
+          "errors": []
+        },
+        "pop-finish": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-pop-finish-1366.png",
+          "header": {
+            "right": 1366,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 463,
+              "clientW": 463
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-none]\"No floor finish\"",
+              "h": 36,
+              "w": 206
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-material-gym-interlock]\"Gym Interlock Tile 92×92\"",
+              "h": 36,
+              "w": 206
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-material-eva-combat]\"EVA Combat Mat 1×1 m\"",
+              "h": 36,
+              "w": 206
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-material-rubber-composite]\"Rubber Composite 50×50\"",
+              "h": 36,
+              "w": 206
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-material-outdoor-1m]\"Outdoor Rubber 1×1 m\"",
+              "h": 36,
+              "w": 206
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-material-outdoor-50]\"Outdoor Rubber 50×50\"",
+              "h": 36,
+              "w": 206
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-material-epdm-roll]\"EPDM Rubber Roll 6 mm\"",
+              "h": 36,
+              "w": 206
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 59,
+          "errors": []
+        },
+        "pop-storeys": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-pop-storeys-1366.png",
+          "header": {
+            "right": 1366,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 463,
+              "clientW": 463
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "popover",
+              "el": "button[level-ground]\"Ground floor1 rm\"",
+              "h": 36,
+              "w": 206
+            },
+            {
+              "surface": "popover",
+              "el": "button[level-add]\"+ Add floor above\"",
+              "h": 36,
+              "w": 206
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 54,
+          "errors": []
+        },
+        "pop-plot": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-pop-plot-1366.png",
+          "header": {
+            "right": 1366,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 463,
+              "clientW": 463
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "popover",
+              "el": "button[land-apply]\"Lock plot\"",
+              "h": 36,
+              "w": 71
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 55,
+          "errors": []
+        },
+        "pop-snap": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-pop-snap-1366.png",
+          "header": {
+            "right": 1366,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 463,
+              "clientW": 463
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "popover",
+              "el": "button[snap-unit-cm1]\"1 cm1\"",
+              "h": 36,
+              "w": 182
+            },
+            {
+              "surface": "popover",
+              "el": "button[snap-unit-cm10]\"10 cm2\"",
+              "h": 36,
+              "w": 182
+            },
+            {
+              "surface": "popover",
+              "el": "button[snap-unit-quarter]\"0.25 m3\"",
+              "h": 36,
+              "w": 182
+            },
+            {
+              "surface": "popover",
+              "el": "button[snap-unit-full]\"0.5 m4\"",
+              "h": 36,
+              "w": 182
+            },
+            {
+              "surface": "popover",
+              "el": "button[snap-unit-m1]\"1 m5\"",
+              "h": 36,
+              "w": 182
+            },
+            {
+              "surface": "popover",
+              "el": "button[snap-unit-m10]\"10 m6\"",
+              "h": 36,
+              "w": 182
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 58,
+          "errors": []
+        },
+        "pop-more": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-pop-more-1366.png",
+          "header": {
+            "right": 1366,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 463,
+              "clientW": 463
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "popover",
+              "el": "button\"New\"",
+              "h": 36,
+              "w": 190
+            },
+            {
+              "surface": "popover",
+              "el": "button\"Save as…\"",
+              "h": 36,
+              "w": 190
+            },
+            {
+              "surface": "popover",
+              "el": "button\"Load0\"",
+              "h": 36,
+              "w": 190
+            },
+            {
+              "surface": "popover",
+              "el": "a\"Shop\"",
+              "h": 36,
+              "w": 190
+            },
+            {
+              "surface": "popover",
+              "el": "button{Help}\"Help\"",
+              "h": 36,
+              "w": 190
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 51,
+          "errors": []
+        }
+      },
+      "probes": {
+        "b_rest": {
+          "room-draw-toggle": {
+            "status": "hit",
+            "box": [
+              551,
+              6,
+              40,
+              40
+            ]
+          },
+          "wall-tool-toggle": {
+            "status": "hit",
+            "box": [
+              198,
+              6,
+              69,
+              40
+            ]
+          },
+          "floor-paint-toggle": {
+            "status": "hit",
+            "box": [
+              334,
+              6,
+              68,
+              40
+            ]
+          },
+          "snap-unit-toggle": {
+            "status": "hit",
+            "box": [
+              753,
+              6,
+              73,
+              40
+            ]
+          },
+          "more-menu-toggle": {
+            "status": "hit",
+            "box": [
+              1318,
+              6,
+              40,
+              40
+            ]
+          }
+        },
+        "f_cta": {
+          "buy-from-k1-sport": {
+            "status": "hit",
+            "box": [
+              1063,
+              562,
+              287,
+              40
+            ]
+          },
+          "details-overlay-close": {
+            "status": "hit",
+            "box": [
+              1310,
+              64,
+              40,
+              40
+            ]
+          }
+        },
+        "c_hud": {
+          "room-draw-finish-walls": {
+            "status": "hit",
+            "box": [
+              396,
+              621,
+              56,
+              40
+            ]
+          },
+          "room-draw-close": {
+            "status": "hit",
+            "box": [
+              460,
+              621,
+              91,
+              40
+            ]
+          },
+          "room-draw-cancel": {
+            "status": "hit",
+            "box": [
+              878,
+              621,
+              92,
+              40
+            ]
+          },
+          "snap-unit-stepper": {
+            "status": "zero-size"
+          },
+          "snap-unit-coarser": {
+            "status": "zero-size"
+          },
+          "snap-unit-finer": {
+            "status": "zero-size"
+          },
+          "room-draw-undo": {
+            "status": "hit",
+            "box": [
+              665,
+              621,
+              57,
+              40
+            ]
+          }
+        },
+        "e_palette": {
+          "floor-paint-outdoor-1m": {
+            "status": "hit",
+            "box": [
+              343,
+              173,
+              270,
+              36
+            ]
+          },
+          "floor-paint-palette": {
+            "status": "hit",
+            "box": [
+              343,
+              59,
+              270,
+              283
+            ]
+          },
+          "floor-paint-erase": {
+            "status": "hit",
+            "box": [
+              482,
+              266,
+              131,
+              36
+            ]
+          },
+          "floor-paint-scope": {
+            "status": "hit",
+            "box": [
+              343,
+              266,
+              131,
+              36
+            ]
+          }
+        },
+        "door": {
+          "door-options": {
+            "status": "hit",
+            "box": [
+              0,
+              52,
+              1366,
+              40
+            ]
+          },
+          "door-flip-facing": {
+            "status": "hit",
+            "box": [
+              262,
+              59,
+              66,
+              28
+            ]
+          },
+          "door-flip-hand": {
+            "status": "hit",
+            "box": [
+              340,
+              59,
+              74,
+              28
+            ]
+          }
+        },
+        "pop_finish": {
+          "floor-tool-toggle": {
+            "status": "hit",
+            "box": [
+              600,
+              6,
+              40,
+              40
+            ]
+          },
+          "floor-picker": {
+            "status": "hit",
+            "box": [
+              609,
+              59,
+              206,
+              264
+            ]
+          }
+        },
+        "pop_storeys": {
+          "levels-toggle": {
+            "status": "hit",
+            "box": [
+              648,
+              6,
+              40,
+              40
+            ]
+          },
+          "levels-picker": {
+            "status": "hit",
+            "box": [
+              657,
+              59,
+              206,
+              78
+            ]
+          }
+        },
+        "pop_plot": {
+          "land-toggle": {
+            "status": "hit",
+            "box": [
+              696,
+              6,
+              40,
+              40
+            ]
+          },
+          "land-picker": {
+            "status": "hit",
+            "box": [
+              705,
+              59,
+              254,
+              118
+            ]
+          }
+        },
+        "pop_snap": {
+          "snap-unit-toggle": {
+            "status": "hit",
+            "box": [
+              753,
+              6,
+              73,
+              40
+            ]
+          },
+          "snap-unit-picker": {
+            "status": "hit",
+            "box": [
+              762,
+              59,
+              182,
+              226
+            ]
+          }
+        },
+        "pop_more": {
+          "more-menu-toggle": {
+            "status": "hit",
+            "box": [
+              1318,
+              6,
+              40,
+              40
+            ]
+          }
+        },
+        "pop_more_rows": [
+          "New:36px",
+          "Save as…:36px",
+          "Load0:36px",
+          "Shop:36px",
+          "Help:36px"
+        ]
+      },
+      "errors": []
+    },
+    "1536": {
+      "states": {
+        "rest": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-rest-1536.png",
+          "header": {
+            "right": 1536,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 512,
+              "clientW": 512
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 51,
+          "errors": []
+        },
+        "selected": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-selected-1536.png",
+          "header": {
+            "right": 1536,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 512,
+              "clientW": 512
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 60,
+          "errors": []
+        },
+        "wallpen": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-wallpen-1536.png",
+          "header": {
+            "right": 1536,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 512,
+              "clientW": 512
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "snap-unit-stepperx2",
+            "snap-unit-coarserx2",
+            "snap-unit-currentx2",
+            "snap-unit-finerx2",
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 57,
+          "errors": []
+        },
+        "paint": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-paint-1536.png",
+          "header": {
+            "right": 1536,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 512,
+              "clientW": 512
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-gym-interlock]\"Gym Interlock Tile 92×920.92×0\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-eva-combat]\"EVA Combat Mat 1×1 m1×1 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-rubber-composite]\"Rubber Composite 50×500.5×0.5 \"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-outdoor-1m]\"Outdoor Rubber 1×1 m1×1 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-outdoor-50]\"Outdoor Rubber 50×500.5×0.5 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-scope]\"By tile\"",
+              "h": 36,
+              "w": 131
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-erase]\"Erase\"",
+              "h": 36,
+              "w": 131
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 60,
+          "errors": []
+        },
+        "door": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-door-1536.png",
+          "header": {
+            "right": 1536,
+            "height": 93,
+            "count": 24,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 512,
+              "clientW": 512
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-door]\"door\"",
+              "h": 28,
+              "w": 44
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-doorway]\"doorway\"",
+              "h": 28,
+              "w": 69
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-window]\"window\"",
+              "h": 28,
+              "w": 64
+            },
+            {
+              "surface": "header",
+              "el": "button[door-flip-facing]\"Flip side\"",
+              "h": 28,
+              "w": 66
+            },
+            {
+              "surface": "header",
+              "el": "button[door-flip-hand]\"Flip hinge\"",
+              "h": 28,
+              "w": 74
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 57,
+          "errors": []
+        }
+      },
+      "probes": {
+        "b_rest": {
+          "room-draw-toggle": {
+            "status": "hit",
+            "box": [
+              599,
+              6,
+              83,
+              40
+            ]
+          },
+          "wall-tool-toggle": {
+            "status": "hit",
+            "box": [
+              206,
+              6,
+              69,
+              40
+            ]
+          },
+          "floor-paint-toggle": {
+            "status": "hit",
+            "box": [
+              342,
+              6,
+              68,
+              40
+            ]
+          },
+          "snap-unit-toggle": {
+            "status": "hit",
+            "box": [
+              952,
+              6,
+              73,
+              40
+            ]
+          },
+          "more-menu-toggle": {
+            "status": "hit",
+            "box": [
+              1488,
+              6,
+              40,
+              40
+            ]
+          }
+        },
+        "f_cta": {
+          "buy-from-k1-sport": {
+            "status": "hit",
+            "box": [
+              1233,
+              658,
+              287,
+              40
+            ]
+          },
+          "details-overlay-close": {
+            "status": "hit",
+            "box": [
+              1480,
+              64,
+              40,
+              40
+            ]
+          }
+        },
+        "c_hud": {
+          "room-draw-finish-walls": {
+            "status": "hit",
+            "box": [
+              481,
+              717,
+              56,
+              40
+            ]
+          },
+          "room-draw-close": {
+            "status": "hit",
+            "box": [
+              545,
+              717,
+              91,
+              40
+            ]
+          },
+          "room-draw-cancel": {
+            "status": "hit",
+            "box": [
+              963,
+              717,
+              92,
+              40
+            ]
+          },
+          "snap-unit-stepper": {
+            "status": "zero-size"
+          },
+          "snap-unit-coarser": {
+            "status": "zero-size"
+          },
+          "snap-unit-finer": {
+            "status": "zero-size"
+          },
+          "room-draw-undo": {
+            "status": "hit",
+            "box": [
+              750,
+              717,
+              57,
+              40
+            ]
+          }
+        },
+        "e_palette": {
+          "floor-paint-outdoor-1m": {
+            "status": "hit",
+            "box": [
+              351,
+              173,
+              270,
+              36
+            ]
+          },
+          "floor-paint-palette": {
+            "status": "hit",
+            "box": [
+              351,
+              59,
+              270,
+              283
+            ]
+          },
+          "floor-paint-erase": {
+            "status": "hit",
+            "box": [
+              490,
+              266,
+              131,
+              36
+            ]
+          },
+          "floor-paint-scope": {
+            "status": "hit",
+            "box": [
+              351,
+              266,
+              131,
+              36
+            ]
+          }
+        },
+        "door": {
+          "door-options": {
+            "status": "hit",
+            "box": [
+              0,
+              52,
+              1536,
+              40
+            ]
+          },
+          "door-flip-facing": {
+            "status": "hit",
+            "box": [
+              262,
+              59,
+              66,
+              28
+            ]
+          },
+          "door-flip-hand": {
+            "status": "hit",
+            "box": [
+              340,
+              59,
+              74,
+              28
+            ]
+          }
+        }
+      },
+      "errors": []
+    },
+    "1920": {
+      "states": {
+        "rest": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-rest-1920.png",
+          "header": {
+            "right": 1920,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 863,
+              "clientW": 863
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 51,
+          "errors": []
+        },
+        "selected": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-selected-1920.png",
+          "header": {
+            "right": 1920,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 863,
+              "clientW": 863
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "details",
+              "el": "a[details-overlay]\"https://www.k1-sport.com/shop-\"",
+              "h": 18,
+              "w": 287
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 60,
+          "errors": []
+        },
+        "wallpen": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-wallpen-1920.png",
+          "header": {
+            "right": 1920,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 863,
+              "clientW": 863
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "snap-unit-stepperx2",
+            "snap-unit-coarserx2",
+            "snap-unit-currentx2",
+            "snap-unit-finerx2",
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 57,
+          "errors": []
+        },
+        "paint": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-paint-1920.png",
+          "header": {
+            "right": 1920,
+            "height": 53,
+            "count": 19,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 863,
+              "clientW": 863
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-gym-interlock]\"Gym Interlock Tile 92×920.92×0\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-eva-combat]\"EVA Combat Mat 1×1 m1×1 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-rubber-composite]\"Rubber Composite 50×500.5×0.5 \"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-outdoor-1m]\"Outdoor Rubber 1×1 m1×1 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-outdoor-50]\"Outdoor Rubber 50×500.5×0.5 m\"",
+              "h": 36,
+              "w": 270
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-scope]\"By tile\"",
+              "h": 36,
+              "w": 131
+            },
+            {
+              "surface": "popover",
+              "el": "button[floor-paint-erase]\"Erase\"",
+              "h": 36,
+              "w": 131
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 60,
+          "errors": []
+        },
+        "door": {
+          "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\toolbar-2026-08-29/gate-door-1920.png",
+          "header": {
+            "right": 1920,
+            "height": 93,
+            "count": 24,
+            "clipped": [],
+            "overflowX": false,
+            "railScroll": {
+              "scrollW": 863,
+              "clientW": 863
+            }
+          },
+          "targets": [
+            {
+              "surface": "header",
+              "el": "a\"\"",
+              "h": 36,
+              "w": 36
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-door]\"door\"",
+              "h": 28,
+              "w": 44
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-doorway]\"doorway\"",
+              "h": 28,
+              "w": 69
+            },
+            {
+              "surface": "header",
+              "el": "button[door-kind-window]\"window\"",
+              "h": 28,
+              "w": 64
+            },
+            {
+              "surface": "header",
+              "el": "button[door-flip-facing]\"Flip side\"",
+              "h": 28,
+              "w": 66
+            },
+            {
+              "surface": "header",
+              "el": "button[door-flip-hand]\"Flip hinge\"",
+              "h": 28,
+              "w": 74
+            }
+          ],
+          "smallText": [],
+          "contrast": [],
+          "dupIds": [
+            "sims-thumbx33"
+          ],
+          "hits": {},
+          "testidCount": 57,
+          "errors": []
+        }
+      },
+      "probes": {
+        "b_rest": {
+          "room-draw-toggle": {
+            "status": "hit",
+            "box": [
+              599,
+              6,
+              83,
+              40
+            ]
+          },
+          "wall-tool-toggle": {
+            "status": "hit",
+            "box": [
+              206,
+              6,
+              69,
+              40
+            ]
+          },
+          "floor-paint-toggle": {
+            "status": "hit",
+            "box": [
+              342,
+              6,
+              68,
+              40
+            ]
+          },
+          "snap-unit-toggle": {
+            "status": "hit",
+            "box": [
+              952,
+              6,
+              109,
+              40
+            ]
+          },
+          "more-menu-toggle": {
+            "status": "hit",
+            "box": [
+              1872,
+              6,
+              40,
+              40
+            ]
+          }
+        },
+        "f_cta": {
+          "buy-from-k1-sport": {
+            "status": "hit",
+            "box": [
+              1617,
+              874,
+              287,
+              40
+            ]
+          },
+          "details-overlay-close": {
+            "status": "hit",
+            "box": [
+              1864,
+              64,
+              40,
+              40
+            ]
+          }
+        },
+        "c_hud": {
+          "room-draw-finish-walls": {
+            "status": "hit",
+            "box": [
+              673,
+              933,
+              56,
+              40
+            ]
+          },
+          "room-draw-close": {
+            "status": "hit",
+            "box": [
+              737,
+              933,
+              91,
+              40
+            ]
+          },
+          "room-draw-cancel": {
+            "status": "hit",
+            "box": [
+              1155,
+              933,
+              92,
+              40
+            ]
+          },
+          "snap-unit-stepper": {
+            "status": "zero-size"
+          },
+          "snap-unit-coarser": {
+            "status": "zero-size"
+          },
+          "snap-unit-finer": {
+            "status": "zero-size"
+          },
+          "room-draw-undo": {
+            "status": "hit",
+            "box": [
+              942,
+              933,
+              57,
+              40
+            ]
+          }
+        },
+        "e_palette": {
+          "floor-paint-outdoor-1m": {
+            "status": "hit",
+            "box": [
+              351,
+              173,
+              270,
+              36
+            ]
+          },
+          "floor-paint-palette": {
+            "status": "hit",
+            "box": [
+              351,
+              59,
+              270,
+              283
+            ]
+          },
+          "floor-paint-erase": {
+            "status": "hit",
+            "box": [
+              490,
+              266,
+              131,
+              36
+            ]
+          },
+          "floor-paint-scope": {
+            "status": "hit",
+            "box": [
+              351,
+              266,
+              131,
+              36
+            ]
+          }
+        },
+        "door": {
+          "door-options": {
+            "status": "hit",
+            "box": [
+              0,
+              52,
+              1920,
+              40
+            ]
+          },
+          "door-flip-facing": {
+            "status": "hit",
+            "box": [
+              262,
+              59,
+              66,
+              28
+            ]
+          },
+          "door-flip-hand": {
+            "status": "hit",
+            "box": [
+              340,
+              59,
+              74,
+              28
+            ]
+          }
+        }
+      },
+      "errors": []
+    }
+  }
+}

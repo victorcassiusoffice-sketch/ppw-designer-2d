@@ -12,14 +12,38 @@
  * drag releases at the drop point and closes the popup. While dragging,
  * the popup fades + goes pointer-transparent so the release lands on the
  * floor beneath it.
+ *
+ * Chrome register (toolbar contract 2026-08-29): a chrome card (CHROME_BG +
+ * CHROME_RIM, radius 12, popover shadow) carrying the SAME control recipes
+ * as CartStrip / DetailsPanel — primary = ink fill + paper, Cancel = chrome
+ * + rim — so the sheet is one control set with the rest of the designer.
  */
 import { useState } from 'react';
 import type { Product } from '../../data/products.schema';
 import { productImageUrl } from '../../data/products';
+import { CHROME_BG, CHROME_RIM, CHROME_TEXT } from '../../designer/blueprintTheme';
 import { useDragToPlace } from './useDragToPlace';
 
-const NAVY = '#232C3B';
-const CREAM = '#F5EBD7';
+// ---------------------------------------------------------------------------
+// Chrome recipe (toolbar contract 2026-08-29) — same strings as CartStrip /
+// DetailsPanel. h-11 = the 44 px phone control height.
+// ---------------------------------------------------------------------------
+const CTRL_BASE =
+  'inline-flex h-11 md:h-10 items-center justify-center rounded-lg px-3 text-[12px] font-medium leading-none ' +
+  'transition-colors duration-[120ms] ease-out motion-reduce:transition-none ' +
+  'focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] ' +
+  'active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] disabled:opacity-40';
+/** Rest: chrome ground + rim; hover: CHROME_HOVER_BG + darker rim. */
+const CTRL_REST =
+  `${CTRL_BASE} border border-ppw-rim bg-ppw-chrome text-ppw-charcoal ` +
+  'hover:bg-[#f3f1ec] hover:border-[rgba(42,41,38,0.35)]';
+/** Ink primary: the sheet's main action. */
+const CTRL_INK = `${CTRL_BASE} border border-ppw-inkDeep bg-ppw-inkDeep font-semibold text-ppw-paper hover:brightness-110`;
+/** Caption: 11/600 uppercase .06em — the smallest text the contract allows. */
+const CAPTION = 'text-[11px] font-semibold uppercase tracking-[0.06em] text-ppw-charcoal';
+
+/** Popover shadow from the contract (12 px blur, ink at 18 %). */
+const POPOVER_SHADOW = '0 12px 32px rgba(42,41,38,0.18)';
 
 function formatPrice(p: Product): string {
   const { value, currency } = p.price;
@@ -74,7 +98,8 @@ export function MobileProductPopup({
           // z above the Gaming Layer floating toolbars (ModeStrip 700,
           // EngineToggle 720) so the modal + its CTAs are never obscured.
           zIndex: 1000,
-          background: dragging ? 'transparent' : 'rgba(14,14,16,0.55)',
+          // Ink scrim (the paper theme's charcoal, not the old near-black).
+          background: dragging ? 'transparent' : 'rgba(42,41,38,0.45)',
           pointerEvents: dragging ? 'none' : 'auto',
           opacity: dragging ? 0.25 : 1,
           transition: 'opacity 120ms ease',
@@ -84,13 +109,18 @@ export function MobileProductPopup({
         }}
       >
         <div
-          className="flex w-full max-w-[340px] flex-col overflow-hidden rounded-2xl shadow-2xl"
-          style={{ background: '#fff', border: `1px solid ${NAVY}22` }}
+          className="flex w-full max-w-[340px] flex-col overflow-hidden rounded-xl"
+          style={{
+            background: CHROME_BG,
+            border: `1px solid ${CHROME_RIM}`,
+            boxShadow: POPOVER_SHADOW,
+          }}
         >
-          {/* Bigger image — also the drag handle. */}
+          {/* Bigger image — also the drag handle. Paper ground under the
+              product so a white-background photo still reads as a card. */}
           <div
-            className="ppw-no-callout relative flex items-center justify-center"
-            style={{ background: '#F8F5EF', height: 200, touchAction: 'none' }}
+            className="ppw-no-callout relative flex items-center justify-center border-b border-ppw-rim bg-ppw-paper"
+            style={{ height: 200, touchAction: 'none' }}
             onPointerDown={(e) => start(e, product.id, imgUrl)}
             // Bug 1 (2026-05-28) — drag the popup image onto the floor; don't
             // let a long-press open the native "Save image" callout instead.
@@ -104,37 +134,34 @@ export function MobileProductPopup({
             />
             {product.eco_certified && (
               <span
-                className="absolute left-3 top-3 rounded-full px-2 py-0.5 text-[10px] font-bold"
-                style={{ background: '#10653620', color: '#0b5a2e', border: '1px solid #0b5a2e55' }}
+                className={`absolute left-3 top-3 rounded-full border border-ppw-rim bg-ppw-chrome px-2 py-0.5 ${CAPTION}`}
               >
                 ✓ Eco-certified
               </span>
             )}
-            <span className="absolute bottom-2 right-3 text-[10px] text-ppw-slate/70">
-              drag onto the floor ↘
-            </span>
+            <span className={`absolute bottom-2 right-3 ${CAPTION}`}>drag onto the floor ↘</span>
           </div>
 
           <div className="flex flex-col gap-2 px-4 py-3">
             <div className="flex items-start justify-between gap-2">
-              <h3 className="text-base font-semibold leading-tight" style={{ color: NAVY }}>
+              <h3 className="text-base font-semibold leading-tight" style={{ color: CHROME_TEXT }}>
                 {product.name}
               </h3>
-              <span className="shrink-0 text-sm font-bold" style={{ color: '#0F766E' }}>
+              <span className="shrink-0 text-[14px] font-semibold" style={{ color: CHROME_TEXT }}>
                 {formatPrice(product)}
               </span>
             </div>
-            <p className="text-[11px] font-medium uppercase tracking-wide text-ppw-slate">
+            <p className={CAPTION}>
               {formatDims(product)} · {product.supplier}
             </p>
             {desc && (
-              <p className="text-xs leading-snug text-ppw-slate">
+              <p className="text-xs leading-snug text-ppw-charcoal">
                 {shownDesc}
                 {truncated && (
                   <button
                     type="button"
                     onClick={() => setExpanded((v) => !v)}
-                    className="ml-1 font-semibold text-ppw-teal underline"
+                    className="ml-1 font-semibold text-ppw-inkDeep underline"
                   >
                     {expanded ? 'less' : 'more'}
                   </button>
@@ -147,17 +174,11 @@ export function MobileProductPopup({
                 type="button"
                 data-testid="popup-add-to-room"
                 onClick={() => onAdd(product.id)}
-                className="flex-1 rounded-lg px-3 py-2.5 text-sm font-bold"
-                style={{ background: NAVY, color: CREAM }}
+                className={`flex-1 ${CTRL_INK}`}
               >
                 + Add to room
               </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="rounded-lg px-3 py-2.5 text-sm font-semibold"
-                style={{ background: CREAM, color: NAVY, border: `1px solid ${NAVY}33` }}
-              >
+              <button type="button" onClick={onClose} className={CTRL_REST}>
                 Cancel
               </button>
             </div>

@@ -5,20 +5,33 @@
  * with categorised shortcut rows. Esc dismisses.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useDrawProgressStore } from '../store/drawProgressStore';
+import { useDesignStore } from '../store/designStore';
+import {
+  CHROME_BG,
+  CHROME_RIM,
+  CHROME_TEXT,
+  CHROME_TEXT_2,
+  CHROME_ACTIVE_BG,
+  CHROME_ACTIVE_TEXT,
+} from './blueprintTheme';
 
 export interface ShortcutRow {
   keys: string;
   label: string;
 }
 
-export const DEFAULT_SHORTCUTS: Array<{ category: string; rows: ShortcutRow[] }> = [
+// Module-private (repair round 1, 2026-08-29): it was exported alongside the
+// components, which tripped react-refresh/only-export-components; nothing
+// outside this file imports it.
+const DEFAULT_SHORTCUTS: Array<{ category: string; rows: ShortcutRow[] }> = [
   {
     category: 'Walls',
     rows: [
-      { keys: 'Click', label: 'Drop a wall point (+ Walls / Custom shape)' },
-      { keys: 'Enter / click first point', label: 'Close the shape as a room' },
-      { keys: 'Alt+Enter / Finish walls', label: 'Keep the run as open walls' },
+      { keys: 'Click', label: 'Drop a wall point (Walls, or Box | Custom)' },
+      { keys: 'Enter / click first point', label: 'Close the shape as a room (Make room)' },
+      { keys: 'Alt+Enter / Done', label: 'Keep the run as open walls' },
       { keys: 'Shift+Enter', label: 'Close the room and keep drawing' },
       { keys: '+ / − (while drawing)', label: 'Finer / coarser unit' },
       { keys: '[ / ]', label: 'Coarser / finer unit, any time' },
@@ -50,10 +63,11 @@ export const DEFAULT_SHORTCUTS: Array<{ category: string; rows: ShortcutRow[] }>
   {
     category: 'Building',
     rows: [
-      { keys: 'PageUp / PageDown', label: 'Go up / down one floor' },
-      { keys: 'Floors button', label: 'Add, rename or remove storeys' },
-      { keys: 'Land button', label: 'Lock the plot size (scale + capacity)' },
-      { keys: 'M', label: 'Measure tool — retype a wall length' },
+      { keys: 'PageUp / PageDown', label: 'Go up / down one storey' },
+      { keys: 'Storeys', label: 'Add, rename or remove storeys' },
+      { keys: 'Plot', label: 'Lock the plot size (scale + capacity)' },
+      { keys: 'Door · Paint · Finish', label: 'Cut a door · paint floor tiles · pick the room\'s floor finish' },
+      { keys: 'M', label: 'Measure — retype a wall length' },
       { keys: 'H / E / J', label: 'Hand · eyedropper · sledgehammer' },
     ],
   },
@@ -66,6 +80,7 @@ export const DEFAULT_SHORTCUTS: Array<{ category: string; rows: ShortcutRow[] }>
       { keys: 'Ctrl+Z', label: 'Undo (removes both visual + cart line)' },
       { keys: 'Ctrl+Y / Ctrl+Shift+Z', label: 'Redo' },
       { keys: 'Shift+P / Shift+X', label: 'Clear products / clear all' },
+      { keys: 'More', label: 'New · Save as… · Load · Shop · Help' },
     ],
   },
 ];
@@ -94,7 +109,7 @@ export function HelpOverlay(props: HelpOverlayProps): JSX.Element | null {
       aria-label="Keyboard shortcuts"
       style={{
         position: 'fixed', inset: 0, zIndex: 950,
-        background: 'rgba(14,14,16,0.7)',
+        background: 'rgba(42,41,38,0.55)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: 24,
       }}
@@ -103,32 +118,50 @@ export function HelpOverlay(props: HelpOverlayProps): JSX.Element | null {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: '#F5EFE6',
-          color: '#0E0E10',
+          background: CHROME_BG,
+          color: CHROME_TEXT,
           width: '100%',
           maxWidth: 560,
           padding: 24,
           borderRadius: 12,
-          border: '1px solid #C0A67E',
+          border: `1px solid ${CHROME_RIM}`,
+          boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
           maxHeight: '80vh',
           overflowY: 'auto',
         }}
       >
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 16 }}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Designer shortcuts</h2>
-          <button type="button" onClick={props.onClose} aria-label="Close help" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 18 }}>×</button>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Designer shortcuts</h2>
+          <button
+            type="button"
+            onClick={props.onClose}
+            aria-label="Close help"
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 8,
+              background: CHROME_BG,
+              border: `1px solid ${CHROME_RIM}`,
+              color: CHROME_TEXT,
+              cursor: 'pointer',
+              fontSize: 18,
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </button>
         </header>
 
         {DEFAULT_SHORTCUTS.map((cat) => (
           <section key={cat.category} style={{ marginBottom: 18 }}>
-            <h3 style={{ margin: '0 0 6px', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#C0A67E' }}>
+            <h3 style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: CHROME_TEXT_2 }}>
               {cat.category}
             </h3>
             <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
               {cat.rows.map((r) => (
-                <li key={r.keys} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(14,14,16,0.08)', fontSize: 13 }}>
-                  <code style={{ background: 'rgba(192,166,126,0.18)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace' }}>{r.keys}</code>
-                  <span style={{ color: 'rgba(14,14,16,0.7)' }}>{r.label}</span>
+                <li key={r.keys} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, minHeight: 36, alignItems: 'center', padding: '4px 0', borderBottom: `1px solid ${CHROME_RIM}`, fontSize: 13 }}>
+                  <code style={{ background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT, padding: '2px 8px', borderRadius: 6, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>{r.keys}</code>
+                  <span style={{ color: CHROME_TEXT_2, textAlign: 'right' }}>{r.label}</span>
                 </li>
               ))}
             </ul>
@@ -140,38 +173,81 @@ export function HelpOverlay(props: HelpOverlayProps): JSX.Element | null {
 }
 
 /**
- * Standalone "?" icon launcher that mounts at the top-right; an
- * alternative to wiring into the TopBar overflow.
+ * Standalone "?" launcher. Toolbar pass (2026-08-29): it used to be pinned
+ * top-right at 204 px / z 700, where it covered the floor-paint chip and
+ * floated over the open phone sheet. It now sits bottom-right, directly
+ * ABOVE the cart pill (which is 44 px tall at
+ * `1rem + dock + toolbar`; 56 px clears it with a 12 px gap), in the chrome
+ * register, and below every sheet (z 35 > the pill's 30, < the sheets' 40+).
+ * While the wall pen is open the HUD owns the bottom band (the cart pill and
+ * Clear pills step aside too), so the launcher steps aside with them — on a
+ * 390 px phone it would otherwise sit on the HUD's Discard button. Likewise
+ * while an item is selected: the DetailsPanel overlay owns the right edge
+ * on desktop (its Buy button sits exactly here) and the selection cluster
+ * owns the phone; `?` still opens the same dialog at any time.
+ *
+ * Polish (2026-08-29): while an item is selected on md+ the launcher stays
+ * MOUNTED and steps LEFT of the 20 rem DetailsPanel (`right: 20rem + 1rem`)
+ * so it never covers the panel; below md the selection sheet owns the bottom
+ * of the phone, so there it still unmounts. Hidden while the pen is open.
  */
-export function HelpLauncherIcon({ onOpen }: { onOpen: () => void }): JSX.Element {
+export function HelpLauncherIcon({ onOpen }: { onOpen: () => void }): JSX.Element | null {
+  const penOpen = useDrawProgressStore((s) => s.enabled);
+  const itemSelected = useDesignStore((s) => s.selectedInstanceId !== null);
+  const belowMd = useBelowMd();
+  if (penOpen || (itemSelected && belowMd)) return null;
+  const besidePanel = itemSelected && !belowMd;
   return (
     <button
       type="button"
       onClick={onOpen}
       aria-label="Open keyboard shortcuts help"
+      title="Keyboard shortcuts (?)"
+      // Repair round 1 (2026-08-29): 44 px on the phone tier (<md), 40 px at
+      // md+ — the contract's control heights; it was a flat 40 at 390.
+      className="h-11 w-11 md:h-10 md:w-10 transition-colors duration-[120ms] ease-out hover:bg-[#f3f1ec] hover:border-[rgba(42,41,38,0.35)] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] motion-reduce:transition-none"
       style={{
-        // PCF-2 — moved below StatusCard + ModeStrip cluster so the
-        // top-right MiniCartPill keeps its slot. Top-right column:
-        //   88 px : StatusCard
-        //   152 px: ModeStrip
-        //   204 px: this Help button
         position: 'fixed',
-        top: 204,
-        right: 16,
-        width: 36,
-        height: 36,
-        borderRadius: '50%',
-        background: '#F5EFE6',
-        border: '2px solid #C0A67E',
+        bottom:
+          'calc(max(1rem, env(safe-area-inset-bottom)) + var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px) + 56px)',
+        // Left of the DetailsPanel (w-80 = 20 rem) while it is open.
+        right: besidePanel ? 'calc(20rem + 1rem)' : '1rem',
+        borderRadius: 8,
+        background: CHROME_BG,
+        border: `1px solid ${CHROME_RIM}`,
         cursor: 'pointer',
         fontSize: 16,
-        fontWeight: 700,
-        color: '#0E0E10',
-        zIndex: 700,
-        boxShadow: '0 4px 12px rgba(14,14,16,0.18)',
+        fontWeight: 600,
+        lineHeight: 1,
+        color: CHROME_TEXT,
+        zIndex: 35,
+        boxShadow: '0 1px 2px rgba(42,41,38,0.08)',
       }}
     >
       ?
     </button>
   );
+}
+
+/**
+ * `true` below Tailwind's `md` (768 px) — where the DetailsPanel is a bottom
+ * sheet rather than a right-hand column. Falls back to "not below md" where
+ * `matchMedia` is missing (jsdom / SSR).
+ */
+function useBelowMd(): boolean {
+  const query = '(max-width: 767.98px)';
+  const [matches, setMatches] = useState<boolean>(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia(query).matches
+      : false,
+  );
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const mq = window.matchMedia(query);
+    const sync = () => setMatches(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, [query]);
+  return matches;
 }

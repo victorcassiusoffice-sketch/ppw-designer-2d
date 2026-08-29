@@ -1,0 +1,87 @@
+{
+ "scenario": "right-flush-rot0-to90",
+ "viewport": "desktop-1366",
+ "gesture": "mouse",
+ "ppm": 100,
+ "handlePx": {
+  "x": 825.5,
+  "y": 320.5
+ },
+ "elementAtHandle": "canvas",
+ "floatingClusterBox": null,
+ "before": {
+  "x": 2.9000000000000004,
+  "y": 1.5,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "centre": {
+   "x": 3.9250000000000003,
+   "y": 1.975
+  },
+  "right": 4.95,
+  "bottom": 2.45
+ },
+ "trace": [
+  {
+   "iter": 0,
+   "rotation": 45,
+   "x": 2.9000000000000004,
+   "y": 1.5
+  },
+  {
+   "iter": 1,
+   "rotation": 90,
+   "x": 2.9000000000000004,
+   "y": 1.5
+  }
+ ],
+ "afterRotate": {
+  "x": 2.9000000000000004,
+  "y": 1.5,
+  "rotation": 90,
+  "w": 0.95,
+  "h": 2.05,
+  "centre": {
+   "x": 3.3750000000000004,
+   "y": 2.525
+  },
+  "right": 3.85,
+  "bottom": 3.55,
+  "rightBeyondInnerFace": false,
+  "bottomBeyondInnerFace": false,
+  "rightBeyondPolygon": false,
+  "bottomBeyondPolygon": false,
+  "centreMoved": true,
+  "xyChanged": false,
+  "reachedTarget": true
+ },
+ "toastsAfterRotate": [],
+ "rotShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify2-desktop-1366-mouse-right-flush-rot0-to90-rotated.png",
+ "postDrag": {
+  "wall": "right",
+  "dropCentre": {
+   "x": 4.275,
+   "y": 2.525
+  },
+  "after": {
+   "x": 4,
+   "y": 1.9000000000000004,
+   "rotation": 90,
+   "w": 0.95,
+   "h": 2.05,
+   "right": 4.95,
+   "bottom": 3.95
+  },
+  "flushLeft": false,
+  "flushTop": false,
+  "flushRight": true,
+  "flushBottom": true,
+  "moved": true,
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ],
+  "dragShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify2-desktop-1366-mouse-right-flush-rot0-to90-dragged.png"
+ }
+}

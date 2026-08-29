@@ -1,0 +1,902 @@
+{
+  "desktop1366": {
+    "headerH": 53,
+    "headerControls": [
+      {
+        "testid": null,
+        "label": null,
+        "text": "",
+        "w": 40,
+        "h": 40,
+        "x": 8,
+        "font": "16px",
+        "pressed": null,
+        "expanded": null
+      },
+      {
+        "testid": "rooms-trigger",
+        "label": "Open rooms list",
+        "text": "Main Room· 0",
+        "w": 128,
+        "h": 40,
+        "x": 56,
+        "font": "12px",
+        "pressed": null,
+        "expanded": "false"
+      },
+      {
+        "testid": "wall-tool-toggle",
+        "label": "Walls",
+        "text": "Walls",
+        "w": 69,
+        "h": 40,
+        "x": 202,
+        "font": "12px",
+        "pressed": "false",
+        "expanded": null
+      },
+      {
+        "testid": "door-tool-toggle",
+        "label": "Door",
+        "text": "Door",
+        "w": 67,
+        "h": 40,
+        "x": 271,
+        "font": "12px",
+        "pressed": "false",
+        "expanded": null
+      },
+      {
+        "testid": "floor-paint-toggle",
+        "label": "Paint",
+        "text": "Paint",
+        "w": 68,
+        "h": 40,
+        "x": 338,
+        "font": "12px",
+        "pressed": "false",
+        "expanded": null
+      },
+      {
+        "testid": "measure-tool-toggle",
+        "label": "Measure",
+        "text": "Measure",
+        "w": 90,
+        "h": 40,
+        "x": 407,
+        "font": "12px",
+        "pressed": "false",
+        "expanded": null
+      },
+      {
+        "testid": null,
+        "label": "Box",
+        "text": "Box",
+        "w": 40,
+        "h": 40,
+        "x": 515,
+        "font": "12px",
+        "pressed": "true",
+        "expanded": "false"
+      },
+      {
+        "testid": "room-draw-toggle",
+        "label": null,
+        "text": "WallsCustom",
+        "w": 40,
+        "h": 40,
+        "x": 555,
+        "font": "12px",
+        "pressed": "false",
+        "expanded": null
+      },
+      {
+        "testid": "floor-tool-toggle",
+        "label": "Finish",
+        "text": "Finish",
+        "w": 40,
+        "h": 40,
+        "x": 604,
+        "font": "12px",
+        "pressed": null,
+        "expanded": "false"
+      },
+      {
+        "testid": "levels-toggle",
+        "label": "Storeys",
+        "text": "Storeys",
+        "w": 40,
+        "h": 40,
+        "x": 652,
+        "font": "12px",
+        "pressed": null,
+        "expanded": "false"
+      },
+      {
+        "testid": "land-toggle",
+        "label": "Plot",
+        "text": "Plot",
+        "w": 40,
+        "h": 40,
+        "x": 700,
+        "font": "12px",
+        "pressed": null,
+        "expanded": "false"
+      },
+      {
+        "testid": "snap-unit-toggle",
+        "label": null,
+        "text": "Snap 0.5 m",
+        "w": 73,
+        "h": 40,
+        "x": 757,
+        "font": "12px",
+        "pressed": null,
+        "expanded": "false"
+      },
+      {
+        "testid": null,
+        "label": "Grid",
+        "text": "",
+        "w": 40,
+        "h": 40,
+        "x": 838,
+        "font": "12px",
+        "pressed": "true",
+        "expanded": null
+      },
+      {
+        "testid": null,
+        "label": "Undo (Ctrl+Z)",
+        "text": "",
+        "w": 40,
+        "h": 40,
+        "x": 887,
+        "font": "12px",
+        "pressed": null,
+        "expanded": null
+      },
+      {
+        "testid": null,
+        "label": "Redo (Ctrl+Shift+Z)",
+        "text": "",
+        "w": 40,
+        "h": 40,
+        "x": 927,
+        "font": "12px",
+        "pressed": null,
+        "expanded": null
+      },
+      {
+        "testid": null,
+        "label": "Currency",
+        "text": "MURUSDEURGBP",
+        "w": 48,
+        "h": 38,
+        "x": 1081,
+        "font": "12px",
+        "pressed": null,
+        "expanded": null
+      },
+      {
+        "testid": null,
+        "label": "Cart, 0 products",
+        "text": "Cart0",
+        "w": 40,
+        "h": 40,
+        "x": 1160,
+        "font": "12px",
+        "pressed": null,
+        "expanded": null
+      },
+      {
+        "testid": null,
+        "label": "Request quote",
+        "text": "Request quote",
+        "w": 102,
+        "h": 40,
+        "x": 1208,
+        "font": "12px",
+        "pressed": null,
+        "expanded": null
+      },
+      {
+        "testid": "more-menu-toggle",
+        "label": "More",
+        "text": "",
+        "w": 40,
+        "h": 40,
+        "x": 1318,
+        "font": "12px",
+        "pressed": null,
+        "expanded": "false"
+      }
+    ],
+    "fontsBelow11": [],
+    "j1": {
+      "steps": [
+        "click Walls",
+        "click world 1,1",
+        "click world 4,1",
+        "click world 4,3",
+        "click world 1,3",
+        "click Make room"
+      ],
+      "boxAtRest": {
+        "text": "Box",
+        "pressed": "true",
+        "expanded": "false",
+        "bg": "rgb(42, 41, 38)",
+        "color": "rgb(248, 245, 238)",
+        "w": 40,
+        "h": 40,
+        "x": 515,
+        "y": 6,
+        "visible": true
+      },
+      "wallsAtRest": {
+        "text": "Walls",
+        "pressed": "false",
+        "expanded": null,
+        "bg": "rgb(250, 249, 245)",
+        "color": "rgb(55, 54, 47)",
+        "w": 69,
+        "h": 40,
+        "x": 202,
+        "y": 6,
+        "visible": true
+      },
+      "customAtRest": {
+        "text": "WallsCustom",
+        "pressed": "false",
+        "expanded": null,
+        "bg": "rgb(250, 249, 245)",
+        "color": "rgb(55, 54, 47)",
+        "w": 40,
+        "h": 40,
+        "x": 555,
+        "y": 6,
+        "visible": true
+      },
+      "wallsOn": {
+        "text": "Walls",
+        "pressed": "true",
+        "expanded": null,
+        "bg": "rgb(42, 41, 38)",
+        "color": "rgb(248, 245, 238)",
+        "w": 69,
+        "h": 40,
+        "x": 202,
+        "y": 6,
+        "visible": true
+      },
+      "customOn": {
+        "text": "WallsCustom",
+        "pressed": "true",
+        "expanded": null,
+        "bg": "rgb(42, 41, 38)",
+        "color": "rgb(248, 245, 238)",
+        "w": 40,
+        "h": 40,
+        "x": 555,
+        "y": 6,
+        "visible": true
+      },
+      "boxOn": {
+        "text": "Box",
+        "pressed": "false",
+        "expanded": "false",
+        "bg": "rgb(250, 249, 245)",
+        "color": "rgb(55, 54, 47)",
+        "w": 40,
+        "h": 40,
+        "x": 515,
+        "y": 6,
+        "visible": true
+      },
+      "hud": {
+        "text": "Wall penClick to drop wall points · walls stay where you stop · click the first point or Enter to close a roomTap to drop · Done keeps the walls · tap the first point for a room−0.5 m+0 verticesperim 0.00 marea 0.00 m²LengthmDoneMake roomRoom + nextUndoDiscard",
+        "pressed": null,
+        "expanded": null,
+        "bg": "rgb(250, 249, 245)",
+        "color": "rgb(55, 54, 47)",
+        "w": 600,
+        "h": 162,
+        "x": 383,
+        "y": 512,
+        "visible": true
+      },
+      "cartPillDuringDraw": 0,
+      "clearControlsDuringDraw": 0,
+      "helpLauncherDuringDraw": 0,
+      "vertexReadout": "4 vertices",
+      "roomsAfter": [
+        {
+          "name": "Treatment Room",
+          "n": 4
+        }
+      ],
+      "hudAfter": 0,
+      "wallsAfter": {
+        "text": "Walls",
+        "pressed": "false",
+        "expanded": null,
+        "bg": "rgb(250, 249, 245)",
+        "color": "rgb(55, 54, 47)",
+        "w": 69,
+        "h": 40,
+        "x": 229,
+        "y": 6,
+        "visible": true
+      },
+      "totalClicks": 6
+    },
+    "j2": {
+      "steps": [
+        "click dock tile",
+        "click corner 0.3,0.3"
+      ],
+      "firstTile": "k1-nordictrack-2450",
+      "armedCount": 2,
+      "armedTileShadow": "rgb(121, 199, 173) 0px 0px 0px 2px inset, rgba(121, 199, 173, 0.35) 0px 0px 0px 3px",
+      "banner": "Tap the floor to place “NordicTrack Commercial 2450 Treadmill”",
+      "detailsOverlay": 0,
+      "hoverCard": 0,
+      "placed": [
+        {
+          "id": "k1-nordictrack-2450",
+          "x": 0.05,
+          "y": 0.05,
+          "rot": 0
+        }
+      ],
+      "armedAfter": 0,
+      "detailsAfter": 1,
+      "itemsPlaced": "1",
+      "costReadout": "£2,633.33",
+      "cartPill": "1£2,633.33",
+      "totalClicks": 2,
+      "detailsBox": {
+        "text": "DetailsCloseSelected itemNordicTrack Commercial 2450 TreadmillFitness · SKU K1-CDIO-NT2450Footprint205 × 95 cmHeight165 cmWeight138 kgPosition0.05 m, 0.05 m · 0°Price150,000 MURCommission5.0 %SupplierK1-Sport (NordicTrack — Mauritius distributor)Ships toMUSourcehttps://www.k1-sport.com/shop-onlineNotesFoldable commercial-grade treadmill; 24-inch touchscreen; iFit-ready. Distributor stock at K1-Sport.Controls↺ 90° CCW↻ 90° CWDuplicate (+0.5 m offset)DeleteKeys: R rotate 90° · Shift+R 15° · Alt+R CCW · D duplicate · L light · Del delete · Esc deselectBuy from K1-Sport →",
+        "pressed": null,
+        "expanded": null,
+        "bg": "rgb(250, 249, 245)",
+        "color": "rgb(14, 27, 31)",
+        "w": 320,
+        "h": 558,
+        "x": 1046,
+        "y": 56,
+        "visible": true
+      },
+      "buyBtn": {
+        "text": "Buy from K1-Sport →",
+        "pressed": null,
+        "expanded": null,
+        "bg": "rgb(255, 187, 88)",
+        "color": "rgb(35, 44, 59)",
+        "w": 287,
+        "h": 40,
+        "x": 1063,
+        "y": 562,
+        "visible": true
+      },
+      "cartPillBox": {
+        "text": "1£2,633.33",
+        "pressed": null,
+        "expanded": "false",
+        "bg": "rgb(42, 41, 38)",
+        "color": "rgb(248, 245, 238)",
+        "w": 144,
+        "h": 40,
+        "x": 1206,
+        "y": 630,
+        "visible": true
+      }
+    },
+    "j3": {
+      "steps": [
+        "click Paint",
+        "click material floor-paint-gym-interlock",
+        "click scope → whole room",
+        "click floor 2.5,2",
+        "click cart pill"
+      ],
+      "paintOn": {
+        "text": "Paint",
+        "pressed": "true",
+        "expanded": null,
+        "bg": "rgb(42, 41, 38)",
+        "color": "rgb(248, 245, 238)",
+        "w": 68,
+        "h": 40,
+        "x": 338,
+        "y": 6,
+        "visible": true
+      },
+      "palette": {
+        "text": "Gym Interlock Tile 92×920.92×0.92 mEVA Combat Mat 1×1 m1×1 mRubber Composite 50×500.5×0.5 mOutdoor Rubber 1×1 m1×1 mOutdoor Rubber 50×500.5×0.5 mBy tileEraseClick a tile · drag a rectangle · Shift fills the room · Ctrl erases",
+        "pressed": null,
+        "expanded": null,
+        "bg": "rgba(0, 0, 0, 0)",
+        "color": "rgb(55, 54, 47)",
+        "w": 270,
+        "h": 283,
+        "x": 347,
+        "y": 59,
+        "visible": true
+      },
+      "paletteCoveredAt": {
+        "tag": "SPAN",
+        "testid": "floor-paint-gym-interlock",
+        "cls": "h-6 w-6 shrink-0 rounded border border-ppw-rim"
+      },
+      "hudChip": {
+        "text": "Paint on · Done",
+        "pressed": null,
+        "expanded": null,
+        "bg": "rgb(42, 41, 38)",
+        "color": "rgb(248, 245, 238)",
+        "w": 113,
+        "h": 40,
+        "x": 1237,
+        "y": 213,
+        "visible": true
+      },
+      "firstMaterial": "floor-paint-gym-interlock",
+      "scopeBefore": {
+        "text": "By tile",
+        "pressed": "false",
+        "expanded": null,
+        "bg": "rgb(250, 249, 245)",
+        "color": "rgb(55, 54, 47)",
+        "w": 131,
+        "h": 36,
+        "x": 347,
+        "y": 266,
+        "visible": true
+      },
+      "scopeAfter": {
+        "text": "Whole room",
+        "pressed": "true",
+        "expanded": null,
+        "bg": "rgb(250, 249, 245)",
+        "color": "rgb(55, 54, 47)",
+        "w": 131,
+        "h": 36,
+        "x": 347,
+        "y": 266,
+        "visible": true
+      },
+      "costAfterPaint": "£870.76",
+      "cartPillAfterPaint": "31£870.76",
+      "paletteStillOpen": 1,
+      "cartSheet": {
+        "text": "CloseCart0 unique - 0 placed - 31 floor units£870.76~ Rs 49,600ProductCat.QtyUnitLineGym Interlock Tile 92×92(+1 for cuts)Floor31 tiles£28.09£870.76Subtotal£870.76~ MURRs 49,600Shipping + tax calculated at checkout. FX live-fetched daily.View cartCheckout",
+        "pressed": null,
+        "expanded": null,
+        "bg": "rgb(250, 249, 245)",
+        "color": "rgb(14, 27, 31)",
+        "w": 720,
+        "h": 284,
+        "x": 646,
+        "y": 485,
+        "visible": true
+      },
+      "cartFloorLine": 1,
+      "totalClicks": 5,
+      "cartSheetAfterEsc": 1
+    },
+    "consoleErrors": []
+  },
+  "mobile390": {
+    "headerH": 57,
+    "headerControls": [
+      {
+        "testid": null,
+        "label": null,
+        "text": "",
+        "w": 44,
+        "h": 44
+      },
+      {
+        "testid": "rooms-trigger",
+        "label": "Open rooms list",
+        "text": "Main Room· 0",
+        "w": 191,
+        "h": 44
+      },
+      {
+        "testid": "room-draw-toggle",
+        "label": null,
+        "text": "WallsCustom",
+        "w": 69,
+        "h": 44
+      },
+      {
+        "testid": null,
+        "label": "Open menu",
+        "text": "",
+        "w": 44,
+        "h": 44
+      }
+    ],
+    "j1": {
+      "steps": [
+        "tap Walls (strip)",
+        "tap world 1,1",
+        "tap world 3,1",
+        "tap world 3,3",
+        "tap world 1,3",
+        "tap Make room"
+      ],
+      "stripWalls": {
+        "text": "WallsCustom",
+        "pressed": "false",
+        "expanded": null,
+        "bg": "rgb(250, 249, 245)",
+        "color": "rgb(55, 54, 47)",
+        "w": 69,
+        "h": 44,
+        "x": 260,
+        "y": 6,
+        "visible": true
+      },
+      "hud": {
+        "text": "Wall penClick to drop wall points · walls stay where you stop · click the first point or Enter to close a roomTap to drop · Done keeps the walls · tap the first point for a room0 verticesperim 0.00 marea 0.00 m²LengthmDoneMake roomRoom + nextUndoDiscard",
+        "pressed": null,
+        "expanded": null,
+        "bg": "rgb(250, 249, 245)",
+        "color": "rgb(55, 54, 47)",
+        "w": 367,
+        "h": 218,
+        "x": 12,
+        "y": 351,
+        "visible": true
+      },
+      "stepper": {
+        "text": "−0.5 m+",
+        "pressed": null,
+        "expanded": null,
+        "bg": "rgba(0, 0, 0, 0)",
+        "color": "rgb(14, 27, 31)",
+        "w": 148,
+        "h": 44,
+        "x": 12,
+        "y": 299,
+        "visible": true
+      },
+      "stepperCount": 1,
+      "doneBtn": {
+        "text": "Done",
+        "pressed": null,
+        "expanded": null,
+        "bg": "rgb(42, 41, 38)",
+        "color": "rgb(248, 245, 238)",
+        "w": 67,
+        "h": 44,
+        "x": 25,
+        "y": 512,
+        "visible": true
+      },
+      "topAtDone": {
+        "tag": "BUTTON",
+        "testid": "room-draw-finish-walls",
+        "cls": "pointer-events-auto inline-flex items-center justify-center "
+      },
+      "toolbar": {
+        "text": "AllFurnitureCardioRecoverySaunaFlooringWallsDecorLightingOutdoor",
+        "pressed": null,
+        "expanded": null,
+        "bg": "rgb(239, 237, 232)",
+        "color": "rgb(14, 27, 31)",
+        "w": 390,
+        "h": 207,
+        "x": 0,
+        "y": 637,
+        "visible": true
+      },
+      "hudOverlapsToolbar": false,
+      "cartPillDuringDraw": 0,
+      "vertexReadout": "8 vertices",
+      "storeVerticesAfterTouchTaps": null,
+      "roomsAfter": [
+        {
+          "name": "Treatment Room",
+          "n": 8
+        }
+      ],
+      "totalTaps": 6
+    },
+    "j2": {
+      "steps": [
+        "tap thumb"
+      ],
+      "popup": null,
+      "addBtn": null
+    }
+  },
+  "keyboard": {
+    "tabOrder": [
+      {
+        "inHeader": true,
+        "tag": "A",
+        "testid": null,
+        "label": "",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(121, 199, 173, 0.45",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "BUTTON",
+        "testid": "rooms-trigger",
+        "label": "Open rooms list",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(121, 199, 173, 0.45",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "BUTTON",
+        "testid": "wall-tool-toggle",
+        "label": "Walls",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px inset, rgba(121, 199, 173",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "BUTTON",
+        "testid": "door-tool-toggle",
+        "label": "Door",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px inset, rgba(121, 199, 173",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "BUTTON",
+        "testid": "floor-paint-toggle",
+        "label": "Paint",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px inset, rgba(121, 199, 173",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "BUTTON",
+        "testid": "measure-tool-toggle",
+        "label": "Measure",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px inset, rgba(121, 199, 173",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "BUTTON",
+        "testid": null,
+        "label": "Box",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px inset, rgba(121, 199, 173",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "BUTTON",
+        "testid": "room-draw-toggle",
+        "label": "WallsCustom",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px inset, rgba(121, 199, 173",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "BUTTON",
+        "testid": "floor-tool-toggle",
+        "label": "Finish",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(121, 199, 173, 0.45",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "BUTTON",
+        "testid": "levels-toggle",
+        "label": "Storeys",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(121, 199, 173, 0.45",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "BUTTON",
+        "testid": "land-toggle",
+        "label": "Plot",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(121, 199, 173, 0.45",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "BUTTON",
+        "testid": "snap-unit-toggle",
+        "label": "Snap 0.5 m",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(121, 199, 173, 0.45",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "BUTTON",
+        "testid": null,
+        "label": "Grid",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(121, 199, 173, 0.45",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "BUTTON",
+        "testid": null,
+        "label": "Undo (Ctrl+Z)",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px inset, rgba(121, 199, 173",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "SELECT",
+        "testid": null,
+        "label": "Currency",
+        "ring": true,
+        "boxShadow": "none",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "A",
+        "testid": null,
+        "label": "Cart, 0 products",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(121, 199, 173, 0.45",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "BUTTON",
+        "testid": null,
+        "label": "Request quote",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(121, 199, 173, 0.45",
+        "outline": "solid 2px"
+      },
+      {
+        "inHeader": true,
+        "tag": "BUTTON",
+        "testid": "more-menu-toggle",
+        "label": "More",
+        "ring": true,
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 0px, rgba(121, 199, 173, 0.45",
+        "outline": "solid 2px"
+      }
+    ],
+    "noRing": [],
+    "esc": {
+      "rooms": {
+        "openVisible": true,
+        "closedByEsc": false,
+        "trigExpandedAfter": "true"
+      },
+      "box-size": {
+        "openVisible": true,
+        "closedByEsc": true,
+        "trigExpandedAfter": "false"
+      },
+      "finish": {
+        "openVisible": true,
+        "closedByEsc": true,
+        "trigExpandedAfter": "false"
+      },
+      "storeys": {
+        "openVisible": true,
+        "closedByEsc": true,
+        "trigExpandedAfter": "false"
+      },
+      "plot": {
+        "openVisible": true,
+        "closedByEsc": true,
+        "trigExpandedAfter": "false"
+      },
+      "snap": {
+        "openVisible": true,
+        "closedByEsc": true,
+        "trigExpandedAfter": "false"
+      },
+      "more": {
+        "openVisible": true,
+        "closedByEsc": true,
+        "trigExpandedAfter": "false"
+      },
+      "help": {
+        "openVisible": true,
+        "closedByEsc": false
+      },
+      "load": {
+        "openVisible": false,
+        "closedByEsc": true
+      },
+      "doorTool": {
+        "openVisible": true,
+        "closedByEsc": true
+      },
+      "paintPalette": {
+        "openVisible": true,
+        "closedByEsc": true
+      }
+    }
+  },
+  "semantics": {
+    "desktop": {
+      "segmentedGroups": [
+        {
+          "role": null,
+          "label": null,
+          "children": [
+            "wall-tool-toggle:false",
+            "door-tool-toggle:false",
+            "floor-paint-toggle:false",
+            "measure-tool-toggle:false"
+          ]
+        },
+        {
+          "role": null,
+          "label": null,
+          "children": [
+            "Undo (Ctrl+Z):null",
+            "Redo (Ctrl+Shift+Z):null"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "t": "rooms-trigger",
+          "expanded": "false",
+          "controls": null
+        },
+        {
+          "t": "floor-tool-toggle",
+          "expanded": "false",
+          "controls": null
+        },
+        {
+          "t": "levels-toggle",
+          "expanded": "false",
+          "controls": null
+        },
+        {
+          "t": "land-toggle",
+          "expanded": "false",
+          "controls": null
+        },
+        {
+          "t": "snap-unit-toggle",
+          "expanded": "false",
+          "controls": null
+        },
+        {
+          "t": "more-menu-toggle",
+          "expanded": "false",
+          "controls": null
+        }
+      ],
+      "boxHasBothPressedAndExpanded": true,
+      "pressedAndExpandedSameButton": [
+        "Box"
+      ],
+      "popoverRoles": [
+        null
+      ]
+    }
+  },
+  "error": "TypeError: Cannot read properties of null (reading 'x')"
+}

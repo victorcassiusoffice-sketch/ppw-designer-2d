@@ -1,0 +1,486 @@
+[
+ {
+  "tag": "desktop-mouse",
+  "id": "A-tread-r0-left-touch",
+  "what": "treadmill r0, left edge exactly touching left wall line (predicted: no snap, x=0)",
+  "product": "k1-nordictrack-2450",
+  "rotPre": 0,
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 1.475,
+   "y": 1.525,
+   "rotation": 0
+  },
+  "dropCentre": {
+   "x": 1.025,
+   "y": 2
+  },
+  "dropScreen": {
+   "x": 535.5,
+   "y": 388.5
+  },
+  "shift": false,
+  "result": {
+   "x": 0,
+   "y": 1.5,
+   "rotation": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "flushX": false,
+  "flushY": false,
+  "resolver": {
+   "x": 0,
+   "y": 1.5,
+   "rotationDeg": 0,
+   "wallSnapped": false,
+   "snappedEdges": 0
+  },
+  "matchesResolver": true,
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ },
+ {
+  "tag": "desktop-mouse",
+  "id": "B-tread-r0-left-gap0.2",
+  "what": "treadmill r0, left edge 0.2 off left wall (predicted: no snap, x=0)",
+  "product": "k1-nordictrack-2450",
+  "rotPre": 0,
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 1.475,
+   "y": 1.525,
+   "rotation": 0
+  },
+  "dropCentre": {
+   "x": 1.2249999999999999,
+   "y": 2
+  },
+  "dropScreen": {
+   "x": 555.5,
+   "y": 388.5
+  },
+  "shift": false,
+  "result": {
+   "x": 0,
+   "y": 1.5,
+   "rotation": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "flushX": false,
+  "flushY": false,
+  "resolver": {
+   "x": 0,
+   "y": 1.5,
+   "rotationDeg": 0,
+   "wallSnapped": false,
+   "snappedEdges": 0
+  },
+  "matchesResolver": true,
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ },
+ {
+  "tag": "desktop-mouse",
+  "id": "C-tread-r0-left-past0.1",
+  "what": "treadmill r0 pushed 0.1 past wall line (predicted: snap x=0.05 rot 270)",
+  "product": "k1-nordictrack-2450",
+  "rotPre": 0,
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 1.475,
+   "y": 1.525,
+   "rotation": 0
+  },
+  "dropCentre": {
+   "x": 0.9249999999999999,
+   "y": 2
+  },
+  "dropScreen": {
+   "x": 525.5,
+   "y": 388.5
+  },
+  "shift": false,
+  "result": {
+   "x": 0.05,
+   "y": 1,
+   "rotation": 270,
+   "w": 0.95,
+   "h": 2.05
+  },
+  "flushX": true,
+  "flushY": false,
+  "resolver": {
+   "x": 0.05,
+   "y": 1,
+   "rotationDeg": 270,
+   "wallSnapped": true,
+   "snappedEdges": 1
+  },
+  "matchesResolver": true,
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ },
+ {
+  "tag": "desktop-mouse",
+  "id": "D-tread-r0-left-touch-SHIFT",
+  "what": "treadmill r0 touching left wall, Shift held (predicted: snap x=0.05 rot 0)",
+  "product": "k1-nordictrack-2450",
+  "rotPre": 0,
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 1.475,
+   "y": 1.525,
+   "rotation": 0
+  },
+  "dropCentre": {
+   "x": 1.025,
+   "y": 2
+  },
+  "dropScreen": {
+   "x": 535.5,
+   "y": 388.5
+  },
+  "shift": true,
+  "result": {
+   "x": 0.05,
+   "y": 1.5,
+   "rotation": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "flushX": true,
+  "flushY": false,
+  "resolver": {
+   "x": 0.05,
+   "y": 1.5,
+   "rotationDeg": 0,
+   "wallSnapped": true,
+   "snappedEdges": 1
+  },
+  "matchesResolver": true,
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ },
+ {
+  "tag": "desktop-mouse",
+  "id": "E-versa-r0-left-gap0.2",
+  "what": "COUNTEREXAMPLE PROBE: versa 165x130 ((L-W)/2=0.175) r0, left edge 0.2 off (predicted by mechanism: snap x=0.05 rot 270)",
+  "product": "k1-matrix-versa-adabd",
+  "rotPre": 0,
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-matrix-versa-adabd",
+   "x": 1.675,
+   "y": 1.35,
+   "rotation": 0
+  },
+  "dropCentre": {
+   "x": 1.025,
+   "y": 2
+  },
+  "dropScreen": {
+   "x": 535.5,
+   "y": 388.5
+  },
+  "shift": false,
+  "result": {
+   "x": 0.05,
+   "y": 1,
+   "rotation": 270,
+   "w": 1.3,
+   "h": 1.65
+  },
+  "flushX": true,
+  "flushY": false,
+  "resolver": {
+   "x": 0.05,
+   "y": 1,
+   "rotationDeg": 270,
+   "wallSnapped": true,
+   "snappedEdges": 1
+  },
+  "matchesResolver": true,
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ },
+ {
+  "tag": "desktop-mouse",
+  "id": "F-lamp-left-gap0.2",
+  "what": "COUNTEREXAMPLE PROBE: square 40x40 floor lamp, left edge 0.2 off (predicted: snap x=0.05)",
+  "product": "demo-floor-lamp",
+  "rotPre": 0,
+  "start": {
+   "instanceId": "it-1",
+   "productId": "demo-floor-lamp",
+   "x": 2.3,
+   "y": 1.8,
+   "rotation": 0
+  },
+  "dropCentre": {
+   "x": 0.4,
+   "y": 2
+  },
+  "dropScreen": {
+   "x": 473,
+   "y": 388.5
+  },
+  "shift": false,
+  "result": {
+   "x": 0.05,
+   "y": 2,
+   "rotation": 270,
+   "w": 0.4,
+   "h": 0.4
+  },
+  "flushX": true,
+  "flushY": false,
+  "resolver": {
+   "x": 0.05,
+   "y": 2,
+   "rotationDeg": 270,
+   "wallSnapped": true,
+   "snappedEdges": 1
+  },
+  "matchesResolver": true,
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ },
+ {
+  "tag": "desktop-mouse",
+  "id": "G-tread-r0-top-gap0.2",
+  "what": "control: treadmill r0 top edge 0.2 off top wall (predicted: snap y=0.05 rot 0)",
+  "product": "k1-nordictrack-2450",
+  "rotPre": 0,
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 1.475,
+   "y": 1.525,
+   "rotation": 0
+  },
+  "dropCentre": {
+   "x": 2.5,
+   "y": 0.675
+  },
+  "dropScreen": {
+   "x": 683,
+   "y": 256
+  },
+  "shift": false,
+  "result": {
+   "x": 1.5,
+   "y": 0.05,
+   "rotation": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "flushX": false,
+  "flushY": true,
+  "resolver": {
+   "x": 1.5,
+   "y": 0.05,
+   "rotationDeg": 0,
+   "wallSnapped": true,
+   "snappedEdges": 1
+  },
+  "matchesResolver": true,
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ },
+ {
+  "tag": "desktop-mouse",
+  "id": "H-tread-r90-top-gap0.2",
+  "what": "treadmill r90 top edge 0.2 off top wall (predicted: no snap, y=0)",
+  "product": "k1-nordictrack-2450",
+  "rotPre": 90,
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 2.025,
+   "y": 0.975,
+   "rotation": 90
+  },
+  "dropCentre": {
+   "x": 2.5,
+   "y": 1.2249999999999999
+  },
+  "dropScreen": {
+   "x": 683,
+   "y": 311
+  },
+  "shift": false,
+  "result": {
+   "x": 2,
+   "y": 0,
+   "rotation": 90,
+   "w": 0.95,
+   "h": 2.05
+  },
+  "flushX": false,
+  "flushY": false,
+  "resolver": {
+   "x": 2,
+   "y": 0,
+   "rotationDeg": 90,
+   "wallSnapped": false,
+   "snappedEdges": 0
+  },
+  "matchesResolver": true,
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ },
+ {
+  "tag": "desktop-mouse",
+  "id": "I-tread-r0-slide-to-corner",
+  "what": "treadmill r0 already flush on top wall, slid left until left edge 0.2 off left wall (predicted: corner x=0.05 y=0.05)",
+  "product": "k1-nordictrack-2450",
+  "rotPre": 0,
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 1.5,
+   "y": 0.05,
+   "rotation": 0
+  },
+  "dropCentre": {
+   "x": 1.2249999999999999,
+   "y": 0.525
+  },
+  "dropScreen": {
+   "x": 555.5,
+   "y": 241
+  },
+  "shift": false,
+  "result": {
+   "x": 0.05,
+   "y": 0.05,
+   "rotation": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "flushX": true,
+  "flushY": true,
+  "resolver": {
+   "x": 0.05,
+   "y": 0.05,
+   "rotationDeg": 0,
+   "wallSnapped": true,
+   "snappedEdges": 2
+  },
+  "matchesResolver": true,
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ },
+ {
+  "tag": "desktop-mouse",
+  "id": "J-tread-r0-corner-from-mid-gap0.2",
+  "what": "treadmill r0 from mid-room to top-left corner, both edges 0.2 off (predicted: corner via primary top + secondary left)",
+  "product": "k1-nordictrack-2450",
+  "rotPre": 0,
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 1.475,
+   "y": 1.525,
+   "rotation": 0
+  },
+  "dropCentre": {
+   "x": 1.2249999999999999,
+   "y": 0.675
+  },
+  "dropScreen": {
+   "x": 555.5,
+   "y": 256
+  },
+  "shift": false,
+  "result": {
+   "x": 0.05,
+   "y": 0.05,
+   "rotation": 0,
+   "w": 2.05,
+   "h": 0.95
+  },
+  "flushX": true,
+  "flushY": true,
+  "resolver": {
+   "x": 0.05,
+   "y": 0.05,
+   "rotationDeg": 0,
+   "wallSnapped": true,
+   "snappedEdges": 2
+  },
+  "matchesResolver": true,
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ },
+ {
+  "tag": "desktop-mouse",
+  "id": "K-versa-r0-left-gap0.3",
+  "what": "versa r0 left edge 0.3 off: backGap=0.3+0.175=0.475>0.45 (predicted: NO snap, x=0.5 grid)",
+  "product": "k1-matrix-versa-adabd",
+  "rotPre": 0,
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-matrix-versa-adabd",
+   "x": 1.675,
+   "y": 1.35,
+   "rotation": 0
+  },
+  "dropCentre": {
+   "x": 1.125,
+   "y": 2
+  },
+  "dropScreen": {
+   "x": 545.5,
+   "y": 388.5
+  },
+  "shift": false,
+  "result": {
+   "x": 0.5,
+   "y": 1.5,
+   "rotation": 0,
+   "w": 1.65,
+   "h": 1.3
+  },
+  "flushX": false,
+  "flushY": false,
+  "resolver": {
+   "x": 0.5,
+   "y": 1.5,
+   "rotationDeg": 0,
+   "wallSnapped": false,
+   "snappedEdges": 0
+  },
+  "matchesResolver": true,
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ }
+]

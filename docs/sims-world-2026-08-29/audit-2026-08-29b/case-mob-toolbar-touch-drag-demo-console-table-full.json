@@ -1,0 +1,138 @@
+[
+ {
+  "label": "mob-toolbar-touch-drag-demo-console-table-full/top-left",
+  "viewport": "mobile 390x844 (hasTouch,isMobile)",
+  "gesture": "toolbar-touch-drag",
+  "product": "demo-console-table",
+  "rotationPre": 0,
+  "snapUnit": "0.5 m",
+  "target": "top-left",
+  "dropCentre": "(0.2, 0.2)",
+  "dropScreen": "(57, 360) finger +56px",
+  "elementAtDrop": "canvas",
+  "resultXY": "(-1.5, -7)",
+  "rotationApplied": 0,
+  "wh": "1.2 x 0.4",
+  "flushX": false,
+  "flushY": false,
+  "needX": true,
+  "needY": true,
+  "pass": false,
+  "moved": true,
+  "resolverExpectedXY": "(0.05, 0.05)",
+  "resolverExpectedRot": 0,
+  "resolverFlush": "x:true y:true edges:2",
+  "matchesResolver": false,
+  "toasts": [
+   "Added \"Wellness Console Table\" to cartUndo"
+  ],
+  "consoleDragMove": [
+   "log: [place] {outdoor: true, wallSnapped: false, corner: false, x: -1.5, y: -7}"
+  ],
+  "precisionStored": "full",
+  "note": "items after drop: 1",
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\FAIL-mob-toolbar-touch-drag-demo-console-table-full-top-left.png"
+ },
+ {
+  "label": "mob-toolbar-touch-drag-demo-console-table-full/top-right",
+  "viewport": "mobile 390x844 (hasTouch,isMobile)",
+  "gesture": "toolbar-touch-drag",
+  "product": "demo-console-table",
+  "rotationPre": 0,
+  "snapUnit": "0.5 m",
+  "target": "top-right",
+  "dropCentre": "(4.8, 0.2)",
+  "dropScreen": "(333, 360) finger +56px",
+  "elementAtDrop": "canvas",
+  "resultXY": "(-1.5, -7)",
+  "rotationApplied": 0,
+  "wh": "1.2 x 0.4",
+  "flushX": false,
+  "flushY": false,
+  "needX": true,
+  "needY": true,
+  "pass": false,
+  "moved": true,
+  "resolverExpectedXY": "(3.75, 0.05)",
+  "resolverExpectedRot": 0,
+  "resolverFlush": "x:true y:true edges:2",
+  "matchesResolver": false,
+  "toasts": [
+   "Added \"Wellness Console Table\" to cartUndo"
+  ],
+  "consoleDragMove": [
+   "log: [place] {outdoor: true, wallSnapped: false, corner: false, x: -1.5, y: -7}"
+  ],
+  "precisionStored": "full",
+  "note": "items after drop: 1",
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\FAIL-mob-toolbar-touch-drag-demo-console-table-full-top-right.png"
+ },
+ {
+  "label": "mob-toolbar-touch-drag-demo-console-table-full/bottom-left",
+  "viewport": "mobile 390x844 (hasTouch,isMobile)",
+  "gesture": "toolbar-touch-drag",
+  "product": "demo-console-table",
+  "rotationPre": 0,
+  "snapUnit": "0.5 m",
+  "target": "bottom-left",
+  "dropCentre": "(0.2, 3.8)",
+  "dropScreen": "(57, 576) finger +56px",
+  "elementAtDrop": "canvas",
+  "resultXY": "(-1.5, -7)",
+  "rotationApplied": 0,
+  "wh": "1.2 x 0.4",
+  "flushX": false,
+  "flushY": false,
+  "needX": true,
+  "needY": true,
+  "pass": false,
+  "moved": true,
+  "resolverExpectedXY": "(0.05, 3.5500000000000003)",
+  "resolverExpectedRot": 180,
+  "resolverFlush": "x:true y:true edges:2",
+  "matchesResolver": false,
+  "toasts": [
+   "Added \"Wellness Console Table\" to cartUndo"
+  ],
+  "consoleDragMove": [
+   "log: [place] {outdoor: true, wallSnapped: false, corner: false, x: -1.5, y: -7}"
+  ],
+  "precisionStored": "full",
+  "note": "items after drop: 1",
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\FAIL-mob-toolbar-touch-drag-demo-console-table-full-bottom-left.png"
+ },
+ {
+  "label": "mob-toolbar-touch-drag-demo-console-table-full/bottom-right",
+  "viewport": "mobile 390x844 (hasTouch,isMobile)",
+  "gesture": "toolbar-touch-drag",
+  "product": "demo-console-table",
+  "rotationPre": 0,
+  "snapUnit": "0.5 m",
+  "target": "bottom-right",
+  "dropCentre": "(4.8, 3.8)",
+  "dropScreen": "(333, 576) finger +56px",
+  "elementAtDrop": "canvas",
+  "resultXY": "(-1.5, -7)",
+  "rotationApplied": 0,
+  "wh": "1.2 x 0.4",
+  "flushX": false,
+  "flushY": false,
+  "needX": true,
+  "needY": true,
+  "pass": false,
+  "moved": true,
+  "resolverExpectedXY": "(4.55, 2.75)",
+  "resolverExpectedRot": 90,
+  "resolverFlush": "x:true y:true edges:2",
+  "matchesResolver": false,
+  "toasts": [
+   "Added \"Wellness Console Table\" to cartUndo"
+  ],
+  "consoleDragMove": [
+   "log: [place] {outdoor: true, wallSnapped: false, corner: false, x: -1.5, y: -7}"
+  ],
+  "precisionStored": "full",
+  "note": "items after drop: 1",
+  "screenshot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\FAIL-mob-toolbar-touch-drag-demo-console-table-full-bottom-right.png"
+ }
+]

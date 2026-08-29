@@ -1,0 +1,134 @@
+[
+ {
+  "label": "mob-toolbar-mouse-drag-demo-console-table-full/top-left",
+  "viewport": "mobile 390x844 (hasTouch,isMobile)",
+  "gesture": "toolbar-mouse-drag",
+  "product": "demo-console-table",
+  "rotationPre": 0,
+  "snapUnit": "0.5 m",
+  "target": "top-left",
+  "dropCentre": "(0.2, 0.2)",
+  "dropScreen": "(57, 360) finger +56px",
+  "elementAtDrop": "canvas",
+  "resultXY": "(0.05, 0.05)",
+  "rotationApplied": 0,
+  "wh": "1.2 x 0.4",
+  "flushX": true,
+  "flushY": true,
+  "needX": true,
+  "needY": true,
+  "pass": true,
+  "moved": true,
+  "resolverExpectedXY": "(0.05, 0.05)",
+  "resolverExpectedRot": 0,
+  "resolverFlush": "x:true y:true edges:2",
+  "matchesResolver": true,
+  "toasts": [
+   "Added \"Wellness Console Table\" to cartUndo"
+  ],
+  "consoleDragMove": [
+   "log: [place] {outdoor: false, wallSnapped: true, corner: true, x: 0.05, y: 0.05}"
+  ],
+  "precisionStored": "full",
+  "note": "items after drop: 1"
+ },
+ {
+  "label": "mob-toolbar-mouse-drag-demo-console-table-full/top-right",
+  "viewport": "mobile 390x844 (hasTouch,isMobile)",
+  "gesture": "toolbar-mouse-drag",
+  "product": "demo-console-table",
+  "rotationPre": 0,
+  "snapUnit": "0.5 m",
+  "target": "top-right",
+  "dropCentre": "(4.8, 0.2)",
+  "dropScreen": "(333, 360) finger +56px",
+  "elementAtDrop": "canvas",
+  "resultXY": "(3.75, 0.05)",
+  "rotationApplied": 0,
+  "wh": "1.2 x 0.4",
+  "flushX": true,
+  "flushY": true,
+  "needX": true,
+  "needY": true,
+  "pass": true,
+  "moved": true,
+  "resolverExpectedXY": "(3.75, 0.05)",
+  "resolverExpectedRot": 0,
+  "resolverFlush": "x:true y:true edges:2",
+  "matchesResolver": true,
+  "toasts": [
+   "Added \"Wellness Console Table\" to cartUndo"
+  ],
+  "consoleDragMove": [
+   "log: [place] {outdoor: false, wallSnapped: true, corner: true, x: 3.75, y: 0.05}"
+  ],
+  "precisionStored": "full",
+  "note": "items after drop: 1"
+ },
+ {
+  "label": "mob-toolbar-mouse-drag-demo-console-table-full/bottom-left",
+  "viewport": "mobile 390x844 (hasTouch,isMobile)",
+  "gesture": "toolbar-mouse-drag",
+  "product": "demo-console-table",
+  "rotationPre": 0,
+  "snapUnit": "0.5 m",
+  "target": "bottom-left",
+  "dropCentre": "(0.2, 3.8)",
+  "dropScreen": "(57, 576) finger +56px",
+  "elementAtDrop": "canvas",
+  "resultXY": "(0.05, 3.55)",
+  "rotationApplied": 180,
+  "wh": "1.2 x 0.4",
+  "flushX": true,
+  "flushY": true,
+  "needX": true,
+  "needY": true,
+  "pass": true,
+  "moved": true,
+  "resolverExpectedXY": "(0.05, 3.5500000000000003)",
+  "resolverExpectedRot": 180,
+  "resolverFlush": "x:true y:true edges:2",
+  "matchesResolver": true,
+  "toasts": [
+   "Added \"Wellness Console Table\" to cartUndo"
+  ],
+  "consoleDragMove": [
+   "log: [place] {outdoor: false, wallSnapped: true, corner: true, x: 0.05, y: 3.5500000000000003}"
+  ],
+  "precisionStored": "full",
+  "note": "items after drop: 1"
+ },
+ {
+  "label": "mob-toolbar-mouse-drag-demo-console-table-full/bottom-right",
+  "viewport": "mobile 390x844 (hasTouch,isMobile)",
+  "gesture": "toolbar-mouse-drag",
+  "product": "demo-console-table",
+  "rotationPre": 0,
+  "snapUnit": "0.5 m",
+  "target": "bottom-right",
+  "dropCentre": "(4.8, 3.8)",
+  "dropScreen": "(333, 576) finger +56px",
+  "elementAtDrop": "canvas",
+  "resultXY": "(4.55, 2.75)",
+  "rotationApplied": 90,
+  "wh": "0.4 x 1.2",
+  "flushX": true,
+  "flushY": true,
+  "needX": true,
+  "needY": true,
+  "pass": true,
+  "moved": true,
+  "resolverExpectedXY": "(4.55, 2.75)",
+  "resolverExpectedRot": 90,
+  "resolverFlush": "x:true y:true edges:2",
+  "matchesResolver": true,
+  "toasts": [
+   "Added \"Wellness Console Table\" to cartUndo"
+  ],
+  "consoleDragMove": [
+   "log: [place] {outdoor: false, wallSnapped: true, corner: true, x: 4.55, y: 2.75}"
+  ],
+  "precisionStored": "full",
+  "note": "items after drop: 1"
+ }
+]

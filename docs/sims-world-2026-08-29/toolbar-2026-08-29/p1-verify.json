@@ -1,0 +1,944 @@
+{
+  "desktop": {
+    "820": {
+      "width": 820,
+      "hits": {
+        "room-draw-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 417,
+            "y": 6,
+            "w": 40,
+            "h": 40
+          }
+        },
+        "wall-tool-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 198,
+            "y": 6,
+            "w": 40,
+            "h": 40
+          }
+        },
+        "floor-paint-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 278,
+            "y": 6,
+            "w": 40,
+            "h": 40
+          }
+        },
+        "snap-unit-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 532,
+            "y": 59,
+            "w": 214,
+            "h": 36
+          }
+        },
+        "more-menu-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 772,
+            "y": 6,
+            "w": 40,
+            "h": 40
+          }
+        }
+      },
+      "clip": {
+        "headerH": 53,
+        "rowH": 52,
+        "clipped": [],
+        "rails": []
+      },
+      "doorClip": {
+        "headerH": 93,
+        "rowH": 52,
+        "clipped": [],
+        "rails": []
+      },
+      "sizes": {
+        "rooms-trigger": {
+          "w": 128,
+          "h": 40
+        },
+        "wall-tool-toggle": {
+          "w": 40,
+          "h": 40
+        },
+        "room-draw-toggle": {
+          "w": 40,
+          "h": 40
+        },
+        "more-menu-toggle": {
+          "w": 40,
+          "h": 40
+        }
+      },
+      "doorOptionsVisible": true,
+      "roomPopover": {
+        "finish": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 475,
+            "y": 59,
+            "w": 214,
+            "h": 36
+          }
+        },
+        "storeys": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 475,
+            "y": 99,
+            "w": 214,
+            "h": 36
+          }
+        },
+        "plot": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 475,
+            "y": 139,
+            "w": 214,
+            "h": 36
+          }
+        }
+      },
+      "viewPopover": {
+        "undo": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 532,
+            "y": 152,
+            "w": 103,
+            "h": 40
+          }
+        },
+        "grid": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 532,
+            "y": 99,
+            "w": 214,
+            "h": 36
+          }
+        }
+      }
+    },
+    "1024": {
+      "width": 1024,
+      "hits": {
+        "room-draw-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 417,
+            "y": 6,
+            "w": 40,
+            "h": 40
+          }
+        },
+        "wall-tool-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 198,
+            "y": 6,
+            "w": 40,
+            "h": 40
+          }
+        },
+        "floor-paint-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 278,
+            "y": 6,
+            "w": 40,
+            "h": 40
+          }
+        },
+        "snap-unit-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 565,
+            "y": 59,
+            "w": 214,
+            "h": 36
+          }
+        },
+        "more-menu-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 976,
+            "y": 6,
+            "w": 40,
+            "h": 40
+          }
+        }
+      },
+      "clip": {
+        "headerH": 53,
+        "rowH": 52,
+        "clipped": [],
+        "rails": []
+      },
+      "doorClip": {
+        "headerH": 93,
+        "rowH": 52,
+        "clipped": [],
+        "rails": []
+      },
+      "sizes": {
+        "rooms-trigger": {
+          "w": 128,
+          "h": 40
+        },
+        "wall-tool-toggle": {
+          "w": 40,
+          "h": 40
+        },
+        "room-draw-toggle": {
+          "w": 40,
+          "h": 40
+        },
+        "more-menu-toggle": {
+          "w": 40,
+          "h": 40
+        }
+      },
+      "doorOptionsVisible": true,
+      "roomPopover": {
+        "finish": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 475,
+            "y": 59,
+            "w": 214,
+            "h": 36
+          }
+        },
+        "storeys": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 475,
+            "y": 99,
+            "w": 214,
+            "h": 36
+          }
+        },
+        "plot": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 475,
+            "y": 139,
+            "w": 214,
+            "h": 36
+          }
+        }
+      },
+      "viewPopover": {
+        "undo": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 565,
+            "y": 152,
+            "w": 103,
+            "h": 40
+          }
+        },
+        "grid": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 565,
+            "y": 99,
+            "w": 214,
+            "h": 36
+          }
+        }
+      }
+    },
+    "1280": {
+      "width": 1280,
+      "hits": {
+        "room-draw-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 551,
+            "y": 6,
+            "w": 40,
+            "h": 40
+          }
+        },
+        "wall-tool-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 198,
+            "y": 6,
+            "w": 69,
+            "h": 40
+          }
+        },
+        "floor-paint-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 334,
+            "y": 6,
+            "w": 68,
+            "h": 40
+          }
+        },
+        "snap-unit-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 753,
+            "y": 6,
+            "w": 73,
+            "h": 40
+          }
+        },
+        "more-menu-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 1232,
+            "y": 6,
+            "w": 40,
+            "h": 40
+          }
+        }
+      },
+      "clip": {
+        "headerH": 53,
+        "rowH": 52,
+        "clipped": [],
+        "rails": []
+      },
+      "doorClip": {
+        "headerH": 93,
+        "rowH": 52,
+        "clipped": [],
+        "rails": []
+      },
+      "sizes": {
+        "rooms-trigger": {
+          "w": 128,
+          "h": 40
+        },
+        "wall-tool-toggle": {
+          "w": 69,
+          "h": 40
+        },
+        "room-draw-toggle": {
+          "w": 40,
+          "h": 40
+        },
+        "more-menu-toggle": {
+          "w": 40,
+          "h": 40
+        }
+      },
+      "doorOptionsVisible": true
+    },
+    "1366": {
+      "width": 1366,
+      "hits": {
+        "room-draw-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 551,
+            "y": 6,
+            "w": 40,
+            "h": 40
+          }
+        },
+        "wall-tool-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 198,
+            "y": 6,
+            "w": 69,
+            "h": 40
+          }
+        },
+        "floor-paint-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 334,
+            "y": 6,
+            "w": 68,
+            "h": 40
+          }
+        },
+        "snap-unit-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 753,
+            "y": 6,
+            "w": 73,
+            "h": 40
+          }
+        },
+        "more-menu-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 1318,
+            "y": 6,
+            "w": 40,
+            "h": 40
+          }
+        }
+      },
+      "clip": {
+        "headerH": 53,
+        "rowH": 52,
+        "clipped": [],
+        "rails": []
+      },
+      "doorClip": {
+        "headerH": 93,
+        "rowH": 52,
+        "clipped": [],
+        "rails": []
+      },
+      "sizes": {
+        "rooms-trigger": {
+          "w": 128,
+          "h": 40
+        },
+        "wall-tool-toggle": {
+          "w": 69,
+          "h": 40
+        },
+        "room-draw-toggle": {
+          "w": 40,
+          "h": 40
+        },
+        "more-menu-toggle": {
+          "w": 40,
+          "h": 40
+        }
+      },
+      "doorOptionsVisible": true,
+      "paletteHit": {
+        "ok": true,
+        "why": "hit",
+        "rect": {
+          "x": 343,
+          "y": 173,
+          "w": 270,
+          "h": 36
+        }
+      },
+      "moreHelp": true,
+      "sizePopover": {
+        "ok": true,
+        "why": "hit",
+        "rect": {
+          "x": 539,
+          "y": 86,
+          "w": 64,
+          "h": 32
+        }
+      },
+      "sizePopoverClosedByEsc": true,
+      "readoutClip": {
+        "headerH": 53,
+        "rowH": 52,
+        "clipped": [],
+        "rails": []
+      }
+    },
+    "1536": {
+      "width": 1536,
+      "hits": {
+        "room-draw-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 599,
+            "y": 6,
+            "w": 83,
+            "h": 40
+          }
+        },
+        "wall-tool-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 206,
+            "y": 6,
+            "w": 69,
+            "h": 40
+          }
+        },
+        "floor-paint-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 342,
+            "y": 6,
+            "w": 68,
+            "h": 40
+          }
+        },
+        "snap-unit-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 952,
+            "y": 6,
+            "w": 73,
+            "h": 40
+          }
+        },
+        "more-menu-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 1488,
+            "y": 6,
+            "w": 40,
+            "h": 40
+          }
+        }
+      },
+      "clip": {
+        "headerH": 53,
+        "rowH": 52,
+        "clipped": [],
+        "rails": []
+      },
+      "doorClip": {
+        "headerH": 93,
+        "rowH": 52,
+        "clipped": [],
+        "rails": []
+      },
+      "sizes": {
+        "rooms-trigger": {
+          "w": 128,
+          "h": 40
+        },
+        "wall-tool-toggle": {
+          "w": 69,
+          "h": 40
+        },
+        "room-draw-toggle": {
+          "w": 83,
+          "h": 40
+        },
+        "more-menu-toggle": {
+          "w": 40,
+          "h": 40
+        }
+      },
+      "doorOptionsVisible": true
+    },
+    "1920": {
+      "width": 1920,
+      "hits": {
+        "room-draw-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 599,
+            "y": 6,
+            "w": 83,
+            "h": 40
+          }
+        },
+        "wall-tool-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 206,
+            "y": 6,
+            "w": 69,
+            "h": 40
+          }
+        },
+        "floor-paint-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 342,
+            "y": 6,
+            "w": 68,
+            "h": 40
+          }
+        },
+        "snap-unit-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 952,
+            "y": 6,
+            "w": 109,
+            "h": 40
+          }
+        },
+        "more-menu-toggle": {
+          "ok": true,
+          "why": "hit",
+          "rect": {
+            "x": 1872,
+            "y": 6,
+            "w": 40,
+            "h": 40
+          }
+        }
+      },
+      "clip": {
+        "headerH": 53,
+        "rowH": 52,
+        "clipped": [],
+        "rails": []
+      },
+      "doorClip": {
+        "headerH": 93,
+        "rowH": 52,
+        "clipped": [],
+        "rails": []
+      },
+      "sizes": {
+        "rooms-trigger": {
+          "w": 128,
+          "h": 40
+        },
+        "wall-tool-toggle": {
+          "w": 69,
+          "h": 40
+        },
+        "room-draw-toggle": {
+          "w": 83,
+          "h": 40
+        },
+        "more-menu-toggle": {
+          "w": 40,
+          "h": 40
+        }
+      },
+      "doorOptionsVisible": true,
+      "paletteHit": {
+        "ok": true,
+        "why": "hit",
+        "rect": {
+          "x": 351,
+          "y": 173,
+          "w": 270,
+          "h": 36
+        }
+      },
+      "moreHelp": true,
+      "sizePopover": {
+        "ok": true,
+        "why": "hit",
+        "rect": {
+          "x": 567,
+          "y": 86,
+          "w": 64,
+          "h": 32
+        }
+      },
+      "sizePopoverClosedByEsc": true
+    }
+  },
+  "mobile": {
+    "strip": {
+      "[data-testid=\"rooms-trigger\"]": {
+        "ok": true,
+        "why": "hit",
+        "rect": {
+          "x": 56,
+          "y": 6,
+          "w": 195,
+          "h": 44
+        }
+      },
+      "[data-testid=\"room-draw-toggle\"]": {
+        "ok": true,
+        "why": "hit",
+        "rect": {
+          "x": 260,
+          "y": 6,
+          "w": 69,
+          "h": 44
+        }
+      },
+      "button[aria-label=\"Open menu\"]": {
+        "ok": true,
+        "why": "hit",
+        "rect": {
+          "x": 338,
+          "y": 6,
+          "w": 44,
+          "h": 44
+        }
+      }
+    },
+    "sheet": {
+      "[data-testid=\"wall-tool-toggle-mobile\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-testid=\"floor-paint-mobile\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 336,
+        "inViewport": true
+      },
+      "[data-testid=\"floor-paint-toggle-mobile\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-testid=\"floor-paint-mobile-gym-interlock\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-testid=\"floor-paint-mobile-eva-combat\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-testid=\"floor-paint-mobile-rubber-composite\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-testid=\"floor-paint-mobile-outdoor-1m\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-testid=\"floor-paint-mobile-outdoor-50\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-testid=\"floor-paint-scope-mobile\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-testid=\"levels-mobile\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 129,
+        "inViewport": true
+      },
+      "[data-testid=\"level-mobile-ground\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-testid=\"level-add-mobile\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-testid=\"land-mobile\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 77,
+        "inViewport": true
+      },
+      "[data-testid=\"snap-unit-mobile-cm1\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 44,
+        "inViewport": true
+      },
+      "[data-testid=\"snap-unit-mobile-cm10\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 44,
+        "inViewport": true
+      },
+      "[data-testid=\"snap-unit-mobile-quarter\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 44,
+        "inViewport": true
+      },
+      "[data-testid=\"snap-unit-mobile-full\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 44,
+        "inViewport": true
+      },
+      "[data-testid=\"snap-unit-mobile-m1\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 44,
+        "inViewport": true
+      },
+      "[data-testid=\"snap-unit-mobile-m10\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 44,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] button[aria-label=\"Close menu\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 44,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] button[aria-label=\"Box\"], [data-ppw-sheet] button:has-text(\"Box\")": {
+        "ok": true,
+        "why": "hit",
+        "h": 44,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] button:has-text(\"Custom\")": {
+        "ok": true,
+        "why": "hit",
+        "h": 44,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] button:has-text(\"Grid\")": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] button:has-text(\"New property\")": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] button:has-text(\"Save as\")": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] button:has-text(\"Load\")": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] a:has-text(\"My designs\")": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] select[aria-label=\"Currency\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 42,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] a[href=\"/cart\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] a[href=\"/products\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] button:has-text(\"Help\")": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] button:has-text(\"Request quote\")": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] button:has-text(\"Lock\")": {
+        "ok": true,
+        "why": "hit",
+        "h": 48,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] input[aria-label=\"Plot width (m)\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 32,
+        "inViewport": true
+      },
+      "[data-ppw-sheet] input[aria-label=\"Plot depth (m)\"]": {
+        "ok": true,
+        "why": "hit",
+        "h": 32,
+        "inViewport": true
+      }
+    },
+    "sheetScroll": {
+      "top": 0,
+      "bottom": 844,
+      "vh": 844,
+      "scrollH": 1471,
+      "clientH": 844,
+      "scrolls": true,
+      "width": 343,
+      "bodyOverflow": "hidden"
+    },
+    "toolbarUnderScrim": {
+      "found": true,
+      "zToolbar": "30",
+      "hitIsScrim": true,
+      "hitTag": "DIV.fixed inset-0 z-40 bg-black/30"
+    },
+    "stripH": 56,
+    "stripDrawText": "Walls",
+    "escClosed": true
+  },
+  "errors": []
+}

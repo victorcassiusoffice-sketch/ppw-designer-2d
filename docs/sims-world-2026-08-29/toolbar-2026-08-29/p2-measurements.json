@@ -1,0 +1,573 @@
+{
+  "desktop-1920": {
+    "pageTabsCount": 0,
+    "mainPaddingBottom": "0px",
+    "toolbarVar": "0px",
+    "toolbar": null,
+    "section": {
+      "x": 0,
+      "y": 53,
+      "w": 1920,
+      "h": 945
+    },
+    "reset": {
+      "x": 1641.078125,
+      "y": 69,
+      "w": 77.421875,
+      "h": 40
+    },
+    "share": {
+      "x": 1726.5,
+      "y": 69,
+      "w": 78.5,
+      "h": 40
+    },
+    "capture": {
+      "x": 1813,
+      "y": 69,
+      "w": 91,
+      "h": 40
+    },
+    "readoutChip": {
+      "x": 1727.328125,
+      "y": 117,
+      "w": 176.671875,
+      "h": 40
+    },
+    "itemsPlaced": {
+      "x": 1868,
+      "y": 126.75,
+      "w": 24,
+      "h": 20.5
+    },
+    "cost": {
+      "x": 1827.5625,
+      "y": 165,
+      "w": 76.4375,
+      "h": 40
+    },
+    "costText": "$3,611.11",
+    "cartPillText": "2$3,611.11",
+    "cartPill": {
+      "x": 1769.234375,
+      "y": 942,
+      "w": 134.765625,
+      "h": 40
+    },
+    "help": {
+      "x": 1864,
+      "y": 886,
+      "w": 40,
+      "h": 40
+    },
+    "helpZ": "35",
+    "clearProducts": {
+      "x": 12,
+      "y": 942,
+      "w": 127.09375,
+      "h": 40
+    },
+    "clearAll": {
+      "x": 147.09375,
+      "y": 942,
+      "w": 91.5,
+      "h": 40
+    },
+    "clearAllFont": "12px/500 rgb(42, 41, 38) on rgb(250, 249, 245)",
+    "mobileUndo": null,
+    "mobilePrecision": null,
+    "buildStampFont": "11px/400 rgb(61, 70, 85) on rgba(0, 0, 0, 0)",
+    "catTab": null,
+    "catTabFont": "11px/600 rgb(55, 54, 47) on rgba(0, 0, 0, 0)",
+    "minimize": null,
+    "smallTextPlan": [],
+    "vertexShots": {
+      "a": {
+        "x": 810,
+        "y": 375.5
+      },
+      "b": {
+        "x": 1010,
+        "y": 375.5
+      }
+    },
+    "sectionInDraw": {
+      "x": 0,
+      "y": 53,
+      "w": 1920,
+      "h": 945
+    },
+    "hud": {
+      "x": 660,
+      "y": 824,
+      "w": 600,
+      "h": 162
+    },
+    "hudVar": "162px",
+    "hudFinish": {
+      "x": 673,
+      "y": 933,
+      "w": 56.1875,
+      "h": 40
+    },
+    "hudClose": {
+      "x": 737.1875,
+      "y": 933,
+      "w": 90.625,
+      "h": 40
+    },
+    "hudCancel": {
+      "x": 1154.671875,
+      "y": 933,
+      "w": 92.328125,
+      "h": 40
+    },
+    "hudUndo": {
+      "x": 941.984375,
+      "y": 933,
+      "w": 56.78125,
+      "h": 40
+    },
+    "hudLength": {
+      "x": 1132.328125,
+      "y": 885,
+      "w": 96,
+      "h": 40
+    },
+    "hudStepperBtn": {
+      "x": 1207,
+      "y": 837,
+      "w": 40,
+      "h": 40
+    },
+    "mobileStepper": null,
+    "clearControlsInDraw": 0,
+    "cartPillInDraw": 0,
+    "hit": {
+      "finish": {
+        "ok": true,
+        "hit": "button[room-draw-finish-walls]"
+      },
+      "close": {
+        "ok": true,
+        "hit": "button[room-draw-close]"
+      },
+      "cancel": {
+        "ok": true,
+        "hit": "button[room-draw-cancel]"
+      },
+      "undo": {
+        "ok": true,
+        "hit": "button[room-draw-undo]"
+      },
+      "length": {
+        "ok": true,
+        "hit": "input[draw-segment-length]"
+      },
+      "finer": {
+        "ok": true,
+        "hit": "button[snap-unit-finer]"
+      }
+    },
+    "smallTextPen": [],
+    "hudCoversRoom": {
+      "roomTop": 325.5,
+      "roomBottom": 725.5,
+      "hudTop": 824,
+      "coveredPx": 0
+    },
+    "hudVarAfter": "0px",
+    "detailsPanel": null,
+    "rotateHandle": 0,
+    "smallTextSelected": []
+  },
+  "desktop-1366": {
+    "pageTabsCount": 0,
+    "mainPaddingBottom": "0px",
+    "toolbarVar": "0px",
+    "toolbar": null,
+    "section": {
+      "x": 0,
+      "y": 53,
+      "w": 1366,
+      "h": 633
+    },
+    "reset": {
+      "x": 1087.078125,
+      "y": 69,
+      "w": 77.421875,
+      "h": 40
+    },
+    "share": {
+      "x": 1172.5,
+      "y": 69,
+      "w": 78.5,
+      "h": 40
+    },
+    "capture": {
+      "x": 1259,
+      "y": 69,
+      "w": 91,
+      "h": 40
+    },
+    "readoutChip": {
+      "x": 1173.328125,
+      "y": 117,
+      "w": 176.671875,
+      "h": 40
+    },
+    "itemsPlaced": {
+      "x": 1314,
+      "y": 126.75,
+      "w": 24,
+      "h": 20.5
+    },
+    "cost": {
+      "x": 1273.5625,
+      "y": 165,
+      "w": 76.4375,
+      "h": 40
+    },
+    "costText": "$3,611.11",
+    "cartPillText": "2$3,611.11",
+    "cartPill": {
+      "x": 1215.234375,
+      "y": 630,
+      "w": 134.765625,
+      "h": 40
+    },
+    "help": {
+      "x": 1310,
+      "y": 574,
+      "w": 40,
+      "h": 40
+    },
+    "helpZ": "35",
+    "clearProducts": {
+      "x": 12,
+      "y": 630,
+      "w": 127.09375,
+      "h": 40
+    },
+    "clearAll": {
+      "x": 147.09375,
+      "y": 630,
+      "w": 91.5,
+      "h": 40
+    },
+    "clearAllFont": "12px/500 rgb(42, 41, 38) on rgb(250, 249, 245)",
+    "mobileUndo": null,
+    "mobilePrecision": null,
+    "buildStampFont": "11px/400 rgb(61, 70, 85) on rgba(0, 0, 0, 0)",
+    "catTab": null,
+    "catTabFont": "11px/600 rgb(55, 54, 47) on rgba(0, 0, 0, 0)",
+    "minimize": null,
+    "smallTextPlan": [],
+    "vertexShots": {
+      "a": {
+        "x": 533,
+        "y": 219.5
+      },
+      "b": {
+        "x": 733,
+        "y": 219.5
+      }
+    },
+    "sectionInDraw": {
+      "x": 0,
+      "y": 53,
+      "w": 1366,
+      "h": 633
+    },
+    "hud": {
+      "x": 383,
+      "y": 512,
+      "w": 600,
+      "h": 162
+    },
+    "hudVar": "162px",
+    "hudFinish": {
+      "x": 396,
+      "y": 621,
+      "w": 56.1875,
+      "h": 40
+    },
+    "hudClose": {
+      "x": 460.1875,
+      "y": 621,
+      "w": 90.625,
+      "h": 40
+    },
+    "hudCancel": {
+      "x": 877.671875,
+      "y": 621,
+      "w": 92.328125,
+      "h": 40
+    },
+    "hudUndo": {
+      "x": 664.984375,
+      "y": 621,
+      "w": 56.78125,
+      "h": 40
+    },
+    "hudLength": {
+      "x": 855.328125,
+      "y": 573,
+      "w": 96,
+      "h": 40
+    },
+    "hudStepperBtn": {
+      "x": 930,
+      "y": 525,
+      "w": 40,
+      "h": 40
+    },
+    "mobileStepper": null,
+    "clearControlsInDraw": 0,
+    "cartPillInDraw": 0,
+    "hit": {
+      "finish": {
+        "ok": true,
+        "hit": "button[room-draw-finish-walls]"
+      },
+      "close": {
+        "ok": true,
+        "hit": "button[room-draw-close]"
+      },
+      "cancel": {
+        "ok": true,
+        "hit": "button[room-draw-cancel]"
+      },
+      "undo": {
+        "ok": true,
+        "hit": "button[room-draw-undo]"
+      },
+      "length": {
+        "ok": true,
+        "hit": "input[draw-segment-length]"
+      },
+      "finer": {
+        "ok": true,
+        "hit": "button[snap-unit-finer]"
+      }
+    },
+    "smallTextPen": [],
+    "hudCoversRoom": {
+      "roomTop": 169.5,
+      "roomBottom": 569.5,
+      "hudTop": 512,
+      "coveredPx": 57.5
+    },
+    "hudVarAfter": "0px",
+    "detailsPanel": null,
+    "rotateHandle": 0,
+    "smallTextSelected": []
+  },
+  "mobile-390": {
+    "pageTabsCount": 0,
+    "mainPaddingBottom": "207px",
+    "toolbarVar": "207px",
+    "toolbar": {
+      "x": 0,
+      "y": 637,
+      "w": 390,
+      "h": 207
+    },
+    "section": {
+      "x": 0,
+      "y": 57,
+      "w": 390,
+      "h": 580
+    },
+    "reset": {
+      "x": 226,
+      "y": 73,
+      "w": 44,
+      "h": 44
+    },
+    "share": {
+      "x": 278,
+      "y": 73,
+      "w": 44,
+      "h": 44
+    },
+    "capture": {
+      "x": 330,
+      "y": 73,
+      "w": 44,
+      "h": 44
+    },
+    "readoutChip": {
+      "x": 204,
+      "y": 125,
+      "w": 170,
+      "h": 40
+    },
+    "itemsPlaced": {
+      "x": 338,
+      "y": 134.75,
+      "w": 24,
+      "h": 20.5
+    },
+    "cost": {
+      "x": 297.5625,
+      "y": 173,
+      "w": 76.4375,
+      "h": 40
+    },
+    "costText": "$3,611.11",
+    "cartPillText": "2$3,611.11",
+    "cartPill": {
+      "x": 239.234375,
+      "y": 577,
+      "w": 134.765625,
+      "h": 44
+    },
+    "help": {
+      "x": 334,
+      "y": 525,
+      "w": 40,
+      "h": 40
+    },
+    "helpZ": "35",
+    "clearProducts": {
+      "x": 12,
+      "y": 577,
+      "w": 44,
+      "h": 44
+    },
+    "clearAll": {
+      "x": 64,
+      "y": 577,
+      "w": 44,
+      "h": 44
+    },
+    "clearAllFont": "12px/500 rgb(42, 41, 38) on rgb(250, 249, 245)",
+    "mobileUndo": {
+      "x": 12,
+      "y": 65,
+      "w": 44,
+      "h": 44
+    },
+    "mobilePrecision": {
+      "x": 116,
+      "y": 65,
+      "w": 64,
+      "h": 44
+    },
+    "buildStampFont": "11px/400 rgb(61, 70, 85) on rgba(0, 0, 0, 0)",
+    "catTab": {
+      "x": 8,
+      "y": 643,
+      "w": 60,
+      "h": 44
+    },
+    "catTabFont": "11px/600 rgb(55, 54, 47) on rgba(0, 0, 0, 0)",
+    "minimize": {
+      "x": 338,
+      "y": 643,
+      "w": 44,
+      "h": 44
+    },
+    "smallTextPlan": [],
+    "vertexShots": {
+      "a": {
+        "x": 102,
+        "y": 254
+      },
+      "b": {
+        "x": 226,
+        "y": 254
+      }
+    },
+    "sectionInDraw": {
+      "x": 0,
+      "y": 57,
+      "w": 390,
+      "h": 580
+    },
+    "hud": {
+      "x": 11.703125,
+      "y": 351,
+      "w": 366.59375,
+      "h": 218
+    },
+    "hudVar": "218px",
+    "hudFinish": {
+      "x": 24.703125,
+      "y": 512,
+      "w": 66.8125,
+      "h": 44
+    },
+    "hudClose": {
+      "x": 99.515625,
+      "y": 512,
+      "w": 90.625,
+      "h": 44
+    },
+    "hudCancel": {
+      "x": 272.96875,
+      "y": 512,
+      "w": 92.328125,
+      "h": 44
+    },
+    "hudUndo": {
+      "x": 198.140625,
+      "y": 512,
+      "w": 66.828125,
+      "h": 44
+    },
+    "hudLength": {
+      "x": 81.265625,
+      "y": 460,
+      "w": 96,
+      "h": 44
+    },
+    "hudStepperBtn": null,
+    "mobileStepper": {
+      "x": 12,
+      "y": 299,
+      "w": 148,
+      "h": 44
+    },
+    "clearControlsInDraw": 0,
+    "cartPillInDraw": 0,
+    "hit": {
+      "finish": {
+        "ok": true,
+        "hit": "button[room-draw-finish-walls]"
+      },
+      "close": {
+        "ok": true,
+        "hit": "button[room-draw-close]"
+      },
+      "cancel": {
+        "ok": true,
+        "hit": "button[room-draw-cancel]"
+      },
+      "undo": {
+        "ok": true,
+        "hit": "button[room-draw-undo]"
+      },
+      "length": {
+        "ok": true,
+        "hit": "input[draw-segment-length]"
+      },
+      "finer": {
+        "ok": false,
+        "hit": "div"
+      }
+    },
+    "smallTextPen": [],
+    "hudCoversRoom": {
+      "roomTop": 223,
+      "roomBottom": 471,
+      "hudTop": 351,
+      "coveredPx": 120
+    },
+    "hudVarAfter": "0px",
+    "detailsPanel": null,
+    "rotateHandle": 0,
+    "smallTextSelected": []
+  }
+}

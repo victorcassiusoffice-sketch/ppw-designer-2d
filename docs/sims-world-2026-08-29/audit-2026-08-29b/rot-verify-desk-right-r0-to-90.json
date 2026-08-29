@@ -1,0 +1,50 @@
+{
+ "slug": "desk/right-r0-to-90",
+ "mode": "mouse",
+ "seeded": {
+  "x": 2.9,
+  "y": 1.5,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "xPlusW": 4.95,
+  "yPlusH": 2.45,
+  "flushLeft": false,
+  "flushRight": true,
+  "flushTop": false,
+  "flushBottom": false,
+  "outOfBounds": false,
+  "centre": {
+   "x": 3.925,
+   "y": 1.975
+  }
+ },
+ "handleFrom": {
+  "x": 825.5,
+  "y": 320.5
+ },
+ "handleTo": {
+  "x": 1025.5,
+  "y": 386
+ },
+ "afterHandle": {
+  "x": 2.9,
+  "y": 1.5,
+  "rotation": 75,
+  "w": 1.4482085774347824,
+  "h": 2.2260260367399844,
+  "xPlusW": 4.3482,
+  "yPlusH": 3.726,
+  "flushLeft": false,
+  "flushRight": false,
+  "flushTop": false,
+  "flushBottom": false,
+  "outOfBounds": false,
+  "centre": {
+   "x": 3.6241,
+   "y": 2.613
+  }
+ },
+ "toastsAfterHandle": [],
+ "follow": []
+}

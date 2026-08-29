@@ -1,0 +1,200 @@
+[
+ {
+  "tag": "mob390-touch",
+  "case": "A rot0 left-edge TOUCH left wall (gap 0)",
+  "expect": "x=0 rot0 no-snap",
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 1.475,
+   "y": 1.525,
+   "rotation": 0
+  },
+  "dropCentreWorld": [
+   1.025,
+   2
+  ],
+  "dropScreen": [
+   107,
+   468
+  ],
+  "result": {
+   "x": 0,
+   "y": 1.5,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "rightEdge": 2.05,
+   "bottomEdge": 2.45
+  },
+  "toasts": [],
+  "log": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ },
+ {
+  "tag": "mob390-touch",
+  "case": "C rot0 left-edge 0.15 PAST left wall",
+  "expect": "x=0.05 rot270 snapped",
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 1.475,
+   "y": 1.525,
+   "rotation": 0
+  },
+  "dropCentreWorld": [
+   0.875,
+   2
+  ],
+  "dropScreen": [
+   98,
+   468
+  ],
+  "result": {
+   "x": 0.05,
+   "y": 1,
+   "rot": 270,
+   "w": 0.95,
+   "h": 2.05,
+   "rightEdge": 1,
+   "bottomEdge": 3.05
+  },
+  "toasts": [],
+  "log": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ },
+ {
+  "tag": "mob390-touch",
+  "case": "E rot0 top-edge TOUCH top wall",
+  "expect": "y=0.05 rot0 snapped",
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 1.475,
+   "y": 1.525,
+   "rotation": 0
+  },
+  "dropCentreWorld": [
+   2.5,
+   0.475
+  ],
+  "dropScreen": [
+   195,
+   376
+  ],
+  "result": {
+   "x": 1.5,
+   "y": 0.05,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "rightEdge": 3.55,
+   "bottomEdge": 1
+  },
+  "toasts": [],
+  "log": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ },
+ {
+  "tag": "mob390-touch",
+  "case": "F rot90 top-edge TOUCH top wall",
+  "expect": "y=0 rot90 no-snap",
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 2.025,
+   "y": 0.975,
+   "rotation": 90
+  },
+  "dropCentreWorld": [
+   2.5,
+   1.025
+  ],
+  "dropScreen": [
+   195,
+   409
+  ],
+  "result": {
+   "x": 2,
+   "y": 0,
+   "rot": 90,
+   "w": 0.95,
+   "h": 2.05,
+   "rightEdge": 2.95,
+   "bottomEdge": 2.05
+  },
+  "toasts": [],
+  "log": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ },
+ {
+  "tag": "mob390-touch",
+  "case": "G rot270 flush-left item (0.05,1.5) dragged up: top-edge TOUCH top",
+  "expect": "corner (0.05,0.05) rot270",
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 0.05,
+   "y": 1.5,
+   "rotation": 270
+  },
+  "dropCentreWorld": [
+   0.525,
+   1.025
+  ],
+  "dropScreen": [
+   77,
+   409
+  ],
+  "result": {
+   "x": 0.05,
+   "y": 0.05,
+   "rot": 270,
+   "w": 0.95,
+   "h": 2.05,
+   "rightEdge": 1,
+   "bottomEdge": 2.1
+  },
+  "toasts": [],
+  "log": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ },
+ {
+  "tag": "mob390-touch",
+  "case": "H rot0 flush-top item (1.5,0.05) dragged left: left-edge TOUCH left",
+  "expect": "corner (0.05,0.05) rot0",
+  "start": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 1.5,
+   "y": 0.05,
+   "rotation": 0
+  },
+  "dropCentreWorld": [
+   1.025,
+   0.525
+  ],
+  "dropScreen": [
+   107,
+   379
+  ],
+  "result": {
+   "x": 0.05,
+   "y": 0.05,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "rightEdge": 2.1,
+   "bottomEdge": 1
+  },
+  "toasts": [],
+  "log": [
+   "log: [drag-move] {reason: same-room}"
+  ]
+ }
+]

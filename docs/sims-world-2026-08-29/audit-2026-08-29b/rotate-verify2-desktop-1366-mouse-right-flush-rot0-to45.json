@@ -1,0 +1,61 @@
+{
+ "scenario": "right-flush-rot0-to45",
+ "viewport": "desktop-1366",
+ "gesture": "mouse",
+ "ppm": 100,
+ "handlePx": {
+  "x": 825.5,
+  "y": 320.5
+ },
+ "elementAtHandle": "canvas",
+ "floatingClusterBox": null,
+ "before": {
+  "x": 2.9000000000000004,
+  "y": 1.5,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "centre": {
+   "x": 3.9250000000000003,
+   "y": 1.975
+  },
+  "right": 4.95,
+  "bottom": 2.45
+ },
+ "trace": [
+  {
+   "iter": 0,
+   "rotation": 15,
+   "x": 2.9000000000000004,
+   "y": 1.5
+  },
+  {
+   "iter": 1,
+   "rotation": 45,
+   "x": 2.9000000000000004,
+   "y": 1.5
+  }
+ ],
+ "afterRotate": {
+  "x": 2.9000000000000004,
+  "y": 1.5,
+  "rotation": 45,
+  "w": 2.1213,
+  "h": 2.1213,
+  "centre": {
+   "x": 3.9606601717798213,
+   "y": 2.560660171779821
+  },
+  "right": 5.0213,
+  "bottom": 3.6213,
+  "rightBeyondInnerFace": true,
+  "bottomBeyondInnerFace": false,
+  "rightBeyondPolygon": true,
+  "bottomBeyondPolygon": false,
+  "centreMoved": true,
+  "xyChanged": false,
+  "reachedTarget": true
+ },
+ "toastsAfterRotate": [],
+ "rotShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify2-desktop-1366-mouse-right-flush-rot0-to45-rotated.png"
+}

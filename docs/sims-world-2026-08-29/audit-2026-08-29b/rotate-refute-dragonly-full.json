@@ -1,0 +1,70 @@
+[
+ {
+  "target": "left-edge-0.2",
+  "dropCentre": {
+   "cx": 1.225,
+   "cy": 2
+  },
+  "after": {
+   "x": 0,
+   "y": 1.5,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": false,
+   "fy": false
+  },
+  "toasts": []
+ },
+ {
+  "target": "top-edge-0.2",
+  "dropCentre": {
+   "cx": 2.5,
+   "cy": 0.675
+  },
+  "after": {
+   "x": 1.5,
+   "y": 0.05,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": false,
+   "fy": true
+  },
+  "toasts": []
+ },
+ {
+  "target": "top-left-edge-0.2",
+  "dropCentre": {
+   "cx": 1.225,
+   "cy": 0.675
+  },
+  "after": {
+   "x": 0.05,
+   "y": 0.05,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": true,
+   "fy": true
+  },
+  "toasts": []
+ },
+ {
+  "target": "left-edge-0.0",
+  "dropCentre": {
+   "cx": 1.025,
+   "cy": 2
+  },
+  "after": {
+   "x": 0,
+   "y": 1.5,
+   "rot": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "fx": false,
+   "fy": false
+  },
+  "toasts": []
+ }
+]

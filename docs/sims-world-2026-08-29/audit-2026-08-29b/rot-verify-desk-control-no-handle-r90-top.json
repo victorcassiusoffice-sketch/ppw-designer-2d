@@ -1,0 +1,71 @@
+{
+ "slug": "desk/control-no-handle-r90-top",
+ "mode": "mouse",
+ "seeded": {
+  "x": 2.025,
+  "y": 0.975,
+  "rotation": 90,
+  "w": 0.95,
+  "h": 2.05,
+  "xPlusW": 2.975,
+  "yPlusH": 3.025,
+  "flushLeft": false,
+  "flushRight": false,
+  "flushTop": false,
+  "flushBottom": false,
+  "outOfBounds": false,
+  "centre": {
+   "x": 2.5,
+   "y": 2
+  }
+ },
+ "follow": [
+  {
+   "label": "drag-edge0.2-top-wall",
+   "dropCentre": {
+    "cx": 2.5,
+    "cy": 1.275
+   },
+   "before": {
+    "x": 2.025,
+    "y": 0.975,
+    "rotation": 90,
+    "w": 0.95,
+    "h": 2.05,
+    "xPlusW": 2.975,
+    "yPlusH": 3.025,
+    "flushLeft": false,
+    "flushRight": false,
+    "flushTop": false,
+    "flushBottom": false,
+    "outOfBounds": false,
+    "centre": {
+     "x": 2.5,
+     "y": 2
+    }
+   },
+   "after": {
+    "x": 2,
+    "y": 0.5,
+    "rotation": 90,
+    "w": 0.95,
+    "h": 2.05,
+    "xPlusW": 2.95,
+    "yPlusH": 2.55,
+    "flushLeft": false,
+    "flushRight": false,
+    "flushTop": false,
+    "flushBottom": false,
+    "outOfBounds": false,
+    "centre": {
+     "x": 2.475,
+     "y": 1.525
+    }
+   },
+   "toasts": [],
+   "console": [
+    "log: [drag-move] {reason: same-room}"
+   ]
+  }
+ ]
+}

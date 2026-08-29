@@ -1,0 +1,979 @@
+{
+  "390": {
+    "dock": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "font": "16px",
+      "weight": "400",
+      "radius": "0px",
+      "bg": "rgb(239, 237, 232)",
+      "color": "rgb(14, 27, 31)"
+    },
+    "tabAll": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "font": "16px",
+      "weight": "400",
+      "radius": "8px",
+      "bg": "rgba(121, 199, 173, 0.2)",
+      "color": "rgb(55, 54, 47)"
+    },
+    "tabLabel": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "font": "11px",
+      "weight": "600",
+      "radius": "0px",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(55, 54, 47)"
+    },
+    "tabIcon": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "font": "16px",
+      "weight": "400",
+      "radius": "0px",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(55, 54, 47)"
+    },
+    "collapse": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "font": "16px",
+      "weight": "400",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(55, 54, 47)"
+    },
+    "tile": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "font": "16px",
+      "weight": "400",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(14, 27, 31)"
+    },
+    "cartPill": {
+      "x": 230.28125,
+      "y": 577,
+      "w": 143.71875,
+      "h": 44,
+      "font": "12px",
+      "weight": "600",
+      "radius": "9999px",
+      "bg": "rgb(42, 41, 38)",
+      "color": "rgb(248, 245, 238)"
+    },
+    "currency": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(61, 70, 85)"
+    },
+    "tabsClickable": {
+      "all": {
+        "found": true,
+        "cx": 0,
+        "cy": 0,
+        "clickable": false,
+        "hitTag": "header"
+      },
+      "furniture": {
+        "found": true,
+        "cx": 0,
+        "cy": 0,
+        "clickable": false,
+        "hitTag": "header"
+      },
+      "cardio": {
+        "found": true,
+        "cx": 0,
+        "cy": 0,
+        "clickable": false,
+        "hitTag": "header"
+      },
+      "recovery": {
+        "found": true,
+        "cx": 0,
+        "cy": 0,
+        "clickable": false,
+        "hitTag": "header"
+      },
+      "sauna": {
+        "found": true,
+        "cx": 0,
+        "cy": 0,
+        "clickable": false,
+        "hitTag": "header"
+      },
+      "flooring": {
+        "found": true,
+        "cx": 0,
+        "cy": 0,
+        "clickable": false,
+        "hitTag": "header"
+      },
+      "walls": {
+        "found": true,
+        "cx": 0,
+        "cy": 0,
+        "clickable": false,
+        "hitTag": "header"
+      },
+      "decor": {
+        "found": true,
+        "cx": 0,
+        "cy": 0,
+        "clickable": false,
+        "hitTag": "header"
+      },
+      "lighting": {
+        "found": true,
+        "cx": 0,
+        "cy": 0,
+        "clickable": false,
+        "hitTag": "header"
+      },
+      "outdoor": {
+        "found": true,
+        "cx": 0,
+        "cy": 0,
+        "clickable": false,
+        "hitTag": "header"
+      }
+    },
+    "collapseClickable": {
+      "found": true,
+      "cx": 0,
+      "cy": 0,
+      "clickable": false,
+      "hitTag": "header"
+    },
+    "treadCentre": {
+      "x": 133,
+      "y": 402.4
+    },
+    "detailsOverlayCount": 1,
+    "mobileSheetBuy": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "font": "13px",
+      "weight": "600",
+      "radius": "8px",
+      "bg": "rgb(255, 187, 88)",
+      "color": "rgb(35, 44, 59)"
+    },
+    "mobileSheetRotate": {
+      "x": 199,
+      "y": 1101.359375,
+      "w": 162,
+      "h": 44,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(61, 70, 85)"
+    },
+    "pillAria": "Open cart — 3 items, £2,931.78",
+    "pillBadge": {
+      "x": 270.28125,
+      "y": 589.75,
+      "w": 19.125,
+      "h": 18.5,
+      "font": "11px",
+      "weight": "700",
+      "radius": "9999px",
+      "bg": "rgb(255, 187, 88)",
+      "color": "rgb(35, 44, 59)"
+    },
+    "cartSheet": {
+      "x": 0,
+      "y": 462,
+      "w": 390,
+      "h": 382,
+      "font": "16px",
+      "weight": "400",
+      "radius": "12px 12px 0px 0px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(14, 27, 31)"
+    },
+    "viewCart": {
+      "x": 16,
+      "y": 788,
+      "w": 80.8125,
+      "h": 44,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(42, 41, 38)"
+    },
+    "checkout": {
+      "x": 104.8125,
+      "y": 788,
+      "w": 81.734375,
+      "h": 44,
+      "font": "12px",
+      "weight": "600",
+      "radius": "8px",
+      "bg": "rgb(42, 41, 38)",
+      "color": "rgb(248, 245, 238)"
+    },
+    "closeCart": {
+      "x": 323.40625,
+      "y": 471,
+      "w": 58.59375,
+      "h": 44,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(61, 70, 85)"
+    },
+    "smallestFontInCart": 11,
+    "cartSheetAfterClose": 0,
+    "smallestFontInDock": 11
+  },
+  "1366": {
+    "dock": {
+      "x": 0,
+      "y": 686,
+      "w": 1366,
+      "h": 82,
+      "font": "16px",
+      "weight": "400",
+      "radius": "0px",
+      "bg": "rgb(239, 237, 232)",
+      "color": "rgb(14, 27, 31)"
+    },
+    "tabAll": {
+      "x": 12,
+      "y": 700,
+      "w": 64,
+      "h": 56,
+      "font": "16px",
+      "weight": "400",
+      "radius": "8px",
+      "bg": "rgba(121, 199, 173, 0.2)",
+      "color": "rgb(55, 54, 47)"
+    },
+    "tabLabel": {
+      "x": 32.78125,
+      "y": 734.5,
+      "w": 22.4375,
+      "h": 11,
+      "font": "11px",
+      "weight": "600",
+      "radius": "0px",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(55, 54, 47)"
+    },
+    "tabIcon": {
+      "x": 34,
+      "y": 710.5,
+      "w": 20,
+      "h": 20,
+      "font": "16px",
+      "weight": "400",
+      "radius": "0px",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(55, 54, 47)"
+    },
+    "collapse": {
+      "x": 1310,
+      "y": 700,
+      "w": 44,
+      "h": 56,
+      "font": "16px",
+      "weight": "400",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(55, 54, 47)"
+    },
+    "tile": {
+      "x": 801.6875,
+      "y": 694,
+      "w": 68,
+      "h": 68,
+      "font": "16px",
+      "weight": "400",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(14, 27, 31)"
+    },
+    "cartPill": {
+      "x": 1206.28125,
+      "y": 630,
+      "w": 143.71875,
+      "h": 40,
+      "font": "12px",
+      "weight": "600",
+      "radius": "9999px",
+      "bg": "rgb(42, 41, 38)",
+      "color": "rgb(248, 245, 238)"
+    },
+    "currency": {
+      "x": 858.421875,
+      "y": 7.5,
+      "w": 80,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(61, 70, 85)"
+    },
+    "tabsClickable": {
+      "all": {
+        "found": true,
+        "cx": 44,
+        "cy": 728,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "furniture": {
+        "found": true,
+        "cx": 124,
+        "cy": 728,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "cardio": {
+        "found": true,
+        "cx": 204,
+        "cy": 728,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "recovery": {
+        "found": true,
+        "cx": 283,
+        "cy": 728,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "sauna": {
+        "found": true,
+        "cx": 361,
+        "cy": 728,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "flooring": {
+        "found": true,
+        "cx": 438,
+        "cy": 728,
+        "clickable": true,
+        "hitTag": "rect"
+      },
+      "walls": {
+        "found": true,
+        "cx": 514,
+        "cy": 728,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "decor": {
+        "found": true,
+        "cx": 586,
+        "cy": 728,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "lighting": {
+        "found": true,
+        "cx": 661,
+        "cy": 728,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "outdoor": {
+        "found": true,
+        "cx": 740,
+        "cy": 728,
+        "clickable": true,
+        "hitTag": "path"
+      }
+    },
+    "collapseClickable": {
+      "found": true,
+      "cx": 1332,
+      "cy": 728,
+      "clickable": true,
+      "hitTag": "svg"
+    },
+    "tabHoverBg": "rgb(250, 249, 245)",
+    "armedCount": 2,
+    "hoverCardWhileArmed": 0,
+    "armedAfterEsc": 0,
+    "treadCentre": {
+      "x": 583,
+      "y": 283.5
+    },
+    "detailsOverlayCount": 1,
+    "details": {
+      "x": 1046,
+      "y": 56,
+      "w": 320,
+      "h": 558,
+      "font": "16px",
+      "weight": "400",
+      "radius": "0px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(14, 27, 31)"
+    },
+    "cta": {
+      "x": 1063,
+      "y": 562,
+      "w": 287,
+      "h": 40,
+      "font": "13px",
+      "weight": "600",
+      "radius": "8px",
+      "bg": "rgb(255, 187, 88)",
+      "color": "rgb(35, 44, 59)"
+    },
+    "ctaClickable": {
+      "found": true,
+      "cx": 1207,
+      "cy": 582,
+      "clickable": true,
+      "hitTag": "a[buy-from-k1-sport]"
+    },
+    "closeBtn": {
+      "x": 1310,
+      "y": 64,
+      "w": 40,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(61, 70, 85)"
+    },
+    "closeClickable": {
+      "found": true,
+      "cx": 1330,
+      "cy": 84,
+      "clickable": true,
+      "hitTag": "path"
+    },
+    "rotateBtn": {
+      "x": 1210.5,
+      "y": 1069.75,
+      "w": 126.5,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(61, 70, 85)"
+    },
+    "deleteBtn": {
+      "x": 1076,
+      "y": 1169.75,
+      "w": 261,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(61, 70, 85)"
+    },
+    "cartPillWithDetails": {
+      "x": 1206.28125,
+      "y": 630,
+      "w": 143.71875,
+      "h": 40,
+      "font": "12px",
+      "weight": "600",
+      "radius": "9999px",
+      "bg": "rgb(42, 41, 38)",
+      "color": "rgb(248, 245, 238)"
+    },
+    "detailsBodyScrollable": {
+      "scrollH": 1168,
+      "clientH": 436,
+      "overflowY": "auto"
+    },
+    "smallestFontInDetails": 11,
+    "tabsClickableWithDetails": {
+      "all": {
+        "found": true,
+        "cx": 44,
+        "cy": 728,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "outdoor": {
+        "found": true,
+        "cx": 740,
+        "cy": 728,
+        "clickable": true,
+        "hitTag": "path"
+      }
+    },
+    "lightToggle": {
+      "x": 1076,
+      "y": 1067.25,
+      "w": 261,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(42, 41, 38)",
+      "color": "rgb(248, 245, 238)"
+    },
+    "deleteHover": {
+      "x": 1076,
+      "y": 502.25,
+      "w": 261,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(201, 85, 63)",
+      "color": "rgb(255, 255, 255)"
+    },
+    "pillAria": "Open cart — 3 items, £2,931.78",
+    "pillBadge": {
+      "x": 1246.28125,
+      "y": 640.75,
+      "w": 19.125,
+      "h": 18.5,
+      "font": "11px",
+      "weight": "700",
+      "radius": "9999px",
+      "bg": "rgb(255, 187, 88)",
+      "color": "rgb(35, 44, 59)"
+    },
+    "cartSheet": {
+      "x": 646,
+      "y": 422.5,
+      "w": 720,
+      "h": 345.5,
+      "font": "16px",
+      "weight": "400",
+      "radius": "12px 12px 0px 0px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(14, 27, 31)"
+    },
+    "viewCart": {
+      "x": 1179.453125,
+      "y": 716,
+      "w": 80.8125,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(42, 41, 38)"
+    },
+    "checkout": {
+      "x": 1268.265625,
+      "y": 716,
+      "w": 81.734375,
+      "h": 40,
+      "font": "12px",
+      "weight": "600",
+      "radius": "8px",
+      "bg": "rgb(42, 41, 38)",
+      "color": "rgb(248, 245, 238)"
+    },
+    "closeCart": {
+      "x": 1299.40625,
+      "y": 431.5,
+      "w": 58.59375,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(61, 70, 85)"
+    },
+    "smallestFontInCart": 11,
+    "cartSheetAfterClose": 0,
+    "smallestFontInDock": 11
+  },
+  "1920": {
+    "dock": {
+      "x": 0,
+      "y": 998,
+      "w": 1920,
+      "h": 82,
+      "font": "16px",
+      "weight": "400",
+      "radius": "0px",
+      "bg": "rgb(239, 237, 232)",
+      "color": "rgb(14, 27, 31)"
+    },
+    "tabAll": {
+      "x": 12,
+      "y": 1012,
+      "w": 64,
+      "h": 56,
+      "font": "16px",
+      "weight": "400",
+      "radius": "8px",
+      "bg": "rgba(121, 199, 173, 0.2)",
+      "color": "rgb(55, 54, 47)"
+    },
+    "tabLabel": {
+      "x": 32.78125,
+      "y": 1046.5,
+      "w": 22.4375,
+      "h": 11,
+      "font": "11px",
+      "weight": "600",
+      "radius": "0px",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(55, 54, 47)"
+    },
+    "tabIcon": {
+      "x": 34,
+      "y": 1022.5,
+      "w": 20,
+      "h": 20,
+      "font": "16px",
+      "weight": "400",
+      "radius": "0px",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(55, 54, 47)"
+    },
+    "collapse": {
+      "x": 1864,
+      "y": 1012,
+      "w": 44,
+      "h": 56,
+      "font": "16px",
+      "weight": "400",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(55, 54, 47)"
+    },
+    "tile": {
+      "x": 801.6875,
+      "y": 1006,
+      "w": 68,
+      "h": 68,
+      "font": "16px",
+      "weight": "400",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(14, 27, 31)"
+    },
+    "cartPill": {
+      "x": 1760.28125,
+      "y": 942,
+      "w": 143.71875,
+      "h": 40,
+      "font": "12px",
+      "weight": "600",
+      "radius": "9999px",
+      "bg": "rgb(42, 41, 38)",
+      "color": "rgb(248, 245, 238)"
+    },
+    "currency": {
+      "x": 1365.390625,
+      "y": 7.5,
+      "w": 80,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(61, 70, 85)"
+    },
+    "tabsClickable": {
+      "all": {
+        "found": true,
+        "cx": 44,
+        "cy": 1040,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "furniture": {
+        "found": true,
+        "cx": 124,
+        "cy": 1040,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "cardio": {
+        "found": true,
+        "cx": 204,
+        "cy": 1040,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "recovery": {
+        "found": true,
+        "cx": 283,
+        "cy": 1040,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "sauna": {
+        "found": true,
+        "cx": 361,
+        "cy": 1040,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "flooring": {
+        "found": true,
+        "cx": 438,
+        "cy": 1040,
+        "clickable": true,
+        "hitTag": "rect"
+      },
+      "walls": {
+        "found": true,
+        "cx": 514,
+        "cy": 1040,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "decor": {
+        "found": true,
+        "cx": 586,
+        "cy": 1040,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "lighting": {
+        "found": true,
+        "cx": 661,
+        "cy": 1040,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "outdoor": {
+        "found": true,
+        "cx": 740,
+        "cy": 1040,
+        "clickable": true,
+        "hitTag": "path"
+      }
+    },
+    "collapseClickable": {
+      "found": true,
+      "cx": 1886,
+      "cy": 1040,
+      "clickable": true,
+      "hitTag": "svg"
+    },
+    "tabHoverBg": "rgb(250, 249, 245)",
+    "armedCount": 2,
+    "hoverCardWhileArmed": 0,
+    "armedAfterEsc": 0,
+    "treadCentre": {
+      "x": 860,
+      "y": 439.5
+    },
+    "detailsOverlayCount": 1,
+    "details": {
+      "x": 1600,
+      "y": 56,
+      "w": 320,
+      "h": 870,
+      "font": "16px",
+      "weight": "400",
+      "radius": "0px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(14, 27, 31)"
+    },
+    "cta": {
+      "x": 1617,
+      "y": 874,
+      "w": 287,
+      "h": 40,
+      "font": "13px",
+      "weight": "600",
+      "radius": "8px",
+      "bg": "rgb(255, 187, 88)",
+      "color": "rgb(35, 44, 59)"
+    },
+    "ctaClickable": {
+      "found": true,
+      "cx": 1761,
+      "cy": 894,
+      "clickable": true,
+      "hitTag": "a[buy-from-k1-sport]"
+    },
+    "closeBtn": {
+      "x": 1864,
+      "y": 64,
+      "w": 40,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(61, 70, 85)"
+    },
+    "closeClickable": {
+      "found": true,
+      "cx": 1884,
+      "cy": 84,
+      "clickable": true,
+      "hitTag": "path"
+    },
+    "rotateBtn": {
+      "x": 1764.5,
+      "y": 1069.75,
+      "w": 126.5,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(61, 70, 85)"
+    },
+    "deleteBtn": {
+      "x": 1630,
+      "y": 1169.75,
+      "w": 261,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(61, 70, 85)"
+    },
+    "cartPillWithDetails": {
+      "x": 1760.28125,
+      "y": 942,
+      "w": 143.71875,
+      "h": 40,
+      "font": "12px",
+      "weight": "600",
+      "radius": "9999px",
+      "bg": "rgb(42, 41, 38)",
+      "color": "rgb(248, 245, 238)"
+    },
+    "detailsBodyScrollable": {
+      "scrollH": 1168,
+      "clientH": 748,
+      "overflowY": "auto"
+    },
+    "smallestFontInDetails": 11,
+    "tabsClickableWithDetails": {
+      "all": {
+        "found": true,
+        "cx": 44,
+        "cy": 1040,
+        "clickable": true,
+        "hitTag": "svg"
+      },
+      "outdoor": {
+        "found": true,
+        "cx": 740,
+        "cy": 1040,
+        "clickable": true,
+        "hitTag": "path"
+      }
+    },
+    "lightToggle": {
+      "x": 1630,
+      "y": 1067.25,
+      "w": 261,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(42, 41, 38)",
+      "color": "rgb(248, 245, 238)"
+    },
+    "deleteHover": {
+      "x": 1630,
+      "y": 814.25,
+      "w": 261,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(201, 85, 63)",
+      "color": "rgb(255, 255, 255)"
+    },
+    "pillAria": "Open cart — 3 items, £2,931.78",
+    "pillBadge": {
+      "x": 1800.28125,
+      "y": 952.75,
+      "w": 19.125,
+      "h": 18.5,
+      "font": "11px",
+      "weight": "700",
+      "radius": "9999px",
+      "bg": "rgb(255, 187, 88)",
+      "color": "rgb(35, 44, 59)"
+    },
+    "cartSheet": {
+      "x": 1200,
+      "y": 734.5,
+      "w": 720,
+      "h": 345.5,
+      "font": "16px",
+      "weight": "400",
+      "radius": "12px 12px 0px 0px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(14, 27, 31)"
+    },
+    "viewCart": {
+      "x": 1733.453125,
+      "y": 1028,
+      "w": 80.8125,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(42, 41, 38)"
+    },
+    "checkout": {
+      "x": 1822.265625,
+      "y": 1028,
+      "w": 81.734375,
+      "h": 40,
+      "font": "12px",
+      "weight": "600",
+      "radius": "8px",
+      "bg": "rgb(42, 41, 38)",
+      "color": "rgb(248, 245, 238)"
+    },
+    "closeCart": {
+      "x": 1853.40625,
+      "y": 743.5,
+      "w": 58.59375,
+      "h": 40,
+      "font": "12px",
+      "weight": "500",
+      "radius": "8px",
+      "bg": "rgb(250, 249, 245)",
+      "color": "rgb(61, 70, 85)"
+    },
+    "smallestFontInCart": 11,
+    "cartSheetAfterClose": 0,
+    "smallestFontInDock": 11
+  }
+}

@@ -1,0 +1,14 @@
+{
+ "handlePagePx": {
+  "x": 280.5,
+  "y": 421
+ },
+ "at": "DIV.pointer-events-auto absolute z-40 flex items-center gap-1.5 [floating-cluster]",
+ "cluster": {
+  "l": 106,
+  "t": 365,
+  "r": 386,
+  "b": 429
+ },
+ "konvaTop": 91
+}

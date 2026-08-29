@@ -1,0 +1,81 @@
+{
+ "scenario": "right-flush-rot0-to90",
+ "viewport": "desktop-1366",
+ "gesture": "mouse",
+ "ppm": 100,
+ "stageScale": 1,
+ "before": {
+  "instanceId": "it-1",
+  "productId": "k1-nordictrack-2450",
+  "x": 2.9000000000000004,
+  "y": 1.5,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "centre": {
+   "x": 3.9250000000000003,
+   "y": 1.975
+  },
+  "right": 4.95,
+  "bottom": 2.45
+ },
+ "handlePx": {
+  "x": 825.5,
+  "y": 320.5
+ },
+ "arcRadiusPx": 65.5,
+ "afterRotate": {
+  "instanceId": "it-1",
+  "productId": "k1-nordictrack-2450",
+  "x": 2.9000000000000004,
+  "y": 1.5,
+  "rotation": 45,
+  "w": 2.1213,
+  "h": 2.1213,
+  "centre": {
+   "x": 3.9606601717798213,
+   "y": 2.560660171779821
+  },
+  "right": 5.0213,
+  "bottom": 3.6213,
+  "rightBeyondInnerFace": true,
+  "bottomBeyondInnerFace": false,
+  "rightBeyondPolygon": true,
+  "bottomBeyondPolygon": false,
+  "centreMoved": true,
+  "xyChanged": false
+ },
+ "toastsAfterRotate": [],
+ "midSnaps": [],
+ "selectedShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify-desktop-1366-mouse-right-flush-rot0-to90-selected.png",
+ "rotShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify-desktop-1366-mouse-right-flush-rot0-to90-rotated.png",
+ "postDrag": {
+  "delta": {
+   "dx": -0.3,
+   "dy": 0
+  },
+  "dropCentre": {
+   "x": 3.6606601717798215,
+   "y": 2.560660171779821
+  },
+  "after": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 2.828679656440358,
+   "y": 1.8286796564403578,
+   "rotation": 45,
+   "w": 2.1213203435596424,
+   "h": 2.1213203435596424,
+   "right": 4.95,
+   "bottom": 3.95
+  },
+  "flushRight": true,
+  "flushBottom": true,
+  "moved": true,
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ],
+  "dragShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify-desktop-1366-mouse-right-flush-rot0-to90-dragged.png"
+ }
+}

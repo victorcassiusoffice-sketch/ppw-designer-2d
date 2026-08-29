@@ -1,0 +1,82 @@
+{
+ "handleBeforeTap": {
+  "circles": 0,
+  "handles": [],
+  "stageScale": 0.62
+ },
+ "handleAfterTap": {
+  "circles": 6,
+  "handles": [
+   {
+    "pageX": 317.45,
+    "pageY": 392.78999999999996,
+    "absRadiusPx": 5.58,
+    "visible": true
+   }
+  ],
+  "stageScale": 0.62
+ },
+ "selectedUi": {
+  "cluster": true,
+  "anySelectedTestIds": [
+   "floating-cluster",
+   "cluster-rotate",
+   "cluster-duplicate",
+   "cluster-info",
+   "cluster-delete",
+   "cluster-confirm",
+   "details-overlay",
+   "details-overlay-close"
+  ]
+ },
+ "elementAtHandleAfterTap": "div[floating-cluster].pointer-events-auto absolute z-40 flex items-center gap-1.5 ",
+ "overlayRect": {
+  "l": 0,
+  "t": 0,
+  "r": 0,
+  "b": 0,
+  "pointerEvents": "auto",
+  "z": "30",
+  "pos": "fixed"
+ },
+ "clusterRect": {
+  "l": 106,
+  "t": 329.9375,
+  "r": 386,
+  "b": 393.9375
+ },
+ "stageRect": {
+  "l": 0,
+  "t": 91,
+  "r": 390,
+  "b": 844
+ },
+ "sweepFrom": {
+  "x": 317.45,
+  "y": 392.78999999999996
+ },
+ "sweepTo": {
+  "x": 452.16,
+  "y": 467.5
+ },
+ "afterHandleDrag": {
+  "instanceId": "it-1",
+  "productId": "k1-nordictrack-2450",
+  "x": 4,
+  "y": 0.975,
+  "rotation": 90
+ },
+ "handleAfterDrag": {
+  "circles": 6,
+  "handles": [
+   {
+    "pageX": 317.45,
+    "pageY": 392.78999999999996,
+    "absRadiusPx": 5.58,
+    "visible": true
+   }
+  ],
+  "stageScale": 0.62
+ },
+ "toasts": []
+}

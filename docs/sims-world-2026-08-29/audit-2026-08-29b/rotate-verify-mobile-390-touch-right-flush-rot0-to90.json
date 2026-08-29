@@ -1,0 +1,81 @@
+{
+ "scenario": "right-flush-rot0-to90",
+ "viewport": "mobile-390",
+ "gesture": "touch",
+ "ppm": 60,
+ "stageScale": 1,
+ "before": {
+  "instanceId": "it-1",
+  "productId": "k1-nordictrack-2450",
+  "x": 2.9000000000000004,
+  "y": 1.5,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "centre": {
+   "x": 3.9250000000000003,
+   "y": 1.975
+  },
+  "right": 4.95,
+  "bottom": 2.45
+ },
+ "handlePx": {
+  "x": 280.5,
+  "y": 419.5
+ },
+ "arcRadiusPx": 60,
+ "afterRotate": {
+  "instanceId": "it-1",
+  "productId": "k1-nordictrack-2450",
+  "x": 2.9000000000000004,
+  "y": 1.5,
+  "rotation": 0,
+  "w": 2.05,
+  "h": 0.95,
+  "centre": {
+   "x": 3.9250000000000003,
+   "y": 1.975
+  },
+  "right": 4.95,
+  "bottom": 2.45,
+  "rightBeyondInnerFace": false,
+  "bottomBeyondInnerFace": false,
+  "rightBeyondPolygon": false,
+  "bottomBeyondPolygon": false,
+  "centreMoved": false,
+  "xyChanged": false
+ },
+ "toastsAfterRotate": [],
+ "midSnaps": [],
+ "selectedShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify-mobile-390-touch-right-flush-rot0-to90-selected.png",
+ "rotShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify-mobile-390-touch-right-flush-rot0-to90-rotated.png",
+ "postDrag": {
+  "delta": {
+   "dx": -0.3,
+   "dy": 0
+  },
+  "dropCentre": {
+   "x": 3.6250000000000004,
+   "y": 1.975
+  },
+  "after": {
+   "instanceId": "it-1",
+   "productId": "k1-nordictrack-2450",
+   "x": 2.5,
+   "y": 1.5,
+   "rotation": 0,
+   "w": 2.05,
+   "h": 0.95,
+   "right": 4.55,
+   "bottom": 2.45
+  },
+  "flushRight": false,
+  "flushBottom": false,
+  "moved": true,
+  "toasts": [],
+  "console": [
+   "log: [drag-move] {reason: same-room}"
+  ],
+  "dragShot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\sims-world-2026-08-29\\audit-2026-08-29b\\rotate-verify-mobile-390-touch-right-flush-rot0-to90-dragged.png"
+ }
+}
