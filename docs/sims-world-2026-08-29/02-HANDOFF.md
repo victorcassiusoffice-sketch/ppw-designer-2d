@@ -201,3 +201,90 @@ Same branch URL; still preview-only, nothing merged or promoted.
   `{"ok":true,"env":"preview","commit":"4eb403bf23781ff49c7cc22dfc802873f0113860"}` (6th poll,
   2026-08-29T13:06Z; polls 1–5 still served `3e6c612`). Production (`designer.ppwellness.co`)
   untouched.
+
+## Corner snap (Vic, evening 2): "doesn't align horizontally flush to the wall, only vertical" — commit `7eaeea2`
+
+**Reproduced with 320 real drag rows** (desktop mouse, phone mouse, phone CDP touch; both products;
+rot 0/90; 0.5 m + 0.1 m units — table in `audit-2026-08-29b/snap-repro-table.json`). With the drop
+CENTRE 0.2 m off a wall (the spec's definition) every wall and corner flushed, 192/192. With the
+REALISTIC gesture — bring the item's current EDGE to ~0.2 m of the wall — 24/64 desktop rows failed,
+always on the two walls perpendicular to the item's current long axis: a landscape treadmill (rot 0)
+failed on LEFT + RIGHT, a portrait one (rot 90) on TOP + BOTTOM. That is exactly "horizontal no,
+vertical yes" and why corners were unreachable (the first flush never happened).
+
+**Root cause** (`wallAwarePlacement.ts` engage test; 3/3 adversarial verifiers, 6/6 refuted the two
+rotate hypotheses as the *cause*): each wall was scored with the object's depth AFTER auto-orient
+(its short side) while the user drags it at its CURRENT facing. Treadmill 2.05 × 0.95 against the left
+wall: centre 1.225 m in, backGap = 1.225 − 0.475 = 0.75 > `WALL_SNAP_GAP_M` 0.45 → free-standing grid
+snap → x = 0 (5 cm INSIDE the wall band), no rotation; the same push on the top wall engaged at touch.
+
+**Fix** — `resolveWallAwarePlacement` engages on min(oriented gap, current-extent gap) (ordering by the
+oriented gap is unchanged, so every prior spec still holds); an EXISTING item pushed into a corner keeps
+the wall it already faces as primary (the corner never spins it); free-standing drops are clamped inside
+the inner faces (no x = 0, no "Out of room bounds." bounce near the far wall); `insideInnerFaces()`
+guards rotate; **R / the rotate handle re-seat through the resolver pivoting on the wall faces the item
+touches** (a corner item turns IN the corner — before, R popped it 0.55 m off the second wall and 5 cm
+into the first, and the handle committed an angle with no position check at all); axis tolerance `<=`
+(an edge exactly 1e-4 off-axis was "slanted" and refused drops); the dock hover card hides while a
+product is armed (it swallowed the bottom-right corner placement click).
+
+Proof: `wallAwarePlacement.test.ts` 54/54 (8 new) · `snap-edge-drag.spec.ts` 4/4 (new: left, right,
+corner + R in the corner, far-wall clamp) + wall-aware-placement / sims-world / placement-fsm /
+multiroom-attach = 19/19 on the dev server.
+
+## Toolbar redesign (Vic, evening 2): "make the toolbars more user-friendly and aesthetic" — commit `bc958dd`
+
+**Audit** (`audit-2026-08-29b/`, 27 before-PNGs + `audit-data.json`, vault design skills applied): 62
+visible controls on a 1920 screen at rest, 26 of them in one 56 px bar; 53 at 1366; 38 on the phone,
+57 with the menu open. Three P0s found by probing, not by eye: the wall-pen HUD's Undo/Done/Make
+room/Discard row sat UNDER the fixed phone toolbar (elementFromPoint returned the toolbar); the phone
+hamburger menu was 1305 px tall in an 844 px viewport with no max-height — Save as, Load, Request
+quote, Help, Grid, Currency, New unreachable; at 1366 the Rectangle|Draw segment was flex-shrunk to
+9 px so Draw was invisible and unclickable. Beyond those: five accent hues, three visual registers on
+one phone screen, 12 control heights / 6 radii, four "floor" words (Floors · Floor · Paint floor ·
+FLOORING), the same pen exposed twice, eight labels wrapping at 1920, 9 px text, several pairs under
+4.5:1, a dead `bg-ppw-clay` class that made the Erase label vanish.
+
+**Contract** (`blueprintTheme.ts` `CHROME_*` + `tailwind.config.js` `ppw.{paper,chrome,rail,rim,
+charcoal,inkDeep,gold,navy,clay}`): paper ground · hairline rim · charcoal ink; pressed / tool-on =
+ink fill + paper text everywhere; ONE call-to-action colour (gold, Request quote only); terracotta only
+as a destructive rim/icon; mint = the armed-product ring in the docks only (Vic's shop-match decision,
+kept). 40 px desktop / 44 px phone / 48 px sheet rows; bar 52 / 56; radius 8 (12 popovers/sheets);
+Inter, nothing under 11 px; every text pair ≥ 4.5:1 (1508 pairs measured, 0 failures).
+
+**What changed** (17 files; every `data-testid` and `aria-label` kept, +4 new; handlers untouched;
+RoomCanvas diff is DOM-only — Konva core untouched):
+- Desktop bar: one 52 px row in five groups — Identity (brand · `<property> · <room>` trigger) · Build
+  (Walls · Door · Paint · Measure, segmented) · Room & plan (Box | Custom radiogroup · Finish · Storeys
+  · Plot) · View (Snap · Grid · 3D · Undo · Redo) · Commerce (Currency · Cart · n · Request quote ·
+  More: New · New plan · Save as… · Load · Shop · Help). 18 controls instead of 26. Door options move to
+  a sub-bar only while the door tool is on; the L × W inputs live in a Box popover at every width (were
+  2xl-only); every dropdown is a portaled popover with Esc + outside-click and proper roles.
+  Tiers measured at 768/820/1024/1280/1366/1536/1920: nothing clipped, all tools hit by
+  `elementFromPoint`; at 1366 Box/Custom/Finish/Storeys/Plot/Snap keep their labels.
+- Phone: 56 px strip [brand · room · Walls · menu]; full-height portaled sheet (Build · Room & plan ·
+  View with the six snap units as one segmented row · Plan files · Shop, sticky gold Request quote) —
+  every row reachable, Esc closes, focus managed, toolbar under the scrim; catalog toolbar on the dock
+  skin (navy/gold gone); wall-pen HUD compact (137 px), clears the toolbar (which auto-minimises while
+  drawing), publishes `--draw-hud-h` so the room re-fits ABOVE it; touch taps no longer drop two
+  vertices (tap + compatibility click deduped, 4 taps → 4 vertices proven); toasts above the Clear row
+  and below sheets; Clear buttons read "Products" / "Clear all".
+- Canvas overlays (Reset · Share · Capture one row; one readout chip; cost badge hidden while the cart
+  pill shows the same total; `formatCurrency` everywhere), details panel (clears dock + pill, ink buy
+  CTA), cart pill/sheet (phone table fits, subtotal footer always visible), currency (charcoal FX dot),
+  selection cluster, product popup, toasts, plans strip, help launcher — all on the same recipe.
+- Vocabulary: Floors→Storeys, Floor→Finish, Paint floor→Paint, Land→Plot, Rectangle|Draw→Box|Custom,
+  "+ Walls"→Walls; help panel + coach copy updated. Wall-pen instruction shown once (HUD), not three times.
+
+**Gate** (this run): tsc 0 · eslint 0 · vitest 2226/2226 · `npm run build` clean · Playwright full suite
+**128 passed / 0 failed / 38 env-gated skips** (3 workers; a 6-worker run shows 4 `page.goto` timeouts
+that pass in isolation — dev-server load, not app) · probes above · 0 console errors. Captures:
+`toolbar-2026-08-29/` (gate-*, gate2-*, polish-*, finish-*).
+
+**Deliberate / open**: mint accent on the docks kept (Vic's call to change); Finish/Storeys/Plot are
+icon-only at 1280–1365 (labels from 1366); the selection cluster can overlap the details panel at
+820 px tablet width; product popup + details show native MUR beside the bar currency (pre-existing);
+the dev-only build stamp stays on the dev server. Vic gates unchanged: nothing merged or promoted.
+- Verified live: cache-busted `GET /api/healthcheck?cb=…` on the branch preview →
+  `{"ok":true,"env":"preview","commit":"bc958dd97ad8c587785fb4a26104d1a22e3414db"}` (7th poll,
+  2026-08-29T16:58Z). Production (`designer.ppwellness.co`) untouched.
