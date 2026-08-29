@@ -31,14 +31,17 @@ import {
   duplicateSelected,
   deleteSelected,
   deselect,
+  toggleSelectedLight,
   ROTATION_STEP_COARSE_DEG,
 } from '../lib/placementActions';
 import { haptic } from '../lib/haptics';
+import { emitsLight } from './lighting';
 
-const NAVY = '#232C3B';
-const GOLD = '#FFBB58';
-const CREAM = '#F5EBD7';
-const CORAL = '#E5654B';
+// Paper register (Sims world 2026-08-29): charcoal ink on paper, teal accent.
+const NAVY = '#2A2926';
+const GOLD = '#3D8F79';
+const CREAM = '#F8F5EE';
+const CORAL = '#C9553F';
 
 export interface FloatingClusterProps {
   /** Selected item AABB top-left, in CSS px relative to the canvas container. */
@@ -95,6 +98,19 @@ export function FloatingCluster({
       testid: 'cluster-duplicate',
       onClick: () => duplicateSelected(),
     },
+    ...(emitsLight(product)
+      ? [
+          {
+            key: 'light',
+            label: (selected.lightOn ?? true) ? 'Light off' : 'Light on',
+            glyph: '☼',
+            testid: 'cluster-light',
+            onClick: () => {
+              toggleSelectedLight();
+            },
+          } satisfies ClusterBtn,
+        ]
+      : []),
     {
       key: 'info',
       label: 'Details',

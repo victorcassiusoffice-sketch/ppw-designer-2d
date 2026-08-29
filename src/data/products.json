@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0-k1-seed",
+  "version": "2.1.0-sims-world",
   "generated_at": "2026-05-20T00:00:00Z",
   "generated_by": "M6 — K1-Sport seed (RELENTLESS_GOAL 2026-05-19). Pricing from k1-sport.com/shop-online live fetch 2026-05-20. Dimensions sourced from manufacturer public spec sheets (NordicTrack, Schwinn, ProForm, Matrix Fitness, Vision Fitness, Bowflex) — typed in cm, rounded to nearest cm. Footprint = floor length × floor width, height = upright spec. Categories mapped onto the existing ProductCategory enum (most are 'fitness'). Thumbnails are placeholder grey-boxes pending K1 image-permission gate (Vic separately). Replaces the prior 'DEMO MODE — all prices 0' seed; the original is preserved in git history pre-M6.",
   "products": [
@@ -665,7 +665,7 @@
       },
       "is_surface": true,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Console%0ATable",
-      "topdown_image_url": "/products/topdown/demo-console-table.jpg",
+      "topdown_image_url": "/products/topdown/demo-console-table.png",
       "notes": "Slim console table for oils, diffusers and small decor. DEMO seed for surface-slot placement."
     },
     {
@@ -694,7 +694,7 @@
       "placement": "wall",
       "mount_height_cm": 150,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Wall%0AShelf",
-      "topdown_image_url": "/products/topdown/demo-wall-shelf.jpg",
+      "topdown_image_url": "/products/topdown/demo-wall-shelf.png",
       "notes": "Wall-mounted floating shelf. DEMO seed for wall-mounted placement."
     },
     {
@@ -723,7 +723,7 @@
       "placement": "wall",
       "mount_height_cm": 20,
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Wall%0AMirror",
-      "topdown_image_url": "/products/topdown/demo-wall-mirror.jpg",
+      "topdown_image_url": "/products/topdown/demo-wall-mirror.png",
       "notes": "Full-length studio mirror, wall-mounted. DEMO seed for wall-mounted placement."
     },
     {
@@ -751,7 +751,7 @@
       },
       "placement": "surface",
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Aroma%0ADiffuser",
-      "topdown_image_url": "/products/topdown/demo-aroma-diffuser.jpg",
+      "topdown_image_url": "/products/topdown/demo-aroma-diffuser.png",
       "notes": "Ultrasonic aroma diffuser. Sits on a table. DEMO seed for surface-slot placement."
     },
     {
@@ -779,8 +779,190 @@
       },
       "placement": "surface",
       "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Potted%0APlant",
-      "topdown_image_url": "/products/topdown/demo-potted-plant.jpg",
+      "topdown_image_url": "/products/topdown/demo-potted-plant.png",
       "notes": "Small potted plant for tabletops. DEMO seed for surface-slot placement."
+    },
+    {
+      "id": "demo-floor-lamp",
+      "sku": "PPW-DEMO-LAMP-FLOOR",
+      "name": "Arc Floor Lamp",
+      "category": "lighting",
+      "supplier": "PPW Demo",
+      "dimensions_cm": {
+        "length": 40,
+        "width": 40,
+        "height": 160
+      },
+      "weight_kg": 6,
+      "price": {
+        "value": 4500,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "https://placehold.co/400x400?text=Floor+Lamp",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Warm-white floor lamp on a 40 cm base. DEMO seed for the light pool: draws the plan light symbol and glows 1.8 m.",
+      "source_url": "",
+      "placement": "floor",
+      "emits_light": true,
+      "light_radius_m": 1.8,
+      "plan_symbol": "light",
+      "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"32\" cy=\"32\" r=\"10\"/><path d=\"M32 8v8M32 48v8M8 32h8M48 32h8M15 15l5.7 5.7M43.3 43.3L49 49M49 15l-5.7 5.7M20.7 43.3L15 49\"/></svg>"
+    },
+    {
+      "id": "demo-pendant-light",
+      "sku": "PPW-DEMO-LAMP-PENDANT",
+      "name": "Rattan Pendant Light",
+      "category": "lighting",
+      "supplier": "PPW Demo",
+      "dimensions_cm": {
+        "length": 45,
+        "width": 45,
+        "height": 30
+      },
+      "weight_kg": 3,
+      "price": {
+        "value": 6900,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "https://placehold.co/400x400?text=Pendant+Light",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Ceiling-hung pendant, 45 cm shade. DEMO seed for ceiling placement: no floor collision, glows 2.2 m.",
+      "source_url": "",
+      "placement": "ceiling",
+      "emits_light": true,
+      "light_radius_m": 2.2,
+      "plan_symbol": "pendant",
+      "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"32\" cy=\"32\" r=\"13\"/><circle cx=\"32\" cy=\"32\" r=\"4\"/><path d=\"M32 12v7M32 45v7M12 32h7M45 32h7\"/></svg>"
+    },
+    {
+      "id": "demo-wall-sconce",
+      "sku": "PPW-DEMO-LAMP-SCONCE",
+      "name": "Wall Sconce",
+      "category": "lighting",
+      "supplier": "PPW Demo",
+      "dimensions_cm": {
+        "length": 20,
+        "width": 12,
+        "height": 25
+      },
+      "weight_kg": 1.2,
+      "price": {
+        "value": 2400,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "https://placehold.co/400x400?text=Wall+Sconce",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Wall-mounted up/down sconce. DEMO seed for a wall-snapped light: glows 1.2 m into the room.",
+      "source_url": "",
+      "placement": "wall",
+      "mount_height_cm": 170,
+      "emits_light": true,
+      "light_radius_m": 1.2,
+      "plan_symbol": "light",
+      "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 14h48\"/><path d=\"M20 14a12 12 0 0 0 24 0\"/><path d=\"M32 30v10M21 29l-5 8M43 29l5 8\"/></svg>"
+    },
+    {
+      "id": "demo-garden-tree",
+      "sku": "PPW-DEMO-GARDEN-TREE",
+      "name": "Garden Tree (frangipani)",
+      "category": "plant",
+      "supplier": "PPW Demo",
+      "dimensions_cm": {
+        "length": 250,
+        "width": 250,
+        "height": 400
+      },
+      "weight_kg": 80,
+      "price": {
+        "value": 12500,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "https://placehold.co/400x400?text=Garden+Tree",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Container-grown frangipani, 2.5 m canopy. DEMO seed for outdoor placement: lives on the plot, outside any room.",
+      "source_url": "",
+      "outdoor": true,
+      "plan_symbol": "tree",
+      "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"32\" cy=\"32\" r=\"21\"/><circle cx=\"32\" cy=\"32\" r=\"2.5\"/><path d=\"M32 11v13M32 40v13M11 32h13M40 32h13\" opacity=\"0.4\"/></svg>"
+    },
+    {
+      "id": "demo-hedge",
+      "sku": "PPW-DEMO-GARDEN-HEDGE",
+      "name": "Hedge Run (2 m)",
+      "category": "plant",
+      "supplier": "PPW Demo",
+      "dimensions_cm": {
+        "length": 200,
+        "width": 50,
+        "height": 120
+      },
+      "weight_kg": 30,
+      "price": {
+        "value": 3800,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "https://placehold.co/400x400?text=Hedge",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Two-metre clipped hedge section, 50 cm deep. DEMO seed for outdoor placement: chain runs along a boundary.",
+      "source_url": "",
+      "outdoor": true,
+      "plan_symbol": "hedge",
+      "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"6\" y=\"20\" width=\"52\" height=\"24\" rx=\"12\"/><path d=\"M14 32c4-4 8-4 12 0s8 4 12 0 8-4 12 0\"/></svg>"
+    },
+    {
+      "id": "demo-outdoor-bench",
+      "sku": "PPW-DEMO-GARDEN-BENCH",
+      "name": "Teak Garden Bench",
+      "category": "decor",
+      "supplier": "PPW Demo",
+      "dimensions_cm": {
+        "length": 150,
+        "width": 50,
+        "height": 45
+      },
+      "weight_kg": 22,
+      "price": {
+        "value": 9800,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "https://placehold.co/400x400?text=Garden+Bench",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Three-seat teak bench for the garden. DEMO seed for outdoor placement; front edge faces the viewer at rotation 0.",
+      "source_url": "",
+      "outdoor": true,
+      "plan_symbol": "bench",
+      "front_edge": "bottom",
+      "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"8\" y=\"22\" width=\"48\" height=\"20\" rx=\"2\"/><path d=\"M8 29h48M8 35h48\"/><path d=\"M14 42v6M50 42v6\"/></svg>"
     }
   ]
 }

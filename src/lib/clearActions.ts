@@ -20,6 +20,7 @@ import { useWallStore } from '../store/wallStore';
 import { useFloorZoneStore } from '../store/floorZoneStore';
 import { useWallTreatmentStore } from '../store/wallTreatmentStore';
 import { beginDrawTransaction, endDrawTransaction } from '../store/historyStore';
+import { activeLevelIdOf } from '../designer/levels';
 
 /**
  * Clear all content the user has placed in the active room — products,
@@ -30,9 +31,13 @@ export function clearActiveRoomContents(): void {
   beginDrawTransaction('clear room');
   try {
     // Placed products live per-room on the active room.
-    usePropertyStore.getState().clearActiveRoomItems();
-    // Walls / floor zones / wall treatments are global stores in the
-    // current model — clear them all, mirroring setDrawMode's reset.
+    const ps = usePropertyStore.getState();
+    ps.clearActiveRoomItems();
+    // Free walls (Sims world 2026-08-29) live on the property per level;
+    // clear the level in focus, not the whole building.
+    ps.clearFreeWalls(activeLevelIdOf(ps.property));
+    // Legacy walls / floor zones / wall treatments are global stores —
+    // clear them all, mirroring setDrawMode's reset.
     useWallStore.getState().clearWalls();
     useFloorZoneStore.getState().clearZones();
     useWallTreatmentStore.getState().clearTreatments();

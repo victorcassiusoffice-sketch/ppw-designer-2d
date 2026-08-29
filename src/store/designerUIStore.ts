@@ -204,6 +204,21 @@ export function currentSnapStepM(): number {
   return PRECISION_STEP_M[useDesignerUIStore.getState().precision];
 }
 
+/**
+ * Step the snap unit one notch FINER (+1) or COARSER (-1) along
+ * SNAP_UNIT_ORDER (Sims world 2026-08-29: "+1" mid-draw). One ladder shared
+ * by the keyboard hook, the draw-HUD stepper and the mobile strip, so the
+ * three can never disagree. Lives here (not in a Konva component) so the
+ * keyboard hook stays importable in node tests.
+ */
+export function stepSnapUnit(direction: 1 | -1): void {
+  const ui = useDesignerUIStore.getState();
+  const idx = SNAP_UNIT_ORDER.indexOf(ui.precision);
+  // SNAP_UNIT_ORDER runs fine → coarse (1 cm first), so finer = lower index.
+  const next = SNAP_UNIT_ORDER[idx - direction];
+  if (next) ui.setPrecision(next);
+}
+
 /** Current snap step in whole millimetres, for the mm-space wall tools. */
 export function currentSnapStepMm(): number {
   return Math.round(currentSnapStepM() * 1000);

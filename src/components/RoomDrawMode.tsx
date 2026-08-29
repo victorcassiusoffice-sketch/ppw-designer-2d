@@ -55,6 +55,9 @@ import {
   currentSnapStepM,
   useDesignerUIStore,
   PRECISION_STEP_M,
+  SNAP_UNIT_ORDER,
+  SNAP_UNIT_LABEL,
+  stepSnapUnit,
 } from '../store/designerUIStore';
 import { formatLengthForUnit, chipVisibleAt } from '../designer/unitFormat';
 import { quantiseVertex, nextVertexAtLength } from '../designer/drawLength';
@@ -63,8 +66,9 @@ import { MeasurementChip } from '../designer/MeasurementChip';
 import {
   MEASURE_TEXT,
   ROOM_FILL,
-  WALL_GOLD,
-  WALL_GOLD_BRIGHT,
+  WALL_INK,
+  SELECT_STROKE,
+  LABEL_HALO,
 } from '../designer/blueprintTheme';
 
 function pushDrawToast(message: string, kind: ToastKind = 'info'): void {
@@ -104,6 +108,12 @@ export interface RoomDrawLayerProps {
   setHover: (v: HoverVertex | null) => void;
   name: string;
   onCommit: (polygon: Polygon, name: string) => void;
+  /**
+   * Sims world (2026-08-29): an OPEN run of walls is a legitimate result.
+   * Called with >= 2 vertices when the user finishes without closing —
+   * the run becomes free-standing walls instead of being thrown away.
+   */
+  onCommitWalls?: (vertices: Polygon) => void;
   onCancel: () => void;
 }
 
@@ -119,6 +129,7 @@ export function RoomDrawLayer({
   setHover,
   name,
   onCommit,
+  onCommitWalls,
   onCancel,
 }: RoomDrawLayerProps) {
   // Units brief (2026-08-28, D8) - the measurement chips are RENDER output,
@@ -131,6 +142,8 @@ export function RoomDrawLayer({
   nameRef.current = name;
   const onCommitRef = useRef(onCommit);
   onCommitRef.current = onCommit;
+  const onCommitWallsRef = useRef(onCommitWalls);
+  onCommitWallsRef.current = onCommitWalls;
   const onCancelRef = useRef(onCancel);
   onCancelRef.current = onCancel;
   const setVerticesRef = useRef(setVertices);
@@ -308,6 +321,19 @@ export function RoomDrawLayer({
         // to rename the room, then hit Enter to close).
         const current = verticesRef.current;
         e.preventDefault();
+        // Sims world (2026-08-29): Alt+Enter finishes the run as OPEN walls
+        // regardless of vertex count — walls do not have to join.
+        if (e.altKey && current.length >= 2 && onCommitWallsRef.current) {
+          console.log('[draw-close]', {
+            reason: 'alt-enter-open-walls',
+            vertices: current.length,
+            success: null,
+          });
+          onCommitWallsRef.current(current);
+          setVerticesRef.current([]);
+          setHoverRef.current(null);
+          return;
+        }
         if (current.length >= 3) {
           console.log(DBG, 'keydown Enter -> close', { vertices: current.length });
           // Units brief D12 - Shift+Enter closes AND stays in draw mode, so a
@@ -326,13 +352,24 @@ export function RoomDrawLayer({
           onCommitRef.current(current, nameRef.current.trim() || 'New Room');
           setVerticesRef.current([]);
           setHoverRef.current(null);
+        } else if (current.length === 2 && onCommitWallsRef.current) {
+          // Two vertices cannot enclose anything, so Enter keeps them as ONE
+          // free-standing wall rather than refusing — the Sims contract.
+          console.log('[draw-close]', {
+            reason: 'enter-key-open-walls',
+            vertices: current.length,
+            success: null,
+          });
+          onCommitWallsRef.current(current);
+          setVerticesRef.current([]);
+          setHoverRef.current(null);
         } else {
           console.log('[draw-close]', {
             reason: 'enter-key-too-few-vertices',
             vertices: current.length,
             success: false,
           });
-          pushDrawToast('Need at least 3 walls.', 'warn');
+          pushDrawToast('Place at least 2 points for a wall.', 'warn');
         }
         return;
       }
@@ -408,9 +445,10 @@ export function RoomDrawLayer({
           points={previewPolygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre])}
           closed
           fill={`${ROOM_FILL}CC`}
-          stroke={WALL_GOLD}
+          stroke={WALL_INK}
           strokeWidth={1.5}
           dash={[6, 4]}
+          opacity={0.9}
         />
       )}
 
@@ -429,10 +467,10 @@ export function RoomDrawLayer({
                 s.to.x * pxPerMetre,
                 s.to.y * pxPerMetre,
               ]}
-              stroke={isPreview ? WALL_GOLD_BRIGHT : WALL_GOLD}
-              strokeWidth={isPreview ? 2 : 5}
+              stroke={isPreview ? SELECT_STROKE : WALL_INK}
+              strokeWidth={isPreview ? 2 : 6}
               dash={isPreview ? [6, 5] : undefined}
-              lineCap="round"
+              lineCap="square"
             />
             {/* Legible dimension callout at the segment midpoint. Screen-
                 space sized, so it reads the same at 30 % and 300 % zoom.
@@ -461,7 +499,7 @@ export function RoomDrawLayer({
           x={hover.x * pxPerMetre}
           y={hover.y * pxPerMetre}
           radius={8 / viewport.scale}
-          stroke={WALL_GOLD_BRIGHT}
+          stroke={SELECT_STROKE}
           strokeWidth={2 / viewport.scale}
           listening={false}
         />
@@ -486,8 +524,8 @@ export function RoomDrawLayer({
             x={v.x * pxPerMetre}
             y={v.y * pxPerMetre}
             radius={i === 0 ? 7 : 5}
-            fill={i === 0 ? WALL_GOLD_BRIGHT : WALL_GOLD}
-            stroke="#0E1B1F"
+            fill={i === 0 ? SELECT_STROKE : WALL_INK}
+            stroke={LABEL_HALO}
             strokeWidth={2}
           />
           {i === vertices.length - 1 && vertices.length >= 1 && (
@@ -495,7 +533,7 @@ export function RoomDrawLayer({
               x={v.x * pxPerMetre}
               y={v.y * pxPerMetre}
               radius={11}
-              stroke={WALL_GOLD_BRIGHT}
+              stroke={SELECT_STROKE}
               strokeWidth={1.5}
               dash={[3, 3]}
             />
@@ -508,9 +546,9 @@ export function RoomDrawLayer({
           x={vertices[0].x * pxPerMetre}
           y={vertices[0].y * pxPerMetre}
           radius={14}
-          stroke={WALL_GOLD_BRIGHT}
+          stroke={SELECT_STROKE}
           strokeWidth={2.5}
-          fill="rgba(255, 187, 88, 0.2)"
+          fill="rgba(61, 143, 121, 0.2)"
         />
       )}
 
@@ -540,7 +578,63 @@ export interface RoomDrawHUDProps {
   name: string;
   setName: (n: string) => void;
   onCommit: (polygon: Polygon, name: string) => void;
+  /** Finish the run as free-standing walls (>= 2 vertices). */
+  onCommitWalls?: (vertices: Polygon) => void;
   onCancel: () => void;
+}
+
+/**
+ * The unit stepper chip: [-] 0.5 m [+]. Shared by the draw HUD (desktop +
+ * mobile) so the unit can change MID-DRAW with a thumb, not a menu. The
+ * ladder itself is `stepSnapUnit` in designerUIStore (keyboard shares it).
+ */
+export function SnapUnitStepper({ compact = false }: { compact?: boolean }): JSX.Element {
+  const precision = useDesignerUIStore((s) => s.precision);
+  const idx = SNAP_UNIT_ORDER.indexOf(precision);
+  const canFiner = idx > 0;
+  const canCoarser = idx < SNAP_UNIT_ORDER.length - 1;
+  const btn =
+    'pointer-events-auto flex h-11 w-11 items-center justify-center rounded-md border border-ppw-stone bg-white text-base font-semibold text-ppw-ink hover:border-ppw-ink disabled:cursor-not-allowed disabled:opacity-40';
+  return (
+    <div
+      className="pointer-events-auto flex items-center gap-1"
+      data-testid="snap-unit-stepper"
+      role="group"
+      aria-label="Snap unit"
+    >
+      <button
+        type="button"
+        className={btn}
+        onClick={() => stepSnapUnit(-1)}
+        disabled={!canCoarser}
+        aria-label="Coarser unit"
+        title="Coarser unit ( - )"
+        data-testid="snap-unit-coarser"
+      >
+        −
+      </button>
+      <span
+        className={`min-w-[52px] rounded-md bg-ppw-ink px-2 py-1 text-center text-[11px] font-semibold text-white ${
+          compact ? '' : 'min-w-[60px]'
+        }`}
+        data-testid="snap-unit-current"
+        aria-live="polite"
+      >
+        {SNAP_UNIT_LABEL[precision]}
+      </span>
+      <button
+        type="button"
+        className={btn}
+        onClick={() => stepSnapUnit(1)}
+        disabled={!canFiner}
+        aria-label="Finer unit"
+        title="Finer unit ( + )"
+        data-testid="snap-unit-finer"
+      >
+        +
+      </button>
+    </div>
+  );
 }
 
 export function RoomDrawHUD({
@@ -551,6 +645,7 @@ export function RoomDrawHUD({
   setHover,
   name,
   onCommit,
+  onCommitWalls,
   onCancel,
 }: RoomDrawHUDProps) {
   const stepM = useDesignerUIStore((s) => PRECISION_STEP_M[s.precision]);
@@ -616,24 +711,45 @@ export function RoomDrawHUD({
   const handleClose = useCallback(() => handleCloseAnd(false), [handleCloseAnd]);
   const handleCloseContinue = useCallback(() => handleCloseAnd(true), [handleCloseAnd]);
 
+  /** Sims world: keep the run as open walls — no room, no discard. */
+  const handleFinishWalls = useCallback(() => {
+    if (!onCommitWalls) return;
+    if (vertices.length < 2) {
+      pushDrawToast('Place at least 2 points for a wall.', 'warn');
+      return;
+    }
+    console.log('[draw-close]', {
+      reason: 'hud-finish-walls',
+      vertices: vertices.length,
+      success: null,
+    });
+    onCommitWalls(vertices);
+    setVertices([]);
+    setHover(null);
+  }, [vertices, onCommitWalls, setVertices, setHover]);
+
   if (!enabled) return null;
 
   return (
     <div
-      className="pointer-events-none absolute left-1/2 bottom-3 z-30 flex w-[min(94vw,520px)] -translate-x-1/2 flex-col gap-2 rounded-lg border border-ppw-teal bg-white p-3 text-xs shadow-xl ring-1 ring-ppw-teal/40"
+      className="pointer-events-none absolute left-1/2 bottom-3 z-30 flex w-[min(94vw,560px)] -translate-x-1/2 flex-col gap-2 rounded-lg border border-ppw-stone bg-white p-3 text-xs shadow-xl ring-1 ring-ppw-ink/10"
       data-testid="room-draw-hud"
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="rounded-md bg-ppw-teal px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-          Draw mode
+        <span className="rounded-md bg-ppw-ink px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+          Wall pen
         </span>
         <span className="hidden text-[10px] text-ppw-slate sm:inline">
-          Click to drop vertices &middot;{' '}
-          {stepM <= 0.1 ? 'press Enter to close' : 'click first vertex or press Enter to close'}
+          Click to drop wall points &middot;{' '}
+          {stepM <= 0.1 ? 'Enter closes a room' : 'click the first point or Enter to close a room'}{' '}
+          &middot; Finish keeps open walls
         </span>
         <span className="text-[10px] text-ppw-slate sm:hidden">
-          Tap to drop &middot; tap first vertex to close
+          Tap to drop &middot; tap first point to close
         </span>
+        {/* The unit stepper lives INSIDE the HUD so it is reachable mid-draw
+            on a phone with a thumb; +/- keys step the same ladder. */}
+        <SnapUnitStepper compact />
       </div>
       {/* Fix 2.4 (Vic 2026-05-22): the ROOM name input was removed from
           the HUD — auto-named "Room N", renamed inline from the left
@@ -698,6 +814,16 @@ export function RoomDrawHUD({
             data-testid="room-draw-undo"
           >
             Undo
+          </button>
+          <button
+            type="button"
+            onClick={handleFinishWalls}
+            disabled={vertices.length < 2 || !onCommitWalls}
+            data-testid="room-draw-finish-walls"
+            className="pointer-events-auto min-h-[44px] flex-1 rounded-md border border-ppw-stone bg-white px-3 text-xs font-medium text-ppw-slate hover:border-ppw-ink disabled:cursor-not-allowed disabled:opacity-50 sm:flex-initial"
+            title="Keep these as free-standing walls without closing a room (Alt+Enter)"
+          >
+            Finish walls
           </button>
           <button
             type="button"

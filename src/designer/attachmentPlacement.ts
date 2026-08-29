@@ -12,23 +12,42 @@
  *     fine 0.1 m sub-grid and collide only with siblings on the SAME
  *     surface. They move with their parent (propertyStore shifts
  *     children on parent x/y updates) and are removed with it.
+ *   • `placement: 'ceiling'` products (pendants) hang from the ceiling:
+ *     free placement, no floor collision (2026-08-29 lighting).
  *   • Everything else is `'floor'` — the existing wall-aware path.
  *
  * Pure functions; consumed by RoomCanvas + placementActions and tested
  * in __tests__/attachmentPlacement.test.ts.
  */
 
-import { rotatedFootprint } from '../lib/geometry';
+import { rotatedFootprint, snapToGrid } from '../lib/geometry';
 import type { FootprintM, Polygon, Vertex } from '../lib/geometry';
-import type { Product } from '../data/products.schema';
-import { autoOrientDeg, nearestEdge } from './wallAwarePlacement';
-import type { FrontEdge } from './wallAwarePlacement';
+import {
+  WALL_HALF_M,
+  autoOrientDeg,
+  collectWallCandidates,
+  wallFlushOrigin,
+} from './wallAwarePlacement';
+import type { FreeWallLike, FrontEdge, WallCandidate } from './wallAwarePlacement';
 
-export type PlacementKind = 'floor' | 'surface' | 'wall';
+export type PlacementKind = 'floor' | 'surface' | 'wall' | 'ceiling';
 
-/** Which placement rules a product follows (absent metadata → floor). */
-export function placementKind(p: Pick<Product, 'placement'> | undefined): PlacementKind {
-  return p?.placement ?? 'floor';
+const PLACEMENT_KINDS: ReadonlySet<string> = new Set<PlacementKind>([
+  'floor',
+  'surface',
+  'wall',
+  'ceiling',
+]);
+
+/**
+ * Which placement rules a product follows (absent or unknown metadata →
+ * floor). Typed loosely on purpose: the catalog schema's `placement` union
+ * is widened by the data package, and an API product may carry a value this
+ * build has never heard of — that must degrade to floor, not throw.
+ */
+export function placementKind(p: { placement?: string | null } | null | undefined): PlacementKind {
+  const k = p?.placement;
+  return k && PLACEMENT_KINDS.has(k) ? (k as PlacementKind) : 'floor';
 }
 
 /** Max cursor distance from a wall for a wall item's ghost to engage. */
@@ -45,10 +64,11 @@ export interface WallItemResult {
 }
 
 /**
- * Snap a wall-mounted item to the nearest axis-aligned wall: flush on
- * the wall axis, grid-snapped along it, back to the wall / face into
- * the room. `ok:false` when no wall is in range (slanted walls too —
- * the AABB model can't hang on them).
+ * Snap a wall-mounted item to the nearest axis-aligned wall (a room edge
+ * or, when `freeWalls` is given, either side of a free wall): flush on the
+ * wall's INNER FACE, grid-snapped along it at `snapStep`, back to the wall
+ * / face into the room. `ok:false` when no such wall is in range (slanted
+ * walls never count — the AABB model can't hang on them).
  */
 export function resolveWallItemPlacement(input: {
   centreXm: number;
@@ -57,33 +77,32 @@ export function resolveWallItemPlacement(input: {
   polygon: Polygon;
   snapStep: number;
   frontEdge?: FrontEdge;
+  /** Distance from a polygon edge to its wall's inner face. Default WALL_HALF_M. */
+  wallInsetM?: number;
+  freeWalls?: readonly FreeWallLike[];
 }): WallItemResult {
   const { fp, polygon, snapStep, frontEdge } = input;
   const centre: Vertex = { x: input.centreXm, y: input.centreYm };
-  const edge = nearestEdge(polygon, centre);
-  if (!edge || edge.alignment === 'slanted' || edge.distance > WALL_ITEM_RANGE_M) {
+  let wall: WallCandidate | null = null;
+  for (const c of collectWallCandidates({
+    polygon,
+    centre,
+    freeWalls: input.freeWalls,
+    wallInsetM: input.wallInsetM ?? WALL_HALF_M,
+  })) {
+    if (c.alignment === 'slanted' || c.distance > WALL_ITEM_RANGE_M) continue;
+    if (!wall || c.distance < wall.distance - 1e-9) wall = c;
+  }
+  if (!wall) {
     return { ok: false, x: centre.x, y: centre.y, rotationDeg: 0 };
   }
-  const rotationDeg = autoOrientDeg(edge.inwardNormal, frontEdge);
+  const rotationDeg = autoOrientDeg(wall.inwardNormal, frontEdge);
   const { w, h } = rotatedFootprint(fp, rotationDeg);
-  const snap = (v: number) => Math.round(v / snapStep) * snapStep;
-  const n = edge.inwardNormal;
-  if (edge.alignment === 'horizontal') {
-    const wallY = edge.a.y;
-    return {
-      ok: true,
-      x: snap(centre.x - w / 2),
-      y: n.y > 0 ? wallY : wallY - h,
-      rotationDeg,
-    };
+  const snap = (v: number) => (snapStep > 0 ? snapToGrid(v, snapStep) : v);
+  if (wall.alignment === 'horizontal') {
+    return { ok: true, x: snap(centre.x - w / 2), y: wallFlushOrigin(wall, h), rotationDeg };
   }
-  const wallX = edge.a.x;
-  return {
-    ok: true,
-    x: n.x > 0 ? wallX : wallX - w,
-    y: snap(centre.y - h / 2),
-    rotationDeg,
-  };
+  return { ok: true, x: wallFlushOrigin(wall, w), y: snap(centre.y - h / 2), rotationDeg };
 }
 
 export interface SurfaceRect {

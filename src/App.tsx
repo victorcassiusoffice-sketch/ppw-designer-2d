@@ -109,13 +109,29 @@ export default function App() {
   // Walls / zones are keyed in the SAME world frame but are NOT per-room,
   // so moving rooms out from under them would strand them. When any exist,
   // the overlap is left in place and only warned about.
+  // Sims world (2026-08-29): the old interior-wall tool kept its walls in a
+  // separate mm store that never reached the server. Fold any it left behind
+  // into the property ONCE, then empty the legacy store so nothing renders
+  // twice. Runs before the un-stack check below, which used to skip whenever
+  // legacy walls existed.
+  useEffect(() => {
+    const legacy = useWallStore.getState().walls;
+    if (legacy.length === 0) return;
+    if (usePropertyStore.getState().importLegacyWalls(legacy)) {
+      useWallStore.getState().replace([]);
+      console.log('[walls]', `migrated ${legacy.length} legacy wall(s) onto the property`);
+    }
+  }, []);
   useEffect(() => {
     const property = usePropertyStore.getState().property;
     // Reference-identity check: the pure helper returns its input unchanged
     // when nothing overlaps, so this is a cheap "is there anything to do?".
     if (unstackLegacyRooms(property) === property) return;
+    // Free walls now live ON the property (Sims world 2026-08-29), so a plan
+    // with walls keeps its geometry together and must not be re-laid.
     const hasWorldGeometry =
       useWallStore.getState().walls.length > 0
+      || (usePropertyStore.getState().property.walls?.length ?? 0) > 0
       || useFloorZoneStore.getState().zones.length > 0;
     if (hasWorldGeometry) {
       console.warn('[multi-room] legacy overlap left in place (walls/zones present)');
@@ -269,9 +285,9 @@ export default function App() {
       <CoachMark
         flagKey="ppw_designer_coach_v1"
         steps={[
-          { title: 'Set your room dims', body: 'Use the toolbar above to set length/width, or click Draw room to sketch a custom polygon.' },
-          { title: 'Drag products in', body: 'Open the catalog from the top bar, then drag (or tap then tap) items into your room.' },
-          { title: 'Save & request a quote', body: 'Click Save to keep your design. Use Request quote to send the layout to the PPW team.' },
+          { title: 'Draw your walls', body: 'Tap + Walls, then click to drop wall points. Close the shape for a room, or Finish walls to leave them open. Change the unit mid-draw with − / +.' },
+          { title: 'Furnish inside and out', body: 'Drag products from the dock onto any floor — inside a room or out in the garden. Items sit flush to walls and tuck into corners.' },
+          { title: 'Floors, land, quote', body: 'Add storeys with Floors, lock the plot with Land, then Save and Request quote to send the layout to the PPW team.' },
         ]}
       />
       {/* V-RENDER-3 (2026-05-27) — unobtrusive build-stamp pinned

@@ -1,13 +1,22 @@
 /**
- * Sims-style wall-aware placement (2026-08-23).
+ * Sims-style wall-aware placement (2026-08-23, reworked 2026-08-29).
  *
  * The Sims build-mode placement contract this module reproduces:
  *   1. Objects have a FRONT. Dropped near a wall, an object auto-rotates
  *      so its back is against that wall and its front faces INTO the room.
- *   2. Wall-adjacent objects sit FLUSH against the wall (no half-tile gap)
- *      while still grid-snapping ALONG the wall.
- *   3. Dropped mid-room, an object keeps its default facing (toward the
- *      viewer — image-bottom) or whatever the user manually rotated to.
+ *   2. Wall-adjacent objects sit FLUSH against the wall's INNER FACE. The
+ *      wall band is WALL_THICKNESS_M thick and stroked CENTRED on the
+ *      polygon edge, so the face is WALL_HALF_M inside the edge — flushing
+ *      to the edge itself left every item overlapping the wall band.
+ *   3. Along the wall the object grid-snaps, but is clamped to the wall's
+ *      span so a coarse grid step can never push it past the room end.
+ *   4. Near TWO perpendicular walls the object is pulled into the corner,
+ *      touching both faces (previously only one wall was ever snapped, so
+ *      corners were reachable only by grid coincidence).
+ *   5. Dropped mid-room, an object keeps its current facing (a dragged item
+ *      no longer resets to 0°); a fresh drop faces the viewer (0°).
+ *   6. Free-standing walls (open runs) are snap targets on BOTH sides and
+ *      obstacles for everything else.
  *
  * Convention: at rotation 0 the top-down product image FACES the bottom
  * of the image (+Y, toward the viewer). Its BACK is the top edge. A
@@ -16,11 +25,12 @@
  * (y-down), so rotating the front vector (0,1) by θ gives (−sinθ, cosθ).
  *
  * Pure functions only — consumed by RoomCanvas (ghost preview, commit,
- * drag-end) and unit-tested in __tests__/wallAwarePlacement.test.ts.
+ * drag-end), attachmentPlacement (wall items) and unit-tested in
+ * __tests__/wallAwarePlacement.test.ts.
  */
 
 import { pointInPolygon, rotatedFootprint, snapToGrid } from '../lib/geometry';
-import type { FootprintM, Polygon, Vertex } from '../lib/geometry';
+import type { FootprintM, PlacedRect, Polygon, Vertex } from '../lib/geometry';
 
 export type FrontEdge = 'top' | 'bottom' | 'left' | 'right';
 
@@ -32,6 +42,24 @@ export type FrontEdge = 'top' | 'bottom' | 'left' | 'right';
  */
 export const WALL_SNAP_GAP_M = 0.45;
 
+/**
+ * Real wall thickness in world metres (2026-08-29). Walls are stroked CENTRED
+ * on the room polygon edge, so the inner face sits WALL_THICKNESS_M / 2 inside
+ * the polygon. Items flush to that inner face, never to the edge itself.
+ */
+export const WALL_THICKNESS_M = 0.1;
+export const WALL_HALF_M = WALL_THICKNESS_M / 2;
+
+/**
+ * Axis-alignment tolerance (metres). Vertices are rounded to 4 dp elsewhere,
+ * so a straight wall can be off-axis by up to 1e-4; the old 1e-9 read such
+ * edges as slanted and silently refused to snap.
+ */
+export const AXIS_ALIGN_TOL_M = 1e-4;
+
+/** Slack for threshold and tie comparisons — floating drift only. */
+const EPS = 1e-9;
+
 /** Angle (deg) of the front vector at rotation 0 for each front_edge. */
 const FRONT_EDGE_ANGLE: Record<FrontEdge, number> = {
   bottom: 0, // (0, 1)
@@ -39,6 +67,19 @@ const FRONT_EDGE_ANGLE: Record<FrontEdge, number> = {
   top: 180, // (0, −1)
   right: 270, // (1, 0)
 };
+
+/**
+ * A free-standing wall (open run) in world metres. Two-sided: its
+ * "inward" normal for a query point is whichever side the point is on.
+ */
+export interface FreeWallLike {
+  a: Vertex;
+  b: Vertex;
+  /** Wall thickness (m). Absent → WALL_THICKNESS_M. */
+  thicknessM?: number;
+}
+
+export type WallAlignment = 'horizontal' | 'vertical' | 'slanted';
 
 export interface NearestEdge {
   a: Vertex;
@@ -48,7 +89,24 @@ export interface NearestEdge {
   /** Unit normal on the ROOM side of the edge. */
   inwardNormal: Vertex;
   /** Axis alignment — flush-positioning only supports axis-aligned walls. */
-  alignment: 'horizontal' | 'vertical' | 'slanted';
+  alignment: WallAlignment;
+}
+
+/** A wall an object may flush against: a room polygon edge or a free wall. */
+export interface WallCandidate extends NearestEdge {
+  source: 'polygon' | 'free';
+  /** Index into the polygon (edge i = vertex i → i+1) or the freeWalls array. */
+  index: number;
+  /** The inner face sits this far inside the edge line (half thickness). */
+  insetM: number;
+  /**
+   * Axis-aligned walls only: coordinate of the edge line on its fixed axis
+   * (y for horizontal, x for vertical) and the segment's span along the
+   * other axis.
+   */
+  lineCoord: number;
+  spanMin: number;
+  spanMax: number;
 }
 
 function mod360(d: number): number {
@@ -64,39 +122,132 @@ export function isCardinalRotation(deg: number): boolean {
   return mod360(deg) % 90 === 0;
 }
 
+interface SegmentProbe {
+  distance: number;
+  /** Unit normal (−dy, dx)/len — the segment's left-hand side in y-down space. */
+  nx: number;
+  ny: number;
+  alignment: WallAlignment;
+}
+
+/** Distance from p to segment ab (clamped to the segment) plus its raw normal. */
+function probeSegment(a: Vertex, b: Vertex, p: Vertex, axisTol: number): SegmentProbe | null {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq < 1e-12) return null;
+  const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq));
+  const distance = Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+  const len = Math.sqrt(lenSq);
+  const alignment: WallAlignment =
+    Math.abs(dy) < axisTol ? 'horizontal' : Math.abs(dx) < axisTol ? 'vertical' : 'slanted';
+  return { distance, nx: -dy / len, ny: dx / len, alignment };
+}
+
+/** Flip the raw normal to whichever side of the edge is inside the room. */
+function roomSideNormal(a: Vertex, b: Vertex, s: SegmentProbe, polygon: Polygon): Vertex {
+  const probe = { x: (a.x + b.x) / 2 + s.nx * 0.01, y: (a.y + b.y) / 2 + s.ny * 0.01 };
+  return pointInPolygon(probe, polygon) ? { x: s.nx, y: s.ny } : { x: -s.nx, y: -s.ny };
+}
+
 /** Nearest polygon edge to a point, with its room-side normal. */
-export function nearestEdge(polygon: Polygon, p: Vertex): NearestEdge | null {
+export function nearestEdge(
+  polygon: Polygon,
+  p: Vertex,
+  axisTol: number = AXIS_ALIGN_TOL_M,
+): NearestEdge | null {
   if (polygon.length < 3) return null;
   let best: NearestEdge | null = null;
   for (let i = 0; i < polygon.length; i++) {
     const a = polygon[i];
     const b = polygon[(i + 1) % polygon.length];
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const lenSq = dx * dx + dy * dy;
-    if (lenSq < 1e-12) continue;
-    let t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq;
-    t = Math.max(0, Math.min(1, t));
-    const cx = a.x + t * dx;
-    const cy = a.y + t * dy;
-    const dist = Math.hypot(p.x - cx, p.y - cy);
-    if (best && dist >= best.distance) continue;
-    const len = Math.sqrt(lenSq);
-    // Candidate normal; flip to whichever side is inside the room.
-    let nx = -dy / len;
-    let ny = dx / len;
-    const midX = (a.x + b.x) / 2;
-    const midY = (a.y + b.y) / 2;
-    const probe = { x: midX + nx * 0.01, y: midY + ny * 0.01 };
-    if (!pointInPolygon(probe, polygon)) {
-      nx = -nx;
-      ny = -ny;
-    }
-    const alignment: NearestEdge['alignment'] =
-      Math.abs(dy) < 1e-9 ? 'horizontal' : Math.abs(dx) < 1e-9 ? 'vertical' : 'slanted';
-    best = { a, b, distance: dist, inwardNormal: { x: nx, y: ny }, alignment };
+    const s = probeSegment(a, b, p, axisTol);
+    if (!s) continue;
+    if (best && s.distance >= best.distance) continue;
+    best = {
+      a,
+      b,
+      distance: s.distance,
+      inwardNormal: roomSideNormal(a, b, s, polygon),
+      alignment: s.alignment,
+    };
   }
   return best;
+}
+
+function toCandidate(
+  a: Vertex,
+  b: Vertex,
+  s: SegmentProbe,
+  inwardNormal: Vertex,
+  source: WallCandidate['source'],
+  index: number,
+  insetM: number,
+): WallCandidate {
+  const horizontal = s.alignment === 'horizontal';
+  return {
+    a,
+    b,
+    distance: s.distance,
+    inwardNormal,
+    alignment: s.alignment,
+    source,
+    index,
+    insetM,
+    lineCoord: horizontal ? (a.y + b.y) / 2 : (a.x + b.x) / 2,
+    spanMin: horizontal ? Math.min(a.x, b.x) : Math.min(a.y, b.y),
+    spanMax: horizontal ? Math.max(a.x, b.x) : Math.max(a.y, b.y),
+  };
+}
+
+/**
+ * Every wall an object at `centre` could flush against: all polygon edges
+ * (normal into the room, inset `wallInsetM`) plus every free wall (normal
+ * toward the centre, inset half its own thickness). Polygon edges come
+ * first, in polygon order — the tie-break order for snapping.
+ */
+export function collectWallCandidates(input: {
+  polygon: Polygon;
+  centre: Vertex;
+  freeWalls?: readonly FreeWallLike[];
+  wallInsetM?: number;
+  axisTol?: number;
+}): WallCandidate[] {
+  const { polygon, centre } = input;
+  const inset = input.wallInsetM ?? WALL_HALF_M;
+  const axisTol = input.axisTol ?? AXIS_ALIGN_TOL_M;
+  const out: WallCandidate[] = [];
+  if (polygon.length >= 3) {
+    for (let i = 0; i < polygon.length; i++) {
+      const a = polygon[i];
+      const b = polygon[(i + 1) % polygon.length];
+      const s = probeSegment(a, b, centre, axisTol);
+      if (!s) continue;
+      out.push(toCandidate(a, b, s, roomSideNormal(a, b, s, polygon), 'polygon', i, inset));
+    }
+  }
+  const walls = input.freeWalls ?? [];
+  for (let i = 0; i < walls.length; i++) {
+    const wall = walls[i];
+    const s = probeSegment(wall.a, wall.b, centre, axisTol);
+    if (!s) continue;
+    // Two-sided: "inward" is whichever side the query point is on.
+    const side = s.nx * (centre.x - wall.a.x) + s.ny * (centre.y - wall.a.y);
+    const n = side < 0 ? { x: -s.nx, y: -s.ny } : { x: s.nx, y: s.ny };
+    out.push(toCandidate(wall.a, wall.b, s, n, 'free', i, (wall.thicknessM ?? WALL_THICKNESS_M) / 2));
+  }
+  return out;
+}
+
+/**
+ * AABB start coordinate on the candidate's fixed axis (y for a horizontal
+ * wall, x for a vertical one) that puts an object `extent` deep flush
+ * against the wall's inner face. Axis-aligned candidates only.
+ */
+export function wallFlushOrigin(c: WallCandidate, extent: number): number {
+  const n = c.alignment === 'horizontal' ? c.inwardNormal.y : c.inwardNormal.x;
+  const face = c.lineCoord + (n >= 0 ? c.insetM : -c.insetM);
+  return n >= 0 ? face : face - extent;
 }
 
 /**
@@ -118,7 +269,7 @@ export interface WallAwareInput {
   /** Unrotated product footprint. */
   fp: FootprintM;
   polygon: Polygon;
-  /** Grid step in metres (0.5 or 0.25). */
+  /** Grid step in metres (0.01 … 10). */
   snapStep: number;
   /**
    * A rotation the user chose explicitly (armed-ghost R key, or an
@@ -127,6 +278,18 @@ export interface WallAwareInput {
    */
   userRotationDeg?: number | null;
   frontEdge?: FrontEdge;
+  /** Distance from a polygon edge to its wall's inner face. Default WALL_HALF_M. */
+  wallInsetM?: number;
+  /**
+   * An EXISTING item's rotation. Used when the item ends up free-standing
+   * and userRotationDeg is null, so a mid-room drag keeps its facing
+   * instead of resetting to 0. New drops pass undefined (= 0).
+   */
+  currentRotationDeg?: number | null;
+  /** Free-standing walls on the same level — snap targets on both sides. */
+  freeWalls?: readonly FreeWallLike[];
+  /** Keep the object within the primary wall's span (default true). */
+  clampAlongWall?: boolean;
 }
 
 export interface WallAwareResult {
@@ -134,56 +297,192 @@ export interface WallAwareResult {
   x: number;
   y: number;
   rotationDeg: number;
-  /** True when the object was pulled flush against a wall. */
+  /** True when the object was pulled flush against at least one wall. */
   wallSnapped: boolean;
+  /** 0 free-standing, 1 flush on one wall, 2 in a corner. */
+  snappedEdges: number;
+  cornerSnapped: boolean;
+  /** The axis free to slide along the primary wall; null when free-standing. */
+  primaryAxis: 'x' | 'y' | null;
+}
+
+interface ScoredCandidate {
+  c: WallCandidate;
+  rotationDeg: number;
+  /** Gap between the object's back edge and the wall edge line (m). */
+  backGap: number;
+}
+
+/** Smallest backGap; ties → smaller distance; then earliest (polygon order). */
+function pickClosest(scored: ScoredCandidate[]): ScoredCandidate | null {
+  let best: ScoredCandidate | null = null;
+  for (const s of scored) {
+    if (
+      !best ||
+      s.backGap < best.backGap - EPS ||
+      (Math.abs(s.backGap - best.backGap) <= EPS && s.c.distance < best.c.distance - EPS)
+    ) {
+      best = s;
+    }
+  }
+  return best;
 }
 
 /**
- * The single placement resolver: grid-snap + wall-snap + auto-orient.
- * Callers still run validatePlacement / findFreeSlot on the result.
+ * The single placement resolver: grid-snap + wall-snap (one or two walls)
+ * + auto-orient. Callers still run validatePlacement on the result and,
+ * when blocked, findFreeSlotAlongWall before falling back to findFreeSlot.
  */
 export function resolveWallAwarePlacement(input: WallAwareInput): WallAwareResult {
   const { fp, polygon, snapStep, frontEdge } = input;
+  const wallInsetM = input.wallInsetM ?? WALL_HALF_M;
   const userRot = input.userRotationDeg ?? null;
   const centre = { x: input.centreXm, y: input.centreYm };
 
-  const plain = (rotationDeg: number): WallAwareResult => {
+  // Slanted walls can't take a flush AABB, so they are never candidates.
+  const candidates = collectWallCandidates({
+    polygon,
+    centre,
+    freeWalls: input.freeWalls,
+    wallInsetM,
+  }).filter((c) => c.alignment !== 'slanted');
+
+  // Each wall would induce its own auto-orient rotation, hence its own
+  // footprint depth along that wall's normal — score them individually.
+  const primary = pickClosest(
+    candidates.map((c) => {
+      const rotationDeg = userRot ?? autoOrientDeg(c.inwardNormal, frontEdge);
+      const { w, h } = rotatedFootprint(fp, rotationDeg);
+      return { c, rotationDeg, backGap: c.distance - (c.alignment === 'horizontal' ? h : w) / 2 };
+    }),
+  );
+
+  if (!primary || primary.backGap > WALL_SNAP_GAP_M + EPS) {
+    // Free-standing: keep an existing item's facing; a new drop faces the viewer.
+    const rotationDeg = userRot ?? input.currentRotationDeg ?? 0;
     const { w, h } = rotatedFootprint(fp, rotationDeg);
     return {
       x: snapToGrid(centre.x - w / 2, snapStep),
       y: snapToGrid(centre.y - h / 2, snapStep),
       rotationDeg,
       wallSnapped: false,
+      snappedEdges: 0,
+      cornerSnapped: false,
+      primaryAxis: null,
     };
+  }
+
+  const { rotationDeg } = primary;
+  const { w, h } = rotatedFootprint(fp, rotationDeg);
+  const horizontal = primary.c.alignment === 'horizontal';
+  // Object size across the wall (depth) and along it (length).
+  const depth = horizontal ? h : w;
+  const length = horizontal ? w : h;
+  const fixed = wallFlushOrigin(primary.c, depth);
+
+  // A perpendicular wall within the gap makes it a corner: flush both faces.
+  const secondary = pickClosest(
+    candidates
+      .filter((c) => c.alignment !== primary.c.alignment)
+      .map((c) => ({ c, rotationDeg, backGap: c.distance - length / 2 })),
+  );
+
+  let along: number;
+  let corner = false;
+  if (secondary && secondary.backGap <= WALL_SNAP_GAP_M + EPS) {
+    along = wallFlushOrigin(secondary.c, length);
+    corner = true;
+  } else {
+    along = snapToGrid((horizontal ? centre.x : centre.y) - length / 2, snapStep);
+    if (input.clampAlongWall ?? true) {
+      // The perpendicular walls at the span ends have inner faces too, so
+      // the usable span shrinks by the inset at both ends.
+      const lo = primary.c.spanMin + wallInsetM;
+      const hi = primary.c.spanMax - wallInsetM;
+      along =
+        hi - lo < length ? (lo + hi) / 2 - length / 2 : Math.min(hi - length, Math.max(lo, along));
+    }
+  }
+
+  return {
+    x: horizontal ? along : fixed,
+    y: horizontal ? fixed : along,
+    rotationDeg,
+    wallSnapped: true,
+    snappedEdges: corner ? 2 : 1,
+    cornerSnapped: corner,
+    primaryAxis: horizontal ? 'x' : 'y',
   };
+}
 
-  const edge = nearestEdge(polygon, centre);
-  if (!edge) return plain(userRot ?? 0);
-
-  // Tentative rotation: the user's explicit choice wins; otherwise face
-  // away from the nearest wall.
-  const rotation = userRot ?? autoOrientDeg(edge.inwardNormal, frontEdge);
-  const { w, h } = rotatedFootprint(fp, rotation);
-
-  // Extent of the footprint along the wall normal, to measure the gap
-  // between the object's back edge and the wall.
-  const normalExtent =
-    edge.alignment === 'horizontal' ? h : edge.alignment === 'vertical' ? w : Math.min(w, h);
-  const backGap = edge.distance - normalExtent / 2;
-  if (backGap > WALL_SNAP_GAP_M || edge.alignment === 'slanted') {
-    // Free-standing (or a slanted wall the AABB can't sit flush on):
-    // mid-room default facing is "toward the viewer" (rotation 0).
-    return plain(userRot ?? 0);
+/**
+ * When a wall-snapped position is blocked, slide ALONG the primary wall
+ * (flush coordinate fixed, nearest first, ±step increments up to
+ * maxSlideM) and return the first candidate `fits` accepts. The generic
+ * findFreeSlot re-snaps both axes and loses the flush coordinate — this
+ * keeps the item on the wall. Null when free-standing or nothing fits.
+ */
+export function findFreeSlotAlongWall(input: {
+  resolved: WallAwareResult;
+  w: number;
+  h: number;
+  step: number;
+  maxSlideM?: number;
+  fits: (rect: PlacedRect) => boolean;
+}): { x: number; y: number } | null {
+  const { resolved, w, h, step, fits } = input;
+  if (!resolved.wallSnapped || !resolved.primaryAxis || !(step > 0)) return null;
+  const maxSlide = input.maxSlideM ?? 6;
+  const alongX = resolved.primaryAxis === 'x';
+  const base = alongX ? resolved.x : resolved.y;
+  const tryAt = (v: number): { x: number; y: number } | null => {
+    const rect: PlacedRect = alongX
+      ? { x: v, y: resolved.y, w, h }
+      : { x: resolved.x, y: v, w, h };
+    return fits(rect) ? { x: rect.x, y: rect.y } : null;
+  };
+  const steps = Math.floor(maxSlide / step + EPS);
+  for (let k = 0; k <= steps; k++) {
+    const hit = tryAt(base + k * step) ?? (k > 0 ? tryAt(base - k * step) : null);
+    if (hit) return hit;
   }
+  return null;
+}
 
-  // Flush the wall axis; grid-snap along the wall.
-  const n = edge.inwardNormal;
-  if (edge.alignment === 'horizontal') {
-    const wallY = edge.a.y;
-    const y = n.y > 0 ? wallY : wallY - h;
-    return { x: snapToGrid(centre.x - w / 2, snapStep), y, rotationDeg: rotation, wallSnapped: true };
-  }
-  const wallX = edge.a.x;
-  const x = n.x > 0 ? wallX : wallX - w;
-  return { x, y: snapToGrid(centre.y - h / 2, snapStep), rotationDeg: rotation, wallSnapped: true };
+/**
+ * Free walls as collision obstacles. Axis-aligned walls become the wall
+ * band (segment ± thickness/2 across, exact span along); slanted walls use
+ * their bounding box grown by thickness/2. instanceId = 'wall:<index>'.
+ * Callers append these to the collision `others` list.
+ */
+export function freeWallObstacleRects(
+  walls: readonly FreeWallLike[],
+  defaultThicknessM: number = WALL_THICKNESS_M,
+): Array<PlacedRect & { instanceId: string }> {
+  const out: Array<PlacedRect & { instanceId: string }> = [];
+  walls.forEach((wall, index) => {
+    const dx = wall.b.x - wall.a.x;
+    const dy = wall.b.y - wall.a.y;
+    // A zero-length wall would still register as a collision (rectsOverlap
+    // accepts zero-width rects), so it must not become an obstacle at all.
+    if (dx * dx + dy * dy < 1e-12) return;
+    const half = (wall.thicknessM ?? defaultThicknessM) / 2;
+    const instanceId = `wall:${index}`;
+    const minX = Math.min(wall.a.x, wall.b.x);
+    const minY = Math.min(wall.a.y, wall.b.y);
+    if (Math.abs(dy) < AXIS_ALIGN_TOL_M) {
+      out.push({ x: minX, y: wall.a.y - half, w: Math.abs(dx), h: 2 * half, instanceId });
+    } else if (Math.abs(dx) < AXIS_ALIGN_TOL_M) {
+      out.push({ x: wall.a.x - half, y: minY, w: 2 * half, h: Math.abs(dy), instanceId });
+    } else {
+      out.push({
+        x: minX - half,
+        y: minY - half,
+        w: Math.abs(dx) + 2 * half,
+        h: Math.abs(dy) + 2 * half,
+        instanceId,
+      });
+    }
+  });
+  return out;
 }

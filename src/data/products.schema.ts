@@ -44,7 +44,28 @@ export type ProductCategory =
   | 'flooring'
   | 'walls'
   | 'decor'
+  // Sims world (2026-08-29) — lamps, pendants, sconces. A `lighting`
+  // product pools light on the plan (see `designer/lighting.ts`); before
+  // this the API adapter collapsed merchant `lighting` rows into `other`.
+  | 'lighting'
   | 'other';
+
+/**
+ * Sims world (2026-08-29) — how a product may be attached to the room.
+ *   'floor'   (default) the normal floor path;
+ *   'wall'    shelves/mirrors/sconces that snap flush to a wall;
+ *   'surface' small items that only sit ON an `is_surface` product;
+ *   'ceiling' a ceiling-hung item (pendant) — no floor collision, no wall
+ *             snap; it floats over whatever is beneath it.
+ */
+export type ProductPlacement = 'floor' | 'surface' | 'wall' | 'ceiling';
+
+/**
+ * Sims world (2026-08-29) — architectural plan glyph drawn on the canvas
+ * INSTEAD of a top-down photo for symbol-style items (lights, greenery,
+ * garden furniture). Resolved by `designer/lighting.ts#planSymbolOf`.
+ */
+export type PlanSymbol = 'light' | 'pendant' | 'tree' | 'hedge' | 'bench' | 'bar';
 
 export type DesignerStatus = 'Not Started' | 'In Progress' | 'Blocked' | 'Done';
 
@@ -136,7 +157,7 @@ export interface Product {
    * 'surface' = small items that can only sit ON a placed item whose
    * product has `is_surface: true`.
    */
-  placement?: 'floor' | 'surface' | 'wall';
+  placement?: ProductPlacement;
   /** True when this (floor) product offers a tabletop that `placement:
    * 'surface'` items can sit on (tables, consoles, desks). */
   is_surface?: boolean;
@@ -144,6 +165,30 @@ export interface Product {
    * Informational in the 2D top-down (shown in details); drives the 3D
    * mirror later. */
   mount_height_cm?: number;
+  /**
+   * Sims world (2026-08-29) — this product is a light source: the canvas
+   * pools a warm glow around it (toggled per item via `PlacedItem.lightOn`).
+   * Absent → inferred from `category === 'lighting'` or a light-like name
+   * (`designer/lighting.ts#emitsLight`).
+   */
+  emits_light?: boolean;
+  /**
+   * Radius of the light pool in METRES. Absent → derived from the footprint
+   * (`designer/lighting.ts#lightRadiusM`). Only meaningful when the product
+   * emits light.
+   */
+  light_radius_m?: number;
+  /**
+   * May be placed OUTSIDE rooms — in the garden / on the plot (trees,
+   * hedges, garden benches). Absent → false: indoor only.
+   */
+  outdoor?: boolean;
+  /**
+   * Plan glyph to draw on the canvas in place of a top-down image. Absent →
+   * `designer/lighting.ts#planSymbolOf` infers one for lights and outdoor
+   * plants, else null (draw the image / footprint as before).
+   */
+  plan_symbol?: PlanSymbol;
 }
 
 export interface ProductCatalog {

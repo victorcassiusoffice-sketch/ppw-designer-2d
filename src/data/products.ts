@@ -71,6 +71,8 @@ export const CATEGORY_LABELS: Record<ProductCategory, string> = {
   flooring: 'Flooring',
   walls: 'Walls',
   decor: 'Decor',
+  // Sims world (2026-08-29) — light sources.
+  lighting: 'Lighting',
   other: 'Other',
 };
 
@@ -131,6 +133,9 @@ export const CATEGORY_FILL: Record<ProductCategory, { fill: string; stroke: stri
   flooring:         { fill: '#D7C3A0', stroke: '#7C5E3C' },
   walls:            { fill: '#C8D0D8', stroke: '#3B4A52' },
   decor:            { fill: '#B6C8B0', stroke: '#5A7A60' },
+  // Sims world (2026-08-29) — warm amber so a lamp footprint already reads
+  // as "light" before the glow layer is drawn.
+  lighting:         { fill: '#F6D58A', stroke: '#B7791F' },
   other:            { fill: '#F5EFE6', stroke: '#C0A67E' },
 };
 
@@ -217,6 +222,12 @@ export function thumbnailFor(category: ProductCategory): string {
       return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <circle cx="32" cy="32" r="20" fill="#B6C8B0" stroke="#5A7A60" stroke-width="2"/>
         <path d="M32 14 L36 28 L50 28 L38 36 L42 50 L32 42 L22 50 L26 36 L14 28 L28 28 Z" fill="#5A7A60" opacity="0.4"/>
+      </svg>`;
+    case 'lighting':
+      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M22 30a10 10 0 1 1 20 0c0 5-4 7-4 12H26c0-5-4-7-4-12z" fill="#F6D58A" stroke="#B7791F" stroke-width="2"/>
+        <rect x="26" y="44" width="12" height="5" rx="1.5" fill="#B7791F"/>
+        <path d="M32 8v5M14 16l3.5 3.5M50 16l-3.5 3.5M10 30h5M49 30h5" stroke="#B7791F" stroke-width="2" stroke-linecap="round"/>
       </svg>`;
     case 'other':
       return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

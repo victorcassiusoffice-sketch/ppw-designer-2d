@@ -131,6 +131,8 @@ const CATEGORY_FILL: Record<string, [number, number, number]> = {
   'ergo-chair': [223, 207, 188],
   plant: [212, 226, 205],
   'eco-office-kit': [234, 226, 198],
+  // Sims world (2026-08-29) — warm amber for light sources.
+  lighting: [250, 233, 190],
 };
 const CATEGORY_BORDER: Record<string, [number, number, number]> = {
   'ice-bath': [78, 142, 174],

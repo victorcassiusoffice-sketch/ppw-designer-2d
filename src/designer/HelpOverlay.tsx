@@ -14,35 +14,58 @@ export interface ShortcutRow {
 
 export const DEFAULT_SHORTCUTS: Array<{ category: string; rows: ShortcutRow[] }> = [
   {
-    category: 'Build mode',
+    category: 'Walls',
     rows: [
-      { keys: 'Click + drag', label: 'Place product' },
-      { keys: 'Shift', label: 'Free-place (bypass 50 cm snap)' },
-      { keys: 'Esc', label: 'Cancel placement' },
-      { keys: 'R / Shift+R', label: 'Rotate 15° CW / CCW' },
-      { keys: 'Right-click drag', label: 'Free rotate (snap off w/ Shift)' },
+      { keys: 'Click', label: 'Drop a wall point (+ Walls / Custom shape)' },
+      { keys: 'Enter / click first point', label: 'Close the shape as a room' },
+      { keys: 'Alt+Enter / Finish walls', label: 'Keep the run as open walls' },
+      { keys: 'Shift+Enter', label: 'Close the room and keep drawing' },
+      { keys: '+ / − (while drawing)', label: 'Finer / coarser unit' },
+      { keys: '[ / ]', label: 'Coarser / finer unit, any time' },
+      { keys: '1 – 6', label: 'Unit: 1 cm · 10 cm · 25 cm · 50 cm · 1 m · 10 m' },
+      { keys: 'Ctrl+Z', label: 'Undo last wall point' },
+      { keys: 'Esc', label: 'Cancel the run' },
     ],
   },
   {
-    category: 'Selection',
+    category: 'Placing',
     rows: [
-      { keys: 'Click', label: 'Select item' },
-      { keys: 'Shift + click', label: 'Add to selection' },
-      { keys: 'Drag on empty floor', label: 'Marquee select (desktop only)' },
+      { keys: 'Drag from dock', label: 'Place a product — inside a room or outside in the garden' },
+      { keys: 'R / Shift+R / Alt+R', label: 'Rotate the armed item 90° / 15° / 90° CCW' },
+      { keys: 'Shift + click', label: 'Stamp copies without disarming' },
+      { keys: 'Esc / right-click', label: 'Cancel placement' },
     ],
   },
   {
-    category: 'History',
+    category: 'Selected item',
     rows: [
+      { keys: 'R / , / .', label: 'Rotate 90° (Shift+R 15°, Alt+R CCW)' },
+      { keys: 'Drag the handle', label: 'Free rotate in 15° steps (Shift for any angle)' },
+      { keys: 'D', label: 'Duplicate' },
+      { keys: 'L', label: 'Light on / off (lamps, pendants, sconces)' },
+      { keys: 'Del / Backspace', label: 'Delete' },
+      { keys: 'Esc', label: 'Deselect' },
+    ],
+  },
+  {
+    category: 'Building',
+    rows: [
+      { keys: 'PageUp / PageDown', label: 'Go up / down one floor' },
+      { keys: 'Floors button', label: 'Add, rename or remove storeys' },
+      { keys: 'Land button', label: 'Lock the plot size (scale + capacity)' },
+      { keys: 'M', label: 'Measure tool — retype a wall length' },
+      { keys: 'H / E / J', label: 'Hand · eyedropper · sledgehammer' },
+    ],
+  },
+  {
+    category: 'View + history',
+    rows: [
+      { keys: 'Wheel / pinch', label: 'Zoom' },
+      { keys: '+ / − (not drawing)', label: 'Zoom in / out' },
+      { keys: 'W A S D / arrows', label: 'Pan' },
       { keys: 'Ctrl+Z', label: 'Undo (removes both visual + cart line)' },
       { keys: 'Ctrl+Y / Ctrl+Shift+Z', label: 'Redo' },
-    ],
-  },
-  {
-    category: 'Misc',
-    rows: [
-      { keys: '?', label: 'Open this help' },
-      { keys: 'Right-click / long-press', label: 'Context menu' },
+      { keys: 'Shift+P / Shift+X', label: 'Clear products / clear all' },
     ],
   },
 ];

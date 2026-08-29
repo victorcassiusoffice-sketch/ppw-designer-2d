@@ -30,9 +30,17 @@ const DIFFUSER = { lengthM: 0.15, widthM: 0.15 };
 describe('placementKind', () => {
   it('defaults to floor', () => {
     expect(placementKind(undefined)).toBe('floor');
+    expect(placementKind(null)).toBe('floor');
     expect(placementKind({})).toBe('floor');
     expect(placementKind({ placement: 'wall' })).toBe('wall');
     expect(placementKind({ placement: 'surface' })).toBe('surface');
+  });
+
+  it('knows ceiling items and degrades unknown strings to floor', () => {
+    expect(placementKind({ placement: 'ceiling' })).toBe('ceiling');
+    expect(placementKind({ placement: 'roof' })).toBe('floor');
+    expect(placementKind({ placement: '' })).toBe('floor');
+    expect(placementKind({ placement: null })).toBe('floor');
   });
 });
 
@@ -47,7 +55,8 @@ describe('resolveWallItemPlacement', () => {
     });
     expect(r.ok).toBe(true);
     expect(r.rotationDeg).toBe(0);
-    expect(r.y).toBeCloseTo(0);
+    // Inner face of the 0.1 m wall band (2026-08-29): edge + 0.05, not the edge.
+    expect(r.y).toBeCloseTo(0.05, 9);
     expect(r.x).toBeCloseTo(2.0); // grid-snapped along the wall
   });
 
@@ -61,8 +70,81 @@ describe('resolveWallItemPlacement', () => {
     });
     expect(r.ok).toBe(true);
     expect(r.rotationDeg).toBe(90);
-    // At 90° the shelf is 0.2 wide × 0.8 tall → flush: x = 5 − 0.2.
-    expect(r.x).toBeCloseTo(4.8);
+    // At 90° the shelf is 0.2 wide × 0.8 tall → flush to the inner face: x = 5 − 0.05 − 0.2.
+    expect(r.x).toBeCloseTo(4.75, 9);
+  });
+
+  it('honours the passed snapStep along the wall', () => {
+    const fine = resolveWallItemPlacement({
+      centreXm: 2.53,
+      centreYm: 0.8,
+      fp: SHELF,
+      polygon: ROOM,
+      snapStep: 0.1,
+    });
+    expect(fine.x).toBeCloseTo(2.1, 9); // 2.53 − 0.4 = 2.13 → 0.1 grid
+    const coarse = resolveWallItemPlacement({
+      centreXm: 2.53,
+      centreYm: 0.8,
+      fp: SHELF,
+      polygon: ROOM,
+      snapStep: 1,
+    });
+    expect(coarse.x).toBeCloseTo(2.0, 9);
+  });
+
+  it('wallInsetM: 0 restores the legacy edge-flush coordinate', () => {
+    const r = resolveWallItemPlacement({
+      centreXm: 2.5,
+      centreYm: 0.8,
+      fp: SHELF,
+      polygon: ROOM,
+      snapStep: 0.5,
+      wallInsetM: 0,
+    });
+    expect(r.y).toBeCloseTo(0, 9);
+  });
+
+  it('hangs on either side of a free wall, flush to that face', () => {
+    const divider = { a: { x: 2, y: 0 }, b: { x: 2, y: 4 }, thicknessM: 0.1 };
+    const east = resolveWallItemPlacement({
+      centreXm: 2.4,
+      centreYm: 1.5,
+      fp: SHELF,
+      polygon: ROOM,
+      snapStep: 0.5,
+      freeWalls: [divider],
+    });
+    expect(east.ok).toBe(true);
+    expect(east.rotationDeg).toBe(270); // back to the wall's east face
+    expect(east.x).toBeCloseTo(2.05, 9);
+    expect(east.y).toBeCloseTo(1.0); // 1.5 − 0.4 = 1.1 → 0.5 grid
+    const west = resolveWallItemPlacement({
+      centreXm: 1.6,
+      centreYm: 1.5,
+      fp: SHELF,
+      polygon: ROOM,
+      snapStep: 0.5,
+      freeWalls: [divider],
+    });
+    expect(west.ok).toBe(true);
+    expect(west.rotationDeg).toBe(90);
+    expect(west.x).toBeCloseTo(1.75, 9); // west face 1.95 minus the 0.2 depth
+  });
+
+  it('ignores a slanted free wall and falls back to a room wall in range', () => {
+    const slanted = { a: { x: 1, y: 1 }, b: { x: 3, y: 2 } };
+    const r = resolveWallItemPlacement({
+      centreXm: 2.0,
+      centreYm: 1.3,
+      fp: SHELF,
+      polygon: ROOM,
+      snapStep: 0.5,
+      freeWalls: [slanted],
+    });
+    expect(r.ok).toBe(true);
+    expect(r.rotationDeg).toBe(0); // top wall (1.3 m away, in range)
+    expect(r.y).toBeCloseTo(0.05, 9);
   });
 
   it('refuses when no wall is within range', () => {

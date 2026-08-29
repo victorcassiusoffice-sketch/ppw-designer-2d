@@ -20,6 +20,13 @@
  * Bands are deliberately spaced by 100 so a band can be inserted later
  * (rugs between covering and freestanding, say) without renumbering.
  *
+ * Sims world (2026-08-29): wall-mounted items (350) and ceiling-hung items
+ * (400) get their own bands ABOVE the freestanding band. A sconce over a
+ * console or a pendant over a treadmill is the normal case, so neither may
+ * ever count as a floor obstacle — and `obstaclesFor` on a floor product
+ * now keeps returning floor items only even when the caller forgets to
+ * pre-filter by placement kind.
+ *
  * NOTE: this is enforced at the CALL SITE by filtering the obstacle list,
  * not by editing `lib/geometry.ts` — that module is protected, and its
  * `collidesWithAny` stays a pure "do these rectangles overlap" primitive.
@@ -31,6 +38,8 @@ import { getProductById } from '../data/products';
 
 export const BAND_FLOOR_COVERING = 200;
 export const BAND_FREESTANDING = 300;
+export const BAND_WALL = 350;
+export const BAND_CEILING = 400;
 
 /**
  * Which band a product occupies.
@@ -41,7 +50,14 @@ export const BAND_FREESTANDING = 300;
  */
 export function bandForProduct(productId: string): number {
   const p = getProductById(productId);
-  return p?.category === 'flooring' ? BAND_FLOOR_COVERING : BAND_FREESTANDING;
+  if (!p) return BAND_FREESTANDING;
+  if (p.category === 'flooring') return BAND_FLOOR_COVERING;
+  if (p.placement === 'ceiling') return BAND_CEILING;
+  if (p.placement === 'wall') return BAND_WALL;
+  // 'floor' and 'surface' stay in the freestanding band: surface items are
+  // already scoped to their host by the surface-slot code, and the floor
+  // collision pass filters them out by placement kind before it gets here.
+  return BAND_FREESTANDING;
 }
 
 /** True when two products contend for the same space. */

@@ -26,7 +26,9 @@ import {
   rotateSelected,
   duplicateSelected,
   deleteSelected,
+  toggleSelectedLight,
 } from '../lib/placementActions';
+import { emitsLight } from '../designer/lighting';
 
 /**
  * P0-ε — Pattern C attribution: stable per-browser sessionId so the
@@ -245,6 +247,24 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
                 >
                   Duplicate (+0.5 m offset)
                 </button>
+                {/* Sims world (2026-08-29): lights cast a pool on the plan;
+                    this is the switch. Only shown for products that emit. */}
+                {emitsLight(selectedProduct) && (
+                  <button
+                    type="button"
+                    onClick={toggleSelectedLight}
+                    data-testid="details-light-toggle"
+                    aria-pressed={selected.lightOn ?? true}
+                    className={`col-span-2 rounded-md border px-2 py-1.5 text-xs font-medium ${
+                      (selected.lightOn ?? true)
+                        ? 'border-amber-400 bg-amber-100 text-ppw-ink'
+                        : 'border-ppw-stone bg-white text-ppw-slate hover:border-ppw-teal'
+                    }`}
+                    title="Switch this light on or off (L)"
+                  >
+                    {(selected.lightOn ?? true) ? 'Light on — tap to switch off' : 'Light off — tap to switch on'}
+                  </button>
+                )}
               </div>
 
               {!confirmingDelete ? (
@@ -282,7 +302,7 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
               )}
 
               <p className="mt-2 text-[10px] leading-snug text-ppw-slate">
-                Keys: <kbd>R</kbd> rotate · <kbd>Shift+R</kbd> CCW · <kbd>D</kbd> duplicate · <kbd>Del</kbd> delete · <kbd>Esc</kbd> deselect
+                Keys: <kbd>R</kbd> rotate 90° · <kbd>Shift+R</kbd> 15° · <kbd>Alt+R</kbd> CCW · <kbd>D</kbd> duplicate · <kbd>L</kbd> light · <kbd>Del</kbd> delete · <kbd>Esc</kbd> deselect
               </p>
             </div>
           </div>

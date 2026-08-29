@@ -77,5 +77,23 @@ export function MacroIcon({ macro }: { macro: MacroCategory }): JSX.Element {
           <path d="M8 20h8" />
         </svg>
       );
+    case 'lighting':
+      // Bulb: dome + neck + base line.
+      return (
+        <svg {...common}>
+          <path d="M9 14.5a5 5 0 1 1 6 0c-.8.6-1 1.5-1 2.5h-4c0-1-.2-1.9-1-2.5z" />
+          <path d="M10 20h4" />
+          <path d="M12 2v1.5M5 6l1 1M19 6l-1 1" />
+        </svg>
+      );
+    case 'outdoor':
+      // Tree: round canopy on a trunk, ground line.
+      return (
+        <svg {...common}>
+          <path d="M12 3a5.5 5.5 0 0 1 4.2 9c1.5.4 2.3 1.5 2.3 2.5 0 1.7-2 2.5-6.5 2.5S5.5 16.2 5.5 14.5c0-1 .8-2.1 2.3-2.5A5.5 5.5 0 0 1 12 3z" />
+          <path d="M12 17v4" />
+          <path d="M7 21h10" />
+        </svg>
+      );
   }
 }

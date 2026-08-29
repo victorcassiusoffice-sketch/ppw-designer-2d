@@ -53,6 +53,8 @@ export const PRODUCT_CATEGORIES = [
   'walls',
   'decor',
   'furniture',
+  // Sims world (2026-08-29) — passes straight through the catalog adapter.
+  'lighting',
 ] as const;
 export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number];
 

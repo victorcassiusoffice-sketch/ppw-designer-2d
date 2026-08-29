@@ -50,10 +50,8 @@ import {
   findFreeSlot,
   polygonArea,
   polygonBounds,
-  resolveDragTarget,
   rotatedFootprint,
   screenToRoom,
-  validatePlacement,
 } from '../lib/geometry';
 import type { PlacedRect, Polygon, Viewport } from '../lib/geometry';
 import { computeZoomScale } from '../lib/zoom';
@@ -82,13 +80,36 @@ import { useDragPointerStore } from '../store/dragPointerStore';
 import { resizeRoomEdge } from '../designer/edgeResize';
 import { formatLengthForUnit } from '../designer/unitFormat';
 import { haptic } from '../lib/haptics';
-// Sims wall-aware placement (2026-08-23) — objects dropped near a wall
-// snap flush against it and auto-rotate to face into the room.
-import { isCardinalRotation, resolveWallAwarePlacement } from '../designer/wallAwarePlacement';
-// Aspect fix (2026-08-24) — contain-fit product art to its footprint.
-import { fitImageToFootprint } from '../designer/imageFit';
-// Blueprint reskin (Vic 2026-08-25, complaint 5) — the canvas becomes a
-// premium dark architectural drawing. Every colour comes from ONE module.
+// Sims wall-aware placement (2026-08-23; inner-face + corners + free walls
+// 2026-08-29) — objects dropped near a wall snap flush against its inner
+// face, tuck into corners, and auto-rotate to face into the room.
+import {
+  findFreeSlotAlongWall,
+  freeWallObstacleRects,
+  isCardinalRotation,
+  resolveWallAwarePlacement,
+  WALL_HALF_M,
+  WALL_THICKNESS_M,
+  type FreeWallLike,
+} from '../designer/wallAwarePlacement';
+// Ratio fix (2026-08-29) — the art is cropped to its CONTENT box and mapped
+// onto the footprint so a product visibly touches the wall it is flush to.
+import { planImageFit } from '../designer/imageFit';
+import { contentBoxForImage } from '../designer/imageContent';
+// Sims world (2026-08-29): storeys, outdoor areas, free walls, land plot.
+import {
+  activeLevelIdOf,
+  isOutdoorRoom,
+  levelBelow,
+  levelsOf,
+  roomsOnLevel,
+} from '../designer/levels';
+import { runToFreeWalls, wallsOnLevel } from '../designer/freeWalls';
+import { emitsLight, lightRadiusM, planSymbolOf } from '../designer/lighting';
+import { pointInPolygon, isRectInsidePolygon } from '../lib/geometry';
+import { SnapUnitStepper } from './RoomDrawMode';
+// Architectural paper theme (2026-08-29): cream paper, charcoal poche walls
+// with a soft shadow, quiet grid. Every colour comes from ONE module.
 import {
   CANVAS_GROUND,
   GHOST_INVALID,
@@ -102,6 +123,7 @@ import {
   GRID_MINOR_WIDTH_PX,
   LABEL_TEXT,
   LABEL_TEXT_MUTED,
+  LABEL_HALO,
   ROOM_FILL,
   ROOM_FILL_ACTIVE,
   DOOR_ARC,
@@ -109,11 +131,25 @@ import {
   DOOR_TARGET_WALL,
   ROOM_LABEL_ACTIVE_OPACITY,
   ROOM_LABEL_INACTIVE_OPACITY,
-  WALL_GOLD,
-  WALL_GOLD_BRIGHT,
+  WALL_INK,
+  WALL_INK_GHOST,
+  WALL_SHADOW,
+  WALL_SHADOW_BLUR_PX,
+  WALL_SHADOW_OFFSET,
   WALL_INNER_STROKE,
   WALL_INNER_STROKE_PX,
   WALL_STROKE_PX,
+  SELECT_STROKE,
+  HANDLE_FILL,
+  SITE_FILL,
+  SITE_STROKE,
+  DIM_LINE,
+  LIGHT_GLOW_CORE,
+  LIGHT_GLOW_EDGE,
+  GREENERY_FILL,
+  GREENERY_STROKE,
+  ITEM_SHADOW,
+  measureFontSize,
 } from '../designer/blueprintTheme';
 // Attached multi-room (Vic 2026-08-26) — all rooms on one canvas, new rooms
 // drawn attached to existing ones, products routed into whichever room they
@@ -339,8 +375,48 @@ export function RoomCanvas({
   // subscribes to the rooms array directly. The `useDesignStore` active-room
   // projections above are kept: they still drive the active-room chrome
   // (TopBar L/W readout, DetailsPanel, the draw-mode name).
-  const rooms = usePropertyStore((s) => s.property.rooms);
+  const allRooms = usePropertyStore((s) => s.property.rooms);
   const activeRoomId = usePropertyStore((s) => s.property.activeRoomId);
+  // Sims world (2026-08-29): storeys. The canvas shows ONE level at a time;
+  // the level below is drawn as a faint ghost so upper floors line up with
+  // the walls beneath, the way The Sims does it.
+  const propertyLevels = usePropertyStore((s) => s.property.levels);
+  const propertyActiveLevelId = usePropertyStore((s) => s.property.activeLevelId);
+  const propertyWalls = usePropertyStore((s) => s.property.walls);
+  const site = usePropertyStore((s) => s.property.site ?? null);
+  const levels = useMemo(() => levelsOf({ levels: propertyLevels }), [propertyLevels]);
+  const activeLevelId = activeLevelIdOf({ levels: propertyLevels, activeLevelId: propertyActiveLevelId });
+  const activeLevel = levels.find((l) => l.id === activeLevelId) ?? levels[0];
+  const belowLevelId = useMemo(() => levelBelow(levels, activeLevelId)?.id ?? null, [levels, activeLevelId]);
+  /** Rooms on the level the canvas is showing (outdoor containers included). */
+  const rooms = useMemo(() => roomsOnLevel(allRooms, activeLevelId), [allRooms, activeLevelId]);
+  /** Free-standing walls on this level (open wall runs). */
+  const freeWalls = useMemo(
+    () => wallsOnLevel(propertyWalls ?? [], activeLevelId),
+    [propertyWalls, activeLevelId],
+  );
+  /** Room outlines one storey down — rendered as a ghost, never interactive. */
+  const belowRooms = useMemo(
+    () =>
+      belowLevelId
+        ? roomsOnLevel(allRooms, belowLevelId).filter(
+            (r) => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon),
+          )
+        : [],
+    [allRooms, belowLevelId],
+  );
+  /** The land plot as a polygon in world metres, or null = unlimited land. */
+  const sitePolygon = useMemo<Polygon | null>(() => {
+    if (!site) return null;
+    const ox = site.originM?.x ?? 0;
+    const oy = site.originM?.y ?? 0;
+    return [
+      { x: ox, y: oy },
+      { x: ox + site.widthM, y: oy },
+      { x: ox + site.widthM, y: oy + site.depthM },
+      { x: ox, y: oy + site.depthM },
+    ];
+  }, [site]);
   // D5 — selecting an item in ANY room must also move focus to that room,
   // or the Sims loop (place → rotate / delete) is dead everywhere except
   // the active room: DetailsPanel, FloatingCluster and placementActions all
@@ -348,9 +424,33 @@ export function RoomCanvas({
   // changing the VALUE passed to PlacedItemGroup, never by widening the
   // designStore facade.
   const selectItemAcrossRooms = usePropertyStore((s) => s.selectItemAcrossRooms);
-  const drawnRooms = useMemo(() => rooms.filter((r) => isDrawnPolygon(r.polygon)), [rooms]);
-  /** Every placed item across every room — badge + cost aggregate over this. */
-  const allItems = useMemo(() => rooms.flatMap((r) => r.placedItems), [rooms]);
+  /** Drawn, walled rooms on this level — what gets floors, walls and a grid. */
+  const drawnRooms = useMemo(
+    () => rooms.filter((r) => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon)),
+    [rooms],
+  );
+  /** Every placed item across every room and level — badge + cost aggregate. */
+  const allItems = useMemo(() => allRooms.flatMap((r) => r.placedItems), [allRooms]);
+  /** Items on the level being shown (what actually renders + collides). */
+  const levelItems = useMemo(() => rooms.flatMap((r) => r.placedItems), [rooms]);
+  /**
+   * Building outlines double as walls for OUTDOOR placement: an item set down
+   * beside a building snaps to the outside face of its wall exactly as an
+   * indoor item snaps to the inside face. Two-sided by construction.
+   */
+  const buildingWallsAsFree = useMemo<FreeWallLike[]>(() => {
+    const out: FreeWallLike[] = [];
+    for (const r of drawnRooms) {
+      for (const e of roomEdges(r)) out.push({ a: e.a, b: e.b, thicknessM: WALL_THICKNESS_M });
+    }
+    return out;
+  }, [drawnRooms]);
+  /** Site area + built area, for the capacity readout. */
+  const capacity = useMemo(() => {
+    const built = drawnRooms.reduce((sum, r) => sum + polygonArea(r.polygon), 0);
+    const plot = site ? site.widthM * site.depthM : 0;
+    return { built, plot, pct: plot > 0 ? Math.round((built / plot) * 100) : 0 };
+  }, [drawnRooms, site]);
 
   const pushToast = useToastStore((s) => s.push);
 
@@ -606,8 +706,34 @@ export function RoomCanvas({
   }, [allItems]);
 
   const bounds = useMemo(() => polygonBounds(polygon), [polygon]);
-  /** AABB over EVERY drawn room — what the viewport centres and fits on. */
-  const union = useMemo(() => unionBounds(rooms), [rooms]);
+  /**
+   * AABB the viewport centres and fits on: the land plot when one is locked
+   * (the plot IS the world), else every drawn room + free wall on this level.
+   */
+  const union = useMemo(() => {
+    if (sitePolygon) return polygonBounds(sitePolygon);
+    let u = unionBounds(drawnRooms);
+    for (const w of freeWalls) {
+      const b = {
+        minX: Math.min(w.a.x, w.b.x),
+        minY: Math.min(w.a.y, w.b.y),
+        maxX: Math.max(w.a.x, w.b.x),
+        maxY: Math.max(w.a.y, w.b.y),
+      };
+      u = u
+        ? {
+            minX: Math.min(u.minX, b.minX),
+            minY: Math.min(u.minY, b.minY),
+            maxX: Math.max(u.maxX, b.maxX),
+            maxY: Math.max(u.maxY, b.maxY),
+          }
+        : b;
+    }
+    // A single wall has zero extent on one axis; give it a metre to fit on.
+    if (u && u.maxX - u.minX < 1) u = { ...u, maxX: u.minX + 1 };
+    if (u && u.maxY - u.minY < 1) u = { ...u, maxY: u.minY + 1 };
+    return u;
+  }, [sitePolygon, drawnRooms, freeWalls]);
   const unionWpx = union ? (union.maxX - union.minX) * pxPerMetre : 0;
   const unionHpx = union ? (union.maxY - union.minY) * pxPerMetre : 0;
   // Area readout stays the ACTIVE room's — it pairs with the TopBar L/W
@@ -769,6 +895,101 @@ export function RoomCanvas({
   // pointer-FSM (via screen→room) and the mobile toolbar (room-centre).
   // `userRotationDeg` null → Sims auto-orientation: near a wall the item
   // snaps flush and faces into the room; mid-room it faces the viewer.
+  /**
+   * Sims world (2026-08-29): where does a world point land?
+   *
+   *   - inside a walled room on this level → that room (active-first tie-break)
+   *   - anywhere else → the level's OUTDOOR container (created on demand),
+   *     unless a land plot is locked and the point is off the plot.
+   *
+   * Read via getState() so the memoised callbacks below never go stale.
+   */
+  const resolveContainer = useCallback(
+    (
+      pM: { x: number; y: number },
+      opts: { create: boolean },
+    ):
+      | { ok: true; room: { id: string; polygon: Polygon; placedItems: PlacedItem[] }; outdoor: boolean }
+      | { ok: false; reason: 'off-plot' } => {
+      const ps = usePropertyStore.getState();
+      const lvl = activeLevelIdOf(ps.property);
+      const levelRooms = roomsOnLevel(ps.property.rooms, lvl).filter((r) => !isOutdoorRoom(r));
+      const room = findRoomAt(pM, levelRooms, ps.property.activeRoomId);
+      if (room) return { ok: true, room, outdoor: false };
+      if (sitePolygon && !pointInPolygon(pM, sitePolygon)) return { ok: false, reason: 'off-plot' };
+      const existing = roomsOnLevel(ps.property.rooms, lvl).find((r) => isOutdoorRoom(r));
+      if (existing) return { ok: true, room: existing, outdoor: true };
+      if (!opts.create) {
+        return { ok: true, room: { id: '__outdoor_preview__', polygon: [], placedItems: [] }, outdoor: true };
+      }
+      const id = ps.ensureOutdoorRoom(lvl);
+      const created = usePropertyStore.getState().property.rooms.find((r) => r.id === id);
+      return created
+        ? { ok: true, room: created, outdoor: true }
+        : { ok: true, room: { id, polygon: [], placedItems: [] }, outdoor: true };
+    },
+    [sitePolygon],
+  );
+
+  /**
+   * Bounds check for an item that lives OUTDOORS: inside the plot when one is
+   * locked, and never overlapping a building. Buildings are tested by their
+   * corners + centre against every drawn room polygon (an outdoor item can
+   * touch a wall's outer face, so edge contact is allowed).
+   */
+  const fitsOutdoors = useCallback(
+    (rect: PlacedRect): boolean => {
+      if (sitePolygon && !isRectInsidePolygon(rect, sitePolygon)) return false;
+      const probes = [
+        { x: rect.x + 0.01, y: rect.y + 0.01 },
+        { x: rect.x + rect.w - 0.01, y: rect.y + 0.01 },
+        { x: rect.x + rect.w - 0.01, y: rect.y + rect.h - 0.01 },
+        { x: rect.x + 0.01, y: rect.y + rect.h - 0.01 },
+        { x: rect.x + rect.w / 2, y: rect.y + rect.h / 2 },
+      ];
+      for (const r of drawnRooms) {
+        for (const p of probes) if (pointInPolygon(p, r.polygon)) return false;
+      }
+      return true;
+    },
+    [sitePolygon, drawnRooms],
+  );
+
+  /**
+   * Nearest free slot for an UNBOUNDED area (no polygon to scan): a square
+   * spiral on the grid around the preferred point, up to `maxRM` away.
+   */
+  const findFreeSlotNear = useCallback(
+    (
+      preferredX: number,
+      preferredY: number,
+      step: number,
+      fits: (x: number, y: number) => boolean,
+      maxRM = 6,
+    ): { x: number; y: number } | null => {
+      const px = Math.round(preferredX / step) * step;
+      const py = Math.round(preferredY / step) * step;
+      if (fits(px, py)) return { x: px, y: py };
+      const rings = Math.ceil(maxRM / step);
+      for (let ring = 1; ring <= rings; ring++) {
+        for (let i = -ring; i <= ring; i++) {
+          const cands: Array<[number, number]> = [
+            [px + i * step, py - ring * step],
+            [px + i * step, py + ring * step],
+            [px - ring * step, py + i * step],
+            [px + ring * step, py + i * step],
+          ];
+          for (const [x, y] of cands) if (fits(x, y)) return { x, y };
+        }
+      }
+      return null;
+    },
+    [],
+  );
+
+  /** Every free wall on this level as collision rectangles (thickness real). */
+  const freeWallRects = useMemo(() => freeWallObstacleRects(freeWalls), [freeWalls]);
+
   const placeAtRoomPoint = useCallback(
     (
       centreXm: number,
@@ -801,18 +1022,27 @@ export function RoomCanvas({
       // point is in. Rooms are read via getState() INSIDE the callback: the
       // memoised callback does not re-create on a store change, so a
       // captured `rooms` would go stale the moment a room is added.
-      const target = findRoomAt(
-        { x: centreXm, y: centreYm },
-        usePropertyStore.getState().property.rooms,
-        usePropertyStore.getState().property.activeRoomId,
-      );
-      if (!target) {
+      // Sims world (2026-08-29): a point outside every room is OUTDOORS, not
+      // an error — gardens, terraces and second buildings all live there.
+      const container = resolveContainer({ x: centreXm, y: centreYm }, { create: true });
+      if (!container.ok) {
         haptic('invalid');
-        pushToast('Drop it inside a room — that spot is outside the plan.', 'warn');
+        pushToast('That spot is off the plot — enlarge the land or drop it inside.', 'warn');
         return false;
       }
+      const target = container.room;
+      const outdoor = container.outdoor;
       const targetPolygon = target.polygon;
       const targetItems = target.placedItems;
+      // Indoors the walls that matter are the room's own edges plus any free
+      // wall on this level; outdoors every building outline is a wall too.
+      const snapWalls: FreeWallLike[] = outdoor ? [...freeWalls, ...buildingWallsAsFree] : freeWalls;
+      const wallRects = outdoor
+        ? [...freeWallRects, ...freeWallObstacleRects(buildingWallsAsFree)]
+        : freeWallRects;
+      /** Bounds test for the container: polygon indoors, plot/buildings outdoors. */
+      const inBounds = (rect: PlacedRect): boolean =>
+        outdoor ? fitsOutdoors(rect) : isRectInsidePolygon(rect, targetPolygon);
 
       const kind = placementKind(product);
 
@@ -827,6 +1057,7 @@ export function RoomCanvas({
           polygon: targetPolygon,
           snapStep,
           frontEdge: product.front_edge,
+          freeWalls: snapWalls,
         });
         if (!r.ok) {
           haptic('invalid');
@@ -835,7 +1066,8 @@ export function RoomCanvas({
         }
         const wf = rotatedFootprint(fp, r.rotationDeg);
         const wallOthers = layerRects(targetItems, 'wall');
-        if (!validatePlacement({ x: r.x, y: r.y, w: wf.w, h: wf.h }, wallOthers, targetPolygon).ok) {
+        const wallRect = { x: r.x, y: r.y, w: wf.w, h: wf.h };
+        if (!inBounds(wallRect) || collidesWithAny(wallRect, wallOthers)) {
           haptic('invalid');
           pushToast("No space on that bit of wall.", 'warn');
           return false;
@@ -903,25 +1135,45 @@ export function RoomCanvas({
         return true;
       }
 
-      // ---- Floor items (the existing Sims wall-aware path) ----------
-      const resolved = resolveWallAwarePlacement({
-        centreXm,
-        centreYm,
-        fp,
-        polygon: targetPolygon,
-        snapStep,
-        userRotationDeg,
-        frontEdge: product.front_edge,
-      });
+      // ---- Floor + ceiling items (the Sims wall-aware path) --------
+      // A ceiling-hung light never snaps to a wall: it sits where it is
+      // dropped, on the grid, colliding only with other ceiling items.
+      const ceiling = kind === 'ceiling';
+      const resolved = ceiling
+        ? (() => {
+            const rot = userRotationDeg ?? 0;
+            const f = rotatedFootprint(fp, rot);
+            return {
+              x: Math.round((centreXm - f.w / 2) / snapStep) * snapStep,
+              y: Math.round((centreYm - f.h / 2) / snapStep) * snapStep,
+              rotationDeg: rot,
+              wallSnapped: false,
+              snappedEdges: 0,
+              cornerSnapped: false,
+              primaryAxis: null,
+            };
+          })()
+        : resolveWallAwarePlacement({
+            centreXm,
+            centreYm,
+            fp,
+            polygon: outdoor ? [] : targetPolygon,
+            snapStep,
+            userRotationDeg,
+            frontEdge: product.front_edge,
+            wallInsetM: WALL_HALF_M,
+            freeWalls: snapWalls,
+          });
       const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
       // Floor items collide with floor items only (wall items hang above,
-      // surface items sit on a tabletop) AND only within the same layer
-      // band — so a treadmill still ignores the mats laid under it.
-      const floorItems = targetItems.filter((it) => {
+      // surface items sit on a tabletop, ceiling items hang from above) AND
+      // only within the same layer band — so a treadmill still ignores the
+      // mats laid under it. Free walls are solid for everything on the floor.
+      const sameKindItems = targetItems.filter((it) => {
         const p = getProductById(it.productId);
-        return p ? placementKind(p) === 'floor' : true;
+        return p ? placementKind(p) === kind : true;
       });
-      const others = obstaclesFor(product.id, floorItems)
+      const others: Array<PlacedRect & { instanceId: string }> = obstaclesFor(product.id, sameKindItems)
         .map((it) => {
           const p = getProductById(it.productId);
           if (!p) return null;
@@ -930,35 +1182,54 @@ export function RoomCanvas({
           return { x: it.x, y: it.y, w: r.w, h: r.h, instanceId: it.instanceId };
         })
         .filter((r): r is PlacedRect & { instanceId: string } => r !== null);
+      if (!ceiling) others.push(...wallRects);
+      const fitsAt = (x: number, y: number): boolean => {
+        const rect = { x, y, w, h };
+        return inBounds(rect) && !collidesWithAny(rect, others);
+      };
       // Designer 3-Bug Fix (2026-05-28, Bug 2) — auto-relocate to the
       // nearest free grid slot instead of rejecting when the preferred
       // point (the room centre for the mobile "+ Add to room" path) is
       // already occupied. Only reject when the room is genuinely full.
-      // The wall-snapped position is tried first via validatePlacement so
-      // a flush non-grid Y/X survives; findFreeSlot re-snaps to the grid.
-      const direct = validatePlacement({ x: resolved.x, y: resolved.y, w, h }, others, targetPolygon);
-      if (!direct.ok && !relocateIfBlocked) {
+      // Sims world: a wall-snapped item first SLIDES ALONG ITS WALL to the
+      // nearest free stretch (keeping the flush face), and only then falls
+      // back to the grid scan — so a blocked drop no longer teleports the
+      // item off the wall.
+      const directOk = fitsAt(resolved.x, resolved.y);
+      if (!directOk && !relocateIfBlocked) {
         haptic('invalid');
         pushToast("That spot is blocked — try somewhere else.", 'warn');
         console.log('[drag-place]', { reason: 'drop-rejected', cause: 'blocked' });
         return false;
       }
-      const slot = direct.ok
+      const relocateStep = Math.max(snapStep, 0.25);
+      const slot = directOk
         ? { x: resolved.x, y: resolved.y }
-        : findFreeSlot({
-            preferredX: resolved.x,
-            preferredY: resolved.y,
-            w,
-            h,
-            others,
-            polygon: targetPolygon,
-            // D15 — floored at 0.5 m so a fine unit cannot turn the fallback
-            // scan into a quadratic sweep. Same cost as today at every unit.
-            step: Math.max(snapStep, 0.5),
-          });
+        : (resolved.wallSnapped
+            ? findFreeSlotAlongWall({
+                resolved,
+                w,
+                h,
+                step: relocateStep,
+                fits: (rect) => fitsAt(rect.x, rect.y),
+              })
+            : null)
+          ?? (outdoor
+            ? findFreeSlotNear(resolved.x, resolved.y, relocateStep, fitsAt)
+            : findFreeSlot({
+                preferredX: resolved.x,
+                preferredY: resolved.y,
+                w,
+                h,
+                others,
+                polygon: targetPolygon,
+                // D15 — floored so a fine unit cannot turn the fallback
+                // scan into a quadratic sweep.
+                step: Math.max(snapStep, 0.5),
+              }));
       if (!slot) {
         haptic('invalid');
-        pushToast("Item won't fit — the room is full.", 'warn');
+        pushToast(outdoor ? 'No space there.' : "Item won't fit — the room is full.", 'warn');
         return false;
       }
       haptic('place');
@@ -966,8 +1237,8 @@ export function RoomCanvas({
       const instanceId = usePropertyStore.getState().addItem(
         {
           productId: product.id,
-          x: slot.x,
-          y: slot.y,
+          x: Number(slot.x.toFixed(4)),
+          y: Number(slot.y.toFixed(4)),
           rotation: resolved.rotationDeg,
         },
         target.id,
@@ -979,6 +1250,14 @@ export function RoomCanvas({
       // selecting ACROSS rooms also moves focus, so the follow-up rotate /
       // delete resolves through the right room's facade.
       selectItemAcrossRooms(instanceId);
+      console.log('[place]', {
+        outdoor,
+        wallSnapped: resolved.wallSnapped,
+        corner: resolved.cornerSnapped,
+        x: slot.x,
+        y: slot.y,
+        rotation: resolved.rotationDeg,
+      });
       pushToast(`Added "${product.name}" to cart`, 'success', {
         ttlMs: 5000,
         action: {
@@ -991,7 +1270,18 @@ export function RoomCanvas({
     // `rooms` is deliberately NOT a dep — it is read via getState() inside
     // the callback precisely so this identity stays stable and the wiring
     // effects that depend on it do not re-fire on every room mutation.
-    [removeItem, pushToast, snapStep, selectItemAcrossRooms],
+    [
+      removeItem,
+      pushToast,
+      snapStep,
+      selectItemAcrossRooms,
+      resolveContainer,
+      fitsOutdoors,
+      findFreeSlotNear,
+      freeWalls,
+      freeWallRects,
+      buildingWallsAsFree,
+    ],
   );
 
   const placeProductAt = useCallback(
@@ -1146,21 +1436,25 @@ export function RoomCanvas({
       };
       // D4 — the IDENTICAL routing call as the commit path (same helper,
       // same active-first tie-break, same getState() read), so ghost
-      // validity can never disagree with what actually lands. Outside every
-      // room the ghost renders invalid rather than silently previewing a
-      // drop that the commit will reject.
-      const target = findRoomAt(
-        { x: xM, y: yM },
-        usePropertyStore.getState().property.rooms,
-        usePropertyStore.getState().property.activeRoomId,
-      );
-      if (!target) {
+      // validity can never disagree with what actually lands. Off the plot
+      // the ghost renders invalid rather than silently previewing a drop
+      // that the commit will reject.
+      const routed = resolveContainer({ x: xM, y: yM }, { create: false });
+      if (!routed.ok) {
         const { w: gw, h: gh } = rotatedFootprint(
           fp,
           ghostManuallyRotated ? ghostRotation : 0,
         );
         return { xM: xM - gw / 2, yM: yM - gh / 2, rotation: ghostManuallyRotated ? ghostRotation : 0, valid: false, w: gw, h: gh };
       }
+      const target = routed.room;
+      const outdoor = routed.outdoor;
+      const snapWalls: FreeWallLike[] = outdoor ? [...freeWalls, ...buildingWallsAsFree] : freeWalls;
+      const wallRects = outdoor
+        ? [...freeWallRects, ...freeWallObstacleRects(buildingWallsAsFree)]
+        : freeWallRects;
+      const inBounds = (rect: PlacedRect): boolean =>
+        outdoor ? fitsOutdoors(rect) : isRectInsidePolygon(rect, target.polygon);
 
       const kind = placementKind(product);
 
@@ -1174,16 +1468,14 @@ export function RoomCanvas({
           polygon: target.polygon,
           snapStep,
           frontEdge: product.front_edge,
+          freeWalls: snapWalls,
         });
         const { w, h } = rotatedFootprint(fp, r.rotationDeg);
         if (!r.ok) {
           return { xM: xM - w / 2, yM: yM - h / 2, rotation: 0, valid: false, w, h };
         }
-        const ok = validatePlacement(
-          { x: r.x, y: r.y, w, h },
-          layerRects(target.placedItems, 'wall'),
-          target.polygon,
-        ).ok;
+        const rect = { x: r.x, y: r.y, w, h };
+        const ok = inBounds(rect) && !collidesWithAny(rect, layerRects(target.placedItems, 'wall'));
         return { xM: r.x, yM: r.y, rotation: r.rotationDeg, valid: ok, w, h };
       }
 
@@ -1212,24 +1504,39 @@ export function RoomCanvas({
 
       // Same wall-aware resolver as the commit path, so the ghost shows
       // EXACTLY where (and at what facing) the item will land.
-      const resolved = resolveWallAwarePlacement({
-        centreXm: xM,
-        centreYm: yM,
-        fp,
-        polygon: target.polygon,
-        snapStep,
-        userRotationDeg: ghostManuallyRotated ? ghostRotation : null,
-        frontEdge: product.front_edge,
-      });
+      const ceiling = kind === 'ceiling';
+      const userRot = ghostManuallyRotated ? ghostRotation : null;
+      const resolved = ceiling
+        ? (() => {
+            const rot = userRot ?? 0;
+            const f = rotatedFootprint(fp, rot);
+            return {
+              x: Math.round((xM - f.w / 2) / snapStep) * snapStep,
+              y: Math.round((yM - f.h / 2) / snapStep) * snapStep,
+              rotationDeg: rot,
+            };
+          })()
+        : resolveWallAwarePlacement({
+            centreXm: xM,
+            centreYm: yM,
+            fp,
+            polygon: outdoor ? [] : target.polygon,
+            snapStep,
+            userRotationDeg: userRot,
+            frontEdge: product.front_edge,
+            wallInsetM: WALL_HALF_M,
+            freeWalls: snapWalls,
+          });
       const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
       const candidate: PlacedRect = { x: resolved.x, y: resolved.y, w, h };
-      // Same combined filter as the commit path — floor-kind items only,
-      // in the same band — so the ghost predicts the commit exactly.
-      const floorItems = target.placedItems.filter((it) => {
+      // Same combined filter as the commit path — same-kind items only,
+      // in the same band, plus solid free walls — so the ghost predicts
+      // the commit exactly.
+      const sameKind = target.placedItems.filter((it) => {
         const p = getProductById(it.productId);
-        return p ? placementKind(p) === 'floor' : true;
+        return p ? placementKind(p) === kind : true;
       });
-      const others = obstaclesFor(product.id, floorItems)
+      const others: PlacedRect[] = obstaclesFor(product.id, sameKind)
         .map((it) => {
           const p = getProductById(it.productId);
           if (!p) return null;
@@ -1238,11 +1545,23 @@ export function RoomCanvas({
           return { x: it.x, y: it.y, w: r.w, h: r.h };
         })
         .filter((r): r is PlacedRect => r !== null);
-      const result = validatePlacement(candidate, others, target.polygon);
-      return { xM: resolved.x, yM: resolved.y, rotation: resolved.rotationDeg, valid: result.ok, w, h };
+      if (!ceiling) others.push(...wallRects);
+      const ok = inBounds(candidate) && !collidesWithAny(candidate, others);
+      return { xM: resolved.x, yM: resolved.y, rotation: resolved.rotationDeg, valid: ok, w, h };
     },
     // `rooms` read via getState() inside — see placeAtRoomPoint.
-    [viewport, pxPerMetre, ghostRotation, ghostManuallyRotated, snapStep],
+    [
+      viewport,
+      pxPerMetre,
+      ghostRotation,
+      ghostManuallyRotated,
+      snapStep,
+      resolveContainer,
+      fitsOutdoors,
+      freeWalls,
+      freeWallRects,
+      buildingWallsAsFree,
+    ],
   );
 
   const handleDrawCommit = useCallback(
@@ -1265,9 +1584,19 @@ export function RoomCanvas({
       // known to be legal. Shared walls pass; a genuine overlap is refused
       // and the user STAYS in draw mode with a clean slate to retry.
       const psNow = usePropertyStore.getState();
-      const clash = psNow.property.rooms.some(
-        (r) => isDrawnPolygon(r.polygon) && strictPolygonsOverlap(newPolygon, r.polygon),
+      // Only rooms on THIS level can clash — the floor above may sit exactly
+      // over the one below (that is the whole point of storeys).
+      const lvlNow = activeLevelIdOf(psNow.property);
+      const clash = roomsOnLevel(psNow.property.rooms, lvlNow).some(
+        (r) => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon) && strictPolygonsOverlap(newPolygon, r.polygon),
       );
+      if (sitePolygon && newPolygon.some((v) => !pointInPolygon(v, sitePolygon))) {
+        pushToast('Keep the room inside the plot — or enlarge the land.', 'warn');
+        console.log('[draw-close]', { reason: 'rejected-off-plot', vertices: newPolygon.length, success: false });
+        setDrawVertices([]);
+        setDrawHover(null);
+        return;
+      }
       if (clash) {
         pushToast("Rooms can't overlap — walls can be shared", 'warn');
         console.log('[draw-close]', {
@@ -1332,10 +1661,43 @@ export function RoomCanvas({
       endDrawTransaction();
       if (onDrawComplete) onDrawComplete();
     },
-    [addRoom, pushToast, onDrawComplete, setDrawVertices],
+    [addRoom, pushToast, onDrawComplete, setDrawVertices, sitePolygon],
   );
 
   void activeRoom;
+
+  /**
+   * Sims world (2026-08-29): an open run of wall points becomes FREE WALLS
+   * on this level — walls do not have to join. Each consecutive pair is one
+   * wall; a run that closed would have gone through handleDrawCommit.
+   */
+  const handleDrawCommitWalls = useCallback(
+    (vertices: Polygon) => {
+      const ps = usePropertyStore.getState();
+      const lvl = activeLevelIdOf(ps.property);
+      const walls = runToFreeWalls(vertices, lvl);
+      if (walls.length === 0) {
+        pushToast('Place at least 2 points for a wall.', 'warn');
+        return;
+      }
+      // Walls off the plot are refused, same as rooms and items.
+      if (sitePolygon && vertices.some((v) => !pointInPolygon(v, sitePolygon))) {
+        pushToast('Keep the walls inside the plot.', 'warn');
+        setDrawVertices([]);
+        setDrawHover(null);
+        return;
+      }
+      ps.addFreeWalls(walls);
+      console.log('[draw-close]', { reason: 'open-walls-commit', walls: walls.length, success: true });
+      pushToast(
+        `${walls.length} wall${walls.length === 1 ? '' : 's'} added — close a shape next time for a room`,
+        'success',
+      );
+      endDrawTransaction();
+      if (onDrawComplete) onDrawComplete();
+    },
+    [pushToast, onDrawComplete, setDrawVertices, sitePolygon],
+  );
 
   const handleDrawCancel = useCallback(() => {
     console.log('[draw-mode]', 'cancel');
@@ -1766,12 +2128,11 @@ export function RoomCanvas({
       className={`relative h-full w-full transition-colors ${
         pendingProductId && !drawMode ? 'ring-2 ring-inset' : ''
       } ${drawMode ? 'cursor-crosshair' : ''} ${pendingProductId && !drawMode ? 'cursor-crosshair' : ''}`}
-      // Blueprint ground. Was the cream `bg-ppw-mist`; the reference is a
-      // deep desaturated navy that lets the gold walls carry the drawing.
+      // Paper ground (2026-08-29): warm cream, the land outside the plot.
       style={{
         background: CANVAS_GROUND,
         ...(pendingProductId && !drawMode
-          ? { '--tw-ring-color': `${WALL_GOLD_BRIGHT}66` } as React.CSSProperties
+          ? { '--tw-ring-color': `${SELECT_STROKE}66` } as React.CSSProperties
           : {}),
       }}
       data-armed={pendingProductId ? 'true' : 'false'}
@@ -1836,6 +2197,9 @@ export function RoomCanvas({
             (M1.5 Playwright hook) — it is just inlined here now. */}
         <div className="pointer-events-none flex items-center gap-1.5">
           <span className="rounded-md bg-ppw-ink/80 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
+            {levels.length > 1 && (
+              <span data-testid="level-readout">{activeLevel?.name ?? 'Ground floor'} · </span>
+            )}
             {area.toFixed(1)} m² · {Math.round(viewport.scale * 100)}% ·{' '}
             {SNAP_UNIT_LABEL[precision]}
             {gridTier.minorStepM > 0 && Math.abs(gridTier.minorStepM - snapStep) > 1e-9 && (
@@ -1851,11 +2215,21 @@ export function RoomCanvas({
             {allItems.length}
           </span>
         </div>
+        {/* Land capacity (Sims world 2026-08-29): how much of the locked
+            plot is built on this level. Only while a plot is locked. */}
+        {site && (
+          <span
+            className="pointer-events-none rounded-md bg-white/85 px-2.5 py-1 text-[11px] font-medium text-ppw-ink shadow-sm ring-1 ring-ppw-stone"
+            data-testid="plot-capacity"
+          >
+            Plot {capacity.plot.toFixed(0)} m² · built {capacity.built.toFixed(1)} m² ({capacity.pct}%)
+          </span>
+        )}
         {/* D21 — live cost total of placed items. Kept as its own prominent
             badge: it is the running shopping total, not chrome. */}
         <div
           className="pointer-events-none rounded-md px-2.5 py-1 text-[11px] font-semibold shadow-sm"
-          style={{ background: 'rgba(255,187,88,0.92)', color: '#232C3B' }}
+          style={{ background: WALL_INK, color: '#F8F5EE' }}
           data-testid="cost-readout"
         >
           {costReadout.total.toLocaleString('en-MU', { maximumFractionDigits: 0 })} {costReadout.currency}
@@ -1919,12 +2293,29 @@ export function RoomCanvas({
             onClick={togglePrecision}
             className="pointer-events-auto flex h-11 min-w-[64px] items-center justify-center rounded-lg px-2 text-[11px] font-semibold shadow-sm active:scale-95"
             style={{
-              background: precision !== 'full' ? '#FFBB58' : 'rgba(255,255,255,0.9)',
-              color: '#232C3B',
+              background: precision !== 'full' ? SELECT_STROKE : 'rgba(255,255,255,0.9)',
+              color: precision !== 'full' ? '#F8F5EE' : '#2A2926',
             }}
           >
             {SNAP_UNIT_LABEL[precision]}
           </button>
+        </div>
+      )}
+
+      {/* Sims world (2026-08-29): the unit stepper is reachable MID-DRAW on
+          a phone. Bottom-left, above the sticky clear row, only while the
+          wall pen is live (the HUD shows it too at sm+, but the HUD's row
+          wraps on a 390 px screen and the stepper must never be off-screen). */}
+      {drawMode && (
+        <div
+          className="sm:hidden pointer-events-none absolute left-3 z-30"
+          style={{
+            bottom:
+              'calc(max(1.25rem, env(safe-area-inset-bottom)) + var(--sims-toolbar-h, 0px) + 150px)',
+          }}
+          data-testid="mobile-draw-unit-stepper"
+        >
+          <SnapUnitStepper compact />
         </div>
       )}
 
@@ -2118,21 +2509,64 @@ export function RoomCanvas({
         className="konva-stage touch-none"
       >
         <Layer listening>
-          {/* Attached multi-room (Vic 2026-08-26): EVERY room renders, in one
-              shared world-metre frame, so the plan reads like the reference
-              — many rooms, one drawing, gold walls shared where they touch.
-              `listening={false}` on the floors is deliberate: the Stage's
-              onClick/onTap commit handlers guard `e.target !== stage`, so a
-              listening floor would swallow every armed placement click.
+          {/* LAND PLOT (Sims world 2026-08-29) — the locked site. Drawn first
+              so everything else sits on it. A dashed boundary with the plot
+              dimensions in the corner: this is the maximum the customer can
+              build inside. */}
+          {sitePolygon && site && (
+            <Group name="site" listening={false}>
+              <Line
+                points={sitePolygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre])}
+                closed
+                fill={SITE_FILL}
+                stroke={SITE_STROKE}
+                strokeWidth={1.5}
+                dash={[10, 6]}
+              />
+              <Text
+                x={sitePolygon[0].x * pxPerMetre + 10 / viewport.scale}
+                y={sitePolygon[0].y * pxPerMetre + 8 / viewport.scale}
+                text={`PLOT ${site.widthM} × ${site.depthM} m · ${(site.widthM * site.depthM).toFixed(0)} m²`}
+                fontSize={measureFontSize(viewport.scale, 11)}
+                fontStyle="bold"
+                fontFamily="Inter, sans-serif"
+                letterSpacing={1.5 / viewport.scale}
+                fill={DIM_LINE}
+              />
+            </Group>
+          )}
+
+          {/* STOREY BELOW (Sims world) — the floor underneath as a faint
+              outline, so an upper floor can be drawn to line up with the
+              walls that carry it. Outline only, never fill, never listening. */}
+          {belowRooms.map((room) => (
+            <Line
+              key={`below-${room.id}`}
+              name="room-below"
+              points={room.polygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre])}
+              closed
+              stroke={WALL_INK_GHOST}
+              strokeWidth={WALL_THICKNESS_M * pxPerMetre}
+              dash={[6, 6]}
+              listening={false}
+            />
+          ))}
+
+          {/* Attached multi-room (Vic 2026-08-26): EVERY room on this level
+              renders in one shared world-metre frame, so the plan reads like
+              the reference — many rooms, one drawing, walls shared where they
+              touch. `listening={false}` on the floors is deliberate: the
+              Stage's onClick/onTap commit handlers guard `e.target !== stage`,
+              so a listening floor would swallow every armed placement click.
               Activation lives on the RoomList dropdown + item selection. */}
           {drawnRooms.map((room) => {
             const pts = room.polygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre]);
             const isActive = room.id === activeRoomId;
             return (
               <Group key={room.id} name="room-poly" listening={false}>
-                {/* Reference `Design/Designer.jpeg`: the walls ARE the drawing.
-                    A thick amber stroke over a slightly lighter floor, with a
-                    hairline inside the stroke for the drafted edge.
+                {/* Architectural paper (2026-08-29): the walls ARE the drawing.
+                    Paper-white floor, charcoal poche walls with a soft cast
+                    shadow so the plan reads as a model on a desk.
 
                     FLOOR — fill only, no stroke. Split from the wall so an
                     opening can cut the wall without cutting the floor away
@@ -2141,10 +2575,6 @@ export function RoomCanvas({
                   points={pts}
                   closed
                   fill={isActive ? ROOM_FILL_ACTIVE : ROOM_FILL}
-                  shadowColor="#000000"
-                  shadowBlur={18}
-                  shadowOpacity={0.45}
-                  shadowOffsetY={4}
                 />
                 {/* FLOOR FINISH — the material the customer actually buys,
                     drawn over the room fill and UNDER the walls, the grid and
@@ -2242,7 +2672,11 @@ export function RoomCanvas({
                     same half-stroke and the cap puts it back exactly on the
                     jamb — the gap ends up the true width of the door. */}
                 {roomEdges(room).map((edge) => {
-                  const halfStrokeM = WALL_STROKE_PX / 2 / pxPerMetre;
+                  // The wall is a REAL thickness in world metres (0.1 m), so
+                  // it scales with pxPerMetre like everything else; at the
+                  // default 100 px/m that is the historic 10 px stroke.
+                  const wallPx = WALL_THICKNESS_M * pxPerMetre;
+                  const halfStrokeM = WALL_HALF_M;
                   const gaps = wallGapsByEdge.get(edgeKey(room.id, edge.index)) ?? [];
                   return splitEdgeSpans(edge.lengthM, gaps).map((span, si) => {
                     const atStartCorner = span.t0 <= 0;
@@ -2262,9 +2696,14 @@ export function RoomCanvas({
                       <Fragment key={`w-${edge.index}-${si}`}>
                         <Line
                           points={seg}
-                          stroke={WALL_GOLD}
-                          strokeWidth={WALL_STROKE_PX}
+                          stroke={WALL_INK}
+                          strokeWidth={wallPx}
                           lineCap="square"
+                          shadowColor={WALL_SHADOW}
+                          shadowBlur={WALL_SHADOW_BLUR_PX}
+                          shadowOffsetX={WALL_SHADOW_OFFSET.x}
+                          shadowOffsetY={WALL_SHADOW_OFFSET.y}
+                          shadowOpacity={1}
                         />
                         <Line
                           points={seg}
@@ -2288,7 +2727,7 @@ export function RoomCanvas({
                 {roomOpenings(room).map((o) => {
                   const edge = roomEdges(room)[o.edgeIndex];
                   if (!edge) return null;
-                  const halfWallM = WALL_STROKE_PX / 2 / pxPerMetre;
+                  const halfWallM = WALL_HALF_M;
                   const toPx = (pt: { x: number; y: number }) => [
                     pt.x * pxPerMetre,
                     pt.y * pxPerMetre,
@@ -2301,14 +2740,14 @@ export function RoomCanvas({
                     <Line
                       key={`jamb-${o.id}-${ti}`}
                       points={[...toPx(t[0]), ...toPx(t[1])]}
-                      stroke={WALL_GOLD}
+                      stroke={WALL_INK}
                       strokeWidth={2}
                     />
                   ));
 
                   if (o.kind === 'window') {
                     // A window keeps the wall line but reads as a thin double
-                    // line across the span.
+                    // line across the span (the drafting convention).
                     const s = openingSpan(o);
                     const a = pointAlongEdge(edge, s.t0);
                     const b = pointAlongEdge(edge, s.t1);
@@ -2316,8 +2755,13 @@ export function RoomCanvas({
                       <Fragment key={`op-${o.id}`}>
                         <Line
                           points={[...toPx(a), ...toPx(b)]}
-                          stroke={WALL_GOLD}
-                          strokeWidth={3}
+                          stroke={ROOM_FILL}
+                          strokeWidth={WALL_THICKNESS_M * pxPerMetre * 0.6}
+                        />
+                        <Line
+                          points={[...toPx(a), ...toPx(b)]}
+                          stroke={WALL_INK}
+                          strokeWidth={1.5}
                         />
                         {tickNodes}
                       </Fragment>
@@ -2384,26 +2828,80 @@ export function RoomCanvas({
               </Group>
             ))}
 
-          {/* Room names, set the way the reference plan sets its callouts:
-              uppercase, letter-spaced, light on the dark floor. Anchored
-              just inside each room's top-left wall so they never fight the
-              centred hints or a placed item's own label. The active room's
-              label is brighter — that plus the lifted floor is the whole
+          {/* FREE-STANDING WALLS (Sims world 2026-08-29) — open runs the
+              customer drew without closing a room. Same poche as room walls,
+              same shadow, so the plan reads as ONE drawing. Listening only
+              while the sledgehammer is armed, so a click can demolish one
+              without ever swallowing an armed placement click. */}
+          {freeWalls.map((w) => {
+            const pts = [w.a.x * pxPerMetre, w.a.y * pxPerMetre, w.b.x * pxPerMetre, w.b.y * pxPerMetre];
+            const wallPx = (w.thicknessM || WALL_THICKNESS_M) * pxPerMetre;
+            const demolish = tool === 'sledgehammer' && !drawMode && !pendingProductId;
+            return (
+              <Group key={`fw-${w.id}`} name="free-wall">
+                <Line
+                  points={pts}
+                  stroke={WALL_INK}
+                  strokeWidth={wallPx}
+                  lineCap="square"
+                  shadowColor={WALL_SHADOW}
+                  shadowBlur={WALL_SHADOW_BLUR_PX}
+                  shadowOffsetX={WALL_SHADOW_OFFSET.x}
+                  shadowOffsetY={WALL_SHADOW_OFFSET.y}
+                  shadowOpacity={1}
+                  listening={demolish}
+                  hitStrokeWidth={Math.max(wallPx, 14)}
+                  onClick={(e) => {
+                    if (!demolish) return;
+                    e.cancelBubble = true;
+                    usePropertyStore.getState().removeFreeWall(w.id);
+                    haptic('delete');
+                  }}
+                  onTap={(e) => {
+                    if (!demolish) return;
+                    e.cancelBubble = true;
+                    usePropertyStore.getState().removeFreeWall(w.id);
+                    haptic('delete');
+                  }}
+                />
+                <Line
+                  points={pts}
+                  stroke={WALL_INNER_STROKE}
+                  strokeWidth={WALL_INNER_STROKE_PX}
+                  lineCap="square"
+                  listening={false}
+                />
+              </Group>
+            );
+          })}
+
+          {/* Room names, set the way the reference plans set their callouts:
+              small caps, letter-spaced, quiet grey on the paper floor.
+              Anchored just inside each room's top-left wall so they never
+              fight the centred hints or a placed item's own label. The active
+              room's label is darker — that plus the lifted floor is the whole
               active-room affordance. */}
           {drawnRooms.map((room) => {
             if (!room.name) return null;
             const b = polygonBounds(room.polygon);
+            // Centred in the room, the way the reference plans set their
+            // callouts. Screen-constant size so it reads at any zoom.
+            const font = measureFontSize(viewport.scale, 11);
+            const boxW = Math.max(40, (b.maxX - b.minX) * pxPerMetre - 8);
             return (
               <Text
                 key={`label-${room.id}`}
+                name="room-label"
                 listening={false}
-                x={b.minX * pxPerMetre + 14}
-                y={b.minY * pxPerMetre + 12}
+                x={b.minX * pxPerMetre + 4}
+                y={(b.minY + b.maxY) / 2 * pxPerMetre - font / 2}
+                width={boxW}
+                align="center"
                 text={room.name.toUpperCase()}
-                fontSize={13}
+                fontSize={font}
                 fontStyle="bold"
                 fontFamily="Inter, sans-serif"
-                letterSpacing={2.5}
+                letterSpacing={2.5 / viewport.scale}
                 fill={LABEL_TEXT}
                 opacity={
                   room.id === activeRoomId
@@ -2413,6 +2911,58 @@ export function RoomCanvas({
               />
             );
           })}
+
+          {/* OVERALL DIMENSIONS (reference plan 2) — one dimension line
+              across the top and one down the left of the BUILDING extent
+              (the plot has its own label), so the customer always sees the
+              size of what they have drawn. Text sits inside the offset band
+              so it can never fall off the top of the stage. */}
+          {drawnRooms.length > 0 && !drawMode && (() => {
+            const bu = unionBounds(drawnRooms);
+            if (!bu) return null;
+            const s = viewport.scale;
+            const off = 0.5 * pxPerMetre;
+            const tick = 0.1 * pxPerMetre;
+            const x0 = bu.minX * pxPerMetre;
+            const x1 = bu.maxX * pxPerMetre;
+            const y0 = bu.minY * pxPerMetre;
+            const y1 = bu.maxY * pxPerMetre;
+            const font = measureFontSize(s, 11);
+            const wM = bu.maxX - bu.minX;
+            const hM = bu.maxY - bu.minY;
+            const labelW = 140 / s;
+            return (
+              <Group name="plan-dimensions" listening={false}>
+                <Line points={[x0, y0 - off, x1, y0 - off]} stroke={DIM_LINE} strokeWidth={1 / s} />
+                <Line points={[x0, y0 - off - tick, x0, y0 - off + tick]} stroke={DIM_LINE} strokeWidth={1 / s} />
+                <Line points={[x1, y0 - off - tick, x1, y0 - off + tick]} stroke={DIM_LINE} strokeWidth={1 / s} />
+                <Text
+                  x={(x0 + x1) / 2 - labelW / 2}
+                  y={y0 - off + 3 / s}
+                  width={labelW}
+                  align="center"
+                  text={formatLengthForUnit(wM, snapStep)}
+                  fontSize={font}
+                  fontFamily="Inter, sans-serif"
+                  fill={DIM_LINE}
+                />
+                <Line points={[x0 - off, y0, x0 - off, y1]} stroke={DIM_LINE} strokeWidth={1 / s} />
+                <Line points={[x0 - off - tick, y0, x0 - off + tick, y0]} stroke={DIM_LINE} strokeWidth={1 / s} />
+                <Line points={[x0 - off - tick, y1, x0 - off + tick, y1]} stroke={DIM_LINE} strokeWidth={1 / s} />
+                <Text
+                  x={x0 - off + 3 / s}
+                  y={(y0 + y1) / 2 + labelW / 2}
+                  width={labelW}
+                  align="center"
+                  rotation={-90}
+                  text={formatLengthForUnit(hM, snapStep)}
+                  fontSize={font}
+                  fontFamily="Inter, sans-serif"
+                  fill={DIM_LINE}
+                />
+              </Group>
+            );
+          })()}
 
           {/* M4 (Customer-UI fix 2026-05-31) — the on-canvas "0,0 - W x H m
               bbox" debug Text was removed; it was developer instrumentation
@@ -2438,11 +2988,49 @@ export function RoomCanvas({
               table without the table swallowing the commit click.
               Konva `opacity` does not disable listening; this prop is the
               only thing that does. */}
+          {/* LIGHT POOLS (Sims world 2026-08-29, reference plan 3) — every
+              lamp / pendant / sconce that is switched on casts a warm radial
+              pool on the floor beneath the furniture. Drawn UNDER the items
+              in this layer so the fixture itself stays crisp on top. */}
+          <Group name="light-pools" listening={false}>
+            {levelItems.map((item) => {
+              const product = getProductById(item.productId);
+              if (!product || !emitsLight(product) || item.lightOn === false) return null;
+              const fp = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
+              const { w, h } = rotatedFootprint(fp, item.rotation);
+              const r = lightRadiusM(product) * pxPerMetre;
+              return (
+                <Circle
+                  key={`glow-${item.instanceId}`}
+                  name="light-pool"
+                  x={(item.x + w / 2) * pxPerMetre}
+                  y={(item.y + h / 2) * pxPerMetre}
+                  radius={r}
+                  fillRadialGradientStartPoint={{ x: 0, y: 0 }}
+                  fillRadialGradientEndPoint={{ x: 0, y: 0 }}
+                  fillRadialGradientStartRadius={0}
+                  fillRadialGradientEndRadius={r}
+                  fillRadialGradientColorStops={[0, LIGHT_GLOW_CORE, 0.55, 'rgba(255,214,140,0.22)', 1, LIGHT_GLOW_EDGE]}
+                  listening={false}
+                />
+              );
+            })}
+          </Group>
           <Group listening={!drawMode && !pendingProductId}>
-            {rooms.map((room) =>
+            {rooms.map((room) => {
+              const outdoorRoom = isOutdoorRoom(room);
+              // Indoors: the room's edges + free walls. Outdoors: free walls
+              // + every building outline, so a dragged item can snap to the
+              // outside face of a wall.
+              const snapWalls: FreeWallLike[] = outdoorRoom
+                ? [...freeWalls, ...buildingWallsAsFree]
+                : freeWalls;
+              const wallRects = outdoorRoom
+                ? [...freeWallRects, ...freeWallObstacleRects(buildingWallsAsFree)]
+                : freeWallRects;
               // Sorted per room so surface/wall items draw above floor items
               // (a diffuser on top of its table) everywhere, not just active.
-              sortItemsForRender(room.placedItems).map((item) => {
+              return sortItemsForRender(room.placedItems).map((item) => {
                 const product = getProductById(item.productId);
                 if (!product) return null;
                 const fp = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
@@ -2470,6 +3058,11 @@ export function RoomCanvas({
                     // sees the room the item actually lives in.
                     polygon={room.polygon}
                     placedItems={room.placedItems}
+                    outdoor={outdoorRoom}
+                    fitsOutdoors={fitsOutdoors}
+                    snapWalls={snapWalls}
+                    wallRects={wallRects}
+                    resolveContainer={resolveContainer}
                     selectItem={selectItemAcrossRooms}
                     updateItem={updateItem}
                     pushToast={pushToast}
@@ -2477,8 +3070,8 @@ export function RoomCanvas({
                     activatePlacedItem={activatePlacedItem}
                   />
                 );
-              }),
-            )}
+              });
+            })}
           </Group>
         </Layer>
 
@@ -2540,7 +3133,7 @@ export function RoomCanvas({
                       e.b.x * pxPerMetre,
                       e.b.y * pxPerMetre,
                     ]}
-                    stroke={sel ? '#FFBB58' : 'rgba(255,187,88,0.35)'}
+                    stroke={sel ? SELECT_STROKE : 'rgba(61,143,121,0.35)'}
                     strokeWidth={sel ? 6 : 4}
                     hitStrokeWidth={18}
                     lineCap="round"
@@ -2655,11 +3248,13 @@ export function RoomCanvas({
           setHover={setDrawHover}
           name={drawName}
           onCommit={handleDrawCommit}
+          onCommitWalls={handleDrawCommitWalls}
           onCancel={handleDrawCancel}
         />
 
-        {/* Persistent committed walls — always rendered so drawn interior
-            walls survive exiting the wall tool (2026-07-24 fix). */}
+        {/* Legacy interior walls (wallStore). Normally EMPTY — App migrates
+            them onto the property on mount — but rendered if any remain so
+            nothing a customer drew ever silently disappears. */}
         <CommittedWallsLayer walls={committedWalls} pxPerMetre={pxPerMetre} />
 
         {/* M2 — Sims-style wall tool. Visible whenever wallStore phase
@@ -2689,6 +3284,7 @@ export function RoomCanvas({
         name={drawName}
         setName={setDrawName}
         onCommit={handleDrawCommit}
+        onCommitWalls={handleDrawCommitWalls}
         onCancel={handleDrawCancel}
       />
 
@@ -2800,20 +3396,21 @@ export function RoomCanvas({
           <div
             className="pointer-events-auto flex max-w-sm flex-col items-center gap-2 rounded-2xl px-6 py-5 text-center shadow-md"
             style={{
-              background: 'rgba(245,235,215,0.92)',
-              border: '1px solid rgba(255,187,88,0.6)',
-              color: '#232C3B',
+              background: 'rgba(253,251,246,0.94)',
+              border: '1px solid rgba(42,41,38,0.18)',
+              color: '#2A2926',
             }}
           >
-            <span aria-hidden style={{ fontSize: 26, lineHeight: 1, color: '#FFBB58' }}>
+            <span aria-hidden style={{ fontSize: 26, lineHeight: 1, color: '#3D8F79' }}>
               ▱
             </span>
-            <p className="text-base font-semibold" style={{ color: '#232C3B' }}>
-              Start by drawing your room
+            <p className="text-base font-semibold" style={{ color: '#2A2926' }}>
+              Start by drawing your walls
             </p>
-            <p className="text-xs leading-snug" style={{ color: '#3B4A52' }}>
-              Your canvas is blank. Sketch the walls of your space first, then
-              drag products in. You can redraw or clear it any time.
+            <p className="text-xs leading-snug" style={{ color: '#5B5852' }}>
+              Your land is blank. Sketch the walls of your space — close them
+              for a room, or leave them open — then drag products in, inside or
+              out in the garden. Lock the plot size with <b>Land</b> any time.
             </p>
             <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
               <button
@@ -2821,16 +3418,16 @@ export function RoomCanvas({
                 data-testid="start-draw-room"
                 onClick={() => onRequestDraw?.()}
                 className="min-h-[40px] rounded-lg px-4 text-sm font-semibold text-white shadow-sm"
-                style={{ background: '#232C3B' }}
+                style={{ background: '#2A2926' }}
               >
-                Draw room
+                Draw walls
               </button>
               <button
                 type="button"
                 data-testid="start-quick-rectangle"
                 onClick={handleQuickRectangle}
                 className="min-h-[40px] rounded-lg border px-4 text-sm font-semibold"
-                style={{ background: '#fff', borderColor: '#232C3B33', color: '#232C3B' }}
+                style={{ background: '#fff', borderColor: '#2A292633', color: '#2A2926' }}
               >
                 Quick 5 × 4 m room
               </button>
@@ -2852,24 +3449,24 @@ export function RoomCanvas({
           <div
             className="flex max-w-xs flex-col items-center gap-1 rounded-xl px-5 py-4 text-center shadow-sm"
             style={{
-              background: 'rgba(245,235,215,0.78)',
-              border: '1px solid rgba(255,187,88,0.55)',
-              color: '#232C3B',
+              background: 'rgba(253,251,246,0.82)',
+              border: '1px solid rgba(42,41,38,0.16)',
+              color: '#2A2926',
             }}
           >
             <span
               aria-hidden
-              style={{ fontSize: 22, lineHeight: 1, color: '#FFBB58' }}
+              style={{ fontSize: 22, lineHeight: 1, color: '#3D8F79' }}
             >
               ✦
             </span>
-            <p className="text-sm font-semibold" style={{ color: '#232C3B' }}>
+            <p className="text-sm font-semibold" style={{ color: '#2A2926' }}>
               Your room is empty
             </p>
-            <p className="text-[11px] leading-snug" style={{ color: '#3B4A52' }}>
+            <p className="text-[11px] leading-snug" style={{ color: '#5B5852' }}>
               Drag a product onto the floor — or tap a catalog item, then tap
-              the room — to place your first piece. Items snap to the{' '}
-              {SNAP_UNIT_LABEL[precision]} grid.
+              the room — to place your first piece. Items sit flush to walls,
+              tuck into corners and snap to the {SNAP_UNIT_LABEL[precision]} grid.
             </p>
           </div>
         </div>
@@ -2890,7 +3487,7 @@ export function RoomCanvas({
               'calc(max(1.25rem, env(safe-area-inset-bottom)) + var(--sims-toolbar-h, 0px) + 46px)',
           }}
         >
-          <span className="font-semibold text-ppw-ink">Draw mode:</span> click to place wall vertices - click first vertex or press <kbd>Enter</kbd> to close - <kbd>Ctrl+Z</kbd> undo - <kbd>Esc</kbd> cancel.
+          <span className="font-semibold text-ppw-ink">Wall pen:</span> click to drop wall points · click the first point or <kbd>Enter</kbd> to close a room · <kbd>Finish walls</kbd> / <kbd>Alt+Enter</kbd> keeps them open · <kbd>+</kbd> / <kbd>−</kbd> change the unit · <kbd>Ctrl+Z</kbd> undo · <kbd>Esc</kbd> cancel.
         </div>
       )}
     </div>
@@ -2927,6 +3524,21 @@ interface PlacedItemGroupProps {
   pxPerMetre: number;
   polygon: Polygon;
   placedItems: PlacedItem[];
+  /** Sims world (2026-08-29): true when the owning container is the level's outdoors. */
+  outdoor: boolean;
+  /** Bounds test for an outdoor rect (plot + not over a building). */
+  fitsOutdoors: (rect: PlacedRect) => boolean;
+  /** Walls this item may snap to (room edges are implicit via `polygon`). */
+  snapWalls: readonly FreeWallLike[];
+  /** Solid wall rectangles this item must not overlap. */
+  wallRects: Array<PlacedRect & { instanceId: string }>;
+  /** The same routing the placement path uses, so a drag lands where a drop would. */
+  resolveContainer: (
+    pM: { x: number; y: number },
+    opts: { create: boolean },
+  ) =>
+    | { ok: true; room: { id: string; polygon: Polygon; placedItems: PlacedItem[] }; outdoor: boolean }
+    | { ok: false; reason: 'off-plot' };
   selectItem: (id: string) => void;
   updateItem: (id: string, patch: Partial<PlacedItem>) => void;
   pushToast: (msg: string, level?: 'warn' | 'info' | 'error') => void;
@@ -2951,6 +3563,11 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
     pxPerMetre,
     polygon,
     placedItems,
+    outdoor,
+    fitsOutdoors,
+    snapWalls,
+    wallRects,
+    resolveContainer,
     selectItem,
     updateItem,
     pushToast,
@@ -3014,6 +3631,9 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
   // collision / drag math stays untouched.
   const unrotatedWPx = cmToM(product.dimensions_cm.length) * pxPerMetre;
   const unrotatedHPx = cmToM(product.dimensions_cm.width) * pxPerMetre;
+  // Sims world (2026-08-29): what to DRAW for this product in plan view.
+  const symbol = planSymbolOf(product);
+  const wallBar = !symbol && placementKind(product) === 'wall';
   return (
     <Group
       ref={groupRef}
@@ -3073,29 +3693,43 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
          * Rooms are read via getState() INSIDE the handler: this component
          * memoises and must not gain store subscriptions.
          */
-        const allRooms = usePropertyStore.getState().property.rooms;
-        const ownerRoom = allRooms.find((r) =>
+        const allRoomsNow = usePropertyStore.getState().property.rooms;
+        const ownerRoom = allRoomsNow.find((r) =>
           r.placedItems.some((i) => i.instanceId === item.instanceId),
         );
-        const dropRoom = findRoomAt(
-          { x: newXm + w / 2, y: newYm + h / 2 },
-          allRooms,
-          ownerRoom?.id ?? null,
-        );
-        const crossRoom = !!(dropRoom && ownerRoom && dropRoom.id !== ownerRoom.id);
-        // Resolve against whichever room it was dropped in.
-        const targetPolygon = crossRoom && dropRoom ? dropRoom.polygon : polygon;
-        const targetItems = crossRoom && dropRoom ? dropRoom.placedItems : placedItems;
+        // Sims world (2026-08-29): the SAME routing as a fresh drop — a room
+        // on this level, else the outdoors (created on demand), else off
+        // the plot. So dragging out of a room into the garden works, and
+        // dragging from the garden into a room works.
+        const routed = resolveContainer({ x: newXm + w / 2, y: newYm + h / 2 }, { create: true });
+        if (!routed.ok) {
+          e.target.position({ x: item.x * pxPerMetre, y: item.y * pxPerMetre });
+          pushToast('That is off the plot.', 'warn');
+          return;
+        }
+        const dropRoom = routed.room;
+        const dropOutdoor = routed.outdoor;
+        const crossRoom = !!(ownerRoom && dropRoom.id !== ownerRoom.id);
+        // Resolve against whichever container it was dropped in.
+        const targetPolygon = crossRoom ? dropRoom.polygon : polygon;
+        const targetItems = crossRoom ? dropRoom.placedItems : placedItems;
+        const targetOutdoor = crossRoom ? dropOutdoor : outdoor;
+        const targetWallRects = crossRoom && dropOutdoor !== outdoor
+          ? (dropOutdoor ? wallRects : wallRects.filter((r) => !r.instanceId.startsWith('wall:')))
+          : wallRects;
+        const inBounds = (rect: PlacedRect): boolean =>
+          targetOutdoor ? fitsOutdoors(rect) : isRectInsidePolygon(rect, targetPolygon);
 
         // Band + placement-kind filter, matching the placement paths: a floor
         // item dragged ONTO a mat must land (band), and must ignore the
         // wall/surface items that live above it (kind). Wall + surface drags
         // return early below, so this only governs the floor drag path.
-        const floorItems = targetItems.filter((it) => {
+        const itemKind = placementKind(product);
+        const sameKindItems = targetItems.filter((it) => {
           const p = getProductById(it.productId);
-          return p ? placementKind(p) === 'floor' : true;
+          return p ? placementKind(p) === itemKind : true;
         });
-        const others = obstaclesFor(item.productId, floorItems)
+        const others: Array<PlacedRect & { instanceId: string }> = obstaclesFor(item.productId, sameKindItems)
           .map((it) => {
             const p = getProductById(it.productId);
             if (!p) return null;
@@ -3107,6 +3741,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
             return { x: it.x, y: it.y, w: r.w, h: r.h, instanceId: it.instanceId };
           })
           .filter((r): r is PlacedRect & { instanceId: string } => r !== null);
+        if (itemKind !== 'ceiling') others.push(...targetWallRects);
         // Sims wall-aware drag (2026-08-23): released near a wall, the
         // item snaps flush and turns to face into the room. Hold Shift
         // to keep the current facing. Mid-room drags keep facing and
@@ -3127,24 +3762,31 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         // different wall — re-orient with it) or bounce back.
         if (kind === 'wall') {
           const cur = rotatedFootprint(fpUnrotated, item.rotation);
+          // Live unit + the routed container (a shelf can cross into the
+          // next room, or hang on a free wall) — no more hardcoded 0.5 m.
           const r = resolveWallItemPlacement({
             centreXm: newXm + cur.w / 2,
             centreYm: newYm + cur.h / 2,
             fp: fpUnrotated,
-            polygon,
-            snapStep: 0.5,
+            polygon: targetPolygon,
+            snapStep,
             frontEdge: product.front_edge,
+            freeWalls: snapWalls,
           });
           const wfW = rotatedFootprint(fpUnrotated, r.rotationDeg);
+          const rect = { x: r.x, y: r.y, w: wfW.w, h: wfW.h };
           const ok =
             r.ok &&
-            validatePlacement(
-              { x: r.x, y: r.y, w: wfW.w, h: wfW.h },
-              layerRects(placedItems, 'wall', { ignoreId: item.instanceId }),
-              polygon,
-            ).ok;
+            inBounds(rect) &&
+            !collidesWithAny(rect, layerRects(targetItems, 'wall', { ignoreId: item.instanceId }));
           if (ok) {
-            updateItem(item.instanceId, { x: r.x, y: r.y, rotation: r.rotationDeg });
+            if (crossRoom) {
+              usePropertyStore
+                .getState()
+                .moveItemToRoom(item.instanceId, dropRoom.id, r.x, r.y, r.rotationDeg);
+            } else {
+              updateItem(item.instanceId, { x: r.x, y: r.y, rotation: r.rotationDeg });
+            }
             e.target.position({ x: r.x * pxPerMetre, y: r.y * pxPerMetre });
           } else {
             revert('Wall items need a free bit of wall.');
@@ -3191,37 +3833,46 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         // to keep the current facing. Mid-room drags keep facing and
         // grid-snap exactly as before (wallAware falls through to the
         // plain grid path with userRotationDeg = current rotation).
-        const wallAware = resolveWallAwarePlacement({
-          centreXm: newXm + w / 2,
-          centreYm: newYm + h / 2,
-          fp: fpUnrotated,
-          polygon: targetPolygon,
-          snapStep,
-          userRotationDeg: shiftHeld || !isCardinalRotation(item.rotation) ? item.rotation : null,
-          frontEdge: product.front_edge,
-        });
+        const ceilingItem = kind === 'ceiling';
+        const wallAware = ceilingItem
+          ? {
+              x: Math.round(newXm / snapStep) * snapStep,
+              y: Math.round(newYm / snapStep) * snapStep,
+              rotationDeg: item.rotation,
+              wallSnapped: false,
+            }
+          : resolveWallAwarePlacement({
+              centreXm: newXm + w / 2,
+              centreYm: newYm + h / 2,
+              fp: fpUnrotated,
+              polygon: targetOutdoor ? [] : targetPolygon,
+              snapStep,
+              userRotationDeg: shiftHeld || !isCardinalRotation(item.rotation) ? item.rotation : null,
+              // Mid-room the item KEEPS its facing (the 2026-08-29 fix for the
+              // rotation-reset-on-drag defect).
+              currentRotationDeg: item.rotation,
+              frontEdge: product.front_edge,
+              wallInsetM: WALL_HALF_M,
+              freeWalls: snapWalls,
+            });
         const wf = rotatedFootprint(fpUnrotated, wallAware.rotationDeg);
-        const wallOk = validatePlacement(
-          { x: wallAware.x, y: wallAware.y, w: wf.w, h: wf.h },
-          others,
-          targetPolygon,
-          item.instanceId,
-        ).ok;
+        const ownOthers = others.filter((o) => o.instanceId !== item.instanceId);
+        const wallRect = { x: wallAware.x, y: wallAware.y, w: wf.w, h: wf.h };
+        const wallOk = inBounds(wallRect) && !collidesWithAny(wallRect, ownOthers);
+        // Plain grid fallback at the CURRENT rotation, bounded by the container.
+        const gridX = Math.round(newXm / snapStep) * snapStep;
+        const gridY = Math.round(newYm / snapStep) * snapStep;
+        const gridRect = { x: gridX, y: gridY, w, h };
         const resolved = wallOk
           ? { ok: true as const, x: wallAware.x, y: wallAware.y }
-          : resolveDragTarget({
-              candidateX: newXm,
-              candidateY: newYm,
-              w,
-              h,
-              others,
-              room: targetPolygon,
-              ignoreInstanceId: item.instanceId,
-              snapStep,
-            });
+          : inBounds(gridRect)
+            ? collidesWithAny(gridRect, ownOthers)
+              ? { ok: false as const, reason: 'collision' as const }
+              : { ok: true as const, x: gridX, y: gridY }
+            : { ok: false as const, reason: 'out-of-bounds' as const };
         if (resolved.ok) {
           const rotation = wallOk ? wallAware.rotationDeg : item.rotation;
-          if (crossRoom && dropRoom) {
+          if (crossRoom) {
             // One atomic action, preserving the instanceId. A remove+add
             // would mint a fresh id and orphan the selection, the history
             // reference and the cart line item.
@@ -3249,7 +3900,11 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
           });
           console.log('[drag-move]', { reason: 'rejected', cause: resolved.reason });
           pushToast(
-            resolved.reason === 'collision' ? "Item won't fit there." : 'Out of room bounds.',
+            resolved.reason === 'collision'
+              ? "Item won't fit there."
+              : targetOutdoor
+                ? 'That would sit on a building or off the plot.'
+                : 'Out of room bounds.',
             'warn',
           );
         }
@@ -3282,30 +3937,78 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         offsetY={unrotatedHPx / 2}
         listening={false}
       >
-        {image ? (
-          // Aspect fix (2026-08-24): contain-fit the art to the footprint
-          // instead of stretching it to the rect — the image keeps its
-          // TRUE proportions, centred, auto-rotated 90° when its long
-          // axis disagrees with the footprint. Correctly-authored
-          // top-downs (canvas ratio == length:width) still fill exactly.
+        {symbol ? (
+          // Sims world (2026-08-29): plan SYMBOLS for products that have no
+          // top-down art by design — lights (the architectural circle-and-
+          // cross), greenery (canopy blobs), garden furniture. Drawn in
+          // world scale so a 2.5 m tree really is 2.5 m.
+          <PlanSymbol
+            symbol={symbol}
+            width={unrotatedWPx}
+            height={unrotatedHPx}
+            lit={emitsLight(product) && item.lightOn !== false}
+            selected={isSelected}
+          />
+        ) : wallBar ? (
+          // Wall-mounted items read as a bar on the wall in plan view (a
+          // mirror is 5 cm deep from above; a perspective photo of it is
+          // meaningless there). The photo stays in the catalog + details.
+          <Group>
+            <Rect
+              width={unrotatedWPx}
+              height={unrotatedHPx}
+              fill={WALL_INK}
+              opacity={0.82}
+              cornerRadius={1}
+              shadowColor={ITEM_SHADOW}
+              shadowBlur={4}
+              shadowOffsetX={1}
+              shadowOffsetY={2}
+            />
+            <Rect
+              x={1}
+              y={1}
+              width={Math.max(unrotatedWPx - 2, 0)}
+              height={Math.max(unrotatedHPx - 2, 0)}
+              stroke={LABEL_HALO}
+              strokeWidth={0.75}
+              opacity={0.5}
+            />
+          </Group>
+        ) : image ? (
+          // Ratio fix (2026-08-29): the art is CROPPED to its content box
+          // (transparent / white margins trimmed at load) and then either
+          // stretched to the exact footprint when its shape is close, or
+          // contained at true aspect anchored to the BACK edge — so the
+          // product visibly touches the wall it is flush against. This is
+          // what makes a 120 x 40 console table draw 120 x 40, not a 40 x 40
+          // blob floating mid-footprint.
           (() => {
-            const fit = fitImageToFootprint(
-              image.naturalWidth,
-              image.naturalHeight,
-              unrotatedWPx,
-              unrotatedHPx,
-            );
+            const box = contentBoxForImage(image);
+            const fit = planImageFit({
+              contentW: box.w,
+              contentH: box.h,
+              footW: unrotatedWPx,
+              footH: unrotatedHPx,
+            });
+            const boxW = fit.rotationDeg === 90 ? fit.drawH : fit.drawW;
+            const boxH = fit.rotationDeg === 90 ? fit.drawW : fit.drawH;
             return (
               <KonvaImage
                 image={image}
-                x={unrotatedWPx / 2}
-                y={unrotatedHPx / 2}
+                crop={{ x: box.x, y: box.y, width: box.w, height: box.h }}
+                x={fit.offsetX + boxW / 2}
+                y={fit.offsetY + boxH / 2}
                 width={fit.drawW}
                 height={fit.drawH}
                 offsetX={fit.drawW / 2}
                 offsetY={fit.drawH / 2}
                 rotation={fit.rotationDeg}
-                opacity={0.95}
+                opacity={0.97}
+                shadowColor={ITEM_SHADOW}
+                shadowBlur={6}
+                shadowOffsetX={2}
+                shadowOffsetY={3}
               />
             );
           })()
@@ -3320,7 +4023,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
           <HydratingSkeleton
             width={unrotatedWPx}
             height={unrotatedHPx}
-            stroke={isSelected ? WALL_GOLD_BRIGHT : GRID_LINE}
+            stroke={isSelected ? SELECT_STROKE : GRID_LINE}
             strokeWidth={isSelected ? 2.5 : 1}
           />
         ) : (
@@ -3329,17 +4032,17 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
             height={unrotatedHPx}
             fill={colors.fill}
             opacity={0.55}
-            stroke={isSelected ? WALL_GOLD_BRIGHT : colors.stroke}
+            stroke={isSelected ? SELECT_STROKE : colors.stroke}
             strokeWidth={isSelected ? 2.5 : 1}
             cornerRadius={3}
           />
         )}
-        {image && isSelected && (
+        {(image || symbol || wallBar) && isSelected && (
           <Rect
             width={unrotatedWPx}
             height={unrotatedHPx}
             fill="transparent"
-            stroke={WALL_GOLD_BRIGHT}
+            stroke={SELECT_STROKE}
             strokeWidth={2.5}
             cornerRadius={3}
           />
@@ -3358,14 +4061,15 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         fontSize={Math.min(12, Math.max(8, wPx / 14))}
         fontFamily="Inter, sans-serif"
         fill={LABEL_TEXT}
-        // Dark halo so the name stays readable over pale product art as
-        // well as over the dark floor.
-        stroke="#0E1B1F"
+        // Paper halo so the name stays readable over product art as well
+        // as over the paper floor.
+        stroke={LABEL_HALO}
         strokeWidth={2.5}
         fillAfterStrokeEnabled
         listening={false}
         ellipsis
         wrap="word"
+        visible={!symbol || wPx >= 40}
       />
       <Text
         x={4}
@@ -3374,17 +4078,18 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         fontSize={9}
         fontFamily="Inter, sans-serif"
         fill={LABEL_TEXT_MUTED}
-        stroke="#0E1B1F"
+        stroke={LABEL_HALO}
         strokeWidth={2}
         fillAfterStrokeEnabled
         listening={false}
+        visible={hPx >= 40 && wPx >= 40}
       />
       {isSelected && (
         <>
-          <Circle x={0} y={0} radius={4} fill={WALL_GOLD_BRIGHT} />
-          <Circle x={wPx} y={0} radius={4} fill={WALL_GOLD_BRIGHT} />
-          <Circle x={0} y={hPx} radius={4} fill={WALL_GOLD_BRIGHT} />
-          <Circle x={wPx} y={hPx} radius={4} fill={WALL_GOLD_BRIGHT} />
+          <Circle x={0} y={0} radius={4} fill={HANDLE_FILL} />
+          <Circle x={wPx} y={0} radius={4} fill={HANDLE_FILL} />
+          <Circle x={0} y={hPx} radius={4} fill={HANDLE_FILL} />
+          <Circle x={wPx} y={hPx} radius={4} fill={HANDLE_FILL} />
           {/* Tweak 01 / Phase B — rotate handle. A draggable Circle
               floating ~18 px above the AABB centre; the user drags it
               around the item centre to rotate. Cursor angle (relative
@@ -3397,8 +4102,8 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
             x={wPx / 2}
             y={-18}
             radius={9}
-            fill={WALL_GOLD_BRIGHT}
-            stroke="#0E1B1F"
+            fill={HANDLE_FILL}
+            stroke={LABEL_HALO}
             strokeWidth={2}
             draggable
             data-testid="rotate-handle"
@@ -3421,12 +4126,18 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
               const node = e.target;
               const layer = node.getLayer();
               if (!layer) return;
-              // Centre of the AABB in stage-local pixels. The Group
-              // sits at (item.x * pxPerMetre, item.y * pxPerMetre); the
-              // handle's stage position is `node.getAbsolutePosition()`.
-              const groupAbs = node.getParent()?.getAbsolutePosition() ?? { x: 0, y: 0 };
-              const centreX = groupAbs.x + wPx / 2;
-              const centreY = groupAbs.y + hPx / 2;
+              // Centre of the AABB in ABSOLUTE (stage-scaled) pixels. The
+              // old code added unscaled layer px (wPx / 2) to a scaled
+              // absolute position, so at any zoom other than 100 % the
+              // pivot was off and the first drag tick gave a wrong angle.
+              // Mapping the layer-space centre through the parent's own
+              // absolute transform keeps every term in the same space.
+              const parent = node.getParent();
+              const centreAbs = parent
+                ? parent.getAbsoluteTransform().point({ x: wPx / 2, y: hPx / 2 })
+                : { x: wPx / 2, y: hPx / 2 };
+              const centreX = centreAbs.x;
+              const centreY = centreAbs.y;
               const handleAbs = node.getAbsolutePosition();
               const dx = handleAbs.x - centreX;
               const dy = handleAbs.y - centreY;
@@ -3483,6 +4194,143 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
             fill="#fff"
             listening={false}
           />
+        </>
+      )}
+    </Group>
+  );
+}
+
+/**
+ * Sims world (2026-08-29) — architectural plan symbols for products that
+ * are drawn, not photographed, from above: lights (circle + cross, the
+ * drafting convention), greenery (soft canopy), garden furniture. Sized in
+ * world px so scale is honest, drawn inside the item's rotating art group.
+ */
+function PlanSymbol({
+  symbol,
+  width,
+  height,
+  lit,
+  selected,
+}: {
+  symbol: NonNullable<ReturnType<typeof planSymbolOf>>;
+  width: number;
+  height: number;
+  lit: boolean;
+  selected: boolean;
+}): JSX.Element {
+  const cx = width / 2;
+  const cy = height / 2;
+  const r = Math.min(width, height) / 2;
+  const ink = selected ? SELECT_STROKE : WALL_INK;
+  if (symbol === 'tree') {
+    // Three overlapping canopy discs read as foliage from above.
+    const lobes = [
+      { x: cx, y: cy - r * 0.18, rr: r * 0.72 },
+      { x: cx - r * 0.42, y: cy + r * 0.28, rr: r * 0.58 },
+      { x: cx + r * 0.44, y: cy + r * 0.24, rr: r * 0.6 },
+      { x: cx, y: cy + r * 0.46, rr: r * 0.5 },
+    ];
+    return (
+      <Group listening={false}>
+        {lobes.map((l, i) => (
+          <Circle
+            key={i}
+            x={l.x}
+            y={l.y}
+            radius={l.rr}
+            fill={GREENERY_FILL}
+            opacity={0.92}
+            shadowColor={ITEM_SHADOW}
+            shadowBlur={10}
+            shadowOffsetX={3}
+            shadowOffsetY={5}
+          />
+        ))}
+        {lobes.map((l, i) => (
+          <Circle key={`s-${i}`} x={l.x} y={l.y} radius={l.rr} stroke={GREENERY_STROKE} strokeWidth={1} opacity={0.6} />
+        ))}
+        <Circle x={cx} y={cy} radius={Math.max(2, r * 0.08)} fill={GREENERY_STROKE} />
+      </Group>
+    );
+  }
+  if (symbol === 'hedge') {
+    return (
+      <Group listening={false}>
+        <Rect
+          width={width}
+          height={height}
+          cornerRadius={Math.min(width, height) / 2}
+          fill={GREENERY_FILL}
+          stroke={GREENERY_STROKE}
+          strokeWidth={1}
+          shadowColor={ITEM_SHADOW}
+          shadowBlur={6}
+          shadowOffsetX={2}
+          shadowOffsetY={3}
+        />
+        {Array.from({ length: Math.max(1, Math.floor(width / Math.max(height, 1))) }, (_, i) => (
+          <Circle
+            key={i}
+            x={(i + 0.5) * (width / Math.max(1, Math.floor(width / Math.max(height, 1))))}
+            y={cy}
+            radius={height * 0.32}
+            stroke={GREENERY_STROKE}
+            strokeWidth={0.8}
+            opacity={0.45}
+          />
+        ))}
+      </Group>
+    );
+  }
+  if (symbol === 'bench' || symbol === 'bar') {
+    const slats = Math.max(2, Math.round(width / Math.max(8, height * 0.35)));
+    return (
+      <Group listening={false}>
+        <Rect
+          width={width}
+          height={height}
+          fill={ROOM_FILL}
+          stroke={ink}
+          strokeWidth={1.2}
+          cornerRadius={2}
+          shadowColor={ITEM_SHADOW}
+          shadowBlur={6}
+          shadowOffsetX={2}
+          shadowOffsetY={3}
+        />
+        {Array.from({ length: slats - 1 }, (_, i) => {
+          const x = ((i + 1) * width) / slats;
+          return <Line key={i} points={[x, 2, x, height - 2]} stroke={ink} strokeWidth={0.8} opacity={0.6} />;
+        })}
+      </Group>
+    );
+  }
+  // 'light' and 'pendant': the drafting symbol — a circle with a cross
+  // (pendant: an X inside), filled warm while switched on.
+  const pendant = symbol === 'pendant';
+  const arm = r * 1.35;
+  return (
+    <Group listening={false}>
+      <Circle
+        x={cx}
+        y={cy}
+        radius={r * 0.78}
+        fill={lit ? 'rgba(255,214,140,0.95)' : ROOM_FILL}
+        stroke={ink}
+        strokeWidth={1.4}
+        shadowColor={lit ? 'rgba(255,200,110,0.6)' : ITEM_SHADOW}
+        shadowBlur={lit ? 10 : 4}
+      />
+      {pendant ? (
+        <>
+          <Line points={[cx - r * 0.5, cy - r * 0.5, cx + r * 0.5, cy + r * 0.5]} stroke={ink} strokeWidth={1.2} />
+          <Line points={[cx + r * 0.5, cy - r * 0.5, cx - r * 0.5, cy + r * 0.5]} stroke={ink} strokeWidth={1.2} />
+        </>
+      ) : (
+        <>
+          <Line points={[cx - arm, cy, cx + arm, cy]} stroke={ink} strokeWidth={1.2} />
+          <Line points={[cx, cy - arm, cx, cy + arm]} stroke={ink} strokeWidth={1.2} />
         </>
       )}
     </Group>
@@ -3559,18 +4407,18 @@ function HydratingSkeleton({
   const staticOverlayOpacity = prefersReducedMotion() ? 0.35 : 0.12;
   return (
     <Group listening={false}>
-      {/* Navy base — the "loading" surface in brand register. */}
+      {/* Paper base — the "loading" surface in the plan register. */}
       <Rect
         width={width}
         height={height}
-        fill="#232C3B"
-        opacity={0.85}
+        fill="#E7E2D8"
+        opacity={0.9}
         stroke={stroke}
         strokeWidth={strokeWidth}
         cornerRadius={3}
       />
-      {/* Cream→gold shimmer overlay. Animated opacity (or static for
-          reduced-motion). Inset slightly so the navy frame stays visible. */}
+      {/* Soft shimmer overlay. Animated opacity (or static for
+          reduced-motion). Inset slightly so the frame stays visible. */}
       <Rect
         ref={shimmerRef}
         x={2}
@@ -3579,7 +4427,7 @@ function HydratingSkeleton({
         height={Math.max(height - 4, 0)}
         fillLinearGradientStartPoint={{ x: 0, y: 0 }}
         fillLinearGradientEndPoint={{ x: width, y: height }}
-        fillLinearGradientColorStops={[0, '#F5EBD7', 0.5, '#FFBB58', 1, '#F5EBD7']}
+        fillLinearGradientColorStops={[0, '#F8F5EE', 0.5, '#CFC9BC', 1, '#F8F5EE']}
         opacity={staticOverlayOpacity}
         cornerRadius={2}
       />

@@ -48,6 +48,30 @@ import {
 } from '../designer/floorTiles';
 import { findFloorMaterialById } from '../data/floorMaterials';
 import { nextRoomName } from '../designer/roomNaming';
+// Sims world (2026-08-29) — storeys, outdoor rooms, free walls and the land
+// plot all ride INSIDE `property`, so history, autosave, pages and the server
+// (which stores property as opaque JSON) pick them up with no new plumbing.
+import {
+  GROUND_LEVEL_ID,
+  activeLevelIdOf,
+  groundLevel,
+  isLevelLike,
+  isOutdoorRoom,
+  levelsOf,
+  nextLevelIndex,
+  nextLevelName,
+  roomLevelId,
+  sortLevels,
+  type Level,
+} from '../designer/levels';
+import {
+  MIN_FREE_WALL_LENGTH_M,
+  freeWallLengthM,
+  fromLegacyWallSegments,
+  isFreeWallLike,
+  wallsOnLevel,
+  type FreeWall,
+} from '../designer/freeWalls';
 
 export interface PlacedItem {
   instanceId: string;
@@ -62,7 +86,28 @@ export interface PlacedItem {
    * (see removeItem). Optional → absent on every pre-existing save.
    */
   parentInstanceId?: string;
+  /**
+   * Lighting (2026-08-29) — whether a light-emitting product is switched on.
+   * Absent reads as ON (a lamp you just bought is lit), so only an explicit
+   * `false` darkens it. Read through `itemLightOn()`.
+   */
+  lightOn?: boolean;
 }
+
+/**
+ * The land plot (2026-08-29, Vic's brief #5). Locks the scale of the plan and
+ * the maximum footprint. World metres; `originM` is the plot's top-left in the
+ * same frame as the room polygons. `null`/absent = no plot, unbounded canvas.
+ */
+export interface Site {
+  widthM: number;
+  depthM: number;
+  originM: Vertex;
+}
+
+/** Plot side lengths are clamped to this range by `setSite`. */
+export const SITE_MIN_M = 1;
+export const SITE_MAX_M = 500;
 
 export interface Room {
   id: string;
@@ -114,6 +159,20 @@ export interface Room {
    * persist key stays `ppw_property_v2` at version 2.
    */
   floorTiles?: FloorZone[];
+  /**
+   * Storey this room sits on (2026-08-29). ABSENT MEANS GROUND — that is the
+   * canonical form, not a fallback, so a single-storey design saved today is
+   * byte-identical to one saved before levels existed. Read it through
+   * `roomLevelId(room)`; never compare against 'ground' directly.
+   */
+  levelId?: string;
+  /**
+   * `'outdoor'` marks the one-per-level container for items placed outside
+   * every room polygon (gardens, terraces, the space between buildings). Its
+   * polygon stays `[]` — it is unbounded, or bounded by the site. Absent =
+   * a normal room. Read through `isOutdoorRoom(room)`.
+   */
+  kind?: 'room' | 'outdoor';
 }
 
 export interface Property {
@@ -121,6 +180,14 @@ export interface Property {
   name: string;
   activeRoomId: string;
   rooms: Room[];
+  /** Storeys (2026-08-29). Absent/empty = a lone ground floor. See `levelsOf`. */
+  levels?: Level[];
+  /** Storey in focus. Absent = ground. See `activeLevelIdOf`. */
+  activeLevelId?: string;
+  /** Free-standing walls, world metres, per level. Absent = none. */
+  walls?: FreeWall[];
+  /** Land plot. Absent/null = no plot. */
+  site?: Site | null;
 }
 
 const PROPERTY_KEY = 'ppw_property_v2';
@@ -143,13 +210,90 @@ const DEFAULT_ROOM_DIMS: RoomDims = { lengthM: 5, widthM: 4 };
  * drawing is the explicit "Quick 5 × 4 m room" button on the start prompt
  * (`data-testid="start-quick-rectangle"`) or the Add-room rectangle mode.
  */
-function makeBlankRoom(name = 'Main Room'): Room {
+function makeBlankRoom(name = 'Main Room', levelId: string = GROUND_LEVEL_ID): Room {
   return {
     id: nanoid(8),
     name,
     polygon: [],
     placedItems: [],
+    ...levelStamp(levelId),
   };
+}
+
+/**
+ * The `levelId` field to spread onto a new room: nothing for ground, so the
+ * ground floor's rooms stay in the pre-levels shape (see `Room.levelId`).
+ */
+function levelStamp(levelId: string): { levelId?: string } {
+  return levelId === GROUND_LEVEL_ID ? {} : { levelId };
+}
+
+/** `Room.levelId` in canonical form (ground = absent). */
+function canonicalLevelId(levelId: unknown): string | undefined {
+  return typeof levelId === 'string' && levelId.length > 0 && levelId !== GROUND_LEVEL_ID
+    ? levelId
+    : undefined;
+}
+
+/** Non-outdoor rooms on a level — the ones the draw tool and focus care about. */
+function realRoomsOnLevel(rooms: readonly Room[], levelId: string): Room[] {
+  return rooms.filter((r) => roomLevelId(r) === levelId && !isOutdoorRoom(r));
+}
+
+/**
+ * Focus a room, and follow it onto its level. `activeLevelId` is only written
+ * when it actually changes so a single-storey property's JSON stays untouched.
+ */
+function focusRoom(property: Property, roomId: string): Property {
+  const room = property.rooms.find((r) => r.id === roomId);
+  const level = room ? roomLevelId(room) : activeLevelIdOf(property);
+  const next: Property = { ...property, activeRoomId: roomId };
+  if (level !== activeLevelIdOf(property)) next.activeLevelId = level;
+  return next;
+}
+
+/**
+ * Make the first real room on `levelId` active, seeding a blank one when the
+ * level has none. Every storey in focus holds at least one non-outdoor room —
+ * the same invariant `removeRoom` keeps — so the draw tool, the TopBar L/W
+ * readout and the start prompt always have a room to talk about.
+ */
+function focusFirstRoomOnLevel(property: Property, levelId: string): Property {
+  const real = realRoomsOnLevel(property.rooms, levelId);
+  if (real.length > 0) return { ...property, activeRoomId: real[0].id };
+  const fresh = makeBlankRoom(nextRoomName(property.rooms), levelId);
+  return { ...property, rooms: [...property.rooms, fresh], activeRoomId: fresh.id };
+}
+
+/**
+ * Validate + clamp a plot. Sides must be finite and positive (anything else is
+ * a typo, not a request) and are clamped to `SITE_MIN_M..SITE_MAX_M`; a
+ * missing or non-finite origin falls back to the world origin. Returns
+ * undefined when the shape is unusable.
+ */
+export function normaliseSite(site: unknown): Site | undefined {
+  if (!site || typeof site !== 'object') return undefined;
+  const s = site as Record<string, unknown>;
+  const clamp = (n: unknown): number | undefined =>
+    typeof n === 'number' && Number.isFinite(n) && n > 0
+      ? Math.min(SITE_MAX_M, Math.max(SITE_MIN_M, n))
+      : undefined;
+  const widthM = clamp(s.widthM);
+  const depthM = clamp(s.depthM);
+  if (widthM === undefined || depthM === undefined) return undefined;
+  const o = s.originM as Record<string, unknown> | undefined;
+  const originM =
+    o && typeof o === 'object'
+      && typeof o.x === 'number' && Number.isFinite(o.x)
+      && typeof o.y === 'number' && Number.isFinite(o.y)
+      ? { x: o.x, y: o.y }
+      : { x: 0, y: 0 };
+  return { widthM, depthM, originM };
+}
+
+/** Whether a light-emitting item is lit. Absent = on (see `PlacedItem.lightOn`). */
+export function itemLightOn(item: Pick<PlacedItem, 'lightOn'>): boolean {
+  return item.lightOn !== false;
 }
 
 function makeDefaultProperty(): Property {
@@ -275,6 +419,64 @@ export interface PropertyState {
   /** D8 — one-shot legacy un-stack; safe to call on every app mount. */
   unstackIfLegacy: () => boolean;
 
+  // ---- levels (storeys) — Sims world 2026-08-29 ----
+  /**
+   * Add a storey above the highest one (index = max + 1), make it active, and
+   * seed it with one blank room which becomes the active room — so the draw
+   * tool has somewhere to put its first polygon. Returns the level id.
+   */
+  addLevel: (name?: string) => string;
+  renameLevel: (id: string, name: string) => void;
+  /**
+   * Delete a storey. Refuses (returns false, changes nothing) for the ground
+   * floor and for any level that still holds a drawn room, a placed item or a
+   * free wall — deleting work must be an explicit act on that work. Otherwise
+   * its (blank) rooms and walls go with it and focus returns to ground.
+   */
+  removeLevel: (id: string) => boolean;
+  /**
+   * Focus a storey. The active room becomes the first non-outdoor room on it,
+   * created blank if there is none. Unknown ids are ignored.
+   */
+  setActiveLevel: (id: string) => void;
+
+  // ---- site (land plot) ----
+  /** Set or clear the plot. Non-finite / non-positive sides are ignored; sides clamp to 1..500 m. */
+  setSite: (site: Site | null) => void;
+
+  // ---- free-standing walls ----
+  /**
+   * Append walls (ids minted here). A wall with no `levelId` lands on the
+   * active level; zero-length walls are dropped. Returns the ids added, in order.
+   */
+  addFreeWalls: (walls: Omit<FreeWall, 'id'>[]) => string[];
+  removeFreeWall: (id: string) => void;
+  /** Remove every free wall, or only those on one level. */
+  clearFreeWalls: (levelId?: string) => void;
+  /**
+   * One-shot bridge from the mm `wallStore`. Adds the converted walls ONLY
+   * when the property has none of its own, so it is safe to call on every app
+   * mount and on every page apply. Returns true iff walls were added.
+   */
+  importLegacyWalls: (
+    segments: Array<{
+      start: { x_mm: number; y_mm: number };
+      end: { x_mm: number; y_mm: number };
+      thickness_mm?: number;
+    }>,
+  ) => boolean;
+
+  // ---- outdoor room ----
+  /**
+   * The id of the level's outdoor room, creating it if the level has none.
+   * Idempotent per level. Does NOT change focus — an outdoor drop routes
+   * through `addItem(item, roomId)` and the pointer's room stays active.
+   */
+  ensureOutdoorRoom: (levelId?: string) => string;
+
+  // ---- lighting ----
+  setItemLight: (instanceId: string, on: boolean) => void;
+
   // ---- view ----
   toggleGrid: () => void;
   setPxPerMetre: (px: number) => void;
@@ -325,6 +527,8 @@ export const usePropertyStore = create<PropertyState>()(
           name: partial?.name ?? nextRoomName(get().property.rooms),
           polygon: partial?.polygon ?? [],
           placedItems: [],
+          // A new room is drawn on the storey the user is looking at.
+          ...levelStamp(activeLevelIdOf(get().property)),
         };
         set((s) => ({
           property: {
@@ -349,7 +553,13 @@ export const usePropertyStore = create<PropertyState>()(
             ...s.property,
             rooms: [
               ...s.property.rooms,
-              { id, name: name.trim() || nextRoomName(s.property.rooms), polygon, placedItems: [] },
+              {
+                id,
+                name: name.trim() || nextRoomName(s.property.rooms),
+                polygon,
+                placedItems: [],
+                ...levelStamp(activeLevelIdOf(s.property)),
+              },
             ],
             activeRoomId: id,
           },
@@ -360,18 +570,23 @@ export const usePropertyStore = create<PropertyState>()(
 
       removeRoom: (roomId) =>
         set((s) => {
+          if (!s.property.rooms.some((r) => r.id === roomId)) return s;
           const remaining = s.property.rooms.filter((r) => r.id !== roomId);
-          // Never let a property have zero rooms — re-seed BLANK so the
-          // canvas never shows a room the user did not draw.
-          if (remaining.length === 0) {
-            const fresh = makeBlankRoom();
+          const level = activeLevelIdOf(s.property);
+          // Never let the storey in focus run out of real rooms — re-seed
+          // BLANK so the canvas never shows a room the user did not draw. An
+          // outdoor container does not count: it has no walls, so with only
+          // that left the draw tool would have nowhere to put a polygon.
+          const real = realRoomsOnLevel(remaining, level);
+          if (real.length === 0) {
+            const fresh = makeBlankRoom(undefined, level);
             return {
-              property: { ...s.property, rooms: [fresh], activeRoomId: fresh.id },
+              property: { ...s.property, rooms: [...remaining, fresh], activeRoomId: fresh.id },
               selectedInstanceId: null,
             };
           }
           const activeRoomId =
-            s.property.activeRoomId === roomId ? remaining[0].id : s.property.activeRoomId;
+            s.property.activeRoomId === roomId ? real[0].id : s.property.activeRoomId;
           return {
             property: { ...s.property, rooms: remaining, activeRoomId },
             selectedInstanceId: null,
@@ -391,7 +606,9 @@ export const usePropertyStore = create<PropertyState>()(
       setActiveRoom: (roomId) =>
         set((s) => {
           if (!s.property.rooms.some((r) => r.id === roomId)) return s;
-          return { property: { ...s.property, activeRoomId: roomId }, selectedInstanceId: null };
+          // Focus follows the room onto its storey — a focused room on a
+          // hidden level would be editable but invisible.
+          return { property: focusRoom(s.property, roomId), selectedInstanceId: null };
         }),
 
       setRoomPolygon: (roomId, polygon) =>
@@ -573,11 +790,10 @@ export const usePropertyStore = create<PropertyState>()(
           };
           return {
             property: {
-              ...s.property,
               // The item follows the pointer into the room it was dropped in,
               // so focus follows it too - otherwise the Sims loop (place ->
               // rotate -> delete) is dead the moment it crosses a wall.
-              activeRoomId: toRoomId,
+              ...focusRoom(s.property, toRoomId),
               rooms: s.property.rooms.map((r) => {
                 if (r.id === owner.id) {
                   return {
@@ -642,7 +858,7 @@ export const usePropertyStore = create<PropertyState>()(
           // ONE atomic set — splitting this into setActiveRoom + selectItem
           // would let setActiveRoom's selection-nulling win the race.
           return {
-            property: { ...s.property, activeRoomId: owner.id },
+            property: focusRoom(s.property, owner.id),
             selectedInstanceId: instanceId,
           };
         }),
@@ -763,6 +979,189 @@ export const usePropertyStore = create<PropertyState>()(
         return true;
       },
 
+      // ---- levels (storeys) ----------------------------------------------
+
+      addLevel: (name) => {
+        const id = nanoid(8);
+        set((s) => {
+          // Materialise the ground floor the first time a second storey
+          // appears; until then `levels` stays absent (pre-levels shape).
+          const levels = levelsOf(s.property);
+          const level: Level = {
+            id,
+            name: name?.trim() || nextLevelName(levels),
+            index: nextLevelIndex(levels),
+          };
+          const room = makeBlankRoom(nextRoomName(s.property.rooms), id);
+          return {
+            property: {
+              ...s.property,
+              levels: sortLevels([...levels, level]),
+              activeLevelId: id,
+              rooms: [...s.property.rooms, room],
+              activeRoomId: room.id,
+            },
+            selectedInstanceId: null,
+          };
+        });
+        return id;
+      },
+
+      renameLevel: (id, name) =>
+        set((s) => {
+          const clean = name.trim();
+          if (!clean) return s;
+          const levels = levelsOf(s.property);
+          if (!levels.some((l) => l.id === id)) return s;
+          return {
+            property: {
+              ...s.property,
+              levels: levels.map((l) => (l.id === id ? { ...l, name: clean } : l)),
+            },
+          };
+        }),
+
+      removeLevel: (id) => {
+        const s = get();
+        if (id === GROUND_LEVEL_ID) return false;
+        const levels = levelsOf(s.property);
+        if (!levels.some((l) => l.id === id)) return false;
+        const rooms = s.property.rooms.filter((r) => roomLevelId(r) === id);
+        const hasWork =
+          rooms.some((r) => r.polygon.length >= 3 || r.placedItems.length > 0)
+          || wallsOnLevel(s.property.walls ?? [], id).length > 0;
+        if (hasWork) return false;
+
+        set((st) => {
+          const remainingRooms = st.property.rooms.filter((r) => roomLevelId(r) !== id);
+          const remainingWalls = (st.property.walls ?? []).filter((w) => roomLevelId(w) !== id);
+          const next: Property = {
+            ...st.property,
+            levels: levelsOf(st.property).filter((l) => l.id !== id),
+            activeLevelId: GROUND_LEVEL_ID,
+            rooms: remainingRooms,
+          };
+          // Canonical form: no walls means no `walls` field.
+          if (remainingWalls.length > 0) next.walls = remainingWalls;
+          else delete next.walls;
+          return { property: focusFirstRoomOnLevel(next, GROUND_LEVEL_ID), selectedInstanceId: null };
+        });
+        return true;
+      },
+
+      setActiveLevel: (id) =>
+        set((s) => {
+          if (!levelsOf(s.property).some((l) => l.id === id)) return s;
+          const next: Property = { ...s.property, activeLevelId: id };
+          return { property: focusFirstRoomOnLevel(next, id), selectedInstanceId: null };
+        }),
+
+      // ---- site --------------------------------------------------------------
+
+      setSite: (site) =>
+        set((s) => {
+          if (site === null) {
+            if (s.property.site == null) return s;
+            const next = { ...s.property };
+            delete next.site;
+            return { property: next };
+          }
+          const clean = normaliseSite(site);
+          if (!clean) return s;
+          return { property: { ...s.property, site: clean } };
+        }),
+
+      // ---- free walls --------------------------------------------------------
+
+      addFreeWalls: (walls) => {
+        const ids: string[] = [];
+        set((s) => {
+          const level = activeLevelIdOf(s.property);
+          const added: FreeWall[] = [];
+          for (const w of walls) {
+            if (!(w.thicknessM > 0) || freeWallLengthM(w) < MIN_FREE_WALL_LENGTH_M) continue;
+            const id = nanoid(10);
+            ids.push(id);
+            added.push({
+              id,
+              a: { x: w.a.x, y: w.a.y },
+              b: { x: w.b.x, y: w.b.y },
+              thicknessM: w.thicknessM,
+              levelId: w.levelId || level,
+            });
+          }
+          if (added.length === 0) return s;
+          return { property: { ...s.property, walls: [...(s.property.walls ?? []), ...added] } };
+        });
+        return ids;
+      },
+
+      removeFreeWall: (id) =>
+        set((s) => {
+          const walls = s.property.walls ?? [];
+          if (!walls.some((w) => w.id === id)) return s;
+          return { property: { ...s.property, walls: walls.filter((w) => w.id !== id) } };
+        }),
+
+      clearFreeWalls: (levelId) =>
+        set((s) => {
+          const walls = s.property.walls ?? [];
+          if (walls.length === 0) return s;
+          const kept = levelId === undefined ? [] : walls.filter((w) => roomLevelId(w) !== levelId);
+          if (kept.length === walls.length) return s;
+          return { property: { ...s.property, walls: kept } };
+        }),
+
+      importLegacyWalls: (segments) => {
+        if ((get().property.walls?.length ?? 0) > 0) return false;
+        const converted = fromLegacyWallSegments(segments);
+        if (converted.length === 0) return false;
+        return get().addFreeWalls(converted).length > 0;
+      },
+
+      // ---- outdoor room ------------------------------------------------------
+
+      ensureOutdoorRoom: (levelId) => {
+        const level = levelId ?? activeLevelIdOf(get().property);
+        const existing = get().property.rooms.find(
+          (r) => isOutdoorRoom(r) && roomLevelId(r) === level,
+        );
+        if (existing) return existing.id;
+        const room: Room = {
+          id: nanoid(8),
+          name: 'Outdoors',
+          polygon: [],
+          placedItems: [],
+          kind: 'outdoor',
+          ...levelStamp(level),
+        };
+        set((s) => ({ property: { ...s.property, rooms: [...s.property.rooms, room] } }));
+        return room.id;
+      },
+
+      // ---- lighting ----------------------------------------------------------
+
+      setItemLight: (instanceId, on) =>
+        set((s) => {
+          const owner = findRoomByInstanceId(s.property, instanceId);
+          if (!owner) return s;
+          return {
+            property: {
+              ...s.property,
+              rooms: s.property.rooms.map((r) =>
+                r.id === owner.id
+                  ? {
+                    ...r,
+                    placedItems: r.placedItems.map((i) =>
+                      i.instanceId === instanceId ? { ...i, lightOn: on } : i,
+                    ),
+                  }
+                  : r,
+              ),
+            },
+          };
+        }),
+
       toggleGrid: () => set((s) => ({ showGrid: !s.showGrid })),
       setPxPerMetre: (px) => set(() => ({ pxPerMetre: Math.max(20, Math.min(400, px)) })),
 
@@ -811,7 +1210,19 @@ export const usePropertyStore = create<PropertyState>()(
  * polygon (migrate legacy `{lengthM, widthM}` shape if found).
  */
 export function normaliseLoadedProperty(property: Property | RawProperty): Property {
-  const rooms: Room[] = (property.rooms ?? []).map((r) => normaliseLoadedRoom(r));
+  // Levels first: rooms and walls are validated AGAINST the level set, so a
+  // room stranded on a level that no longer exists drops to ground rather
+  // than becoming invisible forever.
+  const levels = normaliseLevels(property.levels);
+  const levelIds = new Set((levels ?? [groundLevel()]).map((l) => l.id));
+  const onKnownLevel = <T extends { levelId?: string }>(x: T): T => {
+    if (x.levelId === undefined || levelIds.has(x.levelId)) return x;
+    const rest = { ...x };
+    delete rest.levelId;
+    return rest;
+  };
+
+  const rooms: Room[] = (property.rooms ?? []).map((r) => onKnownLevel(normaliseLoadedRoom(r)));
   if (rooms.length === 0) {
     rooms.push(makeBlankRoom());
   }
@@ -819,12 +1230,77 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
     property.activeRoomId && rooms.some((r) => r.id === property.activeRoomId)
       ? property.activeRoomId
       : rooms[0].id;
-  return {
+
+  const out: Property = {
     id: property.id ?? nanoid(8),
     name: property.name ?? 'Wellness Property',
     activeRoomId,
     rooms,
   };
+  // Every field below is OPTIONAL and only written when it carries something,
+  // so a property saved before the Sims world round-trips byte-identical.
+  if (levels) out.levels = levels;
+  const activeRoom = rooms.find((r) => r.id === activeRoomId)!;
+  const roomLevel = roomLevelId(activeRoom);
+  const storedLevel =
+    typeof property.activeLevelId === 'string' && levelIds.has(property.activeLevelId)
+      ? property.activeLevelId
+      : undefined;
+  // The focused room wins a disagreement — it is the older, more-tested
+  // field and the one every manipulation surface resolves through.
+  const activeLevelId = storedLevel && storedLevel === roomLevel ? storedLevel : roomLevel;
+  if (activeLevelId !== GROUND_LEVEL_ID) out.activeLevelId = activeLevelId;
+  const walls = normaliseFreeWalls(property.walls).map(onKnownLevel);
+  if (walls.length > 0) out.walls = walls;
+  const site = normaliseSite(property.site);
+  if (site) out.site = site;
+  return out;
+}
+
+/**
+ * Persisted levels → validated, de-duplicated, sorted, and always including
+ * ground (rooms with no `levelId` live there, so it can never be missing).
+ * Returns undefined for absent/empty so the field stays off single-storey
+ * saves.
+ */
+export function normaliseLevels(levels: unknown): Level[] | undefined {
+  if (!Array.isArray(levels) || levels.length === 0) return undefined;
+  const seen = new Set<string>();
+  const out: Level[] = [];
+  for (const l of levels) {
+    if (!isLevelLike(l) || seen.has(l.id)) continue;
+    seen.add(l.id);
+    out.push({ id: l.id, name: l.name.trim() || `Level ${l.index}`, index: l.index });
+  }
+  if (out.length === 0) return undefined;
+  if (!seen.has(GROUND_LEVEL_ID)) out.push(groundLevel());
+  return sortLevels(out);
+}
+
+/**
+ * Persisted free walls → validated copies holding only the whitelisted
+ * fields. Zero-length walls (structurally valid, geometrically nothing) are
+ * dropped here; `levelId` is kept as stored and checked against the level
+ * set by the caller.
+ */
+export function normaliseFreeWalls(walls: unknown): FreeWall[] {
+  if (!Array.isArray(walls)) return [];
+  const seen = new Set<string>();
+  const out: FreeWall[] = [];
+  for (const w of walls) {
+    if (!isFreeWallLike(w) || seen.has(w.id)) continue;
+    if (freeWallLengthM(w) < MIN_FREE_WALL_LENGTH_M) continue;
+    seen.add(w.id);
+    const clean: FreeWall = {
+      id: w.id,
+      a: { x: w.a.x, y: w.a.y },
+      b: { x: w.b.x, y: w.b.y },
+      thicknessM: w.thicknessM,
+    };
+    if (w.levelId) clean.levelId = w.levelId;
+    out.push(clean);
+  }
+  return out;
 }
 
 /**
@@ -844,6 +1320,8 @@ interface RawRoom {
   openings?: Opening[];
   floorFinish?: { materialId: string } | null;
   floorTiles?: FloorZone[];
+  levelId?: unknown;
+  kind?: unknown;
 }
 
 interface RawProperty {
@@ -851,6 +1329,10 @@ interface RawProperty {
   name?: string;
   activeRoomId?: string;
   rooms?: RawRoom[];
+  levels?: unknown;
+  activeLevelId?: unknown;
+  walls?: unknown;
+  site?: unknown;
 }
 
 export function normaliseLoadedRoom(r: RawRoom): Room {
@@ -873,11 +1355,19 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
       })
       : []);
   const clean = cleanPolygon(polygon);
+  // Same whitelist trap as every optional field below: leave these out and
+  // a first-floor room silently falls to ground, and an outdoor container
+  // turns into a wall-less "room", on the first save/load round trip.
+  // Ground is canonicalised to ABSENT; an unknown `kind` is dropped.
+  const levelId = canonicalLevelId(r.levelId);
+  const kind = r.kind === 'outdoor' || r.kind === 'room' ? r.kind : undefined;
   return {
     id: r.id ?? nanoid(8),
     name: r.name ?? 'Room',
     polygon: clean,
     placedItems: Array.isArray(r.placedItems) ? r.placedItems : [],
+    ...(levelId ? { levelId } : {}),
+    ...(kind ? { kind } : {}),
     // This function WHITELISTS fields — anything not named here is dropped on
     // every Save/Load round trip. Openings survive a reload without this (the
     // persist blob is restored verbatim) but would silently vanish the first
@@ -1004,3 +1494,6 @@ export function selectActiveRoom(s: PropertyState): Room | undefined {
 }
 
 export type { Vertex };
+// Re-exported so consumers of the store need not know which designer module
+// owns the shape.
+export type { Level, FreeWall };

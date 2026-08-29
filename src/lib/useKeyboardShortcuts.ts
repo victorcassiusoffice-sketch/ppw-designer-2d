@@ -21,13 +21,17 @@ import {
   duplicateSelected,
   deleteSelected,
   deselect,
+  toggleSelectedLight,
   ROTATION_STEP_COARSE_DEG,
   ROTATION_STEP_FINE_DEG,
 } from './placementActions';
 import { useDesignStore } from '../store/designStore';
+import { usePropertyStore } from '../store/propertyStore';
 import { isDrawTransactionActive } from '../store/historyStore';
-import { useDesignerUIStore, SNAP_UNIT_ORDER } from '../store/designerUIStore';
+import { useDesignerUIStore, SNAP_UNIT_ORDER, stepSnapUnit } from '../store/designerUIStore';
 import { performUndo, performRedo } from './undoIntent';
+import { activeLevelIdOf, levelsOf } from '../designer/levels';
+import { useToastStore } from '../store/toastStore';
 
 function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -132,6 +136,38 @@ export function useKeyboardShortcuts(): void {
         }
         return;
       }
+      // Sims world (Vic 2026-08-29): "+1" steps the unit one notch finer,
+      // "-1" one notch coarser. WHILE DRAWING +/- own the unit (RoomCanvas
+      // ignores them for zoom in draw mode, so there is no fight); outside a
+      // draw +/- stay zoom, and [ / ] step the unit at any time.
+      if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+        const finer = e.key === ']' || (inDraw && (e.key === '+' || e.key === '='));
+        const coarser = e.key === '[' || (inDraw && (e.key === '-' || e.key === '_'));
+        if (finer || coarser) {
+          e.preventDefault();
+          stepSnapUnit(finer ? 1 : -1);
+          return;
+        }
+        // Storeys: PageUp / PageDown walk the floors (Sims: the floor
+        // up/down buttons). Never while a draw is open — a half-drawn room
+        // must not change level under the pen.
+        if (!inDraw && (e.key === 'PageUp' || e.key === 'PageDown')) {
+          e.preventDefault();
+          const ps = usePropertyStore.getState();
+          const levels = levelsOf(ps.property);
+          const cur = levels.findIndex((l) => l.id === activeLevelIdOf(ps.property));
+          const next = levels[cur + (e.key === 'PageUp' ? 1 : -1)];
+          if (next) {
+            ps.setActiveLevel(next.id);
+            try {
+              useToastStore.getState().push(`Now on ${next.name}`, 'info');
+            } catch {
+              /* toast store optional in tests */
+            }
+          }
+          return;
+        }
+      }
 
       switch (e.key) {
         case 'r':
@@ -177,6 +213,13 @@ export function useKeyboardShortcuts(): void {
           // bookmark shortcut. Bare D also works (back-compat).
           e.preventDefault();
           duplicateSelected();
+          break;
+        // Sims world (2026-08-29) — L switches the selected light on/off.
+        case 'l':
+        case 'L':
+          if (inDraw || !hasSelection || e.ctrlKey || e.metaKey) return;
+          e.preventDefault();
+          toggleSelectedLight();
           break;
         case 'Delete':
         case 'Backspace':

@@ -18,14 +18,18 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import { Layer, Line, Circle, Group, Rect, Text } from 'react-konva';
-// Blueprint reskin + legible measurements (Vic 2026-08-25, complaints 3+5).
+// Paper theme (2026-08-29) + legible measurements (Vic 2026-08-25, complaint 3).
 import {
   MEASURE_BG,
   MEASURE_BG_OPACITY,
   MEASURE_MIN_SCREEN_PX,
   MEASURE_TEXT,
-  WALL_GOLD,
-  WALL_GOLD_BRIGHT,
+  DOCK_ACCENT,
+  DOCK_BORDER,
+  DOCK_TEXT,
+  LABEL_HALO,
+  SELECT_STROKE,
+  WALL_INK,
   measureChipMetrics,
 } from './blueprintTheme';
 import type Konva from 'konva';
@@ -46,6 +50,9 @@ import { useToastStore } from '../store/toastStore';
 import { useHistoryStore } from '../store/historyStore';
 import { wallLinePoints, wallStrokeWidthPx, formatWallLengthM } from './wallGeometry';
 
+// Compatibility re-export of the wall geometry helpers that used to live here;
+// the canonical module is ./wallGeometry. Kept so no importer breaks.
+// eslint-disable-next-line react-refresh/only-export-components
 export { wallLinePoints, wallStrokeWidthPx, segmentLengthM, formatWallLengthM } from './wallGeometry';
 
 const DBG = '[wall-draw]';
@@ -295,7 +302,7 @@ export function WallDrawLayer({
             (w.end.x_mm / 1000) * pxPerMetre,
             (w.end.y_mm / 1000) * pxPerMetre,
           ]}
-          stroke={WALL_GOLD}
+          stroke={WALL_INK}
           strokeWidth={Math.max(3, (w.thickness_mm / 1000) * pxPerMetre)}
           lineCap="round"
         />
@@ -310,7 +317,7 @@ export function WallDrawLayer({
               (draw.anchor.x_mm / 1000) * pxPerMetre,
               (draw.anchor.y_mm / 1000) * pxPerMetre,
             ]}
-            stroke={WALL_GOLD_BRIGHT}
+            stroke={SELECT_STROKE}
             strokeWidth={4}
             dash={[8, 8]}
           />
@@ -318,11 +325,11 @@ export function WallDrawLayer({
             x={(draw.anchor.x_mm / 1000) * pxPerMetre}
             y={(draw.anchor.y_mm / 1000) * pxPerMetre}
             radius={6}
-            fill={WALL_GOLD_BRIGHT}
-            stroke={MEASURE_BG}
+            fill={SELECT_STROKE}
+            stroke={LABEL_HALO}
             strokeWidth={1.5}
           />
-          {/* Measurement chip: dark plate + gold numerals, both positioned
+          {/* Measurement chip: charcoal plate + paper numerals, both positioned
               and sized imperatively in handleMove so they track the cursor
               at 60 fps without a React render per pointer move. Hidden
               until the first move gives it a position. */}
@@ -370,7 +377,7 @@ export interface CommittedWallsLayerProps {
 
 /**
  * Always-on render of committed walls. Styling matches the committed-wall
- * render inside `WallDrawLayer` (blueprint WALL_GOLD, round cap) so there is
+ * render inside `WallDrawLayer` (WALL_INK, round cap) so there is
  * no visual jump between drawing and idle.
  */
 export function CommittedWallsLayer({ walls, pxPerMetre }: CommittedWallsLayerProps): JSX.Element {
@@ -380,7 +387,7 @@ export function CommittedWallsLayer({ walls, pxPerMetre }: CommittedWallsLayerPr
         <Line
           key={w.id}
           points={wallLinePoints(w, pxPerMetre)}
-          stroke={WALL_GOLD}
+          stroke={WALL_INK}
           strokeWidth={wallStrokeWidthPx(w, pxPerMetre)}
           lineCap="round"
         />
@@ -419,13 +426,13 @@ export function WallDrawHUD({ enabled }: WallDrawHUDProps): JSX.Element | null {
   return (
     <div
       className="pointer-events-auto absolute left-1/2 top-3 z-30 flex w-[min(94vw,520px)] -translate-x-1/2 flex-col gap-2 rounded-lg bg-white p-3 text-xs shadow-xl"
-      style={{ border: '1px solid #FFBB58', boxShadow: '0 4px 14px rgba(14,14,16,0.18)' }}
+      style={{ border: `1px solid ${DOCK_BORDER}`, boxShadow: '0 4px 14px rgba(14,14,16,0.18)' }}
       data-testid="wall-draw-hud"
     >
       <div className="flex items-center justify-between gap-2">
         <span
           className="rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-          style={{ background: '#FFBB58', color: '#0E1B1F' }}
+          style={{ background: DOCK_ACCENT, color: DOCK_TEXT }}
         >
           Wall mode
         </span>

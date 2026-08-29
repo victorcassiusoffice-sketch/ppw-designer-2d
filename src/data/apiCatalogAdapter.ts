@@ -62,7 +62,18 @@ export interface ApiProductsResponse {
 const ALLOWED_CURRENCIES: readonly Currency[] = ['MUR', 'USD', 'EUR', 'GBP'];
 const ALLOWED_REGIONS: readonly Region[] = ['MU', 'global', 'EU', 'UK', 'US', 'ME', 'APAC'];
 
-function normaliseCategory(raw: string): ProductCategory {
+/**
+ * Map a merchant-API category string onto the Designer's `ProductCategory`.
+ * Every value that IS a `ProductCategory` passes through; the DB-only
+ * agent categories (tables, beds, storage, seating, plants) and anything
+ * unknown collapse to `other`.
+ *
+ * Sims world (2026-08-29): `lighting`, `decor`, `flooring` and `walls`
+ * now pass through. Before this they were folded into `other`, which
+ * meant a merchant lamp never lit and a merchant floor mat collided with
+ * equipment (the flooring layer band keys off `category === 'flooring'`).
+ */
+export function normaliseCategory(raw: string): ProductCategory {
   const c = raw.trim().toLowerCase();
   switch (c) {
     case 'ice-bath':
@@ -73,18 +84,57 @@ function normaliseCategory(raw: string): ProductCategory {
     case 'massage':
     case 'sauna':
     case 'fitness':
+    case 'flooring':
+    case 'walls':
+    case 'decor':
+    case 'lighting':
       return c as ProductCategory;
     case 'tables':
     case 'beds':
-    case 'lighting':
     case 'storage':
-    case 'decor':
     case 'seating':
     case 'plants':
       return 'other';
     default:
       return 'other';
   }
+}
+
+/**
+ * Designer-behaviour fields the `/api/products` wire shape does not carry
+ * (the DB row has no placement / lighting / outdoor columns). They ride on
+ * the bundled seed and are copied across by SKU so a merchant row for a
+ * seeded SKU behaves exactly like the seed on the canvas.
+ *
+ * Parity fix (2026-08-29): until now the SKU merge carried only supplier,
+ * commission_pct, photo_image_url, topdown_image_url and notes — so an
+ * API-served wall shelf lost `placement: 'wall'`, a console lost
+ * `is_surface`, and every item lost `front_edge`. Those plus the new
+ * lighting / outdoor / plan-symbol fields are now merged.
+ */
+const SEED_BEHAVIOUR_FIELDS = [
+  'placement',
+  'is_surface',
+  'front_edge',
+  'mount_height_cm',
+  'emits_light',
+  'light_radius_m',
+  'outdoor',
+  'plan_symbol',
+  'thumbnail_svg',
+] as const satisfies readonly (keyof Product)[];
+
+type SeedBehaviourField = (typeof SEED_BEHAVIOUR_FIELDS)[number];
+
+/** Only the seed's DEFINED behaviour fields — never writes `undefined` keys. */
+function seedBehaviour(seed: Product | undefined): Partial<Pick<Product, SeedBehaviourField>> {
+  const out: Partial<Pick<Product, SeedBehaviourField>> = {};
+  if (!seed) return out;
+  for (const key of SEED_BEHAVIOUR_FIELDS) {
+    const v = seed[key];
+    if (v !== undefined) (out as Record<string, unknown>)[key] = v;
+  }
+  return out;
 }
 
 function normaliseCurrency(raw: string): Currency {
@@ -143,6 +193,7 @@ export function apiProductToProduct(api: ApiProductSummary): Product {
     // Prefer the live DB description; fall back to the curated bundled notes
     // so the detail panel is never blank.
     notes: api.description?.trim() || seed?.notes || '',
+    ...seedBehaviour(seed),
   };
 }
 

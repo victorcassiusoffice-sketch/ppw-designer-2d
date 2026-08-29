@@ -39,6 +39,8 @@ import {
 } from '../store/designerUIStore';
 import { useDrawProgressStore } from '../store/drawProgressStore';
 import { isDrawnPolygon } from '../designer/roomLayout';
+// Sims world (2026-08-29): storeys + land plot live on the property.
+import { activeLevelIdOf, levelsOf, nextLevelName, visibleRooms, roomsOnLevel } from '../designer/levels';
 import { performUndo, performRedo } from '../lib/undoIntent';
 import { FLOOR_MATERIALS, tileableFloorMaterials } from '../data/floorMaterials';
 import { useWallStore } from '../store/wallStore';
@@ -105,8 +107,71 @@ export function TopBar({
   // exact moment undo is most useful.
   const drawInFlight = useDrawProgressStore((s) => s.enabled && s.vertices.length > 0);
   // DRAWN rooms only — a fresh canvas always holds one blank seed room, and
-  // reporting "1 room" over an empty plan is wrong.
-  const drawnRoomCount = property.rooms.filter((r) => isDrawnPolygon(r.polygon)).length;
+  // reporting "1 room" over an empty plan is wrong. Outdoor containers are
+  // not rooms either (Sims world 2026-08-29).
+  const drawnRoomCount = visibleRooms(property.rooms).filter((r) => isDrawnPolygon(r.polygon)).length;
+
+  // Storeys (Sims world 2026-08-29). The active level is a property field;
+  // the popover lists every level, adds one, renames inline, deletes empty
+  // ones. PageUp / PageDown walk the same list from the keyboard.
+  const levels = levelsOf(property);
+  const activeLevelId = activeLevelIdOf(property);
+  const activeLevel = levels.find((l) => l.id === activeLevelId) ?? levels[0];
+  const addLevel = usePropertyStore((s) => s.addLevel);
+  const renameLevel = usePropertyStore((s) => s.renameLevel);
+  const removeLevel = usePropertyStore((s) => s.removeLevel);
+  const setActiveLevel = usePropertyStore((s) => s.setActiveLevel);
+  const [levelsOpen, setLevelsOpen] = useState(false);
+  const [levelEditId, setLevelEditId] = useState<string | null>(null);
+  const [levelDraft, setLevelDraft] = useState('');
+
+  // Land plot (Sims world 2026-08-29). Locks the world to a W x D rectangle:
+  // rooms, walls and items must stay inside it, and the readout shows how
+  // much of the plot is built.
+  const site = property.site ?? null;
+  const setSite = usePropertyStore((s) => s.setSite);
+  const [landOpen, setLandOpen] = useState(false);
+  const [landW, setLandW] = useState(site ? String(site.widthM) : '20');
+  const [landD, setLandD] = useState(site ? String(site.depthM) : '15');
+
+  function commitLevelRename() {
+    if (levelEditId) renameLevel(levelEditId, levelDraft.trim() || 'Level');
+    setLevelEditId(null);
+    setLevelDraft('');
+  }
+
+  function handleAddLevel() {
+    const id = addLevel(nextLevelName(levels));
+    pushToast(`Added ${nextLevelName(levels)} — you are now on it`, 'success');
+    setLevelEditId(null);
+    return id;
+  }
+
+  function handleRemoveLevel(id: string) {
+    const ok = removeLevel(id);
+    pushToast(
+      ok ? 'Floor removed' : 'Clear that floor first — it still has rooms or walls',
+      ok ? 'info' : 'warn',
+    );
+  }
+
+  function applyLand() {
+    const w = Number(landW);
+    const d = Number(landD);
+    if (!Number.isFinite(w) || !Number.isFinite(d) || w <= 0 || d <= 0) {
+      pushToast('Enter the plot width and depth in metres.', 'warn');
+      return;
+    }
+    setSite({ widthM: w, depthM: d, originM: site?.originM ?? { x: 0, y: 0 } });
+    pushToast(`Plot locked at ${w} × ${d} m`, 'success');
+    setLandOpen(false);
+  }
+
+  function clearLand() {
+    setSite(null);
+    pushToast('Plot cleared — unlimited land', 'info');
+    setLandOpen(false);
+  }
   // Mobile Safari long-press confirm — Tweak 07 §7. A first tap arms;
   // a second tap within 1500ms fires. Desktop fires immediately.
   const [mobileUndoArmed, setMobileUndoArmed] = useState(false);
@@ -196,15 +261,18 @@ export function TopBar({
   }
 
   function handleToggleWall() {
-    if (wallActive) {
-      setWallDraw({ phase: 'idle' });
+    // Sims world (2026-08-29): ONE wall pen. The old interior-wall tool
+    // (wallStore, mm, never saved to the server, invisible to placement)
+    // is retired; "+ Walls" now enters the same draw mode as "Custom shape".
+    // A run that closes becomes a room; a run that stops where it stops is
+    // kept as free-standing walls (Finish walls / Alt+Enter).
+    if (wallActive) setWallDraw({ phase: 'idle' });
+    if (drawMode) {
+      setDrawMode(false);
       return;
     }
-    // Entering wall mode — leave polygon-draw mode if it was on so the two
-    // tools don't fight over the canvas (setDrawMode has history side
-    // effects, so only call it when actually in draw mode).
-    if (drawMode) setDrawMode(false);
-    setWallDraw({ phase: 'armed' });
+    setDrawMode(true);
+    pushToast('Wall pen: click to drop points. Close a shape for a room, or Finish walls to leave them open.', 'info');
   }
 
   const [showHelp, setShowHelp] = useState(false);
@@ -404,7 +472,10 @@ export function TopBar({
       </div>
 
       <div className="flex min-w-0 items-center gap-1.5 text-xs md:gap-2">
-        <div className="hidden md:flex items-center gap-1.5 rounded-md border border-ppw-stone bg-ppw-sand px-2 py-1">
+        {/* L/W box: 2xl+ only since the Sims-world controls (Floors, Land)
+            joined the bar — at 1366/1920 it pushed Save/Load/Quote off the
+            right edge. The Measure tool retypes any wall length at every width. */}
+        <div className="hidden 2xl:flex items-center gap-1.5 rounded-md border border-ppw-stone bg-ppw-sand px-2 py-1">
           {activeRoomIsRect ? (
             <>
               <label className="text-[11px] uppercase tracking-wide text-ppw-slate">L</label>
@@ -466,28 +537,186 @@ export function TopBar({
             onClick={() => setDrawMode(true)}
             data-testid="room-draw-toggle"
             className={`min-h-[40px] px-3 text-xs font-medium ${drawMode ? 'bg-ppw-teal text-white' : 'text-ppw-slate hover:text-ppw-teal'}`}
-            title="Draw a room — attaches to existing rooms, walls snap together"
+            title="Draw walls — close the shape for a room, or Finish walls to leave them open"
             aria-pressed={drawMode}
           >
-            <span className="md:hidden">Custom</span>
-            <span className="hidden md:inline">Custom shape</span>
+            <span className="md:hidden">Draw</span>
+            <span className="hidden md:inline">Draw</span>
           </button>
         </div>
-        {/* Interior walls — its own control, not a third "room shape". */}
+        {/* Walls — the same pen as Custom shape; walls do not have to join. */}
         <button
           type="button"
           onClick={handleToggleWall}
           data-testid="wall-tool-toggle"
           className={`hidden md:inline-block min-h-[40px] rounded-md border px-3 text-xs font-medium ${
-            wallActive
+            drawMode || wallActive
               ? 'border-ppw-teal bg-ppw-teal text-white'
               : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
           }`}
-          title="Add interior walls inside the room — click to start a wall, click to drop each corner, Done to finish"
-          aria-pressed={wallActive}
+          title="Draw walls — click to drop points. Close the shape for a room, or press Finish walls to leave them open. +/- change the unit mid-draw."
+          aria-pressed={drawMode || wallActive}
         >
           + Walls
         </button>
+
+        {/* Storeys (Sims world 2026-08-29): which floor of the building the
+            canvas shows. Popover pattern, same as Snap / Floor pickers. */}
+        <div className="relative hidden md:block">
+          <button
+            type="button"
+            onClick={() => setLevelsOpen((v) => !v)}
+            data-testid="levels-toggle"
+            className={`min-h-[40px] rounded-md border px-3 text-xs font-medium ${
+              levelsOpen ? 'border-ppw-teal bg-ppw-teal text-white' : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
+            }`}
+            title={`Floors of the building — now on ${activeLevel?.name ?? 'Ground floor'} (PageUp / PageDown to switch)`}
+            aria-expanded={levelsOpen}
+          >
+            {levels.length > 1
+              ? `${activeLevel?.index === 0 ? 'Ground' : `Floor ${activeLevel?.index ?? 0}`} · ${levels.length}`
+              : 'Floors'}
+          </button>
+          {levelsOpen && (
+            <div
+              className="absolute left-0 top-full z-40 mt-1 w-56 rounded-lg border border-ppw-stone bg-white p-1.5 shadow-lg"
+              data-testid="levels-picker"
+            >
+              {[...levels].sort((a, b) => b.index - a.index).map((l) => (
+                <div key={l.id} className="flex items-center gap-1">
+                  {levelEditId === l.id ? (
+                    <input
+                      autoFocus
+                      value={levelDraft}
+                      onChange={(e) => setLevelDraft(e.target.value)}
+                      onBlur={commitLevelRename}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') commitLevelRename();
+                        if (e.key === 'Escape') { setLevelEditId(null); setLevelDraft(''); }
+                      }}
+                      data-testid={`level-rename-${l.id}`}
+                      className="min-w-0 flex-1 rounded-md border border-ppw-teal px-2 py-1 text-xs"
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => { setActiveLevel(l.id); setLevelsOpen(false); }}
+                      onDoubleClick={() => { setLevelEditId(l.id); setLevelDraft(l.name); }}
+                      data-testid={`level-${l.id}`}
+                      aria-pressed={l.id === activeLevelId}
+                      className={`flex min-h-[36px] min-w-0 flex-1 items-center justify-between rounded-md px-2 text-left text-xs ${
+                        l.id === activeLevelId ? 'bg-ppw-mist font-semibold' : 'text-ppw-slate hover:bg-ppw-mist'
+                      }`}
+                      title="Click to switch · double-click to rename"
+                    >
+                      <span className="truncate">{l.name}</span>
+                      <span className="ml-2 text-[10px] text-ppw-slate">
+                        {roomsOnLevel(visibleRooms(property.rooms), l.id).filter((r) => isDrawnPolygon(r.polygon)).length} rm
+                      </span>
+                    </button>
+                  )}
+                  {l.id !== 'ground' && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveLevel(l.id)}
+                      data-testid={`level-remove-${l.id}`}
+                      className="h-8 w-8 shrink-0 rounded-md text-ppw-slate hover:bg-ppw-mist hover:text-ppw-coral"
+                      title="Remove this floor (must be empty)"
+                      aria-label={`Remove ${l.name}`}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => { handleAddLevel(); setLevelsOpen(false); }}
+                data-testid="level-add"
+                className="mt-1 flex min-h-[36px] w-full items-center justify-center rounded-md border border-dashed border-ppw-stone px-2 text-xs font-semibold text-ppw-slate hover:border-ppw-teal hover:text-ppw-teal"
+              >
+                + Add floor above
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Land plot (Sims world 2026-08-29): lock the scale + capacity. */}
+        <div className="relative hidden md:block">
+          <button
+            type="button"
+            onClick={() => setLandOpen((v) => !v)}
+            data-testid="land-toggle"
+            className={`min-h-[40px] rounded-md border px-3 text-xs font-medium ${
+              site ? 'border-ppw-teal bg-ppw-teal text-white' : 'border-ppw-stone bg-white text-ppw-slate hover:text-ppw-teal'
+            }`}
+            title={
+              site
+                ? `Land plot locked at ${site.widthM} × ${site.depthM} m — click to change or clear`
+                : 'Land plot — set the width and depth of the site to lock the scale and the maximum you can build'
+            }
+            aria-expanded={landOpen}
+          >
+            {site ? `Land ${site.widthM}×${site.depthM}` : 'Land'}
+          </button>
+          {landOpen && (
+            <div
+              className="absolute left-0 top-full z-40 mt-1 w-64 rounded-lg border border-ppw-stone bg-white p-3 shadow-lg"
+              data-testid="land-picker"
+            >
+              <p className="mb-2 text-[11px] leading-snug text-ppw-slate">
+                The plot is the outer boundary: rooms, walls and items stay inside it.
+              </p>
+              <div className="flex items-center gap-2">
+                <label className="text-[10px] uppercase tracking-wide text-ppw-slate">W</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={500}
+                  step={0.5}
+                  value={landW}
+                  onChange={(e) => setLandW(e.target.value)}
+                  data-testid="land-width"
+                  className="w-16 rounded-md border border-ppw-stone px-2 py-1 text-right text-xs"
+                />
+                <span className="text-[10px] text-ppw-slate">m</span>
+                <label className="text-[10px] uppercase tracking-wide text-ppw-slate">D</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={500}
+                  step={0.5}
+                  value={landD}
+                  onChange={(e) => setLandD(e.target.value)}
+                  data-testid="land-depth"
+                  className="w-16 rounded-md border border-ppw-stone px-2 py-1 text-right text-xs"
+                  onKeyDown={(e) => { if (e.key === 'Enter') applyLand(); }}
+                />
+                <span className="text-[10px] text-ppw-slate">m</span>
+              </div>
+              <div className="mt-2 flex items-center justify-end gap-1.5">
+                {site && (
+                  <button
+                    type="button"
+                    onClick={clearLand}
+                    data-testid="land-clear"
+                    className="rounded-md border border-ppw-stone px-2 py-1 text-[11px] text-ppw-slate hover:border-ppw-coral hover:text-ppw-coral"
+                  >
+                    Clear
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={applyLand}
+                  data-testid="land-apply"
+                  className="rounded-md border border-ppw-teal bg-ppw-teal px-3 py-1 text-[11px] font-semibold text-white"
+                >
+                  Lock plot
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Openings — doors, doorways and windows. Cut into a wall rather than
             placed in space, so this is a wall tool, not a catalog product. */}
@@ -949,16 +1178,90 @@ export function TopBar({
                   handleToggleWall();
                   setShowMobileMenu(false);
                 }}
-                aria-pressed={wallActive}
+                aria-pressed={drawMode || wallActive}
                 className={`flex min-h-[44px] items-center justify-between rounded-md border px-3 text-sm font-medium ${
-                  wallActive
+                  drawMode || wallActive
                     ? 'border-ppw-teal bg-ppw-teal text-white'
                     : 'border-ppw-stone bg-white text-ppw-ink hover:border-ppw-teal'
                 }`}
               >
-                <span>Interior walls</span>
-                <span className="text-[10px] opacity-80">{wallActive ? 'on' : 'off'}</span>
+                <span>Draw walls</span>
+                <span className="text-[10px] opacity-80">{drawMode || wallActive ? 'on' : 'off'}</span>
               </button>
+
+              {/* Storeys on the phone: one row per floor + add. */}
+              <div className="rounded-md border border-ppw-stone bg-white p-1.5" data-testid="levels-mobile">
+                <p className="px-1 pb-1 text-[10px] uppercase tracking-wide text-ppw-slate">Floors</p>
+                {[...levels].sort((a, b) => b.index - a.index).map((l) => (
+                  <button
+                    key={l.id}
+                    type="button"
+                    onClick={() => { setActiveLevel(l.id); setShowMobileMenu(false); }}
+                    data-testid={`level-mobile-${l.id}`}
+                    aria-pressed={l.id === activeLevelId}
+                    className={`flex min-h-[40px] w-full items-center justify-between rounded-md px-2 text-sm ${
+                      l.id === activeLevelId ? 'bg-ppw-mist font-semibold text-ppw-ink' : 'text-ppw-slate'
+                    }`}
+                  >
+                    <span>{l.name}</span>
+                    {l.id === activeLevelId && <span className="text-[10px] opacity-80">here</span>}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => { handleAddLevel(); setShowMobileMenu(false); }}
+                  data-testid="level-add-mobile"
+                  className="mt-1 flex min-h-[40px] w-full items-center justify-center rounded-md border border-dashed border-ppw-stone text-sm font-semibold text-ppw-slate"
+                >
+                  + Add floor above
+                </button>
+              </div>
+
+              {/* Land plot on the phone. */}
+              <div className="rounded-md border border-ppw-stone bg-white p-2" data-testid="land-mobile">
+                <p className="pb-1 text-[10px] uppercase tracking-wide text-ppw-slate">
+                  Land plot {site ? `· ${site.widthM} × ${site.depthM} m` : '· unlimited'}
+                </p>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="number"
+                    min={1}
+                    max={500}
+                    step={0.5}
+                    value={landW}
+                    onChange={(e) => setLandW(e.target.value)}
+                    aria-label="Plot width (m)"
+                    className="w-16 rounded-md border border-ppw-stone px-2 py-1 text-right text-sm"
+                  />
+                  <span className="text-[10px] text-ppw-slate">×</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={500}
+                    step={0.5}
+                    value={landD}
+                    onChange={(e) => setLandD(e.target.value)}
+                    aria-label="Plot depth (m)"
+                    className="w-16 rounded-md border border-ppw-stone px-2 py-1 text-right text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => { applyLand(); setShowMobileMenu(false); }}
+                    className="ml-auto min-h-[40px] rounded-md bg-ppw-teal px-3 text-sm font-semibold text-white"
+                  >
+                    Lock
+                  </button>
+                  {site && (
+                    <button
+                      type="button"
+                      onClick={() => { clearLand(); setShowMobileMenu(false); }}
+                      className="min-h-[40px] rounded-md border border-ppw-stone px-2 text-sm text-ppw-slate"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
 
               {/* Units brief D7 - without these six rows a phone user has no
                   way to choose a unit at all (the desktop popover is md-only). */}
@@ -1087,16 +1390,16 @@ export function TopBar({
         <div className="absolute right-2 top-full z-40 mt-1 w-[min(20rem,calc(100vw-1rem))] rounded-lg border border-ppw-stone bg-white p-4 text-xs leading-snug text-ppw-slate shadow-lg">
           <p className="mb-1 font-semibold text-ppw-ink">Quick start</p>
           <ol className="ml-4 list-decimal space-y-1">
-            <li>Set room L x W (top bar), or switch to <em>Draw</em> mode to sketch a polygon.</li>
-            <li>Drag a product from the left palette onto the canvas (or tap "Place on floor" on mobile).</li>
-            <li>Scroll-wheel zoom or pinch-zoom; drag empty floor to pan.</li>
-            <li>Click a placed item to edit on the right.</li>
-            <li>Use the room list to switch rooms within this property.</li>
-            <li><em>Save as...</em> stores the whole property (all rooms + items).</li>
+            <li><em>+ Walls</em> or <em>Custom shape</em>: click to drop wall points. Close the shape for a room, or <em>Finish walls</em> to leave them open.</li>
+            <li>Change the unit mid-draw with the − / + chips (keys + and −, or 1–6).</li>
+            <li>Drag a product from the dock onto the floor — inside a room or outside in the garden. Items sit flush to walls and tuck into corners.</li>
+            <li><em>Land</em> locks the plot size; <em>Floors</em> adds storeys (PageUp / PageDown).</li>
+            <li>Click a placed item to rotate, duplicate, delete, or switch a light on/off.</li>
+            <li><em>Save as...</em> stores the whole property (all floors, rooms, walls + items).</li>
           </ol>
           <p className="mt-2 text-[10px] text-ppw-slate">
-            Keys: R rotate; D duplicate; Del delete; Esc deselect; Ctrl+Z undo;
-            Shift+P clear products; Shift+X clear all.
+            Keys: R rotate; D duplicate; Del delete; Esc deselect; Ctrl+Z undo; M measure;
+            [ / ] unit; PageUp / PageDown floor; Shift+P clear products; Shift+X clear all.
           </p>
         </div>
       )}

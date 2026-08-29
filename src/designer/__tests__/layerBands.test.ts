@@ -13,12 +13,20 @@ import {
   obstaclesFor,
   BAND_FLOOR_COVERING,
   BAND_FREESTANDING,
+  BAND_WALL,
+  BAND_CEILING,
 } from '../layerBands';
 import { getAllProducts } from '../../data/products';
 
 const ALL = getAllProducts();
 const flooring = ALL.filter((p) => p.category === 'flooring');
-const equipment = ALL.filter((p) => p.category !== 'flooring');
+// Sims world (2026-08-29): wall- and ceiling-mounted items have their own
+// bands, so "equipment" here means floor-standing (or surface) products.
+const equipment = ALL.filter(
+  (p) => p.category !== 'flooring' && p.placement !== 'wall' && p.placement !== 'ceiling',
+);
+const wallMounted = ALL.filter((p) => p.placement === 'wall');
+const ceilingHung = ALL.filter((p) => p.placement === 'ceiling');
 
 describe('the catalog still has the categories this depends on', () => {
   it('ships flooring SKUs and non-flooring SKUs', () => {
@@ -32,8 +40,22 @@ describe('bandForProduct', () => {
     for (const p of flooring) expect(bandForProduct(p.id)).toBe(BAND_FLOOR_COVERING);
   });
 
-  it('puts everything else in the freestanding band', () => {
+  it('puts every floor-standing / surface product in the freestanding band', () => {
     for (const p of equipment) expect(bandForProduct(p.id)).toBe(BAND_FREESTANDING);
+  });
+
+  it('puts wall-mounted products in the wall band and ceiling-hung ones in the ceiling band', () => {
+    expect(wallMounted.length).toBeGreaterThan(0);
+    expect(ceilingHung.length).toBeGreaterThan(0);
+    for (const p of wallMounted) expect(bandForProduct(p.id)).toBe(BAND_WALL);
+    for (const p of ceilingHung) expect(bandForProduct(p.id)).toBe(BAND_CEILING);
+  });
+
+  it('keeps the bands strictly ordered and spaced', () => {
+    expect(BAND_FLOOR_COVERING).toBe(200);
+    expect(BAND_FREESTANDING).toBe(300);
+    expect(BAND_WALL).toBe(350);
+    expect(BAND_CEILING).toBe(400);
   });
 
   it('treats an unknown product as freestanding rather than throwing', () => {
@@ -52,6 +74,13 @@ describe('bandsCollide', () => {
 
   it('flooring still collides with flooring — you cannot lay a mat over a mat', () => {
     expect(bandsCollide(flooring[0].id, flooring[1].id)).toBe(true);
+  });
+
+  it('a sconce over a console and a pendant over a treadmill never collide', () => {
+    expect(bandsCollide(wallMounted[0].id, equipment[0].id)).toBe(false);
+    expect(bandsCollide(ceilingHung[0].id, equipment[0].id)).toBe(false);
+    expect(bandsCollide(ceilingHung[0].id, wallMounted[0].id)).toBe(false);
+    expect(bandsCollide(ceilingHung[0].id, flooring[0].id)).toBe(false);
   });
 });
 
@@ -86,5 +115,16 @@ describe('obstaclesFor', () => {
     const before = items.length;
     obstaclesFor(equipment[0].id, items);
     expect(items).toHaveLength(before);
+  });
+
+  it('a floor product only has to avoid floor items even when wall/ceiling items are passed in', () => {
+    const mixed = [
+      { productId: wallMounted[0].id, instanceId: 'sconce' },
+      { productId: ceilingHung[0].id, instanceId: 'pendant' },
+      { productId: flooring[0].id, instanceId: 'mat' },
+      { productId: equipment[0].id, instanceId: 'bike' },
+    ];
+    expect(obstaclesFor(equipment[1].id, mixed).map((o) => o.instanceId)).toEqual(['bike']);
+    expect(obstaclesFor(ceilingHung[0].id, mixed).map((o) => o.instanceId)).toEqual(['pendant']);
   });
 });

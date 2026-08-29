@@ -52,15 +52,28 @@ export function captureCurrentPage(): PageBundle {
  *
  * Order matters: the property goes down first so anything reacting to it sees
  * the new rooms before the walls that belong to them arrive.
+ *
+ * LEGACY WALL MIGRATION (Sims world 2026-08-29)
+ * ---------------------------------------------
+ * Free-standing walls now live ON the property (`property.walls`, metres),
+ * where history, autosave and the server see them. A bundle saved before that
+ * still carries its walls as mm `wallStore` segments. When such a bundle lands
+ * on a property that has no walls of its own, the segments are converted onto
+ * the property and `wallStore` is left EMPTY — the same wall must never exist
+ * in both systems. A property that already has its own walls keeps them, and
+ * the legacy segments fall through to `wallStore` exactly as before.
  */
 export function applyPage(bundle: Partial<PageBundle>): void {
+  const legacyWalls = bundle.walls ?? [];
+  let migrated = false;
   if (bundle.property) {
     const normalised = normaliseLoadedProperty(bundle.property) ?? bundle.property;
     usePropertyStore.getState().loadProperty(normalised);
+    migrated = legacyWalls.length > 0 && usePropertyStore.getState().importLegacyWalls(legacyWalls);
   }
   // Always replace, even with an empty array. Skipping a missing key is what
   // would let the previous page's walls survive onto this one.
-  useWallStore.getState().replace(bundle.walls ?? []);
+  useWallStore.getState().replace(migrated ? [] : legacyWalls);
   useFloorZoneStore.getState().replace(bundle.floorZones ?? []);
   useWallTreatmentStore
     .getState()
@@ -129,7 +142,10 @@ export function promoteDraftToPage(name?: string): string | null {
   const property = usePropertyStore.getState().property;
   const hasContent =
     property.rooms.some((r) => (r.polygon?.length ?? 0) >= 3)
-    || property.rooms.some((r) => (r.placedItems?.length ?? 0) > 0);
+    || property.rooms.some((r) => (r.placedItems?.length ?? 0) > 0)
+    // A free wall is drawn work too — an open run with no room around it
+    // must earn its tab the same way a closed one does.
+    || (property.walls?.length ?? 0) > 0;
   if (!hasContent) return null;
 
   const title = (name ?? property.name ?? '').trim() || 'Untitled plan';
