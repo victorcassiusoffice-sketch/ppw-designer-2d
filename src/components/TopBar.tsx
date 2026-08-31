@@ -177,6 +177,7 @@ const INPUT =
 type IconName =
   | 'list'
   | 'cursor'
+  | 'hammer'
   | 'pen'
   | 'door'
   | 'roller'
@@ -229,6 +230,8 @@ const ICON_PATHS: Record<IconName, string> = {
   view: 'M2 8s2.5-4 6-4 6 4 6 4-2.5 4-6 4-6-4-6-4zM8 9.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z',
   room: 'M2.5 13.5v-8l5.5-3 5.5 3v8h-11zM6.5 13.5v-4h3v4',
   send: 'M2.5 8l11-5.5-3 11-2.5-4.5L2.5 8z',
+  // Remove tool (2026-08-31): a sledgehammer — head top-right, handle down-left.
+  hammer: 'M8.5 2.5l5 5-2 2-5-5zM6.5 7l-4 4.5 1.5 1.5 4.5-4z',
 };
 
 function Icon({ name, size = 16, className = '' }: { name: IconName; size?: number; className?: string }) {
@@ -552,6 +555,7 @@ export function TopBar({
   const doorActive = tool === 'door';
   const measureActive = tool === 'measure';
   const floorPaintActive = tool === 'floor';
+  const removeActive = tool === 'sledgehammer';
   // Select/Move (P2 2026-08-31, complaint B). The default tool is on when
   // NOTHING else is: hand, no room-draw, no wall run, no door/floor/measure.
   const selectActive =
@@ -634,6 +638,16 @@ export function TopBar({
     if (drawMode) setDrawMode(false);
     if (wallActive) setWallDraw({ phase: 'idle' });
     setTool('hand');
+  }
+
+  // Remove / demolish (2026-08-31, Vic "I can't remove walls"). Arms the
+  // sledgehammer: a click on a free wall OR a placed object deletes it (both
+  // wired in RoomCanvas). Toggling off returns to Select. Stands down the
+  // other build tools first, like every toggle here.
+  function handleToggleRemove() {
+    if (drawMode) setDrawMode(false);
+    if (wallActive) setWallDraw({ phase: 'idle' });
+    setTool(removeActive ? 'hand' : 'sledgehammer');
   }
 
   const [showHelp, setShowHelp] = useState(false);
@@ -1414,6 +1428,20 @@ export function TopBar({
               <Icon name="ruler" />
               <span className="hidden min-[1700px]:inline">Measure</span>
             </button>
+            {/* Remove — the sledgehammer. Click a wall or object to delete it
+                (complaint "I can't remove walls"). Terracotta-tinted when on. */}
+            <button
+              type="button"
+              onClick={handleToggleRemove}
+              data-testid="remove-tool-toggle"
+              className={segOn(removeActive)}
+              title="Remove — click a wall or an object to delete it (Esc to stop)"
+              aria-pressed={removeActive}
+              aria-label="Remove"
+            >
+              <Icon name="hammer" />
+              <span className="hidden min-[1700px]:inline">Remove</span>
+            </button>
           </div>
 
           <span className={`${DIVIDER} mr-0`} aria-hidden="true" />
@@ -2008,6 +2036,20 @@ export function TopBar({
                 >
                   <span className="flex items-center gap-3"><Icon name="cursor" size={20} />Select</span>
                   <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{selectActive ? 'on' : 'off'}</span>
+                </button>
+                {/* Remove — sledgehammer; tap a wall or object to delete it. */}
+                <button
+                  type="button"
+                  data-testid="remove-tool-toggle-mobile"
+                  onClick={() => {
+                    handleToggleRemove();
+                    setShowMobileMenu(false);
+                  }}
+                  aria-pressed={removeActive}
+                  className={`${SHEET_ROW} justify-between ${removeActive ? SHEET_ROW_ON : ''}`}
+                >
+                  <span className="flex items-center gap-3"><Icon name="hammer" size={20} />Remove</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{removeActive ? 'on · tap to delete' : 'off'}</span>
                 </button>
                 {/* Interior walls — the same pen as Custom; identical handler. */}
                 <button

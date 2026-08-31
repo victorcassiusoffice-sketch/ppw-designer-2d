@@ -3090,6 +3090,30 @@ export function RoomCanvas({
         </div>
       )}
 
+      {/* Remove tool (2026-08-31): a top-centre banner while the
+          sledgehammer is armed, so it is obvious clicks now DELETE and there
+          is a clear way out. Terracotta rim = destructive. */}
+      {tool === 'sledgehammer' && !drawMode && !pendingProductId && (
+        <div
+          className="pointer-events-auto absolute left-1/2 top-3 z-20 flex w-[min(92vw,420px)] -translate-x-1/2 items-center justify-between gap-2 rounded-xl px-3 py-2 text-xs"
+          data-testid="remove-hud"
+          style={{ background: CHROME_BG, border: `1px solid ${CHROME_DANGER}`, boxShadow: '0 12px 32px rgba(42,41,38,0.18)', color: CHROME_TEXT }}
+        >
+          <span className="min-w-0 flex-1 truncate font-semibold" style={{ color: CHROME_DANGER }}>
+            Remove — tap a wall or object to delete it
+          </span>
+          <button
+            type="button"
+            data-testid="remove-done"
+            onClick={() => setTool('hand')}
+            className={`${OVL_CTRL} ${OVL_ACTIVE} h-9 shrink-0 px-3`}
+            title="Stop removing (Esc)"
+          >
+            Done
+          </button>
+        </div>
+      )}
+
       {pendingProductId && !drawMode && (() => {
         const pendingProduct = getProductById(pendingProductId);
         if (!pendingProduct) return null;
