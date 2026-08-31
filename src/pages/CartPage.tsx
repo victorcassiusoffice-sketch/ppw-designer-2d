@@ -17,6 +17,7 @@ import { useCurrencyStore } from '../store/currencyStore';
 import { usePropertyStore } from '../store/propertyStore';
 import { CartPageHeader } from '../components/CartPageHeader';
 import { CATEGORY_LABELS, thumbnailFor } from '../data/products';
+import { findFloorMaterialById } from '../data/floorMaterials';
 import { formatCurrency } from '../lib/currency';
 import { useState } from 'react';
 
@@ -29,7 +30,9 @@ export default function CartPage() {
   const navigate = useNavigate();
   const [breakdownOpen, setBreakdownOpen] = useState(true);
 
-  if (cart.totalItemCount === 0) {
+  // A floor laid with no product is still a cart (Vic 2026-08-31: the floor
+  // "doesn't show" at checkout) — the empty gate used to look at products only.
+  if (cart.totalItemCount === 0 && cart.floorLines.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-ppw-sand text-ppw-ink">
         <CartPageHeader />
@@ -141,6 +144,49 @@ export default function CartPage() {
             ))}
           </ul>
 
+          {/* Flooring (Vic 2026-08-31: the floor laid in the designer must
+              show on the cart, not just at checkout). Floors are sold by the
+              whole unit (tile / roll / pack / mat), so a floor line carries
+              the unit count to ORDER including the cut-edge surplus — it is
+              NOT a product with a quantity stepper. */}
+          {cart.floorLines.length > 0 && (
+            <ul className="space-y-3" data-testid="cart-page-floor-lines">
+              {cart.floorLines.map((f) => (
+                <li
+                  key={f.lineId}
+                  data-testid="cart-floor-line"
+                  className="flex flex-col gap-3 rounded-lg border border-ppw-stone bg-white p-3 md:flex-row md:items-center"
+                >
+                  <div
+                    className="h-16 w-16 shrink-0 rounded-md border border-ppw-stone"
+                    style={{ background: findFloorMaterialById(f.materialId)?.hex ?? '#e7e2d8' }}
+                    aria-hidden="true"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-ppw-ink">{f.materialName}</p>
+                    <p className="text-[11px] text-ppw-slate">Flooring · laid on the plan</p>
+                    <p className="mt-0.5 text-[11px] text-ppw-slate">
+                      Unit: {formatCurrency(f.unitPriceDisplay, currency)} / {f.unit}
+                      {f.surplusUnits > 0 && (
+                        <span className="ml-1">· includes {f.surplusUnits} spare for cut edges</span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="text-sm font-semibold text-ppw-ink md:w-24 md:text-center">
+                    {f.unitsToOrder} {f.unit}
+                    {f.unitsToOrder === 1 ? '' : 's'}
+                  </div>
+                  <div className="text-right md:w-32">
+                    <p className="text-sm font-bold text-ppw-ink">
+                      {formatCurrency(f.lineTotalDisplay, currency)}
+                    </p>
+                    <p className="mt-0.5 text-[10px] text-ppw-slate">≈ {f.coveredM2.toFixed(1)} m²</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
           {/* Per-room breakdown */}
           <section className="rounded-lg border border-ppw-stone bg-white">
             <button
@@ -195,6 +241,22 @@ export default function CartPage() {
           <div className="sticky top-4 rounded-lg border border-ppw-stone bg-white p-4 shadow-sm">
             <p className="text-sm font-bold text-ppw-ink">Order summary</p>
             <dl className="mt-3 space-y-1.5 text-xs">
+              {cart.floorLines.length > 0 && (
+                <>
+                  <div className="flex justify-between text-ppw-slate">
+                    <dt>Products</dt>
+                    <dd className="text-ppw-ink">
+                      {formatCurrency(cart.subtotal - cart.floorSubtotal, currency)}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between text-ppw-slate">
+                    <dt data-testid="cart-page-floor-subtotal-label">Flooring</dt>
+                    <dd className="text-ppw-ink">
+                      {formatCurrency(cart.floorSubtotal, currency)}
+                    </dd>
+                  </div>
+                </>
+              )}
               <div className="flex justify-between text-ppw-slate">
                 <dt>Subtotal</dt>
                 <dd className="text-ppw-ink">
