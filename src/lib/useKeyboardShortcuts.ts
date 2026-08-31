@@ -27,6 +27,8 @@ import {
 } from './placementActions';
 import { useDesignStore } from '../store/designStore';
 import { usePropertyStore } from '../store/propertyStore';
+import { useWallStore } from '../store/wallStore';
+import { useDrawProgressStore } from '../store/drawProgressStore';
 import { isDrawTransactionActive } from '../store/historyStore';
 import { useDesignerUIStore, SNAP_UNIT_ORDER, stepSnapUnit } from '../store/designerUIStore';
 import { performUndo, performRedo } from './undoIntent';
@@ -248,13 +250,30 @@ export function useKeyboardShortcuts(): void {
           e.preventDefault();
           useDesignerUIStore.getState().setTool('sledgehammer');
           break;
-        case 'Escape':
+        case 'Escape': {
           e.preventDefault();
-          // Esc also drops back to the Hand tool (cancels sledgehammer/
-          // eyedropper) in addition to deselecting.
-          useDesignerUIStore.getState().setTool('hand');
+          // Complaint B (P2 2026-08-31): Esc must return the user to the
+          // Select/Move tool from ANY build tool, not only Floor.
+          //
+          // Walls / Custom pen: a live draw run owns Esc entirely — the
+          // capture-phase handler in RoomDrawMode keeps the run as walls (≥2
+          // points) or cancels + exits draw mode (0-1 points). Do not fight it.
+          if (useDrawProgressStore.getState().enabled) return;
+          const ui = useDesignerUIStore.getState();
+          const wall = useWallStore.getState();
+          const toolLive = ui.tool !== 'hand';
+          const wallLive = wall.draw.phase !== 'idle';
+          if (toolLive || wallLive) {
+            // First Esc exits the live tool (Door / Floor / Measure /
+            // eyedropper / sledgehammer / wall run) back to Select.
+            if (wallLive) wall.setDraw({ phase: 'idle' });
+            ui.setTool('hand');
+            return;
+          }
+          // No tool live — Esc deselects the selected item.
           deselect();
           break;
+        }
         default:
           break;
       }

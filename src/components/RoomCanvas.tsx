@@ -870,11 +870,13 @@ export function RoomCanvas({
     return () => ro.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (userMovedViewportRef.current) return;
-    // Nothing to centre on until a room exists — leave the viewport alone
-    // so the blank-canvas prompt is not fighting a pointless transform.
-    if (!union || unionWpx <= 0 || unionHpx <= 0) return;
+  // Union-fit transform — the single source of the "fit the whole plan in
+  // the visible stage" math. Both the auto-centre effect (below) and the
+  // Fit button (resetView) call it, so a click fits exactly what the auto
+  // fit would, HUD/panel insets included. Returns null when there is
+  // nothing to centre on yet (blank canvas — leave the viewport alone).
+  const fitViewportToUnion = useCallback((): Viewport | null => {
+    if (!union || unionWpx <= 0 || unionHpx <= 0) return null;
     // Polish (2026-08-29): while the wall pen is open the HUD card covers
     // the bottom of the stage (on a 390 px phone it used to hide the lower
     // half of the room). The fit treats the band from the card's top edge
@@ -932,11 +934,33 @@ export function RoomCanvas({
       MIN_SCALE,
       Math.min(1, (availW - 80) / unionWpx, (availH - 80) / unionHpx),
     );
-    setViewport({
+    return {
       x: (availW - unionWpx * scale) / 2 - union.minX * pxPerMetre * scale,
       y: (availH - unionHpx * scale) / 2 - union.minY * pxPerMetre * scale,
       scale,
-    });
+    };
+  }, [
+    union,
+    unionWpx,
+    unionHpx,
+    stageSize.width,
+    stageSize.height,
+    pxPerMetre,
+    drawMode,
+    drawHudH,
+    floorTool,
+    floorHudH,
+    doorTool,
+    doorHudH,
+  ]);
+
+  useEffect(() => {
+    if (userMovedViewportRef.current) return;
+    // Nothing to centre on until a room exists — leave the viewport alone
+    // so the blank-canvas prompt is not fighting a pointless transform.
+    const fitted = fitViewportToUnion();
+    if (!fitted) return;
+    setViewport(fitted);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, pxPerMetre, drawMode, drawHudH, floorTool, floorHudH, doorTool, doorHudH]);
 
@@ -1572,11 +1596,13 @@ export function RoomCanvas({
   }, [placementIntent?.nonce]);
 
   function resetView() {
-    // Clearing the flag hands the room back to the auto-centring effect, so
-    // Reset now RE-CENTRES rather than slamming the room's origin into the
-    // stage's top-left corner (which is what {0,0,scale:1} literally means).
+    // "Fit" — zoom the whole plan back into view. Applying the union-fit
+    // transform DIRECTLY (rather than clearing the ref and hoping a
+    // useEffect re-runs — a ref change does not re-run one) is what makes
+    // the room actually re-centre instead of sitting in the corner. The ref
+    // is still cleared so later auto-fits (resize, new room) keep working.
     userMovedViewportRef.current = false;
-    setViewport(INITIAL_VIEWPORT);
+    setViewport(fitViewportToUnion() ?? INITIAL_VIEWPORT);
   }
 
   // V-RENDER-4 (2026-05-27) — "Share render". Primary path: export the
@@ -2702,9 +2728,9 @@ export function RoomCanvas({
           <button
             type="button"
             onClick={resetView}
-            aria-label="Reset view"
+            aria-label="Fit to view"
             className={`${OVL_CTRL} ${OVL_REST} ${OVL_TOPRIGHT}`}
-            title="Reset pan/zoom"
+            title="Fit the whole plan in view"
           >
             <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
               <path
@@ -2716,7 +2742,7 @@ export function RoomCanvas({
                 d="M2.5 8a5.5 5.5 0 1 0 1.6-3.9M2.5 2.5v3h3"
               />
             </svg>
-            <span className="hidden md:inline">Reset</span>
+            <span className="hidden md:inline">Fit</span>
           </button>
           {/* V-RENDER-4 — share / capture the current room render. Primary
               uses the Konva stage (sharp, canvas-only); secondary snapshots

@@ -63,6 +63,7 @@ const DEFAULT_SHORTCUTS: Array<{ category: string; rows: ShortcutRow[] }> = [
   {
     category: 'Building',
     rows: [
+      { keys: 'Select', label: 'Select a placed item to move, rotate (R) or delete it (Del); Esc returns to Select' },
       { keys: 'PageUp / PageDown', label: 'Go up / down one storey' },
       { keys: 'Storeys', label: 'Add, rename or remove storeys' },
       { keys: 'Plot', label: 'Lock the plot size (scale + capacity)' },

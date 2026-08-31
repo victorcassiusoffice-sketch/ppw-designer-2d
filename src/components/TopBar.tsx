@@ -176,6 +176,7 @@ const INPUT =
 
 type IconName =
   | 'list'
+  | 'cursor'
   | 'pen'
   | 'door'
   | 'roller'
@@ -201,6 +202,9 @@ type IconName =
 
 const ICON_PATHS: Record<IconName, string> = {
   list: 'M3 4h10M3 8h10M3 12h10',
+  // Select/Move (P2 2026-08-31): the classic arrow pointer, so the user
+  // always has a visible way back to grabbing / rotating / deleting an object.
+  cursor: 'M3 2L3 12L5.6 9.4L7.2 13L8.7 12.3L7.1 8.9L10.5 8.9Z',
   pen: 'M3 13l1-3.5L11 2.5l2.5 2.5-7 7L3 13zM9.5 4l2.5 2.5',
   door: 'M4 14V2h8v12M4 14h8M10 8.5v.5',
   roller: 'M2.5 3.5h9a1 1 0 011 1v1.5a1 1 0 01-1 1h-9a1 1 0 01-1-1V4.5a1 1 0 011-1zM12.5 5h1.5v3H8v2M8 10v3.5',
@@ -548,6 +552,15 @@ export function TopBar({
   const doorActive = tool === 'door';
   const measureActive = tool === 'measure';
   const floorPaintActive = tool === 'floor';
+  // Select/Move (P2 2026-08-31, complaint B). The default tool is on when
+  // NOTHING else is: hand, no room-draw, no wall run, no door/floor/measure.
+  const selectActive =
+    tool === 'hand' &&
+    !drawMode &&
+    !wallActive &&
+    !doorActive &&
+    !floorPaintActive &&
+    !measureActive;
   const floorDraft = useDesignerUIStore((st) => st.floorDraft);
   const setFloorDraft = useDesignerUIStore((st) => st.setFloorDraft);
   // Optional: P2 may publish the in-flight stroke's tile count so the live
@@ -612,6 +625,15 @@ export function TopBar({
       return;
     }
     setDrawMode(true);
+  }
+
+  // Select/Move (P2 2026-08-31). The always-available way back to grabbing an
+  // object: stand down every build tool (App-level drawMode, the wallStore
+  // draw run, and the designerUIStore tool) so nothing is left half-armed.
+  function handleSelect() {
+    if (drawMode) setDrawMode(false);
+    if (wallActive) setWallDraw({ phase: 'idle' });
+    setTool('hand');
   }
 
   const [showHelp, setShowHelp] = useState(false);
@@ -1328,6 +1350,20 @@ export function TopBar({
           {/* 2 BUILD — segmented: Walls · Door · Paint · Measure. Walls keeps
               its label at every width; Measure drops first, then Door. */}
           <div className={SEG_GROUP} role="group" aria-label="Build tools">
+            {/* Select — the always-visible way back to move / rotate / delete
+                an object (complaint B). Ink when no build tool is armed. */}
+            <button
+              type="button"
+              onClick={handleSelect}
+              data-testid="select-tool-toggle"
+              className={segOn(selectActive)}
+              title="Select — move, rotate or delete an object (Esc)"
+              aria-pressed={selectActive}
+              aria-label="Select"
+            >
+              <Icon name="cursor" />
+              <span className="hidden min-[1366px]:inline">Select</span>
+            </button>
             <button
               type="button"
               onClick={handleToggleWall}
@@ -1958,6 +1994,21 @@ export function TopBar({
               <div className="flex flex-1 flex-col px-2 pb-4">
                 {/* 1 BUILD */}
                 <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>Build</p>
+                {/* Select — the always-visible way back to grabbing an object
+                    (complaint B). Same handler as the desktop toggle. */}
+                <button
+                  type="button"
+                  data-testid="select-tool-toggle-mobile"
+                  onClick={() => {
+                    handleSelect();
+                    setShowMobileMenu(false);
+                  }}
+                  aria-pressed={selectActive}
+                  className={`${SHEET_ROW} justify-between ${selectActive ? SHEET_ROW_ON : ''}`}
+                >
+                  <span className="flex items-center gap-3"><Icon name="cursor" size={20} />Select</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{selectActive ? 'on' : 'off'}</span>
+                </button>
                 {/* Interior walls — the same pen as Custom; identical handler. */}
                 <button
                   type="button"

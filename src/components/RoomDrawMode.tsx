@@ -27,7 +27,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Layer, Line, Circle, Group } from 'react-konva';
+import { Layer, Line, Circle, Group, Text } from 'react-konva';
 import type Konva from 'konva';
 import {
   distance,
@@ -60,7 +60,12 @@ import {
   stepSnapUnit,
 } from '../store/designerUIStore';
 import { formatLengthForUnit, chipVisibleAt } from '../designer/unitFormat';
-import { quantiseVertex, nextVertexAtLength } from '../designer/drawLength';
+import {
+  quantiseVertex,
+  nextVertexAtLength,
+  axisLockVertex,
+  type LockAxis,
+} from '../designer/drawLength';
 // Blueprint reskin + legible measurements (Vic 2026-08-25, complaints 3+5).
 import { MeasurementChip } from '../designer/MeasurementChip';
 import {
@@ -99,7 +104,7 @@ const DBG = '[draw-mode]';
  * kind of feature it snapped to. Committed polygon vertices are always the
  * plain `Vertex` — this extra key never reaches `Room.polygon`.
  */
-export type HoverVertex = Vertex & { snap?: 'vertex' | 'edge' };
+export type HoverVertex = Vertex & { snap?: 'vertex' | 'edge'; axis?: LockAxis };
 
 export interface RoomDrawLayerProps {
   enabled: boolean;
@@ -186,13 +191,36 @@ export function RoomDrawLayer({
      * committed vertices. The snap KIND is computed separately in
      * `handleMove` and attached only to the hover value.
      */
-    function getRoomPoint(evt: { clientX: number; clientY: number }): Vertex {
+    /**
+     * Straight-line assist (2026-08-31, complaint A). The grid branch runs the
+     * candidate through `axisLockVertex(prev, …)` so a run the user means to be
+     * horizontal/vertical commits exactly on the axis instead of a cell-drift
+     * slant. `freed` (Shift held) releases the lock for a deliberate diagonal.
+     *
+     * The wall-snap branch is left UNTOUCHED and un-locked — re-projecting a
+     * wall-snapped vertex onto an axis would drift it off the wall it was just
+     * attached to and reopen the overlap the snap exists to prevent (same
+     * reason grid quantisation skips it). `axis` rides on the return so the HUD
+     * can show the "straight" affordance; it is stripped before commit.
+     */
+    function resolveDrawPoint(
+      evt: { clientX: number; clientY: number },
+      freed: boolean,
+    ): { point: Vertex; snap?: 'vertex' | 'edge'; axis: LockAxis } {
       const hit = snapHitFor(evt);
-      if (hit) return { x: hit.v.x, y: hit.v.y };
+      if (hit) return { point: { x: hit.v.x, y: hit.v.y }, snap: hit.kind, axis: 'none' };
       const raw = rawRoomPoint(evt);
-      const stepM = currentSnapStepM();
-      // Grid branch ONLY. The wall-snap branch above returns its hit verbatim.
-      return quantiseVertex(raw, stepM);
+      const gridPt = quantiseVertex(raw, currentSnapStepM());
+      const verts = verticesRef.current;
+      const prev = verts.length > 0 ? verts[verts.length - 1] : null;
+      const locked = axisLockVertex(prev, gridPt, { freed });
+      return { point: locked.vertex, axis: locked.axis };
+    }
+
+    /** Shift releases the axis lock. Touch events carry no `shiftKey`. */
+    function shiftFrom(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>): boolean {
+      const evt = e.evt as MouseEvent;
+      return !!(evt && evt.shiftKey);
     }
 
     function rawRoomPoint(evt: { clientX: number; clientY: number }): Vertex {
@@ -237,11 +265,11 @@ export function RoomDrawLayer({
     function handleMove(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
       const c = readClient(e.evt as MouseEvent | TouchEvent);
       if (!c) return;
-      const p = getRoomPoint({ clientX: c.x, clientY: c.y });
-      // The snap KIND rides on the HOVER value only — it drives the gold
-      // ring below and must never reach a committed polygon vertex.
-      const hit = snapHitFor({ clientX: c.x, clientY: c.y });
-      setHoverRef.current({ ...p, snap: hit?.kind });
+      // The snap KIND and axis-lock flag ride on the HOVER value only — they
+      // drive the gold ring + "straight" readout below and must never reach a
+      // committed polygon vertex (both are stripped when the click pushes).
+      const r = resolveDrawPoint({ clientX: c.x, clientY: c.y }, shiftFrom(e));
+      setHoverRef.current({ ...r.point, snap: r.snap, axis: r.axis });
     }
 
     function handleClickOrTap(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
@@ -250,7 +278,7 @@ export function RoomDrawLayer({
         console.warn(DBG, 'click: no client coords');
         return;
       }
-      const p = getRoomPoint({ clientX: c.x, clientY: c.y });
+      const p = resolveDrawPoint({ clientX: c.x, clientY: c.y }, shiftFrom(e)).point;
       const current = verticesRef.current;
       console.log(DBG, 'click', {
         candidate: p,
@@ -467,6 +495,24 @@ export function RoomDrawLayer({
     return distance(vertices[vertices.length - 1], hover);
   }, [vertices, hover]);
 
+  /**
+   * Straight-line assist readout (complaint A): the angle of the in-progress
+   * segment, 0°/90°/… when axis-locked, the true angle when Shift frees it or
+   * the run is a deliberate diagonal. `null` when there is no segment yet.
+   * Normalised to 0–180 (a wall reads the same drawn either way).
+   */
+  const liveSegment = useMemo(() => {
+    if (!hover || vertices.length === 0) return null;
+    const last = vertices[vertices.length - 1];
+    const dx = hover.x - last.x;
+    const dy = hover.y - last.y;
+    if (Math.hypot(dx, dy) < 1e-6) return null;
+    let deg = Math.abs((Math.atan2(dy, dx) * 180) / Math.PI);
+    if (deg > 90) deg = 180 - deg; // 0 = level, 90 = upright, both directions
+    const locked = hover.axis === 'horizontal' || hover.axis === 'vertical';
+    return { deg, locked };
+  }, [vertices, hover]);
+
   const closeCandidate = useMemo(() => {
     if (vertices.length < 3 || !hover) return false;
     return isClosingPolygon(vertices, hover, closeThresholdM(currentSnapStepM()));
@@ -568,6 +614,29 @@ export function RoomDrawLayer({
           scale={scale}
           offsetYPx={-26}
           live
+        />
+      )}
+
+      {/* Straight-line assist readout (complaint A). The angle of the segment
+          the cursor is drawing, parked just below it. When the axis lock is
+          engaged the number reads 0°/90° and carries a "straight" tag in the
+          highlight colour; a deliberate diagonal (or Shift-freed run) shows the
+          true angle in the muted colour. Screen-space sized like the chips. */}
+      {hover && liveSegment && (
+        <Text
+          x={hover.x * pxPerMetre}
+          y={hover.y * pxPerMetre + 14 / scale}
+          text={
+            liveSegment.locked
+              ? `${Math.round(liveSegment.deg)}° · straight`
+              : `${Math.round(liveSegment.deg)}°`
+          }
+          fontSize={12 / scale}
+          fontStyle={liveSegment.locked ? 'bold' : 'normal'}
+          fill={liveSegment.locked ? SELECT_STROKE : MEASURE_TEXT}
+          align="center"
+          offsetX={0}
+          listening={false}
         />
       )}
 

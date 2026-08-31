@@ -21,7 +21,6 @@
 import { useEffect, useState } from 'react';
 import { clearActiveRoomProducts, clearEntireDesign } from '../lib/clearActions';
 import { useDesignStore } from '../store/designStore';
-import { usePropertyStore, selectActiveRoom } from '../store/propertyStore';
 import { useToastStore } from '../store/toastStore';
 
 type PendingClear = 'products' | 'all' | null;
@@ -84,12 +83,12 @@ export function ClearControls(): JSX.Element {
   }
 
   // Disable "Clear products" when there's nothing placed (purely cosmetic —
-  // the action is harmless either way). "Clear all" stays enabled so a user
-  // can always reset a half-drawn room.
+  // the action is harmless either way). "Clear all" is NEVER disabled: a
+  // freshly-seeded room is polygon:[] so the old `!hasProducts && !hasRoom`
+  // gate wrongly disabled it on a blank canvas — the exact "always reset a
+  // half-drawn room" case the button exists for. clearEntireDesign() is
+  // harmless + a single undoable frame (Ctrl+Z), so it always stays live.
   const hasProducts = placedItems.length > 0;
-  const activeRoom = usePropertyStore(selectActiveRoom);
-  const hasRoom = (activeRoom?.polygon.length ?? 0) >= 3;
-  const nothingToClear = !hasProducts && !hasRoom;
 
   return (
     <>
@@ -135,7 +134,6 @@ export function ClearControls(): JSX.Element {
           type="button"
           data-testid="clear-all-button"
           onClick={() => setPending('all')}
-          disabled={nothingToClear}
           title="Delete the whole room + products, start blank (Shift+X)"
           aria-label="Clear all"
           className={`${CTRL} ${CTRL_DANGER}`}
