@@ -109,6 +109,24 @@ export function perpDistanceToEdgeLine(edge: RoomEdge, p: Vertex): number {
 }
 
 /**
+ * Which SIDE of a wall a world point sits on (doors round 2026-08-31,
+ * defect 7 — cursor-side default facing on shared walls).
+ *
+ * Returns +1 when `p` lies on the side that `edgeNormal(edge, false)` (in
+ * `openings.ts`, the left normal `(-dy, dx)`) points toward — i.e. the side a
+ * door with `flipFacing: false` swings into; -1 for the `flipFacing: true`
+ * side; 0 when the point is on the wall line itself (within
+ * `COLLINEAR_EPS_M`). So a placement that should swing TOWARD the cursor
+ * defaults `flipFacing` to `cursorSideOfEdge(edge, cursor) < 0`.
+ */
+export function cursorSideOfEdge(edge: RoomEdge, p: Vertex): -1 | 0 | 1 {
+  const d = perpDistanceToEdgeLine(edge, p);
+  if (d > COLLINEAR_EPS_M) return 1;
+  if (d < -COLLINEAR_EPS_M) return -1;
+  return 0;
+}
+
+/**
  * Shortest distance from `p` to the edge SEGMENT (clamped at both ends), plus
  * where along the edge the closest point sits.
  */

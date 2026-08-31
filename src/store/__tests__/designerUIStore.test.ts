@@ -11,6 +11,7 @@ import {
   currentSnapStepM,
   currentSnapStepMm,
 } from '../designerUIStore';
+import { DEFAULT_DOOR_WIDTH_M, DEFAULT_WINDOW_WIDTH_M } from '../../designer/openings';
 
 beforeEach(() => {
   if (typeof localStorage !== 'undefined') localStorage.removeItem('ppw_designer_ui_v1');
@@ -109,5 +110,55 @@ describe('designerUIStore', () => {
     expect(currentSnapStepMm()).toBe(10);
     useDesignerUIStore.getState().setPrecision('m10');
     expect(currentSnapStepMm()).toBe(10000);
+  });
+
+  // ---- doors brief 2026-08-31, defect 8: per-kind default widths ----
+
+  it('switching the kind to window carries DEFAULT_WINDOW_WIDTH_M (1.2)', () => {
+    const s = useDesignerUIStore.getState();
+    s.setDoorDraft({ kind: 'door', widthM: DEFAULT_DOOR_WIDTH_M });
+    s.setDoorDraft({ kind: 'window' });
+    expect(useDesignerUIStore.getState().doorDraft.widthM).toBe(DEFAULT_WINDOW_WIDTH_M);
+  });
+
+  it('switching back to door restores DEFAULT_DOOR_WIDTH_M', () => {
+    const s = useDesignerUIStore.getState();
+    s.setDoorDraft({ kind: 'window', widthM: DEFAULT_WINDOW_WIDTH_M });
+    s.setDoorDraft({ kind: 'door' });
+    expect(useDesignerUIStore.getState().doorDraft.widthM).toBe(DEFAULT_DOOR_WIDTH_M);
+    useDesignerUIStore.getState().setDoorDraft({ kind: 'window' });
+    useDesignerUIStore.getState().setDoorDraft({ kind: 'doorway' });
+    expect(useDesignerUIStore.getState().doorDraft.widthM).toBe(DEFAULT_DOOR_WIDTH_M);
+  });
+
+  it('a custom width typed this arm survives kind switches', () => {
+    const s = useDesignerUIStore.getState();
+    s.setDoorDraft({ kind: 'door', widthM: 0.914 });
+    s.setDoorDraft({ kind: 'window' });
+    expect(useDesignerUIStore.getState().doorDraft.widthM).toBe(0.914);
+    useDesignerUIStore.getState().setDoorDraft({ kind: 'door' });
+    expect(useDesignerUIStore.getState().doorDraft.widthM).toBe(0.914);
+  });
+
+  it('an explicit widthM in the same patch always wins over the kind default', () => {
+    const s = useDesignerUIStore.getState();
+    s.setDoorDraft({ kind: 'door', widthM: DEFAULT_DOOR_WIDTH_M });
+    s.setDoorDraft({ kind: 'window', widthM: 0.9 });
+    expect(useDesignerUIStore.getState().doorDraft.widthM).toBe(0.9);
+  });
+
+  it('ARMING the door tool resets a custom width to the kind default (custom is per-arm)', () => {
+    const s = useDesignerUIStore.getState();
+    s.setDoorDraft({ kind: 'window', widthM: 0.9 });
+    s.setTool('door');
+    expect(useDesignerUIStore.getState().doorDraft.widthM).toBe(DEFAULT_WINDOW_WIDTH_M);
+    useDesignerUIStore.getState().setTool('hand');
+    useDesignerUIStore.getState().setDoorDraft({ kind: 'door', widthM: 0.686 });
+    useDesignerUIStore.getState().setTool('door');
+    expect(useDesignerUIStore.getState().doorDraft.widthM).toBe(DEFAULT_DOOR_WIDTH_M);
+    // Re-setting 'door' while already on it must NOT reset mid-arm state.
+    useDesignerUIStore.getState().setDoorDraft({ widthM: 0.762 });
+    useDesignerUIStore.getState().setTool('door');
+    expect(useDesignerUIStore.getState().doorDraft.widthM).toBe(0.762);
   });
 });

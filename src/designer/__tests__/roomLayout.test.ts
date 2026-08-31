@@ -312,4 +312,33 @@ describe('unstackLegacyRooms', () => {
       { x: 5, y: 0 }, { x: 10, y: 0 }, { x: 10, y: 4 }, { x: 5, y: 4 },
     ]);
   });
+
+  // Doors round 2026-08-31: an upper storey is drawn directly over the
+  // ground floor — cross-level coincidence is the storeys FEATURE, and the
+  // legacy un-stack used to shred it into an "attached layout".
+  it('storeys STACK by design — coincident rooms on different levels are untouched', () => {
+    const stacked = {
+      rooms: [
+        { id: 'g', polygon: R1, placedItems: [] },
+        { id: 'up', polygon: [...R1], placedItems: [], levelId: 'up' },
+      ],
+    };
+    expect(unstackLegacyRooms(stacked)).toBe(stacked);
+  });
+
+  it('un-stacks ONLY the level that overlaps; stacked upper storeys ride along', () => {
+    const mixed = {
+      rooms: [
+        { id: 'a', polygon: R1, placedItems: [] },
+        { id: 'b', polygon: [...R1], placedItems: [] },
+        { id: 'up', polygon: [...R1], placedItems: [], levelId: 'up' },
+      ],
+    };
+    const out = unstackLegacyRooms(mixed);
+    expect(out.rooms[1].polygon).toEqual([
+      { x: 5, y: 0 }, { x: 10, y: 0 }, { x: 10, y: 4 }, { x: 5, y: 4 },
+    ]);
+    // The upper storey stays exactly over the ground floor.
+    expect(out.rooms[2].polygon).toEqual(R1);
+  });
 });

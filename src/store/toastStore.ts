@@ -17,6 +17,8 @@ export interface ToastAction {
 }
 
 export interface Toast {
+  /** How many identical pushes this toast represents (coalesced). */
+  count?: number;
   id: string;
   message: string;
   kind: ToastKind;
@@ -60,7 +62,17 @@ export const useToastStore = create<ToastState>((set) => ({
     const ttlMs = opts.ttlMs ?? 2400;
     const toast: Toast = { id, message, kind, ttlMs };
     if (opts.action) toast.action = opts.action;
-    set((s) => ({ toasts: [...s.toasts, toast] }));
+    set((s) => {
+      // Coalesce a repeat of the newest toast ("Door added" x8 blanketed
+      // the canvas): same message + kind and no action bumps a count on a
+      // FRESH id (the ttl timer keys on id, so the clock restarts).
+      const last = s.toasts[s.toasts.length - 1];
+      if (last && !last.action && !toast.action && last.message === message && last.kind === kind) {
+        const bumped: Toast = { ...last, id, count: (last.count ?? 1) + 1 };
+        return { toasts: [...s.toasts.slice(0, -1), bumped] };
+      }
+      return { toasts: [...s.toasts, toast] };
+    });
     return id;
   },
   dismiss: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),

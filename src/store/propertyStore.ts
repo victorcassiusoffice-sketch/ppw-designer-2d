@@ -35,7 +35,7 @@ import { translatePolygon, unstackLegacyRooms } from '../designer/roomLayout';
 // Wall-hosted openings (2026-08-28) — doors/doorways/windows live on the Room
 // so history and persistence pick them up with no extra plumbing.
 import type { Opening } from '../designer/openings';
-import { openingSpan, validateOpening } from '../designer/openings';
+import { canonicaliseRoomGeometry, openingSpan, validateOpening } from '../designer/openings';
 import { roomEdges } from '../designer/wallEdges';
 // Per-tile floor painting (floor-painting brief 2026-08-28).
 import {
@@ -539,7 +539,10 @@ export const usePropertyStore = create<PropertyState>()(
         const newRoom: Room = {
           id: nanoid(8),
           name: partial?.name ?? nextRoomName(get().property.rooms),
-          polygon: partial?.polygon ?? [],
+          // Free-draw commits land here (RoomCanvas addRoom({name, polygon}))
+          // — canonicalise winding at draw-commit, BEFORE any opening can
+          // exist on the polygon (the cheap path of doors defect 4).
+          polygon: partial?.polygon ? canonicaliseRoomGeometry(partial.polygon).polygon : [],
           placedItems: [],
           // A new room is drawn on the storey the user is looking at.
           ...levelStamp(activeLevelIdOf(get().property)),
@@ -626,33 +629,36 @@ export const usePropertyStore = create<PropertyState>()(
         }),
 
       setRoomPolygon: (roomId, polygon) =>
-        set((s) => {
-          const clean = cleanPolygon(polygon);
-          return {
-            property: {
-              ...s.property,
-              rooms: s.property.rooms.map((r) =>
-                r.id === roomId
-                  // Reshaping a room can delete a wall or shorten it below the
-                  // door it was hosting. An opening has no independent
-                  // existence — it is a hole in a wall — so it cascades with
-                  // its host, in the SAME set() and therefore the same undo
-                  // frame. Leaving it behind would render a swing arc floating
-                  // in space with no wall under it.
-                  // Floor tiles are polygon-coupled exactly as openings are:
-                  // shrink a room and the tiles outside it are no longer real.
-                  // Without this they persist invisibly AND stay in the quote.
-                  ? {
-                    ...r,
-                    polygon: clean,
-                    openings: pruneOpenings(r.openings, clean),
-                    floorTiles: decodeFloorZones(r.floorTiles, clean),
-                  }
-                  : r,
-              ),
-            },
-          };
-        }),
+        set((s) => ({
+          property: {
+            ...s.property,
+            rooms: s.property.rooms.map((r) => {
+              if (r.id !== roomId) return r;
+              // Winding is canonicalised at this funnel (doors defect 4):
+              // every stored polygon winds CW in y-down screen space, so the
+              // fixed left normal in `edgeNormal` always points into the
+              // room. When canonicalisation reverses a polygon, the room's
+              // openings are remapped EXACTLY (same world-space gap + swing).
+              //
+              // Reshaping a room can delete a wall or shorten it below the
+              // door it was hosting. An opening has no independent
+              // existence — it is a hole in a wall — so it cascades with
+              // its host, in the SAME set() and therefore the same undo
+              // frame. Leaving it behind would render a swing arc floating
+              // in space with no wall under it.
+              // Floor tiles are polygon-coupled exactly as openings are:
+              // shrink a room and the tiles outside it are no longer real.
+              // Without this they persist invisibly AND stay in the quote.
+              const canon = canonicaliseRoomGeometry(polygon, roomOpenings(r));
+              return {
+                ...r,
+                polygon: canon.polygon,
+                openings: pruneOpenings(canon.openings, canon.polygon),
+                floorTiles: decodeFloorZones(r.floorTiles, canon.polygon),
+              };
+            }),
+          },
+        })),
 
       /**
        * Commit ONE floor-paint stroke (floor-painting brief).
@@ -954,7 +960,9 @@ export const usePropertyStore = create<PropertyState>()(
         const s = get();
         const room = s.property.rooms.find((r) => r.id === roomId);
         if (!room) return null;
-        const edge = roomEdges(room)[opening.edgeIndex];
+        // By e.index, not array position — `roomEdges` skips degenerate
+        // edges, so the two can drift apart (doors defect 9).
+        const edge = roomEdges(room).find((e) => e.index === opening.edgeIndex);
         if (!edge) return null;
 
         const others = roomOpenings(room).filter((o) => o.edgeIndex === opening.edgeIndex);
@@ -994,7 +1002,8 @@ export const usePropertyStore = create<PropertyState>()(
 
         const current = roomOpenings(room).find((o) => o.id === openingId)!;
         const merged: Opening = { ...current, ...patch, id: current.id };
-        const edge = roomEdges(room)[merged.edgeIndex];
+        // By e.index, not array position (doors defect 9).
+        const edge = roomEdges(room).find((e) => e.index === merged.edgeIndex);
         if (!edge) return false;
 
         // Re-validate against the (possibly new) host wall, excluding itself,
@@ -1259,6 +1268,17 @@ export const usePropertyStore = create<PropertyState>()(
         }
         return persisted;
       },
+      // Rehydrate normalisation. `migrate()` above early-returns for
+      // version >= 2, so it can never canonicalise a current-version payload;
+      // this merge is the one hook that sees EVERY localStorage load. It
+      // fixes winding only (doors defect 4) — deliberately not the full
+      // `normaliseLoadedProperty`, whose field whitelist is too aggressive
+      // for a verbatim persist round trip.
+      merge: (persisted, current) => {
+        const merged = { ...current, ...((persisted ?? {}) as Partial<PropertyState>) };
+        if (merged.property) merged.property = canonicalisePropertyWinding(merged.property);
+        return merged;
+      },
     },
   ),
 );
@@ -1412,7 +1432,14 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
         widthM: r.widthM ?? r.roomDimensions?.widthM ?? DEFAULT_ROOM_DIMS.widthM,
       })
       : []);
-  const clean = cleanPolygon(polygon);
+  // Canonicalise winding + duplicate vertices at the LOAD path (doors
+  // defect 4), remapping any persisted openings exactly — a plan saved with
+  // a CCW-drawn room keeps its doors' world-space gaps and swings.
+  const canon = canonicaliseRoomGeometry(
+    cleanPolygon(polygon),
+    Array.isArray(r.openings) ? r.openings : [],
+  );
+  const clean = canon.polygon;
   // Same whitelist trap as every optional field below: leave these out and
   // a first-floor room silently falls to ground, and an outdoor container
   // turns into a wall-less "room", on the first save/load round trip.
@@ -1433,7 +1460,7 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
     // shape for a data-loss bug. Pruned against the CLEANED polygon so a
     // migrated room can never carry an opening hosted on an edge that no
     // longer exists.
-    openings: pruneOpenings(r.openings, clean),
+    openings: pruneOpenings(canon.openings, clean),
     // Same whitelist trap as `openings`: omit this and a room's floor silently
     // disappears on the first save/load round trip.
     floorFinish:
@@ -1519,7 +1546,10 @@ export function pruneOpenings(
   const edges = roomEdges({ id: '_', polygon });
   return openings.filter((o) => {
     if (!o || typeof o.edgeIndex !== 'number' || typeof o.offsetM !== 'number') return false;
-    const edge = edges[o.edgeIndex];
+    // By e.index, not array position — `roomEdges` skips degenerate edges,
+    // so a stray duplicate vertex would shift every later opening one wall
+    // around under positional indexing (doors defect 9).
+    const edge = edges.find((e) => e.index === o.edgeIndex);
     if (!edge) return false;
     const { t0, t1 } = openingSpan(o);
     return t0 >= -1e-9 && t1 <= edge.lengthM + 1e-9;
@@ -1532,18 +1562,50 @@ export function roomOpenings(room: Pick<Room, 'openings'>): Opening[] {
 }
 
 /**
- * Sanity-clean a polygon — drop a trailing duplicate-of-first vertex
- * if present (some encoders emit them). Returns at least the input
- * unchanged if no cleanup needed.
+ * Sanity-clean a polygon — drop CONSECUTIVE duplicate vertices and a trailing
+ * duplicate-of-first vertex (some encoders emit them). A duplicate vertex
+ * makes a zero-length edge, which `roomEdges` skips — leaving it in would let
+ * edge indices and positional edge arrays drift apart (doors defect 9).
+ * Returns the input BY REFERENCE when nothing needed cleaning.
  */
 export function cleanPolygon(polygon: Polygon): Polygon {
   if (polygon.length < 2) return polygon;
-  const first = polygon[0];
-  const last = polygon[polygon.length - 1];
-  if (Math.abs(first.x - last.x) < 1e-6 && Math.abs(first.y - last.y) < 1e-6) {
-    return polygon.slice(0, -1);
+  const out: Polygon = [];
+  for (const v of polygon) {
+    const last = out[out.length - 1];
+    if (last && Math.abs(v.x - last.x) < 1e-6 && Math.abs(v.y - last.y) < 1e-6) continue;
+    out.push(v);
   }
-  return polygon;
+  if (
+    out.length > 1
+    && Math.abs(out[0].x - out[out.length - 1].x) < 1e-6
+    && Math.abs(out[0].y - out[out.length - 1].y) < 1e-6
+  ) {
+    out.pop();
+  }
+  return out.length === polygon.length ? polygon : out;
+}
+
+/**
+ * Canonicalise every room's winding (+ remap its openings) across a whole
+ * property. Used by the persist `merge` on rehydrate: a version-2 payload
+ * skips `migrate()`, so a plan saved with CCW rooms before the winding fix
+ * (doors defect 4) would otherwise reload un-normalised and keep swinging
+ * its doors outward. Returns the input BY REFERENCE when nothing changed.
+ */
+export function canonicalisePropertyWinding(property: Property): Property {
+  if (!property || !Array.isArray(property.rooms)) return property;
+  let touched = false;
+  const rooms = property.rooms.map((room) => {
+    if (!room || !Array.isArray(room.polygon) || room.polygon.length < 3) return room;
+    const canon = canonicaliseRoomGeometry(room.polygon, roomOpenings(room));
+    if (!canon.changed) return room;
+    touched = true;
+    const next: Room = { ...room, polygon: canon.polygon };
+    if (room.openings) next.openings = pruneOpenings(canon.openings, canon.polygon);
+    return next;
+  });
+  return touched ? { ...property, rooms } : property;
 }
 
 /** Convenience selectors. */

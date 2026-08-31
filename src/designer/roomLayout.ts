@@ -354,6 +354,12 @@ interface UnstackItem {
 interface UnstackRoom {
   polygon: Polygon;
   placedItems: UnstackItem[];
+  /**
+   * Storey key (Sims world 2026-08-29). Rooms on DIFFERENT levels stack by
+   * design — an upper floor is drawn directly over the ground floor — so
+   * the un-stack must never treat cross-level coincidence as legacy overlap.
+   */
+  levelId?: string | null;
 }
 
 interface UnstackProperty {
@@ -380,27 +386,35 @@ export function unstackLegacyRooms<P extends UnstackProperty>(property: P): P {
   const drawn = rooms.filter((r) => isDrawnPolygon(r.polygon));
   if (drawn.length < 2) return property;
 
-  let anyOverlap = false;
-  for (let i = 0; i < drawn.length && !anyOverlap; i++) {
+  // PER-LEVEL (doors round 2026-08-31): an upper storey is drawn directly
+  // over the ground floor — that coincidence is the FEATURE, not the legacy
+  // stacking bug. Overlap is only meaningful between rooms on the SAME
+  // level, and only a level that actually overlaps is re-laid; every other
+  // level rides through untouched.
+  const levelKeyOf = (r: UnstackRoom) => r.levelId ?? '';
+  const overlappedLevels = new Set<string>();
+  for (let i = 0; i < drawn.length; i++) {
     for (let j = i + 1; j < drawn.length; j++) {
+      if (levelKeyOf(drawn[i]) !== levelKeyOf(drawn[j])) continue;
       if (strictPolygonsOverlap(drawn[i].polygon, drawn[j].polygon)) {
-        anyOverlap = true;
-        break;
+        overlappedLevels.add(levelKeyOf(drawn[i]));
       }
     }
   }
-  if (!anyOverlap) return property;
+  if (overlappedLevels.size === 0) return property;
 
-  let union: Bounds | null = null;
+  const unions = new Map<string, Bounds>();
   const nextRooms = rooms.map((r) => {
     if (!isDrawnPolygon(r.polygon)) return r;
+    const key = levelKeyOf(r);
+    if (!overlappedLevels.has(key)) return r;
     const b = polygonBounds(r.polygon);
-    if (union === null) {
-      // First drawn room stays exactly where it is.
-      union = { minX: b.minX, minY: b.minY, maxX: b.maxX, maxY: b.maxY };
+    const u = unions.get(key);
+    if (!u) {
+      // First drawn room on this level stays exactly where it is.
+      unions.set(key, { minX: b.minX, minY: b.minY, maxX: b.maxX, maxY: b.maxY });
       return r;
     }
-    const u: Bounds = union;
     const dx = u.maxX - b.minX;
     const dy = u.minY - b.minY;
     const polygon = translatePolygon(r.polygon, dx, dy);
@@ -410,12 +424,12 @@ export function unstackLegacyRooms<P extends UnstackProperty>(property: P): P {
       y: it.y + dy,
     }));
     const nb = polygonBounds(polygon);
-    union = {
+    unions.set(key, {
       minX: Math.min(u.minX, nb.minX),
       minY: Math.min(u.minY, nb.minY),
       maxX: Math.max(u.maxX, nb.maxX),
       maxY: Math.max(u.maxY, nb.maxY),
-    };
+    });
     return { ...r, polygon, placedItems };
   });
 

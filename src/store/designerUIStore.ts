@@ -37,7 +37,11 @@
  */
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { DEFAULT_DOOR_WIDTH_M, type OpeningKind } from '../designer/openings';
+import {
+  DEFAULT_DOOR_WIDTH_M,
+  DEFAULT_WINDOW_WIDTH_M,
+  type OpeningKind,
+} from '../designer/openings';
 
 export type SnapPrecision = 'cm1' | 'cm10' | 'quarter' | 'full' | 'm1' | 'm10';
 export type BuildTool =
@@ -191,8 +195,46 @@ export const useDesignerUIStore = create<DesignerUIState>()(
             ? s
             : { precision, lastPrecision: s.precision },
         ),
-      setTool: (tool) => set({ tool }),
-      setDoorDraft: (patch) => set((s) => ({ doorDraft: { ...s.doorDraft, ...patch } })),
+      // Arming the door tool starts the arm from the KIND's default width
+      // (doors brief 2026-08-31, defect 8): "custom width" is scoped to one
+      // arm of the tool, so a width typed last session cannot silently make
+      // every new window 0.9 m.
+      setTool: (tool) =>
+        set((s) =>
+          tool === 'door' && s.tool !== 'door'
+            ? {
+                tool,
+                doorDraft: {
+                  ...s.doorDraft,
+                  widthM:
+                    s.doorDraft.kind === 'window'
+                      ? DEFAULT_WINDOW_WIDTH_M
+                      : DEFAULT_DOOR_WIDTH_M,
+                },
+              }
+            : { tool },
+        ),
+      // Kind switch carries the KIND's default width with it (defect 8: the
+      // Window chip used to keep the 0.838 door width) — unless the user has
+      // typed a custom width this arm. "Custom" = any width that is not one
+      // of the two defaults; an explicit `widthM` in the same patch always
+      // wins. Lives HERE so the md+ sub-bar chips and the phone HUD chips
+      // (which both call setDoorDraft) can never disagree.
+      setDoorDraft: (patch) =>
+        set((s) => {
+          const next = { ...s.doorDraft, ...patch };
+          if (
+            patch.kind !== undefined
+            && patch.kind !== s.doorDraft.kind
+            && patch.widthM === undefined
+            && (s.doorDraft.widthM === DEFAULT_DOOR_WIDTH_M
+              || s.doorDraft.widthM === DEFAULT_WINDOW_WIDTH_M)
+          ) {
+            next.widthM =
+              patch.kind === 'window' ? DEFAULT_WINDOW_WIDTH_M : DEFAULT_DOOR_WIDTH_M;
+          }
+          return { doorDraft: next };
+        }),
       setFloorDraft: (patch) => set((s) => ({ floorDraft: { ...s.floorDraft, ...patch } })),
       setFloorPreviewCount: (n) =>
         set((s) => (s.floorPreviewCount === n ? s : { floorPreviewCount: n })),

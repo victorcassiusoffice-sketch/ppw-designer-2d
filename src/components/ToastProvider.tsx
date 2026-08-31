@@ -131,6 +131,11 @@ export function ToastProvider() {
           {t.kind === 'error' && <ErrorIcon />}
           <span className="flex-1 cursor-pointer" onClick={() => dismiss(t.id)}>
             {t.message}
+            {(t.count ?? 1) > 1 && (
+              <span className="ml-1.5 rounded-full bg-white/20 px-1.5 text-[11px] font-bold tabular-nums">
+                ×{t.count}
+              </span>
+            )}
           </span>
           {t.action && (
             <button

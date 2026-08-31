@@ -33,7 +33,7 @@
  * a window). That halves the geometry and hit-testing code.
  */
 
-import type { Vertex } from '../lib/geometry';
+import type { Polygon, Vertex } from '../lib/geometry';
 import { pointAlongEdge, type RoomEdge, type Span } from './wallEdges';
 
 export type OpeningKind = 'door' | 'doorway' | 'window';
@@ -154,6 +154,161 @@ export function validateOpening(
  */
 export function edgeNormal(edge: RoomEdge, flipFacing: boolean): { nx: number; ny: number } {
   return flipFacing ? { nx: edge.dy, ny: -edge.dx } : { nx: -edge.dy, ny: edge.dx };
+}
+
+// ---------------------------------------------------------------------------
+// Polygon winding canonicalisation (doors round 2026-08-31, defect 4)
+// ---------------------------------------------------------------------------
+
+/**
+ * Vertices closer than this (in BOTH axes) are the same point. Matches the
+ * tolerance `propertyStore.cleanPolygon` has always used for the trailing
+ * duplicate vertex.
+ */
+export const DUPLICATE_VERTEX_EPS_M = 1e-6;
+
+/**
+ * Shoelace area, SIGNED. In this app's y-DOWN screen space a positive value
+ * means the polygon winds CLOCKWISE as drawn on screen — which is the
+ * canonical winding every stored room polygon is normalised to.
+ */
+export function signedPolygonAreaM2(polygon: Polygon): number {
+  if (polygon.length < 3) return 0;
+  let s = 0;
+  for (let i = 0; i < polygon.length; i++) {
+    const a = polygon[i];
+    const b = polygon[(i + 1) % polygon.length];
+    s += a.x * b.y - b.x * a.y;
+  }
+  return s / 2;
+}
+
+/** True when the polygon winds clockwise in y-down screen space (canonical). */
+export function isClockwisePolygon(polygon: Polygon): boolean {
+  return signedPolygonAreaM2(polygon) > 0;
+}
+
+export interface CanonicalRoomGeometry {
+  polygon: Polygon;
+  openings: Opening[];
+  /** True when the polygon was deduped and/or reversed. */
+  changed: boolean;
+}
+
+/**
+ * Canonicalise a room polygon — the fix for "CCW-drawn rooms swing every door
+ * outward" (doors analysis 2026-08-31, defect 4).
+ *
+ * `edgeNormal` above is the FIXED left normal of an edge; it only points into
+ * the room when the polygon winds clockwise (in y-down screen space). Nothing
+ * used to normalise winding, so a hand-drawn counter-clockwise room reversed
+ * every door's default swing and made "Flip side" read backwards. The durable
+ * fix is at the DATA level: every stored polygon is canonicalised to CW here,
+ * at both draw-commit and load.
+ *
+ * Two steps, both index-mapping-aware so openings hosted on the polygon are
+ * remapped EXACTLY (same world-space gap, same world-space swing):
+ *
+ *  1. DEDUPE — consecutive duplicate vertices (and a trailing duplicate of
+ *     the first) are dropped. A duplicate produces a zero-length edge, which
+ *     `roomEdges` skips; any consumer indexing edges positionally would then
+ *     shift every later opening one wall around (latent defect 9).
+ *  2. WINDING — a counter-clockwise polygon (negative shoelace area) is
+ *     reversed KEEPING the first vertex: [p0, p(n-1), …, p1]. Old edge i
+ *     (p_i → p_{i+1}) becomes new edge (n-1-i) traversed backwards, so an
+ *     opening remaps as:
+ *       edgeIndex' = n - 1 - edgeIndex
+ *       offsetM'   = edgeLength - offsetM   (measured from the other end)
+ *       flipFacing' = !flipFacing           (the left normal flips with the
+ *       flipHand'   = !flipHand              direction; both toggle so the
+ *                                            WORLD-space leaf/arc is identical)
+ *
+ * Malformed opening records (non-numeric or out-of-range indices) pass
+ * through untouched — `pruneOpenings` owns dropping those.
+ *
+ * Pure and idempotent: running it on its own output reports `changed: false`
+ * and returns the inputs by reference.
+ */
+export function canonicaliseRoomGeometry(
+  polygon: Polygon,
+  openings: readonly Opening[] = [],
+): CanonicalRoomGeometry {
+  const n = polygon.length;
+  if (n < 3) return { polygon, openings: [...openings], changed: false };
+
+  // -- 1. dedupe, tracking where each OLD vertex index lands ----------------
+  const eps = DUPLICATE_VERTEX_EPS_M;
+  const same = (a: Vertex, b: Vertex) =>
+    Math.abs(a.x - b.x) < eps && Math.abs(a.y - b.y) < eps;
+
+  const kept: Vertex[] = [];
+  const newIndexForOld: number[] = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const v = polygon[i];
+    const last = kept[kept.length - 1];
+    if (last && same(v, last)) {
+      // Collapses onto the previous kept vertex — same world point, so an
+      // opening measured from it keeps its offset.
+      newIndexForOld[i] = kept.length - 1;
+    } else {
+      newIndexForOld[i] = kept.length;
+      kept.push(v);
+    }
+  }
+  if (kept.length > 1 && same(kept[0], kept[kept.length - 1])) {
+    const popped = kept.length - 1;
+    kept.pop();
+    for (let i = 0; i < n; i++) {
+      if (newIndexForOld[i] === popped) newIndexForOld[i] = 0;
+    }
+  }
+
+  const deduped = kept.length !== n;
+  if (kept.length < 3) {
+    // Degenerate after cleanup — nothing can host an opening.
+    return { polygon: kept, openings: [], changed: true };
+  }
+
+  const validIndex = (o: Opening, len: number) =>
+    !!o
+    && typeof o.edgeIndex === 'number'
+    && Number.isInteger(o.edgeIndex)
+    && o.edgeIndex >= 0
+    && o.edgeIndex < len
+    && typeof o.offsetM === 'number';
+
+  let outOpenings: Opening[] = deduped
+    ? openings.map((o) =>
+      validIndex(o, n) ? { ...o, edgeIndex: newIndexForOld[o.edgeIndex] } : o,
+    )
+    : [...openings];
+
+  // -- 2. winding -----------------------------------------------------------
+  const ccw = signedPolygonAreaM2(kept) < 0;
+  if (!ccw) {
+    return deduped
+      ? { polygon: kept, openings: outOpenings, changed: true }
+      : { polygon, openings: [...openings], changed: false };
+  }
+
+  const m = kept.length;
+  const reversed: Polygon = [kept[0], ...kept.slice(1).reverse()];
+  const edgeLen = (i: number) => {
+    const a = kept[i];
+    const b = kept[(i + 1) % m];
+    return Math.hypot(b.x - a.x, b.y - a.y);
+  };
+  outOpenings = outOpenings.map((o) => {
+    if (!validIndex(o, m)) return o;
+    return {
+      ...o,
+      edgeIndex: m - 1 - o.edgeIndex,
+      offsetM: edgeLen(o.edgeIndex) - o.offsetM,
+      flipFacing: !o.flipFacing,
+      flipHand: !o.flipHand,
+    };
+  });
+  return { polygon: reversed, openings: outOpenings, changed: true };
 }
 
 export interface DoorSymbol {

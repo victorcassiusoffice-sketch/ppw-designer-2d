@@ -25,7 +25,7 @@
  * strip is desktop-only on mobile (clipped by Android nav otherwise).
  */
 
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   Stage,
   Layer,
@@ -187,6 +187,7 @@ import {
 // did — see the square-cap note at the call site.
 import {
   edgeKey,
+  perpDistanceToEdgeLine,
   pointAlongEdge,
   projectOntoEdge,
   nearestEdge,
@@ -198,6 +199,8 @@ import {
 } from '../designer/wallEdges';
 import {
   clampOpeningOffset,
+  DEFAULT_DOOR_WIDTH_M,
+  DEFAULT_WINDOW_WIDTH_M,
   doorSymbol,
   jambTicks,
   openingSpan,
@@ -241,6 +244,20 @@ import { collidesWithAny } from '../lib/geometry';
 const DOOR_SNAP_TOL_M = 0.6;
 
 /**
+ * Screen-px slop under which a door-tool gesture still counts as a TAP.
+ * Anything travelling further is a pan (the Stage stays draggable with the
+ * tool armed) and must not commit a door on release.
+ */
+const DOOR_TAP_SLOP_PX = 10;
+
+/**
+ * A remove-scan must never target an opening placed within this window —
+ * a doubled commit path (the P0 touch bug) used to place-then-remove in one
+ * tap, netting to an empty store while toasting "Door added".
+ */
+const DOOR_REMOVE_GRACE_MS = 300;
+
+/**
  * What the door tool is currently pointing at.
  *  place   — a legal spot on a wall; click commits
  *  remove  — an existing opening under the cursor; click deletes it
@@ -253,6 +270,14 @@ interface DoorHover {
   offsetM: number;
   openingId?: string;
   message?: string;
+  /**
+   * EFFECTIVE facing for this placement (Sims-adapted, 2026-08-31): defaults
+   * from the cursor's side of the host wall so the leaf swings toward the
+   * room you clicked from; the sub-bar / HUD "Flip side" toggle becomes an
+   * override for the current arm. Ghost and commit read the SAME value so
+   * what you preview is what you get.
+   */
+  flipFacing?: boolean;
 }
 
 /**
@@ -379,6 +404,11 @@ export function RoomCanvas({
   const tool = useDesignerUIStore((s) => s.tool);
   const setTool = useDesignerUIStore((s) => s.setTool);
   const doorDraft = useDesignerUIStore((s) => s.doorDraft);
+  // Phone door HUD (2026-08-31): the card's chips drive the same draft the
+  // desktop sub-bar owns, so the two can never disagree.
+  const setDoorDraft = useDesignerUIStore((s) => s.setDoorDraft);
+  const toggleDoorFacing = useDesignerUIStore((s) => s.toggleDoorFacing);
+  const toggleDoorHand = useDesignerUIStore((s) => s.toggleDoorHand);
   const [doorHover, setDoorHover] = useState<DoorHover | null>(null);
   /** The wall the measure tool has selected, if any. */
   const [measureSel, setMeasureSel] = useState<{
@@ -565,6 +595,32 @@ export function RoomCanvas({
   const floorTool = tool === 'floor';
   const floorHudRef = useRef<HTMLDivElement | null>(null);
   const [floorHudH, setFloorHudH] = useState(0);
+  // Door tool (2026-08-31): hoisted here (not with the door section below)
+  // for the same reason as `floorTool` — the fit-to-view effect reads it,
+  // and the phone door HUD card gets the identical height/ref treatment.
+  const doorTool = tool === 'door';
+  const doorHudRef = useRef<HTMLDivElement | null>(null);
+  const [doorHudH, setDoorHudH] = useState(0);
+  /**
+   * The door tool's in-flight press: where the primary pointer went down,
+   * so release commits EXACTLY once (the ref is consumed on pointerup) and
+   * only when the gesture stayed a tap (`moved` flips on pan/pinch travel).
+   */
+  const doorGestureRef = useRef<{
+    pointerId: number;
+    x: number;
+    y: number;
+    moved: boolean;
+  } | null>(null);
+  /** The opening placed moments ago — shielded from the remove scan. */
+  const recentOpeningRef = useRef<{ id: string; t: number } | null>(null);
+  /**
+   * True once "Flip side" was toggled during THIS arm of the door tool.
+   * Until then, facing defaults per placement from the cursor's side of the
+   * host wall (see computeDoorHover); after, the user's choice wins.
+   */
+  const doorFacingOverrideRef = useRef(false);
+  const prevDoorFlipRef = useRef<boolean | null>(null);
   const itemDragRef = useRef<{ instanceId: string | null; moved: boolean }>({
     instanceId: null,
     moved: false,
@@ -843,6 +899,17 @@ export function RoomCanvas({
         Math.max(0, Math.min(box.height - 120, box.bottom - hud.top + 12)),
       );
     }
+    // Door tool (2026-08-31): the phone door HUD card gets the same
+    // treatment as the Floor card — the band under its top edge is
+    // unavailable, so the plan re-centres above it.
+    if (doorTool && doorHudH > 0 && doorHudRef.current && containerRef.current) {
+      const hud = doorHudRef.current.getBoundingClientRect();
+      const box = containerRef.current.getBoundingClientRect();
+      bottomInset = Math.max(
+        bottomInset,
+        Math.max(0, Math.min(box.height - 120, box.bottom - hud.top + 12)),
+      );
+    }
     // Floor tool (2026-08-30): from md up the docked Floor panel overlays
     // the right edge of the stage. TopBar publishes its width as
     // --floor-panel-w (0px closed / below md); subtracting the overlap
@@ -871,7 +938,30 @@ export function RoomCanvas({
       scale,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, pxPerMetre, drawMode, drawHudH, floorTool, floorHudH]);
+  }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, pxPerMetre, drawMode, drawHudH, floorTool, floorHudH, doorTool, doorHudH]);
+
+  /**
+   * Door tool stale-transform race (2026-08-31, defect 3): arming the tool
+   * mounts the desktop sub-bar / phone HUD, which resizes this container —
+   * but the ResizeObserver reports that a frame or two later, so a click
+   * within ~1 s of arming used to map through the PRE-fit transform and land
+   * the door on the WRONG WALL. Measure the container synchronously in the
+   * same commit the tool arms so the fit effect runs against the settled
+   * layout before the first click can arrive. (The commit path additionally
+   * reads the transform off the live Konva stage at event time — see
+   * computeDoorHover — so even a mid-flight re-fit cannot skew the mapping.)
+   */
+  useLayoutEffect(() => {
+    if (!doorTool) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    setStageSize((s) =>
+      Math.abs(s.width - r.width) < 0.5 && Math.abs(s.height - r.height) < 0.5
+        ? s
+        : { width: r.width, height: r.height },
+    );
+  }, [doorTool]);
 
   function handleWheel(e: Konva.KonvaEventObject<WheelEvent>) {
     e.evt.preventDefault();
@@ -950,6 +1040,8 @@ export function RoomCanvas({
       // A second finger means pinch, not a floor stroke — drop any anchor
       // so lifting the fingers cannot commit one (Floor tool 2026-08-30).
       floorAnchorRef.current = null;
+      // Same for the door tool: a pinch must never commit a door on lift.
+      doorGestureRef.current = null;
       e.preventDefault();
     }
 
@@ -2008,7 +2100,7 @@ export function RoomCanvas({
    * represent. Clicking an existing door removes it, which keeps add and
    * remove on one tool instead of inventing a second mode.
    */
-  const doorTool = tool === 'door';
+  // (doorTool is declared up beside the HUD refs — the fit effect needs it.)
   const measureTool = tool === 'measure';
   // (floorTool is declared up beside the HUD refs — the fit effect needs it.)
   const floorDraft = useDesignerUIStore((st) => st.floorDraft);
@@ -2278,6 +2370,36 @@ export function RoomCanvas({
     };
   }, [floorHudOn]);
 
+  /** The phone door HUD card mounts while the Door tool is on (md:hidden on
+   *  desktop, where the TopBar sub-bar is the indicator). */
+  const doorHudOn = doorTool && !drawMode;
+  // Same --draw-hud-h contract as the Floor card. The OFF branch deliberately
+  // does NOT write the var: the tools are mutually exclusive, and a blind
+  // publish(0) here would clobber the Floor card's height on the commit
+  // where both effects run.
+  useEffect(() => {
+    if (!doorHudOn) {
+      setDoorHudH(0);
+      return undefined;
+    }
+    const el = doorHudRef.current;
+    if (!el) return undefined;
+    const root = document.documentElement;
+    const publish = (h: number) => {
+      root.style.setProperty('--draw-hud-h', `${h}px`);
+      setDoorHudH(h);
+    };
+    const apply = () => publish(el.offsetHeight);
+    apply();
+    if (typeof ResizeObserver === 'undefined') return () => publish(0);
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      publish(0);
+    };
+  }, [doorHudOn]);
+
   /**
    * Sims drag-drop, effect (a) - a live drag ARMS the existing FSM.
    *
@@ -2361,26 +2483,49 @@ export function RoomCanvas({
       const container = containerRef.current;
       if (!container) return null;
       const rect = container.getBoundingClientRect();
+      // Defect 3 (stale-transform race): read the transform off the LIVE
+      // Konva stage AT EVENT TIME, never from the memoised `viewport`
+      // closure — a re-fit landing between arm and click (the door sub-bar
+      // mount re-centres the canvas) would otherwise map this click through
+      // a transform the user is no longer looking at, onto the WRONG WALL.
+      const stage = stageRef.current;
+      const vp = stage
+        ? { x: stage.x(), y: stage.y(), scale: stage.scaleX() }
+        : viewport;
       const { xM, yM } = screenToRoom(
         clientX,
         clientY,
         { left: rect.left, top: rect.top },
-        viewport,
+        vp,
         pxPerMetre,
       );
       // Read rooms through getState(): this callback is memoised on the
       // viewport, so a closure over `drawnRooms` would go stale the moment a
-      // door is placed.
-      const live = usePropertyStore
-        .getState()
-        .property.rooms.filter((r) => isDrawnPolygon(r.polygon));
+      // door is placed. Defect 6 (storeys): scan ONLY the drawn, indoor
+      // rooms on the ACTIVE level — the set the renderer draws — so an
+      // upper-storey click can never host (and hide) a door on the
+      // ground-floor room beneath it.
+      const ps = usePropertyStore.getState();
+      const lvl = activeLevelIdOf(ps.property);
+      const live = roomsOnLevel(ps.property.rooms, lvl).filter(
+        (r) => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon),
+      );
       if (live.length === 0) return null;
 
       // Is the pointer over an EXISTING opening? Generous radius so a door is
-      // easy to hit at any zoom.
+      // easy to hit at any zoom. An opening placed within the last
+      // DOOR_REMOVE_GRACE_MS is NOT a remove target — the P0 touch bug was a
+      // doubled commit path removing the door it had just placed.
+      const recent = recentOpeningRef.current;
       for (const room of live) {
+        const edges = roomEdges(room);
         for (const o of roomOpenings(room)) {
-          const edge = roomEdges(room)[o.edgeIndex];
+          if (recent && o.id === recent.id && Date.now() - recent.t < DOOR_REMOVE_GRACE_MS) {
+            continue;
+          }
+          // Match by the edge's OWN index, never by array position — a
+          // dropped degenerate edge would shift every later wall around.
+          const edge = edges.find((e) => e.index === o.edgeIndex);
           if (!edge) continue;
           const c = pointAlongEdge(edge, o.offsetM);
           if (Math.hypot(c.x - xM, c.y - yM) <= Math.max(o.widthM / 2, 0.35)) {
@@ -2393,6 +2538,17 @@ export function RoomCanvas({
       if (!hit) return null;
 
       const draft = useDesignerUIStore.getState().doorDraft;
+      // Defect 7 (Sims-adapted): default the facing per placement from the
+      // cursor's side of the host wall, so the leaf swings toward the room
+      // you clicked from — shared walls included. `flipFacing: false` puts
+      // the leaf on the (-dy, dx) normal side (see openings.edgeNormal),
+      // which is exactly the side where perpDistanceToEdgeLine is positive.
+      // STRICT < 0: a click landing exactly ON the wall centreline (the
+      // natural target — snapped taps produce it) is side 0 and must keep
+      // the inward default, not flip the door outside the building.
+      // A "Flip side" toggle during this arm overrides the default.
+      const cursorSideFlip = perpDistanceToEdgeLine(hit.edge, { x: xM, y: yM }) < 0;
+      const flipFacing = doorFacingOverrideRef.current ? draft.flipFacing : cursorSideFlip;
       const offsetM = clampOpeningOffset(hit.edge.lengthM, draft.widthM, hit.offsetM);
       if (offsetM === null) {
         return { mode: 'invalid', roomId: hit.edge.roomId, edge: hit.edge, offsetM: hit.offsetM };
@@ -2406,6 +2562,7 @@ export function RoomCanvas({
         edge: hit.edge,
         offsetM,
         message: v.message,
+        flipFacing,
       };
     },
     [viewport, pxPerMetre],
@@ -2433,18 +2590,47 @@ export function RoomCanvas({
         offsetM: h.offsetM,
         widthM: draft.widthM,
         kind: draft.kind,
-        flipFacing: draft.flipFacing,
+        // Cursor-side default facing with the sub-bar/HUD as an override
+        // (defect 7) — the same value the hover ghost previewed.
+        flipFacing: h.flipFacing ?? draft.flipFacing,
         flipHand: draft.flipHand,
       });
       if (!id) {
         pushToast('That opening will not fit on this wall.', 'warn');
         return;
       }
+      // Shield the fresh opening from the remove scan (defect 1's second
+      // half): a same-gesture re-scan must not net place + remove to zero.
+      recentOpeningRef.current = { id, t: Date.now() };
       const label = draft.kind === 'window' ? 'Window' : draft.kind === 'doorway' ? 'Doorway' : 'Door';
       pushToast(`${label} added`, 'success');
     },
     [computeDoorHover, pushToast],
   );
+
+  // Arm/disarm bookkeeping (2026-08-31): a fresh arm starts with NO facing
+  // override and no half-finished gesture; leaving the tool clears the ghost.
+  useEffect(() => {
+    doorGestureRef.current = null;
+    if (doorTool) {
+      doorFacingOverrideRef.current = false;
+    } else {
+      setDoorHover(null);
+    }
+  }, [doorTool]);
+
+  // "Flip side" (sub-bar, phone HUD or the F key) toggled during an arm
+  // becomes an override for the rest of that arm — defect 7's contract.
+  useEffect(() => {
+    if (prevDoorFlipRef.current === null) {
+      prevDoorFlipRef.current = doorDraft.flipFacing;
+      return;
+    }
+    if (prevDoorFlipRef.current !== doorDraft.flipFacing) {
+      prevDoorFlipRef.current = doorDraft.flipFacing;
+      if (doorTool) doorFacingOverrideRef.current = true;
+    }
+  }, [doorDraft.flipFacing, doorTool]);
 
   // Designer 3-Bug Fix (2026-05-28, Bug 3) — "Clear leaves ghost items on
   // the canvas". Confirmed via a live dev-server probe: when `placedItems`
@@ -2777,6 +2963,107 @@ export function RoomCanvas({
         </div>
       )}
 
+      {/* Door tool HUD card (PHONE, 2026-08-31 — defect 2: below md the
+          toggle lived in the md:-only rail and the sub-bar was hidden, so
+          the phone had NO door controls at all). Same pattern/position
+          mechanics as the Floor card: bottom-anchored above the Sims
+          toolbar + the 56 px Clear/cart band, publishes --draw-hud-h so the
+          fit keeps the plan above it, md:hidden — from md up the TopBar
+          sub-bar is the tool's home. 44 px chrome targets throughout. */}
+      {doorHudOn && (
+        <div
+          ref={doorHudRef}
+          data-testid="door-hud"
+          className="pointer-events-auto fixed left-1/2 z-30 flex w-[min(94vw,420px)] -translate-x-1/2 flex-col gap-1.5 rounded-xl p-2 text-xs md:hidden bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-toolbar-h,0px)_+_56px)]"
+          style={{
+            background: CHROME_BG,
+            border: `1px solid ${CHROME_RIM}`,
+            boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
+            color: CHROME_TEXT,
+          }}
+        >
+          <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Opening kind">
+            {(
+              [
+                ['door', 'Door'],
+                ['doorway', 'Doorway'],
+                ['window', 'Window'],
+              ] as const
+            ).map(([k, label]) => (
+              <button
+                key={k}
+                type="button"
+                role="radio"
+                data-testid={`door-kind-mobile-${k}`}
+                aria-checked={doorDraft.kind === k}
+                onClick={() =>
+                  setDoorDraft({
+                    kind: k,
+                    // Each kind arms its own trade width (defect 8's rule):
+                    // a window is 1.2 m, never the 0.838 m door leaf.
+                    widthM: k === 'window' ? DEFAULT_WINDOW_WIDTH_M : DEFAULT_DOOR_WIDTH_M,
+                  })
+                }
+                className={`${OVL_CTRL} ${doorDraft.kind === k ? OVL_ACTIVE : OVL_REST} h-11 flex-1 px-2`}
+                title={
+                  k === 'door'
+                    ? 'Door — a swinging leaf'
+                    : k === 'doorway'
+                      ? 'Doorway — an open gap, no leaf'
+                      : 'Window — keeps the wall line'
+                }
+              >
+                {label}
+              </button>
+            ))}
+            {/* Width readout — parity with the desktop sub-bar (check R7). */}
+            <span
+              data-testid="door-width-mobile"
+              className="flex h-11 shrink-0 items-center rounded-lg border border-ppw-rim bg-ppw-chrome px-2 text-[11px] font-semibold tabular-nums"
+              style={{ color: CHROME_TEXT_2 }}
+              title="Opening width"
+            >
+              {doorDraft.widthM.toFixed(2).replace(/\.?0+$/, '')} m
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              data-testid="door-flip-facing-mobile"
+              onClick={toggleDoorFacing}
+              className={`${OVL_CTRL} ${OVL_REST} h-11 flex-1 px-2`}
+              title="Flip which side the door opens toward"
+            >
+              Flip side
+            </button>
+            <button
+              type="button"
+              data-testid="door-flip-hand-mobile"
+              onClick={toggleDoorHand}
+              className={`${OVL_CTRL} ${OVL_REST} h-11 flex-1 px-2`}
+              title="Swap the hinge to the other end"
+            >
+              Flip hinge
+            </button>
+            <button
+              type="button"
+              data-testid="door-done-mobile"
+              onClick={() => setTool('hand')}
+              className={`${OVL_CTRL} ${OVL_ACTIVE} h-11 flex-1 px-2`}
+              title="Done — put the Door tool away"
+            >
+              Done
+            </button>
+          </div>
+          <p
+            className="px-1 text-[11px] font-medium leading-snug"
+            style={{ color: CHROME_TEXT_2 }}
+          >
+            Tap a wall to place · tap a door to remove
+          </p>
+        </div>
+      )}
+
       {pendingProductId && !drawMode && (() => {
         const pendingProduct = getProductById(pendingProductId);
         if (!pendingProduct) return null;
@@ -2907,21 +3194,54 @@ export function RoomCanvas({
           }
         }}
         onPointerDown={(e) => {
-          // Floor tool (2026-08-30): one anchor path for mouse AND touch.
-          // Non-primary pointers (the second finger of a pinch) and
-          // non-left mouse buttons never start a stroke.
-          if (drawMode || !floorTool || pendingProductId) return;
+          // Floor + Door tools: ONE gesture path for mouse AND touch (Konva
+          // fires `pointerdown` from the native pointer event only, so this
+          // runs exactly once per gesture on every device). Non-primary
+          // pointers (the second finger of a pinch) and non-left mouse
+          // buttons never start a gesture.
+          if (drawMode || pendingProductId) return;
           const evt = e.evt as PointerEvent;
           if (evt.isPrimary === false) return;
           if (evt.pointerType === 'mouse' && evt.button !== 0) return;
+          if (doorTool) {
+            // Defect 1 (a tap fired commitDoorAt 4×): the commit now lives
+            // on pointerUP consuming this per-gesture record — onPointerUp.
+            doorGestureRef.current = {
+              pointerId: evt.pointerId,
+              x: evt.clientX,
+              y: evt.clientY,
+              moved: false,
+            };
+            // A NEW gesture ends the fresh-opening shield: the grace window
+            // exists to absorb the same tap's residual compat events, never
+            // to make a deliberate second tap miss its remove target.
+            recentOpeningRef.current = null;
+            return;
+          }
+          if (!floorTool) return;
           const w = floorWorldPoint(evt.clientX, evt.clientY);
           if (!w) return;
           const room = floorRoomAt(w.xM, w.yM);
           floorAnchorRef.current = { x: w.xM, y: w.yM, roomId: room?.id ?? null };
         }}
         onPointerUp={(e) => {
-          if (!floorTool) return;
           const evt = e.evt as PointerEvent;
+          if (doorTool) {
+            // Defect 1: the ONE door commit path — native pointerup only, so
+            // a touch tap can never fan out into tap + click + browser
+            // compat mouse events (the old 4× commit that placed then
+            // removed the same door). The gesture record is consumed here,
+            // so a duplicate pointerup is inert by construction.
+            const g = doorGestureRef.current;
+            doorGestureRef.current = null;
+            if (!g) return;
+            if (evt.isPrimary === false || evt.pointerId !== g.pointerId) return;
+            if (g.moved) return; // the gesture was a pan, not a tap
+            if (Math.hypot(evt.clientX - g.x, evt.clientY - g.y) > DOOR_TAP_SLOP_PX) return;
+            commitDoorAt(evt.clientX, evt.clientY);
+            return;
+          }
+          if (!floorTool) return;
           if (evt.isPrimary === false) return;
           commitFloorAt(evt);
         }}
@@ -2929,6 +3249,27 @@ export function RoomCanvas({
           // M1.5 pointer-FSM: while armed, track snapped pointer position
           // and update the ghost preview every frame.
           if (drawMode) return;
+          if (doorTool) {
+            // Defect 5: this branch used to sit BELOW the `!pendingProductId`
+            // early-return, so the wall-highlight ghost never showed while
+            // hovering with the door TOOL (it only worked with a dock
+            // product armed). Hoisted above every other guard — mouse hover
+            // and touch drag alike.
+            const evt = e.evt as PointerEvent;
+            if (typeof evt.clientX !== 'number') return;
+            const g = doorGestureRef.current;
+            if (
+              g
+              && evt.pointerId === g.pointerId
+              && Math.hypot(evt.clientX - g.x, evt.clientY - g.y) > DOOR_TAP_SLOP_PX
+            ) {
+              g.moved = true; // travelled: this gesture is a pan, not a tap
+            }
+            if (evt.isPrimary !== false) {
+              setDoorHover(computeDoorHover(evt.clientX, evt.clientY));
+            }
+            return;
+          }
           if (floorTool) {
             const evt = e.evt as PointerEvent;
             if (evt.isPrimary === false) return;
@@ -2977,10 +3318,6 @@ export function RoomCanvas({
           }
           const evt = e.evt as PointerEvent;
           if (typeof evt.clientX !== 'number') return;
-          if (doorTool) {
-            setDoorHover(computeDoorHover(evt.clientX, evt.clientY));
-            return;
-          }
           const next = computeGhost(evt.clientX, evt.clientY, pendingProductId);
           if (next) {
             setDragGhost({ xM: next.xM, yM: next.yM, rotation: next.rotation, valid: next.valid });
@@ -2996,11 +3333,7 @@ export function RoomCanvas({
         onTap={(e) => {
           if (drawMode) return;
           if (wallDrawEnabled) return; // M2: wall layer owns tap
-          if (doorTool) {
-            const t = (e.evt as TouchEvent).changedTouches?.[0];
-            if (t) commitDoorAt(t.clientX, t.clientY);
-            return;
-          }
+          if (doorTool) return; // door commits live on pointerup (defect 1)
           if (e.target !== e.target.getStage()) return;
           if (pendingProductId && setPendingProductId) {
             const touch = (e.evt as TouchEvent).changedTouches?.[0];
@@ -3017,10 +3350,7 @@ export function RoomCanvas({
         onClick={(e) => {
           if (drawMode) return;
           if (wallDrawEnabled) return; // M2: wall layer owns click
-          if (doorTool) {
-            commitDoorAt(e.evt.clientX, e.evt.clientY);
-            return;
-          }
+          if (doorTool) return; // door commits live on pointerup (defect 1)
           if (e.target !== e.target.getStage()) return;
           if (pendingProductId && setPendingProductId) {
             const placed = placeProductAt(e.evt.clientX, e.evt.clientY, pendingProductId);
@@ -3256,7 +3586,11 @@ export function RoomCanvas({
                     Drawn per HOST room only: a door in a shared wall cuts both
                     rooms' strokes (see wallGapsByEdge) but draws ONE symbol. */}
                 {roomOpenings(room).map((o) => {
-                  const edge = roomEdges(room)[o.edgeIndex];
+                  // By the edge's OWN index, not array position (latent
+                  // defect 9): roomEdges drops degenerate edges, and a
+                  // positional lookup would then draw every later door one
+                  // wall around.
+                  const edge = roomEdges(room).find((e) => e.index === o.edgeIndex);
                   if (!edge) return null;
                   const halfWallM = WALL_HALF_M;
                   const toPx = (pt: { x: number; y: number }) => [
@@ -3733,7 +4067,10 @@ export function RoomCanvas({
                 offsetM: h.offsetM,
                 widthM: doorDraft.widthM,
                 kind: doorDraft.kind,
-                flipFacing: doorDraft.flipFacing,
+                // The EFFECTIVE facing (cursor-side default or the user's
+                // override) so the ghost previews exactly what a click
+                // will commit — defect 7.
+                flipFacing: h.flipFacing ?? doorDraft.flipFacing,
                 flipHand: doorDraft.flipHand,
               };
               const span = openingSpan(preview);
@@ -3985,7 +4322,7 @@ export function RoomCanvas({
           used to sit centred over the very tile the customer had just laid. */}
       {/* …and hidden once ANY floor is laid: a floored room is not empty
           (check R3 — the card re-centred over freshly laid tiles). */}
-      {!drawMode && !wallDrawEnabled && !pendingProductId && !floorTool && hasRoom && allItems.length === 0 &&
+      {!drawMode && !wallDrawEnabled && !pendingProductId && !floorTool && !doorTool && hasRoom && allItems.length === 0 &&
         !drawnRooms.some((r) => (r.floorTiles && r.floorTiles.length > 0) || r.floorFinish) && (
         <div
           className="pointer-events-none absolute inset-0 flex items-center justify-center"

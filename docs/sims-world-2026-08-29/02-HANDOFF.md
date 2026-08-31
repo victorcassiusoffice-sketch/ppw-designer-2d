@@ -334,3 +334,33 @@ enabling the tool can put the door on the WRONG WALL · CCW-drawn rooms swing ev
 winding normalisation) · no hover preview via the door tool · storeys ignored · shared-wall facing
 defaults to the first room · window keeps door width. The Sims reference model + adopt/adapt table is
 in the findings file.
+
+## Door fixes shipped (2026-08-31, same day as the analysis)
+
+All nine findings from `doors-2026-08-31/00-FINDINGS.md` are fixed and gated:
+- **Touch**: the commit lives on ONE pointer path (Stage `onPointerUp`, per-gesture guard, 10 px tap
+  slop) — a tap places exactly one door; the remove scan ignores an opening placed < 300 ms ago so
+  place-then-remove can no longer net to zero; a deliberate second tap still removes.
+- **Phone**: Door row in the menu sheet + a bottom HUD card (Door · Doorway · Window kind chips with
+  their trade widths, a width readout, Flip side · Flip hinge · Done, 44 px targets).
+- **Race**: the click maps through the stage transform read AT EVENT TIME and the canvas re-fit runs
+  synchronously when the tool arms — a click 100 ms after arming lands on the clicked wall.
+- **Winding**: `canonicaliseRoomGeometry` normalises every polygon to CW at draw-commit, load and a
+  new persist-merge hook, remapping openings EXACTLY (edgeIndex' = n−1−i, offset' = length−offset,
+  both flips toggled; world-space gap + swing proven equal to 1e-9 in 21 new unit tests) — a
+  hand-drawn counter-clockwise room now swings its doors into the room.
+- **Hover preview** shows with the bare door tool (branch hoisted above the armed-product guard).
+- **Storeys**: the hover/remove scan is level-filtered; also fixed the level-blind load-time
+  un-stacker that shredded stacked storeys into an attached layout.
+- **Facing**: `flipFacing` defaults per placement to the cursor's side of the host wall (shared wall:
+  click from room B → swings into room B); the toggles override. A click exactly ON the wall line
+  keeps the inward default (strict `< 0` — the check caught `<= 0` flipping it outside).
+- **Window** arms 1.2 m; each kind chip arms its trade width. Positional `edgeIndex` lookups replaced
+  with `.find(e => e.index === …)` in store + canvas.
+- Repeat toasts coalesce ("Door added ×3"); the empty-room card hides while the door tool is on.
+
+Gate: tsc 0 · eslint 0 · vitest **2259/2259** (21 new winding + un-stacker tests) · build clean ·
+full Playwright **136 / 0 / 38** incl. the extended `door-openings.spec.ts` (hover preview, storey
+filter, shared-wall facing, window width, CCW room) and the new `door-touch.spec.ts` · probes: on-line
+click → `flipFacing:false` inward, width chip 0.84 m → 1.2 m, toasts "Door added ×3" · 0 console
+errors. Captures `doors-2026-08-31/fix-*.png`, `gate-fix-*.png`. Preview verification line below.

@@ -826,10 +826,11 @@ export function TopBar({
   // are the same `tool` field so they never coexist — measured anyway).
   const headerRef = useRef<HTMLElement>(null);
   const [floorPanelTop, setFloorPanelTop] = useState(53);
-  // Phone: `ppw:open-menu {section:'floor'}` (from the canvas HUD's Change
-  // button) opens the sheet AT the Floor row.
+  // Phone: `ppw:open-menu {section:'floor'|'door'}` (from a canvas HUD card)
+  // opens the sheet AT that section's row.
   const floorRowMobileRef = useRef<HTMLButtonElement>(null);
-  const [sheetScrollTo, setSheetScrollTo] = useState<'floor' | null>(null);
+  const doorRowMobileRef = useRef<HTMLButtonElement>(null);
+  const [sheetScrollTo, setSheetScrollTo] = useState<'floor' | 'door' | null>(null);
   const levelsRef = useRef<HTMLButtonElement>(null);
   const landRef = useRef<HTMLButtonElement>(null);
   const snapRef = useRef<HTMLButtonElement>(null);
@@ -921,12 +922,12 @@ export function TopBar({
     return () => document.removeEventListener('keydown', onKey);
   }, [floorPaintActive, setTool]);
 
-  // `ppw:open-menu` — any surface (the phone Floor HUD's Change button) can
+  // `ppw:open-menu` — any surface (the phone Floor / Door HUD cards) can
   // ask for the sheet, scrolled to a section.
   useEffect(() => {
     const onOpen = (e: Event) => {
       const section = (e as CustomEvent<{ section?: string }>).detail?.section;
-      if (section === 'floor') setSheetScrollTo('floor');
+      if (section === 'floor' || section === 'door') setSheetScrollTo(section);
       setShowMobileMenu(true);
     };
     window.addEventListener('ppw:open-menu', onOpen);
@@ -935,8 +936,9 @@ export function TopBar({
   useEffect(() => {
     if (!showMobileMenu || !sheetScrollTo) return;
     // After the sheet's own open effect has moved focus to Close.
+    const target = sheetScrollTo === 'door' ? doorRowMobileRef : floorRowMobileRef;
     const id = window.requestAnimationFrame(() => {
-      floorRowMobileRef.current?.scrollIntoView({ block: 'start' });
+      target.current?.scrollIntoView({ block: 'start' });
       setSheetScrollTo(null);
     });
     return () => window.cancelAnimationFrame(id);
@@ -1692,6 +1694,16 @@ export function TopBar({
               </button>
             ))}
           </div>
+          {/* Live width readout (defect 8): the kind chips carry their default
+              width with them (0.838 m door / 1.2 m window — designerUIStore),
+              so show the number the next click will cut. */}
+          <span
+            className="text-[12px] font-medium tabular-nums"
+            style={{ color: CHROME_TEXT_2 }}
+            data-testid="door-width-readout"
+          >
+            {doorDraft.widthM} m
+          </span>
           <span className="h-5 w-px bg-ppw-rim" aria-hidden="true" />
           <button
             type="button"
@@ -1959,6 +1971,28 @@ export function TopBar({
                 >
                   <span className="flex items-center gap-3"><Icon name="pen" size={20} />Walls</span>
                   <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{drawMode || wallActive ? 'on' : 'off'}</span>
+                </button>
+
+                {/* Door on the phone (doors brief 2026-08-31, defect 2: below
+                    md the toggle lived in a md:-only rail, so a phone had no
+                    door tool at all). The row ARMS the tool via the same
+                    exclusion handler as the desktop toggle and closes the
+                    sheet; kind / flip / Done chips live on the canvas HUD
+                    card (RoomCanvas), not here — the sheet is a menu. */}
+                <button
+                  ref={doorRowMobileRef}
+                  type="button"
+                  data-testid="door-toggle-mobile"
+                  onClick={() => {
+                    handleToggleDoor();
+                    setShowMobileMenu(false);
+                  }}
+                  aria-pressed={doorActive}
+                  className={`${SHEET_ROW} justify-between ${doorActive ? SHEET_ROW_ON : ''}`}
+                  style={{ scrollMarginTop: 56 }}
+                >
+                  <span className="flex items-center gap-3"><Icon name="door" size={20} />Door</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{doorActive ? 'on' : 'off'}</span>
                 </button>
 
                 {/* Floor on the phone (2026-08-30). The Floor row toggles the
@@ -2300,6 +2334,7 @@ export function TopBar({
             <li>Change the unit mid-draw with the − / + chips (keys + and −, or 1–6).</li>
             <li>Drag a product from the dock onto the floor — inside a room or outside in the garden. Items sit flush to walls and tuck into corners.</li>
             <li><em>Floor</em>: pick a material, then click a tile, drag an area, or press <em>Room</em> to lay the whole room. Shift fills the room, Ctrl erases.</li>
+            <li><em>Door</em>: pick Door, Doorway or Window, hover a wall and click. <em>Flip side</em> / <em>Flip hinge</em> set the swing; click a placed opening to remove it. On the phone: Menu → Door, then tap a wall.</li>
             <li><em>Plot</em> locks the plot size; <em>Storeys</em> adds storeys (PageUp / PageDown).</li>
             <li>Click a placed item to rotate, duplicate, delete, or switch a light on/off.</li>
             <li><em>Save as…</em> (under More) stores the whole property (all storeys, rooms, walls + items).</li>
