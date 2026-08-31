@@ -364,3 +364,9 @@ full Playwright **136 / 0 / 38** incl. the extended `door-openings.spec.ts` (hov
 filter, shared-wall facing, window width, CCW room) and the new `door-touch.spec.ts` · probes: on-line
 click → `flipFacing:false` inward, width chip 0.84 m → 1.2 m, toasts "Door added ×3" · 0 console
 errors. Captures `doors-2026-08-31/fix-*.png`, `gate-fix-*.png`. Preview verification line below.
+- Verified live on the branch preview: cache-busted healthcheck →
+  `{"ok":true,"env":"preview","commit":"898a1fa987783dceba0a666e42515e41679f165f"}` (5th poll,
+  2026-08-31T10:28Z). Deployed smoke on that build: on-the-line top-wall click → edge 0, offset 2.5,
+  `flipFacing:false` (inward); a click from Room 2's side of the shared wall → hosted on Room 1
+  edge 1 with `flipFacing:true` (swings into Room 2); a phone touch tap places exactly ONE door that
+  persists and a second tap removes it; width chip 0.84 m; 0 console errors. Production untouched.
