@@ -7,12 +7,17 @@
  *
  * Layout (md+): ONE 52 px row, flex-nowrap, five groups left → right:
  *   1 IDENTITY   brand tile · rooms trigger (the only group that may shrink)
- *   2 BUILD      Walls · Door · Paint · Measure   (segmented, ink when on)
- *   3 ROOM&PLAN  Box | Custom · Finish · Storeys · Plot
+ *   2 BUILD      Walls · Door · Floor · Measure   (segmented, ink when on)
+ *   3 ROOM&PLAN  Box | Custom · Storeys · Plot
  *   4 VIEW       Snap · Grid · 3D · Undo/Redo
  *   5 COMMERCE   Currency · Cart · Request quote (the ONE gold CTA) · More
  * Door options live in a 40 px sub-bar under the row while the door tool
- * is on. Every popover is portaled to <body> and positioned from its
+ * is on. The Floor tool (2026-08-30) gets a DOCKED 272 px panel on the right
+ * edge (fixed, header-bottom → dock-top) rather than a popover over the room:
+ * the popover sat on 17 % of the auto-centred room at 1366 and the first
+ * click hit its own Erase button. The panel publishes `--floor-panel-w` on
+ * <html> (0px when closed) so the canvas insets its fit around it.
+ * Every popover is portaled to <body> and positioned from its
  * anchor's rect, so the middle rail can fall back to `overflow-x:auto`
  * without ever clipping a dropdown.
  *
@@ -71,7 +76,15 @@ import { performUndo, performRedo } from '../lib/undoIntent';
 // Polish (2026-08-29): "New plan" under More — PageTabs is hidden while there
 // is a single plan, so this is how a second plan gets started.
 import { createPage, switchToPage } from '../lib/pages';
-import { FLOOR_MATERIALS, tileableFloorMaterials } from '../data/floorMaterials';
+import { FLOOR_MATERIALS, findFloorMaterialById, type FloorMaterial } from '../data/floorMaterials';
+import { productImageForSku } from '../data/products';
+// Floor tool (2026-08-30): the docked panel prices the active room's floor
+// with the SAME derivation the cart uses (roomFloorOrders → units × MUR
+// price → display currency), so the panel and the cart can never disagree.
+import { roomFloorOrders } from '../designer/floorTiles';
+import { convert } from '../lib/fx';
+import { formatCurrency } from '../lib/currency';
+import { useCurrencyStore } from '../store/currencyStore';
 import { useWallStore } from '../store/wallStore';
 import { useCart } from '../store/cartStore';
 import { CurrencySwitcher } from './CurrencySwitcher';
@@ -139,6 +152,16 @@ const SHEET_ROW =
   'flex min-h-[48px] w-full items-center gap-3 rounded-lg px-3 text-left text-[14px] font-medium transition-colors duration-[120ms] ease-out motion-reduce:transition-none hover:bg-[#f3f1ec] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]';
 const SHEET_ROW_ON = 'bg-ppw-inkDeep text-ppw-paper hover:bg-ppw-inkDeep';
 const CAPTION = 'px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-[0.06em]';
+/** Floor tool (2026-08-30): docked panel width, also published as `--floor-panel-w`. */
+const FLOOR_PANEL_W = 272;
+/** 40 px chip inside the Floor panel — chrome recipe (CartStrip / DetailsPanel CTRL_*). */
+const CHIP =
+  'inline-flex h-10 min-w-[40px] items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border px-3 text-[12px] font-medium leading-none transition-colors duration-[120ms] ease-out motion-reduce:transition-none focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] disabled:cursor-not-allowed disabled:opacity-40';
+const CHIP_REST = 'border-ppw-rim bg-ppw-chrome text-ppw-charcoal hover:bg-[#f3f1ec] hover:border-[rgba(42,41,38,0.35)]';
+const CHIP_ON = 'border-ppw-inkDeep bg-ppw-inkDeep font-semibold text-ppw-paper';
+/** Destructive: terracotta rim + charcoal label at rest; Erase-on keeps the rim and adds a clay wash. */
+const CHIP_DANGER = 'border-ppw-clay bg-ppw-chrome text-ppw-charcoal hover:bg-[#f3f1ec]';
+const CHIP_DANGER_ON = 'border-ppw-clay bg-[rgba(201,85,63,0.14)] font-semibold text-ppw-charcoal';
 /** Group divider: a 1 px rim with 4 px either side up to xl, 8 from 2xl,
     12 from 1700 (all on the 4/8/12 spacing ladder). Polish (2026-08-29):
     measured at 1366 the six ROOM&PLAN / VIEW labels + Walls + Quote need
@@ -156,6 +179,7 @@ type IconName =
   | 'pen'
   | 'door'
   | 'roller'
+  | 'tiles'
   | 'ruler'
   | 'box'
   | 'polygon'
@@ -180,6 +204,9 @@ const ICON_PATHS: Record<IconName, string> = {
   pen: 'M3 13l1-3.5L11 2.5l2.5 2.5-7 7L3 13zM9.5 4l2.5 2.5',
   door: 'M4 14V2h8v12M4 14h8M10 8.5v.5',
   roller: 'M2.5 3.5h9a1 1 0 011 1v1.5a1 1 0 01-1 1h-9a1 1 0 01-1-1V4.5a1 1 0 011-1zM12.5 5h1.5v3H8v2M8 10v3.5',
+  // Floor tool (2026-08-30): a 2 × 2 tile lattice, not the paint roller —
+  // the customer lays tiles they buy, they do not paint.
+  tiles: 'M2.5 2.5h4.5v4.5H2.5zM9 2.5h4.5v4.5H9zM2.5 9h4.5v4.5H2.5zM9 9h4.5v4.5H9z',
   ruler: 'M2 11l9-9 3 3-9 9-3-3zM5 8l1.5 1.5M7 6l1.5 1.5M9 4l1.5 1.5',
   box: 'M2.5 3.5h11v9h-11z',
   polygon: 'M3 3h6l4 4v6H3zM9 3v4h4',
@@ -454,7 +481,8 @@ export function TopBar({
   function handleRemoveLevel(id: string) {
     const ok = removeLevel(id);
     pushToast(
-      ok ? 'Floor removed' : 'Clear that floor first — it still has rooms or walls',
+      // "Storey", not "floor": the Floor tool owns that word now.
+      ok ? 'Storey removed' : 'Clear that storey first — it still has rooms or walls',
       ok ? 'info' : 'warn',
     );
   }
@@ -522,18 +550,27 @@ export function TopBar({
   const floorPaintActive = tool === 'floor';
   const floorDraft = useDesignerUIStore((st) => st.floorDraft);
   const setFloorDraft = useDesignerUIStore((st) => st.setFloorDraft);
+  // Optional: P2 may publish the in-flight stroke's tile count so the live
+  // line can read "+n tiles" mid-drag. Read defensively — the field is not
+  // part of this store's contract yet, and 0 is the honest fallback.
+  const floorPreviewCount = useDesignerUIStore(
+    (st) => (st as unknown as { floorPreviewCount?: number }).floorPreviewCount ?? 0,
+  );
 
-  // Floor finish (2026-08-28). Applies to the FOCUSED room — the one the
-  // L/W boxes and the details panel already describe — so there is one
-  // consistent answer to "which room am I editing".
-  const [floorOpen, setFloorOpen] = useState(false);
+  // Floor tool (2026-08-30). ONE tool named "Floor": the old whole-room
+  // "Finish" picker and the per-tile "Paint" brush are folded into it. Room
+  // scope lays the whole ACTIVE room in one action; both actions live on the
+  // property store so they are one undo frame each.
+  const fillRoomFloor = usePropertyStore((s) => s.fillRoomFloor);
+  const clearRoomFloor = usePropertyStore((s) => s.clearRoomFloor);
+  const displayCurrency = useCurrencyStore((s) => s.currency);
+  const fx = useCurrencyStore((s) => s.fx);
   // Units brief (2026-08-28, D7). A popover, not a six-way segmented
   // control on desktop; the phone sheet shows the six chips in one row.
   const [unitOpen, setUnitOpen] = useState(false);
   const precision = useDesignerUIStore((s) => s.precision);
   const setPrecision = useDesignerUIStore((s) => s.setPrecision);
   const snapStepM = PRECISION_STEP_M[precision];
-  const setRoomFloor = usePropertyStore((s) => s.setRoomFloor);
 
   function handleToggleDoor() {
     // Room-draw and wall-draw own the canvas pointer while they are live, so
@@ -582,7 +619,91 @@ export function TopBar({
   const [confirmingNew, setConfirmingNew] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const activeRoom = property.rooms.find((r) => r.id === property.activeRoomId);
-  const currentFloorId = activeRoom?.floorFinish?.materialId ?? null;
+  // The Floor tool works on a DRAWN, indoor room. The blank seed room and the
+  // Outdoors container are not floors a customer buys tiles for.
+  const floorRoom =
+    activeRoom && isDrawnPolygon(activeRoom.polygon) && !isOutdoorRoom(activeRoom) ? activeRoom : null;
+  const floorRoomHasFloor =
+    !!floorRoom && ((floorRoom.floorTiles?.length ?? 0) > 0 || !!floorRoom.floorFinish);
+  const floorMaterial: FloorMaterial | undefined = findFloorMaterialById(floorDraft.materialId);
+  const floorMaterialIsRoll = !!floorMaterial && floorMaterial.tile_w_m === null;
+  const floorScope: 'tile' | 'room' = floorMaterialIsRoll ? 'room' : floorDraft.scope;
+  // What the active room's floor costs right now — the cart's own derivation.
+  const floorLive = (() => {
+    if (!floorRoom) return { units: 0, cost: 0, unit: 'tile' as const };
+    let units = 0;
+    let cost = 0;
+    let unit: 'tile' | 'roll' = 'tile';
+    for (const { materialId, order } of roomFloorOrders(floorRoom)) {
+      const m = findFloorMaterialById(materialId);
+      if (!m) continue;
+      units += order.unitsToOrder;
+      cost += order.unitsToOrder * convert(m.price_per_unit_mur, 'MUR', displayCurrency, fx);
+      if (m.unit === 'roll') unit = 'roll';
+    }
+    return { units, cost, unit };
+  })();
+  const floorLiveText =
+    floorLive.units === 0
+      ? 'No floor yet'
+      : `${floorLive.units} ${floorLive.unit === 'roll' ? (floorLive.units === 1 ? 'roll' : 'rolls') : floorLive.units === 1 ? 'tile' : 'tiles'} · ${formatCurrency(floorLive.cost, displayCurrency)}`;
+  /** "0.92 × 0.92 m" for a tile, "12.5 m² roll" for sheet goods. */
+  const floorSizeText = (m: FloorMaterial) =>
+    m.tile_w_m !== null && m.tile_h_m !== null
+      ? `${m.tile_w_m} × ${m.tile_h_m} m`
+      : `${m.coverage_m2_per_unit} m² roll`;
+  const floorPriceText = (m: FloorMaterial) =>
+    `${formatCurrency(convert(m.price_per_unit_mur, 'MUR', displayCurrency, fx), displayCurrency)} / ${m.unit}`;
+
+  /** Choose a material: erase off; a roll forces Room scope. */
+  function chooseFloorMaterial(m: FloorMaterial) {
+    setFloorDraft({
+      materialId: m.id,
+      erase: false,
+      scope: m.tile_w_m === null ? 'room' : floorDraft.scope,
+    });
+  }
+
+  /**
+   * The Room chip IS the action: it lays (or, with Erase on, clears) the
+   * whole active room at once and then stays selected, so "fill the room"
+   * is one press, never "switch scope, then find somewhere to click".
+   */
+  function handleFloorRoom() {
+    setFloorDraft({ scope: 'room' });
+    if (!floorRoom) {
+      pushToast('Draw a room first — Walls', 'warn');
+      return;
+    }
+    if (floorDraft.erase) {
+      clearRoomFloor(floorRoom.id);
+      pushToast(`${floorRoom.name} — floor cleared`, 'info');
+      return;
+    }
+    if (!floorMaterial) return;
+    const n = fillRoomFloor(floorRoom.id, floorMaterial.id);
+    pushToast(
+      floorMaterial.tile_w_m === null
+        ? `${floorRoom.name} — ${floorMaterial.name} laid`
+        : `${floorRoom.name} — ${n} tiles laid`,
+      'success',
+    );
+  }
+
+  function handleFloorClear() {
+    if (!floorRoom) return;
+    clearRoomFloor(floorRoom.id);
+    pushToast(`${floorRoom.name} — floor cleared`, 'info');
+  }
+
+  // A roll can only be laid whole-room: if the draft lands on a roll with
+  // Tile scope (a catalog card can arm the tool without touching scope),
+  // snap it to Room so the canvas never gets a tile stroke it must refuse.
+  useEffect(() => {
+    if (floorPaintActive && floorMaterialIsRoll && floorDraft.scope === 'tile') {
+      setFloorDraft({ scope: 'room' });
+    }
+  }, [floorPaintActive, floorMaterialIsRoll, floorDraft.scope, setFloorDraft]);
 
   const savedList = Object.values(designs)
     .filter((d) => d.id !== '__draft__')
@@ -700,8 +821,15 @@ export function TopBar({
   const [moreOpen, setMoreOpen] = useState(false);
 
   const boxRef = useRef<HTMLButtonElement>(null);
-  const paintRef = useRef<HTMLButtonElement>(null);
-  const finishRef = useRef<HTMLButtonElement>(null);
+  // Floor tool (2026-08-30): the docked panel hangs from the header's live
+  // bottom edge (53 px; 93 px would be the door sub-bar, but door and floor
+  // are the same `tool` field so they never coexist — measured anyway).
+  const headerRef = useRef<HTMLElement>(null);
+  const [floorPanelTop, setFloorPanelTop] = useState(53);
+  // Phone: `ppw:open-menu {section:'floor'}` (from the canvas HUD's Change
+  // button) opens the sheet AT the Floor row.
+  const floorRowMobileRef = useRef<HTMLButtonElement>(null);
+  const [sheetScrollTo, setSheetScrollTo] = useState<'floor' | null>(null);
   const levelsRef = useRef<HTMLButtonElement>(null);
   const landRef = useRef<HTMLButtonElement>(null);
   const snapRef = useRef<HTMLButtonElement>(null);
@@ -752,8 +880,69 @@ export function TopBar({
     return () => document.removeEventListener('keydown', onKey);
   }, [confirmingNew]);
 
+  // Floor panel (md+): publish its width on <html> so the canvas can inset
+  // its auto-fit; 0px whenever it is closed, on the phone, or on unmount.
+  const floorPanelOpen = isMd && floorPaintActive;
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--floor-panel-w', floorPanelOpen ? `${FLOOR_PANEL_W}px` : '0px');
+    return () => {
+      root.style.setProperty('--floor-panel-w', '0px');
+    };
+  }, [floorPanelOpen]);
+
+  // Hang the panel from the header's LIVE bottom edge.
+  useLayoutEffect(() => {
+    if (!floorPanelOpen) return;
+    const el = headerRef.current;
+    if (!el) return;
+    const measure = () => setFloorPanelTop(Math.round(el.getBoundingClientRect().bottom));
+    measure();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    ro?.observe(el);
+    window.addEventListener('resize', measure);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [floorPanelOpen]);
+
+  // Esc = tool off while the Floor tool is on (Done does the same). Inputs
+  // keep their own Esc (a level rename in progress must not lose the tool).
+  useEffect(() => {
+    if (!floorPaintActive) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      setTool('hand');
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [floorPaintActive, setTool]);
+
+  // `ppw:open-menu` — any surface (the phone Floor HUD's Change button) can
+  // ask for the sheet, scrolled to a section.
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      const section = (e as CustomEvent<{ section?: string }>).detail?.section;
+      if (section === 'floor') setSheetScrollTo('floor');
+      setShowMobileMenu(true);
+    };
+    window.addEventListener('ppw:open-menu', onOpen);
+    return () => window.removeEventListener('ppw:open-menu', onOpen);
+  }, []);
+  useEffect(() => {
+    if (!showMobileMenu || !sheetScrollTo) return;
+    // After the sheet's own open effect has moved focus to Close.
+    const id = window.requestAnimationFrame(() => {
+      floorRowMobileRef.current?.scrollIntoView({ block: 'start' });
+      setSheetScrollTo(null);
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [showMobileMenu, sheetScrollTo]);
+
   const closeSize = useCallback(() => setSizeOpen(false), []);
-  const closeFinish = useCallback(() => setFloorOpen(false), []);
   const closeLevels = useCallback(() => setLevelsOpen(false), []);
   const closeLand = useCallback(() => setLandOpen(false), []);
   const closeUnit = useCallback(() => setUnitOpen(false), []);
@@ -801,57 +990,10 @@ export function TopBar({
       stacked ? `${ROW} ${on ? ROW_ON : ''}` : `${BTN} ${on ? BTN_ON : BTN_REST}`;
     return (
       <>
-        {/* Finish — the material the customer buys for this room. */}
-        <button
-          ref={finishRef}
-          type="button"
-          onClick={() => setFloorOpen((v) => !v)}
-          data-testid="floor-tool-toggle"
-          className={btn(!!currentFloorId)}
-          title="Finish — choose the floor material for this room"
-          aria-expanded={floorOpen}
-          aria-controls="ppw-pop-finish"
-          aria-label="Finish"
-        >
-          <Icon name="swatch" />
-          <span className={lbl(stacked, '1366')}>Finish</span>
-        </button>
-        <Popover anchor={finishRef} open={floorOpen} onClose={closeFinish} width={224} id="ppw-pop-finish" label="Floor finish">
-          <div data-testid="floor-picker" className="flex flex-col gap-0.5">
-          <button
-            type="button"
-            onClick={() => {
-              if (activeRoom) setRoomFloor(activeRoom.id, null);
-              setFloorOpen(false);
-            }}
-            data-testid="floor-none"
-            className={`${ROW} ${currentFloorId ? '' : ROW_ON}`}
-          >
-            <span className="h-6 w-6 shrink-0 rounded border border-ppw-rim bg-ppw-paper" />
-            No floor finish
-          </button>
-          {FLOOR_MATERIALS.map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => {
-                if (activeRoom) setRoomFloor(activeRoom.id, m.id);
-                setFloorOpen(false);
-              }}
-              data-testid={`floor-material-${m.id}`}
-              className={`${ROW} ${currentFloorId === m.id ? ROW_ON : ''}`}
-            >
-              <span
-                className="h-6 w-6 shrink-0 rounded border border-ppw-rim"
-                style={{ background: m.hex }}
-              />
-              <span className="truncate">{m.name}</span>
-            </button>
-          ))}
-        </div>
-        </Popover>
-
-        {/* Storeys — which floor of the building the canvas shows. */}
+        {/* The whole-room "Finish" picker that used to lead this group is
+            retired (2026-08-30): the Floor tool's Room scope lays a whole
+            room, so one tool covers what two controls used to. */}
+        {/* Storeys — which storey of the building the canvas shows. */}
         <button
           ref={levelsRef}
           type="button"
@@ -1123,6 +1265,7 @@ export function TopBar({
 
   return (
     <header
+      ref={headerRef}
       className="relative z-20 shrink-0 border-b"
       style={{ background: CHROME_BG, borderColor: CHROME_RIM }}
     >
@@ -1208,18 +1351,18 @@ export function TopBar({
               <span className="hidden min-[1700px]:inline">Door</span>
             </button>
             <button
-              ref={paintRef}
               type="button"
               onClick={handleToggleFloorPaint}
               data-testid="floor-paint-toggle"
               className={segOn(floorPaintActive)}
-              title="Paint the floor — click a tile, drag a rectangle, Shift to fill the room, Ctrl to erase"
+              title="Floor — click a tile, drag an area, or Room to lay the whole room. Shift fills the room, Ctrl erases."
               aria-pressed={floorPaintActive}
-              aria-controls="ppw-pop-paint"
-              aria-label="Paint"
+              aria-controls="ppw-floor-panel"
+              aria-label="Floor"
             >
-              <Icon name="roller" />
-              <span className="hidden 2xl:inline">Paint</span>
+              <Icon name="tiles" />
+              {/* Vic could not find the floor — its label shows from 1366. */}
+              <span className="hidden min-[1366px]:inline">Floor</span>
             </button>
             <button
               type="button"
@@ -1364,7 +1507,7 @@ export function TopBar({
                 type="button"
                 onClick={() => setRoomGroupOpen((v) => !v)}
                 className={`${BTN} ${roomGroupOpen ? BTN_ON : BTN_REST} ml-1 lg:ml-2`}
-                title="Room — finish, storeys, plot"
+                title="Room — storeys, plot"
                 aria-expanded={roomGroupOpen}
                 aria-controls="ppw-pop-room"
                 aria-label="Room"
@@ -1571,62 +1714,189 @@ export function TopBar({
         </div>
       )}
 
-      {/* Paint palette — anchored to Paint, tied to the tool (no auto-close:
-          the canvas clicks that paint must not dismiss it). Erase active =
-          ink fill + paper text; scope + erase are two 36 px chips. */}
-      {isMd && (
-      <Popover anchor={paintRef} open={floorPaintActive} width={288} id="ppw-pop-paint" label="Paint palette">
-          <div data-testid="floor-paint-palette" className="flex flex-col gap-0.5">
-        {tileableFloorMaterials().map((m) => (
-          <button
-            key={m.id}
-            type="button"
-            onClick={() => setFloorDraft({ materialId: m.id, erase: false })}
-            data-testid={`floor-paint-${m.id}`}
-            aria-pressed={floorDraft.materialId === m.id && !floorDraft.erase}
-            className={`${ROW} ${floorDraft.materialId === m.id && !floorDraft.erase ? ROW_ON : ''}`}
+      {/* Floor panel (2026-08-30) — DOCKED to the right edge while the Floor
+          tool is on, never a popover over the room. Fixed from the header's
+          bottom edge down to the desktop dock, 272 px, chrome ground + left
+          rim, scrolls internally. Tied to the tool (no outside-click close:
+          the canvas clicks that lay tiles must not dismiss it). Carries
+          `data-ppw-popover` so the other popovers' outside-click handlers
+          treat it as chrome. */}
+      {floorPanelOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <aside
+            id="ppw-floor-panel"
+            role="complementary"
+            aria-label="Floor"
+            data-testid="floor-paint-palette"
+            data-ppw-popover=""
+            className="hidden flex-col overflow-y-auto border-l md:flex"
+            style={{
+              position: 'fixed',
+              top: floorPanelTop,
+              right: 0,
+              bottom: 'var(--sims-dock-h, 0px)',
+              width: FLOOR_PANEL_W,
+              zIndex: 30,
+              background: CHROME_BG,
+              color: CHROME_TEXT,
+              borderColor: CHROME_RIM,
+              boxShadow: '-4px 0 16px rgba(42,41,38,0.08)',
+            }}
           >
-            <span
-              className="h-6 w-6 shrink-0 rounded border border-ppw-rim"
-              style={{ background: m.hex }}
-            />
-            <span className="flex-1 truncate">{m.name}</span>
-            <span
-              className="text-[11px] tabular-nums"
-              style={{ color: floorDraft.materialId === m.id && !floorDraft.erase ? undefined : CHROME_TEXT_2 }}
-            >
-              {m.tile_w_m}×{m.tile_h_m} m
-            </span>
-          </button>
-        ))}
-        <div className="mt-2 flex gap-2 border-t border-ppw-rim pt-2">
-          <button
-            type="button"
-            onClick={() => setFloorDraft({ scope: floorDraft.scope === 'room' ? 'tile' : 'room' })}
-            data-testid="floor-paint-scope"
-            aria-pressed={floorDraft.scope === 'room'}
-            className={`${BTN} h-9 flex-1 ${floorDraft.scope === 'room' ? BTN_ON : BTN_REST}`}
-            title="Fill the whole room in one click (or hold Shift)"
-          >
-            {floorDraft.scope === 'room' ? 'Whole room' : 'By tile'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setFloorDraft({ erase: !floorDraft.erase })}
-            data-testid="floor-paint-erase"
-            aria-pressed={floorDraft.erase}
-            className={`${BTN} h-9 flex-1 ${floorDraft.erase ? BTN_ON : BTN_REST}`}
-            title="Remove floor (or hold Ctrl)"
-          >
-            Erase
-          </button>
-        </div>
-        <p className="mt-2 px-1 text-[11px] leading-snug" style={{ color: CHROME_TEXT_2 }}>
-          Click a tile · drag a rectangle · Shift fills the room · Ctrl erases
-        </p>
-      </div>
-        </Popover>
-      )}
+            <div className="flex flex-col gap-0.5 p-3">
+              {/* Title + the room the tool works on. */}
+              <div className="mb-1 flex items-baseline justify-between gap-2 px-1">
+                <span className="text-[14px] font-semibold text-[#37362f]">Floor</span>
+                <span
+                  className="min-w-0 truncate text-[12px] font-medium"
+                  style={{ color: CHROME_TEXT_2 }}
+                  data-testid="floor-paint-room"
+                >
+                  {floorRoom ? floorRoom.name : 'Draw a room first'}
+                </span>
+              </div>
+
+              {/* Materials — all six K1 SKUs, the roll included. */}
+              {FLOOR_MATERIALS.map((m) => {
+                const on = floorDraft.materialId === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => chooseFloorMaterial(m)}
+                    data-testid={`floor-paint-${m.id}`}
+                    aria-pressed={on}
+                    className={`${ROW} min-h-[44px] py-1 ${on ? ROW_ON : ''}`}
+                    title={m.tile_w_m === null ? `${m.name} — sold by the roll, laid whole-room` : m.name}
+                  >
+                    <span
+                      className="h-6 w-6 shrink-0 overflow-hidden rounded border border-ppw-rim"
+                      style={{ background: m.hex }}
+                    >
+                      {productImageForSku(m.sku) && (
+                        <img src={productImageForSku(m.sku) ?? undefined} alt="" className="h-full w-full object-cover" />
+                      )}
+                    </span>
+                    <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                      <span className="truncate">{m.name}</span>
+                      <span
+                        className="truncate text-[11px] font-medium tabular-nums"
+                        style={{ color: on ? undefined : CHROME_TEXT_2, opacity: on ? 0.85 : 1 }}
+                      >
+                        {floorSizeText(m)} · {floorPriceText(m)}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+
+              {/* Scope — Tile or Room. Room IS the action (fills the active room). */}
+              <div
+                className="mt-2 flex gap-2 border-t border-ppw-rim pt-3"
+                role="radiogroup"
+                aria-label="Floor scope"
+                data-testid="floor-paint-scope"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  onClick={() => setFloorDraft({ scope: 'tile' })}
+                  disabled={floorMaterialIsRoll}
+                  data-testid="floor-paint-scope-tile"
+                  aria-checked={floorScope === 'tile'}
+                  className={`${CHIP} flex-1 ${floorScope === 'tile' ? CHIP_ON : CHIP_REST}`}
+                  title={
+                    floorMaterialIsRoll
+                      ? 'Sold by the roll — whole room only'
+                      : 'Tile — click a tile, drag an area'
+                  }
+                >
+                  Tile
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  onClick={handleFloorRoom}
+                  data-testid="floor-paint-scope-room"
+                  aria-checked={floorScope === 'room'}
+                  className={`${CHIP} flex-1 ${floorScope === 'room' ? CHIP_ON : CHIP_REST}`}
+                  title={
+                    floorDraft.erase
+                      ? 'Room — clears the whole active room now'
+                      : 'Room — lays the whole active room now (or Shift+click on the canvas)'
+                  }
+                >
+                  Room
+                </button>
+              </div>
+
+              {/* Erase toggle + Clear floor. */}
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFloorDraft({ erase: !floorDraft.erase })}
+                  data-testid="floor-paint-erase"
+                  aria-pressed={floorDraft.erase}
+                  className={`${CHIP} flex-1 ${floorDraft.erase ? CHIP_DANGER_ON : CHIP_REST}`}
+                  title="Erase — clicks and drags remove tiles (or hold Ctrl)"
+                >
+                  Erase
+                </button>
+                <button
+                  type="button"
+                  onClick={handleFloorClear}
+                  disabled={!floorRoomHasFloor}
+                  data-testid="floor-paint-clear"
+                  className={`${CHIP} flex-1 ${CHIP_DANGER}`}
+                  title={
+                    floorRoomHasFloor
+                      ? `Remove every floor from ${floorRoom?.name ?? 'this room'}`
+                      : 'This room has no floor yet'
+                  }
+                >
+                  Clear floor
+                </button>
+              </div>
+
+              {/* Live line — the cart's own number for this room. */}
+              <p
+                className="mt-3 px-1 text-[12px] font-semibold tabular-nums text-[#37362f]"
+                data-testid="floor-paint-live"
+                aria-live="polite"
+              >
+                {floorLiveText}
+                {floorPreviewCount > 0 && (
+                  <span className="ml-1 font-medium" style={{ color: CHROME_TEXT_2 }}>
+                    +{floorPreviewCount} tiles
+                  </span>
+                )}
+              </p>
+              <p className="px-1 text-[11px] leading-snug" style={{ color: CHROME_TEXT_2 }}>
+                {!floorRoom
+                  ? 'Draw a room first — Walls'
+                  : floorDraft.erase
+                    ? floorScope === 'room'
+                      ? 'Click inside a room to clear its floor'
+                      : 'Click or drag to remove tiles'
+                    : floorScope === 'room'
+                      ? 'Click inside a room to fill it'
+                      : 'Click a tile · drag an area · Shift fills the room · Ctrl erases'}
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setTool('hand')}
+                data-testid="floor-paint-done"
+                className={`${CHIP} ${CHIP_ON} mt-3 w-full`}
+                title="Done — put the Floor tool away (Esc)"
+              >
+                Done
+              </button>
+            </div>
+          </aside>,
+          document.body,
+        )}
 
       {/* ------------------------------------------------------------------ */}
       {/* Phone sheet — full-height, right, portaled; scrim closes.           */}
@@ -1691,11 +1961,13 @@ export function TopBar({
                   <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{drawMode || wallActive ? 'on' : 'off'}</span>
                 </button>
 
-                {/* Paint floor on the phone (Vic 2026-08-29: The Sims lets you
-                    drag and fill flooring). Same handler as the md+ toolbar
-                    button; the material rows arm the brush. */}
-                <div data-testid="floor-paint-mobile">
+                {/* Floor on the phone (2026-08-30). The Floor row toggles the
+                    tool; tapping a material arms it with that material and
+                    closes the sheet. Scope / Erase / Done live on the canvas
+                    HUD card (RoomCanvas), not here — the sheet is a menu. */}
+                <div data-testid="floor-paint-mobile" style={{ scrollMarginTop: 56 }}>
                   <button
+                    ref={floorRowMobileRef}
                     type="button"
                     onClick={() => {
                       handleToggleFloorPaint();
@@ -1704,40 +1976,45 @@ export function TopBar({
                     data-testid="floor-paint-toggle-mobile"
                     aria-pressed={floorPaintActive}
                     className={`${SHEET_ROW} justify-between ${floorPaintActive ? SHEET_ROW_ON : ''}`}
+                    style={{ scrollMarginTop: 56 }}
                   >
-                    <span className="flex items-center gap-3"><Icon name="roller" size={20} />Paint</span>
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{floorPaintActive ? 'on · tap tiles' : 'off'}</span>
-                  </button>
-                  {tileableFloorMaterials().map((m) => (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onClick={() => {
-                        setFloorDraft({ materialId: m.id, erase: false });
-                        if (!floorPaintActive) handleToggleFloorPaint();
-                        setShowMobileMenu(false);
-                      }}
-                      data-testid={`floor-paint-mobile-${m.id}`}
-                      aria-pressed={floorDraft.materialId === m.id}
-                      className={`${SHEET_ROW} pl-6 ${floorPaintActive && floorDraft.materialId === m.id ? SHEET_ROW_ON : ''}`}
-                    >
-                      <span className="h-6 w-6 shrink-0 rounded border border-ppw-rim" style={{ background: m.hex }} />
-                      <span className="truncate">{m.name}</span>
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFloorDraft({ scope: floorDraft.scope === 'room' ? 'tile' : 'room' });
-                    }}
-                    data-testid="floor-paint-scope-mobile"
-                    className={`${SHEET_ROW} justify-between pl-6`}
-                  >
-                    <span>Brush</span>
-                    <span className="text-[12px] font-semibold" style={{ color: CHROME_TEXT_2 }}>
-                      {floorDraft.scope === 'room' ? 'Fill whole room' : 'Tile by tile'}
+                    <span className="flex items-center gap-3"><Icon name="tiles" size={20} />Floor</span>
+                    <span className="min-w-0 max-w-[55%] truncate text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">
+                      {floorPaintActive ? `on · ${floorMaterial?.name ?? floorDraft.materialId}` : 'off'}
                     </span>
                   </button>
+                  {FLOOR_MATERIALS.map((m) => {
+                    const on = floorPaintActive && floorDraft.materialId === m.id;
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => {
+                          chooseFloorMaterial(m);
+                          if (!floorPaintActive) handleToggleFloorPaint();
+                          setShowMobileMenu(false);
+                        }}
+                        data-testid={`floor-paint-mobile-${m.id}`}
+                        aria-pressed={floorDraft.materialId === m.id}
+                        className={`${SHEET_ROW} pl-6 ${on ? SHEET_ROW_ON : ''}`}
+                      >
+                        <span className="h-6 w-6 shrink-0 overflow-hidden rounded border border-ppw-rim" style={{ background: m.hex }}>
+                          {productImageForSku(m.sku) && (
+                            <img src={productImageForSku(m.sku) ?? undefined} alt="" className="h-full w-full object-cover" />
+                          )}
+                        </span>
+                        <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                          <span className="truncate">{m.name}</span>
+                          <span
+                            className="truncate text-[11px] font-medium tabular-nums"
+                            style={{ color: on ? undefined : CHROME_TEXT_2, opacity: on ? 0.85 : 1 }}
+                          >
+                            {floorSizeText(m)} · {floorPriceText(m)}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* 2 ROOM & PLAN */}
@@ -2022,6 +2299,7 @@ export function TopBar({
             <li><em>Walls</em> or <em>Custom</em>: click to drop wall points. Close the shape for a room, or <em>Finish walls</em> to leave them open.</li>
             <li>Change the unit mid-draw with the − / + chips (keys + and −, or 1–6).</li>
             <li>Drag a product from the dock onto the floor — inside a room or outside in the garden. Items sit flush to walls and tuck into corners.</li>
+            <li><em>Floor</em>: pick a material, then click a tile, drag an area, or press <em>Room</em> to lay the whole room. Shift fills the room, Ctrl erases.</li>
             <li><em>Plot</em> locks the plot size; <em>Storeys</em> adds storeys (PageUp / PageDown).</li>
             <li>Click a placed item to rotate, duplicate, delete, or switch a light on/off.</li>
             <li><em>Save as…</em> (under More) stores the whole property (all storeys, rooms, walls + items).</li>

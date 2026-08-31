@@ -68,9 +68,16 @@ export const DESIGNER_UI_KEY = 'ppw_designer_ui_v1';
  * action, which is what anyone who has used a paint tool expects.
  */
 export interface FloorDraft {
+  /**
+   * The material on the tool. PERSISTED (Floor tool 2026-08-30): the last
+   * material you laid is a preference, exactly like the snap unit — coming
+   * back to the plan and finding the tool reset to the first row is the
+   * kind of thing that makes a floor feel "confusing".
+   */
   materialId: string;
-  /** 'tile' paints what you touch; 'room' fills the whole polygon. */
+  /** 'tile' lays what you touch; 'room' fills the whole polygon. Transient. */
   scope: 'tile' | 'room';
+  /** Transient — an Erase that survived a reload would silently eat floors. */
   erase: boolean;
 }
 
@@ -130,6 +137,12 @@ interface DesignerUIState {
   tool: BuildTool;
   doorDraft: DoorDraft;
   floorDraft: FloorDraft;
+  /**
+   * Tiles the Floor tool's live preview would lay on release (0 when there
+   * is no preview). Published by RoomCanvas so the docked panel / phone HUD
+   * can show "+n tiles" before the click, without subscribing to the canvas.
+   */
+  floorPreviewCount: number;
 
   setInfoOpen: (open: boolean) => void;
   /** Swap precision ↔ lastPrecision (Ctrl+F). */
@@ -138,6 +151,7 @@ interface DesignerUIState {
   setTool: (t: BuildTool) => void;
   setDoorDraft: (patch: Partial<DoorDraft>) => void;
   setFloorDraft: (patch: Partial<FloorDraft>) => void;
+  setFloorPreviewCount: (n: number) => void;
   /** Flip which side of the wall the next door swings toward. */
   toggleDoorFacing: () => void;
   /** Flip which end of the opening the next door hinges on. */
@@ -164,6 +178,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         scope: 'tile',
         erase: false,
       },
+      floorPreviewCount: 0,
 
       setInfoOpen: (open) => set({ infoOpen: open }),
       // A/B swap, not a 6-way cycle: from the default state this is still
@@ -179,6 +194,8 @@ export const useDesignerUIStore = create<DesignerUIState>()(
       setTool: (tool) => set({ tool }),
       setDoorDraft: (patch) => set((s) => ({ doorDraft: { ...s.doorDraft, ...patch } })),
       setFloorDraft: (patch) => set((s) => ({ floorDraft: { ...s.floorDraft, ...patch } })),
+      setFloorPreviewCount: (n) =>
+        set((s) => (s.floorPreviewCount === n ? s : { floorPreviewCount: n })),
       toggleDoorFacing: () =>
         set((s) => ({ doorDraft: { ...s.doorDraft, flipFacing: !s.doorDraft.flipFacing } })),
       toggleDoorHand: () =>
@@ -189,12 +206,28 @@ export const useDesignerUIStore = create<DesignerUIState>()(
       name: DESIGNER_UI_KEY,
       storage: createJSONStorage(() => localStorage),
       version: 1,
-      // Units only. `tool`, `infoOpen` and `doorDraft` are per-session chrome
-      // and must NOT survive a reload.
+      // Units + the Floor tool's material. `tool`, `infoOpen`, `doorDraft`
+      // and the floor SCOPE / ERASE flags are per-session chrome and must
+      // NOT survive a reload.
       partialize: (state) => ({
         precision: state.precision,
         lastPrecision: state.lastPrecision,
+        floorDraft: { materialId: state.floorDraft.materialId },
       }),
+      // The persisted `floorDraft` is a PARTIAL object. zustand's default
+      // merge is shallow, so without this the rehydrated draft would be
+      // `{ materialId }` alone — scope and erase undefined, and the first
+      // stroke after a reload would throw on `.scope`.
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<DesignerUIState> & {
+          floorDraft?: Partial<FloorDraft>;
+        };
+        return {
+          ...current,
+          ...p,
+          floorDraft: { ...current.floorDraft, ...(p.floorDraft ?? {}) },
+        };
+      },
     },
   ),
 );

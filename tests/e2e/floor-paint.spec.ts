@@ -1,12 +1,13 @@
 /**
- * Floor painting — Sims-style per-tile flooring (Vic 2026-08-28).
+ * Floor tool — Sims-style per-tile flooring (Vic 2026-08-28; ONE tool named
+ * "Floor" with a docked panel, 2026-08-30).
  *
  * Vic asked for The Sims' flooring build workflow. The gestures researched
- * and adopted: click paints a tile, drag paints the rectangle between anchor
+ * and adopted: click lays a tile, drag lays the rectangle between anchor
  * and cursor, Shift fills the room, Ctrl erases — and a whole stroke is ONE
  * undo, not one per tile.
  *
- * The commercial half is what a game never has to get right: a painted tile
+ * The commercial half is what a game never has to get right: a laid tile
  * is a tile the customer BUYS, so coverage is by INTERSECTION (the floor
  * reaches the walls and boundary tiles are cut) rather than by tile centre,
  * which would leave a bare margin and quote the room short.
@@ -76,6 +77,8 @@ async function openWithFloorTool(page: Page): Promise<void> {
   await waitForGeom(page);
   await page.waitForTimeout(500);
   await page.locator('[data-testid="floor-paint-toggle"]').click();
+  // The docked Floor panel (NOT a popover over the room) is the tool's
+  // indicator; the material rows live in it.
   await page.waitForSelector('[data-testid="floor-paint-palette"]');
   // 1 m tiles divide the 5 x 4 m fixture room exactly, so the counts below are
   // unambiguous rather than depending on how the boundary is cut.
@@ -105,10 +108,10 @@ async function dragWorld(
   await page.waitForTimeout(350);
 }
 
-test.describe('Floor painting', () => {
+test.describe('Floor tool', () => {
   test.use({ viewport: { width: 1920, height: 1080 } });
 
-  test('a drag paints the rectangle between anchor and cursor', async ({ page }) => {
+  test('a drag lays the rectangle between anchor and cursor', async ({ page }) => {
     const logs: string[] = [];
     page.on('console', (m) => logs.push(m.text()));
 
@@ -153,7 +156,7 @@ test.describe('Floor painting', () => {
     expect(tileCount(await zones(page))).toBe(20);
   });
 
-  test('paint does not leak into the neighbouring room', async ({ page }) => {
+  test('a stroke does not leak into the neighbouring room', async ({ page }) => {
     await openWithFloorTool(page);
 
     // Drag from inside room 1 well past the shared x = 5 wall into room 2.
@@ -165,7 +168,7 @@ test.describe('Floor painting', () => {
     expect(tileCount(await zones(page, 1))).toBe(0);
   });
 
-  test('painted tiles survive a reload', async ({ page }) => {
+  test('laid tiles survive a reload', async ({ page }) => {
     await openWithFloorTool(page);
     await dragWorld(page, { x: 1.5, y: 1.5 }, { x: 1.5, y: 1.5 }, { shift: true });
     expect(tileCount(await zones(page))).toBe(20);
@@ -175,7 +178,7 @@ test.describe('Floor painting', () => {
     await page.waitForTimeout(600);
 
     // The whitelist trap: omit floorTiles from normaliseLoadedRoom and a
-    // painted floor vanishes on the first save/load round trip.
+    // laid floor vanishes on the first save/load round trip.
     expect(tileCount(await zones(page))).toBe(20);
   });
 

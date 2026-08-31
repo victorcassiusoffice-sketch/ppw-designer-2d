@@ -1,0 +1,525 @@
+[
+  {
+    "project": "phone390",
+    "tag": "dev",
+    "locate": "window.Konva.stages container rect + stage x/y/scale",
+    "before": {
+      "width": 390,
+      "isXl": false,
+      "isMd": false,
+      "finishToggleCount": 0,
+      "finishToggleVisible": false,
+      "roomBtnCount": 0,
+      "roomBtnVisible": false,
+      "menuBtnVisible": true,
+      "paintToggleVisible": false,
+      "cart": "-"
+    },
+    "roomBox": {
+      "x0": 40,
+      "y0": 223,
+      "x1": 350,
+      "y1": 471
+    },
+    "scale": 0.62,
+    "pxBefore": "[135,134,130,255] [0,0,0,0] [0,0,0,0]",
+    "storedBefore": {
+      "floorFinish": null,
+      "zones": [],
+      "tiles": 0
+    },
+    "sheet": {
+      "open": 1,
+      "finishToggleInSheet": 0,
+      "floorMaterialRows": 0,
+      "textFinish": 0,
+      "paintMobileRows": 5,
+      "epdmPaintRow": 0,
+      "sheetText": "Menu BUILD Walls OFF Paint OFF Gym Interlock Tile 92×92 EVA Combat Mat 1×1 m Rubber Composite 50×50 Outdoor Rubber 1×1 m Outdoor Rubber 50×50 Brush Tile by tile ROOM & PLAN Box Custom STOREYS Ground floor HERE + Add floor above PLOT · UNLIMITED × Lock VIEW Snap unit 1 cm 10 cm 0.25 m 0.5 m 1 m 10 m Grid · 0.5 m ON PLAN FILES New property Save as… Load 0 My designs (cloud) SHOP Currency MUR USD EUR GBP approximate rates Cart 0 ← Back to Shop Help Request quote"
+    },
+    "route": "phone sheet",
+    "clicksToApply": 1,
+    "scopeRow": "Brush Fill whole room",
+    "hud": "Paint on · Done",
+    "paletteMounted": 0,
+    "phonePaintFill": {
+      "tapAt": {
+        "x": 195,
+        "y": 347
+      },
+      "stored": {
+        "floorFinish": null,
+        "zones": [
+          "gym-interlock"
+        ],
+        "tiles": 30
+      },
+      "px": "[61,61,59,255] [0,0,0,0] [0,0,0,0]",
+      "pxCorner": "[73,73,73,255] [0,0,0,0] [0,0,0,0]",
+      "cart": "31 $1,102.22"
+    },
+    "errors": []
+  },
+  {
+    "project": "w767",
+    "tag": "dev",
+    "locate": "window.Konva.stages container rect + stage x/y/scale",
+    "before": {
+      "width": 767,
+      "isXl": false,
+      "isMd": false,
+      "finishToggleCount": 0,
+      "finishToggleVisible": false,
+      "roomBtnCount": 0,
+      "roomBtnVisible": false,
+      "menuBtnVisible": true,
+      "paintToggleVisible": false,
+      "cart": "-"
+    },
+    "roomBox": {
+      "x0": 133.5,
+      "y0": 109,
+      "x1": 633.5,
+      "y1": 509
+    },
+    "scale": 1,
+    "pxBefore": "[240,238,233,255] [0,0,0,0] [0,0,0,0]",
+    "storedBefore": {
+      "floorFinish": null,
+      "zones": [],
+      "tiles": 0
+    },
+    "sheet": {
+      "open": 1,
+      "finishToggleInSheet": 0,
+      "floorMaterialRows": 0,
+      "textFinish": 0,
+      "paintMobileRows": 5,
+      "epdmPaintRow": 0,
+      "sheetText": "Menu BUILD Walls OFF Paint OFF Gym Interlock Tile 92×92 EVA Combat Mat 1×1 m Rubber Composite 50×50 Outdoor Rubber 1×1 m Outdoor Rubber 50×50 Brush Tile by tile ROOM & PLAN Box Custom STOREYS Ground floor HERE + Add floor above PLOT · UNLIMITED × Lock VIEW Snap unit 1 cm 10 cm 0.25 m 0.5 m 1 m 10 m Grid · 0.5 m ON PLAN FILES New property Save as… Load 0 My designs (cloud) SHOP Currency MUR USD EUR GBP approximate rates Cart 0 ← Back to Shop Help Request quote"
+    },
+    "route": "phone sheet",
+    "clicksToApply": 1,
+    "errors": []
+  },
+  {
+    "project": "w768",
+    "tag": "dev",
+    "locate": "window.Konva.stages container rect + stage x/y/scale",
+    "before": {
+      "width": 768,
+      "isXl": false,
+      "isMd": true,
+      "finishToggleCount": 0,
+      "finishToggleVisible": false,
+      "roomBtnCount": 1,
+      "roomBtnVisible": true,
+      "menuBtnVisible": false,
+      "paintToggleVisible": true,
+      "cart": "-"
+    },
+    "roomBox": {
+      "x0": 134,
+      "y0": 107,
+      "x1": 634,
+      "y1": 507
+    },
+    "scale": 1,
+    "pxBefore": "[237,235,230,255] [0,0,0,0] [0,0,0,0]",
+    "storedBefore": {
+      "floorFinish": null,
+      "zones": [],
+      "tiles": 0
+    },
+    "afterRoomClick": {
+      "finishToggleVisible": true,
+      "roomPopover": 1
+    },
+    "finishBtnBox": {
+      "x": 433.5625,
+      "y": 59,
+      "width": 214,
+      "height": 36
+    },
+    "pickerVisible": true,
+    "pickerBox": {
+      "x": 442.5625,
+      "y": 108,
+      "width": 206,
+      "height": 264
+    },
+    "pickerMaterials": 6,
+    "pickerHasEpdm": 1,
+    "storedAfter": {
+      "floorFinish": {
+        "materialId": "gym-interlock"
+      },
+      "zones": [],
+      "tiles": 0
+    },
+    "pxAfter": "[73,73,72,255] [0,0,0,0] [0,0,0,0]",
+    "after": {
+      "width": 768,
+      "isXl": false,
+      "isMd": true,
+      "finishToggleCount": 1,
+      "finishToggleVisible": true,
+      "roomBtnCount": 1,
+      "roomBtnVisible": true,
+      "menuBtnVisible": false,
+      "paintToggleVisible": true,
+      "cart": "31 $1,102.22"
+    },
+    "route": "Room popover",
+    "clicksToApply": 3,
+    "errors": []
+  },
+  {
+    "project": "w1024",
+    "tag": "dev",
+    "locate": "window.Konva.stages container rect + stage x/y/scale",
+    "before": {
+      "width": 1024,
+      "isXl": false,
+      "isMd": true,
+      "finishToggleCount": 0,
+      "finishToggleVisible": false,
+      "roomBtnCount": 1,
+      "roomBtnVisible": true,
+      "menuBtnVisible": false,
+      "paintToggleVisible": true,
+      "cart": "-"
+    },
+    "roomBox": {
+      "x0": 262,
+      "y0": 169.5,
+      "x1": 762,
+      "y1": 569.5
+    },
+    "scale": 1,
+    "pxBefore": "[250,248,243,255] [0,0,0,0] [0,0,0,0]",
+    "storedBefore": {
+      "floorFinish": null,
+      "zones": [],
+      "tiles": 0
+    },
+    "afterRoomClick": {
+      "finishToggleVisible": true,
+      "roomPopover": 1
+    },
+    "finishBtnBox": {
+      "x": 472.359375,
+      "y": 59,
+      "width": 214,
+      "height": 36
+    },
+    "pickerVisible": true,
+    "pickerBox": {
+      "x": 481.359375,
+      "y": 108,
+      "width": 206,
+      "height": 264
+    },
+    "pickerMaterials": 6,
+    "pickerHasEpdm": 1,
+    "storedAfter": {
+      "floorFinish": {
+        "materialId": "gym-interlock"
+      },
+      "zones": [],
+      "tiles": 0
+    },
+    "pxAfter": "[76,76,75,255] [0,0,0,0] [0,0,0,0]",
+    "after": {
+      "width": 1024,
+      "isXl": false,
+      "isMd": true,
+      "finishToggleCount": 1,
+      "finishToggleVisible": true,
+      "roomBtnCount": 1,
+      "roomBtnVisible": true,
+      "menuBtnVisible": false,
+      "paintToggleVisible": true,
+      "cart": "31 $1,102.22"
+    },
+    "route": "Room popover",
+    "clicksToApply": 3,
+    "errors": []
+  },
+  {
+    "project": "w1279",
+    "tag": "dev",
+    "locate": "window.Konva.stages container rect + stage x/y/scale",
+    "before": {
+      "width": 1279,
+      "isXl": false,
+      "isMd": true,
+      "finishToggleCount": 0,
+      "finishToggleVisible": false,
+      "roomBtnCount": 1,
+      "roomBtnVisible": true,
+      "menuBtnVisible": false,
+      "paintToggleVisible": true,
+      "cart": "-"
+    },
+    "roomBox": {
+      "x0": 389.5,
+      "y0": 169.5,
+      "x1": 889.5,
+      "y1": 569.5
+    },
+    "scale": 1,
+    "pxBefore": "[253,251,246,255] [0,0,0,0] [0,0,0,0]",
+    "storedBefore": {
+      "floorFinish": null,
+      "zones": [],
+      "tiles": 0
+    },
+    "afterRoomClick": {
+      "finishToggleVisible": true,
+      "roomPopover": 1
+    },
+    "finishBtnBox": {
+      "x": 472.359375,
+      "y": 59,
+      "width": 214,
+      "height": 36
+    },
+    "pickerVisible": true,
+    "pickerBox": {
+      "x": 481.359375,
+      "y": 108,
+      "width": 206,
+      "height": 264
+    },
+    "pickerMaterials": 6,
+    "pickerHasEpdm": 1,
+    "storedAfter": {
+      "floorFinish": {
+        "materialId": "gym-interlock"
+      },
+      "zones": [],
+      "tiles": 0
+    },
+    "pxAfter": "[77,77,76,255] [0,0,0,0] [0,0,0,0]",
+    "after": {
+      "width": 1279,
+      "isXl": false,
+      "isMd": true,
+      "finishToggleCount": 1,
+      "finishToggleVisible": true,
+      "roomBtnCount": 1,
+      "roomBtnVisible": true,
+      "menuBtnVisible": false,
+      "paintToggleVisible": true,
+      "cart": "31 $1,102.22"
+    },
+    "route": "Room popover",
+    "clicksToApply": 3,
+    "errors": []
+  },
+  {
+    "project": "w1280",
+    "tag": "dev",
+    "locate": "window.Konva.stages container rect + stage x/y/scale",
+    "before": {
+      "width": 1280,
+      "isXl": true,
+      "isMd": true,
+      "finishToggleCount": 1,
+      "finishToggleVisible": true,
+      "roomBtnCount": 0,
+      "roomBtnVisible": false,
+      "menuBtnVisible": false,
+      "paintToggleVisible": true,
+      "cart": "-"
+    },
+    "roomBox": {
+      "x0": 390,
+      "y0": 169.5,
+      "x1": 890,
+      "y1": 569.5
+    },
+    "scale": 1,
+    "pxBefore": "[250,248,243,255] [0,0,0,0] [0,0,0,0]",
+    "storedBefore": {
+      "floorFinish": null,
+      "zones": [],
+      "tiles": 0
+    },
+    "finishBtnBox": {
+      "x": 550.515625,
+      "y": 6,
+      "width": 40,
+      "height": 40
+    },
+    "pickerVisible": true,
+    "pickerBox": {
+      "x": 559.515625,
+      "y": 59,
+      "width": 206,
+      "height": 264
+    },
+    "pickerMaterials": 6,
+    "pickerHasEpdm": 1,
+    "storedAfter": {
+      "floorFinish": {
+        "materialId": "gym-interlock"
+      },
+      "zones": [],
+      "tiles": 0
+    },
+    "pxAfter": "[76,76,75,255] [0,0,0,0] [0,0,0,0]",
+    "after": {
+      "width": 1280,
+      "isXl": true,
+      "isMd": true,
+      "finishToggleCount": 1,
+      "finishToggleVisible": true,
+      "roomBtnCount": 0,
+      "roomBtnVisible": false,
+      "menuBtnVisible": false,
+      "paintToggleVisible": true,
+      "cart": "31 $1,102.22"
+    },
+    "route": "inline",
+    "clicksToApply": 2,
+    "errors": []
+  },
+  {
+    "project": "w1366",
+    "tag": "dev",
+    "locate": "window.Konva.stages container rect + stage x/y/scale",
+    "before": {
+      "width": 1366,
+      "isXl": true,
+      "isMd": true,
+      "finishToggleCount": 1,
+      "finishToggleVisible": true,
+      "roomBtnCount": 0,
+      "roomBtnVisible": false,
+      "menuBtnVisible": false,
+      "paintToggleVisible": true,
+      "cart": "-"
+    },
+    "roomBox": {
+      "x0": 433,
+      "y0": 169.5,
+      "x1": 933,
+      "y1": 569.5
+    },
+    "scale": 1,
+    "pxBefore": "[250,248,243,255] [0,0,0,0] [0,0,0,0]",
+    "storedBefore": {
+      "floorFinish": null,
+      "zones": [],
+      "tiles": 0
+    },
+    "finishBtnBox": {
+      "x": 550.515625,
+      "y": 6,
+      "width": 74.03125,
+      "height": 40
+    },
+    "pickerVisible": true,
+    "pickerBox": {
+      "x": 559.515625,
+      "y": 59,
+      "width": 206,
+      "height": 264
+    },
+    "pickerMaterials": 6,
+    "pickerHasEpdm": 1,
+    "storedAfter": {
+      "floorFinish": {
+        "materialId": "gym-interlock"
+      },
+      "zones": [],
+      "tiles": 0
+    },
+    "pxAfter": "[76,76,75,255] [0,0,0,0] [0,0,0,0]",
+    "after": {
+      "width": 1366,
+      "isXl": true,
+      "isMd": true,
+      "finishToggleCount": 1,
+      "finishToggleVisible": true,
+      "roomBtnCount": 0,
+      "roomBtnVisible": false,
+      "menuBtnVisible": false,
+      "paintToggleVisible": true,
+      "cart": "31 $1,102.22"
+    },
+    "route": "inline",
+    "clicksToApply": 2,
+    "errors": []
+  },
+  {
+    "project": "w1920",
+    "tag": "dev",
+    "locate": "window.Konva.stages container rect + stage x/y/scale",
+    "before": {
+      "width": 1920,
+      "isXl": true,
+      "isMd": true,
+      "finishToggleCount": 1,
+      "finishToggleVisible": true,
+      "roomBtnCount": 0,
+      "roomBtnVisible": false,
+      "menuBtnVisible": false,
+      "paintToggleVisible": true,
+      "cart": "-"
+    },
+    "roomBox": {
+      "x0": 710,
+      "y0": 325.5,
+      "x1": 1210,
+      "y1": 725.5
+    },
+    "scale": 1,
+    "pxBefore": "[250,248,243,255] [0,0,0,0] [0,0,0,0]",
+    "storedBefore": {
+      "floorFinish": null,
+      "zones": [],
+      "tiles": 0
+    },
+    "finishBtnBox": {
+      "x": 695.25,
+      "y": 6,
+      "width": 74.03125,
+      "height": 40
+    },
+    "pickerVisible": true,
+    "pickerBox": {
+      "x": 704.25,
+      "y": 59,
+      "width": 206,
+      "height": 264
+    },
+    "pickerMaterials": 6,
+    "pickerHasEpdm": 1,
+    "storedAfter": {
+      "floorFinish": {
+        "materialId": "gym-interlock"
+      },
+      "zones": [],
+      "tiles": 0
+    },
+    "pxAfter": "[76,76,75,255] [0,0,0,0] [0,0,0,0]",
+    "after": {
+      "width": 1920,
+      "isXl": true,
+      "isMd": true,
+      "finishToggleCount": 1,
+      "finishToggleVisible": true,
+      "roomBtnCount": 0,
+      "roomBtnVisible": false,
+      "menuBtnVisible": false,
+      "paintToggleVisible": true,
+      "cart": "31 $1,102.22"
+    },
+    "route": "inline",
+    "clicksToApply": 2,
+    "errors": []
+  }
+]

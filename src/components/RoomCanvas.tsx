@@ -167,6 +167,7 @@ import {
   GREENERY_STROKE,
   ITEM_SHADOW,
   measureFontSize,
+  CHROME_DANGER,
 } from '../designer/blueprintTheme';
 // Attached multi-room (Vic 2026-08-26) — all rooms on one canvas, new rooms
 // drawn attached to existing ones, products routed into whichever room they
@@ -212,9 +213,15 @@ import {
   tilesInDragRect,
   tilesCoveringPolygon,
   dragRectTileCount,
+  roomFloorOrders,
   type FloorZone,
 } from '../designer/floorTiles';
 import { findFloorMaterialById } from '../data/floorMaterials';
+import { productImageForSku } from '../data/products';
+// Floor tool (2026-08-30): the phone HUD card's live "n tiles · £x" line
+// uses the cart's own conversion so the two can never disagree.
+import { convert } from '../lib/fx';
+import { useCurrencyStore } from '../store/currencyStore';
 import { nextRoomName } from '../designer/roomNaming';
 import { obstaclesFor } from '../designer/layerBands';
 // Surface slots + wall-mounted items (2026-08-24) — placement:'wall'
@@ -550,6 +557,14 @@ export function RoomCanvas({
   // (so the fit reads WHERE the card sits over the stage, at any width).
   const drawHudRef = useRef<HTMLDivElement | null>(null);
   const [drawHudH, setDrawHudH] = useState(0);
+  // Floor tool (2026-08-30): the phone Floor HUD card — same mechanism as
+  // the wall-pen card above (ref for WHERE it sits, height state so the
+  // fit effect re-runs when it grows). `floorTool` is declared HERE (not
+  // with the rest of the floor-tool state below) because the fit-to-view
+  // effect reads it.
+  const floorTool = tool === 'floor';
+  const floorHudRef = useRef<HTMLDivElement | null>(null);
+  const [floorHudH, setFloorHudH] = useState(0);
   const itemDragRef = useRef<{ instanceId: string | null; moved: boolean }>({
     instanceId: null,
     moved: false,
@@ -817,21 +832,46 @@ export function RoomCanvas({
       const box = containerRef.current.getBoundingClientRect();
       bottomInset = Math.max(0, Math.min(box.height - 120, box.bottom - hud.top + 12));
     }
+    // Floor tool (2026-08-30): the phone Floor HUD card gets the same
+    // treatment as the pen card — the band from its top edge down is
+    // unavailable, so the seeded room re-centres ABOVE the card.
+    if (floorTool && floorHudH > 0 && floorHudRef.current && containerRef.current) {
+      const hud = floorHudRef.current.getBoundingClientRect();
+      const box = containerRef.current.getBoundingClientRect();
+      bottomInset = Math.max(
+        bottomInset,
+        Math.max(0, Math.min(box.height - 120, box.bottom - hud.top + 12)),
+      );
+    }
+    // Floor tool (2026-08-30): from md up the docked Floor panel overlays
+    // the right edge of the stage. TopBar publishes its width as
+    // --floor-panel-w (0px closed / below md); subtracting the overlap
+    // re-centres the room in the VISIBLE area so the panel never covers it.
+    let rightInset = 0;
+    if (floorTool && containerRef.current) {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--floor-panel-w');
+      const px = Number.parseFloat(raw);
+      if (Number.isFinite(px) && px > 0) {
+        const box = containerRef.current.getBoundingClientRect();
+        rightInset = Math.max(0, Math.min(box.width - 160, box.right - (window.innerWidth - px)));
+      }
+    }
     const availH = stageSize.height - bottomInset;
+    const availW = stageSize.width - rightInset;
     // Attached multi-room: centre + FIT the whole plan, not the active room.
     // This used to hardcode scale 1 with a 40 px minimum clamp, which pinned
     // a union wider than the stage off-screen with no way back except Reset.
     const scale = Math.max(
       MIN_SCALE,
-      Math.min(1, (stageSize.width - 80) / unionWpx, (availH - 80) / unionHpx),
+      Math.min(1, (availW - 80) / unionWpx, (availH - 80) / unionHpx),
     );
     setViewport({
-      x: (stageSize.width - unionWpx * scale) / 2 - union.minX * pxPerMetre * scale,
+      x: (availW - unionWpx * scale) / 2 - union.minX * pxPerMetre * scale,
       y: (availH - unionHpx * scale) / 2 - union.minY * pxPerMetre * scale,
       scale,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, pxPerMetre, drawMode, drawHudH]);
+  }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, pxPerMetre, drawMode, drawHudH, floorTool, floorHudH]);
 
   function handleWheel(e: Konva.KonvaEventObject<WheelEvent>) {
     e.evt.preventDefault();
@@ -907,6 +947,9 @@ export function RoomCanvas({
           y: (stageY - viewport.y) / viewport.scale,
         },
       };
+      // A second finger means pinch, not a floor stroke — drop any anchor
+      // so lifting the fingers cannot commit one (Floor tool 2026-08-30).
+      floorAnchorRef.current = null;
       e.preventDefault();
     }
 
@@ -1967,10 +2010,17 @@ export function RoomCanvas({
    */
   const doorTool = tool === 'door';
   const measureTool = tool === 'measure';
-  const floorTool = tool === 'floor';
+  // (floorTool is declared up beside the HUD refs — the fit effect needs it.)
   const floorDraft = useDesignerUIStore((st) => st.floorDraft);
-  /** Anchor of an in-progress paint drag, in world metres. */
-  const floorAnchorRef = useRef<{ x: number; y: number; roomId: string } | null>(null);
+  const setFloorDraft = useDesignerUIStore((st) => st.setFloorDraft);
+  const setFloorPreviewCount = useDesignerUIStore((st) => st.setFloorPreviewCount);
+  /**
+   * Anchor of an in-progress floor stroke, in world metres. `roomId` is
+   * null when the press landed outside every room — kept (rather than not
+   * anchoring at all) so a Room-scope release can still say "tap inside a
+   * room" instead of silently no-oping.
+   */
+  const floorAnchorRef = useRef<{ x: number; y: number; roomId: string | null } | null>(null);
   const [floorPreview, setFloorPreview] = useState<{
     zone: FloorZone;
     keys: string[];
@@ -2002,11 +2052,21 @@ export function RoomCanvas({
     [floorDraft.materialId],
   );
 
-  /** World point -> the room under it, via the same routing placement uses. */
+  /**
+   * World point -> the room under it. LEVEL-FILTERED (Floor tool
+   * 2026-08-30): the old lookup scanned every room on every storey, so on
+   * an upper level a stroke could land in the ground-floor room directly
+   * beneath the cursor. Only drawn, indoor rooms on the ACTIVE level can
+   * take a floor.
+   */
   const floorRoomAt = useCallback((xM: number, yM: number) => {
-    const rooms2 = usePropertyStore.getState().property.rooms;
-    return findRoomAt({ x: xM, y: yM }, rooms2, activeRoomId);
-  }, [activeRoomId]);
+    const ps = usePropertyStore.getState();
+    const lvl = activeLevelIdOf(ps.property);
+    const levelRooms = roomsOnLevel(ps.property.rooms, lvl).filter(
+      (r) => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon),
+    );
+    return findRoomAt({ x: xM, y: yM }, levelRooms, ps.property.activeRoomId);
+  }, []);
 
   const floorWorldPoint = useCallback(
     (clientX: number, clientY: number) => {
@@ -2032,6 +2092,191 @@ export function RoomCanvas({
     },
     [],
   );
+
+  /**
+   * The Floor tool's release handler — ONE path for mouse and touch. The
+   * stroke is bound to Stage POINTER events (Floor tool 2026-08-30): the
+   * old mouse-only binding is why a one-finger phone drag laid nothing.
+   *
+   * Room scope (the scope chip, Shift, or a roll material) fills/clears the
+   * pressed room via the store's own fillRoomFloor / clearRoomFloor, so a
+   * fill is one undo frame and the roll path routes to the whole-room
+   * finish. Tile scope keeps the drag-rectangle stroke.
+   */
+  const commitFloorAt = useCallback(
+    (evt: PointerEvent) => {
+      const anchor = floorAnchorRef.current;
+      floorAnchorRef.current = null;
+      setFloorPreview(null);
+      if (!anchor) return;
+      const w = floorWorldPoint(evt.clientX, evt.clientY);
+      if (!w) return;
+      const mat = findFloorMaterialById(floorDraft.materialId);
+      const erase = evt.ctrlKey || evt.metaKey || floorDraft.erase;
+      const fillRoom =
+        evt.shiftKey || floorDraft.scope === 'room' || (mat ? mat.tile_w_m === null : false);
+      const room = anchor.roomId
+        ? usePropertyStore.getState().property.rooms.find((r) => r.id === anchor.roomId)
+        : undefined;
+      if (fillRoom) {
+        if (!room) {
+          pushToast('Tap inside a room to fill it', 'warn');
+          console.log('[floor-paint]', { reason: 'refused', cause: 'no-room' });
+          return;
+        }
+        if (erase) {
+          usePropertyStore.getState().clearRoomFloor(room.id);
+          pushToast(`${room.name} — floor cleared`, 'info');
+          console.log('[floor-paint]', { reason: 'clear-room', roomId: room.id });
+          return;
+        }
+        if (!mat) return;
+        const n = usePropertyStore.getState().fillRoomFloor(room.id, mat.id);
+        pushToast(
+          mat.tile_w_m === null
+            ? `${room.name} — ${mat.name} laid`
+            : `${room.name} — ${n} tiles laid`,
+          'success',
+        );
+        console.log('[floor-paint]', { reason: 'fill-room', roomId: room.id, tiles: n });
+        return;
+      }
+      if (!room) {
+        console.log('[floor-paint]', { reason: 'refused', cause: 'no-room' });
+        return;
+      }
+      // A room already covered by a roll has no lattice to stroke onto.
+      const finish = roomFloorMaterial(room);
+      if (finish && finish.tile_w_m === null) {
+        pushToast('This floor is a roll — Clear floor first', 'warn');
+        console.log('[floor-paint]', { reason: 'refused', cause: 'roll-floor', roomId: room.id });
+        return;
+      }
+      const zone = floorZoneFor(room);
+      if (!zone) return;
+      const pending = dragRectTileCount(zone, { x: anchor.x, y: anchor.y }, { x: w.xM, y: w.yM });
+      if (pending > MAX_TILES_PER_STROKE) {
+        pushToast('That area is too large to lay in one go.', 'warn');
+        console.log('[floor-paint]', { reason: 'refused', cause: 'too-many-tiles', pending });
+        return;
+      }
+      const tiles = tilesInDragRect(
+        zone,
+        { x: anchor.x, y: anchor.y },
+        { x: w.xM, y: w.yM },
+        room.polygon,
+      );
+      commitFloorStroke(
+        room.id,
+        zone,
+        tiles.map((t) => String(t.row) + ',' + String(t.col)),
+        erase,
+      );
+    },
+    [floorDraft, floorWorldPoint, floorZoneFor, commitFloorStroke, pushToast],
+  );
+
+  // Tool off → no stale anchor or preview (a stroke must not survive into
+  // the hand tool and commit on some later pointerup).
+  useEffect(() => {
+    if (floorTool) return;
+    floorAnchorRef.current = null;
+    setFloorPreview(null);
+  }, [floorTool]);
+
+  // Publish the live preview's tile count so the docked Floor panel
+  // (TopBar) can show "+n tiles" before the click without subscribing to
+  // canvas state. 0 while erasing — the line reads as an addition.
+  useEffect(() => {
+    setFloorPreviewCount(
+      floorTool && floorPreview && !floorPreview.erase ? floorPreview.keys.length : 0,
+    );
+  }, [floorTool, floorPreview, setFloorPreviewCount]);
+
+  // ---- Floor tool, phone HUD card state (2026-08-30) ---------------------
+  const displayCurrency = useCurrencyStore((s) => s.currency);
+  const fx = useCurrencyStore((s) => s.fx);
+  const floorMat = findFloorMaterialById(floorDraft.materialId);
+  const floorMatIsRoll = !!floorMat && floorMat.tile_w_m === null;
+  /** A roll forces Room scope (there is no lattice to lay tile by tile). */
+  const floorScope: 'tile' | 'room' = floorMatIsRoll ? 'room' : floorDraft.scope;
+  /** The drawn, indoor room the tool works on — the active room or nothing. */
+  const floorActiveRoom = useMemo(() => {
+    const r = allRooms.find((x) => x.id === activeRoomId);
+    return r && isDrawnPolygon(r.polygon) && !isOutdoorRoom(r) ? r : null;
+  }, [allRooms, activeRoomId]);
+  /** Live "n tiles · £x" for the active room — the cart's own derivation. */
+  const floorHudLive = useMemo(() => {
+    if (!floorActiveRoom) return null;
+    let units = 0;
+    let cost = 0;
+    let unit: 'tile' | 'roll' = 'tile';
+    for (const { materialId, order } of roomFloorOrders(floorActiveRoom)) {
+      const m = findFloorMaterialById(materialId);
+      if (!m) continue;
+      units += order.unitsToOrder;
+      cost += order.unitsToOrder * convert(m.price_per_unit_mur, 'MUR', displayCurrency, fx);
+      if (m.unit === 'roll') unit = 'roll';
+    }
+    return { units, cost, unit };
+  }, [floorActiveRoom, displayCurrency, fx]);
+
+  /**
+   * The phone HUD's "Fill room" chip IS the action (mirrors the desktop
+   * panel's Room chip): it lays — or with Erase on, clears — the active
+   * room immediately, then stays selected.
+   */
+  const handleFloorHudFillRoom = useCallback(() => {
+    setFloorDraft({ scope: 'room' });
+    const room = floorActiveRoom;
+    if (!room) {
+      pushToast('Draw a room first — Walls', 'warn');
+      return;
+    }
+    if (floorDraft.erase) {
+      usePropertyStore.getState().clearRoomFloor(room.id);
+      pushToast(`${room.name} — floor cleared`, 'info');
+      return;
+    }
+    const mat = findFloorMaterialById(floorDraft.materialId);
+    if (!mat) return;
+    const n = usePropertyStore.getState().fillRoomFloor(room.id, mat.id);
+    pushToast(
+      mat.tile_w_m === null ? `${room.name} — ${mat.name} laid` : `${room.name} — ${n} tiles laid`,
+      'success',
+    );
+  }, [floorActiveRoom, floorDraft.erase, floorDraft.materialId, setFloorDraft, pushToast]);
+
+  /** The phone HUD card mounts while the tool is on (md:hidden hides it on
+   *  desktop, where the docked panel is the indicator). */
+  const floorHudOn = floorTool && !drawMode;
+  // Publish the card's live height as --draw-hud-h (the same var the
+  // wall-pen card owns — the two tools are mutually exclusive on screen)
+  // and keep a local copy for the fit-to-view bottom inset. 0 px the moment
+  // the card unmounts, and 0 naturally on md+ (display:none → offsetHeight
+  // 0). ResizeObserver is absent in jsdom — the one-shot apply is all that
+  // runs there.
+  useEffect(() => {
+    const root = document.documentElement;
+    const el = floorHudRef.current;
+    const publish = (h: number) => {
+      root.style.setProperty('--draw-hud-h', `${h}px`);
+      setFloorHudH(h);
+    };
+    if (!floorHudOn || !el) {
+      publish(0);
+      return undefined;
+    }
+    const apply = () => publish(el.offsetHeight);
+    apply();
+    if (typeof ResizeObserver === 'undefined') return () => publish(0);
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      publish(0);
+    };
+  }, [floorHudOn]);
 
   /**
    * Sims drag-drop, effect (a) - a live drag ARMS the existing FSM.
@@ -2254,7 +2499,9 @@ export function RoomCanvas({
         className="pointer-events-none absolute z-10 flex flex-col items-end gap-2"
         style={{
           top: 'max(1rem, env(safe-area-inset-top))',
-          right: 'max(1rem, env(safe-area-inset-right))',
+          // Floor tool (2026-08-31 check R1): slide left of the docked
+          // panel so Reset / Share / Capture + the readouts stay visible.
+          right: 'calc(max(1rem, env(safe-area-inset-right)) + var(--floor-panel-w, 0px))',
         }}
       >
         {/* Declutter 2026-07-26 (Vic directive 2): the top-right used to be a
@@ -2390,25 +2637,145 @@ export function RoomCanvas({
         >
           {formatCurrency(costReadout.total, costReadout.currency)}
         </div>
-        {/* Sims flooring (2026-08-29): the brush is ON. On the phone the
-            toolbar's teal Paint-floor button is hidden, so without this chip
-            nothing says why taps paint instead of select. Tap = hand tool.
-            Lives in this right-hand column so it never covers the desktop
-            material palette (which drops down from the toolbar). */}
-        {floorTool && !drawMode && (
-          <button
-            type="button"
-            onClick={() => setTool('hand')}
-            data-testid="floor-paint-hud"
-            // mr-12 on the phone: the round ? help button sits at this
-            // height on the right edge and would cover "Done".
-            className={`${OVL_CTRL} ${OVL_ACTIVE} mr-12 h-11 px-3 md:mr-0 md:h-10`}
-            title="Paint is on: tap a tile, drag a rectangle, Shift fills the room. Tap here to stop painting."
-          >
-            Paint on · Done
-          </button>
-        )}
       </div>
+
+      {/* Floor tool HUD card (PHONE, 2026-08-30). Replaces the old
+          "Paint on · Done" chip. md:hidden — from md up the docked Floor
+          panel (TopBar) is the tool's indicator. Bottom-anchored exactly
+          like the wall-pen card: above the Sims toolbar's live height plus
+          the 56 px Clear/cart band; publishes --draw-hud-h so the fit
+          keeps the room above it. */}
+      {floorHudOn && (
+        <div
+          ref={floorHudRef}
+          data-testid="floor-paint-hud"
+          className="pointer-events-auto fixed left-1/2 z-30 flex w-[min(94vw,420px)] -translate-x-1/2 flex-col gap-1.5 rounded-xl p-2 text-xs md:hidden bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-toolbar-h,0px)_+_56px)]"
+          style={{
+            background: CHROME_BG,
+            border: `1px solid ${CHROME_RIM}`,
+            boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
+            color: CHROME_TEXT,
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-6 w-6 shrink-0 overflow-hidden rounded"
+              style={{
+                background: floorMat?.hex ?? '#8a8a84',
+                border: `1px solid ${CHROME_RIM}`,
+              }}
+            >
+              {floorMat && productImageForSku(floorMat.sku) && (
+                <img
+                  src={productImageForSku(floorMat.sku) ?? undefined}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              )}
+            </span>
+            <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-[#37362f]">
+              {floorMat?.name ?? 'Floor'}
+            </span>
+            <span
+              className="shrink-0 text-[12px] font-medium tabular-nums"
+              style={{ color: CHROME_TEXT_2 }}
+              aria-live="polite"
+            >
+              {floorHudLive && floorHudLive.units > 0
+                ? `${floorHudLive.units} ${
+                    floorHudLive.unit === 'roll'
+                      ? floorHudLive.units === 1
+                        ? 'roll'
+                        : 'rolls'
+                      : floorHudLive.units === 1
+                        ? 'tile'
+                        : 'tiles'
+                  } · ${formatCurrency(floorHudLive.cost, displayCurrency)}`
+                : 'No floor yet'}
+            </span>
+            <button
+              type="button"
+              data-testid="floor-paint-change-mobile"
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent('ppw:open-menu', { detail: { section: 'floor' } }),
+                )
+              }
+              className={`${OVL_CTRL} ${OVL_REST} h-11 shrink-0 px-3`}
+              title="Change the floor material"
+            >
+              Change
+            </button>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              data-testid="floor-paint-scope-mobile-tile"
+              aria-pressed={floorScope === 'tile'}
+              disabled={floorMatIsRoll}
+              onClick={() => setFloorDraft({ scope: 'tile' })}
+              className={`${OVL_CTRL} ${floorScope === 'tile' && !floorDraft.erase ? OVL_ACTIVE : OVL_REST} h-11 flex-1 px-2`}
+              title={
+                floorMatIsRoll
+                  ? 'Sold by the roll — whole room only'
+                  : 'Tile — tap a tile, drag an area'
+              }
+            >
+              Tile
+            </button>
+            <button
+              type="button"
+              data-testid="floor-paint-scope-mobile-room"
+              aria-pressed={floorScope === 'room'}
+              onClick={handleFloorHudFillRoom}
+              className={`${OVL_CTRL} ${floorScope === 'room' && !floorDraft.erase ? OVL_ACTIVE : OVL_REST} h-11 flex-1 px-2`}
+              title={
+                floorDraft.erase
+                  ? 'Fill room — clears the active room now'
+                  : 'Fill room — lays the whole active room now'
+              }
+            >
+              Fill room
+            </button>
+            <button
+              type="button"
+              data-testid="floor-paint-erase-mobile"
+              aria-pressed={floorDraft.erase}
+              onClick={() => setFloorDraft({ erase: !floorDraft.erase })}
+              className={`${OVL_CTRL} h-11 flex-1 px-2 ${
+                floorDraft.erase
+                  ? 'border-ppw-clay bg-ppw-chrome text-ppw-charcoal shadow-sm'
+                  : OVL_REST
+              }`}
+              title="Erase — taps and drags remove tiles"
+            >
+              Erase
+            </button>
+            <button
+              type="button"
+              data-testid="floor-paint-done-mobile"
+              onClick={() => setTool('hand')}
+              className={`${OVL_CTRL} ${OVL_ACTIVE} h-11 flex-1 px-2`}
+              title="Done — put the Floor tool away"
+            >
+              Done
+            </button>
+          </div>
+          <p
+            className="px-1 text-[11px] font-medium leading-snug"
+            style={{ color: floorDraft.erase ? CHROME_DANGER : CHROME_TEXT_2 }}
+          >
+            {!floorActiveRoom
+              ? 'Draw a room first — Walls'
+              : floorDraft.erase
+                ? 'Tap or drag to remove tiles'
+                : floorScope === 'room'
+                  ? 'Tap inside a room to fill it'
+                  : 'Tap a tile · drag an area'}
+          </p>
+        </div>
+      )}
 
       {pendingProductId && !drawMode && (() => {
         const pendingProduct = getProductById(pendingProductId);
@@ -2530,56 +2897,33 @@ export function RoomCanvas({
         }}
         onWheel={handleWheel}
         onMouseDown={(e) => {
-          if (drawMode) return;
-          if (floorTool) {
-            const evt = e.evt as MouseEvent;
-            const w = floorWorldPoint(evt.clientX, evt.clientY);
-            if (!w) return;
-            const room = floorRoomAt(w.xM, w.yM);
-            if (!room) return;
-            floorAnchorRef.current = { x: w.xM, y: w.yM, roomId: room.id };
-            return;
-          }
+          // The Floor stroke lives on the POINTER handlers below — Konva
+          // fires `pointerdown` from the native pointer event only (mouse
+          // and touch compat events keep their own mouse*/touch* names), so
+          // the stroke fires exactly once per gesture on every device.
+          if (drawMode || floorTool) return;
           if (e.target === e.target.getStage() && e.evt.button === PAN_BTN) {
             selectItem(null);
           }
         }}
-        onMouseUp={(e) => {
-          if (!floorTool) return;
-          const anchor = floorAnchorRef.current;
-          floorAnchorRef.current = null;
-          setFloorPreview(null);
-          if (!anchor) return;
-          const evt = e.evt as MouseEvent;
+        onPointerDown={(e) => {
+          // Floor tool (2026-08-30): one anchor path for mouse AND touch.
+          // Non-primary pointers (the second finger of a pinch) and
+          // non-left mouse buttons never start a stroke.
+          if (drawMode || !floorTool || pendingProductId) return;
+          const evt = e.evt as PointerEvent;
+          if (evt.isPrimary === false) return;
+          if (evt.pointerType === 'mouse' && evt.button !== 0) return;
           const w = floorWorldPoint(evt.clientX, evt.clientY);
           if (!w) return;
-          const rooms2 = usePropertyStore.getState().property.rooms;
-          const room = rooms2.find((r) => r.id === anchor.roomId);
-          if (!room) return;
-          const zone = floorZoneFor(room);
-          if (!zone) return;
-          const erase = evt.ctrlKey || evt.metaKey || floorDraft.erase;
-
-          // Shift, or the 'room' scope, fills the whole polygon - the Sims
-          // room-fill, which is what Vic asked for by name.
-          const fillRoom = evt.shiftKey || floorDraft.scope === 'room';
-          const tiles = fillRoom
-            ? tilesCoveringPolygon(zone, room.polygon)
-            : (() => {
-              const pending = dragRectTileCount(zone, { x: anchor.x, y: anchor.y }, { x: w.xM, y: w.yM });
-              if (pending > MAX_TILES_PER_STROKE) {
-                pushToast('That area is too large to paint in one go.', 'warn');
-                console.log('[floor-paint]', { reason: 'refused', cause: 'too-many-tiles', pending });
-                return [];
-              }
-              return tilesInDragRect(zone, { x: anchor.x, y: anchor.y }, { x: w.xM, y: w.yM }, room.polygon);
-            })();
-          commitFloorStroke(
-            room.id,
-            zone,
-            tiles.map((t) => String(t.row) + ',' + String(t.col)),
-            erase,
-          );
+          const room = floorRoomAt(w.xM, w.yM);
+          floorAnchorRef.current = { x: w.xM, y: w.yM, roomId: room?.id ?? null };
+        }}
+        onPointerUp={(e) => {
+          if (!floorTool) return;
+          const evt = e.evt as PointerEvent;
+          if (evt.isPrimary === false) return;
+          commitFloorAt(evt);
         }}
         onPointerMove={(e) => {
           // M1.5 pointer-FSM: while armed, track snapped pointer position
@@ -2587,6 +2931,7 @@ export function RoomCanvas({
           if (drawMode) return;
           if (floorTool) {
             const evt = e.evt as PointerEvent;
+            if (evt.isPrimary === false) return;
             const w = floorWorldPoint(evt.clientX, evt.clientY);
             if (!w) return;
             const rooms2 = usePropertyStore.getState().property.rooms;
@@ -3088,7 +3433,9 @@ export function RoomCanvas({
                 fontStyle="bold"
                 fontFamily="Inter, sans-serif"
                 letterSpacing={2.5 / viewport.scale}
-                fill={LABEL_TEXT}
+                // Dark floors (EVA / gym tile) swallowed the ink label —
+                // flip to paper when the room's floor material is dark (R7).
+                fill={roomLabelFill(room)}
                 opacity={
                   room.id === activeRoomId
                     ? ROOM_LABEL_ACTIVE_OPACITY
@@ -3202,7 +3549,11 @@ export function RoomCanvas({
               );
             })}
           </Group>
-          <Group listening={!drawMode && !pendingProductId}>
+          {/* Floor tool (2026-08-30): items also stop listening while the
+              Floor tool is on, so a press over a placed item lays floor
+              UNDER it instead of being swallowed by the item's hit-rect
+              (PlacedItemGroup cancels bubbling on its own handlers). */}
+          <Group listening={!drawMode && !pendingProductId && !floorTool}>
             {rooms.map((room) => {
               const outdoorRoom = isOutdoorRoom(room);
               // Indoors: the room's edges + free walls. Outdoors: free walls
@@ -3630,7 +3981,12 @@ export function RoomCanvas({
           active). Auto-hides the moment the first item lands. Brand register:
           navy ink + gold accent + cream card. Pointer-events off so it never
           blocks a tap-to-place on the floor beneath it. */}
-      {!drawMode && !wallDrawEnabled && !pendingProductId && hasRoom && allItems.length === 0 && (
+      {/* Floor tool (2026-08-30): hidden while the tool is on — the card
+          used to sit centred over the very tile the customer had just laid. */}
+      {/* …and hidden once ANY floor is laid: a floored room is not empty
+          (check R3 — the card re-centred over freshly laid tiles). */}
+      {!drawMode && !wallDrawEnabled && !pendingProductId && !floorTool && hasRoom && allItems.length === 0 &&
+        !drawnRooms.some((r) => (r.floorTiles && r.floorTiles.length > 0) || r.floorFinish) && (
         <div
           className="pointer-events-none absolute inset-0 flex items-center justify-center"
           data-testid="empty-room-hint"
@@ -4404,6 +4760,25 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
  * drafting convention), greenery (soft canopy), garden furniture. Sized in
  * world px so scale is honest, drawn inside the item's rotating art group.
  */
+/**
+ * Room-label ink on dark floors reads as invisible; luminance under ~0.45
+ * flips the label to paper (R7). Finish material wins, else the first
+ * painted zone; no floor = standard ink.
+ */
+function roomLabelFill(room: { floorFinish?: { materialId: string } | null; floorTiles?: Array<{ materialId: string }> }): string {
+  const matId = room.floorFinish?.materialId ?? room.floorTiles?.[0]?.materialId;
+  if (!matId) return LABEL_TEXT;
+  const m = findFloorMaterialById(matId);
+  if (!m) return LABEL_TEXT;
+  const hex = m.hex.replace('#', '');
+  if (hex.length < 6) return LABEL_TEXT;
+  const r = parseInt(hex.slice(0, 2), 16) / 255;
+  const g = parseInt(hex.slice(2, 4), 16) / 255;
+  const b = parseInt(hex.slice(4, 6), 16) / 255;
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return lum < 0.45 ? '#F8F5EE' : LABEL_TEXT;
+}
+
 function PlanSymbol({
   symbol,
   width,

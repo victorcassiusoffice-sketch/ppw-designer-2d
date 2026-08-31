@@ -27,6 +27,12 @@ import { usePlacementIntentStore } from '../../store/placementIntentStore';
 // Polish (2026-08-29): the toolbar folds to its category row while the wall
 // pen is open (the phone needs the canvas back), and unfolds on exit.
 import { useDrawProgressStore } from '../../store/drawProgressStore';
+// Floor tool (2026-08-30): the six K1 tile/roll SKUs are FLOOR cards — a
+// tap arms the Floor tool on that material instead of placing a loose item.
+// The strip also folds for the Floor tool exactly as it does for the pen —
+// the phone HUD card + a full thumbnail strip would leave no floor to tap.
+import { floorMaterialForProduct } from '../../data/floorMaterials';
+import { useDesignerUIStore } from '../../store/designerUIStore';
 import {
   MACRO_CATEGORY_ORDER,
   MACRO_CATEGORY_LABEL,
@@ -74,9 +80,11 @@ export function SimsBottomToolbar() {
   // thumb can still unfold it) and the previous state comes back on exit.
   // The user's own chevron taps mid-draw are respected until the pen closes.
   const penOpen = useDrawProgressStore((s) => s.enabled);
+  const floorToolOn = useDesignerUIStore((s) => s.tool === 'floor');
+  const foldForTool = penOpen || floorToolOn;
   const minimizedBeforePenRef = useRef<boolean | null>(null);
   useEffect(() => {
-    if (penOpen) {
+    if (foldForTool) {
       setMinimized((v) => {
         minimizedBeforePenRef.current = v;
         return true;
@@ -88,7 +96,7 @@ export function SimsBottomToolbar() {
       minimizedBeforePenRef.current = null;
       setMinimized(prev);
     }
-  }, [penOpen]);
+  }, [foldForTool]);
 
   // Publish the toolbar's live height as a CSS var so other bottom-anchored
   // overlays (ModeStrip, CartStrip) can sit above it. When the toolbar is
@@ -134,6 +142,17 @@ export function SimsBottomToolbar() {
     if (activeCategory === 'all') return allProducts;
     return allProducts.filter((p) => macroOf(p) === activeCategory);
   }, [allProducts, activeCategory]);
+
+  // Floor tool state for the floor cards (scalar selectors — the strip must
+  // not re-render for draft fields it does not show).
+  const tool = useDesignerUIStore((s) => s.tool);
+  const floorMaterialId = useDesignerUIStore((s) => s.floorDraft.materialId);
+  const setFloorDraft = useDesignerUIStore((s) => s.setFloorDraft);
+  const setTool = useDesignerUIStore((s) => s.setTool);
+  function armFloor(materialId: string): void {
+    setFloorDraft({ materialId, erase: false });
+    setTool('floor');
+  }
 
   // Long-press a thumbnail → drag; tap → open the popup.
   const { start, ghost } = useDragToPlace({
@@ -253,7 +272,50 @@ export function SimsBottomToolbar() {
                   gap: 8,
                 }}
               >
-                {filtered.map((p) => (
+                {filtered.map((p) => {
+                  const floorMat = floorMaterialForProduct(p);
+                  if (floorMat) {
+                    // FLOOR card: a tap arms the Floor tool on this material
+                    // (the HUD card in RoomCanvas takes over); no long-press
+                    // drag, no popup — the tile is laid by the tool, never
+                    // dropped as a loose item.
+                    const isOn = tool === 'floor' && floorMaterialId === floorMat.id;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        data-testid="sims-thumb"
+                        data-product-id={p.id}
+                        data-floor-material={floorMat.id}
+                        title="Laid with the Floor tool"
+                        aria-label={`${p.name} — tap to lay this floor`}
+                        aria-pressed={isOn}
+                        onClick={() => armFloor(floorMat.id)}
+                        onContextMenu={(e) => e.preventDefault()}
+                        className={`ppw-no-callout relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg ${DOCK_CONTROL}`}
+                        style={{
+                          background: THUMB_PLATE,
+                          boxShadow: isOn
+                            ? `inset 0 0 0 2px ${DOCK_ACCENT}, 0 0 0 3px rgba(121,199,173,0.35)`
+                            : `inset 0 0 0 1px ${DOCK_BORDER}`,
+                        }}
+                      >
+                        <ThumbImage src={productImageUrl(p)} />
+                        <span
+                          aria-hidden="true"
+                          className="pointer-events-none absolute bottom-0 left-0 right-0 flex h-[16px] items-center justify-center text-[11px] font-semibold uppercase leading-none tracking-[0.06em]"
+                          style={{
+                            background: 'rgba(250,249,245,0.92)',
+                            color: DOCK_TEXT,
+                            borderTop: `1px solid ${DOCK_BORDER}`,
+                          }}
+                        >
+                          Floor
+                        </span>
+                      </button>
+                    );
+                  }
+                  return (
                   <button
                     key={p.id}
                     type="button"
@@ -273,7 +335,8 @@ export function SimsBottomToolbar() {
                         leaving the cream tile). Reduced-motion handled inside. */}
                     <ThumbImage src={productImageUrl(p)} />
                   </button>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

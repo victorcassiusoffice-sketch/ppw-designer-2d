@@ -1,0 +1,379 @@
+{
+  "mobile-preview": {
+    "name": "preview",
+    "base": "https://ppw-designer-2d-git-feat-sims-world-2026-08-29-victor-ppw.vercel.app",
+    "steps": [
+      {
+        "step": "A tap (0.5,0.5)",
+        "tiles": 1,
+        "events": {
+          "pointerdown": 1,
+          "touchstart": 1,
+          "pointerup": 1,
+          "touchend": 1,
+          "mousemove": 1,
+          "mousedown": 1,
+          "mouseup": 1,
+          "click": 1
+        },
+        "floorLogs": [
+          "[floor-paint] {reason: paint, tiles: 1, materialId: outdoor-1m, roomId: r1}"
+        ]
+      },
+      {
+        "step": "B drag (1.5,1.5)->(3.5,3.5)",
+        "tiles": 1,
+        "events": {
+          "pointerdown": 1,
+          "touchstart": 1,
+          "pointermove": 6,
+          "touchmove": 6,
+          "pointerup": 1,
+          "touchend": 1
+        },
+        "floorLogs": []
+      },
+      {
+        "step": "B2 drag (1.5,2.5)->(4.5,3.5)",
+        "tiles": 1,
+        "events": {
+          "pointerdown": 1,
+          "touchstart": 1,
+          "pointermove": 4,
+          "touchmove": 4,
+          "pointerup": 1,
+          "touchend": 1
+        },
+        "floorLogs": []
+      },
+      {
+        "step": "C whole-room tap (2.5,1.5)",
+        "tiles": 1,
+        "events": {
+          "pointerdown": 1,
+          "touchstart": 1,
+          "pointerup": 1,
+          "touchend": 1,
+          "mousemove": 1,
+          "mousedown": 1,
+          "mouseup": 1,
+          "click": 1
+        },
+        "firstTargets": [
+          "pointerdown@canvas",
+          "touchstart@canvas",
+          "pointerup@canvas",
+          "touchend@canvas",
+          "mousemove@canvas",
+          "mousedown@canvas"
+        ],
+        "floorLogs": []
+      }
+    ],
+    "hudVisible": true,
+    "konvaGlobal": true,
+    "geomBridge": false,
+    "w2s_0505": {
+      "x": 57.22222222222222,
+      "y": 295.3333333333333,
+      "sx": 40,
+      "sy": 221.11111111111111,
+      "sc": 0.34444444444444444,
+      "rl": 0,
+      "rt": 57,
+      "rw": 390,
+      "rh": 580,
+      "ppm": 100
+    },
+    "geom_0505": null,
+    "touchAction": "none",
+    "scopeText": "Brush\nFill whole room",
+    "sheetStillOpenAfterEsc": false,
+    "zonesFinal": [
+      {
+        "materialId": "outdoor-1m",
+        "tileWm": 1,
+        "tileHm": 1,
+        "originM": {
+          "x": 0,
+          "y": 0
+        },
+        "runs": [
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "cartText": []
+  },
+  "desktop-preview": {
+    "name": "preview",
+    "base": "https://ppw-designer-2d-git-feat-sims-world-2026-08-29-victor-ppw.vercel.app",
+    "steps": [
+      {
+        "step": "D1 click (1.25,1.25)",
+        "tiles": 0,
+        "eraseOn": "false",
+        "floorLogs": []
+      },
+      {
+        "step": "D2 click (4.5,3.5) clear of popover",
+        "tiles": 20,
+        "floorLogs": [
+          "[floor-paint] {reason: paint, tiles: 20, materialId: outdoor-1m, roomId: r1}"
+        ]
+      }
+    ],
+    "popRect": {
+      "x": 342.859375,
+      "y": 50,
+      "w": 288,
+      "h": 301.25
+    },
+    "room00": {
+      "x": 233,
+      "y": 169.5,
+      "sx": 233,
+      "sy": 116.5,
+      "sc": 1,
+      "rl": 0,
+      "rt": 53,
+      "rw": 1366,
+      "rh": 633,
+      "ppm": 100
+    },
+    "room54": {
+      "x": 733,
+      "y": 569.5,
+      "sx": 233,
+      "sy": 116.5,
+      "sc": 1,
+      "rl": 0,
+      "rt": 53,
+      "rw": 1366,
+      "rh": 633,
+      "ppm": 100
+    },
+    "probes": [
+      {
+        "xM": 0.5,
+        "yM": 0.5,
+        "x": 283,
+        "y": 219.5,
+        "el": "canvas"
+      },
+      {
+        "xM": 1.25,
+        "yM": 1.25,
+        "x": 358,
+        "y": 294.5,
+        "el": "floor-paint-scope [IN POPOVER]"
+      },
+      {
+        "xM": 2.5,
+        "yM": 2.5,
+        "x": 483,
+        "y": 419.5,
+        "el": "canvas"
+      },
+      {
+        "xM": 4.5,
+        "yM": 3.5,
+        "x": 683,
+        "y": 519.5,
+        "el": "canvas"
+      }
+    ]
+  },
+  "mobile-dev": {
+    "name": "dev",
+    "base": "http://127.0.0.1:5188",
+    "steps": [
+      {
+        "step": "A tap (0.5,0.5)",
+        "tiles": 1,
+        "events": {
+          "pointerdown": 1,
+          "touchstart": 1,
+          "pointerup": 1,
+          "touchend": 1,
+          "mousemove": 1,
+          "mousedown": 1,
+          "mouseup": 1,
+          "click": 1
+        },
+        "floorLogs": [
+          "[floor-paint] {reason: paint, tiles: 1, materialId: outdoor-1m, roomId: r1}"
+        ]
+      },
+      {
+        "step": "B drag (1.5,1.5)->(3.5,3.5)",
+        "tiles": 1,
+        "events": {
+          "pointerdown": 1,
+          "touchstart": 1,
+          "pointermove": 6,
+          "touchmove": 6,
+          "pointerup": 1,
+          "touchend": 1
+        },
+        "floorLogs": []
+      },
+      {
+        "step": "B2 drag (1.5,2.5)->(4.5,3.5)",
+        "tiles": 1,
+        "events": {
+          "pointerdown": 1,
+          "touchstart": 1,
+          "pointermove": 4,
+          "touchmove": 4,
+          "pointerup": 1,
+          "touchend": 1
+        },
+        "floorLogs": []
+      },
+      {
+        "step": "C whole-room tap (2.5,1.5)",
+        "tiles": 1,
+        "events": {
+          "pointerdown": 1,
+          "touchstart": 1,
+          "pointerup": 1,
+          "touchend": 1,
+          "mousemove": 1,
+          "mousedown": 1,
+          "mouseup": 1,
+          "click": 1
+        },
+        "firstTargets": [
+          "pointerdown@canvas",
+          "touchstart@canvas",
+          "pointerup@canvas",
+          "touchend@canvas",
+          "mousemove@canvas",
+          "mousedown@canvas"
+        ],
+        "floorLogs": []
+      }
+    ],
+    "hudVisible": true,
+    "konvaGlobal": true,
+    "geomBridge": true,
+    "w2s_0505": {
+      "x": 57.22222222222222,
+      "y": 295.3333333333333,
+      "sx": 40,
+      "sy": 221.11111111111111,
+      "sc": 0.34444444444444444,
+      "rl": 0,
+      "rt": 57,
+      "rw": 390,
+      "rh": 580,
+      "ppm": 100
+    },
+    "geom_0505": {
+      "x": 57.22222222222222,
+      "y": 295.33333333333337
+    },
+    "touchAction": "none",
+    "scopeText": "Brush\nFill whole room",
+    "sheetStillOpenAfterEsc": false,
+    "zonesFinal": [
+      {
+        "materialId": "outdoor-1m",
+        "tileWm": 1,
+        "tileHm": 1,
+        "originM": {
+          "x": 0,
+          "y": 0
+        },
+        "runs": [
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "cartText": []
+  },
+  "desktop-dev": {
+    "name": "dev",
+    "base": "http://127.0.0.1:5188",
+    "steps": [
+      {
+        "step": "D1 click (1.25,1.25)",
+        "tiles": 0,
+        "eraseOn": "false",
+        "floorLogs": []
+      },
+      {
+        "step": "D2 click (4.5,3.5) clear of popover",
+        "tiles": 20,
+        "floorLogs": [
+          "[floor-paint] {reason: paint, tiles: 20, materialId: outdoor-1m, roomId: r1}"
+        ]
+      }
+    ],
+    "popRect": {
+      "x": 342.859375,
+      "y": 50,
+      "w": 288,
+      "h": 301.25
+    },
+    "room00": {
+      "x": 233,
+      "y": 169.5,
+      "sx": 233,
+      "sy": 116.5,
+      "sc": 1,
+      "rl": 0,
+      "rt": 53,
+      "rw": 1366,
+      "rh": 633,
+      "ppm": 100
+    },
+    "room54": {
+      "x": 733,
+      "y": 569.5,
+      "sx": 233,
+      "sy": 116.5,
+      "sc": 1,
+      "rl": 0,
+      "rt": 53,
+      "rw": 1366,
+      "rh": 633,
+      "ppm": 100
+    },
+    "probes": [
+      {
+        "xM": 0.5,
+        "yM": 0.5,
+        "x": 283,
+        "y": 219.5,
+        "el": "canvas"
+      },
+      {
+        "xM": 1.25,
+        "yM": 1.25,
+        "x": 358,
+        "y": 294.5,
+        "el": "floor-paint-scope [IN POPOVER]"
+      },
+      {
+        "xM": 2.5,
+        "yM": 2.5,
+        "x": 483,
+        "y": 419.5,
+        "el": "canvas"
+      },
+      {
+        "xM": 4.5,
+        "yM": 3.5,
+        "x": 683,
+        "y": 519.5,
+        "el": "canvas"
+      }
+    ]
+  }
+}

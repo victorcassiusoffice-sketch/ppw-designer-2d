@@ -613,6 +613,95 @@ describe('floor painting - per-tile floors', () => {
   });
 });
 
+describe('floor tool - one floor per room (fillRoomFloor / setRoomFloor / clearRoomFloor)', () => {
+  function room5x4() {
+    const ps = usePropertyStore.getState();
+    ps.setRoomPolygon(ps.property.activeRoomId, rectToPolygon({ lengthM: 5, widthM: 4 }));
+    return usePropertyStore.getState().property.activeRoomId;
+  }
+  const ZONE = {
+    materialId: 'outdoor-1m',
+    tileWm: 1,
+    tileHm: 1,
+    originM: { x: 0, y: 0 },
+    runs: [] as number[],
+  };
+  const tileCount = (runs: number[]): number => {
+    let n = 0;
+    for (let i = 2; i < runs.length; i += 3) n += runs[i];
+    return n;
+  };
+  const room = (id: string) =>
+    usePropertyStore.getState().property.rooms.find((x) => x.id === id)!;
+
+  it('fillRoomFloor lays a tileable material as ONE full-cover zone and returns the count', () => {
+    const id = room5x4();
+    // 1 m tiles divide the 5 x 4 m room exactly: 20 tiles, no cut edge.
+    const n = usePropertyStore.getState().fillRoomFloor(id, 'outdoor-1m');
+    expect(n).toBe(20);
+    const r = room(id);
+    expect(r.floorTiles).toHaveLength(1);
+    expect(r.floorTiles![0].materialId).toBe('outdoor-1m');
+    expect(tileCount(r.floorTiles![0].runs)).toBe(20);
+    // One floor per room: the whole-room finish cannot shadow the tiles.
+    expect(r.floorFinish).toBeNull();
+  });
+
+  it('fillRoomFloor with a roll sets the whole-room finish and lays no tiles', () => {
+    const id = room5x4();
+    const n = usePropertyStore.getState().fillRoomFloor(id, 'epdm-roll');
+    expect(n).toBe(0);
+    const r = room(id);
+    expect(r.floorFinish).toEqual({ materialId: 'epdm-roll' });
+    // A fictional tile lattice on sheet goods would put fake units on the
+    // customer's quote.
+    expect(r.floorTiles).toBeUndefined();
+  });
+
+  it('fillRoomFloor replaces a previously painted patch with the full cover', () => {
+    const id = room5x4();
+    usePropertyStore.getState().paintFloorTiles(id, ZONE, ['0,0', '0,1']);
+    const n = usePropertyStore.getState().fillRoomFloor(id, 'outdoor-1m');
+    expect(n).toBe(20);
+    expect(tileCount(room(id).floorTiles![0].runs)).toBe(20);
+  });
+
+  it('fillRoomFloor is a no-op returning 0 for an undrawn room or unknown material', () => {
+    const ps = usePropertyStore.getState();
+    // The default seed room has no polygon yet.
+    expect(ps.fillRoomFloor(ps.property.activeRoomId, 'outdoor-1m')).toBe(0);
+    const id = room5x4();
+    expect(usePropertyStore.getState().fillRoomFloor(id, 'no-such-material')).toBe(0);
+    expect(room(id).floorTiles).toBeUndefined();
+  });
+
+  it('setRoomFloor is authoritative - it drops any painted tiles', () => {
+    const id = room5x4();
+    usePropertyStore.getState().paintFloorTiles(id, ZONE, ['0,0', '0,1']);
+    usePropertyStore.getState().setRoomFloor(id, 'epdm-roll');
+    const r = room(id);
+    // Tiles used to survive UNDER the finish, drawn over it and priced in
+    // ADDITION to it - two floors on one quote.
+    expect(r.floorTiles).toBeUndefined();
+    expect(r.floorFinish).toEqual({ materialId: 'epdm-roll' });
+  });
+
+  it('clearRoomFloor clears tiles and finish alike', () => {
+    const id = room5x4();
+    usePropertyStore.getState().fillRoomFloor(id, 'outdoor-1m');
+    usePropertyStore.getState().clearRoomFloor(id);
+    let r = room(id);
+    expect(r.floorTiles).toBeUndefined();
+    expect(r.floorFinish).toBeNull();
+
+    usePropertyStore.getState().fillRoomFloor(id, 'epdm-roll');
+    usePropertyStore.getState().clearRoomFloor(id);
+    r = room(id);
+    expect(r.floorTiles).toBeUndefined();
+    expect(r.floorFinish).toBeNull();
+  });
+});
+
 describe('floor painting - backwards compatibility', () => {
   it('a design saved with only a whole-room floor still loads unchanged', () => {
     const loaded = normaliseLoadedRoom({

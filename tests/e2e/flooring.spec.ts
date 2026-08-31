@@ -115,15 +115,25 @@ test('a floor material can be chosen and it actually renders', async ({ page }) 
   expect(isLightPaper(bare), `bare floor should be paper-white, got ${JSON.stringify(bare)}`).toBe(true);
   expect(isDarkRed(bare)).toBe(false);
 
-  // Choose a floor for the ACTIVE room (r1).
-  await page.getByTestId('floor-tool-toggle').click();
-  await page.getByTestId('floor-material-outdoor-1m').click();
+  // Lay a floor in the ACTIVE room (r1) with the ONE Floor tool (2026-08-30):
+  // open the docked Floor panel, pick the material, then the Room scope chip
+  // fills the active room in one action.
+  await page.getByTestId('floor-paint-toggle').click();
+  await expect(page.getByTestId('floor-paint-palette')).toBeVisible();
+  await page.getByTestId('floor-paint-outdoor-1m').click();
+  await page.getByTestId('floor-paint-scope-room').click();
 
-  // It is persisted...
+  // It is persisted... A tileable material fills as ONE full-cover tile zone
+  // (`fillRoomFloor`), not as the old whole-room `floorFinish`.
   await expect
-    .poll(async () => (await persistedRoom(page, 'r1'))?.floorFinish?.materialId ?? null, {
-      timeout: 10_000,
-    })
+    .poll(
+      async () => {
+        const r = await persistedRoom(page, 'r1');
+        const zones = (r?.floorTiles ?? []) as Array<{ materialId: string }>;
+        return zones.length === 1 ? zones[0].materialId : null;
+      },
+      { timeout: 10_000 },
+    )
     .toBe('outdoor-1m');
 
   // ...and it is on the CANVAS. #8b3a2f is a dark red-brown, so the pixel
@@ -154,7 +164,9 @@ test('a floor material can be chosen and it actually renders', async ({ page }) 
     `the neighbouring room must stay bare paper, got ${JSON.stringify(other)}`,
   ).toBe(true);
   expect(isDarkRed(other)).toBe(false);
-  expect((await persistedRoom(page, 'r2'))?.floorFinish ?? null).toBeFalsy();
+  const r2 = await persistedRoom(page, 'r2');
+  expect(r2?.floorFinish ?? null).toBeFalsy();
+  expect((r2?.floorTiles ?? []).length).toBe(0);
 
   await page.screenshot({ path: 'docs/designer-build-2026-08-28/after/flooring.png' });
   console.log('FLOORING=true', JSON.stringify({ bare, painted, other }));

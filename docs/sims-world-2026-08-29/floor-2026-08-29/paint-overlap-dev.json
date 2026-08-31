@@ -1,0 +1,38 @@
+{
+  "tag": "dev",
+  "palette": {
+    "x": 312.359375,
+    "y": 59,
+    "width": 270,
+    "height": 283.25
+  },
+  "popover": {
+    "x": 303.359375,
+    "y": 50,
+    "width": 288,
+    "height": 301.25
+  },
+  "roomBox": {
+    "x0": 433,
+    "y0": 169.5,
+    "x1": 933,
+    "y1": 569.5
+  },
+  "p1": {
+    "x": 558,
+    "y": 294.5
+  },
+  "hit1": "BUTTON testid=floor-paint-erase text=Erase",
+  "p2": {
+    "x": 783,
+    "y": 419.5
+  },
+  "hit2": "CANVAS class=",
+  "eraseAfter1": "true",
+  "tilesAfter1": 0,
+  "tilesAfter2": 0,
+  "logs": [
+    "[floor-paint] {reason: erase, tiles: 1, materialId: gym-interlock, roomId: r1}"
+  ],
+  "cart": "-"
+}

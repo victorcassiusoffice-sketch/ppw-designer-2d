@@ -53,6 +53,11 @@ import {
   DOCK_BORDER,
   DOCK_TEXT,
 } from '../../designer/blueprintTheme';
+// Floor tool (2026-08-30): the six K1 tile/roll SKUs are FLOOR cards. Their
+// card arms the Floor tool with that material instead of placing a loose
+// item, so the catalog and the Floor panel are one path, not two.
+import { floorMaterialForProduct } from '../../data/floorMaterials';
+import { useDesignerUIStore } from '../../store/designerUIStore';
 
 /**
  * Toolbar contract (2026-08-29): the ONE motion + focus recipe every dock
@@ -215,6 +220,26 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
     setPendingProductId(pendingProductId === p.id ? null : p.id);
   }
 
+  // Floor tool state — a floor card reads as "on" while the tool is open on
+  // its material. Scalar selectors: the dock must not re-render per draft
+  // patch it does not show.
+  const tool = useDesignerUIStore((s) => s.tool);
+  const floorMaterialId = useDesignerUIStore((s) => s.floorDraft.materialId);
+  const setFloorDraft = useDesignerUIStore((s) => s.setFloorDraft);
+  const setTool = useDesignerUIStore((s) => s.setTool);
+
+  /**
+   * Arm the Floor tool with this card's material. Idempotent (no toggle-off:
+   * the panel's Done / Esc closes the tool) and it drops any armed product,
+   * so a click never leaves both a ghost and a floor stroke in hand.
+   */
+  function armFloor(materialId: string): void {
+    setFloorDraft({ materialId, erase: false });
+    setTool('floor');
+    if (setPendingProductId && pendingProductId) setPendingProductId(null);
+    setHover(null);
+  }
+
   const emptyLabel = MACRO_CATEGORY_LABEL[activeCategory];
 
   return (
@@ -312,6 +337,54 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
             ) : (
               filtered.map((p) => {
                 const isPending = pendingProductId === p.id;
+                const floorMat = floorMaterialForProduct(p);
+                if (floorMat) {
+                  // FLOOR card: no placement, no drag. Click arms the Floor
+                  // tool on this material; the docked Floor panel is the
+                  // indicator. `data-armed` stays false so the e2e armed
+                  // counts (dock tile + canvas = 2) are untouched.
+                  const isOn = tool === 'floor' && floorMaterialId === floorMat.id;
+                  return (
+                    <li key={p.id} className="shrink-0">
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={isOn}
+                        aria-label={`Lay ${p.name} floor — ${formatPrice(p)}`}
+                        title="Laid with the Floor tool"
+                        onClick={() => armFloor(floorMat.id)}
+                        onKeyDown={(e) => {
+                          if (e.key !== 'Enter' && e.key !== ' ') return;
+                          e.preventDefault();
+                          armFloor(floorMat.id);
+                        }}
+                        onPointerEnter={(e) =>
+                          armHover(p, (e.currentTarget as HTMLElement).getBoundingClientRect())
+                        }
+                        onPointerLeave={disarmHover}
+                        onFocus={(e) =>
+                          armHover(p, (e.currentTarget as HTMLElement).getBoundingClientRect())
+                        }
+                        onBlur={disarmHover}
+                        data-product-id={p.id}
+                        data-category={p.category}
+                        data-macro={macroOf(p)}
+                        data-armed="false"
+                        data-floor-material={floorMat.id}
+                        className={`ppw-no-callout relative flex h-[68px] w-[68px] cursor-pointer items-center justify-center overflow-hidden rounded-lg ${DOCK_CONTROL}`}
+                        style={{
+                          background: DOCK_BG_RAISED,
+                          boxShadow: isOn
+                            ? `inset 0 0 0 2px ${DOCK_ACCENT}, 0 0 0 3px rgba(121,199,173,0.35)`
+                            : `4px 4px 9px rgba(167,160,144,0.42), -4px -4px 9px rgba(255,255,255,0.95), inset 0 0 0 1px ${DOCK_BORDER}`,
+                        }}
+                      >
+                        <DockThumb product={p} />
+                        <FloorBadge />
+                      </div>
+                    </li>
+                  );
+                }
                 return (
                   <li key={p.id} className="shrink-0">
                     <div
@@ -453,18 +526,26 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                 : `${hover.product.dimensions_cm.length}×${hover.product.dimensions_cm.width}×${hover.product.dimensions_cm.height} cm · ${hover.product.supplier}`
             }
             actions={
-              setPendingProductId
+              floorMaterialForProduct(hover.product)
                 ? [
                     {
-                      id: 'place',
-                      label: 'Place on floor',
-                      onClick: () => {
-                        setPendingProductId(hover.product.id);
-                        setHover(null);
-                      },
+                      id: 'lay-floor',
+                      label: 'Lay this floor',
+                      onClick: () => armFloor(floorMaterialForProduct(hover.product)!.id),
                     },
                   ]
-                : []
+                : setPendingProductId
+                  ? [
+                      {
+                        id: 'place',
+                        label: 'Place on floor',
+                        onClick: () => {
+                          setPendingProductId(hover.product.id);
+                          setHover(null);
+                        },
+                      },
+                    ]
+                  : []
             }
             onDismiss={() => setHover(null)}
           />
@@ -503,5 +584,22 @@ function DockThumb({ product }: { product: Product }) {
       className="h-[52px] w-[52px] rounded-md object-contain"
       style={{ background: '#F5EBD7', padding: 2 }}
     />
+  );
+}
+
+/**
+ * "Floor" caption on a floor card (Floor tool, 2026-08-30). 11/600 uppercase
+ * — the contract floor — on a chrome plate so it stays >= 4.5:1 over any
+ * product photo. Purely visual; the card's title carries the explanation.
+ */
+function FloorBadge() {
+  return (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute bottom-0 left-0 right-0 flex h-[16px] items-center justify-center text-[11px] font-semibold uppercase leading-none tracking-[0.06em]"
+      style={{ background: 'rgba(250,249,245,0.92)', color: DOCK_TEXT, borderTop: `1px solid ${DOCK_BORDER}` }}
+    >
+      Floor
+    </span>
   );
 }

@@ -325,8 +325,8 @@ export default function App() {
       <CoachMark
         flagKey="ppw_designer_coach_v1"
         steps={[
-          { title: 'Draw your walls', body: 'Tap Walls (or Box | Custom for a shape), then tap to drop wall points. Close the shape for a room, or Done to leave the walls open. Change the unit mid-draw with − / +. Add a Door, Paint the floor, or Measure a wall from the same bar.' },
-          { title: 'Furnish inside and out', body: 'Drag products from the dock onto any floor — inside a room or out in the garden. Items sit flush to walls and tuck into corners. Finish picks the room\'s floor finish.' },
+          { title: 'Draw your walls', body: 'Tap Walls (or Box | Custom for a shape), then tap to drop wall points. Close the shape for a room, or Done to leave the walls open. Change the unit mid-draw with − / +. Add a Door, lay the Floor, or Measure a wall from the same bar.' },
+          { title: 'Furnish inside and out', body: 'Drag products from the dock onto any floor — inside a room or out in the garden. Items sit flush to walls and tuck into corners. Floor lays the tiles you buy: pick a material, then click a tile, drag an area, or Room to fill the room (Shift fills, Ctrl erases).' },
           { title: 'Storeys, plot, quote', body: 'Add levels with Storeys, lock the plot with Plot, then Request quote to send the layout to the PPW team. New, Save as… and Load live under More.' },
         ]}
       />

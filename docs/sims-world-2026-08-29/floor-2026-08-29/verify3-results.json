@@ -1,0 +1,142 @@
+{
+  "desktop-preview": {
+    "name": "preview",
+    "steps": [
+      {
+        "step": "mouse drag (1.5,3.0)->(3.5,3.5) clear of popover",
+        "tiles": 6,
+        "floorLogs": [
+          "[floor-paint] {reason: paint, tiles: 6, materialId: outdoor-1m, roomId: r1}"
+        ]
+      }
+    ],
+    "room": {
+      "p00": {
+        "x": 433,
+        "y": 169.5
+      },
+      "p54": {
+        "x": 933,
+        "y": 569.5
+      }
+    },
+    "pop": {
+      "x": 342.859375,
+      "y": 50,
+      "r": 630.859375,
+      "b": 351.25
+    },
+    "dragStart_2515": {
+      "x": 683,
+      "y": 319.5,
+      "el": "canvas"
+    },
+    "dragStart_1530": {
+      "x": 583,
+      "y": 469.5,
+      "el": "canvas"
+    }
+  },
+  "mobile-preview": {
+    "name": "preview",
+    "steps": [
+      {
+        "step": "tap on item centre",
+        "tiles": 0,
+        "events": [
+          "pointerdown",
+          "touchstart",
+          "touchstart/bubble(dp)",
+          "touchend",
+          "touchend/bubble"
+        ],
+        "floorLogs": []
+      }
+    ],
+    "item": {
+      "cx": 321.16999999999996,
+      "cy": 408.38,
+      "w": 135.77999999999994,
+      "h": 68.20000000000005,
+      "hit": "Rect",
+      "listening": true,
+      "pd": true,
+      "chain": [
+        "Rect",
+        "Group",
+        "Group",
+        "Layer"
+      ]
+    }
+  },
+  "desktop-dev": {
+    "name": "dev",
+    "steps": [
+      {
+        "step": "mouse drag (1.5,3.0)->(3.5,3.5) clear of popover",
+        "tiles": 6,
+        "floorLogs": [
+          "[floor-paint] {reason: paint, tiles: 6, materialId: outdoor-1m, roomId: r1}"
+        ]
+      }
+    ],
+    "room": {
+      "p00": {
+        "x": 433,
+        "y": 169.5
+      },
+      "p54": {
+        "x": 933,
+        "y": 569.5
+      }
+    },
+    "pop": {
+      "x": 342.859375,
+      "y": 50,
+      "r": 630.859375,
+      "b": 351.25
+    },
+    "dragStart_2515": {
+      "x": 683,
+      "y": 319.5,
+      "el": "canvas"
+    },
+    "dragStart_1530": {
+      "x": 583,
+      "y": 469.5,
+      "el": "canvas"
+    }
+  },
+  "mobile-dev": {
+    "name": "dev",
+    "steps": [
+      {
+        "step": "tap on item centre",
+        "tiles": 0,
+        "events": [
+          "pointerdown",
+          "touchstart",
+          "touchstart/bubble(dp)",
+          "touchend",
+          "touchend/bubble"
+        ],
+        "floorLogs": []
+      }
+    ],
+    "item": {
+      "cx": 321.16999999999996,
+      "cy": 408.38,
+      "w": 135.77999999999994,
+      "h": 68.20000000000005,
+      "hit": "Rect",
+      "listening": true,
+      "pd": true,
+      "chain": [
+        "Rect",
+        "Group",
+        "Group",
+        "Layer"
+      ]
+    }
+  }
+}

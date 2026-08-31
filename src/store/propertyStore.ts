@@ -405,7 +405,21 @@ export interface PropertyState {
    * from `validateOpening` rather than silently dropping it.
    */
   /** Set (or clear, with null) a room's floor finish. */
+  /**
+   * Whole-room finish. AUTHORITATIVE (Floor tool 2026-08-30): setting a
+   * material drops any per-tile zones so one floor never shadows another;
+   * null clears the finish AND the tiles.
+   */
   setRoomFloor: (roomId: string, materialId: string | null) => void;
+  /**
+   * The Floor tool's "Room" action: lay `materialId` over the whole room in
+   * ONE undo frame. Tileable material → a full-cover tile zone (the quote is
+   * a tile count); roll → the whole-room finish. Returns the tiles laid
+   * (0 for a roll / unknown material / no polygon).
+   */
+  fillRoomFloor: (roomId: string, materialId: string) => number;
+  /** Remove every floor (tiles + finish) from a room in ONE undo frame. */
+  clearRoomFloor: (roomId: string) => void;
 
   addOpening: (roomId: string, opening: Omit<Opening, 'id'> & { id?: string }) => string | null;
   /** Removes by opening id from WHICHEVER room owns it (ids are global). */
@@ -884,8 +898,52 @@ export const usePropertyStore = create<PropertyState>()(
             ...s.property,
             rooms: s.property.rooms.map((r) =>
               r.id === roomId
-                ? { ...r, floorFinish: materialId ? { materialId } : null }
+                ? {
+                    ...r,
+                    floorFinish: materialId ? { materialId } : null,
+                    // One floor per room: a finish replaces the tiles (they
+                    // used to sit on top of it, drawn over it and priced
+                    // instead of it — two floors on one quote).
+                    floorTiles: undefined,
+                  }
                 : r,
+            ),
+          },
+        })),
+
+      fillRoomFloor: (roomId, materialId) => {
+        const room = get().property.rooms.find((r) => r.id === roomId);
+        const mat = findFloorMaterialById(materialId);
+        if (!room || !mat || room.polygon.length < 3) return 0;
+        if (mat.tile_w_m === null || mat.tile_h_m === null) {
+          // Sold by the roll: area-priced whole-room finish.
+          get().setRoomFloor(roomId, materialId);
+          return 0;
+        }
+        const zone = zoneForMaterial(mat.id, mat.tile_w_m, mat.tile_h_m, room.polygon);
+        const keys = tilesCoveringPolygon(zone, room.polygon).map(
+          (t) => String(t.row) + Q + String(t.col),
+        );
+        if (keys.length === 0) return 0;
+        set((s) => ({
+          property: {
+            ...s.property,
+            rooms: s.property.rooms.map((r) =>
+              r.id === roomId
+                ? { ...r, floorTiles: [{ ...zone, runs: setToRuns(new Set(keys)) }], floorFinish: null }
+                : r,
+            ),
+          },
+        }));
+        return keys.length;
+      },
+
+      clearRoomFloor: (roomId) =>
+        set((s) => ({
+          property: {
+            ...s.property,
+            rooms: s.property.rooms.map((r) =>
+              r.id === roomId ? { ...r, floorTiles: undefined, floorFinish: null } : r,
             ),
           },
         })),

@@ -119,8 +119,8 @@ export function ToastProvider() {
               // the toolbar; stack the toasts above it. Desktop: the row is
               // bottom-left, toasts are centred — no extra offset needed.
               bottom: phone
-                ? 'calc(1.5rem + 52px + var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))'
-                : 'calc(1.5rem + var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))',
+                ? 'calc(1.5rem + 52px + var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px) + var(--draw-hud-h, 0px))'
+                : 'calc(1.5rem + var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px) + var(--draw-hud-h, 0px))',
             }
       }
       role="status"

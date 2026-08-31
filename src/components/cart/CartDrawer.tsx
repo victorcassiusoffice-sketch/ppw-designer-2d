@@ -165,7 +165,7 @@ export function CartDrawer() {
                 <li data-testid="floor-group">
                   <div className="flex items-baseline justify-between border-b border-[#C0A67E]/30 pb-1">
                     <p className="text-[11px] font-semibold uppercase tracking-wide text-[#C0A67E]">
-                      Painted flooring
+                      Flooring
                     </p>
                     <p className="text-[11px] font-medium text-[#0E0E10]">
                       {formatCurrency(cart.floorSubtotal, currency)}

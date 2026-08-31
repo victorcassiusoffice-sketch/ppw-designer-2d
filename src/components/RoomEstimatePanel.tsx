@@ -18,7 +18,7 @@ import { calculatePaint } from '../lib/paintCalculator';
 import { ECO_PAINT_PALETTE } from '../data/paintPalette';
 import { calculateFloor } from '../lib/floorCalculator';
 import { FLOOR_MATERIALS, findFloorMaterialById } from '../data/floorMaterials';
-// Painted per-tile floors price by TILES TO ORDER, not by area (Vic 2026-08-28).
+// Per-tile floors laid with the Floor tool price by TILES TO ORDER, not by area (Vic 2026-08-28).
 import { roomFloorOrders } from '../designer/floorTiles';
 import { usePropertyStore } from '../store/propertyStore';
 
@@ -35,9 +35,9 @@ function PaintSection() {
 
   return (
     <section data-testid="paint-section">
-      <h3 className="text-[10px] font-bold uppercase tracking-wide text-ppw-slate">Paint (walls)</h3>
+      <h3 className="text-[10px] font-bold uppercase tracking-wide text-ppw-slate">Wall colour</h3>
       {walls.length === 0 ? (
-        <p className="text-[11px] text-ppw-slate">Draw walls to estimate paint.</p>
+        <p className="text-[11px] text-ppw-slate">Draw walls to estimate coverage.</p>
       ) : (
         <>
           <p className="text-[11px] text-ppw-slate">
@@ -64,7 +64,7 @@ function PaintSection() {
             className="w-full" data-testid="paint-coats"
           />
           <p className="mt-1 text-[11px]">
-            Paint needed: <span className="font-semibold" data-testid="paint-litres">{result.litres_total} L</span>
+            Litres needed: <span className="font-semibold" data-testid="paint-litres">{result.litres_total} L</span>
           </p>
           {result.paint && result.total_price_mur !== undefined && (
             <p className="text-[11px]">
@@ -82,7 +82,7 @@ function FloorSection() {
   const polygon = useDesignStore((s) => s.polygon);
   const areaM2 = useMemo(() => polygonArea(polygon), [polygon]);
 
-  // The ACTUAL painted floor, if this room has one. Distinct from the
+  // The ACTUAL laid floor, if this room has one. Distinct from the
   // hypothetical calculator below, which answers "what if the whole room
   // were material X" and stays the right tool for sheet goods.
   const activeRoom = usePropertyStore((st) =>
@@ -105,7 +105,7 @@ function FloorSection() {
       {paintedLines.length > 0 && (
         <div className="mb-2 rounded border border-ppw-teal/40 bg-ppw-mist p-2" data-testid="painted-floor-order">
           <p className="text-[10px] font-semibold uppercase tracking-wide text-ppw-slate">
-            Painted floor
+            Floor
           </p>
           {paintedLines.map((line) => {
             const m = findFloorMaterialById(line.materialId);

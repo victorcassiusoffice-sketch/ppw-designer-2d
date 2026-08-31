@@ -164,7 +164,7 @@ export default function CheckoutPage() {
         })
         .filter((x): x is NonNullable<typeof x> => x !== null);
 
-      // Painted floors are billed by the whole unit (tile/roll/pack/mat)
+      // Floors laid with the Floor tool are billed by the whole unit (tile/roll/pack/mat)
       // with an offcut allowance, so they belong on the order + plan PDF
       // as room product rows next to the furniture.
       const floorRows = roomFloorOrders(r).map(({ materialId, order }) => {
@@ -262,7 +262,7 @@ export default function CheckoutPage() {
       unitPriceDisplay: l.unitPriceDisplay,
       lineTotalDisplay: l.lineTotalDisplay,
     }));
-    // Painted-floor order lines: billed by the whole unit; the name carries
+    // Floor-tool order lines: billed by the whole unit; the name carries
     // the surplus so the invoice reads "…, incl. N spare tiles".
     const floorOrderLines: OrderLine[] = cart.floorLines.map((f) => ({
       productId: f.lineId,

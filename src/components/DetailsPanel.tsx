@@ -42,6 +42,9 @@ import {
 } from '../lib/placementActions';
 import { emitsLight } from '../designer/lighting';
 import { isFlooringProduct } from '../designer/flooringLattice';
+// Floor tool (2026-08-30): tile SKUs that ARE a Floor-tool material are laid
+// by the tool, so "Fill floor" only shows for loose mats placed as items.
+import { floorMaterialForProduct } from '../data/floorMaterials';
 
 /**
  * P0-ε — Pattern C attribution: stable per-browser sessionId so the
@@ -313,8 +316,10 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
                   Duplicate (+0.5 m offset)
                 </button>
                 {/* Sims flooring (2026-08-29): lay this tile over the whole
-                    room, edge to edge. Duplicate (D) lays ONE next to it. */}
-                {isFlooringProduct(selectedProduct) && (
+                    room, edge to edge. Duplicate (D) lays ONE next to it.
+                    Only for LOOSE mats — a material the Floor tool lays has
+                    its own fill (the Room scope), not a copy of this one. */}
+                {isFlooringProduct(selectedProduct) && !floorMaterialForProduct(selectedProduct) && (
                   <button
                     type="button"
                     onClick={fillFloorWithSelected}

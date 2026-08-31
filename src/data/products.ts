@@ -252,6 +252,17 @@ export function thumbnailFor(category: ProductCategory): string {
  *   4. SVG thumbnail        — `thumbnailFor(category)` as a `data:` URI;
  *                            never returns an empty string.
  */
+/**
+ * Floor tool (2026-08-31, check R5): the six floor materials' flat hex
+ * swatches were near-identical dark greys — the real product photo tells
+ * them apart. Looks up the catalog product by SKU; null when unseeded.
+ */
+export function productImageForSku(sku: string | null | undefined): string | null {
+  if (!sku) return null;
+  const p = getAllProducts().find((x) => x.sku === sku);
+  return p ? productImageUrl(p) : null;
+}
+
 export function productImageUrl(p: Product): string {
   if (p.photo_image_url) return p.photo_image_url;
   if (p.topdown_image_url) return p.topdown_image_url;

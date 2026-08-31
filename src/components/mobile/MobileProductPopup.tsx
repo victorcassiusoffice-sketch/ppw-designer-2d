@@ -23,6 +23,10 @@ import type { Product } from '../../data/products.schema';
 import { productImageUrl } from '../../data/products';
 import { CHROME_BG, CHROME_RIM, CHROME_TEXT } from '../../designer/blueprintTheme';
 import { useDragToPlace } from './useDragToPlace';
+// Floor tool (2026-08-30): a product that IS a Floor-tool material is laid by
+// the tool — the popup offers "Lay this floor" and no placement/drag.
+import { floorMaterialForProduct } from '../../data/floorMaterials';
+import { useDesignerUIStore } from '../../store/designerUIStore';
 
 // ---------------------------------------------------------------------------
 // Chrome recipe (toolbar contract 2026-08-29) — same strings as CartStrip /
@@ -74,6 +78,15 @@ export function MobileProductPopup({
 }: MobileProductPopupProps) {
   const [expanded, setExpanded] = useState(false);
   const imgUrl = productImageUrl(product);
+  const floorMat = floorMaterialForProduct(product);
+  const setFloorDraft = useDesignerUIStore((s) => s.setFloorDraft);
+  const setTool = useDesignerUIStore((s) => s.setTool);
+  function layFloor(): void {
+    if (!floorMat) return;
+    setFloorDraft({ materialId: floorMat.id, erase: false });
+    setTool('floor');
+    onClose();
+  }
   const desc = product.notes?.trim() ?? '';
   const truncated = desc.length > DESC_LIMIT;
   const shownDesc = expanded || !truncated ? desc : `${desc.slice(0, DESC_LIMIT).trimEnd()}…`;
@@ -120,8 +133,8 @@ export function MobileProductPopup({
               product so a white-background photo still reads as a card. */}
           <div
             className="ppw-no-callout relative flex items-center justify-center border-b border-ppw-rim bg-ppw-paper"
-            style={{ height: 200, touchAction: 'none' }}
-            onPointerDown={(e) => start(e, product.id, imgUrl)}
+            style={{ height: 200, touchAction: floorMat ? undefined : 'none' }}
+            onPointerDown={floorMat ? undefined : (e) => start(e, product.id, imgUrl)}
             // Bug 1 (2026-05-28) — drag the popup image onto the floor; don't
             // let a long-press open the native "Save image" callout instead.
             onContextMenu={(e) => e.preventDefault()}
@@ -139,7 +152,9 @@ export function MobileProductPopup({
                 ✓ Eco-certified
               </span>
             )}
-            <span className={`absolute bottom-2 right-3 ${CAPTION}`}>drag onto the floor ↘</span>
+            <span className={`absolute bottom-2 right-3 ${CAPTION}`}>
+              {floorMat ? 'laid with the Floor tool' : 'drag onto the floor ↘'}
+            </span>
           </div>
 
           <div className="flex flex-col gap-2 px-4 py-3">
@@ -170,14 +185,26 @@ export function MobileProductPopup({
             )}
 
             <div className="mt-1 flex gap-2">
-              <button
-                type="button"
-                data-testid="popup-add-to-room"
-                onClick={() => onAdd(product.id)}
-                className={`flex-1 ${CTRL_INK}`}
-              >
-                + Add to room
-              </button>
+              {floorMat ? (
+                <button
+                  type="button"
+                  data-testid="popup-lay-floor"
+                  onClick={layFloor}
+                  className={`flex-1 ${CTRL_INK}`}
+                  title="Laid with the Floor tool"
+                >
+                  Lay this floor
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  data-testid="popup-add-to-room"
+                  onClick={() => onAdd(product.id)}
+                  className={`flex-1 ${CTRL_INK}`}
+                >
+                  + Add to room
+                </button>
+              )}
               <button type="button" onClick={onClose} className={CTRL_REST}>
                 Cancel
               </button>

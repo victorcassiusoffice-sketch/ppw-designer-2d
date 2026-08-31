@@ -120,3 +120,21 @@ export function tileableFloorMaterials(): FloorMaterial[] {
 export function findFloorMaterialById(id: string): FloorMaterial | undefined {
   return FLOOR_MATERIALS.find((m) => m.id === id);
 }
+
+/**
+ * The Floor-tool material a catalog product IS, if any (Floor tool, 2026-08-30).
+ *
+ * Six K1 flooring SKUs exist twice: as a paintable material here and as a
+ * placeable product in `products.json`. Matching on `sku` (not name, not id)
+ * makes the catalog card for such a product arm the Floor tool instead of
+ * placing a loose item, so a customer meets ONE way to lay a floor. Loose
+ * mats with no material row (the kids mat, the vinyl equipment mat) return
+ * undefined and stay ordinary placeable items.
+ */
+export function floorMaterialForProduct(
+  p: { sku?: string | null } | null | undefined,
+): FloorMaterial | undefined {
+  const sku = p?.sku;
+  if (!sku) return undefined;
+  return FLOOR_MATERIALS.find((m) => m.sku === sku);
+}

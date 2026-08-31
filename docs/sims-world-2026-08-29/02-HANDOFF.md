@@ -288,3 +288,49 @@ the dev-only build stamp stays on the dev server. Vic gates unchanged: nothing m
 - Verified live: cache-busted `GET /api/healthcheck?cb=…` on the branch preview →
   `{"ok":true,"env":"preview","commit":"bc958dd97ad8c587785fb4a26104d1a22e3414db"}` (7th poll,
   2026-08-29T16:58Z). Production (`designer.ppwellness.co`) untouched.
+
+## The Floor tool (Vic 2026-08-31): "floor should not be called paint … applying the floor doesn't function"
+
+Reproduced first (40 journeys, preview + dev, `floor-2026-08-29/`): the paint MECHANISM worked, but the
+palette popover covered 17 % of the auto-centred room — the natural first click hit the palette's
+Erase button (silently arming Erase, which then made every later click erase an empty floor) with zero
+feedback; on the phone the stroke was bound to mouse events only (a tap worked via browser compat
+events; a touch drag laid nothing) and there was no Erase and no Finish at all; and three disconnected
+floor concepts (Paint brush · Finish picker · catalog Flooring items — the same six K1 SKUs twice).
+
+**Now there is ONE tool, named "Floor"** (words Paint/Painted/Finish/Brush retired from the surface):
+- Desktop: the Floor button (labelled from 1366) opens a **docked right panel** — never over the room
+  (rect-intersection asserted 0 at 1280/1366/1536/1920; the canvas re-fits via `--floor-panel-w` and
+  the Reset/Share/Capture row slides with it). Panel: active room name · all six materials with photo
+  swatch, size and converted price · scope **Tile | Room** (Room fills the active room immediately) ·
+  Erase · Clear floor · a live "n tiles · £x" line · hints · Done. Shift = fill, Ctrl = erase remain.
+- Phone: menu sheet row + materials; the tool then shows a bottom HUD card (photo swatch · name ·
+  live count/cost · Change · Tile · Fill room · Erase · Done); the stroke is on POINTER events so
+  tap = tile and one-finger **touch drag = area**; the catalog toolbar auto-minimises; the room
+  re-fits above the card; toasts stack above it.
+- The Finish picker is merged: `setRoomFloor` is authoritative (one floor per room), `fillRoomFloor`
+  lays a tileable material as a full-cover zone (rolls become the area-priced finish),
+  `clearRoomFloor` empties both. A Tile stroke on a roll floor is refused with a hint.
+- Catalog: the six floor SKUs are **Floor cards** — tapping arms the Floor tool with that material
+  (badge "Floor", never placed as items); the two loose mats stay placeable with the lattice.
+- Presses over placed items lay floor under them; room lookup is storey-filtered; the empty-room card
+  no longer covers a floored room; dark floors flip the room label to paper.
+
+**Per-material lay check** (Vic: "some products doesn't lay properly") — all six PASS: origin anchored
+to the room's inner corner, zero gap/overlap pixels across tile borders, committed counts equal the
+pitch expectation (0.92 / 1.0 / 0.5), previews match commits, one material per tile on overlap, roll →
+whole-room finish. Table in the gate output; captures `floor-2026-08-29/gate-*.png`, `polish7-*.png`.
+
+**Gate**: tsc 0 · eslint 0 · vitest 2232/2232 · build clean · full Playwright **129 / 0 / 38** ·
+0 console errors · contrast 0 failures · all referenced testids present (retired Finish ids removed
+from specs in the same pass).
+
+## Doors — analysed, fixes queued (see `doors-2026-08-31/00-FINDINGS.md`)
+
+Desktop mouse placement is exact (≤5 mm; no zoom/pan error). Confirmed defects queued as the next
+round (same files as the Floor build, so sequenced after it): touch commits 4× (place+remove nets
+zero — touch can never place a door) · no door tool on the phone · a stale-transform race right after
+enabling the tool can put the door on the WRONG WALL · CCW-drawn rooms swing every door outward (no
+winding normalisation) · no hover preview via the door tool · storeys ignored · shared-wall facing
+defaults to the first room · window keeps door width. The Sims reference model + adopt/adapt table is
+in the findings file.

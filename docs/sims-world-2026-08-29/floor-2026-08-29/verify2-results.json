@@ -1,0 +1,166 @@
+{
+  "mobile-preview": {
+    "name": "preview",
+    "base": "https://ppw-designer-2d-git-feat-sims-world-2026-08-29-victor-ppw.vercel.app",
+    "steps": [
+      {
+        "step": "1 tap on placed item (3.5,2.5)",
+        "tiles": 1,
+        "events": [
+          "pointerdown@canvas",
+          "touchstart@canvas",
+          "pointerup@canvas",
+          "touchend@canvas",
+          "mousedown@canvas",
+          "mouseup@canvas",
+          "click@canvas"
+        ],
+        "floorLogs": [
+          "[floor-paint] {reason: paint, tiles: 1, materialId: outdoor-1m, roomId: r1}"
+        ]
+      },
+      {
+        "step": "2 tap bare (0.5,0.5)",
+        "tiles": 2,
+        "events": [
+          "pointerdown@canvas",
+          "touchstart@canvas",
+          "pointerup@canvas",
+          "touchend@canvas",
+          "mousedown@canvas",
+          "mouseup@canvas",
+          "click@canvas"
+        ],
+        "floorLogs": [
+          "[floor-paint] {reason: paint, tiles: 1, materialId: outdoor-1m, roomId: r1}"
+        ]
+      },
+      {
+        "step": "3 whole-room tap bare (1.5,1.5)",
+        "tiles": 20,
+        "events": [
+          "pointerdown@canvas",
+          "touchstart@canvas",
+          "pointerup@canvas",
+          "touchend@canvas",
+          "mousedown@canvas",
+          "mouseup@canvas",
+          "click@canvas"
+        ],
+        "floorLogs": [
+          "[floor-paint] {reason: paint, tiles: 20, materialId: outdoor-1m, roomId: r1}"
+        ]
+      }
+    ],
+    "hudVisible": true,
+    "itemRendered": "1/img 9/groups",
+    "hitItem": null,
+    "hitBare": null,
+    "scopeText": "Brush Fill whole room",
+    "sheetClosed": true,
+    "hudVisibleBeforeRoomTap": true,
+    "cartText": []
+  },
+  "desktop-preview": {
+    "name": "preview",
+    "base": "https://ppw-designer-2d-git-feat-sims-world-2026-08-29-victor-ppw.vercel.app",
+    "steps": [
+      {
+        "step": "click (2.5,2.5) after Esc",
+        "tiles": 0,
+        "floorLogs": []
+      },
+      {
+        "step": "mouse drag (2.5,1.5)->(4.5,3.5) clear of popover",
+        "tiles": 0,
+        "floorLogs": []
+      }
+    ],
+    "hudBefore": true,
+    "hudAfterEsc": false,
+    "popAfterEsc": false,
+    "hudReToggled": true
+  },
+  "mobile-dev": {
+    "name": "dev",
+    "base": "http://127.0.0.1:5188",
+    "steps": [
+      {
+        "step": "1 tap on placed item (3.5,2.5)",
+        "tiles": 1,
+        "events": [
+          "pointerdown@canvas",
+          "touchstart@canvas",
+          "pointerup@canvas",
+          "touchend@canvas",
+          "mousedown@canvas",
+          "mouseup@canvas",
+          "click@canvas"
+        ],
+        "floorLogs": [
+          "[floor-paint] {reason: paint, tiles: 1, materialId: outdoor-1m, roomId: r1}"
+        ]
+      },
+      {
+        "step": "2 tap bare (0.5,0.5)",
+        "tiles": 2,
+        "events": [
+          "pointerdown@canvas",
+          "touchstart@canvas",
+          "pointerup@canvas",
+          "touchend@canvas",
+          "mousedown@canvas",
+          "mouseup@canvas",
+          "click@canvas"
+        ],
+        "floorLogs": [
+          "[floor-paint] {reason: paint, tiles: 1, materialId: outdoor-1m, roomId: r1}"
+        ]
+      },
+      {
+        "step": "3 whole-room tap bare (1.5,1.5)",
+        "tiles": 20,
+        "events": [
+          "pointerdown@canvas",
+          "touchstart@canvas",
+          "pointerup@canvas",
+          "touchend@canvas",
+          "mousedown@canvas",
+          "mouseup@canvas",
+          "click@canvas"
+        ],
+        "floorLogs": [
+          "[floor-paint] {reason: paint, tiles: 20, materialId: outdoor-1m, roomId: r1}"
+        ]
+      }
+    ],
+    "hudVisible": true,
+    "itemRendered": "1/img 9/groups",
+    "hitItem": null,
+    "hitBare": null,
+    "scopeText": "Brush Fill whole room",
+    "sheetClosed": true,
+    "hudVisibleBeforeRoomTap": true,
+    "cartText": []
+  },
+  "desktop-dev": {
+    "name": "dev",
+    "base": "http://127.0.0.1:5188",
+    "steps": [
+      {
+        "step": "click (2.5,2.5) after Esc",
+        "tiles": 0,
+        "floorLogs": []
+      },
+      {
+        "step": "mouse drag (2.5,1.5)->(4.5,3.5) clear of popover",
+        "tiles": 0,
+        "floorLogs": []
+      }
+    ],
+    "hudBefore": true,
+    "hudAfterEsc": false,
+    "popAfterEsc": false,
+    "hudReToggled": true
+  }
+}
