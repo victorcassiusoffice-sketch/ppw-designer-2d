@@ -84,7 +84,7 @@ incognito is stuck"). Root causes + fixes, all live on the branch preview and ga
 Note: the fresh-incognito "stuck with a treadmill and a bike" is persisted localStorage within the
 incognito session (a new tab shares it) — the fix that matters is that Clear all now clears it.
 
-## STILL OPEN (separate issue, tracked)
+## STILL OPEN (separate issue, tracked) — ✅ CLOSED 2026-09-03, see addendum below
 
 Object top-down rendering (`objects-topdown-2026-08-31/`): the top-down image FILES are mostly
 correct top-downs and load (200), but on the canvas several objects render as blank labelled boxes
@@ -92,3 +92,20 @@ instead of their art — that inconsistency is what reads as "not top down / doe
 This is a rendering-path issue (large-image content-box/fit), NOT the removal loop. Fix is the next
 pass: classify all 27 objects' on-canvas rendering, fix the render so every object reliably shows a
 clean top-down, and replace any genuinely side-on source with a proper top-down or a plan symbol.
+
+### Addendum 2026-09-03 — objects-topdown CLOSED
+
+Root cause was never the Konva render path — it was 34 MB of committed
+product PNGs (single top-downs up to 4.6 MB, photos to 0.6 MB). Local dev
+reads from disk so it always looked fine; on a cold preview/production load
+the canvas sat in its fallback/skeleton state for many seconds (and the
+catalog dock's <img> tiles sat empty), which read as "objects are blank
+labelled boxes". Fix: every referenced topdown/photo asset re-encoded to a
+≤640 px WebP (34.0 MB → 1.58 MB across 41 files, e.g. NordicTrack top-down
+1.7 MB → 14 KB) and `products.json` repointed; original PNGs left in place
+(URL revert = rollback). Wall-mounted items (shelf/mirror/sconce) draw plan
+BARS by design — that is correct plan grammar, not a missing image. The six
+imageless lamp/garden products draw plan symbols. Pinned by
+`tests/e2e/objects-topdown.spec.ts` (art-count via the new `.item-art` node
+name, symbol coverage, dock-thumbnail loads). Evidence: `after-fix-desktop-1366.png`
+next to the original blank-box captures in `objects-topdown-2026-08-31/`.

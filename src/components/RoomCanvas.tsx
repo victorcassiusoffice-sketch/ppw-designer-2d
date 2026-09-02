@@ -5342,6 +5342,9 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
             const boxH = fit.rotationDeg === 90 ? fit.drawW : fit.drawH;
             return (
               <KonvaImage
+                // Probe hook: e2e counts `.item-art` nodes to pin "every
+                // placed product shows its art, not the fallback box".
+                name="item-art"
                 image={image}
                 crop={{ x: box.x, y: box.y, width: box.w, height: box.h }}
                 x={fit.offsetX + boxW / 2}

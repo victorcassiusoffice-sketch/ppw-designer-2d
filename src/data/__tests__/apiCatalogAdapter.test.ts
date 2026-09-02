@@ -102,7 +102,7 @@ describe('apiProductToProduct — seed-by-SKU behaviour merge', () => {
   it('still carries front_edge for the K1 seeds', () => {
     const p = apiProductToProduct(apiRow({ sku: 'K1-CDIO-NT2450', category: 'fitness' }));
     expect(p.front_edge).toBe('bottom');
-    expect(p.topdown_image_url).toBe('/products/topdown/k1-nordictrack-2450.png');
+    expect(p.topdown_image_url).toBe('/products/topdown/k1-nordictrack-2450.webp');
   });
 
   it('adds NO behaviour keys (not even undefined ones) for an unseeded SKU', () => {

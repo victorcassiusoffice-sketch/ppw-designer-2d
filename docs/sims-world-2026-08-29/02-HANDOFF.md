@@ -370,3 +370,50 @@ errors. Captures `doors-2026-08-31/fix-*.png`, `gate-fix-*.png`. Preview verific
   `flipFacing:false` (inward); a click from Room 2's side of the shared wall → hosted on Room 1
   edge 1 with `flipFacing:true` (swings into Room 2); a phone touch tap places exactly ONE door that
   persists and a second tap removes it; width chip 0.84 m; 0 console errors. Production untouched.
+
+---
+
+## Round 8 (2026-09-02) — Sofap wall-paint tool + 2.5D wall lift — commit `652bbef`
+
+Vic: "add walls and wall paint calculating cubic to size, pull something from
+Sofap in Mauritius … 5 different paint products … it automatically goes a bit
+more 3d … only when they select walls, any other feature goes back to the 2d."
+
+**Shipped (all preview-verified at `652bbef`):**
+
+- `src/data/wallPaints.ts` — 5 REAL Sofap (Permoglaze) products, researched
+  2026-09-02 from live MU listings (sofaponlinestore.mu WooCommerce Store API,
+  EcoMauritius, IME Distributors; source URLs in the file): Matt Emulsion,
+  Soft Feel, Xtreme White, Aquashield (1/20 L only — no live 5 L price),
+  Anti-Fungus. Datasheet spread-rate midpoints, 1/5/20 L tins, MUR prices.
+  Default wall height 2.7 m (MU slab ceilings ~2.6–2.9 m), customer-set
+  2.0–4.0 m.
+- `src/designer/wallPaintCalc.ts` (+9 unit tests) — length × height − door
+  (w×2.04 m) / window (w×1.2 m) openings → litres (× coats ÷ coverage, up to
+  0.1 L) → cheapest whole-tin fill by exact enumeration.
+- Stores: `Room.wallPaint[]`, `FreeWall.paintId`, `Property.wallHeightM` with
+  all three load-normaliser whitelists carried; actions paintWallEdge /
+  paintRoomWalls / paintFreeWall / setWallHeight; UI store `wallpaint` tool +
+  persisted `wallPaintDraft.paintId` (units.spec envelope updated).
+- Canvas: click paints a wall (0.6 m snap, slop-guarded one-pointer path),
+  Room scope paints the room, Erase strips, hover highlight; **2.5D lift**
+  (`.wall-faces` Konva group) — extruded faces with plaster/paint colour,
+  door/window gaps, top caps, cutaway stubs — ONLY while wall pen / wall
+  paint armed; Select or any other tool drops back to flat 2D, objects stay
+  top-down. Phone HUD card (`wallpaint-hud`) with live m²·L·cost.
+- TopBar: roller BUILD button, docked 272px panel (5 paints, wall-height
+  input, Wall/Room scope, Erase/Clear, live line, Done), phone sheet rows,
+  `ppw:open-menu {section:'wallpaint'}`.
+- Money: `WallPaintLine`s in cartStore (subtotal split), CartStrip rows +
+  tin count, CartDrawer group, CartPage section + subtotal, Checkout display
+  + OrderLine rows carrying the tin breakdown; wall-paint-only ≠ empty cart.
+
+**Gate:** tsc 0 · eslint touched 0/0 · vitest 2276/2276 (176 files) · build
+clean · Playwright **157 passed / 0 failed / 38 env-gated skips** incl. new
+`wallpaint.spec.ts` (6/6). Captures: `wallpaint-2026-09-02/`. Deployed proof:
+healthcheck poll = `652bbef`; 10/10 live interaction smoke (desktop+phone,
+2.5D on/off, live line "48.6 m² · 10.8 L · £30.22"); 2 seeded money tests
+green against the preview /cart + /checkout.
+
+**Still open (unchanged):** object top-down rendering backlog
+(`objects-topdown-2026-08-31/`, FINDINGS "STILL OPEN").
