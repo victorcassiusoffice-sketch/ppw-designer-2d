@@ -119,7 +119,7 @@ export default function CheckoutPage() {
     [form, submitted],
   );
 
-  if (cart.totalItemCount === 0 && cart.floorLines.length === 0) {
+  if (cart.totalItemCount === 0 && cart.floorLines.length === 0 && cart.wallPaintLines.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-ppw-sand text-ppw-ink">
         <CartPageHeader />
@@ -277,7 +277,19 @@ export default function CheckoutPage() {
       unitPriceDisplay: f.unitPriceDisplay,
       lineTotalDisplay: f.lineTotalDisplay,
     }));
-    const lines: OrderLine[] = [...productLines, ...floorOrderLines];
+    // Wall-paint order lines: whole Sofap tins; one line per paint, the
+    // name carrying the tin breakdown so the invoice is self-explanatory.
+    const wallPaintOrderLines: OrderLine[] = cart.wallPaintLines.map((l) => ({
+      productId: l.lineId,
+      name: `${l.paintName} — ${l.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')} (${l.areaM2.toFixed(1)} m², ${l.coats} coats)`,
+      category: 'Wall paint',
+      quantity: 1,
+      unitPrice: l.totalMur,
+      unitCurrency: 'MUR' as const,
+      unitPriceDisplay: l.totalDisplay,
+      lineTotalDisplay: l.totalDisplay,
+    }));
+    const lines: OrderLine[] = [...productLines, ...floorOrderLines, ...wallPaintOrderLines];
     const order: Order = {
       id: orderId,
       timestamp: Date.now(),
@@ -507,6 +519,19 @@ export default function CheckoutPage() {
                   </span>
                   <span className="shrink-0 text-ppw-ink">
                     {formatCurrency(f.lineTotalDisplay, currency)}
+                  </span>
+                </li>
+              ))}
+              {cart.wallPaintLines.map((l) => (
+                <li key={l.lineId} className="flex justify-between gap-2" data-testid="checkout-wallpaint-line">
+                  <span className="truncate text-ppw-slate">
+                    {l.paintName}{' '}
+                    <span className="text-[10px]">
+                      {l.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-ppw-ink">
+                    {formatCurrency(l.totalDisplay, currency)}
                   </span>
                 </li>
               ))}

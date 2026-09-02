@@ -76,6 +76,15 @@ import { performUndo, performRedo } from '../lib/undoIntent';
 // Polish (2026-08-29): "New plan" under More — PageTabs is hidden while there
 // is a single plan, so this is how a second plan gets started.
 import { createPage, switchToPage } from '../lib/pages';
+import {
+  DEFAULT_WALL_HEIGHT_M,
+  MAX_WALL_HEIGHT_M,
+  MIN_WALL_HEIGHT_M,
+  WALL_PAINTS,
+  findWallPaintById,
+  type WallPaint,
+} from '../data/wallPaints';
+import { deriveWallPaintOrders } from '../designer/wallPaintCalc';
 import { FLOOR_MATERIALS, findFloorMaterialById, type FloorMaterial } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
 // Floor tool (2026-08-30): the docked panel prices the active room's floor
@@ -555,6 +564,7 @@ export function TopBar({
   const doorActive = tool === 'door';
   const measureActive = tool === 'measure';
   const floorPaintActive = tool === 'floor';
+  const wallPaintActive = tool === 'wallpaint';
   const removeActive = tool === 'sledgehammer';
   // Select/Move (P2 2026-08-31, complaint B). The default tool is on when
   // NOTHING else is: hand, no room-draw, no wall run, no door/floor/measure.
@@ -564,9 +574,12 @@ export function TopBar({
     !wallActive &&
     !doorActive &&
     !floorPaintActive &&
+    !wallPaintActive &&
     !measureActive;
   const floorDraft = useDesignerUIStore((st) => st.floorDraft);
   const setFloorDraft = useDesignerUIStore((st) => st.setFloorDraft);
+  const wallPaintDraft = useDesignerUIStore((st) => st.wallPaintDraft);
+  const setWallPaintDraft = useDesignerUIStore((st) => st.setWallPaintDraft);
   // Optional: P2 may publish the in-flight stroke's tile count so the live
   // line can read "+n tiles" mid-drag. Read defensively — the field is not
   // part of this store's contract yet, and 0 is the honest fallback.
@@ -580,6 +593,9 @@ export function TopBar({
   // property store so they are one undo frame each.
   const fillRoomFloor = usePropertyStore((s) => s.fillRoomFloor);
   const clearRoomFloor = usePropertyStore((s) => s.clearRoomFloor);
+  const paintRoomWalls = usePropertyStore((s) => s.paintRoomWalls);
+  const paintFreeWall = usePropertyStore((s) => s.paintFreeWall);
+  const setWallHeight = usePropertyStore((s) => s.setWallHeight);
   const displayCurrency = useCurrencyStore((s) => s.currency);
   const fx = useCurrencyStore((s) => s.fx);
   // Units brief (2026-08-28, D7). A popover, not a six-way segmented
@@ -604,6 +620,14 @@ export function TopBar({
     if (drawMode) setDrawMode(false);
     if (wallActive) setWallDraw({ phase: 'idle' });
     setTool(floorPaintActive ? 'hand' : 'floor');
+  }
+
+  function handleToggleWallPaint() {
+    // Same exclusions as the Floor tool; door/floor/measure share `tool`
+    // so arming this stands those down automatically.
+    if (drawMode) setDrawMode(false);
+    if (wallActive) setWallDraw({ phase: 'idle' });
+    setTool(wallPaintActive ? 'hand' : 'wallpaint');
   }
 
   function handleToggleMeasure() {
@@ -741,6 +765,73 @@ export function TopBar({
     }
   }, [floorPaintActive, floorMaterialIsRoll, floorDraft.scope, setFloorDraft]);
 
+  // ------------------------------------------------------------------
+  // Wall paint (Vic 2026-09-02): five real Sofap (Permoglaze) products.
+  // Painted wall length × wall height − door/window openings → litres
+  // (× coats ÷ coverage) → whole purchasable tins → MUR. While a wall
+  // tool is armed the canvas lifts to 2.5D wall elevations (RoomCanvas).
+  const wallHeightM = property.wallHeightM ?? DEFAULT_WALL_HEIGHT_M;
+  const wallPaintSel: WallPaint = findWallPaintById(wallPaintDraft.paintId) ?? WALL_PAINTS[0];
+  const wallPaintLive = (() => {
+    const orders = deriveWallPaintOrders(property, wallHeightM);
+    let areaM2 = 0;
+    let litres = 0;
+    let costMur = 0;
+    for (const o of orders) {
+      areaM2 += o.areaM2;
+      litres += o.litres;
+      costMur += o.fill.totalMur;
+    }
+    return { any: orders.length > 0, areaM2, litres, cost: convert(costMur, 'MUR', displayCurrency, fx) };
+  })();
+  const wallPaintLiveText = !wallPaintLive.any
+    ? 'No walls painted yet'
+    : `${wallPaintLive.areaM2.toFixed(1)} m² · ${wallPaintLive.litres.toFixed(1)} L · ${formatCurrency(wallPaintLive.cost, displayCurrency)}`;
+  /** "matt · 9 m²/L · from Rs 201.25" — one line under the name. */
+  const wallPaintMetaText = (p: WallPaint) =>
+    `${p.finish} · ${p.coverage_m2_per_l} m²/L · from ${formatCurrency(
+      convert(Math.min(...p.tins.map((t) => t.priceMur)), 'MUR', displayCurrency, fx),
+      displayCurrency,
+    )}`;
+
+  /** Choose a paint: erase off, like choosing a floor material. */
+  function chooseWallPaint(p: WallPaint) {
+    setWallPaintDraft({ paintId: p.id, erase: false });
+  }
+
+  /**
+   * The Room chip IS the action, mirroring the Floor tool: paint (or, with
+   * Erase on, strip) every wall of the active room in one press.
+   */
+  function handleWallPaintRoom() {
+    setWallPaintDraft({ scope: 'room' });
+    if (!floorRoom) {
+      pushToast('Draw a room first — Walls', 'warn');
+      return;
+    }
+    if (wallPaintDraft.erase) {
+      paintRoomWalls(floorRoom.id, null);
+      pushToast(`${floorRoom.name} — wall paint removed`, 'info');
+      return;
+    }
+    paintRoomWalls(floorRoom.id, wallPaintSel.id);
+    pushToast(`${floorRoom.name} — every wall painted`, 'success');
+  }
+
+  const anyWallPainted =
+    property.rooms.some((r) => (r.wallPaint?.length ?? 0) > 0) ||
+    (property.walls ?? []).some((w) => !!w.paintId);
+
+  function handleWallPaintClearAll() {
+    for (const r of property.rooms) {
+      if ((r.wallPaint?.length ?? 0) > 0) paintRoomWalls(r.id, null);
+    }
+    for (const w of property.walls ?? []) {
+      if (w.paintId) paintFreeWall(w.id, null);
+    }
+    pushToast('Wall paint removed everywhere', 'info');
+  }
+
   const savedList = Object.values(designs)
     .filter((d) => d.id !== '__draft__')
     .sort((a, b) => (a.savedAt < b.savedAt ? 1 : -1));
@@ -866,7 +957,8 @@ export function TopBar({
   // opens the sheet AT that section's row.
   const floorRowMobileRef = useRef<HTMLButtonElement>(null);
   const doorRowMobileRef = useRef<HTMLButtonElement>(null);
-  const [sheetScrollTo, setSheetScrollTo] = useState<'floor' | 'door' | null>(null);
+  const wallPaintRowMobileRef = useRef<HTMLButtonElement>(null);
+  const [sheetScrollTo, setSheetScrollTo] = useState<'floor' | 'door' | 'wallpaint' | null>(null);
   const levelsRef = useRef<HTMLButtonElement>(null);
   const landRef = useRef<HTMLButtonElement>(null);
   const snapRef = useRef<HTMLButtonElement>(null);
@@ -920,17 +1012,22 @@ export function TopBar({
   // Floor panel (md+): publish its width on <html> so the canvas can inset
   // its auto-fit; 0px whenever it is closed, on the phone, or on unmount.
   const floorPanelOpen = isMd && floorPaintActive;
+  // Wall paint docks the same right edge. Floor and Wall paint share the
+  // `tool` field so at most ONE side panel exists — both publish the same
+  // inset var for the canvas auto-fit.
+  const wallPaintPanelOpen = isMd && wallPaintActive;
+  const sidePanelOpen = floorPanelOpen || wallPaintPanelOpen;
   useLayoutEffect(() => {
     const root = document.documentElement;
-    root.style.setProperty('--floor-panel-w', floorPanelOpen ? `${FLOOR_PANEL_W}px` : '0px');
+    root.style.setProperty('--floor-panel-w', sidePanelOpen ? `${FLOOR_PANEL_W}px` : '0px');
     return () => {
       root.style.setProperty('--floor-panel-w', '0px');
     };
-  }, [floorPanelOpen]);
+  }, [sidePanelOpen]);
 
   // Hang the panel from the header's LIVE bottom edge.
   useLayoutEffect(() => {
-    if (!floorPanelOpen) return;
+    if (!sidePanelOpen) return;
     const el = headerRef.current;
     if (!el) return;
     const measure = () => setFloorPanelTop(Math.round(el.getBoundingClientRect().bottom));
@@ -942,12 +1039,12 @@ export function TopBar({
       ro?.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, [floorPanelOpen]);
+  }, [sidePanelOpen]);
 
   // Esc = tool off while the Floor tool is on (Done does the same). Inputs
   // keep their own Esc (a level rename in progress must not lose the tool).
   useEffect(() => {
-    if (!floorPaintActive) return;
+    if (!floorPaintActive && !wallPaintActive) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       const t = e.target as HTMLElement | null;
@@ -956,14 +1053,14 @@ export function TopBar({
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [floorPaintActive, setTool]);
+  }, [floorPaintActive, wallPaintActive, setTool]);
 
   // `ppw:open-menu` — any surface (the phone Floor / Door HUD cards) can
   // ask for the sheet, scrolled to a section.
   useEffect(() => {
     const onOpen = (e: Event) => {
       const section = (e as CustomEvent<{ section?: string }>).detail?.section;
-      if (section === 'floor' || section === 'door') setSheetScrollTo(section);
+      if (section === 'floor' || section === 'door' || section === 'wallpaint') setSheetScrollTo(section);
       setShowMobileMenu(true);
     };
     window.addEventListener('ppw:open-menu', onOpen);
@@ -972,7 +1069,12 @@ export function TopBar({
   useEffect(() => {
     if (!showMobileMenu || !sheetScrollTo) return;
     // After the sheet's own open effect has moved focus to Close.
-    const target = sheetScrollTo === 'door' ? doorRowMobileRef : floorRowMobileRef;
+    const target =
+      sheetScrollTo === 'door'
+        ? doorRowMobileRef
+        : sheetScrollTo === 'wallpaint'
+          ? wallPaintRowMobileRef
+          : floorRowMobileRef;
     const id = window.requestAnimationFrame(() => {
       target.current?.scrollIntoView({ block: 'start' });
       setSheetScrollTo(null);
@@ -1415,6 +1517,19 @@ export function TopBar({
               <Icon name="tiles" />
               {/* Vic could not find the floor — its label shows from 1366. */}
               <span className="hidden min-[1366px]:inline">Floor</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleToggleWallPaint}
+              data-testid="wallpaint-tool-toggle"
+              className={segOn(wallPaintActive)}
+              title="Wall paint — click a wall to paint it with a Sofap colour; the plan lifts to show the walls. Room paints every wall of the room."
+              aria-pressed={wallPaintActive}
+              aria-controls="ppw-wallpaint-panel"
+              aria-label="Wall paint"
+            >
+              <Icon name="roller" />
+              <span className="hidden min-[1700px]:inline">Paint</span>
             </button>
             <button
               type="button"
@@ -1974,6 +2089,194 @@ export function TopBar({
           document.body,
         )}
 
+      {/* Wall paint panel (md+): the Sofap palette, docked like the Floor
+          panel. Both tools share `tool`, so only one panel exists at a time;
+          the shared effect above publishes the canvas inset var for both. */}
+      {wallPaintPanelOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <aside
+            id="ppw-wallpaint-panel"
+            role="complementary"
+            aria-label="Wall paint"
+            data-testid="wallpaint-palette"
+            data-ppw-popover=""
+            className="hidden flex-col overflow-y-auto border-l md:flex"
+            style={{
+              position: 'fixed',
+              top: floorPanelTop,
+              right: 0,
+              bottom: 'var(--sims-dock-h, 0px)',
+              width: FLOOR_PANEL_W,
+              zIndex: 30,
+              background: CHROME_BG,
+              color: CHROME_TEXT,
+              borderColor: CHROME_RIM,
+              boxShadow: '-4px 0 16px rgba(42,41,38,0.08)',
+            }}
+          >
+            <div className="flex flex-col gap-0.5 p-3">
+              {/* Title + the room the Room scope works on. */}
+              <div className="mb-1 flex items-baseline justify-between gap-2 px-1">
+                <span className="text-[14px] font-semibold text-[#37362f]">Wall paint</span>
+                <span
+                  className="min-w-0 truncate text-[12px] font-medium"
+                  style={{ color: CHROME_TEXT_2 }}
+                  data-testid="wallpaint-room"
+                >
+                  {floorRoom ? floorRoom.name : 'Sofap · Mauritius'}
+                </span>
+              </div>
+
+              {/* Wall height — drives every litre and tin count. */}
+              <label
+                className="flex min-h-[44px] items-center justify-between gap-2 px-1"
+                htmlFor="ppw-wall-height"
+              >
+                <span className="text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>
+                  Wall height
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <input
+                    id="ppw-wall-height"
+                    type="number"
+                    min={MIN_WALL_HEIGHT_M}
+                    max={MAX_WALL_HEIGHT_M}
+                    step={0.1}
+                    value={wallHeightM}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value);
+                      if (Number.isFinite(v)) setWallHeight(v);
+                    }}
+                    data-testid="wallpaint-height"
+                    className="h-9 w-20 rounded-md border border-ppw-rim bg-white px-2 text-right text-[13px] font-semibold tabular-nums text-ppw-ink focus:border-ppw-ink focus:outline-none"
+                    aria-label="Wall height in metres"
+                  />
+                  <span className="text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>
+                    m
+                  </span>
+                </span>
+              </label>
+
+              {/* The five Sofap (Permoglaze) products — sourced 2026-09-02. */}
+              {WALL_PAINTS.map((p) => {
+                const on = wallPaintDraft.paintId === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => chooseWallPaint(p)}
+                    data-testid={`wallpaint-${p.id}`}
+                    aria-pressed={on}
+                    className={`${ROW} min-h-[44px] py-1 ${on ? ROW_ON : ''}`}
+                    title={`${p.name} — ${p.use === 'both' ? 'interior + exterior' : p.use}, ${p.recommended_coats} coats`}
+                  >
+                    <span
+                      className="h-6 w-6 shrink-0 rounded border border-ppw-rim"
+                      style={{ background: p.hex }}
+                    />
+                    <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                      <span className="truncate">{p.name}</span>
+                      <span
+                        className="truncate text-[11px] font-medium tabular-nums"
+                        style={{ color: on ? undefined : CHROME_TEXT_2, opacity: on ? 0.85 : 1 }}
+                      >
+                        {wallPaintMetaText(p)}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+
+              {/* Scope — Wall or Room. Room IS the action. */}
+              <div
+                className="mt-2 flex gap-2 border-t border-ppw-rim pt-3"
+                role="radiogroup"
+                aria-label="Wall paint scope"
+                data-testid="wallpaint-scope"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  onClick={() => setWallPaintDraft({ scope: 'wall' })}
+                  data-testid="wallpaint-scope-wall"
+                  aria-checked={wallPaintDraft.scope === 'wall'}
+                  className={`${CHIP} flex-1 ${wallPaintDraft.scope === 'wall' ? CHIP_ON : CHIP_REST}`}
+                  title="Wall — click one wall to paint it"
+                >
+                  Wall
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  onClick={handleWallPaintRoom}
+                  data-testid="wallpaint-scope-room"
+                  aria-checked={wallPaintDraft.scope === 'room'}
+                  className={`${CHIP} flex-1 ${wallPaintDraft.scope === 'room' ? CHIP_ON : CHIP_REST}`}
+                  title={
+                    wallPaintDraft.erase
+                      ? 'Room — strips every wall of the active room now'
+                      : 'Room — paints every wall of the active room now'
+                  }
+                >
+                  Room
+                </button>
+              </div>
+
+              {/* Erase toggle + Clear paint. */}
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setWallPaintDraft({ erase: !wallPaintDraft.erase })}
+                  data-testid="wallpaint-erase"
+                  aria-pressed={wallPaintDraft.erase}
+                  className={`${CHIP} flex-1 ${wallPaintDraft.erase ? CHIP_DANGER_ON : CHIP_REST}`}
+                  title="Erase — clicks remove paint from a wall"
+                >
+                  Erase
+                </button>
+                <button
+                  type="button"
+                  onClick={handleWallPaintClearAll}
+                  disabled={!anyWallPainted}
+                  data-testid="wallpaint-clear"
+                  className={`${CHIP} flex-1 ${CHIP_DANGER}`}
+                  title={anyWallPainted ? 'Remove wall paint from the whole plan' : 'No walls painted yet'}
+                >
+                  Clear paint
+                </button>
+              </div>
+
+              {/* Live line — the cart's own number for the whole plan. */}
+              <p
+                className="mt-3 px-1 text-[12px] font-semibold tabular-nums text-[#37362f]"
+                data-testid="wallpaint-live"
+                aria-live="polite"
+              >
+                {wallPaintLiveText}
+              </p>
+              <p className="px-1 text-[11px] leading-snug" style={{ color: CHROME_TEXT_2 }}>
+                {wallPaintDraft.erase
+                  ? 'Click a wall to remove its paint'
+                  : wallPaintDraft.scope === 'room'
+                    ? 'Click any wall of a room to paint the whole room'
+                    : `Click a wall to paint it · ${wallPaintSel.recommended_coats} coats at ${wallHeightM.toFixed(1)} m`}
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setTool('hand')}
+                data-testid="wallpaint-done"
+                className={`${CHIP} ${CHIP_ON} mt-3 w-full`}
+                title="Done — put the Wall paint tool away (Esc)"
+              >
+                Done
+              </button>
+            </div>
+          </aside>,
+          document.body,
+        )}
+
       {/* ------------------------------------------------------------------ */}
       {/* Phone sheet — full-height, right, portaled; scrim closes.           */}
       {/* ------------------------------------------------------------------ */}
@@ -2137,6 +2440,58 @@ export function TopBar({
                             style={{ color: on ? undefined : CHROME_TEXT_2, opacity: on ? 0.85 : 1 }}
                           >
                             {floorSizeText(m)} · {floorPriceText(m)}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Wall paint on the phone (2026-09-02). Same shape as Floor:
+                    the row arms the tool; a paint row arms it with that paint
+                    and closes the sheet. Scope / Erase / Done live on the
+                    canvas HUD card (RoomCanvas), not here. */}
+                <div data-testid="wallpaint-mobile" style={{ scrollMarginTop: 56 }}>
+                  <button
+                    ref={wallPaintRowMobileRef}
+                    type="button"
+                    onClick={() => {
+                      handleToggleWallPaint();
+                      setShowMobileMenu(false);
+                    }}
+                    data-testid="wallpaint-toggle-mobile"
+                    aria-pressed={wallPaintActive}
+                    className={`${SHEET_ROW} justify-between ${wallPaintActive ? SHEET_ROW_ON : ''}`}
+                    style={{ scrollMarginTop: 56 }}
+                  >
+                    <span className="flex items-center gap-3"><Icon name="roller" size={20} />Wall paint</span>
+                    <span className="min-w-0 max-w-[55%] truncate text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">
+                      {wallPaintActive ? `on · ${wallPaintSel.name}` : 'off'}
+                    </span>
+                  </button>
+                  {WALL_PAINTS.map((p) => {
+                    const on = wallPaintActive && wallPaintDraft.paintId === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => {
+                          chooseWallPaint(p);
+                          if (!wallPaintActive) handleToggleWallPaint();
+                          setShowMobileMenu(false);
+                        }}
+                        data-testid={`wallpaint-mobile-${p.id}`}
+                        aria-pressed={wallPaintDraft.paintId === p.id}
+                        className={`${SHEET_ROW} pl-6 ${on ? SHEET_ROW_ON : ''}`}
+                      >
+                        <span className="h-6 w-6 shrink-0 rounded border border-ppw-rim" style={{ background: p.hex }} />
+                        <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                          <span className="truncate">{p.name}</span>
+                          <span
+                            className="truncate text-[11px] font-medium tabular-nums"
+                            style={{ color: on ? undefined : CHROME_TEXT_2, opacity: on ? 0.85 : 1 }}
+                          >
+                            {wallPaintMetaText(p)}
                           </span>
                         </span>
                       </button>

@@ -76,7 +76,8 @@ export function CartDrawer() {
   const groups = groupLinesByMerchant(cart.lines);
   const marketplaceFee = cart.subtotal * MARKETPLACE_FEE_PCT;
   const total = cart.subtotal + marketplaceFee;
-  const isEmpty = cart.lines.length === 0 && cart.floorLines.length === 0;
+  const isEmpty =
+    cart.lines.length === 0 && cart.floorLines.length === 0 && cart.wallPaintLines.length === 0;
 
   function handleCheckout() {
     // Route to the cartStore-backed checkout — the SAME store this drawer
@@ -189,6 +190,34 @@ export function CartDrawer() {
                             {f.surplusUnits > 1 ? 's' : ''} to cover cut edges
                           </p>
                         )}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              )}
+
+              {cart.wallPaintLines.length > 0 && (
+                <li data-testid="wallpaint-group">
+                  <div className="flex items-baseline justify-between border-b border-[#C0A67E]/30 pb-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#C0A67E]">
+                      Wall paint
+                    </p>
+                    <p className="text-[11px] font-medium text-[#0E0E10]">
+                      {formatCurrency(cart.wallPaintSubtotal, currency)}
+                    </p>
+                  </div>
+                  <ul className="mt-1.5 space-y-1.5">
+                    {cart.wallPaintLines.map((l) => (
+                      <li key={l.lineId} className="text-xs" data-testid="wallpaint-line">
+                        <div className="flex items-baseline justify-between">
+                          <span className="truncate pr-2 text-[#0E0E10]">{l.paintName}</span>
+                          <span className="tabular-nums text-[#0E0E10]/80">
+                            {formatCurrency(l.totalDisplay, currency)}
+                          </span>
+                        </div>
+                        <p className="text-[10px] leading-snug text-[#0E0E10]/55">
+                          {l.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')} · {l.areaM2.toFixed(1)} m² · {l.coats} coats
+                        </p>
                       </li>
                     ))}
                   </ul>

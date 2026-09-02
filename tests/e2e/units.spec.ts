@@ -306,7 +306,8 @@ test.describe('Selectable snap units', () => {
       JSON.parse(localStorage.getItem('ppw_designer_ui_v1') ?? 'null'),
     );
     // The persisted envelope also carries the Floor tool's material choice
-    // (designerUIStore partialize: units + floorDraft.materialId only —
+    // and the Wall paint tool's paint choice (designerUIStore partialize:
+    // units + floorDraft.materialId + wallPaintDraft.paintId only —
     // scope/erase/tool stay per-session). Exact shape guards against
     // accidentally persisting session chrome.
     expect(persisted).toEqual({
@@ -314,6 +315,7 @@ test.describe('Selectable snap units', () => {
         precision: 'cm1',
         lastPrecision: 'full',
         floorDraft: { materialId: 'gym-interlock' },
+        wallPaintDraft: { paintId: 'permoglaze-matt-emulsion' },
       },
       version: 1,
     });

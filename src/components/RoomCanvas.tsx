@@ -221,6 +221,8 @@ import {
 } from '../designer/floorTiles';
 import { findFloorMaterialById } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
+import { DEFAULT_WALL_HEIGHT_M, WALL_PAINTS, findWallPaintById } from '../data/wallPaints';
+import { deriveWallPaintOrders } from '../designer/wallPaintCalc';
 // Floor tool (2026-08-30): the phone HUD card's live "n tiles · £x" line
 // uses the cart's own conversion so the two can never disagree.
 import { convert } from '../lib/fx';
@@ -242,6 +244,17 @@ import { collidesWithAny } from '../lib/geometry';
 
 /** How close the pointer must be to a wall for the door tool to snap to it. */
 const DOOR_SNAP_TOL_M = 0.6;
+/** Wall paint (2026-09-02): how far a tap may land from a wall and still paint it. */
+const WALLPAINT_SNAP_TOL_M = 0.6;
+
+interface WallPaintTarget {
+  kind: 'edge' | 'free';
+  roomId?: string;
+  edgeIndex?: number;
+  wallId?: string;
+  a: { x: number; y: number };
+  b: { x: number; y: number };
+}
 
 /**
  * Screen-px slop under which a door-tool gesture still counts as a TAP.
@@ -599,6 +612,14 @@ export function RoomCanvas({
   // for the same reason as `floorTool` — the fit-to-view effect reads it,
   // and the phone door HUD card gets the identical height/ref treatment.
   const doorTool = tool === 'door';
+  // Wall paint (2026-09-02): tap a wall to paint its face; Sofap tins in the
+  // cart. While this tool (or the wall pen) is on, the canvas lifts into the
+  // 2.5D wall-elevation view — display only, objects stay top-down.
+  const wallPaintTool = tool === 'wallpaint';
+  const wallPaintHudRef = useRef<HTMLDivElement | null>(null);
+  const [wallPaintHudH, setWallPaintHudH] = useState(0);
+  const wallPaintGestureRef = useRef<{ pointerId: number; x: number; y: number; moved: boolean } | null>(null);
+  const [wallPaintHover, setWallPaintHover] = useState<WallPaintTarget | null>(null);
   const doorHudRef = useRef<HTMLDivElement | null>(null);
   const [doorHudH, setDoorHudH] = useState(0);
   /**
@@ -901,6 +922,15 @@ export function RoomCanvas({
         Math.max(0, Math.min(box.height - 120, box.bottom - hud.top + 12)),
       );
     }
+    // Wall paint (2026-09-02): the paint HUD card, same treatment.
+    if (wallPaintTool && wallPaintHudH > 0 && wallPaintHudRef.current && containerRef.current) {
+      const hud = wallPaintHudRef.current.getBoundingClientRect();
+      const box = containerRef.current.getBoundingClientRect();
+      bottomInset = Math.max(
+        bottomInset,
+        Math.max(0, Math.min(box.height - 120, box.bottom - hud.top + 12)),
+      );
+    }
     // Door tool (2026-08-31): the phone door HUD card gets the same
     // treatment as the Floor card — the band under its top edge is
     // unavailable, so the plan re-centres above it.
@@ -917,7 +947,7 @@ export function RoomCanvas({
     // --floor-panel-w (0px closed / below md); subtracting the overlap
     // re-centres the room in the VISIBLE area so the panel never covers it.
     let rightInset = 0;
-    if (floorTool && containerRef.current) {
+    if ((floorTool || wallPaintTool) && containerRef.current) {
       const raw = getComputedStyle(document.documentElement).getPropertyValue('--floor-panel-w');
       const px = Number.parseFloat(raw);
       if (Number.isFinite(px) && px > 0) {
@@ -952,6 +982,8 @@ export function RoomCanvas({
     floorHudH,
     doorTool,
     doorHudH,
+    wallPaintTool,
+    wallPaintHudH,
   ]);
 
   useEffect(() => {
@@ -962,7 +994,7 @@ export function RoomCanvas({
     if (!fitted) return;
     setViewport(fitted);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, pxPerMetre, drawMode, drawHudH, floorTool, floorHudH, doorTool, doorHudH]);
+  }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, pxPerMetre, drawMode, drawHudH, floorTool, floorHudH, doorTool, doorHudH, wallPaintTool, wallPaintHudH]);
 
   /**
    * Door tool stale-transform race (2026-08-31, defect 3): arming the tool
@@ -2131,6 +2163,8 @@ export function RoomCanvas({
   // (floorTool is declared up beside the HUD refs — the fit effect needs it.)
   const floorDraft = useDesignerUIStore((st) => st.floorDraft);
   const setFloorDraft = useDesignerUIStore((st) => st.setFloorDraft);
+  const wallPaintDraft = useDesignerUIStore((st) => st.wallPaintDraft);
+  const setWallPaintDraft = useDesignerUIStore((st) => st.setWallPaintDraft);
   const setFloorPreviewCount = useDesignerUIStore((st) => st.setFloorPreviewCount);
   /**
    * Anchor of an in-progress floor stroke, in world metres. `roomId` is
@@ -2339,6 +2373,117 @@ export function RoomCanvas({
     return { units, cost, unit };
   }, [floorActiveRoom, displayCurrency, fx]);
 
+  // Wall paint (2026-09-02): live property-wide totals for the HUD/panel —
+  // painted area, litres and the whole-tin cost, in the display currency.
+  const propertyForPaint = usePropertyStore((st) => st.property);
+  const wallPaintLive = useMemo(() => {
+    const orders = deriveWallPaintOrders(
+      propertyForPaint,
+      propertyForPaint.wallHeightM ?? DEFAULT_WALL_HEIGHT_M,
+    );
+    let areaM2 = 0;
+    let litres = 0;
+    let cost = 0;
+    for (const o of orders) {
+      areaM2 += o.areaM2;
+      litres += o.litres;
+      cost += convert(o.fill.totalMur, 'MUR', displayCurrency, fx);
+    }
+    return { areaM2, litres, cost, any: orders.length > 0 };
+  }, [propertyForPaint, displayCurrency, fx]);
+
+  // The 2.5D wall-elevation view (Vic 2026-09-02: "if they select add a wall
+  // it automatically goes a bit more 3d — just to display the walls").
+  // Active ONLY while a wall tool is on; every other tool sees the flat plan.
+  const show25d = drawMode || wallDrawEnabled || wallPaintTool;
+  const wallFaces = useMemo(() => {
+    if (!show25d) return [];
+    const hM = propertyForPaint.wallHeightM ?? DEFAULT_WALL_HEIGHT_M;
+    const K = 0.42; // foreshortening: full height would bury the plan
+    const hPx = hM * pxPerMetre * K;
+    const stubPx = 0.3 * pxPerMetre * K;
+    const shade = (hex: string, f: number): string => {
+      const h = hex.replace('#', '');
+      if (h.length < 6) return hex;
+      const c = (i: number) => Math.max(0, Math.min(255, Math.round(parseInt(h.slice(i, i + 2), 16) * f)));
+      return `rgb(${c(0)},${c(2)},${c(4)})`;
+    };
+    interface Face {
+      key: string;
+      pts: number[];
+      fill: string;
+      h: number;
+      baseY: number;
+      gaps: Array<{ pts: number[] }>;
+    }
+    const faces: Face[] = [];
+    const PLASTER = '#EDE9DF';
+    for (const room of rooms) {
+      if (isOutdoorRoom(room) || !isDrawnPolygon(room.polygon)) continue;
+      const paintByEdge = new Map((room.wallPaint ?? []).map((e) => [e.edgeIndex, e.paintId]));
+      for (const e of roomEdges(room)) {
+        const dx = e.b.x - e.a.x;
+        const dy = e.b.y - e.a.y;
+        const len = Math.hypot(dx, dy);
+        if (len < 1e-6) continue;
+        // CW polygon in y-down space: the inward normal is the LEFT normal.
+        const ny = dx / len; // inwardNormal.y
+        const facesDown = ny > 0.5; // inner face looks down-screen = the room's TOP wall
+        const facesUp = ny < -0.5; // the room's BOTTOM wall — cutaway stub
+        const h = facesUp ? stubPx : hPx;
+        const paint = paintByEdge.get(e.index);
+        const hex = paint ? findWallPaintById(paint)?.hex ?? PLASTER : PLASTER;
+        const fill = facesDown ? shade(hex, 1) : facesUp ? shade(hex, 0.96) : shade(hex, 0.9);
+        const ax = e.a.x * pxPerMetre;
+        const ay = e.a.y * pxPerMetre;
+        const bx = e.b.x * pxPerMetre;
+        const by = e.b.y * pxPerMetre;
+        const gaps: Face['gaps'] = [];
+        if (!facesUp) {
+          for (const o of roomOpenings(room)) {
+            if (o.edgeIndex !== e.index) continue;
+            const t0 = Math.max(0, (o.offsetM - o.widthM / 2) / len);
+            const t1 = Math.min(1, (o.offsetM + o.widthM / 2) / len);
+            const gx0 = ax + (bx - ax) * t0;
+            const gy0 = ay + (by - ay) * t0;
+            const gx1 = ax + (bx - ax) * t1;
+            const gy1 = ay + (by - ay) * t1;
+            const isWin = o.kind === 'window';
+            const top = (isWin ? Math.min(0.9 + 1.2, hM) : Math.min(2.04, hM)) * pxPerMetre * K;
+            const bot = isWin ? 0.9 * pxPerMetre * K : 0;
+            gaps.push({ pts: [gx0, gy0 - bot, gx1, gy1 - bot, gx1, gy1 - top, gx0, gy0 - top] });
+          }
+        }
+        faces.push({
+          key: `f-${room.id}-${e.index}`,
+          pts: [ax, ay, bx, by, bx, by - h, ax, ay - h],
+          fill,
+          h,
+          baseY: Math.min(ay, by),
+          gaps,
+        });
+      }
+    }
+    for (const w of freeWalls) {
+      const hex = w.paintId ? findWallPaintById(w.paintId)?.hex ?? PLASTER : PLASTER;
+      const ax = w.a.x * pxPerMetre;
+      const ay = w.a.y * pxPerMetre;
+      const bx = w.b.x * pxPerMetre;
+      const by = w.b.y * pxPerMetre;
+      faces.push({
+        key: `f-fw-${w.id}`,
+        pts: [ax, ay, bx, by, bx, by - hPx, ax, ay - hPx],
+        fill: shade(hex, 0.95),
+        h: hPx,
+        baseY: Math.min(ay, by),
+        gaps: [],
+      });
+    }
+    faces.sort((a, b) => a.baseY - b.baseY);
+    return faces;
+  }, [show25d, propertyForPaint.wallHeightM, rooms, freeWalls, pxPerMetre]);
+
+
   /**
    * The phone HUD's "Fill room" chip IS the action (mirrors the desktop
    * panel's Room chip): it lays — or with Erase on, clears — the active
@@ -2395,6 +2540,30 @@ export function RoomCanvas({
       publish(0);
     };
   }, [floorHudOn]);
+
+  /** Phone wall-paint HUD card (2026-09-02) — same --draw-hud-h contract. */
+  const wallPaintHudOn = wallPaintTool && !drawMode;
+  useEffect(() => {
+    const root = document.documentElement;
+    const el = wallPaintHudRef.current;
+    const publish = (h: number) => {
+      root.style.setProperty('--draw-hud-h', `${h}px`);
+      setWallPaintHudH(h);
+    };
+    if (!wallPaintHudOn || !el) {
+      publish(0);
+      return undefined;
+    }
+    const apply = () => publish(el.offsetHeight);
+    apply();
+    if (typeof ResizeObserver === 'undefined') return () => publish(0);
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      publish(0);
+    };
+  }, [wallPaintHudOn]);
 
   /** The phone door HUD card mounts while the Door tool is on (md:hidden on
    *  desktop, where the TopBar sub-bar is the indicator). */
@@ -2503,6 +2672,79 @@ export function RoomCanvas({
     setDragGhost(null);
   }, [dropNonce, drawMode, wallDrawEnabled, doorTool, measureTool, placeProductAt, setPendingProductId, pushToast]);
 
+
+  /** The wall a paint tap would hit: a room edge's inner face or a free wall. */
+  const computeWallPaintTarget = useCallback(
+    (clientX: number, clientY: number): WallPaintTarget | null => {
+      const container = containerRef.current;
+      if (!container) return null;
+      const rect = container.getBoundingClientRect();
+      const stage = stageRef.current;
+      const vp = stage ? { x: stage.x(), y: stage.y(), scale: stage.scaleX() } : viewport;
+      const { xM, yM } = screenToRoom(clientX, clientY, { left: rect.left, top: rect.top }, vp, pxPerMetre);
+      const p = { x: xM, y: yM };
+      const distToSeg = (a: { x: number; y: number }, b: { x: number; y: number }): number => {
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const l2 = dx * dx + dy * dy;
+        if (l2 < 1e-12) return Math.hypot(p.x - a.x, p.y - a.y);
+        const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2));
+        return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+      };
+      const ps = usePropertyStore.getState();
+      const lvl = activeLevelIdOf(ps.property);
+      let best: WallPaintTarget | null = null;
+      let bestD = WALLPAINT_SNAP_TOL_M;
+      for (const room of roomsOnLevel(ps.property.rooms, lvl)) {
+        if (isOutdoorRoom(room) || !isDrawnPolygon(room.polygon)) continue;
+        for (const e of roomEdges(room)) {
+          const d = distToSeg(e.a, e.b);
+          if (d < bestD) {
+            bestD = d;
+            best = { kind: 'edge', roomId: room.id, edgeIndex: e.index, a: e.a, b: e.b };
+          }
+        }
+      }
+      for (const w of wallsOnLevel(ps.property.walls ?? [], lvl)) {
+        const d = distToSeg(w.a, w.b);
+        if (d < bestD) {
+          bestD = d;
+          best = { kind: 'free', wallId: w.id, a: w.a, b: w.b };
+        }
+      }
+      return best;
+    },
+    [viewport, pxPerMetre],
+  );
+
+  const commitWallPaintAt = useCallback(
+    (clientX: number, clientY: number) => {
+      const t = computeWallPaintTarget(clientX, clientY);
+      const draft = useDesignerUIStore.getState().wallPaintDraft;
+      const { scope, erase } = draft;
+      // A persisted draft can hold a retired catalog id — fall back to the
+      // current default so a tap never paints an unpriceable paint.
+      const paintId = findWallPaintById(draft.paintId) ? draft.paintId : WALL_PAINTS[0].id;
+      if (!t) {
+        pushToast('Tap a wall to paint it.', 'warn');
+        return;
+      }
+      const ps = usePropertyStore.getState();
+      const apply = erase ? null : paintId;
+      if (t.kind === 'edge' && scope === 'room' && t.roomId) {
+        ps.paintRoomWalls(t.roomId, apply);
+        pushToast(erase ? 'Wall paint removed from the room.' : 'Every wall of the room painted.', erase ? 'info' : 'success');
+      } else if (t.kind === 'edge' && t.roomId && typeof t.edgeIndex === 'number') {
+        ps.paintWallEdge(t.roomId, t.edgeIndex, apply);
+        if (erase) pushToast('Wall paint removed.', 'info');
+      } else if (t.kind === 'free' && t.wallId) {
+        ps.paintFreeWall(t.wallId, apply);
+        if (erase) pushToast('Wall paint removed.', 'info');
+      }
+      haptic('place');
+    },
+    [computeWallPaintTarget, pushToast],
+  );
 
   const computeDoorHover = useCallback(
     (clientX: number, clientY: number): DoorHover | null => {
@@ -2996,6 +3238,106 @@ export function RoomCanvas({
           toolbar + the 56 px Clear/cart band, publishes --draw-hud-h so the
           fit keeps the plan above it, md:hidden — from md up the TopBar
           sub-bar is the tool's home. 44 px chrome targets throughout. */}
+      {/* Wall-paint HUD (2026-09-02) — the phone's brush card, same
+          mechanics as the Floor card: bottom-anchored, publishes
+          --draw-hud-h, the toolbar folds, the plan re-fits above it. */}
+      {wallPaintHudOn && (
+        <div
+          ref={wallPaintHudRef}
+          data-testid="wallpaint-hud"
+          className="pointer-events-auto fixed left-1/2 z-30 flex w-[min(94vw,420px)] -translate-x-1/2 flex-col gap-1.5 rounded-xl p-2 text-xs md:hidden bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-toolbar-h,0px)_+_56px)]"
+          style={{
+            background: CHROME_BG,
+            border: `1px solid ${CHROME_RIM}`,
+            boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
+            color: CHROME_TEXT,
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-6 w-6 shrink-0 rounded"
+              style={{
+                background: findWallPaintById(wallPaintDraft.paintId)?.hex ?? '#EDE9DF',
+                border: `1px solid ${CHROME_RIM}`,
+              }}
+            />
+            <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-[#37362f]">
+              {findWallPaintById(wallPaintDraft.paintId)?.name ?? 'Wall paint'}
+            </span>
+            <span className="shrink-0 text-[12px] font-medium tabular-nums" style={{ color: CHROME_TEXT_2 }} aria-live="polite">
+              {wallPaintLive.any
+                ? `${wallPaintLive.areaM2.toFixed(1)} m² · ${wallPaintLive.litres.toFixed(1)} L · ${formatCurrency(wallPaintLive.cost, displayCurrency)}`
+                : 'No walls painted yet'}
+            </span>
+            <button
+              type="button"
+              data-testid="wallpaint-change-mobile"
+              onClick={() =>
+                window.dispatchEvent(new CustomEvent('ppw:open-menu', { detail: { section: 'wallpaint' } }))
+              }
+              className={`${OVL_CTRL} ${OVL_REST} h-11 shrink-0 px-3`}
+              title="Change the paint"
+            >
+              Change
+            </button>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              data-testid="wallpaint-scope-mobile-wall"
+              aria-pressed={wallPaintDraft.scope === 'wall'}
+              onClick={() => setWallPaintDraft({ scope: 'wall' })}
+              className={`${OVL_CTRL} ${wallPaintDraft.scope === 'wall' && !wallPaintDraft.erase ? OVL_ACTIVE : OVL_REST} h-11 flex-1 px-2`}
+              title="Wall — tap one wall to paint it"
+            >
+              Wall
+            </button>
+            <button
+              type="button"
+              data-testid="wallpaint-scope-mobile-room"
+              aria-pressed={wallPaintDraft.scope === 'room'}
+              onClick={() => setWallPaintDraft({ scope: 'room' })}
+              className={`${OVL_CTRL} ${wallPaintDraft.scope === 'room' && !wallPaintDraft.erase ? OVL_ACTIVE : OVL_REST} h-11 flex-1 px-2`}
+              title="Room — tap a wall to paint every wall of that room"
+            >
+              Room
+            </button>
+            <button
+              type="button"
+              data-testid="wallpaint-erase-mobile"
+              aria-pressed={wallPaintDraft.erase}
+              onClick={() => setWallPaintDraft({ erase: !wallPaintDraft.erase })}
+              className={`${OVL_CTRL} h-11 flex-1 px-2 ${
+                wallPaintDraft.erase ? 'border-ppw-clay bg-ppw-chrome text-ppw-charcoal shadow-sm' : OVL_REST
+              }`}
+              title="Erase — taps remove the paint"
+            >
+              Erase
+            </button>
+            <button
+              type="button"
+              data-testid="wallpaint-done-mobile"
+              onClick={() => setTool('hand')}
+              className={`${OVL_CTRL} ${OVL_ACTIVE} h-11 flex-1 px-2`}
+              title="Done — put the paint away"
+            >
+              Done
+            </button>
+          </div>
+          <p
+            className="px-1 text-[11px] font-medium leading-snug"
+            style={{ color: wallPaintDraft.erase ? CHROME_DANGER : CHROME_TEXT_2 }}
+          >
+            {wallPaintDraft.erase
+              ? 'Tap a wall to remove its paint'
+              : wallPaintDraft.scope === 'room'
+                ? 'Tap a wall to paint the whole room'
+                : 'Tap a wall to paint it'}
+          </p>
+        </div>
+      )}
+
       {doorHudOn && (
         <div
           ref={doorHudRef}
@@ -3268,6 +3610,18 @@ export function RoomCanvas({
             recentOpeningRef.current = null;
             return;
           }
+          if (wallPaintTool) {
+            // Same one-gesture contract as the door tool: commit on
+            // pointerUP consuming this record, with tap slop so a pan
+            // never paints.
+            wallPaintGestureRef.current = {
+              pointerId: evt.pointerId,
+              x: evt.clientX,
+              y: evt.clientY,
+              moved: false,
+            };
+            return;
+          }
           if (!floorTool) return;
           const w = floorWorldPoint(evt.clientX, evt.clientY);
           if (!w) return;
@@ -3289,6 +3643,16 @@ export function RoomCanvas({
             if (g.moved) return; // the gesture was a pan, not a tap
             if (Math.hypot(evt.clientX - g.x, evt.clientY - g.y) > DOOR_TAP_SLOP_PX) return;
             commitDoorAt(evt.clientX, evt.clientY);
+            return;
+          }
+          if (wallPaintTool) {
+            const g = wallPaintGestureRef.current;
+            wallPaintGestureRef.current = null;
+            if (!g) return;
+            if (evt.isPrimary === false || evt.pointerId !== g.pointerId) return;
+            if (g.moved) return;
+            if (Math.hypot(evt.clientX - g.x, evt.clientY - g.y) > DOOR_TAP_SLOP_PX) return;
+            commitWallPaintAt(evt.clientX, evt.clientY);
             return;
           }
           if (!floorTool) return;
@@ -3317,6 +3681,22 @@ export function RoomCanvas({
             }
             if (evt.isPrimary !== false) {
               setDoorHover(computeDoorHover(evt.clientX, evt.clientY));
+            }
+            return;
+          }
+          if (wallPaintTool) {
+            const evt = e.evt as PointerEvent;
+            if (typeof evt.clientX !== 'number') return;
+            const g = wallPaintGestureRef.current;
+            if (
+              g
+              && evt.pointerId === g.pointerId
+              && Math.hypot(evt.clientX - g.x, evt.clientY - g.y) > DOOR_TAP_SLOP_PX
+            ) {
+              g.moved = true;
+            }
+            if (evt.isPrimary !== false) {
+              setWallPaintHover(computeWallPaintTarget(evt.clientX, evt.clientY));
             }
             return;
           }
@@ -3748,6 +4128,38 @@ export function RoomCanvas({
               same shadow, so the plan reads as ONE drawing. Listening only
               while the sledgehammer is armed, so a click can demolish one
               without ever swallowing an armed placement click. */}
+          {/* 2.5D wall elevation (2026-09-02): display-only faces while a
+              wall tool is armed. Objects stay top-down; the plan strokes
+              draw over the face baselines so nothing else changes. */}
+          {show25d && wallFaces.length > 0 && (
+            <Group name="wall-faces" listening={false}>
+              {wallFaces.map((f) => (
+                <Group key={f.key}>
+                  <Line points={f.pts} closed fill={f.fill} stroke={WALL_INK} strokeWidth={1} opacity={0.97} />
+                  {f.gaps.map((g, i) => (
+                    <Line key={i} points={g.pts} closed fill={CANVAS_GROUND} stroke={WALL_INK} strokeWidth={0.8} opacity={0.95} />
+                  ))}
+                  {/* top cap so the face reads as a solid wall */}
+                  <Line points={[f.pts[6], f.pts[7], f.pts[4], f.pts[5]]} stroke={WALL_INK} strokeWidth={1.5} />
+                </Group>
+              ))}
+              {wallPaintTool && wallPaintHover && (
+                <Line
+                  points={[
+                    wallPaintHover.a.x * pxPerMetre,
+                    wallPaintHover.a.y * pxPerMetre,
+                    wallPaintHover.b.x * pxPerMetre,
+                    wallPaintHover.b.y * pxPerMetre,
+                  ]}
+                  stroke={SELECT_STROKE}
+                  strokeWidth={WALL_STROKE_PX + 4}
+                  dash={[10, 6]}
+                  opacity={0.55}
+                  lineCap="butt"
+                />
+              )}
+            </Group>
+          )}
           {freeWalls.map((w) => {
             const pts = [w.a.x * pxPerMetre, w.a.y * pxPerMetre, w.b.x * pxPerMetre, w.b.y * pxPerMetre];
             const wallPx = (w.thicknessM || WALL_THICKNESS_M) * pxPerMetre;

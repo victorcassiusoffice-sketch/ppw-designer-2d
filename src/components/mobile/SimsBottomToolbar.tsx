@@ -80,7 +80,7 @@ export function SimsBottomToolbar() {
   // thumb can still unfold it) and the previous state comes back on exit.
   // The user's own chevron taps mid-draw are respected until the pen closes.
   const penOpen = useDrawProgressStore((s) => s.enabled);
-  const floorToolOn = useDesignerUIStore((s) => s.tool === 'floor');
+  const floorToolOn = useDesignerUIStore((s) => s.tool === 'floor' || s.tool === 'wallpaint');
   const foldForTool = penOpen || floorToolOn;
   const minimizedBeforePenRef = useRef<boolean | null>(null);
   useEffect(() => {

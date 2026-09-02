@@ -26,6 +26,8 @@ export interface FreeWall {
   thicknessM: number;
   /** Absent means ground — same rule as `Room.levelId`. */
   levelId?: string;
+  /** Wall paint (2026-09-02): a WALL_PAINTS id. Absent = bare plaster. */
+  paintId?: string;
 }
 
 /** A wall shorter than this is a click, not a wall, and is dropped. */

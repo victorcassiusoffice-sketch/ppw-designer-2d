@@ -160,6 +160,13 @@ export interface Room {
    */
   floorTiles?: FloorZone[];
   /**
+   * Wall paint per edge (2026-09-02): which WALL_PAINTS id covers the inner
+   * face of polygon edge `edgeIndex`. Sparse — unpainted walls are absent.
+   * Written only on live (already winding-canonical) polygons; a reshape
+   * prunes entries whose edge no longer exists.
+   */
+  wallPaint?: Array<{ edgeIndex: number; paintId: string }>;
+  /**
    * Storey this room sits on (2026-08-29). ABSENT MEANS GROUND — that is the
    * canonical form, not a fallback, so a single-storey design saved today is
    * byte-identical to one saved before levels existed. Read it through
@@ -188,6 +195,12 @@ export interface Property {
   walls?: FreeWall[];
   /** Land plot. Absent/null = no plot. */
   site?: Site | null;
+  /**
+   * Wall height in metres (wall-paint feature 2026-09-02) — one height for
+   * the whole property, the way a quote is actually taken. Absent = the
+   * DEFAULT_WALL_HEIGHT_M the calculator assumes.
+   */
+  wallHeightM?: number;
 }
 
 const PROPERTY_KEY = 'ppw_property_v2';
@@ -420,6 +433,14 @@ export interface PropertyState {
   fillRoomFloor: (roomId: string, materialId: string) => number;
   /** Remove every floor (tiles + finish) from a room in ONE undo frame. */
   clearRoomFloor: (roomId: string) => void;
+  /** Wall paint (2026-09-02): set/clear the paint on one room edge. */
+  paintWallEdge: (roomId: string, edgeIndex: number, paintId: string | null) => void;
+  /** Paint (or with null clear) EVERY edge of a room in one frame. */
+  paintRoomWalls: (roomId: string, paintId: string | null) => void;
+  /** Set/clear the paint on one free-standing wall. */
+  paintFreeWall: (wallId: string, paintId: string | null) => void;
+  /** Property-wide wall height for paint quotes (clamped 2.0–4.0). */
+  setWallHeight: (heightM: number) => void;
 
   addOpening: (roomId: string, opening: Omit<Opening, 'id'> & { id?: string }) => string | null;
   /** Removes by opening id from WHICHEVER room owns it (ids are global). */
@@ -954,6 +975,58 @@ export const usePropertyStore = create<PropertyState>()(
           },
         })),
 
+      paintWallEdge: (roomId, edgeIndex, paintId) =>
+        set((s) => ({
+          property: {
+            ...s.property,
+            rooms: s.property.rooms.map((r) => {
+              if (r.id !== roomId) return r;
+              if (edgeIndex < 0 || edgeIndex >= r.polygon.length) return r;
+              const rest = (r.wallPaint ?? []).filter((e) => e.edgeIndex !== edgeIndex);
+              const next = paintId ? [...rest, { edgeIndex, paintId }] : rest;
+              return { ...r, wallPaint: next.length > 0 ? next : undefined };
+            }),
+          },
+        })),
+
+      paintRoomWalls: (roomId, paintId) =>
+        set((s) => ({
+          property: {
+            ...s.property,
+            rooms: s.property.rooms.map((r) => {
+              if (r.id !== roomId) return r;
+              if (!paintId) return { ...r, wallPaint: undefined };
+              const all = r.polygon.map((_, i) => ({ edgeIndex: i, paintId }));
+              return { ...r, wallPaint: all.length > 0 ? all : undefined };
+            }),
+          },
+        })),
+
+      paintFreeWall: (wallId, paintId) =>
+        set((s) => ({
+          property: {
+            ...s.property,
+            walls: (s.property.walls ?? []).map((w) =>
+              w.id === wallId
+                ? (() => {
+                    const next = { ...w };
+                    if (paintId) next.paintId = paintId;
+                    else delete next.paintId;
+                    return next;
+                  })()
+                : w,
+            ),
+          },
+        })),
+
+      setWallHeight: (heightM) =>
+        set((s) => ({
+          property: {
+            ...s.property,
+            wallHeightM: Math.min(4.0, Math.max(2.0, Number(heightM.toFixed(2)))),
+          },
+        })),
+
       // ---- openings ----------------------------------------------------
 
       addOpening: (roomId, opening) => {
@@ -1332,6 +1405,12 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   if (walls.length > 0) out.walls = walls;
   const site = normaliseSite(property.site);
   if (site) out.site = site;
+  // Wall paint (2026-09-02): same whitelist trap — omit this and a saved
+  // property's wall height silently resets on the first load.
+  const rawH = (property as { wallHeightM?: unknown }).wallHeightM;
+  if (typeof rawH === 'number' && rawH >= 2.0 && rawH <= 4.0) {
+    out.wallHeightM = rawH;
+  }
   return out;
 }
 
@@ -1376,6 +1455,10 @@ export function normaliseFreeWalls(walls: unknown): FreeWall[] {
       thicknessM: w.thicknessM,
     };
     if (w.levelId) clean.levelId = w.levelId;
+    // Wall paint (2026-09-02): whitelist trap — carry the paint or it
+    // vanishes on the first save/load round trip.
+    const paintId = (w as { paintId?: unknown }).paintId;
+    if (typeof paintId === 'string' && paintId) clean.paintId = paintId;
     out.push(clean);
   }
   return out;
@@ -1390,6 +1473,7 @@ interface RawRoom {
   id?: string;
   name?: string;
   polygon?: Polygon;
+  wallPaint?: Array<{ edgeIndex?: unknown; paintId?: unknown }>;
   vertices?: Polygon;
   lengthM?: number;
   widthM?: number;
@@ -1403,6 +1487,7 @@ interface RawRoom {
 }
 
 interface RawProperty {
+  wallHeightM?: unknown;
   id?: string;
   name?: string;
   activeRoomId?: string;
@@ -1473,6 +1558,25 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
     // hand-edited payload would otherwise reach the renderer AND the price
     // calculator. Pruned against the CLEANED polygon.
     floorTiles: decodeFloorZones(r.floorTiles, clean),
+    // Wall paint (2026-09-02): whitelist + prune — entries must point at an
+    // edge that still exists on the CLEANED polygon, exactly like openings.
+    ...(Array.isArray(r.wallPaint)
+      ? (() => {
+          const wp = r.wallPaint
+            .filter(
+              (e): e is { edgeIndex: number; paintId: string } =>
+                !!e &&
+                typeof e.edgeIndex === 'number' &&
+                Number.isInteger(e.edgeIndex) &&
+                e.edgeIndex >= 0 &&
+                e.edgeIndex < clean.length &&
+                typeof e.paintId === 'string' &&
+                e.paintId.length > 0,
+            )
+            .filter((e, idx, arr) => arr.findIndex((x) => x.edgeIndex === e.edgeIndex) === idx);
+          return wp.length > 0 ? { wallPaint: wp } : {};
+        })()
+      : {}),
   };
 }
 

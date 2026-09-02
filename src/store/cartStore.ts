@@ -29,6 +29,8 @@ import { type FxSnapshot, FALLBACK_RATES_USD, convert } from '../lib/fx';
 // tiles are sold as whole units, so the customer is billed per tile/roll/
 // pack/mat and told how many surplus units the offcuts force them to buy.
 import { roomFloorOrders } from '../designer/floorTiles';
+import { deriveWallPaintOrders } from '../designer/wallPaintCalc';
+import { DEFAULT_WALL_HEIGHT_M } from '../data/wallPaints';
 import { findFloorMaterialById } from '../data/floorMaterials';
 
 /** Static fallback retained for tests that don't want to load the FX module. */
@@ -85,16 +87,41 @@ export interface FloorCartLine {
   perRoom: Array<{ roomId: string; roomName: string; unitsToOrder: number }>;
 }
 
+/**
+ * A wall-paint line (2026-09-02). Paint is sold by the TIN: the line carries
+ * the tins to buy (cheapest whole-tin fill of the litres the painted area
+ * needs), with the area/litres alongside as context — never the price basis.
+ */
+export interface WallPaintLine {
+  lineId: string;
+  paintId: string;
+  paintName: string;
+  finish: string;
+  areaM2: number;
+  coats: number;
+  litres: number;
+  /** Tin rows, largest first: size, unit price, count. */
+  tins: Array<{ sizeL: number; priceMur: number; count: number }>;
+  boughtLitres: number;
+  totalMur: number;
+  totalDisplay: number;
+  perRoom: Array<{ roomId: string; roomName: string; areaM2: number }>;
+}
+
 export interface CartTotals {
   lines: CartLine[];
   /** Painted-floor lines, kept separate from product lines (different unit). */
   floorLines: FloorCartLine[];
+  /** Wall-paint lines (sold by the tin), separate again. */
+  wallPaintLines: WallPaintLine[];
   uniqueProductCount: number;
   totalItemCount: number;
   /** Combined product + floor subtotal in the active display currency. */
   subtotal: number;
   /** Floor-only subtotal in the active display currency. */
   floorSubtotal: number;
+  /** Wall-paint-only subtotal in the active display currency. */
+  wallPaintSubtotal: number;
   /** Same (combined) subtotal expressed in each supported currency. */
   subtotalByCurrency: Record<Currency, number>;
   /** Active display currency at the time of derivation. */
@@ -223,6 +250,36 @@ export function deriveFloorLines(
 }
 
 /**
+ * Wall paint → cart lines (2026-09-02). Pure derivation from the property:
+ * painted wall area (minus door/window openings) → litres → cheapest
+ * whole-tin fill per paint. See src/designer/wallPaintCalc.ts.
+ */
+export function deriveWallPaintLines(
+  property: Property,
+  fx: FxSnapshot,
+  displayCurrency: Currency,
+): WallPaintLine[] {
+  const orders = deriveWallPaintOrders(
+    property,
+    property.wallHeightM ?? DEFAULT_WALL_HEIGHT_M,
+  );
+  return orders.map((o) => ({
+    lineId: `wallpaint:${o.paintId}`,
+    paintId: o.paintId,
+    paintName: o.paint.name,
+    finish: o.paint.finish,
+    areaM2: o.areaM2,
+    coats: o.coats,
+    litres: o.litres,
+    tins: o.fill.tins.map((t) => ({ sizeL: t.sizeL, priceMur: t.priceMur, count: t.count })),
+    boughtLitres: o.fill.boughtLitres,
+    totalMur: o.fill.totalMur,
+    totalDisplay: convert(o.fill.totalMur, 'MUR', displayCurrency, fx),
+    perRoom: o.perRoom,
+  }));
+}
+
+/**
  * Pure derivation - used by tests.
  */
 export function deriveCart(
@@ -281,8 +338,11 @@ export function deriveCart(
   const floorLines = deriveFloorLines(property, fx, displayCurrency);
   const floorSubtotal = floorLines.reduce((acc, l) => acc + l.lineTotalDisplay, 0);
 
+  const wallPaintLines = deriveWallPaintLines(property, fx, displayCurrency);
+  const wallPaintSubtotal = wallPaintLines.reduce((acc, l) => acc + l.totalDisplay, 0);
+
   const productSubtotal = lines.reduce((acc, l) => acc + l.lineTotalDisplay, 0);
-  const subtotal = productSubtotal + floorSubtotal;
+  const subtotal = productSubtotal + floorSubtotal + wallPaintSubtotal;
   const totalItemCount = lines.reduce((acc, l) => acc + l.quantity, 0);
 
   const subtotalByCurrency: Record<Currency, number> = {
@@ -295,10 +355,12 @@ export function deriveCart(
   return {
     lines,
     floorLines,
+    wallPaintLines,
     uniqueProductCount: lines.length,
     totalItemCount,
     subtotal,
     floorSubtotal,
+    wallPaintSubtotal,
     subtotalByCurrency,
     currency: displayCurrency,
   };

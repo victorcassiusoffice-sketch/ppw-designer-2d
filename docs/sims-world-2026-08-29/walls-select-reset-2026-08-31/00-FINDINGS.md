@@ -60,3 +60,35 @@ confirmed New/Clear). All four fixes follow that grammar.
 Clean file ownership: P1 `RoomDrawMode.tsx` + `drawLength.ts`; P2 `TopBar.tsx` +
 `useKeyboardShortcuts.ts` + `HelpOverlay.tsx`; P3 `RoomCanvas.tsx` (resetView) + `ClearControls.tsx`.
 No file overlap, so all three build in parallel.
+
+## SHIPPED (2026-08-31) — commits 63365fe + 1bb41de, verified on the preview
+
+Vic was fully blocked ("I can't delete anything, remove walls, clear, or reset; even a fresh
+incognito is stuck"). Root causes + fixes, all live on the branch preview and gated:
+
+- **Delete objects**: works — Select an item, press Delete (or use the Remove tool). Verified 2→1→0.
+- **Remove an individual wall**: NEW visible **Remove** tool (`remove-tool-toggle` + phone row). The
+  sledgehammer that deletes a free wall / object on click existed but was J-key-only (no button,
+  nothing on mobile) — that was "I can't remove walls". Now a button + on-canvas banner. Verified a
+  wall click 1→0 and an object click 1→0.
+- **Clear all / start again**: was DISABLED whenever the active room had no drawn polygon and no
+  products (a blank canvas, or objects in Outdoors) — so a fresh/blank user literally could not click
+  it. Now always enabled; wipes rooms, items, openings, walls and floors to blank. Verified on a
+  fresh blank preview: clickable → confirm modal.
+- **Reset → Fit**: was slamming the room to the corner ({0,0,1} + an effect that never re-ran). Now
+  zoom-to-fits and re-centres; relabelled "Fit" so it is not mistaken for start-over.
+- **Straight walls**: 15° axis-lock (Shift frees a diagonal) + an angle readout.
+- **Select tool**: a persistent arrow button so you can always get back to moving/deleting; Esc from
+  any tool returns to it.
+
+Note: the fresh-incognito "stuck with a treadmill and a bike" is persisted localStorage within the
+incognito session (a new tab shares it) — the fix that matters is that Clear all now clears it.
+
+## STILL OPEN (separate issue, tracked)
+
+Object top-down rendering (`objects-topdown-2026-08-31/`): the top-down image FILES are mostly
+correct top-downs and load (200), but on the canvas several objects render as blank labelled boxes
+instead of their art — that inconsistency is what reads as "not top down / doesn't look right".
+This is a rendering-path issue (large-image content-box/fit), NOT the removal loop. Fix is the next
+pass: classify all 27 objects' on-canvas rendering, fix the render so every object reliably shows a
+clean top-down, and replace any genuinely side-on source with a proper top-down or a plan symbol.

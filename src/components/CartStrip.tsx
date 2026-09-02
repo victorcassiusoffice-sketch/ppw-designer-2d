@@ -84,7 +84,11 @@ export function CartStrip() {
   // STILL a cart — the strip used to hide until the first product landed,
   // which read as "the floor does not cost anything".
   const floorUnits = cart.floorLines.reduce((acc, f) => acc + f.unitsToOrder, 0);
-  if (cart.totalItemCount === 0 && cart.floorLines.length === 0) {
+  const paintTins = cart.wallPaintLines.reduce(
+    (acc, l) => acc + l.tins.reduce((a, t) => a + t.count, 0),
+    0,
+  );
+  if (cart.totalItemCount === 0 && cart.floorLines.length === 0 && cart.wallPaintLines.length === 0) {
     return null;
   }
 
@@ -107,6 +111,11 @@ export function CartStrip() {
             {cart.floorLines.length > 0 && (
               <>
                 {' '}- <b className="text-ppw-inkDeep" data-testid="cart-floor-units">{floorUnits}</b> floor units
+              </>
+            )}
+            {cart.wallPaintLines.length > 0 && (
+              <>
+                {' '}- <b className="text-ppw-inkDeep" data-testid="cart-paint-tins">{paintTins}</b> paint tins
               </>
             )}
           </span>
@@ -191,6 +200,29 @@ export function CartStrip() {
                   </td>
                   <td className="py-1.5 pl-2 text-right font-semibold tabular-nums text-ppw-inkDeep whitespace-nowrap">
                     {formatCurrency(f.lineTotalDisplay, currency)}
+                  </td>
+                </tr>
+              ))}
+              {/* Wall-paint lines: whole Sofap tins from painted wall
+                  area × height − openings (Vic 2026-09-02). */}
+              {cart.wallPaintLines.map((l) => (
+                <tr key={l.lineId} className="border-t border-ppw-rim" data-testid="cart-wallpaint-line">
+                  <td className="py-1.5 pr-2 font-medium text-ppw-inkDeep max-w-[180px] sm:max-w-[200px]">
+                    <span className="block truncate">{l.paintName}</span>
+                    <span className="block text-[11px] font-medium tabular-nums text-ppw-charcoal sm:hidden">
+                      {l.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')} · Paint
+                    </span>
+                  </td>
+                  <td className="hidden py-1.5 pr-2 text-ppw-charcoal sm:table-cell">Paint</td>
+                  <td className="py-1.5 text-right tabular-nums text-ppw-inkDeep whitespace-nowrap">
+                    {l.tins.reduce((a, t) => a + t.count, 0)} tin
+                    {l.tins.reduce((a, t) => a + t.count, 0) === 1 ? '' : 's'}
+                  </td>
+                  <td className="hidden py-1.5 text-right tabular-nums text-ppw-charcoal sm:table-cell">
+                    {l.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')}
+                  </td>
+                  <td className="py-1.5 pl-2 text-right font-semibold tabular-nums text-ppw-inkDeep whitespace-nowrap">
+                    {formatCurrency(l.totalDisplay, currency)}
                   </td>
                 </tr>
               ))}

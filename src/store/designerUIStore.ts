@@ -50,7 +50,8 @@ export type BuildTool =
   | 'sledgehammer'
   | 'door'
   | 'measure'
-  | 'floor';
+  | 'floor'
+  | 'wallpaint';
 
 /** localStorage key for the persisted unit preference. */
 export const DESIGNER_UI_KEY = 'ppw_designer_ui_v1';
@@ -82,6 +83,14 @@ export interface FloorDraft {
   /** 'tile' lays what you touch; 'room' fills the whole polygon. Transient. */
   scope: 'tile' | 'room';
   /** Transient — an Erase that survived a reload would silently eat floors. */
+  erase: boolean;
+}
+
+export interface WallPaintDraft {
+  /** WALL_PAINTS id on the brush. */
+  paintId: string;
+  /** 'wall' paints the wall you tap; 'room' paints every wall of that room. */
+  scope: 'wall' | 'room';
   erase: boolean;
 }
 
@@ -141,6 +150,8 @@ interface DesignerUIState {
   tool: BuildTool;
   doorDraft: DoorDraft;
   floorDraft: FloorDraft;
+  wallPaintDraft: WallPaintDraft;
+  setWallPaintDraft: (patch: Partial<WallPaintDraft>) => void;
   /**
    * Tiles the Floor tool's live preview would lay on release (0 when there
    * is no preview). Published by RoomCanvas so the docked panel / phone HUD
@@ -180,6 +191,11 @@ export const useDesignerUIStore = create<DesignerUIState>()(
       floorDraft: {
         materialId: 'gym-interlock',
         scope: 'tile',
+        erase: false,
+      },
+      wallPaintDraft: {
+        paintId: 'permoglaze-matt-emulsion',
+        scope: 'wall',
         erase: false,
       },
       floorPreviewCount: 0,
@@ -236,6 +252,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
           return { doorDraft: next };
         }),
       setFloorDraft: (patch) => set((s) => ({ floorDraft: { ...s.floorDraft, ...patch } })),
+      setWallPaintDraft: (patch) => set((s) => ({ wallPaintDraft: { ...s.wallPaintDraft, ...patch } })),
       setFloorPreviewCount: (n) =>
         set((s) => (s.floorPreviewCount === n ? s : { floorPreviewCount: n })),
       toggleDoorFacing: () =>
@@ -255,6 +272,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         precision: state.precision,
         lastPrecision: state.lastPrecision,
         floorDraft: { materialId: state.floorDraft.materialId },
+        wallPaintDraft: { paintId: state.wallPaintDraft.paintId },
       }),
       // The persisted `floorDraft` is a PARTIAL object. zustand's default
       // merge is shallow, so without this the rehydrated draft would be
@@ -268,6 +286,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
           ...current,
           ...p,
           floorDraft: { ...current.floorDraft, ...(p.floorDraft ?? {}) },
+          wallPaintDraft: { ...current.wallPaintDraft, ...(p.wallPaintDraft ?? {}) },
         };
       },
     },

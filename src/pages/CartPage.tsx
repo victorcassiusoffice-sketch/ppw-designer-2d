@@ -18,6 +18,7 @@ import { usePropertyStore } from '../store/propertyStore';
 import { CartPageHeader } from '../components/CartPageHeader';
 import { CATEGORY_LABELS, thumbnailFor } from '../data/products';
 import { findFloorMaterialById } from '../data/floorMaterials';
+import { findWallPaintById } from '../data/wallPaints';
 import { formatCurrency } from '../lib/currency';
 import { useState } from 'react';
 
@@ -32,7 +33,7 @@ export default function CartPage() {
 
   // A floor laid with no product is still a cart (Vic 2026-08-31: the floor
   // "doesn't show" at checkout) — the empty gate used to look at products only.
-  if (cart.totalItemCount === 0 && cart.floorLines.length === 0) {
+  if (cart.totalItemCount === 0 && cart.floorLines.length === 0 && cart.wallPaintLines.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-ppw-sand text-ppw-ink">
         <CartPageHeader />
@@ -187,6 +188,44 @@ export default function CartPage() {
             </ul>
           )}
 
+          {/* Wall paint (Vic 2026-09-02): Sofap tins priced from painted
+              wall area × wall height − door/window openings; sold by the
+              whole tin, so the line carries the tin breakdown, not a
+              quantity stepper. */}
+          {cart.wallPaintLines.length > 0 && (
+            <ul className="space-y-3" data-testid="cart-page-wallpaint-lines">
+              {cart.wallPaintLines.map((l) => (
+                <li
+                  key={l.lineId}
+                  data-testid="cart-wallpaint-line"
+                  className="flex flex-col gap-3 rounded-lg border border-ppw-stone bg-white p-3 md:flex-row md:items-center"
+                >
+                  <div
+                    className="h-16 w-16 shrink-0 rounded-md border border-ppw-stone"
+                    style={{ background: findWallPaintById(l.paintId)?.hex ?? '#EDE9DF' }}
+                    aria-hidden="true"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-ppw-ink">{l.paintName}</p>
+                    <p className="text-[11px] text-ppw-slate">Wall paint · {l.finish} · painted on the plan</p>
+                    <p className="mt-0.5 text-[11px] text-ppw-slate">
+                      {l.areaM2.toFixed(1)} m² · {l.coats} coats · needs {l.litres.toFixed(1)} L
+                    </p>
+                  </div>
+                  <div className="text-sm font-semibold text-ppw-ink md:w-32 md:text-center">
+                    {l.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')}
+                  </div>
+                  <div className="text-right md:w-32">
+                    <p className="text-sm font-bold text-ppw-ink">
+                      {formatCurrency(l.totalDisplay, currency)}
+                    </p>
+                    <p className="mt-0.5 text-[10px] text-ppw-slate">buys {l.boughtLitres.toFixed(0)} L</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
           {/* Per-room breakdown */}
           <section className="rounded-lg border border-ppw-stone bg-white">
             <button
@@ -241,21 +280,29 @@ export default function CartPage() {
           <div className="sticky top-4 rounded-lg border border-ppw-stone bg-white p-4 shadow-sm">
             <p className="text-sm font-bold text-ppw-ink">Order summary</p>
             <dl className="mt-3 space-y-1.5 text-xs">
+              {(cart.floorLines.length > 0 || cart.wallPaintLines.length > 0) && (
+                <div className="flex justify-between text-ppw-slate">
+                  <dt>Products</dt>
+                  <dd className="text-ppw-ink">
+                    {formatCurrency(cart.subtotal - cart.floorSubtotal - cart.wallPaintSubtotal, currency)}
+                  </dd>
+                </div>
+              )}
               {cart.floorLines.length > 0 && (
-                <>
-                  <div className="flex justify-between text-ppw-slate">
-                    <dt>Products</dt>
-                    <dd className="text-ppw-ink">
-                      {formatCurrency(cart.subtotal - cart.floorSubtotal, currency)}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between text-ppw-slate">
-                    <dt data-testid="cart-page-floor-subtotal-label">Flooring</dt>
-                    <dd className="text-ppw-ink">
-                      {formatCurrency(cart.floorSubtotal, currency)}
-                    </dd>
-                  </div>
-                </>
+                <div className="flex justify-between text-ppw-slate">
+                  <dt data-testid="cart-page-floor-subtotal-label">Flooring</dt>
+                  <dd className="text-ppw-ink">
+                    {formatCurrency(cart.floorSubtotal, currency)}
+                  </dd>
+                </div>
+              )}
+              {cart.wallPaintLines.length > 0 && (
+                <div className="flex justify-between text-ppw-slate">
+                  <dt data-testid="cart-page-wallpaint-subtotal-label">Wall paint</dt>
+                  <dd className="text-ppw-ink">
+                    {formatCurrency(cart.wallPaintSubtotal, currency)}
+                  </dd>
+                </div>
               )}
               <div className="flex justify-between text-ppw-slate">
                 <dt>Subtotal</dt>
