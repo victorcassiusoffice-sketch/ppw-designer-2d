@@ -100,6 +100,8 @@ const PRODUCT_TO_MACRO: Record<ProductCategory, MacroCategory> = {
   // Sims world (2026-08-29) — this legacy palette has no Lighting tab; the
   // Sims dock/toolbar (catalogMacros.ts) does.
   lighting: 'decor',
+  // Eco / solar (2026-09-04) — likewise no Eco tab here; the Sims dock has it.
+  solar: 'decor',
   other: 'decor',
 };
 

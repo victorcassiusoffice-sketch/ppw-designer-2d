@@ -6,6 +6,7 @@ import {
   ECO_CERT_LEVELS,
   SORT_OPTIONS,
   topdownColumnsEnabled,
+  energyColumnsEnabled,
 } from '../products';
 
 describe('parseProductFilters', () => {
@@ -227,5 +228,27 @@ describe('GET /api/products handler', () => {
     };
     await handler({ method: 'OPTIONS', headers: {} } as never, res as never);
     expect(status).toBe(204);
+  });
+});
+
+describe('energyColumnsEnabled (migration-0029 gate, eco / solar 2026-09-04)', () => {
+  const prev = process.env.ENERGY_DB_COLUMNS;
+  afterEach(() => {
+    if (prev === undefined) delete process.env.ENERGY_DB_COLUMNS;
+    else process.env.ENERGY_DB_COLUMNS = prev;
+  });
+
+  it('defaults to FALSE so an unmigrated DB cannot empty the catalog', () => {
+    delete process.env.ENERGY_DB_COLUMNS;
+    expect(energyColumnsEnabled()).toBe(false);
+    process.env.ENERGY_DB_COLUMNS = '0';
+    expect(energyColumnsEnabled()).toBe(false);
+  });
+
+  it('is TRUE for 1 / true / on', () => {
+    for (const v of ['1', 'true', 'ON']) {
+      process.env.ENERGY_DB_COLUMNS = v;
+      expect(energyColumnsEnabled()).toBe(true);
+    }
   });
 });

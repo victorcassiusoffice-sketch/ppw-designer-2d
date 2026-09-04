@@ -24,6 +24,23 @@ export function isFlooringProduct(p: Pick<Product, 'category'> | null | undefine
   return p?.category === 'flooring';
 }
 
+/**
+ * Products that snap to THEIR OWN lattice rather than the room grid: floor
+ * tiles, and (eco / solar 2026-09-04) roof-placed PV panels — a panel array
+ * is laid edge-to-edge exactly like tiles, so Duplicate lands the next
+ * panel flush and "Fill" carpets the slab. Collision layering is untouched:
+ * panels still collide like floor items (`layerBands`), only the snap
+ * differs.
+ */
+export function usesTileLattice(
+  p: Pick<Product, 'category'> & Partial<Pick<Product, 'placement' | 'pv_wp'>> | null | undefined,
+): boolean {
+  if (!p) return false;
+  if (isFlooringProduct(p)) return true;
+  if (p.placement === 'roof') return true;
+  return p.category === 'solar' && typeof p.pv_wp === 'number' && p.pv_wp > 0;
+}
+
 /** The lattice a flooring item snaps to: origin + pitch in metres. */
 export interface TileLattice {
   originX: number;

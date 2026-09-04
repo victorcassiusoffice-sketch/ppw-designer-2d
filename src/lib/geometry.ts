@@ -213,6 +213,54 @@ export function isRectInsidePolygon(rect: PlacedRect, polygon: Polygon, eps: num
   return true;
 }
 
+/**
+ * Roof slabs (eco / solar 2026-09-04): is `rect` wholly COVERED by the union
+ * of `polygons`? A solar panel may straddle two attached rooms' slabs, so a
+ * single-polygon containment test would refuse a perfectly good spot.
+ *
+ * Sampling test, not a polygon union: the rect is probed on a `grid` × `grid`
+ * lattice (corners + edge points + interior, 4 × 4 by default — 16 probes)
+ * and every probe must fall inside SOME polygon. Shared edges between two
+ * slabs are covered because `pointInPolygon` counts a point on the boundary
+ * of at least one of them. Deterministic, allocation-light, and exact for
+ * rectilinear slabs; a sliver thinner than the probe pitch could slip
+ * through on a diagonal slab — acceptable for roof furniture.
+ */
+export function rectCoveredByPolygons(
+  rect: PlacedRect,
+  polygons: ReadonlyArray<Polygon>,
+  grid: number = 4,
+  eps: number = 1e-6,
+): boolean {
+  const polys = polygons.filter((p) => p.length >= 3);
+  if (polys.length === 0) return false;
+  const n = Math.max(2, Math.floor(grid));
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      const p = { x: rect.x + (rect.w * i) / (n - 1), y: rect.y + (rect.h * j) / (n - 1) };
+      let inside = false;
+      for (const poly of polys) {
+        if (pointInPolygon(p, poly, eps) || pointOnPolygonBoundary(p, poly, 1e-4)) {
+          inside = true;
+          break;
+        }
+      }
+      if (!inside) return false;
+    }
+  }
+  return true;
+}
+
+/** True when `p` lies on any edge of `polygon` (within `eps`). */
+export function pointOnPolygonBoundary(p: Vertex, polygon: Polygon, eps: number = 1e-6): boolean {
+  for (let i = 0; i < polygon.length; i++) {
+    const a = polygon[i];
+    const b = polygon[(i + 1) % polygon.length];
+    if (pointOnSegment(p, a, b, eps)) return true;
+  }
+  return false;
+}
+
 // =====================================================================
 // In-room check - back-compat wrapper
 // =====================================================================

@@ -71,7 +71,14 @@ import {
   nextLevelName,
   visibleRooms,
   roomsOnLevel,
+  isRoofLevel,
+  roofLevelOf,
+  storeyLevels,
 } from '../designer/levels';
+// Roof (eco / solar 2026-09-04): slab area for the Storeys row + Roof button.
+import { roofAreaM2 } from '../designer/roof';
+// Energy readout (eco / solar 2026-09-04): docked aside + phone sheet section.
+import { EnergyPanel, EnergySummary } from './EnergyPanel';
 import { performUndo, performRedo } from '../lib/undoIntent';
 // Polish (2026-08-29): "New plan" under More — PageTabs is hidden while there
 // is a single plan, so this is how a second plan gets started.
@@ -208,7 +215,10 @@ type IconName =
   | 'close'
   | 'view'
   | 'room'
-  | 'send';
+  | 'send'
+  | 'roof'
+  | 'sun'
+  | 'bolt';
 
 const ICON_PATHS: Record<IconName, string> = {
   list: 'M3 4h10M3 8h10M3 12h10',
@@ -241,6 +251,11 @@ const ICON_PATHS: Record<IconName, string> = {
   send: 'M2.5 8l11-5.5-3 11-2.5-4.5L2.5 8z',
   // Remove tool (2026-08-31): a sledgehammer — head top-right, handle down-left.
   hammer: 'M8.5 2.5l5 5-2 2-5-5zM6.5 7l-4 4.5 1.5 1.5 4.5-4z',
+  // Eco / solar (2026-09-04): a flat slab with a panel on it (roof), a sun,
+  // and a bolt for the energy readout.
+  roof: 'M2 9.5l6-5 6 5M3.5 8.5v5h9v-5M6 10.5h4v2H6z',
+  sun: 'M8 5.25a2.75 2.75 0 100 5.5 2.75 2.75 0 000-5.5zM8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M12.6 3.4l-1 1M4.4 11.6l-1 1',
+  bolt: 'M9 1.5L3.5 9h4l-.5 5.5L12 7H8z',
 };
 
 function Icon({ name, size = 16, className = '' }: { name: IconName; size?: number; className?: string }) {
@@ -464,6 +479,11 @@ export function TopBar({
   const levels = levelsOf(property);
   const activeLevelId = activeLevelIdOf(property);
   const activeLevel = levels.find((l) => l.id === activeLevelId) ?? levels[0];
+  // Roof (eco / solar 2026-09-04). One level on top of the building; the
+  // wall tools refuse it (a roof has no walls) and the Roof button toggles
+  // between it and the top storey.
+  const onRoof = isRoofLevel(activeLevel);
+  const ensureRoofLevel = usePropertyStore((s) => s.ensureRoofLevel);
   const addLevel = usePropertyStore((s) => s.addLevel);
   const renameLevel = usePropertyStore((s) => s.renameLevel);
   const removeLevel = usePropertyStore((s) => s.removeLevel);
@@ -605,7 +625,33 @@ export function TopBar({
   const setPrecision = useDesignerUIStore((s) => s.setPrecision);
   const snapStepM = PRECISION_STEP_M[precision];
 
+  /** Roof (2026-09-04): the wall tools have nothing to do on a slab. */
+  function roofBlocksWalls(): boolean {
+    if (!onRoof) return false;
+    pushToast('The roof has no walls — switch to a storey to build walls, doors or paint.', 'warn');
+    return true;
+  }
+
+  function handleToggleRoof() {
+    if (drawMode) setDrawMode(false);
+    if (wallActive) setWallDraw({ phase: 'idle' });
+    if (onRoof) {
+      const storeys = storeyLevels(levels);
+      setActiveLevel(storeys[storeys.length - 1]?.id ?? 'ground');
+      return;
+    }
+    ensureRoofLevel();
+    const area = roofAreaM2(usePropertyStore.getState().property);
+    pushToast(
+      area > 0
+        ? `Roof — ${area.toFixed(0)} m² of slab. Lay solar panels, air-con, planters or flooring here.`
+        : 'Roof — draw a room on a storey first; the roof follows the building.',
+      'info',
+    );
+  }
+
   function handleToggleDoor() {
+    if (roofBlocksWalls()) return;
     // Room-draw and wall-draw own the canvas pointer while they are live, so
     // stand them down rather than letting two tools fight over the same click.
     if (drawMode) setDrawMode(false);
@@ -623,6 +669,7 @@ export function TopBar({
   }
 
   function handleToggleWallPaint() {
+    if (roofBlocksWalls()) return;
     // Same exclusions as the Floor tool; door/floor/measure share `tool`
     // so arming this stands those down automatically.
     if (drawMode) setDrawMode(false);
@@ -631,6 +678,7 @@ export function TopBar({
   }
 
   function handleToggleMeasure() {
+    if (roofBlocksWalls()) return;
     // Same three exclusions as the door tool. Wall mode lives on
     // wallStore.draw.phase, room-draw on App-level drawMode, and the door
     // tool on designerUIStore.tool - miss one and two tools fight the same
@@ -652,6 +700,7 @@ export function TopBar({
       setDrawMode(false);
       return;
     }
+    if (roofBlocksWalls()) return;
     setDrawMode(true);
   }
 
@@ -958,7 +1007,8 @@ export function TopBar({
   const floorRowMobileRef = useRef<HTMLButtonElement>(null);
   const doorRowMobileRef = useRef<HTMLButtonElement>(null);
   const wallPaintRowMobileRef = useRef<HTMLButtonElement>(null);
-  const [sheetScrollTo, setSheetScrollTo] = useState<'floor' | 'door' | 'wallpaint' | null>(null);
+  const energyRowMobileRef = useRef<HTMLDivElement>(null);
+  const [sheetScrollTo, setSheetScrollTo] = useState<'floor' | 'door' | 'wallpaint' | 'energy' | null>(null);
   const levelsRef = useRef<HTMLButtonElement>(null);
   const landRef = useRef<HTMLButtonElement>(null);
   const snapRef = useRef<HTMLButtonElement>(null);
@@ -1016,7 +1066,12 @@ export function TopBar({
   // `tool` field so at most ONE side panel exists — both publish the same
   // inset var for the canvas auto-fit.
   const wallPaintPanelOpen = isMd && wallPaintActive;
-  const sidePanelOpen = floorPanelOpen || wallPaintPanelOpen;
+  // Energy readout (2026-09-04): a third docked panel on the same edge. The
+  // store guarantees it never coexists with a build tool.
+  const energyPanelOpen = useDesignerUIStore((s) => s.energyPanelOpen);
+  const setEnergyPanelOpen = useDesignerUIStore((s) => s.setEnergyPanelOpen);
+  const energyPanelOpenMd = isMd && energyPanelOpen;
+  const sidePanelOpen = floorPanelOpen || wallPaintPanelOpen || energyPanelOpenMd;
   useLayoutEffect(() => {
     const root = document.documentElement;
     root.style.setProperty('--floor-panel-w', sidePanelOpen ? `${FLOOR_PANEL_W}px` : '0px');
@@ -1060,7 +1115,7 @@ export function TopBar({
   useEffect(() => {
     const onOpen = (e: Event) => {
       const section = (e as CustomEvent<{ section?: string }>).detail?.section;
-      if (section === 'floor' || section === 'door' || section === 'wallpaint') setSheetScrollTo(section);
+      if (section === 'floor' || section === 'door' || section === 'wallpaint' || section === 'energy') setSheetScrollTo(section);
       setShowMobileMenu(true);
     };
     window.addEventListener('ppw:open-menu', onOpen);
@@ -1074,7 +1129,9 @@ export function TopBar({
         ? doorRowMobileRef
         : sheetScrollTo === 'wallpaint'
           ? wallPaintRowMobileRef
-          : floorRowMobileRef;
+          : sheetScrollTo === 'energy'
+            ? energyRowMobileRef
+            : floorRowMobileRef;
     const id = window.requestAnimationFrame(() => {
       target.current?.scrollIntoView({ block: 'start' });
       setSheetScrollTo(null);
@@ -1180,7 +1237,9 @@ export function TopBar({
                 >
                   <span className="truncate">{l.name}</span>
                   <span className="ml-2 text-[11px] font-semibold tabular-nums opacity-80">
-                    {roomsOnLevel(visibleRooms(property.rooms), l.id).filter((r) => isDrawnPolygon(r.polygon)).length} rm
+                    {isRoofLevel(l)
+                      ? `${roofAreaM2(property).toFixed(0)} m²`
+                      : `${roomsOnLevel(visibleRooms(property.rooms), l.id).filter((r) => isDrawnPolygon(r.polygon)).length} rm`}
                   </span>
                 </button>
               )}
@@ -1208,6 +1267,22 @@ export function TopBar({
           </button>
         </div>
         </Popover>
+
+        {/* Roof (eco / solar 2026-09-04) — the slab on top of the building:
+            solar panels, air-con, planters, flooring. Toggles back to the
+            top storey. */}
+        <button
+          type="button"
+          onClick={handleToggleRoof}
+          data-testid="roof-toggle"
+          className={btn(onRoof)}
+          title={onRoof ? 'Roof — back to the top storey' : 'Roof — lay solar panels, air-con and planters on the slab'}
+          aria-pressed={onRoof}
+          aria-label="Roof"
+        >
+          <Icon name="roof" />
+          <span className={lbl(stacked, '1366')}>Roof</span>
+        </button>
 
         {/* Plot — lock the scale + capacity. */}
         <button
@@ -2277,6 +2352,14 @@ export function TopBar({
           document.body,
         )}
 
+      {/* Energy readout (2026-09-04) — same dock as Floor / Wall paint. */}
+      {energyPanelOpenMd &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <EnergyPanel top={floorPanelTop} width={FLOOR_PANEL_W} onClose={() => setEnergyPanelOpen(false)} />,
+          document.body,
+        )}
+
       {/* ------------------------------------------------------------------ */}
       {/* Phone sheet — full-height, right, portaled; scrim closes.           */}
       {/* ------------------------------------------------------------------ */}
@@ -2499,6 +2582,13 @@ export function TopBar({
                   })}
                 </div>
 
+                {/* Energy (eco / solar 2026-09-04): the sun-vs-use balance,
+                    same body as the desktop panel. */}
+                <div ref={energyRowMobileRef} data-testid="energy-mobile" className="px-3" style={{ scrollMarginTop: 56 }}>
+                  <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>Energy</p>
+                  <EnergySummary compact onJumpToRoof={() => setShowMobileMenu(false)} />
+                </div>
+
                 {/* 2 ROOM & PLAN */}
                 <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>Room &amp; plan</p>
                 {/* Polish (2026-08-29): plain radios — the Walls row above is the
@@ -2543,6 +2633,18 @@ export function TopBar({
                       {l.id === activeLevelId && <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">here</span>}
                     </button>
                   ))}
+                  {!roofLevelOf(property) && (
+                    <button
+                      type="button"
+                      onClick={() => { handleToggleRoof(); setShowMobileMenu(false); }}
+                      data-testid="roof-toggle-mobile"
+                      aria-pressed={false}
+                      className={`${SHEET_ROW} justify-between`}
+                    >
+                      <span>Roof</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">solar</span>
+                    </button>
+                  )}
                   <div className="px-3 pt-1">
                     <button
                       type="button"

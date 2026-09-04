@@ -381,6 +381,15 @@ export const products = pgTable(
     topdownSourceUrl: varchar('topdown_source_url', { length: 500 }),
     topdownGeneratedAt: timestamp('topdown_generated_at', { withTimezone: true }),
     topdownError: text('topdown_error'),
+    // Eco / solar (2026-09-04, migration 0029) — energy figures the Designer's
+    // readout consumes. All nullable; gated by ENERGY_DB_COLUMNS in the API
+    // until 0029 is applied on Neon (same pattern as the 0027 top-down cols).
+    powerW: integer('power_w'),
+    dutyHoursPerDay: numeric('duty_hours_per_day', { precision: 4, scale: 1 }),
+    pvWp: integer('pv_wp'),
+    batteryWh: integer('battery_wh'),
+    inverterW: integer('inverter_w'),
+    energyRole: varchar('energy_role', { length: 16 }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

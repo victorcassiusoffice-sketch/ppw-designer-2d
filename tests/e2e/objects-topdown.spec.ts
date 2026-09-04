@@ -131,16 +131,30 @@ test.describe('Object top-down rendering', () => {
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
     await page.waitForTimeout(1000);
-    const probe = await page.evaluate(() => {
-      const imgs = Array.from(document.querySelectorAll('img')).filter((i) =>
-        (i.getAttribute('src') ?? '').startsWith('/products/'),
-      );
-      return {
-        total: imgs.length,
-        loaded: imgs.filter((i) => i.complete && i.naturalWidth > 0).length,
-        webp: imgs.filter((i) => (i.getAttribute('src') ?? '').endsWith('.webp')).length,
-      };
-    });
+    const readProbe = () =>
+      page.evaluate(() => {
+        const imgs = Array.from(document.querySelectorAll('img')).filter((i) =>
+          (i.getAttribute('src') ?? '').startsWith('/products/'),
+        );
+        return {
+          total: imgs.length,
+          loaded: imgs.filter((i) => i.naturalWidth > 0).length,
+          webp: imgs.filter((i) => (i.getAttribute('src') ?? '').endsWith('.webp')).length,
+        };
+      });
+    // "No blank tiles" means every thumbnail has DECODED PIXELS
+    // (`naturalWidth > 0`) — that is what the 34 MB-PNG starvation defect
+    // broke. It deliberately does NOT assert `img.complete`: the dock
+    // thumbnails are `loading="lazy"` (SimsDock), so once the catalog grew
+    // past a screenful (eco / solar 2026-09-04 took it to 41 products) the
+    // off-screen tail reports `complete: false` with its dimensions already
+    // known — a lazy-loading artefact, not a blank tile. Polled because the
+    // last images can still be in flight a second after mount.
+    await expect.poll(async () => {
+      const q = await readProbe();
+      return q.total > 5 && q.loaded === q.total;
+    }, { timeout: 15_000 }).toBe(true);
+    const probe = await readProbe();
     expect(probe.total).toBeGreaterThan(5);
     expect(probe.loaded).toBe(probe.total);
     // The catalog must be on the optimized assets.

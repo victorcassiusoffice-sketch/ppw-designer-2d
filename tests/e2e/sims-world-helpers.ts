@@ -27,7 +27,8 @@ export interface SimsSeedRoom {
   polygon: Array<{ x: number; y: number }>;
   placedItems: SimsSeedItem[];
   levelId?: string;
-  kind?: 'room' | 'outdoor';
+  /** 'roof' = a roof slab (eco / solar 2026-09-04). */
+  kind?: 'room' | 'outdoor' | 'roof';
 }
 
 export interface SimsFreeWall {
@@ -43,7 +44,7 @@ export interface SimsSeedProperty {
   name: string;
   activeRoomId: string;
   rooms: SimsSeedRoom[];
-  levels?: Array<{ id: string; name: string; index: number }>;
+  levels?: Array<{ id: string; name: string; index: number; kind?: 'roof' }>;
   activeLevelId?: string;
   walls?: SimsFreeWall[];
   site?: { widthM: number; depthM: number; originM: { x: number; y: number } } | null;

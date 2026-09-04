@@ -49,6 +49,13 @@ export interface ApiProductSummary {
   /** Designer-canvas plan asset (photo/top-down split, 2026-07-26). */
   topdownImageUrl?: string | null;
   region: string | null;
+  /** Eco / solar (2026-09-04, migration 0029) — on the wire only when ENERGY_DB_COLUMNS=1. */
+  powerW?: number | null;
+  dutyHoursPerDay?: number | string | null;
+  pvWp?: number | null;
+  batteryWh?: number | null;
+  inverterW?: number | null;
+  energyRole?: string | null;
 }
 
 export interface ApiProductsResponse {
@@ -88,6 +95,7 @@ export function normaliseCategory(raw: string): ProductCategory {
     case 'walls':
     case 'decor':
     case 'lighting':
+    case 'solar':
       return c as ProductCategory;
     case 'tables':
     case 'beds':
@@ -122,6 +130,14 @@ const SEED_BEHAVIOUR_FIELDS = [
   'outdoor',
   'plan_symbol',
   'thumbnail_svg',
+  // Eco / solar (2026-09-04): a seeded panel / inverter / battery served by
+  // the API keeps its ratings; a merchant row's own DB values win below.
+  'power_w',
+  'duty_hours_per_day',
+  'pv_wp',
+  'battery_kwh',
+  'inverter_kw',
+  'energy_role',
 ] as const satisfies readonly (keyof Product)[];
 
 type SeedBehaviourField = (typeof SEED_BEHAVIOUR_FIELDS)[number];
@@ -194,7 +210,41 @@ export function apiProductToProduct(api: ApiProductSummary): Product {
     // so the detail panel is never blank.
     notes: api.description?.trim() || seed?.notes || '',
     ...seedBehaviour(seed),
+    ...apiEnergyFields(api),
   };
+}
+
+/** Positive finite number or undefined (the wire carries null / numeric strings). */
+function posNum(v: unknown): number | undefined {
+  const n = typeof v === 'string' ? Number(v) : v;
+  return typeof n === 'number' && Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+/**
+ * Eco / solar (2026-09-04): the DB row's energy figures → Product fields.
+ * DB units are W / Wh; the Product schema keeps kWh / kW for batteries and
+ * inverters (what the shop labels say). Only DEFINED keys are written so a
+ * row without the 0029 columns leaves the seed's values in place.
+ */
+function apiEnergyFields(
+  api: ApiProductSummary,
+): Partial<Pick<Product, 'power_w' | 'duty_hours_per_day' | 'pv_wp' | 'battery_kwh' | 'inverter_kw' | 'energy_role'>> {
+  const out: Partial<Pick<Product, 'power_w' | 'duty_hours_per_day' | 'pv_wp' | 'battery_kwh' | 'inverter_kw' | 'energy_role'>> = {};
+  const powerW = posNum(api.powerW);
+  const hours = posNum(api.dutyHoursPerDay);
+  const pvWp = posNum(api.pvWp);
+  const batteryWh = posNum(api.batteryWh);
+  const inverterW = posNum(api.inverterW);
+  if (powerW !== undefined) out.power_w = Math.round(powerW);
+  if (hours !== undefined) out.duty_hours_per_day = Math.min(24, hours);
+  if (pvWp !== undefined) out.pv_wp = Math.round(pvWp);
+  if (batteryWh !== undefined) out.battery_kwh = Math.round(batteryWh / 10) / 100;
+  if (inverterW !== undefined) out.inverter_kw = Math.round(inverterW / 10) / 100;
+  const role = api.energyRole;
+  if (role === 'consumer' || role === 'generator' || role === 'storage' || role === 'inverter' || role === 'none') {
+    out.energy_role = role;
+  }
+  return out;
 }
 
 /**

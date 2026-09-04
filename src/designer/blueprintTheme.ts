@@ -289,3 +289,12 @@ export const ROOM_BORDER_SCAN = {
 export function isRoomBorderPixel(r: number, g: number, b: number): boolean {
   return r < ROOM_BORDER_SCAN.max && g < ROOM_BORDER_SCAN.max && b < ROOM_BORDER_SCAN.max;
 }
+
+/**
+ * Roof slab (eco / solar 2026-09-04): a warm concrete grey under the panels,
+ * darker than the paper floors so the roof reads as a different surface;
+ * dashed parapet line in a mid ink. Both keep a channel ≥ 50 for the
+ * border-scan guard.
+ */
+export const ROOF_SLAB_FILL = '#DAD5C9';
+export const ROOF_SLAB_STROKE = '#6E6A60';

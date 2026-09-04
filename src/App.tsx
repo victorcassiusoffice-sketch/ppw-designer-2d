@@ -82,6 +82,8 @@ import { GamingLayer1Surfaces } from './designer/GamingLayer1Surfaces';
 import { RoomEstimatePanel } from './components/RoomEstimatePanel';
 import { ClearControls } from './components/ClearControls';
 import { isPaintEstimateActive } from './designer/paintEstimateFlag';
+import { activeLevelIdOf, isRoofLevel, levelsOf } from './designer/levels';
+import { useRoofSync } from './designer/useRoofSync';
 // Babylon 3D viewer removed 2026-06-04 (P1-1): the lazy 3D path (6.46 MB raw /
 // 1.43 MB gzip) was never flipped past its soak (DEFAULT_ENGINE='konva'),
 // carried untested-in-prod surface, and is the single biggest simplification.
@@ -96,6 +98,8 @@ import { isPaintEstimateActive } from './designer/paintEstimateFlag';
 export default function App() {
   useKeyboardShortcuts();
   useAutoSave();
+  // Roof (2026-09-04): keep the roof slabs mirroring the storey beneath.
+  useRoofSync();
   // Tweak 07 / Phase A.0 — install undo subscriptions once. The hook
   // returns its own teardown, but App is mounted once at the root so we
   // don't bother re-running the effect (idempotent inside the store).
@@ -169,6 +173,13 @@ export default function App() {
   // to strand a phantom undo frame).
   const setDrawMode = useCallback((next: boolean) => {
     if (next) {
+      // Roof (eco / solar 2026-09-04): a roof has no walls — the pen stays
+      // shut on the roof level. Read via getState() so the deps stay `[]`.
+      const ps = usePropertyStore.getState();
+      if (isRoofLevel(levelsOf(ps.property).find((l) => l.id === activeLevelIdOf(ps.property)))) {
+        useToastStore.getState().push('The roof has no walls — switch to a storey to draw.', 'warn');
+        return;
+      }
       beginDrawTransaction('draw new room');
       usePropertyStore.getState().selectItem(null);
       const dp = useDrawProgressStore.getState();

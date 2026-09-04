@@ -1,968 +1,1225 @@
 {
-  "version": "2.1.0-sims-world",
-  "generated_at": "2026-05-20T00:00:00Z",
-  "generated_by": "M6 — K1-Sport seed (RELENTLESS_GOAL 2026-05-19). Pricing from k1-sport.com/shop-online live fetch 2026-05-20. Dimensions sourced from manufacturer public spec sheets (NordicTrack, Schwinn, ProForm, Matrix Fitness, Vision Fitness, Bowflex) — typed in cm, rounded to nearest cm. Footprint = floor length × floor width, height = upright spec. Categories mapped onto the existing ProductCategory enum (most are 'fitness'). Thumbnails are placeholder grey-boxes pending K1 image-permission gate (Vic separately). Replaces the prior 'DEMO MODE — all prices 0' seed; the original is preserved in git history pre-M6.",
-  "products": [
-    {
-      "id": "k1-nordictrack-2450",
-      "sku": "K1-CDIO-NT2450",
-      "name": "NordicTrack Commercial 2450 Treadmill",
-      "category": "fitness",
-      "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
-      "dimensions_cm": {
-        "length": 205,
-        "width": 95,
-        "height": 165
-      },
-      "weight_kg": 138,
-      "price": {
-        "value": 150000,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0A2450",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Foldable commercial-grade treadmill; 24-inch touchscreen; iFit-ready. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-nordictrack-2450.webp",
-      "photo_image_url": "/products/photos/k1-nordictrack-2450.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-nordictrack-tour-de-france",
-      "sku": "K1-CDIO-NTTDF",
-      "name": "NordicTrack Tour de France Indoor Bike",
-      "category": "fitness",
-      "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
-      "dimensions_cm": {
-        "length": 150,
-        "width": 65,
-        "height": 135
-      },
-      "weight_kg": 84,
-      "price": {
-        "value": 150000,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0ATour+de+France",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Incline/decline indoor cycle; iFit-ready interactive trainer. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-nordictrack-tour-de-france.webp",
-      "photo_image_url": "/products/photos/k1-nordictrack-tour-de-france.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-nordictrack-gx10",
-      "sku": "K1-CDIO-NTGX10",
-      "name": "NordicTrack GX 10 Recumbent Bike",
-      "category": "fitness",
-      "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
-      "dimensions_cm": {
-        "length": 150,
-        "width": 65,
-        "height": 130
-      },
-      "weight_kg": 62,
-      "price": {
-        "value": 95000,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0AGX10",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Recumbent bike with 26 resistance levels. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-nordictrack-gx10.webp",
-      "photo_image_url": "/products/photos/k1-nordictrack-gx10.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-schwinn-700ic",
-      "sku": "K1-CDIO-SCH700IC",
-      "name": "Schwinn 700IC Indoor Bike",
-      "category": "fitness",
-      "supplier": "K1-Sport (Schwinn — Mauritius distributor)",
-      "dimensions_cm": {
-        "length": 120,
-        "width": 55,
-        "height": 130
-      },
-      "weight_kg": 51,
-      "price": {
-        "value": 29000,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Schwinn%0A700IC",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Indoor cycle with 18.1 kg / 40 lb flywheel. On-sale entry-price cardio. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-schwinn-700ic.webp",
-      "photo_image_url": "/products/photos/k1-schwinn-700ic.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-proform-carbon-tl",
-      "sku": "K1-CDIO-PROFCTL",
-      "name": "ProForm Carbon TL Treadmill",
-      "category": "fitness",
-      "supplier": "K1-Sport (ProForm — Mauritius distributor)",
-      "dimensions_cm": {
-        "length": 180,
-        "width": 85,
-        "height": 145
-      },
-      "weight_kg": 79,
-      "price": {
-        "value": 40500,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=ProForm%0ACarbon+TL",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Foldable home treadmill; iFit-enabled. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-proform-carbon-tl.webp",
-      "photo_image_url": "/products/photos/k1-proform-carbon-tl.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-nordictrack-x16",
-      "sku": "K1-CDIO-NTX16",
-      "name": "NordicTrack X16 Elliptical",
-      "category": "fitness",
-      "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
-      "dimensions_cm": {
-        "length": 180,
-        "width": 70,
-        "height": 175
-      },
-      "weight_kg": 103,
-      "price": {
-        "value": 125000,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0AX16",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Front-drive elliptical; 16-inch touchscreen; iFit-ready. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-nordictrack-x16.webp",
-      "photo_image_url": "/products/photos/k1-nordictrack-x16.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-nordictrack-rw900",
-      "sku": "K1-CDIO-NTRW900",
-      "name": "NordicTrack RW900 Rower",
-      "category": "fitness",
-      "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
-      "dimensions_cm": {
-        "length": 220,
-        "width": 55,
-        "height": 110
-      },
-      "weight_kg": 53,
-      "price": {
-        "value": 120000,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0ARW900",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Magnetic + air resistance rower; 22-inch HD touchscreen; iFit-ready. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-nordictrack-rw900.webp",
-      "photo_image_url": "/products/photos/k1-nordictrack-rw900.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-vision-t600-03",
-      "sku": "K1-CDIO-VST60003",
-      "name": "Vision Fitness T600-03 Treadmill",
-      "category": "fitness",
-      "supplier": "K1-Sport (Vision Fitness — Mauritius distributor)",
-      "dimensions_cm": {
-        "length": 210,
-        "width": 100,
-        "height": 165
-      },
-      "weight_kg": 165,
-      "price": {
-        "value": 210393,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Vision%0AT600-03",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Commercial-grade treadmill with vibration-isolation deck. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-vision-t600-03.webp",
-      "photo_image_url": "/products/photos/k1-vision-t600-03.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-vision-t600e-02",
-      "sku": "K1-CDIO-VST600E02",
-      "name": "Vision Fitness T600E-02 Treadmill (22\" touchscreen)",
-      "category": "fitness",
-      "supplier": "K1-Sport (Vision Fitness — Mauritius distributor)",
-      "dimensions_cm": {
-        "length": 210,
-        "width": 100,
-        "height": 165
-      },
-      "weight_kg": 175,
-      "price": {
-        "value": 259600,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Vision%0AT600E-02",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Top-of-line commercial treadmill with 22-inch entertainment screen. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-vision-t600e-02.webp",
-      "photo_image_url": "/products/photos/k1-vision-t600e-02.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-matrix-mg-glute",
-      "sku": "K1-STRG-MXMGGT",
-      "name": "Matrix MG Glute Trainer",
-      "category": "fitness",
-      "supplier": "K1-Sport (Matrix Fitness — Mauritius distributor)",
-      "dimensions_cm": {
-        "length": 150,
-        "width": 100,
-        "height": 175
-      },
-      "weight_kg": 195,
-      "price": {
-        "value": 140001,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Matrix%0AMG+Glute",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Glute + hip-thrust strength station, plate-loaded. Commercial-grade. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-matrix-mg-glute.webp",
-      "photo_image_url": "/products/photos/k1-matrix-mg-glute.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-matrix-versa-adabd",
-      "sku": "K1-STRG-MXVSAD",
-      "name": "Matrix Versa Adductor / Abductor",
-      "category": "fitness",
-      "supplier": "K1-Sport (Matrix Fitness — Mauritius distributor)",
-      "dimensions_cm": {
-        "length": 165,
-        "width": 130,
-        "height": 195
-      },
-      "weight_kg": 220,
-      "price": {
-        "value": 154675,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Matrix%0AVersa+Ad%2FAbd",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Selectorised dual adductor/abductor station, weight-stack. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-matrix-versa-adabd.webp",
-      "photo_image_url": "/products/photos/k1-matrix-versa-adabd.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-vision-smith",
-      "sku": "K1-STRG-VSSMITH",
-      "name": "Vision Fitness Smith Machine",
-      "category": "fitness",
-      "supplier": "K1-Sport (Vision Fitness — Mauritius distributor)",
-      "dimensions_cm": {
-        "length": 225,
-        "width": 165,
-        "height": 230
-      },
-      "weight_kg": 280,
-      "price": {
-        "value": 172500,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Vision%0ASmith+Machine",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Fixed-path Smith machine; 90-degree movement track; counterbalanced bar. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-vision-smith.webp",
-      "photo_image_url": "/products/photos/k1-vision-smith.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-bowflex-xtreme-2se",
-      "sku": "K1-STRG-BFXT2SE",
-      "name": "Bowflex Xtreme 2 SE Home Gym",
-      "category": "fitness",
-      "supplier": "K1-Sport (Bowflex — Mauritius distributor)",
-      "dimensions_cm": {
-        "length": 205,
-        "width": 130,
-        "height": 210
-      },
-      "weight_kg": 81,
-      "price": {
-        "value": 52000,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Bowflex%0AXtreme+2+SE",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Power-rod multi-station home gym; 70+ exercises. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-bowflex-xtreme-2se.webp",
-      "photo_image_url": "/products/photos/k1-bowflex-xtreme-2se.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-bench-adjustable-fid",
-      "sku": "K1-STRG-FIDBN",
-      "name": "Adjustable Flat / Incline / Decline Bench",
-      "category": "fitness",
-      "supplier": "K1-Sport",
-      "dimensions_cm": {
-        "length": 135,
-        "width": 60,
-        "height": 60
-      },
-      "weight_kg": 24,
-      "price": {
-        "value": 11000,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Adjustable%0AFID+Bench",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Multi-position weight bench (flat / incline / decline). Entry-price strength accessory. Distributor stock at K1-Sport.",
-      "source_url": "https://www.k1-sport.com/shop-online",
-      "topdown_image_url": "/products/topdown/k1-bench-adjustable-fid.webp",
-      "photo_image_url": "/products/photos/k1-bench-adjustable-fid.webp"
-    },
-    {
-      "id": "k1-floor-eva-combat",
-      "sku": "K1-FLOR-EVACOMBAT",
-      "name": "EVA Combat Sport Mat 1×1m × 2.5 cm",
-      "category": "flooring",
-      "supplier": "K1-Sport",
-      "dimensions_cm": {
-        "length": 100,
-        "width": 100,
-        "height": 2.5
-      },
-      "weight_kg": 4.5,
-      "price": {
-        "value": 850,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EVA%0ACombat+Mat",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "EVA foam combat sport / martial arts mat. 1×1m tile, 2.5 cm thick. Eco — typical EVA has recycled-content options (vendor to confirm).",
-      "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false,
-      "topdown_image_url": "/products/topdown/k1-floor-eva-combat.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-floor-eva-kids",
-      "sku": "K1-FLOR-EVAKIDS",
-      "name": "EVA Kids Mat (5-pack)",
-      "category": "flooring",
-      "supplier": "K1-Sport",
-      "dimensions_cm": {
-        "length": 50,
-        "width": 50,
-        "height": 1
-      },
-      "weight_kg": 1.2,
-      "price": {
-        "value": 950,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EVA%0AKids+Mat",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "EVA kids' play mat sold in packs of 5. Approx Rs 190 / m². Soft 1 cm thickness for nursery / kids' rooms.",
-      "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false,
-      "topdown_image_url": "/products/topdown/k1-floor-eva-kids.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-floor-gym-interlock",
-      "sku": "K1-FLOR-GYMTILE",
-      "name": "Gym Interlock Tile 92×92×0.5 cm",
-      "category": "flooring",
-      "supplier": "K1-Sport",
-      "dimensions_cm": {
-        "length": 92,
-        "width": 92,
-        "height": 0.5
-      },
-      "weight_kg": 2,
-      "price": {
-        "value": 1600,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=PVC%0AGym+Interlock",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "PVC interlock gym flooring tile, 92×92 cm × 5 mm. Approx Rs 1,890 / m².",
-      "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false,
-      "topdown_image_url": "/products/topdown/k1-floor-gym-interlock.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-floor-ifit-vinyl",
-      "sku": "K1-FLOR-IFITVINYL",
-      "name": "iFIT Vinyl Equipment Mat 36\"×72\"",
-      "category": "flooring",
-      "supplier": "K1-Sport",
-      "dimensions_cm": {
-        "length": 183,
-        "width": 91,
-        "height": 0.6
-      },
-      "weight_kg": 8,
-      "price": {
-        "value": 3500,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=iFIT%0AVinyl+Mat",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Vinyl protective mat for cardio equipment (treadmill / bike / elliptical). 36\"×72\" ≈ 183×91 cm. Approx Rs 2,090 / m².",
-      "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false,
-      "topdown_image_url": "/products/topdown/k1-floor-ifit-vinyl.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-floor-rubber-interlock",
-      "sku": "K1-FLOR-RUBCOMP",
-      "name": "Interlock Composite Rubber Tile 50×50×1.5 cm",
-      "category": "flooring",
-      "supplier": "K1-Sport",
-      "dimensions_cm": {
-        "length": 50,
-        "width": 50,
-        "height": 1.5
-      },
-      "weight_kg": 3.5,
-      "price": {
-        "value": 500,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Rubber%0AInterlock",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Composite rubber interlock tile, 50×50 cm × 15 mm. Approx Rs 2,000 / m². Typical recycled-content rubber.",
-      "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false,
-      "topdown_image_url": "/products/topdown/k1-floor-rubber-interlock.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-floor-outdoor-rubber-1m",
-      "sku": "K1-FLOR-OUTDOOR1M",
-      "name": "Outdoor Rubber Tile 1×1m × 5 cm — Red",
-      "category": "flooring",
-      "supplier": "K1-Sport",
-      "dimensions_cm": {
-        "length": 100,
-        "width": 100,
-        "height": 5
-      },
-      "weight_kg": 24,
-      "price": {
-        "value": 1500,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+1m",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Outdoor rubber tile, 1×1m × 50 mm — red. Sale price. Approx Rs 1,500 / m². Suitable for playgrounds + outdoor gym pads.",
-      "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false,
-      "topdown_image_url": "/products/topdown/k1-floor-outdoor-rubber-1m.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-floor-outdoor-rubber-50",
-      "sku": "K1-FLOR-OUTDOOR50",
-      "name": "Outdoor Rubber Tile 50×50×2.5 cm — Red",
-      "category": "flooring",
-      "supplier": "K1-Sport",
-      "dimensions_cm": {
-        "length": 50,
-        "width": 50,
-        "height": 2.5
-      },
-      "weight_kg": 6,
-      "price": {
-        "value": 375,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+50",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Outdoor rubber tile, 50×50 cm × 25 mm — red. Sale price. Approx Rs 1,500 / m². Modular playground / outdoor surface.",
-      "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false,
-      "topdown_image_url": "/products/topdown/k1-floor-outdoor-rubber-50.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "id": "k1-floor-epdm-roll",
-      "sku": "K1-FLOR-EPDM6",
-      "name": "EPDM Rubber Roll 6 mm — Grey",
-      "category": "flooring",
-      "supplier": "K1-Sport",
-      "dimensions_cm": {
-        "length": 1000,
-        "width": 125,
-        "height": 0.6
-      },
-      "weight_kg": 60,
-      "price": {
-        "value": 13500,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EPDM%0ARubber+Roll",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "EPDM rubber roll, 6 mm thick, grey. Per-roll pricing (full roll ≈ 10×1.25 m). EPDM typically uses recycled-rubber content — flag for vendor confirm.",
-      "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
-      "eco_certified": false,
-      "topdown_image_url": "/products/topdown/k1-floor-epdm-roll.webp",
-      "front_edge": "bottom"
-    },
-    {
-      "supplier": "PPW Studio (demo)",
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "source_url": "",
-      "id": "demo-console-table",
-      "sku": "PPW-DEMO-TABLE",
-      "name": "Wellness Console Table",
-      "category": "decor",
-      "dimensions_cm": {
-        "length": 120,
-        "width": 40,
-        "height": 75
-      },
-      "weight_kg": 18,
-      "price": {
-        "value": 12500,
-        "currency": "MUR"
-      },
-      "is_surface": true,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Console%0ATable",
-      "topdown_image_url": "/products/topdown/demo-console-table.webp",
-      "notes": "Slim console table for oils, diffusers and small decor. DEMO seed for surface-slot placement."
-    },
-    {
-      "supplier": "PPW Studio (demo)",
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "source_url": "",
-      "id": "demo-wall-shelf",
-      "sku": "PPW-DEMO-SHELF",
-      "name": "Floating Wall Shelf",
-      "category": "decor",
-      "dimensions_cm": {
-        "length": 80,
-        "width": 20,
-        "height": 18
-      },
-      "weight_kg": 6,
-      "price": {
-        "value": 3500,
-        "currency": "MUR"
-      },
-      "placement": "wall",
-      "mount_height_cm": 150,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Wall%0AShelf",
-      "topdown_image_url": "/products/topdown/demo-wall-shelf.webp",
-      "notes": "Wall-mounted floating shelf. DEMO seed for wall-mounted placement."
-    },
-    {
-      "supplier": "PPW Studio (demo)",
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "source_url": "",
-      "id": "demo-wall-mirror",
-      "sku": "PPW-DEMO-MIRROR",
-      "name": "Studio Wall Mirror",
-      "category": "decor",
-      "dimensions_cm": {
-        "length": 120,
-        "width": 5,
-        "height": 180
-      },
-      "weight_kg": 22,
-      "price": {
-        "value": 9800,
-        "currency": "MUR"
-      },
-      "placement": "wall",
-      "mount_height_cm": 20,
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Wall%0AMirror",
-      "topdown_image_url": "/products/topdown/demo-wall-mirror.webp",
-      "notes": "Full-length studio mirror, wall-mounted. DEMO seed for wall-mounted placement."
-    },
-    {
-      "supplier": "PPW Studio (demo)",
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "source_url": "",
-      "id": "demo-aroma-diffuser",
-      "sku": "PPW-DEMO-DIFFUSER",
-      "name": "Aroma Diffuser",
-      "category": "decor",
-      "dimensions_cm": {
-        "length": 15,
-        "width": 15,
-        "height": 25
-      },
-      "weight_kg": 0.8,
-      "price": {
-        "value": 1800,
-        "currency": "MUR"
-      },
-      "placement": "surface",
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Aroma%0ADiffuser",
-      "topdown_image_url": "/products/topdown/demo-aroma-diffuser.webp",
-      "notes": "Ultrasonic aroma diffuser. Sits on a table. DEMO seed for surface-slot placement."
-    },
-    {
-      "supplier": "PPW Studio (demo)",
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "source_url": "",
-      "id": "demo-potted-plant",
-      "sku": "PPW-DEMO-PLANT-S",
-      "name": "Potted Plant (small)",
-      "category": "plant",
-      "dimensions_cm": {
-        "length": 25,
-        "width": 25,
-        "height": 40
-      },
-      "weight_kg": 2.5,
-      "price": {
-        "value": 950,
-        "currency": "MUR"
-      },
-      "placement": "surface",
-      "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Potted%0APlant",
-      "topdown_image_url": "/products/topdown/demo-potted-plant.webp",
-      "notes": "Small potted plant for tabletops. DEMO seed for surface-slot placement."
-    },
-    {
-      "id": "demo-floor-lamp",
-      "sku": "PPW-DEMO-LAMP-FLOOR",
-      "name": "Arc Floor Lamp",
-      "category": "lighting",
-      "supplier": "PPW Demo",
-      "dimensions_cm": {
-        "length": 40,
-        "width": 40,
-        "height": 160
-      },
-      "weight_kg": 6,
-      "price": {
-        "value": 4500,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400?text=Floor+Lamp",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Warm-white floor lamp on a 40 cm base. DEMO seed for the light pool: draws the plan light symbol and glows 1.8 m.",
-      "source_url": "",
-      "placement": "floor",
-      "emits_light": true,
-      "light_radius_m": 1.8,
-      "plan_symbol": "light",
-      "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"32\" cy=\"32\" r=\"10\"/><path d=\"M32 8v8M32 48v8M8 32h8M48 32h8M15 15l5.7 5.7M43.3 43.3L49 49M49 15l-5.7 5.7M20.7 43.3L15 49\"/></svg>"
-    },
-    {
-      "id": "demo-pendant-light",
-      "sku": "PPW-DEMO-LAMP-PENDANT",
-      "name": "Rattan Pendant Light",
-      "category": "lighting",
-      "supplier": "PPW Demo",
-      "dimensions_cm": {
-        "length": 45,
-        "width": 45,
-        "height": 30
-      },
-      "weight_kg": 3,
-      "price": {
-        "value": 6900,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400?text=Pendant+Light",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Ceiling-hung pendant, 45 cm shade. DEMO seed for ceiling placement: no floor collision, glows 2.2 m.",
-      "source_url": "",
-      "placement": "ceiling",
-      "emits_light": true,
-      "light_radius_m": 2.2,
-      "plan_symbol": "pendant",
-      "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"32\" cy=\"32\" r=\"13\"/><circle cx=\"32\" cy=\"32\" r=\"4\"/><path d=\"M32 12v7M32 45v7M12 32h7M45 32h7\"/></svg>"
-    },
-    {
-      "id": "demo-wall-sconce",
-      "sku": "PPW-DEMO-LAMP-SCONCE",
-      "name": "Wall Sconce",
-      "category": "lighting",
-      "supplier": "PPW Demo",
-      "dimensions_cm": {
-        "length": 20,
-        "width": 12,
-        "height": 25
-      },
-      "weight_kg": 1.2,
-      "price": {
-        "value": 2400,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400?text=Wall+Sconce",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Wall-mounted up/down sconce. DEMO seed for a wall-snapped light: glows 1.2 m into the room.",
-      "source_url": "",
-      "placement": "wall",
-      "mount_height_cm": 170,
-      "emits_light": true,
-      "light_radius_m": 1.2,
-      "plan_symbol": "light",
-      "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 14h48\"/><path d=\"M20 14a12 12 0 0 0 24 0\"/><path d=\"M32 30v10M21 29l-5 8M43 29l5 8\"/></svg>"
-    },
-    {
-      "id": "demo-garden-tree",
-      "sku": "PPW-DEMO-GARDEN-TREE",
-      "name": "Garden Tree (frangipani)",
-      "category": "plant",
-      "supplier": "PPW Demo",
-      "dimensions_cm": {
-        "length": 250,
-        "width": 250,
-        "height": 400
-      },
-      "weight_kg": 80,
-      "price": {
-        "value": 12500,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400?text=Garden+Tree",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Container-grown frangipani, 2.5 m canopy. DEMO seed for outdoor placement: lives on the plot, outside any room.",
-      "source_url": "",
-      "outdoor": true,
-      "plan_symbol": "tree",
-      "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"32\" cy=\"32\" r=\"21\"/><circle cx=\"32\" cy=\"32\" r=\"2.5\"/><path d=\"M32 11v13M32 40v13M11 32h13M40 32h13\" opacity=\"0.4\"/></svg>"
-    },
-    {
-      "id": "demo-hedge",
-      "sku": "PPW-DEMO-GARDEN-HEDGE",
-      "name": "Hedge Run (2 m)",
-      "category": "plant",
-      "supplier": "PPW Demo",
-      "dimensions_cm": {
-        "length": 200,
-        "width": 50,
-        "height": 120
-      },
-      "weight_kg": 30,
-      "price": {
-        "value": 3800,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400?text=Hedge",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Two-metre clipped hedge section, 50 cm deep. DEMO seed for outdoor placement: chain runs along a boundary.",
-      "source_url": "",
-      "outdoor": true,
-      "plan_symbol": "hedge",
-      "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"6\" y=\"20\" width=\"52\" height=\"24\" rx=\"12\"/><path d=\"M14 32c4-4 8-4 12 0s8 4 12 0 8-4 12 0\"/></svg>"
-    },
-    {
-      "id": "demo-outdoor-bench",
-      "sku": "PPW-DEMO-GARDEN-BENCH",
-      "name": "Teak Garden Bench",
-      "category": "decor",
-      "supplier": "PPW Demo",
-      "dimensions_cm": {
-        "length": 150,
-        "width": 50,
-        "height": 45
-      },
-      "weight_kg": 22,
-      "price": {
-        "value": 9800,
-        "currency": "MUR"
-      },
-      "commission_pct": 0.05,
-      "shopify_ready": false,
-      "image_url": "https://placehold.co/400x400?text=Garden+Bench",
-      "designer_status": "Done",
-      "delivery_regions": [
-        "MU"
-      ],
-      "notes": "Three-seat teak bench for the garden. DEMO seed for outdoor placement; front edge faces the viewer at rotation 0.",
-      "source_url": "",
-      "outdoor": true,
-      "plan_symbol": "bench",
-      "front_edge": "bottom",
-      "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"8\" y=\"22\" width=\"48\" height=\"20\" rx=\"2\"/><path d=\"M8 29h48M8 35h48\"/><path d=\"M14 42v6M50 42v6\"/></svg>"
-    }
-  ]
+ "version": "2.1.0-sims-world",
+ "generated_at": "2026-05-20T00:00:00Z",
+ "generated_by": "M6 — K1-Sport seed (RELENTLESS_GOAL 2026-05-19). Pricing from k1-sport.com/shop-online live fetch 2026-05-20. Dimensions sourced from manufacturer public spec sheets (NordicTrack, Schwinn, ProForm, Matrix Fitness, Vision Fitness, Bowflex) — typed in cm, rounded to nearest cm. Footprint = floor length × floor width, height = upright spec. Categories mapped onto the existing ProductCategory enum (most are 'fitness'). Thumbnails are placeholder grey-boxes pending K1 image-permission gate (Vic separately). Replaces the prior 'DEMO MODE — all prices 0' seed; the original is preserved in git history pre-M6.",
+ "products": [
+  {
+   "id": "k1-nordictrack-2450",
+   "sku": "K1-CDIO-NT2450",
+   "name": "NordicTrack Commercial 2450 Treadmill",
+   "category": "fitness",
+   "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
+   "dimensions_cm": {
+    "length": 205,
+    "width": 95,
+    "height": 165
+   },
+   "weight_kg": 138,
+   "price": {
+    "value": 150000,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0A2450",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Foldable commercial-grade treadmill; 24-inch touchscreen; iFit-ready. Distributor stock at K1-Sport.",
+   "source_url": "https://www.k1-sport.com/shop-online",
+   "topdown_image_url": "/products/topdown/k1-nordictrack-2450.webp",
+   "photo_image_url": "/products/photos/k1-nordictrack-2450.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-nordictrack-tour-de-france",
+   "sku": "K1-CDIO-NTTDF",
+   "name": "NordicTrack Tour de France Indoor Bike",
+   "category": "fitness",
+   "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
+   "dimensions_cm": {
+    "length": 150,
+    "width": 65,
+    "height": 135
+   },
+   "weight_kg": 84,
+   "price": {
+    "value": 150000,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0ATour+de+France",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Incline/decline indoor cycle; iFit-ready interactive trainer. Distributor stock at K1-Sport.",
+   "source_url": "https://www.k1-sport.com/shop-online",
+   "topdown_image_url": "/products/topdown/k1-nordictrack-tour-de-france.webp",
+   "photo_image_url": "/products/photos/k1-nordictrack-tour-de-france.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-nordictrack-gx10",
+   "sku": "K1-CDIO-NTGX10",
+   "name": "NordicTrack GX 10 Recumbent Bike",
+   "category": "fitness",
+   "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
+   "dimensions_cm": {
+    "length": 150,
+    "width": 65,
+    "height": 130
+   },
+   "weight_kg": 62,
+   "price": {
+    "value": 95000,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0AGX10",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Recumbent bike with 26 resistance levels. Distributor stock at K1-Sport.",
+   "source_url": "https://www.k1-sport.com/shop-online",
+   "topdown_image_url": "/products/topdown/k1-nordictrack-gx10.webp",
+   "photo_image_url": "/products/photos/k1-nordictrack-gx10.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-schwinn-700ic",
+   "sku": "K1-CDIO-SCH700IC",
+   "name": "Schwinn 700IC Indoor Bike",
+   "category": "fitness",
+   "supplier": "K1-Sport (Schwinn — Mauritius distributor)",
+   "dimensions_cm": {
+    "length": 120,
+    "width": 55,
+    "height": 130
+   },
+   "weight_kg": 51,
+   "price": {
+    "value": 29000,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Schwinn%0A700IC",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Indoor cycle with 18.1 kg / 40 lb flywheel. On-sale entry-price cardio. Distributor stock at K1-Sport.",
+   "source_url": "https://www.k1-sport.com/shop-online",
+   "topdown_image_url": "/products/topdown/k1-schwinn-700ic.webp",
+   "photo_image_url": "/products/photos/k1-schwinn-700ic.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-proform-carbon-tl",
+   "sku": "K1-CDIO-PROFCTL",
+   "name": "ProForm Carbon TL Treadmill",
+   "category": "fitness",
+   "supplier": "K1-Sport (ProForm — Mauritius distributor)",
+   "dimensions_cm": {
+    "length": 180,
+    "width": 85,
+    "height": 145
+   },
+   "weight_kg": 79,
+   "price": {
+    "value": 40500,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=ProForm%0ACarbon+TL",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Foldable home treadmill; iFit-enabled. Distributor stock at K1-Sport.",
+   "source_url": "https://www.k1-sport.com/shop-online",
+   "topdown_image_url": "/products/topdown/k1-proform-carbon-tl.webp",
+   "photo_image_url": "/products/photos/k1-proform-carbon-tl.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-nordictrack-x16",
+   "sku": "K1-CDIO-NTX16",
+   "name": "NordicTrack X16 Elliptical",
+   "category": "fitness",
+   "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
+   "dimensions_cm": {
+    "length": 180,
+    "width": 70,
+    "height": 175
+   },
+   "weight_kg": 103,
+   "price": {
+    "value": 125000,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0AX16",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Front-drive elliptical; 16-inch touchscreen; iFit-ready. Distributor stock at K1-Sport.",
+   "source_url": "https://www.k1-sport.com/shop-online",
+   "topdown_image_url": "/products/topdown/k1-nordictrack-x16.webp",
+   "photo_image_url": "/products/photos/k1-nordictrack-x16.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-nordictrack-rw900",
+   "sku": "K1-CDIO-NTRW900",
+   "name": "NordicTrack RW900 Rower",
+   "category": "fitness",
+   "supplier": "K1-Sport (NordicTrack — Mauritius distributor)",
+   "dimensions_cm": {
+    "length": 220,
+    "width": 55,
+    "height": 110
+   },
+   "weight_kg": 53,
+   "price": {
+    "value": 120000,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0ARW900",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Magnetic + air resistance rower; 22-inch HD touchscreen; iFit-ready. Distributor stock at K1-Sport.",
+   "source_url": "https://www.k1-sport.com/shop-online",
+   "topdown_image_url": "/products/topdown/k1-nordictrack-rw900.webp",
+   "photo_image_url": "/products/photos/k1-nordictrack-rw900.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-vision-t600-03",
+   "sku": "K1-CDIO-VST60003",
+   "name": "Vision Fitness T600-03 Treadmill",
+   "category": "fitness",
+   "supplier": "K1-Sport (Vision Fitness — Mauritius distributor)",
+   "dimensions_cm": {
+    "length": 210,
+    "width": 100,
+    "height": 165
+   },
+   "weight_kg": 165,
+   "price": {
+    "value": 210393,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Vision%0AT600-03",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Commercial-grade treadmill with vibration-isolation deck. Distributor stock at K1-Sport.",
+   "source_url": "https://www.k1-sport.com/shop-online",
+   "topdown_image_url": "/products/topdown/k1-vision-t600-03.webp",
+   "photo_image_url": "/products/photos/k1-vision-t600-03.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-vision-t600e-02",
+   "sku": "K1-CDIO-VST600E02",
+   "name": "Vision Fitness T600E-02 Treadmill (22\" touchscreen)",
+   "category": "fitness",
+   "supplier": "K1-Sport (Vision Fitness — Mauritius distributor)",
+   "dimensions_cm": {
+    "length": 210,
+    "width": 100,
+    "height": 165
+   },
+   "weight_kg": 175,
+   "price": {
+    "value": 259600,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Vision%0AT600E-02",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Top-of-line commercial treadmill with 22-inch entertainment screen. Distributor stock at K1-Sport.",
+   "source_url": "https://www.k1-sport.com/shop-online",
+   "topdown_image_url": "/products/topdown/k1-vision-t600e-02.webp",
+   "photo_image_url": "/products/photos/k1-vision-t600e-02.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-matrix-mg-glute",
+   "sku": "K1-STRG-MXMGGT",
+   "name": "Matrix MG Glute Trainer",
+   "category": "fitness",
+   "supplier": "K1-Sport (Matrix Fitness — Mauritius distributor)",
+   "dimensions_cm": {
+    "length": 150,
+    "width": 100,
+    "height": 175
+   },
+   "weight_kg": 195,
+   "price": {
+    "value": 140001,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Matrix%0AMG+Glute",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Glute + hip-thrust strength station, plate-loaded. Commercial-grade. Distributor stock at K1-Sport.",
+   "source_url": "https://www.k1-sport.com/shop-online",
+   "topdown_image_url": "/products/topdown/k1-matrix-mg-glute.webp",
+   "photo_image_url": "/products/photos/k1-matrix-mg-glute.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-matrix-versa-adabd",
+   "sku": "K1-STRG-MXVSAD",
+   "name": "Matrix Versa Adductor / Abductor",
+   "category": "fitness",
+   "supplier": "K1-Sport (Matrix Fitness — Mauritius distributor)",
+   "dimensions_cm": {
+    "length": 165,
+    "width": 130,
+    "height": 195
+   },
+   "weight_kg": 220,
+   "price": {
+    "value": 154675,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Matrix%0AVersa+Ad%2FAbd",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Selectorised dual adductor/abductor station, weight-stack. Distributor stock at K1-Sport.",
+   "source_url": "https://www.k1-sport.com/shop-online",
+   "topdown_image_url": "/products/topdown/k1-matrix-versa-adabd.webp",
+   "photo_image_url": "/products/photos/k1-matrix-versa-adabd.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-vision-smith",
+   "sku": "K1-STRG-VSSMITH",
+   "name": "Vision Fitness Smith Machine",
+   "category": "fitness",
+   "supplier": "K1-Sport (Vision Fitness — Mauritius distributor)",
+   "dimensions_cm": {
+    "length": 225,
+    "width": 165,
+    "height": 230
+   },
+   "weight_kg": 280,
+   "price": {
+    "value": 172500,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Vision%0ASmith+Machine",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Fixed-path Smith machine; 90-degree movement track; counterbalanced bar. Distributor stock at K1-Sport.",
+   "source_url": "https://www.k1-sport.com/shop-online",
+   "topdown_image_url": "/products/topdown/k1-vision-smith.webp",
+   "photo_image_url": "/products/photos/k1-vision-smith.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-bowflex-xtreme-2se",
+   "sku": "K1-STRG-BFXT2SE",
+   "name": "Bowflex Xtreme 2 SE Home Gym",
+   "category": "fitness",
+   "supplier": "K1-Sport (Bowflex — Mauritius distributor)",
+   "dimensions_cm": {
+    "length": 205,
+    "width": 130,
+    "height": 210
+   },
+   "weight_kg": 81,
+   "price": {
+    "value": 52000,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Bowflex%0AXtreme+2+SE",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Power-rod multi-station home gym; 70+ exercises. Distributor stock at K1-Sport.",
+   "source_url": "https://www.k1-sport.com/shop-online",
+   "topdown_image_url": "/products/topdown/k1-bowflex-xtreme-2se.webp",
+   "photo_image_url": "/products/photos/k1-bowflex-xtreme-2se.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-bench-adjustable-fid",
+   "sku": "K1-STRG-FIDBN",
+   "name": "Adjustable Flat / Incline / Decline Bench",
+   "category": "fitness",
+   "supplier": "K1-Sport",
+   "dimensions_cm": {
+    "length": 135,
+    "width": 60,
+    "height": 60
+   },
+   "weight_kg": 24,
+   "price": {
+    "value": 11000,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Adjustable%0AFID+Bench",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Multi-position weight bench (flat / incline / decline). Entry-price strength accessory. Distributor stock at K1-Sport.",
+   "source_url": "https://www.k1-sport.com/shop-online",
+   "topdown_image_url": "/products/topdown/k1-bench-adjustable-fid.webp",
+   "photo_image_url": "/products/photos/k1-bench-adjustable-fid.webp"
+  },
+  {
+   "id": "k1-floor-eva-combat",
+   "sku": "K1-FLOR-EVACOMBAT",
+   "name": "EVA Combat Sport Mat 1×1m × 2.5 cm",
+   "category": "flooring",
+   "supplier": "K1-Sport",
+   "dimensions_cm": {
+    "length": 100,
+    "width": 100,
+    "height": 2.5
+   },
+   "weight_kg": 4.5,
+   "price": {
+    "value": 850,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EVA%0ACombat+Mat",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "EVA foam combat sport / martial arts mat. 1×1m tile, 2.5 cm thick. Eco — typical EVA has recycled-content options (vendor to confirm).",
+   "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
+   "eco_certified": false,
+   "topdown_image_url": "/products/topdown/k1-floor-eva-combat.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-floor-eva-kids",
+   "sku": "K1-FLOR-EVAKIDS",
+   "name": "EVA Kids Mat (5-pack)",
+   "category": "flooring",
+   "supplier": "K1-Sport",
+   "dimensions_cm": {
+    "length": 50,
+    "width": 50,
+    "height": 1
+   },
+   "weight_kg": 1.2,
+   "price": {
+    "value": 950,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EVA%0AKids+Mat",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "EVA kids' play mat sold in packs of 5. Approx Rs 190 / m². Soft 1 cm thickness for nursery / kids' rooms.",
+   "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
+   "eco_certified": false,
+   "topdown_image_url": "/products/topdown/k1-floor-eva-kids.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-floor-gym-interlock",
+   "sku": "K1-FLOR-GYMTILE",
+   "name": "Gym Interlock Tile 92×92×0.5 cm",
+   "category": "flooring",
+   "supplier": "K1-Sport",
+   "dimensions_cm": {
+    "length": 92,
+    "width": 92,
+    "height": 0.5
+   },
+   "weight_kg": 2,
+   "price": {
+    "value": 1600,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=PVC%0AGym+Interlock",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "PVC interlock gym flooring tile, 92×92 cm × 5 mm. Approx Rs 1,890 / m².",
+   "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
+   "eco_certified": false,
+   "topdown_image_url": "/products/topdown/k1-floor-gym-interlock.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-floor-ifit-vinyl",
+   "sku": "K1-FLOR-IFITVINYL",
+   "name": "iFIT Vinyl Equipment Mat 36\"×72\"",
+   "category": "flooring",
+   "supplier": "K1-Sport",
+   "dimensions_cm": {
+    "length": 183,
+    "width": 91,
+    "height": 0.6
+   },
+   "weight_kg": 8,
+   "price": {
+    "value": 3500,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=iFIT%0AVinyl+Mat",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Vinyl protective mat for cardio equipment (treadmill / bike / elliptical). 36\"×72\" ≈ 183×91 cm. Approx Rs 2,090 / m².",
+   "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
+   "eco_certified": false,
+   "topdown_image_url": "/products/topdown/k1-floor-ifit-vinyl.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-floor-rubber-interlock",
+   "sku": "K1-FLOR-RUBCOMP",
+   "name": "Interlock Composite Rubber Tile 50×50×1.5 cm",
+   "category": "flooring",
+   "supplier": "K1-Sport",
+   "dimensions_cm": {
+    "length": 50,
+    "width": 50,
+    "height": 1.5
+   },
+   "weight_kg": 3.5,
+   "price": {
+    "value": 500,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Rubber%0AInterlock",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Composite rubber interlock tile, 50×50 cm × 15 mm. Approx Rs 2,000 / m². Typical recycled-content rubber.",
+   "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
+   "eco_certified": false,
+   "topdown_image_url": "/products/topdown/k1-floor-rubber-interlock.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-floor-outdoor-rubber-1m",
+   "sku": "K1-FLOR-OUTDOOR1M",
+   "name": "Outdoor Rubber Tile 1×1m × 5 cm — Red",
+   "category": "flooring",
+   "supplier": "K1-Sport",
+   "dimensions_cm": {
+    "length": 100,
+    "width": 100,
+    "height": 5
+   },
+   "weight_kg": 24,
+   "price": {
+    "value": 1500,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+1m",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Outdoor rubber tile, 1×1m × 50 mm — red. Sale price. Approx Rs 1,500 / m². Suitable for playgrounds + outdoor gym pads.",
+   "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
+   "eco_certified": false,
+   "topdown_image_url": "/products/topdown/k1-floor-outdoor-rubber-1m.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-floor-outdoor-rubber-50",
+   "sku": "K1-FLOR-OUTDOOR50",
+   "name": "Outdoor Rubber Tile 50×50×2.5 cm — Red",
+   "category": "flooring",
+   "supplier": "K1-Sport",
+   "dimensions_cm": {
+    "length": 50,
+    "width": 50,
+    "height": 2.5
+   },
+   "weight_kg": 6,
+   "price": {
+    "value": 375,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+50",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Outdoor rubber tile, 50×50 cm × 25 mm — red. Sale price. Approx Rs 1,500 / m². Modular playground / outdoor surface.",
+   "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
+   "eco_certified": false,
+   "topdown_image_url": "/products/topdown/k1-floor-outdoor-rubber-50.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "id": "k1-floor-epdm-roll",
+   "sku": "K1-FLOR-EPDM6",
+   "name": "EPDM Rubber Roll 6 mm — Grey",
+   "category": "flooring",
+   "supplier": "K1-Sport",
+   "dimensions_cm": {
+    "length": 1000,
+    "width": 125,
+    "height": 0.6
+   },
+   "weight_kg": 60,
+   "price": {
+    "value": 13500,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EPDM%0ARubber+Roll",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "EPDM rubber roll, 6 mm thick, grey. Per-roll pricing (full roll ≈ 10×1.25 m). EPDM typically uses recycled-rubber content — flag for vendor confirm.",
+   "source_url": "https://www.k1-sport.com/shop-online/category/flooring",
+   "eco_certified": false,
+   "topdown_image_url": "/products/topdown/k1-floor-epdm-roll.webp",
+   "front_edge": "bottom"
+  },
+  {
+   "supplier": "PPW Studio (demo)",
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "source_url": "",
+   "id": "demo-console-table",
+   "sku": "PPW-DEMO-TABLE",
+   "name": "Wellness Console Table",
+   "category": "decor",
+   "dimensions_cm": {
+    "length": 120,
+    "width": 40,
+    "height": 75
+   },
+   "weight_kg": 18,
+   "price": {
+    "value": 12500,
+    "currency": "MUR"
+   },
+   "is_surface": true,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Console%0ATable",
+   "topdown_image_url": "/products/topdown/demo-console-table.webp",
+   "notes": "Slim console table for oils, diffusers and small decor. DEMO seed for surface-slot placement."
+  },
+  {
+   "supplier": "PPW Studio (demo)",
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "source_url": "",
+   "id": "demo-wall-shelf",
+   "sku": "PPW-DEMO-SHELF",
+   "name": "Floating Wall Shelf",
+   "category": "decor",
+   "dimensions_cm": {
+    "length": 80,
+    "width": 20,
+    "height": 18
+   },
+   "weight_kg": 6,
+   "price": {
+    "value": 3500,
+    "currency": "MUR"
+   },
+   "placement": "wall",
+   "mount_height_cm": 150,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Wall%0AShelf",
+   "topdown_image_url": "/products/topdown/demo-wall-shelf.webp",
+   "notes": "Wall-mounted floating shelf. DEMO seed for wall-mounted placement."
+  },
+  {
+   "supplier": "PPW Studio (demo)",
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "source_url": "",
+   "id": "demo-wall-mirror",
+   "sku": "PPW-DEMO-MIRROR",
+   "name": "Studio Wall Mirror",
+   "category": "decor",
+   "dimensions_cm": {
+    "length": 120,
+    "width": 5,
+    "height": 180
+   },
+   "weight_kg": 22,
+   "price": {
+    "value": 9800,
+    "currency": "MUR"
+   },
+   "placement": "wall",
+   "mount_height_cm": 20,
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Wall%0AMirror",
+   "topdown_image_url": "/products/topdown/demo-wall-mirror.webp",
+   "notes": "Full-length studio mirror, wall-mounted. DEMO seed for wall-mounted placement."
+  },
+  {
+   "supplier": "PPW Studio (demo)",
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "source_url": "",
+   "id": "demo-aroma-diffuser",
+   "sku": "PPW-DEMO-DIFFUSER",
+   "name": "Aroma Diffuser",
+   "category": "decor",
+   "dimensions_cm": {
+    "length": 15,
+    "width": 15,
+    "height": 25
+   },
+   "weight_kg": 0.8,
+   "price": {
+    "value": 1800,
+    "currency": "MUR"
+   },
+   "placement": "surface",
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Aroma%0ADiffuser",
+   "topdown_image_url": "/products/topdown/demo-aroma-diffuser.webp",
+   "notes": "Ultrasonic aroma diffuser. Sits on a table. DEMO seed for surface-slot placement."
+  },
+  {
+   "supplier": "PPW Studio (demo)",
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "source_url": "",
+   "id": "demo-potted-plant",
+   "sku": "PPW-DEMO-PLANT-S",
+   "name": "Potted Plant (small)",
+   "category": "plant",
+   "dimensions_cm": {
+    "length": 25,
+    "width": 25,
+    "height": 40
+   },
+   "weight_kg": 2.5,
+   "price": {
+    "value": 950,
+    "currency": "MUR"
+   },
+   "placement": "surface",
+   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Potted%0APlant",
+   "topdown_image_url": "/products/topdown/demo-potted-plant.webp",
+   "notes": "Small potted plant for tabletops. DEMO seed for surface-slot placement."
+  },
+  {
+   "id": "demo-floor-lamp",
+   "sku": "PPW-DEMO-LAMP-FLOOR",
+   "name": "Arc Floor Lamp",
+   "category": "lighting",
+   "supplier": "PPW Demo",
+   "dimensions_cm": {
+    "length": 40,
+    "width": 40,
+    "height": 160
+   },
+   "weight_kg": 6,
+   "price": {
+    "value": 4500,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400?text=Floor+Lamp",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Warm-white floor lamp on a 40 cm base. DEMO seed for the light pool: draws the plan light symbol and glows 1.8 m.",
+   "source_url": "",
+   "placement": "floor",
+   "emits_light": true,
+   "light_radius_m": 1.8,
+   "plan_symbol": "light",
+   "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"32\" cy=\"32\" r=\"10\"/><path d=\"M32 8v8M32 48v8M8 32h8M48 32h8M15 15l5.7 5.7M43.3 43.3L49 49M49 15l-5.7 5.7M20.7 43.3L15 49\"/></svg>"
+  },
+  {
+   "id": "demo-pendant-light",
+   "sku": "PPW-DEMO-LAMP-PENDANT",
+   "name": "Rattan Pendant Light",
+   "category": "lighting",
+   "supplier": "PPW Demo",
+   "dimensions_cm": {
+    "length": 45,
+    "width": 45,
+    "height": 30
+   },
+   "weight_kg": 3,
+   "price": {
+    "value": 6900,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400?text=Pendant+Light",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Ceiling-hung pendant, 45 cm shade. DEMO seed for ceiling placement: no floor collision, glows 2.2 m.",
+   "source_url": "",
+   "placement": "ceiling",
+   "emits_light": true,
+   "light_radius_m": 2.2,
+   "plan_symbol": "pendant",
+   "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"32\" cy=\"32\" r=\"13\"/><circle cx=\"32\" cy=\"32\" r=\"4\"/><path d=\"M32 12v7M32 45v7M12 32h7M45 32h7\"/></svg>"
+  },
+  {
+   "id": "demo-wall-sconce",
+   "sku": "PPW-DEMO-LAMP-SCONCE",
+   "name": "Wall Sconce",
+   "category": "lighting",
+   "supplier": "PPW Demo",
+   "dimensions_cm": {
+    "length": 20,
+    "width": 12,
+    "height": 25
+   },
+   "weight_kg": 1.2,
+   "price": {
+    "value": 2400,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400?text=Wall+Sconce",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Wall-mounted up/down sconce. DEMO seed for a wall-snapped light: glows 1.2 m into the room.",
+   "source_url": "",
+   "placement": "wall",
+   "mount_height_cm": 170,
+   "emits_light": true,
+   "light_radius_m": 1.2,
+   "plan_symbol": "light",
+   "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 14h48\"/><path d=\"M20 14a12 12 0 0 0 24 0\"/><path d=\"M32 30v10M21 29l-5 8M43 29l5 8\"/></svg>"
+  },
+  {
+   "id": "demo-garden-tree",
+   "sku": "PPW-DEMO-GARDEN-TREE",
+   "name": "Garden Tree (frangipani)",
+   "category": "plant",
+   "supplier": "PPW Demo",
+   "dimensions_cm": {
+    "length": 250,
+    "width": 250,
+    "height": 400
+   },
+   "weight_kg": 80,
+   "price": {
+    "value": 12500,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400?text=Garden+Tree",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Container-grown frangipani, 2.5 m canopy. DEMO seed for outdoor placement: lives on the plot, outside any room.",
+   "source_url": "",
+   "outdoor": true,
+   "plan_symbol": "tree",
+   "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"32\" cy=\"32\" r=\"21\"/><circle cx=\"32\" cy=\"32\" r=\"2.5\"/><path d=\"M32 11v13M32 40v13M11 32h13M40 32h13\" opacity=\"0.4\"/></svg>"
+  },
+  {
+   "id": "demo-hedge",
+   "sku": "PPW-DEMO-GARDEN-HEDGE",
+   "name": "Hedge Run (2 m)",
+   "category": "plant",
+   "supplier": "PPW Demo",
+   "dimensions_cm": {
+    "length": 200,
+    "width": 50,
+    "height": 120
+   },
+   "weight_kg": 30,
+   "price": {
+    "value": 3800,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400?text=Hedge",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Two-metre clipped hedge section, 50 cm deep. DEMO seed for outdoor placement: chain runs along a boundary.",
+   "source_url": "",
+   "outdoor": true,
+   "plan_symbol": "hedge",
+   "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"6\" y=\"20\" width=\"52\" height=\"24\" rx=\"12\"/><path d=\"M14 32c4-4 8-4 12 0s8 4 12 0 8-4 12 0\"/></svg>"
+  },
+  {
+   "id": "demo-outdoor-bench",
+   "sku": "PPW-DEMO-GARDEN-BENCH",
+   "name": "Teak Garden Bench",
+   "category": "decor",
+   "supplier": "PPW Demo",
+   "dimensions_cm": {
+    "length": 150,
+    "width": 50,
+    "height": 45
+   },
+   "weight_kg": 22,
+   "price": {
+    "value": 9800,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "https://placehold.co/400x400?text=Garden+Bench",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Three-seat teak bench for the garden. DEMO seed for outdoor placement; front edge faces the viewer at rotation 0.",
+   "source_url": "",
+   "outdoor": true,
+   "plan_symbol": "bench",
+   "front_edge": "bottom",
+   "thumbnail_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"8\" y=\"22\" width=\"48\" height=\"20\" rx=\"2\"/><path d=\"M8 29h48M8 35h48\"/><path d=\"M14 42v6M50 42v6\"/></svg>"
+  },
+  {
+   "id": "emcar-jinko-475",
+   "sku": "EMCAR-SOLAR-JINKO-475",
+   "name": "Jinko Solar 475 W N-type panel",
+   "category": "solar",
+   "supplier": "Emcar (Victron Energy distributor, Mauritius)",
+   "dimensions_cm": {
+    "length": 190.3,
+    "width": 113.4,
+    "height": 3
+   },
+   "weight_kg": 24.2,
+   "price": {
+    "value": 12075,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "/products/photos/emcar-jinko-475.webp",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Jinko N-type mono module, 475 Wp. 1903 x 1134 x 30 mm, 24.2 kg, 2400 Pa wind load, IP68 junction box, anodised aluminium frame (Emcar listing). Rs 12,075 on emcar.mu 2026-09-04 (VAT not stated; out of stock that day). Lays on the roof; snaps edge-to-edge like a tile.",
+   "source_url": "https://emcar.mu/product/energy/solar-equipment/solar-panels/solar-panel-475w/",
+   "photo_image_url": "/products/photos/emcar-jinko-475.webp",
+   "eco_certified": true,
+   "topdown_image_url": "/products/topdown/emcar-jinko-475.webp",
+   "front_edge": "bottom",
+   "placement": "roof",
+   "outdoor": true,
+   "pv_wp": 475,
+   "energy_role": "generator"
+  },
+  {
+   "id": "emcar-victron-175",
+   "sku": "EMCAR-SOLAR-VIC-175",
+   "name": "Victron BlueSolar 175 W-12 V mono panel",
+   "category": "solar",
+   "supplier": "Emcar (Victron Energy distributor, Mauritius)",
+   "dimensions_cm": {
+    "length": 148.5,
+    "width": 66.8,
+    "height": 3
+   },
+   "weight_kg": 11,
+   "price": {
+    "value": 9085,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "/products/photos/emcar-victron-175.webp",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Victron Energy BlueSolar monocrystalline 175 W, 12 V, series 4a. 1485 x 668 x 30 mm, 11 kg, Vmp 19.4 V, Imp 9.03 A (product page + BlueSolar datasheet). Rs 9,085 on emcar.mu 2026-09-04 (VAT not stated; out of stock that day).",
+   "source_url": "https://emcar.mu/product/energy/solar-equipment/solar-panels/victron-energy-solar-panel-175w-12v/",
+   "photo_image_url": "/products/photos/emcar-victron-175.webp",
+   "eco_certified": true,
+   "topdown_image_url": "/products/topdown/emcar-victron-175.webp",
+   "front_edge": "bottom",
+   "placement": "roof",
+   "outdoor": true,
+   "pv_wp": 175,
+   "energy_role": "generator"
+  },
+  {
+   "id": "emcar-sunpower-flex-100",
+   "sku": "EMCAR-SOLAR-SPR-FLEX-100",
+   "name": "SunPower SPR-E-Flex-100 flexible panel",
+   "category": "solar",
+   "supplier": "Emcar (Victron Energy distributor, Mauritius)",
+   "dimensions_cm": {
+    "length": 116.5,
+    "width": 55.6,
+    "height": 2
+   },
+   "weight_kg": 2,
+   "price": {
+    "value": 8050,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "/products/photos/emcar-sunpower-flex-100.webp",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "SunPower flexible 100 W module (SPR-E-Flex-100), bends up to 30 degrees. 1165 x 556 x 20 mm with junction box, 2 kg, Vmp 17.1 V (SunPower specsheet linked by Emcar). Rs 8,050 on emcar.mu 2026-09-04 (VAT not stated; in stock).",
+   "source_url": "https://emcar.mu/product/energy/solar-equipment/solar-panels/flexible-solar-panel-100w/",
+   "photo_image_url": "/products/photos/emcar-sunpower-flex-100.webp",
+   "eco_certified": true,
+   "topdown_image_url": "/products/topdown/emcar-sunpower-flex-100.webp",
+   "front_edge": "bottom",
+   "placement": "roof",
+   "outdoor": true,
+   "pv_wp": 100,
+   "energy_role": "generator"
+  },
+  {
+   "id": "emcar-victron-multiplus-12-3000",
+   "sku": "EMCAR-SOLAR-VIC-MP-12-3000",
+   "name": "Victron MultiPlus 12/3000/120-50 inverter/charger",
+   "category": "solar",
+   "supplier": "Emcar (Victron Energy distributor, Mauritius)",
+   "dimensions_cm": {
+    "length": 25.8,
+    "width": 21.8,
+    "height": 36.2
+   },
+   "weight_kg": 19,
+   "price": {
+    "value": 82800,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "/products/photos/emcar-victron-multiplus-12-3000.webp",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Victron MultiPlus 12 V inverter/charger: 3000 VA, 2400 W continuous at 25 C, 6000 W peak, 93 % max efficiency, 120 A charger (Victron datasheet linked by Emcar). 258 x 218 x 362 mm, 19 kg. Wall-mounted. Rs 82,800 on emcar.mu 2026-09-04 (VAT not stated; out of stock that day).",
+   "source_url": "https://emcar.mu/product/energy/solar-equipment/inverter-charger/victron-energy-multiplus-12-3000-120-50-inverter-charger/",
+   "photo_image_url": "/products/photos/emcar-victron-multiplus-12-3000.webp",
+   "eco_certified": true,
+   "placement": "wall",
+   "mount_height_cm": 120,
+   "inverter_kw": 2.4,
+   "energy_role": "inverter"
+  },
+  {
+   "id": "emcar-victron-phoenix-12-1200",
+   "sku": "EMCAR-SOLAR-VIC-PHX-12-1200",
+   "name": "Victron Phoenix 12/1200 230 V inverter",
+   "category": "solar",
+   "supplier": "Emcar (Victron Energy distributor, Mauritius)",
+   "dimensions_cm": {
+    "length": 23.2,
+    "width": 36.2,
+    "height": 11.7
+   },
+   "weight_kg": 7.4,
+   "price": {
+    "value": 17250,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "/products/photos/emcar-victron-phoenix-12-1200.webp",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Victron Phoenix inverter 12/1200 VE.Direct (UK socket): 1200 VA, 1000 W continuous at 25 C, 2200 W peak, 91 % max efficiency (Victron datasheet). 117 x 232 x 362 mm, 7.4 kg, IP21. Wall-mounted. Rs 17,250 on emcar.mu 2026-09-04 (VAT not stated; 1 in stock).",
+   "source_url": "https://emcar.mu/product/energy/solar-equipment/inverter-charger/victron-energy-phoenix-inverter-ve-direct-uk/",
+   "photo_image_url": "/products/photos/emcar-victron-phoenix-12-1200.webp",
+   "eco_certified": true,
+   "placement": "wall",
+   "mount_height_cm": 120,
+   "inverter_kw": 1.0,
+   "energy_role": "inverter"
+  },
+  {
+   "id": "emcar-victron-superpack-12-100",
+   "sku": "EMCAR-SOLAR-VIC-SP-12-100",
+   "name": "Victron Lithium SuperPack 12.8 V/100 Ah battery",
+   "category": "solar",
+   "supplier": "Emcar (Victron Energy distributor, Mauritius)",
+   "dimensions_cm": {
+    "length": 33,
+    "width": 17.2,
+    "height": 22
+   },
+   "weight_kg": 14,
+   "price": {
+    "value": 37950,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "/products/photos/emcar-victron-superpack-12-100.webp",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Victron Lithium SuperPack 12.8 V / 100 Ah (M8, high current): 1280 Wh nominal, 2500 cycles at 80 % DoD, integrated BMS (Victron datasheet). 330 x 172 x 220 mm, 14 kg. Rs 37,950 on emcar.mu 2026-09-04 (VAT not stated; out of stock that day).",
+   "source_url": "https://emcar.mu/product/energy/solar-equipment/battery/victron-energy-lithium-superpack-12-8v-100ah-m8-high-current/",
+   "photo_image_url": "/products/photos/emcar-victron-superpack-12-100.webp",
+   "eco_certified": true,
+   "battery_kwh": 1.28,
+   "energy_role": "storage"
+  },
+  {
+   "id": "emcar-victron-agm-200",
+   "sku": "EMCAR-SOLAR-VIC-AGM-200",
+   "name": "Victron AGM Telecom 12 V/200 Ah battery",
+   "category": "solar",
+   "supplier": "Emcar (Victron Energy distributor, Mauritius)",
+   "dimensions_cm": {
+    "length": 54.6,
+    "width": 12.5,
+    "height": 32.3
+   },
+   "weight_kg": 60,
+   "price": {
+    "value": 25300,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "/products/photos/emcar-victron-agm-200.webp",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Victron AGM Telecom battery 12 V / 200 Ah (2.4 kWh nominal at C20), 500 cycles at 80 % DoD, 12-year float life (Victron datasheet). 546 x 125 x 323 mm, 60 kg. Rs 25,300 on emcar.mu 2026-09-04 (VAT not stated; in stock).",
+   "source_url": "https://emcar.mu/product/energy/solar-equipment/battery/victron-energy-agm-telecom-battery-12v-200ah/",
+   "photo_image_url": "/products/photos/emcar-victron-agm-200.webp",
+   "eco_certified": true,
+   "battery_kwh": 2.4,
+   "energy_role": "storage"
+  },
+  {
+   "id": "emcar-victron-mppt-100-30",
+   "sku": "EMCAR-SOLAR-VIC-MPPT-100-30",
+   "name": "Victron SmartSolar MPPT 100/30 charge controller",
+   "category": "solar",
+   "supplier": "Emcar (Victron Energy distributor, Mauritius)",
+   "dimensions_cm": {
+    "length": 18.6,
+    "width": 7,
+    "height": 13
+   },
+   "weight_kg": 1.3,
+   "price": {
+    "value": 6900,
+    "currency": "MUR"
+   },
+   "commission_pct": 0.05,
+   "shopify_ready": false,
+   "image_url": "/products/photos/emcar-victron-mppt-100-30.webp",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "Victron SmartSolar MPPT 100/30: 30 A charge, 440 W PV at 12 V / 880 W at 24 V, 100 V max PV, 98 % max efficiency, Bluetooth (Victron datasheet). 186 x 70 x 130 mm, 1.3 kg. Wall-mounted. Rs 6,900 on emcar.mu 2026-09-04 (VAT not stated; in stock).",
+   "source_url": "https://emcar.mu/product/energy/solar-equipment/solar-charge-controller/victron-energy-smartsolar-mppt-100-30/",
+   "photo_image_url": "/products/photos/emcar-victron-mppt-100-30.webp",
+   "eco_certified": true,
+   "placement": "wall",
+   "mount_height_cm": 130,
+   "energy_role": "none"
+  }
+ ]
 }

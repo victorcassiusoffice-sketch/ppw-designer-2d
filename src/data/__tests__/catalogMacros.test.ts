@@ -35,7 +35,7 @@ function product(overrides: Partial<Product>): Product {
 }
 
 describe('MACRO_CATEGORY_ORDER', () => {
-  it('is all, furniture, cardio, recovery, sauna, flooring, walls, decor, lighting, outdoor', () => {
+  it('is all, furniture, cardio, recovery, sauna, flooring, walls, decor, lighting, outdoor, eco', () => {
     expect(MACRO_CATEGORY_ORDER).toEqual([
       'all',
       'furniture',
@@ -47,7 +47,15 @@ describe('MACRO_CATEGORY_ORDER', () => {
       'decor',
       'lighting',
       'outdoor',
+      // Eco / solar (2026-09-04).
+      'eco',
     ]);
+  });
+
+  it('routes solar gear to Eco even though a panel lives outdoors on the roof', () => {
+    expect(macroOf(product({ category: 'solar' }))).toBe('eco');
+    expect(macroOf(product({ category: 'solar', outdoor: true }))).toBe('eco');
+    expect(MACRO_CATEGORY_LABEL.eco).toBe('Eco');
   });
 
   it('has a non-empty label for every tab', () => {

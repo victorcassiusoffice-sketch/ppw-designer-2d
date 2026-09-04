@@ -48,6 +48,11 @@ export type ProductCategory =
   // product pools light on the plan (see `designer/lighting.ts`); before
   // this the API adapter collapsed merchant `lighting` rows into `other`.
   | 'lighting'
+  // Eco / solar (2026-09-04) — panels, inverters, batteries, charge
+  // controllers from the Mauritius solar shops (Solaire, Emcar/Victron,
+  // Suntricity, Solar Center). Lands in the Eco tab; a `pv_wp` panel is
+  // roof-placed and feeds the energy readout (`designer/energy.ts`).
+  | 'solar'
   | 'other';
 
 /**
@@ -58,7 +63,19 @@ export type ProductCategory =
  *   'ceiling' a ceiling-hung item (pendant) — no floor collision, no wall
  *             snap; it floats over whatever is beneath it.
  */
-export type ProductPlacement = 'floor' | 'surface' | 'wall' | 'ceiling';
+export type ProductPlacement = 'floor' | 'surface' | 'wall' | 'ceiling' | 'roof';
+
+/**
+ * Eco / solar (2026-09-04) — what a product does in the energy balance.
+ *   'consumer'  draws `power_w` for `duty_hours_per_day` (an appliance);
+ *   'generator' a PV panel rated `pv_wp` (roof-placed);
+ *   'storage'   a battery of `battery_kwh`;
+ *   'inverter'  an inverter of `inverter_kw` AC output;
+ *   'none'      takes no part (a plant, a mat).
+ * Absent → inferred by `designer/energy.ts#energyRoleOf` from the fields
+ * above, then from the appliance reference table by name / category.
+ */
+export type EnergyRole = 'consumer' | 'generator' | 'storage' | 'inverter' | 'none';
 
 /**
  * Sims world (2026-08-29) — architectural plan glyph drawn on the canvas
@@ -189,6 +206,25 @@ export interface Product {
    * plants, else null (draw the image / footprint as before).
    */
   plan_symbol?: PlanSymbol;
+  /**
+   * Eco / solar (2026-09-04) — energy fields. Every one is OPTIONAL so the
+   * whole existing catalog keeps its shape; the designer infers a sensible
+   * role when they are absent (see `EnergyRole`).
+   */
+  /** Rated power DRAW in watts while in use (consumer). The number a
+   * merchant prints on the product page: "1.5 kW", "750 W". */
+  power_w?: number;
+  /** Hours per day the product is typically switched on. Absent → the
+   * appliance reference default for its kind, else 2 h. */
+  duty_hours_per_day?: number;
+  /** PV module rated power in watt-peak (STC). Present ⇒ generator. */
+  pv_wp?: number;
+  /** Usable battery capacity in kWh. Present ⇒ storage. */
+  battery_kwh?: number;
+  /** Inverter continuous AC output in kW. Present ⇒ inverter. */
+  inverter_kw?: number;
+  /** Explicit energy role; wins over every inference. */
+  energy_role?: EnergyRole;
 }
 
 export interface ProductCatalog {

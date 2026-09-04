@@ -169,3 +169,26 @@ describe('fetchApiProducts', () => {
     expect(await fetchApiProducts(boom)).toEqual([]);
   });
 });
+
+describe('apiProductToProduct — energy fields (eco / solar 2026-09-04)', () => {
+  const row = {
+    id: 901, sku: 'SOL-TEST-450', name: 'Test panel 450', category: 'solar', description: null,
+    widthMm: 1134, depthMm: 1722, heightMm: 30, weightG: 21500, priceMinor: 950000, currency: 'MUR', imageUrl: null, region: 'MU',
+  };
+  it('maps W / Wh on the wire to the Product schema units (kWh, kW)', () => {
+    const p = apiProductToProduct({ ...row, pvWp: 450, batteryWh: 5000, inverterW: 5000, powerW: 1500, dutyHoursPerDay: '1.5', energyRole: 'generator' });
+    expect(p.category).toBe('solar');
+    expect(p.pv_wp).toBe(450);
+    expect(p.battery_kwh).toBe(5);
+    expect(p.inverter_kw).toBe(5);
+    expect(p.power_w).toBe(1500);
+    expect(p.duty_hours_per_day).toBe(1.5);
+    expect(p.energy_role).toBe('generator');
+  });
+  it('writes no energy keys when the wire carries none (unmigrated DB)', () => {
+    const p = apiProductToProduct({ ...row, powerW: null, energyRole: 'turbine' });
+    expect('power_w' in p).toBe(false);
+    expect('pv_wp' in p).toBe(false);
+    expect('energy_role' in p).toBe(false);
+  });
+});

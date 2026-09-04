@@ -179,3 +179,24 @@ describe('decideProductFormSubmit / validation errors', () => {
     }
   });
 });
+
+describe('decideProductFormSubmit / energy fields (eco / solar 2026-09-04)', () => {
+  it('passes typed watts through and leaves blanks null', () => {
+    const r = decideProductFormSubmit(withDefaults({ powerW: '1500', pvWp: '', batteryWh: '5000', inverterW: '' }));
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.payload.powerW).toBe(1500);
+      expect(r.payload.pvWp).toBe(null);
+      expect(r.payload.batteryWh).toBe(5000);
+      expect(r.payload.inverterW).toBe(null);
+    }
+  });
+  it('rejects fractional or negative watts', () => {
+    const r = decideProductFormSubmit(withDefaults({ powerW: '12.5', inverterW: '-3' }));
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors.powerW).toBeTruthy();
+      expect(r.errors.inverterW).toBeTruthy();
+    }
+  });
+});

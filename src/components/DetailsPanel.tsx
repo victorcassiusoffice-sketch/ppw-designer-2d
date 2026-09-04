@@ -38,9 +38,14 @@ import {
   duplicateSelected,
   deleteSelected,
   toggleSelectedLight,
+  toggleSelectedPower,
+  setSelectedHours,
   fillFloorWithSelected,
 } from '../lib/placementActions';
 import { emitsLight } from '../designer/lighting';
+// Energy (eco / solar 2026-09-04): what this item draws, and the switch.
+import { energyRoleOf, itemHoursPerDay, productPowerW, productLoadReference } from '../designer/energy';
+import { formatW } from '../designer/solarCalc';
 import { isFlooringProduct } from '../designer/flooringLattice';
 // Floor tool (2026-08-30): tile SKUs that ARE a Floor-tool material are laid
 // by the tool, so "Fill floor" only shows for loose mats placed as items.
@@ -198,6 +203,12 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
   }, [selectedInstanceId]);
 
   const lightOn = selected?.lightOn ?? true;
+  // Energy (2026-09-04): consumers get a switch + hours; the readout sums them.
+  const isConsumer = !!selectedProduct && energyRoleOf(selectedProduct) === 'consumer';
+  const powerOn = selected?.powerOn !== false;
+  const powerW = selectedProduct ? productPowerW(selectedProduct) : 0;
+  const hoursPerDay = selected && selectedProduct ? itemHoursPerDay(selected, selectedProduct) : 0;
+  const loadRef = selectedProduct ? productLoadReference(selectedProduct) : null;
 
   const body = (
     <>
@@ -344,6 +355,36 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
                   >
                     {lightOn ? 'Light on — tap to switch off' : 'Light off — tap to switch on'}
                   </button>
+                )}
+                {/* Energy (eco / solar 2026-09-04): count this item in the
+                    energy readout or not, and how long it runs each day. */}
+                {isConsumer && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={toggleSelectedPower}
+                      data-testid="details-power-toggle"
+                      aria-pressed={powerOn}
+                      className={`col-span-2 ${powerOn ? CTRL_ACTIVE : CTRL_REST}`}
+                      title={loadRef ? `Typical draw — based on: ${loadRef.key}` : 'Rated draw from the product page'}
+                    >
+                      {powerOn ? `Power on — ${formatW(powerW)}` : 'Power off — not counted'}
+                    </button>
+                    <label className="col-span-2 flex items-center justify-between gap-2 px-1 text-[12px] font-medium text-ppw-inkDeep">
+                      <span>Hours per day</span>
+                      <input
+                        type="number"
+                        min={0}
+                        max={24}
+                        step={0.5}
+                        value={hoursPerDay}
+                        onChange={(e) => setSelectedHours(Number(e.target.value))}
+                        data-testid="details-hours"
+                        className="h-8 w-20 rounded-md border border-ppw-rim bg-white px-2 text-right text-[13px] tabular-nums text-ppw-ink focus:border-ppw-ink focus:outline-none"
+                        aria-label="Hours per day"
+                      />
+                    </label>
+                  </>
                 )}
               </div>
 

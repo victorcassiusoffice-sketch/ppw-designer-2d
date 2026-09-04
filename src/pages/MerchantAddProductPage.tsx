@@ -81,6 +81,12 @@ export interface ProductFormState {
   widthMm: string;
   depthMm: string;
   heightMm: string;
+  // Eco / solar (2026-09-04): optional energy figures. Read off the product
+  // page by the scrape, or typed here. Stored when migration 0029 is live.
+  powerW: string;
+  pvWp: string;
+  batteryWh: string;
+  inverterW: string;
   imageFile: File | null;
 }
 
@@ -94,6 +100,10 @@ export const EMPTY_FORM: ProductFormState = {
   widthMm: '',
   depthMm: '',
   heightMm: '',
+  powerW: '',
+  pvWp: '',
+  batteryWh: '',
+  inverterW: '',
   imageFile: null,
 };
 
@@ -117,6 +127,10 @@ export interface SubmitDecisionOk {
     widthMm: number;
     depthMm: number;
     heightMm: number | null;
+    powerW: number | null;
+    pvWp: number | null;
+    batteryWh: number | null;
+    inverterW: number | null;
   };
   imageFile: File | null;
 }
@@ -167,6 +181,15 @@ export function decideProductFormSubmit(state: ProductFormState): SubmitDecision
   else if (d === null) errors.depthMm = 'Required — real footprint depth in mm.';
   else if (d <= 0) errors.depthMm = 'Must be greater than 0.';
   if (h === 'invalid') errors.heightMm = 'Whole non-negative mm.';
+  // Energy (2026-09-04): optional, whole non-negative numbers.
+  const pw = parseDim(state.powerW);
+  const wp = parseDim(state.pvWp);
+  const bwh = parseDim(state.batteryWh);
+  const iw = parseDim(state.inverterW);
+  if (pw === 'invalid') errors.powerW = 'Whole watts, e.g. 1500.';
+  if (wp === 'invalid') errors.pvWp = 'Whole watt-peak, e.g. 450.';
+  if (bwh === 'invalid') errors.batteryWh = 'Whole watt-hours, e.g. 5000.';
+  if (iw === 'invalid') errors.inverterW = 'Whole watts, e.g. 5000.';
 
   if (state.imageFile) {
     if (!(ALLOWED_IMAGE_TYPES as readonly string[]).includes(state.imageFile.type)) {
@@ -195,6 +218,10 @@ export function decideProductFormSubmit(state: ProductFormState): SubmitDecision
       widthMm: w as number,
       depthMm: d as number,
       heightMm: h === null || h === 'invalid' ? null : h,
+      powerW: typeof pw === 'number' ? pw : null,
+      pvWp: typeof wp === 'number' ? wp : null,
+      batteryWh: typeof bwh === 'number' ? bwh : null,
+      inverterW: typeof iw === 'number' ? iw : null,
     },
     imageFile: state.imageFile,
   };
@@ -447,6 +474,24 @@ export default function MerchantAddProductPage(
             />
           </Field>
         </div>
+
+        {/* Eco / solar (2026-09-04): the numbers the Designer's energy
+            readout runs on. Power draw for anything that plugs in; the
+            solar trio for panels / batteries / inverters. All optional. */}
+        <div style={styles.row3}>
+          <Field label="Power draw (W)" error={errors.powerW}>
+            <input type="number" min={0} step={1} value={form.powerW} onChange={(e) => update('powerW', e.target.value)} style={styles.input} data-testid="product-power-w" placeholder="e.g. 1500" />
+          </Field>
+          <Field label="Solar panel (Wp)" error={errors.pvWp}>
+            <input type="number" min={0} step={1} value={form.pvWp} onChange={(e) => update('pvWp', e.target.value)} style={styles.input} data-testid="product-pv-wp" placeholder="e.g. 450" />
+          </Field>
+          <Field label="Battery (Wh)" error={errors.batteryWh}>
+            <input type="number" min={0} step={1} value={form.batteryWh} onChange={(e) => update('batteryWh', e.target.value)} style={styles.input} data-testid="product-battery-wh" placeholder="e.g. 5000" />
+          </Field>
+        </div>
+        <Field label="Inverter output (W)" error={errors.inverterW}>
+          <input type="number" min={0} step={1} value={form.inverterW} onChange={(e) => update('inverterW', e.target.value)} style={styles.input} data-testid="product-inverter-w" placeholder="e.g. 5000" />
+        </Field>
 
         <Field label="Top-down image (PNG/JPG, ≤5 MB)" error={errors.imageFile}>
           <input

@@ -96,6 +96,16 @@ export function MacroIcon({ macro, size = 22 }: MacroIconProps): JSX.Element {
           <path d="M12 2v1.5M5 6l1 1M19 6l-1 1" />
         </svg>
       );
+    case 'eco':
+      // Sun over a solar panel: rays + a tilted 2 x 3 cell grid.
+      return (
+        <svg {...common}>
+          <circle cx="17" cy="6.5" r="2.5" />
+          <path d="M17 1.5v1.5M17 10v1.5M12 6.5h1.5M20.5 6.5H22M13.5 3l1 1M19.5 9l1 1M20.5 3l-1 1M14.5 9l-1 1" />
+          <path d="M5 13h14l2 8H3z" />
+          <path d="M4 17h16M9.5 13l-1 8M14.5 13l1 8" />
+        </svg>
+      );
     case 'outdoor':
       // Tree: round canopy on a trunk, ground line.
       return (

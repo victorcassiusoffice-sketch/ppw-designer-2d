@@ -25,6 +25,7 @@ import type { PlacedItem } from '../store/designStore';
 import { haptic } from './haptics';
 import { currentSnapStepM } from '../store/designerUIStore';
 import { emitsLight } from '../designer/lighting';
+import { energyRoleOf } from '../designer/energy';
 import { activeLevelIdOf, isOutdoorRoom } from '../designer/levels';
 import { wallsOnLevel } from '../designer/freeWalls';
 import {
@@ -35,7 +36,7 @@ import {
 import {
   adjacentTileSlots,
   fillLatticeInside,
-  isFlooringProduct,
+  usesTileLattice,
   tileLatticeFor,
 } from '../designer/flooringLattice';
 // Surface slots + wall-mounted (2026-08-24) — rotation/duplication are
@@ -250,6 +251,37 @@ export function toggleSelectedLight(): boolean {
   return true;
 }
 
+/**
+ * Energy (eco / solar 2026-09-04): leave the selected electrical item out of
+ * the estimate (or put it back). Default ON when absent. No-op for products
+ * that draw nothing.
+ */
+export function toggleSelectedPower(): boolean {
+  const state = useDesignStore.getState();
+  const id = state.selectedInstanceId;
+  if (!id) return false;
+  const item = state.placedItems.find((i) => i.instanceId === id);
+  if (!item) return false;
+  const product = getProductById(item.productId);
+  if (!product || energyRoleOf(product) !== 'consumer') return false;
+  const next = item.powerOn === false;
+  usePropertyStore.getState().setItemPower(id, next);
+  haptic('select');
+  useToastStore.getState().push(next ? 'Counted in the energy estimate' : 'Left out of the energy estimate', 'info', 1200);
+  return true;
+}
+
+/** Energy: hours per day the selected item runs (null / 0 clears the override). */
+export function setSelectedHours(hoursPerDay: number | null): boolean {
+  const state = useDesignStore.getState();
+  const id = state.selectedInstanceId;
+  if (!id) return false;
+  const item = state.placedItems.find((i) => i.instanceId === id);
+  if (!item) return false;
+  usePropertyStore.getState().setItemHours(id, hoursPerDay);
+  return true;
+}
+
 /** Duplicate the selected item with a 0.5 m offset; tries a few offsets. */
 export function duplicateSelected(): void {
   const state = useDesignStore.getState();
@@ -342,7 +374,7 @@ export function duplicateSelected(): void {
   // Sims flooring (2026-08-29): a tile duplicates EDGE TO EDGE — right,
   // below, left, above, one tile away — so a floor is laid by tapping
   // Duplicate along a row, never by nudging copies into place.
-  if (isFlooringProduct(product)) {
+  if (usesTileLattice(product)) {
     for (const slot of adjacentTileSlots({ x: item.x, y: item.y, w, h })) {
       if (fitsHere(slot.x, slot.y)) {
         commit(slot.x, slot.y, item.rotation);
@@ -386,7 +418,7 @@ export function fillFloorWithSelected(): number {
   const item = state.placedItems.find((i) => i.instanceId === id);
   if (!item) return 0;
   const product = getProductById(item.productId);
-  if (!product || !isFlooringProduct(product)) return 0;
+  if (!product || !usesTileLattice(product)) return 0;
   if (state.polygon.length < 3) {
     useToastStore.getState().push('Fill floor works inside a room.', 'warn');
     return 0;

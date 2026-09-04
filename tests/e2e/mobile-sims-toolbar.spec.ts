@@ -43,7 +43,8 @@ test.describe('Mobile Sims toolbar', () => {
     // Sims-world (2026-08-29) Lighting and Outdoor tabs. The tab row scrolls
     // horizontally at 390 px, so each tab is scrolled into view before the
     // visibility check rather than asserted at rest.
-    const cats = ['all', 'furniture', 'cardio', 'recovery', 'sauna', 'flooring', 'walls', 'decor', 'lighting', 'outdoor'];
+    // Eco / solar (2026-09-04) adds the eleventh: Eco.
+    const cats = ['all', 'furniture', 'cardio', 'recovery', 'sauna', 'flooring', 'walls', 'decor', 'lighting', 'outdoor', 'eco'];
     for (const cat of cats) {
       const tab = page.locator(`[data-testid="sims-cat-${cat}"]`);
       await tab.scrollIntoViewIfNeeded();

@@ -299,3 +299,21 @@ describe('Wellness-Designer-App (c) / createMerchantProduct DB path', () => {
     insertSpy.mockRestore();
   });
 });
+
+describe('productCreateSchema — energy fields (eco / solar 2026-09-04)', () => {
+  const base = { name: 'Treadmill', category: 'cardio', priceMinor: 100, currency: 'mur', widthMm: 900, depthMm: 600 };
+  it('accepts the optional energy figures and the role enum', () => {
+    const r = productCreateSchema.safeParse({ ...base, powerW: 1500, dutyHoursPerDay: 1.5, pvWp: 450, batteryWh: 5000, inverterW: 5000, energyRole: 'consumer' });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.powerW).toBe(1500);
+  });
+  it('rejects negatives, non-integers where whole, out-of-range hours and unknown roles', () => {
+    expect(productCreateSchema.safeParse({ ...base, powerW: -1 }).success).toBe(false);
+    expect(productCreateSchema.safeParse({ ...base, pvWp: 12.5 }).success).toBe(false);
+    expect(productCreateSchema.safeParse({ ...base, dutyHoursPerDay: 25 }).success).toBe(false);
+    expect(productCreateSchema.safeParse({ ...base, energyRole: 'turbine' }).success).toBe(false);
+  });
+  it('is unchanged without them', () => {
+    expect(productCreateSchema.safeParse(base).success).toBe(true);
+  });
+});

@@ -82,7 +82,16 @@ interface ProductSummary {
   currency: string;
   imageUrl: string | null;
   region: string | null;
+  /** Eco / solar (2026-09-04, migration 0029) — present only when ENERGY_DB_COLUMNS=1. */
+  powerW?: number | null;
+  dutyHoursPerDay?: number | string | null;
+  pvWp?: number | null;
+  batteryWh?: number | null;
+  inverterW?: number | null;
+  energyRole?: string | null;
 }
+
+export const ENERGY_ROLES = ['consumer', 'generator', 'storage', 'inverter', 'none'] as const;
 
 export const ECO_CERT_LEVELS = ['none', 'self-declared', 'third-party-claimed', 'verified-certified'] as const;
 export type EcoCertLevel = (typeof ECO_CERT_LEVELS)[number];
@@ -165,6 +174,17 @@ export function parseSort(q: Record<string, string | string[] | undefined>): Sor
  */
 export function topdownColumnsEnabled(): boolean {
   const v = (process.env.TOPDOWN_DB_COLUMNS ?? '').trim().toLowerCase();
+  return v === '1' || v === 'true' || v === 'on';
+}
+
+/**
+ * True when the migration-0029 energy columns exist on the deployed DB.
+ * Same posture as `topdownColumnsEnabled`: FALSE by default so an
+ * unmigrated branch can never raise 42703 and empty the catalog. Flip
+ * `ENERGY_DB_COLUMNS=1` in the Vercel env once 0029 is applied.
+ */
+export function energyColumnsEnabled(): boolean {
+  const v = (process.env.ENERGY_DB_COLUMNS ?? '').trim().toLowerCase();
   return v === '1' || v === 'true' || v === 'on';
 }
 
@@ -313,6 +333,18 @@ export async function fetchActiveProducts(filters: ProductFilters): Promise<Prod
         // static PNGs, SKU-exact) which needs no DB column at all.
         // TO ENABLE: apply 0027 on Neon, then set TOPDOWN_DB_COLUMNS=1.
         ...(topdownColumnsEnabled() ? { topdownImageUrl: schema.products.topdownImageUrl } : {}),
+        // Eco / solar (2026-09-04): energy columns, migration-0029-gated the
+        // same way. Absent from the wire until the flag is on.
+        ...(energyColumnsEnabled()
+          ? {
+              powerW: schema.products.powerW,
+              dutyHoursPerDay: schema.products.dutyHoursPerDay,
+              pvWp: schema.products.pvWp,
+              batteryWh: schema.products.batteryWh,
+              inverterW: schema.products.inverterW,
+              energyRole: schema.products.energyRole,
+            }
+          : {}),
         region: schema.products.region,
       })
       .from(schema.products)
@@ -477,6 +509,15 @@ export const productCreateSchema = z
       .regex(/^[A-Za-z0-9._-]+$/)
       .optional(),
     inStockQty: z.number().int().nonnegative().optional(),
+    // Eco / solar (2026-09-04): optional energy figures. Stored only when
+    // ENERGY_DB_COLUMNS=1 (migration 0029 applied); accepted always so the
+    // form never breaks on an unmigrated branch.
+    powerW: z.number().int().min(0).max(100_000).optional().nullable(),
+    dutyHoursPerDay: z.number().min(0).max(24).optional().nullable(),
+    pvWp: z.number().int().min(0).max(5000).optional().nullable(),
+    batteryWh: z.number().int().min(0).max(1_000_000).optional().nullable(),
+    inverterW: z.number().int().min(0).max(1_000_000).optional().nullable(),
+    energyRole: z.enum(ENERGY_ROLES).optional().nullable(),
   })
   .strict();
 
@@ -560,6 +601,16 @@ export async function createMerchantProduct(
         region: fields.region ?? null,
         inStockQty: fields.inStockQty ?? 0,
         status: 'active',
+        ...(energyColumnsEnabled()
+          ? {
+              powerW: fields.powerW ?? null,
+              dutyHoursPerDay: fields.dutyHoursPerDay == null ? null : String(fields.dutyHoursPerDay),
+              pvWp: fields.pvWp ?? null,
+              batteryWh: fields.batteryWh ?? null,
+              inverterW: fields.inverterW ?? null,
+              energyRole: fields.energyRole ?? null,
+            }
+          : {}),
       })
       .returning({
         id: schema.products.id,

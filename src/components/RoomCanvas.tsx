@@ -108,14 +108,22 @@ import { contentBoxForImage } from '../designer/imageContent';
 import {
   activeLevelIdOf,
   isOutdoorRoom,
+  isRoofLevel,
+  isRoofRoom,
   levelBelow,
   levelsOf,
   roomsOnLevel,
 } from '../designer/levels';
+// Roof + energy (eco / solar 2026-09-04): PV panels are roof-placed, snap on
+// their own lattice like tiles, and arming one takes the customer to the roof.
+import { isRoofProduct } from '../designer/energy';
+import { roofAreaM2 } from '../designer/roof';
+import { energyDotColour, useEnergyReport } from '../designer/useEnergyReport';
+import { formatWh } from '../designer/solarCalc';
 import { runToFreeWalls, wallsOnLevel } from '../designer/freeWalls';
 import { emitsLight, lightRadiusM, planSymbolOf } from '../designer/lighting';
 // Sims flooring (2026-08-29): tiles snap to their own lattice, edge to edge.
-import { isFlooringProduct, snapToTileLattice, tileLatticeFor } from '../designer/flooringLattice';
+import { snapToTileLattice, tileLatticeFor, usesTileLattice } from '../designer/flooringLattice';
 // Rotate-handle re-seat (2026-08-29): same wall-aware path as the R key.
 import { rotateSelected } from '../lib/placementActions';
 import { pointInPolygon, isRectInsidePolygon } from '../lib/geometry';
@@ -168,6 +176,8 @@ import {
   ITEM_SHADOW,
   measureFontSize,
   CHROME_DANGER,
+  ROOF_SLAB_FILL,
+  ROOF_SLAB_STROKE,
 } from '../designer/blueprintTheme';
 // Attached multi-room (Vic 2026-08-26) — all rooms on one canvas, new rooms
 // drawn attached to existing ones, products routed into whichever room they
@@ -541,6 +551,17 @@ export function RoomCanvas({
   }, [drawnRooms, site]);
 
   const pushToast = useToastStore((s) => s.push);
+  // Energy readout (eco / solar 2026-09-04): one chip, only once something
+  // electrical or a panel is on the plan; opens the docked panel (md+) or
+  // the phone sheet's Energy section.
+  const energy = useEnergyReport();
+  const energyPanelOpen = useDesignerUIStore((s) => s.energyPanelOpen);
+  const setEnergyPanelOpen = useDesignerUIStore((s) => s.setEnergyPanelOpen);
+  const openEnergy = useCallback(() => {
+    const md = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(min-width: 768px)').matches;
+    if (md) setEnergyPanelOpen(!energyPanelOpen);
+    else window.dispatchEvent(new CustomEvent('ppw:open-menu', { detail: { section: 'energy' } }));
+  }, [energyPanelOpen, setEnergyPanelOpen]);
 
   // "No room drawn yet" is now a PROPERTY-wide question, not an active-room
   // one: with a blank room active and two rooms drawn beside it, the old
@@ -722,6 +743,26 @@ export function RoomCanvas({
       setGhostManuallyRotated(false);
     }
   }, [pendingProductId]);
+
+  // Roof (eco / solar 2026-09-04): arming a roof-placed product (a PV panel)
+  // takes the customer to the roof — "when selecting solar panels a roof
+  // with the roof surface measured at room scale can automatically pop up".
+  useEffect(() => {
+    if (!pendingProductId) return;
+    const p = getProductById(pendingProductId);
+    if (!p || !isRoofProduct(p)) return;
+    const ps = usePropertyStore.getState();
+    const lvl = activeLevelIdOf(ps.property);
+    if (isRoofLevel(levelsOf(ps.property).find((l) => l.id === lvl))) return;
+    ps.ensureRoofLevel();
+    const area = roofAreaM2(usePropertyStore.getState().property);
+    pushToast(
+      area > 0
+        ? `Roof — ${area.toFixed(0)} m² of slab to lay panels on`
+        : 'Roof — draw a room on a storey first; the roof follows the building',
+      'info',
+    );
+  }, [pendingProductId, pushToast]);
 
   // M1.5 pointer-FSM: R rotates the armed product by 90° (Sims build-mode
   // step — footprint swaps with it), Shift+R goes the other way, Esc
@@ -1161,13 +1202,16 @@ export function RoomCanvas({
       pM: { x: number; y: number },
       opts: { create: boolean },
     ):
-      | { ok: true; room: { id: string; polygon: Polygon; placedItems: PlacedItem[] }; outdoor: boolean }
-      | { ok: false; reason: 'off-plot' } => {
+      | { ok: true; room: { id: string; polygon: Polygon; placedItems: PlacedItem[]; kind?: string }; outdoor: boolean }
+      | { ok: false; reason: 'off-plot' | 'off-roof' } => {
       const ps = usePropertyStore.getState();
       const lvl = activeLevelIdOf(ps.property);
       const levelRooms = roomsOnLevel(ps.property.rooms, lvl).filter((r) => !isOutdoorRoom(r));
       const room = findRoomAt(pM, levelRooms, ps.property.activeRoomId);
       if (room) return { ok: true, room, outdoor: false };
+      // Roof (eco / solar 2026-09-04): nothing floats off a slab — the roof
+      // level has no outdoor container, so off-slab is refused outright.
+      if (isRoofLevel(levelsOf(ps.property).find((l) => l.id === lvl))) return { ok: false, reason: 'off-roof' };
       if (sitePolygon && !pointInPolygon(pM, sitePolygon)) return { ok: false, reason: 'off-plot' };
       const existing = roomsOnLevel(ps.property.rooms, lvl).find((r) => isOutdoorRoom(r));
       if (existing) return { ok: true, room: existing, outdoor: true };
@@ -1279,10 +1323,23 @@ export function RoomCanvas({
       const container = resolveContainer({ x: centreXm, y: centreYm }, { create: true });
       if (!container.ok) {
         haptic('invalid');
-        pushToast('That spot is off the plot — enlarge the land or drop it inside.', 'warn');
+        pushToast(
+          container.reason === 'off-roof'
+            ? 'Nothing floats off the roof — drop it on a slab.'
+            : 'That spot is off the plot — enlarge the land or drop it inside.',
+          'warn',
+        );
         return false;
       }
       const target = container.room;
+      // A roof-placed product (PV panel) dropped on a storey: take the
+      // customer to the roof instead of refusing in silence.
+      if (isRoofProduct(product) && !isRoofRoom(target)) {
+        haptic('invalid');
+        usePropertyStore.getState().ensureRoofLevel();
+        pushToast('Solar panels go on the roof — you are on the Roof now, drop it on a slab.', 'info');
+        return false;
+      }
       const outdoor = container.outdoor;
       const targetPolygon = target.polygon;
       const targetItems = target.placedItems;
@@ -1394,7 +1451,7 @@ export function RoomCanvas({
       // the tile, anchored on the first tile of that product in the room —
       // so tiles fit tight edge-to-edge the way The Sims lays flooring.
       const ceiling = kind === 'ceiling';
-      const flooring = isFlooringProduct(product);
+      const flooring = usesTileLattice(product);
       const resolved = ceiling
         ? (() => {
             const rot = userRotationDeg ?? 0;
@@ -1729,6 +1786,10 @@ export function RoomCanvas({
         return { xM: xM - gw / 2, yM: yM - gh / 2, rotation: ghostManuallyRotated ? ghostRotation : 0, valid: false, w: gw, h: gh };
       }
       const target = routed.room;
+      if (isRoofProduct(product) && !isRoofRoom(target)) {
+        const { w: gw, h: gh } = rotatedFootprint(fp, ghostManuallyRotated ? ghostRotation : 0);
+        return { xM: xM - gw / 2, yM: yM - gh / 2, rotation: ghostManuallyRotated ? ghostRotation : 0, valid: false, w: gw, h: gh };
+      }
       const outdoor = routed.outdoor;
       const snapWalls: FreeWallLike[] = outdoor ? [...freeWalls, ...buildingWallsAsFree] : freeWalls;
       const wallRects = outdoor
@@ -1786,7 +1847,7 @@ export function RoomCanvas({
       // Same wall-aware resolver as the commit path, so the ghost shows
       // EXACTLY where (and at what facing) the item will land.
       const ceiling = kind === 'ceiling';
-      const flooring = isFlooringProduct(product);
+      const flooring = usesTileLattice(product);
       const userRot = ghostManuallyRotated ? ghostRotation : null;
       const resolved = ceiling
         ? (() => {
@@ -3091,6 +3152,30 @@ export function RoomCanvas({
         >
           {formatCurrency(costReadout.total, costReadout.currency)}
         </div>
+        {/* ENERGY (eco / solar 2026-09-04) — sun vs use, per day. Hidden
+            until the plan has a consumer or a panel, so an empty plan stays
+            uncluttered; the dot is the verdict, the numbers the reason. */}
+        {energy.status !== 'none' && (
+          <button
+            type="button"
+            onClick={openEnergy}
+            className={`${OVL_CHIP} pointer-events-auto cursor-pointer gap-1.5`}
+            style={{ background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT }}
+            data-testid="energy-readout"
+            data-status={energy.status}
+            aria-pressed={energyPanelOpen}
+            aria-controls="ppw-energy-panel"
+            title="Energy — sun vs use per day. Tap for the breakdown."
+          >
+            <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: energyDotColour(energy.status) }} aria-hidden="true" />
+            <span className="tabular-nums">☀ {formatWh(energy.generationWhDay)} · ⚡ {formatWh(energy.loadWhDay)}</span>
+            {energy.loadWhDay > 0 && (
+              <span className="tabular-nums opacity-80">
+                {energy.netWhDay < 0 ? '−' : '+'}{formatWh(Math.abs(energy.netWhDay))}
+              </span>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Floor tool HUD card (PHONE, 2026-08-30). Replaces the old
@@ -3865,8 +3950,22 @@ export function RoomCanvas({
                 <Line
                   points={pts}
                   closed
-                  fill={isActive ? ROOM_FILL_ACTIVE : ROOM_FILL}
+                  fill={isRoofRoom(room) ? ROOF_SLAB_FILL : isActive ? ROOM_FILL_ACTIVE : ROOM_FILL}
                 />
+                {/* ROOF SLAB (eco / solar 2026-09-04): concrete, no walls —
+                    a dashed parapet line marks the edge panels must stay
+                    inside. */}
+                {isRoofRoom(room) && (
+                  <Line
+                    points={pts}
+                    closed
+                    name="roof-slab"
+                    stroke={ROOF_SLAB_STROKE}
+                    strokeWidth={2 / viewport.scale}
+                    dash={[8 / viewport.scale, 4 / viewport.scale]}
+                    listening={false}
+                  />
+                )}
                 {/* FLOOR FINISH — the material the customer actually buys,
                     drawn over the room fill and UNDER the walls, the grid and
                     every placed item. Per-room, one material, filling the
@@ -3962,7 +4061,7 @@ export function RoomCanvas({
                     into the gap, so an opening-side end is pulled back by the
                     same half-stroke and the cap puts it back exactly on the
                     jamb — the gap ends up the true width of the door. */}
-                {roomEdges(room).map((edge) => {
+                {!isRoofRoom(room) && roomEdges(room).map((edge) => {
                   // The wall is a REAL thickness in world metres (0.1 m), so
                   // it scales with pxPerMetre like everything else; at the
                   // default 100 px/m that is the historic 10 px stroke.
@@ -4224,7 +4323,11 @@ export function RoomCanvas({
                 y={(b.minY + b.maxY) / 2 * pxPerMetre - font / 2}
                 width={boxW}
                 align="center"
-                text={room.name.toUpperCase()}
+                text={
+                  isRoofRoom(room)
+                    ? `ROOF · ${room.name} · ${polygonArea(room.polygon).toFixed(0)} m²`.toUpperCase()
+                    : room.name.toUpperCase()
+                }
                 fontSize={font}
                 fontStyle="bold"
                 fontFamily="Inter, sans-serif"
@@ -4869,8 +4972,8 @@ interface PlacedItemGroupProps {
     pM: { x: number; y: number },
     opts: { create: boolean },
   ) =>
-    | { ok: true; room: { id: string; polygon: Polygon; placedItems: PlacedItem[] }; outdoor: boolean }
-    | { ok: false; reason: 'off-plot' };
+    | { ok: true; room: { id: string; polygon: Polygon; placedItems: PlacedItem[]; kind?: string }; outdoor: boolean }
+    | { ok: false; reason: 'off-plot' | 'off-roof' };
   selectItem: (id: string) => void;
   updateItem: (id: string, patch: Partial<PlacedItem>) => void;
   pushToast: (msg: string, level?: 'warn' | 'info' | 'error') => void;
@@ -5036,7 +5139,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         const routed = resolveContainer({ x: newXm + w / 2, y: newYm + h / 2 }, { create: true });
         if (!routed.ok) {
           e.target.position({ x: item.x * pxPerMetre, y: item.y * pxPerMetre });
-          pushToast('That is off the plot.', 'warn');
+          pushToast(routed.reason === 'off-roof' ? 'Nothing floats off the roof.' : 'That is off the plot.', 'warn');
           return;
         }
         const dropRoom = routed.room;
@@ -5166,7 +5269,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         // grid-snap exactly as before (wallAware falls through to the
         // plain grid path with userRotationDeg = current rotation).
         const ceilingItem = kind === 'ceiling';
-        const flooringItem = isFlooringProduct(product);
+        const flooringItem = usesTileLattice(product);
         const wallAware = ceilingItem
           ? {
               x: Math.round(newXm / snapStep) * snapStep,

@@ -25,7 +25,8 @@ export type MacroCategory =
   | 'walls'
   | 'decor'
   | 'lighting'
-  | 'outdoor';
+  | 'outdoor'
+  | 'eco';
 
 export const MACRO_CATEGORY_ORDER: MacroCategory[] = [
   'all',
@@ -38,6 +39,9 @@ export const MACRO_CATEGORY_ORDER: MacroCategory[] = [
   'decor',
   'lighting',
   'outdoor',
+  // Eco / solar (2026-09-04): panels, inverters, batteries — the products
+  // that make the energy readout move.
+  'eco',
 ];
 
 export const MACRO_CATEGORY_LABEL: Record<MacroCategory, string> = {
@@ -51,6 +55,7 @@ export const MACRO_CATEGORY_LABEL: Record<MacroCategory, string> = {
   decor: 'Decor',
   lighting: 'Lighting',
   outdoor: 'Outdoor',
+  eco: 'Eco',
 };
 
 const PRODUCT_TO_MACRO: Record<ProductCategory, MacroCategory> = {
@@ -66,15 +71,18 @@ const PRODUCT_TO_MACRO: Record<ProductCategory, MacroCategory> = {
   walls: 'walls',
   decor: 'decor',
   lighting: 'lighting',
+  solar: 'eco',
   other: 'decor',
 };
 
 /**
  * Which toolbar tab a product lives in. `outdoor` wins over the category
  * map so garden pieces are found on the Outdoor tab regardless of whether
- * they are plants, decor or lighting.
+ * they are plants, decor or lighting — except solar gear, which is Eco
+ * even though a panel is placed outside (on the roof).
  */
 export function macroOf(p: Product): MacroCategory {
+  if (p.category === 'solar') return 'eco';
   if (p.outdoor === true) return 'outdoor';
   return PRODUCT_TO_MACRO[p.category] ?? 'decor';
 }

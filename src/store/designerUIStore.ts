@@ -158,6 +158,14 @@ interface DesignerUIState {
    * can show "+n tiles" before the click, without subscribing to the canvas.
    */
   floorPreviewCount: number;
+  /**
+   * Energy readout (eco / solar 2026-09-04): the docked Energy panel (md+).
+   * Per-session chrome, never persisted; opening a build tool closes it and
+   * opening it puts the tool away, so it never shares the right edge with
+   * the Floor / Wall paint panels.
+   */
+  energyPanelOpen: boolean;
+  setEnergyPanelOpen: (open: boolean) => void;
 
   setInfoOpen: (open: boolean) => void;
   /** Swap precision ↔ lastPrecision (Ctrl+F). */
@@ -198,6 +206,9 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         scope: 'wall',
         erase: false,
       },
+      energyPanelOpen: false,
+      setEnergyPanelOpen: (open) =>
+        set((s) => (open ? { energyPanelOpen: true, tool: 'hand' } : s.energyPanelOpen ? { energyPanelOpen: false } : s)),
       floorPreviewCount: 0,
 
       setInfoOpen: (open) => set({ infoOpen: open }),
@@ -220,6 +231,8 @@ export const useDesignerUIStore = create<DesignerUIState>()(
           tool === 'door' && s.tool !== 'door'
             ? {
                 tool,
+                // A build tool takes the right edge; the Energy panel yields.
+                energyPanelOpen: false,
                 doorDraft: {
                   ...s.doorDraft,
                   widthM:
@@ -228,7 +241,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
                       : DEFAULT_DOOR_WIDTH_M,
                 },
               }
-            : { tool },
+            : { tool, energyPanelOpen: tool === 'hand' ? s.energyPanelOpen : false },
         ),
       // Kind switch carries the KIND's default width with it (defect 8: the
       // Window chip used to keep the 0.838 door width) — unless the user has

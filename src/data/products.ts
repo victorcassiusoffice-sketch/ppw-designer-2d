@@ -73,6 +73,8 @@ export const CATEGORY_LABELS: Record<ProductCategory, string> = {
   decor: 'Decor',
   // Sims world (2026-08-29) — light sources.
   lighting: 'Lighting',
+  // Eco / solar (2026-09-04) — panels, inverters, batteries.
+  solar: 'Solar',
   other: 'Other',
 };
 
@@ -136,6 +138,9 @@ export const CATEGORY_FILL: Record<ProductCategory, { fill: string; stroke: stri
   // Sims world (2026-08-29) — warm amber so a lamp footprint already reads
   // as "light" before the glow layer is drawn.
   lighting:         { fill: '#F6D58A', stroke: '#B7791F' },
+  // Eco / solar (2026-09-04) — deep PV blue with a slate frame, so a panel
+  // footprint reads as glass on the roof before its art loads.
+  solar:            { fill: '#2F4F7F', stroke: '#1B2A44' },
   other:            { fill: '#F5EFE6', stroke: '#C0A67E' },
 };
 
@@ -144,6 +149,12 @@ export const CATEGORY_FILL: Record<ProductCategory, { fill: string; stroke: stri
  */
 export function thumbnailFor(category: ProductCategory): string {
   switch (category) {
+    case 'solar':
+      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="6" y="14" width="52" height="36" rx="3" fill="#2F4F7F" stroke="#1B2A44" stroke-width="2"/>
+        <path d="M6 26h52M6 38h52M23 14v36M41 14v36" stroke="#8FB3E6" stroke-width="1.5" opacity="0.8"/>
+        <circle cx="52" cy="10" r="4" fill="#F6D58A"/>
+      </svg>`;
     case 'ice-bath':
       return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="6" y="20" width="52" height="34" rx="6" fill="#5EEAD4" stroke="#0F766E" stroke-width="2"/>

@@ -417,3 +417,114 @@ green against the preview /cart + /checkout.
 
 **Still open (unchanged):** object top-down rendering backlog
 (`objects-topdown-2026-08-31/`, FINDINGS "STILL OPEN").
+
+---
+
+## Round 9 (2026-09-03) — objects-topdown CLOSED (34 MB → 1.6 MB) — commit `e2b0b66`
+
+The STILL OPEN item ("objects render as blank labelled boxes") is closed.
+Root cause was ASSET WEIGHT, not the Konva render path: 41 committed product
+images totalled 34.0 MB (EPDM roll top-down 4.6 MB, NordicTrack 1.7 MB), so
+a cold preview load sat in fallback/skeleton for many seconds with an empty
+catalog dock — dev reads from disk and always looked fine.
+
+Fix: every referenced topdown/photo → max-640px WebP (total 1.58 MB;
+NordicTrack 1704 KB → 14 KB), products.json repointed, originals kept on
+disk (URL revert = rollback). seedImagery API enrichment follows the seed
+automatically. Confirmed by-design: wall items (shelf/mirror/sconce) draw
+plan BARS; the 6 imageless lamp/garden items draw plan symbols.
+
+Pinned by `tests/e2e/objects-topdown.spec.ts` (3): 7 `.item-art` nodes +
+2 wall bars in the nine-product evidence scene, symbols for imageless,
+all dock thumbnails loaded from .webp. Gate: tsc 0 · vitest 2276/2276 ·
+build clean · Playwright 160/0/38. Deployed proof: healthcheck = `e2b0b66`,
+CDN serves image/webp, all 3 tests green AGAINST THE PREVIEW (full art in
+<3 s on a cold context). Evidence: `objects-topdown-2026-08-31/
+after-fix-desktop-1366.png` vs the original blank-box captures.
+
+---
+
+## Round 10 (2026-09-04) — eco / solar onboarding: roof, panels, energy readout
+
+Vic: "start implementing onboarding for ecological facilities such as solar
+panels … calculate the output and sun in Mauritius … when a person adds
+something electronic it calculates the output of the electric device … show if
+the solar panel is sufficiently providing enough power for the current
+electrical products on the canvas or even outside the room … how much energy
+is surplus or lacking … these obviously need to be on a roof, as such when
+selecting solar panels a roof with the roof surface measured at room scale can
+automatically pop up, additionally a roof button … user friendly and not
+clutter the designer … pull real Mauritius products from Solaire / Emcar /
+Suntricity / Solar Center — these are also the companies worth onboarding."
+
+**Research first** (one 23-agent workflow, 4 shops each with an adversarial
+verifier, 4 brands, 4 science lanes; every price, spec, image and URL
+re-fetched the same day). Headline: **only Emcar publishes prices** — the
+other three are quote-only. Full record + merchant contacts:
+`eco-solar-2026-09-04/01-MERCHANTS.md`.
+
+**Shipped:**
+
+- **The sun** — `src/data/mauritiusSolar.ts`: PVGIS 5.3 / SARAH3 (2005–2023)
+  for Tamarin, three tilt cases with monthly PSH. Default = 20° north,
+  5.17 kWh/m²/day, PR 0.775, 1462 kWh/kWp/yr. (PVGIS 5.2 rejects the point as
+  "over the sea"; azimuth 0 is SOUTH — both recorded in the file.)
+- **The algorithm** — `src/designer/solarCalc.ts` (12 tests): generation
+  Wp × PSH × PR, load W × h, net, coverage %, panels-to-cover, battery
+  autonomy, inverter peak check, annual bill effect. Reproduces PVGIS's own
+  annual yield to within 1 %.
+- **The model** — `src/designer/energy.ts` (12 tests) classifies every
+  product as generator / storage / inverter / consumer / none and sums the
+  whole plan across every level AND outdoors;
+  `src/data/applianceLoads.ts` (9 tests) is a 36-row sourced fallback table
+  (Harvia, Titan, Peloton, Concept2, Apple, ENERGY STAR, PNNL) so a treadmill
+  with no published watts still counts — self-powered gear is 0 W explicitly.
+- **The roof** — a single `roof` level always on top (`levels.ts`), slabs that
+  mirror the storey beneath as Rooms of `kind: 'roof'` (`roof.ts`, 13 tests,
+  idempotent + stable slab ids), rebuilt on every room change
+  (`useRoofSync.ts`). Arming a panel POPS THE ROOF; a **Roof button** toggles
+  roof ↔ top storey; the wall pen, door, paint and measure tools refuse the
+  roof with a toast; PageUp/PageDown walk onto it.
+- **Roof placement** — panels snap on the tile lattice (`usesTileLattice`
+  now covers flooring AND roof products), so Duplicate lands flush and Fill
+  carpets the slab; off-slab drops are refused ("Nothing floats off the roof").
+- **The Eco tab** — new `solar` category + Eco macro tab + icon; **8 priced
+  Emcar products** seeded with real MUR prices, datasheet dimensions and
+  640 px WebP art (products.json 33 → 41).
+- **The readout** — ONE canvas chip (`energy-readout`, hidden until something
+  electrical or a panel exists) opening a docked 272 px Energy panel on md+
+  (same dock and `--floor-panel-w` inset as Floor / Wall paint, never both
+  open) or the phone sheet's Energy section. Shows sun vs use per day, the
+  surplus/shortfall, "add N panels" to close a gap, panels-not-on-the-roof,
+  battery autonomy, inverter check, every consumer with a per-item on/off and
+  hours, and one honest line naming the PVGIS assumption. Per-item controls
+  also in the Details panel.
+- **Merchant side** — migration `0029_products_energy.sql` (+ rollback,
+  **authored not applied**, gated by `ENERGY_DB_COLUMNS` exactly like 0027),
+  drizzle columns, API select + create schema, adapter mapping (W/Wh on the
+  wire → kWh/kW on the Product), four new fields on the merchant add-product
+  form, and `src/lib/energySpecs.ts` (14 tests) + `scripts/scrape-energy-specs.ts`
+  which read "1.5 kW" / "450 Wp" / "5 kWh" off a merchant page with context
+  scoring and keep the page snippet as evidence.
+
+**NOT in this round:** the **stairs** feature Vic asked for. Stairs link two
+levels (run below, void above) and touch the level model, placement, render
+and the export — own round, flagged rather than faked.
+
+**Gate:** tsc 0 · eslint 0 errors on every touched file (the 5 warnings are
+pre-existing at HEAD, verified) · vitest **2357/2357 (182 files)** ·
+`npm run build` clean · full Playwright **165 passed / 0 failed / 38
+env-gated skips** incl. the new `eco-solar.spec.ts` (5/5) · captures
+`tools/eco-solar-shot-2026-09-04.mjs` → `eco-solar-2026-09-04/` with **0
+console errors** at 1366 and 390. Measured live: 4 panels on the slab at the
+lattice pitch (0.05/1.953 × 0.05/1.184), chip "☀ 7.6 kWh · ⚡ 0 Wh"; a
+treadmill + bike + lamp = 435 Wh/day, peak 420 W, status **short** with "Add
+1 × 450 Wp panel"; six panels → **covered**, +11.0 kWh/day.
+
+**Trap that cost a red spec:** the dock thumbnails are `loading="lazy"`, so
+with 41 products the off-screen tail reports `img.complete === false` while
+already decoded. `objects-topdown.spec.ts` now asserts `naturalWidth > 0`
+(which is what "no blank tiles" means) instead of `complete`.
+
+Detail: `eco-solar-2026-09-04/` — `00-PLAN-AND-STATUS.md`, `01-MERCHANTS.md`,
+`02-ALGORITHM.md`, `03-FINDINGS.md` (decisions + what is open for Vic).

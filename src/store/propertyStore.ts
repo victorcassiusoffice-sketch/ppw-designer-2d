@@ -62,8 +62,14 @@ import {
   nextLevelName,
   roomLevelId,
   sortLevels,
+  ROOF_LEVEL_ID,
+  isRoofLevel,
+  isRoofRoom,
+  roofLevel,
   type Level,
 } from '../designer/levels';
+// Roof slabs (eco / solar 2026-09-04) — rebuilt from the storey beneath.
+import { roofRoomHasWork, syncRoofRooms } from '../designer/roof';
 import {
   MIN_FREE_WALL_LENGTH_M,
   freeWallLengthM,
@@ -92,6 +98,13 @@ export interface PlacedItem {
    * `false` darkens it. Read through `itemLightOn()`.
    */
   lightOn?: boolean;
+  /**
+   * Energy (eco / solar 2026-09-04) — an electrical product switched off for
+   * the estimate. Absent reads as ON. Read through `designer/energy.ts`.
+   */
+  powerOn?: boolean;
+  /** Per-item hours-per-day override for the energy estimate. Absent = product default. */
+  hoursPerDay?: number;
 }
 
 /**
@@ -177,9 +190,11 @@ export interface Room {
    * `'outdoor'` marks the one-per-level container for items placed outside
    * every room polygon (gardens, terraces, the space between buildings). Its
    * polygon stays `[]` — it is unbounded, or bounded by the site. Absent =
-   * a normal room. Read through `isOutdoorRoom(room)`.
+   * a normal room. Read through `isOutdoorRoom(room)`. `'roof'` (eco / solar
+   * 2026-09-04) marks a roof SLAB — a room on the roof level mirroring the
+   * drawn room beneath; read through `isRoofRoom(room)`.
    */
-  kind?: 'room' | 'outdoor';
+  kind?: 'room' | 'outdoor' | 'roof';
 }
 
 export interface Property {
@@ -474,6 +489,19 @@ export interface PropertyState {
    * created blank if there is none. Unknown ids are ignored.
    */
   setActiveLevel: (id: string) => void;
+
+  // ---- roof (eco / solar 2026-09-04) ----
+  /**
+   * Make sure the property has a roof level, rebuild its slabs from the
+   * storey beneath and focus it. Returns the roof level id.
+   */
+  ensureRoofLevel: () => string;
+  /** Rebuild the roof slabs (no-op without a roof). Returns true iff anything changed. */
+  syncRoof: () => boolean;
+  /** Switch an electrical item on/off for the energy estimate (absent = on). */
+  setItemPower: (instanceId: string, on: boolean) => void;
+  /** Per-item hours-per-day for the energy estimate; null clears the override. */
+  setItemHours: (instanceId: string, hoursPerDay: number | null) => void;
 
   // ---- site (land plot) ----
   /** Set or clear the plot. Non-finite / non-positive sides are ignored; sides clamp to 1..500 m. */
@@ -1127,16 +1155,19 @@ export const usePropertyStore = create<PropertyState>()(
           // Materialise the ground floor the first time a second storey
           // appears; until then `levels` stays absent (pre-levels shape).
           const levels = levelsOf(s.property);
+          const index = nextLevelIndex(levels);
           const level: Level = {
             id,
             name: name?.trim() || nextLevelName(levels),
-            index: nextLevelIndex(levels),
+            index,
           };
+          // The roof always stays on top: it moves up above the new storey.
+          const bumped = levels.map((l) => (isRoofLevel(l) ? { ...l, index: index + 1 } : l));
           const room = makeBlankRoom(nextRoomName(s.property.rooms), id);
           return {
             property: {
               ...s.property,
-              levels: sortLevels([...levels, level]),
+              levels: sortLevels([...bumped, level]),
               activeLevelId: id,
               rooms: [...s.property.rooms, room],
               activeRoomId: room.id,
@@ -1167,8 +1198,12 @@ export const usePropertyStore = create<PropertyState>()(
         const levels = levelsOf(s.property);
         if (!levels.some((l) => l.id === id)) return false;
         const rooms = s.property.rooms.filter((r) => roomLevelId(r) === id);
+        // A roof slab's polygon is a mirror of the storey below, not work;
+        // only what the customer put ON the slab counts.
         const hasWork =
-          rooms.some((r) => r.polygon.length >= 3 || r.placedItems.length > 0)
+          rooms.some((r) =>
+            isRoofRoom(r) ? roofRoomHasWork(r) : r.polygon.length >= 3 || r.placedItems.length > 0,
+          )
           || wallsOnLevel(s.property.walls ?? [], id).length > 0;
         if (hasWork) return false;
 
@@ -1192,8 +1227,92 @@ export const usePropertyStore = create<PropertyState>()(
       setActiveLevel: (id) =>
         set((s) => {
           if (!levelsOf(s.property).some((l) => l.id === id)) return s;
-          const next: Property = { ...s.property, activeLevelId: id };
+          // Roof (2026-09-04): entering the roof rebuilds its slabs from the
+          // storey beneath, so it always matches the building as drawn.
+          const base: Property = { ...s.property, activeLevelId: id };
+          const next = id === ROOF_LEVEL_ID ? syncRoofRooms(base) : base;
           return { property: focusFirstRoomOnLevel(next, id), selectedInstanceId: null };
+        }),
+
+      // ---- roof (eco / solar 2026-09-04) ------------------------------------
+
+      ensureRoofLevel: () => {
+        if (!levelsOf(get().property).some((l) => isRoofLevel(l))) {
+          set((s) => {
+            const levels = levelsOf(s.property);
+            return { property: { ...s.property, levels: sortLevels([...levels, roofLevel(levels)]) } };
+          });
+        }
+        get().setActiveLevel(ROOF_LEVEL_ID);
+        return ROOF_LEVEL_ID;
+      },
+
+      syncRoof: () => {
+        const current = get().property;
+        const next = syncRoofRooms(current);
+        if (next === current) return false;
+        set(() => {
+          const stillThere = next.rooms.some((r) => r.id === next.activeRoomId);
+          return {
+            property: stillThere ? next : focusFirstRoomOnLevel(next, activeLevelIdOf(next)),
+          };
+        });
+        return true;
+      },
+
+      setItemPower: (instanceId, on) =>
+        set((s) => {
+          const owner = findRoomByInstanceId(s.property, instanceId);
+          if (!owner) return s;
+          return {
+            property: {
+              ...s.property,
+              rooms: s.property.rooms.map((r) =>
+                r.id === owner.id
+                  ? {
+                    ...r,
+                    placedItems: r.placedItems.map((i) => {
+                      if (i.instanceId !== instanceId) return i;
+                      // Canonical form: ON is the absent field.
+                      const next: PlacedItem = { ...i };
+                      if (on) delete next.powerOn;
+                      else next.powerOn = false;
+                      return next;
+                    }),
+                  }
+                  : r,
+              ),
+            },
+          };
+        }),
+
+      setItemHours: (instanceId, hoursPerDay) =>
+        set((s) => {
+          const owner = findRoomByInstanceId(s.property, instanceId);
+          if (!owner) return s;
+          const clean =
+            hoursPerDay === null || !Number.isFinite(hoursPerDay) || hoursPerDay <= 0
+              ? null
+              : Math.min(24, Math.round(hoursPerDay * 10) / 10);
+          return {
+            property: {
+              ...s.property,
+              rooms: s.property.rooms.map((r) =>
+                r.id === owner.id
+                  ? {
+                    ...r,
+                    placedItems: r.placedItems.map((i) => {
+                      if (i.instanceId !== instanceId) return i;
+                      const next: PlacedItem = { ...i };
+                      if (clean === null) delete next.hoursPerDay;
+                      else next.hoursPerDay = clean;
+                      return next;
+                    }),
+                  }
+                  : r,
+              ),
+            },
+          };
         }),
 
       // ---- site --------------------------------------------------------------
@@ -1427,7 +1546,11 @@ export function normaliseLevels(levels: unknown): Level[] | undefined {
   for (const l of levels) {
     if (!isLevelLike(l) || seen.has(l.id)) continue;
     seen.add(l.id);
-    out.push({ id: l.id, name: l.name.trim() || `Level ${l.index}`, index: l.index });
+    const clean: Level = { id: l.id, name: l.name.trim() || `Level ${l.index}`, index: l.index };
+    // Roof (2026-09-04): whitelist trap — carry the kind or the roof loads
+    // back as a plain storey with walls.
+    if (l.kind === 'roof' || l.id === ROOF_LEVEL_ID) clean.kind = 'roof';
+    out.push(clean);
   }
   if (out.length === 0) return undefined;
   if (!seen.has(GROUND_LEVEL_ID)) out.push(groundLevel());
