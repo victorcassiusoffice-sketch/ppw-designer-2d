@@ -9,6 +9,7 @@
 
 import catalogJson from './products.json';
 import { getApiProductFromCache } from './apiCatalogAdapter';
+import { demoProductById, demoProducts } from '../demo/demoCatalog';
 import type {
   Product,
   ProductCatalog,
@@ -22,11 +23,19 @@ export function getCatalog(): ProductCatalog {
   return catalog;
 }
 
+/**
+ * Every bundled product. While a merchant DEMO is active (`/designer?demo=…`,
+ * see `demo/demoCatalog.ts`) that merchant's range is prepended so it heads
+ * the catalog; otherwise this is exactly the seed.
+ */
 export function getAllProducts(): Product[] {
-  return catalog.products;
+  const demo = demoProducts();
+  return demo.length ? [...demo, ...catalog.products] : catalog.products;
 }
 
 export function getProductById(id: string): Product | undefined {
+  const demo = demoProductById(id);
+  if (demo) return demo;
   const bundled = catalog.products.find((p) => p.id === id);
   if (bundled) return bundled;
   return getApiProductFromCache(id);

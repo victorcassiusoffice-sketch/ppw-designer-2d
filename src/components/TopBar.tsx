@@ -83,6 +83,7 @@ import { performUndo, performRedo } from '../lib/undoIntent';
 // Polish (2026-08-29): "New plan" under More — PageTabs is hidden while there
 // is a single plan, so this is how a second plan gets started.
 import { createPage, switchToPage } from '../lib/pages';
+import { activeDemo, setActiveDemo } from '../demo/demoCatalog';
 import {
   DEFAULT_WALL_HEIGHT_M,
   MAX_WALL_HEIGHT_M,
@@ -455,6 +456,9 @@ export function TopBar({
   const removeSavedDesign = useDesignsStore((s) => s.remove);
 
   const pushToast = useToastStore((s) => s.push);
+  // Merchant demo pill (2026-09-05) — read at render; App activates the demo
+  // synchronously before this component ever mounts, and leaving reloads.
+  const demoPill = activeDemo();
 
   const cart = useCart();
   const activeRoomIsRect = isActiveRoomRectangle();
@@ -1530,6 +1534,36 @@ export function TopBar({
               <span className="ml-1 tabular-nums opacity-80 max-md:inline md:hidden lg:inline">· {drawnRoomCount}</span>
             </span>
           </button>
+
+          {/* MERCHANT DEMO pill (Courts Mammouth push, 2026-09-05). Shown only
+              while `/designer?demo=<slug>` is active in this tab: names whose
+              range is in the catalog, and the × leaves demo mode (the show
+              home page stays; only the catalog returns to the standard seed).
+              md+ only — the phone strip has no spare pixels and the page name
+              already carries the merchant. */}
+          {demoPill && (
+            <span
+              data-testid="demo-pill"
+              className="hidden h-10 shrink-0 items-center gap-1.5 rounded-xl border border-ppw-inkDeep bg-ppw-inkDeep pl-3 pr-1 text-[12px] font-semibold text-ppw-paper md:inline-flex"
+              title={`${demoPill.merchant}: their catalog is loaded in this tab. Close the tab or press × for the standard catalog.`}
+            >
+              <span className="truncate max-w-[160px]">{demoPill.merchant}</span>
+              <span className="opacity-70">· demo</span>
+              <button
+                type="button"
+                data-testid="demo-pill-exit"
+                onClick={() => {
+                  setActiveDemo(null);
+                  window.location.assign('/designer?demo=off');
+                }}
+                className="ml-1 inline-flex h-7 w-7 items-center justify-center rounded-lg hover:bg-white/15"
+                aria-label="Leave demo mode"
+                title="Leave demo mode"
+              >
+                ×
+              </button>
+            </span>
+          )}
         </div>
 
         {/* ---- md+: rail A — BUILD. shrink-0; the Box|Custom segment follows

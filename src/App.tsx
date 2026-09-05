@@ -84,6 +84,9 @@ import { ClearControls } from './components/ClearControls';
 import { isPaintEstimateActive } from './designer/paintEstimateFlag';
 import { activeLevelIdOf, isRoofLevel, levelsOf } from './designer/levels';
 import { useRoofSync } from './designer/useRoofSync';
+// Merchant demos (Courts Mammouth push, 2026-09-05): `/designer?demo=<slug>`
+// swaps the merchant's real range into the catalog and loads their show home.
+import { useDemoMode } from './demo/useDemoMode';
 // Babylon 3D viewer removed 2026-06-04 (P1-1): the lazy 3D path (6.46 MB raw /
 // 1.43 MB gzip) was never flipped past its soak (DEFAULT_ENGINE='konva'),
 // carried untested-in-prod surface, and is the single biggest simplification.
@@ -96,6 +99,9 @@ import { useRoofSync } from './designer/useRoofSync';
 // device most of them use. (Previous implementation in git history.)
 
 export default function App() {
+  // FIRST: a merchant demo must be active before any child computes its
+  // catalog (the hook activates synchronously in this render).
+  useDemoMode();
   useKeyboardShortcuts();
   useAutoSave();
   // Roof (2026-09-04): keep the roof slabs mirroring the storey beneath.
