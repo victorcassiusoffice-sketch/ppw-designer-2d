@@ -120,7 +120,7 @@ import { isRoofProduct } from '../designer/energy';
 import { roofAreaM2 } from '../designer/roof';
 import { energyDotColour, useEnergyReport } from '../designer/useEnergyReport';
 import { formatWh } from '../designer/solarCalc';
-import { runToFreeWalls, wallsOnLevel } from '../designer/freeWalls';
+import { freeWallLengthM, runToFreeWalls, wallsOnLevel } from '../designer/freeWalls';
 import { emitsLight, lightRadiusM, planSymbolOf } from '../designer/lighting';
 // Sims flooring (2026-08-29): tiles snap to their own lattice, edge to edge.
 import { snapToTileLattice, tileLatticeFor, usesTileLattice } from '../designer/flooringLattice';
@@ -271,6 +271,14 @@ interface WallPaintTarget {
  * Anything travelling further is a pan (the Stage stays draggable with the
  * tool armed) and must not commit a door on release.
  */
+/**
+ * One finger has to travel this far while the wall pen is armed before the
+ * gesture is read as a PAN rather than a tap (Vic 2026-09-05). Bigger than
+ * the tap slop below: a thumb wobbles more than a mouse, and planting a
+ * stray wall is worse than a pan that needs a moment to engage.
+ */
+const PEN_PAN_SLOP_PX = 10;
+
 const DOOR_TAP_SLOP_PX = 10;
 
 /**
@@ -415,6 +423,10 @@ export function RoomCanvas({
   // facade signature itself is untouched for every other call site.
   const removeItem = useDesignStore((s) => s.removeItem);
   const selectItem = useDesignStore((s) => s.selectItem);
+  // Wall selection (Vic 2026-09-05) — the Select tool can pick a free wall,
+  // read its length and delete it.
+  const selectedWallId = useDesignerUIStore((s) => s.selectedWallId);
+  const selectWall = useDesignerUIStore((s) => s.selectWall);
   const updateItem = useDesignStore((s) => s.updateItem);
 
   // Sims feature-finish — snap resolution (full 0.5 m / quarter 0.25 m).
@@ -1088,6 +1100,20 @@ export function RoomCanvas({
     });
   }
 
+  /**
+   * Wall pen gestures (Vic 2026-09-05). `drawTapSuppressRef` is raised by the
+   * touch handlers below the moment a gesture becomes a pan or a pinch, and
+   * RoomDrawLayer refuses to drop a vertex while it is up. Cleared at the
+   * START of the next single-finger gesture (not on read) because a touch
+   * reaches the Stage twice — Konva `tap` then the compatibility `click`.
+   */
+  const drawTapSuppressRef = useRef(false);
+  /** `drawMode` for the touch handlers, which must not re-attach per toggle. */
+  const drawModeRef = useRef(drawMode);
+  drawModeRef.current = drawMode;
+  /** One-finger pan while the pen is armed: where the finger started + the viewport then. */
+  const penPanRef = useRef<{ startX: number; startY: number; vx: number; vy: number; panning: boolean } | null>(null);
+
   // Mobile UX (fix/mobile-ux-v1): two-finger pinch zoom.
   const pinchRef = useRef<{
     active: boolean;
@@ -1112,6 +1138,23 @@ export function RoomCanvas({
     }
 
     function onTouchStart(e: TouchEvent) {
+      // A FRESH one-finger gesture: nothing vetoed yet, and while the wall
+      // pen is armed this finger may turn into a pan (Vic 2026-09-05 — the
+      // Stage is not draggable in draw mode, so without this the plan could
+      // not be moved at all and every attempt planted a vertex).
+      if (e.touches.length === 1) {
+        drawTapSuppressRef.current = false;
+        penPanRef.current = drawModeRef.current
+          ? {
+            startX: e.touches[0].clientX,
+            startY: e.touches[0].clientY,
+            vx: viewport.x,
+            vy: viewport.y,
+            panning: false,
+          }
+          : null;
+        return;
+      }
       if (e.touches.length !== 2) return;
       const stage = stageRef.current;
       if (!stage) return;
@@ -1139,29 +1182,59 @@ export function RoomCanvas({
       floorAnchorRef.current = null;
       // Same for the door tool: a pinch must never commit a door on lift.
       doorGestureRef.current = null;
+      // ...and for the wall pen: a pinch must never plant a vertex.
+      drawTapSuppressRef.current = true;
+      penPanRef.current = null;
       e.preventDefault();
     }
 
     function onTouchMove(e: TouchEvent) {
-      if (!pinchRef.current?.active || e.touches.length !== 2) return;
-      const { startDist, startScale, centerStage, centerWorld } = pinchRef.current;
-      const d = dist(e.touches[0], e.touches[1]);
-      if (startDist <= 0) return;
-      let newScale = startScale * (d / startDist);
-      newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
-      userMovedViewportRef.current = true;
-      setViewport({
-        x: centerStage.x - centerWorld.x * newScale,
-        y: centerStage.y - centerWorld.y * newScale,
-        scale: newScale,
-      });
-      e.preventDefault();
+      if (pinchRef.current?.active && e.touches.length === 2) {
+        const { startDist, startScale, centerWorld } = pinchRef.current;
+        const d = dist(e.touches[0], e.touches[1]);
+        if (startDist <= 0) return;
+        let newScale = startScale * (d / startDist);
+        newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+        // Track the LIVE midpoint, so two fingers pan as well as zoom. The
+        // old code froze the centre at gesture start, which meant a customer
+        // could zoom but never move the plan with two fingers.
+        const rectNow = container!.getBoundingClientRect();
+        const midNow = midpoint(e.touches[0], e.touches[1]);
+        const stageX = midNow.x - rectNow.left;
+        const stageY = midNow.y - rectNow.top;
+        userMovedViewportRef.current = true;
+        drawTapSuppressRef.current = true;
+        setViewport({
+          x: stageX - centerWorld.x * newScale,
+          y: stageY - centerWorld.y * newScale,
+          scale: newScale,
+        });
+        e.preventDefault();
+        return;
+      }
+      // One finger while the wall pen is armed: past the slop this is a PAN,
+      // and the lift must not drop a vertex. Under the slop it stays a tap.
+      const pan = penPanRef.current;
+      if (pan && e.touches.length === 1) {
+        const dx = e.touches[0].clientX - pan.startX;
+        const dy = e.touches[0].clientY - pan.startY;
+        if (!pan.panning && Math.hypot(dx, dy) < PEN_PAN_SLOP_PX) return;
+        pan.panning = true;
+        drawTapSuppressRef.current = true;
+        userMovedViewportRef.current = true;
+        setViewport((v) => ({ ...v, x: pan.vx + dx, y: pan.vy + dy }));
+        e.preventDefault();
+      }
     }
 
     function onTouchEnd(e: TouchEvent) {
       if (e.touches.length < 2 && pinchRef.current?.active) {
         pinchRef.current = null;
+        // Lifting one finger of a pinch leaves the other one down; it must
+        // not become a fresh tap that plants a vertex.
+        drawTapSuppressRef.current = true;
       }
+      if (e.touches.length === 0) penPanRef.current = null;
     }
 
     container.addEventListener('touchstart', onTouchStart, { passive: false });
@@ -2457,6 +2530,41 @@ export function RoomCanvas({
   // it automatically goes a bit more 3d — just to display the walls").
   // Active ONLY while a wall tool is on; every other tool sees the flat plan.
   const show25d = drawMode || wallDrawEnabled || wallPaintTool;
+  /**
+   * The Select tool is armed and nothing else owns the canvas: a tap on a
+   * free wall picks it (Vic 2026-09-05). The sledgehammer keeps its own
+   * one-tap delete; every other tool leaves walls unlistening as before.
+   */
+  const wallSelectArmed =
+    tool === 'hand' && !drawMode && !wallDrawEnabled && !pendingProductId && !measureTool;
+  /** The picked wall itself, or null — drives the on-canvas card below. */
+  const selectedWall = useMemo(
+    () => (selectedWallId ? freeWalls.find((w) => w.id === selectedWallId) ?? null : null),
+    [selectedWallId, freeWalls],
+  );
+  // A wall that is gone (deleted, undone, another storey) must not stay picked.
+  useEffect(() => {
+    if (selectedWallId && !selectedWall) selectWall(null);
+  }, [selectedWallId, selectedWall, selectWall]);
+  // Delete / Backspace removes the picked wall, the way it removes an item.
+  useEffect(() => {
+    if (!selectedWall) return;
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      if (e.key === 'Escape') {
+        selectWall(null);
+        return;
+      }
+      if (e.key !== 'Delete' && e.key !== 'Backspace') return;
+      e.preventDefault();
+      usePropertyStore.getState().removeFreeWall(selectedWall.id);
+      selectWall(null);
+      haptic('delete');
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectedWall, selectWall]);
   const wallFaces = useMemo(() => {
     if (!show25d) return [];
     const hM = propertyForPaint.wallHeightM ?? DEFAULT_WALL_HEIGHT_M;
@@ -3520,6 +3628,64 @@ export function RoomCanvas({
       {/* Remove tool (2026-08-31): a top-centre banner while the
           sledgehammer is armed, so it is obvious clicks now DELETE and there
           is a clear way out. Terracotta rim = destructive. */}
+      {/* PICKED WALL (Vic 2026-09-05) — the Select tool's answer for a wall:
+          what it is, how long it is, and a way to delete it. Deliberately the
+          same compact card the Floor / Door / Wall-paint tools use, sitting
+          in the same bottom band, so the phone learns one shape. */}
+      {selectedWall && (
+        <div
+          data-testid="wall-selected-card"
+          // Unlike the wall pen (which hides the Clear row while drawing), the
+          // Select tool leaves it on screen — so this card reserves the same
+          // 56 px band the Floor / Door / Wall-paint cards do, or it would
+          // land on top of "Products" / "Clear all". On a phone it is also
+          // anchored left with a 64 px right gutter rather than centred: it
+          // is one row tall, so a centred card would sit UNDER the round
+          // help launcher in the same band (the taller tool cards clear it).
+          className="pointer-events-auto fixed left-3 right-[64px] z-30 flex items-center gap-2 rounded-xl p-2 text-xs bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-toolbar-h,0px)_+_56px)] lg:left-1/2 lg:right-auto lg:w-[min(94vw,420px)] lg:-translate-x-1/2 lg:bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-dock-h,0px))]"
+          style={{
+            background: CHROME_BG,
+            border: `1px solid ${CHROME_RIM}`,
+            boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
+            color: CHROME_TEXT,
+          }}
+        >
+          <span
+            className="shrink-0 rounded-lg px-2 py-1 text-[11px] font-semibold uppercase leading-none tracking-[0.06em]"
+            style={{ background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT }}
+          >
+            Wall
+          </span>
+          <span className="min-w-0 flex-1 truncate text-[12px] font-semibold tabular-nums" data-testid="wall-selected-length">
+            {freeWallLengthM(selectedWall).toFixed(2)} m
+          </span>
+          <button
+            type="button"
+            data-testid="wall-selected-delete"
+            onClick={() => {
+              usePropertyStore.getState().removeFreeWall(selectedWall.id);
+              selectWall(null);
+              haptic('delete');
+              pushToast('Wall removed', 'info');
+            }}
+            className="inline-flex h-9 shrink-0 items-center rounded-lg border border-ppw-clay px-3 text-[12px] font-semibold text-ppw-charcoal transition-colors duration-[120ms] ease-out hover:bg-ppw-clay hover:text-white motion-reduce:transition-none"
+            title="Delete this wall (Del)"
+          >
+            Delete
+          </button>
+          <button
+            type="button"
+            data-testid="wall-selected-done"
+            onClick={() => selectWall(null)}
+            className="inline-flex h-9 shrink-0 items-center rounded-lg px-3 text-[12px] font-semibold"
+            style={{ background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT }}
+            title="Done (Esc)"
+          >
+            Done
+          </button>
+        </div>
+      )}
+
       {tool === 'sledgehammer' && !drawMode && !pendingProductId && (
         <div
           className="pointer-events-auto absolute left-1/2 top-3 z-20 flex w-[min(92vw,420px)] -translate-x-1/2 items-center justify-between gap-2 rounded-xl px-3 py-2 text-xs"
@@ -3668,6 +3834,7 @@ export function RoomCanvas({
           if (drawMode || floorTool) return;
           if (e.target === e.target.getStage() && e.evt.button === PAN_BTN) {
             selectItem(null);
+            selectWall(null);
           }
         }}
         onPointerDown={(e) => {
@@ -3861,6 +4028,7 @@ export function RoomCanvas({
             }
           }
           selectItem(null);
+          selectWall(null);
         }}
         onClick={(e) => {
           if (drawMode) return;
@@ -4263,8 +4431,36 @@ export function RoomCanvas({
             const pts = [w.a.x * pxPerMetre, w.a.y * pxPerMetre, w.b.x * pxPerMetre, w.b.y * pxPerMetre];
             const wallPx = (w.thicknessM || WALL_THICKNESS_M) * pxPerMetre;
             const demolish = tool === 'sledgehammer' && !drawMode && !pendingProductId;
+            // Vic 2026-09-05: "when I pressed select tool i could not select
+            // the walls to delete". A free wall is now pickable with the
+            // Select tool — tapping it shows its length and a Delete.
+            const pickable = wallSelectArmed;
+            const picked = selectedWallId === w.id;
+            const pickWall = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
+              e.cancelBubble = true;
+              if (demolish) {
+                usePropertyStore.getState().removeFreeWall(w.id);
+                selectWall(null);
+                haptic('delete');
+                return;
+              }
+              selectItem(null);
+              selectWall(w.id);
+              haptic('select');
+            };
             return (
               <Group key={`fw-${w.id}`} name="free-wall">
+                {picked && (
+                  <Line
+                    points={pts}
+                    name="free-wall-selected"
+                    stroke={SELECT_STROKE}
+                    strokeWidth={wallPx + 8}
+                    lineCap="round"
+                    opacity={0.5}
+                    listening={false}
+                  />
+                )}
                 <Line
                   points={pts}
                   stroke={WALL_INK}
@@ -4275,20 +4471,10 @@ export function RoomCanvas({
                   shadowOffsetX={WALL_SHADOW_OFFSET.x}
                   shadowOffsetY={WALL_SHADOW_OFFSET.y}
                   shadowOpacity={1}
-                  listening={demolish}
-                  hitStrokeWidth={Math.max(wallPx, 14)}
-                  onClick={(e) => {
-                    if (!demolish) return;
-                    e.cancelBubble = true;
-                    usePropertyStore.getState().removeFreeWall(w.id);
-                    haptic('delete');
-                  }}
-                  onTap={(e) => {
-                    if (!demolish) return;
-                    e.cancelBubble = true;
-                    usePropertyStore.getState().removeFreeWall(w.id);
-                    haptic('delete');
-                  }}
+                  listening={demolish || pickable}
+                  hitStrokeWidth={Math.max(wallPx, 22)}
+                  onClick={pickWall}
+                  onTap={pickWall}
                 />
                 <Line
                   points={pts}
@@ -4689,6 +4875,7 @@ export function RoomCanvas({
           onCommit={handleDrawCommit}
           onCommitWalls={handleDrawCommitWalls}
           onCancel={handleDrawCancel}
+          tapSuppressRef={drawTapSuppressRef}
         />
 
         {/* Legacy interior walls (wallStore). Normally EMPTY — App migrates

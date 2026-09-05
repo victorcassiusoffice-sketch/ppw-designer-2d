@@ -166,6 +166,14 @@ interface DesignerUIState {
    */
   energyPanelOpen: boolean;
   setEnergyPanelOpen: (open: boolean) => void;
+  /**
+   * Wall selection (Vic 2026-09-05: "when I pressed select tool i could not
+   * select the walls to delete"). The free wall the Select tool has picked,
+   * or null. Transient chrome — never persisted, cleared whenever the tool
+   * changes, so a reload never opens with a phantom selection.
+   */
+  selectedWallId: string | null;
+  selectWall: (id: string | null) => void;
 
   setInfoOpen: (open: boolean) => void;
   /** Swap precision ↔ lastPrecision (Ctrl+F). */
@@ -209,6 +217,8 @@ export const useDesignerUIStore = create<DesignerUIState>()(
       energyPanelOpen: false,
       setEnergyPanelOpen: (open) =>
         set((s) => (open ? { energyPanelOpen: true, tool: 'hand' } : s.energyPanelOpen ? { energyPanelOpen: false } : s)),
+      selectedWallId: null,
+      selectWall: (id) => set((s) => (s.selectedWallId === id ? s : { selectedWallId: id })),
       floorPreviewCount: 0,
 
       setInfoOpen: (open) => set({ infoOpen: open }),
@@ -233,6 +243,8 @@ export const useDesignerUIStore = create<DesignerUIState>()(
                 tool,
                 // A build tool takes the right edge; the Energy panel yields.
                 energyPanelOpen: false,
+                // ...and a picked wall belongs to the Select tool only.
+                selectedWallId: null,
                 doorDraft: {
                   ...s.doorDraft,
                   widthM:
@@ -241,7 +253,12 @@ export const useDesignerUIStore = create<DesignerUIState>()(
                       : DEFAULT_DOOR_WIDTH_M,
                 },
               }
-            : { tool, energyPanelOpen: tool === 'hand' ? s.energyPanelOpen : false },
+            : {
+              tool,
+              energyPanelOpen: tool === 'hand' ? s.energyPanelOpen : false,
+              // A different tool means the picked wall is no longer picked.
+              selectedWallId: tool === 'hand' ? s.selectedWallId : null,
+            },
         ),
       // Kind switch carries the KIND's default width with it (defect 8: the
       // Window chip used to keep the 0.838 door width) — unless the user has
@@ -272,7 +289,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         set((s) => ({ doorDraft: { ...s.doorDraft, flipFacing: !s.doorDraft.flipFacing } })),
       toggleDoorHand: () =>
         set((s) => ({ doorDraft: { ...s.doorDraft, flipHand: !s.doorDraft.flipHand } })),
-      resetTransient: () => set({ infoOpen: false, tool: 'hand' }),
+      resetTransient: () => set({ infoOpen: false, tool: 'hand', selectedWallId: null }),
     }),
     {
       name: DESIGNER_UI_KEY,

@@ -162,3 +162,45 @@ describe('designerUIStore', () => {
     expect(useDesignerUIStore.getState().doorDraft.widthM).toBe(0.762);
   });
 });
+
+/**
+ * Wall selection (Vic 2026-09-05: "when I pressed select tool i could not
+ * select the walls to delete"). The pick is transient chrome: it belongs to
+ * the Select tool and to this session only.
+ */
+describe('designerUIStore — selected wall', () => {
+  it('starts empty, sets and clears', () => {
+    expect(useDesignerUIStore.getState().selectedWallId).toBeNull();
+    useDesignerUIStore.getState().selectWall('w1');
+    expect(useDesignerUIStore.getState().selectedWallId).toBe('w1');
+    useDesignerUIStore.getState().selectWall(null);
+    expect(useDesignerUIStore.getState().selectedWallId).toBeNull();
+  });
+
+  it('re-selecting the same wall is a no-op (same state object)', () => {
+    useDesignerUIStore.getState().selectWall('w1');
+    const before = useDesignerUIStore.getState();
+    useDesignerUIStore.getState().selectWall('w1');
+    expect(useDesignerUIStore.getState()).toBe(before);
+  });
+
+  it('any tool other than Select drops the pick, and Select keeps it', () => {
+    useDesignerUIStore.getState().selectWall('w1');
+    useDesignerUIStore.getState().setTool('floor');
+    expect(useDesignerUIStore.getState().selectedWallId).toBeNull();
+
+    useDesignerUIStore.getState().setTool('hand');
+    useDesignerUIStore.getState().selectWall('w2');
+    useDesignerUIStore.getState().setTool('hand');
+    expect(useDesignerUIStore.getState().selectedWallId).toBe('w2');
+
+    useDesignerUIStore.getState().setTool('door');
+    expect(useDesignerUIStore.getState().selectedWallId).toBeNull();
+  });
+
+  it('resetTransient drops it', () => {
+    useDesignerUIStore.getState().selectWall('w1');
+    useDesignerUIStore.getState().resetTransient();
+    expect(useDesignerUIStore.getState().selectedWallId).toBeNull();
+  });
+});

@@ -528,3 +528,57 @@ already decoded. `objects-topdown.spec.ts` now asserts `naturalWidth > 0`
 
 Detail: `eco-solar-2026-09-04/` — `00-PLAN-AND-STATUS.md`, `01-MERCHANTS.md`,
 `02-ALGORITHM.md`, `03-FINDINGS.md` (decisions + what is open for Vic).
+
+---
+
+## Round 11 (2026-09-05) — the wall pen on a phone: four defects
+
+Vic, testing the pen on his phone: "I needed to zoom out and move over but the
+wall draw was still active and made me draw random walls · when I pressed
+select tool i could not select the walls to delete · Select toolbar should
+still be available on main screen rather than only burger menu · wall pen
+toolbar at the bottom has some space underneath, all toolbar should minimise
+space to maximise canvas."
+
+**Reproduced first** with real touch at 390 x 844 (raw CDP multi-touch —
+Playwright's `touchscreen` is single-point):
+
+| Symptom | Measured before |
+|---|---|
+| Pinch to zoom | HUD `0 pts` → `1 pts` — the pinch planted a wall point |
+| One-finger drag to move | `1 pts` → `2 pts` AND the viewport never moved |
+| Select a drawn wall | 1 wall before, 1 after, no selection UI |
+| Select on the phone strip | absent (menu only) |
+| Space under the pen card | 68 px of dead band |
+
+**Root causes:** the pen commits on Konva `tap`/`click` with no gesture guard
+(Floor / Door / Wall-paint each drop their gesture when a second finger lands;
+the pen never did); the Stage is not draggable in draw mode, so one finger
+panned nothing and the release planted a point instead; free walls render
+`listening={demolish}`, so they are only hit-testable with the sledgehammer;
+and the pen card reserved 56 px for a Clear row that `App` hides while drawing.
+
+**Fixed:** a single gesture contract for the pen (a pan or pinch raises a veto
+that `RoomDrawLayer` honours, cleared at the start of the next gesture — never
+on read, because a touch reaches the Stage twice); one finger pans past a
+10 px slop, two fingers now pan as well as zoom (the pinch centre used to be
+frozen at touch-start); mouse drags over 12 px are not vertices either; free
+walls are pickable with Select and show a card with their length, Delete and
+Done (Del/Esc/empty-tap all behave); Select added to the phone strip; the pen
+card sits on the toolbar with tighter padding.
+
+**Measured after:** pinch 0 points (still zooms 0.62 → 0.30), one-finger drag
+0 points and the view moves, three taps still give three points, gap under the
+card **68 px → 8 px**, Select picks a wall reading **3.50 m** and Delete takes
+2 walls to 1, 0 console errors.
+
+**Two regressions my own fix introduced, both caught and fixed before commit:**
+every tap after the first was swallowed (the mouse-slop test was comparing a
+tap against the compat `mousedown` of the PREVIOUS tap — caught by the repro,
+3 taps → 1 point), and the new wall card landed on top of "Products / Clear
+all" and the help launcher (caught by looking at the screenshot).
+
+**Gate:** tsc 0 · eslint 0 on touched files · vitest **2361/2361** · build
+clean · Playwright **171 passed / 0 failed / 38 env-gated skips** incl. the new
+`wallpen-mobile.spec.ts` (6/6). Detail + before/after captures:
+`wallpen-mobile-2026-09-05/`.

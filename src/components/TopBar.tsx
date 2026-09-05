@@ -1684,6 +1684,22 @@ export function TopBar({
           </button>
         </div>
 
+        {/* Select on the PHONE STRIP (Vic 2026-09-05: "Select toolbar should
+            still be available on main screen rather than only burger menu").
+            Icon-only so the strip still fits at 390 px; the md+ bar has its
+            own Select in the Build group. */}
+        <button
+          type="button"
+          onClick={handleSelect}
+          data-testid="select-tool-toggle-phone"
+          className={`${BTN} ${selectActive ? BTN_ON : BTN_REST} h-11 w-11 shrink-0 px-0 md:hidden`}
+          aria-pressed={selectActive}
+          aria-label="Select"
+          title="Select — pick an object or a wall to move or delete it"
+        >
+          <Icon name="cursor" />
+        </button>
+
         {/* Phone hamburger → full-height sheet. */}
         <button
           ref={menuBtnRef}

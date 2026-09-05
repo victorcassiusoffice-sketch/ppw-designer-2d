@@ -126,7 +126,23 @@ export interface RoomDrawLayerProps {
    */
   onCommitWalls?: (vertices: Polygon) => void;
   onCancel: () => void;
+  /**
+   * Gesture veto (Vic 2026-09-05: "I needed to zoom out and move over but the
+   * wall draw was still active and made me draw random walls").
+   *
+   * RoomCanvas owns the touch handlers that pinch-zoom and one-finger-pan the
+   * stage; when a gesture turns out to be a pan or a pinch it raises this
+   * flag, and the vertex commit below refuses. The flag is CLEARED by
+   * RoomCanvas at the start of the next single-finger gesture, never here: a
+   * touch reaches the Stage twice (Konva `tap`, then the browser's
+   * compatibility `click`), so a consume-on-read would let the second event
+   * through and plant the very vertex the pan was trying to avoid.
+   */
+  tapSuppressRef?: React.MutableRefObject<boolean>;
 }
+
+/** A mouse press that travelled further than this is a drag, not a vertex. */
+const DRAW_TAP_SLOP_PX = 12;
 
 export function RoomDrawLayer({
   enabled,
@@ -142,6 +158,7 @@ export function RoomDrawLayer({
   onCommit,
   onCommitWalls,
   onCancel,
+  tapSuppressRef,
 }: RoomDrawLayerProps) {
   // Units brief (2026-08-28, D8) - the measurement chips are RENDER output,
   // so unlike the pointer handlers they subscribe reactively: picking a new
@@ -163,6 +180,8 @@ export function RoomDrawLayer({
   setHoverRef.current = setHover;
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
+  const tapSuppressRefRef = useRef(tapSuppressRef);
+  tapSuppressRefRef.current = tapSuppressRef;
 
   useEffect(() => {
     if (!enabled) {
@@ -272,10 +291,43 @@ export function RoomDrawLayer({
       setHoverRef.current({ ...r.point, snap: r.snap, axis: r.axis });
     }
 
-    function handleClickOrTap(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+    /** Where the current mouse press started, for the drag-is-not-a-vertex test. */
+    let mouseDownAt: { x: number; y: number } | null = null;
+
+    function handleMouseDown(e: Konva.KonvaEventObject<MouseEvent>) {
+      const c = readClient(e.evt as MouseEvent);
+      // A finger also fires a COMPATIBILITY mousedown a few ms after its
+      // tap. Recording that would leave a stale press position behind, and
+      // the NEXT tap (a fresh touch, tens of px away) would then be read as
+      // a drag and refused — every tap after the first would be swallowed.
+      if (c && isCompatAfterTap(c)) return;
+      mouseDownAt = c ? { x: c.x, y: c.y } : null;
+    }
+
+    function handleClickOrTap(
+      e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
+      fromTap = false,
+    ) {
       const c = readClient(e.evt as MouseEvent | TouchEvent);
       if (!c) {
         console.warn(DBG, 'click: no client coords');
+        return;
+      }
+      // The gesture was a pinch or a pan (RoomCanvas raised the veto) — the
+      // user was moving the view, not dropping a point.
+      if (tapSuppressRefRef.current?.current) {
+        console.log(DBG, 'tap ignored: view gesture (pan/pinch)');
+        return;
+      }
+      // Mouse only: a press that travelled is a drag, not a vertex. A touch
+      // tap is already guarded by the pan/pinch veto above, and it must never
+      // be measured against a compat mousedown.
+      const down = fromTap ? null : mouseDownAt;
+      mouseDownAt = null;
+      if (down && Math.hypot(c.x - down.x, c.y - down.y) > DRAW_TAP_SLOP_PX) {
+        console.log(DBG, 'click ignored: pointer travelled', {
+          dist: Math.round(Math.hypot(c.x - down.x, c.y - down.y)),
+        });
         return;
       }
       const p = resolveDrawPoint({ clientX: c.x, clientY: c.y }, shiftFrom(e)).point;
@@ -326,10 +378,21 @@ export function RoomDrawLayer({
     const TAP_CLICK_DEDUPE_PX = 16;
     let lastTap: { t: number; x: number; y: number } | null = null;
 
+    /** True when this mouse event is the compat echo of the tap just handled. */
+    function isCompatAfterTap(c: { x: number; y: number }): boolean {
+      if (!lastTap) return false;
+      return (
+        performance.now() - lastTap.t < TAP_CLICK_DEDUPE_MS
+        && Math.hypot(c.x - lastTap.x, c.y - lastTap.y) < TAP_CLICK_DEDUPE_PX
+      );
+    }
+
     function handleTap(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
       const c = readClient(e.evt as MouseEvent | TouchEvent);
       if (c) lastTap = { t: performance.now(), x: c.x, y: c.y };
-      handleClickOrTap(e);
+      // A finger never leaves a mouse press behind.
+      mouseDownAt = null;
+      handleClickOrTap(e, true);
     }
 
     function handleClick(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
@@ -347,6 +410,7 @@ export function RoomDrawLayer({
 
     stage.on('mousemove.roomdraw', handleMove);
     stage.on('touchmove.roomdraw', handleMove);
+    stage.on('mousedown.roomdraw', handleMouseDown);
     stage.on('click.roomdraw', handleClick);
     stage.on('tap.roomdraw', handleTap);
 
@@ -354,6 +418,7 @@ export function RoomDrawLayer({
       console.log(DBG, 'layer effect: cleanup Stage handlers');
       stage.off('mousemove.roomdraw');
       stage.off('touchmove.roomdraw');
+      stage.off('mousedown.roomdraw');
       stage.off('click.roomdraw');
       stage.off('tap.roomdraw');
     };
@@ -987,8 +1052,8 @@ export function RoomDrawHUD({
       // Polish (2026-08-29): below sm the card is COMPACT — three rows
       // (badge + readout · stepper + length · actions), 8 px padding, 6 px
       // gaps — so the phone keeps its drawable canvas.
-      className={`pointer-events-auto fixed left-1/2 z-30 flex w-[min(94vw,600px)] -translate-x-1/2 flex-col rounded-xl text-xs bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-toolbar-h,0px)_+_56px)] lg:bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-dock-h,0px))] ${
-        phone ? 'gap-1.5 p-2' : 'gap-2 p-3'
+      className={`pointer-events-auto fixed left-1/2 z-30 flex w-[min(94vw,600px)] -translate-x-1/2 flex-col rounded-xl text-xs bottom-[calc(max(0.5rem,env(safe-area-inset-bottom))_+_var(--sims-toolbar-h,0px))] lg:bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-dock-h,0px))] ${
+        phone ? 'gap-1 p-1.5' : 'gap-2 p-3'
       }`}
       style={{
         background: CHROME_BG,
