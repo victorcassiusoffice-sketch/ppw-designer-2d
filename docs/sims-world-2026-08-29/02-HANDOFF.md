@@ -582,3 +582,11 @@ all" and the help launcher (caught by looking at the screenshot).
 clean · Playwright **171 passed / 0 failed / 38 env-gated skips** incl. the new
 `wallpen-mobile.spec.ts` (6/6). Detail + before/after captures:
 `wallpen-mobile-2026-09-05/`.
+
+**Deployed proof** — preview healthcheck `bfa3fad` (4th poll), then the same
+touch repro run AGAINST the preview (the dev geom bridge does not ship, so the
+wall midpoint is mapped through the live Konva transform): pinch 0 points,
+one-finger drag 0 points with the view moving (x 120 → 232), three taps → 3
+points, gap under the card 8 px, Select on the phone strip, the card reads
+3.50 m and is clear of the help launcher, Delete takes 2 walls to 1, **0
+console errors**. Captures: `wallpen-mobile-2026-09-05/preview/`.

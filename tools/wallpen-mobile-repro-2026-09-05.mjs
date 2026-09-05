@@ -176,8 +176,17 @@ try {
     const wall = (p?.walls ?? [])[0];
     if (!wall) return null;
     const mid = { x: (wall.a.x + wall.b.x) / 2, y: (wall.a.y + wall.b.y) / 2 };
-    const pt = window.__ppwGeom?.worldToScreen(mid.x, mid.y);
-    return pt ? { id: wall.id, ...pt } : null;
+    // Dev server: the geom bridge. Deployed preview: it does not ship, so map
+    // through the live Konva stage transform instead (pxPerMetre is 100 in
+    // the seeded envelope).
+    const viaBridge = window.__ppwGeom?.worldToScreen(mid.x, mid.y);
+    if (viaBridge) return { id: wall.id, ...viaBridge, via: 'bridge' };
+    const K = window.Konva;
+    const st = K?.stages?.find((x) => x.container().isConnected);
+    if (!st) return null;
+    const r = st.container().getBoundingClientRect();
+    const pt = st.getAbsoluteTransform().point({ x: mid.x * 100, y: mid.y * 100 });
+    return { id: wall.id, x: r.left + pt.x, y: r.top + pt.y, via: 'konva' };
   });
   facts.C_firstWallMidpoint = w;
   if (w) {
