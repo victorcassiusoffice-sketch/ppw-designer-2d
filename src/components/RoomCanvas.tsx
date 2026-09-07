@@ -114,6 +114,7 @@ import {
   levelsOf,
   roomsOnLevel,
 } from '../designer/levels';
+import { floorTargetRoom } from '../designer/floorTarget';
 // Roof + energy (eco / solar 2026-09-04): PV panels are roof-placed, snap on
 // their own lattice like tiles, and arming one takes the customer to the roof.
 import { isRoofProduct } from '../designer/energy';
@@ -2502,10 +2503,13 @@ export function RoomCanvas({
   /** A roll forces Room scope (there is no lattice to lay tile by tile). */
   const floorScope: 'tile' | 'room' = floorMatIsRoll ? 'room' : floorDraft.scope;
   /** The drawn, indoor room the tool works on — the active room or nothing. */
-  const floorActiveRoom = useMemo(() => {
-    const r = allRooms.find((x) => x.id === activeRoomId);
-    return r && isDrawnPolygon(r.polygon) && !isOutdoorRoom(r) ? r : null;
-  }, [allRooms, activeRoomId]);
+  // Same rule as the desktop panel (`designer/floorTarget.ts`): the active
+  // indoor room, else the last indoor room — never Outdoors (2026-09-07).
+  const lastIndoorRoomId = useDesignerUIStore((s) => s.lastIndoorRoomId);
+  const floorActiveRoom = useMemo(
+    () => floorTargetRoom(allRooms, activeRoomId, lastIndoorRoomId),
+    [allRooms, activeRoomId, lastIndoorRoomId],
+  );
   /** Live "n tiles · £x" for the active room — the cart's own derivation. */
   const floorHudLive = useMemo(() => {
     if (!floorActiveRoom) return null;

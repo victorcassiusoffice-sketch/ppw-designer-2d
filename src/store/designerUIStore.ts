@@ -173,6 +173,14 @@ interface DesignerUIState {
    * changes, so a reload never opens with a phantom selection.
    */
   selectedWallId: string | null;
+  /**
+   * The drawn INDOOR room the customer was in most recently (2026-09-07).
+   * Whole-room actions (Floor "Room", Wall paint "Room") fall back to it
+   * when focus has moved to Outdoors — see `designer/floorTarget.ts`.
+   * Transient: App notes it as focus moves; never persisted.
+   */
+  lastIndoorRoomId: string | null;
+  noteIndoorRoom: (id: string) => void;
   selectWall: (id: string | null) => void;
 
   setInfoOpen: (open: boolean) => void;
@@ -219,6 +227,8 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         set((s) => (open ? { energyPanelOpen: true, tool: 'hand' } : s.energyPanelOpen ? { energyPanelOpen: false } : s)),
       selectedWallId: null,
       selectWall: (id) => set((s) => (s.selectedWallId === id ? s : { selectedWallId: id })),
+      lastIndoorRoomId: null,
+      noteIndoorRoom: (id) => set((s) => (s.lastIndoorRoomId === id ? s : { lastIndoorRoomId: id })),
       floorPreviewCount: 0,
 
       setInfoOpen: (open) => set({ infoOpen: open }),

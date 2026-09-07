@@ -74,6 +74,7 @@ import { useFloorZoneStore } from './store/floorZoneStore';
 // mode no longer destroys anything, so there is nothing here to clear.)
 import { useDrawProgressStore } from './store/drawProgressStore';
 import { useToastStore } from './store/toastStore';
+import { useDesignerUIStore } from './store/designerUIStore';
 import { unstackLegacyRooms } from './designer/roomLayout';
 // Sims-Parity Gaming Layer 1 (V4 default-ON 2026-05-18) — additive overlays
 // mounted on top of the existing Konva render-core. Konva stable-lock 26c144c
@@ -82,7 +83,8 @@ import { GamingLayer1Surfaces } from './designer/GamingLayer1Surfaces';
 import { RoomEstimatePanel } from './components/RoomEstimatePanel';
 import { ClearControls } from './components/ClearControls';
 import { isPaintEstimateActive } from './designer/paintEstimateFlag';
-import { activeLevelIdOf, isRoofLevel, levelsOf } from './designer/levels';
+import { activeLevelIdOf, isOutdoorRoom, isRoofLevel, levelsOf } from './designer/levels';
+import { isDrawnPolygon } from './designer/roomLayout';
 import { useRoofSync } from './designer/useRoofSync';
 // Merchant demos (Courts Mammouth push, 2026-09-05): `/designer?demo=<slug>`
 // swaps the merchant's real range into the catalog and loads their show home.
@@ -106,6 +108,16 @@ export default function App() {
   useAutoSave();
   // Roof (2026-09-04): keep the roof slabs mirroring the storey beneath.
   useRoofSync();
+  // Verify pass (2026-09-07): remember the indoor room the customer was in
+  // last, so Floor / Wall paint "Room" have a target when focus is Outdoors;
+  // and never show the first-run coach over a room that is already started.
+  const activeRoomNow = usePropertyStore((s) => s.property.rooms.find((r) => r.id === s.property.activeRoomId));
+  const noteIndoorRoom = useDesignerUIStore((s) => s.noteIndoorRoom);
+  useEffect(() => {
+    if (activeRoomNow && isDrawnPolygon(activeRoomNow.polygon) && !isOutdoorRoom(activeRoomNow)) noteIndoorRoom(activeRoomNow.id);
+  }, [activeRoomNow, noteIndoorRoom]);
+  const roomStarted =
+    !!activeRoomNow && ((activeRoomNow.polygon?.length ?? 0) >= 3 || (activeRoomNow.placedItems?.length ?? 0) > 0);
   // Tweak 07 / Phase A.0 — install undo subscriptions once. The hook
   // returns its own teardown, but App is mounted once at the root so we
   // don't bother re-running the effect (idempotent inside the store).
@@ -338,15 +350,18 @@ export default function App() {
           polish surfaces (StatusCard / ModeStrip / Help). Renders null when
           ?ui=classic is set. */}
       <GamingLayer1Surfaces />
-      {/* OMS Wave 3.5 — 3-step coach mark, localStorage dismissal. */}
-      <CoachMark
+      {/* OMS Wave 3.5 — 3-step coach mark, localStorage dismissal.
+          Verify pass (2026-09-07): never over a room that is already drawn
+          or furnished — a customer opening a saved plan on a new device was
+          getting "STEP 1 OF 3 — draw your walls" on top of their own room. */}
+      {!roomStarted && <CoachMark
         flagKey="ppw_designer_coach_v1"
         steps={[
           { title: 'Draw your walls', body: 'Tap Walls (or Box | Custom for a shape), then tap to drop wall points. Close the shape for a room, or Done to leave the walls open. Change the unit mid-draw with − / +. Add a Door, lay the Floor, or Measure a wall from the same bar.' },
           { title: 'Furnish inside and out', body: 'Drag products from the dock onto any floor — inside a room or out in the garden. Items sit flush to walls and tuck into corners. Floor lays the tiles you buy: pick a material, then click a tile, drag an area, or Room to fill the room (Shift fills, Ctrl erases).' },
           { title: 'Storeys, plot, quote', body: 'Add levels with Storeys, lock the plot with Plot, then Request quote to send the layout to the PPW team. New, Save as… and Load live under More.' },
         ]}
-      />
+      />}
       {/* V-RENDER-3 (2026-05-27) — unobtrusive build-stamp pinned
           bottom-left so Vic can confirm a fresh bundle landed on his
           iPhone after the index.html no-cache header change. Short commit

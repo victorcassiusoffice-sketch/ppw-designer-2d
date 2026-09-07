@@ -63,6 +63,7 @@ import {
 } from '../store/designerUIStore';
 import { useDrawProgressStore } from '../store/drawProgressStore';
 import { isDrawnPolygon } from '../designer/roomLayout';
+import { floorTargetRoom } from '../designer/floorTarget';
 // Sims world (2026-08-29): storeys + land plot live on the property.
 import {
   activeLevelIdOf,
@@ -734,8 +735,10 @@ export function TopBar({
   const activeRoom = property.rooms.find((r) => r.id === property.activeRoomId);
   // The Floor tool works on a DRAWN, indoor room. The blank seed room and the
   // Outdoors container are not floors a customer buys tiles for.
-  const floorRoom =
-    activeRoom && isDrawnPolygon(activeRoom.polygon) && !isOutdoorRoom(activeRoom) ? activeRoom : null;
+  // The room a whole-room action acts on: the active indoor room, else the
+  // indoor room the customer was in last — never Outdoors (2026-09-07).
+  const lastIndoorRoomId = useDesignerUIStore((s) => s.lastIndoorRoomId);
+  const floorRoom = floorTargetRoom(property.rooms, activeRoom?.id, lastIndoorRoomId);
   const floorRoomHasFloor =
     !!floorRoom && ((floorRoom.floorTiles?.length ?? 0) > 0 || !!floorRoom.floorFinish);
   const floorMaterial: FloorMaterial | undefined = findFloorMaterialById(floorDraft.materialId);
