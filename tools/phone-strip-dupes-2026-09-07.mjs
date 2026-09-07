@@ -27,6 +27,10 @@ const report = await page.evaluate(() => {
   const dupNames = [...new Set(names.filter((n, i) => names.indexOf(n) !== i))];
   return { tiles: tiles.length, distinctNames: new Set(names).size, dupNames: dupNames.slice(0, 20), ids: tiles.map((t) => t.getAttribute('data-product-id')).slice(0, 40) };
 });
+// The duplicates sit AFTER the 14 API rows, off-screen to the right: scroll
+// the strip to its end so the frame shows the tail where they appeared.
+await page.evaluate(() => { const s = document.querySelector('[data-testid="sims-thumb-strip"]'); if (s) s.scrollLeft = s.scrollWidth; });
+await page.waitForTimeout(400);
 await page.screenshot({ path: out, fullPage: false });
 const health = await page.evaluate(async () => { try { const r = await fetch('/api/healthcheck?cb=' + Math.random()); return await r.json(); } catch { return null; } });
 console.log(JSON.stringify({ base, commit: health?.commit?.slice(0, 7) ?? null, env: health?.env ?? null, ...report, pageErrors: errors }, null, 1));
