@@ -36,7 +36,7 @@
  * from a bottom-sheet to the canvas on touch devices).
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { PageTabs } from './components/PageTabs';
 import { TopBar } from './components/TopBar';
 import { CoachMark } from './components/uxKit';
@@ -240,6 +240,33 @@ export default function App() {
     setDrawMode(true);
   }, [continueAfterCommit, drawMode, setDrawMode]);
 
+  /**
+   * STRAIGHT TO DRAW (Vic 2026-09-08: "don't give the option at the beginning
+   * to select draw or the sample room, just straight to draw").
+   *
+   * A blank plan opens with the wall pen ARMED, so the customer's first click
+   * lands a wall point. The old centred card that made them choose between
+   * "Draw walls" and "Quick 5 x 4 m room" is gone; the 5 x 4 m shortcut moved
+   * into the pen's own HUD, where it costs nothing to ignore.
+   *
+   * The rule is a TRANSITION, not a condition: arm on the first paint of a
+   * blank plan, and again when a drawn plan is cleared back to blank. Arming
+   * on the condition alone would re-arm the moment the customer stood the pen
+   * down on an empty canvas — a pen you cannot put away. A demo or a saved
+   * plan already has rooms, so neither is touched.
+   */
+  const hasDrawnRoom = usePropertyStore((s) => s.property.rooms.some((r) => isDrawnPolygon(r.polygon)));
+  const hadDrawnRoomRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    const previously = hadDrawnRoomRef.current;
+    hadDrawnRoomRef.current = hasDrawnRoom;
+    if (hasDrawnRoom || drawMode) return;
+    if (previously === null || previously === true) setDrawMode(true);
+    // `drawMode` is read, not tracked: re-running when the pen closes is
+    // exactly the loop this guard exists to prevent.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasDrawnRoom, setDrawMode]);
+
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [roomsMenuOpen, setRoomsMenuOpen] = useState(false);
   const [pendingProductId, setPendingProductId] = useState<string | null>(null);
@@ -353,8 +380,13 @@ export default function App() {
       {/* OMS Wave 3.5 — 3-step coach mark, localStorage dismissal.
           Verify pass (2026-09-07): never over a room that is already drawn
           or furnished — a customer opening a saved plan on a new device was
-          getting "STEP 1 OF 3 — draw your walls" on top of their own room. */}
-      {!roomStarted && <CoachMark
+          getting "STEP 1 OF 3 — draw your walls" on top of their own room.
+          Straight to draw (Vic 2026-09-08): it no longer opens by itself at
+          all. On a blank plan the pen is now armed and its HUD says the one
+          next thing to do, so a modal on top of the canvas was a second
+          gate in front of the first click. The same three cards are still
+          one tap away under "?" (HelpOverlay), which also lists the keys. */}
+      {false && !roomStarted && <CoachMark
         flagKey="ppw_designer_coach_v1"
         steps={[
           { title: 'Draw your walls', body: 'Tap Walls (or Box | Custom for a shape), then tap to drop wall points. Close the shape for a room, or Done to leave the walls open. Change the unit mid-draw with − / +. Add a Door, lay the Floor, or Measure a wall from the same bar.' },

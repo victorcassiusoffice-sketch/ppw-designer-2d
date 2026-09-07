@@ -338,6 +338,13 @@ test.describe('(D) clear-all always enabled', () => {
     REC.D_seededPolygonLen = seeded?.rooms[0].polygon.length ?? -1;
     expect(seeded?.rooms[0].polygon.length).toBe(0);
 
+    // Straight-to-draw (Vic 2026-09-08): a blank plan opens with the wall pen
+    // armed, and the Clear pills stand down for the pen's HUD (they share the
+    // bottom of the phone). Esc puts an untouched pen away — the gate this
+    // test guards is that Clear all is never DISABLED on a blank room, which
+    // is what it still asserts below.
+    await page.keyboard.press('Escape');
+
     const clearAll = page.getByTestId('clear-all-button');
     await expect(clearAll).toBeVisible();
     const disabled = await clearAll.isDisabled();
@@ -354,6 +361,8 @@ test.describe('(D) clear-all always enabled', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await seedSimsProperty(page, blankRoomFixture());
     await openDesigner(page);
+    // Same as the 1366 case: put the auto-armed pen away first (2026-09-08).
+    await page.keyboard.press('Escape');
     const clearAll = page.getByTestId('clear-all-button');
     await expect(clearAll).toBeVisible();
     expect(await clearAll.isDisabled()).toBe(false);

@@ -7,7 +7,7 @@
  * guard, so mid-draw it did nothing useful while the keyboard worked.
  */
 import { test, expect } from '@playwright/test';
-import { seedCoachFlagOnly, canvasOrigin, drawVertexCount, PX_PER_M } from './multiroom-helpers';
+import { seedCoachFlagOnly, canvasOrigin, drawVertexCount, enterWallPen, PX_PER_M } from './multiroom-helpers';
 
 test.use({ viewport: { width: 1600, height: 900 } });
 
@@ -21,8 +21,9 @@ test('the undo BUTTON steps back one vertex mid-draw, like Ctrl+Z', async ({ pag
   await page.goto('/designer');
   await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
 
-  // Enter draw mode from the blank-canvas prompt.
-  await page.locator('[data-testid="start-draw-room"]').click();
+  // The pen is already in hand on a blank plan (2026-09-08); ask for it only
+  // if it is not.
+  await enterWallPen(page);
 
   const o = await canvasOrigin(page);
   const at = (xM: number, yM: number) => ({ x: o.x + xM * PX_PER_M, y: o.y + yM * PX_PER_M });

@@ -88,6 +88,10 @@ test.describe('Mobile Sims toolbar', () => {
 
   test('M.S.3 — minimize chevron collapses the thumbnail strip', async ({ page }) => {
     await toolbarOrSkip(page);
+    // A blank plan opens with the wall pen armed (2026-09-08) and the strip
+    // auto-folds for it. Lay the starter room — which puts the pen away —
+    // so this spec pins what it was written to pin: the CHEVRON.
+    await page.locator('[data-testid="start-quick-rectangle"]').click();
     await expect(page.locator('[data-testid="sims-thumb-strip"]')).toBeVisible();
     const minBtn = page.locator('[data-testid="sims-toolbar-minimize"]');
     await expect(minBtn).toHaveAttribute('aria-expanded', 'true');
@@ -98,6 +102,8 @@ test.describe('Mobile Sims toolbar', () => {
 
   test('M.S.4 — Cancel in the popup closes without placing', async ({ page }) => {
     await toolbarOrSkip(page);
+    // Same as M.S.3: put the auto-armed pen away first (2026-09-08).
+    await page.locator('[data-testid="start-quick-rectangle"]').click();
     const placedBefore = Number((await page.locator('[data-testid="items-placed"]').first().textContent()) ?? '0');
     await page.locator('[data-testid="sims-thumb"]').first().click();
     const popup = page.locator('[data-testid="mobile-product-popup"]');

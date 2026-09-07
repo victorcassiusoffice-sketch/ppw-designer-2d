@@ -120,6 +120,26 @@ export function dockCard(page: Page, id: string, name: string): Locator {
     .first();
 }
 
+/**
+ * Put the wall pen in hand, wherever the app left it.
+ *
+ * Straight-to-draw (Vic 2026-09-08): a BLANK plan now opens with the pen
+ * already armed, so the old "click the start card" line would time out. A
+ * seeded plan still opens in Select, so the pen has to be asked for. This
+ * covers both without either spec caring which.
+ */
+export async function enterWallPen(page: Page): Promise<void> {
+  const hud = page.locator('[data-testid="room-draw-hud"]');
+  if (await hud.isVisible().catch(() => false)) return;
+  const start = page.locator('[data-testid="start-draw-room"]');
+  if (await start.isVisible().catch(() => false)) {
+    await start.click();
+  } else {
+    await page.locator('[data-testid="room-draw-toggle"]').click();
+  }
+  await hud.waitFor({ state: 'visible', timeout: 10_000 });
+}
+
 /** Blank canvas — coach flag only, NO property seed. */
 export async function seedCoachFlagOnly(page: Page): Promise<void> {
   await page.addInitScript(() => {

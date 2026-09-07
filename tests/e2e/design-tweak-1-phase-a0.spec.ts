@@ -52,7 +52,12 @@ test.describe('Design Tweak 1 — Phase A.0 (Tweak 07 Undo foundation)', () => {
   test('UNDO button is present in the toolbar (criterion a)', async ({ page }) => {
     const undoBtn = page.getByRole('button', { name: /Undo \(Ctrl\+Z\)/i });
     await expect(undoBtn).toBeVisible();
-    // Initially disabled because past is empty.
+    // Straight-to-draw (Vic 2026-09-08): a blank plan opens with the wall pen
+    // ARMED, and arming it opens a draw transaction whose entry frame is one
+    // real history step (it is what a later Ctrl+Z returns to). Stand the pen
+    // down first — that aborts the transaction and pops the frame — then the
+    // "past is empty" state this criterion is about is the one on screen.
+    await page.locator('[data-testid="select-tool-toggle"]').click();
     await expect(undoBtn).toBeDisabled();
   });
 

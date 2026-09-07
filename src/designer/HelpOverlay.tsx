@@ -195,13 +195,20 @@ export function HelpOverlay(props: HelpOverlayProps): JSX.Element | null {
  * Polish (2026-08-29): while an item is selected on md+ the launcher stays
  * MOUNTED and steps LEFT of the 20 rem DetailsPanel (`right: 20rem + 1rem`)
  * so it never covers the panel; below md the selection sheet owns the bottom
- * of the phone, so there it still unmounts. Hidden while the pen is open.
+ * of the phone, so there it still unmounts.
+ *
+ * Straight-to-draw (Vic 2026-09-08): the launcher used to unmount whenever
+ * the pen was open, which was fine while drawing was something you chose. A
+ * blank plan now OPENS with the pen in hand, so that rule hid the only way
+ * into the help — and the three onboarding cards moved in here when the
+ * auto-opening coach was retired. It now folds only below md, where the
+ * pen's HUD really does own the bottom of the screen.
  */
 export function HelpLauncherIcon({ onOpen }: { onOpen: () => void }): JSX.Element | null {
   const penOpen = useDrawProgressStore((s) => s.enabled);
   const itemSelected = useDesignStore((s) => s.selectedInstanceId !== null);
   const belowMd = useBelowMd();
-  if (penOpen || (itemSelected && belowMd)) return null;
+  if (belowMd && (penOpen || itemSelected)) return null;
   const besidePanel = itemSelected && !belowMd;
   return (
     <button

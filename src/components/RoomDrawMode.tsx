@@ -788,6 +788,13 @@ export interface RoomDrawHUDProps {
   cardRef?: React.MutableRefObject<HTMLDivElement | null>;
   /** Live card height (0 when closed) — the CSS var `--draw-hud-h` as a callback. */
   onHeightChange?: (heightPx: number) => void;
+  /**
+   * Lay a 5 x 4 m room instead of drawing one (Vic 2026-09-08). The old
+   * blocking start card ("Draw walls" | "Quick 5 x 4 m room") is gone — the
+   * designer now opens WITH the pen armed — so the shortcut lives here, as a
+   * tertiary action offered only while the run is still empty.
+   */
+  onQuickRectangle?: () => void;
 }
 
 /**
@@ -880,6 +887,7 @@ export function RoomDrawHUD({
   onCancel,
   showUnitStepper = true,
   phone = false,
+  onQuickRectangle,
   cardRef,
   onHeightChange,
 }: RoomDrawHUDProps) {
@@ -1074,18 +1082,24 @@ export function RoomDrawHUD({
         >
           Wall pen
         </span>
-        {/* ONE instruction line (the duplicate bottom-left tip card is gone).
-            The compact phone card has no room for it — the badge's title
-            carries the same words. */}
-        {!phone && (
-          <span
-            className="hidden min-w-0 flex-1 text-[12px] font-medium leading-snug sm:inline"
-            style={{ color: CHROME_TEXT_2 }}
-          >
-            Click to drop wall points &middot; walls stay where you stop &middot;{' '}
-            {stepM <= 0.1 ? 'Enter closes a room' : 'click the first point or Enter to close a room'}
-          </span>
-        )}
+        {/* ONE instruction line, and it changes with the run (Vic 2026-09-08:
+            "it needs to be user friendly"). A static sentence made the
+            customer read all of it on every click and still not know which
+            button finishes; this says the ONE next thing to do, at every
+            width — the phone gets the short form. */}
+        <span
+          className={`min-w-0 flex-1 font-medium leading-snug ${phone ? 'text-[11px]' : 'text-[12px]'}`}
+          style={{ color: CHROME_TEXT_2 }}
+          data-testid="room-draw-hint"
+        >
+          {vertices.length === 0
+            ? (phone ? 'Tap each corner of your room' : 'Click each corner of your room — the walls follow your clicks')
+            : vertices.length < 3
+              ? (phone ? 'Tap the next corner' : 'Click the next corner. Two points make one wall.')
+              : (phone
+                  ? 'Tap the first point to close the room'
+                  : 'Click your first point (or press Enter) to close the room — Make room does the same')}
+        </span>
         {phone && readout}
         {/* The unit stepper lives INSIDE the HUD so it is reachable mid-draw
             with a thumb; +/- keys step the same ladder. On the phone it
@@ -1157,52 +1171,71 @@ export function RoomDrawHUD({
         </div>
       </div>
 
-      {/* Actions. Hierarchy: Done (the ONE ink button) · Make room (ink
-          rim) · Room + next (rest, sm+ only) · Undo (rest; icon-only on the
-          phone) · Discard (terracotta rim). Polish (2026-08-29): Room + next
-          and Undo were ghost buttons (no rim) between rimmed siblings — they
-          now wear the rest recipe like every other control. */}
+      {/* Actions (rebuilt 2026-09-08 after Vic: "the wall draw feature
+          doesn't work properly"). The trap it fixes: the ONE ink button used
+          to be "Done", which keeps the run as LOOSE WALLS. A customer who
+          drew four corners and pressed the obvious button got three
+          free-standing walls and no room — no floor, no area, nothing to
+          paint or furnish (probe: `tools/wall-done-trap-2026-09-08.mjs`,
+          "3 walls added"). The primary is now MAKE ROOM the moment a room
+          is possible; keeping the run open is the deliberate second choice.
+          Hierarchy: Make room (ink) · Keep walls (rim) · Room + next (rest,
+          sm+) · Undo · Discard. */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* DONE keeps the run as walls — the Sims contract: walls are real
-            the moment you stop. Primary on the phone, where it is the
-            button a thumb reaches first. */}
-        <button
-          type="button"
-          onClick={vertices.length >= 2 && onCommitWalls ? handleFinishWalls : handleCancel}
-          data-testid="room-draw-finish-walls"
-          className={`${CTRL} ${CTRL_PRIMARY} ${CTRL_H} flex-1 sm:flex-initial`}
-          title={
-            vertices.length >= 2
-              ? 'Done — keep these walls as they are (Esc or Alt+Enter)'
-              : 'Done — leave the pen'
-          }
-        >
-          Done
-        </button>
         <button
           type="button"
           onClick={handleClose}
           disabled={vertices.length < 3}
-          className={`${CTRL} ${CTRL_OUTLINED} ${CTRL_H} flex-1 sm:flex-initial`}
+          className={`${CTRL} ${vertices.length >= 3 ? CTRL_PRIMARY : CTRL_OUTLINED} ${CTRL_H} flex-1 sm:flex-initial`}
           title={
             vertices.length < 3
-              ? 'A room needs at least 3 points'
+              ? 'Place at least 3 corners to make a room'
               : 'Close the shape and make it a room (Enter)'
           }
           data-testid="room-draw-close"
         >
           Make room
         </button>
+        {/* Keeping the run OPEN is real and stays one tap away — a fence, a
+            half-wall, a partition. It just is not what the big button does. */}
         <button
           type="button"
-          onClick={handleCloseContinue}
-          disabled={vertices.length < 3}
-          data-testid="room-draw-close-continue"
-          className={`${CTRL} ${CTRL_REST} ${CTRL_H} hidden sm:inline-flex`}
-          title="Make the room and keep drawing another (Shift+Enter)"
+          onClick={vertices.length >= 2 && onCommitWalls ? handleFinishWalls : handleCancel}
+          data-testid="room-draw-finish-walls"
+          className={`${CTRL} ${vertices.length >= 3 ? CTRL_REST : vertices.length === 0 ? CTRL_REST : CTRL_OUTLINED} ${CTRL_H} flex-1 sm:flex-initial`}
+          title={
+            vertices.length >= 2
+              ? 'Keep these as open walls, not a room (Esc or Alt+Enter)'
+              : 'Leave the pen'
+          }
         >
-          Room + next
+          {vertices.length >= 2 ? 'Keep walls' : 'Done'}
         </button>
+        {vertices.length >= 3 && (
+          <button
+            type="button"
+            onClick={handleCloseContinue}
+            data-testid="room-draw-close-continue"
+            className={`${CTRL} ${CTRL_REST} ${CTRL_H} hidden sm:inline-flex`}
+            title="Make the room and keep drawing another (Shift+Enter)"
+          >
+            Room + next
+          </button>
+        )}
+        {/* The 5 x 4 m shortcut the removed start card used to offer. It is
+            NOT a blocking choice any more: the pen is already armed, and this
+            only shows while nothing has been drawn. */}
+        {vertices.length === 0 && onQuickRectangle && (
+          <button
+            type="button"
+            onClick={onQuickRectangle}
+            data-testid="start-quick-rectangle"
+            className={`${CTRL} ${CTRL_OUTLINED} ${CTRL_H} flex-1 sm:flex-initial`}
+            title="Lay a 5 x 4 m room instead of drawing one"
+          >
+            {phone ? '5 × 4 m room' : 'Or use a 5 × 4 m room'}
+          </button>
+        )}
         <button
           type="button"
           onClick={handleUndo}

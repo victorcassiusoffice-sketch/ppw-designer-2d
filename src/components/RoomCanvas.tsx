@@ -587,6 +587,11 @@ export function RoomCanvas({
   // inputs (which only edit rectangle rooms) light up. Draw mode stays
   // the primary path per Vic's Sims-style brief.
   const handleQuickRectangle = useCallback(() => {
+    // Straight to draw (2026-09-08): this now fires from INSIDE the armed
+    // pen's HUD, so it has to stand the pen down as well — otherwise the
+    // next click on the canvas would drop a wall point onto the room it
+    // just laid instead of placing a product.
+    onDrawComplete?.();
     const ps = usePropertyStore.getState();
     const active = selectActiveRoom(ps);
     if (!active) return;
@@ -608,7 +613,7 @@ export function RoomCanvas({
       ps.addRectangleRoom(nextRoomName(ps.property.rooms), { lengthM: 5, widthM: 4 }, anchor);
     }
     pushToast('Added a 5 × 4 m room — adjust the size in the top bar or place products.', 'info');
-  }, [pushToast]);
+  }, [onDrawComplete, pushToast]);
 
   const [viewport, setViewport] = useState<Viewport>(INITIAL_VIEWPORT);
   /**
@@ -4934,6 +4939,7 @@ export function RoomCanvas({
         onCommit={handleDrawCommit}
         onCommitWalls={handleDrawCommitWalls}
         onCancel={handleDrawCancel}
+        onQuickRectangle={hasRoom ? undefined : handleQuickRectangle}
       />
 
       {/* Measure popover (units brief D10). Says out loud what it does:
@@ -5030,57 +5036,40 @@ export function RoomCanvas({
         );
       })()}
 
-      {/* Blank-canvas-on-open (2026-06-09, Vic) — START-STATE prompt. Shown
-          on a FRESH canvas (no room drawn yet) and after "Clear all". Guides
-          the customer to draw their own room first, Sims build-mode style,
-          with a one-tap "Quick rectangle" escape hatch. This card IS
-          interactive (its buttons need clicks) so it opts back into pointer
-          events; it sits centred and never overlaps the toolbars. */}
+      {/* Blank canvas (Vic 2026-09-08: "don't give the option at the
+          beginning to select draw or the sample room, just straight to
+          draw"). The centred card that asked "Draw walls" or "Quick 5 x 4 m
+          room" is GONE: App arms the wall pen itself on a blank plan, so the
+          customer's first click lands a wall point instead of choosing from a
+          modal. The pen's own HUD carries the instruction, and the 5 x 4 m
+          shortcut lives there while the run is empty. What stays here is a
+          quiet, non-blocking prompt for the case the pen is NOT armed (the
+          customer stood it down on an empty plan) so the canvas is never
+          mute. */}
       {!drawMode && !wallDrawEnabled && !pendingProductId && !hasRoom && (
         <div
           className="pointer-events-none absolute inset-0 flex items-center justify-center px-4"
           data-testid="start-room-prompt"
         >
-          <div
-            className="pointer-events-auto flex max-w-sm flex-col items-center gap-2 rounded-2xl px-6 py-5 text-center shadow-md"
+          <button
+            type="button"
+            data-testid="start-draw-room"
+            onClick={() => onRequestDraw?.()}
+            className="pointer-events-auto flex flex-col items-center gap-1 rounded-2xl px-6 py-4 text-center shadow-sm"
             style={{
-              background: 'rgba(253,251,246,0.94)',
-              border: '1px solid rgba(42,41,38,0.18)',
+              background: 'rgba(253,251,246,0.9)',
+              border: '1px solid rgba(42,41,38,0.16)',
               color: '#2A2926',
             }}
           >
-            <span aria-hidden style={{ fontSize: 26, lineHeight: 1, color: '#3D8F79' }}>
+            <span aria-hidden style={{ fontSize: 22, lineHeight: 1, color: '#3D8F79' }}>
               ▱
             </span>
-            <p className="text-base font-semibold" style={{ color: '#2A2926' }}>
-              Start by drawing your walls
-            </p>
-            <p className="text-xs leading-snug" style={{ color: '#5B5852' }}>
-              Your land is blank. Sketch the walls of your space — close them
-              for a room, or leave them open — then drag products in, inside or
-              out in the garden. Lock the plot size with <b>Land</b> any time.
-            </p>
-            <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
-              <button
-                type="button"
-                data-testid="start-draw-room"
-                onClick={() => onRequestDraw?.()}
-                className="min-h-[40px] rounded-lg px-4 text-sm font-semibold text-white shadow-sm"
-                style={{ background: '#2A2926' }}
-              >
-                Draw walls
-              </button>
-              <button
-                type="button"
-                data-testid="start-quick-rectangle"
-                onClick={handleQuickRectangle}
-                className="min-h-[40px] rounded-lg border px-4 text-sm font-semibold"
-                style={{ background: '#fff', borderColor: '#2A292633', color: '#2A2926' }}
-              >
-                Quick 5 × 4 m room
-              </button>
-            </div>
-          </div>
+            <span className="text-sm font-semibold">Draw your walls</span>
+            <span className="text-[11px] leading-snug" style={{ color: '#5B5852' }}>
+              Click here, then click each corner of your room.
+            </span>
+          </button>
         </div>
       )}
 

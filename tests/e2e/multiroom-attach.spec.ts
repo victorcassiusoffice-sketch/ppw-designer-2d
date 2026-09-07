@@ -22,6 +22,7 @@ import {
   storedWallCount,
   type SeedProperty,
   dockCard,
+  enterWallPen,
   GEOM_BRIDGE_SKIP,
 } from './multiroom-helpers';
 import { requireGeomBridgeGenerous } from './sims-world-helpers';
@@ -233,7 +234,7 @@ test.describe('Attached multi-room — draw-attach', () => {
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
 
-    await page.locator('[data-testid="start-draw-room"]').click();
+    await enterWallPen(page);
     // Inset from the canvas corner: with no room drawn the viewport is the
     // identity transform, so world (0,0) IS the canvas corner and clicking
     // exactly there sits on the element edge.
