@@ -1,7 +1,6 @@
 import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import * as Sentry from '@sentry/react';
 import App from './App';
 import { bootstrapFx } from './store/currencyStore';
 import './index.css';
@@ -86,19 +85,28 @@ if (import.meta.env.DEV) {
 // OMS Wave 1B / Wave 1.10 — Sentry browser init, gated on the DSN env.
 // Release-tagged with the Vercel commit SHA so source-maps map back.
 // Free-tier-safe: traces + replays off.
+// Perf (2026-09-07): the SDK is loaded AFTER the designer has painted — it was
+// the largest non-essential slice of the single main chunk, and a phone on
+// throttled CPU paid for it before the first canvas. Errors thrown in the
+// first ~second before the SDK attaches are the trade-off, accepted.
 if (import.meta.env.VITE_SENTRY_DSN) {
-  Sentry.init({
-    dsn: import.meta.env.VITE_SENTRY_DSN as string,
-    environment:
-      (import.meta.env.VITE_SENTRY_ENVIRONMENT as string | undefined) ??
-      (import.meta.env.MODE as string),
-    release:
-      (import.meta.env.VITE_SENTRY_RELEASE as string | undefined) ??
-      (import.meta.env.VITE_VERCEL_GIT_COMMIT_SHA as string | undefined),
-    tracesSampleRate: 0,
-    replaysSessionSampleRate: 0,
-    replaysOnErrorSampleRate: 0,
-  });
+  const initSentry = () =>
+    import('@sentry/react').then((Sentry) => {
+      Sentry.init({
+        dsn: import.meta.env.VITE_SENTRY_DSN as string,
+        environment:
+          (import.meta.env.VITE_SENTRY_ENVIRONMENT as string | undefined) ??
+          (import.meta.env.MODE as string),
+        release:
+          (import.meta.env.VITE_SENTRY_RELEASE as string | undefined) ??
+          (import.meta.env.VITE_VERCEL_GIT_COMMIT_SHA as string | undefined),
+        tracesSampleRate: 0,
+        replaysSessionSampleRate: 0,
+        replaysOnErrorSampleRate: 0,
+      });
+    });
+  if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(() => void initSentry(), { timeout: 4000 });
+  else window.setTimeout(() => void initSentry(), 1500);
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

@@ -80,6 +80,21 @@ export default defineConfig({
         'dompurify',
         /^core-js\//,
       ],
+      // Perf (2026-09-07): the app shipped as ONE ~900 KB chunk. Splitting the
+      // stable vendors out lets the browser fetch them in parallel and keep
+      // them cached across our own releases (the app chunk changes every
+      // deploy; react/konva do not).
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          const path = id.replace(/\\/g, '/');
+          if (/\/node_modules\/(react|react-dom|scheduler)\//.test(path)) return 'vendor-react';
+          if (/\/node_modules\/(konva|react-konva)\//.test(path)) return 'vendor-konva';
+          if (/\/node_modules\/react-router/.test(path)) return 'vendor-router';
+          if (/\/node_modules\/@sentry/.test(path)) return 'vendor-sentry';
+          return undefined;
+        },
+      },
     },
   },
 });

@@ -159,7 +159,10 @@ test.describe('Design Tweak 1 — Phase A surface checks', () => {
     // Lighting (the `lighting` category) and Outdoor (any `outdoor` product).
     // The dock is exactly these 10 — no more, no fewer.
     // Eco / solar (2026-09-04) adds Eco (solar panels, inverters, batteries).
-    const labels = ['All', 'Furniture', 'Cardio', 'Recovery', 'Sauna', 'Flooring', 'Walls', 'Decor', 'Lighting', 'Outdoor', 'Eco'];
+    // Empty tabs hide (2026-09-07): the wellness seed has no furniture,
+    // recovery or sauna products, so those three do not render until a
+    // range brings them. Flooring + Walls always show (they host tools).
+    const labels = ['All', 'Cardio', 'Flooring', 'Walls', 'Decor', 'Lighting', 'Outdoor', 'Eco'];
     for (const label of labels) {
       // The catalog moved from ProductPalette's plain <button> chips to
       // SimsDock, whose macro tabs carry role="tab". The label text is

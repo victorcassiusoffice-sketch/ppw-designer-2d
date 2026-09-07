@@ -38,7 +38,7 @@ type StoredRoom = SeedRoom & { kind?: 'room' | 'outdoor' };
 
 /** Arm the catalog card, then click at a WORLD point. */
 async function armAndClickAt(page: Page, xM: number, yM: number): Promise<void> {
-  const card = page.locator(`[data-product-id="${PRODUCT_ID}"]`).first();
+  const card = page.locator(`[data-product-id="${PRODUCT_ID}"]:visible`).first();
   await expect(card).toBeVisible();
   await card.click();
   await expect(page.locator('[data-armed="true"]')).toHaveCount(2);

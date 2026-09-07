@@ -8,6 +8,7 @@ import { describe, it, expect } from 'vitest';
 import {
   MACRO_CATEGORY_LABEL,
   MACRO_CATEGORY_ORDER,
+  visibleMacroCategories,
   macroOf,
   type MacroCategory,
 } from '../../components/mobile/catalogMacros';
@@ -105,5 +106,19 @@ describe('macroOf', () => {
       'demo-hedge',
       'demo-outdoor-bench',
     ]);
+  });
+});
+
+describe('visibleMacroCategories (2026-09-07)', () => {
+  it('hides every product tab the seed cannot fill, keeps All + the two tool tabs', () => {
+    expect(visibleMacroCategories(getAllProducts())).toEqual(['all', 'cardio', 'flooring', 'walls', 'decor', 'lighting', 'outdoor', 'eco']);
+  });
+  it('shows Furniture and Appliances the moment a range maps to them', () => {
+    const extra = [
+      { ...getAllProducts()[0], id: 'x-sofa', sku: 'X-SOFA', category: 'furniture' as const, outdoor: false },
+      { ...getAllProducts()[0], id: 'x-fridge', sku: 'X-FRIDGE', category: 'appliance' as const, outdoor: false },
+    ];
+    const vis = visibleMacroCategories([...extra, ...getAllProducts()]);
+    expect(vis.slice(0, 3)).toEqual(['all', 'furniture', 'appliances']);
   });
 });

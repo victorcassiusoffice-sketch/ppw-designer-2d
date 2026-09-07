@@ -9,8 +9,8 @@
  * few gestures (arm-and-click, drag) that the older specs inline.
  */
 
-import { expect, type Page } from '@playwright/test';
-import { worldToScreen } from './multiroom-helpers';
+import { expect, test, type Page } from '@playwright/test';
+import { GEOM_BRIDGE_SKIP, worldToScreen } from './multiroom-helpers';
 
 export interface SimsSeedItem {
   instanceId: string;
@@ -133,14 +133,28 @@ export async function storedPrecision(page: Page): Promise<string | null> {
  * truth is "not yet".
  */
 export async function waitForGeom(page: Page): Promise<void> {
-  await page.waitForFunction(
-    () => {
-      const g = (window as unknown as { __ppwGeom?: { ready: () => boolean } }).__ppwGeom;
-      return !!g && g.ready();
-    },
-    undefined,
-    { timeout: 15_000 },
-  );
+  try {
+    await page.waitForFunction(
+      () => {
+        const g = (window as unknown as { __ppwGeom?: { ready: () => boolean } }).__ppwGeom;
+        return !!g && g.ready();
+      },
+      undefined,
+      { timeout: 15_000 },
+    );
+  } catch (err) {
+    // Verify pass (2026-09-07): 46 specs "failed" against the Vercel
+    // preview for one reason — the bridge is DEV-only and production builds
+    // tree-shake it, so this wait can never resolve there. That is an
+    // environment, not a defect: skip with the same reason the guarded
+    // specs already use, and only fail when the bridge EXISTS but never
+    // became ready (a real regression).
+    const absent = await page.evaluate(
+      () => typeof (window as unknown as { __ppwGeom?: unknown }).__ppwGeom === 'undefined',
+    );
+    if (absent) test.skip(true, GEOM_BRIDGE_SKIP);
+    throw err;
+  }
 }
 
 /**

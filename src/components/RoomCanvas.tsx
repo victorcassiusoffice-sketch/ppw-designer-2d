@@ -1749,6 +1749,21 @@ export function RoomCanvas({
       // already the active room's; findFreeSlot pulls edge cases inside.
       const cx = (bounds.minX + bounds.maxX) / 2;
       const cy = (bounds.minY + bounds.maxY) / 2;
+      // Verify pass (2026-09-07, phone journey P1): "+ Add to room" on a
+      // solar panel switched the view to the Roof and placed NOTHING — the
+      // customer saw an empty roof and a "your room is empty" hint. The
+      // click path can ask the customer to tap a slab; the popup cannot, so
+      // pop the roof first and place on the slab that mirrors this storey.
+      // The slab shares this room's outline, so the same centre lands on it
+      // and the tile lattice pulls the panel to its origin.
+      const intentProduct = getProductById(placementIntent.productId);
+      if (intentProduct && isRoofProduct(intentProduct)) {
+        const ps = usePropertyStore.getState();
+        const lvl = activeLevelIdOf(ps.property);
+        if (!isRoofLevel(levelsOf(ps.property).find((l) => l.id === lvl))) {
+          ps.ensureRoofLevel();
+        }
+      }
       placeAtRoomPoint(cx, cy, placementIntent.productId, null);
     } else {
       placeProductAt(placementIntent.target.clientX, placementIntent.target.clientY, placementIntent.productId, null);

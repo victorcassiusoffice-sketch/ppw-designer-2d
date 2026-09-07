@@ -14,7 +14,8 @@ make it ultra appealing."
 | No reply from any `@courtsmammouth.mu` address | Gmail search `from:courtsmammouth.mu in:anywhere newer_than:180d` → empty |
 | A 60-second demo page already exists: `ppw-room-designer-demo.vercel.app` (Vercel project `prj_Bq8bcikqHqn8qMbtbexkXok6kb6f`, CLI deploy 2026-09-02, no git link; 583 KB MP4 of a gym fit-out) | Vercel API + `curl -I` this run |
 | CEO = **Andrew Cohen** (confirmed from two primary press pages); chair = Alexander Winston Lynford (CARE Ratings PDF, Aug 2023); legal entity **Mammouth Trading Co. Ltd** t/a Courts Mammouth; parent Mammouth (Mauritius) Ltd; 24 stores; HQ Brabant Street, Bell Village, Port Louis | research workflow `wf_d06f1759-ec5`, adversarially verified |
-| No room planner / 3D / AR found for Courts (the May-2026 vault note about an "M Space AR gallery" is NOT supported by any source read) | same workflow, digital lane |
+| Courts HAS "M Space — our AR makeover tool" (an `ar-gallery` of ~90 pieces: "View in Room" → "360" → place ONE piece by phone camera). No room PLANNER. My first version of this row said "no AR found" — wrong: the site 403s every fetcher; the Wayback Machine has the page | Wayback `20250608235507/…/category/ar-gallery.html` read this run |
+| Courts' catalog is readable via the Wayback Machine: 6 231 product pages (title, price, Width/Depth/Height cm, brand, images) + ~470 category pages — the Cloudflare gate is not on the critical path | CDX queries + a parsed product snapshot (Alps sofa 3+2+1, Rs 55 999, 198×85×90 cm) |
 | `courtsmammouth.mu` sits behind Cloudflare Turnstile ("Verify you are human") — scripted fetches get 403, and the browser shows an interactive check I do not complete | curl 403 with a browser UA; Chrome tab screenshot |
 
 ## Workflow (the plan) and status
@@ -23,8 +24,8 @@ make it ultra appealing."
 |---|---|---|
 | 1 | Research — leadership, catalog, digital posture, build-vs-buy, route-to-director (5 lanes, each adversarially verified) | 4/5 lanes DONE; catalog lane running |
 | 2 | Designer: merchant DEMO mode — `/designer?demo=<slug>` swaps the merchant's real range into the catalog and loads a pre-built show home as its own page (customer's work promoted to a tab first) | DONE — `src/demo/*`, 12 unit tests, typecheck + lint clean |
-| 3 | Courts range: real products (name, price, dimensions, photo) + top-down art, registered as the `courts` demo | BLOCKED on catalog data (Cloudflare gate — Vic clicks "Verify you are human" in the open Chrome tab, or the research lane finds mirror sources) |
-| 4 | Courts show home: living room + home gym / wellness corner + home office, painted, floored, to scale, with basket total | pending 3 |
+| 3 | Courts range: real products (name, price, dimensions, photo) + top-down art, registered as the `courts` demo | 33 products DONE from Wayback snapshots (`src/demo/courts/products.json`); photos + top-downs PENDING — archive.org started timing out every request on 2026-09-07 (monitor armed, fetch resumes when it answers) |
+| 4 | Courts show home: living · dining/kitchen · wellness · office · bedroom, painted, floored, to scale, with basket total | DONE — `buildCourtsShowHome()`, 22 tests, rendered on dev (5 rooms, 33 items, 12 openings, MUR, 26.6 kWh/day load, 0 console errors) |
 | 5 | User test the demo (three profiles: Courts CEO, e-commerce lead, shopper) → fix P0/P1 | pending 4 |
 | 6 | Demo video — $0 Playwright screen recording of the Courts-fitted demo, captions burned with ffmpeg; draft in the vault, Vic approves | pending 4 |
 | 7 | Director pack — formal letter to the CEO, LinkedIn note, follow-ups to the two 2 Sep contacts, one-page pitch; ALL drafts, nothing sent | pending 1 |

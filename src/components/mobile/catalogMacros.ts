@@ -64,11 +64,18 @@ export const MACRO_CATEGORY_LABEL: Record<MacroCategory, string> = {
 };
 
 /**
- * Macro tabs that only appear when at least one product maps to them. The
- * standard wellness seed has no appliances, so its dock is unchanged; a
- * merchant demo (`/designer?demo=courts`) brings the tab with its range.
+ * Macro tabs that only appear when at least one product maps to them.
+ *
+ * Verify pass (2026-09-07, phone journey): a first-time customer's natural
+ * first tap was "Furniture" — empty in the wellness seed — and it read as
+ * broken. So EVERY product tab hides while it has nothing to show; only
+ * "All" and the two tabs that host a TOOL (Flooring = floor materials,
+ * Walls = wall paint) are always there. A merchant demo brings its own tabs
+ * with its range (Courts → Furniture + Appliances).
  */
-export const MACRO_HIDDEN_WHEN_EMPTY: ReadonlySet<MacroCategory> = new Set<MacroCategory>(['appliances']);
+export const MACRO_HIDDEN_WHEN_EMPTY: ReadonlySet<MacroCategory> = new Set<MacroCategory>(
+  MACRO_CATEGORY_ORDER.filter((mc) => mc !== 'all' && mc !== 'flooring' && mc !== 'walls'),
+);
 
 /** The tabs to render for a given product list — the order, minus empty hide-able tabs. */
 export function visibleMacroCategories(products: readonly Product[]): MacroCategory[] {

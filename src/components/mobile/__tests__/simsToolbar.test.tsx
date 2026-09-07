@@ -52,9 +52,13 @@ describe('SimsBottomToolbar', () => {
     });
     await flushAsync();
     expect(container.querySelector('[data-testid="sims-bottom-toolbar"]')).not.toBeNull();
-    // All seven macro tabs + "All".
-    for (const cat of ['all', 'furniture', 'cardio', 'recovery', 'sauna', 'flooring', 'walls', 'decor']) {
-      expect(container.querySelector(`[data-testid="sims-cat-${cat}"]`)).not.toBeNull();
+    // Empty tabs hide (2026-09-07): the seed fills these eight; Furniture,
+    // Recovery and Sauna stay out until a range brings them (Courts does).
+    for (const cat of ['all', 'cardio', 'flooring', 'walls', 'decor', 'lighting', 'outdoor', 'eco']) {
+      expect(container.querySelector(`[data-testid="sims-cat-${cat}"]`), cat).not.toBeNull();
+    }
+    for (const cat of ['furniture', 'recovery', 'sauna', 'appliances']) {
+      expect(container.querySelector(`[data-testid="sims-cat-${cat}"]`), cat).toBeNull();
     }
     // Bundled catalog (22 products) renders thumbnails in the "All" tab.
     expect(container.querySelectorAll('[data-testid="sims-thumb"]').length).toBeGreaterThan(0);

@@ -46,7 +46,7 @@ interface StoredItem {
 }
 
 async function placeAt(page: Page, xM: number, yM: number) {
-  const card = page.locator(`[data-product-id="${PRODUCT_ID}"]`).first();
+  const card = page.locator(`[data-product-id="${PRODUCT_ID}"]:visible`).first();
   await expect(card).toBeVisible();
   await card.click();
   await expect(page.locator('[data-armed="true"]')).toHaveCount(2);
@@ -180,7 +180,7 @@ test.describe('Sims wall-aware placement', () => {
     await page.goto('/designer');
     await page.locator('[data-testid="start-quick-rectangle"]').click();
 
-    const card = page.locator(`[data-product-id="${PRODUCT_ID}"]`).first();
+    const card = page.locator(`[data-product-id="${PRODUCT_ID}"]:visible`).first();
     await card.click();
     await expect(page.locator('[data-armed="true"]')).toHaveCount(2);
     // Origin read AFTER arming — the same "re-read before every click
