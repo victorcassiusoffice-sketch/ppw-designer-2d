@@ -53,6 +53,10 @@ export type ProductCategory =
   // Suntricity, Solar Center). Lands in the Eco tab; a `pv_wp` panel is
   // roof-placed and feeds the energy readout (`designer/energy.ts`).
   | 'solar'
+  // Retail (Courts Mammouth demo, 2026-09-05): a furniture + appliance
+  // merchant's range does not fit the wellness-first list above.
+  | 'furniture'
+  | 'appliance'
   | 'other';
 
 /**

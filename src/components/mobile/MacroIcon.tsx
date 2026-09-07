@@ -106,6 +106,15 @@ export function MacroIcon({ macro, size = 22 }: MacroIconProps): JSX.Element {
           <path d="M4 17h16M9.5 13l-1 8M14.5 13l1 8" />
         </svg>
       );
+    case 'appliances':
+      // Fridge: tall rounded box, freezer line, two handles.
+      return (
+        <svg {...common}>
+          <rect x="6" y="2.5" width="12" height="19" rx="1.5" />
+          <path d="M6 9.5h12" />
+          <path d="M9 5.5v2M9 12.5v3" />
+        </svg>
+      );
     case 'outdoor':
       // Tree: round canopy on a trunk, ground line.
       return (

@@ -96,6 +96,8 @@ export function normaliseCategory(raw: string): ProductCategory {
     case 'decor':
     case 'lighting':
     case 'solar':
+    case 'furniture':
+    case 'appliance':
       return c as ProductCategory;
     case 'tables':
     case 'beds':

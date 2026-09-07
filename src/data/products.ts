@@ -84,6 +84,9 @@ export const CATEGORY_LABELS: Record<ProductCategory, string> = {
   lighting: 'Lighting',
   // Eco / solar (2026-09-04) — panels, inverters, batteries.
   solar: 'Solar',
+  // Retail (2026-09-05) — sofas, beds, tables, storage / TVs, ACs, fridges.
+  furniture: 'Furniture',
+  appliance: 'Appliance',
   other: 'Other',
 };
 
@@ -150,6 +153,9 @@ export const CATEGORY_FILL: Record<ProductCategory, { fill: string; stroke: stri
   // Eco / solar (2026-09-04) — deep PV blue with a slate frame, so a panel
   // footprint reads as glass on the roof before its art loads.
   solar:            { fill: '#2F4F7F', stroke: '#1B2A44' },
+  // Retail (2026-09-05): warm oak for furniture, brushed steel for appliances.
+  furniture:        { fill: '#D9B98A', stroke: '#8A6A3F' },
+  appliance:        { fill: '#D8DCE0', stroke: '#6B7480' },
   other:            { fill: '#F5EFE6', stroke: '#C0A67E' },
 };
 
@@ -248,6 +254,19 @@ export function thumbnailFor(category: ProductCategory): string {
         <path d="M22 30a10 10 0 1 1 20 0c0 5-4 7-4 12H26c0-5-4-7-4-12z" fill="#F6D58A" stroke="#B7791F" stroke-width="2"/>
         <rect x="26" y="44" width="12" height="5" rx="1.5" fill="#B7791F"/>
         <path d="M32 8v5M14 16l3.5 3.5M50 16l-3.5 3.5M10 30h5M49 30h5" stroke="#B7791F" stroke-width="2" stroke-linecap="round"/>
+      </svg>`;
+    case 'furniture':
+      // Retail (2026-09-05): a sofa silhouette in the furniture oak.
+      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="8" y="26" width="48" height="20" rx="5" fill="#D9B98A" stroke="#8A6A3F" stroke-width="2"/>
+        <rect x="14" y="18" width="36" height="12" rx="4" fill="#E8D2AE" stroke="#8A6A3F" stroke-width="2"/>
+        <path d="M12 46v6M52 46v6" stroke="#8A6A3F" stroke-width="2" stroke-linecap="round"/>
+      </svg>`;
+    case 'appliance':
+      // Retail (2026-09-05): a fridge outline in brushed steel.
+      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="18" y="8" width="28" height="48" rx="4" fill="#D8DCE0" stroke="#6B7480" stroke-width="2"/>
+        <path d="M18 26h28M24 14v6M24 32v10" stroke="#6B7480" stroke-width="2" stroke-linecap="round"/>
       </svg>`;
     case 'other':
       return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

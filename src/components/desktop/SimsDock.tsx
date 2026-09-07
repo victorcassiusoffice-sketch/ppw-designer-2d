@@ -34,7 +34,7 @@ import { getAllProducts, productImageUrl, thumbnailFor } from '../../data/produc
 import { fetchApiProducts } from '../../data/apiCatalogAdapter';
 import type { Product } from '../../data/products.schema';
 import {
-  MACRO_CATEGORY_ORDER,
+  visibleMacroCategories,
   MACRO_CATEGORY_LABEL,
   macroOf,
   type MacroCategory,
@@ -278,7 +278,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
           className="flex shrink-0 items-center gap-2 pr-3"
           style={{ borderRight: `1px solid ${DOCK_BORDER}` }}
         >
-          {MACRO_CATEGORY_ORDER.map((mc) => {
+          {visibleMacroCategories(allProducts).map((mc) => {
             const active = activeCategory === mc;
             return (
               <button

@@ -31,6 +31,11 @@ export interface DemoDefinition {
   pageName: string;
   /** The merchant's range. Ids MUST be prefixed `<slug>-` so they never collide with seed ids. */
   products: Product[];
+  /**
+   * Display currency the pitch should open in (the store's default is not
+   * the merchant's). Absent = leave whatever the visitor had.
+   */
+  currency?: 'MUR' | 'USD' | 'EUR' | 'GBP';
   /** Builds the pre-designed plan — a fresh object every call (the store normalises in place). */
   buildProperty: () => Property;
 }

@@ -21,6 +21,7 @@ import { activeDemo, setActiveDemo, type DemoDefinition } from './demoCatalog';
 import { useDesignsStore, DRAFT_ID } from '../store/designsStore';
 import { useHistoryStore } from '../store/historyStore';
 import { useToastStore } from '../store/toastStore';
+import { useCurrencyStore } from '../store/currencyStore';
 import { applyPage, currentPageId, flushCurrentPage, promoteDraftToPage, switchToPage } from '../lib/pages';
 
 /** The `demo` query value, lower-cased, or null. `'off'` is meaningful. */
@@ -50,6 +51,8 @@ export type DemoPageOutcome = 'loaded' | 'switched' | 'current';
 
 /** Make the demo's show home the page on the canvas. Pure store work; no React. */
 export function ensureDemoPage(demo: DemoDefinition): DemoPageOutcome {
+  // A Mauritian merchant's pitch opens in rupees, whatever the store's default.
+  if (demo.currency) useCurrencyStore.getState().setCurrency(demo.currency);
   const designs = useDesignsStore.getState();
   const existing = Object.values(designs.designs).find(
     (d) => d.id !== DRAFT_ID && d.name === demo.pageName,

@@ -26,11 +26,15 @@ export type MacroCategory =
   | 'decor'
   | 'lighting'
   | 'outdoor'
-  | 'eco';
+  | 'eco'
+  // Retail (2026-09-05): TVs, air conditioners, fridges. Hidden while empty
+  // (see MACRO_HIDDEN_WHEN_EMPTY) so the wellness catalog keeps its 11 tabs.
+  | 'appliances';
 
 export const MACRO_CATEGORY_ORDER: MacroCategory[] = [
   'all',
   'furniture',
+  'appliances',
   'cardio',
   'recovery',
   'sauna',
@@ -56,7 +60,22 @@ export const MACRO_CATEGORY_LABEL: Record<MacroCategory, string> = {
   lighting: 'Lighting',
   outdoor: 'Outdoor',
   eco: 'Eco',
+  appliances: 'Appliances',
 };
+
+/**
+ * Macro tabs that only appear when at least one product maps to them. The
+ * standard wellness seed has no appliances, so its dock is unchanged; a
+ * merchant demo (`/designer?demo=courts`) brings the tab with its range.
+ */
+export const MACRO_HIDDEN_WHEN_EMPTY: ReadonlySet<MacroCategory> = new Set<MacroCategory>(['appliances']);
+
+/** The tabs to render for a given product list — the order, minus empty hide-able tabs. */
+export function visibleMacroCategories(products: readonly Product[]): MacroCategory[] {
+  return MACRO_CATEGORY_ORDER.filter(
+    (mc) => !MACRO_HIDDEN_WHEN_EMPTY.has(mc) || products.some((p) => macroOf(p) === mc),
+  );
+}
 
 const PRODUCT_TO_MACRO: Record<ProductCategory, MacroCategory> = {
   'ergo-chair': 'furniture',
@@ -72,6 +91,8 @@ const PRODUCT_TO_MACRO: Record<ProductCategory, MacroCategory> = {
   decor: 'decor',
   lighting: 'lighting',
   solar: 'eco',
+  furniture: 'furniture',
+  appliance: 'appliances',
   other: 'decor',
 };
 

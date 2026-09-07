@@ -1,0 +1,108 @@
+{
+  "base": "http://127.0.0.1:5188",
+  "at": "2026-09-07T12:55:41.168Z",
+  "desktop": {
+    "name": "courts-desktop-1366",
+    "stored": {
+      "name": "Courts Mammouth · Show home",
+      "rooms": [
+        {
+          "id": "living",
+          "items": 10,
+          "openings": 5
+        },
+        {
+          "id": "dining",
+          "items": 5,
+          "openings": 2
+        },
+        {
+          "id": "wellness",
+          "items": 5,
+          "openings": 2
+        },
+        {
+          "id": "office",
+          "items": 6,
+          "openings": 1
+        },
+        {
+          "id": "bedroom",
+          "items": 7,
+          "openings": 2
+        }
+      ]
+    },
+    "pill": "Courts Mammouth· demo×",
+    "cart": "105£9,084.93",
+    "energy": "☀ 0 Wh · ⚡ 26.6 kWh−26.6 kWh",
+    "tabs": [
+      "All",
+      "Furniture",
+      "Appliances",
+      "Cardio",
+      "Recovery",
+      "Sauna",
+      "Flooring",
+      "Walls",
+      "Decor",
+      "Lighting",
+      "Outdoor",
+      "Eco"
+    ],
+    "courtsTiles": 66,
+    "errors": []
+  },
+  "phone": {
+    "name": "courts-phone-390",
+    "stored": {
+      "name": "Courts Mammouth · Show home",
+      "rooms": [
+        {
+          "id": "living",
+          "items": 10,
+          "openings": 5
+        },
+        {
+          "id": "dining",
+          "items": 5,
+          "openings": 2
+        },
+        {
+          "id": "wellness",
+          "items": 5,
+          "openings": 2
+        },
+        {
+          "id": "office",
+          "items": 6,
+          "openings": 1
+        },
+        {
+          "id": "bedroom",
+          "items": 7,
+          "openings": 2
+        }
+      ]
+    },
+    "pill": "Courts Mammouth· demo×",
+    "cart": "105£9,084.93",
+    "energy": "☀ 0 Wh · ⚡ 26.6 kWh−26.6 kWh",
+    "tabs": [
+      "All",
+      "Furniture",
+      "Appliances",
+      "Cardio",
+      "Recovery",
+      "Sauna",
+      "Flooring",
+      "Walls",
+      "Decor",
+      "Lighting",
+      "Outdoor",
+      "Eco"
+    ],
+    "courtsTiles": 66,
+    "errors": []
+  }
+}

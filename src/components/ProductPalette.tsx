@@ -97,6 +97,10 @@ const PRODUCT_TO_MACRO: Record<ProductCategory, MacroCategory> = {
   flooring: 'flooring',
   walls: 'walls',
   decor: 'decor',
+  // Retail (2026-09-05) — a furniture + appliance merchant's range.
+  furniture: 'furniture',
+  // This legacy palette has no Appliances tab (the dock and phone toolbar do).
+  appliance: 'decor',
   // Sims world (2026-08-29) — this legacy palette has no Lighting tab; the
   // Sims dock/toolbar (catalogMacros.ts) does.
   lighting: 'decor',

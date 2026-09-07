@@ -34,7 +34,7 @@ import { useDrawProgressStore } from '../../store/drawProgressStore';
 import { floorMaterialForProduct } from '../../data/floorMaterials';
 import { useDesignerUIStore } from '../../store/designerUIStore';
 import {
-  MACRO_CATEGORY_ORDER,
+  visibleMacroCategories,
   MACRO_CATEGORY_LABEL,
   macroOf,
   type MacroCategory,
@@ -186,7 +186,7 @@ export function SimsBottomToolbar() {
             aria-label="Product category"
             className="flex flex-1 gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {MACRO_CATEGORY_ORDER.map((mc) => {
+            {visibleMacroCategories(allProducts).map((mc) => {
               const active = activeCategory === mc;
               return (
                 <button

@@ -10,8 +10,9 @@
  * then list it here. Nothing else changes.
  */
 import { registerDemo, registeredDemoSlugs, type DemoDefinition } from './demoCatalog';
+import { COURTS_DEMO } from './courts';
 
-const ALL: DemoDefinition[] = [];
+const ALL: DemoDefinition[] = [COURTS_DEMO];
 
 let registered = false;
 

@@ -35,10 +35,12 @@ function product(overrides: Partial<Product>): Product {
 }
 
 describe('MACRO_CATEGORY_ORDER', () => {
-  it('is all, furniture, cardio, recovery, sauna, flooring, walls, decor, lighting, outdoor, eco', () => {
+  it('is all, furniture, appliances, cardio, recovery, sauna, flooring, walls, decor, lighting, outdoor, eco', () => {
     expect(MACRO_CATEGORY_ORDER).toEqual([
       'all',
       'furniture',
+      // Retail (2026-09-05) — hidden from the tabs while no product maps to it.
+      'appliances',
       'cardio',
       'recovery',
       'sauna',

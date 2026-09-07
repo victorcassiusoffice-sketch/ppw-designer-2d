@@ -1,0 +1,968 @@
+{
+  "version": 1,
+  "generated_at": "2026-09-07",
+  "source": "courtsmammouth.mu via web.archive.org snapshots (see each row's notes)",
+  "products": [
+    {
+      "id": "courts-marco-sofa-corner",
+      "sku": "CM-MARCO-SOFA-CORNER",
+      "name": "Marco Sofa Corner Brown with 12 Cushions in Fabrics",
+      "category": "furniture",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 260.0,
+        "width": 102.0,
+        "height": 110.0
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 53999.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 53,999 (was Rs 74,999) on the 2025-01-14 snapshot. Data sheet: Seating Capacity 5; Width (cm) 260; Depth (cm) 102; Height (cm) 110; Fabric Pattern Plain; Upholstery Cover Fabric.",
+      "source_url": "https://www.courtsmammouth.mu/product/marco-sofa-corner-brown-with-12-cushions-in-fabrics.html",
+      "front_edge": "bottom"
+    },
+    {
+      "id": "courts-perera-coffee-table",
+      "sku": "CM-PERERA-COFFEE-TABLE",
+      "name": "Perera Coffee Table Grey & Black",
+      "category": "furniture",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 120.0,
+        "width": 60.0,
+        "height": 43.0
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 5499.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 5,499 (was Rs 12,499) on the 2026-06-14 snapshot. Data sheet: Shape Rectangular; Table Top Sintered Stone; Width (cm) 120; Depth (cm) 60; Height (cm) 43; Frame Material Metal.",
+      "source_url": "https://www.courtsmammouth.mu/product/perera-coffee-table-grey-black.html",
+      "is_surface": true
+    },
+    {
+      "id": "courts-aurum-tv-cabinet",
+      "sku": "CM-AURUM-TV-CABINET",
+      "name": "Aurum Low TV Cabinet Nature/Off White",
+      "category": "furniture",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 160.0,
+        "width": 36.0,
+        "height": 66.0
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 8299.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 8,299 (was Rs 10,499) on the 2025-09-09 snapshot. Data sheet: No of Doors 1; Material Type Particle Board; Width (cm) 160; Depth (cm) 36; Height (cm) 66; Size(Tv cabinet) Low.",
+      "source_url": "https://www.courtsmammouth.mu/product/aurum-low-tv-cabinet-natureoff-white.html",
+      "is_surface": true,
+      "front_edge": "bottom"
+    },
+    {
+      "id": "courts-hisense-65a6h-tv",
+      "sku": "CM-HISENSE-65A6H-TV",
+      "name": "Hisense 65A6H/65A53FXVT 65'' 4K Smart TV",
+      "category": "appliance",
+      "supplier": "Courts Mammouth (Hisense)",
+      "dimensions_cm": {
+        "length": 145.2,
+        "width": 7.4,
+        "height": 83.4
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 28990.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Energy: typical 65-inch DLED draw; the page lists no wattage Courts price shown as Rs 28,990 (was Rs 35,990) on the 2026-06-06 snapshot. Data sheet: Screen Size (Inch) 65; Resolution 4K; Display Technology DLED; Bluetooth Yes; Operating System VIDAA U; Width (cm) 145.2.",
+      "source_url": "https://www.courtsmammouth.mu/product/hisense-65a6h65a53fxvt-65-4k-smart-tv.html",
+      "placement": "wall",
+      "mount_height_cm": 105,
+      "energy_role": "consumer",
+      "power_w": 120,
+      "duty_hours_per_day": 5
+    },
+    {
+      "id": "courts-samsung-ar18-ac",
+      "sku": "CM-SAMSUNG-AR18-AC",
+      "name": "Samsung AR18BVHGAWK Air Conditioner",
+      "category": "appliance",
+      "supplier": "Courts Mammouth (Samsung)",
+      "dimensions_cm": {
+        "length": 106,
+        "width": 22,
+        "height": 30
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 30990.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "indoor-unit size typical for an 18 000 BTU split; the page publishes BTU only Energy: derived: 18 000 BTU x 0.293 W/BTU / EER 3.2 Courts price shown as Rs 30,990 (was Rs 36,490) on the 2025-02-11 snapshot. Data sheet: Capacity (BTU) 18000; WIFI No; Energy Efficiency Rating A.",
+      "source_url": "https://www.courtsmammouth.mu/product/samsung-ar18bvhgawk-air-conditioner.html",
+      "placement": "wall",
+      "mount_height_cm": 220,
+      "energy_role": "consumer",
+      "power_w": 1650,
+      "duty_hours_per_day": 6
+    },
+    {
+      "id": "courts-elit-rug",
+      "sku": "CM-ELIT-RUG",
+      "name": "Elit Rug 114X180 Ref EL001A",
+      "category": "decor",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 180,
+        "width": 114,
+        "height": 1
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 1099.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 1,099 (was Rs 10,699) on the 2025-09-08 snapshot. Data sheet: Material Type Acrylic; Length(cm) 180; Width (cm) 114.",
+      "source_url": "https://www.courtsmammouth.mu/product/elit-rug-114x180-ref-el001a.html"
+    },
+    {
+      "id": "courts-marble-table-lamp",
+      "sku": "CM-MARBLE-TABLE-LAMP",
+      "name": "Marble Table Lamp With Brass Post",
+      "category": "lighting",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 36,
+        "width": 36,
+        "height": 62
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 2299.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 2,299 (was Rs 2,799) on the 2025-02-11 snapshot. Data sheet: Material Type Brass; Height (cm) 62; Diameter (cm) 36.",
+      "source_url": "https://www.courtsmammouth.mu/product/marble-table-lamp-with-brass-post-.html",
+      "placement": "surface",
+      "emits_light": true,
+      "light_radius_m": 1.6,
+      "plan_symbol": "light",
+      "energy_role": "consumer",
+      "power_w": 40,
+      "duty_hours_per_day": 4
+    },
+    {
+      "id": "courts-pendant-lamp-7254",
+      "sku": "CM-PENDANT-LAMP-7254",
+      "name": "Pendant Lamp 7254/1",
+      "category": "lighting",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 40,
+        "width": 40,
+        "height": 120
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 299.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 299 (was Rs 1,499) on the 2025-09-08 snapshot. Data sheet: Height (cm) 120; Diameter (cm) 40.",
+      "source_url": "https://www.courtsmammouth.mu/product/pendant-lamp-72541.html",
+      "placement": "ceiling",
+      "emits_light": true,
+      "light_radius_m": 2.6,
+      "plan_symbol": "pendant",
+      "energy_role": "consumer",
+      "power_w": 40,
+      "duty_hours_per_day": 5
+    },
+    {
+      "id": "courts-campus-sideboard",
+      "sku": "CM-CAMPUS-SIDEBOARD",
+      "name": "Campus Sideboard With 2 Doors & 3 Drawers",
+      "category": "furniture",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 180.0,
+        "width": 40.0,
+        "height": 81.0
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 8999.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 8,999 (was Rs 18,999) on the 2025-06-23 snapshot. Data sheet: No of Doors 2; Material Type MDF; Width (cm) 180; Depth (cm) 40; Height (cm) 81; No of Drawers 3.",
+      "source_url": "https://www.courtsmammouth.mu/product/campus-sideboard-with-2-doors-3-drawers.html",
+      "is_surface": true,
+      "front_edge": "bottom"
+    },
+    {
+      "id": "courts-blind-white-180",
+      "sku": "CM-BLIND-WHITE-180",
+      "name": "Blind White 180x200 cm Rainbow",
+      "category": "decor",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 180,
+        "width": 5,
+        "height": 200
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 999.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 999 (was Rs 3,599) on the 2025-02-11 snapshot. Data sheet: Material Type Polyester; Width (cm) 180; Height (cm) 200; Fabric Pattern Plain.",
+      "source_url": "https://www.courtsmammouth.mu/product/blind-white-180x200-cm-rainbow.html",
+      "placement": "wall",
+      "mount_height_cm": 60
+    },
+    {
+      "id": "courts-gessica-dining-6",
+      "sku": "CM-GESSICA-DINING-6",
+      "name": "Gessica Table and 6 Chairs Wenge Rubberwood",
+      "category": "furniture",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 240,
+        "width": 180,
+        "height": 74
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 34999.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "table 150 x 90 cm per the page; footprint includes the six chairs drawn in (about 45 cm each side) Courts price shown as Rs 34,999 (was Rs 43,999) on the 2025-06-10 snapshot. Data sheet: Seating Capacity 6; Shape Rectangular; Table Top MDF; Width (cm) 150; Depth (cm) 90; Height (cm) 73.8.",
+      "source_url": "https://www.courtsmammouth.mu/product/gessica-table-and-6-chairs-wenge-rubberwood.html"
+    },
+    {
+      "id": "courts-samsung-rb33-fridge",
+      "sku": "CM-SAMSUNG-RB33-FRIDGE",
+      "name": "Samsung RB33J3700SA/EF Refrigerator",
+      "category": "appliance",
+      "supplier": "Courts Mammouth (Samsung)",
+      "dimensions_cm": {
+        "length": 60.0,
+        "width": 67.0,
+        "height": 178.0
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 36990.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Energy: 317 kWh/year on the page = 36 W average Courts price shown as Rs 36,990 (was Rs 42,490) on the 2025-04-24 snapshot. Data sheet: No of Doors 2; Width (cm) 60; Depth (cm) 67; Height (cm) 178; Capacity (L) 321; Energy Efficiency Rating F.",
+      "source_url": "https://www.courtsmammouth.mu/product/samsung-rb33j3700saef-refrigerator.html",
+      "front_edge": "bottom",
+      "energy_role": "consumer",
+      "power_w": 36,
+      "duty_hours_per_day": 24
+    },
+    {
+      "id": "courts-lavis-sideboard",
+      "sku": "CM-LAVIS-SIDEBOARD",
+      "name": "Lavis Sideboard With 2 Doors And 3 Drawers",
+      "category": "furniture",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 140.0,
+        "width": 40.0,
+        "height": 81.0
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 9999.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 9,999 (was Rs 18,999) on the 2026-03-09 snapshot. Data sheet: No of Doors 2; Material Type Solid Wood; Width (cm) 140; Depth (cm) 40; Height (cm) 81; No of Drawers 3.",
+      "source_url": "https://www.courtsmammouth.mu/product/lavis-sideboard-with-2-doors-and-3-drawers.html",
+      "is_surface": true,
+      "front_edge": "bottom"
+    },
+    {
+      "id": "courts-pendant-black-canopy",
+      "sku": "CM-PENDANT-BLACK-CANOPY",
+      "name": "Pendant Lamp Black Metal Canopy ACSLG2157005",
+      "category": "lighting",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 39,
+        "width": 39,
+        "height": 80
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 249.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 249 (was Rs 3,699) on the 2025-04-20 snapshot. Data sheet: Material Type Metal; Height (cm) 80; Diameter (cm) 39.",
+      "source_url": "https://www.courtsmammouth.mu/product/pendant-lamp-black-metal-canopy-acslg2157005.html",
+      "placement": "ceiling",
+      "emits_light": true,
+      "light_radius_m": 2.4,
+      "plan_symbol": "pendant",
+      "energy_role": "consumer",
+      "power_w": 40,
+      "duty_hours_per_day": 4
+    },
+    {
+      "id": "courts-ceramic-table-lamp",
+      "sku": "CM-CERAMIC-TABLE-LAMP",
+      "name": "Ceramic Table Lamp In Biege and Brown Glaze Finish",
+      "category": "lighting",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 28,
+        "width": 28,
+        "height": 47
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 1199.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 1,199 (was Rs 1,499) on the 2025-02-11 snapshot. Data sheet: Material Type Ceramic; Height (cm) 47; Diameter (cm) 28.",
+      "source_url": "https://www.courtsmammouth.mu/product/ceramic-table-lamp-in-biege-and-brown-glaze-finish.html",
+      "placement": "surface",
+      "emits_light": true,
+      "light_radius_m": 1.4,
+      "plan_symbol": "light",
+      "energy_role": "consumer",
+      "power_w": 40,
+      "duty_hours_per_day": 3
+    },
+    {
+      "id": "courts-mika-bed-160",
+      "sku": "CM-MIKA-BED-160",
+      "name": "Mika Bed 160x200 cm Dirty Oak",
+      "category": "furniture",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 165.1,
+        "width": 194.8,
+        "height": 89
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 16999.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 16,999 (was Rs 23,999) on the 2025-04-25 snapshot. Data sheet: Bed & Mattress Size Queen (160cm); Bed Type Platform Bed; Material Type Solid Wood; Length(cm) 194.8; Width (cm) 165.1; Height (cm) 89.",
+      "source_url": "https://www.courtsmammouth.mu/product/mika-bed-160x200-cm-dirty-oak.html",
+      "front_edge": "bottom"
+    },
+    {
+      "id": "courts-beluga-wardrobe-4",
+      "sku": "CM-BELUGA-WARDROBE-4",
+      "name": "Beluga Wardrobe 4 Doors Paradise & San Marino",
+      "category": "furniture",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 163.0,
+        "width": 54.0,
+        "height": 188.0
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 24999.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 24,999 (was Rs 31,499) on the 2025-01-18 snapshot. Data sheet: No of Doors 4; Material Type Particle Board; Width (cm) 163; Depth (cm) 54; Height (cm) 188.",
+      "source_url": "https://www.courtsmammouth.mu/product/beluga-wardrobe-4-doors-paradise-san-marino.html",
+      "front_edge": "bottom"
+    },
+    {
+      "id": "courts-arte-bedside",
+      "sku": "CM-ARTE-BEDSIDE",
+      "name": "Arte Bed Side Table In Melamine MDF Wash Oak & White",
+      "category": "furniture",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 41.5,
+        "width": 35.0,
+        "height": 45.0
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 2999.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 2,999 (was Rs 3,799) on the 2025-04-18 snapshot. Data sheet: Material Type MDF; Width (cm) 41.5; Depth (cm) 35; Height (cm) 45; No of Drawers 1; Finish Melamine.",
+      "source_url": "https://www.courtsmammouth.mu/product/arte-bed-side-table-in-melamine-mdf-wash-oak-white.html",
+      "is_surface": true,
+      "front_edge": "bottom"
+    },
+    {
+      "id": "courts-hisense-40a4n-tv",
+      "sku": "CM-HISENSE-40A4N-TV",
+      "name": "Hisense 40A4N 40\" FHD Smart Led TV",
+      "category": "appliance",
+      "supplier": "Courts Mammouth (Hisense)",
+      "dimensions_cm": {
+        "length": 90.0,
+        "width": 8.5,
+        "height": 51.5
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 11990.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Energy: typical 40-inch LED draw; standby 0.5 W is the only figure on the page Courts price shown as Rs 11,990 (was Rs 13,990) on the 2026-06-12 snapshot. Data sheet: Screen Size (Inch) 40; Resolution Full HD; Display Technology DLED; Bluetooth No; Operating System VIDAA U; Width (cm) 90.",
+      "source_url": "https://www.courtsmammouth.mu/product/hisense-40a4n-40-fhd-smart-led-tv.html",
+      "placement": "wall",
+      "mount_height_cm": 120,
+      "energy_role": "consumer",
+      "power_w": 60,
+      "duty_hours_per_day": 3
+    },
+    {
+      "id": "courts-samsung-ar09-ac",
+      "sku": "CM-SAMSUNG-AR09-AC",
+      "name": "Samsung AR09BVHGAWK Air Conditioner",
+      "category": "appliance",
+      "supplier": "Courts Mammouth (Samsung)",
+      "dimensions_cm": {
+        "length": 82,
+        "width": 20,
+        "height": 29
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 17490.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "indoor-unit size typical for a 9 000 BTU split; the page publishes BTU only Energy: derived: 9 000 BTU x 0.293 W/BTU / EER 3.2 Courts price shown as Rs 17,490 (was Rs 22,990) on the 2025-03-25 snapshot. Data sheet: Capacity (BTU) 9000; WIFI No; Energy Efficiency Rating B.",
+      "source_url": "https://www.courtsmammouth.mu/product/samsung-ar09bvhgawk-air-conditioner.html",
+      "placement": "wall",
+      "mount_height_cm": 220,
+      "energy_role": "consumer",
+      "power_w": 820,
+      "duty_hours_per_day": 8
+    },
+    {
+      "id": "courts-table-lamp-wood-d25",
+      "sku": "CM-TABLE-LAMP-WOOD-D25",
+      "name": "Table Lamp: 1xE27xMax.60W, Wood D25xH50 cm",
+      "category": "lighting",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 25,
+        "width": 25,
+        "height": 50
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 1499.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 1,499 (was Rs 3,499) on the 2025-06-09 snapshot. Data sheet: Material Type Wood; Height (cm) 50; Diameter (cm) 25.",
+      "source_url": "https://www.courtsmammouth.mu/product/table-lamp-1xe27xmax60w-wood-d25xh50-cm.html",
+      "placement": "surface",
+      "emits_light": true,
+      "light_radius_m": 1.4,
+      "plan_symbol": "light",
+      "energy_role": "consumer",
+      "power_w": 60,
+      "duty_hours_per_day": 2
+    },
+    {
+      "id": "courts-blind-beige-120",
+      "sku": "CM-BLIND-BEIGE-120",
+      "name": "Blind Beige 120x150 cm Rainbow",
+      "category": "decor",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 120,
+        "width": 5,
+        "height": 150
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 299.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 299 (was Rs 3,499) on the 2025-09-14 snapshot. Data sheet: Material Type Polyester; Width (cm) 120; Height (cm) 150; Fabric Pattern Plain.",
+      "source_url": "https://www.courtsmammouth.mu/product/blind-beige-120x150-cm-rainbow.html",
+      "placement": "wall",
+      "mount_height_cm": 90
+    },
+    {
+      "id": "courts-touran-desk",
+      "sku": "CM-TOURAN-DESK",
+      "name": "Touran Office Desk Transparent Top & Oak Legs",
+      "category": "furniture",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 120.0,
+        "width": 60.0,
+        "height": 75.0
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 7999.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 7,999 (was Rs 9,999) on the 2025-01-18 snapshot. Data sheet: Material Type Metal; Width (cm) 120; Depth (cm) 60; Height (cm) 75; No of Drawers 1.",
+      "source_url": "https://www.courtsmammouth.mu/product/touran-office-desk-transparent-top-oak-legs.html",
+      "is_surface": true,
+      "front_edge": "bottom"
+    },
+    {
+      "id": "courts-stellar-celosia-chair",
+      "sku": "CM-STELLAR-CELOSIA-CHAIR",
+      "name": "Stellar Celosia High Back Office Chair Light Grey & Blue",
+      "category": "ergo-chair",
+      "supplier": "Courts Mammouth (Stellar)",
+      "dimensions_cm": {
+        "length": 63.0,
+        "width": 59.0,
+        "height": 127.0
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 9999.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 9,999 (was Rs 12,499) on the 2026-04-18 snapshot. Data sheet: Width (cm) 63; Depth (cm) 59; Height (cm) 127; Upholstery Cover Fabric; Adjustable Height Yes; Frame Material Polypropylene (PP).",
+      "source_url": "https://www.courtsmammouth.mu/product/stellar-celosia-high-back-office-chair-light-grey-blue.html",
+      "front_edge": "top"
+    },
+    {
+      "id": "courts-malden-bookshelf",
+      "sku": "CM-MALDEN-BOOKSHELF",
+      "name": "Malden Bookshelf 5 Tiers Red",
+      "category": "furniture",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 58.0,
+        "width": 22.5,
+        "height": 169.5
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 2999.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 2,999 (was Rs 3,799) on the 2025-01-17 snapshot. Data sheet: Material Type Particle Board; Width (cm) 58; Depth (cm) 22.5; Height (cm) 169.5; Finish Melamine.",
+      "source_url": "https://www.courtsmammouth.mu/product/malden-bookshelf-5-tiers-red.html",
+      "front_edge": "bottom"
+    },
+    {
+      "id": "courts-nexus-shelving-white",
+      "sku": "CM-NEXUS-SHELVING-WHITE",
+      "name": "Nexus Shelving White Particle Board MB085",
+      "category": "furniture",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 42.4,
+        "width": 29.4,
+        "height": 106.4
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 1499.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 1,499 (was Rs 1,899) on the 2025-01-18 snapshot. Data sheet: Material Type Particle Board; Width (cm) 42.4; Depth (cm) 29.4; Height (cm) 106.4; DIY Yes.",
+      "source_url": "https://www.courtsmammouth.mu/product/nexus-shelving-white-particle-board-mb085.html",
+      "front_edge": "bottom"
+    },
+    {
+      "id": "courts-bamboo-desk-lamp",
+      "sku": "CM-BAMBOO-DESK-LAMP",
+      "name": "Cylinder Bamboo Desk Lamp 10x35cm with Cable",
+      "category": "lighting",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 10,
+        "width": 10,
+        "height": 35
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 1299.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 1,299 (was Rs 2,299) on the 2025-06-09 snapshot. Data sheet: Material Type Bamboo; Height (cm) 35; Diameter (cm) 10.",
+      "source_url": "https://www.courtsmammouth.mu/product/cylinder-bamboo-desk-lamp-10x35cm-with-cable-.html",
+      "placement": "surface",
+      "emits_light": true,
+      "light_radius_m": 1.2,
+      "plan_symbol": "light",
+      "energy_role": "consumer",
+      "power_w": 20,
+      "duty_hours_per_day": 4
+    },
+    {
+      "id": "courts-hisense-as12-ac",
+      "sku": "CM-HISENSE-AS12-AC",
+      "name": "Hisense AS-12TR4SYETD Air Conditioner",
+      "category": "appliance",
+      "supplier": "Courts Mammouth (Hisense)",
+      "dimensions_cm": {
+        "length": 90,
+        "width": 20,
+        "height": 30
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 19990.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "indoor-unit size typical for a 12 000 BTU split; the page publishes BTU only Energy: derived: 12 000 BTU x 0.293 W/BTU / EER 3.2 Courts price shown as Rs 19,990 (was Rs 20,990) on the 2025-02-11 snapshot. Data sheet: Capacity (BTU) 12000; WIFI No; Noise Emission (dB) 39.",
+      "source_url": "https://www.courtsmammouth.mu/product/hisense-as-12tr4syetd-air-conditioner.html",
+      "placement": "wall",
+      "mount_height_cm": 220,
+      "energy_role": "consumer",
+      "power_w": 1100,
+      "duty_hours_per_day": 6
+    },
+    {
+      "id": "courts-horizon-tr50-treadmill",
+      "sku": "CM-HORIZON-TR50-TREADMILL",
+      "name": "Horizon TR5.0 Treadmill",
+      "category": "fitness",
+      "supplier": "Courts Mammouth (Horizon)",
+      "dimensions_cm": {
+        "length": 162.5,
+        "width": 77,
+        "height": 139.5
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 37500.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Energy: typical average draw of a home treadmill at walking/jogging pace; the page lists no wattage Courts price shown as Rs 37,500 (was Rs 39,500) on the 2025-05-13 snapshot. Data sheet: Display Technology LED; Bluetooth Yes; Length(cm) 162.5; Width (cm) 77; Height (cm) 139.5; Weight (Kg) 59.2.",
+      "source_url": "https://www.courtsmammouth.mu/product/horizon-tr50-treadmill.html",
+      "front_edge": "bottom",
+      "energy_role": "consumer",
+      "power_w": 750,
+      "duty_hours_per_day": 1
+    },
+    {
+      "id": "courts-horizon-gr7-cycle",
+      "sku": "CM-HORIZON-GR7-CYCLE",
+      "name": "Horizon GR7 Indoor Cycle",
+      "category": "fitness",
+      "supplier": "Courts Mammouth (Horizon)",
+      "dimensions_cm": {
+        "length": 134,
+        "width": 56.2,
+        "height": 105.8
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 44999.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 44,999 (was Rs 64,999) on the 2025-03-25 snapshot. Data sheet: Bluetooth No; Length(cm) 134; Width (cm) 56.2; Height (cm) 105.8; Weight (Kg) 51; Adjustable Height No.",
+      "source_url": "https://www.courtsmammouth.mu/product/horizon-gr7-indoor-cycle.html",
+      "front_edge": "bottom",
+      "energy_role": "none"
+    },
+    {
+      "id": "courts-jdm-home-gym",
+      "sku": "CM-JDM-HOME-GYM",
+      "name": "JDM Sports One Station Home Gym",
+      "category": "fitness",
+      "supplier": "Courts Mammouth (JDM Sports)",
+      "dimensions_cm": {
+        "length": 110,
+        "width": 100,
+        "height": 205
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 24999.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "footprint typical for a single-station home gym; the page publishes no dimensions Courts price shown as Rs 24,999 (was Rs 27,999) on the 2025-02-11 snapshot.",
+      "source_url": "https://www.courtsmammouth.mu/product/jdm-sports-one-station-home-gym.html",
+      "front_edge": "bottom"
+    },
+    {
+      "id": "courts-homedics-footspa",
+      "sku": "CM-HOMEDICS-FOOTSPA",
+      "name": "Homedics FB-350-EU Foldaway 3YW Luxury Footspa",
+      "category": "massage",
+      "supplier": "Courts Mammouth (Homedics)",
+      "dimensions_cm": {
+        "length": 43.5,
+        "width": 42.0,
+        "height": 47.0
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 2699.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Energy: typical for a heated foot spa; the page lists no wattage Courts price shown as Rs 2,699 (was Rs 2,899) on the 2025-06-10 snapshot. Data sheet: Width (cm) 43.5; Depth (cm) 42; Height (cm) 47; Foldable Yes.",
+      "source_url": "https://www.courtsmammouth.mu/product/homedics-fb-350-eu-foldaway-3yw-luxury-footspa.html",
+      "energy_role": "consumer",
+      "power_w": 100,
+      "duty_hours_per_day": 0.5
+    },
+    {
+      "id": "courts-tamarin-corner",
+      "sku": "CM-TAMARIN-CORNER",
+      "name": "Tamarin Reversible Corner Red Col Fabric",
+      "category": "furniture",
+      "supplier": "Courts Mammouth",
+      "dimensions_cm": {
+        "length": 112.0,
+        "width": 112.0,
+        "height": 80.0
+      },
+      "weight_kg": 0,
+      "price": {
+        "value": 21999.0,
+        "currency": "MUR"
+      },
+      "commission_pct": 0.05,
+      "shopify_ready": false,
+      "image_url": "",
+      "designer_status": "Done",
+      "delivery_regions": [
+        "MU"
+      ],
+      "notes": "Courts price shown as Rs 21,999 (was Rs 29,999) on the 2025-03-20 snapshot. Data sheet: Seating Capacity 1; Width (cm) 112; Depth (cm) 112; Height (cm) 80; Fabric Pattern Plain; Upholstery Cover Fabric.",
+      "source_url": "https://www.courtsmammouth.mu/product/tamarin-reversible-corner-red-col-fabric.html",
+      "front_edge": "bottom"
+    }
+  ]
+}
