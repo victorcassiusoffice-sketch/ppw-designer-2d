@@ -55,8 +55,17 @@ describe('fetchFxSnapshot', () => {
   });
 
   it('falls back when fetch is unavailable', async () => {
-    const snap = await fetchFxSnapshot(undefined);
-    expect(snap.fallback).toBe(true);
+    // Passing `undefined` re-triggers the default parameter, which hands the
+    // REAL global fetch back in — on Node 18+ the test then hit the live FX
+    // API and timed out whenever that host was slow (5 s red on 2026-09-07).
+    // "Unavailable" means no global fetch at all: stub it out and use the default.
+    vi.stubGlobal('fetch', undefined);
+    try {
+      const snap = await fetchFxSnapshot();
+      expect(snap.fallback).toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 
