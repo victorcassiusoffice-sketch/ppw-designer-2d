@@ -27,7 +27,8 @@ import { WALL_HALF_M } from '../../src/designer/wallAwarePlacement';
 // construction), falling back to the charcoal wall pixel-scan that shares
 // `blueprintTheme.ROOM_BORDER_SCAN` with the theme it tracks. Both live in
 // the shared helper so this spec can never drift onto a stale palette.
-import { PX_PER_M, dockCard, roomOrigin } from './multiroom-helpers';
+import { GEOM_BRIDGE_SKIP, PX_PER_M, dockCard, roomOrigin } from './multiroom-helpers';
+import { requireGeomBridgeGenerous } from './sims-world-helpers';
 
 // Treadmill seed: 205 x 95 cm footprint (length along X at rotation 0).
 const PRODUCT_ID = 'k1-nordictrack-2450';
@@ -92,6 +93,12 @@ test.describe('Sims wall-aware placement', () => {
       localStorage.setItem('ppw_designer_coach_v1', '1');
     });
     await page.goto('/designer');
+    await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    // Asserted to the centimetre against the wall, so this needs the DEV
+    // bridge's exact world->screen transform. Without it (a production
+    // build) the colour-scan origin drifts by up to half a metre and the
+    // snap assertions read one grid cell off — environment, not product.
+    test.skip(!(await requireGeomBridgeGenerous(page)), GEOM_BRIDGE_SKIP);
 
     // Fresh canvas → give it the quick 5x4 m rectangle room.
     await page.locator('[data-testid="start-quick-rectangle"]').click();
@@ -179,6 +186,8 @@ test.describe('Sims wall-aware placement', () => {
       localStorage.setItem('ppw_designer_coach_v1', '1');
     });
     await page.goto('/designer');
+    await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    test.skip(!(await requireGeomBridgeGenerous(page)), GEOM_BRIDGE_SKIP);
     await page.locator('[data-testid="start-quick-rectangle"]').click();
 
     const card = dockCard(page, PRODUCT_ID, PRODUCT_NAME);

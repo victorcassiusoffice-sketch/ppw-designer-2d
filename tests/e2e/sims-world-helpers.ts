@@ -133,28 +133,33 @@ export async function storedPrecision(page: Page): Promise<string | null> {
  * truth is "not yet".
  */
 export async function waitForGeom(page: Page): Promise<void> {
-  try {
-    await page.waitForFunction(
-      () => {
-        const g = (window as unknown as { __ppwGeom?: { ready: () => boolean } }).__ppwGeom;
-        return !!g && g.ready();
-      },
+  // PRESENCE first, capped short. A production build never defines the
+  // bridge (DEV-only, tree-shaken), and the skip has to land well inside the
+  // 30 s test budget even after a slow preview navigation: the earlier shape
+  // (15 s wait, THEN probe the page in a catch) probed a page Playwright had
+  // already closed at the 30 s mark, so an intended SKIP was logged as
+  // "Target page closed" (verify pass 2026-09-07). On dev the bridge lands
+  // within a second of the canvas attaching, so 8 s only runs out on a build
+  // that does not ship it.
+  const present = await page
+    .waitForFunction(
+      () => typeof (window as unknown as { __ppwGeom?: unknown }).__ppwGeom !== 'undefined',
       undefined,
-      { timeout: 15_000 },
-    );
-  } catch (err) {
-    // Verify pass (2026-09-07): 46 specs "failed" against the Vercel
-    // preview for one reason — the bridge is DEV-only and production builds
-    // tree-shake it, so this wait can never resolve there. That is an
-    // environment, not a defect: skip with the same reason the guarded
-    // specs already use, and only fail when the bridge EXISTS but never
-    // became ready (a real regression).
-    const absent = await page.evaluate(
-      () => typeof (window as unknown as { __ppwGeom?: unknown }).__ppwGeom === 'undefined',
-    );
-    if (absent) test.skip(true, GEOM_BRIDGE_SKIP);
-    throw err;
-  }
+      { timeout: 8_000 },
+    )
+    .then(() => true)
+    .catch(() => false);
+  if (!present) test.skip(true, GEOM_BRIDGE_SKIP);
+  // Present: it must become READY. A bridge that exists but never reports a
+  // live stage is a real regression, so this one is allowed to fail.
+  await page.waitForFunction(
+    () => {
+      const g = (window as unknown as { __ppwGeom?: { ready: () => boolean } }).__ppwGeom;
+      return !!g && g.ready();
+    },
+    undefined,
+    { timeout: 10_000 },
+  );
 }
 
 /**

@@ -23,11 +23,13 @@ import {
   TWO_ROOM_FIXTURE,
   cloneFixture,
   dockCard,
+  GEOM_BRIDGE_SKIP,
   roomOrigin,
   seedProperty,
   storedProperty,
   type SeedRoom,
 } from './multiroom-helpers';
+import { requireGeomBridgeGenerous } from './sims-world-helpers';
 
 const PRODUCT_ID = 'k1-schwinn-700ic';
 const PRODUCT_NAME = 'Schwinn 700IC Indoor Bike';
@@ -66,6 +68,11 @@ test.describe('Attached multi-room — placement routing', () => {
     await seedProperty(page, cloneFixture(TWO_ROOM_FIXTURE));
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    // Asserted to the centimetre against the wall, so this needs the DEV
+    // bridge's exact world->screen transform. Without it (a production
+    // build) the colour-scan origin drifts by up to half a metre and the
+    // snap assertions read one grid cell off — environment, not product.
+    test.skip(!(await requireGeomBridgeGenerous(page)), GEOM_BRIDGE_SKIP);
     await expect(page.locator('[data-testid="items-placed"]')).toHaveText('0');
 
     // r1 is ACTIVE; drop deep inside r2 (world x 7, y 2).
@@ -132,6 +139,11 @@ test.describe('Attached multi-room — placement routing', () => {
     await seedProperty(page, cloneFixture(TWO_ROOM_FIXTURE));
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    // Asserted to the centimetre against the wall, so this needs the DEV
+    // bridge's exact world->screen transform. Without it (a production
+    // build) the colour-scan origin drifts by up to half a metre and the
+    // snap assertions read one grid cell off — environment, not product.
+    test.skip(!(await requireGeomBridgeGenerous(page)), GEOM_BRIDGE_SKIP);
 
     await armAndClickAt(page, 2, 2);
 
