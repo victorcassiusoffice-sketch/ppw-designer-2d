@@ -11,8 +11,9 @@
  */
 import { registerDemo, registeredDemoSlugs, type DemoDefinition } from './demoCatalog';
 import { COURTS_DEMO } from './courts';
+import { SOFAP_DEMO } from './sofap';
 
-const ALL: DemoDefinition[] = [COURTS_DEMO];
+const ALL: DemoDefinition[] = [COURTS_DEMO, SOFAP_DEMO];
 
 let registered = false;
 
