@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PPW Room Designer — let your customers design the room before they buy</title>
+<meta name="description" content="A room designer that runs on your website. Customers lay out a whole space with your real products at their real Mauritius prices — floor tiles by the box, paint by the tin, even a roof and solar — and reach checkout with the room in the basket. Built in Mauritius by Peak Performance Wellness Ltd.">
+<meta property="og:title" content="PPW Room Designer">
+<meta property="og:description" content="Let your customers design the room before they buy — your products, to scale, at your prices, on your website.">
+<meta property="og:image" content="https://ppw-room-designer-demo.vercel.app/img/hero-desktop.webp">
+<meta property="og:type" content="website">
+<link rel="icon" href="img/ppw-mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5EBD7; --surface:#FFFFFF; --surface-2:#FBF6EC;
+    --ink:#232C3B; --ink-soft:#5A5346; --line:#E3D6BC;
+    --navy:#232C3B; --navy-deep:#182030; --gold:#FFBB58; --gold-deep:#8A6313;
+    --ok:#2E7D5B; --shadow:0 1px 2px rgba(35,44,59,.05),0 14px 34px -14px rgba(35,44,59,.18);
+    --maxw:1140px; --r:18px;
+    color-scheme:light;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:"EB Garamond",Georgia,"Times New Roman",serif;font-weight:500;line-height:1.08;letter-spacing:-.005em;margin:0;text-wrap:balance;}
+  p{margin:0}
+  a{color:inherit}
+  img{max-width:100%;height:auto;display:block}
+  .wrap{max-width:var(--maxw);margin-inline:auto;padding-inline:clamp(18px,5vw,48px);}
+  .eyebrow{font-size:.74rem;text-transform:uppercase;letter-spacing:.16em;font-weight:700;color:var(--gold-deep);}
+  .lead{color:var(--ink-soft);font-size:clamp(1.05rem,1.5vw,1.2rem);}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.55rem;font-weight:600;font-size:.98rem;padding:.9rem 1.4rem;border-radius:999px;text-decoration:none;border:1.5px solid transparent;min-height:48px;transition:transform .18s ease,background .18s ease,box-shadow .18s ease;white-space:nowrap;cursor:pointer;font-family:inherit;}
+  .btn:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+  .btn-primary{background:var(--navy);color:#fff;}
+  .btn-primary:hover{background:var(--navy-deep);transform:translateY(-2px);box-shadow:0 12px 24px -12px rgba(35,44,59,.6);}
+  .btn-gold{background:var(--gold);color:var(--navy);}
+  .btn-gold:hover{background:#FFC97A;transform:translateY(-2px);box-shadow:0 12px 24px -12px rgba(138,99,19,.6);}
+  .btn-ghost{background:rgba(255,255,255,.7);color:var(--ink);border-color:var(--line);}
+  .btn-ghost:hover{border-color:var(--navy);transform:translateY(-2px);}
+  .arrow::after{content:"→";font-weight:500}
+
+  header.site{position:sticky;top:0;z-index:20;background:rgba(245,235,215,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);}
+  header.site .wrap{display:flex;align-items:center;justify-content:space-between;padding-block:.7rem;gap:1rem;}
+  .mark{display:flex;align-items:center;gap:.65rem;font-weight:700;letter-spacing:-.01em;text-decoration:none;color:var(--ink);line-height:1.1;}
+  .mark img{width:34px;height:34px;border-radius:9px;background:var(--surface);border:1px solid var(--line);padding:4px;}
+  .mark small{display:block;font-weight:600;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-deep);margin-top:2px;}
+  header .btn{padding:.6rem 1rem;min-height:40px;font-size:.9rem}
+  @media (max-width:520px){ header .btn span{display:none} }
+
+  section{padding-block:clamp(52px,7.5vw,96px);}
+  .sec-head{max-width:660px;margin-bottom:clamp(28px,4.5vw,52px);}
+  .sec-head h2{font-size:clamp(1.9rem,3.5vw,2.8rem);margin-top:.6rem;}
+  .sec-head p{margin-top:.9rem;}
+
+  /* hero */
+  .hero{padding-block:clamp(40px,6vw,80px) clamp(36px,5vw,64px);border-bottom:1px solid var(--line);}
+  .hero .grid{display:grid;grid-template-columns:1fr 1.15fr;gap:clamp(24px,4vw,56px);align-items:center;}
+  @media (max-width:860px){ .hero .grid{grid-template-columns:1fr;} }
+  .hero h1{font-size:clamp(2.4rem,5.4vw,4rem);}
+  .hero h1 em{font-style:normal;color:var(--gold-deep);}
+  .hero .lead{margin-top:1.1rem;max-width:36ch;}
+  .cta-row{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1.8rem;}
+  .tagpill{display:inline-flex;align-items:center;gap:.5rem;margin-bottom:1.2rem;font-size:.78rem;font-weight:600;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);padding:.4rem .8rem;border-radius:999px;}
+  .tagpill b{color:var(--gold-deep);}
+  .device{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:8px;box-shadow:var(--shadow);}
+  .device .bar{display:flex;align-items:center;gap:6px;padding:6px 10px 10px;}
+  .device .bar i{width:9px;height:9px;border-radius:50%;background:var(--line);display:inline-block;}
+  .device .bar span{margin-left:8px;font-size:.76rem;color:var(--ink-soft);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;}
+  .device img{border-radius:10px;border:1px solid var(--line);}
+  .hero .facts{display:flex;flex-wrap:wrap;gap:.6rem 1.4rem;margin-top:1.4rem;font-size:.85rem;color:var(--ink-soft);}
+  .hero .facts b{color:var(--ink);font-weight:600}
+
+  /* cards */
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  @media (max-width:820px){ .grid3{grid-template-columns:1fr;} }
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:26px;box-shadow:var(--shadow);}
+  .card .ico{width:44px;height:44px;border-radius:12px;background:rgba(255,187,88,.22);color:var(--gold-deep);display:grid;place-items:center;margin-bottom:16px;}
+  .card svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .card h3{font-size:1.3rem;margin-bottom:.45rem;}
+  .card p{color:var(--ink-soft);font-size:.97rem;}
+
+  /* calculators */
+  .calc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  @media (max-width:980px){ .calc-grid{grid-template-columns:1fr;} }
+  .calc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px;}
+  .calc h3{font-size:1.25rem}
+  .calc .sub{color:var(--ink-soft);font-size:.9rem;margin-top:-4px}
+  .calc label{display:grid;gap:4px;font-size:.82rem;font-weight:600;color:var(--ink-soft)}
+  .calc input[type=number],.calc select{font:inherit;font-size:1rem;padding:.55rem .7rem;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--ink);min-height:44px;width:100%}
+  .calc input[type=range]{width:100%;accent-color:var(--navy)}
+  .calc .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .calc .out{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:auto}
+  .calc .out .big{font-family:"EB Garamond",serif;font-size:1.75rem;line-height:1.1;font-variant-numeric:tabular-nums}
+  .calc .out .small{font-size:.85rem;color:var(--ink-soft);margin-top:4px}
+  .calc .src{font-size:.74rem;color:var(--ink-soft);}
+  .checks{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:.85rem;font-weight:500;color:var(--ink)}
+  .checks label{display:flex;align-items:center;gap:.5rem;font-weight:500;color:var(--ink);cursor:pointer;min-height:32px}
+  .checks input{width:18px;height:18px;accent-color:var(--navy)}
+  .bar-wrap{height:10px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:8px}
+  .bar-wrap i{display:block;height:100%;background:var(--gold);border-radius:999px;transition:width .3s ease}
+
+  /* to-scale widget */
+  .scale{display:grid;grid-template-columns:1fr 1.2fr;gap:20px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);margin-top:18px}
+  @media (max-width:860px){ .scale{grid-template-columns:1fr} }
+  .scale svg{width:100%;height:auto;background:var(--surface-2);border:1px solid var(--line);border-radius:12px}
+  .scale .controls{display:grid;gap:12px}
+  .scale .controls label{display:grid;gap:4px;font-size:.82rem;font-weight:600;color:var(--ink-soft)}
+  .scale select,.scale input{font:inherit;font-size:1rem;padding:.55rem .7rem;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--ink);min-height:44px}
+  .scale .btn{align-self:start}
+  .scale .readout{font-size:.95rem;color:var(--ink-soft)}
+  .scale .readout b{color:var(--ink)}
+
+  /* steps */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+  @media (max-width:820px){ .steps{grid-template-columns:1fr;} }
+  .step{padding:28px;border-right:1px solid var(--line);}
+  .step:last-child{border-right:none;}
+  @media (max-width:820px){ .step{border-right:none;border-bottom:1px solid var(--line);} .step:last-child{border-bottom:none;} }
+  .step .n{font-family:"EB Garamond",serif;font-size:2.2rem;color:var(--gold-deep);line-height:1;}
+  .step h3{font-size:1.2rem;margin:.6rem 0 .4rem;}
+  .step p{color:var(--ink-soft);font-size:.95rem;}
+  .capability{margin-top:22px;background:var(--navy);color:#fff;border-radius:var(--r);padding:22px 26px;font-size:1.02rem;line-height:1.6}
+  .capability b{color:var(--gold)}
+
+  /* walkthrough */
+  .demo{background:var(--surface-2);border-block:1px solid var(--line);}
+  .wt{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:8px}
+  @media (max-width:980px){ .wt{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:520px){ .wt{grid-template-columns:1fr;} }
+  .wt figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+  .wt img{aspect-ratio:16/9;object-fit:cover;object-position:top left;width:100%}
+  .wt figcaption{padding:10px 12px 12px;font-size:.85rem;color:var(--ink-soft)}
+  .wt figcaption b{display:block;color:var(--ink);font-weight:600;margin-bottom:2px}
+  .wt-full{margin-top:16px}
+  .toggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:4px;gap:4px;margin-top:22px}
+  .toggle button{font:inherit;font-weight:600;border:0;background:transparent;color:var(--ink-soft);padding:.5rem 1rem;border-radius:999px;min-height:40px;cursor:pointer}
+  .toggle button[aria-pressed=true]{background:var(--navy);color:#fff}
+  .stage{margin-top:14px;display:grid;gap:14px}
+  .stage .device{max-width:980px}
+  .stage .phone{max-width:340px;margin-inline:auto}
+  .demo .cta-row{margin-top:22px}
+  video{width:100%;max-width:980px;border-radius:14px;border:1px solid var(--line);background:#000;display:block;margin-top:16px}
+
+  /* FAQ */
+  .faq{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:820px){ .faq{grid-template-columns:1fr;} }
+  .faq .card h3{font-size:1.15rem}
+
+  /* pricing */
+  .anchor{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:var(--r);padding:18px 22px;margin-bottom:22px;color:var(--ink-soft);font-size:.97rem}
+  .anchor b{color:var(--ink)}
+  .includes{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;margin:0 0 26px;padding:0;list-style:none;font-size:.95rem;color:var(--ink-soft)}
+  @media (max-width:820px){ .includes{grid-template-columns:1fr;} }
+  .includes li{display:flex;gap:.6rem;align-items:flex-start}
+  .includes li::before{content:"";flex:0 0 10px;width:10px;height:10px;border-radius:50%;background:var(--gold);margin-top:.5rem}
+  .prices{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  @media (max-width:980px){ .prices{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:560px){ .prices{grid-template-columns:1fr;} }
+  .tier{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px;display:flex;flex-direction:column;box-shadow:var(--shadow);position:relative;}
+  .tier.feat{border-color:var(--navy);box-shadow:0 0 0 1px var(--navy),var(--shadow);}
+  .tier .badge{position:absolute;top:-11px;left:22px;background:var(--gold);color:var(--navy);font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .7rem;border-radius:999px;}
+  .tier h3{font-size:1.35rem;}
+  .tier .cat{font-size:.85rem;color:var(--ink-soft);margin-top:.3rem;min-height:2.6em;}
+  .tier .setup{font-family:"EB Garamond",serif;font-size:1.85rem;margin-top:.9rem;font-variant-numeric:tabular-nums;}
+  .tier .setup small{display:block;font-family:Inter,sans-serif;font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-soft);font-weight:700;margin-bottom:.2rem;}
+  .tier .care{margin-top:.9rem;padding-top:.9rem;border-top:1px dashed var(--line);font-size:.95rem;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .tier .care b{color:var(--ink);font-weight:700;}
+  .price-note{margin-top:18px;color:var(--ink-soft);font-size:.92rem;max-width:64ch;}
+  .terms{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:26px}
+  @media (max-width:980px){ .terms{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:520px){ .terms{grid-template-columns:1fr;} }
+  .terms div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:.88rem;color:var(--ink-soft)}
+  .terms div b{display:block;color:var(--ink);font-weight:600;margin-bottom:3px}
+
+  /* founder */
+  .founder{display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:clamp(22px,4vw,38px);box-shadow:var(--shadow);}
+  @media (max-width:640px){ .founder{grid-template-columns:1fr;} }
+  .avatar{width:112px;height:112px;border-radius:50%;object-fit:cover;border:3px solid var(--gold);}
+  .founder h3{font-size:1.45rem;margin-bottom:.15rem;}
+  .founder .role{color:var(--gold-deep);font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.1em;}
+  .founder p{color:var(--ink-soft);margin-top:.9rem;}
+  .founder p b{color:var(--ink);font-weight:600}
+
+  /* final */
+  .final{background:var(--navy);color:#fff;text-align:center;}
+  .final h2{color:#fff;font-size:clamp(2rem,4vw,3rem);}
+  .final p{color:rgba(255,255,255,.86);margin-top:1rem;max-width:48ch;margin-inline:auto;}
+  .final .cta-row{justify-content:center;margin-top:1.9rem;}
+  .final .btn-ghost{background:transparent;border-color:rgba(255,255,255,.55);color:#fff;}
+  .final .btn-ghost:hover{border-color:#fff;}
+  .contacts{margin-top:1.7rem;font-size:.95rem;display:flex;gap:1.4rem;justify-content:center;flex-wrap:wrap;}
+  .contacts a{color:var(--gold);text-decoration:none;font-weight:600;}
+
+  footer{padding-block:28px;text-align:center;color:var(--ink-soft);font-size:.82rem;line-height:1.7}
+  footer b{color:var(--ink);font-weight:600}
+
+  .js .reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease;}
+  .js .reveal.in{opacity:1;transform:none;}
+  @media (prefers-reduced-motion:reduce){ .js .reveal{opacity:1;transform:none;transition:none;} .btn{transition:none;} }
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add('js')</script>
+
+<header class="site">
+  <div class="wrap">
+    <a class="mark" href="#top" aria-label="PPW Room Designer, top of page"><img src="img/ppw-mark.png" alt="" width="34" height="34"><span>Peak Performance Wellness<small>Room Designer</small></span></a>
+    <a class="btn btn-gold" href="https://calendly.com/victorcassius-office/room-designer-45-min-walkthrough" target="_blank" rel="noopener">Book a <span>45-minute </span>walkthrough</a>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <div class="wrap grid">
+    <div>
+      <span class="tagpill">Built in Mauritius · <b>runs on your website</b></span>
+      <h1>Let your customers <em>design the room</em> before they buy.</h1>
+      <p class="lead">A designer that lives on your website. A customer lays out a whole space — your furniture, your floor tiles, your paint, even a roof and solar panels — each at its real MUR price, adding up as they go.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary arrow" href="https://designer.ppwellness.co/designer" target="_blank" rel="noopener">Open the live tool</a>
+        <a class="btn btn-ghost" href="#demo">▶&nbsp; Watch the 60-second demo</a>
+      </div>
+      <div class="facts"><span><b>To scale</b> — real dimensions</span><span><b>Real prices</b> — in rupees</span><span><b>Whole room</b> — in the basket</span></div>
+    </div>
+    <div class="device">
+      <div class="bar"><i></i><i></i><i></i><span>designer.ppwellness.co/designer</span></div>
+      <img src="img/hero-desktop.webp" width="1600" height="900" alt="The Room Designer with a furnished 6 by 4.5 metre wellness room: treadmill, indoor bike, bench, Smith machine, console table and floor lamp placed to scale, with a running total of Rs 380,450" fetchpriority="high">
+    </div>
+  </div>
+</section>
+
+<section id="why">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Why it works</span>
+      <h2>A customer who has laid out the room is closer to buying it.</h2>
+      <p class="lead">Empty spaces and single products are the hardest things to sell. Let a customer build the whole room, and the room does the selling.</p>
+    </div>
+    <div class="grid3">
+      <div class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 7h18v10H3z"/><path d="M7 7v10M17 7v10M3 12h18"/></svg></div>
+        <h3>Bigger baskets</h3>
+        <p>They design a whole space, not one item — sofa, table, rug, lamp, the floor and the paint. You hold a shopping list nobody else has.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20V4h16v16z"/><path d="M4 12h16M12 4v16"/><path d="M8 8h2M14 8h2"/></svg></div>
+        <h3>It measures the room</h3>
+        <p>Floor tiles by the exact box count, paint by the whole tin, doors and windows to scale, even a roof and solar panels against the Mauritius sun. A furniture-drag tool this is not.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3l9 4.5-9 4.5-9-4.5z"/><path d="M3 12l9 4.5 9-4.5"/><path d="M3 16.5L12 21l9-4.5"/></svg></div>
+        <h3>Real product, real prices</h3>
+        <p>Every piece is your own catalogue, at its Mauritius price. No retailer here lets a customer lay out a whole room with real products and a live total. Add the care plan and we keep images, prices and stock current for you.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="maths" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Try the maths yourself</span>
+      <h2>The same formulas the designer runs — right here.</h2>
+      <p class="lead">Nothing is estimated by eye. Every count below is the designer's own calculation, with the real Mauritian prices it uses today.</p>
+    </div>
+
+    <div class="calc-grid">
+      <!-- PAINT -->
+      <div class="calc reveal" id="calc-paint">
+        <h3>Paint, by the tin</h3>
+        <p class="sub">Permoglaze Matt Emulsion (Sofap) — 9 m² per litre, two coats.</p>
+        <div class="row">
+          <label>Wall length (m)<input type="number" id="p-len" value="16" min="1" max="200" step="0.1"></label>
+          <label>Wall height (m)<input type="number" id="p-h" value="2.7" min="2" max="4" step="0.1"></label>
+        </div>
+        <div class="row">
+          <label>Doors<input type="number" id="p-doors" value="1" min="0" max="20" step="1"></label>
+          <label>Windows<input type="number" id="p-win" value="2" min="0" max="30" step="1"></label>
+        </div>
+        <div class="out">
+          <div class="big" id="p-out">—</div>
+          <div class="small" id="p-detail"></div>
+        </div>
+        <p class="src">Wall area minus doors (0.84 × 2.04 m) and windows (1.2 × 1.2 m) × 2 coats ÷ 9 m²/L, then the cheapest whole-tin fill from 1 L Rs 201.25 · 5 L Rs 760 · 20 L Rs 2,940.</p>
+      </div>
+
+      <!-- TILES -->
+      <div class="calc reveal" id="calc-tiles">
+        <h3>Floor, by the tile</h3>
+        <p class="sub">Gym Interlock Tile 92 × 92 cm — Rs 1,600 per tile.</p>
+        <div class="row">
+          <label>Room width (m)<input type="number" id="t-w" value="6" min="1" max="40" step="0.1"></label>
+          <label>Room depth (m)<input type="number" id="t-d" value="4.5" min="1" max="40" step="0.1"></label>
+        </div>
+        <label>Tile<select id="t-tile">
+          <option value="0.92|1600|Gym Interlock Tile 92×92">Gym Interlock Tile 92 × 92 cm · Rs 1,600</option>
+          <option value="1|850|EVA Combat Mat 1×1 m">EVA Combat Mat 1 × 1 m · Rs 850</option>
+          <option value="0.5|500|Rubber Composite 50×50">Rubber Composite 50 × 50 cm · Rs 500</option>
+          <option value="1|1500|Outdoor Rubber 1×1 m">Outdoor Rubber 1 × 1 m · Rs 1,500</option>
+        </select></label>
+        <div class="out">
+          <div class="big" id="t-out">—</div>
+          <div class="small" id="t-detail"></div>
+        </div>
+        <p class="src">Whole tiles, plus the cut tiles along the walls, plus a 10 % offcut allowance on the cut tiles — the count the designer puts in the basket.</p>
+      </div>
+
+      <!-- SOLAR -->
+      <div class="calc reveal" id="calc-solar">
+        <h3>Solar, against the Mauritius sun</h3>
+        <p class="sub">Jinko 475 W panel (Emcar) — Rs 12,075 each. Tamarin, 20° north-facing roof.</p>
+        <label>Panels: <span id="s-n">4</span><input type="range" id="s-panels" min="0" max="20" value="4"></label>
+        <div class="checks" id="s-loads">
+          <label><input type="checkbox" data-w="800" data-h="6" checked>Air conditioner</label>
+          <label><input type="checkbox" data-w="56" data-h="24" checked>Fridge</label>
+          <label><input type="checkbox" data-w="77" data-h="3" checked>Television</label>
+          <label><input type="checkbox" data-w="350" data-h="1" checked>Treadmill</label>
+          <label><input type="checkbox" data-w="10" data-h="4" checked>Lamp</label>
+          <label><input type="checkbox" data-w="2000" data-h="1.5">Water heater</label>
+          <label><input type="checkbox" data-w="4200" data-h="1">Sauna heater</label>
+          <label><input type="checkbox" data-w="250" data-h="24">Ice-bath chiller</label>
+        </div>
+        <div class="out">
+          <div class="big" id="s-out">—</div>
+          <div class="small" id="s-detail"></div>
+          <div class="bar-wrap" aria-hidden="true"><i id="s-bar" style="width:0%"></i></div>
+        </div>
+        <p class="src">Generation = watts-peak × 5.17 sun-hours × 0.775 performance ratio (PVGIS SARAH3 2005–2023, Tamarin). Loads are the designer's sourced average draws.</p>
+      </div>
+    </div>
+
+    <!-- TO SCALE -->
+    <div class="scale reveal" id="scale">
+      <div class="controls">
+        <h3>To scale, every time</h3>
+        <p class="readout">Pick a real product and a room. The footprint is drawn at its true dimensions on a half-metre grid — exactly how the designer places it.</p>
+        <label>Product<select id="sc-product">
+          <option value="205|95|NordicTrack Commercial 2450 Treadmill">NordicTrack Commercial 2450 Treadmill — 205 × 95 cm</option>
+          <option value="225|165|Vision Fitness Smith Machine">Vision Fitness Smith Machine — 225 × 165 cm</option>
+          <option value="120|55|Schwinn 700IC Indoor Bike">Schwinn 700IC Indoor Bike — 120 × 55 cm</option>
+          <option value="135|60|Adjustable Flat / Incline / Decline Bench">Adjustable bench — 135 × 60 cm</option>
+          <option value="120|40|Wellness Console Table">Wellness Console Table — 120 × 40 cm</option>
+        </select></label>
+        <div class="row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <label>Room width (m)<input type="number" id="sc-w" value="6" min="1" max="20" step="0.5"></label>
+          <label>Room depth (m)<input type="number" id="sc-d" value="4.5" min="1" max="20" step="0.5"></label>
+        </div>
+        <button type="button" class="btn btn-ghost" id="sc-rotate">Rotate 90°</button>
+        <p class="readout" id="sc-read"></p>
+      </div>
+      <svg id="sc-svg" viewBox="0 0 640 480" role="img" aria-label="A product footprint drawn to scale inside a room grid"></svg>
+    </div>
+  </div>
+</section>
+
+<section id="how" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">How it works</span>
+      <h2>Three steps to a designer on your site.</h2>
+    </div>
+    <div class="steps reveal">
+      <div class="step"><div class="n">1</div><h3>We run it for you</h3><p>Hosted and run by us — linked from your site today, embedded on your own pages once your domain is on the allow-list, and styled to match your brand as part of setup. No app for your customer to download.</p></div>
+      <div class="step"><div class="n">2</div><h3>Your catalogue, loaded</h3><p>Your products become real, movable objects — images, sizes and prices. You send a catalogue export and photos; we do the scaling and loading. With the care plan, we keep them current.</p></div>
+      <div class="step"><div class="n">3</div><h3>They design and buy</h3><p>Customers lay out the space, see the running total, and send the whole room to your checkout basket — or to your sales team as a costed plan.</p></div>
+    </div>
+    <div class="capability reveal">In one room a customer can <b>draw the walls</b>, drop your sofas and tables in <b>to scale at their real MUR price</b>, <b>tile the floor</b> and get the exact number of boxes to order, <b>paint the walls</b> and get the tin count, add a <b>second storey and a roof</b>, place <b>solar panels</b> and read the day's energy against the Mauritius sun — then send the whole basket to your checkout.</div>
+  </div>
+</section>
+
+<section class="demo" id="demo">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">See it live</span>
+      <h2>It's finished — not a concept.</h2>
+      <p class="lead">These are frames of the real tool, taken today, loaded with a sample wellness catalogue. Yours would show your own products.</p>
+    </div>
+
+    <div class="wt reveal">
+      <figure><img src="img/wt-1-draw.webp" width="1400" height="787" alt="Drawing the room's walls with the wall pen; the length and angle read out as you draw" loading="lazy"><figcaption><b>1 · Draw the room</b>Walls snap straight; length and angle read out live.</figcaption></figure>
+      <figure><img src="img/wt-2-scale.webp" width="1400" height="787" alt="A treadmill selected in the room with its details panel reading footprint 205 by 95 cm and height 165 cm" loading="lazy"><figcaption><b>2 · Drop products to scale</b>205 × 95 cm on the page, 205 × 95 cm on the plan.</figcaption></figure>
+      <figure><img src="img/wt-3-tiles.webp" width="1400" height="787" alt="The floor tool laying Gym Interlock tiles across the room with a live count of 37 tiles at Rs 59,200" loading="lazy"><figcaption><b>3 · Tile the floor</b>"37 tiles · Rs 59,200" — cut tiles and offcuts counted.</figcaption></figure>
+      <figure><img src="img/wt-4-paint.webp" width="1400" height="787" alt="The wall-paint tool with the room painted and the litres and tins required listed" loading="lazy"><figcaption><b>4 · Paint the walls</b>Litres from the wall area, then whole tins.</figcaption></figure>
+      <figure><img src="img/wt-5-solar.webp" width="1400" height="787" alt="The roof level with four Jinko solar panels and the energy panel reading a surplus of 7.2 kilowatt-hours per day" loading="lazy"><figcaption><b>5 · Add a roof and solar</b>"Surplus +7.2 kWh/day · 4 panels · 1.90 kWp".</figcaption></figure>
+    </div>
+
+    <div class="toggle" role="group" aria-label="Preview device">
+      <button type="button" aria-pressed="true" data-stage="desktop">Desktop</button>
+      <button type="button" aria-pressed="false" data-stage="phone">Phone</button>
+    </div>
+    <div class="stage">
+      <div class="device" id="stage-desktop">
+        <div class="bar"><i></i><i></i><i></i><span>designer.ppwellness.co/designer</span></div>
+        <img src="img/hero-desktop.webp" width="1600" height="900" alt="The furnished wellness room on a desktop screen" loading="lazy">
+      </div>
+      <div class="device phone" id="stage-phone" hidden>
+        <div class="bar"><i></i><i></i><i></i><span>phone · 390 px</span></div>
+        <img src="img/phone-390.webp" width="780" height="1688" alt="The same room on a phone, with the catalogue toolbar along the bottom" loading="lazy">
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <a class="btn btn-primary arrow" href="https://designer.ppwellness.co/designer" target="_blank" rel="noopener">Open the live tool</a>
+      <a class="btn btn-ghost" href="#video">▶&nbsp; Watch the 60-second demo</a>
+    </div>
+    <video id="video" controls preload="metadata" playsinline poster="img/hero-desktop.webp">
+      <source src="demo-60s.mp4" type="video/mp4">
+      Your browser cannot play this video. <a href="demo-60s.mp4">Download the MP4</a>.
+    </video>
+  </div>
+</section>
+
+<section id="questions">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">What we handle</span>
+      <h2>The questions a director asks first.</h2>
+    </div>
+    <div class="faq">
+      <div class="card reveal"><h3>What does it cost us in effort?</h3><p>One catalogue export and one review. You give us a product list, photos and dimensions; we produce the to-scale top-down image each product needs, the sizing and the pricing.</p></div>
+      <div class="card reveal"><h3>Couldn't our web team build this?</h3><p>Building it in-house means a drawing engine, real-scale placement, tile and paint arithmetic, and a solar model tuned to Mauritius. The retailers who "built their own" — IKEA, Williams-Sonoma — bought a specialist company to do it. This one is finished and running today.</p></div>
+      <div class="card reveal"><h3>How long to launch?</h3><p>Weeks, not months. The catalogue size sets the pace; we agree the go-live date at the walkthrough and hold to it.</p></div>
+      <div class="card reveal"><h3>Does it change our checkout?</h3><p>No. Your checkout stays yours. The designer hands the basket, or a costed plan, to whichever you prefer.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Pricing</span>
+      <h2>Priced to your catalogue.</h2>
+      <p class="lead">A one-off setup to build and load your products, then an optional monthly care plan that keeps everything current. Two numbers size it: how many products you sell, and how often the range changes.</p>
+    </div>
+    <div class="anchor reveal"><b>Why it pays.</b> The tool is built to sell the whole room instead of one product. Houzz reported that shoppers who used its view-in-room tool were <b>11 times more likely to buy</b> (<a href="https://blog.houzz.com/houzz-upgrades-augmented-reality-app-capabilities/" target="_blank" rel="noopener">Houzz, 2018</a>). We would rather show you your own numbers at the walkthrough than promise a figure here.</div>
+    <ul class="includes reveal">
+      <li>The designer running for you, linked from your site (embedded once your domain is on the allow-list), in your branding.</li>
+      <li>Your products converted by us into scaled top-down objects — real photo, real dimensions, MUR price — from your catalogue export.</li>
+      <li>Floor-tile, wall-paint, door and window, storey, roof and solar estimators configured for your range.</li>
+      <li>A walkthrough for your staff, and a go-live date agreed up front.</li>
+    </ul>
+    <div class="prices reveal">
+      <div class="tier"><h3>Starter</h3><p class="cat">Up to about 150 products. A single showroom or boutique.</p><div class="setup"><small>Setup</small>Rs 50,000</div><div class="care">Care plan <b>Rs 10,000</b>/mo · optional</div></div>
+      <div class="tier"><h3>Growth</h3><p class="cat">About 150–1,000 products. A mid-size retailer or developer range.</p><div class="setup"><small>Setup</small>Rs 90,000</div><div class="care">Care plan <b>Rs 18,000</b>/mo · optional</div></div>
+      <div class="tier feat"><span class="badge">Recommended</span><h3>Pro</h3><p class="cat">About 1,000–5,000 products. A multi-category showroom or chain.</p><div class="setup"><small>Setup</small>Rs 150,000</div><div class="care">Care plan <b>Rs 30,000</b>/mo · optional</div></div>
+      <div class="tier"><h3>Enterprise</h3><p class="cat">5,000+ products with stock that changes constantly.</p><div class="setup"><small>Setup from</small>Rs 250,000</div><div class="care">Care plan from <b>Rs 45,000</b>/mo · quoted on volume</div></div>
+    </div>
+    <p class="price-note reveal">For a large, fast-moving catalogue the care plan is where the value sits — keeping thousands of products, prices and stock current is real work you would rather not do by hand.</p>
+    <div class="terms reveal">
+      <div><b>Contract</b>Care plan is month to month; 30 days' notice to cancel.</div>
+      <div><b>Support</b>Mon–Fri by WhatsApp and email; a reply within one business day.</div>
+      <div><b>Your data</b>Your catalogue and your customers' designs stay yours.</div>
+      <div><b>Hosting</b>Hosted and run by us; you are never asked to manage a server.</div>
+      <div><b>If you stop</b>The designer stays live with your last catalogue; nothing is switched off without notice.</div>
+    </div>
+  </div>
+</section>
+
+<section id="founder" style="padding-top:0">
+  <div class="wrap">
+    <div class="founder reveal">
+      <img class="avatar" src="img/founder.webp" width="112" height="112" alt="Victor Cassius Bhatoolaul">
+      <div>
+        <span class="role">The founder</span>
+        <h3>Victor Cassius Bhatoolaul</h3>
+        <p>Over the past several months I built this end to end — the drawing engine, the catalogue system and the pricing — and it runs live at designer.ppwellness.co. My background is sports science (BSc Hons, University of Hertfordshire) and 13 years of clinical practice; my clinic is in Tamarin. <b>It's finished and working, not a concept I'm asking you to fund.</b> I'm offering it in Mauritius first, and I'd rather start with the right partners.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2>See it, then let's talk.</h2>
+    <p>Open the live tool, then book 45 minutes. I'll show you the customer side and the back end your team would run, and give you clear options for your catalogue.</p>
+    <div class="cta-row">
+      <a class="btn btn-gold" href="https://calendly.com/victorcassius-office/room-designer-45-min-walkthrough" target="_blank" rel="noopener">Book a 45-minute walkthrough</a>
+      <a class="btn btn-ghost arrow" href="https://designer.ppwellness.co/designer" target="_blank" rel="noopener">Open the live tool</a>
+    </div>
+    <div class="contacts">
+      <a href="https://wa.me/23054560035" target="_blank" rel="noopener">WhatsApp +230 5456 0035</a>
+      <a href="mailto:victor@ppwellness.co">victor@ppwellness.co</a>
+      <a href="https://ppwellness.co" target="_blank" rel="noopener">ppwellness.co</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <b>Peak Performance Wellness Ltd</b> · BRN C26237941 · Company No. C237941, registered 10 August 2026<br>
+    Registered office: 59 Charles Regnaud Street, Eau Coulée, Curepipe, Mauritius
+  </div>
+</footer>
+
+<script>
+(function(){
+  // ---------- helpers ----------
+  const $ = (s) => document.querySelector(s);
+  const rs = (n) => 'Rs ' + Math.round(n).toLocaleString('en-US');
+  const num = (el, fallback) => { const v = parseFloat(el.value); return Number.isFinite(v) && v >= 0 ? v : fallback; };
+
+  // ---------- PAINT (wallPaintCalc.ts + wallPaints.ts) ----------
+  const PAINT = { coverage: 9, coats: 2, tins: [{ l: 20, p: 2940 }, { l: 5, p: 760 }, { l: 1, p: 201.25 }] };
+  const DOOR_W = 0.838, DOOR_H = 2.04, WIN_W = 1.2, WIN_H = 1.2;
+  // Cheapest whole-tin fill: exact enumeration over 20/5/1 L counts.
+  function tinsFor(litres) {
+    let best = null;
+    const need = Math.max(0, litres);
+    for (let a = 0; a <= Math.ceil(need / 20) + 1; a++) {
+      for (let b = 0; b <= Math.ceil(need / 5) + 1; b++) {
+        const rem = need - a * 20 - b * 5;
+        const c = rem > 0 ? Math.ceil(rem - 1e-9) : 0;
+        const price = a * 2940 + b * 760 + c * 201.25;
+        const total = a * 20 + b * 5 + c;
+        if (total + 1e-9 >= need && (!best || price < best.price - 1e-9 || (Math.abs(price - best.price) < 1e-9 && total < best.total))) best = { a, b, c, price, total };
+      }
+    }
+    return best;
+  }
+  function paint() {
+    const len = num($('#p-len'), 0), h = num($('#p-h'), 2.7), doors = num($('#p-doors'), 0), wins = num($('#p-win'), 0);
+    const area = Math.max(0, len * h - doors * DOOR_W * Math.min(DOOR_H, h) - wins * WIN_W * Math.min(WIN_H, h));
+    const litres = Math.ceil((area * PAINT.coats) / PAINT.coverage * 10) / 10;
+    const t = tinsFor(litres);
+    const parts = [];
+    if (t.a) parts.push(t.a + ' × 20 L'); if (t.b) parts.push(t.b + ' × 5 L'); if (t.c) parts.push(t.c + ' × 1 L');
+    $('#p-out').textContent = (parts.join(' + ') || 'no paint needed') + (litres ? ' · ' + rs(t.price) : '');
+    $('#p-detail').textContent = area.toFixed(1) + ' m² of wall × 2 coats = ' + litres.toFixed(1) + ' L';
+  }
+  ['#p-len', '#p-h', '#p-doors', '#p-win'].forEach((s) => $(s).addEventListener('input', paint));
+  paint();
+
+  // ---------- TILES (floorTiles.ts: units = whole + cut + ceil(cut × 0.10)) ----------
+  function tiles() {
+    const w = num($('#t-w'), 0), d = num($('#t-d'), 0);
+    const [size, price, name] = $('#t-tile').value.split('|');
+    const s = parseFloat(size), p = parseFloat(price);
+    const cols = Math.ceil(w / s - 1e-9), rows = Math.ceil(d / s - 1e-9);
+    const wholeC = Math.floor(w / s + 1e-9), wholeR = Math.floor(d / s + 1e-9);
+    const whole = wholeC * wholeR;
+    const cut = cols * rows - whole;
+    const units = whole + cut + Math.ceil(cut * 0.1);
+    $('#t-out').textContent = units + ' tiles · ' + rs(units * p);
+    $('#t-detail').textContent = (w * d).toFixed(1) + ' m² · ' + whole + ' whole + ' + cut + ' cut + ' + Math.ceil(cut * 0.1) + ' spare (' + name + ')';
+  }
+  ['#t-w', '#t-d', '#t-tile'].forEach((s) => $(s).addEventListener('input', tiles));
+  tiles();
+
+  // ---------- SOLAR (solarCalc.ts + mauritiusSolar.ts) ----------
+  const PSH = 5.17, PR = 0.775, PANEL_WP = 475, PANEL_RS = 12075;
+  function solar() {
+    const n = parseInt($('#s-panels').value, 10) || 0;
+    $('#s-n').textContent = n;
+    const gen = n * PANEL_WP * PSH * PR; // Wh/day
+    let load = 0;
+    document.querySelectorAll('#s-loads input:checked').forEach((c) => { load += parseFloat(c.dataset.w) * parseFloat(c.dataset.h); });
+    const perPanel = PANEL_WP * PSH * PR;
+    const cov = load > 0 ? Math.min(999, Math.round(gen / load * 100)) : (gen > 0 ? 999 : 0);
+    const gap = Math.max(0, load - gen);
+    const need = gap > 0 ? Math.ceil(gap / perPanel) : 0;
+    const net = gen - load;
+    $('#s-out').textContent = (net >= 0 ? 'Surplus +' : 'Short −') + (Math.abs(net) / 1000).toFixed(1) + ' kWh/day';
+    $('#s-detail').textContent = '☀ ' + (gen / 1000).toFixed(1) + ' kWh generated · ⚡ ' + (load / 1000).toFixed(1) + ' kWh used · ' + cov + '% covered' + (need ? ' · add ' + need + ' more panel' + (need > 1 ? 's' : '') : '') + ' · panels ' + rs(n * PANEL_RS);
+    $('#s-bar').style.width = Math.min(100, cov) + '%';
+  }
+  $('#s-panels').addEventListener('input', solar);
+  document.querySelectorAll('#s-loads input').forEach((c) => c.addEventListener('change', solar));
+  solar();
+
+  // ---------- TO SCALE ----------
+  let rot = 0;
+  function scale() {
+    const [L, W, name] = $('#sc-product').value.split('|');
+    const roomW = Math.max(1, num($('#sc-w'), 6)), roomD = Math.max(1, num($('#sc-d'), 4.5));
+    const fw = (rot % 180 === 0 ? parseFloat(L) : parseFloat(W)) / 100, fh = (rot % 180 === 0 ? parseFloat(W) : parseFloat(L)) / 100;
+    const pad = 36, VW = 640, VH = 480;
+    const px = Math.min((VW - pad * 2) / roomW, (VH - pad * 2) / roomD);
+    const ox = (VW - roomW * px) / 2, oy = (VH - roomD * px) / 2;
+    const fits = fw <= roomW + 1e-9 && fh <= roomD + 1e-9;
+    let g = '';
+    for (let x = 0; x <= roomW + 1e-9; x += 0.5) g += `<line x1="${ox + x * px}" y1="${oy}" x2="${ox + x * px}" y2="${oy + roomD * px}" stroke="#E3D6BC" stroke-width="${Number.isInteger(x) ? 1.2 : 0.6}"/>`;
+    for (let y = 0; y <= roomD + 1e-9; y += 0.5) g += `<line x1="${ox}" y1="${oy + y * px}" x2="${ox + roomW * px}" y2="${oy + y * px}" stroke="#E3D6BC" stroke-width="${Number.isInteger(y) ? 1.2 : 0.6}"/>`;
+    const ix = ox + 0.25 * px, iy = oy + 0.25 * px;
+    const label = name.length > 26 ? name.slice(0, 25) + '…' : name;
+    $('#sc-svg').innerHTML = `
+      <rect x="${ox}" y="${oy}" width="${roomW * px}" height="${roomD * px}" fill="#fff" stroke="#232C3B" stroke-width="4"/>
+      ${g}
+      <rect x="${ix}" y="${iy}" width="${fw * px}" height="${fh * px}" rx="6" fill="${fits ? 'rgba(255,187,88,.55)' : 'rgba(176,91,59,.45)'}" stroke="${fits ? '#8A6313' : '#B05B3B'}" stroke-width="2"/>
+      <text x="${ix + 8}" y="${iy + 18}" font-family="Inter,sans-serif" font-size="13" font-weight="600" fill="#232C3B">${label}</text>
+      <text x="${ix + 8}" y="${iy + 36}" font-family="Inter,sans-serif" font-size="12" fill="#5A5346">${(fw * 100).toFixed(0)} × ${(fh * 100).toFixed(0)} cm</text>
+      <text x="${ox + roomW * px / 2}" y="${oy - 10}" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="#5A5346">${roomW.toFixed(1)} m</text>
+      <text x="${ox - 8}" y="${oy + roomD * px / 2}" text-anchor="end" font-family="Inter,sans-serif" font-size="12" fill="#5A5346" transform="rotate(-90 ${ox - 8} ${oy + roomD * px / 2})">${roomD.toFixed(1)} m</text>`;
+    $('#sc-read').innerHTML = `<b>${name}</b> takes <b>${(fw * fh).toFixed(2)} m²</b> of a ${(roomW * roomD).toFixed(1)} m² room${fits ? '' : ' — <b>it does not fit</b> this way round'}.`;
+  }
+  ['#sc-product', '#sc-w', '#sc-d'].forEach((s) => $(s).addEventListener('input', scale));
+  $('#sc-rotate').addEventListener('click', () => { rot = (rot + 90) % 360; scale(); });
+  scale();
+
+  // ---------- device toggle ----------
+  document.querySelectorAll('.toggle button').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('.toggle button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    $('#stage-desktop').hidden = b.dataset.stage !== 'desktop';
+    $('#stage-phone').hidden = b.dataset.stage !== 'phone';
+  }));
+
+  // ---------- reveal ----------
+  const els = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const io = new IntersectionObserver((entries) => entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '120px 0px 0px 0px' });
+    els.forEach((el) => io.observe(el));
+    // Safety: nothing stays hidden for a reader who lands mid-page, a slow
+    // observer, or a crawler — everything is on by three seconds regardless.
+    setTimeout(() => els.forEach((el) => el.classList.add('in')), 3000);
+  } else {
+    els.forEach((el) => el.classList.add('in'));
+  }
+})();
+</script>
+</body>
+</html>
