@@ -12,8 +12,9 @@
 import { registerDemo, registeredDemoSlugs, type DemoDefinition } from './demoCatalog';
 import { COURTS_DEMO } from './courts';
 import { SOFAP_DEMO } from './sofap';
+import { CAPTAMARIN_DEMO } from './captamarin';
 
-const ALL: DemoDefinition[] = [COURTS_DEMO, SOFAP_DEMO];
+const ALL: DemoDefinition[] = [COURTS_DEMO, SOFAP_DEMO, CAPTAMARIN_DEMO];
 
 let registered = false;
 

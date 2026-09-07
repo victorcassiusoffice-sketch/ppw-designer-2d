@@ -89,6 +89,7 @@ import { useRoofSync } from './designer/useRoofSync';
 // Merchant demos (Courts Mammouth push, 2026-09-05): `/designer?demo=<slug>`
 // swaps the merchant's real range into the catalog and loads their show home.
 import { useDemoMode } from './demo/useDemoMode';
+import { activeDemoSlug } from './demo/demoCatalog';
 // Babylon 3D viewer removed 2026-06-04 (P1-1): the lazy 3D path (6.46 MB raw /
 // 1.43 MB gzip) was never flipped past its soak (DEFAULT_ENGINE='konva'),
 // carried untested-in-prod surface, and is the single biggest simplification.
@@ -260,6 +261,11 @@ export default function App() {
   useEffect(() => {
     const previously = hadDrawnRoomRef.current;
     hadDrawnRoomRef.current = hasDrawnRoom;
+    // A merchant demo (`?demo=courts`) brings its own finished plan, and it
+    // lands a tick after first paint — so on that first tick the plan still
+    // looks blank and the pen would arm itself over a show home about to
+    // appear. Nobody opens a demo to draw: never arm inside one.
+    if (activeDemoSlug()) return;
     if (hasDrawnRoom || drawMode) return;
     if (previously === null || previously === true) setDrawMode(true);
     // `drawMode` is read, not tracked: re-running when the pen closes is
