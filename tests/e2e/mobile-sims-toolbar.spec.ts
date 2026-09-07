@@ -39,18 +39,29 @@ test.describe('Mobile Sims toolbar', () => {
     expect(box).not.toBeNull();
     // Anchored to the bottom of the viewport.
     if (box) expect(box.y + box.height).toBeGreaterThan(844 - 4);
-    // All ten macro category tabs render — the original eight plus the
-    // Sims-world (2026-08-29) Lighting and Outdoor tabs. The tab row scrolls
-    // horizontally at 390 px, so each tab is scrolled into view before the
-    // visibility check rather than asserted at rest.
-    // Eco / solar (2026-09-04) adds the eleventh: Eco.
-    const cats = ['all', 'furniture', 'cardio', 'recovery', 'sauna', 'flooring', 'walls', 'decor', 'lighting', 'outdoor', 'eco'];
-    for (const cat of cats) {
+    // Product tabs HIDE while they are empty (verify pass 2026-09-07): the
+    // wellness seed has no Furniture / Appliances products and a first-time
+    // customer's natural first tap used to open a dead tab. A merchant range
+    // brings them back. So the rendered set is read from the toolbar and
+    // checked for the invariants rather than pinned to a fixed list. The tab
+    // row scrolls horizontally at 390 px, so each tab is scrolled into view
+    // before the visibility check rather than asserted at rest.
+    const rendered = await page
+      .locator('[data-testid^="sims-cat-"]')
+      .evaluateAll((els) => els.map((el) => (el.getAttribute('data-testid') ?? '').replace('sims-cat-', '')));
+    // Always-on (All + the two tool tabs) and every macro the seed populates.
+    for (const must of ['all', 'flooring', 'walls', 'cardio', 'decor', 'lighting', 'outdoor', 'eco']) {
+      expect(rendered, `the ${must} tab renders`).toContain(must);
+    }
+    // Empty in the wellness seed — a dead tab must not render.
+    for (const empty of ['furniture', 'appliances']) {
+      expect(rendered, `the empty ${empty} tab hides`).not.toContain(empty);
+    }
+    for (const cat of rendered) {
       const tab = page.locator(`[data-testid="sims-cat-${cat}"]`);
       await tab.scrollIntoViewIfNeeded();
       await expect(tab).toBeVisible();
     }
-    await expect(page.locator('[data-testid^="sims-cat-"]')).toHaveCount(cats.length);
   });
 
   test('M.S.2 — tap a thumbnail opens the product popup, "+" places it', async ({ page }) => {

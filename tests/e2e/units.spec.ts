@@ -33,6 +33,7 @@ import {
   TWO_ROOM_FIXTURE,
   type SeedProperty,
 } from './multiroom-helpers';
+import { waitForGeom } from './sims-world-helpers';
 
 /** One on-grid 5 × 4 m room. The new room is drawn clear to its east. */
 const ONE_ROOM_FIXTURE: SeedProperty = {
@@ -113,12 +114,6 @@ async function livePxPerMetre(page: Page): Promise<number> {
  * bridge has been wired to it. Calling it too early yields a null that reads
  * as "bridge unavailable" when the truth is "not yet".
  */
-async function waitForGeom(page: Page): Promise<void> {
-  await page.waitForFunction(() => {
-    const g = (window as unknown as { __ppwGeom?: { ready: () => boolean } }).__ppwGeom;
-    return !!g && g.ready();
-  }, undefined, { timeout: 15_000 });
-}
 
 async function clickWorld(page: Page, xM: number, yM: number): Promise<void> {
   const pt = await worldToScreen(page, xM, yM);

@@ -28,6 +28,7 @@
 
 import { test, expect } from '@playwright/test';
 import { targetHasNoApi, NO_API_SKIP } from './multiroom-helpers';
+import { PREVIEW_NO_SECRET_SKIP, previewWithoutSecret } from './deploy-env';
 
 const TEST_SLUG = process.env.PPW_E2E_MERCHANT_SLUG ?? 'k1-sport';
 const HAS_SEED = process.env.PPW_E2E_HAVE_SEED === '1';
@@ -198,6 +199,7 @@ test.describe('Wellness-Designer-App (i) · Merchant journey', () => {
       data: { email: 'e2e+phase-a@example.com' },
       headers: { 'Content-Type': 'application/json' },
     });
+    test.skip(await previewWithoutSecret(request, res.status()), PREVIEW_NO_SECRET_SKIP);
     expect(res.status()).toBe(200);
     const body = (await res.json()) as { ok?: boolean; message?: string };
     expect(body.ok).toBe(true);

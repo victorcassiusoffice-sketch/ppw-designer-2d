@@ -14,6 +14,7 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { TWO_ROOM_FIXTURE, renderedRoomCount, worldToScreen, type SeedProperty } from './multiroom-helpers';
+import { waitForGeom } from './sims-world-helpers';
 
 /** One item sitting in room r1, well clear of the shared x = 5 wall. */
 function fixtureWithItem(): SeedProperty {
@@ -45,16 +46,6 @@ async function rooms(page: Page): Promise<SeedProperty['rooms']> {
   });
 }
 
-async function waitForGeom(page: Page): Promise<void> {
-  await page.waitForFunction(
-    () => {
-      const g = (window as unknown as { __ppwGeom?: { ready: () => boolean } }).__ppwGeom;
-      return !!g && g.ready();
-    },
-    undefined,
-    { timeout: 15_000 },
-  );
-}
 
 /**
  * Wait until both rooms are mounted AND the auto-centre fit has stopped

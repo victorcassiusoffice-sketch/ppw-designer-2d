@@ -21,7 +21,10 @@ import {
   storedProperty,
   storedWallCount,
   type SeedProperty,
+  dockCard,
+  GEOM_BRIDGE_SKIP,
 } from './multiroom-helpers';
+import { requireGeomBridgeGenerous } from './sims-world-helpers';
 
 /**
  * ONE drawn room, deliberately OFF-GRID on its east wall (x = 5.13).
@@ -88,6 +91,12 @@ test.describe('Attached multi-room — draw-attach', () => {
     await seedProperty(page, JSON.parse(JSON.stringify(OFF_GRID_FIXTURE)));
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    // A draw is asserted to the centimetre against the seeded wall, so it
+    // needs the exact world->screen transform of the DEV geometry bridge.
+    // Without it (a production build) the colour-scan origin is off by a
+    // few pixels and the draw either misses the snap or overlaps — an
+    // environment limit, not a product defect: skip with the standard reason.
+    test.skip(!(await requireGeomBridgeGenerous(page, 10_000)), GEOM_BRIDGE_SKIP);
 
     // 1 — the seed is one room + one item, and no free walls exist.
     await expect(page.locator('[data-testid="items-placed"]')).toHaveText('1');
@@ -169,7 +178,7 @@ test.describe('Attached multi-room — draw-attach', () => {
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
 
-    const card = page.locator('[data-product-id="k1-schwinn-700ic"]').first();
+    const card = dockCard(page, 'k1-schwinn-700ic', 'Schwinn 700IC Indoor Bike');
     await card.click();
     await expect(page.locator('[data-armed="true"]')).toHaveCount(2);
     const origin = await roomOrigin(page);
@@ -193,6 +202,12 @@ test.describe('Attached multi-room — draw-attach', () => {
     await seedProperty(page, JSON.parse(JSON.stringify(OFF_GRID_FIXTURE)));
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    // A draw is asserted to the centimetre against the seeded wall, so it
+    // needs the exact world->screen transform of the DEV geometry bridge.
+    // Without it (a production build) the colour-scan origin is off by a
+    // few pixels and the draw either misses the snap or overlaps — an
+    // environment limit, not a product defect: skip with the standard reason.
+    test.skip(!(await requireGeomBridgeGenerous(page, 10_000)), GEOM_BRIDGE_SKIP);
 
     await enterDrawMode(page);
     await clickWorldPoints(page, [

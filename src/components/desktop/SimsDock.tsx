@@ -30,9 +30,10 @@
  * `CHROME_FOCUS_RING`, no text below 11 px.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { getAllProducts, productImageUrl, thumbnailFor } from '../../data/products';
+import { productImageUrl, thumbnailFor } from '../../data/products';
 import { fetchApiProducts } from '../../data/apiCatalogAdapter';
 import type { Product } from '../../data/products.schema';
+import { mergeCatalog } from '../../data/mergeCatalog';
 import {
   visibleMacroCategories,
   MACRO_CATEGORY_LABEL,
@@ -128,18 +129,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
     };
   }, []);
 
-  const allProducts = useMemo(() => {
-    const merged = [...apiProducts, ...getAllProducts()];
-    const seen = new Set<string>();
-    const out: Product[] = [];
-    for (const p of merged) {
-      const key = p.sku || p.id;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(p);
-    }
-    return out;
-  }, [apiProducts]);
+  const allProducts = useMemo(() => mergeCatalog(apiProducts), [apiProducts]);
 
   const filtered = useMemo(() => {
     if (activeCategory === 'all') return allProducts;

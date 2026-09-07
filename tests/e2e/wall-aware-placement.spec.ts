@@ -27,10 +27,11 @@ import { WALL_HALF_M } from '../../src/designer/wallAwarePlacement';
 // construction), falling back to the charcoal wall pixel-scan that shares
 // `blueprintTheme.ROOM_BORDER_SCAN` with the theme it tracks. Both live in
 // the shared helper so this spec can never drift onto a stale palette.
-import { PX_PER_M, roomOrigin } from './multiroom-helpers';
+import { PX_PER_M, dockCard, roomOrigin } from './multiroom-helpers';
 
 // Treadmill seed: 205 x 95 cm footprint (length along X at rotation 0).
 const PRODUCT_ID = 'k1-nordictrack-2450';
+const PRODUCT_NAME = 'NordicTrack Commercial 2450 Treadmill';
 const LEN = 2.05; // footprint length (m) along X at rotation 0
 const WID = 0.95; // footprint depth (m)
 
@@ -46,7 +47,7 @@ interface StoredItem {
 }
 
 async function placeAt(page: Page, xM: number, yM: number) {
-  const card = page.locator(`[data-product-id="${PRODUCT_ID}"]:visible`).first();
+  const card = dockCard(page, PRODUCT_ID, PRODUCT_NAME);
   await expect(card).toBeVisible();
   await card.click();
   await expect(page.locator('[data-armed="true"]')).toHaveCount(2);
@@ -180,7 +181,7 @@ test.describe('Sims wall-aware placement', () => {
     await page.goto('/designer');
     await page.locator('[data-testid="start-quick-rectangle"]').click();
 
-    const card = page.locator(`[data-product-id="${PRODUCT_ID}"]:visible`).first();
+    const card = dockCard(page, PRODUCT_ID, PRODUCT_NAME);
     await card.click();
     await expect(page.locator('[data-armed="true"]')).toHaveCount(2);
     // Origin read AFTER arming — the same "re-read before every click

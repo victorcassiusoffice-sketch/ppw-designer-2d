@@ -22,6 +22,7 @@ import {
   PX_PER_M,
   TWO_ROOM_FIXTURE,
   cloneFixture,
+  dockCard,
   roomOrigin,
   seedProperty,
   storedProperty,
@@ -29,6 +30,9 @@ import {
 } from './multiroom-helpers';
 
 const PRODUCT_ID = 'k1-schwinn-700ic';
+const PRODUCT_NAME = 'Schwinn 700IC Indoor Bike';
+/** The id the dock actually armed — `k1-…` on dev, the merchant id on a deployed build. */
+let armedProductId = PRODUCT_ID;
 /** Schwinn seed: 120 x 55 cm footprint. */
 const LEN = 1.2;
 const WID = 0.55;
@@ -38,8 +42,9 @@ type StoredRoom = SeedRoom & { kind?: 'room' | 'outdoor' };
 
 /** Arm the catalog card, then click at a WORLD point. */
 async function armAndClickAt(page: Page, xM: number, yM: number): Promise<void> {
-  const card = page.locator(`[data-product-id="${PRODUCT_ID}"]:visible`).first();
+  const card = dockCard(page, PRODUCT_ID, PRODUCT_NAME);
   await expect(card).toBeVisible();
+  armedProductId = (await card.getAttribute('data-product-id')) ?? PRODUCT_ID;
   await card.click();
   await expect(page.locator('[data-armed="true"]')).toHaveCount(2);
   // Re-read the origin per placement — panels opening can re-centre the
@@ -111,7 +116,7 @@ test.describe('Attached multi-room — placement routing', () => {
     // (-1 - LEN/2, -1.2 - WID/2) → (-1.5, -1.5).
     const snap = (v: number) => Math.round(v / 0.5) * 0.5;
     const garden = outdoors[0].placedItems[0];
-    expect(garden.productId).toBe(PRODUCT_ID);
+    expect(garden.productId).toBe(armedProductId);
     expect(garden.rotation).toBe(0);
     expect(garden.x).toBeCloseTo(snap(-1 - LEN / 2), 5);
     expect(garden.y).toBeCloseTo(snap(-1.2 - WID / 2), 5);

@@ -20,9 +20,10 @@
  * validated placement. No engine change — Konva stable-lock untouched.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { getAllProducts, productImageUrl } from '../../data/products';
+import { productImageUrl } from '../../data/products';
 import { fetchApiProducts } from '../../data/apiCatalogAdapter';
 import type { Product } from '../../data/products.schema';
+import { mergeCatalog } from '../../data/mergeCatalog';
 import { usePlacementIntentStore } from '../../store/placementIntentStore';
 // Polish (2026-08-29): the toolbar folds to its category row while the wall
 // pen is open (the phone needs the canvas back), and unfolds on exit.
@@ -133,10 +134,9 @@ export function SimsBottomToolbar() {
     };
   }, []);
 
-  const allProducts = useMemo(
-    () => [...apiProducts, ...getAllProducts()],
-    [apiProducts],
-  );
+  // SKU-deduped like the desktop dock: the 14 K1 SKUs arrive from BOTH the
+  // API and the bundled seed, and this strip used to show each twice.
+  const allProducts = useMemo(() => mergeCatalog(apiProducts), [apiProducts]);
 
   const filtered = useMemo(() => {
     if (activeCategory === 'all') return allProducts;

@@ -12,6 +12,7 @@
  */
 import { test, expect } from '@playwright/test';
 import * as path from 'node:path';
+import { PREVIEW_NO_SECRET_SKIP, previewWithoutSecret } from './deploy-env';
 
 const SHOT_DIR =
   process.env.PPW_PHASE0_SHOT_DIR ??
@@ -86,6 +87,7 @@ test('d) M5+M5.b — /merchant/demo-supplier-cn renders sign-in form (not design
   const mlRes = await request.post('/api/merchants/demo-supplier-cn/magic-link', {
     data: { email: 'phase-0-acceptance@ppwellness.co' },
   });
+  test.skip(await previewWithoutSecret(request, mlRes.status()), PREVIEW_NO_SECRET_SKIP);
   expect(mlRes.status()).toBeLessThan(500);
 
   await page.screenshot({ path: path.join(SHOT_DIR, 'd-m5b-signin.png'), fullPage: true });

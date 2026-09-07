@@ -50,7 +50,12 @@ async function bridgeOrSkip(page: import('@playwright/test').Page): Promise<bool
     .waitForFunction(
       () => Boolean((window as unknown as { __ppwGeom?: unknown }).__ppwGeom),
       undefined,
-      { timeout: 20_000 },
+      // 10 s, not 20: the seed + navigation before this guard already costs
+      // several seconds on a Vercel preview, and 20 s of patience pushed
+      // five specs past the 30 s test budget — a TIMEOUT where a SKIP was
+      // meant (verify pass 2026-09-07). The bridge lands right after the
+      // first render, so 10 s only ever runs out on a build without it.
+      { timeout: 10_000 },
     )
     .catch(() => undefined);
   return requireGeomBridge(page);

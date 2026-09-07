@@ -24,10 +24,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   REGION_GROUPS,
   filterByRegion,
-  getAllProducts,
   productImageUrl,
   thumbnailFor,
 } from '../data/products';
+import { mergeCatalog } from '../data/mergeCatalog';
 import { fetchApiProducts } from '../data/apiCatalogAdapter';
 import { DetailCard } from '../designer/DetailCard';
 import type { RegionGroup } from '../data/products';
@@ -217,16 +217,7 @@ export function ProductPalette({
     // API row, already enriched with the real photo + description by SKU in
     // apiCatalogAdapter), so each product shows exactly once. Bundled-only
     // products (e.g. flooring) have no API twin and are kept as-is.
-    const merged = [...apiProducts, ...getAllProducts()];
-    const seen = new Set<string>();
-    const out: Product[] = [];
-    for (const p of merged) {
-      const key = p.sku || p.id;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(p);
-    }
-    return out;
+    return mergeCatalog(apiProducts);
   }, [apiProducts]);
 
   function searchAll(q: string): Product[] {

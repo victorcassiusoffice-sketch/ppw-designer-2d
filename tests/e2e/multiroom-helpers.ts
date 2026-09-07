@@ -20,7 +20,7 @@
  *     nothing and the app falls back to a blank default property.
  */
 
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { ROOM_BORDER_SCAN } from '../../src/designer/blueprintTheme';
 
 /** propertyStore default; a fresh session never zooms. */
@@ -99,6 +99,25 @@ export async function seedProperty(page: Page, prop: SeedProperty): Promise<void
       }),
     );
   }, prop);
+}
+
+/**
+ * The desktop dock card for a bundled product, by id OR by accessible name.
+ *
+ * On a DEPLOYED build `/api/products` returns the 14 K1 rows under merchant
+ * ids (`m-6`…) and `mergeCatalog` drops the bundled `k1-*` twin by SKU, so a
+ * card pinned to `[data-product-id="k1-…"]` is simply not in the dock there
+ * (dev has no API, so the bundled id renders). The name is the same in both
+ * sources. Only VISIBLE cards count — the phone strip carries hidden twins
+ * of every id at desktop widths.
+ */
+export function dockCard(page: Page, id: string, name: string): Locator {
+  const strip = page.locator('[data-testid="dock-strip"]');
+  return strip
+    .locator(`[data-product-id="${id}"]`)
+    .or(strip.locator(`[role="button"][aria-label^="Place ${name}"]`))
+    .filter({ visible: true })
+    .first();
 }
 
 /** Blank canvas — coach flag only, NO property seed. */

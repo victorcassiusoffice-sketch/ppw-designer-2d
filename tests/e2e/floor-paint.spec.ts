@@ -18,6 +18,7 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { TWO_ROOM_FIXTURE, worldToScreen, type SeedProperty } from './multiroom-helpers';
+import { waitForGeom } from './sims-world-helpers';
 
 interface Zone {
   materialId: string;
@@ -59,16 +60,6 @@ function tileCount(zs: Zone[]): number {
   return n;
 }
 
-async function waitForGeom(page: Page): Promise<void> {
-  await page.waitForFunction(
-    () => {
-      const g = (window as unknown as { __ppwGeom?: { ready: () => boolean } }).__ppwGeom;
-      return !!g && g.ready();
-    },
-    undefined,
-    { timeout: 15_000 },
-  );
-}
 
 async function openWithFloorTool(page: Page): Promise<void> {
   await seed(page, JSON.parse(JSON.stringify(TWO_ROOM_FIXTURE)));

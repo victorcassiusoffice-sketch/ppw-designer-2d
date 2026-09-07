@@ -23,6 +23,7 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { worldToScreen } from './multiroom-helpers';
+import { waitForGeom } from './sims-world-helpers';
 
 type Seed = Record<string, unknown>;
 
@@ -48,16 +49,6 @@ async function seed(page: Page, propertyExtra: Seed = {}, rooms: Seed[] = [ROOM]
   }, property);
 }
 
-async function waitForGeom(page: Page): Promise<void> {
-  await page.waitForFunction(
-    () => {
-      const g = (window as unknown as { __ppwGeom?: { ready: () => boolean } }).__ppwGeom;
-      return !!g && g.ready();
-    },
-    undefined,
-    { timeout: 15_000 },
-  );
-}
 
 async function openDesigner(page: Page): Promise<void> {
   await page.goto('/designer');
