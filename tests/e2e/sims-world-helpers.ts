@@ -168,7 +168,13 @@ export async function waitForGeom(page: Page): Promise<void> {
  * Konva canvas is attached a 20 s wait can only fail on a build that does
  * not ship it (production). Same semantics, wider patience.
  */
-export async function requireGeomBridgeGenerous(page: Page, timeoutMs = 20_000): Promise<boolean> {
+// 10 s, not 20 (verify pass 2026-09-07): on a Vercel preview the seed +
+// navigation before this guard already costs 5-10 s, and 20 s of patience
+// pushed eco-solar / flooring past the 30 s test budget — a TIMEOUT where a
+// SKIP was meant. The canvas is attached before this is called and the
+// bridge lands right after the first render, so 10 s only ever runs out on
+// a build that does not ship it.
+export async function requireGeomBridgeGenerous(page: Page, timeoutMs = 10_000): Promise<boolean> {
   return page
     .waitForFunction(
       () => Boolean((window as unknown as { __ppwGeom?: unknown }).__ppwGeom),

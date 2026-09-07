@@ -123,9 +123,15 @@ test('Bug 2 — two "+ Add to room" taps both land (no false "won\'t fit")', asy
       el.dispatchEvent(new PointerEvent('pointerdown', opt));
       window.dispatchEvent(new PointerEvent('pointerup', opt));
     };
+    // By id on dev, by NAME on a deployed build: there /api/products returns
+    // this SKU under a merchant id (m-7) and mergeCatalog drops the bundled
+    // twin (2026-09-07). This spec used to pass on previews only because the
+    // phone strip rendered the product TWICE — the bug that fix removed.
     const thumb = () =>
       Array.from(document.querySelectorAll('[data-testid="sims-thumb"]')).find(
-        (t) => t.getAttribute('data-product-id') === 'k1-nordictrack-tour-de-france',
+        (t) =>
+          t.getAttribute('data-product-id') === 'k1-nordictrack-tour-de-france' ||
+          (t.getAttribute('aria-label') ?? '').startsWith('NordicTrack Tour de France'),
       ) as HTMLElement | undefined;
     const addOnce = async () => {
       const t = thumb();

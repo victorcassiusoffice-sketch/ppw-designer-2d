@@ -41,7 +41,7 @@ test('geom bridge agrees with the charcoal wall pixel-scan on world (0,0)', asyn
   // start first; the helper's own probe (and its skip message) still decide.
   await page
     .waitForFunction(() => Boolean((window as unknown as { __ppwGeom?: unknown }).__ppwGeom), undefined, {
-      timeout: 20_000,
+      timeout: 10_000, // 2026-09-07: see requireGeomBridgeGenerous — SKIP, not TIMEOUT, on a build without the bridge
     })
     .catch(() => undefined);
   test.skip(!(await requireGeomBridge(page)), GEOM_BRIDGE_SKIP);

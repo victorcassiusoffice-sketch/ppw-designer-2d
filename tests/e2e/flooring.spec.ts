@@ -64,7 +64,9 @@ async function bridgeOrSkip(page: import('@playwright/test').Page): Promise<bool
     .waitForFunction(
       () => Boolean((window as unknown as { __ppwGeom?: unknown }).__ppwGeom),
       undefined,
-      { timeout: 20_000 },
+      // 10 s, not 20 — see requireGeomBridgeGenerous (2026-09-07): 20 s of
+      // patience after a preview navigation overran the 30 s test budget.
+      { timeout: 10_000 },
     )
     .catch(() => undefined);
   return requireGeomBridge(page);
