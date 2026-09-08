@@ -107,9 +107,9 @@
   .scale{display:grid;grid-template-columns:1fr 1.2fr;gap:20px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);margin-top:18px}
   @media (max-width:860px){ .scale{grid-template-columns:1fr} }
   .scale svg{width:100%;height:auto;background:var(--surface-2);border:1px solid var(--line);border-radius:12px}
-  .scale .controls{display:grid;gap:12px}
-  .scale .controls label{display:grid;gap:4px;font-size:.82rem;font-weight:600;color:var(--ink-soft)}
-  .scale select,.scale input{font:inherit;font-size:1rem;padding:.55rem .7rem;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--ink);min-height:44px}
+  .scale .controls{display:grid;gap:12px;min-width:0}
+  .scale .controls label{display:grid;gap:4px;font-size:.82rem;font-weight:600;color:var(--ink-soft);min-width:0}
+  .scale select,.scale input{font:inherit;font-size:1rem;padding:.55rem .7rem;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--ink);min-height:44px;min-width:0;max-width:100%}
   .scale .btn{align-self:start}
   .scale .readout{font-size:.95rem;color:var(--ink-soft)}
   .scale .readout b{color:var(--ink)}
@@ -164,11 +164,22 @@
   .tier.feat{border-color:var(--navy);box-shadow:0 0 0 1px var(--navy),var(--shadow);}
   .tier .badge{position:absolute;top:-11px;left:22px;background:var(--gold);color:var(--navy);font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .7rem;border-radius:999px;}
   .tier h3{font-size:1.35rem;}
-  .tier .cat{font-size:.85rem;color:var(--ink-soft);margin-top:.3rem;min-height:2.6em;}
+  .tier .cat{font-size:.85rem;color:var(--ink-soft);margin-top:.3rem;min-height:3.9em;}
   .tier .setup{font-family:"EB Garamond",serif;font-size:1.85rem;margin-top:.9rem;font-variant-numeric:tabular-nums;}
   .tier .setup small{display:block;font-family:Inter,sans-serif;font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-soft);font-weight:700;margin-bottom:.2rem;}
   .tier .care{margin-top:.9rem;padding-top:.9rem;border-top:1px dashed var(--line);font-size:.95rem;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
   .tier .care b{color:var(--ink);font-weight:700;}
+  .ratecard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:6px 24px;margin-bottom:22px}
+  .ratecard .row{display:flex;justify-content:space-between;align-items:baseline;gap:18px;padding:15px 0;border-bottom:1px solid var(--line)}
+  .ratecard .row:last-child{border-bottom:none}
+  .ratecard .what{color:var(--ink);font-size:1rem;font-weight:600}
+  .ratecard .what small{display:block;color:var(--ink-soft);font-size:.84rem;font-weight:400;margin-top:.25rem}
+  .ratecard .amt{font-family:"EB Garamond",serif;font-size:1.5rem;white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right}
+  .ratecard .amt small{display:block;font-family:Inter,sans-serif;font-size:.8rem;font-weight:400;color:var(--ink-soft);white-space:normal;margin-top:.15rem}
+  .ratecard .row.sub{padding:10px 0}
+  .ratecard .row.sub .what{padding-left:18px;font-weight:400;color:var(--ink-soft)}
+  .ratecard .row.sub .amt{font-size:1.15rem;color:var(--ink-soft)}
+  @media (max-width:520px){ .ratecard .row{flex-direction:column;gap:4px} .ratecard .row.sub .what{padding-left:0} }
   .price-note{margin-top:18px;color:var(--ink-soft);font-size:.92rem;max-width:64ch;}
   .terms{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:26px}
   @media (max-width:980px){ .terms{grid-template-columns:repeat(2,1fr);} }
@@ -432,8 +443,8 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Pricing</span>
-      <h2>Priced to your catalogue.</h2>
-      <p class="lead">A one-off setup to build and load your products, then an optional monthly care plan that keeps everything current. Two numbers size it: how many products you sell, and how often the range changes.</p>
+      <h2>One price list. You count your products.</h2>
+      <p class="lead">A one-off to build your catalogue into the tool, then an optional monthly plan that keeps it current. No tiers to argue about and nothing hidden: multiply the products you sell by the rate below and you have your number.</p>
     </div>
     <div class="anchor reveal"><b>Why it pays.</b> The tool is built to sell the whole room instead of one product. Houzz reported that shoppers who used its view-in-room tool were <b>11 times more likely to buy</b> (<a href="https://blog.houzz.com/houzz-upgrades-augmented-reality-app-capabilities/" target="_blank" rel="noopener">Houzz, 2018</a>). We would rather show you your own numbers at the walkthrough than promise a figure here.</div>
     <ul class="includes reveal">
@@ -442,17 +453,28 @@
       <li>Floor-tile, wall-paint, door and window, storey, roof and solar estimators configured for your range.</li>
       <li>A walkthrough for your staff, and a go-live date agreed up front.</li>
     </ul>
-    <div class="prices reveal">
-      <div class="tier"><h3>Starter</h3><p class="cat">Up to about 150 products. A single showroom or boutique.</p><div class="setup"><small>Setup</small>Rs 50,000</div><div class="care">Care plan <b>Rs 10,000</b>/mo · optional</div></div>
-      <div class="tier"><h3>Growth</h3><p class="cat">About 150–1,000 products. A mid-size retailer or developer range.</p><div class="setup"><small>Setup</small>Rs 90,000</div><div class="care">Care plan <b>Rs 18,000</b>/mo · optional</div></div>
-      <div class="tier feat"><span class="badge">Recommended</span><h3>Pro</h3><p class="cat">About 1,000–5,000 products. A multi-category showroom or chain.</p><div class="setup"><small>Setup</small>Rs 150,000</div><div class="care">Care plan <b>Rs 30,000</b>/mo · optional</div></div>
-      <div class="tier"><h3>Enterprise</h3><p class="cat">5,000+ products with stock that changes constantly.</p><div class="setup"><small>Setup from</small>Rs 250,000</div><div class="care">Care plan from <b>Rs 45,000</b>/mo · quoted on volume</div></div>
+    <div class="ratecard reveal">
+      <div class="row"><div class="what">Setup<small>One-off. Your branding, your embed, your team trained, tested on desktop, tablet and phone.</small></div><div class="amt">Rs 30,000</div></div>
+      <div class="row"><div class="what">Building each product into the tool<small>Photo and dimensions in, a to-scale piece at your price out — checked by hand before it ships.</small></div><div class="amt">per product</div></div>
+      <div class="row sub"><div class="what">products 1&ndash;100</div><div class="amt">Rs 275 each</div></div>
+      <div class="row sub"><div class="what">products 101&ndash;500</div><div class="amt">Rs 185 each</div></div>
+      <div class="row sub"><div class="what">products 501 and above</div><div class="amt">Rs 95 each</div></div>
+      <div class="row sub"><div class="what">a colour or finish of a product already built</div><div class="amt">Rs 90 each</div></div>
+      <div class="row"><div class="what">Care plan &middot; optional, month to month<small>Prices and stock kept current, hosting, monitoring, support, and every new feature as it is built.</small></div><div class="amt">Rs 6,000<small>+ Rs 15 per product, each month</small></div></div>
     </div>
-    <p class="price-note reveal">For a large, fast-moving catalogue the care plan is where the value sits — keeping thousands of products, prices and stock current is real work you would rather not do by hand.</p>
+    <p class="price-note reveal"><b>The per-product price falls because our cost does.</b> The first hundred products teach our pipeline how your website is put together &mdash; where the dimensions live, how the prices are written, which photo is the real one. After that it goes faster, so it costs less, so you pay less. Prices exclude VAT where it applies.</p>
+    <h3 class="reveal" style="margin:34px 0 16px">What that comes to</h3>
+    <div class="prices reveal">
+      <div class="tier"><h3>A single showroom</h3><p class="cat">60 products &mdash; one store&rsquo;s range.</p><div class="setup"><small>One-off</small>Rs 46,500</div><div class="care">Care plan <b>Rs 6,900</b>/mo &middot; optional</div></div>
+      <div class="tier feat"><span class="badge">Most common</span><h3>A mid-size retailer</h3><p class="cat">250 products &mdash; a decorative or furniture range.</p><div class="setup"><small>One-off</small>Rs 85,250</div><div class="care">Care plan <b>Rs 9,750</b>/mo &middot; optional</div></div>
+      <div class="tier"><h3>A full catalogue</h3><p class="cat">800 products &mdash; furniture and appliances.</p><div class="setup"><small>One-off</small>Rs 160,000</div><div class="care">Care plan <b>Rs 18,000</b>/mo &middot; optional</div></div>
+      <div class="tier"><h3>A group</h3><p class="cat">2,000 products across several stores.</p><div class="setup"><small>One-off</small>Rs 274,000</div><div class="care">Care plan <b>Rs 36,000</b>/mo &middot; optional</div></div>
+    </div>
+    <p class="price-note reveal">Check the middle one: Rs 30,000 setup, the first 100 products at Rs 275 (Rs 27,500), the next 150 at Rs 185 (Rs 27,750) &mdash; Rs 85,250. Care is Rs 6,000 + 250 &times; Rs 15 = Rs 9,750 a month. Half of the one-off up front, half at go-live.</p>
     <div class="terms reveal">
       <div><b>Contract</b>Care plan is month to month; 30 days' notice to cancel.</div>
-      <div><b>Support</b>Mon–Fri by WhatsApp and email; a reply within one business day.</div>
-      <div><b>Your data</b>Your catalogue and your customers' designs stay yours.</div>
+      <div><b>Support</b>Mon&ndash;Fri by WhatsApp and email; a reply within one business day.</div>
+      <div><b>Your data</b>Your catalogue and your customers' designs stay yours, exportable any time.</div>
       <div><b>Hosting</b>Hosted and run by us; you are never asked to manage a server.</div>
       <div><b>If you stop</b>The designer stays live with your last catalogue; nothing is switched off without notice.</div>
     </div>
