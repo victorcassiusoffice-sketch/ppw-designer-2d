@@ -1,0 +1,12 @@
+import { chromium } from 'playwright';
+import fs from 'node:fs';
+const [url, out] = process.argv.slice(2);
+fs.mkdirSync(out, { recursive: true });
+const b = await chromium.launch();
+const ctx = await b.newContext({ viewport: { width: 900, height: 400 }, deviceScaleFactor: 3 });
+const p = await ctx.newPage();
+await p.goto(url, { waitUntil: 'domcontentloaded' });
+await p.waitForTimeout(2500);
+await p.screenshot({ path: out + '/header.png', clip: { x: 0, y: 0, width: 420, height: 80 } });
+console.log('captured header');
+await b.close();

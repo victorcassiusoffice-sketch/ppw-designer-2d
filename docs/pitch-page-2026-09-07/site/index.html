@@ -23,7 +23,7 @@
     color-scheme:light;
   }
   *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
+  html{scroll-behavior:smooth;scroll-padding-top:96px}
   @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
   body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;}
   h1,h2,h3{font-family:"EB Garamond",Georgia,"Times New Roman",serif;font-weight:500;line-height:1.08;letter-spacing:-.005em;margin:0;text-wrap:balance;}
@@ -46,7 +46,7 @@
   header.site{position:sticky;top:0;z-index:20;background:rgba(245,235,215,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);}
   header.site .wrap{display:flex;align-items:center;justify-content:space-between;padding-block:.7rem;gap:1rem;}
   .mark{display:flex;align-items:center;gap:.65rem;font-weight:700;letter-spacing:-.01em;text-decoration:none;color:var(--ink);line-height:1.1;}
-  .mark img{width:34px;height:34px;border-radius:9px;background:var(--surface);border:1px solid var(--line);padding:4px;}
+  .mark img{width:34px;height:34px;border-radius:9px;background:var(--navy);border:1px solid var(--navy);padding:4px;}
   .mark small{display:block;font-weight:600;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-deep);margin-top:2px;}
   header .btn{padding:.6rem 1rem;min-height:40px;font-size:.9rem}
   @media (max-width:520px){ header .btn span{display:none} }
@@ -98,7 +98,7 @@
   .calc .out .small{font-size:.85rem;color:var(--ink-soft);margin-top:4px}
   .calc .src{font-size:.74rem;color:var(--ink-soft);}
   .checks{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:.85rem;font-weight:500;color:var(--ink)}
-  .checks label{display:flex;align-items:center;gap:.5rem;font-weight:500;color:var(--ink);cursor:pointer;min-height:32px}
+  .checks label{display:flex;align-items:center;gap:.5rem;font-weight:500;color:var(--ink);cursor:pointer;min-height:44px}
   .checks input{width:18px;height:18px;accent-color:var(--navy)}
   .bar-wrap{height:10px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:8px}
   .bar-wrap i{display:block;height:100%;background:var(--gold);border-radius:999px;transition:width .3s ease}
@@ -137,7 +137,7 @@
   .wt figcaption b{display:block;color:var(--ink);font-weight:600;margin-bottom:2px}
   .wt-full{margin-top:16px}
   .toggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:4px;gap:4px;margin-top:22px}
-  .toggle button{font:inherit;font-weight:600;border:0;background:transparent;color:var(--ink-soft);padding:.5rem 1rem;border-radius:999px;min-height:40px;cursor:pointer}
+  .toggle button{font:inherit;font-weight:600;border:0;background:transparent;color:var(--ink-soft);padding:.5rem 1rem;border-radius:999px;min-height:44px;cursor:pointer}
   .toggle button[aria-pressed=true]{background:var(--navy);color:#fff}
   .stage{margin-top:14px;display:grid;gap:14px}
   .stage .device{max-width:980px}
@@ -179,7 +179,9 @@
   .ratecard .row.sub{padding:10px 0}
   .ratecard .row.sub .what{padding-left:18px;font-weight:400;color:var(--ink-soft)}
   .ratecard .row.sub .amt{font-size:1.15rem;color:var(--ink-soft)}
-  @media (max-width:520px){ .ratecard .row{flex-direction:column;gap:4px} .ratecard .row.sub .what{padding-left:0} }
+  @media (max-width:520px){ .ratecard .row{flex-direction:column;align-items:flex-start;gap:4px}
+    .ratecard .amt,.ratecard .amt small{text-align:left}
+    .ratecard .row.sub .what{padding-left:0} }
   .price-note{margin-top:18px;color:var(--ink-soft);font-size:.92rem;max-width:64ch;}
   .terms{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:26px}
   @media (max-width:980px){ .terms{grid-template-columns:repeat(2,1fr);} }
@@ -444,7 +446,7 @@
     <div class="sec-head reveal">
       <span class="eyebrow">Pricing</span>
       <h2>One price list. You count your products.</h2>
-      <p class="lead">A one-off to build your catalogue into the tool, then an optional monthly plan that keeps it current. No tiers to argue about and nothing hidden: multiply the products you sell by the rate below and you have your number.</p>
+      <p class="lead">A one-off to build your catalogue into the tool, then an optional monthly plan that keeps it current. No tiers to argue about: multiply the products you sell by the rate below and you have your one-off, and the monthly plan is optional.</p>
     </div>
     <div class="anchor reveal"><b>Why it pays.</b> The tool is built to sell the whole room instead of one product. Houzz reported that shoppers who used its view-in-room tool were <b>11 times more likely to buy</b> (<a href="https://blog.houzz.com/houzz-upgrades-augmented-reality-app-capabilities/" target="_blank" rel="noopener">Houzz, 2018</a>). We would rather show you your own numbers at the walkthrough than promise a figure here.</div>
     <ul class="includes reveal">
@@ -501,6 +503,7 @@
     <div class="cta-row">
       <a class="btn btn-gold" href="https://calendly.com/victorcassius-office/room-designer-45-min-walkthrough" target="_blank" rel="noopener">Book a 45-minute walkthrough</a>
       <a class="btn btn-ghost arrow" href="https://designer.ppwellness.co/designer" target="_blank" rel="noopener">Open the live tool</a>
+      <a class="btn btn-ghost" href="PPW-Room-Designer-one-pager.pdf" target="_blank" rel="noopener">One page on what it does (PDF)</a>
     </div>
     <div class="contacts">
       <a href="https://wa.me/23054560035" target="_blank" rel="noopener">WhatsApp +230 5456 0035</a>

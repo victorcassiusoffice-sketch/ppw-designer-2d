@@ -1,0 +1,18 @@
+import { chromium } from 'playwright';
+import fs from 'node:fs';
+const url = process.argv[2], out = process.argv[3];
+fs.mkdirSync(out, { recursive: true });
+const b = await chromium.launch();
+const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+const p = await ctx.newPage();
+await p.goto(url, { waitUntil: 'domcontentloaded' });
+await p.waitForTimeout(2500);
+await p.evaluate(() => document.querySelectorAll('.reveal').forEach(e => e.classList.add('in')));
+await p.waitForTimeout(600);
+const box = await p.evaluate(() => { const r = document.querySelector('.ratecard').getBoundingClientRect(); return { x: 0, y: r.top + window.scrollY, width: 390, height: Math.ceil(r.height) + 20 }; });
+await p.evaluate((y) => window.scrollTo(0, y), box.y - 10);
+await p.waitForTimeout(400);
+const r2 = await p.evaluate(() => { const r = document.querySelector('.ratecard').getBoundingClientRect(); return { x: 0, y: Math.max(0, r.top), width: 390, height: Math.min(844 - Math.max(0, r.top), Math.ceil(r.height)) }; });
+await p.screenshot({ path: out + '/ratecard-phone.png', clip: r2 });
+console.log('captured', JSON.stringify(r2));
+await b.close();

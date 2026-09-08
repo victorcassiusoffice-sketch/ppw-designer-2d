@@ -13,7 +13,8 @@ for (const [name, w, h] of [['desktop-1366', 1366, 900], ['phone-390', 390, 844]
   const p = await ctx.newPage();
   const errs = [];
   p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
-  await p.goto(page_url, { waitUntil: 'networkidle' });
+  await p.goto(page_url, { waitUntil: 'domcontentloaded' });
+  await p.waitForTimeout(1200);
   await p.evaluate(() => document.querySelectorAll('.reveal').forEach(e => e.classList.add('in')));
   await p.locator('#pricing').scrollIntoViewIfNeeded();
   await p.waitForTimeout(800);
