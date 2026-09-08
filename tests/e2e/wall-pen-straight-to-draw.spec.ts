@@ -138,3 +138,87 @@ test.describe('Wall pen — straight to draw', () => {
     await expect(page.locator('[data-testid="start-quick-rectangle"]')).toHaveCount(0);
   });
 });
+
+test.describe('Wall pen — drag to draw (Vic 2026-09-08)', () => {
+  test('press, drag, release draws ONE wall, and the length shows while dragging', async ({ page }) => {
+    await openBlank(page);
+    const o = await canvasOrigin(page);
+    const from = { x: o.x + 1 * PX_PER_M, y: o.y + 1 * PX_PER_M };
+    const to = { x: o.x + 4 * PX_PER_M, y: o.y + 1 * PX_PER_M };
+
+    await page.mouse.move(from.x, from.y, { steps: 4 });
+    await page.mouse.down();
+    // The anchor goes in on the PRESS, so the rubber band has something to
+    // measure from — that is what makes the length live while dragging.
+    await expect(page.locator('[data-testid="room-draw-vertices-count"]')).toContainText('1');
+    await page.mouse.move((from.x + to.x) / 2, from.y, { steps: 6 });
+    await page.waitForTimeout(120);
+    await page.mouse.move(to.x, to.y, { steps: 6 });
+    await page.waitForTimeout(120);
+    await page.mouse.up();
+    await page.waitForTimeout(300);
+
+    // One gesture, one wall: two vertices.
+    await expect(page.locator('[data-testid="room-draw-vertices-count"]')).toContainText('2');
+
+    // …and it is 3 m long, the distance actually dragged.
+    await page.locator('[data-testid="room-draw-finish-walls"]').click();
+    await page.waitForTimeout(500);
+    const walls = await page.evaluate(() => {
+      const p = JSON.parse(localStorage.getItem('ppw_property_v2') || '{}').state?.property ?? {};
+      return (p.walls ?? []).map((w: { a: { x: number; y: number }; b: { x: number; y: number } }) =>
+        Math.round(Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y) * 100) / 100);
+    });
+    expect(walls).toHaveLength(1);
+    expect(walls[0]).toBeCloseTo(3, 1);
+  });
+
+  test('a plain click still plants exactly one vertex', async ({ page }) => {
+    await openBlank(page);
+    const o = await canvasOrigin(page);
+    for (const [xM, yM] of [[1, 1], [3, 1], [3, 3]] as const) {
+      await page.mouse.move(o.x + xM * PX_PER_M, o.y + yM * PX_PER_M, { steps: 4 });
+      await page.mouse.click(o.x + xM * PX_PER_M, o.y + yM * PX_PER_M);
+      await page.waitForTimeout(180);
+    }
+    await expect(page.locator('[data-testid="room-draw-vertices-count"]')).toContainText('3');
+  });
+
+  test('right-click takes back the wall just drawn, without leaving the pen', async ({ page }) => {
+    await openBlank(page);
+    const o = await canvasOrigin(page);
+    for (const [xM, yM] of [[1, 1], [4, 1], [4, 3]] as const) {
+      await page.mouse.move(o.x + xM * PX_PER_M, o.y + yM * PX_PER_M, { steps: 4 });
+      await page.mouse.click(o.x + xM * PX_PER_M, o.y + yM * PX_PER_M);
+      await page.waitForTimeout(180);
+    }
+    await expect(page.locator('[data-testid="room-draw-vertices-count"]')).toContainText('3');
+    // Right-click over the PLAN, not the bottom-centre HUD card — a click that
+    // lands on the card never reaches the canvas.
+    await page.mouse.click(o.x + 2 * PX_PER_M, o.y + 2 * PX_PER_M, { button: 'right' });
+    await page.waitForTimeout(300);
+    await expect(page.locator('[data-testid="room-draw-vertices-count"]')).toContainText('2');
+    // The pen is still in hand.
+    await expect(page.locator('[data-testid="room-draw-hud"]')).toBeVisible();
+  });
+
+  test('zoom lives on the toolbar, not only on a pinch', async ({ page }) => {
+    await openBlank(page);
+    const zoomIn = page.locator('[data-testid="zoom-in"]');
+    const zoomOut = page.locator('[data-testid="zoom-out"]');
+    await expect(zoomIn).toBeVisible();
+    await expect(zoomOut).toBeVisible();
+
+    const readout = page.locator('[data-testid="zoom-readout"]');
+    await expect(readout).toHaveText('100%');
+    await zoomIn.click();
+    await zoomIn.click();
+    await page.waitForTimeout(250);
+    await expect(readout).toHaveText('125%'); // 1.12^2, rounded
+    await zoomOut.click();
+    await zoomOut.click();
+    await zoomOut.click();
+    await page.waitForTimeout(250);
+    await expect(readout).toHaveText('89%');
+  });
+});

@@ -368,6 +368,8 @@ const PAN_BTN: number = 0;
 const INITIAL_VIEWPORT: Viewport = { x: 0, y: 0, scale: 1 };
 const MIN_SCALE = 0.3;
 const MAX_SCALE = 3;
+/** Toolbar zoom step — the same 1.12 the +/- keys use. */
+const ZOOM_STEP = 1.12;
 
 export interface RoomCanvasProps {
   drawMode?: boolean;
@@ -1778,6 +1780,25 @@ export function RoomCanvas({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [placementIntent?.nonce]);
 
+  /**
+   * Zoom about the centre of the stage (Vic 2026-09-08 — zoom belongs on the
+   * toolbar, not only on a pinch that fights the wall pen). Same 1.12 step and
+   * the same MIN/MAX clamp the +/- keys use, so the two agree; the centre is
+   * held fixed so the plan does not walk across the canvas as you step.
+   */
+  function zoomBy(factor: number) {
+    userMovedViewportRef.current = true;
+    setViewport((v) => {
+      const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, v.scale * factor));
+      if (next === v.scale) return v;
+      const cx = stageSize.width / 2;
+      const cy = stageSize.height / 2;
+      // Keep the world point under the stage centre pinned while the scale moves.
+      const k = next / v.scale;
+      return { scale: next, x: cx - (cx - v.x) * k, y: cy - (cy - v.y) * k };
+    });
+  }
+
   function resetView() {
     // "Fit" — zoom the whole plan back into view. Applying the union-fit
     // transform DIRECTLY (rather than clearing the ref and hoping a
@@ -3160,6 +3181,36 @@ export function RoomCanvas({
             used to carry an ink rim, which read as pressed next to its
             siblings. The gold call-to-action is reserved for Request quote. */}
         <div className="pointer-events-auto flex items-center gap-2">
+          {/* Zoom, on the toolbar (Vic 2026-09-08: "put the zoom effect on the
+              toolbar instead of maybe the pinch zoom"). Until now zoom lived
+              only on the +/- keys, the wheel and a two-finger pinch — none of
+              which a customer finds, and the pinch competes with drawing.
+              These two buttons step the same 1.12 factor the keys use, about
+              the centre of the stage, and are clamped to the same bounds. */}
+          <button
+            type="button"
+            onClick={() => zoomBy(1 / ZOOM_STEP)}
+            data-testid="zoom-out"
+            aria-label="Zoom out"
+            className={`${OVL_CTRL} ${OVL_REST} ${OVL_TOPRIGHT}`}
+            title="Zoom out (−)"
+          >
+            <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
+              <path fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" d="M3.5 8h9" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => zoomBy(ZOOM_STEP)}
+            data-testid="zoom-in"
+            aria-label="Zoom in"
+            className={`${OVL_CTRL} ${OVL_REST} ${OVL_TOPRIGHT}`}
+            title="Zoom in (+)"
+          >
+            <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
+              <path fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" d="M8 3.5v9M3.5 8h9" />
+            </svg>
+          </button>
           <button
             type="button"
             onClick={resetView}
@@ -3243,7 +3294,7 @@ export function RoomCanvas({
             {levels.length > 1 && (
               <span data-testid="level-readout">{activeLevel?.name ?? 'Ground floor'} · </span>
             )}
-            {area.toFixed(1)} m² · {Math.round(viewport.scale * 100)}% ·{' '}
+            {area.toFixed(1)} m² · <span data-testid="zoom-readout">{Math.round(viewport.scale * 100)}%</span> ·{' '}
             {SNAP_UNIT_LABEL[precision]}
             {gridTier.minorStepM > 0 && Math.abs(gridTier.minorStepM - snapStep) > 1e-9 && (
               <span className="opacity-70"> · grid {gridTier.minorStepM >= 1

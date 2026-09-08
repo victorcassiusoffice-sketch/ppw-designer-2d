@@ -293,6 +293,21 @@ export function RoomDrawLayer({
 
     /** Where the current mouse press started, for the drag-is-not-a-vertex test. */
     let mouseDownAt: { x: number; y: number } | null = null;
+    /**
+     * DRAG TO DRAW (Vic 2026-09-08: "it used to be as you click and hold, and
+     * you drag the line, it draws the wall, and you can clearly see the
+     * measurements in real time").
+     *
+     * A mouse press now plants its vertex IMMEDIATELY, so the rubber band and
+     * its length chip have something to measure from while the pointer is
+     * still down. Release far away and the release point is planted too — one
+     * gesture, one wall. Release without travelling and it was a click, which
+     * plants exactly the one vertex it always did.
+     *
+     * `pushedOnDown` is what keeps those two readings of the same gesture from
+     * planting two vertices for one click.
+     */
+    let pushedOnDown = false;
 
     function handleMouseDown(e: Konva.KonvaEventObject<MouseEvent>) {
       const c = readClient(e.evt as MouseEvent);
@@ -301,7 +316,24 @@ export function RoomDrawLayer({
       // the NEXT tap (a fresh touch, tens of px away) would then be read as
       // a drag and refused — every tap after the first would be swallowed.
       if (c && isCompatAfterTap(c)) return;
+      // PRIMARY BUTTON ONLY. The right button opens the take-back (contextmenu
+      // below); planting a vertex under it and removing it again in the same
+      // gesture is a no-op the customer reads as 'right-click does nothing'.
+      if ((e.evt as MouseEvent).button !== 0) return;
       mouseDownAt = c ? { x: c.x, y: c.y } : null;
+      pushedOnDown = false;
+      if (!c) return;
+      // A pan or a pinch is a view gesture, not a wall.
+      if (tapSuppressRefRef.current?.current) return;
+      const p = resolveDrawPoint({ clientX: c.x, clientY: c.y }, shiftFrom(e)).point;
+      const current = verticesRef.current;
+      // A press ON the first vertex is a closing gesture — leave it to the
+      // release, which owns the close.
+      if (isClosingPolygon(current, p, closeThresholdM(currentSnapStepM()))) return;
+      console.log(DBG, 'press: plant anchor', { vertex: p, verticesAfter: current.length + 1 });
+      setVerticesRef.current([...current, p]);
+      setHoverRef.current(p);
+      pushedOnDown = true;
     }
 
     function handleClickOrTap(
@@ -323,11 +355,31 @@ export function RoomDrawLayer({
       // tap is already guarded by the pan/pinch veto above, and it must never
       // be measured against a compat mousedown.
       const down = fromTap ? null : mouseDownAt;
+      const planted = fromTap ? false : pushedOnDown;
       mouseDownAt = null;
+      pushedOnDown = false;
       if (down && Math.hypot(c.x - down.x, c.y - down.y) > DRAW_TAP_SLOP_PX) {
-        console.log(DBG, 'click ignored: pointer travelled', {
-          dist: Math.round(Math.hypot(c.x - down.x, c.y - down.y)),
-        });
+        // DRAG TO DRAW. The anchor went in on press; this plants the far end,
+        // so the wall is exactly the line the customer just dragged.
+        const to = resolveDrawPoint({ clientX: c.x, clientY: c.y }, shiftFrom(e)).point;
+        const current = verticesRef.current;
+        if (isClosingPolygon(current, to, closeThresholdM(currentSnapStepM())) && current.length >= 3) {
+          console.log('[draw-close]', { reason: 'drag-onto-first-vertex', vertices: current.length, success: null });
+          onCommitRef.current(current, nameRef.current.trim() || 'New Room');
+          setVerticesRef.current([]);
+          setHoverRef.current(null);
+          return;
+        }
+        const next = planted ? [...current] : [...current, resolveDrawPoint({ clientX: down.x, clientY: down.y }, shiftFrom(e)).point];
+        next.push(to);
+        console.log(DBG, 'drag: wall drawn', { dist: Math.round(Math.hypot(c.x - down.x, c.y - down.y)), verticesAfter: next.length });
+        setVerticesRef.current(next);
+        setHoverRef.current(to);
+        return;
+      }
+      // A plain click already planted its vertex on the press.
+      if (planted) {
+        console.log(DBG, 'click: vertex already planted on press');
         return;
       }
       const p = resolveDrawPoint({ clientX: c.x, clientY: c.y }, shiftFrom(e)).point;
@@ -396,6 +448,11 @@ export function RoomDrawLayer({
     }
 
     function handleClick(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+      // Konva raises 'click' for ANY button, so the right-click that just ran
+      // the take-back would otherwise plant the vertex straight back again —
+      // a right-click that visibly does nothing.
+      const btn = (e.evt as MouseEvent).button;
+      if (typeof btn === 'number' && btn !== 0) return;
       const c = readClient(e.evt as MouseEvent | TouchEvent);
       if (c && lastTap) {
         const dt = performance.now() - lastTap.t;
@@ -408,6 +465,23 @@ export function RoomDrawLayer({
       handleClickOrTap(e);
     }
 
+    /**
+     * Delete the wall you just drew, in place (Vic 2026-09-08: "you can't even
+     * delete one of the walls you've just drawn"). Deleting IS possible today
+     * — the Remove tool picks a committed free wall — but only by leaving the
+     * pen and finding another tool. A right-click now takes back the last
+     * point mid-run, which is the same thing Ctrl+Z and the HUD's Undo do,
+     * reachable without moving the hand.
+     */
+    function handleContextMenu(e: Konva.KonvaEventObject<PointerEvent>) {
+      e.evt.preventDefault();
+      const current = verticesRef.current;
+      if (current.length === 0) return;
+      console.log(DBG, 'right-click: undo last wall', { verticesAfter: current.length - 1 });
+      setVerticesRef.current(current.slice(0, -1));
+    }
+
+    stage.on('contextmenu.roomdraw', handleContextMenu);
     stage.on('mousemove.roomdraw', handleMove);
     stage.on('touchmove.roomdraw', handleMove);
     stage.on('mousedown.roomdraw', handleMouseDown);
@@ -416,6 +490,7 @@ export function RoomDrawLayer({
 
     return () => {
       console.log(DBG, 'layer effect: cleanup Stage handlers');
+      stage.off('contextmenu.roomdraw');
       stage.off('mousemove.roomdraw');
       stage.off('touchmove.roomdraw');
       stage.off('mousedown.roomdraw');
@@ -1093,12 +1168,14 @@ export function RoomDrawHUD({
           data-testid="room-draw-hint"
         >
           {vertices.length === 0
-            ? (phone ? 'Tap each corner of your room' : 'Click each corner of your room — the walls follow your clicks')
+            ? (phone
+                ? 'Tap each corner of your room'
+                : 'Drag to draw a wall — or click corner to corner. The length shows as you go.')
             : vertices.length < 3
-              ? (phone ? 'Tap the next corner' : 'Click the next corner. Two points make one wall.')
+              ? (phone ? 'Tap the next corner' : 'Drag the next wall. Right-click takes the last one back.')
               : (phone
                   ? 'Tap the first point to close the room'
-                  : 'Click your first point (or press Enter) to close the room — Make room does the same')}
+                  : 'Finish on your first point to close the room — Make room does the same')}
         </span>
         {phone && readout}
         {/* The unit stepper lives INSIDE the HUD so it is reachable mid-draw
@@ -1241,7 +1318,7 @@ export function RoomDrawHUD({
           onClick={handleUndo}
           disabled={vertices.length === 0}
           className={`${CTRL} ${CTRL_REST} ${CTRL_H} w-11 shrink-0 !px-0 sm:w-auto sm:!px-3`}
-          title="Undo last wall (Ctrl+Z)"
+          title="Undo the last wall (Ctrl+Z, or right-click on the plan)"
           aria-label="Undo last wall point"
           data-testid="room-draw-undo"
         >
