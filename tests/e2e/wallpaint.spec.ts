@@ -97,7 +97,7 @@ test.describe('Wall paint — desktop panel + canvas', () => {
     await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
     await page.waitForSelector('[data-testid="wallpaint-palette"]');
 
-    // The five real Sofap (Permoglaze) products.
+    // The five Sofap (Permoglaze) products (more lines load as their datasheets are sourced).
     for (const id of [
       'permoglaze-matt-emulsion',
       'permoglaze-soft-feel',
@@ -172,10 +172,12 @@ test.describe('Wall paint — the algorithm to money (seeded)', () => {
 
   test('length × height − door → litres → whole tins → cart + checkout', async ({ page }) => {
     // 5×4 m room at 2.7 m: painted edges 0 (with an 0.838 m door) and 2,
-    // plus a 2 m free wall.
-    //   area  = (5×2.7 − 0.838×2.04) + 5×2.7 + 2×2.7 = 30.69 m²
-    //   litres = ceil(30.69 × 2 coats ÷ 9 m²/L × 10)/10 = 6.9 L
-    //   tins   = 1× 5 L + 2× 1 L (Rs 760 + 2×201.25 = Rs 1,162.50)
+    // plus a 2 m free wall (one face).
+    //   area   = (5×2.7 − 0.838×2.04) + 5×2.7 + 2×2.7 = 30.69 m²
+    //   litres = ceil(30.69 × 3 coats (TDS) ÷ 9 m²/L × 10)/10 = 10.3 L
+    //            + 10 % touch-up contingency → 11.4 L   (audit 2026-09-14)
+    //   tins   = cheapest whole-tin cover at Sofap store prices 2026-09-14
+    //            (1 L 201.25 · 5 L 816.50 · 20 L 3,168.25) = 2× 5 L + 2× 1 L
     await seed(
       page,
       {
@@ -217,8 +219,8 @@ test.describe('Wall paint — the algorithm to money (seeded)', () => {
     await expect(line).toHaveCount(1);
     await expect(line).toContainText('Permoglaze Matt Emulsion');
     await expect(line).toContainText('30.7 m²');
-    await expect(line).toContainText('needs 6.9 L');
-    await expect(line).toContainText('1× 5 L + 2× 1 L');
+    await expect(line).toContainText('needs 11.4 L');
+    await expect(line).toContainText('2× 5 L + 2× 1 L');
     await expect(page.locator('[data-testid="cart-page-wallpaint-subtotal-label"]')).toBeVisible();
 
     await page.goto('/checkout');

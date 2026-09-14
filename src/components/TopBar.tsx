@@ -39,15 +39,7 @@
  * its polygon is rectangular · rooms dropdown state lifted to App.
  */
 
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type ReactNode,
-  type RefObject,
-} from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useDesignStore, isActiveRoomRectangle } from '../store/designStore';
@@ -90,18 +82,26 @@ import {
   MAX_WALL_HEIGHT_M,
   MIN_WALL_HEIGHT_M,
   WALL_PAINTS,
+  DEFAULT_PAINT_WASTE_PCT,
+  MAX_PAINT_COATS,
+  MAX_PAINT_WASTE_PCT,
+  MIN_PAINT_COATS,
+  TINTED_PAINT_WASTE_PCT,
+  brandHasColourChart,
   brandIdOfPaint,
   brandsWithPaints,
   coloursForPaint,
   findPaintBrandById,
   findWallPaintById,
   isPaintTintable,
+  loadPaintColourChart,
   normalisePaintColourHex,
   paintsForBrand,
   resolveWallColourHex,
   type PaintColour,
   type WallPaint,
 } from '../data/wallPaints';
+import { SOFAP_COLOUR_DISCLAIMER } from '../data/sofapColours';
 import { deriveWallPaintOrders, wallPaintBreakdown } from '../designer/wallPaintCalc';
 // Wall paint tints + the Sims-style 3D room view (2026-09-14).
 import { applyWallPaintBrush, brushColour, brushPaintId } from '../designer/wallPaintBrush';
@@ -633,6 +633,8 @@ export function TopBar({
   const paintRoomWalls = usePropertyStore((s) => s.paintRoomWalls);
   const paintFreeWall = usePropertyStore((s) => s.paintFreeWall);
   const setWallHeight = usePropertyStore((s) => s.setWallHeight);
+  const setWallPaintCoats = usePropertyStore((s) => s.setWallPaintCoats);
+  const setWallPaintWastePct = usePropertyStore((s) => s.setWallPaintWastePct);
   const displayCurrency = useCurrencyStore((s) => s.currency);
   const fx = useCurrencyStore((s) => s.fx);
   // Units brief (2026-08-28, D7). A popover, not a six-way segmented
@@ -857,6 +859,38 @@ export function TopBar({
       ? paintsForBrand(paintBrand?.id ?? paintBrands[0]?.id ?? paintBrandId)
       : WALL_PAINTS;
   const [paintBreakdownOpen, setPaintBreakdownOpen] = useState(false);
+  // The brand's full tinting chart (Sofap: 1,050 Colour Match shades) —
+  // loaded on demand, filtered by family + search.
+  const [paintChartOpen, setPaintChartOpen] = useState(false);
+  const [paintChart, setPaintChart] = useState<PaintColour[] | null>(null);
+  const [paintChartFamily, setPaintChartFamily] = useState<string>('');
+  const [paintChartQuery, setPaintChartQuery] = useState('');
+  const paintChartBrandId = brandIdOfPaint(wallPaintSel);
+  useEffect(() => {
+    if (!paintChartOpen || paintChart) return;
+    let alive = true;
+    loadPaintColourChart(paintChartBrandId).then((rows) => {
+      if (alive) setPaintChart(rows);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [paintChartOpen, paintChart, paintChartBrandId]);
+  const paintChartFamilies = useMemo(
+    () => (paintChart ? [...new Set(paintChart.map((c) => c.collection ?? ''))] : []),
+    [paintChart],
+  );
+  const paintChartRows = useMemo(() => {
+    if (!paintChart) return [];
+    const q = paintChartQuery.trim().toLowerCase();
+    return paintChart.filter(
+      (c) =>
+        (!paintChartFamily || c.collection === paintChartFamily) &&
+        (!q || c.name.toLowerCase().includes(q) || (c.code ?? '').toLowerCase().includes(q)),
+    );
+  }, [paintChart, paintChartFamily, paintChartQuery]);
+  const paintCoatsSetting = property.wallPaintCoats;
+  const paintWasteSetting = property.wallPaintWastePct;
   const wallPaintOrders = deriveWallPaintOrders(property, wallHeightM);
   const wallPaintRows = wallPaintBreakdown(property, wallHeightM);
   const wallPaintLive = (() => {
@@ -2360,6 +2394,56 @@ export function TopBar({
                 </span>
               </label>
 
+              {/* Coats + touch-up contingency (audit 2026-09-14): the two
+                  inputs that move the litres; both printed on the quote. */}
+              <div className="flex items-center justify-between gap-2 px-1 pb-1" data-testid="wallpaint-estimate-settings">
+                <label className="flex items-center gap-1.5" htmlFor="ppw-paint-coats">
+                  <span className="text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>
+                    Coats
+                  </span>
+                  <select
+                    id="ppw-paint-coats"
+                    data-testid="wallpaint-coats"
+                    value={paintCoatsSetting ?? ''}
+                    onChange={(e) => setWallPaintCoats(e.target.value === '' ? null : Number(e.target.value))}
+                    className="h-9 rounded-md border border-ppw-rim bg-white px-1.5 text-[13px] font-semibold tabular-nums text-ppw-ink focus:border-ppw-ink focus:outline-none"
+                    aria-label="Coats"
+                    title={`Datasheet: ${wallPaintSel.recommended_coats} coats for ${wallPaintSel.name}`}
+                  >
+                    <option value="">Datasheet</option>
+                    {Array.from({ length: MAX_PAINT_COATS - MIN_PAINT_COATS + 1 }, (_, i) => MIN_PAINT_COATS + i).map((n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex items-center gap-1.5" htmlFor="ppw-paint-waste">
+                  <span className="text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>
+                    Extra
+                  </span>
+                  <input
+                    id="ppw-paint-waste"
+                    type="number"
+                    min={0}
+                    max={MAX_PAINT_WASTE_PCT}
+                    step={1}
+                    value={paintWasteSetting ?? (wallPaintTint ? TINTED_PAINT_WASTE_PCT : DEFAULT_PAINT_WASTE_PCT)}
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value, 10);
+                      setWallPaintWastePct(Number.isFinite(v) ? v : null);
+                    }}
+                    data-testid="wallpaint-waste"
+                    className="h-9 w-14 rounded-md border border-ppw-rim bg-white px-1.5 text-right text-[13px] font-semibold tabular-nums text-ppw-ink focus:border-ppw-ink focus:outline-none"
+                    aria-label="Extra paint for touch-ups, percent"
+                    title="Touch-up contingency — 10 % is the estimating norm, 15 % on a tinted colour"
+                  />
+                  <span className="text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>
+                    %
+                  </span>
+                </label>
+              </div>
+
               {/* Brands — only when more than one paint company is loaded. */}
               {paintBrands.length > 1 && (
                 <div className="mb-1 flex flex-wrap gap-1.5 px-1" role="radiogroup" aria-label="Paint brand" data-testid="wallpaint-brands">
@@ -2481,10 +2565,86 @@ export function TopBar({
                       {!wallPaintTintIsCustom && <span aria-hidden="true">+</span>}
                     </label>
                   </div>
+                  {brandHasColourChart(paintChartBrandId) && (
+                    <div className="mt-1.5 px-1" data-testid="wallpaint-chart">
+                      <button
+                        type="button"
+                        onClick={() => setPaintChartOpen((v) => !v)}
+                        aria-expanded={paintChartOpen}
+                        data-testid="wallpaint-chart-toggle"
+                        className="flex w-full items-center justify-between py-1 text-[12px] font-medium"
+                        style={{ color: CHROME_TEXT_2 }}
+                      >
+                        <span>{paintChartOpen ? 'Colour Match chart' : 'All Colour Match shades'}</span>
+                        <span aria-hidden="true">{paintChartOpen ? '▾' : '▸'}</span>
+                      </button>
+                      {paintChartOpen && (
+                        <div className="mt-1">
+                          <div className="flex gap-1.5">
+                            <select
+                              value={paintChartFamily}
+                              onChange={(e) => setPaintChartFamily(e.target.value)}
+                              data-testid="wallpaint-chart-family"
+                              aria-label="Colour family"
+                              className="h-8 min-w-0 flex-1 rounded-md border border-ppw-rim bg-white px-1.5 text-[12px] text-ppw-ink focus:outline-none"
+                            >
+                              <option value="">All families{paintChart ? ` (${paintChart.length})` : ''}</option>
+                              {paintChartFamilies.map((f) => (
+                                <option key={f} value={f}>
+                                  {f.replace(/^Colour Match · /, '')}
+                                </option>
+                              ))}
+                            </select>
+                            <input
+                              type="search"
+                              value={paintChartQuery}
+                              onChange={(e) => setPaintChartQuery(e.target.value)}
+                              placeholder="Name or code"
+                              data-testid="wallpaint-chart-search"
+                              aria-label="Search colours"
+                              className="h-8 w-24 rounded-md border border-ppw-rim bg-white px-1.5 text-[12px] text-ppw-ink focus:outline-none"
+                            />
+                          </div>
+                          {!paintChart ? (
+                            <p className="py-2 text-[11px]" style={{ color: CHROME_TEXT_2 }}>
+                              Loading the chart…
+                            </p>
+                          ) : (
+                            <div className="mt-1.5 grid max-h-[176px] grid-cols-8 gap-1 overflow-y-auto pr-0.5" role="radiogroup" aria-label="Colour Match shades" data-testid="wallpaint-chart-grid">
+                              {paintChartRows.map((c) => {
+                                const hex = normalisePaintColourHex(c.hex) ?? c.hex;
+                                const on = !!wallPaintTint && wallPaintTint.hex === hex;
+                                return (
+                                  <button
+                                    key={c.id}
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={on}
+                                    data-testid={`wallpaint-colour-${c.id}`}
+                                    onClick={() => chooseWallPaintColour(c)}
+                                    className={`h-6 w-6 rounded border ${on ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
+                                    style={{ background: hex }}
+                                    title={`${c.name}${c.code ? ` · ${c.code}` : ''}`}
+                                    aria-label={`${c.name}${c.code ? ` ${c.code}` : ''}`}
+                                  />
+                                );
+                              })}
+                              {paintChartRows.length === 0 && (
+                                <p className="col-span-8 py-2 text-[11px]" style={{ color: CHROME_TEXT_2 }}>
+                                  No shade matches.
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <p className="mt-1 px-1 text-[10px] leading-snug" style={{ color: CHROME_TEXT_2 }}>
                     {wallPaintColours.length > 0
-                      ? `${paintBrand?.name ?? 'Brand'} shades${paintBrand?.colourSystem ? ` · ${paintBrand.colourSystem}` : ''}. Tin price is the base; tinting is priced in store.`
-                      : 'Pick any colour — the store tints the base tin to match. Tin price is the base.'}
+                      ? `${paintBrand?.name ?? 'Brand'} shades${paintBrand?.colourSystem ? ` · ${paintBrand.colourSystem}` : ''}. A tinted tin is priced on its base (Pastel / Medium / Basic).`
+                      : 'Pick any colour — the store tints the base tin to match.'}
+                    {paintChartBrandId === 'sofap' ? ` ${SOFAP_COLOUR_DISCLAIMER}` : ''}
                   </p>
                 </div>
               ) : (
@@ -2565,7 +2725,11 @@ export function TopBar({
                   ? 'Click a wall to remove its paint'
                   : wallPaintDraft.scope === 'room'
                     ? 'Click any wall of a room to paint the whole room'
-                    : `Click a wall to paint it · ${wallPaintSel.recommended_coats} coats at ${wallHeightM.toFixed(1)} m`}
+                    : `Click a wall to paint it · ${paintCoatsSetting ?? wallPaintSel.recommended_coats} coats at ${wallHeightM.toFixed(1)} m`}
+              </p>
+              <p className="px-1 text-[10px] leading-snug" style={{ color: CHROME_TEXT_2 }} data-testid="wallpaint-assumptions">
+                {wallPaintSel.vat_inclusive ? 'Prices incl. VAT' : 'Prices excl. VAT'}
+                {wallPaintSel.priced_at ? ` (${paintBrand?.name ?? 'store'} store, ${wallPaintSel.priced_at})` : ''} · ceilings not included · skirting not deducted · openings under 1 m² not deducted
               </p>
 
               {/* How it's worked out (2026-09-14): every painted wall as a
@@ -2611,10 +2775,11 @@ export function TopBar({
                               {o.colourHex ? ` · ${o.colourName ?? o.colourHex}` : ''}
                             </span>
                             {': '}
-                            {o.areaM2.toFixed(2)} m² × {o.coats} coats ÷ {o.paint.coverage_m2_per_l} m²/L = {o.litres.toFixed(1)} L →{' '}
+                            {o.areaM2.toFixed(2)} m² × {o.coats} coats ÷ {o.paint.coverage_m2_per_l} m²/L = {o.netLitres.toFixed(1)} L + {o.wastePct}% = {o.litres.toFixed(1)} L →{' '}
                             {o.fill.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')} ={' '}
                             <span className="font-semibold">{formatCurrency(convert(o.fill.totalMur, 'MUR', displayCurrency, fx), displayCurrency)}</span>
                             {o.surplusLitres > 0 ? ` (${o.surplusLitres.toFixed(1)} L over)` : ''}
+                            {o.baseName ? ` · ${o.baseName}${o.baseEstimated ? ' (estimated from the colour depth)' : ''}` : ''}
                           </li>
                         ))}
                       </ul>
