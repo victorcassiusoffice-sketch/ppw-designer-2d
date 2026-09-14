@@ -101,6 +101,8 @@ export interface WallPaintLine {
   colourName?: string;
   /** Swatch colour for the line (tint, else the product's base). */
   renderHex: string;
+  /** A primer coat for bare plaster, quoted under the brand's paints. */
+  isPrimer?: boolean;
   finish: string;
   areaM2: number;
   coats: number;
@@ -275,6 +277,7 @@ export function deriveWallPaintLines(
     paintName: o.paint.name,
     ...(o.colourHex ? { colourHex: o.colourHex } : {}),
     ...(o.colourName ? { colourName: o.colourName } : {}),
+    ...(o.isPrimer ? { isPrimer: true } : {}),
     renderHex: o.renderHex,
     finish: o.paint.finish,
     areaM2: o.areaM2,

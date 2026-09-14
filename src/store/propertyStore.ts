@@ -35,7 +35,7 @@ import { translatePolygon, unstackLegacyRooms } from '../designer/roomLayout';
 // Wall-hosted openings (2026-08-28) — doors/doorways/windows live on the Room
 // so history and persistence pick them up with no extra plumbing.
 import type { Opening } from '../designer/openings';
-import { canonicaliseRoomGeometry, openingSpan, signedPolygonAreaM2, validateOpening } from '../designer/openings';
+import { canonicaliseRoomGeometry, openingSpan, validateOpening } from '../designer/openings';
 import { roomEdges } from '../designer/wallEdges';
 // Per-tile floor painting (floor-painting brief 2026-08-28).
 import {
@@ -80,12 +80,17 @@ import {
 } from '../designer/freeWalls';
 // Wall paint tints (2026-09-14): one validator for the store, the load
 // normalisers and the UI, so a bad hex is rejected the same way everywhere.
-import { normalisePaintColourHex, normalisePaintColourName } from '../data/wallPaints';
+import { findWallPaintById, isPaintTintable, normalisePaintColourHex, normalisePaintColourName } from '../data/wallPaints';
 
-/** One painted edge, tint validated. A tint with no valid hex is dropped. */
+/**
+ * One painted edge, tint validated. A tint with no valid hex is dropped, and
+ * so is a tint on a line the catalogue marks white-only (Xtreme White, Heat
+ * Guard) — it could never be bought, so it must never be stored or priced.
+ */
 function paintedEdge(edgeIndex: number, paintId: string, colour?: PaintColourChoice | null): PaintedEdge {
   const out: PaintedEdge = { edgeIndex, paintId };
-  const hex = normalisePaintColourHex(colour?.hex);
+  const known = findWallPaintById(paintId);
+  const hex = known && !isPaintTintable(known) ? undefined : normalisePaintColourHex(colour?.hex);
   if (hex) {
     out.colourHex = hex;
     const name = normalisePaintColourName(colour?.name);
@@ -96,26 +101,26 @@ function paintedEdge(edgeIndex: number, paintId: string, colour?: PaintColourCho
 
 /**
  * Carry painted edges across a polygon change (2026-09-14). Paint is
- * index-addressed like an opening, so it must follow the same two rules:
- * an edge that no longer exists loses its paint (prune), and a polygon
- * that arrived counter-clockwise and was reversed maps old edge i to new
- * edge n-1-i — exactly the opening remap in `canonicaliseRoomGeometry`.
- * Before this, a reshape or a CCW seed could leave paint on the wrong wall.
+ * index-addressed like an opening, so it follows the SAME map the openings
+ * follow — `canonicaliseRoomGeometry`'s `edgeMap` (dedupe + winding flip):
+ * an edge that collapsed loses its paint, a reversed polygon keeps the paint
+ * on the same world wall. Before this, a reshape or a CCW seed could leave
+ * paint on the wrong wall.
  */
 function remapPaintedEdges(
   wallPaint: PaintedEdge[] | undefined,
-  rawPolygon: Polygon,
+  edgeMap: number[],
   canonPolygon: Polygon,
 ): PaintedEdge[] | undefined {
   if (!Array.isArray(wallPaint) || wallPaint.length === 0) return undefined;
   const m = canonPolygon.length;
   if (m < 3) return undefined;
-  const flipped = rawPolygon.length >= 3 && signedPolygonAreaM2(rawPolygon) < 0;
   const seen = new Set<number>();
   const out: PaintedEdge[] = [];
   for (const e of wallPaint) {
     if (!e || !Number.isInteger(e.edgeIndex) || typeof e.paintId !== 'string' || !e.paintId) continue;
-    const idx = flipped ? m - 1 - e.edgeIndex : e.edgeIndex;
+    if (e.edgeIndex < 0 || e.edgeIndex >= edgeMap.length) continue;
+    const idx = edgeMap[e.edgeIndex];
     if (idx < 0 || idx >= m || seen.has(idx)) continue;
     seen.add(idx);
     out.push({ ...e, edgeIndex: idx });
@@ -286,6 +291,8 @@ export interface Property {
    */
   wallPaintCoats?: number;
   wallPaintWastePct?: number;
+  /** Bare / new plaster: quote one coat of the brand's primer under the paint. */
+  wallPaintPrimer?: boolean;
 }
 
 const PROPERTY_KEY = 'ppw_property_v2';
@@ -533,6 +540,8 @@ export interface PropertyState {
   setWallPaintCoats: (coats: number | null) => void;
   /** Touch-up contingency 0–25 %; null = the default. */
   setWallPaintWastePct: (pct: number | null) => void;
+  /** Bare plaster → a primer line per brand used. */
+  setWallPaintPrimer: (on: boolean) => void;
   /** Paint one or both faces of a free-standing wall. */
   setFreeWallPaintFaces: (wallId: string, faces: 1 | 2) => void;
 
@@ -781,7 +790,7 @@ export const usePropertyStore = create<PropertyState>()(
               // Wall paint (2026-09-14) is polygon-coupled exactly as
               // openings are: an edge that is gone loses its paint and a
               // reversed polygon keeps the paint on the same WORLD wall.
-              const wallPaint = remapPaintedEdges(r.wallPaint, polygon, canon.polygon);
+              const wallPaint = remapPaintedEdges(r.wallPaint, canon.edgeMap, canon.polygon);
               return {
                 ...r,
                 polygon: canon.polygon,
@@ -1127,7 +1136,8 @@ export const usePropertyStore = create<PropertyState>()(
                     delete next.paintColourName;
                     if (paintId) {
                       next.paintId = paintId;
-                      const hex = normalisePaintColourHex(colour?.hex);
+                      const known = findWallPaintById(paintId);
+                      const hex = known && !isPaintTintable(known) ? undefined : normalisePaintColourHex(colour?.hex);
                       if (hex) {
                         next.paintColourHex = hex;
                         const name = normalisePaintColourName(colour?.name);
@@ -1164,6 +1174,14 @@ export const usePropertyStore = create<PropertyState>()(
           const w = normaliseWallPaintWastePct(pct);
           if (w === undefined) delete next.wallPaintWastePct;
           else next.wallPaintWastePct = w;
+          return { property: next };
+        }),
+
+      setWallPaintPrimer: (on) =>
+        set((s) => {
+          const next = { ...s.property };
+          if (on) next.wallPaintPrimer = true;
+          else delete next.wallPaintPrimer;
           return { property: next };
         }),
 
@@ -1661,6 +1679,7 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   if (coats !== undefined) out.wallPaintCoats = coats;
   const waste = normaliseWallPaintWastePct((property as { wallPaintWastePct?: unknown }).wallPaintWastePct);
   if (waste !== undefined) out.wallPaintWastePct = waste;
+  if ((property as { wallPaintPrimer?: unknown }).wallPaintPrimer === true) out.wallPaintPrimer = true;
   return out;
 }
 
@@ -1799,8 +1818,10 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
   // Canonicalise winding + duplicate vertices at the LOAD path (doors
   // defect 4), remapping any persisted openings exactly — a plan saved with
   // a CCW-drawn room keeps its doors' world-space gaps and swings.
+  // Canonicalised from the RAW polygon (it dedupes itself) so the edge map
+  // it returns is indexed the way the persisted openings and paint are.
   const canon = canonicaliseRoomGeometry(
-    cleanPolygon(polygon),
+    polygon,
     Array.isArray(r.openings) ? r.openings : [],
   );
   const clean = canon.polygon;
@@ -1865,7 +1886,7 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
             );
           // Remap against the RAW polygon (a CCW seed reverses), then prune
           // to the CLEANED one — the same order the openings take.
-          const wp = remapPaintedEdges(typed, cleanPolygon(polygon), clean);
+          const wp = remapPaintedEdges(typed, canon.edgeMap, clean);
           return wp ? { wallPaint: wp } : {};
         })()
       : {}),
@@ -2000,7 +2021,7 @@ export function canonicalisePropertyWinding(property: Property): Property {
     const next: Room = { ...room, polygon: canon.polygon };
     if (room.openings) next.openings = pruneOpenings(canon.openings, canon.polygon);
     // Paint follows the same remap as the openings (2026-09-14).
-    const wallPaint = remapPaintedEdges(room.wallPaint, room.polygon, canon.polygon);
+    const wallPaint = remapPaintedEdges(room.wallPaint, canon.edgeMap, canon.polygon);
     if (wallPaint) next.wallPaint = wallPaint;
     else delete next.wallPaint;
     return next;

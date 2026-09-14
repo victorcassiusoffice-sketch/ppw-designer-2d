@@ -45,6 +45,8 @@ export interface PaintBrand {
   country: string;
   /** How the brand tints — shown once in the panel, e.g. "Colour Match, 20 000 shades". */
   colourSystem?: string;
+  /** The brand's primer for bare plaster (`WallPaint.id` with category 'primer'), if priced. */
+  primerId?: string;
 }
 
 /**
@@ -64,6 +66,12 @@ export interface PaintColour {
   source_url?: string;
   /** The tint base this shade is mixed on (`PaintTintBase.id`), when the brand prices by base. */
   baseId?: string;
+  /**
+   * True when `baseId` was INFERRED (e.g. from the depth band in the brand's
+   * colour code) rather than named by the brand — priced on that base but
+   * shown as an estimate.
+   */
+  baseInferred?: boolean;
 }
 
 /**
@@ -107,6 +115,8 @@ export interface WallPaint {
   use: 'interior' | 'exterior' | 'both';
   /** Shown in the panel's short list; the rest sit behind "More lines". */
   featured?: boolean;
+  /** 'primer' lines are quoted under a paint, never offered as a wall colour. Absent = paint. */
+  category?: 'paint' | 'primer';
   /** m² covered by ONE litre in ONE coat (datasheet spread-rate midpoint). */
   coverage_m2_per_l: number;
   /** The datasheet's spread-rate range, when it publishes one. */
@@ -557,6 +567,36 @@ export const WALL_PAINTS: WallPaint[] = [
     product_url: 'https://www.sofaponlinestore.mu/product/permoglaze-heat-guard/',
     source_urls: [`${SOFAP_STORE}permoglaze-heat-guard/`, 'https://sofap.mu/wp-content/uploads/2023/03/HEAT-GUARD_TDS_ENG_27-FEB-2023.pdf'],
   },
+  // ---- Sofap primer for bare / new plaster (quoted under the paints, never a wall colour) ----
+  {
+    id: 'permoglaze-aqua-prime',
+    name: 'Permoglaze Aqua Prime',
+    brand: 'Permoglaze (Sofap)',
+    brandId: 'sofap',
+    category: 'primer',
+    finish: 'matt',
+    use: 'both',
+    coverage_m2_per_l: 9,
+    coverage_low_m2_per_l: 8,
+    coverage_high_m2_per_l: 10,
+    recommended_coats: 1,
+    coats_source: 'Sofap TDS Rev 006 (15 Mar 2023): the Matt Emulsion and VIP Satin TDS call for 1 coat of Aqua Prime on bare porous concrete',
+    priced_at: SOFAP_PRICED_AT,
+    vat_inclusive: true,
+    tintable: false,
+    tins: [
+      { sizeL: 1, priceMur: 258.75 },
+      { sizeL: 5, priceMur: 920 },
+      { sizeL: 20, priceMur: 3478.75 },
+    ],
+    hex: '#F3F2EE',
+    product_url: `${SOFAP_STORE}permoglaze-aqua-prime/`,
+    source_urls: [`${SOFAP_STORE}permoglaze-aqua-prime/`, 'https://sofap.mu/wp-content/uploads/2023/04/AQUA-PRIME_ENG-TDS_MAR-2023.pdf'],
+  },
+  // Other Mauritian paint companies are researched and generated in
+  // `otherBrandPaints.ts` (Mauvilac, Polytol) but NOT loaded — Vic
+  // 2026-09-14: the pitch stays on the Sofap range. Spread them in here
+  // (and their brands into PAINT_BRANDS) to switch them on.
 ];
 
 export function findWallPaintById(id: string): WallPaint | undefined {
@@ -578,6 +618,7 @@ export const PAINT_BRANDS: PaintBrand[] = [
     website: 'https://www.sofaponlinestore.mu',
     country: 'MU',
     colourSystem: 'Colour Match — over 20,000 colours, mixed in store',
+    primerId: 'permoglaze-aqua-prime',
   },
 ];
 
@@ -602,6 +643,7 @@ export function loadPaintColourChart(brandId: string): Promise<PaintColour[]> {
   } else {
     p = Promise.resolve([]);
   }
+  p.then((rows) => loadedChartColours.set(brandId, rows)).catch(() => undefined);
   chartCache.set(brandId, p);
   return p;
 }
@@ -619,13 +661,25 @@ export function brandIdOfPaint(paint: WallPaint): string {
   return paint.brandId ?? SOFAP_BRAND_ID;
 }
 
-export function paintsForBrand(brandId: string): WallPaint[] {
-  return WALL_PAINTS.filter((p) => brandIdOfPaint(p) === brandId);
+/** Wall colours only — primers are quoted, never chosen. */
+export function decorativePaints(): WallPaint[] {
+  return WALL_PAINTS.filter((p) => p.category !== 'primer');
 }
 
-/** Brands that actually have products loaded, in catalogue order. */
+export function paintsForBrand(brandId: string): WallPaint[] {
+  return decorativePaints().filter((p) => brandIdOfPaint(p) === brandId);
+}
+
+/** Brands that actually have wall paints loaded, in catalogue order. */
 export function brandsWithPaints(): PaintBrand[] {
-  return PAINT_BRANDS.filter((b) => WALL_PAINTS.some((p) => brandIdOfPaint(p) === b.id));
+  return PAINT_BRANDS.filter((b) => decorativePaints().some((p) => brandIdOfPaint(p) === b.id));
+}
+
+/** The brand's priced primer, if it has one. */
+export function primerForBrand(brandId: string): WallPaint | undefined {
+  const b = findPaintBrandById(brandId);
+  const p = b?.primerId ? findWallPaintById(b.primerId) : undefined;
+  return p && p.category === 'primer' ? p : undefined;
 }
 
 export function isPaintTintable(paint: WallPaint): boolean {
@@ -640,10 +694,17 @@ export function coloursForPaint(paint: WallPaint): PaintColour[] {
   return PAINT_COLOURS.filter((c) => c.brandId === brandId);
 }
 
+/** Chart colours already loaded this session, so a chart shade prices on its base. */
+const loadedChartColours = new Map<string, PaintColour[]>();
+
 export function findPaintColourByHex(paint: WallPaint, hex: string | undefined): PaintColour | undefined {
   const h = normalisePaintColourHex(hex);
   if (!h) return undefined;
-  return coloursForPaint(paint).find((c) => normalisePaintColourHex(c.hex) === h);
+  const own = coloursForPaint(paint).find((c) => normalisePaintColourHex(c.hex) === h);
+  if (own) return own;
+  if (!isPaintTintable(paint)) return undefined;
+  const chart = loadedChartColours.get(brandIdOfPaint(paint));
+  return chart?.find((c) => normalisePaintColourHex(c.hex) === h);
 }
 
 /** CIE L* lightness 0-100 of a hex colour (sRGB -> relative luminance -> L*). */
@@ -680,7 +741,7 @@ export function tinsForPaintColour(paint: WallPaint, colourHex?: string, baseId?
   if (named) return { tins: named.tins, base: named, baseEstimated: false };
   const known = findPaintColourByHex(paint, hex);
   const knownBase = known?.baseId ? bases.find((b) => b.id === known.baseId) : undefined;
-  if (knownBase) return { tins: knownBase.tins, base: knownBase, baseEstimated: false };
+  if (knownBase) return { tins: knownBase.tins, base: knownBase, baseEstimated: !!known?.baseInferred };
   const L = hexLightness(hex);
   const byDepth = bases.find((b) => typeof b.minLightness === 'number' && L >= b.minLightness) ?? bases[bases.length - 1];
   return { tins: byDepth.tins, base: byDepth, baseEstimated: true };
@@ -712,8 +773,10 @@ export function normalisePaintColourName(x: unknown): string | undefined {
  * else the product's base swatch, else plaster for an unknown product.
  */
 export function resolveWallColourHex(paintId: string | undefined, colourHex?: string, plaster = '#EDE9DF'): string {
-  const tint = normalisePaintColourHex(colourHex);
-  if (tint) return tint;
+  // A paint the catalogue no longer knows cannot be priced, so it must not
+  // LOOK painted either — plaster, whatever tint it carried.
   const paint = paintId ? findWallPaintById(paintId) : undefined;
-  return paint?.hex ?? plaster;
+  if (!paint) return plaster;
+  const tint = isPaintTintable(paint) ? normalisePaintColourHex(colourHex) : undefined;
+  return tint ?? paint.hex;
 }

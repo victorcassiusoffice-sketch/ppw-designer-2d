@@ -177,3 +177,53 @@ describe('wall-paint tints — load normalisers (the whitelist)', () => {
     expect(prop.wallHeightM).toBe(3.1);
   });
 });
+
+describe('wall-paint tints — edge map (review round 2)', () => {
+  it('a duplicate vertex collapses one edge; paint remaps exactly as an opening does', () => {
+    seed([{ id: 'r1', name: 'Room', polygon: RECT, placedItems: [] }]);
+    const s = usePropertyStore.getState();
+    s.paintWallEdge('r1', 2, 'permoglaze-matt-emulsion');
+    s.paintWallEdge('r1', 3, 'permoglaze-soft-feel');
+    s.addOpening('r1', { edgeIndex: 2, offsetM: 1, widthM: 0.838, kind: 'door', flipFacing: false, flipHand: false });
+    // The committed polygon carries (0,0) twice: its edge 1 collapses, so
+    // its edges 2 and 3 become the canonical 1 and 2 — for the door AND
+    // for the paint (both are read in the committed polygon's index space).
+    s.setRoomPolygon('r1', [{ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 4 }, { x: 0, y: 4 }]);
+    const room = usePropertyStore.getState().property.rooms[0];
+    expect(room.polygon).toHaveLength(4);
+    expect(room.openings?.map((o) => o.edgeIndex)).toEqual([1]);
+    expect(room.wallPaint).toEqual([
+      { edgeIndex: 1, paintId: 'permoglaze-matt-emulsion' },
+      { edgeIndex: 2, paintId: 'permoglaze-soft-feel' },
+    ]);
+  });
+
+  it('a tint chosen for a white-only line is not stored', () => {
+    seed([{ id: 'r1', name: 'Room', polygon: RECT, placedItems: [] }], [{ id: 'w1', a: { x: 6, y: 0 }, b: { x: 8, y: 0 }, thicknessM: 0.15 }]);
+    const s = usePropertyStore.getState();
+    s.paintWallEdge('r1', 0, 'permoglaze-xtreme-white', { hex: '#C9553F', name: 'Coral' });
+    s.paintFreeWall('w1', 'permoglaze-heat-guard', { hex: '#C9553F' });
+    const p = usePropertyStore.getState().property;
+    expect(p.rooms[0].wallPaint).toEqual([{ edgeIndex: 0, paintId: 'permoglaze-xtreme-white' }]);
+    expect(p.walls![0]).not.toHaveProperty('paintColourHex');
+  });
+
+  it('primer, coats and contingency settings survive normalisation', () => {
+    const prop = normaliseLoadedProperty({
+      id: 'p', name: 'P', activeRoomId: 'r1',
+      rooms: [{ id: 'r1', name: 'Room', polygon: RECT, placedItems: [] }],
+      wallPaintPrimer: true, wallPaintCoats: 3, wallPaintWastePct: 15,
+    } as unknown as Property);
+    expect(prop.wallPaintPrimer).toBe(true);
+    expect(prop.wallPaintCoats).toBe(3);
+    expect(prop.wallPaintWastePct).toBe(15);
+    const bad = normaliseLoadedProperty({
+      id: 'p', name: 'P', activeRoomId: 'r1',
+      rooms: [{ id: 'r1', name: 'Room', polygon: RECT, placedItems: [] }],
+      wallPaintPrimer: 'yes', wallPaintCoats: 9, wallPaintWastePct: -1,
+    } as unknown as Property);
+    expect(bad).not.toHaveProperty('wallPaintPrimer');
+    expect(bad).not.toHaveProperty('wallPaintCoats');
+    expect(bad).not.toHaveProperty('wallPaintWastePct');
+  });
+});

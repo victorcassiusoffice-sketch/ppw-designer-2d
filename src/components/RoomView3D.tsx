@@ -14,10 +14,12 @@
  * Two variants: `card` (docked inside the paint panel) and `overlay` (a
  * large view for a meeting screen; Esc / Close returns to the panel).
  */
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { usePropertyStore, type Property, type Room } from '../store/propertyStore';
-import { activeLevelIdOf, isOutdoorRoom, roomsOnLevel } from '../designer/levels';
+import { activeLevelIdOf, isOutdoorRoom, isRoofRoom, roomsOnLevel } from '../designer/levels';
 import { wallsOnLevel } from '../designer/freeWalls';
+import { edgeKey, pointAlongEdge, projectOntoEdge, roomEdges, sharedEdgeMap } from '../designer/wallEdges';
+import { openingSpan } from '../designer/openings';
 import { isDrawnPolygon } from '../designer/roomLayout';
 import { roomFloorMaterial } from '../designer/floorFinish';
 import { findFloorMaterialById } from '../data/floorMaterials';
@@ -54,6 +56,8 @@ export interface RoomView3DProps {
   footer?: string;
   /** Read-out of what the brush will do, shown as the caption. */
   caption?: string;
+  /** Overlay only: a strip under the view (the phone's brush controls). */
+  brushStrip?: ReactNode;
   className?: string;
   style?: CSSProperties;
 }
@@ -65,12 +69,68 @@ const BTN =
 interface RoomView3DBridge {
   wallScreenPoint: (hit: WallHit) => { x: number; y: number } | null;
   faceCount: () => number;
+  /** Every drawn face by key with its hole count — lets a spec assert a doorway exists. */
+  faces: () => Array<{ key: string; holes: number }>;
   camera: () => OrbitCamera | null;
+}
+/**
+ * The card and the overlay can be mounted together (md+), so each registers
+ * under its own key and the top-level functions read the overlay when it is
+ * open, else the card. Closing the overlay never blanks the card's bridge.
+ */
+interface RoomView3DBridgeRegistry extends RoomView3DBridge {
+  instances: Partial<Record<'card' | 'overlay', RoomView3DBridge>>;
 }
 declare global {
   interface Window {
-    __ppwRoomView3d?: RoomView3DBridge;
+    __ppwRoomView3d?: RoomView3DBridgeRegistry;
   }
+}
+function bridgeRegistry(): RoomView3DBridgeRegistry {
+  if (!window.__ppwRoomView3d) {
+    const reg: RoomView3DBridgeRegistry = {
+      instances: {},
+      wallScreenPoint: (hit) => (reg.instances.overlay ?? reg.instances.card)?.wallScreenPoint(hit) ?? null,
+      faceCount: () => (reg.instances.overlay ?? reg.instances.card)?.faceCount() ?? 0,
+      faces: () => (reg.instances.overlay ?? reg.instances.card)?.faces() ?? [],
+      camera: () => (reg.instances.overlay ?? reg.instances.card)?.camera() ?? null,
+    };
+    window.__ppwRoomView3d = reg;
+  }
+  return window.__ppwRoomView3d;
+}
+
+/**
+ * Every opening that cuts a room's wall, including the neighbour's: a door
+ * hosted by room A on a wall shared with room B must also be a hole in B's
+ * wall, or it vanishes the moment the camera looks at that wall from B's
+ * side (review 2026-09-14). Same world-point projection the plan uses.
+ */
+function openingsIncludingNeighbours(rooms: Room[]): Map<string, NonNullable<SceneRoomInput['openings']>> {
+  const drawn = rooms.filter((r) => !isOutdoorRoom(r) && !isRoofRoom(r) && isDrawnPolygon(r.polygon));
+  const shared = sharedEdgeMap(drawn.map((r) => ({ id: r.id, polygon: r.polygon })));
+  const edgesByRoom = new Map(drawn.map((r) => [r.id, roomEdges(r)]));
+  const byId = new Map(drawn.map((r) => [r.id, r]));
+  const out = new Map<string, NonNullable<SceneRoomInput['openings']>>();
+  for (const room of drawn) {
+    const list: NonNullable<SceneRoomInput['openings']> = [...(room.openings ?? [])];
+    for (const edge of edgesByRoom.get(room.id) ?? []) {
+      for (const ref of shared.get(edgeKey(room.id, edge.index)) ?? []) {
+        const nRoom = byId.get(ref.roomId);
+        const nEdge = edgesByRoom.get(ref.roomId)?.[ref.edgeIndex];
+        if (!nRoom || !nEdge) continue;
+        for (const o of nRoom.openings ?? []) {
+          if (o.edgeIndex !== ref.edgeIndex) continue;
+          const span = openingSpan(o);
+          const t0 = projectOntoEdge(edge, pointAlongEdge(nEdge, span.t0));
+          const t1 = projectOntoEdge(edge, pointAlongEdge(nEdge, span.t1));
+          list.push({ edgeIndex: edge.index, offsetM: (t0 + t1) / 2, widthM: Math.abs(t1 - t0), kind: o.kind, sillM: o.sillM });
+        }
+      }
+    }
+    out.set(room.id, list);
+  }
+  return out;
 }
 
 function sceneFromProperty(property: Property, hover: WallHit | null, cam: OrbitCamera): SceneInput {
@@ -78,8 +138,10 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
   const rooms = roomsOnLevel(property.rooms, level);
   const walls = wallsOnLevel(property.walls ?? [], level);
   const H = property.wallHeightM ?? DEFAULT_WALL_HEIGHT_M;
+  const openingsByRoom = openingsIncludingNeighbours(rooms);
   const sceneRooms: SceneRoomInput[] = rooms.map((room: Room) => {
-    const outdoor = isOutdoorRoom(room) || !isDrawnPolygon(room.polygon);
+    // A roof slab has no walls to paint — items only, like outdoors.
+    const outdoor = isOutdoorRoom(room) || isRoofRoom(room) || !isDrawnPolygon(room.polygon);
     const wallColourByEdge = new Map<number, string>();
     for (const e of room.wallPaint ?? []) {
       wallColourByEdge.set(e.edgeIndex, resolveWallColourHex(e.paintId, e.colourHex));
@@ -113,7 +175,7 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
       id: room.id,
       name: room.name,
       polygon: room.polygon,
-      openings: room.openings,
+      openings: openingsByRoom.get(room.id) ?? room.openings,
       wallColourByEdge,
       floorHex,
       kind: outdoor ? 'outdoor' : 'room',
@@ -154,7 +216,7 @@ function describeHit(property: Property, hit: WallHit | null): string | null {
   return `Free wall${paint ? ` · ${paint.name}` : ' · unpainted'}${colour ? ` · ${colour}` : ''}`;
 }
 
-export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, caption, className = '', style }: RoomView3DProps): JSX.Element {
+export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, caption, brushStrip, className = '', style }: RoomView3DProps): JSX.Element {
   const property = usePropertyStore((s) => s.property);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -167,7 +229,7 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
   // Bounds of the storey in view — the camera re-frames when they change.
   const level = activeLevelIdOf(property);
   const bounds = useMemo(() => {
-    const rooms = roomsOnLevel(property.rooms, level).filter((r) => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon));
+    const rooms = roomsOnLevel(property.rooms, level).filter((r) => !isOutdoorRoom(r) && !isRoofRoom(r) && isDrawnPolygon(r.polygon));
     const walls = wallsOnLevel(property.walls ?? [], level);
     return boundsOf(rooms, walls);
   }, [property, level]);
@@ -234,7 +296,8 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
   useEffect(() => {
     if (!import.meta.env.DEV) return;
     const canvas = canvasRef.current;
-    window.__ppwRoomView3d = {
+    const reg = bridgeRegistry();
+    reg.instances[variant] = {
       wallScreenPoint: (hit) => {
         if (!canvas) return null;
         const face = projected.find(
@@ -253,12 +316,14 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
         return { x: r.left + cx, y: r.top + cy };
       },
       faceCount: () => projected.length,
+      faces: () => projected.map((f) => ({ key: f.face.key, holes: f.holes.length })),
       camera: () => camera,
     };
     return () => {
-      delete window.__ppwRoomView3d;
+      const r = window.__ppwRoomView3d;
+      if (r) delete r.instances[variant];
     };
-  }, [projected, camera]);
+  }, [projected, camera, variant]);
 
   // ---- gestures -----------------------------------------------------------
   const pointers = useRef(new Map<number, { x: number; y: number }>());
@@ -326,17 +391,35 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
     const had = pointers.current.delete(e.pointerId);
     const d = drag.current;
     if (pointers.current.size === 0) drag.current = null;
-    else if (d) d.pinchDist = 0;
+    else if (d) {
+      // One finger left after a pinch: the drag origin is re-seeded on the
+      // finger that stayed, so its next move orbits from where it is, not
+      // by the distance to the finger that lifted.
+      const [rest] = [...pointers.current.values()];
+      d.x = rest.x;
+      d.y = rest.y;
+      d.pinchDist = 0;
+      d.moved = true;
+    }
     if (!had || !d || cancelled || d.moved || !onPaintWall) return;
     const p = localPoint(e);
     const hit = hitTestWall(projected, p.x, p.y);
     if (hit) onPaintWall(hit);
   };
 
-  const onWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-    zoomBy(e.deltaY > 0 ? 1.1 : 1 / 1.1);
-  };
+  // Wheel zoom must be a NON-passive native listener: React's onWheel is
+  // passive, so preventDefault is a no-op and the docked panel scrolls the
+  // card out from under the pointer.
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+    const h = (e: WheelEvent) => {
+      e.preventDefault();
+      zoomBy(e.deltaY > 0 ? 1.1 : 1 / 1.1);
+    };
+    el.addEventListener('wheel', h, { passive: false });
+    return () => el.removeEventListener('wheel', h);
+  }, [zoomBy]);
 
   const rotate = (deltaRad: number) => setCamera((c) => (c ? { ...c, azimuthRad: c.azimuthRad + deltaRad } : c));
   const refit = () => {
@@ -350,10 +433,12 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
   useEffect(() => {
     if (variant !== 'overlay' || !onClose) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        onClose();
-      }
+      if (e.key !== 'Escape') return;
+      // An input in the still-usable docked panel keeps its own Esc.
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+      e.stopPropagation();
+      onClose();
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
@@ -366,7 +451,7 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
     <div
       ref={containerRef}
       className="relative w-full overflow-hidden"
-      style={{ background: '#E7E2D8', touchAction: 'none', ...(variant === 'card' ? { aspectRatio: '4 / 3' } : { flex: 1, minHeight: 0 }) }}
+      style={{ background: '#E7E2D8', touchAction: 'none', ...(variant === 'card' ? { aspectRatio: '16 / 10' } : { flex: 1, minHeight: 0 }) }}
       data-testid="wallpaint-3d"
       data-variant={variant}
     >
@@ -381,7 +466,6 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
         onPointerUp={(e) => endPointer(e, false)}
         onPointerCancel={(e) => endPointer(e, true)}
         onPointerLeave={() => setHover(null)}
-        onWheel={onWheel}
         onContextMenu={(e) => e.preventDefault()}
       />
       {empty && (
@@ -406,8 +490,8 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
           </button>
         )}
         {variant === 'overlay' && onClose && (
-          <button type="button" className={`${BTN} bg-ppw-inkDeep text-ppw-paper hover:bg-[#3a3835]`} onClick={onClose} title="Back to the plan (Esc)" aria-label="Close the room view" data-testid="wallpaint-3d-close">
-            Close
+          <button type="button" className={`${BTN} bg-ppw-inkDeep text-ppw-paper hover:bg-[#3a3835]`} onClick={onClose} title="Back to the plan (Esc)" aria-label="Back to the plan" data-testid="wallpaint-3d-close">
+            Plan
           </button>
         )}
       </div>
@@ -438,32 +522,28 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
 
   return (
     <div
-      className={`fixed inset-y-0 left-0 z-[60] flex items-center justify-center p-3 md:p-6 ${className}`}
-      // Ends at the docked panel on md+ (the brush stays reachable); the
+      className={`fixed inset-y-0 left-0 z-[34] flex flex-col ${className}`}
+      // A WORKSPACE, not a dialog: it takes the plan's place edge to edge and
+      // ends at the docked panel on md+ (the brush stays reachable); the
       // panel publishes 0px on the phone, so there it is full-screen.
-      style={{ right: 'var(--floor-panel-w, 0px)', ...style }}
+      style={{ right: 'var(--floor-panel-w, 0px)', background: '#E7E2D8', ...style }}
       data-testid="wallpaint-3d-overlay"
+      role="region"
+      aria-label="Room view in 3D"
     >
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden="true" />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Room view in 3D"
-        className="relative flex h-full w-full max-w-[1400px] flex-col overflow-hidden rounded-xl border border-ppw-rim bg-ppw-chrome shadow-2xl"
-      >
-        <div className="flex items-center justify-between gap-2 border-b border-ppw-rim px-3 py-2">
-          <div className="min-w-0">
-            <p className="text-[14px] font-semibold text-[#37362f]">Room view</p>
-            <p className="truncate text-[11px] font-medium text-ppw-charcoal">Drag to look around · pinch or scroll to zoom · click a wall to paint it</p>
-          </div>
-          {footer && (
-            <p className="shrink-0 text-[12px] font-semibold tabular-nums text-[#37362f]" data-testid="wallpaint-3d-footer">
-              {footer}
-            </p>
-          )}
+      <div className="flex items-center justify-between gap-2 border-b border-ppw-rim bg-ppw-chrome px-3 py-1.5">
+        <div className="min-w-0">
+          <p className="text-[13px] font-semibold leading-tight text-[#37362f]">3D room view</p>
+          <p className="truncate text-[11px] font-medium leading-tight text-ppw-charcoal">Drag to look around · pinch or scroll to zoom · click a wall to paint it</p>
         </div>
-        {box}
+        {footer && (
+          <p className="shrink-0 text-[12px] font-semibold tabular-nums text-[#37362f]" data-testid="wallpaint-3d-footer">
+            {footer}
+          </p>
+        )}
       </div>
+      {box}
+      {brushStrip}
     </div>
   );
 }

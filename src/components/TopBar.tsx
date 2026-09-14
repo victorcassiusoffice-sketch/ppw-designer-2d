@@ -97,6 +97,7 @@ import {
   loadPaintColourChart,
   normalisePaintColourHex,
   paintsForBrand,
+  primerForBrand,
   resolveWallColourHex,
   type PaintColour,
   type WallPaint,
@@ -635,6 +636,8 @@ export function TopBar({
   const setWallHeight = usePropertyStore((s) => s.setWallHeight);
   const setWallPaintCoats = usePropertyStore((s) => s.setWallPaintCoats);
   const setWallPaintWastePct = usePropertyStore((s) => s.setWallPaintWastePct);
+  const setWallPaintPrimer = usePropertyStore((s) => s.setWallPaintPrimer);
+  const setFreeWallPaintFaces = usePropertyStore((s) => s.setFreeWallPaintFaces);
   const displayCurrency = useCurrencyStore((s) => s.currency);
   const fx = useCurrencyStore((s) => s.fx);
   // Units brief (2026-08-28, D7). A popover, not a six-way segmented
@@ -854,10 +857,7 @@ export function TopBar({
   const paintBrands = brandsWithPaints().filter((b) => !demoBrandIds || demoBrandIds.includes(b.id));
   const [paintBrandId, setPaintBrandId] = useState<string>(() => brandIdOfPaint(wallPaintSel));
   const paintBrand = findPaintBrandById(paintBrandId) ?? paintBrands[0];
-  const wallPaintsShown =
-    paintBrands.length > 1 || demoBrandIds
-      ? paintsForBrand(paintBrand?.id ?? paintBrands[0]?.id ?? paintBrandId)
-      : WALL_PAINTS;
+  const wallPaintsShown = paintsForBrand(paintBrand?.id ?? paintBrands[0]?.id ?? paintBrandId);
   const [paintBreakdownOpen, setPaintBreakdownOpen] = useState(false);
   // The short list (featured lines) by default; the rest behind "More lines".
   const [paintMoreLines, setPaintMoreLines] = useState(false);
@@ -893,6 +893,10 @@ export function TopBar({
   }, [paintChart, paintChartFamily, paintChartQuery]);
   const paintCoatsSetting = property.wallPaintCoats;
   const paintWasteSetting = property.wallPaintWastePct;
+  const paintPrimerOn = !!property.wallPaintPrimer;
+  const paintBrandPrimer = primerForBrand(paintChartBrandId);
+  const vatText =
+    wallPaintSel.vat_inclusive === true ? 'Prices incl. VAT' : wallPaintSel.vat_inclusive === false ? 'Prices excl. VAT' : 'VAT status not confirmed';
   const wallPaintOrders = deriveWallPaintOrders(property, wallHeightM);
   const wallPaintRows = wallPaintBreakdown(property, wallHeightM);
   const wallPaintLive = (() => {
@@ -1202,6 +1206,12 @@ export function TopBar({
   useEffect(() => {
     if (!wallPaintActive && wallPaintDraft.view3d) setWallPaintDraft({ view3d: false });
   }, [wallPaintActive, wallPaintDraft.view3d, setWallPaintDraft]);
+  // The roof has no walls: a storey change onto the roof stands the wall
+  // tools down (they refuse to arm there, but PageUp / the Storeys popover
+  // could move the focus under an armed tool).
+  useEffect(() => {
+    if (onRoof && (wallPaintActive || doorActive || floorPaintActive)) setTool('hand');
+  }, [onRoof, wallPaintActive, doorActive, floorPaintActive, setTool]);
 
   // Esc = tool off while the Floor tool is on (Done does the same). Inputs
   // keep their own Esc (a level rename in progress must not lose the tool).
@@ -2356,6 +2366,33 @@ export function TopBar({
                 </span>
               </div>
 
+              {/* View — Plan (the drawing) or 3D (the room). The 3D workspace
+                  takes the plan's place; this panel stays. */}
+              <div className={`${SEG_GROUP} mb-2 flex w-full`} role="radiogroup" aria-label="View" data-testid="wallpaint-view">
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={!wallPaintDraft.view3d}
+                  onClick={() => setWallPaintDraft({ view3d: false })}
+                  data-testid="wallpaint-view-plan"
+                  className={`${SEG} ${!wallPaintDraft.view3d ? SEG_CHECKED : SEG_REST} h-9 flex-1`}
+                  title="The plan — click a wall on the drawing to paint it"
+                >
+                  Plan
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={wallPaintDraft.view3d}
+                  onClick={() => setWallPaintDraft({ view3d: true })}
+                  data-testid="wallpaint-view-3d"
+                  className={`${SEG} ${wallPaintDraft.view3d ? SEG_CHECKED : SEG_REST} h-9 flex-1`}
+                  title="The room in 3D — orbit, then click a wall to paint it"
+                >
+                  3D room
+                </button>
+              </div>
+
               {/* The Sims-style room view (2026-09-14): the storey in 3D,
                   every wall in its paint. Click a wall here to paint it;
                   ⤢ opens the big view. */}
@@ -2365,6 +2402,25 @@ export function TopBar({
                 onExpand={() => setWallPaintDraft({ view3d: true })}
                 className="mb-2 overflow-hidden rounded-lg border border-ppw-rim"
               />
+
+              {/* Brand card — always: who the prices come from and when. */}
+              {paintBrand && (
+                <div className="mb-1 flex items-center gap-2 px-1" data-testid="wallpaint-brand-card">
+                  <span
+                    aria-hidden="true"
+                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-ppw-rim bg-white text-[11px] font-bold text-[#37362f]"
+                  >
+                    {paintBrand.name.slice(0, 1)}
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                    <span className="truncate text-[12px] font-semibold text-[#37362f]">{paintBrand.name}</span>
+                    <span className="truncate text-[10px]" style={{ color: CHROME_TEXT_2 }}>
+                      {paintBrand.colourSystem ?? 'Tinted in store'}
+                      {wallPaintSel.priced_at ? ` · prices ${wallPaintSel.priced_at}` : ''}
+                    </span>
+                  </span>
+                </div>
+              )}
 
               {/* Wall height — drives every litre and tin count. */}
               <label
@@ -2445,6 +2501,21 @@ export function TopBar({
                   </span>
                 </label>
               </div>
+              {/* Bare plaster → one coat of the brand's primer, its own line. */}
+              <label className="flex min-h-[36px] items-center gap-2 px-1" htmlFor="ppw-paint-primer" title={paintBrandPrimer ? `${paintBrandPrimer.name} — 1 coat at ${paintBrandPrimer.coverage_m2_per_l} m²/L` : 'This brand has no priced primer loaded'}>
+                <input
+                  id="ppw-paint-primer"
+                  type="checkbox"
+                  data-testid="wallpaint-primer"
+                  checked={paintPrimerOn}
+                  disabled={!paintBrandPrimer && !paintPrimerOn}
+                  onChange={(e) => setWallPaintPrimer(e.target.checked)}
+                  className="h-4 w-4 accent-ppw-inkDeep"
+                />
+                <span className="text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>
+                  Bare plaster · add primer{paintBrandPrimer ? ` (${paintBrandPrimer.name.replace(/^Permoglaze |^Polytol /, '')})` : ''}
+                </span>
+              </label>
 
               {/* Brands — only when more than one paint company is loaded. */}
               {paintBrands.length > 1 && (
@@ -2750,8 +2821,8 @@ export function TopBar({
                     : `Click a wall to paint it · ${paintCoatsSetting ?? wallPaintSel.recommended_coats} coats at ${wallHeightM.toFixed(1)} m`}
               </p>
               <p className="px-1 text-[10px] leading-snug" style={{ color: CHROME_TEXT_2 }} data-testid="wallpaint-assumptions">
-                {wallPaintSel.vat_inclusive ? 'Prices incl. VAT' : 'Prices excl. VAT'}
-                {wallPaintSel.priced_at ? ` (${paintBrand?.name ?? 'store'} store, ${wallPaintSel.priced_at})` : ''} · ceilings not included · skirting not deducted · openings under 1 m² not deducted
+                {vatText}
+                {wallPaintSel.priced_at ? ` (${paintBrand?.name ?? 'store'}, ${wallPaintSel.priced_at})` : ''} · ceilings not included · skirting not deducted · openings under 1 m² not deducted
               </p>
 
               {/* How it's worked out (2026-09-14): every painted wall as a
@@ -2782,9 +2853,21 @@ export function TopBar({
                               <span className="font-semibold">{r.roomName} · {r.wallLabel}</span>
                               {' '}
                               {r.lengthM.toFixed(2)} × {r.heightM.toFixed(1)} m
+                              {r.faces === 2 ? ' × 2 faces' : ''}
                               {r.openingsM2 > 0 ? ` − ${r.openingsM2.toFixed(2)} m² (${r.openingCount} opening${r.openingCount === 1 ? '' : 's'})` : ''}
                               {' = '}
                               <span className="font-semibold">{r.areaM2.toFixed(2)} m²</span>
+                              {r.kind === 'free' && r.wallId && (
+                                <button
+                                  type="button"
+                                  onClick={() => setFreeWallPaintFaces(r.wallId as string, r.faces === 2 ? 1 : 2)}
+                                  data-testid={`wallpaint-faces-${r.wallId}`}
+                                  className="ml-1 rounded border border-ppw-rim bg-white px-1 text-[10px] font-semibold text-[#37362f] hover:bg-[#f3f1ec]"
+                                  title="A free-standing wall has two faces — paint one or both"
+                                >
+                                  {r.faces === 2 ? 'both faces' : '1 face'}
+                                </button>
+                              )}
                             </span>
                           </li>
                         ))}
@@ -2794,6 +2877,7 @@ export function TopBar({
                           <li key={o.key} className="tabular-nums text-[#37362f]" data-testid="wallpaint-breakdown-order">
                             <span className="font-semibold">
                               {o.paint.name}
+                              {o.isPrimer ? ' (primer, bare plaster)' : ''}
                               {o.colourHex ? ` · ${o.colourName ?? o.colourHex}` : ''}
                             </span>
                             {': '}
@@ -2836,6 +2920,59 @@ export function TopBar({
             onPaintWall={paintFromRoomView}
             onClose={() => setWallPaintDraft({ view3d: false })}
             footer={wallPaintLiveText}
+            brushStrip={
+              !isMd ? (
+                <div className="flex items-center gap-1.5 overflow-x-auto border-t border-ppw-rim bg-ppw-chrome px-2 py-1.5" data-testid="wallpaint-3d-brush-strip">
+                  <button
+                    type="button"
+                    onClick={() => window.dispatchEvent(new CustomEvent('ppw:open-menu', { detail: { section: 'wallpaint' } }))}
+                    className={`${CHIP} h-9 shrink-0 px-2 text-[11px] ${CHIP_REST}`}
+                    data-testid="wallpaint-3d-brush-change"
+                    title="Change the paint"
+                  >
+                    <span aria-hidden="true" className="mr-1 inline-block h-3.5 w-3.5 rounded-sm border border-ppw-rim" style={{ background: wallPaintBrushHex }} />
+                    {wallPaintSel.name.replace(/^Permoglaze |^Mauvilac |^Polytol /, '')}
+                  </button>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={!wallPaintTint}
+                    onClick={() => chooseWallPaintColour(null)}
+                    className={`h-8 w-8 shrink-0 rounded-md border ${!wallPaintTint ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
+                    style={{ background: wallPaintSel.hex }}
+                    aria-label="Base white"
+                    data-testid="wallpaint-3d-colour-base"
+                  />
+                  {wallPaintColours.slice(0, 24).map((c) => {
+                    const hex = normalisePaintColourHex(c.hex) ?? c.hex;
+                    const on = !!wallPaintTint && wallPaintTint.hex === hex;
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        onClick={() => chooseWallPaintColour(c)}
+                        className={`h-8 w-8 shrink-0 rounded-md border ${on ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
+                        style={{ background: hex }}
+                        aria-label={c.name}
+                        title={c.name}
+                        data-testid={`wallpaint-3d-colour-${c.id}`}
+                      />
+                    );
+                  })}
+                  <button
+                    type="button"
+                    aria-pressed={wallPaintDraft.erase}
+                    onClick={() => setWallPaintDraft({ erase: !wallPaintDraft.erase })}
+                    className={`${CHIP} h-9 shrink-0 px-2 text-[11px] ${wallPaintDraft.erase ? CHIP_DANGER_ON : CHIP_REST}`}
+                    data-testid="wallpaint-3d-erase"
+                  >
+                    Erase
+                  </button>
+                </div>
+              ) : undefined
+            }
           />,
           document.body,
         )}

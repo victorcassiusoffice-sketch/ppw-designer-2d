@@ -277,18 +277,21 @@ export default function CheckoutPage() {
       unitPriceDisplay: f.unitPriceDisplay,
       lineTotalDisplay: f.lineTotalDisplay,
     }));
-    // Wall-paint order lines: whole Sofap tins; one line per paint, the
-    // name carrying the tin breakdown so the invoice is self-explanatory.
-    const wallPaintOrderLines: OrderLine[] = cart.wallPaintLines.map((l) => ({
-      productId: l.lineId,
-      name: `${l.paintName}${l.colourHex ? ` · ${l.colourName ?? l.colourHex}` : ''} — ${l.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')} (${l.areaM2.toFixed(1)} m², ${l.coats} coats)`,
-      category: 'Wall paint',
-      quantity: 1,
-      unitPrice: l.totalMur,
-      unitCurrency: 'MUR' as const,
-      unitPriceDisplay: l.totalDisplay,
-      lineTotalDisplay: l.totalDisplay,
-    }));
+    // Wall-paint order lines (2026-09-14): one line per paint · colour · pack
+    // size with the quantity and the unit price — the way a paint company
+    // fulfils an order; the measurement (m², coats) rides in the name.
+    const wallPaintOrderLines: OrderLine[] = cart.wallPaintLines.flatMap((l) =>
+      l.tins.map((t) => ({
+        productId: `${l.lineId}:${t.sizeL}L`,
+        name: `${l.paintName}${l.isPrimer ? ' (primer)' : ''}${l.colourHex ? ` · ${l.colourName ?? l.colourHex}` : ''} · ${t.sizeL} L tin (${l.areaM2.toFixed(1)} m², ${l.coats} coat${l.coats === 1 ? '' : 's'})`,
+        category: l.isPrimer ? 'Primer' : 'Wall paint',
+        quantity: t.count,
+        unitPrice: t.priceMur,
+        unitCurrency: 'MUR' as const,
+        unitPriceDisplay: l.totalMur > 0 ? (l.totalDisplay * t.priceMur) / l.totalMur : 0,
+        lineTotalDisplay: l.totalMur > 0 ? (l.totalDisplay * t.priceMur * t.count) / l.totalMur : 0,
+      })),
+    );
     const lines: OrderLine[] = [...productLines, ...floorOrderLines, ...wallPaintOrderLines];
     const order: Order = {
       id: orderId,

@@ -99,13 +99,14 @@ describe('wall paint measurement', () => {
     const o = orders[0];
     const expectedArea = (5 * 2.6 - 0.838 * 2.04) + 5 * 2.6 + 2 * 2.6;
     expect(o.areaM2).toBeCloseTo(expectedArea, 6);
-    // Net litres, then the 10 % touch-up contingency (audit 2026-09-14),
-    // both rounded UP to 0.1 L.
+    // Net litres for the breakdown, and the ordered litres rounded ONCE from
+    // the exact need + the 10 % contingency (audit 2026-09-14, R4-06 / #3).
     const expectedNet =
       Math.ceil(((expectedArea * paint.recommended_coats) / paint.coverage_m2_per_l) * 10 - 1e-9) / 10;
     expect(o.netLitres).toBeCloseTo(expectedNet, 6);
     expect(o.wastePct).toBe(10);
-    expect(o.litres).toBeCloseTo(Math.ceil(expectedNet * 1.1 * 10 - 1e-9) / 10, 6);
+    const exact = (expectedArea * 1.1 * paint.recommended_coats) / paint.coverage_m2_per_l;
+    expect(o.litres).toBeCloseTo(Math.ceil(exact * 10 - 1e-9) / 10, 6);
     expect(o.fill.boughtLitres).toBeGreaterThanOrEqual(o.litres);
     expect(o.fill.totalMur).toBeGreaterThan(0);
     expect(o.perRoom.map((p) => p.roomId).sort()).toEqual(['r1', 'walls']);
@@ -259,5 +260,74 @@ describe('wall paint tints (2026-09-14) — one tin serves one colour', () => {
     const big = tinsForLitres(450, WALL_PAINTS[0].tins);
     expect(big.boughtLitres).toBeGreaterThanOrEqual(450);
     expect(big.tins[0].sizeL).toBe(20);
+  });
+});
+
+describe('wall paint audit fixes (2026-09-14, review round 2)', () => {
+  const paint = WALL_PAINTS[0];
+
+  it('litres are rounded once: a 5.04 m wall at 3 coats + 10 % needs 5.0 L, not 5.1 L', () => {
+    // 5.04 × 2.7 = 13.608 m² × 3 ÷ 9 × 1.1 = 4.99 L → 5.0 L → one 5 L tin.
+    const property = {
+      wallHeightM: 2.7,
+      rooms: [{ id: 'r1', name: 'R', polygon: [{ x: 0, y: 0 }, { x: 5.04, y: 0 }, { x: 5.04, y: 4 }, { x: 0, y: 4 }], wallPaint: [{ edgeIndex: 0, paintId: paint.id }] }],
+    };
+    const [o] = deriveWallPaintOrders(property);
+    expect(o.coats).toBe(3);
+    expect(o.litres).toBeCloseTo(5.0, 9);
+    expect(o.fill.tins).toEqual([{ sizeL: 5, priceMur: 816.5, count: 1 }]);
+  });
+
+  it('the tin fill credits a 0.75 L pack with 0.75 L, never more', () => {
+    const f = tinsForLitres(1.6, [{ sizeL: 0.75, priceMur: 100 }, { sizeL: 5, priceMur: 1000 }]);
+    expect(f.boughtLitres).toBeGreaterThanOrEqual(1.6);
+    expect(f.tins).toEqual([{ sizeL: 0.75, priceMur: 100, count: 3 }]);
+    const g = tinsForLitres(0.8, [{ sizeL: 0.75, priceMur: 100 }]);
+    expect(g.boughtLitres).toBe(1.5);
+  });
+
+  it('a tint stored on a white-only line is priced as the white, one order', () => {
+    const xw = findWallPaintById('permoglaze-xtreme-white')!;
+    const property = {
+      wallHeightM: 2.7,
+      rooms: [{ id: 'r1', name: 'R', polygon: ROOM_POLY, wallPaint: [{ edgeIndex: 0, paintId: xw.id, colourHex: '#123456' }, { edgeIndex: 2, paintId: xw.id }] }],
+    };
+    const orders = deriveWallPaintOrders(property);
+    expect(orders).toHaveLength(1);
+    expect(orders[0].colourHex).toBeUndefined();
+    expect(orders[0].wastePct).toBe(10);
+    expect(wallPaintBreakdown(property).every((r) => !r.colourHex)).toBe(true);
+  });
+
+  it('bare plaster adds one primer order per brand, one coat at the primer coverage', () => {
+    const property = {
+      wallHeightM: 2.7,
+      wallPaintPrimer: true,
+      rooms: [{ id: 'r1', name: 'R', polygon: ROOM_POLY, wallPaint: [{ edgeIndex: 0, paintId: paint.id }, { edgeIndex: 1, paintId: 'permoglaze-soft-feel', colourHex: '#C9553F' }] }],
+    };
+    const orders = deriveWallPaintOrders(property);
+    const primer = orders.filter((o) => o.isPrimer);
+    expect(primer).toHaveLength(1);
+    expect(primer[0].paintId).toBe('permoglaze-aqua-prime');
+    expect(primer[0].coats).toBe(1);
+    expect(primer[0].areaM2).toBeCloseTo((5 + 4) * 2.7, 6);
+    expect(primer[0].wastePct).toBe(10);
+    expect(primer[0].fill.totalMur).toBeGreaterThan(0);
+    // The primer sorts last and never appears without the flag.
+    expect(orders[orders.length - 1].isPrimer).toBe(true);
+    expect(deriveWallPaintOrders({ ...property, wallPaintPrimer: false }).some((o) => o.isPrimer)).toBe(false);
+  });
+
+  it('a free wall painted on both faces doubles the area and says so', () => {
+    const property = {
+      wallHeightM: 2.7,
+      rooms: [],
+      walls: [{ id: 'fw', a: { x: 0, y: 0 }, b: { x: 3, y: 0 }, paintId: paint.id, paintFaces: 2 }],
+    };
+    const [row] = wallPaintBreakdown(property);
+    expect(row.faces).toBe(2);
+    expect(row.grossM2).toBeCloseTo(8.1, 6);
+    expect(row.areaM2).toBeCloseTo(16.2, 6);
+    expect(deriveWallPaintOrders(property)[0].areaM2).toBeCloseTo(16.2, 6);
   });
 });

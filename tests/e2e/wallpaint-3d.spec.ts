@@ -194,3 +194,62 @@ test.describe('Wall paint — 3D room view (phone)', () => {
     await expect(hud).toBeVisible();
   });
 });
+
+test.describe('Wall paint — 3D room view, review round 2 (desktop)', () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test('Plan | 3D switches the workspace; the panel stays usable; Plan returns', async ({ page }) => {
+    await seed(page);
+    await openDesigner(page);
+    await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
+    await page.waitForSelector('[data-testid="wallpaint-palette"]');
+    await page.locator('[data-testid="wallpaint-view-3d"]').click();
+    const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
+    await expect(overlay).toBeVisible();
+    await expect(page.locator('[data-testid="wallpaint-view-3d"]')).toHaveAttribute('aria-checked', 'true');
+    // The brush can still change while the room is on screen.
+    await page.locator('[data-testid="wallpaint-permoglaze-soft-feel"]').click();
+    await expect(page.locator('[data-testid="wallpaint-permoglaze-soft-feel"]')).toHaveAttribute('aria-pressed', 'true');
+    await page.locator('[data-testid="wallpaint-view-plan"]').click();
+    await expect(overlay).toHaveCount(0);
+  });
+
+  test('a door on a shared wall stays a doorway when the room is viewed from the neighbour', async ({ page }) => {
+    await seed(page, {}, [
+      { ...ROOM, openings: [{ id: 'd1', edgeIndex: 1, offsetM: 2, widthM: 0.9, kind: 'door', flipFacing: false, flipHand: false }] },
+      { id: 'r2', name: 'Room 2', polygon: [{ x: 5, y: 0 }, { x: 9, y: 0 }, { x: 9, y: 4 }, { x: 5, y: 4 }], openings: [], placedItems: [] },
+    ]);
+    await openDesigner(page);
+    await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
+    await page.waitForSelector('[data-testid="wallpaint-palette"]');
+    test.skip(!(await bridgeReady(page)), 'DEV bridge absent — deployed build');
+    // Two rotate-lefts put the camera east of the shared wall (x = 5): it is
+    // now Room 2's far wall (edge 3), drawn from Room 2's side — the door
+    // Room 1 hosts must still be a hole in it.
+    await page.locator('[data-testid="wallpaint-3d-rotate-left"]').first().click();
+    await page.locator('[data-testid="wallpaint-3d-rotate-left"]').first().click();
+    await page.waitForTimeout(300);
+    const faces = await page.evaluate(() =>
+      (window as unknown as { __ppwRoomView3d: { faces: () => Array<{ key: string; holes: number }> } }).__ppwRoomView3d.faces(),
+    );
+    const shared = faces.find((f) => f.key === 'wall-r2-3');
+    expect(shared, JSON.stringify(faces.map((f) => f.key))).toBeDefined();
+    expect(shared!.holes).toBe(1);
+  });
+
+  test('bare plaster adds a primer line to the quote and the cart', async ({ page }) => {
+    await seed(page);
+    await openDesigner(page);
+    await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
+    await page.waitForSelector('[data-testid="wallpaint-palette"]');
+    await page.locator('[data-testid="wallpaint-scope-room"]').click();
+    await page.waitForTimeout(250);
+    await page.locator('[data-testid="wallpaint-primer"]').check();
+    await page.locator('[data-testid="wallpaint-breakdown-toggle"]').click();
+    await expect(page.locator('[data-testid="wallpaint-breakdown-order"]')).toHaveCount(2);
+    await expect(page.locator('[data-testid="wallpaint-breakdown-order"]').last()).toContainText('primer, bare plaster');
+    await page.goto('/cart');
+    await expect(page.locator('[data-testid="cart-wallpaint-line"]')).toHaveCount(2);
+    await expect(page.locator('[data-testid="cart-page-wallpaint-lines"]')).toContainText('Primer · bare plaster');
+  });
+});

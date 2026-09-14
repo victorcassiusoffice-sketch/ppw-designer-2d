@@ -117,15 +117,34 @@ export interface SofapColourMatchRow {
   f: string;
 }
 
+/**
+ * The Colour Match code ends in a depth band — `-1` (591 shades, pale), `-4`
+ * (167, mid) or `-5` (292, deep). Sofap does not publish which base each
+ * mixes on, so the band is only an INFERRED base (priced on it, shown as an
+ * estimate); the à-la-carte shades stocked ready-mixed carry Sofap's own.
+ */
+export function sofapBaseFromCode(code: string | undefined): 'pastel' | 'medium' | 'basic' | undefined {
+  const m = /-(\d)$/.exec(code ?? '');
+  if (!m) return undefined;
+  if (m[1] === '1') return 'pastel';
+  if (m[1] === '4') return 'medium';
+  if (m[1] === '5') return 'basic';
+  return undefined;
+}
+
 export function sofapColourMatchToPaintColours(rows: SofapColourMatchRow[]): PaintColour[] {
-  return rows.map((r) => ({
-    id: `sofap-cm-${r.c || r.n.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
-    brandId: 'sofap',
-    name: r.n,
-    hex: r.h,
-    ...(r.c ? { code: r.c } : {}),
-    collection: `Colour Match · ${r.f}`,
-    hexOrigin: 'official' as const,
-    source_url: SOFAP_COLOUR_MATCH_URL,
-  }));
+  return rows.map((r) => {
+    const inferred = sofapBaseFromCode(r.c);
+    return {
+      id: `sofap-cm-${r.c || r.n.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+      brandId: 'sofap',
+      name: r.n,
+      hex: r.h,
+      ...(r.c ? { code: r.c } : {}),
+      collection: `Colour Match · ${r.f}`,
+      hexOrigin: 'official' as const,
+      source_url: SOFAP_COLOUR_MATCH_URL,
+      ...(inferred ? { baseId: inferred, baseInferred: true } : {}),
+    };
+  });
 }

@@ -340,3 +340,22 @@ describe('roomView3d — items, ordering, drawing', () => {
     expect(seg.filter((c) => c === 'close')).toHaveLength(2);
   });
 });
+
+describe('roomView3d — a neighbour opening passed in cuts the far wall (review round 2)', () => {
+  it('the hole is cut whichever room hosts the door', () => {
+    const cam = { ...southCamera(), azimuthRad: Math.PI / 2, target: { x: 5, y: 2, z: 1 } }; // camera EAST of x = 5
+    const faces = buildScene(
+      sceneInput(cam, {
+        rooms: [
+          { id: 'a', name: 'A', polygon: RECT, openings: [{ edgeIndex: 1, offsetM: 2, widthM: 0.9, kind: 'door' }] },
+          // Room B east of A; the shared wall is B's edge 3 (x = 5, y 4→0). The
+          // component maps A's door across; here we pass it mapped already.
+          { id: 'b', name: 'B', polygon: [{ x: 5, y: 0 }, { x: 9, y: 0 }, { x: 9, y: 4 }, { x: 5, y: 4 }], openings: [{ edgeIndex: 3, offsetM: 2, widthM: 0.9, kind: 'door' }] },
+        ],
+      }),
+    );
+    const keys = faces.map((f) => f.key);
+    expect(keys).toContain('wall-b-3');
+    expect(faces.find((f) => f.key === 'wall-b-3')!.holes).toHaveLength(1);
+  });
+});

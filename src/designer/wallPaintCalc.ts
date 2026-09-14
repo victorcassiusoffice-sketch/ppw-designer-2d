@@ -27,9 +27,12 @@ import {
   OPENING_WINDOW_HEIGHT_M,
   TINTED_PAINT_WASTE_PCT,
   WALL_PAINTS,
+  brandIdOfPaint,
   findWallPaintById,
+  isPaintTintable,
   normalisePaintColourHex,
   normalisePaintColourName,
+  primerForBrand,
   resolveWallColourHex,
   tinsForPaintColour,
   type WallPaint,
@@ -67,6 +70,8 @@ export interface PaintEstimateSettings {
   wallPaintCoats?: number;
   /** Touch-up contingency in percent; absent = 10 % (15 % for a tint). */
   wallPaintWastePct?: number;
+  /** Bare / new plaster: add one coat of the brand's primer under its paints. */
+  wallPaintPrimer?: boolean;
 }
 
 /** The coats a paint is quoted at: the override if set, else its datasheet figure. */
@@ -159,10 +164,11 @@ export function tinsForLitres(litres: number, tins: WallPaintTin[]): TinFill {
     .sort((a, b) => a.sizeL - b.sizeL);
   if (!Number.isFinite(litres) || litres <= 0 || sorted.length === 0) return { tins: [], totalMur: 0, boughtLitres: 0 };
 
-  // Work in whole deci-litres so the table is integer-indexed.
-  const STEP = 10;
+  // Work in whole CENTILITRES so a 0.75 L or 2.5 L pack is credited exactly
+  // — never rounded up to more paint than it holds (audit 2026-09-14).
+  const STEP = 100;
   const need = Math.max(1, Math.ceil(litres * STEP - 1e-6));
-  const sizes = sorted.map((t) => Math.max(1, Math.round(t.sizeL * STEP)));
+  const sizes = sorted.map((t) => Math.max(1, Math.floor(t.sizeL * STEP + 1e-6)));
   const biggest = sizes[sizes.length - 1];
   // Covering `need` never needs more than need + biggest − 1 deci-litres.
   const limit = need + biggest;
@@ -214,7 +220,7 @@ export function tinsForLitres(litres: number, tins: WallPaintTin[]): TinFill {
     mur += counts[i] * sorted[i].priceMur;
     bought += counts[i] * sorted[i].sizeL;
   }
-  return { tins: rows, totalMur: Math.round(mur * 100) / 100, boughtLitres: Math.round(bought * 10) / 10 };
+  return { tins: rows, totalMur: Math.round(mur * 100) / 100, boughtLitres: Math.round(bought * 100) / 100 };
 }
 
 export interface WallPaintOrder {
@@ -241,6 +247,8 @@ export interface WallPaintOrder {
   baseName?: string;
   /** True when that base was inferred from the colour's depth, not named by the brand. */
   baseEstimated?: boolean;
+  /** A primer coat under the brand's paints (bare plaster), not a wall colour. */
+  isPrimer?: boolean;
   perRoom: Array<{ roomId: string; roomName: string; areaM2: number }>;
 }
 
@@ -286,7 +294,9 @@ export function deriveWallPaintOrders(
     roomName: string,
   ) => {
     if (areaM2 <= 0) return;
-    const hex = normalisePaintColourHex(colourHex);
+    const product = findWallPaintById(paintId);
+    // A tint on a white-only line was never buyable: price the white.
+    const hex = product && !isPaintTintable(product) ? undefined : normalisePaintColourHex(colourHex);
     const key = wallPaintOrderKey(paintId, hex);
     const cur =
       areaByKey.get(key) ??
@@ -318,7 +328,9 @@ export function deriveWallPaintOrders(
     const coats = coatsFor(paint, property);
     const netLitres = litresForArea(agg.areaM2, coats, paint.coverage_m2_per_l);
     const wastePct = wastePctFor(!!agg.colourHex, property);
-    const litres = Math.ceil(netLitres * (1 + wastePct / 100) * 10 - 1e-9) / 10;
+    // Rounded ONCE, from the exact need — rounding the net first and again
+    // after the contingency could add a whole tin (audit 2026-09-14).
+    const litres = litresForArea(agg.areaM2 * (1 + wastePct / 100), coats, paint.coverage_m2_per_l);
     // A tinted tin is priced on its BASE where the brand prices that way.
     const choice = tinsForPaintColour(paint, agg.colourHex);
     const fill = tinsForLitres(litres, choice.tins);
@@ -340,7 +352,47 @@ export function deriveWallPaintOrders(
       perRoom: [...agg.perRoom.values()],
     });
   }
-  out.sort((a, b) => b.fill.totalMur - a.fill.totalMur || a.key.localeCompare(b.key));
+  // Primer (audit 2026-09-14): bare plaster takes one coat of the brand's
+  // primer under every wall painted in that brand — one line per brand.
+  if (property.wallPaintPrimer) {
+    const areaByBrand = new Map<string, { areaM2: number; perRoom: Map<string, { roomId: string; roomName: string; areaM2: number }> }>();
+    for (const o of out) {
+      const brandId = brandIdOfPaint(o.paint);
+      const cur = areaByBrand.get(brandId) ?? { areaM2: 0, perRoom: new Map() };
+      cur.areaM2 += o.areaM2;
+      for (const pr of o.perRoom) {
+        const r = cur.perRoom.get(pr.roomId) ?? { roomId: pr.roomId, roomName: pr.roomName, areaM2: 0 };
+        r.areaM2 += pr.areaM2;
+        cur.perRoom.set(pr.roomId, r);
+      }
+      areaByBrand.set(brandId, cur);
+    }
+    for (const [brandId, agg] of areaByBrand.entries()) {
+      const primer = primerForBrand(brandId);
+      if (!primer || agg.areaM2 <= 0) continue;
+      const coats = 1;
+      const wastePct = wastePctFor(false, property);
+      const netLitres = litresForArea(agg.areaM2, coats, primer.coverage_m2_per_l);
+      const litres = litresForArea(agg.areaM2 * (1 + wastePct / 100), coats, primer.coverage_m2_per_l);
+      const fill = tinsForLitres(litres, primer.tins);
+      out.push({
+        key: `primer|${primer.id}`,
+        paintId: primer.id,
+        paint: primer,
+        renderHex: primer.hex,
+        areaM2: agg.areaM2,
+        coats,
+        netLitres,
+        wastePct,
+        litres,
+        fill,
+        surplusLitres: Math.max(0, Math.round((fill.boughtLitres - litres) * 10) / 10),
+        isPrimer: true,
+        perRoom: [...agg.perRoom.values()],
+      });
+    }
+  }
+  out.sort((a, b) => Number(!!a.isPrimer) - Number(!!b.isPrimer) || b.fill.totalMur - a.fill.totalMur || a.key.localeCompare(b.key));
   return out;
 }
 
@@ -396,7 +448,7 @@ export function wallPaintBreakdown(
       const openings = (room.openings ?? []).filter((o) => o.edgeIndex === e.edgeIndex);
       const openingsM2 = openings.reduce((acc, o) => acc + openingDeductionM2(o, h), 0);
       const gross = lengthM * h;
-      const hex = normalisePaintColourHex(e.colourHex);
+      const hex = isPaintTintable(paint) ? normalisePaintColourHex(e.colourHex) : undefined;
       const name = hex ? normalisePaintColourName(e.colourName) : undefined;
       rows.push({
         key: wallPaintOrderKey(e.paintId, hex),
@@ -428,7 +480,7 @@ export function wallPaintBreakdown(
     const lengthM = Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y);
     if (lengthM <= 0) continue;
     n += 1;
-    const hex = normalisePaintColourHex(w.paintColourHex);
+    const hex = isPaintTintable(paint) ? normalisePaintColourHex(w.paintColourHex) : undefined;
     const name = hex ? normalisePaintColourName(w.paintColourName) : undefined;
     rows.push({
       key: wallPaintOrderKey(w.paintId, hex),
@@ -444,7 +496,8 @@ export function wallPaintBreakdown(
       renderHex: resolveWallColourHex(w.paintId, hex),
       lengthM,
       heightM: h,
-      grossM2: lengthM * h * (w.paintFaces === 2 ? 2 : 1),
+      // Per FACE; `faces` is the explicit multiplier the row prints.
+      grossM2: lengthM * h,
       openingsM2: 0,
       openingCount: 0,
       faces: w.paintFaces === 2 ? 2 : 1,

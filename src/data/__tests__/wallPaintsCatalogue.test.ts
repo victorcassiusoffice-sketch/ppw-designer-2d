@@ -5,6 +5,7 @@ import {
   WALL_PAINTS,
   brandsWithPaints,
   coloursForPaint,
+  decorativePaints,
   findPaintColourByHex,
   findWallPaintById,
   hexLightness,
@@ -13,6 +14,7 @@ import {
   normalisePaintColourHex,
   normalisePaintColourName,
   paintsForBrand,
+  primerForBrand,
   resolveWallColourHex,
   tinsForPaintColour,
 } from '../wallPaints';
@@ -42,7 +44,9 @@ describe('wall-paint catalogue (2026-09-14)', () => {
   it('brands: Sofap only for now, with products; helpers agree', () => {
     expect(PAINT_BRANDS.map((b) => b.id)).toContain('sofap');
     expect(brandsWithPaints().map((b) => b.id)).toEqual(['sofap']);
-    expect(paintsForBrand('sofap')).toHaveLength(WALL_PAINTS.length);
+    // Every decorative line is Sofap's; the primer is quoted, not listed.
+    expect(paintsForBrand('sofap')).toHaveLength(decorativePaints().length);
+    expect(decorativePaints().length).toBe(WALL_PAINTS.length - 1);
     expect(paintsForBrand('nope')).toEqual([]);
   });
 
@@ -140,5 +144,36 @@ describe('wall-paint catalogue (2026-09-14)', () => {
     // Non-finite input buys nothing.
     expect(tinsForLitres(Number.NaN, five).tins).toEqual([]);
     expect(tinsForLitres(Number.POSITIVE_INFINITY, five).tins).toEqual([]);
+  });
+});
+
+describe('wall-paint catalogue — review round 2 (2026-09-14)', () => {
+  it('primers are quoted, never offered as a colour; Sofap has a priced primer', () => {
+    const primer = findWallPaintById('permoglaze-aqua-prime')!;
+    expect(primer.category).toBe('primer');
+    expect(decorativePaints().some((p) => p.id === primer.id)).toBe(false);
+    expect(paintsForBrand('sofap').some((p) => p.category === 'primer')).toBe(false);
+    expect(primerForBrand('sofap')?.id).toBe('permoglaze-aqua-prime');
+    expect(primerForBrand('nope')).toBeUndefined();
+  });
+
+  it('a paint the catalogue does not know renders as plaster even with a valid tint', () => {
+    expect(resolveWallColourHex('sofap-retired-line', '#C9553F')).toBe('#EDE9DF');
+    // …and a tint on a white-only line renders as the white.
+    expect(resolveWallColourHex('permoglaze-xtreme-white', '#C9553F')).toBe(findWallPaintById('permoglaze-xtreme-white')!.hex);
+  });
+
+  it('a Colour Match shade prices on the base its code band implies, flagged as inferred', async () => {
+    const chart = await loadPaintColourChart('sofap');
+    const deep = chart.find((c) => c.code?.endsWith('-5'))!;
+    const pale = chart.find((c) => c.code?.endsWith('-1'))!;
+    expect(deep.baseId).toBe('basic');
+    expect(deep.baseInferred).toBe(true);
+    expect(pale.baseId).toBe('pastel');
+    const matt = findWallPaintById('permoglaze-matt-emulsion')!;
+    const choice = tinsForPaintColour(matt, deep.hex);
+    expect(choice.base?.id).toBe('basic');
+    expect(choice.baseEstimated).toBe(true);
+    expect(choice.tins[0].priceMur).toBe(419.75);
   });
 });

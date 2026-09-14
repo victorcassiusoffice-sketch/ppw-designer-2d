@@ -193,6 +193,13 @@ export interface CanonicalRoomGeometry {
   openings: Opening[];
   /** True when the polygon was deduped and/or reversed. */
   changed: boolean;
+  /**
+   * Old edge index → new edge index, or -1 when that edge collapsed in the
+   * dedupe (2026-09-14). Anything else index-addressed on the polygon —
+   * wall paint — remaps through this, so paint and openings can never
+   * disagree about which wall is which.
+   */
+  edgeMap: number[];
 }
 
 /**
@@ -234,7 +241,7 @@ export function canonicaliseRoomGeometry(
   openings: readonly Opening[] = [],
 ): CanonicalRoomGeometry {
   const n = polygon.length;
-  if (n < 3) return { polygon, openings: [...openings], changed: false };
+  if (n < 3) return { polygon, openings: [...openings], changed: false, edgeMap: polygon.map((_, i) => i) };
 
   // -- 1. dedupe, tracking where each OLD vertex index lands ----------------
   const eps = DUPLICATE_VERTEX_EPS_M;
@@ -264,9 +271,18 @@ export function canonicaliseRoomGeometry(
   }
 
   const deduped = kept.length !== n;
+  // Old edge i (v_i → v_{i+1}) becomes the new edge that starts at the kept
+  // vertex v_i landed on — unless both ends landed on the same kept vertex,
+  // in which case the edge is gone.
+  const edgeMapDeduped: number[] = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const a = newIndexForOld[i];
+    const b = newIndexForOld[(i + 1) % n];
+    edgeMapDeduped[i] = a === b ? -1 : a;
+  }
   if (kept.length < 3) {
     // Degenerate after cleanup — nothing can host an opening.
-    return { polygon: kept, openings: [], changed: true };
+    return { polygon: kept, openings: [], changed: true, edgeMap: new Array(n).fill(-1) };
   }
 
   const validIndex = (o: Opening, len: number) =>
@@ -287,8 +303,8 @@ export function canonicaliseRoomGeometry(
   const ccw = signedPolygonAreaM2(kept) < 0;
   if (!ccw) {
     return deduped
-      ? { polygon: kept, openings: outOpenings, changed: true }
-      : { polygon, openings: [...openings], changed: false };
+      ? { polygon: kept, openings: outOpenings, changed: true, edgeMap: edgeMapDeduped }
+      : { polygon, openings: [...openings], changed: false, edgeMap: edgeMapDeduped };
   }
 
   const m = kept.length;
@@ -308,7 +324,12 @@ export function canonicaliseRoomGeometry(
       flipHand: !o.flipHand,
     };
   });
-  return { polygon: reversed, openings: outOpenings, changed: true };
+  return {
+    polygon: reversed,
+    openings: outOpenings,
+    changed: true,
+    edgeMap: edgeMapDeduped.map((idx) => (idx < 0 ? -1 : m - 1 - idx)),
+  };
 }
 
 export interface DoorSymbol {

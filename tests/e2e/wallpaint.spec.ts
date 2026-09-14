@@ -174,8 +174,8 @@ test.describe('Wall paint — the algorithm to money (seeded)', () => {
     // 5×4 m room at 2.7 m: painted edges 0 (with an 0.838 m door) and 2,
     // plus a 2 m free wall (one face).
     //   area   = (5×2.7 − 0.838×2.04) + 5×2.7 + 2×2.7 = 30.69 m²
-    //   litres = ceil(30.69 × 3 coats (TDS) ÷ 9 m²/L × 10)/10 = 10.3 L
-    //            + 10 % touch-up contingency → 11.4 L   (audit 2026-09-14)
+    //   litres = 30.69 × 1.10 (touch-up contingency) × 3 coats (TDS) ÷ 9 m²/L
+    //          = 11.25 → 11.3 L, rounded ONCE   (audit 2026-09-14)
     //   tins   = cheapest whole-tin cover at Sofap store prices 2026-09-14
     //            (1 L 201.25 · 5 L 816.50 · 20 L 3,168.25) = 2× 5 L + 2× 1 L
     await seed(
@@ -219,7 +219,7 @@ test.describe('Wall paint — the algorithm to money (seeded)', () => {
     await expect(line).toHaveCount(1);
     await expect(line).toContainText('Permoglaze Matt Emulsion');
     await expect(line).toContainText('30.7 m²');
-    await expect(line).toContainText('needs 11.4 L');
+    await expect(line).toContainText('needs 11.3 L');
     await expect(line).toContainText('2× 5 L + 2× 1 L');
     await expect(page.locator('[data-testid="cart-page-wallpaint-subtotal-label"]')).toBeVisible();
 

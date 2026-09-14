@@ -207,8 +207,7 @@ export default function CartPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-ppw-ink">{l.paintName}</p>
                     <p className="text-[11px] text-ppw-slate">
-                      Wall paint · {l.finish}
-                      {l.colourHex ? ` · ${l.colourName ?? l.colourHex}` : ' · base colour'} · painted on the plan
+                      {l.isPrimer ? 'Primer · bare plaster · under the walls painted on the plan' : `Wall paint · ${l.finish}${l.colourHex ? ` · ${l.colourName ?? l.colourHex}` : ' · base colour'} · painted on the plan`}
                     </p>
                     <p className="mt-0.5 text-[11px] text-ppw-slate">
                       {l.areaM2.toFixed(1)} m² · {l.coats} coats · needs {l.litres.toFixed(1)} L
