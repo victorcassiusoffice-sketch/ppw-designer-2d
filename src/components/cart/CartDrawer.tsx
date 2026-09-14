@@ -210,7 +210,13 @@ export function CartDrawer() {
                     {cart.wallPaintLines.map((l) => (
                       <li key={l.lineId} className="text-xs" data-testid="wallpaint-line">
                         <div className="flex items-baseline justify-between">
-                          <span className="truncate pr-2 text-[#0E0E10]">{l.paintName}</span>
+                          <span className="flex min-w-0 items-center gap-1.5 truncate pr-2 text-[#0E0E10]">
+                            <span aria-hidden="true" className="inline-block h-3 w-3 shrink-0 rounded-sm border border-[#C0A67E]/40" style={{ background: l.renderHex }} />
+                            <span className="truncate">
+                              {l.paintName}
+                              {l.colourHex ? ` · ${l.colourName ?? l.colourHex}` : ''}
+                            </span>
+                          </span>
                           <span className="tabular-nums text-[#0E0E10]/80">
                             {formatCurrency(l.totalDisplay, currency)}
                           </span>

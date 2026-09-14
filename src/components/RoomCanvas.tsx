@@ -232,8 +232,11 @@ import {
 } from '../designer/floorTiles';
 import { findFloorMaterialById } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
-import { DEFAULT_WALL_HEIGHT_M, WALL_PAINTS, findWallPaintById } from '../data/wallPaints';
+import { DEFAULT_WALL_HEIGHT_M, findWallPaintById, resolveWallColourHex } from '../data/wallPaints';
 import { deriveWallPaintOrders } from '../designer/wallPaintCalc';
+// Wall paint tints + the 3D room view (2026-09-14): the brush is applied
+// through ONE helper so the plan and the 3D view paint identically.
+import { applyWallPaintBrush, brushColour, brushPaintId } from '../designer/wallPaintBrush';
 // Floor tool (2026-08-30): the phone HUD card's live "n tiles · £x" line
 // uses the cart's own conversion so the two can never disagree.
 import { convert } from '../lib/fx';
@@ -2634,7 +2637,7 @@ export function RoomCanvas({
     const PLASTER = '#EDE9DF';
     for (const room of rooms) {
       if (isOutdoorRoom(room) || !isDrawnPolygon(room.polygon)) continue;
-      const paintByEdge = new Map((room.wallPaint ?? []).map((e) => [e.edgeIndex, e.paintId]));
+      const paintByEdge = new Map((room.wallPaint ?? []).map((e) => [e.edgeIndex, e]));
       for (const e of roomEdges(room)) {
         const dx = e.b.x - e.a.x;
         const dy = e.b.y - e.a.y;
@@ -2646,7 +2649,7 @@ export function RoomCanvas({
         const facesUp = ny < -0.5; // the room's BOTTOM wall — cutaway stub
         const h = facesUp ? stubPx : hPx;
         const paint = paintByEdge.get(e.index);
-        const hex = paint ? findWallPaintById(paint)?.hex ?? PLASTER : PLASTER;
+        const hex = paint ? resolveWallColourHex(paint.paintId, paint.colourHex, PLASTER) : PLASTER;
         const fill = facesDown ? shade(hex, 1) : facesUp ? shade(hex, 0.96) : shade(hex, 0.9);
         const ax = e.a.x * pxPerMetre;
         const ay = e.a.y * pxPerMetre;
@@ -2679,7 +2682,7 @@ export function RoomCanvas({
       }
     }
     for (const w of freeWalls) {
-      const hex = w.paintId ? findWallPaintById(w.paintId)?.hex ?? PLASTER : PLASTER;
+      const hex = w.paintId ? resolveWallColourHex(w.paintId, w.paintColourHex, PLASTER) : PLASTER;
       const ax = w.a.x * pxPerMetre;
       const ay = w.a.y * pxPerMetre;
       const bx = w.b.x * pxPerMetre;
@@ -2934,27 +2937,11 @@ export function RoomCanvas({
   const commitWallPaintAt = useCallback(
     (clientX: number, clientY: number) => {
       const t = computeWallPaintTarget(clientX, clientY);
-      const draft = useDesignerUIStore.getState().wallPaintDraft;
-      const { scope, erase } = draft;
-      // A persisted draft can hold a retired catalog id — fall back to the
-      // current default so a tap never paints an unpriceable paint.
-      const paintId = findWallPaintById(draft.paintId) ? draft.paintId : WALL_PAINTS[0].id;
-      if (!t) {
-        pushToast('Tap a wall to paint it.', 'warn');
-        return;
-      }
-      const ps = usePropertyStore.getState();
-      const apply = erase ? null : paintId;
-      if (t.kind === 'edge' && scope === 'room' && t.roomId) {
-        ps.paintRoomWalls(t.roomId, apply);
-        pushToast(erase ? 'Wall paint removed from the room.' : 'Every wall of the room painted.', erase ? 'info' : 'success');
-      } else if (t.kind === 'edge' && t.roomId && typeof t.edgeIndex === 'number') {
-        ps.paintWallEdge(t.roomId, t.edgeIndex, apply);
-        if (erase) pushToast('Wall paint removed.', 'info');
-      } else if (t.kind === 'free' && t.wallId) {
-        ps.paintFreeWall(t.wallId, apply);
-        if (erase) pushToast('Wall paint removed.', 'info');
-      }
+      // Scope, Erase, the paint (retired-id fallback) and the tint all live
+      // in the brush helper — shared with the 3D room view.
+      const r = applyWallPaintBrush(t ? { kind: t.kind, roomId: t.roomId, edgeIndex: t.edgeIndex, wallId: t.wallId } : null);
+      if (r.message) pushToast(r.message, r.kind);
+      if (!t) return;
       haptic('place');
     },
     [computeWallPaintTarget, pushToast],
@@ -3525,13 +3512,21 @@ export function RoomCanvas({
             <span
               aria-hidden="true"
               className="h-6 w-6 shrink-0 rounded"
+              data-testid="wallpaint-hud-swatch"
               style={{
-                background: findWallPaintById(wallPaintDraft.paintId)?.hex ?? '#EDE9DF',
+                background: resolveWallColourHex(brushPaintId(wallPaintDraft), brushColour(wallPaintDraft)?.hex),
                 border: `1px solid ${CHROME_RIM}`,
               }}
             />
-            <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-[#37362f]">
-              {findWallPaintById(wallPaintDraft.paintId)?.name ?? 'Wall paint'}
+            <span className="flex min-w-0 flex-1 flex-col leading-tight">
+              <span className="truncate text-[12px] font-semibold text-[#37362f]">
+                {findWallPaintById(brushPaintId(wallPaintDraft))?.name ?? 'Wall paint'}
+              </span>
+              {brushColour(wallPaintDraft) && (
+                <span className="truncate text-[11px] font-medium" style={{ color: CHROME_TEXT_2 }} data-testid="wallpaint-hud-colour">
+                  {brushColour(wallPaintDraft)?.name ?? brushColour(wallPaintDraft)?.hex}
+                </span>
+              )}
             </span>
             <span className="shrink-0 text-[12px] font-medium tabular-nums" style={{ color: CHROME_TEXT_2 }} aria-live="polite">
               {wallPaintLive.any
@@ -3540,12 +3535,22 @@ export function RoomCanvas({
             </span>
             <button
               type="button"
+              data-testid="wallpaint-3d-mobile"
+              aria-pressed={wallPaintDraft.view3d}
+              onClick={() => setWallPaintDraft({ view3d: !wallPaintDraft.view3d })}
+              className={`${OVL_CTRL} ${wallPaintDraft.view3d ? OVL_ACTIVE : OVL_REST} h-11 shrink-0 px-3`}
+              title="See the room in 3D and paint the walls there"
+            >
+              3D
+            </button>
+            <button
+              type="button"
               data-testid="wallpaint-change-mobile"
               onClick={() =>
                 window.dispatchEvent(new CustomEvent('ppw:open-menu', { detail: { section: 'wallpaint' } }))
               }
               className={`${OVL_CTRL} ${OVL_REST} h-11 shrink-0 px-3`}
-              title="Change the paint"
+              title="Change the paint or colour"
             >
               Change
             </button>

@@ -145,5 +145,7 @@ export const SOFAP_DEMO: DemoDefinition = {
   pageName: SOFAP_PAGE_NAME,
   products: [],
   currency: 'MUR',
+  // Their meeting, their range: the panel shows Sofap only.
+  paintBrandIds: ['sofap'],
   buildProperty: buildSofapShowFlat,
 };

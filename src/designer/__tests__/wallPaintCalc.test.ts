@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   deriveWallPaintOrders,
   edgeLengthM,
+  litresForArea,
   openingFaceAreaM2,
   paintableEdgeAreaM2,
   tinsForLitres,
+  wallPaintBreakdown,
 } from '../wallPaintCalc';
 import { WALL_PAINTS, findWallPaintById } from '../../data/wallPaints';
 import type { Opening } from '../openings';
@@ -97,9 +99,13 @@ describe('wall paint measurement', () => {
     const o = orders[0];
     const expectedArea = (5 * 2.6 - 0.838 * 2.04) + 5 * 2.6 + 2 * 2.6;
     expect(o.areaM2).toBeCloseTo(expectedArea, 6);
-    const expectedLitres =
-      Math.ceil(((expectedArea * paint.recommended_coats) / paint.coverage_m2_per_l) * 10) / 10;
-    expect(o.litres).toBeCloseTo(expectedLitres, 6);
+    // Net litres, then the 10 % touch-up contingency (audit 2026-09-14),
+    // both rounded UP to 0.1 L.
+    const expectedNet =
+      Math.ceil(((expectedArea * paint.recommended_coats) / paint.coverage_m2_per_l) * 10 - 1e-9) / 10;
+    expect(o.netLitres).toBeCloseTo(expectedNet, 6);
+    expect(o.wastePct).toBe(10);
+    expect(o.litres).toBeCloseTo(Math.ceil(expectedNet * 1.1 * 10 - 1e-9) / 10, 6);
     expect(o.fill.boughtLitres).toBeGreaterThanOrEqual(o.litres);
     expect(o.fill.totalMur).toBeGreaterThan(0);
     expect(o.perRoom.map((p) => p.roomId).sort()).toEqual(['r1', 'walls']);
@@ -144,5 +150,110 @@ describe('wall paint measurement', () => {
       }
     }
     expect(WALL_PAINTS).toHaveLength(5);
+  });
+});
+
+describe('wall paint tints (2026-09-14) — one tin serves one colour', () => {
+  const paint = WALL_PAINTS[0];
+
+  it('the same product in two tints is two orders; the base colour is a third', () => {
+    const property = {
+      wallHeightM: 2.7,
+      rooms: [
+        {
+          id: 'r1', name: 'Room 1', polygon: ROOM_POLY, openings: [],
+          wallPaint: [
+            { edgeIndex: 0, paintId: paint.id, colourHex: '#C9553F', colourName: 'Coral' },
+            { edgeIndex: 1, paintId: paint.id, colourHex: '#c9553f' }, // same tint, lower-case
+            { edgeIndex: 2, paintId: paint.id, colourHex: '#8FA68A', colourName: 'Sage' },
+            { edgeIndex: 3, paintId: paint.id },
+          ],
+        },
+      ],
+    };
+    const orders = deriveWallPaintOrders(property);
+    expect(orders).toHaveLength(3);
+    const coral = orders.find((o) => o.colourHex === '#C9553F')!;
+    expect(coral.colourName).toBe('Coral');
+    expect(coral.areaM2).toBeCloseTo(5 * 2.7 + 4 * 2.7, 6);
+    expect(coral.renderHex).toBe('#C9553F');
+    const base = orders.find((o) => !o.colourHex)!;
+    expect(base.renderHex).toBe(paint.hex);
+    expect(base.key).toBe(`${paint.id}|`);
+    // Every order fills its own tins — no sharing across colours.
+    for (const o of orders) expect(o.fill.boughtLitres).toBeGreaterThanOrEqual(o.litres);
+    expect(orders.every((o) => o.surplusLitres >= 0)).toBe(true);
+  });
+
+  it('a bad tint hex falls back to the base colour rather than making a new order', () => {
+    const property = {
+      wallHeightM: 2.7,
+      rooms: [
+        {
+          id: 'r1', name: 'Room 1', polygon: ROOM_POLY,
+          wallPaint: [
+            { edgeIndex: 0, paintId: paint.id, colourHex: 'red' },
+            { edgeIndex: 1, paintId: paint.id },
+          ],
+        },
+      ],
+    };
+    const orders = deriveWallPaintOrders(property);
+    expect(orders).toHaveLength(1);
+    expect(orders[0].colourHex).toBeUndefined();
+  });
+
+  it('litresForArea rounds UP to 0.1 L and never returns a negative or NaN', () => {
+    expect(litresForArea(30.69, 2, 9)).toBeCloseTo(6.9, 9);
+    expect(litresForArea(9, 1, 9)).toBe(1);
+    expect(litresForArea(0, 2, 9)).toBe(0);
+    expect(litresForArea(10, 2, 0)).toBe(0);
+    expect(litresForArea(0.01, 2, 9)).toBeCloseTo(0.1, 9);
+  });
+
+  it('the breakdown lists every painted face as length × height − openings', () => {
+    const property = {
+      wallHeightM: 2.7,
+      rooms: [
+        {
+          id: 'r1', name: 'Room 1', polygon: ROOM_POLY, openings: [door(0), window_(0)],
+          wallPaint: [
+            { edgeIndex: 2, paintId: paint.id },
+            { edgeIndex: 0, paintId: paint.id, colourHex: '#C9553F', colourName: 'Coral' },
+          ],
+        },
+      ],
+      walls: [{ id: 'fw', a: { x: 6, y: 1 }, b: { x: 8, y: 1 }, paintId: paint.id }],
+    };
+    const rows = wallPaintBreakdown(property);
+    expect(rows.map((r) => r.wallLabel)).toEqual(['Wall 1', 'Wall 3', 'Free wall 1']);
+    const w1 = rows[0];
+    expect(w1.lengthM).toBeCloseTo(5, 6);
+    expect(w1.heightM).toBe(2.7);
+    expect(w1.grossM2).toBeCloseTo(13.5, 6);
+    expect(w1.openingCount).toBe(2);
+    expect(w1.openingsM2).toBeCloseTo(0.838 * 2.04 + 1.2 * 1.2, 6);
+    expect(w1.areaM2).toBeCloseTo(13.5 - (0.838 * 2.04 + 1.2 * 1.2), 6);
+    expect(w1.colourName).toBe('Coral');
+    expect(w1.key).toBe(`${paint.id}|#C9553F`);
+    expect(rows[2]).toMatchObject({ kind: 'free', wallId: 'fw', areaM2: 2 * 2.7, openingsM2: 0 });
+    // Rows sum to the orders, per key.
+    const orders = deriveWallPaintOrders(property);
+    for (const o of orders) {
+      const sum = rows.filter((r) => r.key === o.key).reduce((a, r) => a + r.areaM2, 0);
+      expect(sum).toBeCloseTo(o.areaM2, 6);
+    }
+  });
+
+  it('tin fill edge cases: tiny jobs, single tin size, equal-price tins, big jobs', () => {
+    expect(tinsForLitres(0.05, [{ sizeL: 1, priceMur: 100 }])).toMatchObject({ totalMur: 100, boughtLitres: 1 });
+    expect(tinsForLitres(7, [{ sizeL: 5, priceMur: 500 }])).toMatchObject({ totalMur: 1000, boughtLitres: 10 });
+    // Two tins, same price: same money buys MORE paint (audit R4-13).
+    const f = tinsForLitres(1, [{ sizeL: 1, priceMur: 100 }, { sizeL: 5, priceMur: 100 }]);
+    expect(f.boughtLitres).toBe(5);
+    expect(f.tins).toHaveLength(1);
+    const big = tinsForLitres(450, WALL_PAINTS[0].tins);
+    expect(big.boughtLitres).toBeGreaterThanOrEqual(450);
+    expect(big.tins[0].sizeL).toBe(20);
   });
 });

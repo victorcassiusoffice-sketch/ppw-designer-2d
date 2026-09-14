@@ -281,7 +281,7 @@ export default function CheckoutPage() {
     // name carrying the tin breakdown so the invoice is self-explanatory.
     const wallPaintOrderLines: OrderLine[] = cart.wallPaintLines.map((l) => ({
       productId: l.lineId,
-      name: `${l.paintName} — ${l.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')} (${l.areaM2.toFixed(1)} m², ${l.coats} coats)`,
+      name: `${l.paintName}${l.colourHex ? ` · ${l.colourName ?? l.colourHex}` : ''} — ${l.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')} (${l.areaM2.toFixed(1)} m², ${l.coats} coats)`,
       category: 'Wall paint',
       quantity: 1,
       unitPrice: l.totalMur,
@@ -525,7 +525,8 @@ export default function CheckoutPage() {
               {cart.wallPaintLines.map((l) => (
                 <li key={l.lineId} className="flex justify-between gap-2" data-testid="checkout-wallpaint-line">
                   <span className="truncate text-ppw-slate">
-                    {l.paintName}{' '}
+                    {l.paintName}
+                    {l.colourHex ? ` · ${l.colourName ?? l.colourHex}` : ''}{' '}
                     <span className="text-[10px]">
                       {l.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')}
                     </span>

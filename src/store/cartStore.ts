@@ -96,6 +96,11 @@ export interface WallPaintLine {
   lineId: string;
   paintId: string;
   paintName: string;
+  /** Chosen tint (2026-09-14) — absent = the product's base colour. */
+  colourHex?: string;
+  colourName?: string;
+  /** Swatch colour for the line (tint, else the product's base). */
+  renderHex: string;
   finish: string;
   areaM2: number;
   coats: number;
@@ -264,9 +269,13 @@ export function deriveWallPaintLines(
     property.wallHeightM ?? DEFAULT_WALL_HEIGHT_M,
   );
   return orders.map((o) => ({
-    lineId: `wallpaint:${o.paintId}`,
+    // One line per paint + tint: a tinted tin serves one colour only.
+    lineId: `wallpaint:${o.key}`,
     paintId: o.paintId,
     paintName: o.paint.name,
+    ...(o.colourHex ? { colourHex: o.colourHex } : {}),
+    ...(o.colourName ? { colourName: o.colourName } : {}),
+    renderHex: o.renderHex,
     finish: o.paint.finish,
     areaM2: o.areaM2,
     coats: o.coats,

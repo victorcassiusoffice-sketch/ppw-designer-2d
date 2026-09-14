@@ -90,10 +90,22 @@ import {
   MAX_WALL_HEIGHT_M,
   MIN_WALL_HEIGHT_M,
   WALL_PAINTS,
+  brandIdOfPaint,
+  brandsWithPaints,
+  coloursForPaint,
+  findPaintBrandById,
   findWallPaintById,
+  isPaintTintable,
+  normalisePaintColourHex,
+  paintsForBrand,
+  resolveWallColourHex,
+  type PaintColour,
   type WallPaint,
 } from '../data/wallPaints';
-import { deriveWallPaintOrders } from '../designer/wallPaintCalc';
+import { deriveWallPaintOrders, wallPaintBreakdown } from '../designer/wallPaintCalc';
+// Wall paint tints + the Sims-style 3D room view (2026-09-14).
+import { applyWallPaintBrush, brushColour, brushPaintId } from '../designer/wallPaintBrush';
+import { RoomView3D } from './RoomView3D';
 import { FLOOR_MATERIALS, findFloorMaterialById, type FloorMaterial } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
 // Floor tool (2026-08-30): the docked panel prices the active room's floor
@@ -827,7 +839,26 @@ export function TopBar({
   // (× coats ÷ coverage) → whole purchasable tins → MUR. While a wall
   // tool is armed the canvas lifts to 2.5D wall elevations (RoomCanvas).
   const wallHeightM = property.wallHeightM ?? DEFAULT_WALL_HEIGHT_M;
-  const wallPaintSel: WallPaint = findWallPaintById(wallPaintDraft.paintId) ?? WALL_PAINTS[0];
+  const wallPaintSel: WallPaint = findWallPaintById(brushPaintId(wallPaintDraft)) ?? WALL_PAINTS[0];
+  /** The tint on the brush (null = the product's base colour). */
+  const wallPaintTint = brushColour(wallPaintDraft);
+  const wallPaintBrushHex = resolveWallColourHex(wallPaintSel.id, wallPaintTint?.hex);
+  const wallPaintColours = coloursForPaint(wallPaintSel);
+  const wallPaintTintIsCustom =
+    !!wallPaintTint && !wallPaintColours.some((c) => normalisePaintColourHex(c.hex) === wallPaintTint.hex);
+  // Brands (2026-09-14): the panel filters products by brand once a second
+  // paint company is loaded; with one brand there is nothing to switch.
+  const demoBrandIds = activeDemo()?.paintBrandIds;
+  const paintBrands = brandsWithPaints().filter((b) => !demoBrandIds || demoBrandIds.includes(b.id));
+  const [paintBrandId, setPaintBrandId] = useState<string>(() => brandIdOfPaint(wallPaintSel));
+  const paintBrand = findPaintBrandById(paintBrandId) ?? paintBrands[0];
+  const wallPaintsShown =
+    paintBrands.length > 1 || demoBrandIds
+      ? paintsForBrand(paintBrand?.id ?? paintBrands[0]?.id ?? paintBrandId)
+      : WALL_PAINTS;
+  const [paintBreakdownOpen, setPaintBreakdownOpen] = useState(false);
+  const wallPaintOrders = deriveWallPaintOrders(property, wallHeightM);
+  const wallPaintRows = wallPaintBreakdown(property, wallHeightM);
   const wallPaintLive = (() => {
     const orders = deriveWallPaintOrders(property, wallHeightM);
     let areaM2 = 0;
@@ -850,9 +881,36 @@ export function TopBar({
       displayCurrency,
     )}`;
 
-  /** Choose a paint: erase off, like choosing a floor material. */
+  /**
+   * Choose a paint: erase off, like choosing a floor material. A white-only
+   * line drops any tint; a tintable line keeps the tint on the brush (a
+   * customer picking a colour, then a finish, expects the colour to stay).
+   */
   function chooseWallPaint(p: WallPaint) {
-    setWallPaintDraft({ paintId: p.id, erase: false });
+    if (isPaintTintable(p)) setWallPaintDraft({ paintId: p.id, erase: false });
+    else setWallPaintDraft({ paintId: p.id, erase: false, colourHex: undefined, colourName: undefined });
+  }
+
+  /** Choose a tint (null = the product's base colour). */
+  function chooseWallPaintColour(c: PaintColour | null) {
+    if (!c) {
+      setWallPaintDraft({ colourHex: undefined, colourName: undefined, erase: false });
+      return;
+    }
+    setWallPaintDraft({ colourHex: normalisePaintColourHex(c.hex), colourName: c.name, erase: false });
+  }
+
+  /** A custom hex from the colour input — "tint to match" at the counter. */
+  function chooseCustomWallPaintColour(hex: string) {
+    const h = normalisePaintColourHex(hex);
+    if (!h) return;
+    setWallPaintDraft({ colourHex: h, colourName: undefined, erase: false });
+  }
+
+  /** The 3D room view paints through the same brush as the plan. */
+  function paintFromRoomView(hit: Parameters<typeof applyWallPaintBrush>[0]) {
+    const r = applyWallPaintBrush(hit);
+    if (r.message) pushToast(r.message, r.kind);
   }
 
   /**
@@ -870,7 +928,7 @@ export function TopBar({
       pushToast(`${floorRoom.name} — wall paint removed`, 'info');
       return;
     }
-    paintRoomWalls(floorRoom.id, wallPaintSel.id);
+    paintRoomWalls(floorRoom.id, wallPaintSel.id, wallPaintTint);
     pushToast(`${floorRoom.name} — every wall painted`, 'success');
   }
 
@@ -1102,6 +1160,12 @@ export function TopBar({
       window.removeEventListener('resize', measure);
     };
   }, [sidePanelOpen]);
+
+  // The 3D room view lives with the paint tool: putting the tool away (Done,
+  // Esc, Select, another tool) closes it too.
+  useEffect(() => {
+    if (!wallPaintActive && wallPaintDraft.view3d) setWallPaintDraft({ view3d: false });
+  }, [wallPaintActive, wallPaintDraft.view3d, setWallPaintDraft]);
 
   // Esc = tool off while the Floor tool is on (Done does the same). Inputs
   // keep their own Esc (a level rename in progress must not lose the tool).
@@ -2252,9 +2316,19 @@ export function TopBar({
                   style={{ color: CHROME_TEXT_2 }}
                   data-testid="wallpaint-room"
                 >
-                  {floorRoom ? floorRoom.name : 'Sofap · Mauritius'}
+                  {floorRoom ? floorRoom.name : `${paintBrand?.name ?? 'Sofap'} · Mauritius`}
                 </span>
               </div>
+
+              {/* The Sims-style room view (2026-09-14): the storey in 3D,
+                  every wall in its paint. Click a wall here to paint it;
+                  ⤢ opens the big view. */}
+              <RoomView3D
+                variant="card"
+                onPaintWall={paintFromRoomView}
+                onExpand={() => setWallPaintDraft({ view3d: true })}
+                className="mb-2 overflow-hidden rounded-lg border border-ppw-rim"
+              />
 
               {/* Wall height — drives every litre and tin count. */}
               <label
@@ -2286,9 +2360,36 @@ export function TopBar({
                 </span>
               </label>
 
-              {/* The five Sofap (Permoglaze) products — sourced 2026-09-02. */}
-              {WALL_PAINTS.map((p) => {
-                const on = wallPaintDraft.paintId === p.id;
+              {/* Brands — only when more than one paint company is loaded. */}
+              {paintBrands.length > 1 && (
+                <div className="mb-1 flex flex-wrap gap-1.5 px-1" role="radiogroup" aria-label="Paint brand" data-testid="wallpaint-brands">
+                  {paintBrands.map((b) => {
+                    const on = b.id === (paintBrand?.id ?? paintBrandId);
+                    return (
+                      <button
+                        key={b.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        data-testid={`wallpaint-brand-${b.id}`}
+                        onClick={() => {
+                          setPaintBrandId(b.id);
+                          const first = paintsForBrand(b.id)[0];
+                          if (first && brandIdOfPaint(wallPaintSel) !== b.id) chooseWallPaint(first);
+                        }}
+                        className={`${CHIP} h-8 px-2.5 text-[11px] ${on ? CHIP_ON : CHIP_REST}`}
+                        title={b.website ? `${b.name} — ${b.website.replace(/^https?:\/\//, '')}` : b.name}
+                      >
+                        {b.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* The products — sourced from the brand's own listings (see wallPaints.ts). */}
+              {wallPaintsShown.map((p) => {
+                const on = wallPaintSel.id === p.id;
                 return (
                   <button
                     key={p.id}
@@ -2301,7 +2402,7 @@ export function TopBar({
                   >
                     <span
                       className="h-6 w-6 shrink-0 rounded border border-ppw-rim"
-                      style={{ background: p.hex }}
+                      style={{ background: on ? wallPaintBrushHex : p.hex }}
                     />
                     <span className="flex min-w-0 flex-1 flex-col leading-tight">
                       <span className="truncate">{p.name}</span>
@@ -2315,6 +2416,82 @@ export function TopBar({
                   </button>
                 );
               })}
+
+              {/* Colour (2026-09-14): the brand's tints for the chosen line,
+                  plus any custom hex — "tint to match" at the counter. A
+                  white-only line shows no colours. */}
+              {isPaintTintable(wallPaintSel) ? (
+                <div className="mt-2 border-t border-ppw-rim pt-2" data-testid="wallpaint-colours">
+                  <div className="flex items-baseline justify-between gap-2 px-1">
+                    <span className="text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>
+                      Colour
+                    </span>
+                    <span className="min-w-0 truncate text-[12px] font-semibold text-[#37362f]" data-testid="wallpaint-colour-name">
+                      {wallPaintTint ? wallPaintTint.name ?? wallPaintTint.hex : 'Base white'}
+                    </span>
+                  </div>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5 px-1" role="radiogroup" aria-label="Paint colour">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={!wallPaintTint}
+                      data-testid="wallpaint-colour-base"
+                      onClick={() => chooseWallPaintColour(null)}
+                      className={`h-7 w-7 rounded-md border ${!wallPaintTint ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
+                      style={{ background: wallPaintSel.hex }}
+                      title="Base white — the tin as sold"
+                      aria-label="Base white"
+                    />
+                    {wallPaintColours.map((c) => {
+                      const hex = normalisePaintColourHex(c.hex) ?? c.hex;
+                      const on = !!wallPaintTint && wallPaintTint.hex === hex;
+                      return (
+                        <button
+                          key={c.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={on}
+                          data-testid={`wallpaint-colour-${c.id}`}
+                          onClick={() => chooseWallPaintColour(c)}
+                          className={`h-7 w-7 rounded-md border ${on ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
+                          style={{ background: hex }}
+                          title={`${c.name}${c.code ? ` · ${c.code}` : ''}${c.collection ? ` · ${c.collection}` : ''}`}
+                          aria-label={c.name}
+                        />
+                      );
+                    })}
+                    <label
+                      className={`relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border text-[13px] leading-none ${wallPaintTintIsCustom ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
+                      style={{
+                        background: wallPaintTintIsCustom
+                          ? wallPaintTint?.hex
+                          : 'conic-gradient(#e8c9b8, #f3e3b0, #cfe0c2, #bfd6e6, #d9c6e6, #e8c9b8)',
+                      }}
+                      title="Any colour — the store tints to match"
+                    >
+                      <span className="sr-only">Custom colour</span>
+                      <input
+                        type="color"
+                        data-testid="wallpaint-colour-custom"
+                        aria-label="Custom colour"
+                        value={wallPaintTint?.hex ?? '#DCCFB8'}
+                        onChange={(e) => chooseCustomWallPaintColour(e.target.value)}
+                        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                      />
+                      {!wallPaintTintIsCustom && <span aria-hidden="true">+</span>}
+                    </label>
+                  </div>
+                  <p className="mt-1 px-1 text-[10px] leading-snug" style={{ color: CHROME_TEXT_2 }}>
+                    {wallPaintColours.length > 0
+                      ? `${paintBrand?.name ?? 'Brand'} shades${paintBrand?.colourSystem ? ` · ${paintBrand.colourSystem}` : ''}. Tin price is the base; tinting is priced in store.`
+                      : 'Pick any colour — the store tints the base tin to match. Tin price is the base.'}
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-2 border-t border-ppw-rim px-1 pt-2 text-[10px] leading-snug" style={{ color: CHROME_TEXT_2 }} data-testid="wallpaint-colours-none">
+                  {wallPaintSel.name} is a white-only line — no tints.
+                </p>
+              )}
 
               {/* Scope — Wall or Room. Room IS the action. */}
               <div
@@ -2391,6 +2568,61 @@ export function TopBar({
                     : `Click a wall to paint it · ${wallPaintSel.recommended_coats} coats at ${wallHeightM.toFixed(1)} m`}
               </p>
 
+              {/* How it's worked out (2026-09-14): every painted wall as a
+                  row a paint company can check by hand, then the tins. */}
+              {wallPaintRows.length > 0 && (
+                <div className="mt-2 border-t border-ppw-rim pt-2" data-testid="wallpaint-breakdown">
+                  <button
+                    type="button"
+                    onClick={() => setPaintBreakdownOpen((v) => !v)}
+                    aria-expanded={paintBreakdownOpen}
+                    data-testid="wallpaint-breakdown-toggle"
+                    className="flex w-full items-center justify-between px-1 py-1 text-[12px] font-medium"
+                    style={{ color: CHROME_TEXT_2 }}
+                  >
+                    <span>How it&apos;s worked out</span>
+                    <span aria-hidden="true">{paintBreakdownOpen ? '▾' : '▸'}</span>
+                  </button>
+                  {paintBreakdownOpen && (
+                    <div className="px-1 text-[11px] leading-snug" data-testid="wallpaint-breakdown-body">
+                      <p className="mb-1" style={{ color: CHROME_TEXT_2 }}>
+                        Wall length × height − doors and windows = m². Litres = m² × coats ÷ coverage, rounded up to 0.1 L, then the cheapest whole tins.
+                      </p>
+                      <ul className="space-y-0.5">
+                        {wallPaintRows.map((r) => (
+                          <li key={`${r.roomId}-${r.wallLabel}`} className="flex items-start gap-1.5 tabular-nums" data-testid="wallpaint-breakdown-row">
+                            <span aria-hidden="true" className="mt-0.5 inline-block h-3 w-3 shrink-0 rounded-sm border border-ppw-rim" style={{ background: r.renderHex }} />
+                            <span className="min-w-0 flex-1 text-[#37362f]">
+                              <span className="font-semibold">{r.roomName} · {r.wallLabel}</span>
+                              {' '}
+                              {r.lengthM.toFixed(2)} × {r.heightM.toFixed(1)} m
+                              {r.openingsM2 > 0 ? ` − ${r.openingsM2.toFixed(2)} m² (${r.openingCount} opening${r.openingCount === 1 ? '' : 's'})` : ''}
+                              {' = '}
+                              <span className="font-semibold">{r.areaM2.toFixed(2)} m²</span>
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      <ul className="mt-1.5 space-y-1 border-t border-ppw-rim pt-1.5">
+                        {wallPaintOrders.map((o) => (
+                          <li key={o.key} className="tabular-nums text-[#37362f]" data-testid="wallpaint-breakdown-order">
+                            <span className="font-semibold">
+                              {o.paint.name}
+                              {o.colourHex ? ` · ${o.colourName ?? o.colourHex}` : ''}
+                            </span>
+                            {': '}
+                            {o.areaM2.toFixed(2)} m² × {o.coats} coats ÷ {o.paint.coverage_m2_per_l} m²/L = {o.litres.toFixed(1)} L →{' '}
+                            {o.fill.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')} ={' '}
+                            <span className="font-semibold">{formatCurrency(convert(o.fill.totalMur, 'MUR', displayCurrency, fx), displayCurrency)}</span>
+                            {o.surplusLitres > 0 ? ` (${o.surplusLitres.toFixed(1)} L over)` : ''}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <button
                 type="button"
                 onClick={() => setTool('hand')}
@@ -2402,6 +2634,24 @@ export function TopBar({
               </button>
             </div>
           </aside>,
+          document.body,
+        )}
+
+      {/* The big 3D room view (2026-09-14). On md+ it covers the plan and
+          leaves the docked panel usable, so the brush can change while the
+          room is on screen; on the phone it is full-screen with Close. */}
+      {wallPaintActive &&
+        wallPaintDraft.view3d &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <RoomView3D
+            variant="overlay"
+            onPaintWall={paintFromRoomView}
+            onClose={() => setWallPaintDraft({ view3d: false })}
+            footer={wallPaintLiveText}
+            style={{ right: 'var(--floor-panel-w, 0px)' }}
+            className="!left-0 !right-auto"
+          />,
           document.body,
         )}
 
@@ -2620,7 +2870,7 @@ export function TopBar({
                         aria-pressed={wallPaintDraft.paintId === p.id}
                         className={`${SHEET_ROW} pl-6 ${on ? SHEET_ROW_ON : ''}`}
                       >
-                        <span className="h-6 w-6 shrink-0 rounded border border-ppw-rim" style={{ background: p.hex }} />
+                        <span className="h-6 w-6 shrink-0 rounded border border-ppw-rim" style={{ background: on ? wallPaintBrushHex : p.hex }} />
                         <span className="flex min-w-0 flex-1 flex-col leading-tight">
                           <span className="truncate">{p.name}</span>
                           <span
@@ -2633,6 +2883,63 @@ export function TopBar({
                       </button>
                     );
                   })}
+                  {/* Colour chips (2026-09-14) for the paint on the brush. */}
+                  {isPaintTintable(wallPaintSel) && (
+                    <div className="px-6 pb-2 pt-1" data-testid="wallpaint-colours-mobile">
+                      <p className="mb-1 text-[11px] font-medium" style={{ color: CHROME_TEXT_2 }}>
+                        Colour · <span className="font-semibold text-[#37362f]">{wallPaintTint ? wallPaintTint.name ?? wallPaintTint.hex : 'Base white'}</span>
+                      </p>
+                      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Paint colour">
+                        <button
+                          type="button"
+                          role="radio"
+                          aria-checked={!wallPaintTint}
+                          data-testid="wallpaint-colour-base-mobile"
+                          onClick={() => chooseWallPaintColour(null)}
+                          className={`h-9 w-9 rounded-md border ${!wallPaintTint ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
+                          style={{ background: wallPaintSel.hex }}
+                          aria-label="Base white"
+                        />
+                        {wallPaintColours.map((c) => {
+                          const hex = normalisePaintColourHex(c.hex) ?? c.hex;
+                          const onC = !!wallPaintTint && wallPaintTint.hex === hex;
+                          return (
+                            <button
+                              key={c.id}
+                              type="button"
+                              role="radio"
+                              aria-checked={onC}
+                              data-testid={`wallpaint-colour-mobile-${c.id}`}
+                              onClick={() => chooseWallPaintColour(c)}
+                              className={`h-9 w-9 rounded-md border ${onC ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
+                              style={{ background: hex }}
+                              aria-label={c.name}
+                              title={c.name}
+                            />
+                          );
+                        })}
+                        <label
+                          className={`relative flex h-9 w-9 items-center justify-center rounded-md border text-[15px] ${wallPaintTintIsCustom ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
+                          style={{
+                            background: wallPaintTintIsCustom
+                              ? wallPaintTint?.hex
+                              : 'conic-gradient(#e8c9b8, #f3e3b0, #cfe0c2, #bfd6e6, #d9c6e6, #e8c9b8)',
+                          }}
+                        >
+                          <span className="sr-only">Custom colour</span>
+                          <input
+                            type="color"
+                            data-testid="wallpaint-colour-custom-mobile"
+                            aria-label="Custom colour"
+                            value={wallPaintTint?.hex ?? '#DCCFB8'}
+                            onChange={(e) => chooseCustomWallPaintColour(e.target.value)}
+                            className="absolute inset-0 h-full w-full opacity-0"
+                          />
+                          {!wallPaintTintIsCustom && <span aria-hidden="true">+</span>}
+                        </label>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Energy (eco / solar 2026-09-04): the sun-vs-use balance,

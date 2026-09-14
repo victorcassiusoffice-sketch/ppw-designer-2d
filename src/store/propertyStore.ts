@@ -35,7 +35,7 @@ import { translatePolygon, unstackLegacyRooms } from '../designer/roomLayout';
 // Wall-hosted openings (2026-08-28) — doors/doorways/windows live on the Room
 // so history and persistence pick them up with no extra plumbing.
 import type { Opening } from '../designer/openings';
-import { canonicaliseRoomGeometry, openingSpan, validateOpening } from '../designer/openings';
+import { canonicaliseRoomGeometry, openingSpan, signedPolygonAreaM2, validateOpening } from '../designer/openings';
 import { roomEdges } from '../designer/wallEdges';
 // Per-tile floor painting (floor-painting brief 2026-08-28).
 import {
@@ -78,6 +78,69 @@ import {
   wallsOnLevel,
   type FreeWall,
 } from '../designer/freeWalls';
+// Wall paint tints (2026-09-14): one validator for the store, the load
+// normalisers and the UI, so a bad hex is rejected the same way everywhere.
+import { normalisePaintColourHex, normalisePaintColourName } from '../data/wallPaints';
+
+/** One painted edge, tint validated. A tint with no valid hex is dropped. */
+function paintedEdge(edgeIndex: number, paintId: string, colour?: PaintColourChoice | null): PaintedEdge {
+  const out: PaintedEdge = { edgeIndex, paintId };
+  const hex = normalisePaintColourHex(colour?.hex);
+  if (hex) {
+    out.colourHex = hex;
+    const name = normalisePaintColourName(colour?.name);
+    if (name) out.colourName = name;
+  }
+  return out;
+}
+
+/**
+ * Carry painted edges across a polygon change (2026-09-14). Paint is
+ * index-addressed like an opening, so it must follow the same two rules:
+ * an edge that no longer exists loses its paint (prune), and a polygon
+ * that arrived counter-clockwise and was reversed maps old edge i to new
+ * edge n-1-i — exactly the opening remap in `canonicaliseRoomGeometry`.
+ * Before this, a reshape or a CCW seed could leave paint on the wrong wall.
+ */
+function remapPaintedEdges(
+  wallPaint: PaintedEdge[] | undefined,
+  rawPolygon: Polygon,
+  canonPolygon: Polygon,
+): PaintedEdge[] | undefined {
+  if (!Array.isArray(wallPaint) || wallPaint.length === 0) return undefined;
+  const m = canonPolygon.length;
+  if (m < 3) return undefined;
+  const flipped = rawPolygon.length >= 3 && signedPolygonAreaM2(rawPolygon) < 0;
+  const seen = new Set<number>();
+  const out: PaintedEdge[] = [];
+  for (const e of wallPaint) {
+    if (!e || !Number.isInteger(e.edgeIndex) || typeof e.paintId !== 'string' || !e.paintId) continue;
+    const idx = flipped ? m - 1 - e.edgeIndex : e.edgeIndex;
+    if (idx < 0 || idx >= m || seen.has(idx)) continue;
+    seen.add(idx);
+    out.push({ ...e, edgeIndex: idx });
+  }
+  return out.length > 0 ? out : undefined;
+}
+
+/**
+ * Wall paint on one room edge (2026-09-02; tint added 2026-09-14). The
+ * paint is a WALL_PAINTS product; the tint is the chosen colour of that
+ * product (`#RRGGBB`) — absent means the product's base colour. A tinted
+ * tin serves ONE colour, so the cart splits tins by paint + tint.
+ */
+export interface PaintedEdge {
+  edgeIndex: number;
+  paintId: string;
+  colourHex?: string;
+  colourName?: string;
+}
+
+/** What a paint action applies: the product plus an optional tint. */
+export interface PaintColourChoice {
+  hex: string;
+  name?: string;
+}
 
 export interface PlacedItem {
   instanceId: string;
@@ -178,7 +241,7 @@ export interface Room {
    * Written only on live (already winding-canonical) polygons; a reshape
    * prunes entries whose edge no longer exists.
    */
-  wallPaint?: Array<{ edgeIndex: number; paintId: string }>;
+  wallPaint?: PaintedEdge[];
   /**
    * Storey this room sits on (2026-08-29). ABSENT MEANS GROUND — that is the
    * canonical form, not a fallback, so a single-storey design saved today is
@@ -216,6 +279,13 @@ export interface Property {
    * DEFAULT_WALL_HEIGHT_M the calculator assumes.
    */
   wallHeightM?: number;
+  /**
+   * Paint estimate settings (2026-09-14). `wallPaintCoats` overrides every
+   * product's datasheet coats (1–3); `wallPaintWastePct` is the touch-up
+   * contingency (0–25 %). Both absent = the defaults the calculator prints.
+   */
+  wallPaintCoats?: number;
+  wallPaintWastePct?: number;
 }
 
 const PROPERTY_KEY = 'ppw_property_v2';
@@ -448,14 +518,23 @@ export interface PropertyState {
   fillRoomFloor: (roomId: string, materialId: string) => number;
   /** Remove every floor (tiles + finish) from a room in ONE undo frame. */
   clearRoomFloor: (roomId: string) => void;
-  /** Wall paint (2026-09-02): set/clear the paint on one room edge. */
-  paintWallEdge: (roomId: string, edgeIndex: number, paintId: string | null) => void;
+  /**
+   * Wall paint (2026-09-02): set/clear the paint on one room edge. `colour`
+   * (2026-09-14) is the chosen tint of that paint; omit it for the base.
+   */
+  paintWallEdge: (roomId: string, edgeIndex: number, paintId: string | null, colour?: PaintColourChoice | null) => void;
   /** Paint (or with null clear) EVERY edge of a room in one frame. */
-  paintRoomWalls: (roomId: string, paintId: string | null) => void;
+  paintRoomWalls: (roomId: string, paintId: string | null, colour?: PaintColourChoice | null) => void;
   /** Set/clear the paint on one free-standing wall. */
-  paintFreeWall: (wallId: string, paintId: string | null) => void;
+  paintFreeWall: (wallId: string, paintId: string | null, colour?: PaintColourChoice | null) => void;
   /** Property-wide wall height for paint quotes (clamped 2.0–4.0). */
   setWallHeight: (heightM: number) => void;
+  /** Coats override for every paint (1–3); null = each product's datasheet figure. */
+  setWallPaintCoats: (coats: number | null) => void;
+  /** Touch-up contingency 0–25 %; null = the default. */
+  setWallPaintWastePct: (pct: number | null) => void;
+  /** Paint one or both faces of a free-standing wall. */
+  setFreeWallPaintFaces: (wallId: string, faces: 1 | 2) => void;
 
   addOpening: (roomId: string, opening: Omit<Opening, 'id'> & { id?: string }) => string | null;
   /** Removes by opening id from WHICHEVER room owns it (ids are global). */
@@ -699,11 +778,16 @@ export const usePropertyStore = create<PropertyState>()(
               // shrink a room and the tiles outside it are no longer real.
               // Without this they persist invisibly AND stay in the quote.
               const canon = canonicaliseRoomGeometry(polygon, roomOpenings(r));
+              // Wall paint (2026-09-14) is polygon-coupled exactly as
+              // openings are: an edge that is gone loses its paint and a
+              // reversed polygon keeps the paint on the same WORLD wall.
+              const wallPaint = remapPaintedEdges(r.wallPaint, polygon, canon.polygon);
               return {
                 ...r,
                 polygon: canon.polygon,
                 openings: pruneOpenings(canon.openings, canon.polygon),
                 floorTiles: decodeFloorZones(r.floorTiles, canon.polygon),
+                ...(wallPaint ? { wallPaint } : { wallPaint: undefined }),
               };
             }),
           },
@@ -1003,7 +1087,7 @@ export const usePropertyStore = create<PropertyState>()(
           },
         })),
 
-      paintWallEdge: (roomId, edgeIndex, paintId) =>
+      paintWallEdge: (roomId, edgeIndex, paintId, colour) =>
         set((s) => ({
           property: {
             ...s.property,
@@ -1011,26 +1095,26 @@ export const usePropertyStore = create<PropertyState>()(
               if (r.id !== roomId) return r;
               if (edgeIndex < 0 || edgeIndex >= r.polygon.length) return r;
               const rest = (r.wallPaint ?? []).filter((e) => e.edgeIndex !== edgeIndex);
-              const next = paintId ? [...rest, { edgeIndex, paintId }] : rest;
+              const next = paintId ? [...rest, paintedEdge(edgeIndex, paintId, colour)] : rest;
               return { ...r, wallPaint: next.length > 0 ? next : undefined };
             }),
           },
         })),
 
-      paintRoomWalls: (roomId, paintId) =>
+      paintRoomWalls: (roomId, paintId, colour) =>
         set((s) => ({
           property: {
             ...s.property,
             rooms: s.property.rooms.map((r) => {
               if (r.id !== roomId) return r;
               if (!paintId) return { ...r, wallPaint: undefined };
-              const all = r.polygon.map((_, i) => ({ edgeIndex: i, paintId }));
+              const all = r.polygon.map((_, i) => paintedEdge(i, paintId, colour));
               return { ...r, wallPaint: all.length > 0 ? all : undefined };
             }),
           },
         })),
 
-      paintFreeWall: (wallId, paintId) =>
+      paintFreeWall: (wallId, paintId, colour) =>
         set((s) => ({
           property: {
             ...s.property,
@@ -1038,8 +1122,18 @@ export const usePropertyStore = create<PropertyState>()(
               w.id === wallId
                 ? (() => {
                     const next = { ...w };
-                    if (paintId) next.paintId = paintId;
-                    else delete next.paintId;
+                    delete next.paintId;
+                    delete next.paintColourHex;
+                    delete next.paintColourName;
+                    if (paintId) {
+                      next.paintId = paintId;
+                      const hex = normalisePaintColourHex(colour?.hex);
+                      if (hex) {
+                        next.paintColourHex = hex;
+                        const name = normalisePaintColourName(colour?.name);
+                        if (name) next.paintColourName = name;
+                      }
+                    }
                     return next;
                   })()
                 : w,
@@ -1052,6 +1146,38 @@ export const usePropertyStore = create<PropertyState>()(
           property: {
             ...s.property,
             wallHeightM: Math.min(4.0, Math.max(2.0, Number(heightM.toFixed(2)))),
+          },
+        })),
+
+      setWallPaintCoats: (coats) =>
+        set((s) => {
+          const next = { ...s.property };
+          const c = normaliseWallPaintCoats(coats);
+          if (c === undefined) delete next.wallPaintCoats;
+          else next.wallPaintCoats = c;
+          return { property: next };
+        }),
+
+      setWallPaintWastePct: (pct) =>
+        set((s) => {
+          const next = { ...s.property };
+          const w = normaliseWallPaintWastePct(pct);
+          if (w === undefined) delete next.wallPaintWastePct;
+          else next.wallPaintWastePct = w;
+          return { property: next };
+        }),
+
+      setFreeWallPaintFaces: (wallId, faces) =>
+        set((s) => ({
+          property: {
+            ...s.property,
+            walls: (s.property.walls ?? []).map((w) => {
+              if (w.id !== wallId) return w;
+              const next = { ...w };
+              if (faces === 2) next.paintFaces = 2;
+              else delete next.paintFaces;
+              return next;
+            }),
           },
         })),
 
@@ -1530,7 +1656,26 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   if (typeof rawH === 'number' && rawH >= 2.0 && rawH <= 4.0) {
     out.wallHeightM = rawH;
   }
+  // Paint estimate settings (2026-09-14): same whitelist rule.
+  const coats = normaliseWallPaintCoats((property as { wallPaintCoats?: unknown }).wallPaintCoats);
+  if (coats !== undefined) out.wallPaintCoats = coats;
+  const waste = normaliseWallPaintWastePct((property as { wallPaintWastePct?: unknown }).wallPaintWastePct);
+  if (waste !== undefined) out.wallPaintWastePct = waste;
   return out;
+}
+
+/** 1–3 whole coats, else undefined (= product default). */
+export function normaliseWallPaintCoats(x: unknown): number | undefined {
+  if (typeof x !== 'number' || !Number.isFinite(x)) return undefined;
+  const c = Math.round(x);
+  return c >= 1 && c <= 3 ? c : undefined;
+}
+
+/** 0–25 % contingency, whole percent, else undefined (= default). */
+export function normaliseWallPaintWastePct(x: unknown): number | undefined {
+  if (typeof x !== 'number' || !Number.isFinite(x)) return undefined;
+  const w = Math.round(x);
+  return w >= 0 && w <= 25 ? w : undefined;
 }
 
 /**
@@ -1579,9 +1724,20 @@ export function normaliseFreeWalls(walls: unknown): FreeWall[] {
     };
     if (w.levelId) clean.levelId = w.levelId;
     // Wall paint (2026-09-02): whitelist trap — carry the paint or it
-    // vanishes on the first save/load round trip.
+    // vanishes on the first save/load round trip. The tint (2026-09-14)
+    // rides with it under the same rule; a tint with no paint is dropped.
     const paintId = (w as { paintId?: unknown }).paintId;
-    if (typeof paintId === 'string' && paintId) clean.paintId = paintId;
+    if (typeof paintId === 'string' && paintId) {
+      clean.paintId = paintId;
+      const hex = normalisePaintColourHex((w as { paintColourHex?: unknown }).paintColourHex);
+      if (hex) {
+        clean.paintColourHex = hex;
+        const name = normalisePaintColourName((w as { paintColourName?: unknown }).paintColourName);
+        if (name) clean.paintColourName = name;
+      }
+      // Both faces painted (2026-09-14) — only the value 2 is stored.
+      if ((w as { paintFaces?: unknown }).paintFaces === 2) clean.paintFaces = 2;
+    }
     out.push(clean);
   }
   return out;
@@ -1596,7 +1752,7 @@ interface RawRoom {
   id?: string;
   name?: string;
   polygon?: Polygon;
-  wallPaint?: Array<{ edgeIndex?: unknown; paintId?: unknown }>;
+  wallPaint?: Array<{ edgeIndex?: unknown; paintId?: unknown; colourHex?: unknown; colourName?: unknown }>;
   vertices?: Polygon;
   lengthM?: number;
   widthM?: number;
@@ -1683,21 +1839,34 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
     floorTiles: decodeFloorZones(r.floorTiles, clean),
     // Wall paint (2026-09-02): whitelist + prune — entries must point at an
     // edge that still exists on the CLEANED polygon, exactly like openings.
+    // The tint (2026-09-14) is whitelisted field by field too: a bad hex
+    // is dropped (the wall keeps its paint at the base colour), never passed
+    // through to the renderer or the cart.
     ...(Array.isArray(r.wallPaint)
       ? (() => {
-          const wp = r.wallPaint
+          const typed = r.wallPaint
             .filter(
-              (e): e is { edgeIndex: number; paintId: string } =>
+              (e): e is { edgeIndex: number; paintId: string; colourHex?: unknown; colourName?: unknown } =>
                 !!e &&
                 typeof e.edgeIndex === 'number' &&
                 Number.isInteger(e.edgeIndex) &&
                 e.edgeIndex >= 0 &&
-                e.edgeIndex < clean.length &&
                 typeof e.paintId === 'string' &&
                 e.paintId.length > 0,
             )
-            .filter((e, idx, arr) => arr.findIndex((x) => x.edgeIndex === e.edgeIndex) === idx);
-          return wp.length > 0 ? { wallPaint: wp } : {};
+            .map((e) =>
+              paintedEdge(
+                e.edgeIndex,
+                e.paintId,
+                typeof e.colourHex === 'string'
+                  ? { hex: e.colourHex, name: typeof e.colourName === 'string' ? e.colourName : undefined }
+                  : null,
+              ),
+            );
+          // Remap against the RAW polygon (a CCW seed reverses), then prune
+          // to the CLEANED one — the same order the openings take.
+          const wp = remapPaintedEdges(typed, cleanPolygon(polygon), clean);
+          return wp ? { wallPaint: wp } : {};
         })()
       : {}),
   };
@@ -1830,6 +1999,10 @@ export function canonicalisePropertyWinding(property: Property): Property {
     touched = true;
     const next: Room = { ...room, polygon: canon.polygon };
     if (room.openings) next.openings = pruneOpenings(canon.openings, canon.polygon);
+    // Paint follows the same remap as the openings (2026-09-14).
+    const wallPaint = remapPaintedEdges(room.wallPaint, room.polygon, canon.polygon);
+    if (wallPaint) next.wallPaint = wallPaint;
+    else delete next.wallPaint;
     return next;
   });
   return touched ? { ...property, rooms } : property;

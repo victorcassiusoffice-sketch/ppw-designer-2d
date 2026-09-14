@@ -208,7 +208,17 @@ export function CartStrip() {
               {cart.wallPaintLines.map((l) => (
                 <tr key={l.lineId} className="border-t border-ppw-rim" data-testid="cart-wallpaint-line">
                   <td className="py-1.5 pr-2 font-medium text-ppw-inkDeep max-w-[180px] sm:max-w-[200px]">
-                    <span className="block truncate">{l.paintName}</span>
+                    <span className="flex items-center gap-1.5 truncate">
+                      <span
+                        aria-hidden="true"
+                        className="inline-block h-3 w-3 shrink-0 rounded-sm border border-ppw-rim"
+                        style={{ background: l.renderHex }}
+                      />
+                      <span className="truncate">
+                        {l.paintName}
+                        {l.colourHex ? <span className="text-ppw-charcoal"> · {l.colourName ?? l.colourHex}</span> : null}
+                      </span>
+                    </span>
                     <span className="block text-[11px] font-medium tabular-nums text-ppw-charcoal sm:hidden">
                       {l.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')} · Paint
                     </span>

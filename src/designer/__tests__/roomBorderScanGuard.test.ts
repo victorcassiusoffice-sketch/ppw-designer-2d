@@ -35,6 +35,7 @@ import {
   HANDLE_FILL,
 } from '../blueprintTheme';
 import { ECO_FLOORING_CATALOG, ECO_PAINT_PALETTE } from '../../data/paintPalette';
+import { WALL_PAINTS, PAINT_COLOURS } from '../../data/wallPaints';
 import { FLOOR_MATERIALS } from '../../data/floorMaterials';
 
 /**
@@ -144,5 +145,20 @@ describe('ROOM_BORDER_SCAN guard', () => {
       return isRoomBorderPixel(r, g, b);
     }).map((p) => `${p.id} (${p.hex})`);
     expect(offenders, `Paint swatches must stay outside the charcoal wall-scan band ${BAND}`).toEqual([]);
+  });
+
+  it('does NOT match any wall-paint product swatch or tint (the live catalogue)', () => {
+    // Painted walls render their tint on the plan's 2.5D lift, so every
+    // shippable colour must keep one channel >= ROOM_BORDER_SCAN.max.
+    const offenders: string[] = [];
+    for (const p of WALL_PAINTS) {
+      const [r, g, b] = hexToRgb(p.hex);
+      if (isRoomBorderPixel(r, g, b)) offenders.push(`${p.id} (${p.hex})`);
+    }
+    for (const c of PAINT_COLOURS) {
+      const [r, g, b] = hexToRgb(c.hex);
+      if (isRoomBorderPixel(r, g, b)) offenders.push(`${c.id} (${c.hex})`);
+    }
+    expect(offenders, `Wall-paint colours must stay outside the charcoal wall-scan band ${BAND}`).toEqual([]);
   });
 });

@@ -28,6 +28,18 @@ export interface FreeWall {
   levelId?: string;
   /** Wall paint (2026-09-02): a WALL_PAINTS id. Absent = bare plaster. */
   paintId?: string;
+  /**
+   * Chosen tint for that paint (2026-09-14) — `#RRGGBB`. Absent = the
+   * product's base colour. Only meaningful with `paintId`.
+   */
+  paintColourHex?: string;
+  /** The tint's name as the brand lists it (for the quote line). */
+  paintColourName?: string;
+  /**
+   * Faces painted (2026-09-14): a free-standing wall has two. Absent = 1,
+   * the conservative default a quote is read at; 2 doubles the area.
+   */
+  paintFaces?: 1 | 2;
 }
 
 /** A wall shorter than this is a click, not a wall, and is dropped. */

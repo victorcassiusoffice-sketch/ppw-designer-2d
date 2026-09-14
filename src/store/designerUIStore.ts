@@ -89,9 +89,20 @@ export interface FloorDraft {
 export interface WallPaintDraft {
   /** WALL_PAINTS id on the brush. */
   paintId: string;
+  /**
+   * Tint on the brush (2026-09-14): `#RRGGBB` + the brand's name for it.
+   * Absent = the product's base colour. Persisted with the paint choice.
+   */
+  colourHex?: string;
+  colourName?: string;
   /** 'wall' paints the wall you tap; 'room' paints every wall of that room. */
   scope: 'wall' | 'room';
   erase: boolean;
+  /**
+   * The Sims-style 3D room view (2026-09-14) is open. Per-session chrome —
+   * never persisted; the tool decides where it shows.
+   */
+  view3d: boolean;
 }
 
 export interface DoorDraft {
@@ -221,6 +232,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         paintId: 'permoglaze-matt-emulsion',
         scope: 'wall',
         erase: false,
+        view3d: false,
       },
       energyPanelOpen: false,
       setEnergyPanelOpen: (open) =>
@@ -312,7 +324,15 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         precision: state.precision,
         lastPrecision: state.lastPrecision,
         floorDraft: { materialId: state.floorDraft.materialId },
-        wallPaintDraft: { paintId: state.wallPaintDraft.paintId },
+        // The tint rides with the paint ONLY when one is chosen, so the
+        // default envelope is byte-identical to the pre-tint one.
+        wallPaintDraft: {
+          paintId: state.wallPaintDraft.paintId,
+          ...(state.wallPaintDraft.colourHex ? { colourHex: state.wallPaintDraft.colourHex } : {}),
+          ...(state.wallPaintDraft.colourHex && state.wallPaintDraft.colourName
+            ? { colourName: state.wallPaintDraft.colourName }
+            : {}),
+        },
       }),
       // The persisted `floorDraft` is a PARTIAL object. zustand's default
       // merge is shallow, so without this the rehydrated draft would be

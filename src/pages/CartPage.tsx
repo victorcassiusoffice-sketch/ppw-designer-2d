@@ -18,7 +18,6 @@ import { usePropertyStore } from '../store/propertyStore';
 import { CartPageHeader } from '../components/CartPageHeader';
 import { CATEGORY_LABELS, thumbnailFor } from '../data/products';
 import { findFloorMaterialById } from '../data/floorMaterials';
-import { findWallPaintById } from '../data/wallPaints';
 import { formatCurrency } from '../lib/currency';
 import { useState } from 'react';
 
@@ -202,12 +201,15 @@ export default function CartPage() {
                 >
                   <div
                     className="h-16 w-16 shrink-0 rounded-md border border-ppw-stone"
-                    style={{ background: findWallPaintById(l.paintId)?.hex ?? '#EDE9DF' }}
+                    style={{ background: l.renderHex }}
                     aria-hidden="true"
                   />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-ppw-ink">{l.paintName}</p>
-                    <p className="text-[11px] text-ppw-slate">Wall paint · {l.finish} · painted on the plan</p>
+                    <p className="text-[11px] text-ppw-slate">
+                      Wall paint · {l.finish}
+                      {l.colourHex ? ` · ${l.colourName ?? l.colourHex}` : ' · base colour'} · painted on the plan
+                    </p>
                     <p className="mt-0.5 text-[11px] text-ppw-slate">
                       {l.areaM2.toFixed(1)} m² · {l.coats} coats · needs {l.litres.toFixed(1)} L
                     </p>

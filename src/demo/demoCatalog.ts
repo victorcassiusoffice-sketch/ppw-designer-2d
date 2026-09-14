@@ -36,6 +36,12 @@ export interface DemoDefinition {
    * the merchant's). Absent = leave whatever the visitor had.
    */
   currency?: 'MUR' | 'USD' | 'EUR' | 'GBP';
+  /**
+   * Paint brands the wall-paint panel shows in this demo (`PaintBrand.id`).
+   * A paint company's own pitch shows its own range only; absent = every
+   * loaded brand.
+   */
+  paintBrandIds?: string[];
   /** Builds the pre-designed plan — a fresh object every call (the store normalises in place). */
   buildProperty: () => Property;
 }
