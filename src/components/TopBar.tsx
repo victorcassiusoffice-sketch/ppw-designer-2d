@@ -2814,8 +2814,6 @@ export function TopBar({
             onPaintWall={paintFromRoomView}
             onClose={() => setWallPaintDraft({ view3d: false })}
             footer={wallPaintLiveText}
-            style={{ right: 'var(--floor-panel-w, 0px)' }}
-            className="!left-0 !right-auto"
           />,
           document.body,
         )}

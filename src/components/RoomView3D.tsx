@@ -437,7 +437,13 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
   }
 
   return (
-    <div className={`fixed inset-0 z-[60] flex items-center justify-center p-3 md:p-6 ${className}`} style={style} data-testid="wallpaint-3d-overlay">
+    <div
+      className={`fixed inset-y-0 left-0 z-[60] flex items-center justify-center p-3 md:p-6 ${className}`}
+      // Ends at the docked panel on md+ (the brush stays reachable); the
+      // panel publishes 0px on the phone, so there it is full-screen.
+      style={{ right: 'var(--floor-panel-w, 0px)', ...style }}
+      data-testid="wallpaint-3d-overlay"
+    >
       <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden="true" />
       <div
         role="dialog"
