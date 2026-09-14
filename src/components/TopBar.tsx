@@ -859,6 +859,8 @@ export function TopBar({
       ? paintsForBrand(paintBrand?.id ?? paintBrands[0]?.id ?? paintBrandId)
       : WALL_PAINTS;
   const [paintBreakdownOpen, setPaintBreakdownOpen] = useState(false);
+  // The short list (featured lines) by default; the rest behind "More lines".
+  const [paintMoreLines, setPaintMoreLines] = useState(false);
   // The brand's full tinting chart (Sofap: 1,050 Colour Match shades) —
   // loaded on demand, filtered by family + search.
   const [paintChartOpen, setPaintChartOpen] = useState(false);
@@ -2471,8 +2473,11 @@ export function TopBar({
                 </div>
               )}
 
-              {/* The products — sourced from the brand's own listings (see wallPaints.ts). */}
-              {wallPaintsShown.map((p) => {
+              {/* The products — sourced from the brand's own listings (see wallPaints.ts).
+                  Featured lines first; the rest of the range one tap away. */}
+              {wallPaintsShown
+                .filter((p) => paintMoreLines || p.featured || !wallPaintsShown.some((q) => q.featured) || p.id === wallPaintSel.id)
+                .map((p) => {
                 const on = wallPaintSel.id === p.id;
                 return (
                   <button
@@ -2500,6 +2505,23 @@ export function TopBar({
                   </button>
                 );
               })}
+              {wallPaintsShown.some((q) => q.featured) && wallPaintsShown.some((q) => !q.featured) && (
+                <button
+                  type="button"
+                  onClick={() => setPaintMoreLines((v) => !v)}
+                  aria-expanded={paintMoreLines}
+                  data-testid="wallpaint-more-lines"
+                  className="flex min-h-[36px] w-full items-center justify-between px-2 text-[12px] font-medium"
+                  style={{ color: CHROME_TEXT_2 }}
+                >
+                  <span>
+                    {paintMoreLines
+                      ? 'Fewer lines'
+                      : `More ${paintBrand?.name ?? ''} lines (${wallPaintsShown.filter((q) => !q.featured).length})`}
+                  </span>
+                  <span aria-hidden="true">{paintMoreLines ? '▾' : '▸'}</span>
+                </button>
+              )}
 
               {/* Colour (2026-09-14): the brand's tints for the chosen line,
                   plus any custom hex — "tint to match" at the counter. A

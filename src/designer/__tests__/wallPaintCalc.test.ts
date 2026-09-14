@@ -149,7 +149,11 @@ describe('wall paint measurement', () => {
         expect(t.priceMur).toBeGreaterThan(0);
       }
     }
-    expect(WALL_PAINTS).toHaveLength(5);
+    expect(WALL_PAINTS.length).toBeGreaterThanOrEqual(5);
+    for (const id of ['permoglaze-matt-emulsion', 'permoglaze-soft-feel', 'permoglaze-xtreme-white', 'permoglaze-aquashield', 'permoglaze-anti-fungus']) {
+      expect(findWallPaintById(id)?.featured, id).toBe(true);
+    }
+    expect(new Set(WALL_PAINTS.map((p) => p.id)).size).toBe(WALL_PAINTS.length);
   });
 });
 
