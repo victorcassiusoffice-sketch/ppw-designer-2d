@@ -261,7 +261,7 @@
       <div class="card reveal">
         <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20V4h16v16z"/><path d="M4 12h16M12 4v16"/><path d="M8 8h2M14 8h2"/></svg></div>
         <h3>It measures the room</h3>
-        <p>Floor tiles by the exact box count, paint by the whole tin, doors and windows to scale, even a roof and solar panels against the Mauritius sun. A furniture-drag tool this is not.</p>
+        <p>Floor tiles by the exact box count, paint by the whole tin &mdash; picked from the paint company&rsquo;s own colour chart and seen on the walls in 3D &mdash; doors and windows to scale, even a roof and solar panels against the Mauritius sun. A furniture-drag tool this is not.</p>
       </div>
       <div class="card reveal">
         <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3l9 4.5-9 4.5-9-4.5z"/><path d="M3 12l9 4.5 9-4.5"/><path d="M3 16.5L12 21l9-4.5"/></svg></div>
@@ -284,7 +284,7 @@
       <!-- PAINT -->
       <div class="calc reveal" id="calc-paint">
         <h3>Paint, by the tin</h3>
-        <p class="sub">Permoglaze Matt Emulsion (Sofap) — 9 m² per litre, two coats.</p>
+        <p class="sub">Permoglaze Matt Emulsion (Sofap) — 9 m² per litre, three coats (data sheet), 10 % for touch-ups.</p>
         <div class="row">
           <label>Wall length (m)<input type="number" id="p-len" value="16" min="1" max="200" step="0.1"></label>
           <label>Wall height (m)<input type="number" id="p-h" value="2.7" min="2" max="4" step="0.1"></label>
@@ -297,7 +297,7 @@
           <div class="big" id="p-out">—</div>
           <div class="small" id="p-detail"></div>
         </div>
-        <p class="src">Wall area minus doors (0.84 × 2.04 m) and windows (1.2 × 1.2 m) × 2 coats ÷ 9 m²/L, then the cheapest whole-tin fill from 1 L Rs 201.25 · 5 L Rs 760 · 20 L Rs 2,940.</p>
+        <p class="src">Wall area minus doors (0.84 × 2.04 m) and windows (1.2 × 1.2 m) — openings under 1 m² are not deducted — × 3 coats ÷ 9 m²/L, plus 10 % for touch-ups, then the cheapest whole-tin fill from 1 L Rs 201.25 · 5 L Rs 816.50 · 20 L Rs 3,168.25 (Sofap store, 14 Sep 2026). A tinted tin is priced on its Pastel / Medium / Basic base.</p>
       </div>
 
       <!-- TILES -->
@@ -396,7 +396,7 @@
       <figure><img src="img/wt-1-draw.webp" width="1400" height="787" alt="Drawing the room's walls with the wall pen; the length and angle read out as you draw" loading="lazy"><figcaption><b>1 · Draw the room</b>Walls snap straight; length and angle read out live.</figcaption></figure>
       <figure><img src="img/wt-2-scale.webp" width="1400" height="787" alt="A treadmill selected in the room with its details panel reading footprint 205 by 95 cm and height 165 cm" loading="lazy"><figcaption><b>2 · Drop products to scale</b>205 × 95 cm on the page, 205 × 95 cm on the plan.</figcaption></figure>
       <figure><img src="img/wt-3-tiles.webp" width="1400" height="787" alt="The floor tool laying Gym Interlock tiles across the room with a live count of 37 tiles at Rs 59,200" loading="lazy"><figcaption><b>3 · Tile the floor</b>"37 tiles · Rs 59,200" — cut tiles and offcuts counted.</figcaption></figure>
-      <figure><img src="img/wt-4-paint.webp" width="1400" height="787" alt="The wall-paint tool with the room painted and the litres and tins required listed" loading="lazy"><figcaption><b>4 · Paint the walls</b>Litres from the wall area, then whole tins.</figcaption></figure>
+      <figure><img src="img/wt-4-paint.webp" width="1400" height="787" alt="The 3D room view with the living room walls painted in a Sofap colour, beside the paint panel listing the Permoglaze lines, the colour chart and the litres and tins required" loading="lazy"><figcaption><b>4 · Paint the walls, in 3D</b>Sofap&rsquo;s own colours on the walls; litres from the wall area, then whole tins.</figcaption></figure>
       <figure><img src="img/wt-5-solar.webp" width="1400" height="787" alt="The roof level with four Jinko solar panels and the energy panel reading a surplus of 7.2 kilowatt-hours per day" loading="lazy"><figcaption><b>5 · Add a roof and solar</b>"Surplus +7.2 kWh/day · 4 panels · 1.90 kWp".</figcaption></figure>
     </div>
 
@@ -528,7 +528,7 @@
   const num = (el, fallback) => { const v = parseFloat(el.value); return Number.isFinite(v) && v >= 0 ? v : fallback; };
 
   // ---------- PAINT (wallPaintCalc.ts + wallPaints.ts) ----------
-  const PAINT = { coverage: 9, coats: 2, tins: [{ l: 20, p: 2940 }, { l: 5, p: 760 }, { l: 1, p: 201.25 }] };
+  const PAINT = { coverage: 9, coats: 3, waste: 0.10, tins: [{ l: 20, p: 3168.25 }, { l: 5, p: 816.5 }, { l: 1, p: 201.25 }] };
   const DOOR_W = 0.838, DOOR_H = 2.04, WIN_W = 1.2, WIN_H = 1.2;
   // Cheapest whole-tin fill: exact enumeration over 20/5/1 L counts.
   function tinsFor(litres) {
@@ -538,22 +538,25 @@
       for (let b = 0; b <= Math.ceil(need / 5) + 1; b++) {
         const rem = need - a * 20 - b * 5;
         const c = rem > 0 ? Math.ceil(rem - 1e-9) : 0;
-        const price = a * 2940 + b * 760 + c * 201.25;
+        const price = a * PAINT.tins[0].p + b * PAINT.tins[1].p + c * PAINT.tins[2].p;
         const total = a * 20 + b * 5 + c;
-        if (total + 1e-9 >= need && (!best || price < best.price - 1e-9 || (Math.abs(price - best.price) < 1e-9 && total < best.total))) best = { a, b, c, price, total };
+        if (total + 1e-9 >= need && (!best || price < best.price - 1e-9 || (Math.abs(price - best.price) < 1e-9 && total > best.total))) best = { a, b, c, price, total };
       }
     }
     return best;
   }
   function paint() {
     const len = num($('#p-len'), 0), h = num($('#p-h'), 2.7), doors = num($('#p-doors'), 0), wins = num($('#p-win'), 0);
-    const area = Math.max(0, len * h - doors * DOOR_W * Math.min(DOOR_H, h) - wins * WIN_W * Math.min(WIN_H, h));
-    const litres = Math.ceil((area * PAINT.coats) / PAINT.coverage * 10) / 10;
+    // Openings under 1 m² are not deducted (NRM2 net-measurement rule).
+    const doorA = DOOR_W * Math.min(DOOR_H, h), winA = WIN_W * Math.min(WIN_H, h);
+    const area = Math.max(0, len * h - doors * (doorA >= 1 ? doorA : 0) - wins * (winA >= 1 ? winA : 0));
+    // Rounded once from the exact need + the touch-up contingency.
+    const litres = Math.ceil((area * (1 + PAINT.waste) * PAINT.coats) / PAINT.coverage * 10 - 1e-9) / 10;
     const t = tinsFor(litres);
     const parts = [];
     if (t.a) parts.push(t.a + ' × 20 L'); if (t.b) parts.push(t.b + ' × 5 L'); if (t.c) parts.push(t.c + ' × 1 L');
     $('#p-out').textContent = (parts.join(' + ') || 'no paint needed') + (litres ? ' · ' + rs(t.price) : '');
-    $('#p-detail').textContent = area.toFixed(1) + ' m² of wall × 2 coats = ' + litres.toFixed(1) + ' L';
+    $('#p-detail').textContent = area.toFixed(1) + ' m² of wall × 3 coats + 10 % = ' + litres.toFixed(1) + ' L';
   }
   ['#p-len', '#p-h', '#p-doors', '#p-win'].forEach((s) => $(s).addEventListener('input', paint));
   paint();
