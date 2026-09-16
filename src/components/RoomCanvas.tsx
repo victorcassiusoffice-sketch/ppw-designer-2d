@@ -3533,11 +3533,6 @@ export function RoomCanvas({
                 </span>
               )}
             </span>
-            <span className="shrink-0 text-[12px] font-medium tabular-nums" style={{ color: CHROME_TEXT_2 }} aria-live="polite">
-              {wallPaintLive.any
-                ? `${wallPaintLive.areaM2.toFixed(1)} m² · ${wallPaintLive.litres.toFixed(1)} L · ${formatCurrency(wallPaintLive.cost, displayCurrency)}`
-                : 'No walls painted yet'}
-            </span>
             <button
               type="button"
               data-testid="wallpaint-3d-mobile"
@@ -3606,10 +3601,20 @@ export function RoomCanvas({
               Done
             </button>
           </div>
+          {/* Phone pass (2026-09-16): the live figures moved down here from
+              the title row — beside 3D + Change they squeezed the paint's
+              name to "S…" at 390 px. */}
           <p
             className="px-1 text-[11px] font-medium leading-snug"
             style={{ color: wallPaintDraft.erase ? CHROME_DANGER : CHROME_TEXT_2 }}
+            aria-live="polite"
           >
+            <span className="tabular-nums" data-testid="wallpaint-hud-live">
+              {wallPaintLive.any
+                ? `${wallPaintLive.areaM2.toFixed(1)} m² · ${wallPaintLive.litres.toFixed(1)} L · ${formatCurrency(wallPaintLive.cost, displayCurrency)}`
+                : 'No walls painted yet'}
+            </span>
+            {' · '}
             {wallPaintDraft.erase
               ? 'Tap a wall to remove its paint'
               : wallPaintDraft.scope === 'room'
