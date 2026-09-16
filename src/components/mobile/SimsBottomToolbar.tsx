@@ -34,6 +34,11 @@ import { useDrawProgressStore } from '../../store/drawProgressStore';
 // the phone HUD card + a full thumbnail strip would leave no floor to tap.
 import { floorMaterialForProduct } from '../../data/floorMaterials';
 import { useDesignerUIStore } from '../../store/designerUIStore';
+// Phone pass (2026-09-16): fold to the category row when a furnished plan
+// arrives (a merchant demo, a saved page, a tab switch).
+import { useDesignsStore } from '../../store/designsStore';
+import { usePropertyStore } from '../../store/propertyStore';
+import { useBelowMd } from '../../lib/useBelowMd';
 import {
   visibleMacroCategories,
   MACRO_CATEGORY_LABEL,
@@ -98,6 +103,20 @@ export function SimsBottomToolbar() {
       setMinimized(prev);
     }
   }, [foldForTool]);
+
+  // Phone pass (2026-09-16): a plan that arrives FURNISHED — a merchant
+  // demo's show home, a saved page, a tab switch — opens with the strip
+  // folded to its category row, so the room gets back the ~150 px the
+  // thumbnails were taking on a 390 px phone (Vic, Sofap demo: "I can't see
+  // the screen"). A category tap unfolds it (that handler already does) and
+  // the chevron still works. A blank plan is untouched: the pen owns it.
+  const currentPageId = useDesignsStore((s) => s.currentId);
+  const belowMd = useBelowMd();
+  useEffect(() => {
+    if (!belowMd) return;
+    const furnished = usePropertyStore.getState().property.rooms.some((r) => r.polygon.length >= 3);
+    if (furnished) setMinimized(true);
+  }, [currentPageId, belowMd]);
 
   // Publish the toolbar's live height as a CSS var so other bottom-anchored
   // overlays (ModeStrip, CartStrip) can sit above it. When the toolbar is

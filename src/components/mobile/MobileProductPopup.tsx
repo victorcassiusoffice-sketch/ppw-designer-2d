@@ -18,7 +18,7 @@
  * as CartStrip / DetailsPanel — primary = ink fill + paper, Cancel = chrome
  * + rim — so the sheet is one control set with the rest of the designer.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Product } from '../../data/products.schema';
 import { productImageUrl } from '../../data/products';
 import { CHROME_BG, CHROME_RIM, CHROME_TEXT } from '../../designer/blueprintTheme';
@@ -99,6 +99,15 @@ export function MobileProductPopup({
     },
   });
 
+  // Esc closes, like every other overlay in the designer.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   return (
     <>
       <div
@@ -117,7 +126,13 @@ export function MobileProductPopup({
           opacity: dragging ? 0.25 : 1,
           transition: 'opacity 120ms ease',
         }}
-        onClick={(e) => {
+        // Phone pass (2026-09-16): the scrim closed on `click`, and a finger
+        // fires a compatibility click ~1 ms after the tap that OPENED this
+        // popup — by then the scrim is under the finger, so every thumbnail
+        // tap flashed the popup shut ("+ Add to room" was unreachable by
+        // tap; only long-press drag worked). A pointerdown is always a NEW
+        // gesture, so the scrim listens for that instead.
+        onPointerDown={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
       >

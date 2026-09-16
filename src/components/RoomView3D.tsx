@@ -62,8 +62,10 @@ export interface RoomView3DProps {
   style?: CSSProperties;
 }
 
+// Phone pass (2026-09-16): 40 px on the phone tier (the overlay is
+// full-screen there and a thumb needs it), 32 px inside the desktop card.
 const BTN =
-  'inline-flex h-8 min-w-[32px] items-center justify-center rounded-md border border-ppw-rim bg-ppw-chrome px-2 text-[12px] font-semibold text-ppw-charcoal shadow-sm hover:bg-[#f3f1ec] focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]';
+  'inline-flex h-10 min-w-[40px] md:h-8 md:min-w-[32px] items-center justify-center rounded-md border border-ppw-rim bg-ppw-chrome px-2 text-[12px] font-semibold text-ppw-charcoal shadow-sm hover:bg-[#f3f1ec] focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]';
 
 /** Screen-space bridge for e2e: click a wall by its identity, not by pixels. */
 interface RoomView3DBridge {

@@ -82,6 +82,7 @@ import { unstackLegacyRooms } from './designer/roomLayout';
 import { GamingLayer1Surfaces } from './designer/GamingLayer1Surfaces';
 import { RoomEstimatePanel } from './components/RoomEstimatePanel';
 import { ClearControls } from './components/ClearControls';
+import { useBelowMd } from './lib/useBelowMd';
 import { isPaintEstimateActive } from './designer/paintEstimateFlag';
 import { activeLevelIdOf, isOutdoorRoom, isRoofLevel, levelsOf } from './designer/levels';
 import { isDrawnPolygon } from './designer/roomLayout';
@@ -298,6 +299,17 @@ export default function App() {
   const onDraftPage = useDesignsStore((st) => (st.currentId ?? DRAFT_ID) === DRAFT_ID);
   const planCount = namedPageCount + (onDraftPage ? 1 : 0);
 
+  // Phone pass (2026-09-16): while the Floor / Door / Wall-paint HUD card is
+  // up on a phone it owns the bottom band the way the pen's card does — the
+  // Products / Clear all row and the cart pill step out (they were a third
+  // layer under the card, and the card had to reserve 56 px for them). Done
+  // brings them back. md+ keeps them: there the tools live in the docked
+  // panel and the cards are display:none.
+  const belowMd = useBelowMd();
+  const phoneToolHud = useDesignerUIStore(
+    (s) => belowMd && (s.tool === 'floor' || s.tool === 'door' || s.tool === 'wallpaint'),
+  );
+
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#efede8] text-ppw-ink">
       <TopBar
@@ -352,7 +364,7 @@ export default function App() {
               clear buttons pinned to the canvas (Clear products / Clear all).
               Toolbar pass (2026-08-29): hidden while the wall pen is open so
               the HUD owns the bottom band (Discard is the pen's own clear). */}
-          {!drawMode && <ClearControls />}
+          {!drawMode && !phoneToolHud && <ClearControls />}
         </section>
         {/* Overlay, not a rail — slides in from the right only while an
             item is selected (see DetailsPanel). */}
@@ -369,7 +381,7 @@ export default function App() {
       {/* Toolbar pass (2026-08-29): the cart pill leaves the bottom band
           while the wall pen is open — the HUD owns it. Conditional at the
           render site; CartStrip itself is untouched. */}
-      {!drawMode && <CartStrip />}
+      {!drawMode && !phoneToolHud && <CartStrip />}
       <CartDrawer />
       {/* Mobile/tablet Sims catalog — sticky bottom toolbar (< 1024 px). */}
       <SimsBottomToolbar />

@@ -5,9 +5,11 @@
  * with categorised shortcut rows. Esc dismisses.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useDrawProgressStore } from '../store/drawProgressStore';
 import { useDesignStore } from '../store/designStore';
+import { useDesignerUIStore } from '../store/designerUIStore';
+import { useBelowMd } from '../lib/useBelowMd';
 import {
   CHROME_BG,
   CHROME_RIM,
@@ -207,8 +209,14 @@ export function HelpOverlay(props: HelpOverlayProps): JSX.Element | null {
 export function HelpLauncherIcon({ onOpen }: { onOpen: () => void }): JSX.Element | null {
   const penOpen = useDrawProgressStore((s) => s.enabled);
   const itemSelected = useDesignStore((s) => s.selectedInstanceId !== null);
+  // Phone pass (2026-09-16): the Floor / Door / Wall-paint HUD cards and the
+  // full-screen 3D room view own the bottom of a phone the way the pen does.
+  // The launcher used to land on the paint card's Done corner and float
+  // over the 3D view (z 35 sits above the overlay's 34).
+  const toolHudOpen = useDesignerUIStore((s) => s.tool === 'floor' || s.tool === 'door' || s.tool === 'wallpaint');
+  const view3d = useDesignerUIStore((s) => s.tool === 'wallpaint' && s.wallPaintDraft.view3d);
   const belowMd = useBelowMd();
-  if (belowMd && (penOpen || itemSelected)) return null;
+  if (belowMd && (penOpen || itemSelected || toolHudOpen || view3d)) return null;
   const besidePanel = itemSelected && !belowMd;
   return (
     <button
@@ -240,27 +248,4 @@ export function HelpLauncherIcon({ onOpen }: { onOpen: () => void }): JSX.Elemen
       ?
     </button>
   );
-}
-
-/**
- * `true` below Tailwind's `md` (768 px) — where the DetailsPanel is a bottom
- * sheet rather than a right-hand column. Falls back to "not below md" where
- * `matchMedia` is missing (jsdom / SSR).
- */
-function useBelowMd(): boolean {
-  const query = '(max-width: 767.98px)';
-  const [matches, setMatches] = useState<boolean>(() =>
-    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-      ? window.matchMedia(query).matches
-      : false,
-  );
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
-    const mq = window.matchMedia(query);
-    const sync = () => setMatches(mq.matches);
-    sync();
-    mq.addEventListener('change', sync);
-    return () => mq.removeEventListener('change', sync);
-  }, [query]);
-  return matches;
 }

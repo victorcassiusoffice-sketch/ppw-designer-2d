@@ -2926,7 +2926,7 @@ export function TopBar({
                   <button
                     type="button"
                     onClick={() => window.dispatchEvent(new CustomEvent('ppw:open-menu', { detail: { section: 'wallpaint' } }))}
-                    className={`${CHIP} h-9 shrink-0 px-2 text-[11px] ${CHIP_REST}`}
+                    className={`${CHIP} h-10 shrink-0 px-2 text-[11px] ${CHIP_REST}`}
                     data-testid="wallpaint-3d-brush-change"
                     title="Change the paint"
                   >
@@ -2938,7 +2938,7 @@ export function TopBar({
                     role="radio"
                     aria-checked={!wallPaintTint}
                     onClick={() => chooseWallPaintColour(null)}
-                    className={`h-8 w-8 shrink-0 rounded-md border ${!wallPaintTint ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
+                    className={`h-10 w-10 shrink-0 rounded-md border ${!wallPaintTint ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
                     style={{ background: wallPaintSel.hex }}
                     aria-label="Base white"
                     data-testid="wallpaint-3d-colour-base"
@@ -2953,7 +2953,7 @@ export function TopBar({
                         role="radio"
                         aria-checked={on}
                         onClick={() => chooseWallPaintColour(c)}
-                        className={`h-8 w-8 shrink-0 rounded-md border ${on ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
+                        className={`h-10 w-10 shrink-0 rounded-md border ${on ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
                         style={{ background: hex }}
                         aria-label={c.name}
                         title={c.name}
@@ -2965,7 +2965,7 @@ export function TopBar({
                     type="button"
                     aria-pressed={wallPaintDraft.erase}
                     onClick={() => setWallPaintDraft({ erase: !wallPaintDraft.erase })}
-                    className={`${CHIP} h-9 shrink-0 px-2 text-[11px] ${wallPaintDraft.erase ? CHIP_DANGER_ON : CHIP_REST}`}
+                    className={`${CHIP} h-10 shrink-0 px-2 text-[11px] ${wallPaintDraft.erase ? CHIP_DANGER_ON : CHIP_REST}`}
                     data-testid="wallpaint-3d-erase"
                   >
                     Erase
@@ -3177,7 +3177,13 @@ export function TopBar({
                       {wallPaintActive ? `on · ${wallPaintSel.name}` : 'off'}
                     </span>
                   </button>
-                  {WALL_PAINTS.map((p) => {
+                  {/* Phone pass (2026-09-16): the brand's featured lines, the
+                      rest behind "More lines" — the same short list the
+                      panel shows. All 15 rows made the sheet 3,400 px tall
+                      with the colours a screen and a half below the fold. */}
+                  {wallPaintsShown
+                    .filter((p) => paintMoreLines || p.featured || !wallPaintsShown.some((q) => q.featured) || p.id === wallPaintSel.id)
+                    .map((p) => {
                     const on = wallPaintActive && wallPaintDraft.paintId === p.id;
                     return (
                       <button
@@ -3205,6 +3211,22 @@ export function TopBar({
                       </button>
                     );
                   })}
+                  {wallPaintsShown.some((q) => q.featured) && wallPaintsShown.some((q) => !q.featured) && (
+                    <button
+                      type="button"
+                      onClick={() => setPaintMoreLines((v) => !v)}
+                      aria-expanded={paintMoreLines}
+                      data-testid="wallpaint-more-lines-mobile"
+                      className={`${SHEET_ROW} justify-between pl-6`}
+                    >
+                      <span className="text-[13px]">
+                        {paintMoreLines
+                          ? 'Fewer lines'
+                          : `More ${paintBrand?.name ?? ''} lines (${wallPaintsShown.filter((q) => !q.featured).length})`}
+                      </span>
+                      <span aria-hidden="true">{paintMoreLines ? '▾' : '▸'}</span>
+                    </button>
+                  )}
                   {/* Colour chips (2026-09-14) for the paint on the brush. */}
                   {isPaintTintable(wallPaintSel) && (
                     <div className="px-6 pb-2 pt-1" data-testid="wallpaint-colours-mobile">
@@ -3218,7 +3240,7 @@ export function TopBar({
                           aria-checked={!wallPaintTint}
                           data-testid="wallpaint-colour-base-mobile"
                           onClick={() => chooseWallPaintColour(null)}
-                          className={`h-9 w-9 rounded-md border ${!wallPaintTint ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
+                          className={`h-10 w-10 rounded-md border ${!wallPaintTint ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
                           style={{ background: wallPaintSel.hex }}
                           aria-label="Base white"
                         />
@@ -3233,7 +3255,7 @@ export function TopBar({
                               aria-checked={onC}
                               data-testid={`wallpaint-colour-mobile-${c.id}`}
                               onClick={() => chooseWallPaintColour(c)}
-                              className={`h-9 w-9 rounded-md border ${onC ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
+                              className={`h-10 w-10 rounded-md border ${onC ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
                               style={{ background: hex }}
                               aria-label={c.name}
                               title={c.name}
@@ -3241,7 +3263,7 @@ export function TopBar({
                           );
                         })}
                         <label
-                          className={`relative flex h-9 w-9 items-center justify-center rounded-md border text-[15px] ${wallPaintTintIsCustom ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
+                          className={`relative flex h-10 w-10 items-center justify-center rounded-md border text-[15px] ${wallPaintTintIsCustom ? 'border-ppw-inkDeep ring-2 ring-ppw-inkDeep/25' : 'border-ppw-rim'}`}
                           style={{
                             background: wallPaintTintIsCustom
                               ? wallPaintTint?.hex

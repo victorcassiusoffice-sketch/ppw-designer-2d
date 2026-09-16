@@ -233,6 +233,9 @@ import {
 import { findFloorMaterialById } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
 import { DEFAULT_WALL_HEIGHT_M, findWallPaintById, resolveWallColourHex } from '../data/wallPaints';
+// Phone pass (2026-09-16): the paint HUD's own colour row — the plan stays
+// on screen while the colour changes (the sheet used to cover it).
+import { WallPaintHudColourStrip } from './mobile/WallPaintHudColourStrip';
 import { deriveWallPaintOrders } from '../designer/wallPaintCalc';
 // Wall paint tints + the 3D room view (2026-09-14): the brush is applied
 // through ONE helper so the plan and the 3D view paint identically.
@@ -3358,7 +3361,7 @@ export function RoomCanvas({
         <div
           ref={floorHudRef}
           data-testid="floor-paint-hud"
-          className="pointer-events-auto fixed left-1/2 z-30 flex w-[min(94vw,420px)] -translate-x-1/2 flex-col gap-1.5 rounded-xl p-2 text-xs md:hidden bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-toolbar-h,0px)_+_56px)]"
+          className="pointer-events-auto fixed left-1/2 z-30 flex w-[min(94vw,420px)] -translate-x-1/2 flex-col gap-1.5 rounded-xl p-2 text-xs md:hidden bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-toolbar-h,0px))]"
           style={{
             background: CHROME_BG,
             border: `1px solid ${CHROME_RIM}`,
@@ -3500,7 +3503,7 @@ export function RoomCanvas({
         <div
           ref={wallPaintHudRef}
           data-testid="wallpaint-hud"
-          className="pointer-events-auto fixed left-1/2 z-30 flex w-[min(94vw,420px)] -translate-x-1/2 flex-col gap-1.5 rounded-xl p-2 text-xs md:hidden bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-toolbar-h,0px)_+_56px)]"
+          className="pointer-events-auto fixed left-1/2 z-30 flex w-[min(94vw,420px)] -translate-x-1/2 flex-col gap-1.5 rounded-xl p-2 text-xs md:hidden bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-toolbar-h,0px))]"
           style={{
             background: CHROME_BG,
             border: `1px solid ${CHROME_RIM}`,
@@ -3520,7 +3523,9 @@ export function RoomCanvas({
             />
             <span className="flex min-w-0 flex-1 flex-col leading-tight">
               <span className="truncate text-[12px] font-semibold text-[#37362f]">
-                {findWallPaintById(brushPaintId(wallPaintDraft))?.name ?? 'Wall paint'}
+                {/* Phone pass (2026-09-16): the line's own name — the brand
+                    prefix left "P…" at 390 px next to the live figures. */}
+                {(findWallPaintById(brushPaintId(wallPaintDraft))?.name ?? 'Wall paint').replace(/^Permoglaze |^Mauvilac |^Polytol /, '')}
               </span>
               {brushColour(wallPaintDraft) && (
                 <span className="truncate text-[11px] font-medium" style={{ color: CHROME_TEXT_2 }} data-testid="wallpaint-hud-colour">
@@ -3555,6 +3560,9 @@ export function RoomCanvas({
               Change
             </button>
           </div>
+          {/* Phone pass (2026-09-16): base white · the brand's shades · More,
+              one scrolling row of 40 px chips. Nothing for a white-only line. */}
+          <WallPaintHudColourStrip />
           <div className="flex items-center gap-1.5">
             <button
               type="button"
@@ -3615,7 +3623,7 @@ export function RoomCanvas({
         <div
           ref={doorHudRef}
           data-testid="door-hud"
-          className="pointer-events-auto fixed left-1/2 z-30 flex w-[min(94vw,420px)] -translate-x-1/2 flex-col gap-1.5 rounded-xl p-2 text-xs md:hidden bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-toolbar-h,0px)_+_56px)]"
+          className="pointer-events-auto fixed left-1/2 z-30 flex w-[min(94vw,420px)] -translate-x-1/2 flex-col gap-1.5 rounded-xl p-2 text-xs md:hidden bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-toolbar-h,0px))]"
           style={{
             background: CHROME_BG,
             border: `1px solid ${CHROME_RIM}`,
