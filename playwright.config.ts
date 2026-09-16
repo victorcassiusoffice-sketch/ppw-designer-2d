@@ -35,7 +35,14 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium-desktop',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        // 3D Mode (2026-09-17): headless Chromium ships without a GPU, and
+        // since Chrome 122 software WebGL (SwiftShader) is opt-in. Without
+        // these the GL stage cannot start and every 3D spec silently runs
+        // on the canvas fallback instead of the renderer people see.
+        launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] },
+      },
     },
   ],
 });

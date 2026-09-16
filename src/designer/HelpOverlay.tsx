@@ -214,7 +214,7 @@ export function HelpLauncherIcon({ onOpen }: { onOpen: () => void }): JSX.Elemen
   // The launcher used to land on the paint card's Done corner and float
   // over the 3D view (z 35 sits above the overlay's 34).
   const toolHudOpen = useDesignerUIStore((s) => s.tool === 'floor' || s.tool === 'door' || s.tool === 'wallpaint');
-  const view3d = useDesignerUIStore((s) => s.tool === 'wallpaint' && s.wallPaintDraft.view3d);
+  const view3d = useDesignerUIStore((s) => s.viewMode === '3d');
   const belowMd = useBelowMd();
   if (belowMd && (penOpen || itemSelected || toolHudOpen || view3d)) return null;
   const besidePanel = itemSelected && !belowMd;

@@ -93,7 +93,10 @@ test('the 3D view is full-screen with 40 px controls and no launcher over it', a
   await expect(overlay).toBeVisible();
   const box = (await overlay.boundingBox())!;
   expect(box.width).toBe(390);
-  expect(box.height).toBe(844);
+  // 3D Mode (2026-09-17): the room sits UNDER the 56 px strip (the bar stays
+  // usable) and runs to the bottom of the screen.
+  expect(box.y).toBeGreaterThan(40);
+  expect(box.y + box.height).toBe(844);
   await expect(page.getByRole('button', { name: 'Open keyboard shortcuts help' })).toHaveCount(0);
   for (const id of ['wallpaint-3d-rotate-left', 'wallpaint-3d-fit', 'wallpaint-3d-close']) {
     const b = (await page.locator(`[data-testid="${id}"]`).first().boundingBox())!;

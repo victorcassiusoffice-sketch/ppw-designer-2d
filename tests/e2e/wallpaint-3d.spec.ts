@@ -138,7 +138,7 @@ test.describe('Wall paint — 3D room view (desktop)', () => {
     await expect(page.locator('[data-testid="cart-page-wallpaint-lines"]')).toContainText('Morning Haze');
   });
 
-  test('the big view opens from the card, closes on Esc, and goes away with the tool', async ({ page }) => {
+  test('the big view opens from the card, closes on Esc, and outlives the tool (3D Mode, 2026-09-17)', async ({ page }) => {
     await seed(page);
     await openDesigner(page);
     await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
@@ -154,9 +154,14 @@ test.describe('Wall paint — 3D room view (desktop)', () => {
     await expect(page.locator('[data-testid="wallpaint-palette"]')).toBeVisible();
     await page.locator('[data-testid="wallpaint-3d-expand"]').click();
     await expect(overlay).toBeVisible();
+    // Putting the paint away no longer closes the room: 3D is the
+    // designer's mode now, and the brush strip / paint caption simply go.
     await page.locator('[data-testid="wallpaint-done"]').click();
-    await expect(overlay).toHaveCount(0);
     await expect(page.locator('[data-testid="wallpaint-palette"]')).toHaveCount(0);
+    await expect(overlay).toBeVisible();
+    await expect(page.locator('[data-testid="wallpaint-3d-caption"]')).not.toContainText('paint');
+    await page.locator('[data-testid="wallpaint-3d-close"]').click();
+    await expect(overlay).toHaveCount(0);
   });
 
   test('a white-only line offers no tints; Xtreme White drops the tint from the brush', async ({ page }) => {

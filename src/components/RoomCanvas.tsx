@@ -2347,6 +2347,9 @@ export function RoomCanvas({
   const setFloorDraft = useDesignerUIStore((st) => st.setFloorDraft);
   const wallPaintDraft = useDesignerUIStore((st) => st.wallPaintDraft);
   const setWallPaintDraft = useDesignerUIStore((st) => st.setWallPaintDraft);
+  // 3D Mode (2026-09-17): the HUD's 3D chip flips the designer's mode.
+  const viewMode = useDesignerUIStore((st) => st.viewMode);
+  const setViewMode = useDesignerUIStore((st) => st.setViewMode);
   const setFloorPreviewCount = useDesignerUIStore((st) => st.setFloorPreviewCount);
   /**
    * Anchor of an in-progress floor stroke, in world metres. `roomId` is
@@ -3536,9 +3539,9 @@ export function RoomCanvas({
             <button
               type="button"
               data-testid="wallpaint-3d-mobile"
-              aria-pressed={wallPaintDraft.view3d}
-              onClick={() => setWallPaintDraft({ view3d: !wallPaintDraft.view3d })}
-              className={`${OVL_CTRL} ${wallPaintDraft.view3d ? OVL_ACTIVE : OVL_REST} h-11 shrink-0 px-3`}
+              aria-pressed={viewMode === '3d'}
+              onClick={() => setViewMode(viewMode === '3d' ? 'plan' : '3d')}
+              className={`${OVL_CTRL} ${viewMode === '3d' ? OVL_ACTIVE : OVL_REST} h-11 shrink-0 px-3`}
               title="See the room in 3D and paint the walls there"
             >
               3D

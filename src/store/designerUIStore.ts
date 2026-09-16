@@ -98,12 +98,14 @@ export interface WallPaintDraft {
   /** 'wall' paints the wall you tap; 'room' paints every wall of that room. */
   scope: 'wall' | 'room';
   erase: boolean;
-  /**
-   * The Sims-style 3D room view (2026-09-14) is open. Per-session chrome —
-   * never persisted; the tool decides where it shows.
-   */
-  view3d: boolean;
 }
+
+/**
+ * 3D Mode (2026-09-17): the whole designer as a Sims-style room view, or the
+ * plan. Was the paint tool's own `view3d` flag (2026-09-14); now a mode of
+ * the designer that any tool can work inside. Per-session, never persisted.
+ */
+export type ViewMode = 'plan' | '3d';
 
 export interface DoorDraft {
   kind: OpeningKind;
@@ -177,6 +179,9 @@ interface DesignerUIState {
    */
   energyPanelOpen: boolean;
   setEnergyPanelOpen: (open: boolean) => void;
+  /** 3D Mode (2026-09-17) — see `ViewMode`. */
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
   /**
    * Wall selection (Vic 2026-09-05: "when I pressed select tool i could not
    * select the walls to delete"). The free wall the Select tool has picked,
@@ -232,9 +237,10 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         paintId: 'permoglaze-matt-emulsion',
         scope: 'wall',
         erase: false,
-        view3d: false,
       },
       energyPanelOpen: false,
+      viewMode: 'plan',
+      setViewMode: (mode) => set((s) => (s.viewMode === mode ? s : { viewMode: mode })),
       setEnergyPanelOpen: (open) =>
         set((s) => (open ? { energyPanelOpen: true, tool: 'hand' } : s.energyPanelOpen ? { energyPanelOpen: false } : s)),
       selectedWallId: null,

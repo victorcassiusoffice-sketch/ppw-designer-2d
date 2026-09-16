@@ -90,6 +90,10 @@ export default defineConfig({
           const path = id.replace(/\\/g, '/');
           if (/\/node_modules\/(react|react-dom|scheduler)\//.test(path)) return 'vendor-react';
           if (/\/node_modules\/(konva|react-konva)\//.test(path)) return 'vendor-konva';
+          // 3D Mode (2026-09-17): three rides in its own chunk, pulled in by
+          // the lazy ThreeStage the first time a 3D view opens — the 2D
+          // designer's first paint never carries it.
+          if (/\/node_modules\/three\//.test(path)) return 'vendor-three';
           if (/\/node_modules\/react-router/.test(path)) return 'vendor-router';
           if (/\/node_modules\/@sentry/.test(path)) return 'vendor-sentry';
           return undefined;

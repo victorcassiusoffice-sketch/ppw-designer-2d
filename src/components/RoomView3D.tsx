@@ -1,20 +1,37 @@
 /**
- * RoomView3D — the Sims-style room view for the wall-paint tool
- * (Vic 2026-09-14). A dollhouse camera over the active storey: walls up
- * where they face you, cut down to a stub where they would hide the room,
- * doors and windows cut out, the floor finish laid, furniture as shaded
- * boxes — and every wall painted in the colour the plan says.
+ * RoomView3D — the Sims-style view of the storey (Vic 2026-09-14), now the
+ * designer's 3D MODE (Vic 2026-09-17: "make it a super realistic 3D version
+ * of the 2D … not exclusive to paint"). A dollhouse camera: walls up where
+ * they face you, cut down to a stub where they would hide the room, doors
+ * and windows cut through, the floor finish laid, furniture to size — and
+ * every wall painted the colour the plan says.
  *
- * Drag to orbit, wheel / pinch to zoom, CLICK A WALL TO PAINT IT with the
- * brush the panel holds. All geometry, shading and hit-testing live in
- * `designer/roomView3d.ts` (pure, unit-tested); this file is the <canvas>,
- * the gestures and the store reads. It is a separate React tree from the
- * Konva plan — nothing here touches the stable-locked canvas.
+ * Drag to orbit, wheel / pinch to zoom; with the Wall-paint tool armed,
+ * CLICK A WALL TO PAINT IT with the brush the panel holds.
  *
- * Two variants: `card` (docked inside the paint panel) and `overlay` (a
- * large view for a meeting screen; Esc / Close returns to the panel).
+ * Rendering: `components/three/ThreeStage.tsx` (WebGL, lazy — its own
+ * chunk, fetched the first time a 3D view opens) draws the solids that
+ * `designer/roomSolids.ts` derives from the SAME `SceneInput` the original
+ * canvas painter (`designer/roomView3d.ts`) takes. The painter stays as the
+ * fallback when WebGL cannot start. This file owns the camera state, the
+ * gestures, the store reads and the e2e bridge; it is a separate React tree
+ * from the Konva plan — nothing here touches the stable-locked canvas.
+ *
+ * Two variants: `card` (docked inside the paint panel) and `overlay` (the
+ * workspace: takes the plan's place; Esc / Plan returns).
  */
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { usePropertyStore, type Property, type Room } from '../store/propertyStore';
 import { activeLevelIdOf, isOutdoorRoom, isRoofRoom, roomsOnLevel } from '../designer/levels';
 import { wallsOnLevel } from '../designer/freeWalls';
@@ -44,6 +61,11 @@ import {
   type SceneRoomInput,
   type WallHit,
 } from '../designer/roomView3d';
+import { buildSolids, type SceneSolids } from '../designer/roomSolids';
+import type { ThreeStageHandle } from './three/ThreeStage';
+
+// The GL renderer and three itself arrive in their own chunk, on first use.
+const ThreeStage = lazy(() => import('./three/ThreeStage'));
 
 export interface RoomView3DProps {
   variant: 'card' | 'overlay';
@@ -58,6 +80,8 @@ export interface RoomView3DProps {
   caption?: string;
   /** Overlay only: a strip under the view (the phone's brush controls). */
   brushStrip?: ReactNode;
+  /** Overlay title (the mode's name) — defaults to the paint-era title. */
+  title?: string;
   className?: string;
   style?: CSSProperties;
 }
@@ -74,6 +98,12 @@ interface RoomView3DBridge {
   /** Every drawn face by key with its hole count — lets a spec assert a doorway exists. */
   faces: () => Array<{ key: string; holes: number }>;
   camera: () => OrbitCamera | null;
+  /** 'gl' when three draws, 'painter' on the canvas fallback. */
+  backend: () => 'gl' | 'painter';
+  /** The wall a click at these CLIENT coordinates would paint — lets a spec check its aim before it fires. */
+  hitAt: (clientX: number, clientY: number) => WallHit | null;
+  /** The GL stage's own account of itself (frames drawn, parts, camera). */
+  debug: () => ReturnType<ThreeStageHandle['debug']> | null;
 }
 /**
  * The card and the overlay can be mounted together (md+), so each registers
@@ -96,6 +126,9 @@ function bridgeRegistry(): RoomView3DBridgeRegistry {
       faceCount: () => (reg.instances.overlay ?? reg.instances.card)?.faceCount() ?? 0,
       faces: () => (reg.instances.overlay ?? reg.instances.card)?.faces() ?? [],
       camera: () => (reg.instances.overlay ?? reg.instances.card)?.camera() ?? null,
+      backend: () => (reg.instances.overlay ?? reg.instances.card)?.backend() ?? 'painter',
+      hitAt: (x, y) => (reg.instances.overlay ?? reg.instances.card)?.hitAt(x, y) ?? null,
+      debug: () => (reg.instances.overlay ?? reg.instances.card)?.debug() ?? null,
     };
     window.__ppwRoomView3d = reg;
   }
@@ -200,6 +233,9 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
   };
 }
 
+/** The solids do not depend on the camera; this stand-in keeps the memo keyed on the plan alone. */
+const SOLIDS_CAMERA: OrbitCamera = { target: { x: 0, y: 0, z: 0 }, azimuthRad: 0, elevationRad: 0.6, distanceM: 10, fovRad: 0.9 };
+
 /** "Living room · Wall 2 · Soft Feel · Coral" for the hover caption. */
 function describeHit(property: Property, hit: WallHit | null): string | null {
   if (!hit) return null;
@@ -218,13 +254,16 @@ function describeHit(property: Property, hit: WallHit | null): string | null {
   return `Free wall${paint ? ` · ${paint.name}` : ' · unpainted'}${colour ? ` · ${colour}` : ''}`;
 }
 
-export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, caption, brushStrip, className = '', style }: RoomView3DProps): JSX.Element {
+export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, caption, brushStrip, title, className = '', style }: RoomView3DProps): JSX.Element {
   const property = usePropertyStore((s) => s.property);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const painterRef = useRef<HTMLCanvasElement | null>(null);
+  const stageRef = useRef<ThreeStageHandle | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [camera, setCamera] = useState<OrbitCamera | null>(null);
   const [hover, setHover] = useState<WallHit | null>(null);
+  // 'gl' until WebGL refuses to start; then the canvas painter takes over.
+  const [backend, setBackend] = useState<'gl' | 'painter'>('gl');
   const baseDistanceRef = useRef(10);
   const H = property.wallHeightM ?? DEFAULT_WALL_HEIGHT_M;
 
@@ -255,7 +294,7 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boundsKey, H, size.width > 0 ? Math.round((size.width / Math.max(1, size.height)) * 10) : 0]);
 
-  // Size the canvas to its box, DPR-aware.
+  // Size the view to its box.
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -273,15 +312,19 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
     };
   }, []);
 
+  // The solids follow the plan only; the camera just decides the cutaway.
+  const solids: SceneSolids = useMemo(() => buildSolids(sceneFromProperty(property, null, SOLIDS_CAMERA)), [property]);
+
+  // Painter fallback: only computed while it is the one drawing.
   const projected: ProjectedFace[] = useMemo(() => {
-    if (!camera || size.width < 8 || size.height < 8) return [];
+    if (backend !== 'painter' || !camera || size.width < 8 || size.height < 8) return [];
     const faces = buildScene(sceneFromProperty(property, hover, camera));
     return projectScene(faces, camera, size);
-  }, [property, hover, camera, size]);
+  }, [backend, property, hover, camera, size]);
 
-  // Paint.
   useEffect(() => {
-    const canvas = canvasRef.current;
+    if (backend !== 'painter') return;
+    const canvas = painterRef.current;
     if (!canvas || size.width < 8 || size.height < 8) return;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     if (canvas.width !== size.width * dpr || canvas.height !== size.height * dpr) {
@@ -292,16 +335,25 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     drawScene(ctx, projected, size);
-  }, [projected, size]);
+  }, [backend, projected, size]);
+
+  const hitAt = useCallback(
+    (x: number, y: number): WallHit | null => (backend === 'gl' ? stageRef.current?.hitTest(x, y) ?? null : hitTestWall(projected, x, y)),
+    [backend, projected],
+  );
 
   // e2e bridge (DEV builds only, like the plan's geometry bridge).
   useEffect(() => {
     if (!import.meta.env.DEV) return;
-    const canvas = canvasRef.current;
     const reg = bridgeRegistry();
     reg.instances[variant] = {
       wallScreenPoint: (hit) => {
-        if (!canvas) return null;
+        const box = containerRef.current?.getBoundingClientRect();
+        if (!box) return null;
+        if (backend === 'gl') {
+          const p = stageRef.current?.screenPoint(hit);
+          return p ? { x: box.left + p.x, y: box.top + p.y } : null;
+        }
         const face = projected.find(
           (f) =>
             f.face.hit &&
@@ -312,27 +364,32 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
             (f.face.kind === 'wall' || f.face.kind === 'wall-stub'),
         );
         if (!face) return null;
-        const r = canvas.getBoundingClientRect();
         const cx = face.pts.reduce((a, p) => a + p.x, 0) / face.pts.length;
         const cy = face.pts.reduce((a, p) => a + p.y, 0) / face.pts.length;
-        return { x: r.left + cx, y: r.top + cy };
+        return { x: box.left + cx, y: box.top + cy };
       },
-      faceCount: () => projected.length,
-      faces: () => projected.map((f) => ({ key: f.face.key, holes: f.holes.length })),
+      faceCount: () => (backend === 'gl' ? stageRef.current?.faceCount() ?? 0 : projected.length),
+      faces: () => (backend === 'gl' ? stageRef.current?.faces() ?? [] : projected.map((f) => ({ key: f.face.key, holes: f.holes.length }))),
       camera: () => camera,
+      backend: () => backend,
+      hitAt: (clientX, clientY) => {
+        const box = containerRef.current?.getBoundingClientRect();
+        return box ? hitAt(clientX - box.left, clientY - box.top) : null;
+      },
+      debug: () => stageRef.current?.debug() ?? null,
     };
     return () => {
       const r = window.__ppwRoomView3d;
       if (r) delete r.instances[variant];
     };
-  }, [projected, camera, variant]);
+  }, [projected, camera, variant, backend, hitAt]);
 
   // ---- gestures -----------------------------------------------------------
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const drag = useRef<{ x: number; y: number; moved: boolean; pinchDist: number } | null>(null);
 
   const localPoint = (e: { clientX: number; clientY: number }) => {
-    const r = canvasRef.current?.getBoundingClientRect();
+    const r = containerRef.current?.getBoundingClientRect();
     return r ? { x: e.clientX - r.left, y: e.clientY - r.top } : { x: 0, y: 0 };
   };
 
@@ -340,7 +397,7 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
     setCamera((c) => (c ? clampCamera({ ...c, distanceM: c.distanceM * factor }, baseDistanceRef.current * 0.35, baseDistanceRef.current * 3) : c));
   }, []);
 
-  const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -352,13 +409,13 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
     }
   };
 
-  const onPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const d = drag.current;
     if (!pointers.current.has(e.pointerId)) {
       // Hover (mouse only): tint the wall under the pointer.
       if (e.pointerType === 'mouse' && onPaintWall) {
         const p = localPoint(e);
-        setHover(hitTestWall(projected, p.x, p.y));
+        setHover(hitAt(p.x, p.y));
       }
       return;
     }
@@ -389,7 +446,7 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
     );
   };
 
-  const endPointer = (e: React.PointerEvent<HTMLCanvasElement>, cancelled: boolean) => {
+  const endPointer = (e: React.PointerEvent<HTMLDivElement>, cancelled: boolean) => {
     const had = pointers.current.delete(e.pointerId);
     const d = drag.current;
     if (pointers.current.size === 0) drag.current = null;
@@ -405,7 +462,7 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
     }
     if (!had || !d || cancelled || d.moved || !onPaintWall) return;
     const p = localPoint(e);
-    const hit = hitTestWall(projected, p.x, p.y);
+    const hit = hitAt(p.x, p.y);
     if (hit) onPaintWall(hit);
   };
 
@@ -413,7 +470,7 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
   // passive, so preventDefault is a no-op and the docked panel scrolls the
   // card out from under the pointer.
   useEffect(() => {
-    const el = canvasRef.current;
+    const el = containerRef.current;
     if (!el) return;
     const h = (e: WheelEvent) => {
       e.preventDefault();
@@ -448,6 +505,10 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
 
   const hoverText = describeHit(property, hover);
   const empty = !bounds;
+  const drawn = solids.walls.length + solids.floors.length + solids.items.length;
+  const viewLabel = empty
+    ? 'Room view — draw a room to see it in 3D'
+    : `Room view in 3D — ${drawn} parts. Drag to orbit${onPaintWall ? '; click a wall to paint it' : ''}.`;
 
   const box = (
     <div
@@ -456,13 +517,33 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
       style={{ background: '#E7E2D8', touchAction: 'none', ...(variant === 'card' ? { aspectRatio: '16 / 10' } : { flex: 1, minHeight: 0 }) }}
       data-testid="wallpaint-3d"
       data-variant={variant}
+      data-backend={backend}
     >
-      <canvas
-        ref={canvasRef}
+      {/* The picture: three when it can, the painter when it cannot. */}
+      <div className="absolute inset-0">
+        {backend === 'gl' && camera && size.width >= 8 && size.height >= 8 ? (
+          <Suspense fallback={null}>
+            <ThreeStage
+              ref={stageRef}
+              solids={solids}
+              camera={camera}
+              width={size.width}
+              height={size.height}
+              hover={hover}
+              onFailed={() => setBackend('painter')}
+            />
+          </Suspense>
+        ) : backend === 'painter' ? (
+          <canvas ref={painterRef} style={{ display: 'block', width: '100%', height: '100%' }} aria-hidden="true" />
+        ) : null}
+      </div>
+      {/* The gesture surface. */}
+      <div
         data-testid="wallpaint-3d-canvas"
         role="img"
-        aria-label={empty ? 'Room view — draw a room to see it in 3D' : `Room view in 3D — ${projected.length} faces. Drag to orbit; click a wall to paint it.`}
-        style={{ display: 'block', width: '100%', height: '100%', cursor: hover ? 'pointer' : 'grab' }}
+        aria-label={viewLabel}
+        className="absolute inset-0"
+        style={{ cursor: hover ? 'pointer' : 'grab' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={(e) => endPointer(e, false)}
@@ -504,7 +585,7 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
         data-testid="wallpaint-3d-caption"
         aria-live="polite"
       >
-        {hoverText ?? caption ?? (onPaintWall ? 'Drag to look around · click a wall to paint it' : 'Drag to look around')}
+        {hoverText ?? caption ?? (onPaintWall ? 'Drag to look around · click a wall to paint it' : 'Drag to look around · pinch or scroll to zoom')}
       </p>
     </div>
   );
@@ -524,19 +605,23 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
 
   return (
     <div
-      className={`fixed inset-y-0 left-0 z-[34] flex flex-col ${className}`}
-      // A WORKSPACE, not a dialog: it takes the plan's place edge to edge and
-      // ends at the docked panel on md+ (the brush stays reachable); the
-      // panel publishes 0px on the phone, so there it is full-screen.
-      style={{ right: 'var(--floor-panel-w, 0px)', background: '#E7E2D8', ...style }}
+      className={`fixed bottom-0 left-0 z-[34] flex flex-col ${className}`}
+      // A WORKSPACE, not a dialog: it takes the plan's place under the top
+      // bar (3D Mode, 2026-09-17: the bar stays usable so tools can be
+      // switched while the room is on screen) and ends at the docked panel
+      // on md+ (the brush stays reachable); the panel publishes 0px on the
+      // phone, so there it is edge to edge.
+      style={{ top: 'var(--ppw-topbar-h, 0px)', right: 'var(--floor-panel-w, 0px)', background: '#E7E2D8', ...style }}
       data-testid="wallpaint-3d-overlay"
       role="region"
       aria-label="Room view in 3D"
     >
       <div className="flex items-center justify-between gap-2 border-b border-ppw-rim bg-ppw-chrome px-3 py-1.5">
         <div className="min-w-0">
-          <p className="text-[13px] font-semibold leading-tight text-[#37362f]">3D room view</p>
-          <p className="truncate text-[11px] font-medium leading-tight text-ppw-charcoal">Drag to look around · pinch or scroll to zoom · click a wall to paint it</p>
+          <p className="text-[13px] font-semibold leading-tight text-[#37362f]">{title ?? '3D room view'}</p>
+          <p className="truncate text-[11px] font-medium leading-tight text-ppw-charcoal">
+            {onPaintWall ? 'Drag to look around · pinch or scroll to zoom · click a wall to paint it' : 'Drag to look around · pinch or scroll to zoom'}
+          </p>
         </div>
         {footer && (
           <p className="shrink-0 text-[12px] font-semibold tabular-nums text-[#37362f]" data-testid="wallpaint-3d-footer">

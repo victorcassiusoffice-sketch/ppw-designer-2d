@@ -618,6 +618,9 @@ export function TopBar({
   const setFloorDraft = useDesignerUIStore((st) => st.setFloorDraft);
   const wallPaintDraft = useDesignerUIStore((st) => st.wallPaintDraft);
   const setWallPaintDraft = useDesignerUIStore((st) => st.setWallPaintDraft);
+  // 3D Mode (2026-09-17): the room view is a mode of the whole designer.
+  const viewMode = useDesignerUIStore((st) => st.viewMode);
+  const setViewMode = useDesignerUIStore((st) => st.setViewMode);
   // Optional: P2 may publish the in-flight stroke's tile count so the live
   // line can read "+n tiles" mid-drag. Read defensively — the field is not
   // part of this store's contract yet, and 0 is the honest fallback.
@@ -1201,11 +1204,25 @@ export function TopBar({
     };
   }, [sidePanelOpen]);
 
-  // The 3D room view lives with the paint tool: putting the tool away (Done,
-  // Esc, Select, another tool) closes it too.
-  useEffect(() => {
-    if (!wallPaintActive && wallPaintDraft.view3d) setWallPaintDraft({ view3d: false });
-  }, [wallPaintActive, wallPaintDraft.view3d, setWallPaintDraft]);
+  // 3D Mode (2026-09-17) outlives the paint tool: putting the tool away
+  // leaves the room on screen (it used to close the view). The mode
+  // publishes nothing here; the overlay hangs from the header's live bottom
+  // edge via `--ppw-topbar-h` so the bar stays usable while the room shows.
+  useLayoutEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const root = document.documentElement;
+    const measure = () => root.style.setProperty('--ppw-topbar-h', `${Math.round(el.getBoundingClientRect().bottom)}px`);
+    measure();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    ro?.observe(el);
+    window.addEventListener('resize', measure);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener('resize', measure);
+      root.style.setProperty('--ppw-topbar-h', '0px');
+    };
+  }, []);
   // The roof has no walls: a storey change onto the roof stands the wall
   // tools down (they refuse to arm there, but PageUp / the Storeys popover
   // could move the focus under an armed tool).
@@ -1399,6 +1416,23 @@ export function TopBar({
         >
           <Icon name="roof" />
           <span className={lbl(stacked, '1366')}>Roof</span>
+        </button>
+
+        {/* 3D Mode (2026-09-17): the whole plan as a Sims-style room view;
+            every tool keeps working inside it. Esc / Plan returns. */}
+        <button
+          type="button"
+          onClick={() => setViewMode(viewMode === '3d' ? 'plan' : '3d')}
+          data-testid="view-mode-3d"
+          className={btn(viewMode === '3d')}
+          title={viewMode === '3d' ? '3D Mode — back to the plan (Esc)' : '3D Mode — see the whole plan as a room'}
+          aria-pressed={viewMode === '3d'}
+          aria-label="3D Mode"
+        >
+          <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
+            <path fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" d="M8 1.8 13.6 5v6L8 14.2 2.4 11V5zM8 8l5.6-3M8 8 2.4 5M8 8v6.2" />
+          </svg>
+          <span className={lbl(stacked, '1366')}>3D</span>
         </button>
 
         {/* Plot — lock the scale + capacity. */}
@@ -2372,10 +2406,10 @@ export function TopBar({
                 <button
                   type="button"
                   role="radio"
-                  aria-checked={!wallPaintDraft.view3d}
-                  onClick={() => setWallPaintDraft({ view3d: false })}
+                  aria-checked={viewMode !== '3d'}
+                  onClick={() => setViewMode('plan')}
                   data-testid="wallpaint-view-plan"
-                  className={`${SEG} ${!wallPaintDraft.view3d ? SEG_CHECKED : SEG_REST} h-9 flex-1`}
+                  className={`${SEG} ${viewMode !== '3d' ? SEG_CHECKED : SEG_REST} h-9 flex-1`}
                   title="The plan — click a wall on the drawing to paint it"
                 >
                   Plan
@@ -2383,10 +2417,10 @@ export function TopBar({
                 <button
                   type="button"
                   role="radio"
-                  aria-checked={wallPaintDraft.view3d}
-                  onClick={() => setWallPaintDraft({ view3d: true })}
+                  aria-checked={viewMode === '3d'}
+                  onClick={() => setViewMode('3d')}
                   data-testid="wallpaint-view-3d"
-                  className={`${SEG} ${wallPaintDraft.view3d ? SEG_CHECKED : SEG_REST} h-9 flex-1`}
+                  className={`${SEG} ${viewMode === '3d' ? SEG_CHECKED : SEG_REST} h-9 flex-1`}
                   title="The room in 3D — orbit, then click a wall to paint it"
                 >
                   3D room
@@ -2399,7 +2433,7 @@ export function TopBar({
               <RoomView3D
                 variant="card"
                 onPaintWall={paintFromRoomView}
-                onExpand={() => setWallPaintDraft({ view3d: true })}
+                onExpand={() => setViewMode('3d')}
                 className="mb-2 overflow-hidden rounded-lg border border-ppw-rim"
               />
 
@@ -2911,17 +2945,17 @@ export function TopBar({
       {/* The big 3D room view (2026-09-14). On md+ it covers the plan and
           leaves the docked panel usable, so the brush can change while the
           room is on screen; on the phone it is full-screen with Close. */}
-      {wallPaintActive &&
-        wallPaintDraft.view3d &&
+      {viewMode === '3d' &&
         typeof document !== 'undefined' &&
         createPortal(
           <RoomView3D
             variant="overlay"
-            onPaintWall={paintFromRoomView}
-            onClose={() => setWallPaintDraft({ view3d: false })}
-            footer={wallPaintLiveText}
+            title="3D Mode"
+            onPaintWall={wallPaintActive ? paintFromRoomView : undefined}
+            onClose={() => setViewMode('plan')}
+            footer={wallPaintActive ? wallPaintLiveText : undefined}
             brushStrip={
-              !isMd ? (
+              wallPaintActive && !isMd ? (
                 <div className="flex items-center gap-1.5 overflow-x-auto border-t border-ppw-rim bg-ppw-chrome px-2 py-1.5" data-testid="wallpaint-3d-brush-strip">
                   <button
                     type="button"
@@ -3360,6 +3394,27 @@ export function TopBar({
                     </button>
                   </div>
                 </div>
+
+                {/* 3D Mode (2026-09-17) on the phone: the room, edge to edge
+                    under the strip; the paint HUD's 3D chip is the same switch. */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setViewMode(viewMode === '3d' ? 'plan' : '3d');
+                    setShowMobileMenu(false);
+                  }}
+                  data-testid="view-mode-3d-mobile"
+                  aria-pressed={viewMode === '3d'}
+                  className={`${SHEET_ROW} justify-between ${viewMode === '3d' ? SHEET_ROW_ON : ''}`}
+                >
+                  <span className="flex items-center gap-3">
+                    <svg viewBox="0 0 16 16" className="h-5 w-5" aria-hidden="true">
+                      <path fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" d="M8 1.8 13.6 5v6L8 14.2 2.4 11V5zM8 8l5.6-3M8 8 2.4 5M8 8v6.2" />
+                    </svg>
+                    3D Mode
+                  </span>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{viewMode === '3d' ? 'on' : 'off'}</span>
+                </button>
 
                 {/* Land plot on the phone. */}
                 <div data-testid="land-mobile" className="px-3 pt-2">
