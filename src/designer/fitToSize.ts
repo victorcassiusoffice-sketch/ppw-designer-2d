@@ -30,8 +30,43 @@ export interface Box3Like {
   max: { x: number; y: number; z: number };
 }
 
+/**
+ * Which model axis points UP. glTF is y-up ('+y'); an image-to-3D generator
+ * builds a flat product (a solar panel, a mat) as an upright slab whose photo
+ * face is ±z, so the plan lays it down: '+z' = the photo face turns up.
+ */
+export type ModelUp = '+y' | '+z' | '-z';
+
+/** Pitch about the model's x axis that brings `up` onto +y (applied before the fit). */
+export function upPitchRad(up: ModelUp | undefined): number {
+  switch (up) {
+    case '+z':
+      return -Math.PI / 2; // −90° about +x takes +z to +y
+    case '-z':
+      return Math.PI / 2; // +90° about +x takes −z to +y
+    case '+y':
+    default:
+      return 0;
+  }
+}
+
+/** The model's bounding box after that pitch — what the fit must see. */
+export function pitchedBox(bbox: Box3Like, up: ModelUp | undefined): Box3Like {
+  switch (up) {
+    case '+z':
+      // y' = z, z' = −y
+      return { min: { x: bbox.min.x, y: bbox.min.z, z: -bbox.max.y }, max: { x: bbox.max.x, y: bbox.max.z, z: -bbox.min.y } };
+    case '-z':
+      // y' = −z, z' = y
+      return { min: { x: bbox.min.x, y: -bbox.max.z, z: bbox.min.y }, max: { x: bbox.max.x, y: -bbox.min.z, z: bbox.max.y } };
+    case '+y':
+    default:
+      return bbox;
+  }
+}
+
 export interface FitInput {
-  /** The model's own bounding box, in its own units, y-up. */
+  /** The model's own bounding box, in its own units — AFTER any `modelUp` pitch (see `pitchedBox`). */
   bbox: Box3Like;
   /** Catalog truth, centimetres. */
   lengthCm: number;

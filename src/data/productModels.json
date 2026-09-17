@@ -1,12 +1,488 @@
 {
-  "demo-console-table": { "url": "/models/kenney/desk.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
-  "demo-wall-shelf": { "url": "/models/kenney/bookcaseOpenLow.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
-  "demo-wall-mirror": { "url": "/models/kenney/bathroomMirror.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
-  "demo-aroma-diffuser": { "url": "/models/kenney/speakerSmall.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
-  "demo-potted-plant": { "url": "/models/kenney/plantSmall1.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
-  "demo-floor-lamp": { "url": "/models/kenney/lampRoundFloor.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
-  "demo-pendant-light": { "url": "/models/kenney/lampSquareCeiling.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
-  "demo-wall-sconce": { "url": "/models/kenney/lampWall.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
-  "demo-outdoor-bench": { "url": "/models/kenney/bench.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
-  "demo-garden-tree": { "url": "/models/kenney/pottedPlant.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" }
+  "demo-console-table": {
+    "url": "/models/kenney/desk.glb",
+    "modelFront": "+z",
+    "lengthAxis": "auto",
+    "licence": "CC0 — Kenney Furniture Kit 2.0"
+  },
+  "demo-wall-shelf": {
+    "url": "/models/kenney/bookcaseOpenLow.glb",
+    "modelFront": "+z",
+    "lengthAxis": "auto",
+    "licence": "CC0 — Kenney Furniture Kit 2.0"
+  },
+  "demo-wall-mirror": {
+    "url": "/models/kenney/bathroomMirror.glb",
+    "modelFront": "+z",
+    "lengthAxis": "auto",
+    "licence": "CC0 — Kenney Furniture Kit 2.0"
+  },
+  "demo-aroma-diffuser": {
+    "url": "/models/kenney/speakerSmall.glb",
+    "modelFront": "+z",
+    "lengthAxis": "auto",
+    "licence": "CC0 — Kenney Furniture Kit 2.0"
+  },
+  "demo-potted-plant": {
+    "url": "/models/kenney/plantSmall1.glb",
+    "modelFront": "+z",
+    "lengthAxis": "auto",
+    "licence": "CC0 — Kenney Furniture Kit 2.0"
+  },
+  "demo-floor-lamp": {
+    "url": "/models/kenney/lampRoundFloor.glb",
+    "modelFront": "+z",
+    "lengthAxis": "auto",
+    "licence": "CC0 — Kenney Furniture Kit 2.0"
+  },
+  "demo-pendant-light": {
+    "url": "/models/kenney/lampSquareCeiling.glb",
+    "modelFront": "+z",
+    "lengthAxis": "auto",
+    "licence": "CC0 — Kenney Furniture Kit 2.0"
+  },
+  "demo-wall-sconce": {
+    "url": "/models/kenney/lampWall.glb",
+    "modelFront": "+z",
+    "lengthAxis": "auto",
+    "licence": "CC0 — Kenney Furniture Kit 2.0"
+  },
+  "demo-outdoor-bench": {
+    "url": "/models/kenney/bench.glb",
+    "modelFront": "+z",
+    "lengthAxis": "auto",
+    "licence": "CC0 — Kenney Furniture Kit 2.0"
+  },
+  "demo-garden-tree": {
+    "url": "/models/kenney/pottedPlant.glb",
+    "modelFront": "+z",
+    "lengthAxis": "auto",
+    "licence": "CC0 — Kenney Furniture Kit 2.0"
+  },
+  "k1-nordictrack-gx10": {
+    "url": "/models/k1-nordictrack-gx10.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-gx10.webp",
+      "generated_at": "2026-09-17T11:45:11.311Z",
+      "bytes": 204192,
+      "raw_bytes": 6179528,
+      "triangles": 21490,
+      "request_id": "01a0af2a-8642-7d80-af85-1bebb1d21b7f",
+      "seconds": 318,
+      "orient": {
+        "art": "right",
+        "head": {
+          "x": 0.15,
+          "z": -0.004
+        },
+        "set": "2026-09-17T12:09:53.210Z"
+      }
+    },
+    "modelFront": "+z",
+    "lengthAxis": "auto"
+  },
+  "k1-nordictrack-2450": {
+    "url": "/models/k1-nordictrack-2450.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-2450.webp",
+      "generated_at": "2026-09-17T11:46:16.134Z",
+      "bytes": 129216,
+      "raw_bytes": 4980024,
+      "triangles": 20000,
+      "request_id": "01a0af2a-87ed-7fc2-b980-7de8ec01c5f2",
+      "seconds": 383,
+      "orient": {
+        "art": "right",
+        "head": {
+          "x": 0.534,
+          "z": -0.006
+        },
+        "set": "2026-09-17T12:09:53.177Z"
+      }
+    },
+    "modelFront": "+z",
+    "lengthAxis": "auto"
+  },
+  "k1-nordictrack-tour-de-france": {
+    "url": "/models/k1-nordictrack-tour-de-france.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-tour-de-france.webp",
+      "generated_at": "2026-09-17T11:47:25.634Z",
+      "bytes": 242796,
+      "raw_bytes": 6419548,
+      "triangles": 22160,
+      "request_id": "01a0af2a-87ed-7fc2-b980-7df1b72e8276",
+      "seconds": 452,
+      "orient": {
+        "art": "right",
+        "head": {
+          "x": -0.011,
+          "z": -0.84
+        },
+        "set": "2026-09-17T12:09:53.190Z"
+      }
+    },
+    "modelFront": "-z",
+    "lengthAxis": "auto"
+  },
+  "k1-schwinn-700ic": {
+    "url": "/models/k1-schwinn-700ic.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/k1-schwinn-700ic.webp",
+      "generated_at": "2026-09-17T11:48:25.626Z",
+      "bytes": 197728,
+      "raw_bytes": 5809468,
+      "triangles": 20884,
+      "request_id": "01a0af2a-87ef-7ae2-b0c6-24dff0a138cb",
+      "seconds": 512,
+      "orient": {
+        "art": "left",
+        "head": {
+          "x": -0.451,
+          "z": 0.004
+        },
+        "set": "2026-09-17T12:09:53.224Z"
+      }
+    },
+    "modelFront": "+z",
+    "lengthAxis": "auto"
+  },
+  "k1-proform-carbon-tl": {
+    "url": "/models/k1-proform-carbon-tl.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/k1-proform-carbon-tl.webp",
+      "generated_at": "2026-09-17T11:48:36.743Z",
+      "bytes": 138796,
+      "raw_bytes": 3859056,
+      "triangles": 24130,
+      "request_id": "01a0af2a-87e9-7700-9922-0be368978457",
+      "seconds": 523,
+      "orient": {
+        "art": "right",
+        "head": {
+          "x": 0.03,
+          "z": -0.761
+        },
+        "set": "2026-09-17T12:09:53.236Z"
+      }
+    },
+    "modelFront": "-z",
+    "lengthAxis": "auto"
+  },
+  "k1-nordictrack-rw900": {
+    "url": "/models/k1-nordictrack-rw900.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-rw900.webp",
+      "generated_at": "2026-09-17T11:49:36.465Z",
+      "bytes": 198460,
+      "raw_bytes": 5818456,
+      "triangles": 20000,
+      "request_id": "01a0af2a-9077-7761-aa05-996393ab631a",
+      "seconds": 583,
+      "orient": {
+        "art": "left",
+        "head": {
+          "x": 0.745,
+          "z": -0.004
+        },
+        "set": "2026-09-17T12:09:53.263Z"
+      }
+    },
+    "modelFront": "-z",
+    "lengthAxis": "auto"
+  },
+  "k1-nordictrack-x16": {
+    "url": "/models/k1-nordictrack-x16.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/k1-nordictrack-x16.webp",
+      "generated_at": "2026-09-17T11:49:47.802Z",
+      "bytes": 180872,
+      "raw_bytes": 5601848,
+      "triangles": 23146,
+      "request_id": "01a0af2a-9079-7ae2-a9e7-f7ea5739abad",
+      "seconds": 594,
+      "orient": {
+        "art": "right",
+        "head": {
+          "x": -0.037,
+          "z": -0.292
+        },
+        "set": "2026-09-17T12:09:53.248Z"
+      }
+    },
+    "modelFront": "-z",
+    "lengthAxis": "auto"
+  },
+  "k1-vision-t600-03": {
+    "url": "/models/k1-vision-t600-03.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/k1-vision-t600-03.webp",
+      "generated_at": "2026-09-17T11:50:52.895Z",
+      "bytes": 161452,
+      "raw_bytes": 4540420,
+      "triangles": 20000,
+      "request_id": "01a0af2f-5b73-7c02-b6d3-989aaffa305c",
+      "seconds": 342,
+      "orient": {
+        "art": "right",
+        "head": {
+          "x": -0.531,
+          "z": 0.014
+        },
+        "set": "2026-09-17T12:09:53.272Z"
+      }
+    },
+    "modelFront": "-z",
+    "lengthAxis": "auto"
+  },
+  "k1-matrix-mg-glute": {
+    "url": "/models/k1-matrix-mg-glute.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/k1-matrix-mg-glute.webp",
+      "generated_at": "2026-09-17T11:50:53.590Z",
+      "bytes": 95820,
+      "raw_bytes": 5087304,
+      "triangles": 20000,
+      "request_id": "01a0af31-6812-7290-8965-f0d46b0266f7",
+      "seconds": 208
+    },
+    "modelFront": "+z",
+    "lengthAxis": "auto"
+  },
+  "k1-vision-t600e-02": {
+    "url": "/models/k1-vision-t600e-02.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/k1-vision-t600e-02.webp",
+      "generated_at": "2026-09-17T11:50:57.929Z",
+      "bytes": 161452,
+      "raw_bytes": 4540420,
+      "triangles": 20000,
+      "request_id": "01a0af30-58b5-7d73-aa11-d72f57fc91bb",
+      "seconds": 282,
+      "orient": {
+        "art": "left",
+        "head": {
+          "x": -0.531,
+          "z": 0.014
+        },
+        "set": "2026-09-17T12:09:53.287Z"
+      }
+    },
+    "modelFront": "+z",
+    "lengthAxis": "auto"
+  },
+  "k1-matrix-versa-adabd": {
+    "url": "/models/k1-matrix-versa-adabd.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/k1-matrix-versa-adabd.webp",
+      "generated_at": "2026-09-17T11:51:09.563Z",
+      "bytes": 156968,
+      "raw_bytes": 4875080,
+      "triangles": 24614,
+      "request_id": "01a0af32-5270-7672-a4fc-a2f88194a3d7",
+      "seconds": 164,
+      "orient": {
+        "art": "left",
+        "head": {
+          "x": 0.864,
+          "z": 0.401
+        },
+        "set": "2026-09-17T12:09:53.310Z"
+      }
+    },
+    "modelFront": "-z",
+    "lengthAxis": "auto"
+  },
+  "k1-vision-smith": {
+    "url": "/models/k1-vision-smith.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/k1-vision-smith.webp",
+      "generated_at": "2026-09-17T11:52:04.157Z",
+      "bytes": 182432,
+      "raw_bytes": 5370632,
+      "triangles": 21910,
+      "request_id": "01a0af32-7de2-7911-ae0c-a71eca70c7d3",
+      "seconds": 207,
+      "orient": {
+        "art": "top",
+        "head": {
+          "x": -0.024,
+          "z": 0.192
+        },
+        "set": "2026-09-17T12:09:53.328Z"
+      }
+    },
+    "modelFront": "-z",
+    "lengthAxis": "auto"
+  },
+  "emcar-victron-175": {
+    "url": "/models/emcar-victron-175.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/emcar-victron-175.webp",
+      "generated_at": "2026-09-17T11:52:07.767Z",
+      "bytes": 189660,
+      "raw_bytes": 6010424,
+      "triangles": 20000,
+      "request_id": "01a0af34-9474-7d73-aa9b-0c3a688dd755",
+      "seconds": 74,
+      "orient": {
+        "note": "photo slab laid flat: photo face (-z) up",
+        "set": "2026-09-17T12:09:53.438Z"
+      }
+    },
+    "modelFront": "+z",
+    "lengthAxis": "auto",
+    "modelUp": "-z"
+  },
+  "emcar-jinko-475": {
+    "url": "/models/emcar-jinko-475.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/emcar-jinko-475.webp",
+      "generated_at": "2026-09-17T11:52:12.613Z",
+      "bytes": 203860,
+      "raw_bytes": 7385308,
+      "triangles": 20000,
+      "request_id": "01a0af34-91b9-7df0-b34c-da5959fc3d6c",
+      "seconds": 80,
+      "orient": {
+        "note": "photo slab laid flat: photo face (-z) up",
+        "set": "2026-09-17T12:09:53.437Z"
+      }
+    },
+    "modelFront": "+z",
+    "lengthAxis": "auto",
+    "modelUp": "-z"
+  },
+  "k1-bowflex-xtreme-2se": {
+    "url": "/models/k1-bowflex-xtreme-2se.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/k1-bowflex-xtreme-2se.webp",
+      "generated_at": "2026-09-17T11:52:22.176Z",
+      "bytes": 331136,
+      "raw_bytes": 7904156,
+      "triangles": 34890,
+      "request_id": "01a0af33-672f-7773-b301-93e8fff09c29",
+      "seconds": 166,
+      "orient": {
+        "art": "top",
+        "head": {
+          "x": 0.137,
+          "z": -0.384
+        },
+        "set": "2026-09-17T12:09:53.352Z"
+      }
+    },
+    "modelFront": "+x",
+    "lengthAxis": "auto"
+  },
+  "emcar-sunpower-flex-100": {
+    "url": "/models/emcar-sunpower-flex-100.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/emcar-sunpower-flex-100.webp",
+      "generated_at": "2026-09-17T11:52:38.476Z",
+      "bytes": 151540,
+      "raw_bytes": 5180860,
+      "triangles": 20000,
+      "request_id": "01a0af34-a569-7482-a80b-e1ed47697677",
+      "seconds": 101,
+      "orient": {
+        "note": "photo slab laid flat: photo face (-z) up",
+        "set": "2026-09-17T12:09:53.438Z"
+      }
+    },
+    "modelFront": "+z",
+    "lengthAxis": "auto",
+    "modelUp": "-z"
+  },
+  "emcar-victron-superpack-12-100": {
+    "url": "/models/emcar-victron-superpack-12-100.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/emcar-victron-superpack-12-100.webp",
+      "generated_at": "2026-09-17T11:53:01.162Z",
+      "bytes": 125604,
+      "raw_bytes": 1182600,
+      "triangles": 20000,
+      "request_id": "01a0af35-a81e-7a02-8c9c-9865664ba721",
+      "seconds": 57
+    },
+    "modelFront": "+z",
+    "lengthAxis": "auto"
+  },
+  "emcar-victron-multiplus-12-3000": {
+    "url": "/models/emcar-victron-multiplus-12-3000.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/emcar-victron-multiplus-12-3000.webp",
+      "generated_at": "2026-09-17T11:53:03.037Z",
+      "bytes": 156776,
+      "raw_bytes": 4883980,
+      "triangles": 20000,
+      "request_id": "01a0af34-d30b-74d1-b3db-7d9baab91095",
+      "seconds": 113
+    },
+    "modelFront": "+z",
+    "lengthAxis": "auto"
+  },
+  "emcar-victron-phoenix-12-1200": {
+    "url": "/models/emcar-victron-phoenix-12-1200.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/emcar-victron-phoenix-12-1200.webp",
+      "generated_at": "2026-09-17T11:53:04.741Z",
+      "bytes": 100744,
+      "raw_bytes": 4103812,
+      "triangles": 20000,
+      "request_id": "01a0af35-867d-7190-9ad7-ee7699254caa",
+      "seconds": 69
+    },
+    "modelFront": "+z",
+    "lengthAxis": "auto"
+  },
+  "emcar-victron-agm-200": {
+    "url": "/models/emcar-victron-agm-200.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/emcar-victron-agm-200.webp",
+      "generated_at": "2026-09-17T11:53:05.132Z",
+      "bytes": 136036,
+      "raw_bytes": 5022548,
+      "triangles": 20000,
+      "request_id": "01a0af35-b63c-74c2-9e49-8f1921b40782",
+      "seconds": 57
+    },
+    "modelFront": "+z",
+    "lengthAxis": "auto"
+  },
+  "emcar-victron-mppt-100-30": {
+    "url": "/models/emcar-victron-mppt-100-30.glb",
+    "source": {
+      "model": "fal-ai/hunyuan3d-v21",
+      "photo": "https://designer.ppwellness.co/products/photos/emcar-victron-mppt-100-30.webp",
+      "generated_at": "2026-09-17T11:53:17.636Z",
+      "bytes": 148936,
+      "raw_bytes": 5395672,
+      "triangles": 20000,
+      "request_id": "01a0af35-c92b-70c2-9064-901664386438",
+      "seconds": 65
+    },
+    "modelFront": "+z",
+    "lengthAxis": "auto"
+  }
 }

@@ -29,8 +29,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import { optimizeGlb } from './optimize-models.mjs';
 
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
+/** The generator's output as delivered (ignored by git, OUTSIDE public/ so no build copies 5 MB bodies); the served body is the optimised one. */
+const RAW_DIR = path.join(ROOT, 'models-raw');
 const KEY_FILE = 'C:\\Users\\Victor\\Documents\\junk files\\fal-ai-api-key.txt';
 const CATALOG = path.join(ROOT, 'src', 'data', 'products.json');
 const MANIFEST = path.join(ROOT, 'src', 'data', 'productModels.json');
@@ -57,6 +60,12 @@ const model = opt('--model', 'fal-ai/hunyuan3d-v21');
 const only = opt('--only');
 const limit = Number(opt('--limit', '0'));
 const all = flag('--all');
+/**
+ * Requests in flight at once. The first run showed 53 s of inference behind
+ * 14 min of queue: sequential submission would turn 21 models into hours,
+ * so the batch submits several and polls them together.
+ */
+const parallel = Math.max(1, Number(opt('--parallel', '6')));
 
 if (!PRICES[model]) {
   console.error(`unknown model ${model}; one of ${Object.keys(PRICES).join(', ')}`);
@@ -100,6 +109,7 @@ if (!fs.existsSync(KEY_FILE)) {
 }
 const KEY = fs.readFileSync(KEY_FILE, 'utf8').trim();
 fs.mkdirSync(OUT_DIR, { recursive: true });
+fs.mkdirSync(RAW_DIR, { recursive: true });
 
 async function falQueue(endpoint, input) {
   const submit = await fetch(`https://queue.fal.run/${endpoint}`, {
@@ -109,22 +119,41 @@ async function falQueue(endpoint, input) {
   });
   if (!submit.ok) throw new Error(`submit ${submit.status}: ${(await submit.text()).slice(0, 300)}`);
   const { request_id, status_url, response_url } = await submit.json();
+  let metrics = null;
   for (let i = 0; i < 240; i++) {
     await new Promise((r) => setTimeout(r, 5000));
-    const st = await fetch(status_url, { headers: { Authorization: `Key ${KEY}` } });
+    const st = await fetch(`${status_url}?logs=1`, { headers: { Authorization: `Key ${KEY}` } });
     const s = await st.json();
+    if (s.metrics) metrics = s.metrics;
     if (s.status === 'COMPLETED') break;
     if (s.status === 'FAILED') throw new Error(`fal FAILED ${request_id}: ${JSON.stringify(s).slice(0, 300)}`);
     if (i % 6 === 0) process.stdout.write(`   … ${s.status} (${s.queue_position ?? '-'})\n`);
   }
   const res = await fetch(response_url, { headers: { Authorization: `Key ${KEY}` } });
   if (!res.ok) throw new Error(`result ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  return res.json();
+  const out = await res.json();
+  return { out, request_id, metrics };
 }
 
-/** Where the GLB lives in each model's response. */
+/** Where the GLB lives in each model's response — the PBR-textured one first. */
 function glbUrlOf(model, out) {
-  return out.model_glb?.url ?? out.model_mesh?.url ?? out.glb?.url ?? out.model?.url ?? null;
+  return out.model_glb_pbr?.url ?? out.model_glb?.url ?? out.model_mesh?.url ?? out.glb?.url ?? out.model?.url ?? null;
+}
+
+/**
+ * Spend log (Vic 2026-09-17: "note the average spend and fluctuations, both
+ * API and Hunyuan3D"): one row per call — unit price, wall seconds, the
+ * generator's own inference metrics when it reports them, bytes, outcome.
+ */
+const SPEND_LOG = path.join(ROOT, 'docs', 'designer-3d-mode-2026-09-17', 'fal-spend-log.json');
+function logSpend(row) {
+  const rows = fs.existsSync(SPEND_LOG) ? JSON.parse(fs.readFileSync(SPEND_LOG, 'utf8')) : [];
+  rows.push(row);
+  fs.writeFileSync(SPEND_LOG, JSON.stringify(rows, null, 2) + '\n');
+}
+/** A balance / quota refusal from Fal: stop the batch so Vic can top up. */
+function isBalanceError(e) {
+  return /402|insufficient|balance|exhausted|quota|payment/i.test(String(e));
 }
 
 function inputFor(model, photoUrl) {
@@ -143,28 +172,53 @@ function inputFor(model, photoUrl) {
 }
 
 let spent = 0;
-for (const p of todo) {
+let first = true;
+let stop = false;
+
+async function generate(p) {
   const photo = photoOf(p);
   process.stdout.write(`→ ${p.id} from ${photo}\n`);
+  const t0 = Date.now();
   try {
-    const out = await falQueue(model, inputFor(model, photo));
+    const { out, request_id, metrics } = await falQueue(model, inputFor(model, photo));
+    if (first) {
+      console.log(`   response keys: ${Object.keys(out).join(', ')}`);
+      first = false;
+    }
     const url = glbUrlOf(model, out);
     if (!url) throw new Error(`no glb in response: ${JSON.stringify(out).slice(0, 300)}`);
     const glb = Buffer.from(await (await fetch(url)).arrayBuffer());
+    const raw = path.join(RAW_DIR, `${p.id}.glb`);
+    fs.writeFileSync(raw, glb);
     const file = path.join(OUT_DIR, `${p.id}.glb`);
-    fs.writeFileSync(file, glb);
+    const opt = await optimizeGlb(raw, file);
+    const seconds = Math.round((Date.now() - t0) / 1000);
     manifest[p.id] = {
       url: `/models/${p.id}.glb`,
-      source: { model, photo, generated_at: new Date().toISOString(), bytes: glb.length },
+      source: { model, photo, generated_at: new Date().toISOString(), bytes: opt.outBytes, raw_bytes: glb.length, triangles: opt.triangles, request_id, seconds },
       // Fit hints the stage may need; the generator's output is y-up, front unknown — QA sets these.
       modelFront: '+z',
       lengthAxis: 'auto',
     };
     fs.writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
     spent += PRICES[model];
-    console.log(`   ✓ ${(glb.length / 1024).toFixed(0)} KB → ${path.relative(ROOT, file)}   (spent so far $${spent.toFixed(2)})`);
+    logSpend({ id: p.id, model, price_usd: PRICES[model], seconds, metrics, bytes: glb.length, served_bytes: opt.outBytes, request_id, at: new Date().toISOString(), ok: true });
+    console.log(`   ✓ ${p.id} ${(glb.length / 1024).toFixed(0)} KB → ${(opt.outBytes / 1024).toFixed(0)} KB in ${seconds}s (inference ${metrics?.inference_time ? metrics.inference_time.toFixed(0) + 's' : '?'})   (spent so far $${spent.toFixed(2)})`);
   } catch (e) {
+    const seconds = Math.round((Date.now() - t0) / 1000);
+    logSpend({ id: p.id, model, price_usd: 0, seconds, at: new Date().toISOString(), ok: false, error: String(e).slice(0, 300) });
     console.error(`   ✗ ${p.id}: ${String(e).slice(0, 200)}`);
+    if (isBalanceError(e)) {
+      console.error('\n⛔ Fal refused on balance/quota — stopping the batch. Vic: top up, then re-run (already-generated products are skipped).');
+      stop = true;
+    }
   }
 }
-console.log(`done · $${spent.toFixed(2)} spent · manifest ${path.relative(ROOT, MANIFEST)}`);
+
+// A small pool: `parallel` requests in flight, the next one submitted as one lands.
+const queue = [...todo];
+async function worker() {
+  while (queue.length && !stop) await generate(queue.shift());
+}
+await Promise.all(Array.from({ length: Math.min(parallel, queue.length) }, worker));
+console.log(`done · $${spent.toFixed(2)} spent this run · manifest ${path.relative(ROOT, MANIFEST)} · log ${path.relative(ROOT, SPEND_LOG)}`);

@@ -97,6 +97,7 @@ export interface ItemSolid {
   meshUrl?: string;
   modelFront?: '+z' | '-z' | '+x' | '-x';
   lengthAxis?: 'x' | 'z' | 'auto';
+  modelUp?: '+y' | '+z' | '-z';
 }
 
 export interface SceneSolids {
@@ -198,6 +199,7 @@ export function buildSolids(input: SceneInput): SceneSolids {
         meshUrl: it.meshUrl,
         modelFront: it.modelFront,
         lengthAxis: it.lengthAxis,
+        modelUp: it.modelUp,
       });
     }
   }

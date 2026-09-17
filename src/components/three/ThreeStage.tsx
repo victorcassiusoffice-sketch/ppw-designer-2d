@@ -24,7 +24,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { cameraPosition, GLASS_HEX, GROUND_HEX, HOVER_HEX, type OrbitCamera, type WallHit } from '../../designer/roomView3d';
 import { cutawayState, wallAnchor, type ItemSolid, type SceneSolids, type WallShow, type WallSolid } from '../../designer/roomSolids';
-import { fitToSize, itemPose } from '../../designer/fitToSize';
+import { fitToSize, itemPose, pitchedBox, upPitchRad } from '../../designer/fitToSize';
 
 // ---------------------------------------------------------------------------
 // Product bodies (2026-09-17): a textured glTF per product, fetched once and
@@ -65,8 +65,10 @@ function loadBody(url: string): Promise<BodyTemplate> {
 
 /** The body for one placed item: fitted to its catalog box, posed on the plan. */
 function bodyObject(it: ItemSolid, tpl: BodyTemplate): THREE.Group {
+  // A flat product generated from a photo arrives as an upright slab: the
+  // `modelUp` pitch lays it down first, and the fit sees the pitched box.
   const fit = fitToSize({
-    bbox: tpl.bbox,
+    bbox: pitchedBox(tpl.bbox, it.modelUp),
     lengthCm: it.lengthM * 100,
     widthCm: it.widthM * 100,
     heightCm: it.heightM * 100,
@@ -74,13 +76,18 @@ function bodyObject(it: ItemSolid, tpl: BodyTemplate): THREE.Group {
     modelFront: it.modelFront,
     lengthAxis: it.lengthAxis,
   });
-  const inner = tpl.scene.clone(true);
+  const model = tpl.scene.clone(true);
   // Own materials per placed item: a shared material would tint every copy
   // of the product when one is selected or hovered.
-  inner.traverse((o) => {
+  model.traverse((o) => {
     const m = o as THREE.Mesh;
     if (m.isMesh) m.material = Array.isArray(m.material) ? m.material.map((x) => x.clone()) : (m.material as THREE.Material).clone();
   });
+  const upright = new THREE.Group();
+  upright.rotation.set(upPitchRad(it.modelUp), 0, 0);
+  upright.add(model);
+  const inner = new THREE.Group();
+  inner.add(upright);
   inner.scale.set(fit.scale.x, fit.scale.y, fit.scale.z);
   inner.rotation.set(0, fit.yawRad, 0);
   inner.position.set(fit.offset.x, fit.offset.y, fit.offset.z);
@@ -601,9 +608,22 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
+        // The body's own surface first (precise for a tap on a leg or a screen)…
         const hits = ray.intersectObjects(itemsRef.current, true);
         const root = hits.length ? itemRootOf(hits[0].object) : null;
-        return root ? { instanceId: root.userData.instanceId as string } : null;
+        if (root) return { instanceId: root.userData.instanceId as string };
+        // …then the exact catalog box the fit guarantees: a treadmill is air
+        // above its deck, a lamp is a thin pole — the Sims pick the box.
+        let best: { instanceId: string; d: number } | null = null;
+        const box = new THREE.Box3();
+        const p = new THREE.Vector3();
+        for (const o of itemsRef.current) {
+          box.setFromObject(o);
+          if (box.isEmpty() || !ray.ray.intersectBox(box, p)) continue;
+          const d = p.distanceTo(ray.ray.origin);
+          if (!best || d < best.d) best = { instanceId: o.userData.instanceId as string, d };
+        }
+        return best ? { instanceId: best.instanceId } : null;
       },
       floorPoint(x, y) {
         const c = cameraRef.current;

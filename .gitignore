@@ -88,3 +88,6 @@ tests/e2e/*.json
 
 # agent scratch scripts + logs (never product code)
 tools/_scratch/
+
+# Generated 3D bodies as delivered by the generator (4 MB each); the optimised ones next to them are served + committed
+models-raw/

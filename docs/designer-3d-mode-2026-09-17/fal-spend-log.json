@@ -1,0 +1,323 @@
+[
+  {
+    "id": "k1-bench-adjustable-fid",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 924,
+    "metrics": {
+      "inference_time": 53.2020001411438
+    },
+    "bytes": 4226964,
+    "request_id": "01a0af16-d0af-7430-8360-ecfff2a2f3ee",
+    "at": "2026-09-17T11:33:45.612Z",
+    "ok": true
+  },
+  {
+    "id": "k1-nordictrack-gx10",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 318,
+    "metrics": {
+      "inference_time": 77.06499981880188
+    },
+    "bytes": 6179528,
+    "served_bytes": 204192,
+    "request_id": "01a0af2a-8642-7d80-af85-1bebb1d21b7f",
+    "at": "2026-09-17T11:45:11.312Z",
+    "ok": true
+  },
+  {
+    "id": "k1-nordictrack-2450",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 383,
+    "metrics": {
+      "inference_time": 65.33200001716614
+    },
+    "bytes": 4980024,
+    "served_bytes": 129216,
+    "request_id": "01a0af2a-87ed-7fc2-b980-7de8ec01c5f2",
+    "at": "2026-09-17T11:46:16.134Z",
+    "ok": true
+  },
+  {
+    "id": "k1-nordictrack-tour-de-france",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 452,
+    "metrics": {
+      "inference_time": 66.09500002861023
+    },
+    "bytes": 6419548,
+    "served_bytes": 242796,
+    "request_id": "01a0af2a-87ed-7fc2-b980-7df1b72e8276",
+    "at": "2026-09-17T11:47:25.635Z",
+    "ok": true
+  },
+  {
+    "id": "k1-schwinn-700ic",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 512,
+    "metrics": {
+      "inference_time": 80.05900001525879
+    },
+    "bytes": 5809468,
+    "served_bytes": 197728,
+    "request_id": "01a0af2a-87ef-7ae2-b0c6-24dff0a138cb",
+    "at": "2026-09-17T11:48:25.626Z",
+    "ok": true
+  },
+  {
+    "id": "k1-proform-carbon-tl",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 523,
+    "metrics": {
+      "inference_time": 71.69000005722046
+    },
+    "bytes": 3859056,
+    "served_bytes": 138796,
+    "request_id": "01a0af2a-87e9-7700-9922-0be368978457",
+    "at": "2026-09-17T11:48:36.743Z",
+    "ok": true
+  },
+  {
+    "id": "k1-nordictrack-rw900",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 583,
+    "metrics": {
+      "inference_time": 66.91799998283386
+    },
+    "bytes": 5818456,
+    "served_bytes": 198460,
+    "request_id": "01a0af2a-9077-7761-aa05-996393ab631a",
+    "at": "2026-09-17T11:49:36.465Z",
+    "ok": true
+  },
+  {
+    "id": "k1-nordictrack-x16",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 594,
+    "metrics": {
+      "inference_time": 68.78499984741211
+    },
+    "bytes": 5601848,
+    "served_bytes": 180872,
+    "request_id": "01a0af2a-9079-7ae2-a9e7-f7ea5739abad",
+    "at": "2026-09-17T11:49:47.802Z",
+    "ok": true
+  },
+  {
+    "id": "k1-vision-t600-03",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 342,
+    "metrics": {
+      "inference_time": 77.07400012016296
+    },
+    "bytes": 4540420,
+    "served_bytes": 161452,
+    "request_id": "01a0af2f-5b73-7c02-b6d3-989aaffa305c",
+    "at": "2026-09-17T11:50:52.896Z",
+    "ok": true
+  },
+  {
+    "id": "k1-matrix-mg-glute",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 208,
+    "metrics": {
+      "inference_time": 58.98299980163574
+    },
+    "bytes": 5087304,
+    "served_bytes": 95820,
+    "request_id": "01a0af31-6812-7290-8965-f0d46b0266f7",
+    "at": "2026-09-17T11:50:53.590Z",
+    "ok": true
+  },
+  {
+    "id": "k1-vision-t600e-02",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 282,
+    "metrics": {
+      "inference_time": 71.79700016975403
+    },
+    "bytes": 4540420,
+    "served_bytes": 161452,
+    "request_id": "01a0af30-58b5-7d73-aa11-d72f57fc91bb",
+    "at": "2026-09-17T11:50:57.930Z",
+    "ok": true
+  },
+  {
+    "id": "k1-matrix-versa-adabd",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 164,
+    "metrics": {
+      "inference_time": 72.9760000705719
+    },
+    "bytes": 4875080,
+    "served_bytes": 156968,
+    "request_id": "01a0af32-5270-7672-a4fc-a2f88194a3d7",
+    "at": "2026-09-17T11:51:09.564Z",
+    "ok": true
+  },
+  {
+    "id": "k1-bench-adjustable-fid",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 128,
+    "metrics": {
+      "inference_time": 59.58099985122681
+    },
+    "bytes": 4918316,
+    "served_bytes": 107536,
+    "request_id": "01a0af33-937b-73f2-866c-b8ec0549f5c4",
+    "at": "2026-09-17T11:51:55.531Z",
+    "ok": true
+  },
+  {
+    "id": "k1-vision-smith",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 207,
+    "metrics": {
+      "inference_time": 78.04200005531311
+    },
+    "bytes": 5370632,
+    "served_bytes": 182432,
+    "request_id": "01a0af32-7de2-7911-ae0c-a71eca70c7d3",
+    "at": "2026-09-17T11:52:04.157Z",
+    "ok": true
+  },
+  {
+    "id": "emcar-victron-175",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 74,
+    "metrics": {
+      "inference_time": 60.36999988555908
+    },
+    "bytes": 6010424,
+    "served_bytes": 189660,
+    "request_id": "01a0af34-9474-7d73-aa9b-0c3a688dd755",
+    "at": "2026-09-17T11:52:07.768Z",
+    "ok": true
+  },
+  {
+    "id": "emcar-jinko-475",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 80,
+    "metrics": {
+      "inference_time": 74.12999987602234
+    },
+    "bytes": 7385308,
+    "served_bytes": 203860,
+    "request_id": "01a0af34-91b9-7df0-b34c-da5959fc3d6c",
+    "at": "2026-09-17T11:52:12.614Z",
+    "ok": true
+  },
+  {
+    "id": "k1-bowflex-xtreme-2se",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 166,
+    "metrics": {
+      "inference_time": 87.07999992370605
+    },
+    "bytes": 7904156,
+    "served_bytes": 331136,
+    "request_id": "01a0af33-672f-7773-b301-93e8fff09c29",
+    "at": "2026-09-17T11:52:22.177Z",
+    "ok": true
+  },
+  {
+    "id": "emcar-sunpower-flex-100",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 101,
+    "metrics": {
+      "inference_time": 70.71399998664856
+    },
+    "bytes": 5180860,
+    "served_bytes": 151540,
+    "request_id": "01a0af34-a569-7482-a80b-e1ed47697677",
+    "at": "2026-09-17T11:52:38.477Z",
+    "ok": true
+  },
+  {
+    "id": "emcar-victron-superpack-12-100",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 57,
+    "metrics": {
+      "inference_time": 47.99600005149841
+    },
+    "bytes": 1182600,
+    "served_bytes": 125604,
+    "request_id": "01a0af35-a81e-7a02-8c9c-9865664ba721",
+    "at": "2026-09-17T11:53:01.163Z",
+    "ok": true
+  },
+  {
+    "id": "emcar-victron-multiplus-12-3000",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 113,
+    "metrics": {
+      "inference_time": 71.40100002288818
+    },
+    "bytes": 4883980,
+    "served_bytes": 156776,
+    "request_id": "01a0af34-d30b-74d1-b3db-7d9baab91095",
+    "at": "2026-09-17T11:53:03.038Z",
+    "ok": true
+  },
+  {
+    "id": "emcar-victron-phoenix-12-1200",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 69,
+    "metrics": {
+      "inference_time": 59.22099995613098
+    },
+    "bytes": 4103812,
+    "served_bytes": 100744,
+    "request_id": "01a0af35-867d-7190-9ad7-ee7699254caa",
+    "at": "2026-09-17T11:53:04.742Z",
+    "ok": true
+  },
+  {
+    "id": "emcar-victron-agm-200",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 57,
+    "metrics": {
+      "inference_time": 51.60900020599365
+    },
+    "bytes": 5022548,
+    "served_bytes": 136036,
+    "request_id": "01a0af35-b63c-74c2-9e49-8f1921b40782",
+    "at": "2026-09-17T11:53:05.133Z",
+    "ok": true
+  },
+  {
+    "id": "emcar-victron-mppt-100-30",
+    "model": "fal-ai/hunyuan3d-v21",
+    "price_usd": 0.3,
+    "seconds": 65,
+    "metrics": {
+      "inference_time": 58.31699991226196
+    },
+    "bytes": 5395672,
+    "served_bytes": 148936,
+    "request_id": "01a0af35-c92b-70c2-9064-901664386438",
+    "at": "2026-09-17T11:53:17.636Z",
+    "ok": true
+  }
+]

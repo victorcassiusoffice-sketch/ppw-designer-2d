@@ -19,6 +19,8 @@ export interface ProductModelEntry {
   modelFront?: '+z' | '-z' | '+x' | '-x';
   /** Which model axis runs along the product's LENGTH. 'auto' = by aspect. */
   lengthAxis?: 'x' | 'z' | 'auto';
+  /** Which model axis points up: '+y' (glTF default) or, for a flat product built from a photo as an upright slab, the photo face ('-z' for Hunyuan3D). */
+  modelUp?: '+y' | '+z' | '-z';
   /** Where it came from (provenance; never rendered). */
   source?: Record<string, unknown>;
   /** Licence note for bundled third-party bodies (e.g. "CC0 — Kenney Furniture Kit"). */

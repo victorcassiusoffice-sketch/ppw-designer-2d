@@ -75,6 +75,40 @@ Vic: "make the 3D designer more like The Sims — it should reflect what's done 
 
 `desktop-1440-3d-bodies-sofap.png` (bodies fitted) · `desktop-1440-3d-selected.png` (pad + card) · `desktop-1440-3d-carry.png` (mid-drag) · `desktop-1440-3d-dropped.png` (landed) · `phone-390-3d-bodies-sofap.png`.
 
+---
+
+# Hero bodies — Fal Hunyuan3D 2.1 for the catalog (2026-09-17, Vic Y "use the credits")
+
+Vic: "Y — use the credits, inform me if you need to top-up, note the average spend and fluctuations both API and Hunyuan3D." (Not OpenArt: OpenArt has no image-to-3D.)
+
+## Spend (the whole run, `fal-spend-log.json`)
+
+| | |
+|---|---|
+| Generations | **23** (22 products + 1 duplicate of the bench — a planning miss, see below), 0 failures, 0 balance refusals |
+| Spent | **$6.90** = 23 × $0.30 (flat per generation, the price rendered on the model page 17 Sep; Fal exposes no balance API — the billed line is on the Fal dashboard) |
+| Average per model | **$0.30** — no per-model variance in price; the variance is in TIME and SIZE |
+| Wall time per model | min **57 s** · avg **278 s** · max **924 s** — the first request sat 14 min in Fal's queue; with 7 in flight the queue emptied and later models came back in ~1 min |
+| Hunyuan3D inference (Fal's own `inference_time`) | min **48 s** · avg **67 s** · max **87 s** — the model's true cost; the rest is queue |
+| Raw output | 1.2–7.7 MB (avg 5.1 MB), 40–70 k triangles, 2048² PNG textures (base colour labelled PNG but actually JPEG) |
+| Served | **94–323 KB (avg 164 KB)**, ~20 k triangles, 1024² WebP colour + 512² WebP metal/rough, Draco — `scripts/optimize-models.mjs` (gltf-transform; sniffs the real image format first) |
+| Bodies live | **21** — 13 K1 machines + 8 Emcar solar products. `k1-bench-adjustable-fid` is NOT served: its catalog photo is a Rogue bench *accessory kit* (bracket + plate + bolts), so the generator faithfully built a bracket. It stays a box until the photo is fixed (the raw body is kept in `models-raw/`, git-ignored, outside `public/`). |
+
+## The orientation law (what "aesthetically identical" needed)
+
+An image-to-3D body faces whichever way its photo was taken, so:
+
+1. `scripts/orient-check.mjs` measures each raw body's **head** (console / screen / handlebars / weight tower = the top 25 % of its height) in its own frame — e.g. the 2450 treadmill's head sits at model +x, the Schwinn's at −x, the Tour de France's at −z.
+2. The plan's **top-down art** is the truth for rotation 0 (length along +x): most consoles sit at the right edge, but the RW900 rower, the Schwinn, the T600E-02, the Versa adductor and the MG glute trainer have their heads at the left, the Bowflex and the Smith machine at the top. `scripts/orient-apply.mjs` holds that table and picks the `modelFront` (of +z / −z / +x / −x) whose fit yaw lands the measured head on the art's side — written into the manifest with the evidence (`source.orient`).
+3. Flat products (the three solar panels) come out of the generator as **upright photo slabs** (Jinko raw box `x ±0.56, y ±1.0, z ±0.11`). New fit hint **`modelUp: '-z'`** (`fitToSize.upPitchRad` / `pitchedBox`, 5 tests): the photo face (−z for Hunyuan3D) is pitched up before the fit, so the panel lies flat, 3 cm tall, its cell grid facing the sky.
+4. The stage's 3D tap now falls back to the **exact catalog box** when the body's surface is air at the tap point (a treadmill's centre is above its deck; a lamp is a pole).
+
+Close-ups after the law (`hero-qa/close-sheet.png`): the 2450's console at the right, the T600E-02's at the left, the rower's screen at the left, the adductor's tower at the left, the Bowflex tower at the back, the Jinko panel flat and face-up. Grid of all 21: `hero-qa/grid-default.png`. Source photos audited: `hero-qa/photo-audit.png`; top-down art: `hero-qa/topdown-art.png`.
+
+## Gates
+
+vitest **197 files / 2,515 tests** (5 new for `modelUp`); e2e `view-mode-3d` 4 · `wallpaint-3d` 8 · `phone-demo` 4 = 16/16 on the dev server with the bodies in; `tsc` / `eslint` / `npm run build` clean; the 21 bodies ship in `dist/models/` (3.7 MB with the ten Kenney bodies, each fetched only when its product is on screen in 3D).
+
 ## Next
 
-Hero bodies for the real catalog (Fal, **Vic-gated spend**: Hunyuan3D 2.1 at $0.30 × 22 K1 products ≈ $6.60, ~$10–15 with re-rolls; orientation QA via `modelFront` per model) → P3 realism (PBR/sky/textures/night from `mauritiusSolar`) → P4 merchant data (Decathlon · Mauvilac · Courts · Espace Maison, `power_w`) → P5 Soft chrome.
+Fix the bench photo → one more $0.30 generation. P3 realism (PBR floor/paint textures, sky, night lights from `mauritiusSolar`) → P4 merchant data (Decathlon · Mauvilac · Courts · Espace Maison, `power_w`) → P5 Soft chrome.

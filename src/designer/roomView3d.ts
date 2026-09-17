@@ -157,6 +157,8 @@ export interface SceneItemInput {
   /** Fit hints from the model manifest. */
   modelFront?: '+z' | '-z' | '+x' | '-x';
   lengthAxis?: 'x' | 'z' | 'auto';
+  /** Which model axis points up ('+y' glTF default; '-z' lays a photo-slab panel face-up). */
+  modelUp?: '+y' | '+z' | '-z';
 }
 
 export interface SceneInput {

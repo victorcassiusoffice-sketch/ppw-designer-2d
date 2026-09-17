@@ -1,0 +1,131 @@
+{
+  "at": "2026-09-17T09:43:35.380Z",
+  "health": {
+    "ok": true,
+    "service": "ppw-designer-2d",
+    "env": "production",
+    "commit": "80d8fb3b9e865464757610a8b60902a55fc51a51",
+    "sentryConfigured": true,
+    "timestamp": "2026-09-17T09:42:36.538Z"
+  },
+  "desktop": {
+    "overlay": {
+      "x": 0,
+      "y": 53,
+      "w": 1440,
+      "h": 765,
+      "bottom": 818
+    },
+    "backend": "gl",
+    "glCanvas": true,
+    "three": [
+      "/assets/ThreeStage-CkE5qQl7.js",
+      "/assets/vendor-three-DqF1HjCd.js"
+    ],
+    "models": [
+      {
+        "n": "/models/kenney/desk.glb",
+        "s": 4574,
+        "d": 392
+      },
+      {
+        "n": "/models/kenney/plantSmall1.glb",
+        "s": 3300,
+        "d": 407
+      },
+      {
+        "n": "/models/kenney/speakerSmall.glb",
+        "s": 6168,
+        "d": 537
+      },
+      {
+        "n": "/models/kenney/lampRoundFloor.glb",
+        "s": 2857,
+        "d": 408
+      },
+      {
+        "n": "/models/kenney/lampSquareCeiling.glb",
+        "s": 2071,
+        "d": 407
+      },
+      {
+        "n": "/models/kenney/bathroomMirror.glb",
+        "s": 2564,
+        "d": 385
+      },
+      {
+        "n": "/models/kenney/lampWall.glb",
+        "s": 2094,
+        "d": 407
+      },
+      {
+        "n": "/models/kenney/bookcaseOpenLow.glb",
+        "s": 3390,
+        "d": 408
+      }
+    ],
+    "dockOrStrip": true,
+    "variance": 0,
+    "errors": []
+  },
+  "phone": {
+    "overlay": {
+      "x": 0,
+      "y": 57,
+      "w": 390,
+      "h": 732,
+      "bottom": 789
+    },
+    "backend": "gl",
+    "glCanvas": true,
+    "three": [
+      "/assets/ThreeStage-CkE5qQl7.js",
+      "/assets/vendor-three-DqF1HjCd.js"
+    ],
+    "models": [
+      {
+        "n": "/models/kenney/desk.glb",
+        "s": 4574,
+        "d": 147
+      },
+      {
+        "n": "/models/kenney/plantSmall1.glb",
+        "s": 3300,
+        "d": 137
+      },
+      {
+        "n": "/models/kenney/speakerSmall.glb",
+        "s": 6168,
+        "d": 139
+      },
+      {
+        "n": "/models/kenney/lampRoundFloor.glb",
+        "s": 2857,
+        "d": 125
+      },
+      {
+        "n": "/models/kenney/lampSquareCeiling.glb",
+        "s": 2071,
+        "d": 166
+      },
+      {
+        "n": "/models/kenney/bathroomMirror.glb",
+        "s": 2564,
+        "d": 145
+      },
+      {
+        "n": "/models/kenney/lampWall.glb",
+        "s": 2094,
+        "d": 145
+      },
+      {
+        "n": "/models/kenney/bookcaseOpenLow.glb",
+        "s": 3390,
+        "d": 138
+      }
+    ],
+    "dockOrStrip": true,
+    "variance": 0,
+    "errors": []
+  }
+}

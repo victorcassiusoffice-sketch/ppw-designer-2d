@@ -233,6 +233,7 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
         meshUrl: body?.url,
         modelFront: body?.modelFront,
         lengthAxis: body?.lengthAxis,
+        modelUp: body?.modelUp,
       });
     }
     return {
