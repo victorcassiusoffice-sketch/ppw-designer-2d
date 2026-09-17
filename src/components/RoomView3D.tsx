@@ -1,13 +1,19 @@
 /**
  * RoomView3D — the Sims-style view of the storey (Vic 2026-09-14), now the
  * designer's 3D MODE (Vic 2026-09-17: "make it a super realistic 3D version
- * of the 2D … not exclusive to paint"). A dollhouse camera: walls up where
- * they face you, cut down to a stub where they would hide the room, doors
- * and windows cut through, the floor finish laid, furniture to size — and
- * every wall painted the colour the plan says.
+ * of the 2D … not exclusive to paint … functioning exactly like The Sims,
+ * it should reflect what's done on the 2D and vice versa"). A dollhouse
+ * camera: walls up where they face you, cut down to a stub where they would
+ * hide the room, doors and windows cut through, the floor finish laid,
+ * furniture as textured bodies fitted EXACTLY to the catalog's dimensions
+ * (designer/fitToSize.ts) — and every wall painted the colour the plan says.
  *
- * Drag to orbit, wheel / pinch to zoom; with the Wall-paint tool armed,
- * CLICK A WALL TO PAINT IT with the brush the panel holds.
+ * Drag to orbit, wheel / pinch to zoom. With the Wall-paint tool armed,
+ * CLICK A WALL TO PAINT IT. Otherwise, in the workspace: TAP an item to
+ * select it (the plan selects it too), DRAG it across the floor to move it
+ * — the drop lands through the plan's own rules (wall snap, tile lattice,
+ * collision, room routing; designer/itemDrop.ts), so 2D and 3D are one plan
+ * — and, with a catalog product armed, TAP the floor to place it there.
  *
  * Rendering: `components/three/ThreeStage.tsx` (WebGL, lazy — its own
  * chunk, fetched the first time a 3D view opens) draws the solids that
@@ -33,6 +39,9 @@ import {
   type ReactNode,
 } from 'react';
 import { usePropertyStore, type Property, type Room } from '../store/propertyStore';
+import { useDesignerUIStore } from '../store/designerUIStore';
+import { usePlacementIntentStore, isScreenTarget } from '../store/placementIntentStore';
+import { rotateSelected, deleteSelected } from '../lib/placementActions';
 import { activeLevelIdOf, isOutdoorRoom, isRoofRoom, roomsOnLevel } from '../designer/levels';
 import { wallsOnLevel } from '../designer/freeWalls';
 import { edgeKey, pointAlongEdge, projectOntoEdge, roomEdges, sharedEdgeMap } from '../designer/wallEdges';
@@ -41,6 +50,7 @@ import { isDrawnPolygon } from '../designer/roomLayout';
 import { roomFloorMaterial } from '../designer/floorFinish';
 import { findFloorMaterialById } from '../data/floorMaterials';
 import { getProductById } from '../data/products';
+import { productModelFor } from '../data/productModels';
 import { DEFAULT_WALL_HEIGHT_M, findWallPaintById, resolveWallColourHex } from '../data/wallPaints';
 import {
   boundsOf,
@@ -90,6 +100,9 @@ export interface RoomView3DProps {
 // full-screen there and a thumb needs it), 32 px inside the desktop card.
 const BTN =
   'inline-flex h-10 min-w-[40px] md:h-8 md:min-w-[32px] items-center justify-center rounded-md border border-ppw-rim bg-ppw-chrome px-2 text-[12px] font-semibold text-ppw-charcoal shadow-sm hover:bg-[#f3f1ec] focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]';
+/** Selection card controls (overlay): 44 px on the phone, 36 px from md. */
+const SEL_BTN =
+  'inline-flex h-11 md:h-9 items-center justify-center rounded-lg border px-3 text-[12px] font-semibold transition-colors duration-[120ms] ease-out focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]';
 
 /** Screen-space bridge for e2e: click a wall by its identity, not by pixels. */
 interface RoomView3DBridge {
@@ -104,6 +117,12 @@ interface RoomView3DBridge {
   hitAt: (clientX: number, clientY: number) => WallHit | null;
   /** The GL stage's own account of itself (frames drawn, parts, camera). */
   debug: () => ReturnType<ThreeStageHandle['debug']> | null;
+  /** CLIENT point over an item's body (its plan centre projected), for a spec to tap or drag. */
+  itemScreenPoint: (instanceId: string) => { x: number; y: number } | null;
+  /** CLIENT point over a plan point on the floor. */
+  floorScreenPoint: (roomX: number, roomY: number) => { x: number; y: number } | null;
+  /** The plan point on the floor under a CLIENT point (GL only), so a spec can aim a drag in metres. */
+  floorAt: (clientX: number, clientY: number) => { x: number; y: number } | null;
 }
 /**
  * The card and the overlay can be mounted together (md+), so each registers
@@ -120,15 +139,19 @@ declare global {
 }
 function bridgeRegistry(): RoomView3DBridgeRegistry {
   if (!window.__ppwRoomView3d) {
+    const pick = () => reg.instances.overlay ?? reg.instances.card;
     const reg: RoomView3DBridgeRegistry = {
       instances: {},
-      wallScreenPoint: (hit) => (reg.instances.overlay ?? reg.instances.card)?.wallScreenPoint(hit) ?? null,
-      faceCount: () => (reg.instances.overlay ?? reg.instances.card)?.faceCount() ?? 0,
-      faces: () => (reg.instances.overlay ?? reg.instances.card)?.faces() ?? [],
-      camera: () => (reg.instances.overlay ?? reg.instances.card)?.camera() ?? null,
-      backend: () => (reg.instances.overlay ?? reg.instances.card)?.backend() ?? 'painter',
-      hitAt: (x, y) => (reg.instances.overlay ?? reg.instances.card)?.hitAt(x, y) ?? null,
-      debug: () => (reg.instances.overlay ?? reg.instances.card)?.debug() ?? null,
+      wallScreenPoint: (hit) => pick()?.wallScreenPoint(hit) ?? null,
+      faceCount: () => pick()?.faceCount() ?? 0,
+      faces: () => pick()?.faces() ?? [],
+      camera: () => pick()?.camera() ?? null,
+      backend: () => pick()?.backend() ?? 'painter',
+      hitAt: (x, y) => pick()?.hitAt(x, y) ?? null,
+      debug: () => pick()?.debug() ?? null,
+      itemScreenPoint: (id) => pick()?.itemScreenPoint(id) ?? null,
+      floorScreenPoint: (x, y) => pick()?.floorScreenPoint(x, y) ?? null,
+      floorAt: (x, y) => pick()?.floorAt(x, y) ?? null,
     };
     window.__ppwRoomView3d = reg;
   }
@@ -193,6 +216,7 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
     for (const it of room.placedItems) {
       const p = getProductById(it.productId);
       if (!p) continue;
+      const body = productModelFor(p);
       items.push({
         instanceId: it.instanceId,
         x: it.x,
@@ -204,6 +228,11 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
         placement: p.placement,
         mountHeightCm: p.mount_height_cm,
         fill: itemFillForCategory(p.category),
+        productId: p.id,
+        frontEdge: p.front_edge,
+        meshUrl: body?.url,
+        modelFront: body?.modelFront,
+        lengthAxis: body?.lengthAxis,
       });
     }
     return {
@@ -254,18 +283,38 @@ function describeHit(property: Property, hit: WallHit | null): string | null {
   return `Free wall${paint ? ` · ${paint.name}` : ' · unpainted'}${colour ? ` · ${colour}` : ''}`;
 }
 
+/** The plan's record of an item, wherever it lives. */
+function findPlacedItem(property: Property, instanceId: string) {
+  for (const room of property.rooms) {
+    const it = room.placedItems.find((i) => i.instanceId === instanceId);
+    if (it) return it;
+  }
+  return null;
+}
+
 export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, caption, brushStrip, title, className = '', style }: RoomView3DProps): JSX.Element {
   const property = usePropertyStore((s) => s.property);
+  const selectedInstanceId = usePropertyStore((s) => s.selectedInstanceId);
+  const selectItem = usePropertyStore((s) => s.selectItem);
+  const tool = useDesignerUIStore((s) => s.tool);
+  const viewMode = useDesignerUIStore((s) => s.viewMode);
+  const armedProductId = usePlacementIntentStore((s) => s.armedProductId);
+  const placeAtPoint = usePlacementIntentStore((s) => s.placeAtPoint);
+  const moveTo = usePlacementIntentStore((s) => s.moveTo);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const painterRef = useRef<HTMLCanvasElement | null>(null);
   const stageRef = useRef<ThreeStageHandle | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [camera, setCamera] = useState<OrbitCamera | null>(null);
   const [hover, setHover] = useState<WallHit | null>(null);
+  const [hoverItem, setHoverItem] = useState<string | null>(null);
   // 'gl' until WebGL refuses to start; then the canvas painter takes over.
   const [backend, setBackend] = useState<'gl' | 'painter'>('gl');
   const baseDistanceRef = useRef(10);
   const H = property.wallHeightM ?? DEFAULT_WALL_HEIGHT_M;
+
+  // Items are live in the workspace when no wall tool holds the click.
+  const itemsInteractive = variant === 'overlay' && !onPaintWall && tool === 'hand' && backend === 'gl';
 
   // Bounds of the storey in view — the camera re-frames when they change.
   const level = activeLevelIdOf(property);
@@ -342,18 +391,39 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
     [backend, projected],
   );
 
+  // 3D Mode: a screen-based placement (a strip drop, "+ Add to room") is
+  // meant for THIS floor while the room is on screen. Resolve it on the
+  // floor plane and republish as a plan point for RoomCanvas to validate.
+  const intent = usePlacementIntentStore((s) => s.intent);
+  const consumeIntent = usePlacementIntentStore((s) => s.consume);
+  useEffect(() => {
+    if (variant !== 'overlay' || viewMode !== '3d' || !intent || !isScreenTarget(intent.target)) return;
+    const stage = stageRef.current;
+    const box = containerRef.current?.getBoundingClientRect();
+    if (!stage || !box) return;
+    const local =
+      intent.target === 'center'
+        ? { x: size.width / 2, y: size.height / 2 }
+        : { x: intent.target.clientX - box.left, y: intent.target.clientY - box.top };
+    const p = stage.floorPoint(local.x, local.y);
+    if (p) placeAtPoint(intent.productId, p.x, p.y);
+    else consumeIntent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [intent?.nonce, variant, viewMode]);
+
   // e2e bridge (DEV builds only, like the plan's geometry bridge).
   useEffect(() => {
     if (!import.meta.env.DEV) return;
     const reg = bridgeRegistry();
+    const clientOf = (p: { x: number; y: number } | null) => {
+      const box = containerRef.current?.getBoundingClientRect();
+      return p && box ? { x: box.left + p.x, y: box.top + p.y } : null;
+    };
     reg.instances[variant] = {
       wallScreenPoint: (hit) => {
         const box = containerRef.current?.getBoundingClientRect();
         if (!box) return null;
-        if (backend === 'gl') {
-          const p = stageRef.current?.screenPoint(hit);
-          return p ? { x: box.left + p.x, y: box.top + p.y } : null;
-        }
+        if (backend === 'gl') return clientOf(stageRef.current?.screenPoint(hit) ?? null);
         const face = projected.find(
           (f) =>
             f.face.hit &&
@@ -377,16 +447,37 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
         return box ? hitAt(clientX - box.left, clientY - box.top) : null;
       },
       debug: () => stageRef.current?.debug() ?? null,
+      itemScreenPoint: (instanceId) => {
+        const s = solids.items.find((i) => i.instanceId === instanceId);
+        if (!s || !camera) return null;
+        // The body's centre at half height, through the renderer that is drawing.
+        const p = { x: (s.x0 + s.x1) / 2, y: (s.y0 + s.y1) / 2, z: (s.z0 + s.z1) / 2 };
+        if (backend === 'gl') return clientOf(stageRef.current?.projectPoint(p.x, p.y, p.z) ?? null);
+        const faces = projectScene([{ key: 'probe', kind: 'item', pts: [p], fill: '#000' }], camera, size);
+        return faces[0] ? clientOf(faces[0].pts[0]) : null;
+      },
+      floorScreenPoint: (roomX, roomY) => {
+        if (!camera) return null;
+        if (backend === 'gl') return clientOf(stageRef.current?.projectPoint(roomX, roomY, 0) ?? null);
+        const faces = projectScene([{ key: 'probe', kind: 'floor', pts: [{ x: roomX, y: roomY, z: 0 }], fill: '#000' }], camera, size);
+        return faces[0] ? clientOf(faces[0].pts[0]) : null;
+      },
+      floorAt: (clientX, clientY) => {
+        const box = containerRef.current?.getBoundingClientRect();
+        return box && backend === 'gl' ? stageRef.current?.floorPoint(clientX - box.left, clientY - box.top) ?? null : null;
+      },
     };
     return () => {
       const r = window.__ppwRoomView3d;
       if (r) delete r.instances[variant];
     };
-  }, [projected, camera, variant, backend, hitAt]);
+  }, [projected, camera, variant, backend, hitAt, solids, size]);
 
   // ---- gestures -----------------------------------------------------------
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const drag = useRef<{ x: number; y: number; moved: boolean; pinchDist: number } | null>(null);
+  /** An item being carried across the floor. */
+  const itemDrag = useRef<{ instanceId: string; start: { x: number; y: number }; dx: number; dy: number; moved: boolean } | null>(null);
 
   const localPoint = (e: { clientX: number; clientY: number }) => {
     const r = containerRef.current?.getBoundingClientRect();
@@ -402,8 +493,24 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
     e.currentTarget.setPointerCapture(e.pointerId);
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.current.size === 1) {
+      // A press on an item picks it up; anywhere else orbits.
+      if (itemsInteractive && stageRef.current) {
+        const p = localPoint(e);
+        const hit = stageRef.current.hitItem(p.x, p.y);
+        const floor = hit ? stageRef.current.floorPoint(p.x, p.y) : null;
+        if (hit && floor) {
+          itemDrag.current = { instanceId: hit.instanceId, start: floor, dx: 0, dy: 0, moved: false };
+          drag.current = null;
+          return;
+        }
+      }
       drag.current = { x: e.clientX, y: e.clientY, moved: false, pinchDist: 0 };
     } else if (pointers.current.size === 2) {
+      // A second finger ends any carry and starts a pinch.
+      if (itemDrag.current) {
+        stageRef.current?.resetItemPreview(itemDrag.current.instanceId);
+        itemDrag.current = null;
+      }
       const [a, b] = [...pointers.current.values()];
       drag.current = { x: e.clientX, y: e.clientY, moved: true, pinchDist: Math.hypot(a.x - b.x, a.y - b.y) };
     }
@@ -412,14 +519,27 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const d = drag.current;
     if (!pointers.current.has(e.pointerId)) {
-      // Hover (mouse only): tint the wall under the pointer.
-      if (e.pointerType === 'mouse' && onPaintWall) {
+      // Hover (mouse only): tint the wall under the pointer, or show a hand over an item.
+      if (e.pointerType === 'mouse') {
         const p = localPoint(e);
-        setHover(hitAt(p.x, p.y));
+        if (onPaintWall) setHover(hitAt(p.x, p.y));
+        else if (itemsInteractive) setHoverItem(stageRef.current?.hitItem(p.x, p.y)?.instanceId ?? null);
       }
       return;
     }
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const carry = itemDrag.current;
+    if (carry && pointers.current.size === 1 && stageRef.current) {
+      const p = localPoint(e);
+      const floor = stageRef.current.floorPoint(p.x, p.y);
+      if (!floor) return;
+      carry.dx = floor.x - carry.start.x;
+      carry.dy = floor.y - carry.start.y;
+      if (!carry.moved && Math.hypot(carry.dx, carry.dy) < 0.03) return;
+      carry.moved = true;
+      stageRef.current.moveItemPreview(carry.instanceId, carry.dx, carry.dy);
+      return;
+    }
     if (!d) return;
     if (pointers.current.size >= 2) {
       const [a, b] = [...pointers.current.values()];
@@ -448,6 +568,25 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
 
   const endPointer = (e: React.PointerEvent<HTMLDivElement>, cancelled: boolean) => {
     const had = pointers.current.delete(e.pointerId);
+    const carry = itemDrag.current;
+    if (carry && had) {
+      itemDrag.current = null;
+      const stage = stageRef.current;
+      if (cancelled || !carry.moved) {
+        stage?.resetItemPreview(carry.instanceId);
+        if (!cancelled) selectItem(carry.instanceId);
+        return;
+      }
+      // The drop lands through the plan's own law — RoomCanvas resolves it
+      // and the plan changes (the stage rebuilds the body where it landed)
+      // or refuses it with the plan's own words. The preview is put back a
+      // frame later: after a rebuild there is nothing to put back, after a
+      // refusal the body returns to where the plan has it.
+      const it = findPlacedItem(usePropertyStore.getState().property, carry.instanceId);
+      if (it) moveTo(carry.instanceId, it.x + carry.dx, it.y + carry.dy, e.shiftKey);
+      requestAnimationFrame(() => stage?.resetItemPreview(carry.instanceId));
+      return;
+    }
     const d = drag.current;
     if (pointers.current.size === 0) drag.current = null;
     else if (d) {
@@ -460,10 +599,18 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
       d.pinchDist = 0;
       d.moved = true;
     }
-    if (!had || !d || cancelled || d.moved || !onPaintWall) return;
+    if (!had || !d || cancelled || d.moved) return;
     const p = localPoint(e);
-    const hit = hitAt(p.x, p.y);
-    if (hit) onPaintWall(hit);
+    if (onPaintWall) {
+      const hit = hitAt(p.x, p.y);
+      if (hit) onPaintWall(hit);
+      return;
+    }
+    if (!itemsInteractive || !stageRef.current) return;
+    // A tap on the floor: place the armed product there, else clear the selection.
+    const floor = stageRef.current.floorPoint(p.x, p.y);
+    if (armedProductId && floor) placeAtPoint(armedProductId, floor.x, floor.y);
+    else if (selectedInstanceId) selectItem(null);
   };
 
   // Wheel zoom must be a NON-passive native listener: React's onWheel is
@@ -508,7 +655,17 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
   const drawn = solids.walls.length + solids.floors.length + solids.items.length;
   const viewLabel = empty
     ? 'Room view — draw a room to see it in 3D'
-    : `Room view in 3D — ${drawn} parts. Drag to orbit${onPaintWall ? '; click a wall to paint it' : ''}.`;
+    : `Room view in 3D — ${drawn} parts. Drag to orbit${onPaintWall ? '; click a wall to paint it' : itemsInteractive ? '; tap an item to select it, drag it to move it' : ''}.`;
+  const selectedItem = selectedInstanceId ? findPlacedItem(property, selectedInstanceId) : null;
+  const selectedProduct = selectedItem ? getProductById(selectedItem.productId) : undefined;
+  const armedProduct = armedProductId ? getProductById(armedProductId) : undefined;
+  const defaultCaption = onPaintWall
+    ? 'Drag to look around · click a wall to paint it'
+    : armedProduct
+      ? `Tap the floor to place ${armedProduct.name}`
+      : itemsInteractive
+        ? 'Drag to look around · tap an item to select it · drag it to move it'
+        : 'Drag to look around · pinch or scroll to zoom';
 
   const box = (
     <div
@@ -530,6 +687,7 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
               width={size.width}
               height={size.height}
               hover={hover}
+              selectedInstanceId={variant === 'overlay' ? selectedInstanceId : null}
               onFailed={() => setBackend('painter')}
             />
           </Suspense>
@@ -543,12 +701,15 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
         role="img"
         aria-label={viewLabel}
         className="absolute inset-0"
-        style={{ cursor: hover ? 'pointer' : 'grab' }}
+        style={{ cursor: hover ? 'pointer' : hoverItem ? 'move' : armedProduct && itemsInteractive ? 'copy' : 'grab' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={(e) => endPointer(e, false)}
         onPointerCancel={(e) => endPointer(e, true)}
-        onPointerLeave={() => setHover(null)}
+        onPointerLeave={() => {
+          setHover(null);
+          setHoverItem(null);
+        }}
         onContextMenu={(e) => e.preventDefault()}
       />
       {empty && (
@@ -578,6 +739,34 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
           </button>
         )}
       </div>
+      {/* The selection's card (overlay, item tools): what it is, turn it, remove it —
+          the same actions the plan's keyboard runs, so 2D follows. */}
+      {variant === 'overlay' && itemsInteractive && selectedItem && selectedProduct && (
+        <div
+          className="absolute left-2 top-2 flex max-w-[calc(100%-200px)] items-center gap-2 rounded-xl border border-ppw-rim bg-ppw-chrome px-3 py-2 shadow-[0_12px_32px_rgba(42,41,38,0.18)]"
+          data-testid="view3d-selection"
+        >
+          <span className="min-w-0 truncate text-[12px] font-semibold text-[#37362f]">{selectedProduct.name}</span>
+          <button
+            type="button"
+            className={`${SEL_BTN} border-ppw-rim bg-ppw-chrome text-ppw-charcoal hover:bg-[#f3f1ec]`}
+            onClick={() => rotateSelected(90)}
+            title="Turn 90° (R)"
+            data-testid="view3d-rotate"
+          >
+            Turn ↻
+          </button>
+          <button
+            type="button"
+            className={`${SEL_BTN} border-ppw-clay bg-ppw-chrome text-ppw-charcoal hover:bg-ppw-clay hover:text-white`}
+            onClick={() => deleteSelected()}
+            title="Remove from the room (Delete)"
+            data-testid="view3d-delete"
+          >
+            Remove
+          </button>
+        </div>
+      )}
       {/* Hover read-out / caption. */}
       <p
         className="pointer-events-none absolute bottom-1.5 left-2 right-2 truncate text-[11px] font-medium text-ppw-charcoal"
@@ -585,7 +774,7 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
         data-testid="wallpaint-3d-caption"
         aria-live="polite"
       >
-        {hoverText ?? caption ?? (onPaintWall ? 'Drag to look around · click a wall to paint it' : 'Drag to look around · pinch or scroll to zoom')}
+        {hoverText ?? caption ?? defaultCaption}
       </p>
     </div>
   );
@@ -605,13 +794,23 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
 
   return (
     <div
-      className={`fixed bottom-0 left-0 z-[34] flex flex-col ${className}`}
+      className={`fixed left-0 z-[34] flex flex-col ${className}`}
       // A WORKSPACE, not a dialog: it takes the plan's place under the top
       // bar (3D Mode, 2026-09-17: the bar stays usable so tools can be
-      // switched while the room is on screen) and ends at the docked panel
-      // on md+ (the brush stays reachable); the panel publishes 0px on the
-      // phone, so there it is edge to edge.
-      style={{ top: 'var(--ppw-topbar-h, 0px)', right: 'var(--floor-panel-w, 0px)', background: '#E7E2D8', ...style }}
+      // switched while the room is on screen), ends at the docked panel on
+      // md+ (the brush stays reachable; 0px on the phone) and, in the
+      // workspace, stops ABOVE the catalog (the desktop dock / the phone
+      // strip publish their live heights) so products can be picked while
+      // the room is on screen — buy mode, the Sims way. With a wall tool
+      // live the brush owns the bottom band (phone pass 2026-09-16): the
+      // room runs edge to edge over the folded strip.
+      style={{
+        top: 'var(--ppw-topbar-h, 0px)',
+        right: 'var(--floor-panel-w, 0px)',
+        bottom: onPaintWall ? 0 : 'calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))',
+        background: '#E7E2D8',
+        ...style,
+      }}
       data-testid="wallpaint-3d-overlay"
       role="region"
       aria-label="Room view in 3D"
@@ -620,7 +819,9 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
         <div className="min-w-0">
           <p className="text-[13px] font-semibold leading-tight text-[#37362f]">{title ?? '3D room view'}</p>
           <p className="truncate text-[11px] font-medium leading-tight text-ppw-charcoal">
-            {onPaintWall ? 'Drag to look around · pinch or scroll to zoom · click a wall to paint it' : 'Drag to look around · pinch or scroll to zoom'}
+            {onPaintWall
+              ? 'Drag to look around · pinch or scroll to zoom · click a wall to paint it'
+              : 'Drag to look around · pinch or scroll to zoom · tap an item to select it, drag it to move it'}
           </p>
         </div>
         {footer && (

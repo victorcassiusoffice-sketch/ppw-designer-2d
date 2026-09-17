@@ -83,6 +83,7 @@ import { GamingLayer1Surfaces } from './designer/GamingLayer1Surfaces';
 import { RoomEstimatePanel } from './components/RoomEstimatePanel';
 import { ClearControls } from './components/ClearControls';
 import { useBelowMd } from './lib/useBelowMd';
+import { usePlacementIntentStore } from './store/placementIntentStore';
 import { isPaintEstimateActive } from './designer/paintEstimateFlag';
 import { activeLevelIdOf, isOutdoorRoom, isRoofLevel, levelsOf } from './designer/levels';
 import { isDrawnPolygon } from './designer/roomLayout';
@@ -277,6 +278,11 @@ export default function App() {
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [roomsMenuOpen, setRoomsMenuOpen] = useState(false);
   const [pendingProductId, setPendingProductId] = useState<string | null>(null);
+  // 3D Mode (2026-09-17): the 3D stage is not in RoomCanvas's prop tree, so
+  // the armed product is mirrored into the intent store for a floor tap.
+  useEffect(() => {
+    usePlacementIntentStore.getState().setArmed(pendingProductId);
+  }, [pendingProductId]);
   // Tweak 06 (Phase A) — the OMS Wave 2.4 top-of-screen CSS-perspective
   // 3D preview was removed per Vic's 2026-05-21 designer test (Note 6:
   // "3D Preview at the top is pointless. 2D can work but better to show

@@ -149,6 +149,14 @@ export interface SceneItemInput {
   placement?: string;
   mountHeightCm?: number;
   fill?: string;
+  /** 3D Mode bodies (2026-09-17): the product this is, and how its body is fitted. */
+  productId?: string;
+  frontEdge?: 'top' | 'bottom' | 'left' | 'right';
+  /** A textured body (glTF) fitted to `dimensions_cm`; absent → the shaded box. */
+  meshUrl?: string;
+  /** Fit hints from the model manifest. */
+  modelFront?: '+z' | '-z' | '+x' | '-x';
+  lengthAxis?: 'x' | 'z' | 'auto';
 }
 
 export interface SceneInput {

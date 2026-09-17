@@ -11,6 +11,14 @@
  *      the room shows, click a wall in 3D, the plan is painted;
  *   4. Plan returns.
  *
+ * Sims build mode in 3D (Vic 2026-09-17: "it should reflect what's done on
+ * the 2D and vice versa … functioning exactly like The Sims"):
+ *   5. a tap on a body selects it — the plan's selection — and R turns it;
+ *   6. a drag across the floor moves it, landing through the plan's own
+ *      drop rules (the grid here);
+ *   7. a dock tile armed while the room shows + a tap on the floor places
+ *      the product there, and the tile disarms.
+ *
  * Runs on a dev server (the bridge is DEV-only): PPW_E2E_BASE_URL=http://127.0.0.1:5199
  */
 import { test, expect, type Page } from '@playwright/test';
@@ -23,14 +31,32 @@ const ROOM = {
   placedItems: [{ instanceId: 'i1', productId: 'k1-nordictrack-2450', x: 0.3, y: 0.3, rotation: 90 }],
 };
 
-async function seed(page: Page): Promise<void> {
+async function seed(page: Page, room: typeof ROOM = ROOM): Promise<void> {
   await page.addInitScript((p) => {
     if (localStorage.getItem('__ppw_seeded') === '1') return;
     localStorage.clear();
     localStorage.setItem('__ppw_seeded', '1');
     localStorage.setItem('ppw_designer_coach_v1', '1');
     localStorage.setItem('ppw_property_v2', JSON.stringify({ state: { property: p, showGrid: true, pxPerMetre: 100 }, version: 2 }));
-  }, { id: 'p', name: 'Vic', activeRoomId: 'r1', rooms: [ROOM], wallHeightM: 2.7 });
+  }, { id: 'p', name: 'Vic', activeRoomId: 'r1', rooms: [room], wallHeightM: 2.7 });
+}
+
+type Pt = { x: number; y: number } | null;
+interface Bridge {
+  itemScreenPoint: (id: string) => Pt;
+  floorScreenPoint: (x: number, y: number) => Pt;
+  floorAt: (x: number, y: number) => Pt;
+}
+// Each runs INSIDE the page (a Node-side helper is not visible to page.evaluate).
+const itemPoint = (page: Page, id: string) => page.evaluate((i) => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.itemScreenPoint(i), id);
+const floorPoint = (page: Page, x: number, y: number) =>
+  page.evaluate(([a, b]) => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.floorScreenPoint(a, b), [x, y] as [number, number]);
+const floorAt = (page: Page, x: number, y: number) =>
+  page.evaluate(([a, b]) => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.floorAt(a, b), [x, y] as [number, number]);
+
+/** The persisted plan's items in room 1. */
+async function items(page: Page): Promise<Array<{ instanceId: string; productId: string; x: number; y: number; rotation: number }>> {
+  return page.evaluate(() => JSON.parse(localStorage.getItem('ppw_property_v2')!).state.property.rooms[0].placedItems);
 }
 
 async function bridge(page: Page) {
@@ -38,6 +64,16 @@ async function bridge(page: Page) {
     const b = (window as unknown as { __ppwRoomView3d?: { backend: () => string; faceCount: () => number; faces: () => Array<{ key: string; holes: number }> } }).__ppwRoomView3d;
     return b ? { backend: b.backend(), faces: b.faceCount(), keys: b.faces().map((f) => f.key) } : null;
   });
+}
+
+/**
+ * `backend` reads 'gl' from the first render — the lazy stage arrives and
+ * builds its parts a moment later. Wait for the parts, and for GL to have
+ * kept the job (the painter takes over only if WebGL refused to start).
+ */
+async function awaitStage(page: Page): Promise<void> {
+  await expect.poll(async () => (await bridge(page))?.faces ?? 0, { timeout: 20_000 }).toBeGreaterThan(0);
+  expect((await bridge(page))?.backend).toBe('gl');
 }
 
 test.describe('3D Mode — desktop', () => {
@@ -64,7 +100,7 @@ test.describe('3D Mode — desktop', () => {
     await expect.poll(async () => (await threeLoads()).length, { timeout: 15_000 }).toBeGreaterThan(0);
 
     // The GL stage draws it: walls, the floor and the item are all there.
-    await expect.poll(async () => (await bridge(page))?.backend, { timeout: 15_000 }).toBe('gl');
+    await awaitStage(page);
     const b = (await bridge(page))!;
     expect(b.faces).toBeGreaterThan(0);
     expect(b.keys).toContain('floor-r1');
@@ -91,7 +127,7 @@ test.describe('3D Mode — desktop', () => {
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
     await page.locator('[data-testid="view-mode-3d"]').click();
     await expect(page.locator('[data-testid="wallpaint-3d-overlay"]')).toBeVisible();
-    await expect.poll(async () => (await bridge(page))?.backend, { timeout: 15_000 }).toBe('gl');
+    await awaitStage(page);
     await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
     await page.waitForSelector('[data-testid="wallpaint-palette"]');
     // The panel's card and the overlay both carry a caption — read the overlay's.
@@ -105,6 +141,59 @@ test.describe('3D Mode — desktop', () => {
     await expect
       .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('ppw_property_v2')!).state.property.rooms[0].wallPaint?.map((e: { edgeIndex: number }) => e.edgeIndex) ?? []))
       .toEqual([0]);
+  });
+
+  test('Sims build mode: tap selects, R turns, a drag moves through the plan rules, a dock tile + floor tap places', async ({ page }) => {
+    // The treadmill mid-room (a box body: no manifest model), room to turn and to slide.
+    await seed(page, { ...ROOM, placedItems: [{ instanceId: 'i1', productId: 'k1-nordictrack-2450', x: 1.5, y: 1.5, rotation: 0 }] });
+    await page.goto('/designer');
+    await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    await page.locator('[data-testid="view-mode-3d"]').click();
+    const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
+    await expect(overlay).toBeVisible();
+    await awaitStage(page);
+    await expect(page.locator('[data-testid="view3d-selection"]')).toHaveCount(0);
+
+    // 5. Tap the body → selected in the plan; the card names it; R turns it.
+    const on = await itemPoint(page, 'i1');
+    expect(on).not.toBeNull();
+    await page.mouse.click(on!.x, on!.y);
+    await expect(page.locator('[data-testid="view3d-selection"]')).toContainText('NordicTrack');
+    await page.keyboard.press('r');
+    await expect.poll(async () => (await items(page))[0].rotation).toBe(90);
+
+    // 6. Drag it 1 m east across the floor: the move lands through the plan's
+    //    resolver, on the grid — so x is exactly +1 (the seed is on the grid).
+    const before = (await items(page))[0];
+    const start = (await itemPoint(page, 'i1'))!;
+    const startFloor = (await floorAt(page, start.x, start.y))!;
+    expect(startFloor).not.toBeNull();
+    const end = (await floorPoint(page, startFloor.x + 1, startFloor.y))!;
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    for (let i = 1; i <= 8; i++) await page.mouse.move(start.x + ((end.x - start.x) * i) / 8, start.y + ((end.y - start.y) * i) / 8);
+    await page.mouse.up();
+    await expect.poll(async () => (await items(page))[0].x).toBeCloseTo(before.x + 1, 5);
+    expect((await items(page))[0].y).toBeCloseTo(before.y, 5);
+    // The camera did not orbit for a carry: the item is still where it was aimed.
+    await expect(page.locator('[data-testid="view3d-selection"]')).toContainText('NordicTrack');
+
+    // 7. Arm a product from the dock under the room, tap the floor: placed there.
+    const tile = page.locator('[data-testid="dock-strip"] [data-product-id="demo-floor-lamp"]');
+    await tile.scrollIntoViewIfNeeded();
+    await tile.click();
+    await expect(tile).toHaveAttribute('data-armed', 'true');
+    await expect(page.locator('[data-testid="wallpaint-3d-overlay"] [data-testid="wallpaint-3d-caption"]')).toContainText('Tap the floor');
+    const spot = (await floorPoint(page, 4.0, 3.0))!;
+    await page.mouse.click(spot.x, spot.y);
+    await expect.poll(async () => (await items(page)).filter((i) => i.productId === 'demo-floor-lamp').length).toBe(1);
+    const lamp = (await items(page)).find((i) => i.productId === 'demo-floor-lamp')!;
+    // Centred on the tap (0.4 m base), within a grid step.
+    expect(Math.abs(lamp.x + 0.2 - 4.0)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(lamp.y + 0.2 - 3.0)).toBeLessThanOrEqual(0.5);
+    await expect(tile).toHaveAttribute('data-armed', 'false');
+    // The new body is on the stage.
+    await expect.poll(async () => (await bridge(page))?.keys.some((k) => k.startsWith('item-') && k !== 'item-i1')).toBe(true);
   });
 });
 
@@ -122,7 +211,7 @@ test.describe('3D Mode — phone', () => {
     const box = (await overlay.boundingBox())!;
     expect(box.width).toBe(390);
     expect(box.y).toBeGreaterThan(40); // under the 56 px strip
-    await expect.poll(async () => (await bridge(page))?.backend, { timeout: 15_000 }).toBe('gl');
+    await awaitStage(page);
     await page.locator('[data-testid="wallpaint-3d-close"]').tap();
     await expect(overlay).toHaveCount(0);
   });

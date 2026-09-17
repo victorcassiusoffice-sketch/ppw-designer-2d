@@ -88,6 +88,15 @@ export interface ItemSolid {
   rotationDeg: number;
   hex: string;
   placement?: string;
+  /** Catalog truth for the body's fit (metres). */
+  lengthM: number;
+  widthM: number;
+  heightM: number;
+  productId?: string;
+  frontEdge?: 'top' | 'bottom' | 'left' | 'right';
+  meshUrl?: string;
+  modelFront?: '+z' | '-z' | '+x' | '-x';
+  lengthAxis?: 'x' | 'z' | 'auto';
 }
 
 export interface SceneSolids {
@@ -181,6 +190,14 @@ export function buildSolids(input: SceneInput): SceneSolids {
         rotationDeg: it.rotation,
         hex: it.fill ?? '#CFC7B8',
         placement: it.placement,
+        lengthM: cmToM(it.lengthCm),
+        widthM: cmToM(it.widthCm),
+        heightM: cmToM(it.heightCm),
+        productId: it.productId,
+        frontEdge: it.frontEdge,
+        meshUrl: it.meshUrl,
+        modelFront: it.modelFront,
+        lengthAxis: it.lengthAxis,
       });
     }
   }

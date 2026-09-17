@@ -1,0 +1,72 @@
+{
+  "desktopItems": 9,
+  "desktopBefore": {
+    "backend": "gl",
+    "faces": 22,
+    "debug": {
+      "frames": 2,
+      "children": 24,
+      "camera": [
+        -6.43632386603082,
+        12.82682587806397,
+        18.451191277762995
+      ],
+      "target": [
+        2.75,
+        1.1340000000000001,
+        3.75
+      ],
+      "renderer": "1440x722 calls=88 tris=2496"
+    }
+  },
+  "picked": {
+    "id": "sofap-01-console-table",
+    "p": "demo-console-table",
+    "room": "living",
+    "pt": {
+      "x": 560.6134447511884,
+      "y": 437.3627414181308
+    }
+  },
+  "selectionCard": 1,
+  "selectionText": "Wellness Console Table\nTurn ↻\nRemove",
+  "desktopAfter": {
+    "backend": "gl",
+    "faces": 22,
+    "debug": {
+      "frames": 10,
+      "children": 25,
+      "camera": [
+        -6.43632386603082,
+        12.82682587806397,
+        18.451191277762995
+      ],
+      "target": [
+        2.75,
+        1.1340000000000001,
+        3.75
+      ],
+      "renderer": "1440x722 calls=89 tris=2498"
+    }
+  },
+  "desktopErrors": [],
+  "phone": {
+    "backend": "gl",
+    "faces": 22,
+    "debug": {
+      "frames": 2,
+      "children": 24,
+      "camera": [
+        -11.769758411871946,
+        19.615495903859273,
+        26.986470739852923
+      ],
+      "target": [
+        2.75,
+        1.1340000000000001,
+        3.75
+      ],
+      "renderer": "780x1378 calls=88 tris=2496"
+    }
+  }
+}

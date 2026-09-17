@@ -1,0 +1,12 @@
+{
+  "demo-console-table": { "url": "/models/kenney/desk.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
+  "demo-wall-shelf": { "url": "/models/kenney/bookcaseOpenLow.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
+  "demo-wall-mirror": { "url": "/models/kenney/bathroomMirror.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
+  "demo-aroma-diffuser": { "url": "/models/kenney/speakerSmall.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
+  "demo-potted-plant": { "url": "/models/kenney/plantSmall1.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
+  "demo-floor-lamp": { "url": "/models/kenney/lampRoundFloor.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
+  "demo-pendant-light": { "url": "/models/kenney/lampSquareCeiling.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
+  "demo-wall-sconce": { "url": "/models/kenney/lampWall.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
+  "demo-outdoor-bench": { "url": "/models/kenney/bench.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" },
+  "demo-garden-tree": { "url": "/models/kenney/pottedPlant.glb", "modelFront": "+z", "lengthAxis": "auto", "licence": "CC0 — Kenney Furniture Kit 2.0" }
+}

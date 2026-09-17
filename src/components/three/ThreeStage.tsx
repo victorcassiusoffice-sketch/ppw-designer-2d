@@ -20,8 +20,78 @@
  */
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { cameraPosition, GLASS_HEX, GROUND_HEX, HOVER_HEX, type OrbitCamera, type WallHit } from '../../designer/roomView3d';
-import { cutawayState, wallAnchor, type SceneSolids, type WallShow, type WallSolid } from '../../designer/roomSolids';
+import { cutawayState, wallAnchor, type ItemSolid, type SceneSolids, type WallShow, type WallSolid } from '../../designer/roomSolids';
+import { fitToSize, itemPose } from '../../designer/fitToSize';
+
+// ---------------------------------------------------------------------------
+// Product bodies (2026-09-17): a textured glTF per product, fetched once and
+// cloned per placed item, fitted EXACTLY to the catalog's dimensions by
+// `fitToSize`. Until it arrives (or if it cannot), the shaded box stands in.
+// ---------------------------------------------------------------------------
+const gltfLoader = new GLTFLoader();
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('/draco/');
+gltfLoader.setDRACOLoader(dracoLoader);
+
+interface BodyTemplate {
+  scene: THREE.Group;
+  bbox: THREE.Box3;
+}
+const bodyCache = new Map<string, Promise<BodyTemplate>>();
+
+function loadBody(url: string): Promise<BodyTemplate> {
+  let p = bodyCache.get(url);
+  if (!p) {
+    p = gltfLoader.loadAsync(url).then((gltf) => {
+      const scene = gltf.scene;
+      scene.updateMatrixWorld(true);
+      scene.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (m.isMesh) {
+          m.castShadow = true;
+          m.receiveShadow = true;
+        }
+      });
+      return { scene, bbox: new THREE.Box3().setFromObject(scene) };
+    });
+    p.catch(() => bodyCache.delete(url));
+    bodyCache.set(url, p);
+  }
+  return p;
+}
+
+/** The body for one placed item: fitted to its catalog box, posed on the plan. */
+function bodyObject(it: ItemSolid, tpl: BodyTemplate): THREE.Group {
+  const fit = fitToSize({
+    bbox: tpl.bbox,
+    lengthCm: it.lengthM * 100,
+    widthCm: it.widthM * 100,
+    heightCm: it.heightM * 100,
+    frontEdge: it.frontEdge,
+    modelFront: it.modelFront,
+    lengthAxis: it.lengthAxis,
+  });
+  const inner = tpl.scene.clone(true);
+  // Own materials per placed item: a shared material would tint every copy
+  // of the product when one is selected or hovered.
+  inner.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (m.isMesh) m.material = Array.isArray(m.material) ? m.material.map((x) => x.clone()) : (m.material as THREE.Material).clone();
+  });
+  inner.scale.set(fit.scale.x, fit.scale.y, fit.scale.z);
+  inner.rotation.set(0, fit.yawRad, 0);
+  inner.position.set(fit.offset.x, fit.offset.y, fit.offset.z);
+  const pose = itemPose({ x: it.x0, y: it.y0, footprintW: it.x1 - it.x0, footprintH: it.y1 - it.y0, rotationDeg: it.rotationDeg, z0: it.z0 });
+  const holder = new THREE.Group();
+  holder.position.set(pose.centre.x, pose.centre.z, pose.centre.y);
+  holder.rotation.set(0, pose.yawRad, 0);
+  holder.add(inner);
+  holder.userData = { key: it.key, instanceId: it.instanceId, body: true };
+  return holder;
+}
 
 export interface ThreeStageHandle {
   /** Wall under a canvas-local point, or null. */
@@ -32,6 +102,16 @@ export interface ThreeStageHandle {
   faces(): Array<{ key: string; holes: number }>;
   /** DEV bridge: what the stage has done so far. */
   debug(): { frames: number; children: number; camera: number[]; target: number[]; renderer: string };
+  /** The placed item under a canvas-local point (its body or its box), or null. */
+  hitItem(x: number, y: number): { instanceId: string } | null;
+  /** Where a canvas-local point meets the floor plane, in PLAN metres, or null when it looks at the sky. */
+  floorPoint(x: number, y: number): { x: number; y: number } | null;
+  /** A PLAN point (x, y on the plan, z up) on the canvas, or null when it is behind the camera. */
+  projectPoint(x: number, y: number, z: number): { x: number; y: number } | null;
+  /** Slide an item's body by a plan-metre delta while a drag is in progress (no store write). */
+  moveItemPreview(instanceId: string, dxM: number, dyM: number): void;
+  /** Put a previewed body back where the plan has it. */
+  resetItemPreview(instanceId: string): void;
 }
 
 export interface ThreeStageProps {
@@ -40,6 +120,8 @@ export interface ThreeStageProps {
   width: number;
   height: number;
   hover: WallHit | null;
+  /** The plan's selection — tinted so 2D and 3D agree on what is picked. */
+  selectedInstanceId?: string | null;
   /** WebGL could not start (headless without GL, an old device) — the parent falls back to the painter. */
   onFailed?: () => void;
 }
@@ -132,8 +214,38 @@ function disposeObject(root: THREE.Object3D): void {
   });
 }
 
+/** The placed-item root (the box mesh or the body holder) an object belongs to. */
+function itemRootOf(o: THREE.Object3D | null): THREE.Object3D | null {
+  let n: THREE.Object3D | null = o;
+  while (n && n.userData?.instanceId === undefined) n = n.parent;
+  return n;
+}
+
+/** Tint every mesh of an item root (selection / preview), remembering the untinted state. */
+function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): void {
+  root.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh) return;
+    const mats = Array.isArray(m.material) ? m.material : [m.material];
+    for (const mat of mats) {
+      const std = mat as THREE.MeshStandardMaterial;
+      if (!std.emissive) continue;
+      if (hex) {
+        std.emissive.set(hex);
+        std.emissiveIntensity = intensity;
+      } else {
+        std.emissive.set(0x000000);
+        std.emissiveIntensity = 0;
+      }
+    }
+  });
+}
+
+const SELECT_HEX = '#79C7AD';
+const FLOOR_PLANE = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, camera, width, height, hover, onFailed },
+  { solids, camera, width, height, hover, selectedInstanceId, onFailed },
   ref,
 ): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -144,12 +256,17 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const contentRef = useRef<THREE.Group | null>(null);
   const wallsRef = useRef<WallEntry[]>([]);
   const floorsRef = useRef<THREE.Mesh[]>([]);
-  const itemsRef = useRef<THREE.Mesh[]>([]);
+  const itemsRef = useRef<THREE.Object3D[]>([]);
+  const buildRef = useRef(0);
   const rafRef = useRef<number | null>(null);
   const failedRef = useRef(false);
   const hoveredRef = useRef<WallEntry | null>(null);
   const framesRef = useRef(0);
   const targetRef = useRef<number[]>([0, 0, 0]);
+  /** Bodies slid by a drag preview, with where the plan has them. */
+  const previewRef = useRef(new Map<string, THREE.Vector3>());
+  const selectedRootRef = useRef<THREE.Object3D | null>(null);
+  const padRef = useRef<THREE.Mesh | null>(null);
 
   const requestRender = () => {
     if (rafRef.current !== null || failedRef.current) return;
@@ -258,6 +375,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     floorsRef.current = [];
     itemsRef.current = [];
     hoveredRef.current = null;
+    previewRef.current.clear();
+    selectedRootRef.current = null;
+    padRef.current = null;
 
     const bounds = new THREE.Box3();
 
@@ -291,6 +411,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       bounds.expandByObject(full);
     }
 
+    const buildId = ++buildRef.current;
     for (const it of solids.items) {
       const sx = Math.max(0.01, it.x1 - it.x0);
       const sy = Math.max(0.01, it.z1 - it.z0);
@@ -299,10 +420,33 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       mesh.position.set((it.x0 + it.x1) / 2, (it.z0 + it.z1) / 2, (it.y0 + it.y1) / 2);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
-      mesh.userData = { key: it.key };
+      mesh.userData = { key: it.key, instanceId: it.instanceId };
       content.add(mesh);
       itemsRef.current.push(mesh);
       bounds.expandByObject(mesh);
+      // Swap the box for the product's body once it has loaded — unless the
+      // plan has been rebuilt since (a stale load must not resurrect).
+      if (it.meshUrl) {
+        loadBody(it.meshUrl)
+          .then((tpl) => {
+            if (buildRef.current !== buildId || !contentRef.current) return;
+            const body = bodyObject(it, tpl);
+            contentRef.current.remove(mesh);
+            mesh.geometry.dispose();
+            (mesh.material as THREE.Material).dispose();
+            contentRef.current.add(body);
+            const i = itemsRef.current.indexOf(mesh);
+            if (i >= 0) itemsRef.current[i] = body;
+            if (selectedRootRef.current === mesh) {
+              selectedRootRef.current = body;
+              tintItem(body, SELECT_HEX, 0.35);
+            }
+            requestRender();
+          })
+          .catch(() => {
+            /* the box stays */
+          });
+      }
     }
 
     // Sun from the north-west, high: shadows fall to the south-east across
@@ -356,6 +500,40 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     requestRender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [camera, width, height, solids]);
+
+  // ---- selection (the plan's selection, mirrored) -----------------------------------
+  // A mint pad on the floor under the picked body — the Sims' footprint
+  // highlight — plus a tint on the body itself. The pad lives in the content
+  // group, which a plan change rebuilds, so it is re-laid on every rebuild.
+  useEffect(() => {
+    const prev = selectedRootRef.current;
+    if (prev) tintItem(prev, null, 0);
+    const oldPad = padRef.current;
+    if (oldPad) {
+      oldPad.parent?.remove(oldPad);
+      oldPad.geometry.dispose();
+      (oldPad.material as THREE.Material).dispose();
+      padRef.current = null;
+    }
+    const next = selectedInstanceId ? itemsRef.current.find((o) => o.userData.instanceId === selectedInstanceId) ?? null : null;
+    if (next) tintItem(next, SELECT_HEX, 0.5);
+    selectedRootRef.current = next;
+    const s = selectedInstanceId ? solids.items.find((i) => i.instanceId === selectedInstanceId) : undefined;
+    if (s && contentRef.current) {
+      const m = 0.06;
+      const pad = new THREE.Mesh(
+        new THREE.PlaneGeometry(s.x1 - s.x0 + 2 * m, s.y1 - s.y0 + 2 * m),
+        new THREE.MeshBasicMaterial({ color: SELECT_HEX, transparent: true, opacity: 0.55, depthWrite: false }),
+      );
+      pad.rotation.x = -Math.PI / 2;
+      pad.position.set((s.x0 + s.x1) / 2, 0.012, (s.y0 + s.y1) / 2);
+      pad.userData = { key: `pad-${s.instanceId}` };
+      contentRef.current.add(pad);
+      padRef.current = pad;
+    }
+    requestRender();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedInstanceId, solids]);
 
   // ---- hover tint ----------------------------------------------------------------
   useEffect(() => {
@@ -417,6 +595,63 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         for (const f of floorsRef.current) out.push({ key: f.userData.key as string, holes: 0 });
         for (const it of itemsRef.current) out.push({ key: it.userData.key as string, holes: 0 });
         return out;
+      },
+      hitItem(x, y) {
+        const c = cameraRef.current;
+        if (!c || width < 8 || height < 8) return null;
+        const ray = new THREE.Raycaster();
+        ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
+        const hits = ray.intersectObjects(itemsRef.current, true);
+        const root = hits.length ? itemRootOf(hits[0].object) : null;
+        return root ? { instanceId: root.userData.instanceId as string } : null;
+      },
+      floorPoint(x, y) {
+        const c = cameraRef.current;
+        if (!c || width < 8 || height < 8) return null;
+        const ray = new THREE.Raycaster();
+        ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
+        const p = new THREE.Vector3();
+        return ray.ray.intersectPlane(FLOOR_PLANE, p) ? { x: p.x, y: p.z } : null;
+      },
+      projectPoint(x, y, z) {
+        const c = cameraRef.current;
+        if (!c || width < 8 || height < 8) return null;
+        // Plan (x, y, z-up) → three (x, z, y): the same map the solids use.
+        const v = new THREE.Vector3(x, z, y).project(c);
+        if (v.z > 1) return null;
+        return { x: ((v.x + 1) / 2) * width, y: ((1 - v.y) / 2) * height };
+      },
+      moveItemPreview(instanceId, dxM, dyM) {
+        const root = itemsRef.current.find((o) => o.userData.instanceId === instanceId);
+        if (!root) return;
+        let home = previewRef.current.get(instanceId);
+        if (!home) {
+          home = root.position.clone();
+          previewRef.current.set(instanceId, home);
+        }
+        root.position.set(home.x + dxM, home.y, home.z + dyM);
+        // The pad rides with the body it marks.
+        const pad = padRef.current;
+        if (pad && selectedRootRef.current === root) {
+          let padHome = previewRef.current.get(`pad:${instanceId}`);
+          if (!padHome) {
+            padHome = pad.position.clone();
+            previewRef.current.set(`pad:${instanceId}`, padHome);
+          }
+          pad.position.set(padHome.x + dxM, padHome.y, padHome.z + dyM);
+        }
+        requestRender();
+      },
+      resetItemPreview(instanceId) {
+        const root = itemsRef.current.find((o) => o.userData.instanceId === instanceId);
+        const home = previewRef.current.get(instanceId);
+        if (root && home) root.position.copy(home);
+        const pad = padRef.current;
+        const padHome = previewRef.current.get(`pad:${instanceId}`);
+        if (pad && padHome) pad.position.copy(padHome);
+        previewRef.current.delete(instanceId);
+        previewRef.current.delete(`pad:${instanceId}`);
+        requestRender();
       },
       debug() {
         const r = rendererRef.current;

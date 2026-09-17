@@ -70,7 +70,9 @@ import { formatCurrency } from '../lib/currency';
 // Batch 3 Fix 3.2 — vertices live in a tiny shared store so the
 // RoomList sidebar can render the live counters next to the room.
 import { useDrawProgressStore } from '../store/drawProgressStore';
-import { usePlacementIntentStore } from '../store/placementIntentStore';
+import { usePlacementIntentStore, isScreenTarget } from '../store/placementIntentStore';
+// 3D Mode (2026-09-17): the plan's drop law as a function, for moves made on the 3D floor.
+import { resolveItemDrop } from '../designer/itemDrop';
 // Sims feature-finish (2026-05-30) — inline floating cluster (flagship),
 // precision snap step, haptics. All additive; Konva stable-lock untouched.
 import { FloatingCluster } from '../designer/FloatingCluster';
@@ -1753,6 +1755,19 @@ export function RoomCanvas({
       consumeIntent();
       return;
     }
+    // 3D Mode (2026-09-17): a screen-based intent (a strip drop, "+ Add to
+    // room") means the 3D floor, not this hidden plan. The 3D stage turns
+    // it into a plan point and republishes it as `{ roomX, roomY }`; leave
+    // the original for it.
+    if (useDesignerUIStore.getState().viewMode === '3d' && isScreenTarget(placementIntent.target)) return;
+    if (!isScreenTarget(placementIntent.target)) {
+      const { roomX, roomY } = placementIntent.target;
+      const placed = placeAtRoomPoint(roomX, roomY, placementIntent.productId, null);
+      // A tap-to-place from the 3D floor disarms like a click on the plan does.
+      if (placed && pendingProductId === placementIntent.productId) setPendingProductId?.(null);
+      consumeIntent();
+      return;
+    }
     // Popup/drag placements auto-orient (null): near a wall they snap
     // flush facing into the room, mid-room they face the viewer. The user
     // can still rotate after via the on-canvas rotate handle.
@@ -1785,6 +1800,57 @@ export function RoomCanvas({
     consumeIntent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [placementIntent?.nonce]);
+
+  // 3D Mode (2026-09-17): an item dragged on the 3D floor lands through the
+  // plan's own drop law (designer/itemDrop.ts — the twin of the Konva drag
+  // handler below): wall snap + facing, tile lattice, layer collision,
+  // room routing, the same refusals. So a move in 3D IS a move on the plan.
+  const moveIntent = usePlacementIntentStore((s) => s.moveIntent);
+  const consumeMove = usePlacementIntentStore((s) => s.consumeMove);
+  useEffect(() => {
+    if (!moveIntent) return;
+    const ps = usePropertyStore.getState();
+    const roomsNow = ps.property.rooms;
+    const owner = roomsNow.find((r) => r.placedItems.some((i) => i.instanceId === moveIntent.instanceId));
+    const item = owner?.placedItems.find((i) => i.instanceId === moveIntent.instanceId);
+    const product = item ? getProductById(item.productId) : undefined;
+    if (!owner || !item || !product) {
+      consumeMove();
+      return;
+    }
+    const outdoorOwner = isOutdoorRoom(owner);
+    const result = resolveItemDrop(
+      {
+        snapStep,
+        polygon: owner.polygon,
+        placedItems: owner.placedItems,
+        outdoor: outdoorOwner,
+        fitsOutdoors,
+        snapWalls: outdoorOwner ? [...freeWalls, ...buildingWallsAsFree] : freeWalls,
+        wallRects: outdoorOwner ? [...freeWallRects, ...freeWallObstacleRects(buildingWallsAsFree)] : freeWallRects,
+        resolveContainer,
+        layerRects,
+        surfaceRects,
+        allRooms: roomsNow,
+      },
+      item,
+      product,
+      moveIntent.roomX,
+      moveIntent.roomY,
+      moveIntent.shiftKey,
+    );
+    if (result.ok) {
+      if (result.crossRoom) ps.moveItemToRoom(item.instanceId, result.roomId, result.x, result.y, result.rotation);
+      else updateItem(item.instanceId, { x: result.x, y: result.y, rotation: result.rotation, ...(result.parentInstanceId ? { parentInstanceId: result.parentInstanceId } : {}) });
+      console.log('[drag-move]', { reason: result.crossRoom ? 'cross-room' : 'same-room', via: '3d', rule: result.reason });
+    } else {
+      haptic('invalid');
+      pushToast(result.message, 'warn');
+      console.log('[drag-move]', { reason: 'rejected', via: '3d', cause: result.reason });
+    }
+    consumeMove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [moveIntent?.nonce]);
 
   /**
    * Zoom about the centre of the stage (Vic 2026-09-08 — zoom belongs on the
