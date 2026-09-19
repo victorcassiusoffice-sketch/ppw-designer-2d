@@ -25,6 +25,9 @@
  */
 
 import { SOFAP_A_LA_CARTE, sofapColourMatchToPaintColours, type SofapColourMatchRow } from './sofapColours';
+import { TINTEX_BRAND, TINTEX_BRAND_ID, TINTEX_PAINTS } from './tintexPaints';
+import { ralToPaintColour, tintexCardFrom, type RalRow } from './tintexColours';
+import ralClassicJson from './ralClassic.json';
 
 export interface WallPaintTin {
   sizeL: number;
@@ -45,6 +48,8 @@ export interface PaintBrand {
   country: string;
   /** How the brand tints — shown once in the panel, e.g. "Colour Match, 20 000 shades". */
   colourSystem?: string;
+  /** Name of the on-demand chart behind "All … shades" (Sofap "Colour Match", TintEX "RAL Classic"). */
+  chartName?: string;
   /** The brand's primer for bare plaster (`WallPaint.id` with category 'primer'), if priced. */
   primerId?: string;
 }
@@ -122,6 +127,16 @@ export interface WallPaint {
   /** The datasheet's spread-rate range, when it publishes one. */
   coverage_low_m2_per_l?: number;
   coverage_high_m2_per_l?: number;
+  /**
+   * True when the brand publishes NO spread rate and a category norm stands
+   * in — the panel and the breakdown mark the figure "(est.)" wherever it
+   * is used. Never set on a line whose datasheet states a yield.
+   */
+  coverage_estimated?: boolean;
+  /** Where the spread rate comes from (the datasheet quote, or the estimate's reasoning). */
+  coverage_source?: string;
+  /** How the tin prices were obtained when the source is not the seller's live list (a dated capture, a quote). */
+  price_note?: string;
   /** Coats assumed for full coverage. */
   recommended_coats: number;
   /** Where the coats figure comes from (TDS revision, or "standard practice"). */
@@ -606,6 +621,8 @@ export const WALL_PAINTS: WallPaint[] = [
   // `otherBrandPaints.ts` (Mauvilac, Polytol) but NOT loaded — Vic
   // 2026-09-14: the pitch stays on the Sofap range. Spread them in here
   // (and their brands into PAINT_BRANDS) to switch them on.
+  // TintEX (Vic 2026-09-19): five lines, loaded — see `tintexPaints.ts`.
+  ...TINTEX_PAINTS,
 ];
 
 /**
@@ -649,8 +666,10 @@ export const PAINT_BRANDS: PaintBrand[] = [
     website: 'https://www.sofaponlinestore.mu',
     country: 'MU',
     colourSystem: 'Colour Match — over 20,000 colours, mixed in store',
+    chartName: 'Colour Match',
     primerId: 'permoglaze-aqua-prime',
   },
+  TINTEX_BRAND,
 ];
 
 /**
@@ -658,7 +677,7 @@ export const PAINT_BRANDS: PaintBrand[] = [
  * its own colour card. The full in-store chart (Sofap: 1,050 Colour Match
  * shades) loads on demand via `loadPaintColourChart`.
  */
-export const PAINT_COLOURS: PaintColour[] = [...SOFAP_A_LA_CARTE];
+export const PAINT_COLOURS: PaintColour[] = [...SOFAP_A_LA_CARTE, ...tintexCardFrom(ralClassicJson as RalRow[])];
 
 const chartCache = new Map<string, Promise<PaintColour[]>>();
 
@@ -671,6 +690,9 @@ export function loadPaintColourChart(brandId: string): Promise<PaintColour[]> {
     p = import('./sofapColourMatch.json').then((m) =>
       sofapColourMatchToPaintColours((m.default ?? m) as unknown as SofapColourMatchRow[]),
     );
+  } else if (brandId === TINTEX_BRAND_ID) {
+    // The whole RAL Classic deck (K7), the card being a selection of it.
+    p = Promise.resolve((ralClassicJson as RalRow[]).map(ralToPaintColour));
   } else {
     p = Promise.resolve([]);
   }
@@ -681,7 +703,7 @@ export function loadPaintColourChart(brandId: string): Promise<PaintColour[]> {
 
 /** Does the brand have an on-demand chart beyond its card colours? */
 export function brandHasColourChart(brandId: string): boolean {
-  return brandId === SOFAP_BRAND_ID;
+  return brandId === SOFAP_BRAND_ID || brandId === TINTEX_BRAND_ID;
 }
 
 export function findPaintBrandById(id: string | undefined): PaintBrand | undefined {

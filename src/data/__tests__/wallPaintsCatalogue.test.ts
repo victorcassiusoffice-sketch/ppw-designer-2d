@@ -26,27 +26,37 @@ describe('wall-paint catalogue (2026-09-14)', () => {
   it('every product cites a seller date, VAT status and a datasheet coats source', () => {
     for (const p of WALL_PAINTS) {
       expect(p.priced_at, p.id).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      expect(p.vat_inclusive, p.id).toBe(true);
+      // Sofap's store states VAT inclusive; TintEX's 2021 shop capture never
+      // states VAT, so the field stays undefined and the panel says so.
+      if (p.brandId === 'tintex') expect(p.vat_inclusive, p.id).toBeUndefined();
+      else expect(p.vat_inclusive, p.id).toBe(true);
       expect(p.coats_source, p.id).toBeTruthy();
       expect(p.coverage_low_m2_per_l ?? 0, p.id).toBeLessThanOrEqual(p.coverage_m2_per_l);
       expect(p.coverage_high_m2_per_l ?? 99, p.id).toBeGreaterThanOrEqual(p.coverage_m2_per_l);
       expect(p.tins.map((t) => t.sizeL)).toEqual([...p.tins.map((t) => t.sizeL)].sort((a, b) => a - b));
       for (const b of p.tintBases ?? []) {
         expect(b.tins.length, `${p.id} ${b.id}`).toBeGreaterThan(0);
-        // A tint base never costs less than the ready-made white of the same size.
+        // A tint base never costs less than the ready-made white of the same
+        // size — except where the seller's own list says otherwise: TintEX's
+        // 2021 shop had Mastertop 1 L White at Rs 362.60 above Pastel Rs 345
+        // (kept as captured, flagged in its price_note).
         for (const t of b.tins) {
           const white = p.tins.find((w) => w.sizeL === t.sizeL);
-          if (white) expect(t.priceMur, `${p.id} ${b.id} ${t.sizeL} L`).toBeGreaterThanOrEqual(white.priceMur);
+          const captured = p.id === 'tintex-mastertop' && b.id === 'pastel' && t.sizeL === 1;
+          if (white && !captured) expect(t.priceMur, `${p.id} ${b.id} ${t.sizeL} L`).toBeGreaterThanOrEqual(white.priceMur);
+          if (captured) expect(p.price_note).toMatch(/362\.60/);
         }
       }
     }
   });
 
-  it('brands: Sofap only for now, with products; helpers agree', () => {
-    expect(PAINT_BRANDS.map((b) => b.id)).toContain('sofap');
-    expect(brandsWithPaints().map((b) => b.id)).toEqual(['sofap']);
-    // Every decorative line is Sofap's; the primer is quoted, not listed.
-    expect(paintsForBrand('sofap')).toHaveLength(decorativePaints().length);
+  it('brands: Sofap and TintEX (2026-09-19), each with products; helpers agree', () => {
+    expect(PAINT_BRANDS.map((b) => b.id)).toEqual(['sofap', 'tintex']);
+    expect(brandsWithPaints().map((b) => b.id)).toEqual(['sofap', 'tintex']);
+    // Every decorative line belongs to one of the two; the Sofap primer is quoted, not listed.
+    expect(paintsForBrand('sofap').length + paintsForBrand('tintex').length).toBe(decorativePaints().length);
+    expect(paintsForBrand('sofap')).toHaveLength(14);
+    expect(paintsForBrand('tintex')).toHaveLength(5);
     expect(decorativePaints().length).toBe(WALL_PAINTS.length - 1);
     expect(paintsForBrand('nope')).toEqual([]);
   });
@@ -56,7 +66,8 @@ describe('wall-paint catalogue (2026-09-14)', () => {
     expect(new Set(SOFAP_A_LA_CARTE.map((c) => c.id)).size).toBe(72);
     expect(SOFAP_A_LA_CARTE.every((c) => c.hexOrigin === 'official' && /^#[0-9A-F]{6}$/.test(c.hex))).toBe(true);
     expect(SOFAP_A_LA_CARTE.filter((c) => c.baseId).length).toBeGreaterThanOrEqual(20);
-    expect(PAINT_COLOURS).toEqual(SOFAP_A_LA_CARTE);
+    expect(PAINT_COLOURS.filter((c) => c.brandId === 'sofap')).toEqual(SOFAP_A_LA_CARTE);
+    expect(PAINT_COLOURS.slice(0, 72)).toEqual(SOFAP_A_LA_CARTE);
     const matt = findWallPaintById('permoglaze-matt-emulsion')!;
     expect(coloursForPaint(matt)).toHaveLength(72);
     const xw = findWallPaintById('permoglaze-xtreme-white')!;

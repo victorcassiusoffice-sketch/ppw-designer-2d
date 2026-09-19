@@ -39,16 +39,17 @@ function rect(b: Box) {
 }
 
 let seq = 0;
+let idPrefix = 'sofap';
 function item(productId: string, at: { x: number; y: number }, rotation: 0 | 90 | 180 | 270 = 0, extra: Partial<PlacedItem> = {}): PlacedItem {
   seq += 1;
-  return { instanceId: `sofap-${String(seq).padStart(2, '0')}-${productId.replace('demo-', '')}`, productId, x: at.x, y: at.y, rotation, ...extra };
+  return { instanceId: `${idPrefix}-${String(seq).padStart(2, '0')}-${productId.replace('demo-', '')}`, productId, x: at.x, y: at.y, rotation, ...extra };
 }
 
 let openingSeq = 0;
 function opening(kind: 'door' | 'window', edgeIndex: number, offsetM: number, widthM: number): Opening {
   openingSeq += 1;
   return {
-    id: `sofap-op-${String(openingSeq).padStart(2, '0')}`,
+    id: `${idPrefix}-op-${String(openingSeq).padStart(2, '0')}`,
     edgeIndex,
     offsetM,
     widthM,
@@ -73,17 +74,41 @@ export const SOFAP_KITCHEN: Box = { x0: 3.5, y0: 4, x1: 5.5, y1: 7.5 };
 /** Wall height the quote is taken at — Sofap's datasheets assume a standard room. */
 export const SOFAP_WALL_HEIGHT_M = 2.7;
 
+export interface ShowFlatOptions {
+  id: string;
+  name: string;
+  /** Prefix for the instance / opening ids (a demo's slug). */
+  prefix: string;
+  /** The paint line per room (`WallPaint.id`). */
+  paints: { living: string; bedroom: string; kitchen: string };
+}
+
+const SOFAP_SHOW_FLAT: ShowFlatOptions = {
+  id: 'sofap-show-flat',
+  name: SOFAP_PAGE_NAME,
+  prefix: 'sofap',
+  // Soft Feel on the living walls (the premium line, 9 m²/L, 2 coats);
+  // Matt Emulsion in the bedroom (the everyday line the pitch page's tin
+  // arithmetic uses); Xtreme White in the kitchen (washable, 10.5 m²/L).
+  paints: { living: 'permoglaze-soft-feel', bedroom: 'permoglaze-matt-emulsion', kitchen: 'permoglaze-xtreme-white' },
+};
+
 export function buildSofapShowFlat(): Property {
+  return buildShowFlat(SOFAP_SHOW_FLAT);
+}
+
+/** The same flat for another paint company's pitch (TintEX, 2026-09-19): its lines on the walls, its ids. */
+export function buildShowFlat(opts: ShowFlatOptions): Property {
   seq = 0;
   openingSeq = 0;
+  idPrefix = opts.prefix;
 
   const console = item('demo-console-table', { x: 0.2, y: 0.1 });
   const living: Room = {
     id: 'living',
     name: 'Living room',
     polygon: rect(SOFAP_LIVING),
-    // Soft Feel on the living walls — the premium line, 9 m²/L, 2 coats.
-    wallPaint: paintAll('permoglaze-soft-feel'),
+    wallPaint: paintAll(opts.paints.living),
     openings: [
       opening('window', 0, 2.0, 1.8), // top wall, x 2.0–3.8
       opening('window', 1, 1.2, 1.2), // right wall, y 1.2–2.4
@@ -105,8 +130,7 @@ export function buildSofapShowFlat(): Property {
     id: 'bedroom',
     name: 'Bedroom',
     polygon: rect(SOFAP_BEDROOM),
-    // Matt Emulsion — the everyday line the tin arithmetic on the pitch page uses.
-    wallPaint: paintAll('permoglaze-matt-emulsion'),
+    wallPaint: paintAll(opts.paints.bedroom),
     openings: [
       opening('window', 3, 1.5, 1.2), // left wall, y 5.5–6.7
       opening('window', 2, 1.15, 1.2), // bottom wall, x 1.15–2.35
@@ -121,8 +145,7 @@ export function buildSofapShowFlat(): Property {
     id: 'kitchen',
     name: 'Kitchen',
     polygon: rect(SOFAP_KITCHEN),
-    // Xtreme White — the washable line for a kitchen, 10.5 m²/L.
-    wallPaint: paintAll('permoglaze-xtreme-white'),
+    wallPaint: paintAll(opts.paints.kitchen),
     openings: [
       opening('window', 1, 1.4, 1.0), // right wall, y 5.4–6.4
     ],
@@ -130,8 +153,8 @@ export function buildSofapShowFlat(): Property {
   };
 
   return {
-    id: 'sofap-show-flat',
-    name: SOFAP_PAGE_NAME,
+    id: opts.id,
+    name: opts.name,
     activeRoomId: 'living',
     rooms: [living, bedroom, kitchen],
     walls: [],

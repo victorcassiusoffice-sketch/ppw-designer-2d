@@ -1,0 +1,59 @@
+{
+  "panelRows": [
+    "TintEX VIP Satin\nsatin · 11 m²/L · from Rs 242",
+    "TintEX Mastertop\nsilk · 12 m²/L · from Rs 363",
+    "TintEX Cashmere Interior Latex\nsilk · 10 m²/L (est.) · from Rs 253",
+    "TintEX True White Matt Emulsion\nmatt · 8.5 m²/L · from Rs 161",
+    "TintEX Trade Pro\nmatt · 7 m²/L (est.) · from Rs 374"
+  ],
+  "brandCard": "T\nTintEX\nTint Match — RAL K7 / NCS / Pantone fan decks, matched in store (150,000+ shades) · prices 2021-11-27",
+  "assumptions": "VAT status not confirmed (TintEX, 2021-11-27) · TintEX online-shop price (Wayback Machine capture); the shop is closed — confirm today's list with TintEX · ceilings not included · skirting not deducted · openings under 1 m² not deducted",
+  "materials": [
+    {
+      "room": "living",
+      "hex": "#F2F1EC",
+      "baseHex": "#F2F1EC",
+      "finish": "satin",
+      "roughness": 0.6,
+      "sheen": 0.38,
+      "hasMap": false,
+      "show": "full"
+    },
+    {
+      "room": "bedroom",
+      "hex": "#EFEDE6",
+      "baseHex": "#EFEDE6",
+      "finish": "silk",
+      "roughness": 0.76,
+      "sheen": 0.22,
+      "hasMap": false,
+      "show": "full"
+    },
+    {
+      "room": "kitchen",
+      "hex": "#F0EEE8",
+      "baseHex": "#F0EEE8",
+      "finish": "silk",
+      "roughness": 0.76,
+      "sheen": 0.22,
+      "hasMap": false,
+      "show": "full"
+    }
+  ],
+  "painted": {
+    "hex": "#B7D9B1",
+    "baseHex": "#B7D9B1",
+    "finish": "satin",
+    "roughness": 0.6,
+    "sheen": 0.38,
+    "hasMap": false,
+    "show": "full"
+  },
+  "pixel": {
+    "r": 192,
+    "g": 226,
+    "b": 182
+  },
+  "breakdown": "Wall length × height − doors and windows = m². Litres = m² × coats ÷ coverage, rounded up to 0.1 L, then the cheapest whole tins.\n\nLiving room · Wall 1 5.50 × 2.7 m − 2.16 m² (1 opening) = 12.69 m²\nLiving room · Wall 2 4.00 × 2.7 m − 1.44 m² (1 opening) = 9.36 m²\nLiving room · Wall 3 5.50 × 2.7 m − 3.42 m² (2 openings) = 11.43 m²\nLiving room · Wall 4 4.00 × 2.7 m − 1.71 m² (1 opening) = 9.09 m²\nBedroom · Wall 1 3.50 × 2.7 m = 9.45 m²\nBedroom · Wall 2 3.50 × 2.7 m = 9.45 m²\nBedroom · Wall 3 3.50 × 2.7 m − 1.44 m² (1 opening) = 8.01 m²\nBedroom · Wall 4 3.50 × 2.7 m − 1.44 m² (1 opening) = 8.01 m²\nKitchen · Wall 1 2.00 × 2.7 m = 5.40 m²\nKitchen · Wall 2 3.50 × 2.7 m − 1.20 m² (1 opening) = 8.25 m²\nKitchen · Wall 3 2.00 × 2.7 m = 5.40 m²\nKitchen · Wall 4 3.50 × 2.7 m = 9.45 m²\nTintEX VIP Satin: 42.57 m² × 2 coats ÷ 11 m²/L = 7.8 L + 10% = 8.6 L → 1× 5 L + 4× 1 L = Rs 2,044 (0.4 L over)\nTintEX Mastertop: 28.50 m² × 2 coats ÷ 12 m²/L = 4.8 L + 10% = 5.3 L → 1× 5 L + 1× 1 L = Rs 1,812 (0.7 L over)\nTintEX Cashmere Interior Latex: 25.47 m² × 2 coats ÷ 10 m²/L (est.) = 5.1 L + 10% = 5.7 L → 1× 5 L + 1× 1 L = Rs 1,329 (0.3 L over)\nTintEX VIP Satin · Pastel green: 9.45 m² × 2 coats ÷ 11 m²/L = 1.8 L + 15% = 2.0 L → 2× 1 L = Rs 516 · Pastel Shades (estimated from the colour depth)",
+  "chartCount": 216
+}

@@ -1,0 +1,35 @@
+{
+  "at": "2026-09-19T15:21:28.266Z",
+  "commit": "eb48728de805808c7b1f79fc1ff23a7af0151d58",
+  "tileId": "m-6",
+  "placed": [
+    "m-6"
+  ],
+  "glb": "/models/k1-nordictrack-2450.glb",
+  "target": {
+    "caption": "Treatment Room · Wall 1 · unpainted — click to paint"
+  },
+  "pxBefore": [
+    223,
+    219,
+    210
+  ],
+  "pxAfter": [
+    234,
+    230,
+    220
+  ],
+  "pxBronze": [
+    72,
+    69,
+    58
+  ],
+  "wallPaint": [
+    {
+      "edgeIndex": 0,
+      "paintId": "permoglaze-matt-emulsion"
+    }
+  ],
+  "wallsUpButton": 1,
+  "errors": []
+}

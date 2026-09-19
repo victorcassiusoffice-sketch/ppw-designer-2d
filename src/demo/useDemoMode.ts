@@ -23,6 +23,23 @@ import { useHistoryStore } from '../store/historyStore';
 import { useToastStore } from '../store/toastStore';
 import { useCurrencyStore } from '../store/currencyStore';
 import { applyPage, currentPageId, flushCurrentPage, promoteDraftToPage, switchToPage } from '../lib/pages';
+import { useDesignerUIStore } from '../store/designerUIStore';
+import { brandIdOfPaint, findWallPaintById, paintsForBrand } from '../data/wallPaints';
+
+/**
+ * A paint company's pitch opens with ITS first line on the brush (TintEX,
+ * 2026-09-19): the panel only shows that brand, so a brush still carrying
+ * another brand's paint would paint what the panel cannot show.
+ */
+export function ensureDemoPaintBrush(demo: DemoDefinition): void {
+  const brands = demo.paintBrandIds;
+  if (!brands || brands.length === 0) return;
+  const ui = useDesignerUIStore.getState();
+  const current = findWallPaintById(ui.wallPaintDraft.paintId);
+  if (current && brands.includes(brandIdOfPaint(current))) return;
+  const first = brands.map((b) => paintsForBrand(b)[0]).find(Boolean);
+  if (first) ui.setWallPaintDraft({ paintId: first.id, colourHex: undefined, colourName: undefined, erase: false });
+}
 
 /** The `demo` query value, lower-cased, or null. `'off'` is meaningful. */
 export function readDemoParam(search: string): string | null {
@@ -53,6 +70,7 @@ export type DemoPageOutcome = 'loaded' | 'switched' | 'current';
 export function ensureDemoPage(demo: DemoDefinition): DemoPageOutcome {
   // A Mauritian merchant's pitch opens in rupees, whatever the store's default.
   if (demo.currency) useCurrencyStore.getState().setCurrency(demo.currency);
+  ensureDemoPaintBrush(demo);
   const designs = useDesignsStore.getState();
   const existing = Object.values(designs.designs).find(
     (d) => d.id !== DRAFT_ID && d.name === demo.pageName,

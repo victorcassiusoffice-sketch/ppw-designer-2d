@@ -104,6 +104,7 @@ import {
   type WallPaint,
 } from '../data/wallPaints';
 import { SOFAP_COLOUR_DISCLAIMER } from '../data/sofapColours';
+import { TINTEX_COLOUR_DISCLAIMER } from '../data/tintexColours';
 import { deriveWallPaintOrders, wallPaintBreakdown } from '../designer/wallPaintCalc';
 // Wall paint tints + the Sims-style 3D room view (2026-09-14).
 import { applyWallPaintBrush, brushColour, brushPaintId } from '../designer/wallPaintBrush';
@@ -860,7 +861,10 @@ export function TopBar({
   const demoBrandIds = activeDemo()?.paintBrandIds;
   const paintBrands = brandsWithPaints().filter((b) => !demoBrandIds || demoBrandIds.includes(b.id));
   const [paintBrandId, setPaintBrandId] = useState<string>(() => brandIdOfPaint(wallPaintSel));
-  const paintBrand = findPaintBrandById(paintBrandId) ?? paintBrands[0];
+  // The chip the user picked, else the brush's brand, else the first shown —
+  // a demo that shows one brand never lands on another brand's chip.
+  const paintBrand =
+    paintBrands.find((b) => b.id === paintBrandId) ?? paintBrands.find((b) => b.id === brandIdOfPaint(wallPaintSel)) ?? paintBrands[0] ?? findPaintBrandById(paintBrandId);
   const wallPaintsShown = paintsForBrand(paintBrand?.id ?? paintBrands[0]?.id ?? paintBrandId);
   const [paintBreakdownOpen, setPaintBreakdownOpen] = useState(false);
   // The short list (featured lines) by default; the rest behind "More lines".
@@ -872,6 +876,8 @@ export function TopBar({
   const [paintChartFamily, setPaintChartFamily] = useState<string>('');
   const [paintChartQuery, setPaintChartQuery] = useState('');
   const paintChartBrandId = brandIdOfPaint(wallPaintSel);
+  /** What the brand calls its full chart — Sofap "Colour Match", TintEX "RAL Classic". */
+  const paintChartName = findPaintBrandById(paintChartBrandId)?.chartName ?? 'colour';
   useEffect(() => {
     if (!paintChartOpen || paintChart) return;
     let alive = true;
@@ -918,9 +924,9 @@ export function TopBar({
   const wallPaintLiveText = !wallPaintLive.any
     ? 'No walls painted yet'
     : `${wallPaintLive.areaM2.toFixed(1)} m² · ${wallPaintLive.litres.toFixed(1)} L · ${formatCurrency(wallPaintLive.cost, displayCurrency)}`;
-  /** "matt · 9 m²/L · from Rs 201.25" — one line under the name. */
+  /** "matt · 9 m²/L · from Rs 201.25" — one line under the name; "(est.)" when the brand publishes no spread rate. */
   const wallPaintMetaText = (p: WallPaint) =>
-    `${p.finish} · ${p.coverage_m2_per_l} m²/L · from ${formatCurrency(
+    `${p.finish} · ${p.coverage_m2_per_l} m²/L${p.coverage_estimated ? ' (est.)' : ''} · from ${formatCurrency(
       convert(Math.min(...p.tins.map((t) => t.priceMur)), 'MUR', displayCurrency, fx),
       displayCurrency,
     )}`;
@@ -2720,7 +2726,7 @@ export function TopBar({
                         className="flex w-full items-center justify-between py-1 text-[12px] font-medium"
                         style={{ color: CHROME_TEXT_2 }}
                       >
-                        <span>{paintChartOpen ? 'Colour Match chart' : 'All Colour Match shades'}</span>
+                        <span>{paintChartOpen ? `${paintChartName} chart` : `All ${paintChartName} shades`}</span>
                         <span aria-hidden="true">{paintChartOpen ? '▾' : '▸'}</span>
                       </button>
                       {paintChartOpen && (
@@ -2755,7 +2761,7 @@ export function TopBar({
                               Loading the chart…
                             </p>
                           ) : (
-                            <div className="mt-1.5 grid max-h-[176px] grid-cols-8 gap-1 overflow-y-auto pr-0.5" role="radiogroup" aria-label="Colour Match shades" data-testid="wallpaint-chart-grid">
+                            <div className="mt-1.5 grid max-h-[176px] grid-cols-8 gap-1 overflow-y-auto pr-0.5" role="radiogroup" aria-label={`${paintChartName} shades`} data-testid="wallpaint-chart-grid">
                               {paintChartRows.map((c) => {
                                 const hex = normalisePaintColourHex(c.hex) ?? c.hex;
                                 const on = !!wallPaintTint && wallPaintTint.hex === hex;
@@ -2790,6 +2796,7 @@ export function TopBar({
                       ? `${paintBrand?.name ?? 'Brand'} shades${paintBrand?.colourSystem ? ` · ${paintBrand.colourSystem}` : ''}. A tinted tin is priced on its base (Pastel / Medium / Basic).`
                       : 'Pick any colour — the store tints the base tin to match.'}
                     {paintChartBrandId === 'sofap' ? ` ${SOFAP_COLOUR_DISCLAIMER}` : ''}
+                    {paintChartBrandId === 'tintex' ? ` ${TINTEX_COLOUR_DISCLAIMER}` : ''}
                   </p>
                 </div>
               ) : (
@@ -2874,7 +2881,9 @@ export function TopBar({
               </p>
               <p className="px-1 text-[10px] leading-snug" style={{ color: CHROME_TEXT_2 }} data-testid="wallpaint-assumptions">
                 {vatText}
-                {wallPaintSel.priced_at ? ` (${paintBrand?.name ?? 'store'}, ${wallPaintSel.priced_at})` : ''} · ceilings not included · skirting not deducted · openings under 1 m² not deducted
+                {wallPaintSel.priced_at ? ` (${paintBrand?.name ?? 'store'}, ${wallPaintSel.priced_at})` : ''}
+                {wallPaintSel.price_note ? ` · ${wallPaintSel.price_note}` : ''}
+                {wallPaintSel.coverage_estimated ? ` · ${wallPaintSel.coverage_m2_per_l} m²/L is an estimate (no spread rate published)` : ''} · ceilings not included · skirting not deducted · openings under 1 m² not deducted
               </p>
 
               {/* How it's worked out (2026-09-14): every painted wall as a
@@ -2933,7 +2942,7 @@ export function TopBar({
                               {o.colourHex ? ` · ${o.colourName ?? o.colourHex}` : ''}
                             </span>
                             {': '}
-                            {o.areaM2.toFixed(2)} m² × {o.coats} coats ÷ {o.paint.coverage_m2_per_l} m²/L = {o.netLitres.toFixed(1)} L + {o.wastePct}% = {o.litres.toFixed(1)} L →{' '}
+                            {o.areaM2.toFixed(2)} m² × {o.coats} coats ÷ {o.paint.coverage_m2_per_l} m²/L{o.paint.coverage_estimated ? ' (est.)' : ''} = {o.netLitres.toFixed(1)} L + {o.wastePct}% = {o.litres.toFixed(1)} L →{' '}
                             {o.fill.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')} ={' '}
                             <span className="font-semibold">{formatCurrency(convert(o.fill.totalMur, 'MUR', displayCurrency, fx), displayCurrency)}</span>
                             {o.surplusLitres > 0 ? ` (${o.surplusLitres.toFixed(1)} L over)` : ''}

@@ -13,8 +13,9 @@ import { registerDemo, registeredDemoSlugs, type DemoDefinition } from './demoCa
 import { COURTS_DEMO } from './courts';
 import { SOFAP_DEMO } from './sofap';
 import { CAPTAMARIN_DEMO } from './captamarin';
+import { TINTEX_DEMO } from './tintex';
 
-const ALL: DemoDefinition[] = [COURTS_DEMO, SOFAP_DEMO, CAPTAMARIN_DEMO];
+const ALL: DemoDefinition[] = [COURTS_DEMO, SOFAP_DEMO, CAPTAMARIN_DEMO, TINTEX_DEMO];
 
 let registered = false;
 

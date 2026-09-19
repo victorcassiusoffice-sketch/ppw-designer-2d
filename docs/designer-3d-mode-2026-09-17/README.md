@@ -155,6 +155,69 @@ Every paint still lands through `applyWallPaintBrush` → `propertyStore.paintWa
 
 Two faces per wall (inside/outside — needs `PaintedEdge.side` in the 2D model, the quote and the cart: a Vic decision), per-segment painting (same), the 2D plan's lifted side-wall faces being slivers (paint on the side walls is invisible on the plan), turntable thumbnails rendered from the bodies.
 
+---
+
+# TintEX — a second paint company, five lines, the finish on the stage (2026-09-19)
+
+Vic: *"continue full build, also add 5 different paint products from tintex in mauritius, make sure the texture etc is super accurate."*
+
+## 1 · Ground truth first (a 3-sweep research workflow + an independent verifier, same day)
+
+TintEX = **Tintex Company Ltd**, reg. C10093089, est. 14 Sep 2017, Corner Adam Street / Royal Road, Eau-Coulée, Curepipe; +230 675 1825; tintexpaint.com. What the sources give, and what they don't:
+
+| Fact | Source | Status |
+|---|---|---|
+| Finish, use, yield, coats, drying / recoat, pack sizes | the five product pages on tintexpaint.com (WooCommerce, store API for attributes), the 2022 catalogue (Calaméo, 18 pp), the 2023 company profile (13 pp) | **quoted verbatim** in `coverage_source` / `coats_source` |
+| Prices | **none published today** — tintex-shop.com / tintexshop.com are dead domains, the Shopify backend answers 402. Every MUR figure is TintEX's OWN shop as captured by the Wayback Machine on **2021-09-19** (Mastertop, Matt Emulsion, Trade Pro) and **2021-11-27** (VIP Satin, Cashmere), variant JSON parsed: currency MUR, `taxable:false`, four tint bands White · Pastel Shades · Mid-basic · Dark, 250 ml sample pot Rs 90 | loaded with `priced_at` + `price_note`; the panel prints "VAT status not confirmed (TintEX, 2021-11-27) · TintEX online-shop price (Wayback Machine capture); the shop is closed — confirm today's list with TintEX" |
+| Colour card | **none** — every tin says "Tint Match"; the shop matches from the RAL K7 / NCS / Pantone / Colour Concert fan decks ("up to 160,000 colours") | the card is 24 RAL Classic shades a wellness room reaches for, the chart is the whole **RAL Classic deck (216)**, hex marked `representative` (RAL is defined physically; the sRGB values are the conventional ones) with the disclaimer on the panel |
+| Datasheets | none — every page ends "Contact us for MSDS" | — |
+| Cashmere yield | **not published anywhere** | 10 m²/L category norm, `coverage_estimated: true` → "(est.)" in the row, the breakdown and the assumptions line |
+| Trade Pro yield | only "PRIMER COAT on new concrete 6-8 m²" (per litre implied) | 7 (6–8), flagged estimated; white-only (no Colour Match attribute, no tint bands in the shop) |
+| Mastertop 1 L | White Rs 362.60 captured ABOVE Pastel Rs 345 | kept as captured, said in `price_note`; the catalogue test carries the one exception |
+
+## 2 · The five lines (`src/data/tintexPaints.ts`)
+
+| Line | Finish → `FINISH_PBR` | Yield | Coats | 1 L · 2.5 L · 5 L · 20 L (White, MUR, 2021) |
+|---|---|---|---|---|
+| VIP Satin | **satin** (roughness 0.6, sheen 0.38) — "a rich satin finish", site attribute eggshell | 10–12 → 11 | 1 primer + 2 | 242 · 662 · 1,076 · 4,227 |
+| Mastertop | **silk** (0.76 / 0.22) — "pearl finish", 100 % acrylic, anti-fungal, int + ext | 11–13 → 12 | 2 (not stated) | 362.60 · 897 · 1,449 · 5,687 |
+| Cashmere Interior Latex | **silk** — "silky rich look" (shop said "velvety matt … not too shiny") | est. 10 | 2 (not stated) | 253 · 696 · 1,076 · 4,221 |
+| True White Matt Emulsion | **matt** (0.95 / 0) | 8–9 → 8.5 | 1–2 → 2 | 161 · 362.25 · 660.10 · 2,553 |
+| Trade Pro | **matt**, white only | est. 7 | 2–3 → 2 | 5 L 374 · 20 L 1,380 |
+
+Tinted tins price on the band the colour's depth needs (Pastel ≥ 72 L*, Mid-basic ≥ 45, Dark) — TintEX names no band per colour, so the breakdown says "estimated from the colour depth".
+
+## 3 · What changed in the product
+
+| Piece | Where |
+|---|---|
+| `PAINT_BRANDS` = Sofap + TintEX; `WallPaint.coverage_estimated / coverage_source / price_note`; `PaintBrand.chartName` ("Colour Match" / "RAL Classic") | `wallPaints.ts` |
+| RAL Classic deck (`ralClassic.json`, 216 rows from Wikipedia's table) → card + on-demand chart for TintEX | `tintexColours.ts`, `loadPaintColourChart` |
+| Panel: chart label is brand-aware ("All RAL Classic shades"), "(est.)" on estimated yields in the row + breakdown, the price note and the estimate in the assumptions line, TintEX disclaimer under the shades | `TopBar.tsx` |
+| A one-brand pitch never lands on another brand's chip: the chip clamps to the brands shown, and `ensureDemoPaintBrush` puts the demo brand's first line on the brush at load | `TopBar.tsx`, `useDemoMode.ts` |
+| `/designer?demo=tintex` — the same three-room show flat as Sofap's (builder now takes `{id, name, prefix, paints}`), VIP Satin in the living room, Cashmere in the bedroom, Mastertop in the kitchen | `src/demo/tintex/index.ts`, `src/demo/sofap/index.ts` |
+
+## 4 · Evidence (`tintex/`, dev server, 2026-09-19)
+
+- `desktop-02-3d-panel-tintex.png` — the show flat in 3D with the TintEX panel; rows read `satin · 11 m²/L · from Rs 242`, `silk · 12 m²/L · from Rs 363`, `silk · 10 m²/L (est.) · from Rs 253`, `matt · 8.5 m²/L · from Rs 161`, `matt · 7 m²/L (est.) · from Rs 374` (`evidence.json`).
+- Stage materials straight from the demo: living **satin** 0.6 / 0.38, bedroom **silk** 0.76 / 0.22, kitchen **silk** 0.76 / 0.22 (`wallMaterial`).
+- `desktop-03-hover-ral6019.png` → `desktop-05-painted.png` — VIP Satin in RAL 6019 Pastel green on a bedroom wall: material `#B7D9B1` satin, rendered pixel **192,226,182** (the hex, lit — no remap).
+- `desktop-06-breakdown.png` — "TintEX Cashmere Interior Latex: 25.47 m² × 2 coats ÷ 10 m²/L (est.) = 5.1 L + 10% = 5.7 L → 1× 5 L + 1× 1 L = Rs 1,329" and "TintEX VIP Satin · Pastel green: … = Rs 516 · Pastel Shades (estimated from the colour depth)".
+- `desktop-07-ral-chart.png` — 216 RAL swatches. `phone-01-sheet.png` / `phone-02-hud-ral.png` — the five lines on the phone sheet, RAL chips on the HUD.
+
+## 5 · Gates
+
+- `npx vitest run` — **200 files / 2,534 tests** (`tintexPaints.test.ts` 7 new; catalogue test now asserts both brands).
+- E2E on the dev server: `tintex-paint` **4 / 4** (show flat + caveats + 216-shade chart · satin vs matt on the stage through the 2D store · both-brand chips with no demo · phone sheet + RAL HUD chips) and the paint regressions `wallpaint` 7 · `paint-sims-3d` 4 · `wallpaint-3d` 8 · `phone-demo` 4 — **25 / 25**.
+- `tsc --noEmit`, `npm run build` clean.
+- **SwiftShader patience:** the show flat's first 3D frame compiles a shader variant per finish and blocks the page 20–30 s on the runner's software GPU (a trace showed the second `faceCount()` evaluate returning after the 30 s default) — the spec carries 180 s / 90 s timeouts for that reason only.
+
+## 6 · Open for Vic
+
+1. **Prices are five years old.** TintEX must re-quote (+230 675 1825) before a customer sees a TintEX figure; the panel says so on every line.
+2. **Cashmere** — no yield, no coat count, and it is missing from the live store API: confirm it is still made.
+3. Whether the four tint bands still exist, and VAT treatment of the list.
+
 ## Next
 
-TintEX paints (Vic 2026-09-19) as a second brand with sourced figures; the bench photo → one more $0.30 body; P4 merchant data; P5 Soft chrome.
+The bench photo → one more $0.30 body; P4 merchant data; P5 Soft chrome.
