@@ -81,6 +81,7 @@ import {
   PRECISION_STEP_M,
   SNAP_UNIT_LABEL,
 } from '../store/designerUIStore';
+import { useCatalogStore } from '../store/catalogStore';
 // Units brief (2026-08-28, D6) - what we DRAW is decoupled from what we SNAP to.
 import { chooseGridTier } from '../designer/gridTier';
 // Sims drag-drop (2026-08-28, D-B3) - the transport seam between a catalog
@@ -234,7 +235,7 @@ import {
 } from '../designer/floorTiles';
 import { findFloorMaterialById } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
-import { DEFAULT_WALL_HEIGHT_M, findWallPaintById, resolveWallColourHex } from '../data/wallPaints';
+import { BARE_PLASTER_HEX, DEFAULT_WALL_HEIGHT_M, findWallPaintById, resolveWallColourHex } from '../data/wallPaints';
 // Phone pass (2026-09-16): the paint HUD's own colour row — the plan stays
 // on screen while the colour changes (the sheet used to cover it).
 import { WallPaintHudColourStrip } from './mobile/WallPaintHudColourStrip';
@@ -450,6 +451,9 @@ export function RoomCanvas({
   const tool = useDesignerUIStore((s) => s.tool);
   const setTool = useDesignerUIStore((s) => s.setTool);
   const doorDraft = useDesignerUIStore((s) => s.doorDraft);
+  // A saved design's merchant items (`m-<id>`) resolve only once the catalog
+  // API has answered; subscribing re-renders them the moment it does.
+  useCatalogStore((s) => s.version);
   // Phone door HUD (2026-08-31): the card's chips drive the same draft the
   // desktop sub-bar owns, so the two can never disagree.
   const setDoorDraft = useDesignerUIStore((s) => s.setDoorDraft);
@@ -2706,7 +2710,7 @@ export function RoomCanvas({
       gaps: Array<{ pts: number[] }>;
     }
     const faces: Face[] = [];
-    const PLASTER = '#EDE9DF';
+    const PLASTER = BARE_PLASTER_HEX;
     for (const room of rooms) {
       if (isOutdoorRoom(room) || !isDrawnPolygon(room.polygon)) continue;
       const paintByEdge = new Map((room.wallPaint ?? []).map((e) => [e.edgeIndex, e]));
@@ -3007,11 +3011,13 @@ export function RoomCanvas({
   );
 
   const commitWallPaintAt = useCallback(
-    (clientX: number, clientY: number) => {
+    (clientX: number, clientY: number, mods: { shift?: boolean; ctrl?: boolean } = {}) => {
       const t = computeWallPaintTarget(clientX, clientY);
       // Scope, Erase, the paint (retired-id fallback) and the tint all live
-      // in the brush helper — shared with the 3D room view.
-      const r = applyWallPaintBrush(t ? { kind: t.kind, roomId: t.roomId, edgeIndex: t.edgeIndex, wallId: t.wallId } : null);
+      // in the brush helper — shared with the 3D room view. Shift = the
+      // whole room, Ctrl = erase, this click only (the Sims keys the Floor
+      // tool already honours).
+      const r = applyWallPaintBrush(t ? { kind: t.kind, roomId: t.roomId, edgeIndex: t.edgeIndex, wallId: t.wallId } : null, mods);
       if (r.message) pushToast(r.message, r.kind);
       if (!t) return;
       haptic('place');
@@ -4066,7 +4072,7 @@ export function RoomCanvas({
             if (evt.isPrimary === false || evt.pointerId !== g.pointerId) return;
             if (g.moved) return;
             if (Math.hypot(evt.clientX - g.x, evt.clientY - g.y) > DOOR_TAP_SLOP_PX) return;
-            commitWallPaintAt(evt.clientX, evt.clientY);
+            commitWallPaintAt(evt.clientX, evt.clientY, { shift: evt.shiftKey, ctrl: evt.ctrlKey || evt.metaKey });
             return;
           }
           if (!floorTool) return;

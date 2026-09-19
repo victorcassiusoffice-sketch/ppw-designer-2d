@@ -10,7 +10,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { buildSolids, cutawayState, inwardNormal, cameraSide, wallAnchor } from '../roomSolids';
-import { buildScene, cameraPosition, fitCamera, boundsOf, type SceneInput, type Vec3 } from '../roomView3d';
+import { buildScene, cameraPosition, fitCamera, boundsOf, PLASTER_HEX, type SceneInput, type Vec3 } from '../roomView3d';
 
 const ROOM = [{ x: 0, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 4 }, { x: 0, y: 4 }];
 const ROOM2 = [{ x: 5, y: 0 }, { x: 9, y: 0 }, { x: 9, y: 4 }, { x: 5, y: 4 }];
@@ -44,7 +44,15 @@ describe('buildSolids — one slab per edge, the painter’s keys', () => {
     expect(s.walls.map((w) => w.key)).toEqual(['wall-r1-0', 'wall-r1-1', 'wall-r1-2', 'wall-r1-3']);
     expect(s.walls.every((w) => w.heightM === 2.7 && w.thicknessM > 0 && !w.centred)).toBe(true);
     expect(s.walls[0].hex).toBe('#EDEBDF');
-    expect(s.walls[2].hex).toBe('#EDE9DF'); // unpainted plaster
+    expect(s.walls[2].hex).toBe(PLASTER_HEX); // unpainted plaster
+  });
+
+  it('a painted edge carries its finish; bare plaster carries none (3D Mode materials)', () => {
+    const s = buildSolids(input({ rooms: [{ ...input().rooms[0], wallFinishByEdge: new Map([[0, 'silk']]) }] }));
+    expect(s.walls[0].finish).toBe('silk');
+    expect(s.walls[1].finish).toBeUndefined();
+    const free = buildSolids(input({ walls: [{ id: 'w1', a: { x: 1, y: 1 }, b: { x: 3, y: 1 }, colourHex: '#4C493F', finish: 'gloss' }] }));
+    expect(free.walls.find((w) => w.key === 'fw-w1')?.finish).toBe('gloss');
   });
 
   it('a door is an opening from the floor to door height; a window from its sill', () => {

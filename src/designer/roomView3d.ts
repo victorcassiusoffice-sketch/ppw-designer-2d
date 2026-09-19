@@ -37,7 +37,7 @@
 import type { Polygon, Vertex } from '../lib/geometry';
 import { cmToM, rotatedFootprint } from '../lib/geometry';
 import { roomEdges } from './wallEdges';
-import { OPENING_DOOR_HEIGHT_M, OPENING_WINDOW_HEIGHT_M } from '../data/wallPaints';
+import { BARE_PLASTER_HEX, OPENING_DOOR_HEIGHT_M, OPENING_WINDOW_HEIGHT_M } from '../data/wallPaints';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -122,6 +122,8 @@ export interface SceneRoomInput {
   openings?: Array<{ edgeIndex: number; offsetM: number; widthM: number; kind: 'door' | 'doorway' | 'window'; sillM?: number }>;
   /** Resolved colour per painted edge (paint product hex or the chosen tint). */
   wallColourByEdge?: Map<number, string>;
+  /** The paint's finish per painted edge (3D Mode: roughness / sheen); absent = bare plaster. */
+  wallFinishByEdge?: Map<number, string>;
   floorHex?: string;
   /** Ignored for walls/floor when `kind === 'outdoor'`; items still render. */
   kind?: string;
@@ -134,6 +136,7 @@ export interface SceneFreeWallInput {
   b: Vertex;
   thicknessM?: number;
   colourHex?: string;
+  finish?: string;
 }
 
 export interface SceneItemInput {
@@ -178,7 +181,8 @@ export interface SceneInput {
 // ---------------------------------------------------------------------------
 
 /** Unpainted plaster — same value the plan's 2.5D lift uses. */
-export const PLASTER_HEX = '#EDE9DF';
+/** Bare, unpainted plaster — shared with the 2D lift (see `BARE_PLASTER_HEX`). */
+export const PLASTER_HEX = BARE_PLASTER_HEX;
 /** Bare floor when no finish is laid. */
 export const BARE_FLOOR_HEX = '#F1EBDD';
 /** Ground plane beyond the rooms. */

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  BARE_PLASTER_HEX,
   PAINT_BRANDS,
   PAINT_COLOURS,
   WALL_PAINTS,
@@ -82,7 +83,7 @@ describe('wall-paint catalogue (2026-09-14)', () => {
     expect(normalisePaintColourName('x'.repeat(100))).toHaveLength(80);
     expect(resolveWallColourHex('permoglaze-soft-feel', '#c9553f')).toBe('#C9553F');
     expect(resolveWallColourHex('permoglaze-soft-feel')).toBe(findWallPaintById('permoglaze-soft-feel')!.hex);
-    expect(resolveWallColourHex('nope', 'zzz')).toBe('#EDE9DF');
+    expect(resolveWallColourHex('nope', 'zzz')).toBe(BARE_PLASTER_HEX);
     expect(hexLightness('#FFFFFF')).toBeCloseTo(100, 0);
     expect(hexLightness('#000000')).toBeCloseTo(0, 0);
     expect(hexLightness('#808080')).toBeGreaterThan(50);
@@ -158,7 +159,7 @@ describe('wall-paint catalogue — review round 2 (2026-09-14)', () => {
   });
 
   it('a paint the catalogue does not know renders as plaster even with a valid tint', () => {
-    expect(resolveWallColourHex('sofap-retired-line', '#C9553F')).toBe('#EDE9DF');
+    expect(resolveWallColourHex('sofap-retired-line', '#C9553F')).toBe(BARE_PLASTER_HEX);
     // …and a tint on a white-only line renders as the white.
     expect(resolveWallColourHex('permoglaze-xtreme-white', '#C9553F')).toBe(findWallPaintById('permoglaze-xtreme-white')!.hex);
   });

@@ -143,6 +143,15 @@ export interface WallPaint {
  * typically run ~2.6–2.9 m — 2.7 m is the working default; the panel lets
  * the customer set their own (2.0–4.0 m).
  */
+/**
+ * Bare, unpainted plaster — the ONE value the 2D lift, the 3D stage and the
+ * "unknown paint" fallback share. Greyer than any white paint on purpose
+ * (Vic 2026-09-17: a white brush on near-white plaster changed a wall by
+ * 4–9/255 — the first click looked like nothing happened). The Sims draws
+ * bare drywall as its own texture; a white paint must visibly land on it.
+ */
+export const BARE_PLASTER_HEX = '#D9D3C6';
+
 export const DEFAULT_WALL_HEIGHT_M = 2.7;
 export const MIN_WALL_HEIGHT_M = 2.0;
 export const MAX_WALL_HEIGHT_M = 4.0;
@@ -599,6 +608,28 @@ export const WALL_PAINTS: WallPaint[] = [
   // (and their brands into PAINT_BRANDS) to switch them on.
 ];
 
+/**
+ * What a finish does to light (3D Mode, 2026-09-17 — "front end like The
+ * Sims 1 but with realistic identical images"). Roughness bands derived
+ * from the gloss-unit bands the trade uses (matt < 10 GU at 60°, silk /
+ * eggshell 10–25, satin 26–40, gloss 70–90); `sheen` is how much of the
+ * room the finish reflects (0 = none, matt). Our mapping, not a standard.
+ */
+export const FINISH_PBR: Record<WallPaint['finish'], { roughness: number; sheen: number; grain: number }> = {
+  matt: { roughness: 0.95, sheen: 0, grain: 0.14 },
+  smooth: { roughness: 0.9, sheen: 0.05, grain: 0.06 },
+  textured: { roughness: 0.97, sheen: 0, grain: 0.3 },
+  silk: { roughness: 0.76, sheen: 0.22, grain: 0.1 },
+  satin: { roughness: 0.6, sheen: 0.38, grain: 0.08 },
+  gloss: { roughness: 0.3, sheen: 0.7, grain: 0.04 },
+};
+
+/** The finish of a paint product by id (undefined = bare plaster). */
+export function finishOfPaint(paintId: string | null | undefined): WallPaint['finish'] | undefined {
+  if (!paintId) return undefined;
+  return findWallPaintById(paintId)?.finish;
+}
+
 export function findWallPaintById(id: string): WallPaint | undefined {
   return WALL_PAINTS.find((p) => p.id === id);
 }
@@ -772,7 +803,7 @@ export function normalisePaintColourName(x: unknown): string | undefined {
  * The colour a painted wall renders in: the chosen tint when there is one,
  * else the product's base swatch, else plaster for an unknown product.
  */
-export function resolveWallColourHex(paintId: string | undefined, colourHex?: string, plaster = '#EDE9DF'): string {
+export function resolveWallColourHex(paintId: string | undefined, colourHex?: string, plaster = BARE_PLASTER_HEX): string {
   // A paint the catalogue no longer knows cannot be priced, so it must not
   // LOOK painted either — plaster, whatever tint it carried.
   const paint = paintId ? findWallPaintById(paintId) : undefined;

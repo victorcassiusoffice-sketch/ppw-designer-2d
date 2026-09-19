@@ -109,6 +109,52 @@ Close-ups after the law (`hero-qa/close-sheet.png`): the 2450's console at the r
 
 vitest **197 files / 2,515 tests** (5 new for `modelUp`); e2e `view-mode-3d` 4 · `wallpaint-3d` 8 · `phone-demo` 4 = 16/16 on the dev server with the bodies in; `tsc` / `eslint` / `npm run build` clean; the 21 bodies ship in `dist/models/` (3.7 MB with the ten Kenney bodies, each fetched only when its product is on screen in 3D).
 
+---
+
+# The Sims paint tool + the production box bug (2026-09-19)
+
+Vic (desktop, production): "the 2d models when going into the 3d mode just come up as a box … The Paint tool cannot paint the wall properly like in the game, it needs to function the same as the 2D back end etc but the front end like 'the sims 1' but with more realistic identical images."
+
+Both reproduced on production first (`repro-vic-2026-09-17/`, 30 frames + `repro-log.txt`), then fixed.
+
+## 1 · The box bug — root cause and fix
+
+Production delivers the K1 range from `/api/products` as `m-<id>` and hides the bundled twin by SKU; the 3D body manifest is keyed by the bundled id (`k1-…`), so every merchant-placed product missed the lookup and stayed a box (0 requests to `/models/` after 10 s; the same room seeded with `k1-…` ids fetched both bodies — the pipeline was fine, the key was wrong). Fix: `productModelFor` resolves by **SKU** as well (`src/data/productModels.ts`, seed-id ↔ SKU join; 6 unit tests incl. an adapter round-trip pinning facing by identity). Follow-up in the same change: `catalogStore` — the API's arrival bumps a version that RoomCanvas and RoomView3D subscribe to, so a saved design's merchant items appear the moment the catalog is known instead of on the next edit. E2E `paint-sims-3d` test 6 mocks `/api/products` with one K1 row, places `m-6` from the dock, opens 3D and waits for the GLB request + a body-sized triangle count.
+
+## 2 · The paint tool — what was wrong (measured on production)
+
+| Defect | Proof |
+|---|---|
+| The default white brush on near-white plaster changed a wall by **4–9/255** — the first click looked like nothing happened | frames 07 → 09; pixel rgb(151,146,135) → (155,152,144) |
+| The hover was a **yellow glow** applied before AND after the click; the painted wall stayed yellow under the pointer | code: emissive `#FFD98A` @ 0.42 on hover |
+| The renderer used **ACES tone mapping** + a rig that left two of four walls unlit: a wall never rendered its chip colour | audit + `light-probe` |
+| The brush painted **through furniture** (the ray hit walls only) | 24 of 40 hover probes over the treadmill reported "Wall 1" |
+| A drag **orbited** instead of painting; no Shift-room / Ctrl-erase; no feedback line; near walls were 0.32 m stubs you had to orbit to reach | repro PART 2 |
+
+## 3 · What shipped — the Sims front end on the same 2D back end
+
+Every paint still lands through `applyWallPaintBrush` → `propertyStore.paintWallEdge / paintRoomWalls / paintFreeWall` — the plan, the quote and the cart are untouched.
+
+| Piece | Where |
+|---|---|
+| **Colour truth** — `NoToneMapping`, a hemisphere + camera-following fill + sun rig stated in multiples of π, and walls as `MeshPhysicalMaterial` with the dielectric specular OFF for matt (`specularIntensity` 0). Measured with the new DEV `samplePixel` / `tune` bridge on a `#808080` room: **119–127 on every wall in every camera**; `#4C493F` renders 72,69,58; black renders 0. Two traps found on the way: three's default 4 % specular lobe added ~0.04 of light to every face (dark paints were never dark), and `scene.environment` **ignores `material.envMapIntensity`** (r186 uses `scene.environmentIntensity`) — a matt wall drank the whole room environment and read ×3 its hex. The environment now goes on the material, only where there is a sheen | `src/components/three/ThreeStage.tsx` |
+| **Bare plaster is a texture, a paint is a finish** — procedural trowel-mark albedo + normal for plaster (`BARE_PLASTER_HEX` `#D9D3C6`, greyer than any white paint so the first click is a visible step, shared with the 2D lift), roller-stipple normal for paint, `FINISH_PBR` per finish (matt 0.95 / silk 0.76 / satin 0.6 / gloss 0.3 roughness; sheen from the gloss-unit bands) reaching the material through `WallSolid.finish`. Sheet `paint-sims/finish-sheet.png`: one colour, four looks — matt ×0.95 · silk ×1.01 · satin ×1.05 · gloss ×1.12 of the chip | `src/data/wallPaints.ts`, `src/designer/roomSolids.ts`, `ThreeStage.tsx` |
+| **Hover = the brush ON the wall** (Sims wallpaper preview) + a mint face outline; Erase previews plaster; leaving restores the wall | `ThreeStage.tsx` hover effect, `RoomView3D.tsx` `brushHex` |
+| **Paint in place** — a paint changes hex/finish only; the stage compares a structure signature and recolours the material instead of re-extruding the room. One GL stage at a time (the panel card yields to the workspace) | `ThreeStage.tsx` `structureSignature`, `TopBar.tsx` |
+| **What is under the cursor is what gets hit** — the brush ray is blocked by any item's exact catalog box or the floor | `ThreeStage.tsx` `hitTest` |
+| **Sims gestures** — mouse press on a wall paints it and a drag paints every wall it runs along (touch keeps tap-to-paint + orbit); **Shift** = whole room, **Ctrl/⌘** = erase, this click only, in 3D and on the plan; a miss says "Tap a wall to paint it"; every stroke flashes what it did ("Wall 2 · Permoglaze Matt Emulsion · Bronze") and haptics | `RoomView3D.tsx`, `src/designer/wallPaintBrush.ts` (+5 tests), `RoomCanvas.tsx` |
+| **Walls Up / Cutaway / Down** — the Sims wall modes as three buttons in the workspace (`designerUIStore.wallView`); Walls Up stands the near walls so they paint like any other | `RoomView3D.tsx`, `designerUIStore.ts` |
+
+## 4 · Gates
+
+- `npx vitest run` — **199 files / 2,527 tests** (productModels 6, wallPaintBrush 5, roomSolids +1, plaster assertions moved to the shared constant).
+- E2E on the dev server: `paint-sims-3d` **4 / 4** (hover preview + pixel truth + plaster step · drag-run + Shift + Ctrl · body blocks the brush + Walls Up/Down · API-id product wears its body) · `wallpaint-3d` 8 · `view-mode-3d` 4 · `wallpaint` 7 · `phone-demo` 4 · plus the strip / pen / units / eco / flooring / placement / drag specs — see the commit.
+- `tsc --noEmit`, `eslint` (touched), `npm run build` clean.
+
+## 5 · Not in this change (named, not hidden)
+
+Two faces per wall (inside/outside — needs `PaintedEdge.side` in the 2D model, the quote and the cart: a Vic decision), per-segment painting (same), the 2D plan's lifted side-wall faces being slivers (paint on the side walls is invisible on the plan), turntable thumbnails rendered from the bodies.
+
 ## Next
 
-Fix the bench photo → one more $0.30 generation. P3 realism (PBR floor/paint textures, sky, night lights from `mauritiusSolar`) → P4 merchant data (Decathlon · Mauvilac · Courts · Espace Maison, `power_w`) → P5 Soft chrome.
+TintEX paints (Vic 2026-09-19) as a second brand with sourced figures; the bench photo → one more $0.30 body; P4 merchant data; P5 Soft chrome.

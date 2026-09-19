@@ -61,6 +61,8 @@ export interface WallSolid {
   centred: boolean;
   /** Paint on the face that looks into the room (free walls: both faces). */
   hex: string;
+  /** The paint's finish ('matt' | 'silk' | …); undefined = bare plaster, unpainted. */
+  finish?: string;
   openings: WallOpeningSolid[];
   /** Room edge shared with a neighbour: its near-side stub is skipped because the neighbour's full wall stands there. */
   shared: boolean;
@@ -163,6 +165,7 @@ export function buildSolids(input: SceneInput): SceneSolids {
           stubHeightM: Math.min(STUB_HEIGHT_M, H),
           centred: false,
           hex: room.wallColourByEdge?.get(e.index) ?? PLASTER_HEX,
+          finish: room.wallFinishByEdge?.get(e.index),
           openings,
           shared: (shared.get(edgeKey(room.id, e.index))?.length ?? 0) > 0,
           free: false,
@@ -219,6 +222,7 @@ export function buildSolids(input: SceneInput): SceneSolids {
       stubHeightM: Math.min(STUB_HEIGHT_M, H),
       centred: true,
       hex: w.colourHex ?? PLASTER_HEX,
+      finish: w.finish,
       openings: [],
       shared: false,
       free: true,

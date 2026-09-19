@@ -22,9 +22,12 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
-import { cameraPosition, GLASS_HEX, GROUND_HEX, HOVER_HEX, type OrbitCamera, type WallHit } from '../../designer/roomView3d';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { cameraPosition, GLASS_HEX, GROUND_HEX, type OrbitCamera, type WallHit } from '../../designer/roomView3d';
 import { cutawayState, wallAnchor, type ItemSolid, type SceneSolids, type WallShow, type WallSolid } from '../../designer/roomSolids';
 import { fitToSize, itemPose, pitchedBox, upPitchRad } from '../../designer/fitToSize';
+import { FINISH_PBR } from '../../data/wallPaints';
+import type { WallView } from '../../store/designerUIStore';
 
 // ---------------------------------------------------------------------------
 // Product bodies (2026-09-17): a textured glTF per product, fetched once and
@@ -111,6 +114,12 @@ export interface ThreeStageHandle {
   debug(): { frames: number; children: number; camera: number[]; target: number[]; renderer: string };
   /** The placed item under a canvas-local point (its body or its box), or null. */
   hitItem(x: number, y: number): { instanceId: string } | null;
+  /** DEV bridge: what a wall's material shows right now (the preview or its own paint). */
+  wallMaterial(hit: WallHit): { hex: string; baseHex: string; finish: string | null; roughness: number; sheen: number; hasMap: boolean; show: WallShow } | null;
+  /** DEV bridge: the rendered colour at a canvas-local point (renders, then reads the pixel back). */
+  samplePixel(x: number, y: number): { r: number; g: number; b: number } | null;
+  /** DEV bridge: bisect the light rig / materials live. */
+  tune(opts: { hemi?: number; sun?: number; fill?: number; env?: boolean; normals?: number; maps?: boolean }): void;
   /** Where a canvas-local point meets the floor plane, in PLAN metres, or null when it looks at the sky. */
   floorPoint(x: number, y: number): { x: number; y: number } | null;
   /** A PLAN point (x, y on the plan, z up) on the canvas, or null when it is behind the camera. */
@@ -129,14 +138,24 @@ export interface ThreeStageProps {
   hover: WallHit | null;
   /** The plan's selection — tinted so 2D and 3D agree on what is picked. */
   selectedInstanceId?: string | null;
+  /**
+   * The paint on the brush, shown ON the hovered wall before the click (The
+   * Sims' wallpaper preview); null = the tool is armed with no preview
+   * colour (Erase shows bare plaster); undefined = no paint tool.
+   */
+  brushHex?: string | null;
+  /** Walls Up / Cutaway / Down (default 'cutaway'). */
+  wallView?: WallView;
   /** WebGL could not start (headless without GL, an old device) — the parent falls back to the painter. */
   onFailed?: () => void;
 }
 
 const SKY_HEX = '#EEEAE2';
 /** Wall tops, ends and the reveals of openings — a shade under plaster so edges read. */
-const REVEAL_HEX = '#D7D1C4';
+const REVEAL_HEX = '#C9C3B6';
 const ITEM_ROUGHNESS = 0.72;
+/** The target outline on the hovered wall (mint, the plan's selection colour). */
+const TARGET_HEX = '#79C7AD';
 
 const toThree = (p: { x: number; y: number; z: number }): THREE.Vector3 => new THREE.Vector3(p.x, p.z, p.y);
 
@@ -145,8 +164,190 @@ interface WallEntry {
   group: THREE.Group;
   full: THREE.Object3D;
   stub: THREE.Object3D;
-  paint: THREE.MeshStandardMaterial;
+  paint: THREE.MeshPhysicalMaterial;
+  /** The wall's own colour (the preview swaps the material colour and restores this). */
+  baseHex: string;
+  /** Outline of the wall face, shown only while it is the paint target. */
+  outlineFull: THREE.LineSegments;
+  outlineStub: THREE.LineSegments;
   show: WallShow;
+}
+
+// ---------------------------------------------------------------------------
+// Surfaces (2026-09-17, Vic: "front end like The Sims 1 but with more
+// realistic identical images"). Bare plaster is a texture, a paint is a
+// finish — matt drinks the light, silk and satin catch the room, gloss
+// mirrors it — all procedural (no assets to fetch), all world-scaled.
+// ---------------------------------------------------------------------------
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Value noise on a wrapping grid, box-blurred `blur` times (0 = grit, 4 = trowel marks). */
+function noiseField(size: number, seed: number, blur: number): Float32Array {
+  const rnd = mulberry32(seed);
+  let f = new Float32Array(size * size);
+  for (let i = 0; i < f.length; i++) f[i] = rnd();
+  for (let pass = 0; pass < blur; pass++) {
+    const g = new Float32Array(size * size);
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        let s = 0;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) s += f[((y + dy + size) % size) * size + ((x + dx + size) % size)];
+        g[y * size + x] = s / 9;
+      }
+    }
+    f = g;
+  }
+  // Normalise to 0..1.
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (const v of f) {
+    if (v < lo) lo = v;
+    if (v > hi) hi = v;
+  }
+  const span = hi - lo || 1;
+  for (let i = 0; i < f.length; i++) f[i] = (f[i] - lo) / span;
+  return f;
+}
+
+function canvasTexture(size: number, fill: (data: Uint8ClampedArray) => void, colorSpace: string): THREE.Texture {
+  const c = document.createElement('canvas');
+  c.width = size;
+  c.height = size;
+  const ctx = c.getContext('2d');
+  if (!ctx) return new THREE.Texture();
+  const img = ctx.createImageData(size, size);
+  fill(img.data);
+  ctx.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = THREE.RepeatWrapping;
+  t.wrapT = THREE.RepeatWrapping;
+  // ExtrudeGeometry UVs are in metres: two tiles per metre → a 0.5 m grain.
+  t.repeat.set(2, 2);
+  t.colorSpace = colorSpace as THREE.ColorSpace;
+  t.needsUpdate = true;
+  return t;
+}
+
+interface WallTextures {
+  /** Bare plaster albedo (mean ≈ 0.97, so the plaster hex stays the plaster hex). */
+  plasterMap: THREE.Texture;
+  /** Trowel-mark normal map for bare plaster. */
+  plasterNormal: THREE.Texture;
+  /** Roller-stipple normal map for a painted wall. */
+  rollerNormal: THREE.Texture;
+}
+let wallTexturesCache: WallTextures | null = null;
+function wallTextures(): WallTextures {
+  if (wallTexturesCache) return wallTexturesCache;
+  const N = 256;
+  const trowel = noiseField(N, 7, 4);
+  const grit = noiseField(N, 11, 1);
+  const normalFrom = (h: Float32Array) =>
+    canvasTexture(
+      N,
+      (d) => {
+        for (let y = 0; y < N; y++) {
+          for (let x = 0; x < N; x++) {
+            const l = h[y * N + ((x - 1 + N) % N)];
+            const r = h[y * N + ((x + 1) % N)];
+            const u = h[((y - 1 + N) % N) * N + x];
+            const b = h[((y + 1) % N) * N + x];
+            const nx = -(r - l) * 2.5;
+            const ny = -(b - u) * 2.5;
+            const len = Math.hypot(nx, ny, 1);
+            const i = (y * N + x) * 4;
+            d[i] = ((nx / len) * 0.5 + 0.5) * 255;
+            d[i + 1] = ((ny / len) * 0.5 + 0.5) * 255;
+            d[i + 2] = (1 / len) * 0.5 * 255 + 127.5;
+            d[i + 3] = 255;
+          }
+        }
+      },
+      THREE.NoColorSpace,
+    );
+  const plasterMap = canvasTexture(
+    N,
+    (d) => {
+      for (let i = 0; i < N * N; i++) {
+        const v = 236 + trowel[i] * 12 + (grit[i] - 0.5) * 10;
+        d[i * 4] = v;
+        d[i * 4 + 1] = v;
+        d[i * 4 + 2] = v;
+        d[i * 4 + 3] = 255;
+      }
+    },
+    THREE.SRGBColorSpace,
+  );
+  wallTexturesCache = { plasterMap, plasterNormal: normalFrom(trowel), rollerNormal: normalFrom(grit) };
+  return wallTexturesCache;
+}
+
+/**
+ * The look of one wall face from the plan's truth: its hex and its paint's
+ * finish (none = bare plaster). A Physical material so the dielectric
+ * specular can be switched OFF for matt paint and plaster
+ * (`specularIntensity` 0): the default 4 % specular lobe adds a constant
+ * ~0.04 of light to every face, which turned a #4C493F wall into #787468
+ * (measured) — dark colours were never dark. Matt = pure diffuse = the hex.
+ */
+function applyWallLook(m: THREE.MeshPhysicalMaterial, w: WallSolid, env: THREE.Texture | null): void {
+  const fin = w.finish ? FINISH_PBR[w.finish as keyof typeof FINISH_PBR] : undefined;
+  const tex = wallTextures();
+  const sheen = fin ? fin.sheen : 0;
+  m.color.set(w.hex);
+  m.roughness = fin ? fin.roughness : 0.96;
+  m.metalness = 0;
+  m.specularIntensity = sheen;
+  m.map = fin ? null : tex.plasterMap;
+  m.normalMap = fin ? tex.rollerNormal : tex.plasterNormal;
+  m.normalScale.set(fin ? fin.grain : 0.35, fin ? fin.grain : 0.35);
+  // The room environment goes on the MATERIAL, never on the scene: with
+  // `scene.environment` three ignores `material.envMapIntensity`
+  // (WebGLRenderer uses `scene.environmentIntensity` instead), so a matt
+  // wall drank the whole environment and read ×3 its hex. Measured.
+  // The environment lifts a wall's diffuse as well as its reflection, so a
+  // gloss wall took 0.7 of the room and read ×1.5 its chip; the highlight
+  // from the lights (`specularIntensity`) carries the sheen, the room
+  // reflection stays a hint. Measured on #4C7A8C: matt ×0.95, gloss ≤ ×1.15.
+  m.envMap = sheen > 0 ? env : null;
+  m.envMapIntensity = sheen * 0.3;
+  m.needsUpdate = true;
+}
+
+/**
+ * What a rebuild is FOR: the geometry. A paint click changes a wall's hex
+ * and finish only — the same walls, floors and items with new colours —
+ * and repaints in place instead of disposing and re-extruding the room
+ * (Sims-instant, and the phone never stalls on a click).
+ */
+function structureSignature(s: SceneSolids): string {
+  return JSON.stringify({
+    h: s.wallHeightM,
+    f: s.floors.map((f) => [f.key, f.hex, f.polygon]),
+    w: s.walls.map((w) => [w.key, w.a, w.b, w.thicknessM, w.heightM, w.stubHeightM, w.centred, w.openings, w.shared, w.free]),
+    i: s.items.map((it) => [it.key, it.instanceId, it.x0, it.y0, it.z0, it.x1, it.y1, it.z1, it.rotationDeg, it.hex, it.meshUrl, it.modelFront, it.lengthAxis, it.modelUp]),
+  });
+}
+
+/** The outline of a slab's inner face (its edges, drawn only while it is the target). */
+function faceOutline(w: WallSolid, heightM: number): THREE.LineSegments {
+  const g = new THREE.BufferGeometry();
+  const z = w.thicknessM + 0.004; // just in front of the inner face
+  const pts = [0, 0, z, w.lengthM, 0, z, w.lengthM, 0, z, w.lengthM, heightM, z, w.lengthM, heightM, z, 0, heightM, z, 0, heightM, z, 0, 0, z];
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+  const line = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: TARGET_HEX, transparent: true, opacity: 0.95, depthTest: false }));
+  line.renderOrder = 5;
+  line.visible = false;
+  return line;
 }
 
 function sameHit(a: WallHit | null | undefined, b: WallHit): boolean {
@@ -252,7 +453,7 @@ const SELECT_HEX = '#79C7AD';
 const FLOOR_PLANE = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, camera, width, height, hover, selectedInstanceId, onFailed },
+  { solids, camera, width, height, hover, selectedInstanceId, brushHex, wallView = 'cutaway', onFailed },
   ref,
 ): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -260,7 +461,12 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const sunRef = useRef<THREE.DirectionalLight | null>(null);
+  /** A soft light that rides with the camera so no wall face is ever unlit. */
+  const fillRef = useRef<THREE.DirectionalLight | null>(null);
+  /** The room environment, for materials with a sheen. */
+  const envRef = useRef<THREE.Texture | null>(null);
   const contentRef = useRef<THREE.Group | null>(null);
+  const signatureRef = useRef<string>('');
   const wallsRef = useRef<WallEntry[]>([]);
   const floorsRef = useRef<THREE.Mesh[]>([]);
   const itemsRef = useRef<THREE.Object3D[]>([]);
@@ -303,10 +509,18 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     }
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    // Colour truth (Vic 2026-09-17): the wall must be the SAME hex as the
+    // 2D chip and the merchant's colour card. Filmic tone mapping remaps
+    // every pixel (ACES washed tints toward grey), so none — a lit face
+    // renders its albedo. The rig below sums to ≈1.0 on a camera-facing
+    // wall: hemisphere 0.8 (flat, everywhere) + fill 0.2 · cos (from the
+    // camera) + sun 0.2 · cos (for the shadows). Measured, not assumed: a
+    // wall painted #4C493F reads back within a few points of #4C493F on the
+    // far walls (the pixel probe in paint-sims-3d.spec.ts pins it).
+    renderer.toneMapping = THREE.NoToneMapping;
+    renderer.toneMappingExposure = 1;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     rendererRef.current = renderer;
 
     const scene = new THREE.Scene();
@@ -316,9 +530,13 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     const cam = new THREE.PerspectiveCamera(50, 1.4, 0.05, 250);
     cameraRef.current = cam;
 
-    const hemi = new THREE.HemisphereLight(0xffffff, 0xcfc7b8, 1.1);
+    // Physical light units (r155+): a lit Lambert face renders albedo ×
+    // intensity × cos / π, so the rig is stated in multiples of π. Measured
+    // on a #808080 room with the DEV `tune()` knob: hemisphere alone at
+    // 0.8 π → 0.76 of the hex on a wall; sun / fill add their cos share.
+    const hemi = new THREE.HemisphereLight(0xffffff, 0xf2ede4, Math.PI * 0.8);
     scene.add(hemi);
-    const sun = new THREE.DirectionalLight(0xfff2de, 2.4);
+    const sun = new THREE.DirectionalLight(0xfff6ea, Math.PI * 0.15);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
     sun.shadow.bias = -0.0004;
@@ -326,6 +544,21 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     scene.add(sun);
     scene.add(sun.target);
     sunRef.current = sun;
+    const fill = new THREE.DirectionalLight(0xffffff, Math.PI * 0.25);
+    scene.add(fill);
+    scene.add(fill.target);
+    fillRef.current = fill;
+
+    // Something for a sheen to reflect: a neutral room environment, handed
+    // to the materials that have a sheen (silk / satin / gloss, the product
+    // bodies) — never set on the scene, see applyWallLook.
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    try {
+      envRef.current = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    } catch {
+      envRef.current = null; /* no environment: finishes read flat, colours unaffected */
+    }
+    pmrem.dispose();
 
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(600, 600),
@@ -358,6 +591,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       if (contentRef.current) disposeObject(contentRef.current);
       ground.geometry.dispose();
       (ground.material as THREE.Material).dispose();
+      envRef.current?.dispose();
+      envRef.current = null;
+      signatureRef.current = '';
       // dispose() only — forceContextLoss() would leave the canvas's context
       // LOST for the next mount (StrictMode remounts in dev; a view that
       // closes and reopens on the same element), and three then reads a null
@@ -376,6 +612,23 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     const content = contentRef.current;
     const sun = sunRef.current;
     if (!content || !sun) return;
+
+    // Same room, new paint: repaint in place (see structureSignature).
+    const signature = structureSignature(solids);
+    if (signature === signatureRef.current && wallsRef.current.length === solids.walls.length) {
+      const byKey = new Map(solids.walls.map((w) => [w.key, w]));
+      for (const e of wallsRef.current) {
+        const w = byKey.get(e.solid.key);
+        if (!w) continue;
+        e.solid = w;
+        e.baseHex = w.hex;
+        applyWallLook(e.paint, w, envRef.current);
+      }
+      requestRender();
+      return;
+    }
+    signatureRef.current = signature;
+
     disposeObject(content);
     content.clear();
     wallsRef.current = [];
@@ -392,29 +645,32 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       const shape = new THREE.Shape(f.polygon.map((v) => new THREE.Vector2(v.x, v.y)));
       const geo = new THREE.ShapeGeometry(shape);
       geo.rotateX(Math.PI / 2); // plan (x, y) → three (x, 0, y)
-      const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: f.hex, roughness: 0.86, metalness: 0, side: THREE.DoubleSide }));
+      const mesh = new THREE.Mesh(geo, new THREE.MeshPhysicalMaterial({ color: f.hex, roughness: 0.86, metalness: 0, side: THREE.DoubleSide, specularIntensity: 0.15, envMap: envRef.current, envMapIntensity: 0.12 }));
       mesh.position.y = 0.001;
       mesh.receiveShadow = true;
-      mesh.userData = { key: f.key };
+      mesh.userData = { key: f.key, floor: true };
       content.add(mesh);
       floorsRef.current.push(mesh);
       bounds.expandByObject(mesh);
     }
 
-    const reveal = new THREE.MeshStandardMaterial({ color: REVEAL_HEX, roughness: 0.95, metalness: 0 });
+    const reveal = new THREE.MeshPhysicalMaterial({ color: REVEAL_HEX, roughness: 0.95, metalness: 0, envMapIntensity: 0, specularIntensity: 0 });
     for (const w of solids.walls) {
-      const paint = new THREE.MeshStandardMaterial({ color: w.hex, roughness: 0.93, metalness: 0 });
+      const paint = new THREE.MeshPhysicalMaterial();
+      applyWallLook(paint, w, envRef.current);
       const group = new THREE.Group();
       const full = slabObject(w, w.heightM, paint, reveal);
       const stub = slabObject(w, w.stubHeightM, paint, reveal);
       stub.traverse((o) => {
         if ((o as THREE.Mesh).isMesh && o.userData.wall) o.userData = { ...o.userData, key: w.key.replace(/^wall-/, 'stub-'), stub: true };
       });
-      group.add(full, stub);
+      const outlineFull = faceOutline(w, w.heightM);
+      const outlineStub = faceOutline(w, w.stubHeightM);
+      group.add(full, stub, outlineFull, outlineStub);
       placeWall(w, group);
       content.add(group);
       group.updateMatrixWorld(true);
-      wallsRef.current.push({ solid: w, group, full, stub, paint, show: 'full' });
+      wallsRef.current.push({ solid: w, group, full, stub, paint, baseHex: w.hex, outlineFull, outlineStub, show: 'full' });
       bounds.expandByObject(full);
     }
 
@@ -438,6 +694,22 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
           .then((tpl) => {
             if (buildRef.current !== buildId || !contentRef.current) return;
             const body = bodyObject(it, tpl);
+            // A product's PBR textures pick up a little of the room.
+            const env = envRef.current;
+            if (env) {
+              body.traverse((o) => {
+                const bm = o as THREE.Mesh;
+                if (!bm.isMesh) return;
+                const mats = Array.isArray(bm.material) ? bm.material : [bm.material];
+                for (const mat of mats) {
+                  if ('envMapIntensity' in mat) {
+                    (mat as THREE.MeshStandardMaterial).envMap = env;
+                    (mat as THREE.MeshStandardMaterial).envMapIntensity = 0.35;
+                    mat.needsUpdate = true;
+                  }
+                }
+              });
+            }
             contentRef.current.remove(mesh);
             mesh.geometry.dispose();
             (mesh.material as THREE.Material).dispose();
@@ -497,16 +769,29 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     // with the previous camera (the e2e's first click landed on nothing).
     c.updateMatrixWorld(true);
 
-    const state = cutawayState(solids, pos, camera.target);
+    // The fill rides with the camera, a little above it, so whichever walls
+    // face the viewer are lit to their colour.
+    const fill = fillRef.current;
+    if (fill) {
+      fill.position.copy(c.position).add(new THREE.Vector3(0, 4, 0));
+      fill.target.position.copy(toThree(camera.target));
+      fill.target.updateMatrixWorld();
+    }
+
+    // Walls Up / Cutaway / Down: the same slabs, only visibility flips.
+    const state = wallView === 'cutaway' ? cutawayState(solids, pos, camera.target) : null;
     for (const e of wallsRef.current) {
-      const show = state.get(e.solid.key) ?? 'full';
+      const show: WallShow = wallView === 'up' ? 'full' : wallView === 'down' ? 'stub' : (state?.get(e.solid.key) ?? 'full');
       e.show = show;
       e.full.visible = show === 'full';
       e.stub.visible = show === 'stub';
+      const target = hoveredRef.current === e;
+      e.outlineFull.visible = target && show === 'full';
+      e.outlineStub.visible = target && show === 'stub';
     }
     requestRender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [camera, width, height, solids]);
+  }, [camera, width, height, solids, wallView]);
 
   // ---- selection (the plan's selection, mirrored) -----------------------------------
   // A mint pad on the floor under the picked body — the Sims' footprint
@@ -542,22 +827,28 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedInstanceId, solids]);
 
-  // ---- hover tint ----------------------------------------------------------------
+  // ---- the paint target (The Sims' wallpaper preview) ------------------------------
+  // The hovered wall shows the BRUSH colour before the click and a mint
+  // outline says which wall; leaving it restores its own colour. A yellow
+  // glow used to sit on the wall instead — the same glow before and after
+  // the click, so a paint looked like nothing happened.
   useEffect(() => {
     const prev = hoveredRef.current;
     if (prev) {
-      prev.paint.emissive.set(0x000000);
-      prev.paint.emissiveIntensity = 0;
+      prev.paint.color.set(prev.baseHex);
+      prev.outlineFull.visible = false;
+      prev.outlineStub.visible = false;
     }
     const next = hover ? wallsRef.current.find((e) => sameHit(hover, e.solid.hit)) ?? null : null;
     if (next) {
-      next.paint.emissive.set(HOVER_HEX);
-      next.paint.emissiveIntensity = 0.42;
+      if (brushHex) next.paint.color.set(brushHex);
+      next.outlineFull.visible = next.show === 'full';
+      next.outlineStub.visible = next.show === 'stub';
     }
     hoveredRef.current = next;
     requestRender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hover, solids]);
+  }, [hover, solids, brushHex]);
 
   useImperativeHandle(
     ref,
@@ -576,7 +867,81 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
           });
         }
         const hits = ray.intersectObjects(targets, false);
-        return (hits[0]?.object.userData.hit as WallHit | undefined) ?? null;
+        const wall = hits[0];
+        if (!wall) return null;
+        // What is under the cursor is what gets hit: an item (its exact
+        // catalog box — the Sims pick the box, and a hollow frame must not
+        // let the brush through) or the floor in front of the wall blocks
+        // the brush; the wall behind a treadmill used to take the paint.
+        let block = Infinity;
+        const box = new THREE.Box3();
+        const p = new THREE.Vector3();
+        for (const o of itemsRef.current) {
+          box.setFromObject(o);
+          if (!box.isEmpty() && ray.ray.intersectBox(box, p)) block = Math.min(block, p.distanceTo(ray.ray.origin));
+        }
+        const floorHit = ray.intersectObjects(floorsRef.current, false)[0];
+        if (floorHit) block = Math.min(block, floorHit.distance);
+        if (block < wall.distance - 1e-4) return null;
+        return (wall.object.userData.hit as WallHit | undefined) ?? null;
+      },
+      wallMaterial(hit) {
+        const e = wallsRef.current.find((x) => sameHit(hit, x.solid.hit));
+        if (!e) return null;
+        return {
+          hex: `#${e.paint.color.getHexString().toUpperCase()}`,
+          baseHex: e.baseHex,
+          finish: e.solid.finish ?? null,
+          roughness: e.paint.roughness,
+          sheen: e.paint.specularIntensity,
+          hasMap: !!e.paint.map,
+          show: e.show,
+        };
+      },
+      tune(opts) {
+        // DEV bridge: bisect the rig live (a probe sets one thing at a time).
+        const s = sceneRef.current;
+        if (!s) return;
+        s.traverse((o) => {
+          const l = o as THREE.Light;
+          if ((l as THREE.HemisphereLight).isHemisphereLight && opts.hemi !== undefined) l.intensity = opts.hemi;
+          if ((l as THREE.DirectionalLight).isDirectionalLight) {
+            if (l === sunRef.current && opts.sun !== undefined) l.intensity = opts.sun;
+            if (l === fillRef.current && opts.fill !== undefined) l.intensity = opts.fill;
+          }
+        });
+        if (opts.env !== undefined) {
+          for (const e of wallsRef.current) {
+            e.paint.envMap = opts.env && e.paint.specularIntensity > 0 ? envRef.current : null;
+            e.paint.needsUpdate = true;
+          }
+        }
+        if (opts.normals !== undefined) {
+          for (const e of wallsRef.current) {
+            e.paint.normalScale.set(opts.normals, opts.normals);
+            e.paint.needsUpdate = true;
+          }
+        }
+        if (opts.maps !== undefined) {
+          for (const e of wallsRef.current) {
+            e.paint.map = opts.maps ? wallTextures().plasterMap : null;
+            e.paint.needsUpdate = true;
+          }
+        }
+        requestRender();
+      },
+      samplePixel(x, y) {
+        const r = rendererRef.current;
+        const s = sceneRef.current;
+        const c = cameraRef.current;
+        if (!r || !s || !c) return null;
+        // Render now and read straight back, before the compositor swaps.
+        r.render(s, c);
+        const gl = r.getContext();
+        const dpr = r.getPixelRatio();
+        const px = new Uint8Array(4);
+        gl.readPixels(Math.round(x * dpr), Math.round((height - y) * dpr), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+        return { r: px[0], g: px[1], b: px[2] };
       },
       screenPoint(hit) {
         const c = cameraRef.current;

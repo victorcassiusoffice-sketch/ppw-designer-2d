@@ -99,6 +99,7 @@ import {
   paintsForBrand,
   primerForBrand,
   resolveWallColourHex,
+  BARE_PLASTER_HEX,
   type PaintColour,
   type WallPaint,
 } from '../data/wallPaints';
@@ -950,11 +951,18 @@ export function TopBar({
     setWallPaintDraft({ colourHex: h, colourName: undefined, erase: false });
   }
 
-  /** The 3D room view paints through the same brush as the plan. */
-  function paintFromRoomView(hit: Parameters<typeof applyWallPaintBrush>[0]) {
-    const r = applyWallPaintBrush(hit);
+  /**
+   * The 3D room view paints through the same brush as the plan — with the
+   * Sims keys (Shift = whole room, Ctrl = erase) — and gets back the one
+   * line it flashes as its caption.
+   */
+  function paintFromRoomView(hit: Parameters<typeof applyWallPaintBrush>[0], mods?: Parameters<typeof applyWallPaintBrush>[1]): string | void {
+    const r = applyWallPaintBrush(hit, mods);
     if (r.message) pushToast(r.message, r.kind);
+    return r.detail;
   }
+  /** What the hovered wall previews: the brush colour, or bare plaster while Erase is on. */
+  const wallPaintPreviewHex = wallPaintDraft.erase ? BARE_PLASTER_HEX : wallPaintBrushHex;
 
   /**
    * The Room chip IS the action, mirroring the Floor tool: paint (or, with
@@ -2430,12 +2438,22 @@ export function TopBar({
               {/* The Sims-style room view (2026-09-14): the storey in 3D,
                   every wall in its paint. Click a wall here to paint it;
                   ⤢ opens the big view. */}
-              <RoomView3D
-                variant="card"
-                onPaintWall={paintFromRoomView}
-                onExpand={() => setViewMode('3d')}
-                className="mb-2 overflow-hidden rounded-lg border border-ppw-rim"
-              />
+              {viewMode === '3d' ? (
+                // The workspace IS the room view while 3D Mode is open — one
+                // GL stage at a time (a second context per paint click cost a
+                // whole extra scene rebuild, and it can distort the first).
+                <p className="mb-2 rounded-lg border border-ppw-rim bg-ppw-chrome px-3 py-2 text-[11px] font-medium text-ppw-charcoal" data-testid="wallpaint-3d-card-note">
+                  The room is in the workspace — click a wall there to paint it.
+                </p>
+              ) : (
+                <RoomView3D
+                  variant="card"
+                  onPaintWall={paintFromRoomView}
+                  brushHex={wallPaintPreviewHex}
+                  onExpand={() => setViewMode('3d')}
+                  className="mb-2 overflow-hidden rounded-lg border border-ppw-rim"
+                />
+              )}
 
               {/* Brand card — always: who the prices come from and when. */}
               {paintBrand && (
@@ -2952,6 +2970,7 @@ export function TopBar({
             variant="overlay"
             title="3D Mode"
             onPaintWall={wallPaintActive ? paintFromRoomView : undefined}
+            brushHex={wallPaintActive ? wallPaintPreviewHex : undefined}
             onClose={() => setViewMode('plan')}
             footer={wallPaintActive ? wallPaintLiveText : undefined}
             brushStrip={

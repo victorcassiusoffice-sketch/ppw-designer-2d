@@ -18,6 +18,7 @@ import type {
   Region,
 } from './products.schema';
 import catalogJson from './products.json';
+import { useCatalogStore } from '../store/catalogStore';
 
 /**
  * Real-image enrichment. Since 2026-07-26 (WD directive 2) the live
@@ -283,6 +284,8 @@ export async function fetchApiProducts(
     if (!json.products || json.schemaMissing) return [];
     const adapted = json.products.map(apiProductToProduct);
     for (const p of adapted) _apiProductsCache.set(p.id, p);
+    // Views that draw placed items re-derive now that `m-` ids resolve.
+    if (adapted.length) useCatalogStore.getState().bump();
     return adapted;
   } catch {
     return [];

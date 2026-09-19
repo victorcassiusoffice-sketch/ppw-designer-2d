@@ -1,0 +1,237 @@
+{
+  "at": "2026-09-17T12:21:06.912Z",
+  "health": {
+    "ok": true,
+    "service": "ppw-designer-2d",
+    "env": "production",
+    "commit": "a3ca4bea84940993e8e39863f1355697bf83ead7",
+    "sentryConfigured": true,
+    "timestamp": "2026-09-17T12:20:22.972Z"
+  },
+  "served": [
+    {
+      "id": "k1-nordictrack-gx10",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "k1-nordictrack-2450",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "k1-nordictrack-tour-de-france",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "k1-schwinn-700ic",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "k1-proform-carbon-tl",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "k1-nordictrack-rw900",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "k1-nordictrack-x16",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "k1-vision-t600-03",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "k1-matrix-mg-glute",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "k1-vision-t600e-02",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "k1-matrix-versa-adabd",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "k1-vision-smith",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "emcar-victron-175",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "emcar-jinko-475",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "k1-bowflex-xtreme-2se",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "emcar-sunpower-flex-100",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "emcar-victron-superpack-12-100",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "emcar-victron-multiplus-12-3000",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "emcar-victron-phoenix-12-1200",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "emcar-victron-agm-200",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    },
+    {
+      "id": "emcar-victron-mppt-100-30",
+      "status": 200,
+      "bytes": 0,
+      "type": "model/gltf-binary"
+    }
+  ],
+  "desktop": {
+    "backend": "gl",
+    "models": [
+      {
+        "n": "/models/k1-nordictrack-2450.glb",
+        "s": 128309,
+        "d": 357
+      },
+      {
+        "n": "/models/k1-vision-t600e-02.glb",
+        "s": 160655,
+        "d": 668
+      },
+      {
+        "n": "/models/k1-nordictrack-rw900.glb",
+        "s": 198765,
+        "d": 613
+      },
+      {
+        "n": "/models/k1-schwinn-700ic.glb",
+        "s": 198033,
+        "d": 303
+      },
+      {
+        "n": "/models/k1-vision-smith.glb",
+        "s": 182737,
+        "d": 211
+      },
+      {
+        "n": "/models/k1-matrix-versa-adabd.glb",
+        "s": 156125,
+        "d": 533
+      },
+      {
+        "n": "/models/emcar-jinko-475.glb",
+        "s": 203969,
+        "d": 450
+      }
+    ],
+    "draco": [
+      "/draco/draco_wasm_wrapper.js",
+      "/draco/draco_decoder.wasm"
+    ],
+    "three": [
+      "/assets/ThreeStage-CR4r5G2q.js",
+      "/assets/vendor-three-DqF1HjCd.js"
+    ],
+    "errors": []
+  },
+  "phone": {
+    "backend": "gl",
+    "models": [
+      {
+        "n": "/models/k1-nordictrack-2450.glb",
+        "s": 128309,
+        "d": 223
+      },
+      {
+        "n": "/models/k1-vision-t600e-02.glb",
+        "s": 160655,
+        "d": 602
+      },
+      {
+        "n": "/models/k1-nordictrack-rw900.glb",
+        "s": 198765,
+        "d": 182
+      },
+      {
+        "n": "/models/k1-schwinn-700ic.glb",
+        "s": 198033,
+        "d": 328
+      },
+      {
+        "n": "/models/k1-vision-smith.glb",
+        "s": 182737,
+        "d": 358
+      },
+      {
+        "n": "/models/k1-matrix-versa-adabd.glb",
+        "s": 156125,
+        "d": 598
+      },
+      {
+        "n": "/models/emcar-jinko-475.glb",
+        "s": 203969,
+        "d": 555
+      }
+    ],
+    "draco": [
+      "/draco/draco_wasm_wrapper.js",
+      "/draco/draco_decoder.wasm"
+    ],
+    "three": [
+      "/assets/ThreeStage-CR4r5G2q.js",
+      "/assets/vendor-three-DqF1HjCd.js"
+    ],
+    "errors": []
+  }
+}

@@ -1,0 +1,196 @@
+=== JOURNEY 1: fresh /designer, draw a room with the pen, place from the dock, open 3D ===
+deployed healthcheck: {"ok":true,"service":"ppw-designer-2d","env":"production","commit":"a3ca4bea84940993e8e39863f1355697bf83ead7","sentryConfigured":true,"timestamp":"2026-09-17T12:59:56.501Z"}
+wall pen HUD visible on open: true
+hint: Drag to draw a wall — or click corner to corner. The length shows as you go.
+  [shot] 01-fresh-designer-pen-in-hand.png
+canvas rect: {"x":0,"y":53,"w":1440,"h":765}
+vertices: 4 vertices
+primary button: Make room enabled: true
+after Make room → rooms: [{"id":"J94HQ-nB","n":4,"poly":[{"x":1,"y":1},{"x":6,"y":1},{"x":6,"y":4.5},{"x":1,"y":4.5}]}] loose walls: 0
+  [shot] 02-plan-room-made.png
+dock tiles (first 15 visible):
+    m-6 | cardio | Place NordicTrack Commercial 2450 Treadmill — 150,000 MUR
+    m-7 | cardio | Place NordicTrack Tour de France Indoor Bike — 150,000 MUR
+    m-8 | cardio | Place NordicTrack GX 10 Recumbent Bike — 95,000 MUR
+    m-9 | cardio | Place Schwinn 700IC Indoor Bike — 29,000 MUR
+    m-10 | cardio | Place ProForm Carbon TL Treadmill — 40,500 MUR
+    m-11 | cardio | Place NordicTrack X16 Elliptical — 125,000 MUR
+    m-12 | cardio | Place NordicTrack RW900 Rower — 120,000 MUR
+    m-13 | cardio | Place Vision Fitness T600-03 Treadmill — 210,393 MUR
+    m-14 | cardio | Place Vision Fitness T600E-02 Treadmill (22" touchscreen) — 259,600 MUR
+    m-15 | cardio | Place Matrix MG Glute Trainer — 140,001 MUR
+    m-16 | cardio | Place Matrix Versa Adductor / Abductor — 154,675 MUR
+    m-17 | cardio | Place Vision Fitness Smith Machine — 172,500 MUR
+    m-18 | cardio | Place Bowflex Xtreme 2 SE Home Gym — 52,000 MUR
+    m-19 | cardio | Place Adjustable Flat / Incline / Decline Bench — 11,000 MUR
+    k1-floor-eva-combat | flooring | Lay EVA Combat Sport Mat 1×1m × 2.5 cm floor — 850 MUR
+dock tiles with k1-* id: 8 | with m-* id: 14
+api resources: [{"name":"/api/products?limit=100","size":1804,"ms":2406,"status":200},{"name":"/api/products?limit=100","size":0,"ms":2404,"status":200},{"name":"/api/healthcheck?cb=1789649996184","size":473,"ms":596,"status":200}]
+/api/products total: 14 schemaMissing: false first product: {"id":6,"sku":"K1-CDIO-NT2450","name":"NordicTrack Commercial 2450 Treadmill","keys":["id","sku","name","category","description","widthMm","depthMm","heightMm","weightG","priceMinor","currency","imageUrl","region","topdownImageUrl"]}
+K1 rows on the API (id | sku | name):
+    6 | K1-CDIO-NT2450 | NordicTrack Commercial 2450 Treadmill
+    7 | K1-CDIO-NTTDF | NordicTrack Tour de France Indoor Bike
+    8 | K1-CDIO-NTGX10 | NordicTrack GX 10 Recumbent Bike
+    9 | K1-CDIO-SCH700IC | Schwinn 700IC Indoor Bike
+    10 | K1-CDIO-PROFCTL | ProForm Carbon TL Treadmill
+    11 | K1-CDIO-NTX16 | NordicTrack X16 Elliptical
+    12 | K1-CDIO-NTRW900 | NordicTrack RW900 Rower
+    13 | K1-CDIO-VST60003 | Vision Fitness T600-03 Treadmill
+    14 | K1-CDIO-VST600E02 | Vision Fitness T600E-02 Treadmill (22" touchscreen)
+    15 | K1-STRG-MXMGGT | Matrix MG Glute Trainer
+    16 | K1-STRG-MXVSAD | Matrix Versa Adductor / Abductor
+    17 | K1-STRG-VSSMITH | Vision Fitness Smith Machine
+    18 | K1-STRG-BFXT2SE | Bowflex Xtreme 2 SE Home Gym
+    19 | K1-STRG-FIDBN | Adjustable Flat / Incline / Decline Bench
+any API row carries a mesh/model field? false
+plan wall bounds (page px): {"minX":466,"minY":257,"maxX":974,"maxY":615}
+tile 1 armed: {"id":"m-6","armed":"true","label":"Place NordicTrack Commercial 2450 Treadmill — 150,000 MUR"} canvas data-armed: true
+items after placement 1: [{"instanceId":"8tJ0pqRenl","productId":"m-6","x":2,"y":1.05,"rotation":0}]
+tile 2 armed: {"id":"m-9","armed":"true","label":"Place Schwinn 700IC Indoor Bike — 29,000 MUR"}
+items after placement 2: [{"instanceId":"8tJ0pqRenl","productId":"m-6","x":2,"y":1.05,"rotation":0},{"instanceId":"OA9F9wFj7Q","productId":"m-9","x":4.5,"y":3.25,"rotation":180}]
+  [shot] 03-plan-two-k1-items-placed.png
+3D backend attr: gl
+3D aria-label: Room view in 3D — 7 parts. Drag to orbit; tap an item to select it, drag it to move it.
+three chunk fetched: ["/assets/ThreeStage-CR4r5G2q.js","/assets/vendor-three-DqF1HjCd.js"]
+model/draco requests after 10 s (user-placed m-* ids): []
+  [shot] 04-3d-user-placed-items-ARE-BOXES.png
+  [shot] 04b-3d-user-placed-items-zoom.png
+console errors/warnings so far: ["[warning] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead."]
+
+=== JOURNEY 1c (control): room seeded in localStorage with placedItems using k1-* seed ids ===
+seeded items: [{"instanceId":"i1","productId":"k1-nordictrack-2450","x":0.5,"y":0.5,"rotation":0},{"instanceId":"i2","productId":"k1-schwinn-700ic","x":3.2,"y":2.4,"rotation":0}]
+3D backend attr: gl
+model/draco requests after 10 s (seed k1-* ids): [{"name":"/models/k1-nordictrack-2450.glb","size":128309,"ms":360,"status":200},{"name":"/models/k1-schwinn-700ic.glb","size":198033,"ms":440,"status":200},{"name":"/draco/draco_wasm_wrapper.js","size":12100,"ms":624,"status":200},{"name":"/draco/draco_decoder.wasm","size":60862,"ms":191,"status":200}]
+  [shot] 05-3d-CONTROL-seed-k1-ids-bodies.png
+console errors/warnings (control): ["[warning] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead."]
+
+=== JOURNEY 2: Wall paint inside 3D Mode (user-drawn room from Journey 1) ===
+paint panel present: 1 | overlay still open: 1
+header line: Drag to look around · pinch or scroll to zoom · click a wall to paint it
+caption (no hover): Drag to look around · click a wall to paint it
+brush name / colour shown: Base white
+visible colour swatches: 72 [{"id":"wallpaint-colour-sofap-alc-morning-haze","bg":"rgb(237, 235, 223)","title":"Morning Haze · 8729-1 · Neutrals"},{"id":"wallpaint-colour-sofap-alc-mushroom","bg":"rgb(217, 196, 166)","title":"Mushroom · Neutrals"},{"id":"wallpaint-colour-sofap-alc-gardenia","bg":"rgb(215, 201, 173)","title":"Gardenia · Neutrals"},{"id":"wallpaint-colour-sofap-alc-scone","bg":"rgb(208, 173, 135)","title":"Scone · 8165-4 · Neutrals"},{"id":"wallpaint-colour-sofap-alc-faint-silhouette","bg":"rgb(229, 224, 214)","title":"Faint Silhouette · 8778-1 · Neutrals"},{"id":"wallpaint-colour-sofap-alc-quicksilver","bg":"rgb(191, 195, 194)","title":"Quicksilver · Neutrals"},{"id":"wallpaint-colour-sofap-alc-ivory","bg":"rgb(249, 231, 203)","title":"Ivory · Neutrals"},{"id":"wallpaint-colour-sofap-alc-bermuda-beach","bg":"rgb(224, 198, 164)","title":"Bermuda Beach · 8157-1 · Neutrals"},{"id":"wallpaint-colour-sofap-alc-himalaya","bg":"rgb(183, 158, 121)","title":"Himalaya · 8754-4 · Neutrals"},{"id":"wallpaint-colour-sofap-alc-peaceful-yellow","bg":"rgb(242, 239, 222)","title":"Peaceful Yellow · 8004-1 · Neutrals"},{"id":"wallpaint-colour-sofap-alc-elmwood","bg":"rgb(207, 197, 183)","title":"Elmwood · 8773-1 · Neutrals"},{"id":"wallpaint-colour-sofap-alc-lb-grey","bg":"rgb(144, 147, 142)","title":"Lb Grey · Neutrals"}]
+  [shot] 06-3d-paint-armed-panel.png
+hover sweep: probes 704 → walls answering: {"wall1":{"points":40,"xMin":368,"xMax":656,"yMin":320,"yMax":536,"centre":{"x":476,"y":428}},"wall2":{"points":19,"xMin":692,"xMax":800,"yMin":356,"yMax":536,"centre":{"x":800,"y":428}},"wall3":{"points":7,"xMin":512,"xMax":800,"yMin":572,"yMax":680,"centre":{"x":584,"y":644}},"wall4":{"points":2,"xMin":440,"xMax":476,"yMin":644,"yMax":680,"centre":{"x":476,"y":680}}}
+walls that answer to the pointer: ["wall1","wall2","wall3","wall4"] (edge 0 = north/top, 1 = east, 2 = south, 3 = west; default camera looks from the south-west)
+  [shot] 07-3d-before-any-paint.png
+hover over wall1 at {"x":476,"y":428} → caption: Treatment Room · Wall 1 · unpainted | cursor: pointer
+  [shot] 08-3d-hover-far-wall.png
+pixel at hover point — idle: rgb(64,64,62) | hovered: rgb(64,64,62) (a highlight should differ)
+store wallPaint after default-brush click on wall1 : [{"edgeIndex":0,"paintId":"permoglaze-matt-emulsion"}]
+  [shot] 09-3d-after-default-brush-click.png
+pixel at clicked wall — before: rgb(64,64,62) | after default brush (mouse away): rgb(64,64,62)
+live quote line: 13.5 m² · 5.0 L · £14.33
+darkest visible swatch: {"id":"wallpaint-colour-sofap-alc-bronze","bg":"rgb(76, 73, 63)","title":"Bronze · Bright"}
+brush now: Bronze
+hover wall2 at {"x":800,"y":428} → caption: Treatment Room · Wall 2 · unpainted
+store wallPaint after tinted click on wall2 : [{"edgeIndex":0,"paintId":"permoglaze-matt-emulsion"},{"edgeIndex":1,"paintId":"permoglaze-matt-emulsion","colourHex":"#4C493F","colourName":"Bronze"}]
+  [shot] 10-3d-after-tinted-click.png
+pixel at tinted wall — before: rgb(196,190,178) | after: rgb(47,42,31)
+drag from wall1 to wall2 → wallPaint changed? false | now: [{"edgeIndex":0,"paintId":"permoglaze-matt-emulsion"},{"edgeIndex":1,"paintId":"permoglaze-matt-emulsion","colourHex":"#4C493F","colourName":"Bronze"}]
+  [shot] 11-3d-after-drag-across-walls.png
+FAILED locator.click: Error: strict mode violation: locator('[data-testid="wallpaint-3d-fit"]') resolved to 2 elements:
+    1) <button type="button" aria-label="Fit" title="Fit the whole plan" data-testid="wallpaint-3d-fit" class="inline-flex h-10 min-w-[40px] md:h-8 md:min-w-[32px] items-center justify-center rounded-md border border-ppw-rim bg-ppw-chrome px-2 text-[12px] font-semibold text-ppw-charcoal shadow-sm hover:bg-[#f3f1ec] focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]">Fit</button> aka getByTestId('wallpaint-3d-overlay').getByTestId('wallpaint-3d-fit')
+    2) <button type="button" aria-label="Fit" title="Fit the whole plan" data-testid="wallpaint-3d-fit" class="inline-flex h-10 min-w-[40px] md:h-8 md:min-w-[32px] items-center justify-center rounded-md border border-ppw-rim bg-ppw-chrome px-2 text-[12px] font-semibold text-ppw-charcoal shadow-sm hover:bg-[#f3f1ec] focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]">Fit</button> aka getByTestId('wallpaint-palette').getByTestId('wallpaint-3d-fit')
+
+Call log:
+[2m  - waiting for locator('[data-testid="wallpaint-3d-fit"]')[22m
+
+    at C:\Users\Victor\AppData\Local\Temp\claude\C--Users-Victor-Documents-PPW-Code-ppw-designer-2d\1b4fd532-e2fa-4df5-bbdb-754fc1225370\scratchpad\repro-vic.js:388:60
+
+=== PART 2 ===
+placed tile m-6
+placed tile m-9
+room: Treatment Room items: [{"productId":"m-6","x":2,"y":1.05,"rotation":0},{"productId":"m-9","x":4.5,"y":3.25,"rotation":180}]
+sweep (default camera): {"wall1":{"points":40,"xMin":368,"xMax":656,"yMin":320,"yMax":536},"wall2":{"points":19,"xMin":692,"xMax":800,"yMin":356,"yMax":536},"wall3":{"points":7,"xMin":512,"xMax":800,"yMin":572,"yMax":680},"wall4":{"points":2,"xMin":440,"xMax":476,"yMin":644,"yMax":680}}
+wall1 → light(plaster) points: 16 | dark points (something in front): 24 ["656,320=rgb(150,146,135)","584,356=rgb(150,146,135)","620,356=rgb(150,146,135)"]
+wall2 → light(plaster) points: 18 | dark points (something in front): 1 ["692,464=rgb(150,145,135)"]
+wall3 → light(plaster) points: 1 | dark points (something in front): 6 ["764,572=rgb(150,145,136)","800,572=rgb(150,145,135)","692,608=rgb(150,145,135)"]
+wall4 → light(plaster) points: 2 | dark points (something in front): 0 []
+hover plaster point of wall1 {"x":512,"y":392} → caption: Treatment Room · Wall 1 · unpainted | cursor: pointer
+  [shot] 17-3d-hover-plaster-wall1.png
+wall1 plaster pixel idle: rgb(151,146,135) | hovered: rgb(213,201,173)
+hover over the ITEM in front of wall1 at {"x":656,"y":320} → caption: Treatment Room · Wall 1 · unpainted | cursor: pointer
+NEAR STUB wall3 at {"x":584,"y":644} → hover caption: Treatment Room · Wall 3 · unpainted | cursor: pointer | click painted? true | edges now: [2]
+NEAR STUB wall4 at {"x":476,"y":680} → hover caption: Treatment Room · Wall 4 · unpainted | cursor: pointer | click painted? true | edges now: [2,3]
+  [shot] 18-3d-after-near-stub-clicks.png
+FLOOR click at {"x":642.4000000000001,"y":578.4} → hover caption: Drag to look around · click a wall to paint it | cursor: grab | paint changed? false
+scope buttons: wall 1 room 1 | scope-room label: Room
+sweep after 2× rotate-left: {"wall4":{"points":28,"xMin":404,"xMax":584,"yMin":320,"yMax":500},"wall1":{"points":28,"xMin":620,"xMax":800,"yMin":320,"yMax":572},"wall3":{"points":4,"xMin":440,"xMax":548,"yMin":572,"yMax":680},"wall2":{"points":5,"xMin":584,"xMax":728,"yMin":644,"yMax":716}}
+  [shot] 19-3d-after-rotate-left-x2.png
+after orbit, click wall3 at {"x":512,"y":644} → painted? true | edges: [3,2]
+  [shot] 20-3d-after-orbit-paint.png
+=== 2D plan paint comparison ===
+overlay closed: true | panel open: 1 | view-plan radio checked: true
+plan wall bounds: {"minX":330,"minY":147,"maxX":838,"maxY":615}
+plan hover top edge → cursor: auto
+  [shot] 21-plan-paint-hover-top-edge.png
+plan click top edge → changed? false | edges: ["3:white","2:white"]
+plan click west edge → changed? true | edges: ["2:white","3:white"]
+plan drag along south edge → changed? false
+plan click INSIDE room (floor) → changed? false
+  [shot] 22-plan-paint-after-clicks.png
+live quote (plan): 23.0 m² · 8.5 L · £28.47
+  [shot] 23-3d-after-plan-paint.png
+final wallPaint: [{"edgeIndex":2,"paintId":"permoglaze-matt-emulsion"},{"edgeIndex":3,"paintId":"permoglaze-matt-emulsion"}]
+page errors: []
+
+=== PART 3 ===
+plan wall bounds (page px): {"minX":329,"minY":146,"maxX":838,"maxY":615,"bandPx":1}
+top wall click at minY-6px → painted edge 0? false | edges [] | under=CANVAS cursor(el/konva/parent-inline)=auto/auto/
+top wall click at minY+0px → painted edge 0? false | edges [] | under=CANVAS cursor(el/konva/parent-inline)=auto/auto/
+top wall click at minY+2px → painted edge 0? false | edges [] | under=CANVAS cursor(el/konva/parent-inline)=auto/auto/
+top wall click at minY+4px → painted edge 0? false | edges [] | under=CANVAS cursor(el/konva/parent-inline)=auto/auto/
+top wall click at minY+6px → painted edge 0? false | edges [] | under=CANVAS cursor(el/konva/parent-inline)=auto/auto/
+top wall click at minY+8px → painted edge 0? false | edges [] | under=CANVAS cursor(el/konva/parent-inline)=auto/auto/
+top wall click at minY+12px → painted edge 0? false | edges [] | under=CANVAS cursor(el/konva/parent-inline)=auto/auto/
+top wall click at minY+16px → painted edge 0? false | edges [] | under=CANVAS cursor(el/konva/parent-inline)=auto/auto/
+top wall click at minY+22px → painted edge 0? false | edges [] | under=CANVAS cursor(el/konva/parent-inline)=auto/auto/
+top wall click at minY+30px → painted edge 0? false | edges [] | under=CANVAS cursor(el/konva/parent-inline)=auto/auto/
+  [shot] 24-plan-paint-hover-top-band.png
+  [shot] 25-plan-paint-top-painted.png
+plan click east band with Bronze → edges [1]
+  [shot] 26-plan-paint-east-bronze.png
+after Room scope button → edges [0,1,2,3]
+  [shot] 27-plan-paint-room-scope.png
+  [shot] 28-3d-room-scope-bronze.png
+overlay caption: Drag to look around · click a wall to paint it
+
+=== PART 4 ===
+charcoal runs down x=584: ["146-146 (1px)","260-264 (5px)","597-597 (1px)","610-614 (5px)"] | across y=436: ["329-338 (10px)","829-838 (10px)"]
+top wall band: {"y0":260,"y1":264,"h":5} | bottom band: {"y0":610,"y1":614,"h":5} | left band: {"x0":329,"x1":338,"w":10} | right band: {"x0":829,"x1":838,"w":10}
+  [shot] 29-plan-paint-hover-top-band.png
+plan hover pixels (band centre / 6px inside / 6px outside) idle: ["rgb(42,41,38)","rgb(212,209,203)","rgb(237,233,223)"] | hovered: ["rgb(42,41,38)","rgb(212,209,203)","rgb(237,233,223)"]
+cursor while hovering the band: {"under":"CANVAS","el":"auto","container":"auto"}
+click top wall @ outer edge -24 (y=236) → edges [0]
+click top wall @ outer edge -12 (y=248) → edges []
+click top wall @ outer edge -6 (y=254) → edges []
+click top wall @ outer edge -2 (y=258) → edges []
+click top wall @ outer edge 0 (y=260) → edges []
+click top wall @ centre (y=262) → edges []
+click top wall @ inner (y=264) → edges []
+click top wall @ inner edge +2 (y=266) → edges []
+click top wall @ inner edge +6 (y=270) → edges []
+click top wall @ inner edge +12 (y=276) → edges []
+click top wall @ inner edge +24 (y=288) → edges []
+click top wall @ inner edge +40 (y=304) → edges []
+paint after resets: []
+top wall Bronze → edges [0]
+  [shot] 30-plan-paint-top-bronze.png
+plan pixels after Bronze (band centre / 6px inside / 6px outside): ["rgb(42,41,38)","rgb(212,209,203)","rgb(81,78,68)"]
+live quote: 13.5 m² · 5.2 L · £39.47
+
+=== PART 5 ===
+click -75px from the top wall line (y=187) → edges []
+click -62px from the top wall line (y=200) → edges []
+click -58px from the top wall line (y=204) → edges [0]
+click -45px from the top wall line (y=217) → edges [0]
+click -24px from the top wall line (y=238) → edges [0]
+click +0px from the top wall line (y=262) → edges [0]
+click +24px from the top wall line (y=286) → edges [0]
+click +45px from the top wall line (y=307) → edges [0]
+click +58px from the top wall line (y=320) → edges [0]
+click +62px from the top wall line (y=324) → edges []
+click +75px from the top wall line (y=337) → edges []
+erase button label: Erase | clear label: Clear paint
+toasts: ["New room \"Treatment Room\" created (17.50 m2)Tap a wall to paint it.×2Wall paint removed everywhere×7Tap a wall to paint it.×2"]

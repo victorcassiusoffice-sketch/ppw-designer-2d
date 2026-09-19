@@ -10,6 +10,7 @@
  * output is not the glTF default, which way it faces.
  */
 import manifestJson from './productModels.json';
+import catalogJson from './products.json';
 import type { Product } from './products.schema';
 
 export interface ProductModelEntry {
@@ -29,10 +30,26 @@ export interface ProductModelEntry {
 
 const manifest: Record<string, ProductModelEntry> = manifestJson as Record<string, ProductModelEntry>;
 
+/**
+ * The manifest is keyed by SEED ids, but on the deployed designer the K1
+ * range arrives from the catalog API and is namespaced `m-<apiId>`
+ * (apiCatalogAdapter), with the seed twin hidden by SKU (mergeCatalog). A
+ * body belongs to the PRODUCT, not to the row that happened to deliver it —
+ * so the second key is the SKU (Vic 2026-09-17: "the 2d models when going
+ * into the 3d mode just come up as a box" — every K1 machine on production).
+ */
+const seedIdBySku = new Map<string, string>(
+  ((catalogJson as unknown as { products: Array<{ id: string; sku: string }> }).products ?? []).map((p) => [p.sku, p.id]),
+);
+
 /** The body for a product, or undefined → the shaded box. */
-export function productModelFor(p: Pick<Product, 'id' | 'mesh_url'>): ProductModelEntry | undefined {
+export function productModelFor(p: Pick<Product, 'id' | 'mesh_url'> & { sku?: string }): ProductModelEntry | undefined {
   if (p.mesh_url) return { url: p.mesh_url, modelFront: '+z', lengthAxis: 'auto' };
-  return manifest[p.id];
+  const byId = manifest[p.id];
+  if (byId) return byId;
+  if (!p.sku) return undefined;
+  const seedId = seedIdBySku.get(p.sku);
+  return seedId ? manifest[seedId] : undefined;
 }
 
 /** Ids that have a body — for reports and tests. */

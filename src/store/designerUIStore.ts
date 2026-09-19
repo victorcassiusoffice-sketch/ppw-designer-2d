@@ -106,6 +106,13 @@ export interface WallPaintDraft {
  * the designer that any tool can work inside. Per-session, never persisted.
  */
 export type ViewMode = 'plan' | '3d';
+/**
+ * How walls stand in 3D Mode (The Sims' Walls Up / Cutaway / Walls Down,
+ * 2026-09-17): 'cutaway' drops the walls nearest the camera to a stub so
+ * the room reads (the default), 'up' stands every wall, 'down' cuts every
+ * wall to a stub for a look straight into the plan.
+ */
+export type WallView = 'up' | 'cutaway' | 'down';
 
 export interface DoorDraft {
   kind: OpeningKind;
@@ -182,6 +189,9 @@ interface DesignerUIState {
   /** 3D Mode (2026-09-17) — see `ViewMode`. */
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
+  /** Walls Up / Cutaway / Down in 3D Mode — see `WallView`. Session chrome, never persisted. */
+  wallView: WallView;
+  setWallView: (view: WallView) => void;
   /**
    * Wall selection (Vic 2026-09-05: "when I pressed select tool i could not
    * select the walls to delete"). The free wall the Select tool has picked,
@@ -241,6 +251,8 @@ export const useDesignerUIStore = create<DesignerUIState>()(
       energyPanelOpen: false,
       viewMode: 'plan',
       setViewMode: (mode) => set((s) => (s.viewMode === mode ? s : { viewMode: mode })),
+      wallView: 'cutaway',
+      setWallView: (view) => set((s) => (s.wallView === view ? s : { wallView: view })),
       setEnergyPanelOpen: (open) =>
         set((s) => (open ? { energyPanelOpen: true, tool: 'hand' } : s.energyPanelOpen ? { energyPanelOpen: false } : s)),
       selectedWallId: null,

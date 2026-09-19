@@ -39,9 +39,12 @@ import {
   type ReactNode,
 } from 'react';
 import { usePropertyStore, type Property, type Room } from '../store/propertyStore';
-import { useDesignerUIStore } from '../store/designerUIStore';
+import { useDesignerUIStore, type WallView } from '../store/designerUIStore';
 import { usePlacementIntentStore, isScreenTarget } from '../store/placementIntentStore';
+import { useCatalogStore } from '../store/catalogStore';
 import { rotateSelected, deleteSelected } from '../lib/placementActions';
+import { haptic } from '../lib/haptics';
+import type { BrushModifiers } from '../designer/wallPaintBrush';
 import { activeLevelIdOf, isOutdoorRoom, isRoofRoom, roomsOnLevel } from '../designer/levels';
 import { wallsOnLevel } from '../designer/freeWalls';
 import { edgeKey, pointAlongEdge, projectOntoEdge, roomEdges, sharedEdgeMap } from '../designer/wallEdges';
@@ -51,7 +54,7 @@ import { roomFloorMaterial } from '../designer/floorFinish';
 import { findFloorMaterialById } from '../data/floorMaterials';
 import { getProductById } from '../data/products';
 import { productModelFor } from '../data/productModels';
-import { DEFAULT_WALL_HEIGHT_M, findWallPaintById, resolveWallColourHex } from '../data/wallPaints';
+import { DEFAULT_WALL_HEIGHT_M, findWallPaintById, finishOfPaint, resolveWallColourHex } from '../data/wallPaints';
 import {
   boundsOf,
   buildScene,
@@ -79,8 +82,15 @@ const ThreeStage = lazy(() => import('./three/ThreeStage'));
 
 export interface RoomView3DProps {
   variant: 'card' | 'overlay';
-  /** Called with the wall under a click (or tap). Omit for a view-only render. */
-  onPaintWall?: (hit: WallHit) => void;
+  /**
+   * Called with each wall the brush touches — a click, or every wall a
+   * mouse drag runs along — with the Sims keys (Shift = room, Ctrl =
+   * erase). Omit for a view-only render. Returns the one-line result to
+   * flash as the caption, if any.
+   */
+  onPaintWall?: (hit: WallHit, mods?: BrushModifiers) => string | void;
+  /** The brush colour, previewed ON the hovered wall; null while Erase is on (previews bare plaster). */
+  brushHex?: string | null;
   /** Overlay: close it. Card: open the overlay. */
   onClose?: () => void;
   onExpand?: () => void;
@@ -123,6 +133,12 @@ interface RoomView3DBridge {
   floorScreenPoint: (roomX: number, roomY: number) => { x: number; y: number } | null;
   /** The plan point on the floor under a CLIENT point (GL only), so a spec can aim a drag in metres. */
   floorAt: (clientX: number, clientY: number) => { x: number; y: number } | null;
+  /** What a wall's material shows (GL only): the brush preview while hovered, else its own paint. */
+  wallMaterial: (hit: WallHit) => { hex: string; baseHex: string; finish: string | null; roughness: number; sheen: number; hasMap: boolean; show: string } | null;
+  /** The rendered colour at a CLIENT point (GL only) — the proof that a paint is visible. */
+  samplePixel: (clientX: number, clientY: number) => { r: number; g: number; b: number } | null;
+  /** Bisect the rig live (GL only). */
+  tune: (opts: { hemi?: number; sun?: number; fill?: number; env?: boolean; normals?: number; maps?: boolean }) => void;
 }
 /**
  * The card and the overlay can be mounted together (md+), so each registers
@@ -152,6 +168,9 @@ function bridgeRegistry(): RoomView3DBridgeRegistry {
       itemScreenPoint: (id) => pick()?.itemScreenPoint(id) ?? null,
       floorScreenPoint: (x, y) => pick()?.floorScreenPoint(x, y) ?? null,
       floorAt: (x, y) => pick()?.floorAt(x, y) ?? null,
+      wallMaterial: (hit) => pick()?.wallMaterial(hit) ?? null,
+      samplePixel: (x, y) => pick()?.samplePixel(x, y) ?? null,
+      tune: (o) => pick()?.tune(o),
     };
     window.__ppwRoomView3d = reg;
   }
@@ -201,8 +220,11 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
     // A roof slab has no walls to paint — items only, like outdoors.
     const outdoor = isOutdoorRoom(room) || isRoofRoom(room) || !isDrawnPolygon(room.polygon);
     const wallColourByEdge = new Map<number, string>();
+    const wallFinishByEdge = new Map<number, string>();
     for (const e of room.wallPaint ?? []) {
       wallColourByEdge.set(e.edgeIndex, resolveWallColourHex(e.paintId, e.colourHex));
+      const finish = finishOfPaint(e.paintId);
+      if (finish) wallFinishByEdge.set(e.edgeIndex, finish);
     }
     // Floor: the largest painted zone's material, else the whole-room finish.
     let floorHex: string | undefined;
@@ -242,6 +264,7 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
       polygon: room.polygon,
       openings: openingsByRoom.get(room.id) ?? room.openings,
       wallColourByEdge,
+      wallFinishByEdge,
       floorHex,
       kind: outdoor ? 'outdoor' : 'room',
       items,
@@ -255,6 +278,7 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
       b: w.b,
       thicknessM: w.thicknessM,
       colourHex: w.paintId ? resolveWallColourHex(w.paintId, w.paintColourHex) : undefined,
+      finish: finishOfPaint(w.paintId),
     })),
     wallHeightM: H,
     cameraPos: cameraPosition(cam),
@@ -275,7 +299,7 @@ function describeHit(property: Property, hit: WallHit | null): string | null {
     const painted = room.wallPaint?.find((e) => e.edgeIndex === hit.edgeIndex);
     const paint = painted ? findWallPaintById(painted.paintId) : undefined;
     const colour = painted?.colourName ?? painted?.colourHex;
-    return `${room.name} · Wall ${(hit.edgeIndex ?? 0) + 1}${paint ? ` · ${paint.name}` : ' · unpainted'}${colour ? ` · ${colour}` : ''}`;
+    return `${room.name} · Wall ${(hit.edgeIndex ?? 0) + 1}${paint ? ` · ${paint.name}` : ' · unpainted'}${colour ? ` · ${colour}` : ''} — click to paint`;
   }
   const w = property.walls?.find((x) => x.id === hit.wallId);
   if (!w) return null;
@@ -293,12 +317,38 @@ function findPlacedItem(property: Property, instanceId: string) {
   return null;
 }
 
-export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, caption, brushStrip, title, className = '', style }: RoomView3DProps): JSX.Element {
+/** A wall hit as a set key, for a paint stroke's "already painted" list. */
+function hitKey(h: WallHit): string {
+  return h.kind === 'edge' ? `e:${h.roomId}:${h.edgeIndex}` : `f:${h.wallId}`;
+}
+
+const WALL_VIEWS: Array<{ id: WallView; label: string; glyph: string; title: string }> = [
+  { id: 'up', label: 'Walls up', glyph: '▮', title: 'Walls up — every wall stands' },
+  { id: 'cutaway', label: 'Cutaway', glyph: '◧', title: 'Cutaway — the walls nearest you drop so the room reads' },
+  { id: 'down', label: 'Walls down', glyph: '▬', title: 'Walls down — look straight into the plan' },
+];
+
+export function RoomView3D({ variant, onPaintWall, brushHex, onClose, onExpand, footer, caption, brushStrip, title, className = '', style }: RoomView3DProps): JSX.Element {
   const property = usePropertyStore((s) => s.property);
   const selectedInstanceId = usePropertyStore((s) => s.selectedInstanceId);
   const selectItem = usePropertyStore((s) => s.selectItem);
   const tool = useDesignerUIStore((s) => s.tool);
   const viewMode = useDesignerUIStore((s) => s.viewMode);
+  const wallView = useDesignerUIStore((s) => s.wallView);
+  const setWallView = useDesignerUIStore((s) => s.setWallView);
+  // The merchant catalog arriving makes `m-` items resolvable — re-derive.
+  const catalogVersion = useCatalogStore((s) => s.version);
+  /** One-line result of the last stroke, shown as the caption for a moment. */
+  const [flash, setFlash] = useState<string | null>(null);
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showFlash = useCallback((text: string) => {
+    setFlash(text);
+    if (flashTimer.current) clearTimeout(flashTimer.current);
+    flashTimer.current = setTimeout(() => setFlash(null), 2600);
+  }, []);
+  useEffect(() => () => {
+    if (flashTimer.current) clearTimeout(flashTimer.current);
+  }, []);
   const armedProductId = usePlacementIntentStore((s) => s.armedProductId);
   const placeAtPoint = usePlacementIntentStore((s) => s.placeAtPoint);
   const moveTo = usePlacementIntentStore((s) => s.moveTo);
@@ -363,7 +413,8 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
   }, []);
 
   // The solids follow the plan only; the camera just decides the cutaway.
-  const solids: SceneSolids = useMemo(() => buildSolids(sceneFromProperty(property, null, SOLIDS_CAMERA)), [property]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const solids: SceneSolids = useMemo(() => buildSolids(sceneFromProperty(property, null, SOLIDS_CAMERA)), [property, catalogVersion]);
 
   // Painter fallback: only computed while it is the one drawing.
   const projected: ProjectedFace[] = useMemo(() => {
@@ -467,6 +518,12 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
         const box = containerRef.current?.getBoundingClientRect();
         return box && backend === 'gl' ? stageRef.current?.floorPoint(clientX - box.left, clientY - box.top) ?? null : null;
       },
+      wallMaterial: (hit) => (backend === 'gl' ? stageRef.current?.wallMaterial(hit) ?? null : null),
+      tune: (o) => stageRef.current?.tune(o),
+      samplePixel: (clientX, clientY) => {
+        const box = containerRef.current?.getBoundingClientRect();
+        return box && backend === 'gl' ? stageRef.current?.samplePixel(clientX - box.left, clientY - box.top) ?? null : null;
+      },
     };
     return () => {
       const r = window.__ppwRoomView3d;
@@ -479,6 +536,19 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
   const drag = useRef<{ x: number; y: number; moved: boolean; pinchDist: number } | null>(null);
   /** An item being carried across the floor. */
   const itemDrag = useRef<{ instanceId: string; start: { x: number; y: number }; dx: number; dy: number; moved: boolean } | null>(null);
+  /**
+   * A mouse stroke with the brush (The Sims' wallpaper tool): the press
+   * paints the wall under it and the drag paints every wall it runs
+   * along, once each. Touch keeps tap-to-paint and one-finger orbit.
+   */
+  const stroke = useRef<{ painted: Set<string>; mods: BrushModifiers } | null>(null);
+
+  const paintHit = (hit: WallHit, mods: BrushModifiers) => {
+    if (!onPaintWall) return;
+    const detail = onPaintWall(hit, mods);
+    haptic('place');
+    if (detail) showFlash(detail);
+  };
 
   const localPoint = (e: { clientX: number; clientY: number }) => {
     const r = containerRef.current?.getBoundingClientRect();
@@ -494,6 +564,18 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
     e.currentTarget.setPointerCapture(e.pointerId);
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.current.size === 1) {
+      // The brush, with a mouse: a press on a wall starts a stroke.
+      if (onPaintWall && e.pointerType === 'mouse') {
+        const p = localPoint(e);
+        const hit = hitAt(p.x, p.y);
+        if (hit) {
+          const mods: BrushModifiers = { shift: e.shiftKey, ctrl: e.ctrlKey || e.metaKey };
+          stroke.current = { painted: new Set([hitKey(hit)]), mods };
+          drag.current = null;
+          paintHit(hit, mods);
+          return;
+        }
+      }
       // A press on an item picks it up; anywhere else orbits.
       if (itemsInteractive && stageRef.current) {
         const p = localPoint(e);
@@ -507,7 +589,8 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
       }
       drag.current = { x: e.clientX, y: e.clientY, moved: false, pinchDist: 0 };
     } else if (pointers.current.size === 2) {
-      // A second finger ends any carry and starts a pinch.
+      // A second finger ends any carry or stroke and starts a pinch.
+      stroke.current = null;
       if (itemDrag.current) {
         stageRef.current?.resetItemPreview(itemDrag.current.instanceId);
         itemDrag.current = null;
@@ -529,6 +612,17 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
       return;
     }
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const run = stroke.current;
+    if (run && pointers.current.size === 1) {
+      const p = localPoint(e);
+      const hit = hitAt(p.x, p.y);
+      setHover(hit);
+      if (hit && !run.painted.has(hitKey(hit))) {
+        run.painted.add(hitKey(hit));
+        paintHit(hit, run.mods);
+      }
+      return;
+    }
     const carry = itemDrag.current;
     if (carry && pointers.current.size === 1 && stageRef.current) {
       const p = localPoint(e);
@@ -569,6 +663,12 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
 
   const endPointer = (e: React.PointerEvent<HTMLDivElement>, cancelled: boolean) => {
     const had = pointers.current.delete(e.pointerId);
+    if (stroke.current && had) {
+      // The stroke painted as it went; the release only ends it.
+      stroke.current = null;
+      if (pointers.current.size === 0) drag.current = null;
+      return;
+    }
     const carry = itemDrag.current;
     if (carry && had) {
       itemDrag.current = null;
@@ -603,8 +703,10 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
     if (!had || !d || cancelled || d.moved) return;
     const p = localPoint(e);
     if (onPaintWall) {
+      // A tap (touch / pen, or a mouse press that started off a wall).
       const hit = hitAt(p.x, p.y);
-      if (hit) onPaintWall(hit);
+      if (hit) paintHit(hit, { shift: e.shiftKey, ctrl: e.ctrlKey || e.metaKey });
+      else showFlash('Tap a wall to paint it');
       return;
     }
     if (!itemsInteractive || !stageRef.current) return;
@@ -661,7 +763,7 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
   const selectedProduct = selectedItem ? getProductById(selectedItem.productId) : undefined;
   const armedProduct = armedProductId ? getProductById(armedProductId) : undefined;
   const defaultCaption = onPaintWall
-    ? 'Drag to look around · click a wall to paint it'
+    ? 'Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase'
     : armedProduct
       ? `Tap the floor to place ${armedProduct.name}`
       : itemsInteractive
@@ -689,6 +791,8 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
               height={size.height}
               hover={hover}
               selectedInstanceId={variant === 'overlay' ? selectedInstanceId : null}
+              brushHex={onPaintWall ? (brushHex ?? null) : undefined}
+              wallView={wallView}
               onFailed={() => setBackend('painter')}
             />
           </Suspense>
@@ -729,6 +833,27 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
         <button type="button" className={BTN} onClick={refit} title="Fit the whole plan" aria-label="Fit" data-testid="wallpaint-3d-fit">
           Fit
         </button>
+        {/* Walls Up / Cutaway / Down — The Sims' wall modes (2026-09-17); the workspace only, the card is too small. */}
+        {variant === 'overlay' && (
+        <div className="ml-1 inline-flex overflow-hidden rounded-md border border-ppw-rim bg-ppw-chrome shadow-sm" role="group" aria-label="Wall view" data-testid="view3d-wall-view">
+          {WALL_VIEWS.map((v) => (
+            <button
+              key={v.id}
+              type="button"
+              className={`inline-flex h-10 min-w-[36px] items-center justify-center px-2 text-[13px] font-semibold md:h-8 md:min-w-[30px] ${
+                wallView === v.id ? 'bg-ppw-inkDeep text-ppw-paper' : 'text-ppw-charcoal hover:bg-[#f3f1ec]'
+              } focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]`}
+              onClick={() => setWallView(v.id)}
+              title={v.title}
+              aria-label={v.label}
+              aria-pressed={wallView === v.id}
+              data-testid={`view3d-walls-${v.id}`}
+            >
+              <span aria-hidden="true">{v.glyph}</span>
+            </button>
+          ))}
+        </div>
+        )}
         {variant === 'card' && onExpand && (
           <button type="button" className={BTN} onClick={onExpand} title="Open the big room view" aria-label="Expand the room view" data-testid="wallpaint-3d-expand">
             ⤢
@@ -775,7 +900,7 @@ export function RoomView3D({ variant, onPaintWall, onClose, onExpand, footer, ca
         data-testid="wallpaint-3d-caption"
         aria-live="polite"
       >
-        {hoverText ?? caption ?? defaultCaption}
+        {flash ?? hoverText ?? caption ?? defaultCaption}
       </p>
     </div>
   );

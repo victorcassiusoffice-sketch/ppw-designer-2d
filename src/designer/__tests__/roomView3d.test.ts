@@ -17,6 +17,7 @@ import {
   type DrawTarget,
   type OrbitCamera,
   type SceneInput,
+  PLASTER_HEX,
 } from '../roomView3d';
 
 const RECT = [{ x: 0, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 4 }, { x: 0, y: 4 }];
@@ -191,7 +192,7 @@ describe('roomView3d — openings, colour, hit-testing', () => {
     const colours = new Map([[0, '#8FA68A']]);
     const faces = buildScene(sceneInput(cam, { rooms: [{ id: 'r1', name: 'Room', polygon: RECT, wallColourByEdge: colours }] }));
     expect(faces.find((f) => f.key === 'wall-r1-0')!.fill).toBe('#8FA68A');
-    expect(faces.find((f) => f.key === 'wall-r1-1')!.fill).toBe('#EDE9DF');
+    expect(faces.find((f) => f.key === 'wall-r1-1')!.fill).toBe(PLASTER_HEX);
     const hovered = buildScene(
       sceneInput(cam, {
         rooms: [{ id: 'r1', name: 'Room', polygon: RECT, wallColourByEdge: colours }],
