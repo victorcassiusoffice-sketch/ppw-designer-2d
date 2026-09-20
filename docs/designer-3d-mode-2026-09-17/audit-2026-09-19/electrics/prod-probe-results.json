@@ -1,0 +1,224 @@
+{
+  "healthcheck": {
+    "ok": true,
+    "service": "ppw-designer-2d",
+    "env": "production",
+    "commit": "cb0dae8bbc9b2650c5ea34a45747955de0606583",
+    "sentryConfigured": true,
+    "timestamp": "2026-09-19T17:33:10.647Z"
+  },
+  "P1": {
+    "plan": "m-6 + m-7 + m-9 in Gym + 1 Jinko 475 on roof",
+    "apiProductsResponse": {
+      "status": 200,
+      "msAfterGoto": 6088
+    },
+    "afterLoad": {
+      "chipVisible": true,
+      "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+      "chipStatus": "covered",
+      "panelVisible": false,
+      "summaryStatus": null,
+      "status": null,
+      "net": null,
+      "generation": null,
+      "load": null,
+      "hint": null,
+      "items": [],
+      "storedItemCount": 4,
+      "storedItems": [
+        "r1:m-6",
+        "r1:m-7",
+        "r1:m-9",
+        "roof-r1:emcar-jinko-475"
+      ],
+      "levelReadout": "Ground floor ·"
+    },
+    "panelStale": {
+      "chipVisible": true,
+      "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+      "chipStatus": "covered",
+      "panelVisible": true,
+      "summaryStatus": "covered",
+      "status": "Surplus+1.5 kWh/day",
+      "net": "+1.5 kWh/day",
+      "generation": "1.9 kWh/day · 1 panel · 0.47 kWp",
+      "load": "440 Wh/day · 3 items on · peak 470 W",
+      "hint": null,
+      "items": [
+        {
+          "id": "energy-item-m1",
+          "text": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhon"
+        },
+        {
+          "id": "energy-item-m2",
+          "text": "NordicTrack Tour de France Indoor BikeGym · 60 W · typicalhon"
+        },
+        {
+          "id": "energy-item-m3",
+          "text": "Schwinn 700IC Indoor BikeGym · 60 W · typicalhon"
+        }
+      ],
+      "storedItemCount": 4,
+      "storedItems": [
+        "r1:m-6",
+        "r1:m-7",
+        "r1:m-9",
+        "roof-r1:emcar-jinko-475"
+      ],
+      "levelReadout": "Ground floor ·"
+    },
+    "nudge": {
+      "how": "roof-toggle → Eco tab → arm Jinko → click mid-slab",
+      "ok": true,
+      "afterRoofToggle": {
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "load": null,
+        "levelReadout": "Roof ·"
+      }
+    },
+    "afterNudge": {
+      "chipVisible": true,
+      "chipText": "☀ 3.8 kWh · ⚡ 440 Wh+3.4 kWh",
+      "chipStatus": "covered",
+      "panelVisible": false,
+      "summaryStatus": null,
+      "status": null,
+      "net": null,
+      "generation": null,
+      "load": null,
+      "hint": null,
+      "items": [],
+      "storedItemCount": 5,
+      "storedItems": [
+        "r1:m-6",
+        "r1:m-7",
+        "r1:m-9",
+        "roof-r1:emcar-jinko-475",
+        "roof-r1:emcar-jinko-475"
+      ],
+      "levelReadout": "Roof ·"
+    },
+    "panelAfterNudge": {
+      "chipVisible": true,
+      "chipText": "☀ 3.8 kWh · ⚡ 440 Wh+3.4 kWh",
+      "chipStatus": "covered",
+      "panelVisible": true,
+      "summaryStatus": "covered",
+      "status": "Surplus+3.4 kWh/day",
+      "net": "+3.4 kWh/day",
+      "generation": "3.8 kWh/day · 2 panels · 0.95 kWp",
+      "load": "440 Wh/day · 3 items on · peak 470 W",
+      "hint": null,
+      "items": [
+        {
+          "id": "energy-item-m1",
+          "text": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhon"
+        },
+        {
+          "id": "energy-item-m2",
+          "text": "NordicTrack Tour de France Indoor BikeGym · 60 W · typicalhon"
+        },
+        {
+          "id": "energy-item-m3",
+          "text": "Schwinn 700IC Indoor BikeGym · 60 W · typicalhon"
+        }
+      ],
+      "storedItemCount": 5,
+      "storedItems": [
+        "r1:m-6",
+        "r1:m-7",
+        "r1:m-9",
+        "roof-r1:emcar-jinko-475",
+        "roof-r1:emcar-jinko-475"
+      ],
+      "levelReadout": "Roof ·"
+    },
+    "consoleErrors": [],
+    "apiCalls": [
+      "200 /api/products?limit=100",
+      "200 /api/products?limit=100"
+    ]
+  },
+  "P2": {
+    "plan": "m-6 + m-7 + m-9 in Gym, no panels",
+    "afterLoad": {
+      "chipVisible": false,
+      "chipText": null,
+      "chipStatus": null,
+      "panelVisible": false,
+      "summaryStatus": null,
+      "status": null,
+      "net": null,
+      "generation": null,
+      "load": null,
+      "hint": null,
+      "items": [],
+      "storedItemCount": 3,
+      "storedItems": [
+        "r1:m-6",
+        "r1:m-7",
+        "r1:m-9"
+      ],
+      "levelReadout": null
+    },
+    "afterNudge": {
+      "chipVisible": true,
+      "chipText": "☀ 0 Wh · ⚡ 440 Wh−440 Wh",
+      "chipStatus": "short",
+      "panelVisible": false,
+      "summaryStatus": null,
+      "status": null,
+      "net": null,
+      "generation": null,
+      "load": null,
+      "hint": null,
+      "items": [],
+      "storedItemCount": 3,
+      "storedItems": [
+        "r1:m-6",
+        "r1:m-7",
+        "r1:m-9"
+      ],
+      "levelReadout": "Roof ·"
+    },
+    "panel": {
+      "chipVisible": true,
+      "chipText": "☀ 0 Wh · ⚡ 440 Wh−440 Wh",
+      "chipStatus": "short",
+      "panelVisible": true,
+      "summaryStatus": "short",
+      "status": "0% covered−440 Wh/day",
+      "net": "−440 Wh/day",
+      "generation": "0 Wh/day · no panels yet",
+      "load": "440 Wh/day · 3 items on · peak 470 W",
+      "hint": "Add 1 × 450 Wp panel on the roof to cover it — they are in the Eco tab.",
+      "items": [
+        {
+          "id": "energy-item-m1",
+          "text": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhon"
+        },
+        {
+          "id": "energy-item-m2",
+          "text": "NordicTrack Tour de France Indoor BikeGym · 60 W · typicalhon"
+        },
+        {
+          "id": "energy-item-m3",
+          "text": "Schwinn 700IC Indoor BikeGym · 60 W · typicalhon"
+        }
+      ],
+      "storedItemCount": 3,
+      "storedItems": [
+        "r1:m-6",
+        "r1:m-7",
+        "r1:m-9"
+      ],
+      "levelReadout": "Roof ·"
+    },
+    "consoleErrors": [],
+    "apiCalls": [
+      "200 /api/products?limit=100",
+      "200 /api/products?limit=100"
+    ]
+  }
+}

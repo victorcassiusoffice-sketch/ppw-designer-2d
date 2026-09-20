@@ -75,6 +75,10 @@ export interface FloorSolid {
   roomId: string;
   polygon: Vertex[];
   hex: string;
+  /** What the laid floor reads as ('screed' | 'rubber-tile' | 'eva-mat' | … — see designer/floorKind.ts); absent = bare screed. */
+  kind?: string;
+  /** Tile size in metres for the surface's joints; absent = 0.5. */
+  tileM?: number;
 }
 
 export interface ItemSolid {
@@ -100,6 +104,10 @@ export interface ItemSolid {
   modelFront?: '+z' | '-z' | '+x' | '-x';
   lengthAxis?: 'x' | 'z' | 'auto';
   modelUp?: '+y' | '+z' | '-z';
+  /** A lamp: gets a warm light after dark (3D Mode P3). */
+  emitsLight?: boolean;
+  /** Height of the lamp's light source above the floor, metres. */
+  lightMountM?: number;
 }
 
 export interface SceneSolids {
@@ -137,7 +145,14 @@ export function buildSolids(input: SceneInput): SceneSolids {
   for (const room of input.rooms) {
     const indoor = room.kind !== 'outdoor' && room.polygon.length >= 3;
     if (indoor) {
-      floors.push({ key: `floor-${room.id}`, roomId: room.id, polygon: room.polygon.map((v) => ({ x: v.x, y: v.y })), hex: room.floorHex ?? BARE_FLOOR_HEX });
+      floors.push({
+        key: `floor-${room.id}`,
+        roomId: room.id,
+        polygon: room.polygon.map((v) => ({ x: v.x, y: v.y })),
+        hex: room.floorHex ?? BARE_FLOOR_HEX,
+        kind: room.floorKind,
+        tileM: room.floorTileM,
+      });
 
       for (const e of roomEdges(room)) {
         const inward = inwardNormal(e.a, e.b);
@@ -203,6 +218,8 @@ export function buildSolids(input: SceneInput): SceneSolids {
         modelFront: it.modelFront,
         lengthAxis: it.lengthAxis,
         modelUp: it.modelUp,
+        emitsLight: it.emitsLight,
+        lightMountM: it.lightMountM,
       });
     }
   }

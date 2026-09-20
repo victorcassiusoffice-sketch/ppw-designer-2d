@@ -1,0 +1,447 @@
+[
+  {
+    "id": "A0-fresh-load",
+    "title": "fresh visitor loads /designer (no storage)",
+    "ok": true,
+    "notes": {
+      "build": null,
+      "skipButton": false,
+      "dialog": false,
+      "hudVisible": true,
+      "wallToolPressed": "true",
+      "hint": "Drag to draw a wall — or click corner to corner. The length shows as you go."
+    },
+    "ms": 65089,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\prod\\A0-fresh-load.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "A1-draw-4x3",
+    "title": "draw a 4x3 room with the pen, Make room",
+    "ok": true,
+    "notes": {
+      "origin": {
+        "x": 0,
+        "y": 53
+      },
+      "vertexCount": "4 vertices",
+      "liveCounters": null,
+      "makeRoomText": "Make room",
+      "plan": {
+        "rooms": [
+          {
+            "id": "NyznxYs0",
+            "polygon": [
+              {
+                "x": 1,
+                "y": 1
+              },
+              {
+                "x": 5,
+                "y": 1
+              },
+              {
+                "x": 5,
+                "y": 4
+              },
+              {
+                "x": 1,
+                "y": 4
+              }
+            ],
+            "items": 0,
+            "wallPaint": []
+          }
+        ],
+        "walls": 0
+      },
+      "roomEstimate": null,
+      "hudGone": true
+    },
+    "ms": 11675,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\prod\\A1-draw-4x3.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "B-place-product",
+    "title": "place a merchant product (m-*) from the dock",
+    "ok": true,
+    "notes": {
+      "visibleMerchantCards": 14,
+      "allCards": 82,
+      "cardLabel": "Place NordicTrack Commercial 2450 Treadmill — 150,000 MUR",
+      "productId": "m-6",
+      "armed": "true",
+      "roomOriginScan": {
+        "x": 517,
+        "y": 282,
+        "w": 408,
+        "h": 308
+      },
+      "itemsAfter": [
+        1
+      ],
+      "itemsPlacedChip": "1",
+      "costReadout": "£2,633.33",
+      "cartPill": "1£2,633.33"
+    },
+    "ms": 2728,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\prod\\B-place-product.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "C-paint-wall",
+    "title": "arm Wall paint, pick a colour, click the top wall, read the live line",
+    "ok": true,
+    "notes": {
+      "paintRows": 5,
+      "brands": [
+        "SSofapColour Match — over 20,000 colours, mixed in store · prices 2026-09-14",
+        "Sofap",
+        "TintEX"
+      ],
+      "liveBefore": "No walls painted yet",
+      "colour": "sofap-alc-bronze",
+      "colourName": "Bronze",
+      "roomOriginBefore": {
+        "x": 517,
+        "y": 282,
+        "w": 408,
+        "h": 308
+      },
+      "roomOriginAfterArm": {
+        "x": 381,
+        "y": 172,
+        "w": 408,
+        "h": 418
+      },
+      "paintedAfterWallClick": [
+        0
+      ],
+      "live": "10.8 m² · 4.2 L · £32.10",
+      "line": null,
+      "breakdown": "Wall length × height − doors and windows = m². Litres = m² × coats ÷ coverage, rounded up to 0.1 L, then the cheapest whole tins.Treatment Room · Wall 1 4.00 × 2.7 m = 10.80 m²Permoglaze Matt Emulsion · Bronze: 10.80 m² × 3 coats ÷ 9 m²/L = 3.6 L + 15% = 4.2 L → 1× 5 L = £32.10 (0.8 L over) · Basic base"
+    },
+    "ms": 8064,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\prod\\C-paint-wall.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "D-3d",
+    "title": "switch to 3D, wait for the first frame",
+    "ok": true,
+    "notes": {
+      "firstFramesMs": 0,
+      "gl": 1,
+      "canvas": 1,
+      "caption": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+      "cardNote": "The room is in the workspace — click a wall there to paint it.",
+      "wallViewButtons": [
+        "▮",
+        "◧",
+        "▬"
+      ],
+      "paletteStillOpen": true
+    },
+    "ms": 3168,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\prod\\D-3d.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "D2-back-to-plan",
+    "title": "back to Plan",
+    "ok": true,
+    "notes": {
+      "btn": "view-mode-3d",
+      "overlayGone": true
+    },
+    "ms": 2844,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\prod\\D2-back-to-plan.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "E-quote",
+    "title": "Quote button → what opens (prompt dismissed; no lead sent)",
+    "ok": true,
+    "notes": {
+      "quoteVisible": true,
+      "quoteText": "QuoteRequest quote",
+      "dialogs": [
+        {
+          "type": "prompt",
+          "message": "Enter your email so we can send the quote"
+        }
+      ],
+      "toast": null
+    },
+    "ms": 4675,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\prod\\E-quote.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "F-cart",
+    "title": "/cart shows paint + product lines with prices",
+    "ok": true,
+    "notes": {
+      "h1": "Your cart",
+      "cartLines": [],
+      "wallpaintLines": [
+        "Permoglaze Matt EmulsionWall paint · matt · Bronze · painted on the plan10.8 m² · 3 coats · needs 4.2 L1× 5 L£32.10buys 5 L"
+      ],
+      "floorLines": 0,
+      "wallpaintSubtotal": true,
+      "bodyText": "Peak Performance Wellness Wellness Room Designer MUR USD EUR GBP approximate rates ← Designer Your cart 0 products · 0 units · 1 room Permoglaze Matt Emulsion Wall paint · matt · Bronze · painted on the plan 10.8 m² · 3 coats · needs 4.2 L 1× 5 L £32.10 buys 5 L Per-room breakdown ▾ Treatment Room No items in this room. ← Continue designing Order summary Products £0 Wall paint £32.10 Subtotal £32.10 Shipping Calculated at checkout Tax VAT/duties may apply Total (est.) £32.10 ≈ $40.63 · Rs 1,829 · €37.38 Checkout → You will not be charged until the Peak Performance Wellness install team has confirmed availability + shipping for your region. Stripe is used for final payment."
+    },
+    "ms": 3859,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\prod\\F-cart.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "G-checkout",
+    "title": "/checkout renders (NOT submitted)",
+    "ok": true,
+    "notes": {
+      "h1": "Checkout",
+      "wallpaintLines": [
+        "Permoglaze Matt Emulsion · Bronze 1× 5 L£32.10"
+      ],
+      "buttons": [
+        "Place order - £32.10"
+      ],
+      "forms": 1,
+      "bodyText": "Peak Performance Wellness Wellness Room Designer MUR USD EUR GBP approximate rates ← Designer Checkout You will not be charged until our install team has confirmed availability and shipping for your region. Contact FULL NAME * EMAIL * PHONE * Delivery address ADDRESS LINE 1 * ADDRESS LINE 2 (OPTIONAL) CITY * POSTCODE * COUNTRY * Mauritius United Arab Emirates Australia Belgium Canada Switzerland Germany Spain France United Kingdom Ireland India Italy Kenya Madagascar Netherlands New Zealand Portugal Seychelles Singapore United States South Africa Notes for the install team Payment method Pay by card (Stripe) Pay with PayPal Back to cart Place order - £32.10 Order summary Permoglaze Matt Emulsion · Bronze 1× 5 L £32.10 Subtotal £32.10 Shipping Calculated at checkout Tax May apply Total (est.) £32.10 Stripe Test Mode - this is a test order, no real money will be charged. Use card 4242 4242 4242 4242, any future expiry date, and any 3-digit CVC."
+    },
+    "ms": 4225,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\prod\\G-checkout.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "H1-phone-tintex",
+    "title": "phone: /designer?demo=tintex opens",
+    "ok": true,
+    "notes": {
+      "demoPill": "TintEX· demo×",
+      "toolbar": true,
+      "cartPill": "9Rs 54,941",
+      "energyChip": "☀ 0 Wh · ⚡ 177 Wh−177 Wh",
+      "plan": {
+        "rooms": [
+          {
+            "id": "living",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 5.5,
+                "y": 0
+              },
+              {
+                "x": 5.5,
+                "y": 4
+              },
+              {
+                "x": 0,
+                "y": 4
+              }
+            ],
+            "items": 6,
+            "wallPaint": [
+              0,
+              1,
+              2,
+              3
+            ]
+          },
+          {
+            "id": "bedroom",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 4
+              },
+              {
+                "x": 3.5,
+                "y": 4
+              },
+              {
+                "x": 3.5,
+                "y": 7.5
+              },
+              {
+                "x": 0,
+                "y": 7.5
+              }
+            ],
+            "items": 2,
+            "wallPaint": [
+              0,
+              1,
+              2,
+              3
+            ]
+          },
+          {
+            "id": "kitchen",
+            "polygon": [
+              {
+                "x": 3.5,
+                "y": 4
+              },
+              {
+                "x": 5.5,
+                "y": 4
+              },
+              {
+                "x": 5.5,
+                "y": 7.5
+              },
+              {
+                "x": 3.5,
+                "y": 7.5
+              }
+            ],
+            "items": 1,
+            "wallPaint": [
+              0,
+              1,
+              2,
+              3
+            ]
+          }
+        ],
+        "walls": 0
+      },
+      "roomsTrigger": "TintEX · Painted show flat· Living room· 3Living room· 3"
+    },
+    "ms": 38828,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\prod\\H1-phone-tintex.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "H2-phone-sheet",
+    "title": "phone: Open menu sheet",
+    "ok": true,
+    "notes": {
+      "paintRows": [
+        "TintEX VIP Satinsatin · 11 m²/L · from Rs 242",
+        "TintEX Mastertopsilk · 12 m²/L · from Rs 363",
+        "TintEX Cashmere Interior Latexsilk · 10 m²/L (est.) · from R",
+        "TintEX True White Matt Emulsionmatt · 8.5 m²/L · from Rs 161",
+        "TintEX Trade Promatt · 7 m²/L (est.) · from Rs 374"
+      ],
+      "energyMobile": "Energy0% covered−177 Wh/day☀0 Wh/day · no panels yet⚡177 Wh/day · 5 items on · peak 54 WAdd 1 × 450 Wp panel on the roof to cover it — they are in the Eco tab.RoofArc Floor LampLiving room · 10 W · typicalhonRattan Pendant LightLiving room · 10 W · typicalhonRattan Pendant LightKitchen · 10 W · typi",
+      "levelsMobile": true,
+      "roofToggle": true
+    },
+    "ms": 3643,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\prod\\H2-phone-sheet.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "H3-phone-paint",
+    "title": "phone: pick a TintEX line, HUD with colours, tint chip",
+    "ok": true,
+    "notes": {
+      "row": "tintex-vip-satin",
+      "hudLive": "106.0 m² · 21.6 L · Rs 5,691",
+      "chipCount": 24,
+      "hudColour": "Pure white",
+      "cartPillGone": true,
+      "roomOriginScan": {
+        "x": 38,
+        "y": 58,
+        "w": 315,
+        "h": 476
+      },
+      "paintedBefore": [
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ]
+    },
+    "ms": 6989,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\prod\\H3-phone-paint.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "H4-phone-3d",
+    "title": "phone: 3D from the HUD",
+    "ok": true,
+    "notes": {
+      "firstFramesMs": 0,
+      "overlayBox": {
+        "x": 0,
+        "y": 57,
+        "width": 390,
+        "height": 787
+      },
+      "gl": 1,
+      "caption": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+      "controls": {
+        "wallpaint-3d-rotate-left": {
+          "w": 40,
+          "h": 40
+        },
+        "wallpaint-3d-fit": {
+          "w": 40,
+          "h": 40
+        },
+        "wallpaint-3d-close": {
+          "w": 44,
+          "h": 40
+        },
+        "wallpaint-3d-colour-base": {
+          "w": 40,
+          "h": 40
+        }
+      }
+    },
+    "ms": 6952,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\prod\\H4-phone-3d.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "H5-phone-3d-close",
+    "title": "phone: close 3D → HUD back",
+    "ok": true,
+    "notes": {
+      "overlayGone": true,
+      "hud": true,
+      "cartPillBack": true
+    },
+    "ms": 1559,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\prod\\H5-phone-3d-close.png",
+    "console": [],
+    "net": []
+  }
+]

@@ -1,0 +1,561 @@
+{
+  "log": [
+    {
+      "t": 18310,
+      "step": "r1 simple room 3D open",
+      "blank": {
+        "firstContentMs": 13446,
+        "samples": [
+          {
+            "ms": 7678,
+            "sd": 0
+          },
+          {
+            "ms": 13446,
+            "sd": 22.3
+          }
+        ]
+      },
+      "faces": {
+        "ms": 33,
+        "faces": 6
+      },
+      "backend": "gl"
+    },
+    {
+      "t": 20813,
+      "step": "r2 aim",
+      "edge0": {
+        "point": {
+          "x": 515.2129315282402,
+          "y": 424.820367617165
+        },
+        "centre": {
+          "x": 515.2129315282402,
+          "y": 424.820367617165
+        },
+        "centreHit": {
+          "kind": "edge",
+          "roomId": "r1",
+          "edgeIndex": 0
+        },
+        "scanned": 0
+      },
+      "edge1": {
+        "point": {
+          "x": 723.9986067618628,
+          "y": 437.25660709942963
+        },
+        "centre": {
+          "x": 723.9986067618628,
+          "y": 437.25660709942963
+        },
+        "centreHit": {
+          "kind": "edge",
+          "roomId": "r1",
+          "edgeIndex": 1
+        },
+        "scanned": 0
+      },
+      "cam": {
+        "target": {
+          "x": 2.5,
+          "y": 2,
+          "z": 1.1340000000000001
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.5934119456780721,
+        "distanceM": 16.702833152565926,
+        "fovRad": 0.6632251157578452
+      }
+    },
+    {
+      "t": 25727,
+      "step": "r3 hover",
+      "p": {
+        "x": 515.2129315282402,
+        "y": 424.820367617165
+      },
+      "cursor": "pointer",
+      "captionOnHover": "Room 1 · Wall 1 · unpainted — click to paint",
+      "priceInCaption": false,
+      "material": {
+        "before": {
+          "hex": "#D9D3C6",
+          "baseHex": "#D9D3C6",
+          "finish": null,
+          "roughness": 0.96,
+          "sheen": 0,
+          "hasMap": true,
+          "show": "full"
+        },
+        "hover": {
+          "hex": "#B7D9B1",
+          "baseHex": "#D9D3C6",
+          "finish": null,
+          "roughness": 0.96,
+          "sheen": 0,
+          "hasMap": true,
+          "show": "full"
+        }
+      },
+      "pixel": {
+        "before": {
+          "r": 197,
+          "g": 190,
+          "b": 176,
+          "n": 5
+        },
+        "hover": {
+          "r": 166,
+          "g": 196,
+          "b": 157,
+          "n": 5
+        },
+        "afterLeave": {
+          "r": 197,
+          "g": 190,
+          "b": 176,
+          "n": 5
+        }
+      }
+    },
+    {
+      "t": 28817,
+      "step": "r4 paint click",
+      "flash": "Wall 1 · TintEX VIP Satin · Pastel green",
+      "store": [
+        {
+          "e": 0,
+          "p": "tintex-vip-satin",
+          "c": "#B7D9B1"
+        }
+      ],
+      "material": {
+        "hex": "#B7D9B1",
+        "baseHex": "#B7D9B1",
+        "finish": "satin",
+        "roughness": 0.6,
+        "sheen": 0.38,
+        "hasMap": false,
+        "show": "full"
+      },
+      "pixelSatin": {
+        "r": 192,
+        "g": 226,
+        "b": 182,
+        "n": 5
+      },
+      "footer": "13.5 m² · 2.9 L · £13.59",
+      "toasts": [],
+      "flashVisibleFor": "2600 ms (RoomView3D.tsx:347)"
+    },
+    {
+      "t": 33834,
+      "step": "r5 finish visibility (same RAL 6019)",
+      "colourKept": "Pastel green",
+      "satin": {
+        "r": 192,
+        "g": 226,
+        "b": 182,
+        "n": 5
+      },
+      "matt": {
+        "r": 175,
+        "g": 206,
+        "b": 166,
+        "n": 5
+      },
+      "silk": {
+        "r": 185,
+        "g": 218,
+        "b": 176,
+        "n": 5
+      },
+      "materials": {
+        "now": {
+          "hex": "#B7D9B1",
+          "baseHex": "#B7D9B1",
+          "finish": "silk",
+          "roughness": 0.76,
+          "sheen": 0.22,
+          "hasMap": false,
+          "show": "full"
+        }
+      },
+      "deltaSatinMatt": 53
+    },
+    {
+      "t": 35308,
+      "step": "r6 drag run",
+      "from": {
+        "x": 515.2129315282402,
+        "y": 424.820367617165
+      },
+      "to": {
+        "x": 723.9986067618628,
+        "y": 437.25660709942963
+      },
+      "store": [
+        {
+          "e": 0,
+          "p": "tintex-vip-satin",
+          "c": "#B7D9B1"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin",
+          "c": "#B7D9B1"
+        }
+      ],
+      "caption": "Wall 2 · TintEX VIP Satin · Pastel green",
+      "cam": {
+        "target": {
+          "x": 2.5,
+          "y": 2,
+          "z": 1.1340000000000001
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.5934119456780721,
+        "distanceM": 16.702833152565926,
+        "fovRad": 0.6632251157578452
+      }
+    },
+    {
+      "t": 35746,
+      "step": "r7 ctrl+z in 3D",
+      "store": [
+        {
+          "e": 0,
+          "p": "tintex-vip-satin",
+          "c": "#B7D9B1"
+        }
+      ],
+      "toasts": [],
+      "overlay": true
+    },
+    {
+      "t": 36117,
+      "step": "r7b redo",
+      "store": [
+        {
+          "e": 0,
+          "p": "tintex-vip-satin",
+          "c": "#B7D9B1"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin",
+          "c": "#B7D9B1"
+        }
+      ]
+    },
+    {
+      "t": 37694,
+      "step": "r8 erase hover",
+      "material": {
+        "hex": "#D9D3C6",
+        "baseHex": "#B7D9B1",
+        "finish": "satin",
+        "roughness": 0.6,
+        "sheen": 0.38,
+        "hasMap": false,
+        "show": "full"
+      },
+      "pixel": {
+        "r": 227,
+        "g": 219,
+        "b": 204,
+        "n": 5
+      },
+      "caption": "Room 1 · Wall 1 · TintEX VIP Satin · Pastel green — click to paint"
+    },
+    {
+      "t": 43932,
+      "step": "r9 zoom clamp",
+      "base": 16.702833152565926,
+      "maxIn": 5.845991603398073,
+      "maxOut": 50.108499457697775,
+      "elevationClampProbe": null
+    },
+    {
+      "t": 51004,
+      "step": "r10 elevation clamp",
+      "afterDragDown": 0.5934119456780721,
+      "afterDragUp": 0.5934119456780721
+    },
+    {
+      "t": 486255,
+      "step": "r11 tintex flat 3D open",
+      "blank": {
+        "firstContentMs": null,
+        "samples": [
+          {
+            "ms": 19041,
+            "sd": 6.7
+          },
+          {
+            "ms": 19679,
+            "sd": 6.7
+          },
+          {
+            "ms": 20348,
+            "sd": 6.7
+          },
+          {
+            "ms": 21116,
+            "sd": 6.7
+          },
+          {
+            "ms": 21848,
+            "sd": 6.7
+          },
+          {
+            "ms": 22557,
+            "sd": 6.7
+          }
+        ]
+      },
+      "faces": {
+        "ms": 3,
+        "faces": 22
+      }
+    },
+    {
+      "t": 488390,
+      "step": "r12 living walls hit scan (cutaway)",
+      "edge0": {
+        "mid": {
+          "target": 11,
+          "otherWall": 0,
+          "none": 8,
+          "n": 19,
+          "misses": [
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.7,
+            0.75
+          ]
+        },
+        "eye": {
+          "target": 13,
+          "otherWall": 0,
+          "none": 6,
+          "n": 19,
+          "misses": [
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5
+          ]
+        }
+      },
+      "edge1": {
+        "mid": {
+          "target": 4,
+          "otherWall": 8,
+          "none": 7,
+          "n": 19,
+          "misses": [
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.75,
+            0.8
+          ]
+        },
+        "eye": {
+          "target": 6,
+          "otherWall": 8,
+          "none": 5,
+          "n": 19,
+          "misses": [
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4
+          ]
+        }
+      },
+      "edge2": {
+        "mid": null,
+        "eye": null
+      },
+      "edge3": {
+        "mid": {
+          "target": 18,
+          "otherWall": 1,
+          "none": 0,
+          "n": 19,
+          "misses": []
+        },
+        "eye": {
+          "target": 19,
+          "otherWall": 0,
+          "none": 0,
+          "n": 19,
+          "misses": []
+        }
+      }
+    },
+    {
+      "t": 489991,
+      "step": "r12 living walls hit scan (up)",
+      "edge0": {
+        "mid": {
+          "target": 8,
+          "otherWall": 3,
+          "none": 8,
+          "n": 19,
+          "misses": [
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.7,
+            0.75
+          ]
+        },
+        "eye": {
+          "target": 11,
+          "otherWall": 2,
+          "none": 6,
+          "n": 19,
+          "misses": [
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5
+          ]
+        }
+      },
+      "edge1": {
+        "mid": {
+          "target": 4,
+          "otherWall": 9,
+          "none": 6,
+          "n": 19,
+          "misses": [
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.8
+          ]
+        },
+        "eye": {
+          "target": 6,
+          "otherWall": 8,
+          "none": 5,
+          "n": 19,
+          "misses": [
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4
+          ]
+        }
+      },
+      "edge2": {
+        "mid": {
+          "target": 5,
+          "otherWall": 8,
+          "none": 6,
+          "n": 19,
+          "misses": [
+            0.35,
+            0.4,
+            0.45,
+            0.7,
+            0.75,
+            0.8
+          ]
+        },
+        "eye": {
+          "target": 9,
+          "otherWall": 6,
+          "none": 4,
+          "n": 19,
+          "misses": [
+            0.1,
+            0.7,
+            0.75,
+            0.8
+          ]
+        }
+      },
+      "edge3": {
+        "mid": {
+          "target": 15,
+          "otherWall": 3,
+          "none": 1,
+          "n": 19,
+          "misses": [
+            0.75
+          ]
+        },
+        "eye": {
+          "target": 15,
+          "otherWall": 4,
+          "none": 0,
+          "n": 19,
+          "misses": []
+        }
+      }
+    },
+    {
+      "t": 490097,
+      "step": "r13 bedroom shared wall scan (up)",
+      "edge0mid": {
+        "target": 1,
+        "otherWall": 10,
+        "none": 8,
+        "n": 19,
+        "misses": [
+          0.3,
+          0.35,
+          0.4,
+          0.45,
+          0.8,
+          0.85,
+          0.9,
+          0.95
+        ]
+      }
+    },
+    {
+      "t": 490667,
+      "step": "r14 flat hover caption",
+      "caption": "Living room · Wall 2 · TintEX VIP Satin — click to paint",
+      "captionBox": {
+        "x": 8,
+        "y": 877.5,
+        "width": 1152,
+        "height": 16.5
+      },
+      "font": "11px"
+    },
+    {
+      "t": 491789,
+      "step": "errors",
+      "count": 0,
+      "errors": []
+    }
+  ],
+  "errors": []
+}

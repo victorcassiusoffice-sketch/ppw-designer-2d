@@ -99,15 +99,16 @@ import {
   paintsForBrand,
   primerForBrand,
   resolveWallColourHex,
+  tinsForPaintColour,
   BARE_PLASTER_HEX,
   type PaintColour,
   type WallPaint,
 } from '../data/wallPaints';
 import { SOFAP_COLOUR_DISCLAIMER } from '../data/sofapColours';
 import { TINTEX_COLOUR_DISCLAIMER } from '../data/tintexColours';
-import { deriveWallPaintOrders, wallPaintBreakdown } from '../designer/wallPaintCalc';
+import { coatsFor, deriveWallPaintOrders, litresForArea, paintableEdgeAreaM2, tinsForLitres, wallPaintBreakdown, wastePctFor } from '../designer/wallPaintCalc';
 // Wall paint tints + the Sims-style 3D room view (2026-09-14).
-import { applyWallPaintBrush, brushColour, brushPaintId } from '../designer/wallPaintBrush';
+import { applyWallPaintBrush, brushColour, brushLabel, brushPaintId } from '../designer/wallPaintBrush';
 import { RoomView3D } from './RoomView3D';
 import { FLOOR_MATERIALS, findFloorMaterialById, type FloorMaterial } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
@@ -969,6 +970,31 @@ export function TopBar({
   }
   /** What the hovered wall previews: the brush colour, or bare plaster while Erase is on. */
   const wallPaintPreviewHex = wallPaintDraft.erase ? BARE_PLASTER_HEX : wallPaintBrushHex;
+  /**
+   * The Sims' price on hover (P3, 2026-09-19): what the click would buy for
+   * the wall under the brush — "VIP Satin · Pastel green ≈ 12.7 m² · 2.7 L ·
+   * Rs 774" — by the same arithmetic as the quote (openings deducted, the
+   * quoted coats, the contingency, the cheapest whole tins on the tint's
+   * base). Erase shows nothing; the wall's own paint is described instead.
+   */
+  const hoverWallTag = (hit: Parameters<typeof applyWallPaintBrush>[0]): string | null => {
+    if (!hit || wallPaintDraft.erase) return null;
+    let areaM2 = 0;
+    if (hit.kind === 'edge' && hit.roomId && typeof hit.edgeIndex === 'number') {
+      const room = property.rooms.find((r) => r.id === hit.roomId);
+      if (!room) return null;
+      areaM2 = paintableEdgeAreaM2(room, hit.edgeIndex, wallHeightM);
+    } else if (hit.kind === 'free' && hit.wallId) {
+      const w = property.walls?.find((x) => x.id === hit.wallId);
+      if (!w) return null;
+      areaM2 = Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y) * wallHeightM;
+    }
+    if (areaM2 <= 0) return null;
+    const tinted = !!wallPaintTint;
+    const litres = litresForArea(areaM2 * (1 + wastePctFor(tinted, property) / 100), coatsFor(wallPaintSel, property), wallPaintSel.coverage_m2_per_l);
+    const fill = tinsForLitres(litres, tinsForPaintColour(wallPaintSel, wallPaintTint?.hex).tins);
+    return `${brushLabel(wallPaintDraft)} ≈ ${areaM2.toFixed(1)} m² · ${litres.toFixed(1)} L · ${formatCurrency(convert(fill.totalMur, 'MUR', displayCurrency, fx), displayCurrency)}`;
+  };
 
   /**
    * The Room chip IS the action, mirroring the Floor tool: paint (or, with
@@ -2456,6 +2482,7 @@ export function TopBar({
                   variant="card"
                   onPaintWall={paintFromRoomView}
                   brushHex={wallPaintPreviewHex}
+                  hoverTag={hoverWallTag}
                   onExpand={() => setViewMode('3d')}
                   className="mb-2 overflow-hidden rounded-lg border border-ppw-rim"
                 />
@@ -2793,7 +2820,7 @@ export function TopBar({
                   )}
                   <p className="mt-1 px-1 text-[10px] leading-snug" style={{ color: CHROME_TEXT_2 }}>
                     {wallPaintColours.length > 0
-                      ? `${paintBrand?.name ?? 'Brand'} shades${paintBrand?.colourSystem ? ` · ${paintBrand.colourSystem}` : ''}. A tinted tin is priced on its base (Pastel / Medium / Basic).`
+                      ? `${paintBrand?.name ?? 'Brand'} shades${paintBrand?.colourSystem ? ` · ${paintBrand.colourSystem}` : ''}. A tinted tin is priced on its base (${(wallPaintSel.tintBases ?? []).map((b) => b.name).join(' / ') || 'Pastel / Medium / Basic'}).`
                       : 'Pick any colour — the store tints the base tin to match.'}
                     {paintChartBrandId === 'sofap' ? ` ${SOFAP_COLOUR_DISCLAIMER}` : ''}
                     {paintChartBrandId === 'tintex' ? ` ${TINTEX_COLOUR_DISCLAIMER}` : ''}
@@ -2980,6 +3007,7 @@ export function TopBar({
             title="3D Mode"
             onPaintWall={wallPaintActive ? paintFromRoomView : undefined}
             brushHex={wallPaintActive ? wallPaintPreviewHex : undefined}
+            hoverTag={wallPaintActive ? hoverWallTag : undefined}
             onClose={() => setViewMode('plan')}
             footer={wallPaintActive ? wallPaintLiveText : undefined}
             brushStrip={

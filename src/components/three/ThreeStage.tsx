@@ -1,9 +1,16 @@
 /**
- * ThreeStage — the WebGL renderer behind the 3D MODE (2026-09-17).
+ * ThreeStage — the WebGL renderer behind the 3D MODE (2026-09-17; P3
+ * realism 2026-09-19).
  *
  * Draws `SceneSolids` (designer/roomSolids.ts) with three.js: wall slabs
- * with real thickness and their doors and windows cut through, floor slabs,
- * furniture bodies, a sun with soft shadows and a sky/ground fill. The Sims
+ * with real thickness and their doors and windows cut through — dressed
+ * with skirting, architraves, panelled door leaves, window frames and
+ * sills (three/joinery.ts) — floor slabs in the laid product's real
+ * surface (three/surfaces.ts), furniture bodies on soft contact shadows,
+ * corner shading where walls meet the floor (the phone-safe stand-in for
+ * ambient occlusion), a sun with soft shadows that can follow the real
+ * Mauritian sky by the hour (designer/sunPosition.ts), lamps that come on
+ * after dark, and a sky dome that goes from noon to night. The Sims
  * cutaway is a per-camera VISIBILITY toggle between a wall's full and stub
  * meshes — orbiting never rebuilds geometry.
  *
@@ -17,17 +24,27 @@
  * Frame mapping: the plan is x east, y south, z up. three is y-up, so
  * plan (x, y, z) → three (x, z, y). Right-handed either way (verified: the
  * camera south of a room looking north has east on its right).
+ *
+ * COLOUR TRUTH (measured, pinned by paint-sims-3d.spec.ts): with no hour
+ * set the rig is the STUDIO rig — hemisphere 0.8 π + camera fill 0.25 π +
+ * a fixed high sun 0.15 π, NoToneMapping — under which a painted wall
+ * renders its hex (a #808080 room reads 119–127 on every wall). The
+ * time-of-day rig only replaces it while the customer drags the sun.
  */
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
-import { cameraPosition, GLASS_HEX, GROUND_HEX, type OrbitCamera, type WallHit } from '../../designer/roomView3d';
+import { cameraPosition, GLASS_HEX, type OrbitCamera, type WallHit } from '../../designer/roomView3d';
 import { cutawayState, wallAnchor, type ItemSolid, type SceneSolids, type WallShow, type WallSolid } from '../../designer/roomSolids';
 import { fitToSize, itemPose, pitchedBox, upPitchRad } from '../../designer/fitToSize';
+import { dayOfYear, sunAt, sunColourHex } from '../../designer/sunPosition';
 import { FINISH_PBR } from '../../data/wallPaints';
 import type { WallView } from '../../store/designerUIStore';
+import { canvasTexture, noiseField, normalFromHeight, type FloorKind } from './surfaces';
+import { wallJoinery } from './joinery';
+import { contactShadow, cornerShades, floorMesh, groundPlane, lampsOnFactor, nightLight, skyDome, updateSkyDome, type NightLight } from './dressing';
 
 // ---------------------------------------------------------------------------
 // Product bodies (2026-09-17): a textured glTF per product, fetched once and
@@ -111,7 +128,7 @@ export interface ThreeStageHandle {
   faceCount(): number;
   faces(): Array<{ key: string; holes: number }>;
   /** DEV bridge: what the stage has done so far. */
-  debug(): { frames: number; children: number; camera: number[]; target: number[]; renderer: string };
+  debug(): { frames: number; children: number; camera: number[]; target: number[]; renderer: string; hour: number | null; sun: { elevationDeg: number; azimuthDeg: number } | null };
   /** The placed item under a canvas-local point (its body or its box), or null. */
   hitItem(x: number, y: number): { instanceId: string } | null;
   /** DEV bridge: what a wall's material shows right now (the preview or its own paint). */
@@ -128,6 +145,8 @@ export interface ThreeStageHandle {
   moveItemPreview(instanceId: string, dxM: number, dyM: number): void;
   /** Put a previewed body back where the plan has it. */
   resetItemPreview(instanceId: string): void;
+  /** DEV bridge: what is dressed — joinery, shades, lamps — for a spec to count. */
+  dressing(): { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }> };
 }
 
 export interface ThreeStageProps {
@@ -146,18 +165,54 @@ export interface ThreeStageProps {
   brushHex?: string | null;
   /** Walls Up / Cutaway / Down (default 'cutaway'). */
   wallView?: WallView;
+  /**
+   * Local clock hour (0–24) to light the room by the real Mauritian sun;
+   * null / undefined = the studio rig the colour truth is measured under.
+   */
+  hour?: number | null;
+  /** Day of the year for the sun's path (default: today). */
+  dayOfYear?: number;
   /** WebGL could not start (headless without GL, an old device) — the parent falls back to the painter. */
   onFailed?: () => void;
 }
 
-const SKY_HEX = '#EEEAE2';
 /** Wall tops, ends and the reveals of openings — a shade under plaster so edges read. */
 const REVEAL_HEX = '#C9C3B6';
+/** The cap strip along the top of every wall, full or cut — the Sims' cut-wall cap. */
+const CAP_HEX = '#B5AFA2';
+/** The OUTSIDE of a room wall: render, never the room's paint (the quote prices one face; the picture painted two). */
+const EXTERIOR_HEX = '#E4E0D6';
 const ITEM_ROUGHNESS = 0.72;
 /** The target outline on the hovered wall (mint, the plan's selection colour). */
 const TARGET_HEX = '#79C7AD';
+const OUTLINE_WIDTH_M = 0.028;
+
+/**
+ * The studio rig (measured): the sun direction, three frame, and the three
+ * intensities in π multiples. P3 raised the sun (0.15 → 0.25) for readable
+ * shadows and lowered the hemisphere to keep a camera-facing, sun-shaded
+ * wall at the same ≈0.95 of its hex the colour-truth probe pins.
+ */
+const STUDIO_SUN_DIR = new THREE.Vector3(-0.45, 1, -0.55).normalize();
+const STUDIO = { hemi: 0.72, sun: 0.25, fill: 0.25 };
+/**
+ * Floors face the sky, so the hemisphere, the fill from above and the sun
+ * all land on them at once: a floor rendered ×1.14 of its swatch and a
+ * light one clipped to white (the 3D audit). This gain, measured on
+ * #3A3A3A / #1F2A44 / #F1EBDD floor centres against the swatch, brings the
+ * rendered floor back to its hex; the walls are untouched.
+ */
+const FLOOR_GAIN = 0.9;
+/** Night rig: a cool, dim sky and the lamps. */
+const NIGHT = { hemi: 0.14, sun: 0, fill: 0.07 };
+const HEMI_DAY_SKY = new THREE.Color(0xffffff);
+const HEMI_DAY_GROUND = new THREE.Color(0xf2ede4);
+const HEMI_NIGHT_SKY = new THREE.Color(0x9db0d6);
+const HEMI_NIGHT_GROUND = new THREE.Color(0x3b3f4a);
+const LAMP_INTENSITY = 26;
 
 const toThree = (p: { x: number; y: number; z: number }): THREE.Vector3 => new THREE.Vector3(p.x, p.z, p.y);
+const SELECT_HEX = '#79C7AD';
 
 interface WallEntry {
   solid: WallSolid;
@@ -168,75 +223,66 @@ interface WallEntry {
   /** The wall's own colour (the preview swaps the material colour and restores this). */
   baseHex: string;
   /** Outline of the wall face, shown only while it is the paint target. */
-  outlineFull: THREE.LineSegments;
-  outlineStub: THREE.LineSegments;
+  outlineFull: THREE.Object3D;
+  outlineStub: THREE.Object3D;
   show: WallShow;
+  /** A cut wall raised as a ghost while the brush hovers it (the preview shows the whole face). */
+  ghost: boolean;
+}
+
+/**
+ * Raise a cutaway stub as a translucent ghost of its full wall while the
+ * brush hovers it, so the preview shows the whole face and not a skirting-
+ * height strip (the 3D audit); the joinery and shading of the ghost stay
+ * hidden so only the painted face floats up.
+ */
+function setGhost(e: WallEntry, on: boolean): void {
+  if (e.ghost === on) return;
+  e.ghost = on;
+  e.paint.transparent = on;
+  e.paint.opacity = on ? 0.55 : 1;
+  e.paint.depthWrite = !on;
+  e.paint.needsUpdate = true;
+  e.full.traverse((o) => {
+    if (o === e.full) return;
+    if (o.userData?.joinery || o.userData?.cap || o.name === 'corner-shades') o.visible = !on;
+  });
+  e.full.visible = on ? true : e.show === 'full';
+}
+
+/** A mint inverted hull around a body — the Sims' selection glow, one draw call, phone-safe. */
+let hullMaterialCache: THREE.MeshBasicMaterial | null = null;
+function makeHull(root: THREE.Object3D): THREE.Object3D {
+  if (!hullMaterialCache) {
+    hullMaterialCache = new THREE.MeshBasicMaterial({ color: SELECT_HEX, side: THREE.BackSide, transparent: true, opacity: 0.9, depthWrite: false });
+    hullMaterialCache.userData.shared = true;
+  }
+  const hull = root.clone(true);
+  hull.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (m.isMesh) {
+      m.material = hullMaterialCache as THREE.Material;
+      m.castShadow = false;
+      m.receiveShadow = false;
+      m.renderOrder = -1;
+    }
+  });
+  hull.userData = { hull: true };
+  // A little bigger about the body's own centre, so the rim shows all round.
+  const box = new THREE.Box3().setFromObject(root);
+  const centre = box.getCenter(new THREE.Vector3());
+  const k = 1.028;
+  hull.scale.multiplyScalar(k);
+  hull.position.copy(root.position).sub(centre).multiplyScalar(k).add(centre);
+  return hull;
 }
 
 // ---------------------------------------------------------------------------
-// Surfaces (2026-09-17, Vic: "front end like The Sims 1 but with more
+// Wall surfaces (2026-09-17, Vic: "front end like The Sims 1 but with more
 // realistic identical images"). Bare plaster is a texture, a paint is a
 // finish — matt drinks the light, silk and satin catch the room, gloss
 // mirrors it — all procedural (no assets to fetch), all world-scaled.
 // ---------------------------------------------------------------------------
-function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-/** Value noise on a wrapping grid, box-blurred `blur` times (0 = grit, 4 = trowel marks). */
-function noiseField(size: number, seed: number, blur: number): Float32Array {
-  const rnd = mulberry32(seed);
-  let f = new Float32Array(size * size);
-  for (let i = 0; i < f.length; i++) f[i] = rnd();
-  for (let pass = 0; pass < blur; pass++) {
-    const g = new Float32Array(size * size);
-    for (let y = 0; y < size; y++) {
-      for (let x = 0; x < size; x++) {
-        let s = 0;
-        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) s += f[((y + dy + size) % size) * size + ((x + dx + size) % size)];
-        g[y * size + x] = s / 9;
-      }
-    }
-    f = g;
-  }
-  // Normalise to 0..1.
-  let lo = Infinity;
-  let hi = -Infinity;
-  for (const v of f) {
-    if (v < lo) lo = v;
-    if (v > hi) hi = v;
-  }
-  const span = hi - lo || 1;
-  for (let i = 0; i < f.length; i++) f[i] = (f[i] - lo) / span;
-  return f;
-}
-
-function canvasTexture(size: number, fill: (data: Uint8ClampedArray) => void, colorSpace: string): THREE.Texture {
-  const c = document.createElement('canvas');
-  c.width = size;
-  c.height = size;
-  const ctx = c.getContext('2d');
-  if (!ctx) return new THREE.Texture();
-  const img = ctx.createImageData(size, size);
-  fill(img.data);
-  ctx.putImageData(img, 0, 0);
-  const t = new THREE.CanvasTexture(c);
-  t.wrapS = THREE.RepeatWrapping;
-  t.wrapT = THREE.RepeatWrapping;
-  // ExtrudeGeometry UVs are in metres: two tiles per metre → a 0.5 m grain.
-  t.repeat.set(2, 2);
-  t.colorSpace = colorSpace as THREE.ColorSpace;
-  t.needsUpdate = true;
-  return t;
-}
-
 interface WallTextures {
   /** Bare plaster albedo (mean ≈ 0.97, so the plaster hex stays the plaster hex). */
   plasterMap: THREE.Texture;
@@ -251,29 +297,7 @@ function wallTextures(): WallTextures {
   const N = 256;
   const trowel = noiseField(N, 7, 4);
   const grit = noiseField(N, 11, 1);
-  const normalFrom = (h: Float32Array) =>
-    canvasTexture(
-      N,
-      (d) => {
-        for (let y = 0; y < N; y++) {
-          for (let x = 0; x < N; x++) {
-            const l = h[y * N + ((x - 1 + N) % N)];
-            const r = h[y * N + ((x + 1) % N)];
-            const u = h[((y - 1 + N) % N) * N + x];
-            const b = h[((y + 1) % N) * N + x];
-            const nx = -(r - l) * 2.5;
-            const ny = -(b - u) * 2.5;
-            const len = Math.hypot(nx, ny, 1);
-            const i = (y * N + x) * 4;
-            d[i] = ((nx / len) * 0.5 + 0.5) * 255;
-            d[i + 1] = ((ny / len) * 0.5 + 0.5) * 255;
-            d[i + 2] = (1 / len) * 0.5 * 255 + 127.5;
-            d[i + 3] = 255;
-          }
-        }
-      },
-      THREE.NoColorSpace,
-    );
+  // ExtrudeGeometry UVs are in metres: two tiles per metre → a 0.5 m grain.
   const plasterMap = canvasTexture(
     N,
     (d) => {
@@ -286,8 +310,9 @@ function wallTextures(): WallTextures {
       }
     },
     THREE.SRGBColorSpace,
+    2,
   );
-  wallTexturesCache = { plasterMap, plasterNormal: normalFrom(trowel), rollerNormal: normalFrom(grit) };
+  wallTexturesCache = { plasterMap, plasterNormal: normalFromHeight(N, trowel, 2.5, 2), rollerNormal: normalFromHeight(N, grit, 2.5, 2) };
   return wallTexturesCache;
 }
 
@@ -332,22 +357,73 @@ function applyWallLook(m: THREE.MeshPhysicalMaterial, w: WallSolid, env: THREE.T
 function structureSignature(s: SceneSolids): string {
   return JSON.stringify({
     h: s.wallHeightM,
-    f: s.floors.map((f) => [f.key, f.hex, f.polygon]),
+    f: s.floors.map((f) => [f.key, f.hex, f.kind, f.tileM, f.polygon]),
     w: s.walls.map((w) => [w.key, w.a, w.b, w.thicknessM, w.heightM, w.stubHeightM, w.centred, w.openings, w.shared, w.free]),
-    i: s.items.map((it) => [it.key, it.instanceId, it.x0, it.y0, it.z0, it.x1, it.y1, it.z1, it.rotationDeg, it.hex, it.meshUrl, it.modelFront, it.lengthAxis, it.modelUp]),
+    i: s.items.map((it) => [it.key, it.instanceId, it.x0, it.y0, it.z0, it.x1, it.y1, it.z1, it.rotationDeg, it.hex, it.meshUrl, it.modelFront, it.lengthAxis, it.modelUp, it.emitsLight, it.lightMountM]),
   });
 }
 
-/** The outline of a slab's inner face (its edges, drawn only while it is the target). */
-function faceOutline(w: WallSolid, heightM: number): THREE.LineSegments {
-  const g = new THREE.BufferGeometry();
-  const z = w.thicknessM + 0.004; // just in front of the inner face
-  const pts = [0, 0, z, w.lengthM, 0, z, w.lengthM, 0, z, w.lengthM, heightM, z, w.lengthM, heightM, z, 0, heightM, z, 0, heightM, z, 0, 0, z];
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-  const line = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: TARGET_HEX, transparent: true, opacity: 0.95, depthTest: false }));
-  line.renderOrder = 5;
-  line.visible = false;
-  return line;
+let outlineMaterialCache: THREE.MeshBasicMaterial | null = null;
+function outlineMaterial(): THREE.MeshBasicMaterial {
+  if (!outlineMaterialCache) {
+    outlineMaterialCache = new THREE.MeshBasicMaterial({ color: TARGET_HEX, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false });
+    outlineMaterialCache.userData.shared = true;
+  }
+  return outlineMaterialCache;
+}
+
+/**
+ * The outline of a slab's inner face, drawn only while it is the target:
+ * four 28 mm strips just in front of the face (a WebGL line is always one
+ * pixel, which read as a hairline on the phone — the 3D audit).
+ */
+function faceOutline(w: WallSolid, heightM: number): THREE.Group {
+  const g = new THREE.Group();
+  const z = w.thicknessM + 0.006;
+  const t = OUTLINE_WIDTH_M;
+  const mat = outlineMaterial();
+  const strip = (sw: number, sh: number, x: number, y: number) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), mat);
+    m.position.set(x, y, z);
+    m.renderOrder = 5;
+    g.add(m);
+  };
+  strip(w.lengthM, t, w.lengthM / 2, t / 2);
+  strip(w.lengthM, t, w.lengthM / 2, heightM - t / 2);
+  strip(t, heightM, t / 2, heightM / 2);
+  strip(t, heightM, w.lengthM - t / 2, heightM / 2);
+  g.visible = false;
+  return g;
+}
+
+/**
+ * Re-group an extruded slab's faces so the OUTSIDE cap of a room wall gets
+ * the exterior render instead of the room's paint. ExtrudeGeometry gives
+ * both caps material 0 and the sides material 1; the cap at z = 0 is the
+ * outer face (placeWall puts the inner face on the wall line at z =
+ * thickness). Free walls straddle their line and are painted on both faces.
+ */
+function splitCaps(geo: THREE.ExtrudeGeometry, depth: number, centred: boolean): void {
+  const pos = geo.getAttribute('position');
+  const groups = geo.groups.map((g) => ({ ...g }));
+  geo.clearGroups();
+  for (const g of groups) {
+    if (g.materialIndex !== 0) {
+      geo.addGroup(g.start, g.count, g.materialIndex ?? 1);
+      continue;
+    }
+    let runStart = g.start;
+    let runMat = -1;
+    for (let i = g.start; i < g.start + g.count; i += 3) {
+      const mat = pos.getZ(i) < depth / 2 && !centred ? 2 : 0;
+      if (mat !== runMat) {
+        if (runMat >= 0) geo.addGroup(runStart, i - runStart, runMat);
+        runStart = i;
+        runMat = mat;
+      }
+    }
+    if (runMat >= 0) geo.addGroup(runStart, g.start + g.count - runStart, runMat);
+  }
 }
 
 function sameHit(a: WallHit | null | undefined, b: WallHit): boolean {
@@ -356,8 +432,12 @@ function sameHit(a: WallHit | null | undefined, b: WallHit): boolean {
   return a.kind === 'edge' ? a.roomId === b.roomId && a.edgeIndex === b.edgeIndex : a.wallId === b.wallId;
 }
 
-/** A wall slab as an extruded shape with its openings as holes, in the wall's local frame (u along, v up, w outward-in). */
-function slabObject(w: WallSolid, heightM: number, paint: THREE.Material, reveal: THREE.Material): THREE.Object3D {
+/**
+ * A wall slab as an extruded shape with its openings as holes, in the
+ * wall's local frame (u along, v up, w outward-in), dressed: skirting,
+ * architraves and door leaves, window frames and sills, corner shading.
+ */
+function slabObject(w: WallSolid, heightM: number, paint: THREE.Material, reveal: THREE.Material, exterior: THREE.Material, cap: THREE.Material): THREE.Object3D {
   const node = new THREE.Group();
   const shape = new THREE.Shape();
   shape.moveTo(0, 0);
@@ -377,22 +457,32 @@ function slabObject(w: WallSolid, heightM: number, paint: THREE.Material, reveal
     shape.holes.push(hole);
   }
   const geo = new THREE.ExtrudeGeometry(shape, { depth: w.thicknessM, bevelEnabled: false });
-  const slab = new THREE.Mesh(geo, [paint, reveal]);
+  splitCaps(geo, w.thicknessM, w.centred);
+  const slab = new THREE.Mesh(geo, [paint, reveal, exterior]);
   slab.castShadow = true;
   slab.receiveShadow = true;
   slab.userData = { hit: w.hit, key: w.key, holes: openings.length, wall: true };
   node.add(slab);
+  // The cap strip along the top — every wall, full or cut, wears one.
+  const capStrip = new THREE.Mesh(new THREE.BoxGeometry(w.lengthM + 0.004, 0.012, w.thicknessM + 0.006), cap);
+  capStrip.position.set(w.lengthM / 2, heightM + 0.006, w.thicknessM / 2);
+  capStrip.receiveShadow = true;
+  capStrip.userData = { cap: true };
+  node.add(capStrip);
   // Window glass: a pane in the middle of the slab's thickness.
   for (const o of openings) {
     if (o.kind !== 'window') continue;
     const top = Math.min(o.topM, heightM);
     const pane = new THREE.Mesh(
       new THREE.PlaneGeometry(o.t1M - o.t0M, top - o.bottomM),
-      new THREE.MeshPhysicalMaterial({ color: GLASS_HEX, transparent: true, opacity: 0.32, roughness: 0.08, metalness: 0, side: THREE.DoubleSide, depthWrite: false }),
+      new THREE.MeshPhysicalMaterial({ color: GLASS_HEX, transparent: true, opacity: 0.28, roughness: 0.06, metalness: 0, side: THREE.DoubleSide, depthWrite: false }),
     );
     pane.position.set((o.t0M + o.t1M) / 2, (o.bottomM + top) / 2, w.thicknessM / 2);
     node.add(pane);
   }
+  // Dressing (P3): joinery on every wall, corner shading on the room side.
+  node.add(wallJoinery(w.lengthM, w.thicknessM, heightM, openings));
+  node.add(cornerShades(w, heightM, openings));
   return node;
 }
 
@@ -417,8 +507,9 @@ function disposeObject(root: THREE.Object3D): void {
     const m = o as THREE.Mesh;
     if (m.geometry) m.geometry.dispose();
     const mat = m.material as THREE.Material | THREE.Material[] | undefined;
-    if (Array.isArray(mat)) mat.forEach((x) => x.dispose());
-    else mat?.dispose();
+    // Shared joinery materials are singletons — never disposed here.
+    if (Array.isArray(mat)) mat.forEach((x) => !x.userData?.shared && x.dispose());
+    else if (mat && !mat.userData?.shared) mat.dispose();
   });
 }
 
@@ -449,27 +540,33 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
   });
 }
 
-const SELECT_HEX = '#79C7AD';
 const FLOOR_PLANE = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, camera, width, height, hover, selectedInstanceId, brushHex, wallView = 'cutaway', onFailed },
+  { solids, camera, width, height, hover, selectedInstanceId, brushHex, wallView = 'cutaway', hour = null, dayOfYear: doy, onFailed },
   ref,
 ): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const hemiRef = useRef<THREE.HemisphereLight | null>(null);
   const sunRef = useRef<THREE.DirectionalLight | null>(null);
   /** A soft light that rides with the camera so no wall face is ever unlit. */
   const fillRef = useRef<THREE.DirectionalLight | null>(null);
   /** The room environment, for materials with a sheen. */
   const envRef = useRef<THREE.Texture | null>(null);
+  const skyRef = useRef<THREE.Mesh | null>(null);
   const contentRef = useRef<THREE.Group | null>(null);
   const signatureRef = useRef<string>('');
   const wallsRef = useRef<WallEntry[]>([]);
   const floorsRef = useRef<THREE.Mesh[]>([]);
   const itemsRef = useRef<THREE.Object3D[]>([]);
+  const lampsRef = useRef<NightLight[]>([]);
+  const shadowsRef = useRef<THREE.Mesh[]>([]);
+  /** Where the plan is and how big, for the sun's shadow frustum. */
+  const boundsRef = useRef<{ centre: THREE.Vector3; radius: number }>({ centre: new THREE.Vector3(), radius: 6 });
+  const sunStateRef = useRef<{ elevationDeg: number; azimuthDeg: number } | null>(null);
   const buildRef = useRef(0);
   const rafRef = useRef<number | null>(null);
   const failedRef = useRef(false);
@@ -480,6 +577,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const previewRef = useRef(new Map<string, THREE.Vector3>());
   const selectedRootRef = useRef<THREE.Object3D | null>(null);
   const padRef = useRef<THREE.Mesh | null>(null);
+  const hullRef = useRef<THREE.Object3D | null>(null);
 
   const requestRender = () => {
     if (rafRef.current !== null || failedRef.current) return;
@@ -493,6 +591,73 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         framesRef.current += 1;
       }
     });
+  };
+
+  /** Aim the sun and size its shadow camera to the plan. `dir` is the direction TOWARDS the sun, three frame. */
+  const aimSun = (dir: THREE.Vector3) => {
+    const sun = sunRef.current;
+    if (!sun) return;
+    const { centre, radius } = boundsRef.current;
+    sun.position.copy(centre).addScaledVector(dir, radius * 3 + 10);
+    sun.target.position.copy(centre);
+    sun.target.updateMatrixWorld();
+    const sc = sun.shadow.camera;
+    sc.left = -radius - 2;
+    sc.right = radius + 2;
+    sc.top = radius + 2;
+    sc.bottom = -radius - 2;
+    sc.near = 0.5;
+    sc.far = radius * 6 + 40;
+    sc.updateProjectionMatrix();
+  };
+
+  /**
+   * The rig for an hour: the studio rig (null) that the colour truth is
+   * measured under, or the real sun for that clock hour with the sky and
+   * the lamps following it.
+   */
+  const applyHour = (h: number | null) => {
+    const hemi = hemiRef.current;
+    const sun = sunRef.current;
+    const fill = fillRef.current;
+    if (!hemi || !sun || !fill) return;
+    if (h === null || !Number.isFinite(h)) {
+      hemi.intensity = Math.PI * STUDIO.hemi;
+      hemi.color.copy(HEMI_DAY_SKY);
+      hemi.groundColor.copy(HEMI_DAY_GROUND);
+      sun.intensity = Math.PI * STUDIO.sun;
+      sun.color.set(0xfff6ea);
+      fill.intensity = Math.PI * STUDIO.fill;
+      aimSun(STUDIO_SUN_DIR);
+      sunStateRef.current = null;
+      if (skyRef.current && skyRef.current.userData.day !== 1) updateSkyDome(skyRef.current, 1);
+      for (const l of lampsRef.current) {
+        l.light.intensity = 0;
+        (l.glow.material as THREE.MeshBasicMaterial).color.set(0xe9e2d3);
+      }
+      return;
+    }
+    const s = sunAt(h, doy ?? dayOfYear(new Date().getMonth() + 1, new Date().getDate()));
+    const day = s.daylight;
+    hemi.intensity = Math.PI * (STUDIO.hemi * day + NIGHT.hemi * (1 - day));
+    hemi.color.copy(HEMI_NIGHT_SKY).lerp(HEMI_DAY_SKY, day);
+    hemi.groundColor.copy(HEMI_NIGHT_GROUND).lerp(HEMI_DAY_GROUND, day);
+    // The sun's share grows as it climbs; it never adds more than the studio sun did at its brightest.
+    const up = Math.max(0, Math.sin((s.elevationDeg * Math.PI) / 180));
+    sun.intensity = Math.PI * STUDIO.sun * Math.min(1, up * 1.4) * day;
+    sun.color.set(sunColourHex(s.elevationDeg));
+    fill.intensity = Math.PI * (STUDIO.fill * day + NIGHT.fill * (1 - day));
+    aimSun(new THREE.Vector3(s.direction.x, Math.max(0.05, s.direction.z), s.direction.y));
+    sunStateRef.current = { elevationDeg: s.elevationDeg, azimuthDeg: s.azimuthDeg };
+    if (skyRef.current) {
+      const quant = Math.round(day * 20) / 20;
+      if (skyRef.current.userData.day !== quant) updateSkyDome(skyRef.current, quant);
+    }
+    const lamps = lampsOnFactor(s.elevationDeg);
+    for (const l of lampsRef.current) {
+      l.light.intensity = LAMP_INTENSITY * lamps;
+      (l.glow.material as THREE.MeshBasicMaterial).color.set(lamps > 0.5 ? 0xffe9c4 : 0xe9e2d3);
+    }
   };
 
   // ---- renderer + lights, once ------------------------------------------
@@ -512,20 +677,22 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     // Colour truth (Vic 2026-09-17): the wall must be the SAME hex as the
     // 2D chip and the merchant's colour card. Filmic tone mapping remaps
     // every pixel (ACES washed tints toward grey), so none — a lit face
-    // renders its albedo. The rig below sums to ≈1.0 on a camera-facing
-    // wall: hemisphere 0.8 (flat, everywhere) + fill 0.2 · cos (from the
-    // camera) + sun 0.2 · cos (for the shadows). Measured, not assumed: a
-    // wall painted #4C493F reads back within a few points of #4C493F on the
-    // far walls (the pixel probe in paint-sims-3d.spec.ts pins it).
+    // renders its albedo. The rig sums to ≈1.0 on a camera-facing wall:
+    // hemisphere 0.8 (flat, everywhere) + fill 0.2 · cos (from the camera)
+    // + sun 0.2 · cos (for the shadows). Measured, not assumed: a wall
+    // painted #4C493F reads back within a few points of #4C493F on the far
+    // walls (the pixel probe in paint-sims-3d.spec.ts pins it).
     renderer.toneMapping = THREE.NoToneMapping;
     renderer.toneMappingExposure = 1;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     rendererRef.current = renderer;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(SKY_HEX);
     sceneRef.current = scene;
+    const sky = skyDome(1);
+    scene.add(sky);
+    skyRef.current = sky;
 
     const cam = new THREE.PerspectiveCamera(50, 1.4, 0.05, 250);
     cameraRef.current = cam;
@@ -534,9 +701,10 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     // intensity × cos / π, so the rig is stated in multiples of π. Measured
     // on a #808080 room with the DEV `tune()` knob: hemisphere alone at
     // 0.8 π → 0.76 of the hex on a wall; sun / fill add their cos share.
-    const hemi = new THREE.HemisphereLight(0xffffff, 0xf2ede4, Math.PI * 0.8);
+    const hemi = new THREE.HemisphereLight(HEMI_DAY_SKY, HEMI_DAY_GROUND, Math.PI * STUDIO.hemi);
     scene.add(hemi);
-    const sun = new THREE.DirectionalLight(0xfff6ea, Math.PI * 0.15);
+    hemiRef.current = hemi;
+    const sun = new THREE.DirectionalLight(0xfff6ea, Math.PI * STUDIO.sun);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
     sun.shadow.bias = -0.0004;
@@ -544,7 +712,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     scene.add(sun);
     scene.add(sun.target);
     sunRef.current = sun;
-    const fill = new THREE.DirectionalLight(0xffffff, Math.PI * 0.25);
+    const fill = new THREE.DirectionalLight(0xffffff, Math.PI * STUDIO.fill);
     scene.add(fill);
     scene.add(fill.target);
     fillRef.current = fill;
@@ -560,13 +728,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     }
     pmrem.dispose();
 
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(600, 600),
-      new THREE.MeshStandardMaterial({ color: GROUND_HEX, roughness: 1, metalness: 0 }),
-    );
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -0.002;
-    ground.receiveShadow = true;
+    const ground = groundPlane();
     scene.add(ground);
 
     const content = new THREE.Group();
@@ -589,8 +751,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       rafRef.current = null;
       failedRef.current = false;
       if (contentRef.current) disposeObject(contentRef.current);
-      ground.geometry.dispose();
-      (ground.material as THREE.Material).dispose();
+      disposeObject(ground);
+      disposeObject(sky);
       envRef.current?.dispose();
       envRef.current = null;
       signatureRef.current = '';
@@ -603,6 +765,10 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       sceneRef.current = null;
       cameraRef.current = null;
       contentRef.current = null;
+      skyRef.current = null;
+      hemiRef.current = null;
+      sunRef.current = null;
+      fillRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -634,33 +800,33 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     wallsRef.current = [];
     floorsRef.current = [];
     itemsRef.current = [];
+    lampsRef.current = [];
+    shadowsRef.current = [];
     hoveredRef.current = null;
     previewRef.current.clear();
     selectedRootRef.current = null;
     padRef.current = null;
+    hullRef.current = null;
 
     const bounds = new THREE.Box3();
 
     for (const f of solids.floors) {
-      const shape = new THREE.Shape(f.polygon.map((v) => new THREE.Vector2(v.x, v.y)));
-      const geo = new THREE.ShapeGeometry(shape);
-      geo.rotateX(Math.PI / 2); // plan (x, y) → three (x, 0, y)
-      const mesh = new THREE.Mesh(geo, new THREE.MeshPhysicalMaterial({ color: f.hex, roughness: 0.86, metalness: 0, side: THREE.DoubleSide, specularIntensity: 0.15, envMap: envRef.current, envMapIntensity: 0.12 }));
-      mesh.position.y = 0.001;
-      mesh.receiveShadow = true;
-      mesh.userData = { key: f.key, floor: true };
+      const mesh = floorMesh(f, (f.kind as FloorKind | undefined) ?? 'screed', f.tileM ?? 0.5, envRef.current);
+      (mesh.material as THREE.MeshPhysicalMaterial).color.multiplyScalar(FLOOR_GAIN);
       content.add(mesh);
       floorsRef.current.push(mesh);
       bounds.expandByObject(mesh);
     }
 
     const reveal = new THREE.MeshPhysicalMaterial({ color: REVEAL_HEX, roughness: 0.95, metalness: 0, envMapIntensity: 0, specularIntensity: 0 });
+    const exterior = new THREE.MeshPhysicalMaterial({ color: EXTERIOR_HEX, roughness: 0.96, metalness: 0, envMapIntensity: 0, specularIntensity: 0, normalMap: wallTextures().plasterNormal, normalScale: new THREE.Vector2(0.35, 0.35) });
+    const cap = new THREE.MeshPhysicalMaterial({ color: CAP_HEX, roughness: 0.9, metalness: 0, envMapIntensity: 0, specularIntensity: 0 });
     for (const w of solids.walls) {
       const paint = new THREE.MeshPhysicalMaterial();
       applyWallLook(paint, w, envRef.current);
       const group = new THREE.Group();
-      const full = slabObject(w, w.heightM, paint, reveal);
-      const stub = slabObject(w, w.stubHeightM, paint, reveal);
+      const full = slabObject(w, w.heightM, paint, reveal, exterior, cap);
+      const stub = slabObject(w, w.stubHeightM, paint, reveal, exterior, cap);
       stub.traverse((o) => {
         if ((o as THREE.Mesh).isMesh && o.userData.wall) o.userData = { ...o.userData, key: w.key.replace(/^wall-/, 'stub-'), stub: true };
       });
@@ -670,7 +836,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       placeWall(w, group);
       content.add(group);
       group.updateMatrixWorld(true);
-      wallsRef.current.push({ solid: w, group, full, stub, paint, baseHex: w.hex, outlineFull, outlineStub, show: 'full' });
+      wallsRef.current.push({ solid: w, group, full, stub, paint, baseHex: w.hex, outlineFull, outlineStub, show: 'full', ghost: false });
       bounds.expandByObject(full);
     }
 
@@ -687,6 +853,19 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       content.add(mesh);
       itemsRef.current.push(mesh);
       bounds.expandByObject(mesh);
+      // Grounded on the floor: a soft contact shadow under every standing body.
+      const shadow = contactShadow(it);
+      if (shadow) {
+        content.add(shadow);
+        shadowsRef.current.push(shadow);
+      }
+      // A lamp: a warm light at its source, off by day, on after dark.
+      if (it.emitsLight) {
+        const lamp = nightLight(it, it.lightMountM ?? Math.min(it.z1, solids.wallHeightM - 0.3));
+        lamp.light.intensity = 0;
+        content.add(lamp.light, lamp.glow);
+        lampsRef.current.push(lamp);
+      }
       // Swap the box for the product's body once it has loaded — unless the
       // plan has been rebuilt since (a stale load must not resurrect).
       if (it.meshUrl) {
@@ -694,22 +873,29 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
           .then((tpl) => {
             if (buildRef.current !== buildId || !contentRef.current) return;
             const body = bodyObject(it, tpl);
-            // A product's PBR textures pick up a little of the room.
+            // A product's PBR textures pick up a little of the room, and
+            // stay sharp at grazing angles (anisotropy is free on a GPU).
             const env = envRef.current;
-            if (env) {
-              body.traverse((o) => {
-                const bm = o as THREE.Mesh;
-                if (!bm.isMesh) return;
-                const mats = Array.isArray(bm.material) ? bm.material : [bm.material];
-                for (const mat of mats) {
-                  if ('envMapIntensity' in mat) {
-                    (mat as THREE.MeshStandardMaterial).envMap = env;
-                    (mat as THREE.MeshStandardMaterial).envMapIntensity = 0.35;
-                    mat.needsUpdate = true;
+            const aniso = rendererRef.current?.capabilities.getMaxAnisotropy() ?? 1;
+            body.traverse((o) => {
+              const bm = o as THREE.Mesh;
+              if (!bm.isMesh) return;
+              const mats = Array.isArray(bm.material) ? bm.material : [bm.material];
+              for (const mat of mats) {
+                const std = mat as THREE.MeshStandardMaterial;
+                if (env && 'envMapIntensity' in std) {
+                  std.envMap = env;
+                  std.envMapIntensity = 0.35;
+                }
+                for (const tex of [std.map, std.normalMap, std.roughnessMap, std.metalnessMap]) {
+                  if (tex && tex.anisotropy < aniso) {
+                    tex.anisotropy = aniso;
+                    tex.needsUpdate = true;
                   }
                 }
-              });
-            }
+                mat.needsUpdate = true;
+              }
+            });
             contentRef.current.remove(mesh);
             mesh.geometry.dispose();
             (mesh.material as THREE.Material).dispose();
@@ -718,7 +904,15 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
             if (i >= 0) itemsRef.current[i] = body;
             if (selectedRootRef.current === mesh) {
               selectedRootRef.current = body;
-              tintItem(body, SELECT_HEX, 0.35);
+              tintItem(body, SELECT_HEX, 0.12);
+              const oldHull = hullRef.current;
+              if (oldHull) {
+                oldHull.parent?.remove(oldHull);
+                disposeObject(oldHull);
+              }
+              const hull = makeHull(body);
+              contentRef.current.add(hull);
+              hullRef.current = hull;
             }
             requestRender();
           })
@@ -728,26 +922,33 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       }
     }
 
-    // Sun from the north-west, high: shadows fall to the south-east across
-    // the plan; the shadow camera hugs whatever is drawn.
-    const centre = bounds.isEmpty() ? new THREE.Vector3() : bounds.getCenter(new THREE.Vector3());
-    const radius = bounds.isEmpty() ? 6 : Math.max(4, bounds.getSize(new THREE.Vector3()).length() / 2);
-    const dir = new THREE.Vector3(-0.45, 1, -0.55).normalize();
-    sun.position.copy(centre).addScaledVector(dir, radius * 3 + 10);
-    sun.target.position.copy(centre);
-    sun.target.updateMatrixWorld();
-    const sc = sun.shadow.camera;
-    sc.left = -radius - 2;
-    sc.right = radius + 2;
-    sc.top = radius + 2;
-    sc.bottom = -radius - 2;
-    sc.near = 0.5;
-    sc.far = radius * 6 + 40;
-    sc.updateProjectionMatrix();
-
-    requestRender();
+    // The sun's shadow camera hugs whatever is drawn; the rig for the hour follows.
+    boundsRef.current = {
+      centre: bounds.isEmpty() ? new THREE.Vector3() : bounds.getCenter(new THREE.Vector3()),
+      radius: bounds.isEmpty() ? 6 : Math.max(4, bounds.getSize(new THREE.Vector3()).length() / 2),
+    };
+    applyHour(hour);
+    // Compile every shader variant OFF the main thread's critical path before
+    // the first frame (a room with several finishes used to block the page
+    // while it compiled on that frame); a renderer without the async path
+    // just draws.
+    const r = rendererRef.current;
+    const s = sceneRef.current;
+    const c = cameraRef.current;
+    if (r && s && c && typeof r.compileAsync === 'function') {
+      r.compileAsync(s, c).then(() => requestRender()).catch(() => requestRender());
+    } else {
+      requestRender();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [solids]);
+
+  // ---- the hour: sun, sky, lamps -----------------------------------------
+  useEffect(() => {
+    applyHour(hour);
+    requestRender();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hour, doy]);
 
   // ---- camera + cutaway, on orbit / resize -------------------------------------
   useEffect(() => {
@@ -770,24 +971,27 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     c.updateMatrixWorld(true);
 
     // The fill rides with the camera, a little above it, so whichever walls
-    // face the viewer are lit to their colour.
+    // face the viewer are lit to their colour. The sky dome rides too, so
+    // its horizon never comes into reach.
     const fill = fillRef.current;
     if (fill) {
       fill.position.copy(c.position).add(new THREE.Vector3(0, 4, 0));
       fill.target.position.copy(toThree(camera.target));
       fill.target.updateMatrixWorld();
     }
+    if (skyRef.current) skyRef.current.position.set(c.position.x, 0, c.position.z);
 
     // Walls Up / Cutaway / Down: the same slabs, only visibility flips.
     const state = wallView === 'cutaway' ? cutawayState(solids, pos, camera.target) : null;
     for (const e of wallsRef.current) {
       const show: WallShow = wallView === 'up' ? 'full' : wallView === 'down' ? 'stub' : (state?.get(e.solid.key) ?? 'full');
       e.show = show;
-      e.full.visible = show === 'full';
+      if (e.ghost && show !== 'stub') setGhost(e, false);
+      e.full.visible = show === 'full' || e.ghost;
       e.stub.visible = show === 'stub';
       const target = hoveredRef.current === e;
-      e.outlineFull.visible = target && show === 'full';
-      e.outlineStub.visible = target && show === 'stub';
+      e.outlineFull.visible = target && (show === 'full' || e.ghost);
+      e.outlineStub.visible = target && show === 'stub' && !e.ghost;
     }
     requestRender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -807,8 +1011,23 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       (oldPad.material as THREE.Material).dispose();
       padRef.current = null;
     }
+    const oldHull = hullRef.current;
+    if (oldHull) {
+      oldHull.parent?.remove(oldHull);
+      disposeObject(oldHull);
+      hullRef.current = null;
+    }
     const next = selectedInstanceId ? itemsRef.current.find((o) => o.userData.instanceId === selectedInstanceId) ?? null : null;
-    if (next) tintItem(next, SELECT_HEX, 0.5);
+    // A hint of mint on the body and a rim around it — the product keeps its
+    // own colours (a 0.5 emissive turned a black machine into a mint ghost).
+    if (next) {
+      tintItem(next, SELECT_HEX, 0.12);
+      if (contentRef.current) {
+        const hull = makeHull(next);
+        contentRef.current.add(hull);
+        hullRef.current = hull;
+      }
+    }
     selectedRootRef.current = next;
     const s = selectedInstanceId ? solids.items.find((i) => i.instanceId === selectedInstanceId) : undefined;
     if (s && contentRef.current) {
@@ -838,12 +1057,16 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       prev.paint.color.set(prev.baseHex);
       prev.outlineFull.visible = false;
       prev.outlineStub.visible = false;
+      setGhost(prev, false);
     }
     const next = hover ? wallsRef.current.find((e) => sameHit(hover, e.solid.hit)) ?? null : null;
     if (next) {
       if (brushHex) next.paint.color.set(brushHex);
-      next.outlineFull.visible = next.show === 'full';
-      next.outlineStub.visible = next.show === 'stub';
+      // A cut wall under the brush stands up as a ghost so the whole face previews.
+      const ghost = !!brushHex && next.show === 'stub';
+      setGhost(next, ghost);
+      next.outlineFull.visible = next.show === 'full' || ghost;
+      next.outlineStub.visible = next.show === 'stub' && !ghost;
     }
     hoveredRef.current = next;
     requestRender();
@@ -1015,7 +1238,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
           previewRef.current.set(instanceId, home);
         }
         root.position.set(home.x + dxM, home.y, home.z + dyM);
-        // The pad rides with the body it marks.
+        // The pad and the contact shadow ride with the body they mark.
         const pad = padRef.current;
         if (pad && selectedRootRef.current === root) {
           let padHome = previewRef.current.get(`pad:${instanceId}`);
@@ -1024,6 +1247,15 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
             previewRef.current.set(`pad:${instanceId}`, padHome);
           }
           pad.position.set(padHome.x + dxM, padHome.y, padHome.z + dyM);
+        }
+        const shadow = shadowsRef.current.find((s) => s.userData.key === `shadow-${root.userData.key}`);
+        if (shadow) {
+          let shadowHome = previewRef.current.get(`shadow:${instanceId}`);
+          if (!shadowHome) {
+            shadowHome = shadow.position.clone();
+            previewRef.current.set(`shadow:${instanceId}`, shadowHome);
+          }
+          shadow.position.set(shadowHome.x + dxM, shadowHome.y, shadowHome.z + dyM);
         }
         requestRender();
       },
@@ -1034,9 +1266,34 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         const pad = padRef.current;
         const padHome = previewRef.current.get(`pad:${instanceId}`);
         if (pad && padHome) pad.position.copy(padHome);
+        const shadowHome = previewRef.current.get(`shadow:${instanceId}`);
+        if (root && shadowHome) {
+          const shadow = shadowsRef.current.find((s) => s.userData.key === `shadow-${root.userData.key}`);
+          if (shadow) shadow.position.copy(shadowHome);
+        }
         previewRef.current.delete(instanceId);
         previewRef.current.delete(`pad:${instanceId}`);
+        previewRef.current.delete(`shadow:${instanceId}`);
         requestRender();
+      },
+      dressing() {
+        let joinery = 0;
+        let shades = 0;
+        for (const e of wallsRef.current) {
+          const node = e.show === 'full' ? e.full : e.show === 'stub' ? e.stub : null;
+          if (!node) continue;
+          node.traverse((o) => {
+            if (o.userData?.joinery && o.userData.joinery !== 'wall') joinery += 1;
+            if (o.name === 'corner-shades') shades += o.children.length;
+          });
+        }
+        return {
+          joinery,
+          shades,
+          lamps: lampsRef.current.length,
+          contactShadows: shadowsRef.current.length,
+          floors: floorsRef.current.map((f) => ({ key: f.userData.key as string, kind: String(f.userData.kind ?? '') })),
+        };
       },
       debug() {
         const r = rendererRef.current;
@@ -1046,10 +1303,12 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
           camera: cameraRef.current?.position.toArray() ?? [],
           target: targetRef.current,
           renderer: r ? `${r.domElement.width}x${r.domElement.height} calls=${r.info.render.calls} tris=${r.info.render.triangles}` : 'none',
+          hour: hour ?? null,
+          sun: sunStateRef.current,
         };
       },
     }),
-    [width, height],
+    [width, height, hour],
   );
 
   return <canvas ref={canvasRef} data-testid="wallpaint-3d-gl" style={{ display: 'block', width: '100%', height: '100%' }} />;

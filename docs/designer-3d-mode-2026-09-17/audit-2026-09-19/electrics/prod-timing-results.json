@@ -1,0 +1,39 @@
+{
+  "commit": "cb0dae8bbc9b2650c5ea34a45747955de0606583",
+  "apiStatus": 200,
+  "apiRows": 14,
+  "apiHasEnergyKeys": [],
+  "msGotoToCanvas": 3696,
+  "msGotoToApi": 4655,
+  "chipAtCanvasAttach": {
+    "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+    "status": "covered",
+    "canvases": 3,
+    "t": 1789839427852
+  },
+  "chipAtApiResponse": {
+    "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+    "status": "covered",
+    "canvases": 3,
+    "t": 1789839428826
+  },
+  "chipPlus2s": {
+    "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+    "status": "covered",
+    "canvases": 3,
+    "t": 1789839430846
+  },
+  "chipPlus10s": {
+    "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+    "status": "covered",
+    "canvases": 3,
+    "t": 1789839438861
+  },
+  "chipVsPanelAfterOpeningPanel": {
+    "chip": "☀ 1.9 kWh · ⚡ 0 Wh",
+    "panelLoad": "440 Wh/day · 3 items on · peak 470 W",
+    "panelStatus": "Surplus+1.5 kWh/day",
+    "items": 3
+  },
+  "consoleErrors": []
+}

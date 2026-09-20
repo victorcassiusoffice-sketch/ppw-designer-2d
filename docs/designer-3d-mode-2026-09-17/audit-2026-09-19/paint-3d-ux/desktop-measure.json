@@ -1,0 +1,354 @@
+{
+  "log": [
+    {
+      "t": 118790,
+      "step": "1440 panel fold",
+      "viewport": {
+        "vw": 1440,
+        "vh": 900
+      },
+      "panel": {
+        "x": 1168,
+        "y": 53,
+        "width": 272,
+        "height": 765
+      },
+      "scroll": {
+        "scrollHeight": 1316,
+        "clientHeight": 765,
+        "scrollTop": 0
+      },
+      "cardFirstVisible": {
+        "ms": 97944,
+        "sd": 8.12564194036985
+      },
+      "cardFaces": 22,
+      "items": {
+        "wallpaint-3d": {
+          "top": 141,
+          "bottom": 294,
+          "h": 153,
+          "w": 245,
+          "visibleWithoutScroll": true
+        },
+        "wallpaint-brand-card": {
+          "top": 305,
+          "bottom": 333,
+          "h": 28,
+          "w": 247,
+          "visibleWithoutScroll": true
+        },
+        "wallpaint-height": {
+          "top": 343,
+          "bottom": 379,
+          "h": 36,
+          "w": 80,
+          "visibleWithoutScroll": true
+        },
+        "wallpaint-coats": {
+          "top": 385,
+          "bottom": 421,
+          "h": 36,
+          "w": 100,
+          "visibleWithoutScroll": true
+        },
+        "wallpaint-brands": null,
+        "wallpaint-tintex-vip-satin": {
+          "top": 465,
+          "bottom": 509,
+          "h": 44,
+          "w": 247,
+          "visibleWithoutScroll": true
+        },
+        "wallpaint-tintex-trade-pro": {
+          "top": 649,
+          "bottom": 693,
+          "h": 44,
+          "w": 247,
+          "visibleWithoutScroll": true
+        },
+        "wallpaint-colours": {
+          "top": 703,
+          "bottom": 1025,
+          "h": 323,
+          "w": 247,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-colour-base": {
+          "top": 736,
+          "bottom": 764,
+          "h": 28,
+          "w": 28,
+          "visibleWithoutScroll": true
+        },
+        "wallpaint-chart-toggle": {
+          "top": 872,
+          "bottom": 898,
+          "h": 26,
+          "w": 239,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-scope-wall": {
+          "top": 1048,
+          "bottom": 1088,
+          "h": 40,
+          "w": 120,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-erase": {
+          "top": 1098,
+          "bottom": 1138,
+          "h": 40,
+          "w": 120,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-clear": {
+          "top": 1098,
+          "bottom": 1138,
+          "h": 40,
+          "w": 120,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-live": {
+          "top": 1152,
+          "bottom": 1170,
+          "h": 18,
+          "w": 247,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-assumptions": {
+          "top": 1190,
+          "bottom": 1258,
+          "h": 69,
+          "w": 247,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-breakdown-toggle": {
+          "top": 1277,
+          "bottom": 1303,
+          "h": 26,
+          "w": 247,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-done": {
+          "top": 1317,
+          "bottom": 1357,
+          "h": 40,
+          "w": 247,
+          "visibleWithoutScroll": false
+        }
+      }
+    },
+    {
+      "t": 121999,
+      "step": "1440 plan hover strength",
+      "wallMidScreen": {
+        "x": 584,
+        "y": 458.3333333333333
+      },
+      "diff": {
+        "meanAbsDiff": 4.919370370370371,
+        "changedPct": 10.911111111111111
+      },
+      "cursorOverWall": "auto",
+      "cardCaptionWhilePlanHover": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+      "priceInCaption": false
+    },
+    {
+      "t": 122870,
+      "step": "1440 card hover caption",
+      "wp": {
+        "x": 1285.6533342296652,
+        "y": 198.93587182276255
+      },
+      "caption": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+      "capBox": {
+        "x": 1190,
+        "y": 271.625,
+        "width": 229,
+        "height": 16.5
+      },
+      "capFont": "11px / rgb(61, 70, 85)",
+      "overflow": {
+        "scrollW": 461,
+        "clientW": 229
+      },
+      "truncated": true
+    },
+    {
+      "t": 241904,
+      "step": "1366 panel fold",
+      "viewport": {
+        "vw": 1366,
+        "vh": 768
+      },
+      "panel": {
+        "x": 1094,
+        "y": 53,
+        "width": 272,
+        "height": 633
+      },
+      "scroll": {
+        "scrollHeight": 1316,
+        "clientHeight": 633,
+        "scrollTop": 0
+      },
+      "cardFirstVisible": {
+        "ms": 85127,
+        "sd": 8.12564194036985
+      },
+      "cardFaces": 22,
+      "items": {
+        "wallpaint-3d": {
+          "top": 141,
+          "bottom": 294,
+          "h": 153,
+          "w": 245,
+          "visibleWithoutScroll": true
+        },
+        "wallpaint-brand-card": {
+          "top": 305,
+          "bottom": 333,
+          "h": 28,
+          "w": 247,
+          "visibleWithoutScroll": true
+        },
+        "wallpaint-height": {
+          "top": 343,
+          "bottom": 379,
+          "h": 36,
+          "w": 80,
+          "visibleWithoutScroll": true
+        },
+        "wallpaint-coats": {
+          "top": 385,
+          "bottom": 421,
+          "h": 36,
+          "w": 100,
+          "visibleWithoutScroll": true
+        },
+        "wallpaint-brands": null,
+        "wallpaint-tintex-vip-satin": {
+          "top": 465,
+          "bottom": 509,
+          "h": 44,
+          "w": 247,
+          "visibleWithoutScroll": true
+        },
+        "wallpaint-tintex-trade-pro": {
+          "top": 649,
+          "bottom": 693,
+          "h": 44,
+          "w": 247,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-colours": {
+          "top": 703,
+          "bottom": 1025,
+          "h": 323,
+          "w": 247,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-colour-base": {
+          "top": 736,
+          "bottom": 764,
+          "h": 28,
+          "w": 28,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-chart-toggle": {
+          "top": 872,
+          "bottom": 898,
+          "h": 26,
+          "w": 239,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-scope-wall": {
+          "top": 1048,
+          "bottom": 1088,
+          "h": 40,
+          "w": 120,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-erase": {
+          "top": 1098,
+          "bottom": 1138,
+          "h": 40,
+          "w": 120,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-clear": {
+          "top": 1098,
+          "bottom": 1138,
+          "h": 40,
+          "w": 120,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-live": {
+          "top": 1152,
+          "bottom": 1170,
+          "h": 18,
+          "w": 247,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-assumptions": {
+          "top": 1190,
+          "bottom": 1258,
+          "h": 69,
+          "w": 247,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-breakdown-toggle": {
+          "top": 1277,
+          "bottom": 1303,
+          "h": 26,
+          "w": 247,
+          "visibleWithoutScroll": false
+        },
+        "wallpaint-done": {
+          "top": 1317,
+          "bottom": 1357,
+          "h": 40,
+          "w": 247,
+          "visibleWithoutScroll": false
+        }
+      }
+    },
+    {
+      "t": 244693,
+      "step": "1366 plan hover strength",
+      "wallMidScreen": {
+        "x": 547,
+        "y": 387.93333333333334
+      },
+      "diff": {
+        "meanAbsDiff": 3.748740740740741,
+        "changedPct": 9.305555555555555
+      },
+      "cursorOverWall": "auto",
+      "cardCaptionWhilePlanHover": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+      "priceInCaption": false
+    },
+    {
+      "t": 245657,
+      "step": "1366 card hover caption",
+      "wp": {
+        "x": 1211.6533342296652,
+        "y": 198.93587182276255
+      },
+      "caption": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+      "capBox": {
+        "x": 1116,
+        "y": 271.625,
+        "width": 229,
+        "height": 16.5
+      },
+      "capFont": "11px / rgb(61, 70, 85)",
+      "overflow": {
+        "scrollW": 461,
+        "clientW": 229
+      },
+      "truncated": true
+    }
+  ]
+}

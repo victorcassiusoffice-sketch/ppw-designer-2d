@@ -1,0 +1,172 @@
+{
+  "plan": [
+    "tm=k1-nordictrack-2450",
+    "rw=k1-nordictrack-rw900",
+    "gx=k1-nordictrack-gx10"
+  ],
+  "desktop": {
+    "chipBefore": {
+      "chipText": "☀ 0 Wh · ⚡ 350 Wh−350 Wh",
+      "chipStatus": "short"
+    },
+    "panel": {
+      "chipText": "☀ 0 Wh · ⚡ 350 Wh−350 Wh",
+      "chipStatus": "short",
+      "panelVisible": true,
+      "summaryVisible": true,
+      "load": "350 Wh/day · 1 item on · peak 350 W",
+      "status": "0% covered−350 Wh/day",
+      "rowCount": 1,
+      "rowIds": [
+        "tm"
+      ],
+      "rows": [
+        {
+          "id": "tm",
+          "text": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhon",
+          "inputs": [
+            {
+              "type": "number",
+              "ariaLabel": "NordicTrack Commercial 2450 Treadmill hours per day",
+              "value": "1",
+              "min": "0",
+              "max": "24"
+            }
+          ],
+          "buttons": [
+            {
+              "testid": null,
+              "text": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typical"
+            },
+            {
+              "testid": "energy-power-tm",
+              "text": "on"
+            }
+          ]
+        }
+      ],
+      "allInputsInSummary": [
+        {
+          "type": "number",
+          "ariaLabel": "NordicTrack Commercial 2450 Treadmill hours per day",
+          "testid": "energy-hours-tm"
+        }
+      ],
+      "wattInputCount": 0,
+      "addItemAffordance": false,
+      "summaryText": "0% covered−350 Wh/day☀0 Wh/day · no panels yet⚡350 Wh/day · 1 item on · peak 350 WAdd 1 × 450 Wp panel on the roof to cover it — they are in the Eco tab.RoofNordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhonSun: 5.17 kWh/m²/day on a 20° tilt, facing north roof, Tamarin, Mauritius (PVGIS SARAH3 2005–23) · 78 % performance ratio ≈ 1462 kWh/yr per kWp."
+    },
+    "frame": "D1-panel-treadmill-rw900-gx10-1366.png",
+    "rower": {
+      "clickedAt": {
+        "x": 753,
+        "y": 229.5
+      },
+      "details": {
+        "overlayVisible": true,
+        "overlayText": "DetailsCloseSelected itemNordicTrack RW900 RowerFitness · SKU K1-CDIO-NTRW900Footprint220 × 55 cmHeight110 cmWeight53 kgPosition3.40 m, 0.80 m · 0°Price120,000 MURCommission5.0 %SupplierK1-Sport (NordicTrack — Mauritius distributor)Ships toMUSourcehttps://www.k1-sport.com/shop-onlineNotesMagnetic + air resistance rower; 22-inch HD touchscreen; iFit-ready. Distributor stock at K1-Sport.Controls↺ 90",
+        "powerToggle": null,
+        "hoursInput": null,
+        "wattEditable": [],
+        "inputs": []
+      },
+      "frame": "D2-details-rw900-selected-1366.png"
+    },
+    "recumbent": {
+      "clickedAt": {
+        "x": 493,
+        "y": 449.5
+      },
+      "details": {
+        "overlayVisible": true,
+        "overlayText": "DetailsCloseSelected itemNordicTrack GX 10 Recumbent BikeFitness · SKU K1-CDIO-NTGX10Footprint150 × 65 cmHeight130 cmWeight62 kgPosition0.80 m, 3.00 m · 0°Price95,000 MURCommission5.0 %SupplierK1-Sport (NordicTrack — Mauritius distributor)Ships toMUSourcehttps://www.k1-sport.com/shop-onlineNotesRecumbent bike with 26 resistance levels. Distributor stock at K1-Sport.Controls↺ 90° CCW↻ 90° CWDuplica",
+        "powerToggle": null,
+        "hoursInput": null,
+        "wattEditable": [],
+        "inputs": []
+      },
+      "frame": "D3-details-gx10-selected-1366.png"
+    },
+    "treadmill": {
+      "clickedAt": {
+        "x": 473,
+        "y": 209.5
+      },
+      "details": {
+        "overlayVisible": true,
+        "overlayText": "DetailsCloseSelected itemNordicTrack Commercial 2450 TreadmillFitness · SKU K1-CDIO-NT2450Footprint205 × 95 cmHeight165 cmWeight138 kgPosition0.60 m, 0.60 m · 0°Price150,000 MURCommission5.0 %SupplierK1-Sport (NordicTrack — Mauritius distributor)Ships toMUSourcehttps://www.k1-sport.com/shop-onlineNotesFoldable commercial-grade treadmill; 24-inch touchscreen; iFit-ready. Distributor stock at K1-Spo",
+        "powerToggle": {
+          "text": "Power on — 350 W",
+          "tag": "BUTTON",
+          "title": "Typical draw — based on: treadmill"
+        },
+        "hoursInput": {
+          "value": "1",
+          "ariaLabel": "Hours per day"
+        },
+        "wattEditable": [],
+        "inputs": [
+          {
+            "type": "number",
+            "ariaLabel": "Hours per day",
+            "testid": "details-hours",
+            "value": "1"
+          }
+        ]
+      },
+      "frame": "D4-details-treadmill-selected-1366.png"
+    },
+    "errors": []
+  },
+  "phone": {
+    "sheet": {
+      "chipText": "☀ 0 Wh · ⚡ 350 Wh−350 Wh",
+      "chipStatus": "short",
+      "panelVisible": false,
+      "summaryVisible": true,
+      "load": "350 Wh/day · 1 item on · peak 350 W",
+      "status": "0% covered−350 Wh/day",
+      "rowCount": 1,
+      "rowIds": [
+        "tm"
+      ],
+      "rows": [
+        {
+          "id": "tm",
+          "text": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhon",
+          "inputs": [
+            {
+              "type": "number",
+              "ariaLabel": "NordicTrack Commercial 2450 Treadmill hours per day",
+              "value": "1",
+              "min": "0",
+              "max": "24"
+            }
+          ],
+          "buttons": [
+            {
+              "testid": null,
+              "text": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typical"
+            },
+            {
+              "testid": "energy-power-tm",
+              "text": "on"
+            }
+          ]
+        }
+      ],
+      "allInputsInSummary": [
+        {
+          "type": "number",
+          "ariaLabel": "NordicTrack Commercial 2450 Treadmill hours per day",
+          "testid": "energy-hours-tm"
+        }
+      ],
+      "wattInputCount": 0,
+      "addItemAffordance": false,
+      "summaryText": "0% covered−350 Wh/day☀0 Wh/day · no panels yet⚡350 Wh/day · 1 item on · peak 350 WAdd 1 × 450 Wp panel on the roof to cover it — they are in the Eco tab.RoofNordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhonSun: 5.17 kWh/m²/day on a 20° tilt, facing north roof, Tamarin, Mauritius (PVGIS SARAH3 2005–23) · 78 % performance ratio ≈ 1462 kWh/yr per kWp."
+    },
+    "frame": "P1-sheet-treadmill-rw900-gx10-390.png",
+    "errors": []
+  }
+}

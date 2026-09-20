@@ -1,0 +1,167 @@
+{
+  "log": [
+    {
+      "t": 11389,
+      "step": "q1 plan wall screen points + what sits on top",
+      "s0": {
+        "x": 195,
+        "y": 108.07386363636365
+      },
+      "s1": {
+        "x": 350,
+        "y": 220.80113636363637
+      },
+      "s2": {
+        "x": 195,
+        "y": 333.5284090909091
+      },
+      "s3": {
+        "x": 40,
+        "y": 220.80113636363637
+      },
+      "hud": {
+        "x": 11.703125,
+        "y": 593.875,
+        "width": 366.59375,
+        "height": 183.125
+      },
+      "elementAtWallMid": {
+        "top": "zoom-in",
+        "right": "CANVAS.",
+        "bottom": "CANVAS.",
+        "left": "CANVAS."
+      },
+      "planChrome": {
+        "undo": {
+          "x": 12,
+          "y": 65,
+          "width": 44,
+          "height": 44
+        },
+        "fit": {
+          "x": 226,
+          "y": 73,
+          "width": 44,
+          "height": 44
+        },
+        "statChip": null
+      }
+    },
+    {
+      "t": 26593,
+      "step": "q2 tap south wall (clear)",
+      "at": {
+        "x": 195,
+        "y": 333.5284090909091
+      },
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "toasts": [],
+      "live": "106.0 m² · 22.0 L · Rs 5,984"
+    },
+    {
+      "t": 28307,
+      "step": "q3 tap top wall (under chrome)",
+      "at": {
+        "x": 195,
+        "y": 108.07386363636365
+      },
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "toasts": [],
+      "precision": {
+        "before": "full",
+        "after": "full"
+      },
+      "elementAt": "zoom-in"
+    },
+    {
+      "t": 30570,
+      "step": "q4 tap right wall",
+      "at": {
+        "x": 350,
+        "y": 220.80113636363637
+      },
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 1,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "toasts": [],
+      "elementAt": "CANVAS."
+    },
+    {
+      "t": 32321,
+      "step": "q5 More → sheet",
+      "sheetOpen": 1,
+      "chartToggleMobile": 0,
+      "coloursMobileBox": {
+        "x": 55.8125,
+        "y": 399.5,
+        "width": 326.1875,
+        "height": 312.5
+      },
+      "chipBox": {
+        "x": 79.8125,
+        "y": 424,
+        "width": 40,
+        "height": 40
+      }
+    },
+    {
+      "t": 63503,
+      "step": "FATAL",
+      "error": "locator.tap: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"wallpaint-3d-mobile\"]')\u001b[22m\n\n    at C:\\Users\\Victor\\AppData\\Local\\Temp\\claude\\C--Users-Victor-Documents-PPW-Code-ppw-designer-2d\\1b4fd532-e2fa-4df5-bbdb-754fc1225370\\scratchpad\\audit\\paint-3d-ux\\phone-reprobe.cjs:93:61"
+    }
+  ],
+  "errors": []
+}

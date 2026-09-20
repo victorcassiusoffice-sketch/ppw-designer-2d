@@ -1,0 +1,150 @@
+{
+  "table": [
+    {
+      "id": "k1-nordictrack-2450",
+      "name": "NordicTrack Commercial 2450 Treadmill",
+      "power_w": null,
+      "energy_role": null,
+      "refKey": "treadmill",
+      "avgW": 350,
+      "role": "consumer",
+      "powerW": 350
+    },
+    {
+      "id": "k1-nordictrack-tour-de-france",
+      "name": "NordicTrack Tour de France Indoor Bike",
+      "power_w": null,
+      "energy_role": null,
+      "refKey": "indoor-bike-connected",
+      "avgW": 60,
+      "role": "consumer",
+      "powerW": 60
+    },
+    {
+      "id": "k1-nordictrack-gx10",
+      "name": "NordicTrack GX 10 Recumbent Bike",
+      "power_w": null,
+      "energy_role": null,
+      "refKey": "indoor-bike",
+      "avgW": 0,
+      "role": "none",
+      "powerW": 0
+    },
+    {
+      "id": "k1-schwinn-700ic",
+      "name": "Schwinn 700IC Indoor Bike",
+      "power_w": null,
+      "energy_role": null,
+      "refKey": "indoor-bike-connected",
+      "avgW": 60,
+      "role": "consumer",
+      "powerW": 60
+    },
+    {
+      "id": "k1-proform-carbon-tl",
+      "name": "ProForm Carbon TL Treadmill",
+      "power_w": null,
+      "energy_role": null,
+      "refKey": "treadmill",
+      "avgW": 350,
+      "role": "consumer",
+      "powerW": 350
+    },
+    {
+      "id": "k1-nordictrack-x16",
+      "name": "NordicTrack X16 Elliptical",
+      "power_w": null,
+      "energy_role": null,
+      "refKey": "elliptical",
+      "avgW": 100,
+      "role": "consumer",
+      "powerW": 100
+    },
+    {
+      "id": "k1-nordictrack-rw900",
+      "name": "NordicTrack RW900 Rower",
+      "power_w": null,
+      "energy_role": null,
+      "refKey": "rower",
+      "avgW": 0,
+      "role": "none",
+      "powerW": 0
+    },
+    {
+      "id": "k1-vision-t600-03",
+      "name": "Vision Fitness T600-03 Treadmill",
+      "power_w": null,
+      "energy_role": null,
+      "refKey": "treadmill-commercial",
+      "avgW": 700,
+      "role": "consumer",
+      "powerW": 700
+    },
+    {
+      "id": "k1-vision-t600e-02",
+      "name": "Vision Fitness T600E-02 Treadmill (22\" touchscreen)",
+      "power_w": null,
+      "energy_role": null,
+      "refKey": "treadmill-commercial",
+      "avgW": 700,
+      "role": "consumer",
+      "powerW": 700
+    },
+    {
+      "id": "k1-matrix-mg-glute",
+      "name": "Matrix MG Glute Trainer",
+      "power_w": null,
+      "energy_role": null,
+      "refKey": "strength-equipment",
+      "avgW": 0,
+      "role": "none",
+      "powerW": 0
+    },
+    {
+      "id": "k1-matrix-versa-adabd",
+      "name": "Matrix Versa Adductor / Abductor",
+      "power_w": null,
+      "energy_role": null,
+      "refKey": "strength-equipment",
+      "avgW": 0,
+      "role": "none",
+      "powerW": 0
+    },
+    {
+      "id": "k1-vision-smith",
+      "name": "Vision Fitness Smith Machine",
+      "power_w": null,
+      "energy_role": null,
+      "refKey": "strength-equipment",
+      "avgW": 0,
+      "role": "none",
+      "powerW": 0
+    },
+    {
+      "id": "k1-bowflex-xtreme-2se",
+      "name": "Bowflex Xtreme 2 SE Home Gym",
+      "power_w": null,
+      "energy_role": null,
+      "refKey": "strength-equipment",
+      "avgW": 0,
+      "role": "none",
+      "powerW": 0
+    },
+    {
+      "id": "k1-bench-adjustable-fid",
+      "name": "Adjustable Flat / Incline / Decline Bench",
+      "power_w": null,
+      "energy_role": null,
+      "refKey": "strength-equipment",
+      "avgW": 0,
+      "role": "none",
+      "powerW": 0
+    }
+  ],
+  "rw900OnlyReport": {
+    "consumersLen": 0,
+    "loadWhDay": 0,
+    "status": "none"
+  },
+  "firstRowKey": "rower"
+}

@@ -1,0 +1,406 @@
+{
+  "A": {
+    "plan": "k1-nordictrack-2450 + k1-nordictrack-tour-de-france + k1-schwinn-700ic + demo-floor-lamp + demo-pendant-light, no panels",
+    "before": {
+      "chipVisible": true,
+      "chipText": "☀ 0 Wh · ⚡ 520 Wh−520 Wh",
+      "chipStatus": "short",
+      "panelVisible": false,
+      "summaryStatus": null,
+      "status": null,
+      "net": null,
+      "generation": null,
+      "load": null,
+      "hint": null,
+      "offRoof": null,
+      "storage": null,
+      "roofBtn": null,
+      "assumptions": null,
+      "items": []
+    },
+    "open": {
+      "chipVisible": true,
+      "chipText": "☀ 0 Wh · ⚡ 520 Wh−520 Wh",
+      "chipStatus": "short",
+      "panelVisible": true,
+      "summaryStatus": "short",
+      "status": "0% covered−520 Wh/day",
+      "net": "−520 Wh/day",
+      "generation": "0 Wh/day · no panels yet",
+      "load": "520 Wh/day · 5 items on · peak 490 W",
+      "hint": "Add 1 × 450 Wp panel on the roof to cover it — they are in the Eco tab.",
+      "offRoof": null,
+      "storage": null,
+      "roofBtn": "Roof",
+      "assumptions": "Sun: 5.17 kWh/m²/day on a 20° tilt, facing north roof, Tamarin, Mauritius (PVGIS SARAH3 2005–23) · 78 % performance ratio ≈ 1462 kWh/yr per kWp.",
+      "items": [
+        {
+          "id": "i1",
+          "text": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhon",
+          "hours": "1",
+          "on": "true"
+        },
+        {
+          "id": "i2",
+          "text": "NordicTrack Tour de France Indoor BikeGym · 60 W · typicalhon",
+          "hours": "0.75",
+          "on": "true"
+        },
+        {
+          "id": "i3",
+          "text": "Schwinn 700IC Indoor BikeGym · 60 W · typicalhon",
+          "hours": "0.75",
+          "on": "true"
+        },
+        {
+          "id": "l1",
+          "text": "Arc Floor LampGym · 10 W · typicalhon",
+          "hours": "4",
+          "on": "true"
+        },
+        {
+          "id": "l2",
+          "text": "Rattan Pendant LightGym · 10 W · typicalhon",
+          "hours": "4",
+          "on": "true"
+        }
+      ]
+    },
+    "errors": []
+  },
+  "A2": {
+    "plan": "A + k1-nordictrack-rw900 (22-inch touchscreen rower) + k1-nordictrack-gx10 (recumbent)",
+    "open": {
+      "chipVisible": true,
+      "chipText": "☀ 0 Wh · ⚡ 520 Wh−520 Wh",
+      "chipStatus": "short",
+      "panelVisible": true,
+      "summaryStatus": "short",
+      "status": "0% covered−520 Wh/day",
+      "net": "−520 Wh/day",
+      "generation": "0 Wh/day · no panels yet",
+      "load": "520 Wh/day · 5 items on · peak 490 W",
+      "hint": "Add 1 × 450 Wp panel on the roof to cover it — they are in the Eco tab.",
+      "offRoof": null,
+      "storage": null,
+      "roofBtn": "Roof",
+      "assumptions": "Sun: 5.17 kWh/m²/day on a 20° tilt, facing north roof, Tamarin, Mauritius (PVGIS SARAH3 2005–23) · 78 % performance ratio ≈ 1462 kWh/yr per kWp.",
+      "items": [
+        {
+          "id": "i1",
+          "text": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhon",
+          "hours": "1",
+          "on": "true"
+        },
+        {
+          "id": "i2",
+          "text": "NordicTrack Tour de France Indoor BikeGym · 60 W · typicalhon",
+          "hours": "0.75",
+          "on": "true"
+        },
+        {
+          "id": "i3",
+          "text": "Schwinn 700IC Indoor BikeGym · 60 W · typicalhon",
+          "hours": "0.75",
+          "on": "true"
+        },
+        {
+          "id": "l1",
+          "text": "Arc Floor LampGym · 10 W · typicalhon",
+          "hours": "4",
+          "on": "true"
+        },
+        {
+          "id": "l2",
+          "text": "Rattan Pendant LightGym · 10 W · typicalhon",
+          "hours": "4",
+          "on": "true"
+        }
+      ]
+    },
+    "errors": []
+  },
+  "B": {
+    "plan": "A + k1-vision-t600e-02 + 1x emcar-jinko-475 on roof slab",
+    "before": {
+      "chipVisible": true,
+      "chipText": "☀ 1.9 kWh · ⚡ 1.9 kWh−17 Wh",
+      "chipStatus": "partial",
+      "panelVisible": false,
+      "summaryStatus": null,
+      "status": null,
+      "net": null,
+      "generation": null,
+      "load": null,
+      "hint": null,
+      "offRoof": null,
+      "storage": null,
+      "roofBtn": null,
+      "assumptions": null,
+      "items": []
+    },
+    "open": {
+      "chipVisible": true,
+      "chipText": "☀ 1.9 kWh · ⚡ 1.9 kWh−17 Wh",
+      "chipStatus": "partial",
+      "panelVisible": true,
+      "summaryStatus": "partial",
+      "status": "99% covered−17 Wh/day",
+      "net": "−17 Wh/day",
+      "generation": "1.9 kWh/day · 1 panel · 0.47 kWp",
+      "load": "1.9 kWh/day · 6 items on · peak 1.2 kW",
+      "hint": "Add 1 × 475 Wp panel on the roof to cover it.",
+      "offRoof": null,
+      "storage": null,
+      "roofBtn": "Roof · 30 m²",
+      "assumptions": "Sun: 5.17 kWh/m²/day on a 20° tilt, facing north roof, Tamarin, Mauritius (PVGIS SARAH3 2005–23) · 78 % performance ratio ≈ 1462 kWh/yr per kWp · your panels ≈ 695 kWh/yr.",
+      "items": [
+        {
+          "id": "i6",
+          "text": "Vision Fitness T600E-02 Treadmill (22\" touchscreen)Gym · 700 W · typicalhon",
+          "hours": "2",
+          "on": "true"
+        },
+        {
+          "id": "i1",
+          "text": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhon",
+          "hours": "1",
+          "on": "true"
+        },
+        {
+          "id": "i2",
+          "text": "NordicTrack Tour de France Indoor BikeGym · 60 W · typicalhon",
+          "hours": "0.75",
+          "on": "true"
+        },
+        {
+          "id": "i3",
+          "text": "Schwinn 700IC Indoor BikeGym · 60 W · typicalhon",
+          "hours": "0.75",
+          "on": "true"
+        },
+        {
+          "id": "l1",
+          "text": "Arc Floor LampGym · 10 W · typicalhon",
+          "hours": "4",
+          "on": "true"
+        },
+        {
+          "id": "l2",
+          "text": "Rattan Pendant LightGym · 10 W · typicalhon",
+          "hours": "4",
+          "on": "true"
+        }
+      ]
+    },
+    "errors": []
+  },
+  "B2": {
+    "plan": "A + k1-vision-t600e-02 + 3x emcar-jinko-475 on roof slab",
+    "before": {
+      "chipVisible": true,
+      "chipText": "☀ 5.7 kWh · ⚡ 1.9 kWh+3.8 kWh",
+      "chipStatus": "covered",
+      "panelVisible": false,
+      "summaryStatus": null,
+      "status": null,
+      "net": null,
+      "generation": null,
+      "load": null,
+      "hint": null,
+      "offRoof": null,
+      "storage": null,
+      "roofBtn": null,
+      "assumptions": null,
+      "items": []
+    },
+    "open": {
+      "chipVisible": true,
+      "chipText": "☀ 5.7 kWh · ⚡ 1.9 kWh+3.8 kWh",
+      "chipStatus": "covered",
+      "panelVisible": true,
+      "summaryStatus": "covered",
+      "status": "Surplus+3.8 kWh/day",
+      "net": "+3.8 kWh/day",
+      "generation": "5.7 kWh/day · 3 panels · 1.43 kWp",
+      "load": "1.9 kWh/day · 6 items on · peak 1.2 kW",
+      "hint": null,
+      "offRoof": null,
+      "storage": null,
+      "roofBtn": "Roof · 30 m²",
+      "assumptions": "Sun: 5.17 kWh/m²/day on a 20° tilt, facing north roof, Tamarin, Mauritius (PVGIS SARAH3 2005–23) · 78 % performance ratio ≈ 1462 kWh/yr per kWp · your panels ≈ 2,085 kWh/yr.",
+      "items": [
+        {
+          "id": "i6",
+          "text": "Vision Fitness T600E-02 Treadmill (22\" touchscreen)Gym · 700 W · typicalhon",
+          "hours": "2",
+          "on": "true"
+        },
+        {
+          "id": "i1",
+          "text": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhon",
+          "hours": "1",
+          "on": "true"
+        },
+        {
+          "id": "i2",
+          "text": "NordicTrack Tour de France Indoor BikeGym · 60 W · typicalhon",
+          "hours": "0.75",
+          "on": "true"
+        },
+        {
+          "id": "i3",
+          "text": "Schwinn 700IC Indoor BikeGym · 60 W · typicalhon",
+          "hours": "0.75",
+          "on": "true"
+        },
+        {
+          "id": "l1",
+          "text": "Arc Floor LampGym · 10 W · typicalhon",
+          "hours": "4",
+          "on": "true"
+        },
+        {
+          "id": "l2",
+          "text": "Rattan Pendant LightGym · 10 W · typicalhon",
+          "hours": "4",
+          "on": "true"
+        }
+      ]
+    },
+    "errors": []
+  },
+  "B3": {
+    "plan": "B items + 1 Jinko in the GYM (not roof)",
+    "open": {
+      "chipVisible": true,
+      "chipText": "☀ 1.9 kWh · ⚡ 1.9 kWh−17 Wh",
+      "chipStatus": "partial",
+      "panelVisible": true,
+      "summaryStatus": "partial",
+      "status": "99% covered−17 Wh/day",
+      "net": "−17 Wh/day",
+      "generation": "1.9 kWh/day · 1 panel · 0.47 kWp",
+      "load": "1.9 kWh/day · 6 items on · peak 1.2 kW",
+      "hint": "Add 1 × 475 Wp panel on the roof to cover it.",
+      "offRoof": "1 panel not on the roof — move it up there.",
+      "storage": null,
+      "roofBtn": "Roof",
+      "assumptions": "Sun: 5.17 kWh/m²/day on a 20° tilt, facing north roof, Tamarin, Mauritius (PVGIS SARAH3 2005–23) · 78 % performance ratio ≈ 1462 kWh/yr per kWp · your panels ≈ 695 kWh/yr.",
+      "items": [
+        {
+          "id": "i6",
+          "text": "Vision Fitness T600E-02 Treadmill (22\" touchscreen)Gym · 700 W · typicalhon",
+          "hours": "2",
+          "on": "true"
+        },
+        {
+          "id": "i1",
+          "text": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhon",
+          "hours": "1",
+          "on": "true"
+        },
+        {
+          "id": "i2",
+          "text": "NordicTrack Tour de France Indoor BikeGym · 60 W · typicalhon",
+          "hours": "0.75",
+          "on": "true"
+        },
+        {
+          "id": "i3",
+          "text": "Schwinn 700IC Indoor BikeGym · 60 W · typicalhon",
+          "hours": "0.75",
+          "on": "true"
+        },
+        {
+          "id": "l1",
+          "text": "Arc Floor LampGym · 10 W · typicalhon",
+          "hours": "4",
+          "on": "true"
+        },
+        {
+          "id": "l2",
+          "text": "Rattan Pendant LightGym · 10 W · typicalhon",
+          "hours": "4",
+          "on": "true"
+        }
+      ]
+    },
+    "errors": []
+  },
+  "C": {
+    "plan": "B (1 panel) on phone",
+    "before": {
+      "chipVisible": true,
+      "chipText": "☀ 3.8 kWh · ⚡ 1.9 kWh+1.9 kWh",
+      "chipStatus": "covered",
+      "panelVisible": false,
+      "summaryStatus": null,
+      "status": null,
+      "net": null,
+      "generation": null,
+      "load": null,
+      "hint": null,
+      "offRoof": null,
+      "storage": null,
+      "roofBtn": null,
+      "assumptions": null,
+      "items": []
+    },
+    "sheet": {
+      "chipVisible": true,
+      "chipText": "☀ 3.8 kWh · ⚡ 1.9 kWh+1.9 kWh",
+      "chipStatus": "covered",
+      "panelVisible": false,
+      "summaryStatus": "covered",
+      "status": "Surplus+1.9 kWh/day",
+      "net": "+1.9 kWh/day",
+      "generation": "3.8 kWh/day · 2 panels · 0.95 kWp",
+      "load": "1.9 kWh/day · 6 items on · peak 1.2 kW",
+      "hint": null,
+      "offRoof": "1 panel not on the roof — move it up there.",
+      "storage": null,
+      "roofBtn": "Roof · 30 m²",
+      "assumptions": "Sun: 5.17 kWh/m²/day on a 20° tilt, facing north roof, Tamarin, Mauritius (PVGIS SARAH3 2005–23) · 78 % performance ratio ≈ 1462 kWh/yr per kWp · your panels ≈ 1,390 kWh/yr.",
+      "items": [
+        {
+          "id": "i6",
+          "text": "Vision Fitness T600E-02 Treadmill (22\" touchscreen)Gym · 700 W · typicalhon",
+          "hours": "2",
+          "on": "true"
+        },
+        {
+          "id": "i1",
+          "text": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhon",
+          "hours": "1",
+          "on": "true"
+        },
+        {
+          "id": "i2",
+          "text": "NordicTrack Tour de France Indoor BikeGym · 60 W · typicalhon",
+          "hours": "0.75",
+          "on": "true"
+        },
+        {
+          "id": "i3",
+          "text": "Schwinn 700IC Indoor BikeGym · 60 W · typicalhon",
+          "hours": "0.75",
+          "on": "true"
+        },
+        {
+          "id": "l1",
+          "text": "Arc Floor LampGym · 10 W · typicalhon",
+          "hours": "4",
+          "on": "true"
+        },
+        {
+          "id": "l2",
+          "text": "Rattan Pendant LightGym · 10 W · typicalhon",
+          "hours": "4",
+          "on": "true"
+        }
+      ]
+    },
+    "errors": []
+  }
+}

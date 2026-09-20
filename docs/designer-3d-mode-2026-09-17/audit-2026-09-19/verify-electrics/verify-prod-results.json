@@ -1,0 +1,151 @@
+{
+  "commit": "cb0dae8bbc9b2650c5ea34a45747955de0606583",
+  "ranAt": "2026-09-19T17:47:02.017Z",
+  "A_mItems_withRoofPanel": {
+    "name": "A-m-items-roof-jinko",
+    "apiStatus": 200,
+    "msGotoToCanvas": 8610,
+    "msGotoToApi": 11126,
+    "atCanvas": {
+      "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+      "status": "covered",
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "canvases": 3,
+      "t": 1789840030963
+    },
+    "atApi": {
+      "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+      "status": "covered",
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "canvases": 3,
+      "t": 1789840033533
+    },
+    "plus3": {
+      "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+      "status": "covered",
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "canvases": 3,
+      "t": 1789840036670
+    },
+    "plus10": {
+      "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+      "status": "covered",
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "canvases": 3,
+      "t": 1789840043769
+    },
+    "afterOpenPanel": {
+      "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+      "status": "covered",
+      "panelLoad": "440 Wh/day · 3 items on · peak 470 W",
+      "panelStatus": "Surplus+1.5 kWh/day",
+      "panelItems": 3,
+      "canvases": 3,
+      "t": 1789840045638
+    },
+    "consoleErrors": []
+  },
+  "B_mItems_noPanel": {
+    "name": "B-m-items-no-panel",
+    "apiStatus": 200,
+    "msGotoToCanvas": 5486,
+    "msGotoToApi": 5602,
+    "atCanvas": {
+      "chipText": null,
+      "status": null,
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "canvases": 3,
+      "t": 1789840051764
+    },
+    "atApi": {
+      "chipText": null,
+      "status": null,
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "canvases": 3,
+      "t": 1789840052151
+    },
+    "plus3": {
+      "chipText": null,
+      "status": null,
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "canvases": 3,
+      "t": 1789840055331
+    },
+    "plus10": {
+      "chipText": null,
+      "status": null,
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "canvases": 3,
+      "t": 1789840062354
+    },
+    "afterRoofClick": {
+      "chipText": "☀ 0 Wh · ⚡ 440 Wh−440 Wh",
+      "status": "short",
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "canvases": 3,
+      "t": 1789840063647
+    },
+    "consoleErrors": []
+  },
+  "C_control_bundledK1_noPanel": {
+    "name": "C-control-bundled-k1-no-panel",
+    "apiStatus": 200,
+    "msGotoToCanvas": 2670,
+    "msGotoToApi": 2920,
+    "atCanvas": {
+      "chipText": "☀ 0 Wh · ⚡ 350 Wh−350 Wh",
+      "status": "short",
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "canvases": 3,
+      "t": 1789840067586
+    },
+    "atApi": {
+      "chipText": "☀ 0 Wh · ⚡ 350 Wh−350 Wh",
+      "status": "short",
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "canvases": 3,
+      "t": 1789840067862
+    },
+    "plus3": {
+      "chipText": "☀ 0 Wh · ⚡ 350 Wh−350 Wh",
+      "status": "short",
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "canvases": 3,
+      "t": 1789840070886
+    },
+    "plus10": {
+      "chipText": "☀ 0 Wh · ⚡ 350 Wh−350 Wh",
+      "status": "short",
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "canvases": 3,
+      "t": 1789840077906
+    },
+    "consoleErrors": []
+  }
+}

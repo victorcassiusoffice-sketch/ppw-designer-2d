@@ -1,0 +1,68 @@
+{
+  "seededItems": [
+    "k1-nordictrack-2450",
+    "k1-nordictrack-gx10",
+    "k1-nordictrack-rw900",
+    "demo-floor-lamp"
+  ],
+  "chipText": "☀ 0 Wh · ⚡ 390 Wh\n−390 Wh",
+  "panelOpen": true,
+  "listedRows": 2,
+  "listed": [
+    {
+      "testid": "energy-item-i-tread",
+      "text": "NordicTrack Commercial 2450 TreadmillRoom 1 · 350 W · typicalhon",
+      "inputs": [
+        {
+          "type": "number",
+          "aria": "NordicTrack Commercial 2450 Treadmill hours per day",
+          "value": "1",
+          "min": "0",
+          "max": "24"
+        }
+      ],
+      "buttons": [
+        "NordicTrack Commercial 2450 TreadmillRoom 1 · 350 W · typical",
+        "on"
+      ]
+    },
+    {
+      "testid": "energy-item-i-lamp",
+      "text": "Arc Floor LampRoom 1 · 10 W · typicalhon",
+      "inputs": [
+        {
+          "type": "number",
+          "aria": "Arc Floor Lamp hours per day",
+          "value": "4",
+          "min": "0",
+          "max": "24"
+        }
+      ],
+      "buttons": [
+        "Arc Floor LampRoom 1 · 10 W · typical",
+        "on"
+      ]
+    }
+  ],
+  "listedIds": [
+    "energy-item-i-tread",
+    "energy-item-i-lamp"
+  ],
+  "missingFromList": [
+    "energy-item-i-gx10",
+    "energy-item-i-rw900"
+  ],
+  "inputsInPanel": [
+    {
+      "type": "number",
+      "aria": "NordicTrack Commercial 2450 Treadmill hours per day"
+    },
+    {
+      "type": "number",
+      "aria": "Arc Floor Lamp hours per day"
+    }
+  ],
+  "wattInputs": [],
+  "load": "390 Wh/day · 2 items on · peak 360 W",
+  "status": "0% covered−390 Wh/day"
+}

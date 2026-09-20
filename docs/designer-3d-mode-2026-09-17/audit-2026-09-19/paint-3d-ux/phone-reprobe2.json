@@ -1,0 +1,266 @@
+{
+  "log": [
+    {
+      "t": 20940,
+      "step": "q6 3D aim",
+      "faces": {
+        "ms": 13092,
+        "faces": 22
+      },
+      "e0": {
+        "point": {
+          "x": 153.93626190085143,
+          "y": 390.2767348956825
+        },
+        "centre": {
+          "x": 138.93626190085143,
+          "y": 390.2767348956825
+        },
+        "centreHit": null
+      },
+      "e1": {
+        "point": {
+          "x": 234.85398820413357,
+          "y": 393.75633439072504
+        },
+        "centre": {
+          "x": 234.85398820413357,
+          "y": 393.75633439072504
+        },
+        "centreHit": {
+          "kind": "edge",
+          "roomId": "living",
+          "edgeIndex": 1
+        }
+      },
+      "e3": {
+        "point": {
+          "x": 97.7107900228437,
+          "y": 469.1543053578505
+        },
+        "centre": {
+          "x": 97.7107900228437,
+          "y": 469.1543053578505
+        },
+        "centreHit": {
+          "kind": "edge",
+          "roomId": "living",
+          "edgeIndex": 3
+        }
+      },
+      "bedroom0": {
+        "point": {
+          "x": 172.78067929071912,
+          "y": 452.8222240222926
+        },
+        "centre": {
+          "x": 172.78067929071912,
+          "y": 452.8222240222926
+        },
+        "centreHit": {
+          "kind": "edge",
+          "roomId": "bedroom",
+          "edgeIndex": 0
+        }
+      }
+    },
+    {
+      "t": 25983,
+      "step": "q7 3D tap on a real wall",
+      "room": "living",
+      "edge": 0,
+      "p": {
+        "x": 153.93626190085143,
+        "y": 390.2767348956825
+      },
+      "flash": "Wall 1 · TintEX Cashmere Interior Latex · Pastel green",
+      "painted": [
+        {
+          "e": 0,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "pixel": {
+        "before": {
+          "r": 254,
+          "g": 252,
+          "b": 244
+        },
+        "after": {
+          "r": 186,
+          "g": 219,
+          "b": 177
+        }
+      },
+      "material": {
+        "hex": "#B7D9B1",
+        "baseHex": "#B7D9B1",
+        "finish": "silk",
+        "roughness": 0.76,
+        "sheen": 0.22,
+        "hasMap": false,
+        "show": "full"
+      },
+      "footer": "106.0 m² · 22.0 L · Rs 5,742",
+      "captionBox": {
+        "x": 8,
+        "y": 768.5,
+        "width": 374,
+        "height": 16.5
+      },
+      "captionFont": "11px"
+    },
+    {
+      "t": 27196,
+      "step": "q7b strip colour + repaint",
+      "painted": [
+        {
+          "e": 0,
+          "p": "tintex-cashmere",
+          "c": "#939388"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "pixel": {
+        "r": 150,
+        "g": 149,
+        "b": 136
+      }
+    },
+    {
+      "t": 27405,
+      "step": "q8 phone 3D control zones",
+      "zones": {
+        "wallpaint-3d-rotate-left": {
+          "x": 88,
+          "y": 108,
+          "w": 40,
+          "h": 40,
+          "topQuarter": true,
+          "bottomThird": false
+        },
+        "wallpaint-3d-rotate-right": {
+          "x": 132,
+          "y": 108,
+          "w": 40,
+          "h": 40,
+          "topQuarter": true,
+          "bottomThird": false
+        },
+        "wallpaint-3d-fit": {
+          "x": 176,
+          "y": 108,
+          "w": 40,
+          "h": 40,
+          "topQuarter": true,
+          "bottomThird": false
+        },
+        "view3d-walls-up": {
+          "x": 225,
+          "y": 109,
+          "w": 36,
+          "h": 40,
+          "topQuarter": true,
+          "bottomThird": false
+        },
+        "view3d-walls-cutaway": {
+          "x": 261,
+          "y": 109,
+          "w": 36,
+          "h": 40,
+          "topQuarter": true,
+          "bottomThird": false
+        },
+        "view3d-walls-down": {
+          "x": 297,
+          "y": 109,
+          "w": 36,
+          "h": 40,
+          "topQuarter": true,
+          "bottomThird": false
+        },
+        "wallpaint-3d-close": {
+          "x": 338,
+          "y": 108,
+          "w": 44,
+          "h": 40,
+          "topQuarter": true,
+          "bottomThird": false
+        },
+        "wallpaint-3d-brush-change": {
+          "x": -612,
+          "y": 798,
+          "w": 229,
+          "h": 40,
+          "topQuarter": false,
+          "bottomThird": true
+        },
+        "wallpaint-3d-colour-base": {
+          "x": -377,
+          "y": 798,
+          "w": 40,
+          "h": 40,
+          "topQuarter": false,
+          "bottomThird": true
+        }
+      },
+      "wallViewGlyphs": [
+        {
+          "text": "▮",
+          "label": "Walls up"
+        },
+        {
+          "text": "◧",
+          "label": "Cutaway"
+        },
+        {
+          "text": "▬",
+          "label": "Walls down"
+        }
+      ],
+      "headerText": "3D Mode\n\nDrag to look around · pinch or scroll to zoom · click a wall to paint it\n\n106.0 m² · 22.0 L · Rs 5,916",
+      "headerHintTruncated": {
+        "truncated": true,
+        "sw": 353,
+        "cw": 195,
+        "font": "11px"
+      },
+      "captionTruncated": {
+        "truncated": false,
+        "sw": 374,
+        "cw": 374
+      }
+    },
+    {
+      "t": 27455,
+      "step": "errors",
+      "count": 0,
+      "errors": []
+    }
+  ],
+  "errors": []
+}

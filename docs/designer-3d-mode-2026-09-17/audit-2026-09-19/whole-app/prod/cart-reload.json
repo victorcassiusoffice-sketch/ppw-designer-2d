@@ -1,0 +1,40 @@
+{
+  "designer": {
+    "itemsPlaced": "2",
+    "cost": "£14.33",
+    "pill": "0£14.33",
+    "apiHits": [
+      "GET /api/products?limit=100",
+      "GET /api/products?limit=100"
+    ]
+  },
+  "energy": {
+    "chipVisible": false,
+    "chipText": null,
+    "status": null
+  },
+  "cart-spa-nav": {
+    "url": "https://designer.ppwellness.co/cart",
+    "summary": "Peak Performance Wellness Wellness Room Designer MUR USD EUR GBP approximate rates ← Designer Your cart 1 product · 2 units · 1 room NordicTrack Commercial 2450 Treadmill Fitness · K1-Sport (NordicTrack — Mauritius distributor) Unit: £2,633.33(Rs 150,000) − + £5,266.67 Remove Permoglaze Matt Emulsion Wall paint · matt · base colour · painted on the plan 13.5 m² · 3 coats · needs 5.0 L 1× 5 L £14.33 buys 5 L Per-room breakdown ▾ Room 1 NordicTrack Commercial 2450 Treadmill × 2 ← Continue designin",
+    "cartLines": 0,
+    "wallpaintLines": 1,
+    "checkoutWallpaint": 0,
+    "apiHitsSoFar": []
+  },
+  "cart-after-reload": {
+    "url": "https://designer.ppwellness.co/cart",
+    "summary": "Peak Performance Wellness Wellness Room Designer MUR USD EUR GBP approximate rates ← Designer Your cart 0 products · 0 units · 1 room Permoglaze Matt Emulsion Wall paint · matt · base colour · painted on the plan 13.5 m² · 3 coats · needs 5.0 L 1× 5 L £14.33 buys 5 L Per-room breakdown ▾ Room 1 No items in this room. ← Continue designing Order summary Products £0 Wall paint £14.33 Subtotal £14.33 Shipping Calculated at checkout Tax VAT/duties may apply Total (est.) £14.33 ≈ $18.14 · Rs 817 · €16",
+    "cartLines": 0,
+    "wallpaintLines": 1,
+    "checkoutWallpaint": 0,
+    "apiHitsSoFar": []
+  },
+  "checkout-direct": {
+    "url": "https://designer.ppwellness.co/checkout?cb=1789839362613",
+    "summary": "Peak Performance Wellness Wellness Room Designer MUR USD EUR GBP approximate rates ← Designer Checkout You will not be charged until our install team has confirmed availability and shipping for your region. Contact FULL NAME * EMAIL * PHONE * Delivery address ADDRESS LINE 1 * ADDRESS LINE 2 (OPTIONAL) CITY * POSTCODE * COUNTRY * Mauritius United Arab Emirates Australia Belgium Canada Switzerland Germany Spain France United Kingdom Ireland India Italy Kenya Madagascar Netherlands New Zealand Port",
+    "cartLines": 0,
+    "wallpaintLines": 0,
+    "checkoutWallpaint": 1,
+    "apiHitsSoFar": []
+  }
+}

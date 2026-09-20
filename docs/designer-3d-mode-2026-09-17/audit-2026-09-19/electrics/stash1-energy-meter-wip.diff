@@ -1,0 +1,268 @@
+diff --git a/src/components/EnergyPanel.tsx b/src/components/EnergyPanel.tsx
+index 6a6c898..9c0120b 100644
+--- a/src/components/EnergyPanel.tsx
++++ b/src/components/EnergyPanel.tsx
+@@ -20,7 +20,8 @@ import { useEffect } from 'react';
+ import { usePropertyStore } from '../store/propertyStore';
+ import { useToastStore } from '../store/toastStore';
+ import { energyDotColour, useEnergyReport } from '../designer/useEnergyReport';
+-import { energyStatusLabel } from '../designer/energy';
++import { meterReading } from '../designer/energyMeter';
++import { EnergyMeterBar } from './EnergyMeterBar';
+ import { annualGenerationKwh, formatW, formatWh } from '../designer/solarCalc';
+ import { MAURITIUS_SOLAR } from '../data/mauritiusSolar';
+ import { roofAreaM2 } from '../designer/roof';
+@@ -59,6 +60,7 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
+   const onRoof = isRoofLevel(levelsOf(property).find((l) => l.id === activeLevelIdOf(property)));
+   const hasBuilding = property.rooms.some((x) => !isOutdoorRoom(x) && !isRoofRoom(x) && isDrawnPolygon(x.polygon));
+   const dot = energyDotColour(r.status);
++  const meter = meterReading(r);
+   const annualKwh = r.totalWp > 0 ? annualGenerationKwh(r.totalWp, sun.poaKwhM2DayMonthly, sun.performanceRatio) : 0;
+   const itemsOn = r.consumers.filter((c) => c.on).length;
+   const consumers = [...r.consumers].sort((a, b) => Number(b.on) - Number(a.on) || b.whDay - a.whDay);
+@@ -79,7 +81,7 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
+       {/* Headline — the one line that answers "am I covered?" */}
+       <div className="flex items-center gap-2 px-1" data-testid="energy-status">
+         <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: dot }} aria-hidden="true" />
+-        <span className="text-[13px] font-semibold text-[#37362f]">{energyStatusLabel(r)}</span>
++        <span className="text-[13px] font-semibold text-[#37362f]">{meter.headline}</span>
+         {r.loadWhDay > 0 && (
+           <span className="ml-auto text-[12px] font-semibold tabular-nums" style={{ color: CHROME_TEXT_2 }} data-testid="energy-net">
+             {signedWh(r.netWhDay)}/day
+@@ -87,6 +89,16 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
+         )}
+       </div>
+ 
++      {/* The meter. One bar, one sentence: the answer before any number. */}
++      <div className="px-1 pt-0.5">
++        <EnergyMeterBar fillPct={meter.fillPct} status={r.status} />
++      </div>
++      {meter.detail && (
++        <p className={`px-1 pt-1 ${rowText}`} style={{ color: CHROME_TEXT_2 }} data-testid="energy-detail">
++          {meter.detail}
++        </p>
++      )}
++
+       <div className={`grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 px-1 ${rowText} tabular-nums`}>
+         <span aria-hidden="true">☀</span>
+         <span data-testid="energy-generation">
+@@ -108,11 +120,12 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
+         </span>
+       </div>
+ 
+-      {/* What to do about a gap — one sentence, one button. */}
+-      {r.netWhDay < 0 && r.panelsToCover > 0 && (
++      {/* What to do about a gap — one sentence, in units the customer can buy.
++          `meterReading` owns the wording, including the case where the roof
++          cannot physically hold the panels the arithmetic asks for. */}
++      {meter.action && (
+         <p className={`px-1 ${rowText} font-medium`} data-testid="energy-hint">
+-          Add {r.panelsToCover} × {r.coverPanelWp} Wp panel{r.panelsToCover === 1 ? '' : 's'} on the roof to cover it
+-          {r.panelCount === 0 ? ' — they are in the Eco tab' : ''}.
++          {meter.action}
+         </p>
+       )}
+       {r.panelsOffRoof > 0 && (
+diff --git a/src/components/RoomCanvas.tsx b/src/components/RoomCanvas.tsx
+index 0dc3875..84ebc25 100644
+--- a/src/components/RoomCanvas.tsx
++++ b/src/components/RoomCanvas.tsx
+@@ -120,6 +120,8 @@ import { floorTargetRoom } from '../designer/floorTarget';
+ import { isRoofProduct } from '../designer/energy';
+ import { roofAreaM2 } from '../designer/roof';
+ import { energyDotColour, useEnergyReport } from '../designer/useEnergyReport';
++import { EnergyMeterBar } from './EnergyMeterBar';
++import { meterFillPct } from '../designer/energyMeter';
+ import { formatWh } from '../designer/solarCalc';
+ import { freeWallLengthM, runToFreeWalls, wallsOnLevel } from '../designer/freeWalls';
+ import { emitsLight, lightRadiusM, planSymbolOf } from '../designer/lighting';
+@@ -3338,6 +3340,14 @@ export function RoomCanvas({
+             title="Energy — sun vs use per day. Tap for the breakdown."
+           >
+             <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: energyDotColour(energy.status) }} aria-hidden="true" />
++            {/* The same meter as the panel, miniaturised, so the answer is
++                readable without opening anything. */}
++            <EnergyMeterBar
++              fillPct={meterFillPct(energy)}
++              status={energy.status}
++              size="chip"
++              label={`${energy.coveragePct}% of a day's use covered by the panels`}
++            />
+             <span className="tabular-nums">☀ {formatWh(energy.generationWhDay)} · ⚡ {formatWh(energy.loadWhDay)}</span>
+             {energy.loadWhDay > 0 && (
+               <span className="tabular-nums opacity-80">
+diff --git a/src/data/mauritiusSolar.ts b/src/data/mauritiusSolar.ts
+index 71e7a0b..26fa0bd 100644
+--- a/src/data/mauritiusSolar.ts
++++ b/src/data/mauritiusSolar.ts
+@@ -103,4 +103,10 @@ export const MAURITIUS_SOLAR = {
+   cases: [MU_SOLAR_NORTH_20, MU_SOLAR_PVGIS_OPTIMAL, MU_SOLAR_FLAT] as const,
+   /** The panel Wp the "add N panels" hint counts in when the plan has none yet. */
+   defaultPanelWp: 450,
++  /**
++   * Footprint of that reference panel, m2. A 450-475 Wp mono module is about
++   * 1.90 x 1.13 m (the seeded Jinko 475 is exactly 1.903 x 1.134). Used only
++   * to ask whether the panels a plan needs would fit its roof.
++   */
++  defaultPanelAreaM2: 2.16,
+ } as const;
+diff --git a/src/designer/energy.ts b/src/designer/energy.ts
+index 5ed3eea..779d072 100644
+--- a/src/designer/energy.ts
++++ b/src/designer/energy.ts
+@@ -22,6 +22,8 @@ import {
+   dailyGenerationWh,
+   dailyLoadWh,
+   inverterCoversPeak,
++  panelFootprintM2,
++  panelsThatStillFit,
+   panelsToCover,
+ } from './solarCalc';
+ 
+@@ -30,6 +32,7 @@ export type EnergyProduct = Pick<Product, 'name' | 'category'> &
+   Partial<
+     Pick<
+       Product,
++      | 'dimensions_cm'
+       | 'power_w'
+       | 'duty_hours_per_day'
+       | 'pv_wp'
+@@ -188,6 +191,15 @@ export interface EnergyReport {
+   panelsToCover: number;
+   /** Wp of the panel `panelsToCover` counts in. */
+   coverPanelWp: number;
++  /**
++   * How many MORE panels the roof can physically hold, after the ones
++   * already up there and an allowance for walkways and edges. `Infinity`
++   * when the roof area or the panel footprint is unknown - "cannot tell"
++   * must never be shown to a customer as "will not fit".
++   */
++  panelsRoofCanStillHold: number;
++  /** False only when we KNOW the panels needed will not fit the roof. */
++  panelsToCoverFitOnRoof: boolean;
+   batteryKwh: number;
+   batteryAutonomyHours: number;
+   inverterKw: number;
+@@ -203,6 +215,10 @@ export interface EnergyReportInput {
+   performanceRatio: number;
+   /** Panel Wp to size the "add N panels" hint with when the plan has none. */
+   defaultPanelWp?: number;
++  /** Usable roof area, m2, for the "will they fit?" check. Omit to skip it. */
++  roofAreaM2?: number;
++  /** Footprint of the panel the hint counts in, m2. Omit to derive it from the plan. */
++  coverPanelAreaM2?: number;
+   table?: readonly ApplianceLoad[];
+ }
+ 
+@@ -223,6 +239,9 @@ export function energyReport(input: EnergyReportInput): EnergyReport {
+   let peakLoadW = 0;
+   let loadWhDay = 0;
+   const wpHistogram = new Map<number, number>();
++  // Footprint of each panel size seen, so the "add N panels" hint can ask
++  // whether N of THAT panel actually fit on THIS roof.
++  const areaByWp = new Map<number, number>();
+ 
+   for (const room of rooms) {
+     const onRoof = isRoofRoom(room);
+@@ -235,6 +254,10 @@ export function energyReport(input: EnergyReportInput): EnergyReport {
+         totalWp += wp;
+         if (!onRoof) panelsOffRoof += 1;
+         wpHistogram.set(wp, (wpHistogram.get(wp) ?? 0) + 1);
++        if (!areaByWp.has(wp)) {
++          const a = panelFootprintM2(p.dimensions_cm);
++          if (a > 0) areaByWp.set(wp, a);
++        }
+         generators.push({ instanceId: item.instanceId, productId: item.productId, name: p.name, wp, onRoof });
+       } else if (role === 'storage') {
+         batteryKwh += pos(p.battery_kwh);
+@@ -276,8 +299,11 @@ export function energyReport(input: EnergyReportInput): EnergyReport {
+       coverPanelWp = wp;
+     }
+   }
++  const coverPanelAreaM2 = pos(areaByWp.get(coverPanelWp)) || pos(input.coverPanelAreaM2);
+   const cov = coveragePct(generationWhDay, loadWhDay);
+   const panelCount = generators.length;
++  const stillFit = panelsThatStillFit(pos(input.roofAreaM2), coverPanelAreaM2, panelCount);
++  const needed = netWhDay < 0 ? panelsToCover(-netWhDay, coverPanelWp, psh, pr) : 0;
+   let status: EnergyReport['status'];
+   if (panelCount === 0 && loadWhDay <= 0) status = 'none';
+   else if (netWhDay >= 0 && loadWhDay > 0) status = 'covered';
+@@ -298,8 +324,10 @@ export function energyReport(input: EnergyReportInput): EnergyReport {
+     peakLoadW: Math.round(peakLoadW),
+     netWhDay,
+     coveragePct: cov,
+-    panelsToCover: netWhDay < 0 ? panelsToCover(-netWhDay, coverPanelWp, psh, pr) : 0,
++    panelsToCover: needed,
+     coverPanelWp,
++    panelsRoofCanStillHold: stillFit,
++    panelsToCoverFitOnRoof: needed <= stillFit,
+     batteryKwh: Math.round(batteryKwh * 100) / 100,
+     batteryAutonomyHours: batteryAutonomyHours(batteryKwh, DEFAULT_DEPTH_OF_DISCHARGE, loadWhDay),
+     inverterKw: Math.round(inverterKw * 100) / 100,
+diff --git a/src/designer/solarCalc.ts b/src/designer/solarCalc.ts
+index 5f26d02..a8cd505 100644
+--- a/src/designer/solarCalc.ts
++++ b/src/designer/solarCalc.ts
+@@ -84,6 +84,41 @@ export function panelsToCover(
+   return Math.ceil(gap / perPanel - 1e-9);
+ }
+ 
++/**
++ * The share of a flat roof that panels can actually occupy once walkways,
++ * edge setbacks, vents and mounting rails are taken out. 0.85 is the
++ * conservative end of what MU installers lay on a simple residential roof;
++ * it exists so the "add N panels" hint cannot promise a roof-full that
++ * nobody could physically install.
++ */
++export const ROOF_USABLE_FRACTION = 0.85;
++
++/** A panel's footprint in m2 from its catalogue dimensions. 0 when unknown. */
++export function panelFootprintM2(dimensionsCm?: { length?: number; width?: number }): number {
++  const l = finitePositive(dimensionsCm?.length ?? 0);
++  const w = finitePositive(dimensionsCm?.width ?? 0);
++  if (l <= 0 || w <= 0) return 0;
++  return Math.round((l / 100) * (w / 100) * 100) / 100;
++}
++
++/**
++ * How many panels of `panelAreaM2` still fit on the roof, given how many are
++ * already up there. Returns Infinity when either figure is unknown, because
++ * "we cannot tell" must never read as "it does not fit" - a false negative
++ * here would talk a customer out of a system that would have been fine.
++ */
++export function panelsThatStillFit(
++  roofAreaM2: number,
++  panelAreaM2: number,
++  alreadyPlaced: number,
++): number {
++  const roof = finitePositive(roofAreaM2);
++  const panel = finitePositive(panelAreaM2);
++  if (roof <= 0 || panel <= 0) return Number.POSITIVE_INFINITY;
++  const capacity = Math.floor((roof * ROOF_USABLE_FRACTION) / panel);
++  return Math.max(0, capacity - Math.max(0, Math.floor(alreadyPlaced)));
++}
++
+ /**
+  * Coverage of the load by generation, as a percentage capped at 999 (a
+  * plan with ten panels and one lamp is "covered", not a division blow-up).
+diff --git a/src/designer/useEnergyReport.ts b/src/designer/useEnergyReport.ts
+index 7014ba0..06e6d29 100644
+--- a/src/designer/useEnergyReport.ts
++++ b/src/designer/useEnergyReport.ts
+@@ -11,6 +11,7 @@ import { usePropertyStore, type Property } from '../store/propertyStore';
+ import { getProductById } from '../data/products';
+ import { MAURITIUS_SOLAR } from '../data/mauritiusSolar';
+ import { energyReport, type EnergyReport } from './energy';
++import { roofAreaM2 } from './roof';
+ 
+ /** Pure: the report for a property, with the readout's default sun case. */
+ export function energyReportForProperty(property: Pick<Property, 'rooms'>): EnergyReport {
+@@ -21,6 +22,8 @@ export function energyReportForProperty(property: Pick<Property, 'rooms'>): Ener
+     pshHoursPerDay: sun.poaKwhM2DayAnnual,
+     performanceRatio: sun.performanceRatio,
+     defaultPanelWp: MAURITIUS_SOLAR.defaultPanelWp,
++    roofAreaM2: roofAreaM2(property),
++    coverPanelAreaM2: MAURITIUS_SOLAR.defaultPanelAreaM2,
+   });
+ }
+ 

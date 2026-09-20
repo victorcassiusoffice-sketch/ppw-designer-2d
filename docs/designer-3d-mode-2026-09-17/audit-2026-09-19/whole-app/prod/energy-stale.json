@@ -1,0 +1,38 @@
+{
+  "env": {
+    "language": "en-GB",
+    "languages": [
+      "en-GB"
+    ],
+    "tz": "Indian/Mauritius",
+    "currencyStore": null
+  },
+  "currencyShown": "GBP",
+  "itemsPlaced": "3",
+  "after-load": {
+    "chipVisible": true,
+    "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+    "status": "Surplus+1.2 kWh/day",
+    "load": "700 Wh/day · 2 items on · peak 700 W",
+    "generation": "1.9 kWh/day · 1 panel · 0.47 kWp",
+    "items": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhonNordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhon"
+  },
+  "itemsAfterPlace": "4",
+  "after-mutation": {
+    "chipVisible": true,
+    "chipText": "☀ 1.9 kWh · ⚡ 1.1 kWh+853 Wh",
+    "status": "Surplus+853 Wh/day",
+    "load": "1.1 kWh/day · 3 items on · peak 1.1 kW",
+    "generation": "1.9 kWh/day · 1 panel · 0.47 kWp",
+    "items": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhonNordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhonNordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhon"
+  },
+  "after-reload": {
+    "chipVisible": true,
+    "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+    "status": "Surplus+853 Wh/day",
+    "load": "1.1 kWh/day · 3 items on · peak 1.1 kW",
+    "generation": "1.9 kWh/day · 1 panel · 0.47 kWp",
+    "items": "NordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhonNordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhonNordicTrack Commercial 2450 TreadmillGym · 350 W · typicalhon"
+  },
+  "errors": []
+}

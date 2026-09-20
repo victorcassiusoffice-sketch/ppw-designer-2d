@@ -25,6 +25,13 @@ export const TINTEX_DEMO: DemoDefinition = {
       id: 'tintex-show-flat',
       name: TINTEX_PAGE_NAME,
       prefix: 'tintex',
-      paints: { living: 'tintex-vip-satin', bedroom: 'tintex-cashmere', kitchen: 'tintex-mastertop' },
+      // Shades from the RAL Classic card the tool carries for TintEX (hex =
+      // the deck's conventional sRGB values in ralClassic.json), so the flat
+      // reads as painted, not as three white boxes.
+      paints: {
+        living: { paintId: 'tintex-vip-satin', colourHex: '#B7D9B1', colourName: 'Pastel green' },
+        bedroom: { paintId: 'tintex-cashmere', colourHex: '#E3D9C6', colourName: 'Oyster white' },
+        kitchen: { paintId: 'tintex-mastertop', colourHex: '#CBD0CC', colourName: 'Light grey' },
+      },
     }),
 };

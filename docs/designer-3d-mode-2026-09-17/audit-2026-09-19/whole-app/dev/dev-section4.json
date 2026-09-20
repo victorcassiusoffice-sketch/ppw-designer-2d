@@ -1,0 +1,434 @@
+[
+  {
+    "id": "S4-00-load",
+    "title": "seeded 5x4 room + treadmill loads on dev",
+    "ok": true,
+    "notes": {
+      "store": {
+        "rooms": [
+          {
+            "id": "r1",
+            "name": "Room 1",
+            "poly": 4,
+            "items": [
+              "i1"
+            ],
+            "openings": [],
+            "wallPaint": [],
+            "floor": null,
+            "levelId": null,
+            "kind": null
+          }
+        ],
+        "levels": [],
+        "walls": 0,
+        "roof": null,
+        "pages": null
+      },
+      "itemsPlaced": "1",
+      "cost": "£2,633.33"
+    },
+    "ms": 4982,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\dev\\S4-00-load.png",
+    "console": [
+      "[warning] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+      "[warning] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    ],
+    "net": []
+  },
+  {
+    "id": "S4-01-energy",
+    "title": "Energy chip + panel (treadmill load must be counted)",
+    "ok": true,
+    "notes": {
+      "chipVisible": true,
+      "chipText": "☀ 0 Wh · ⚡ 350 Wh−350 Wh",
+      "chipStatus": "short",
+      "energy-status": "0% covered−350 Wh/day",
+      "energy-net": "−350 Wh/day",
+      "energy-generation": "0 Wh/day · no panels yet",
+      "energy-load": "350 Wh/day · 1 item on · peak 350 W",
+      "energy-hint": "Add 1 × 450 Wp panel on the roof to cover it — they are in the Eco tab.",
+      "energy-summary": "0% covered−350 Wh/day☀0 Wh/day · no panels yet⚡350 Wh/day · 1 item on · peak 350 WAdd 1 × 450 Wp panel on the roof to cover it — they are in the Eco tab.RoofNordicTrack Commercial 2450 TreadmillRoom 1 · 350 W · typicalhonSun: 5.17 kWh/m²/day on a 20° tilt, facing north roof, Tamarin, Mauritius (PVGIS SARAH3 2005–23) · 78 % performance ratio ≈ 1462 kWh/yr per kWp.",
+      "energy-roof": "Roof",
+      "energy-storage": null,
+      "itemRow": "NordicTrack Commercial 2450 TreadmillRoom 1 · 350 W · typicalhon",
+      "powerRow": "on",
+      "hoursRow": "1",
+      "assumptions": "Sun: 5.17 kWh/m²/day on a 20° tilt, facing north roof, Tamarin, Mauritius (PVGIS SARAH3 2005–23) · 78 % performance ratio ≈ 1462 kWh/yr per kWp."
+    },
+    "ms": 4721,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\dev\\S4-01-energy.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "S4-02-undo-redo",
+    "title": "place a 2nd product, Undo, Redo",
+    "ok": true,
+    "notes": {
+      "card": "k1-nordictrack-2450",
+      "afterPlace": 2,
+      "afterUndo": 1,
+      "afterRedo": 2
+    },
+    "ms": 4407,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\dev\\S4-02-undo-redo.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "S4-03-select-remove",
+    "title": "Select tool picks an item; Remove tool deletes it",
+    "ok": true,
+    "notes": {
+      "selectPressed": "true",
+      "hitCount": 0,
+      "selectionUi": {
+        "rotateHandle": false,
+        "details": true,
+        "statusCard": false
+      },
+      "removeHud": true,
+      "removed": {
+        "before": 2,
+        "after": 1
+      }
+    },
+    "ms": 3615,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\dev\\S4-03-select-remove.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "S4-04-floor",
+    "title": "Floor tool paints the room floor and prices it",
+    "ok": true,
+    "notes": {
+      "materials": 3,
+      "live": "31 tiles · £870.76",
+      "floorPrice": null,
+      "floorUnits": null,
+      "cost": "£3,504.09",
+      "store": {
+        "id": "r1",
+        "name": "Room 1",
+        "poly": 4,
+        "items": [
+          "i1"
+        ],
+        "openings": [],
+        "wallPaint": [],
+        "floor": null,
+        "levelId": null,
+        "kind": null
+      },
+      "paintedFloor": {
+        "paintedFloor": null,
+        "floorTiles": 1,
+        "floorMaterialId": null,
+        "keys": [
+          "id",
+          "name",
+          "polygon",
+          "openings",
+          "placedItems",
+          "floorTiles",
+          "floorFinish"
+        ]
+      }
+    },
+    "ms": 12745,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\dev\\S4-04-floor.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "S4-05-doors-windows",
+    "title": "Door on the top wall, window on the right wall",
+    "ok": true,
+    "notes": {
+      "kinds": [
+        "door",
+        "doorway",
+        "window",
+        "Door",
+        "Doorway",
+        "Window"
+      ],
+      "afterDoor": [
+        "door"
+      ],
+      "afterWindow": [
+        "door",
+        "window"
+      ],
+      "widthReadout": "1.2 m"
+    },
+    "ms": 4694,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\dev\\S4-05-doors-windows.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "S4-06-storeys-roof",
+    "title": "Storeys picker adds a level; Roof toggle",
+    "ok": false,
+    "notes": {
+      "levelsBefore": [],
+      "readoutBefore": null,
+      "levelsAfter": [
+        "ground",
+        "_8KKaz4I"
+      ],
+      "readoutAfter": "First floor ·",
+      "roomsAfter": [
+        {
+          "id": "r1",
+          "levelId": null,
+          "poly": 4
+        },
+        {
+          "id": "vImr4rKs",
+          "levelId": "_8KKaz4I",
+          "poly": 0
+        }
+      ],
+      "roofPressedBefore": "false",
+      "roofPressedAfter": "true",
+      "storeAfterRoof": {
+        "rooms": [
+          {
+            "id": "r1",
+            "name": "Room 1",
+            "poly": 4,
+            "items": [
+              "i1"
+            ],
+            "openings": [
+              "door",
+              "window"
+            ],
+            "wallPaint": [],
+            "floor": null,
+            "levelId": null,
+            "kind": null
+          },
+          {
+            "id": "vImr4rKs",
+            "name": "Treatment Room",
+            "poly": 0,
+            "items": [],
+            "openings": [],
+            "wallPaint": [],
+            "floor": null,
+            "levelId": "_8KKaz4I",
+            "kind": null
+          },
+          {
+            "id": "roof-r1",
+            "name": "Room 1",
+            "poly": 4,
+            "items": [],
+            "openings": [],
+            "wallPaint": [],
+            "floor": null,
+            "levelId": "roof",
+            "kind": "roof"
+          }
+        ],
+        "levels": [
+          "ground",
+          "_8KKaz4I",
+          "roof"
+        ],
+        "walls": 0,
+        "roof": null,
+        "pages": null
+      },
+      "plotCapacity": null,
+      "roofPressedBack": "false"
+    },
+    "error": "Error: level-add did not add a level",
+    "ms": 11798,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\dev\\S4-06-storeys-roof.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "S4-07-pages",
+    "title": "page tabs: new page, switch back",
+    "ok": false,
+    "notes": {
+      "tabsVisible": false,
+      "tabsBefore": 0
+    },
+    "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"page-tab-new\"]')\u001b[22m\n",
+    "ms": 30723,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\dev\\S4-07-pages.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "S4-08-currency",
+    "title": "currency switch reprices the cost chip",
+    "ok": true,
+    "notes": {
+      "options": [
+        "MUR",
+        "USD",
+        "EUR",
+        "GBP"
+      ],
+      "costMur": "£3,504.09",
+      "costUsd": "$4,435.56",
+      "energyChip": "☀ 0 Wh · ⚡ 350 Wh−350 Wh",
+      "costBack": "Rs 199,600"
+    },
+    "ms": 1838,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\dev\\S4-08-currency.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "S4-09-clear-all",
+    "title": "Clear all wipes the plan (confirm modal)",
+    "ok": true,
+    "notes": {
+      "modalText": "Clear everything?This deletes the whole room and every product, leaving a fresh blank canvas. Press Ctrl+Z to restore.CancelClear all",
+      "storeAfter": {
+        "rooms": [
+          {
+            "id": "zXHmXk45",
+            "name": "Main Room",
+            "poly": 0,
+            "items": [],
+            "openings": [],
+            "wallPaint": [],
+            "floor": null,
+            "levelId": null,
+            "kind": null
+          }
+        ],
+        "levels": [],
+        "walls": 0,
+        "roof": null,
+        "pages": null
+      },
+      "hud": true
+    },
+    "ms": 2723,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\dev\\S4-09-clear-all.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "S4-10-3d-paint",
+    "title": "3D: paint the north wall Bronze via the brush",
+    "ok": false,
+    "notes": {
+      "backend": "gl",
+      "colour": "Bronze",
+      "pt": {
+        "x": 515.2129315282402,
+        "y": 424.820367617165
+      },
+      "store": [
+        {
+          "e": 0,
+          "paint": "permoglaze-matt-emulsion",
+          "colour": "#4C493F"
+        }
+      ],
+      "material": {
+        "hex": "#4C493F",
+        "baseHex": "#4C493F",
+        "finish": "matt",
+        "roughness": 0.95,
+        "sheen": 0,
+        "hasMap": false,
+        "show": "full"
+      }
+    },
+    "error": "Error: page.evaluate: TypeError: undefined is not iterable (cannot read property Symbol(Symbol.iterator))\n    at eval (eval at evaluate (:302:30), <anonymous>:1:1)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+    "ms": 32289,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\dev\\S4-10-3d-paint.png",
+    "console": [
+      "[warning] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.",
+      "[warning] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    ],
+    "net": []
+  },
+  {
+    "id": "S4-11-plan-shows-3d-paint",
+    "title": "back to Plan: the 2.5D wall face carries the 3D paint",
+    "ok": false,
+    "notes": {
+      "overlayGone": true,
+      "paletteOpen": true,
+      "fills": [
+        "rgb(76,73,63)",
+        "rgb(195,190,178)",
+        "rgb(195,190,178)",
+        "rgb(208,203,190)"
+      ],
+      "facesRow": []
+    },
+    "error": "Error: no wall face is filled Bronze on the plan: [\"rgb(76,73,63)\",\"rgb(195,190,178)\",\"rgb(195,190,178)\",\"rgb(208,203,190)\"]",
+    "ms": 3786,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\dev\\S4-11-plan-shows-3d-paint.png",
+    "console": [],
+    "net": []
+  },
+  {
+    "id": "S4-12-plan-paint-shows-in-3d",
+    "title": "Plan: click the south wall; 3D shows it Bronze",
+    "ok": false,
+    "notes": {
+      "p": {
+        "x": 584,
+        "y": 635.5
+      },
+      "store": [
+        {
+          "e": 0,
+          "paint": "permoglaze-matt-emulsion",
+          "colour": "#4C493F"
+        },
+        {
+          "e": 2,
+          "paint": "permoglaze-matt-emulsion",
+          "colour": "#4C493F"
+        }
+      ],
+      "live": "27.0 m² · 10.4 L · £71.57",
+      "mat2": {
+        "hex": "#4C493F",
+        "baseHex": "#4C493F",
+        "finish": "matt",
+        "roughness": 0.95,
+        "sheen": 0,
+        "hasMap": false,
+        "show": "stub"
+      },
+      "mat0": {
+        "hex": "#4C493F",
+        "baseHex": "#4C493F",
+        "finish": "matt",
+        "roughness": 0.95,
+        "sheen": 0,
+        "hasMap": false,
+        "show": "full"
+      },
+      "pt2": {
+        "x": 662.1090673968881,
+        "y": 627.4101503806772
+      }
+    },
+    "error": "Error: page.evaluate: TypeError: undefined is not iterable (cannot read property Symbol(Symbol.iterator))\n    at eval (eval at evaluate (:302:30), <anonymous>:1:1)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+    "ms": 3786,
+    "shot": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\whole-app\\dev\\S4-12-plan-paint-shows-in-3d.png",
+    "console": [],
+    "net": []
+  }
+]

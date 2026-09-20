@@ -62,8 +62,21 @@ function opening(kind: 'door' | 'window', edgeIndex: number, offsetM: number, wi
 
 const DOOR = 0.838;
 
-function paintAll(paintId: string) {
-  return [0, 1, 2, 3].map((edgeIndex) => ({ edgeIndex, paintId }));
+/**
+ * A room's paint: the line, and (3D Mode P3, 2026-09-19) the SHADE it is
+ * painted in — the 3D audit found both show flats reading as unpainted
+ * white boxes because every wall carried its line's white base hex. A shade
+ * from the brand's own card makes the flat read as painted.
+ */
+export interface RoomPaint {
+  paintId: string;
+  colourHex?: string;
+  colourName?: string;
+}
+
+function paintAll(p: RoomPaint | string) {
+  const spec: RoomPaint = typeof p === 'string' ? { paintId: p } : p;
+  return [0, 1, 2, 3].map((edgeIndex) => ({ edgeIndex, ...spec }));
 }
 
 // The flat, metres. Living across the top; bedroom and kitchen beneath it.
@@ -79,8 +92,8 @@ export interface ShowFlatOptions {
   name: string;
   /** Prefix for the instance / opening ids (a demo's slug). */
   prefix: string;
-  /** The paint line per room (`WallPaint.id`). */
-  paints: { living: string; bedroom: string; kitchen: string };
+  /** The paint line per room (`WallPaint.id`), with the shade it is painted in. */
+  paints: { living: RoomPaint | string; bedroom: RoomPaint | string; kitchen: RoomPaint | string };
 }
 
 const SOFAP_SHOW_FLAT: ShowFlatOptions = {
@@ -90,7 +103,13 @@ const SOFAP_SHOW_FLAT: ShowFlatOptions = {
   // Soft Feel on the living walls (the premium line, 9 m²/L, 2 coats);
   // Matt Emulsion in the bedroom (the everyday line the pitch page's tin
   // arithmetic uses); Xtreme White in the kitchen (washable, 10.5 m²/L).
-  paints: { living: 'permoglaze-soft-feel', bedroom: 'permoglaze-matt-emulsion', kitchen: 'permoglaze-xtreme-white' },
+  // Shades from Sofap's own à-la-carte card (official hexes, sofapColours.ts);
+  // Xtreme White is a white-only line, so the kitchen stays its white.
+  paints: {
+    living: { paintId: 'permoglaze-soft-feel', colourHex: '#E0C6A4', colourName: 'Bermuda Beach' },
+    bedroom: { paintId: 'permoglaze-matt-emulsion', colourHex: '#CFC5B7', colourName: 'Elmwood' },
+    kitchen: 'permoglaze-xtreme-white',
+  },
 };
 
 export function buildSofapShowFlat(): Property {

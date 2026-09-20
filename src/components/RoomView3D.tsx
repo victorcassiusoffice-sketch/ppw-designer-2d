@@ -51,6 +51,8 @@ import { edgeKey, pointAlongEdge, projectOntoEdge, roomEdges, sharedEdgeMap } fr
 import { openingSpan } from '../designer/openings';
 import { isDrawnPolygon } from '../designer/roomLayout';
 import { roomFloorMaterial } from '../designer/floorFinish';
+import { floorKindOf } from '../designer/floorKind';
+import { emitsLight } from '../designer/lighting';
 import { findFloorMaterialById } from '../data/floorMaterials';
 import { getProductById } from '../data/products';
 import { productModelFor } from '../data/productModels';
@@ -91,6 +93,8 @@ export interface RoomView3DProps {
   onPaintWall?: (hit: WallHit, mods?: BrushModifiers) => string | void;
   /** The brush colour, previewed ON the hovered wall; null while Erase is on (previews bare plaster). */
   brushHex?: string | null;
+  /** The price tag for the wall under the brush — "VIP Satin · Pastel green ≈ 12.7 m² · 2.7 L · Rs 774" (P3). */
+  hoverTag?: (hit: WallHit) => string | null;
   /** Overlay: close it. Card: open the overlay. */
   onClose?: () => void;
   onExpand?: () => void;
@@ -139,6 +143,8 @@ interface RoomView3DBridge {
   samplePixel: (clientX: number, clientY: number) => { r: number; g: number; b: number } | null;
   /** Bisect the rig live (GL only). */
   tune: (opts: { hemi?: number; sun?: number; fill?: number; env?: boolean; normals?: number; maps?: boolean }) => void;
+  /** What the stage has dressed (P3): joinery pieces, corner shades, lamps, contact shadows, floor kinds (GL only). */
+  dressing: () => { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }> } | null;
 }
 /**
  * The card and the overlay can be mounted together (md+), so each registers
@@ -171,6 +177,7 @@ function bridgeRegistry(): RoomView3DBridgeRegistry {
       wallMaterial: (hit) => pick()?.wallMaterial(hit) ?? null,
       samplePixel: (x, y) => pick()?.samplePixel(x, y) ?? null,
       tune: (o) => pick()?.tune(o),
+      dressing: () => pick()?.dressing() ?? null,
     };
     window.__ppwRoomView3d = reg;
   }
@@ -226,20 +233,30 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
       const finish = finishOfPaint(e.paintId);
       if (finish) wallFinishByEdge.set(e.edgeIndex, finish);
     }
-    // Floor: the largest painted zone's material, else the whole-room finish.
-    let floorHex: string | undefined;
+    // Floor: the largest painted zone's material, else the whole-room finish —
+    // its hex, and (P3) what it reads as and its tile size for the surface.
+    let floorMaterial = roomFloorMaterial(room);
     const zones = room.floorTiles ?? [];
     if (zones.length > 0) {
       const biggest = [...zones].sort((a, b) => b.runs.length - a.runs.length)[0];
-      floorHex = findFloorMaterialById(biggest.materialId)?.hex;
+      floorMaterial = findFloorMaterialById(biggest.materialId) ?? floorMaterial;
     }
-    if (!floorHex) floorHex = roomFloorMaterial(room)?.hex ?? undefined;
+    const floorHex = floorMaterial?.hex ?? undefined;
+    const floorKind = floorKindOf(floorMaterial);
+    const floorTileM = floorMaterial?.tile_w_m ?? undefined;
     const items: SceneItemInput[] = [];
     for (const it of room.placedItems) {
       const p = getProductById(it.productId);
       if (!p) continue;
       const body = productModelFor(p);
+      const lamp = emitsLight(p);
+      const hM = p.dimensions_cm.height / 100;
+      // Where a lamp's light comes from: a pendant hangs from the ceiling, a
+      // sconce sits at its mount height, a floor or table lamp near its top.
+      const lightMountM = !lamp ? undefined : p.placement === 'ceiling' ? Math.max(0.5, H - 0.35) : p.placement === 'wall' ? (p.mount_height_cm ?? 170) / 100 + hM * 0.5 : Math.max(0.3, hM * 0.85);
       items.push({
+        emitsLight: lamp,
+        lightMountM,
         instanceId: it.instanceId,
         x: it.x,
         y: it.y,
@@ -266,6 +283,8 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
       wallColourByEdge,
       wallFinishByEdge,
       floorHex,
+      floorKind,
+      floorTileM,
       kind: outdoor ? 'outdoor' : 'room',
       items,
     };
@@ -290,8 +309,13 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
 /** The solids do not depend on the camera; this stand-in keeps the memo keyed on the plan alone. */
 const SOLIDS_CAMERA: OrbitCamera = { target: { x: 0, y: 0, z: 0 }, azimuthRad: 0, elevationRad: 0.6, distanceM: 10, fovRad: 0.9 };
 
-/** "Living room · Wall 2 · Soft Feel · Coral" for the hover caption. */
-function describeHit(property: Property, hit: WallHit | null): string | null {
+/**
+ * "Living room · Wall 2 · Soft Feel · Coral" for the hover caption — or,
+ * with the brush armed and a price tag from the panel, what the click would
+ * buy: "Living room · Wall 2 → VIP Satin · Pastel green ≈ 12.7 m² · 2.7 L ·
+ * Rs 774 — click to paint" (The Sims shows the price before the click; P3).
+ */
+function describeHit(property: Property, hit: WallHit | null, tag?: string | null): string | null {
   if (!hit) return null;
   if (hit.kind === 'edge') {
     const room = property.rooms.find((r) => r.id === hit.roomId);
@@ -299,13 +323,15 @@ function describeHit(property: Property, hit: WallHit | null): string | null {
     const painted = room.wallPaint?.find((e) => e.edgeIndex === hit.edgeIndex);
     const paint = painted ? findWallPaintById(painted.paintId) : undefined;
     const colour = painted?.colourName ?? painted?.colourHex;
-    return `${room.name} · Wall ${(hit.edgeIndex ?? 0) + 1}${paint ? ` · ${paint.name}` : ' · unpainted'}${colour ? ` · ${colour}` : ''} — click to paint`;
+    const current = `${paint ? ` · ${paint.name}` : ' · unpainted'}${colour ? ` · ${colour}` : ''}`;
+    return `${room.name} · Wall ${(hit.edgeIndex ?? 0) + 1}${tag ? ` → ${tag}` : current} — click to paint`;
   }
   const w = property.walls?.find((x) => x.id === hit.wallId);
   if (!w) return null;
   const paint = w.paintId ? findWallPaintById(w.paintId) : undefined;
   const colour = w.paintColourName ?? w.paintColourHex;
-  return `Free wall${paint ? ` · ${paint.name}` : ' · unpainted'}${colour ? ` · ${colour}` : ''}`;
+  const current = `${paint ? ` · ${paint.name}` : ' · unpainted'}${colour ? ` · ${colour}` : ''}`;
+  return `Free wall${tag ? ` → ${tag}` : current}${tag ? ' — click to paint' : ''}`;
 }
 
 /** The plan's record of an item, wherever it lives. */
@@ -322,13 +348,22 @@ function hitKey(h: WallHit): string {
   return h.kind === 'edge' ? `e:${h.roomId}:${h.edgeIndex}` : `f:${h.wallId}`;
 }
 
-const WALL_VIEWS: Array<{ id: WallView; label: string; glyph: string; title: string }> = [
-  { id: 'up', label: 'Walls up', glyph: '▮', title: 'Walls up — every wall stands' },
-  { id: 'cutaway', label: 'Cutaway', glyph: '◧', title: 'Cutaway — the walls nearest you drop so the room reads' },
-  { id: 'down', label: 'Walls down', glyph: '▬', title: 'Walls down — look straight into the plan' },
+const WALL_VIEWS: Array<{ id: WallView; label: string; short: string; glyph: string; title: string }> = [
+  { id: 'up', label: 'Walls up', short: 'Up', glyph: '▮', title: 'Walls up — every wall stands' },
+  { id: 'cutaway', label: 'Cutaway', short: 'Cut', glyph: '◧', title: 'Cutaway — the walls nearest you drop so the room reads' },
+  { id: 'down', label: 'Walls down', short: 'Down', glyph: '▬', title: 'Walls down — look straight into the plan' },
 ];
 
-export function RoomView3D({ variant, onPaintWall, brushHex, onClose, onExpand, footer, caption, brushStrip, title, className = '', style }: RoomView3DProps): JSX.Element {
+/** The sun slider's range (P3): dawn to dusk in Mauritius, half-hour steps; off = the studio rig. */
+const SUN_HOUR_MIN = 6;
+const SUN_HOUR_MAX = 20;
+function sunHourLabel(h: number): string {
+  const hh = Math.floor(h);
+  const mm = Math.round((h - hh) * 60);
+  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+}
+
+export function RoomView3D({ variant, onPaintWall, brushHex, hoverTag, onClose, onExpand, footer, caption, brushStrip, title, className = '', style }: RoomView3DProps): JSX.Element {
   const property = usePropertyStore((s) => s.property);
   const selectedInstanceId = usePropertyStore((s) => s.selectedInstanceId);
   const selectItem = usePropertyStore((s) => s.selectItem);
@@ -336,6 +371,8 @@ export function RoomView3D({ variant, onPaintWall, brushHex, onClose, onExpand, 
   const viewMode = useDesignerUIStore((s) => s.viewMode);
   const wallView = useDesignerUIStore((s) => s.wallView);
   const setWallView = useDesignerUIStore((s) => s.setWallView);
+  const sunHour = useDesignerUIStore((s) => s.sunHour);
+  const setSunHour = useDesignerUIStore((s) => s.setSunHour);
   // The merchant catalog arriving makes `m-` items resolvable — re-derive.
   const catalogVersion = useCatalogStore((s) => s.version);
   /** One-line result of the last stroke, shown as the caption for a moment. */
@@ -520,6 +557,7 @@ export function RoomView3D({ variant, onPaintWall, brushHex, onClose, onExpand, 
       },
       wallMaterial: (hit) => (backend === 'gl' ? stageRef.current?.wallMaterial(hit) ?? null : null),
       tune: (o) => stageRef.current?.tune(o),
+      dressing: () => (backend === 'gl' ? stageRef.current?.dressing() ?? null : null),
       samplePixel: (clientX, clientY) => {
         const box = containerRef.current?.getBoundingClientRect();
         return box && backend === 'gl' ? stageRef.current?.samplePixel(clientX - box.left, clientY - box.top) ?? null : null;
@@ -556,14 +594,21 @@ export function RoomView3D({ variant, onPaintWall, brushHex, onClose, onExpand, 
   };
 
   const zoomBy = useCallback((factor: number) => {
-    setCamera((c) => (c ? clampCamera({ ...c, distanceM: c.distanceM * factor }, baseDistanceRef.current * 0.35, baseDistanceRef.current * 3) : c));
+    setCamera((c) => (c ? clampCamera({ ...c, distanceM: c.distanceM * factor }, baseDistanceRef.current * 0.18, baseDistanceRef.current * 3) : c));
   }, []);
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (e.pointerType === 'mouse' && e.button !== 0 && e.button !== 2) return;
+    // The right button always orbits (The Sims' camera drag), whatever tool
+    // is armed — so a look-around never paints a wall or carries a product.
+    const orbitOnly = e.pointerType === 'mouse' && e.button === 2;
     e.currentTarget.setPointerCapture(e.pointerId);
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.current.size === 1) {
+      if (orbitOnly) {
+        drag.current = { x: e.clientX, y: e.clientY, moved: false, pinchDist: 0 };
+        return;
+      }
       // The brush, with a mouse: a press on a wall starts a stroke.
       if (onPaintWall && e.pointerType === 'mouse') {
         const p = localPoint(e);
@@ -654,7 +699,7 @@ export function RoomView3D({ variant, onPaintWall, brushHex, onClose, onExpand, 
       c
         ? clampCamera(
             { ...c, azimuthRad: c.azimuthRad - dx * 0.008, elevationRad: c.elevationRad + dy * 0.006 },
-            baseDistanceRef.current * 0.35,
+            baseDistanceRef.current * 0.18,
             baseDistanceRef.current * 3,
           )
         : c,
@@ -663,6 +708,11 @@ export function RoomView3D({ variant, onPaintWall, brushHex, onClose, onExpand, 
 
   const endPointer = (e: React.PointerEvent<HTMLDivElement>, cancelled: boolean) => {
     const had = pointers.current.delete(e.pointerId);
+    if (e.pointerType === 'mouse' && e.button === 2) {
+      // A right-button release ends an orbit and nothing else — never a tap.
+      if (pointers.current.size === 0) drag.current = null;
+      return;
+    }
     if (stroke.current && had) {
       // The stroke painted as it went; the release only ends it.
       stroke.current = null;
@@ -753,7 +803,7 @@ export function RoomView3D({ variant, onPaintWall, brushHex, onClose, onExpand, 
     return () => window.removeEventListener('keydown', onKey, true);
   }, [variant, onClose]);
 
-  const hoverText = describeHit(property, hover);
+  const hoverText = describeHit(property, hover, onPaintWall && hoverTag && hover ? hoverTag(hover) : null);
   const empty = !bounds;
   const drawn = solids.walls.length + solids.floors.length + solids.items.length;
   const viewLabel = empty
@@ -793,6 +843,7 @@ export function RoomView3D({ variant, onPaintWall, brushHex, onClose, onExpand, 
               selectedInstanceId={variant === 'overlay' ? selectedInstanceId : null}
               brushHex={onPaintWall ? (brushHex ?? null) : undefined}
               wallView={wallView}
+              hour={sunHour}
               onFailed={() => setBackend('painter')}
             />
           </Suspense>
@@ -849,10 +900,49 @@ export function RoomView3D({ variant, onPaintWall, brushHex, onClose, onExpand, 
               aria-pressed={wallView === v.id}
               data-testid={`view3d-walls-${v.id}`}
             >
-              <span aria-hidden="true">{v.glyph}</span>
+              <span aria-hidden="true" className="hidden md:inline">{v.glyph}</span>
+              <span aria-hidden="true" className="text-[11px] md:hidden">{v.short}</span>
             </button>
           ))}
         </div>
+        )}
+        {/* The sun (P3, 2026-09-19): off = the colour-true studio rig; on = the real Mauritian sun by the hour, lamps after dark. */}
+        {variant === 'overlay' && backend === 'gl' && (
+          <div
+            className="ml-1 inline-flex h-10 items-center gap-1.5 rounded-md border border-ppw-rim bg-ppw-chrome px-2 shadow-sm md:h-8"
+            role="group"
+            aria-label="Sun"
+            data-testid="view3d-sun"
+          >
+            <button
+              type="button"
+              className={`inline-flex h-7 min-w-[28px] items-center justify-center rounded px-1.5 text-[12px] font-semibold ${sunHour === null ? 'text-ppw-charcoal hover:bg-[#f3f1ec]' : 'bg-ppw-inkDeep text-ppw-paper'}`}
+              onClick={() => setSunHour(sunHour === null ? 15.5 : null)}
+              title={sunHour === null ? 'Sun — light the room by the time of day (colours stay the chip until you do)' : 'Sun off — back to the colour-true daylight'}
+              aria-pressed={sunHour !== null}
+              data-testid="view3d-sun-toggle"
+            >
+              <span aria-hidden="true">☀</span>
+            </button>
+            {sunHour !== null && (
+              <>
+                <input
+                  type="range"
+                  min={SUN_HOUR_MIN}
+                  max={SUN_HOUR_MAX}
+                  step={0.5}
+                  value={sunHour}
+                  onChange={(e) => setSunHour(Number(e.target.value))}
+                  className="h-7 w-[92px] accent-[#37362f] md:w-[110px]"
+                  aria-label="Time of day"
+                  data-testid="view3d-sun-hour"
+                />
+                <span className="w-[38px] text-[11px] font-semibold tabular-nums text-ppw-charcoal" data-testid="view3d-sun-label">
+                  {sunHourLabel(sunHour)}
+                </span>
+              </>
+            )}
+          </div>
         )}
         {variant === 'card' && onExpand && (
           <button type="button" className={BTN} onClick={onExpand} title="Open the big room view" aria-label="Expand the room view" data-testid="wallpaint-3d-expand">

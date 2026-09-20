@@ -1,0 +1,78 @@
+{
+  "rows": {
+    "k1-nordictrack-rw900": {
+      "name": "NordicTrack RW900 Rower",
+      "category": "fitness",
+      "has_power_w": false,
+      "has_energy_role": false,
+      "notes": "Magnetic + air resistance rower; 22-inch HD touchscreen; iFit-ready. Distributor stock at K1-Sport.",
+      "refKey": "rower",
+      "refAvgW": 0,
+      "role": "none",
+      "powerW": 0
+    },
+    "k1-nordictrack-gx10": {
+      "name": "NordicTrack GX 10 Recumbent Bike",
+      "category": "fitness",
+      "has_power_w": false,
+      "has_energy_role": false,
+      "notes": "Recumbent bike with 26 resistance levels. Distributor stock at K1-Sport.",
+      "refKey": "indoor-bike",
+      "refAvgW": 0,
+      "role": "none",
+      "powerW": 0
+    },
+    "k1-nordictrack-2450": {
+      "name": "NordicTrack Commercial 2450 Treadmill",
+      "category": "fitness",
+      "has_power_w": false,
+      "has_energy_role": false,
+      "notes": "Foldable commercial-grade treadmill; 24-inch touchscreen; iFit-ready. Distributor stock at K1-Sport.",
+      "refKey": "treadmill",
+      "refAvgW": 350,
+      "role": "consumer",
+      "powerW": 350
+    },
+    "k1-nordictrack-tour-de-france": {
+      "name": "NordicTrack Tour de France Indoor Bike",
+      "category": "fitness",
+      "has_power_w": false,
+      "has_energy_role": false,
+      "notes": "Incline/decline indoor cycle; iFit-ready interactive trainer. Distributor stock at K1-Sport.",
+      "refKey": "indoor-bike-connected",
+      "refAvgW": 60,
+      "role": "consumer",
+      "powerW": 60
+    },
+    "k1-schwinn-700ic": {
+      "name": "Schwinn 700IC Indoor Bike",
+      "category": "fitness",
+      "has_power_w": false,
+      "has_energy_role": false,
+      "notes": "Indoor cycle with 18.1 kg / 40 lb flywheel. On-sale entry-price cardio. Distributor stock at K1-Sport.",
+      "refKey": "indoor-bike-connected",
+      "refAvgW": 60,
+      "role": "consumer",
+      "powerW": 60
+    }
+  },
+  "reportOnlyRowerRecumbent": {
+    "status": "none",
+    "loadWhDay": 0,
+    "peakLoadW": 0,
+    "consumers": []
+  },
+  "reportTreadmillPlusRowerRecumbent": {
+    "status": "short",
+    "loadWhDay": 350,
+    "peakLoadW": 350,
+    "consumers": [
+      "k1-nordictrack-2450:350W:treadmill"
+    ]
+  },
+  "edgeName": {
+    "refKey": "rower",
+    "avgW": 0,
+    "role": "none"
+  }
+}

@@ -1,0 +1,989 @@
+{
+  "log": [
+    {
+      "t": 15968,
+      "step": "d01 new visitor",
+      "drawHud": "WALL PEN\nDrag to draw a wall — or click corner to corner. The length shows as you go.\n−\n0.5 m\n+\n0 vertices\nperim 0.00 m\narea 0.00 m²\nLENGTH\nm\nMake room\nDone\nOr use a 5 × 4 m room\nUndo\nDiscard",
+      "drawHint": "Drag to draw a wall — or click corner to corner. The length shows as you go.",
+      "emptyHint": null,
+      "paintToggleBox": {
+        "x": 508.484375,
+        "y": 6,
+        "width": 40,
+        "height": 40
+      },
+      "paintToggleLabelVisible": 0,
+      "paintToggleTitle": "Wall paint — click a wall to paint it with a Sofap colour; the plan lifts to show the walls. Room paints every wall of the room.",
+      "view3dBox": {
+        "x": 962.3125,
+        "y": 6,
+        "width": 56.1875,
+        "height": 40
+      },
+      "cursor": "crosshair | inline="
+    },
+    {
+      "t": 24531,
+      "step": "d02 paint armed on blank plan",
+      "panel": true,
+      "cardCaption": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+      "live": "No walls painted yet",
+      "hint": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+      "drawHudStillOn": false,
+      "cursor": "auto | inline=",
+      "toasts": []
+    },
+    {
+      "t": 34021,
+      "step": "d02b Room chip on blank plan",
+      "toasts": [
+        "Draw a room first — Walls"
+      ]
+    },
+    {
+      "t": 36103,
+      "step": "d02c Esc with paint armed on plan",
+      "panelOpen": false
+    },
+    {
+      "t": 71083,
+      "step": "d03 tintex plan",
+      "rooms": [
+        {
+          "id": "living",
+          "name": "Living room",
+          "painted": 4,
+          "poly": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 5.5,
+              "y": 0
+            },
+            {
+              "x": 5.5,
+              "y": 4
+            },
+            {
+              "x": 0,
+              "y": 4
+            }
+          ]
+        },
+        {
+          "id": "bedroom",
+          "name": "Bedroom",
+          "painted": 4,
+          "poly": [
+            {
+              "x": 0,
+              "y": 4
+            },
+            {
+              "x": 3.5,
+              "y": 4
+            },
+            {
+              "x": 3.5,
+              "y": 7.5
+            },
+            {
+              "x": 0,
+              "y": 7.5
+            }
+          ]
+        },
+        {
+          "id": "kitchen",
+          "name": "Kitchen",
+          "painted": 4,
+          "poly": [
+            {
+              "x": 3.5,
+              "y": 4
+            },
+            {
+              "x": 5.5,
+              "y": 4
+            },
+            {
+              "x": 5.5,
+              "y": 7.5
+            },
+            {
+              "x": 3.5,
+              "y": 7.5
+            }
+          ]
+        }
+      ],
+      "paintArmed": "false",
+      "ui": {
+        "precision": "full",
+        "lastPrecision": "quarter",
+        "floorDraft": {
+          "materialId": "gym-interlock"
+        },
+        "wallPaintDraft": {
+          "paintId": "tintex-vip-satin"
+        }
+      },
+      "cursor": "auto | inline=",
+      "toasts": []
+    },
+    {
+      "t": 116315,
+      "step": "d04 panel",
+      "panelBox": {
+        "x": 1168,
+        "y": 53,
+        "width": 272,
+        "height": 765
+      },
+      "panelScrollHeight": {
+        "sh": 1316,
+        "ch": 765
+      },
+      "cardBox": {
+        "x": 1182,
+        "y": 141,
+        "width": 245,
+        "height": 153.125
+      },
+      "cardBackend": "gl",
+      "cardCaption": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+      "cardFaces": 22,
+      "brandCard": "T\nTintEX\nTint Match — RAL K7 / NCS / Pantone fan decks, matched in store (150,000+ shades) · prices 2021-11-27",
+      "rows": [
+        "TintEX VIP Satin\nsatin · 11 m²/L · from Rs 242",
+        "TintEX Mastertop\nsilk · 12 m²/L · from Rs 363",
+        "TintEX Cashmere Interior Latex\nsilk · 10 m²/L (est.) · from Rs 253",
+        "TintEX True White Matt Emulsion\nmatt · 8.5 m²/L · from Rs 161",
+        "TintEX Trade Pro\nmatt · 7 m²/L (est.) · from Rs 374"
+      ],
+      "colourChips": 25,
+      "colourChipBox": {
+        "x": 1219,
+        "y": 735.625,
+        "width": 28,
+        "height": 28
+      },
+      "chartToggle": "All RAL Classic shades\n▸",
+      "scopeWallBox": {
+        "x": 1181,
+        "y": 1048.375,
+        "width": 119.5,
+        "height": 40
+      },
+      "live": "106.0 m² · 21.6 L · Rs 5,691",
+      "hintUnderLive": "Click a wall to paint it · 2 coats at 2.7 m",
+      "assumptions": "VAT status not confirmed (TintEX, 2021-11-27) · TintEX online-shop price (Wayback Machine capture); the shop is closed — confirm today's list with TintEX · ceilings not included · skirting not deducted · openings under 1 m² not deducted",
+      "coats": "",
+      "waste": "10",
+      "height": "2.7",
+      "cursor": "auto | inline=",
+      "doneBox": {
+        "x": 1181,
+        "y": 1317.25,
+        "width": 247,
+        "height": 40
+      }
+    },
+    {
+      "t": 125215,
+      "step": "d05 line + colour",
+      "chipIds": [
+        "wallpaint-colour-name",
+        "wallpaint-colour-base",
+        "wallpaint-colour-ral-9010",
+        "wallpaint-colour-ral-9003",
+        "wallpaint-colour-ral-9001",
+        "wallpaint-colour-ral-9002",
+        "wallpaint-colour-ral-1013",
+        "wallpaint-colour-ral-1015",
+        "wallpaint-colour-ral-1014",
+        "wallpaint-colour-ral-7047",
+        "wallpaint-colour-ral-7035",
+        "wallpaint-colour-ral-7044",
+        "wallpaint-colour-ral-7032",
+        "wallpaint-colour-ral-7030",
+        "wallpaint-colour-ral-1019",
+        "wallpaint-colour-ral-1000",
+        "wallpaint-colour-ral-6019",
+        "wallpaint-colour-ral-6021",
+        "wallpaint-colour-ral-6027",
+        "wallpaint-colour-ral-6034",
+        "wallpaint-colour-ral-6011",
+        "wallpaint-colour-ral-5024",
+        "wallpaint-colour-ral-5014",
+        "wallpaint-colour-ral-5023",
+        "wallpaint-colour-ral-3015",
+        "wallpaint-colour-ral-3012",
+        "wallpaint-colour-custom"
+      ],
+      "picked": "wallpaint-colour-ral-6019",
+      "colourName": "Pastel green",
+      "hudSwatchHex": "rgb(183, 217, 177)",
+      "ui": {
+        "precision": "full",
+        "lastPrecision": "quarter",
+        "floorDraft": {
+          "materialId": "gym-interlock"
+        },
+        "wallPaintDraft": {
+          "paintId": "tintex-cashmere",
+          "colourHex": "#B7D9B1",
+          "colourName": "Pastel green"
+        }
+      }
+    },
+    {
+      "t": 128733,
+      "step": "d06 plan hover",
+      "wallMidScreen": {
+        "x": 584,
+        "y": 93
+      },
+      "cursor": "auto | inline=",
+      "live": "106.0 m² · 21.6 L · Rs 5,691",
+      "anyHoverPriceTag": 11,
+      "toasts": []
+    },
+    {
+      "t": 136133,
+      "step": "d07 plan paint one wall",
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "live": "106.0 m² · 22.0 L · Rs 5,742",
+      "toasts": [],
+      "caption": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase"
+    },
+    {
+      "t": 136833,
+      "step": "d07b shift-click room",
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 1,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 3,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        }
+      ],
+      "toasts": [
+        "Every wall of the room painted."
+      ],
+      "live": "106.0 m² · 22.8 L · Rs 5,867"
+    },
+    {
+      "t": 138315,
+      "step": "d07c ctrl-click erase",
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 3,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        }
+      ],
+      "toasts": [
+        "Every wall of the room painted.",
+        "Wall paint removed."
+      ]
+    },
+    {
+      "t": 148752,
+      "step": "d07d ctrl+z",
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 1,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 3,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        }
+      ],
+      "toasts": []
+    },
+    {
+      "t": 150299,
+      "step": "d07e ctrl+z again",
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "toasts": []
+    },
+    {
+      "t": 151398,
+      "step": "d07f ctrl+z third",
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "toasts": []
+    },
+    {
+      "t": 157487,
+      "step": "d07g erase chip on",
+      "cursor": "auto | inline=",
+      "hint": "Click a wall to remove its paint"
+    },
+    {
+      "t": 159623,
+      "step": "d07h erase-click",
+      "living": [
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "toasts": [
+        "Wall paint removed."
+      ]
+    },
+    {
+      "t": 160817,
+      "step": "d07i Room chip",
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 1,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 3,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        }
+      ],
+      "toasts": [
+        "Wall paint removed.",
+        "Living room — every wall painted"
+      ],
+      "scope": {
+        "precision": "full",
+        "lastPrecision": "quarter",
+        "floorDraft": {
+          "materialId": "gym-interlock"
+        },
+        "wallPaintDraft": {
+          "paintId": "tintex-cashmere",
+          "colourHex": "#B7D9B1",
+          "colourName": "Pastel green"
+        }
+      }
+    },
+    {
+      "t": 162761,
+      "step": "d09 settings",
+      "live0": "106.0 m² · 22.8 L · Rs 5,867",
+      "coats3": "106.0 m² · 34.2 L · Rs 8,525",
+      "waste20": "106.0 m² · 36.6 L · Rs 9,398",
+      "height3": "119.2 m² · 41.1 L · Rs 10,167"
+    },
+    {
+      "t": 184418,
+      "step": "d10 breakdown",
+      "body": "Wall length × height − doors and windows = m². Litres = m² × coats ÷ coverage, rounded up to 0.1 L, then the cheapest whole tins.\n\nLiving room · Wall 1 5.50 × 2.7 m − 2.16 m² (1 opening) = 12.69 m²\nLiving room · Wall 2 4.00 × 2.7 m − 1.44 m² (1 opening) = 9.36 m²\nLiving room · Wall 3 5.50 × 2.7 m − 3.42 m² (2 openings) = 11.43 m²\nLiving room · Wall 4 4.00 × 2.7 m − 1.71 m² (1 opening) = 9.09 m²\nBedroom · Wall 1 3.50 × 2.7 m = 9.45 m²\nBedroom · Wall 2 3.50 × 2.7 m = 9.45 m²\nBedroom · Wall 3 3.50 × 2.7 m − 1.44 m² (1 opening) = 8.01 m²\nBedroom · Wall 4 3.50 × 2.7 m − 1.44 m² (1 opening) = 8.01 m²\nKitchen · Wall 1 2.00 × 2.7 m = 5.40 m²\nKitchen · Wall 2 3.50 × 2.7 m − 1.20 m² (1 opening) = 8.25 m²\nKitchen · Wall 3 2.00 × 2.7 m = 5.40 m²\nKitchen · Wall 4 3.50 × 2.7 m = 9.45 m²\nTintEX Cashmere Interior Latex · Pastel green: 42.57 m² × 2 coats ÷ 10 m²/L (est.) = 8.6 L + 10% = 9.4 L → 2× 5 L = ",
+      "rows": 12,
+      "orders": [
+        "TintEX Cashmere Interior Latex · Pastel green: 42.57 m² × 2 coats ÷ 10 m²/L (est.) = 8.6 L + 10% = 9.4 L → 2× 5 L = Rs 2,220 (0.6 L over) · Pastel Shades (estimated from the colour depth)",
+        "TintEX Cashmere Interior Latex: 34.92 m² × 2 coats ÷ 10 m²/L (est.) = 7.0 L + 10% = 7.7 L → 1× 5 L + 3× 1 L = Rs 1,835 (0.3 L over)",
+        "TintEX Mastertop: 28.50 m² × 2 coats ÷ 12 m²/L = 4.8 L + 10% = 5.3 L → 1× 5 L + 1× 1 L = Rs 1,812 (0.7 L over)"
+      ]
+    },
+    {
+      "t": 201213,
+      "step": "d11 3D mode",
+      "loadingState": {
+        "overlay": true,
+        "canvasCount": 1,
+        "caption": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+        "header": "3D Mode\n\nDrag to look around · pinch or scroll to zoom · click a wall to paint it\n\n106.0 m² · 22.4 L · Rs 5,867",
+        "spinner": 0,
+        "cardNote": "The room is in the workspace — click a wall there to paint it."
+      },
+      "firstFrame": {
+        "ms": 70,
+        "faces": 22
+      },
+      "totalMs": 14716,
+      "backend": "gl",
+      "debug": {
+        "frames": 1,
+        "children": 24,
+        "camera": [
+          -6.43632386603082,
+          12.82682587806397,
+          18.451191277762995
+        ],
+        "target": [
+          2.75,
+          1.1340000000000001,
+          3.75
+        ],
+        "renderer": "1168x804 calls=88 tris=2496"
+      },
+      "overlayBox": {
+        "x": 0,
+        "y": 53,
+        "width": 1168,
+        "height": 847
+      },
+      "footer": "106.0 m² · 22.4 L · Rs 5,867",
+      "caption": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+      "controls": {
+        "rotL": {
+          "x": 907.84375,
+          "y": 104,
+          "width": 32,
+          "height": 32
+        },
+        "fit": {
+          "x": 979.84375,
+          "y": 104,
+          "width": 32.4375,
+          "height": 32
+        },
+        "wallsUp": {
+          "x": 1021.28125,
+          "y": 105,
+          "width": 30,
+          "height": 32
+        },
+        "close": {
+          "x": 1116.28125,
+          "y": 104,
+          "width": 43.71875,
+          "height": 32
+        }
+      }
+    },
+    {
+      "t": 201273,
+      "step": "d12 wall point",
+      "wp": {
+        "x": 484.962619089221,
+        "y": 400.4473264411836
+      },
+      "hit": null
+    },
+    {
+      "t": 204425,
+      "step": "d12 3D hover",
+      "cursor": "grab",
+      "caption": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+      "material": {
+        "before": {
+          "hex": "#B7D9B1",
+          "baseHex": "#B7D9B1",
+          "finish": "silk",
+          "roughness": 0.76,
+          "sheen": 0.22,
+          "hasMap": false,
+          "show": "full"
+        },
+        "hover": {
+          "hex": "#B7D9B1",
+          "baseHex": "#B7D9B1",
+          "finish": "silk",
+          "roughness": 0.76,
+          "sheen": 0.22,
+          "hasMap": false,
+          "show": "full"
+        }
+      },
+      "pixel": {
+        "before": {
+          "r": 219,
+          "g": 223,
+          "b": 219
+        },
+        "hover": {
+          "r": 219,
+          "g": 223,
+          "b": 219
+        }
+      },
+      "brushUi": {
+        "precision": "full",
+        "lastPrecision": "quarter",
+        "floorDraft": {
+          "materialId": "gym-interlock"
+        },
+        "wallPaintDraft": {
+          "paintId": "tintex-cashmere",
+          "colourHex": "#B7D9B1",
+          "colourName": "Pastel green"
+        }
+      }
+    },
+    {
+      "t": 211143,
+      "step": "d13 3D paint",
+      "captionFlash": "Tap a wall to paint it",
+      "captionAfterLeave": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 1,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 3,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        }
+      ],
+      "material": {
+        "hex": "#B7D9B1",
+        "baseHex": "#B7D9B1",
+        "finish": "silk",
+        "roughness": 0.76,
+        "sheen": 0.22,
+        "hasMap": false,
+        "show": "full"
+      },
+      "pixel": {
+        "r": 219,
+        "g": 223,
+        "b": 219
+      },
+      "footer": "106.0 m² · 22.4 L · Rs 5,867",
+      "toasts": [],
+      "live": "106.0 m² · 22.4 L · Rs 5,867"
+    },
+    {
+      "t": 211153,
+      "step": "d13b feedback channels",
+      "audioEls": 0,
+      "vibrateDefined": "function"
+    },
+    {
+      "t": 215617,
+      "step": "d14a drag run",
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 1,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 3,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        }
+      ],
+      "caption": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase"
+    },
+    {
+      "t": 216620,
+      "step": "d14b ctrl-click erase in 3D",
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 1,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 3,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        }
+      ],
+      "toasts": [
+        "Wall paint removed."
+      ]
+    },
+    {
+      "t": 217254,
+      "step": "d14c shift-click room in 3D",
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 1,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 3,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        }
+      ],
+      "toasts": [
+        "Wall paint removed.",
+        "Every wall of the room painted."
+      ]
+    },
+    {
+      "t": 224935,
+      "step": "d14d ctrl+z in 3D",
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 1,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        },
+        {
+          "e": 3,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1",
+          "n": "Pastel green"
+        }
+      ],
+      "toasts": [],
+      "viewMode3dStill": true
+    },
+    {
+      "t": 232047,
+      "step": "d15 navigation",
+      "floorPoint": {
+        "x": 496.7551502013477,
+        "y": 576.3680275122424
+      },
+      "hitAtFloor": null,
+      "dragOrbit": {
+        "before": {
+          "target": {
+            "x": 2.75,
+            "y": 3.75,
+            "z": 1.1340000000000001
+          },
+          "azimuthRad": -1.91566429618506,
+          "elevationRad": 0.6286969188226035,
+          "distanceM": 20.910182882311304,
+          "fovRad": 0.6632251157578452
+        },
+        "after": {
+          "target": {
+            "x": 2.75,
+            "y": 3.75,
+            "z": 1.1340000000000001
+          },
+          "azimuthRad": -3.5156640520444364,
+          "elevationRad": 0.8686969188226037,
+          "distanceM": 20.910182882311304,
+          "fovRad": 0.6632251157578452
+        }
+      },
+      "wheelZoom": {
+        "distBefore": 20.910182882311304,
+        "distAfter": 19.009257165737548
+      },
+      "rotateBtn": {
+        "azBefore": -3.5156640520444364,
+        "azAfter": -4.301062215441885
+      },
+      "rightDragPan": {
+        "target": {
+          "x": 2.75,
+          "y": 3.75,
+          "z": 1.1340000000000001
+        },
+        "after": {
+          "x": 2.75,
+          "y": 3.75,
+          "z": 1.1340000000000001
+        },
+        "az": -4.301062215441885
+      },
+      "arrowKey": {
+        "az": -4.301062215441885,
+        "target": {
+          "x": 2.75,
+          "y": 3.75,
+          "z": 1.1340000000000001
+        }
+      },
+      "fit": {
+        "target": {
+          "x": 2.75,
+          "y": 3.75,
+          "z": 1.1340000000000001
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.5934119456780721,
+        "distanceM": 20.910182882311304,
+        "fovRad": 0.6632251157578452
+      },
+      "headerHint": "3D Mode\n\nDrag to look around · pinch or scroll to zoom · click a wall to paint it\n\n106.0 m² · 22.4 L · Rs 5,867"
+    },
+    {
+      "t": 233958,
+      "step": "d16 walls up",
+      "faces": 24,
+      "southWall": {
+        "hex": "#B7D9B1",
+        "baseHex": "#B7D9B1",
+        "finish": "silk",
+        "roughness": 0.76,
+        "sheen": 0.22,
+        "hasMap": false,
+        "show": "full"
+      },
+      "southPoint": {
+        "x": 591.5032499457242,
+        "y": 494.57253148683833
+      },
+      "hitSouth": null
+    },
+    {
+      "t": 235141,
+      "step": "d16 walls cutaway",
+      "faces": 22,
+      "southWall": {
+        "hex": "#B7D9B1",
+        "baseHex": "#B7D9B1",
+        "finish": "silk",
+        "roughness": 0.76,
+        "sheen": 0.22,
+        "hasMap": false,
+        "show": "hidden"
+      },
+      "southPoint": null,
+      "hitSouth": null
+    },
+    {
+      "t": 236020,
+      "step": "d16 walls down",
+      "faces": 24,
+      "southWall": {
+        "hex": "#B7D9B1",
+        "baseHex": "#B7D9B1",
+        "finish": "silk",
+        "roughness": 0.76,
+        "sheen": 0.22,
+        "hasMap": false,
+        "show": "stub"
+      },
+      "southPoint": {
+        "x": 591.2686081540655,
+        "y": 548.8078069589501
+      },
+      "hitSouth": {
+        "kind": "edge",
+        "roomId": "living",
+        "edgeIndex": 2
+      }
+    },
+    {
+      "t": 239224,
+      "step": "d17 Esc in 3D with paint armed",
+      "overlayStill": false,
+      "paintStill": "true",
+      "panelOpen": true
+    },
+    {
+      "t": 249568,
+      "step": "d17b second Esc",
+      "paintStill": "false",
+      "panelOpen": false
+    },
+    {
+      "t": 261391,
+      "step": "d18 cart",
+      "paintLines": [
+        "TintEX Cashmere Interior Latex\n\nWall paint · silk · Pastel green · painted on the plan\n\n42.6 m² · 2 coats · needs 9.4 L\n\n2× 5 L\n\nRs 2,220\n\nbuys 10 L",
+        "TintEX Cashmere Interior Latex\n\nWall paint · silk · base colour · painted on the plan\n\n34.9 m² · 2 coats · needs 7.7 L\n\n1× 5 L + 3× 1 L\n\nRs 1,835\n\nbuys 8 L",
+        "TintEX Mastertop\n\nWall paint · silk · base colour · painted on the plan\n\n28.5 m² · 2 coats · needs 5.3 L\n\n1× 5 L + 1× 1 L\n\nRs 1,812\n\nbuys 6 L"
+      ],
+      "subtotal": "Rs 5,867",
+      "body": "Your cart\n8 products · 9 units · 3 rooms\n\nRattan Pendant Light\n\nLighting · PPW Demo\n\nUnit: Rs 6,900\n\n−\n+\n\nRs 13,800\n\nRemove\n\nWellness Console Table\n\nDecor · PPW Studio (demo)\n\nUnit: Rs 12,500\n\n−\n+\n\nRs 12,500\n\nRemove\n\nStudio Wall Mirror\n\nDecor · PPW Studio (demo)\n\nUnit: Rs 9,800\n\n−\n+\n\nRs 9,800\n\nRemove\n\nArc Floor Lamp\n\nLighting · PPW Demo\n\nUnit: Rs 4,500\n\n−\n+\n\nRs 4,500\n\nRemove\n\nFloating Wall Shelf\n\nDecor · PPW Studio (demo)\n\nUnit: Rs 3,500\n\n−\n+\n\nRs 3,500\n\nRemove\n\nWall Sconce\n\nLighting · PPW Demo\n\nUnit: Rs 2,400\n\n−\n+\n\nRs 2,400\n\nRemove\n\nAroma Diffuser\n\nDecor · PPW Studio (demo)\n\nUnit: Rs 1,800\n\n−\n"
+    },
+    {
+      "t": 261392,
+      "step": "errors",
+      "count": 0,
+      "errors": []
+    }
+  ],
+  "errors": []
+}

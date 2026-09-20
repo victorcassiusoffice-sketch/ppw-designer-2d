@@ -1,0 +1,177 @@
+{
+  "log": [
+    {
+      "t": 32551,
+      "step": "f1 help launcher vs panel",
+      "help": {
+        "x": 1384,
+        "y": 706,
+        "width": 40,
+        "height": 40
+      },
+      "colourName": {
+        "x": 1351.34375,
+        "y": 697.625,
+        "width": 72.65625,
+        "height": 18
+      },
+      "overlapsColourName": true,
+      "overlapsColoursBlock": true,
+      "insidePanel": true
+    },
+    {
+      "t": 48578,
+      "step": "f2 paint click on a wall with a wall-mounted item",
+      "at": {
+        "x": 561.1666666666667,
+        "y": 458.3333333333333
+      },
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "bedroom": [
+        {
+          "e": 0,
+          "p": "tintex-cashmere"
+        },
+        {
+          "e": 1,
+          "p": "tintex-cashmere"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere"
+        },
+        {
+          "e": 3,
+          "p": "tintex-cashmere"
+        }
+      ],
+      "activeRoom": {
+        "before": "living",
+        "after": "living"
+      },
+      "floatingCluster": {
+        "before": 0,
+        "after": 0
+      },
+      "clusterText": null,
+      "toasts": [],
+      "panelRoom": "Living room"
+    },
+    {
+      "t": 49203,
+      "step": "f2b paint click on a clear stretch",
+      "at": {
+        "x": 625.1,
+        "y": 458.3333333333333
+      },
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "activeRoom": "living",
+      "floatingCluster": 0
+    },
+    {
+      "t": 50070,
+      "step": "f2c paint click on the north wall over the console table",
+      "at": {
+        "x": 396.7666666666667,
+        "y": 93
+      },
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-cashmere",
+          "c": "#B7D9B1"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "floatingCluster": 0,
+      "clusterText": null,
+      "activeRoom": "living"
+    },
+    {
+      "t": 66868,
+      "step": "f3 live line in 3D mode",
+      "panel": {
+        "x": 1168,
+        "y": 53,
+        "width": 272,
+        "height": 765
+      },
+      "live": {
+        "x": 1181,
+        "y": 1048.25,
+        "width": 247,
+        "height": 18
+      },
+      "liveVisible": false,
+      "scope": {
+        "x": 1181,
+        "y": 944.25,
+        "width": 119.5,
+        "height": 40
+      },
+      "scopeVisible": false,
+      "footer": "106.0 m² · 22.3 L · Rs 5,984",
+      "footerBox": {
+        "x": 993.265625,
+        "y": 65,
+        "width": 162.734375,
+        "height": 18
+      },
+      "footerFont": "12px"
+    },
+    {
+      "t": 66877,
+      "step": "f4 coach",
+      "coachMark": 0,
+      "helpOverlayOpen": 0
+    }
+  ]
+}

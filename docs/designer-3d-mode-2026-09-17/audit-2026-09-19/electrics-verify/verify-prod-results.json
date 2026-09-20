@@ -1,0 +1,66 @@
+{
+  "commit": "cb0dae8bbc9b2650c5ea34a45747955de0606583",
+  "ranAt": "2026-09-19T17:45:56.782Z",
+  "withPanel": {
+    "plan": "withPanel",
+    "apiStatus": 200,
+    "apiRows": 14,
+    "apiIdsPresent": [
+      true,
+      true,
+      true
+    ],
+    "apiEnergyKeysOnRow0": [],
+    "msGotoToApi": 14021,
+    "chipAndPanel_3sAfterApi_noInteraction": {
+      "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+      "chipStatus": "covered",
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "t": 1789839975860
+    },
+    "afterOpeningPanel": {
+      "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+      "chipStatus": "covered",
+      "panelLoad": "440 Wh/day · 3 items on · peak 470 W",
+      "panelStatus": "Surplus+1.5 kWh/day",
+      "panelItems": 3,
+      "t": 1789839985733
+    },
+    "storedItems": [
+      "r1:m-6",
+      "r1:m-7",
+      "r1:m-9",
+      "roof-r1:emcar-jinko-475"
+    ],
+    "consoleErrors": []
+  },
+  "noPanel": {
+    "plan": "noPanel",
+    "apiStatus": 200,
+    "apiRows": 14,
+    "apiIdsPresent": [
+      true,
+      true,
+      true
+    ],
+    "apiEnergyKeysOnRow0": [],
+    "msGotoToApi": 4594,
+    "chipAndPanel_3sAfterApi_noInteraction": {
+      "chipText": null,
+      "chipStatus": null,
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "t": 1789840003012
+    },
+    "afterOpeningPanel": null,
+    "storedItems": [
+      "r1:m-6",
+      "r1:m-7",
+      "r1:m-9"
+    ],
+    "consoleErrors": []
+  }
+}

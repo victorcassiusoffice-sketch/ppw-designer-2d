@@ -1,0 +1,1833 @@
+{
+  "scenarios": {
+    "grey": {
+      "open": {
+        "backend": "gl",
+        "faceCount": 5,
+        "msToOverlay": 509,
+        "msToFaces": 6307,
+        "msToFirstFrame": 6393,
+        "debug": {
+          "frames": 1,
+          "children": 5,
+          "camera": [
+            -4.837938442879222,
+            10.474105766770789,
+            13.743156262117338
+          ],
+          "target": [
+            2.5,
+            1.1340000000000001,
+            2
+          ],
+          "renderer": "1440x722 calls=18 tris=100"
+        }
+      },
+      "samples": [
+        {
+          "edge": 0,
+          "material": {
+            "hex": "#808080",
+            "baseHex": "#808080",
+            "finish": "matt",
+            "roughness": 0.95,
+            "sheen": 0,
+            "hasMap": false,
+            "show": "full"
+          },
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        {
+          "edge": 1,
+          "material": {
+            "hex": "#808080",
+            "baseHex": "#808080",
+            "finish": "matt",
+            "roughness": 0.95,
+            "sheen": 0,
+            "hasMap": false,
+            "show": "full"
+          },
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 119
+          }
+        },
+        {
+          "edge": 2,
+          "material": {
+            "hex": "#808080",
+            "baseHex": "#808080",
+            "finish": "matt",
+            "roughness": 0.95,
+            "sheen": 0,
+            "hasMap": false,
+            "show": "full"
+          },
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 119
+          }
+        },
+        {
+          "edge": 3,
+          "material": {
+            "hex": "#808080",
+            "baseHex": "#808080",
+            "finish": "matt",
+            "roughness": 0.95,
+            "sheen": 0,
+            "hasMap": false,
+            "show": "full"
+          },
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 119
+          }
+        }
+      ],
+      "frame": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\grey-808080-walls-up-1440.png"
+    },
+    "gym": {
+      "open": {
+        "backend": "gl",
+        "faceCount": 10,
+        "msToOverlay": 468,
+        "msToFaces": 8941,
+        "msToFirstFrame": 9147,
+        "debug": {
+          "frames": 1,
+          "children": 10,
+          "camera": [
+            -5.235604673623101,
+            11.616701552177313,
+            15.679722526730899
+          ],
+          "target": [
+            3,
+            1.1340000000000001,
+            2.5
+          ],
+          "renderer": "1440x722 calls=30 tris=296"
+        }
+      },
+      "bodies": {
+        "renderer": "1440x722 calls=30 tris=214608",
+        "ms": 2333
+      },
+      "glbs": [
+        {
+          "url": "/models/k1-nordictrack-2450.glb",
+          "status": 200
+        },
+        {
+          "url": "/models/k1-nordictrack-tour-de-france.glb",
+          "status": 200
+        },
+        {
+          "url": "/models/k1-nordictrack-rw900.glb",
+          "status": 200
+        },
+        {
+          "url": "/models/k1-vision-smith.glb",
+          "status": 200
+        },
+        {
+          "url": "/models/k1-nordictrack-x16.glb",
+          "status": 200
+        }
+      ],
+      "frames": {
+        "cutaway": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-3d-cutaway-default-1440.png",
+        "up": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-3d-walls-up-1440.png",
+        "down": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-3d-walls-down-1440.png",
+        "hoverPreview": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-3d-paint-hover-preview-bronze-1440.png",
+        "painted": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-3d-painted-bronze-1440.png",
+        "zoomed": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-3d-zoomed-in-1440.png",
+        "low": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-3d-zoomed-low-angle-1440.png",
+        "selected": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-3d-selected-treadmill-1440.png"
+      },
+      "crops": {
+        "paintedWall": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-close-painted-wall-bronze-2x.png",
+          "left": 492,
+          "top": 415,
+          "w": 360,
+          "h": 240
+        },
+        "door": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-close-door-cutaway-2x.png",
+          "left": 413,
+          "top": 226,
+          "w": 320,
+          "h": 220
+        },
+        "window": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-close-window-2x.png",
+          "left": 694,
+          "top": 195,
+          "w": 320,
+          "h": 220
+        },
+        "corner": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-close-wall-top-corner-2x.png",
+          "left": 774,
+          "top": 259,
+          "w": 320,
+          "h": 220
+        },
+        "floor": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-close-floor-2x.png",
+          "left": 691,
+          "top": 332,
+          "w": 320,
+          "h": 220
+        },
+        "treadmill": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-close-body-treadmill-2x.png",
+          "left": 446,
+          "top": 244,
+          "w": 320,
+          "h": 240
+        },
+        "smith": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-close-body-smith-2x.png",
+          "left": 660,
+          "top": 230,
+          "w": 320,
+          "h": 260
+        },
+        "doorUp": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-close-door-walls-up-2x.png",
+          "left": 413,
+          "top": 196,
+          "w": 320,
+          "h": 240
+        },
+        "treadmillZoom": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-zoom-close-treadmill-2x.png",
+          "left": 199,
+          "top": 218,
+          "w": 420,
+          "h": 300
+        },
+        "doorZoom": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-zoom-close-door-2x.png",
+          "left": 144,
+          "top": 188,
+          "w": 420,
+          "h": 300
+        },
+        "windowZoom": {
+          "path": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\gym-zoom-close-window-2x.png",
+          "left": 854,
+          "top": 67,
+          "w": 420,
+          "h": 300
+        }
+      },
+      "debugAfterBodies": {
+        "frames": 3,
+        "children": 10,
+        "camera": [
+          -5.235604673623101,
+          11.616701552177313,
+          15.679722526730899
+        ],
+        "target": [
+          3,
+          1.1340000000000001,
+          2.5
+        ],
+        "renderer": "1440x722 calls=30 tris=214608"
+      },
+      "renderMsSwiftShader": 31.96666665871938,
+      "debugUp": {
+        "frames": 4,
+        "children": 10,
+        "camera": [
+          -5.235604673623101,
+          11.616701552177313,
+          15.679722526730899
+        ],
+        "target": [
+          3,
+          1.1340000000000001,
+          2.5
+        ],
+        "renderer": "1440x722 calls=30 tris=214608"
+      },
+      "paint": {
+        "hit": {
+          "kind": "edge",
+          "roomId": "r1",
+          "edgeIndex": 2
+        },
+        "material": {
+          "hex": "#4C493F",
+          "baseHex": "#4C493F",
+          "finish": "matt",
+          "roughness": 0.95,
+          "sheen": 0,
+          "hasMap": false,
+          "show": "stub"
+        },
+        "screen": {
+          "x": 672,
+          "y": 535
+        },
+        "pixelCentre": {
+          "r": 73,
+          "g": 69,
+          "b": 59
+        },
+        "pixels5": [
+          {
+            "r": 255,
+            "g": 255,
+            "b": 243
+          },
+          {
+            "r": 238,
+            "g": 232,
+            "b": 221
+          },
+          {
+            "r": 255,
+            "g": 255,
+            "b": 243
+          },
+          {
+            "r": 238,
+            "g": 232,
+            "b": 221
+          },
+          {
+            "r": 73,
+            "g": 69,
+            "b": 59
+          }
+        ]
+      },
+      "points": {
+        "doorPt": {
+          "x": 573.0827568178389,
+          "y": 471.8376842881219
+        },
+        "winPt": {
+          "x": 853.7456998536026,
+          "y": 400.85241867522336
+        },
+        "cornerPt": {
+          "x": 934.1582245960385,
+          "y": 525.4554589793165
+        },
+        "floorPt": {
+          "x": 851.2084864482802,
+          "y": 538.253513240466
+        },
+        "bodyPt": {
+          "x": 606.0021281601977,
+          "y": 459.5691781611293
+        },
+        "smithPt": {
+          "x": 819.6866237973244,
+          "y": 455.51834499376156
+        },
+        "box": {
+          "x": 0,
+          "y": 96,
+          "width": 1440,
+          "height": 722
+        }
+      },
+      "floorPixel": {
+        "r": 255,
+        "g": 255,
+        "b": 243
+      },
+      "floorHexSeed": null,
+      "cameraZoomed": {
+        "target": {
+          "x": 3,
+          "y": 2.5,
+          "z": 1.1340000000000001
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.5934119456780721,
+        "distanceM": 6.561144679215323,
+        "fovRad": 0.6632251157578452
+      },
+      "cameraLow": {
+        "target": {
+          "x": 3,
+          "y": 2.5,
+          "z": 1.1340000000000001
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.5934119456780721,
+        "distanceM": 6.561144679215323,
+        "fovRad": 0.6632251157578452
+      },
+      "selectionCard": "NordicTrack X16 EllipticalTurn ↻Remove",
+      "consoleErrors": [
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)",
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)",
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)",
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)",
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)",
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)",
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)",
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)",
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)",
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)",
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)",
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)",
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)",
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)",
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)",
+        "Warning: Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.%s op-undefined \n    at Group\n    at Layer\n    at FiberProvider (http://127.0.0.1:5199/node_modules/.vite/deps/react-konva.js?v=b2085276:15570:21)"
+      ]
+    },
+    "tintex-phone": {
+      "msToFirstFrame": 36854,
+      "bodies": {
+        "renderer": "780x1378 calls=88 tris=2496",
+        "ms": 120176,
+        "timedOut": true
+      },
+      "debug": {
+        "frames": 4,
+        "children": 24,
+        "camera": [
+          -11.769758411871946,
+          19.615495903859273,
+          26.986470739852923
+        ],
+        "target": [
+          2.75,
+          1.1340000000000001,
+          3.75
+        ],
+        "renderer": "780x1378 calls=88 tris=2496"
+      },
+      "frame": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\tintex-phone-390-3d-cutaway.png",
+      "consoleErrors": [],
+      "renderMsSwiftShader": 9.566666662693024
+    },
+    "tintex": {
+      "open": {
+        "backend": "gl",
+        "faceCount": 22,
+        "msToOverlay": 186,
+        "msToFaces": 6153,
+        "msToFirstFrame": 6263,
+        "debug": {
+          "frames": 3,
+          "children": 24,
+          "camera": [
+            -6.43632386603082,
+            12.82682587806397,
+            18.451191277762995
+          ],
+          "target": [
+            2.75,
+            1.1340000000000001,
+            3.75
+          ],
+          "renderer": "1440x722 calls=88 tris=2496"
+        }
+      },
+      "bodies": {
+        "renderer": "1440x722 calls=88 tris=2496",
+        "ms": 120349,
+        "timedOut": true
+      },
+      "frames": {
+        "cutaway": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\tintex-3d-cutaway-default-1440.png",
+        "up": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\tintex-3d-walls-up-1440.png",
+        "down": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\tintex-3d-walls-down-1440.png",
+        "rotated": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\tintex-3d-cutaway-rotated-90-1440.png"
+      },
+      "samples": [
+        {
+          "room": "Living room",
+          "edge": 0,
+          "show": "full",
+          "finish": "satin",
+          "baseHex": "#F2F1EC",
+          "roughness": 0.6,
+          "sheen": 0.38,
+          "hasMap": false,
+          "screen": {
+            "x": 631,
+            "y": 273
+          },
+          "pixel": {
+            "r": 219,
+            "g": 223,
+            "b": 219
+          }
+        },
+        {
+          "room": "Living room",
+          "edge": 1,
+          "show": "full",
+          "finish": "satin",
+          "baseHex": "#F2F1EC",
+          "roughness": 0.6,
+          "sheen": 0.38,
+          "hasMap": false,
+          "screen": {
+            "x": 783,
+            "y": 279
+          },
+          "pixel": {
+            "r": 209,
+            "g": 202,
+            "b": 187
+          }
+        },
+        {
+          "room": "Living room",
+          "edge": 3,
+          "show": "stub",
+          "finish": "satin",
+          "baseHex": "#F2F1EC",
+          "roughness": 0.6,
+          "sheen": 0.38,
+          "hasMap": false,
+          "screen": {
+            "x": 561,
+            "y": 400
+          },
+          "pixel": {
+            "r": 209,
+            "g": 202,
+            "b": 187
+          }
+        },
+        {
+          "room": "Bedroom",
+          "edge": 0,
+          "show": "full",
+          "finish": "silk",
+          "baseHex": "#EFEDE6",
+          "roughness": 0.76,
+          "sheen": 0.22,
+          "hasMap": false,
+          "screen": {
+            "x": 683,
+            "y": 373
+          },
+          "pixel": {
+            "r": 242,
+            "g": 238,
+            "b": 229
+          }
+        },
+        {
+          "room": "Bedroom",
+          "edge": 1,
+          "show": "full",
+          "finish": "silk",
+          "baseHex": "#EFEDE6",
+          "roughness": 0.76,
+          "sheen": 0.22,
+          "hasMap": false,
+          "screen": {
+            "x": 810,
+            "y": 390
+          },
+          "pixel": {
+            "r": 234,
+            "g": 230,
+            "b": 219
+          }
+        },
+        {
+          "room": "Bedroom",
+          "edge": 2,
+          "show": "stub",
+          "finish": "silk",
+          "baseHex": "#EFEDE6",
+          "roughness": 0.76,
+          "sheen": 0.22,
+          "hasMap": false,
+          "screen": {
+            "x": 785,
+            "y": 525
+          },
+          "pixel": {
+            "r": 209,
+            "g": 202,
+            "b": 187
+          }
+        },
+        {
+          "room": "Bedroom",
+          "edge": 3,
+          "show": "stub",
+          "finish": "silk",
+          "baseHex": "#EFEDE6",
+          "roughness": 0.76,
+          "sheen": 0.22,
+          "hasMap": false,
+          "screen": {
+            "x": 649,
+            "y": 504
+          },
+          "pixel": {
+            "r": 209,
+            "g": 202,
+            "b": 187
+          }
+        },
+        {
+          "room": "Kitchen",
+          "edge": 0,
+          "show": "full",
+          "finish": "silk",
+          "baseHex": "#F0EEE8",
+          "roughness": 0.76,
+          "sheen": 0.22,
+          "hasMap": false,
+          "screen": {
+            "x": 799,
+            "y": 333
+          },
+          "pixel": {
+            "r": 234,
+            "g": 230,
+            "b": 219
+          }
+        },
+        {
+          "room": "Kitchen",
+          "edge": 1,
+          "show": "full",
+          "finish": "silk",
+          "baseHex": "#F0EEE8",
+          "roughness": 0.76,
+          "sheen": 0.22,
+          "hasMap": false,
+          "screen": {
+            "x": 893,
+            "y": 359
+          },
+          "pixel": {
+            "r": 219,
+            "g": 222,
+            "b": 218
+          }
+        },
+        {
+          "room": "Kitchen",
+          "edge": 2,
+          "show": "stub",
+          "finish": "silk",
+          "baseHex": "#F0EEE8",
+          "roughness": 0.76,
+          "sheen": 0.22,
+          "hasMap": false,
+          "screen": {
+            "x": 906,
+            "y": 472
+          },
+          "pixel": {
+            "r": 221,
+            "g": 216,
+            "b": 205
+          }
+        }
+      ],
+      "debugCutaway": {
+        "frames": 3,
+        "children": 24,
+        "camera": [
+          -6.43632386603082,
+          12.82682587806397,
+          18.451191277762995
+        ],
+        "target": [
+          2.75,
+          1.1340000000000001,
+          3.75
+        ],
+        "renderer": "1440x722 calls=88 tris=2496"
+      },
+      "camera": {
+        "target": {
+          "x": 2.75,
+          "y": 3.75,
+          "z": 1.1340000000000001
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.5934119456780721,
+        "distanceM": 20.910182882311304,
+        "fovRad": 0.6632251157578452
+      },
+      "renderMsSwiftShader": 3.700000007947286,
+      "consoleErrors": []
+    },
+    "sofap": {
+      "open": {
+        "backend": "gl",
+        "faceCount": 22,
+        "msToOverlay": 2093,
+        "msToFaces": 4569,
+        "msToFirstFrame": 5004,
+        "debug": {
+          "frames": 3,
+          "children": 24,
+          "camera": [
+            -6.43632386603082,
+            12.82682587806397,
+            18.451191277762995
+          ],
+          "target": [
+            2.75,
+            1.1340000000000001,
+            3.75
+          ],
+          "renderer": "1440x722 calls=88 tris=2496"
+        }
+      },
+      "bodies": {
+        "renderer": "1440x722 calls=88 tris=2496",
+        "ms": 120068,
+        "timedOut": true
+      },
+      "frames": {
+        "cutaway": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\sofap-3d-cutaway-default-1440.png",
+        "up": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\sofap-3d-walls-up-1440.png",
+        "down": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\sofap-3d-walls-down-1440.png",
+        "rotated": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\sofap-3d-cutaway-rotated-90-1440.png"
+      },
+      "samples": [
+        {
+          "room": "Living room",
+          "edge": 0,
+          "show": "full",
+          "finish": "silk",
+          "baseHex": "#EDE8DE",
+          "roughness": 0.76,
+          "sheen": 0.22,
+          "hasMap": false,
+          "screen": {
+            "x": 631,
+            "y": 273
+          },
+          "pixel": {
+            "r": 219,
+            "g": 223,
+            "b": 219
+          }
+        },
+        {
+          "room": "Living room",
+          "edge": 1,
+          "show": "full",
+          "finish": "silk",
+          "baseHex": "#EDE8DE",
+          "roughness": 0.76,
+          "sheen": 0.22,
+          "hasMap": false,
+          "screen": {
+            "x": 783,
+            "y": 279
+          },
+          "pixel": {
+            "r": 209,
+            "g": 202,
+            "b": 187
+          }
+        },
+        {
+          "room": "Living room",
+          "edge": 3,
+          "show": "stub",
+          "finish": "silk",
+          "baseHex": "#EDE8DE",
+          "roughness": 0.76,
+          "sheen": 0.22,
+          "hasMap": false,
+          "screen": {
+            "x": 561,
+            "y": 400
+          },
+          "pixel": {
+            "r": 209,
+            "g": 202,
+            "b": 187
+          }
+        },
+        {
+          "room": "Bedroom",
+          "edge": 0,
+          "show": "full",
+          "finish": "matt",
+          "baseHex": "#F4F2EB",
+          "roughness": 0.95,
+          "sheen": 0,
+          "hasMap": false,
+          "screen": {
+            "x": 683,
+            "y": 373
+          },
+          "pixel": {
+            "r": 234,
+            "g": 231,
+            "b": 221
+          }
+        },
+        {
+          "room": "Bedroom",
+          "edge": 1,
+          "show": "full",
+          "finish": "matt",
+          "baseHex": "#F4F2EB",
+          "roughness": 0.95,
+          "sheen": 0,
+          "hasMap": false,
+          "screen": {
+            "x": 810,
+            "y": 390
+          },
+          "pixel": {
+            "r": 234,
+            "g": 230,
+            "b": 219
+          }
+        },
+        {
+          "room": "Bedroom",
+          "edge": 2,
+          "show": "stub",
+          "finish": "matt",
+          "baseHex": "#F4F2EB",
+          "roughness": 0.95,
+          "sheen": 0,
+          "hasMap": false,
+          "screen": {
+            "x": 785,
+            "y": 525
+          },
+          "pixel": {
+            "r": 209,
+            "g": 202,
+            "b": 187
+          }
+        },
+        {
+          "room": "Bedroom",
+          "edge": 3,
+          "show": "stub",
+          "finish": "matt",
+          "baseHex": "#F4F2EB",
+          "roughness": 0.95,
+          "sheen": 0,
+          "hasMap": false,
+          "screen": {
+            "x": 649,
+            "y": 504
+          },
+          "pixel": {
+            "r": 209,
+            "g": 202,
+            "b": 187
+          }
+        },
+        {
+          "room": "Kitchen",
+          "edge": 0,
+          "show": "full",
+          "finish": "matt",
+          "baseHex": "#F7F7F1",
+          "roughness": 0.95,
+          "sheen": 0,
+          "hasMap": false,
+          "screen": {
+            "x": 799,
+            "y": 333
+          },
+          "pixel": {
+            "r": 234,
+            "g": 230,
+            "b": 219
+          }
+        },
+        {
+          "room": "Kitchen",
+          "edge": 1,
+          "show": "full",
+          "finish": "matt",
+          "baseHex": "#F7F7F1",
+          "roughness": 0.95,
+          "sheen": 0,
+          "hasMap": false,
+          "screen": {
+            "x": 893,
+            "y": 359
+          },
+          "pixel": {
+            "r": 219,
+            "g": 222,
+            "b": 218
+          }
+        },
+        {
+          "room": "Kitchen",
+          "edge": 2,
+          "show": "stub",
+          "finish": "matt",
+          "baseHex": "#F7F7F1",
+          "roughness": 0.95,
+          "sheen": 0,
+          "hasMap": false,
+          "screen": {
+            "x": 906,
+            "y": 472
+          },
+          "pixel": {
+            "r": 218,
+            "g": 214,
+            "b": 203
+          }
+        }
+      ],
+      "debugCutaway": {
+        "frames": 3,
+        "children": 24,
+        "camera": [
+          -6.43632386603082,
+          12.82682587806397,
+          18.451191277762995
+        ],
+        "target": [
+          2.75,
+          1.1340000000000001,
+          3.75
+        ],
+        "renderer": "1440x722 calls=88 tris=2496"
+      },
+      "camera": {
+        "target": {
+          "x": 2.75,
+          "y": 3.75,
+          "z": 1.1340000000000001
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.5934119456780721,
+        "distanceM": 20.910182882311304,
+        "fovRad": 0.6632251157578452
+      },
+      "renderMsSwiftShader": 8,
+      "consoleErrors": []
+    },
+    "probe2_floors": [
+      {
+        "floorId": "gym-interlock",
+        "expectHex": "#3a3a3a",
+        "walls": [
+          {
+            "edge": 0,
+            "hex": "#808080",
+            "show": "full",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 120
+            }
+          },
+          {
+            "edge": 1,
+            "hex": "#808080",
+            "show": "full",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 119
+            }
+          },
+          {
+            "edge": 2,
+            "hex": "#808080",
+            "show": "full",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 119
+            }
+          },
+          {
+            "edge": 3,
+            "hex": "#808080",
+            "show": "full",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 119
+            }
+          }
+        ],
+        "gl": {
+          "antialias": true,
+          "samples": 4,
+          "maxSamples": 4,
+          "canvas": [
+            1440,
+            722
+          ],
+          "css": [
+            1440,
+            722
+          ],
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+        },
+        "floorCentre": {
+          "screen": {
+            "x": 720,
+            "y": 418
+          },
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        "floorCornerNW": {
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 119
+          }
+        },
+        "floorCornerSE": {
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        "groundLit": {
+          "pixel": {
+            "r": 0,
+            "g": 0,
+            "b": 0
+          }
+        },
+        "groundShadow": {
+          "pixel": {
+            "r": 226,
+            "g": 221,
+            "b": 212
+          }
+        },
+        "sky": {
+          "pixel": {
+            "r": 237,
+            "g": 231,
+            "b": 220
+          }
+        },
+        "floorCentreNoSun": {
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        "groundLitNoSun": {
+          "pixel": {
+            "r": 0,
+            "g": 0,
+            "b": 0
+          }
+        },
+        "wall0NoSun": {
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        "debug": {
+          "frames": 4,
+          "children": 5,
+          "camera": [
+            -4.837938442879222,
+            10.474105766770789,
+            13.743156262117338
+          ],
+          "target": [
+            2.5,
+            1.1340000000000001,
+            2
+          ],
+          "renderer": "1440x722 calls=18 tris=100"
+        },
+        "frame": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\probe2-floor-gym-interlock-walls-808080-up-1440.png"
+      },
+      {
+        "floorId": "eva-combat",
+        "expectHex": "#1f2a44",
+        "walls": [
+          {
+            "edge": 0,
+            "hex": "#808080",
+            "show": "full",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 120
+            }
+          },
+          {
+            "edge": 1,
+            "hex": "#808080",
+            "show": "full",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 119
+            }
+          },
+          {
+            "edge": 2,
+            "hex": "#808080",
+            "show": "full",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 119
+            }
+          },
+          {
+            "edge": 3,
+            "hex": "#808080",
+            "show": "full",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 119
+            }
+          }
+        ],
+        "gl": {
+          "antialias": true,
+          "samples": 4,
+          "maxSamples": 4,
+          "canvas": [
+            1440,
+            722
+          ],
+          "css": [
+            1440,
+            722
+          ],
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+        },
+        "floorCentre": {
+          "screen": {
+            "x": 720,
+            "y": 418
+          },
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        "floorCornerNW": {
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 119
+          }
+        },
+        "floorCornerSE": {
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        "groundLit": {
+          "pixel": {
+            "r": 0,
+            "g": 0,
+            "b": 0
+          }
+        },
+        "groundShadow": {
+          "pixel": {
+            "r": 226,
+            "g": 221,
+            "b": 212
+          }
+        },
+        "sky": {
+          "pixel": {
+            "r": 237,
+            "g": 231,
+            "b": 220
+          }
+        },
+        "floorCentreNoSun": {
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        "groundLitNoSun": {
+          "pixel": {
+            "r": 0,
+            "g": 0,
+            "b": 0
+          }
+        },
+        "wall0NoSun": {
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        "debug": {
+          "frames": 4,
+          "children": 5,
+          "camera": [
+            -4.837938442879222,
+            10.474105766770789,
+            13.743156262117338
+          ],
+          "target": [
+            2.5,
+            1.1340000000000001,
+            2
+          ],
+          "renderer": "1440x722 calls=18 tris=100"
+        },
+        "frame": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\probe2-floor-eva-combat-walls-808080-up-1440.png"
+      },
+      {
+        "floorId": null,
+        "expectHex": "#F1EBDD",
+        "walls": [
+          {
+            "edge": 0,
+            "hex": "#808080",
+            "show": "full",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 120
+            }
+          },
+          {
+            "edge": 1,
+            "hex": "#808080",
+            "show": "full",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 119
+            }
+          },
+          {
+            "edge": 2,
+            "hex": "#808080",
+            "show": "full",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 119
+            }
+          },
+          {
+            "edge": 3,
+            "hex": "#808080",
+            "show": "full",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 119
+            }
+          }
+        ],
+        "gl": {
+          "antialias": true,
+          "samples": 4,
+          "maxSamples": 4,
+          "canvas": [
+            1440,
+            722
+          ],
+          "css": [
+            1440,
+            722
+          ],
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+        },
+        "floorCentre": {
+          "screen": {
+            "x": 720,
+            "y": 418
+          },
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        "floorCornerNW": {
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 119
+          }
+        },
+        "floorCornerSE": {
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        "groundLit": {
+          "pixel": {
+            "r": 0,
+            "g": 0,
+            "b": 0
+          }
+        },
+        "groundShadow": {
+          "pixel": {
+            "r": 226,
+            "g": 221,
+            "b": 212
+          }
+        },
+        "sky": {
+          "pixel": {
+            "r": 237,
+            "g": 231,
+            "b": 220
+          }
+        },
+        "floorCentreNoSun": {
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        "groundLitNoSun": {
+          "pixel": {
+            "r": 0,
+            "g": 0,
+            "b": 0
+          }
+        },
+        "wall0NoSun": {
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        "debug": {
+          "frames": 4,
+          "children": 5,
+          "camera": [
+            -4.837938442879222,
+            10.474105766770789,
+            13.743156262117338
+          ],
+          "target": [
+            2.5,
+            1.1340000000000001,
+            2
+          ],
+          "renderer": "1440x722 calls=18 tris=100"
+        },
+        "frame": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\probe2-floor-bare-walls-808080-up-1440.png"
+      }
+    ],
+    "probe2_floors_wallsdown": [
+      {
+        "floorId": "gym-interlock",
+        "expectHex": "#3a3a3a",
+        "walls": [
+          {
+            "edge": 0,
+            "hex": "#808080",
+            "show": "stub",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 120
+            }
+          },
+          {
+            "edge": 1,
+            "hex": "#808080",
+            "show": "stub",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 119
+            }
+          },
+          {
+            "edge": 2,
+            "hex": "#808080",
+            "show": "stub",
+            "pixel": {
+              "r": 166,
+              "g": 162,
+              "b": 154
+            }
+          },
+          {
+            "edge": 3,
+            "hex": "#808080",
+            "show": "stub",
+            "pixel": {
+              "r": 209,
+              "g": 202,
+              "b": 188
+            }
+          }
+        ],
+        "gl": {
+          "antialias": true,
+          "samples": 4,
+          "maxSamples": 4,
+          "canvas": [
+            1440,
+            722
+          ],
+          "css": [
+            1440,
+            722
+          ],
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+        },
+        "floorCentre": {
+          "screen": {
+            "x": 720,
+            "y": 418
+          },
+          "pixel": {
+            "r": 66,
+            "g": 66,
+            "b": 66
+          }
+        },
+        "floorCornerNW": {
+          "pixel": {
+            "r": 66,
+            "g": 66,
+            "b": 66
+          }
+        },
+        "floorCornerSE": {
+          "pixel": {
+            "r": 138,
+            "g": 134,
+            "b": 127
+          }
+        },
+        "groundLit": {
+          "screen": {
+            "x": 935,
+            "y": 337
+          },
+          "pixel": {
+            "r": 238,
+            "g": 232,
+            "b": 221
+          }
+        },
+        "groundShadow": {
+          "screen": {
+            "x": 919,
+            "y": 406
+          },
+          "pixel": {
+            "r": 238,
+            "g": 232,
+            "b": 221
+          }
+        },
+        "sky": {
+          "pixel": {
+            "r": 237,
+            "g": 231,
+            "b": 220
+          }
+        },
+        "floorCentreNoSun": {
+          "pixel": {
+            "r": 63,
+            "g": 63,
+            "b": 63
+          }
+        },
+        "groundLitNoSun": {
+          "pixel": {
+            "r": 226,
+            "g": 221,
+            "b": 211
+          }
+        },
+        "wall0NoSun": {
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        "debug": {
+          "frames": 4,
+          "children": 5,
+          "camera": [
+            -4.837938442879222,
+            10.474105766770789,
+            13.743156262117338
+          ],
+          "target": [
+            2.5,
+            1.1340000000000001,
+            2
+          ],
+          "renderer": "1440x722 calls=18 tris=100"
+        },
+        "frame": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\probe2-floor-gym-interlock-walls-808080-down-1440.png"
+      },
+      {
+        "floorId": "eva-combat",
+        "expectHex": "#1f2a44",
+        "walls": [
+          {
+            "edge": 0,
+            "hex": "#808080",
+            "show": "stub",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 120
+            }
+          },
+          {
+            "edge": 1,
+            "hex": "#808080",
+            "show": "stub",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 119
+            }
+          },
+          {
+            "edge": 2,
+            "hex": "#808080",
+            "show": "stub",
+            "pixel": {
+              "r": 166,
+              "g": 162,
+              "b": 154
+            }
+          },
+          {
+            "edge": 3,
+            "hex": "#808080",
+            "show": "stub",
+            "pixel": {
+              "r": 209,
+              "g": 202,
+              "b": 188
+            }
+          }
+        ],
+        "gl": {
+          "antialias": true,
+          "samples": 4,
+          "maxSamples": 4,
+          "canvas": [
+            1440,
+            722
+          ],
+          "css": [
+            1440,
+            722
+          ],
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+        },
+        "floorCentre": {
+          "screen": {
+            "x": 720,
+            "y": 418
+          },
+          "pixel": {
+            "r": 37,
+            "g": 49,
+            "b": 76
+          }
+        },
+        "floorCornerNW": {
+          "pixel": {
+            "r": 37,
+            "g": 49,
+            "b": 76
+          }
+        },
+        "floorCornerSE": {
+          "pixel": {
+            "r": 123,
+            "g": 126,
+            "b": 132
+          }
+        },
+        "groundLit": {
+          "screen": {
+            "x": 935,
+            "y": 337
+          },
+          "pixel": {
+            "r": 238,
+            "g": 232,
+            "b": 221
+          }
+        },
+        "groundShadow": {
+          "screen": {
+            "x": 919,
+            "y": 406
+          },
+          "pixel": {
+            "r": 238,
+            "g": 232,
+            "b": 221
+          }
+        },
+        "sky": {
+          "pixel": {
+            "r": 237,
+            "g": 231,
+            "b": 220
+          }
+        },
+        "floorCentreNoSun": {
+          "pixel": {
+            "r": 35,
+            "g": 46,
+            "b": 73
+          }
+        },
+        "groundLitNoSun": {
+          "pixel": {
+            "r": 226,
+            "g": 221,
+            "b": 211
+          }
+        },
+        "wall0NoSun": {
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        "debug": {
+          "frames": 4,
+          "children": 5,
+          "camera": [
+            -4.837938442879222,
+            10.474105766770789,
+            13.743156262117338
+          ],
+          "target": [
+            2.5,
+            1.1340000000000001,
+            2
+          ],
+          "renderer": "1440x722 calls=18 tris=100"
+        },
+        "frame": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\probe2-floor-eva-combat-walls-808080-down-1440.png"
+      },
+      {
+        "floorId": null,
+        "expectHex": "#F1EBDD",
+        "walls": [
+          {
+            "edge": 0,
+            "hex": "#808080",
+            "show": "stub",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 120
+            }
+          },
+          {
+            "edge": 1,
+            "hex": "#808080",
+            "show": "stub",
+            "pixel": {
+              "r": 122,
+              "g": 121,
+              "b": 119
+            }
+          },
+          {
+            "edge": 2,
+            "hex": "#808080",
+            "show": "stub",
+            "pixel": {
+              "r": 166,
+              "g": 162,
+              "b": 154
+            }
+          },
+          {
+            "edge": 3,
+            "hex": "#808080",
+            "show": "stub",
+            "pixel": {
+              "r": 209,
+              "g": 202,
+              "b": 188
+            }
+          }
+        ],
+        "gl": {
+          "antialias": true,
+          "samples": 4,
+          "maxSamples": 4,
+          "canvas": [
+            1440,
+            722
+          ],
+          "css": [
+            1440,
+            722
+          ],
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+        },
+        "floorCentre": {
+          "screen": {
+            "x": 720,
+            "y": 418
+          },
+          "pixel": {
+            "r": 255,
+            "g": 255,
+            "b": 243
+          }
+        },
+        "floorCornerNW": {
+          "pixel": {
+            "r": 255,
+            "g": 255,
+            "b": 243
+          }
+        },
+        "floorCornerSE": {
+          "pixel": {
+            "r": 232,
+            "g": 229,
+            "b": 216
+          }
+        },
+        "groundLit": {
+          "screen": {
+            "x": 935,
+            "y": 337
+          },
+          "pixel": {
+            "r": 238,
+            "g": 232,
+            "b": 221
+          }
+        },
+        "groundShadow": {
+          "screen": {
+            "x": 919,
+            "y": 406
+          },
+          "pixel": {
+            "r": 238,
+            "g": 232,
+            "b": 221
+          }
+        },
+        "sky": {
+          "pixel": {
+            "r": 237,
+            "g": 231,
+            "b": 220
+          }
+        },
+        "floorCentreNoSun": {
+          "pixel": {
+            "r": 255,
+            "g": 249,
+            "b": 235
+          }
+        },
+        "groundLitNoSun": {
+          "pixel": {
+            "r": 226,
+            "g": 221,
+            "b": 211
+          }
+        },
+        "wall0NoSun": {
+          "pixel": {
+            "r": 122,
+            "g": 121,
+            "b": 120
+          }
+        },
+        "debug": {
+          "frames": 4,
+          "children": 5,
+          "camera": [
+            -4.837938442879222,
+            10.474105766770789,
+            13.743156262117338
+          ],
+          "target": [
+            2.5,
+            1.1340000000000001,
+            2
+          ],
+          "renderer": "1440x722 calls=18 tris=100"
+        },
+        "frame": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\3d-visual\\probe2-floor-bare-walls-808080-down-1440.png"
+      }
+    ]
+  },
+  "startedAt": "2026-09-19T17:33:36.097Z",
+  "finishedAt": "2026-09-19T17:40:25.243Z",
+  "error": "page.screenshot: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n    at demoScenario (C:\\Users\\Victor\\AppData\\Local\\Temp\\claude\\C--Users-Victor-Documents-PPW-Code-ppw-designer-2d\\1b4fd532-e2fa-4df5-bbdb-754fc1225370\\scratchpad\\audit\\3d-visual\\capture.cjs:118:14)\n    at async C:\\Users\\Victor\\AppData\\Local\\Temp\\claude\\C--Users-Victor-Documents-PPW-Code-ppw-designer-2d\\1b4fd532-e2fa-4df5-bbdb-754fc1225370\\scratchpad\\audit\\3d-visual\\capture.cjs:337:24",
+  "error_tintex": "page.screenshot: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n    at demoScenario (C:\\Users\\Victor\\AppData\\Local\\Temp\\claude\\C--Users-Victor-Documents-PPW-Code-ppw-designer-2d\\1b4fd532-e2fa-4df5-bbdb-754fc1225370\\scratchpad\\audit\\3d-visual\\capture.cjs:118:14)\n    at async safe (C:\\Users\\Victor\\AppData\\Local\\Temp\\claude\\C--Users-Victor-Documents-PPW-Code-ppw-designer-2d\\1b4fd532-e2fa-4df5-bbdb-754fc1225370\\scratchpad\\audit\\3d-visual\\capture.cjs:336:33)\n    at async C:\\Users\\Victor\\AppData\\Local\\Temp\\claude\\C--Users-Victor-Documents-PPW-Code-ppw-designer-2d\\1b4fd532-e2fa-4df5-bbdb-754fc1225370\\scratchpad\\audit\\3d-visual\\capture.cjs:338:24",
+  "error_sofap": "page.screenshot: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n    at demoScenario (C:\\Users\\Victor\\AppData\\Local\\Temp\\claude\\C--Users-Victor-Documents-PPW-Code-ppw-designer-2d\\1b4fd532-e2fa-4df5-bbdb-754fc1225370\\scratchpad\\audit\\3d-visual\\capture.cjs:118:14)\n    at async safe (C:\\Users\\Victor\\AppData\\Local\\Temp\\claude\\C--Users-Victor-Documents-PPW-Code-ppw-designer-2d\\1b4fd532-e2fa-4df5-bbdb-754fc1225370\\scratchpad\\audit\\3d-visual\\capture.cjs:336:33)\n    at async C:\\Users\\Victor\\AppData\\Local\\Temp\\claude\\C--Users-Victor-Documents-PPW-Code-ppw-designer-2d\\1b4fd532-e2fa-4df5-bbdb-754fc1225370\\scratchpad\\audit\\3d-visual\\capture.cjs:339:23"
+}

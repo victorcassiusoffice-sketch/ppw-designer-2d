@@ -1,0 +1,21 @@
+┌─────────┬─────────────────────────────────┬───────────────────────────────────────────────────────┬─────────┬─────────────┬─────────────────────────┬──────┬────────────┬────────┐
+│ (index) │ id                              │ name                                                  │ power_w │ energy_role │ refKey                  │ avgW │ role       │ powerW │
+├─────────┼─────────────────────────────────┼───────────────────────────────────────────────────────┼─────────┼─────────────┼─────────────────────────┼──────┼────────────┼────────┤
+│ 0       │ 'k1-nordictrack-2450'           │ 'NordicTrack Commercial 2450 Treadmill'               │ null    │ null        │ 'treadmill'             │ 350  │ 'consumer' │ 350    │
+│ 1       │ 'k1-nordictrack-tour-de-france' │ 'NordicTrack Tour de France Indoor Bike'              │ null    │ null        │ 'indoor-bike-connected' │ 60   │ 'consumer' │ 60     │
+│ 2       │ 'k1-nordictrack-gx10'           │ 'NordicTrack GX 10 Recumbent Bike'                    │ null    │ null        │ 'indoor-bike'           │ 0    │ 'none'     │ 0      │
+│ 3       │ 'k1-schwinn-700ic'              │ 'Schwinn 700IC Indoor Bike'                           │ null    │ null        │ 'indoor-bike-connected' │ 60   │ 'consumer' │ 60     │
+│ 4       │ 'k1-proform-carbon-tl'          │ 'ProForm Carbon TL Treadmill'                         │ null    │ null        │ 'treadmill'             │ 350  │ 'consumer' │ 350    │
+│ 5       │ 'k1-nordictrack-x16'            │ 'NordicTrack X16 Elliptical'                          │ null    │ null        │ 'elliptical'            │ 100  │ 'consumer' │ 100    │
+│ 6       │ 'k1-nordictrack-rw900'          │ 'NordicTrack RW900 Rower'                             │ null    │ null        │ 'rower'                 │ 0    │ 'none'     │ 0      │
+│ 7       │ 'k1-vision-t600-03'             │ 'Vision Fitness T600-03 Treadmill'                    │ null    │ null        │ 'treadmill-commercial'  │ 700  │ 'consumer' │ 700    │
+│ 8       │ 'k1-vision-t600e-02'            │ 'Vision Fitness T600E-02 Treadmill (22" touchscreen)' │ null    │ null        │ 'treadmill-commercial'  │ 700  │ 'consumer' │ 700    │
+│ 9       │ 'k1-matrix-mg-glute'            │ 'Matrix MG Glute Trainer'                             │ null    │ null        │ 'strength-equipment'    │ 0    │ 'none'     │ 0      │
+│ 10      │ 'k1-matrix-versa-adabd'         │ 'Matrix Versa Adductor / Abductor'                    │ null    │ null        │ 'strength-equipment'    │ 0    │ 'none'     │ 0      │
+│ 11      │ 'k1-vision-smith'               │ 'Vision Fitness Smith Machine'                        │ null    │ null        │ 'strength-equipment'    │ 0    │ 'none'     │ 0      │
+│ 12      │ 'k1-bowflex-xtreme-2se'         │ 'Bowflex Xtreme 2 SE Home Gym'                        │ null    │ null        │ 'strength-equipment'    │ 0    │ 'none'     │ 0      │
+│ 13      │ 'k1-bench-adjustable-fid'       │ 'Adjustable Flat / Incline / Decline Bench'           │ null    │ null        │ 'strength-equipment'    │ 0    │ 'none'     │ 0      │
+└─────────┴─────────────────────────────────┴───────────────────────────────────────────────────────┴─────────┴─────────────┴─────────────────────────┴──────┴────────────┴────────┘
+REPORT rw900-only: {"consumersLen":0,"loadWhDay":0,"status":"none"}
+first matching row index: 3 key: rower | rower-connected idx: 2 | rower idx: 3
+edge: NordicTrack RW900 Rower 22-inch touchscreen -> rower 0 W | NordicTrack RW900 Rower iFit -> rower 0 W

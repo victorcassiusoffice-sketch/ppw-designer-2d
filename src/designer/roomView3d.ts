@@ -125,6 +125,9 @@ export interface SceneRoomInput {
   /** The paint's finish per painted edge (3D Mode: roughness / sheen); absent = bare plaster. */
   wallFinishByEdge?: Map<number, string>;
   floorHex?: string;
+  /** What the laid floor reads as (designer/floorKind.ts) and its tile size, for the 3D surface (P3). */
+  floorKind?: string;
+  floorTileM?: number;
   /** Ignored for walls/floor when `kind === 'outdoor'`; items still render. */
   kind?: string;
   items?: SceneItemInput[];
@@ -140,6 +143,10 @@ export interface SceneFreeWallInput {
 }
 
 export interface SceneItemInput {
+  /** A lamp: the 3D stage lights it after dark (P3). */
+  emitsLight?: boolean;
+  /** Height of the lamp's light source above the floor, metres. */
+  lightMountM?: number;
   instanceId: string;
   /** Footprint top-left, metres (the plan's own convention). */
   x: number;
@@ -754,7 +761,7 @@ export function boundsOf(rooms: Array<{ polygon: Polygon; kind?: string }>, wall
 }
 
 export const DEFAULT_FOV_RAD = (38 * Math.PI) / 180;
-export const DEFAULT_ELEVATION_RAD = (34 * Math.PI) / 180;
+export const DEFAULT_ELEVATION_RAD = (30 * Math.PI) / 180;
 export const DEFAULT_AZIMUTH_RAD = (-32 * Math.PI) / 180;
 export const MIN_ELEVATION_RAD = (12 * Math.PI) / 180;
 export const MAX_ELEVATION_RAD = (78 * Math.PI) / 180;
@@ -762,6 +769,12 @@ export const MAX_ELEVATION_RAD = (78 * Math.PI) / 180;
 /**
  * A camera that frames the whole plan from the default three-quarter angle.
  * `aspect` = width / height of the viewport; wider viewports can sit closer.
+ *
+ * P3 (2026-09-19, the 3D audit): the old fit left the room 6–16 % of the
+ * view, floating in a void. The plan's half-diagonal plus a third of the
+ * wall height, at the limiting field of view, plus a little standoff —
+ * the room now fills the frame the way a Sims lot does; the wheel and the
+ * pinch zoom out from there.
  */
 export function fitCamera(b: Bounds2, wallHeightM: number, aspect = 1.4): OrbitCamera {
   const w = Math.max(1, b.maxX - b.minX);
@@ -770,7 +783,7 @@ export function fitCamera(b: Bounds2, wallHeightM: number, aspect = 1.4): OrbitC
   const fov = DEFAULT_FOV_RAD;
   const hfov = 2 * Math.atan(Math.tan(fov / 2) * Math.max(0.6, aspect));
   const limiting = Math.min(fov, hfov);
-  const distance = (radius + wallHeightM * 0.6) / Math.tan(limiting / 2) + wallHeightM;
+  const distance = (radius + wallHeightM * 0.3) / Math.tan(limiting / 2) + wallHeightM * 0.4;
   return {
     target: { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2, z: wallHeightM * 0.42 },
     azimuthRad: DEFAULT_AZIMUTH_RAD,

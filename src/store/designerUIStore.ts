@@ -193,6 +193,14 @@ interface DesignerUIState {
   wallView: WallView;
   setWallView: (view: WallView) => void;
   /**
+   * The sun's clock hour in 3D Mode (P3 realism, 2026-09-19): null = the
+   * studio rig the colour truth is measured under; a number = the real
+   * Mauritian sun at that hour, lamps on after dark. Session chrome, never
+   * persisted — every open starts colour-true.
+   */
+  sunHour: number | null;
+  setSunHour: (hour: number | null) => void;
+  /**
    * Wall selection (Vic 2026-09-05: "when I pressed select tool i could not
    * select the walls to delete"). The free wall the Select tool has picked,
    * or null. Transient chrome — never persisted, cleared whenever the tool
@@ -253,6 +261,8 @@ export const useDesignerUIStore = create<DesignerUIState>()(
       setViewMode: (mode) => set((s) => (s.viewMode === mode ? s : { viewMode: mode })),
       wallView: 'cutaway',
       setWallView: (view) => set((s) => (s.wallView === view ? s : { wallView: view })),
+      sunHour: null,
+      setSunHour: (hour) => set((s) => (s.sunHour === hour ? s : { sunHour: hour })),
       setEnergyPanelOpen: (open) =>
         set((s) => (open ? { energyPanelOpen: true, tool: 'hand' } : s.energyPanelOpen ? { energyPanelOpen: false } : s)),
       selectedWallId: null,

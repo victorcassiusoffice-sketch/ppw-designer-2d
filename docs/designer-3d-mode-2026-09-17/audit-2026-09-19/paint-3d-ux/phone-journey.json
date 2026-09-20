@@ -1,0 +1,546 @@
+{
+  "log": [
+    {
+      "t": 6339,
+      "step": "p01 new visitor",
+      "drawHud": "WALL PEN\nTap each corner of your room\n0 pts\n·\n0.00 m\n·\n0.00 m²\n−\n0.5 m\n+\nLENGTH\nm\nMake room\nDone\n5 × 4 m room\nDiscard",
+      "toolbar": {
+        "x": 0,
+        "y": 789,
+        "width": 390,
+        "height": 55
+      },
+      "menuBtn": {
+        "x": 338,
+        "y": 6,
+        "width": 44,
+        "height": 44
+      },
+      "paintToggleVisible": 0,
+      "view3dVisible": 0
+    },
+    {
+      "t": 7822,
+      "step": "p02 sheet",
+      "paintRow": "Wall paint\nOFF",
+      "paintRowBox": {
+        "x": 55.8125,
+        "y": 620.5,
+        "width": 326.1875,
+        "height": 48
+      },
+      "view3dRow": "3D Mode\nOFF",
+      "sheetScroll": {
+        "sh": 2994,
+        "ch": 844
+      },
+      "mobileRows": 5
+    },
+    {
+      "t": 19362,
+      "step": "p03 tintex plan",
+      "rooms": [
+        {
+          "id": "living",
+          "painted": 4
+        },
+        {
+          "id": "bedroom",
+          "painted": 4
+        },
+        {
+          "id": "kitchen",
+          "painted": 4
+        }
+      ],
+      "toolbar": {
+        "x": 0,
+        "y": 789,
+        "width": 390,
+        "height": 55
+      },
+      "cartPill": {
+        "x": 231.1875,
+        "y": 729,
+        "width": 142.8125,
+        "height": 44
+      },
+      "toasts": []
+    },
+    {
+      "t": 21810,
+      "step": "p04 HUD",
+      "rowIds": [
+        "wallpaint-mobile-tintex-vip-satin",
+        "wallpaint-mobile-tintex-mastertop",
+        "wallpaint-mobile-tintex-cashmere",
+        "wallpaint-mobile-tintex-true-white-matt",
+        "wallpaint-mobile-tintex-trade-pro"
+      ],
+      "rowBox": {
+        "x": 55.8125,
+        "y": 668.5,
+        "width": 326.1875,
+        "height": 48
+      },
+      "hud": {
+        "x": 11.703125,
+        "y": 593.875,
+        "width": 366.59375,
+        "height": 183.125
+      },
+      "hudText": "TintEX VIP Satin\n3D\nChange\nMore\nWall\nRoom\nErase\nDone\n\n106.0 m² · 21.6 L · Rs 5,691 · Tap a wall to paint it",
+      "chips": 25,
+      "chipBox": {
+        "x": 66.703125,
+        "y": 654.875,
+        "width": 40,
+        "height": 40
+      },
+      "moreBox": {
+        "x": 1170.703125,
+        "y": 654.875,
+        "width": 55.671875,
+        "height": 40
+      },
+      "buttons": {
+        "wallpaint-3d-mobile": {
+          "x": 247.96875,
+          "y": 602.875,
+          "width": 42.1875,
+          "height": 44
+        },
+        "wallpaint-change-mobile": {
+          "x": 298.15625,
+          "y": 602.875,
+          "width": 71.140625,
+          "height": 44
+        },
+        "wallpaint-scope-mobile-wall": {
+          "x": 20.703125,
+          "y": 702.875,
+          "width": 82.640625,
+          "height": 44
+        },
+        "wallpaint-scope-mobile-room": {
+          "x": 109.34375,
+          "y": 702.875,
+          "width": 82.65625,
+          "height": 44
+        },
+        "wallpaint-erase-mobile": {
+          "x": 198,
+          "y": 702.875,
+          "width": 82.640625,
+          "height": 44
+        },
+        "wallpaint-done-mobile": {
+          "x": 286.640625,
+          "y": 702.875,
+          "width": 82.65625,
+          "height": 44
+        }
+      },
+      "live": "106.0 m² · 21.6 L · Rs 5,691",
+      "toolbar": {
+        "x": 0,
+        "y": 789,
+        "width": 390,
+        "height": 55
+      },
+      "cartPill": null,
+      "planVisibleHeight": 537.875
+    },
+    {
+      "t": 22205,
+      "step": "p05 colour",
+      "picked": "wallpaint-hud-colour-ral-6019",
+      "hudColour": "Pastel green"
+    },
+    {
+      "t": 22224,
+      "step": "p05b wall points on plan",
+      "s0": {
+        "x": 195,
+        "y": 108.07386363636365
+      },
+      "s2": {
+        "x": 195,
+        "y": 333.5284090909091
+      },
+      "hud": {
+        "x": 11.703125,
+        "y": 593.875,
+        "width": 366.59375,
+        "height": 183.125
+      }
+    },
+    {
+      "t": 23785,
+      "step": "p06 plan tap",
+      "target": {
+        "x": 195,
+        "y": 108.07386363636365
+      },
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "toasts": [],
+      "live": "106.0 m² · 21.6 L · Rs 5,691"
+    },
+    {
+      "t": 24658,
+      "step": "p06b room tap",
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "toasts": []
+    },
+    {
+      "t": 25749,
+      "step": "p06c erase tap",
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "toasts": []
+    },
+    {
+      "t": 25850,
+      "step": "p06d undo affordance on phone",
+      "undoBtn": 0,
+      "toastAction": 0
+    },
+    {
+      "t": 37145,
+      "step": "p07 3D",
+      "loading": {
+        "overlay": {
+          "x": 0,
+          "y": 57,
+          "width": 390,
+          "height": 787
+        },
+        "canvas": 1,
+        "caption": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+        "spinner": 0
+      },
+      "firstFrame": {
+        "ms": 4,
+        "faces": 22
+      },
+      "totalMs": 11236,
+      "backend": "gl",
+      "overlay": {
+        "x": 0,
+        "y": 57,
+        "width": 390,
+        "height": 787
+      },
+      "header": "3D Mode\n\nDrag to look around · pinch or scroll to zoom · click a wall to paint it\n\n106.0 m² · 21.6 L · Rs 5,691",
+      "caption": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+      "controls": {
+        "wallpaint-3d-rotate-left": {
+          "x": 88.28125,
+          "y": 108,
+          "width": 40,
+          "height": 40
+        },
+        "wallpaint-3d-rotate-right": {
+          "x": 132.28125,
+          "y": 108,
+          "width": 40,
+          "height": 40
+        },
+        "wallpaint-3d-fit": {
+          "x": 176.28125,
+          "y": 108,
+          "width": 40,
+          "height": 40
+        },
+        "view3d-walls-up": {
+          "x": 225.28125,
+          "y": 109,
+          "width": 36,
+          "height": 40
+        },
+        "view3d-walls-cutaway": {
+          "x": 261.28125,
+          "y": 109,
+          "width": 36,
+          "height": 40
+        },
+        "view3d-walls-down": {
+          "x": 297.28125,
+          "y": 109,
+          "width": 36,
+          "height": 40
+        },
+        "wallpaint-3d-close": {
+          "x": 338.28125,
+          "y": 108,
+          "width": 43.71875,
+          "height": 40
+        },
+        "wallpaint-3d-brush-strip": {
+          "x": 0,
+          "y": 791,
+          "width": 390,
+          "height": 53
+        },
+        "wallpaint-3d-colour-base": {
+          "x": 157.1875,
+          "y": 798,
+          "width": 40,
+          "height": 40
+        },
+        "wallpaint-3d-brush-change": {
+          "x": 8,
+          "y": 798,
+          "width": 143.1875,
+          "height": 40
+        },
+        "wallpaint-3d-canvas": {
+          "x": 0,
+          "y": 100,
+          "width": 390,
+          "height": 691
+        },
+        "wallpaint-3d-footer": {
+          "x": 215.265625,
+          "y": 69,
+          "width": 162.734375,
+          "height": 18
+        }
+      },
+      "controlsRowRight": {
+        "x": 88.28125,
+        "y": 108,
+        "width": 293.71875,
+        "height": 42,
+        "top": 108,
+        "right": 382,
+        "bottom": 150,
+        "left": 88.28125
+      },
+      "hudStill": {
+        "x": 11.703125,
+        "y": 593.875,
+        "width": 366.59375,
+        "height": 183.125
+      },
+      "stripChips": 25
+    },
+    {
+      "t": 37158,
+      "step": "p08 wall points",
+      "wp": {
+        "x": 138.93626190085143,
+        "y": 390.2767348956825
+      },
+      "wp1": {
+        "x": 234.85398820413357,
+        "y": 393.75633439072504
+      },
+      "hit0": null
+    },
+    {
+      "t": 38122,
+      "step": "p08 3D tap",
+      "tp": {
+        "x": 138.93626190085143,
+        "y": 390.2767348956825
+      },
+      "captionFlash": "Tap a wall to paint it",
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "pixel": {
+        "before": {
+          "r": 219,
+          "g": 222,
+          "b": 218
+        },
+        "after": {
+          "r": 219,
+          "g": 222,
+          "b": 218
+        }
+      },
+      "material": {
+        "hex": "#F2F1EC",
+        "baseHex": "#F2F1EC",
+        "finish": "satin",
+        "roughness": 0.6,
+        "sheen": 0.38,
+        "hasMap": false,
+        "show": "full"
+      },
+      "footer": "106.0 m² · 21.6 L · Rs 5,691",
+      "toasts": []
+    },
+    {
+      "t": 38454,
+      "step": "p08b floor tap",
+      "fl": {
+        "x": 162.15266672145714,
+        "y": 450.81385843857635
+      },
+      "caption": "Tap a wall to paint it",
+      "toasts": []
+    },
+    {
+      "t": 38469,
+      "step": "p08c strip",
+      "stripIds": [
+        "wallpaint-3d-colour-base",
+        "wallpaint-3d-colour-ral-9010",
+        "wallpaint-3d-colour-ral-9003",
+        "wallpaint-3d-colour-ral-9001",
+        "wallpaint-3d-colour-ral-9002",
+        "wallpaint-3d-colour-ral-1013",
+        "wallpaint-3d-colour-ral-1015",
+        "wallpaint-3d-colour-ral-1014",
+        "wallpaint-3d-colour-ral-7047",
+        "wallpaint-3d-colour-ral-7035"
+      ],
+      "stripBox": {
+        "x": 0,
+        "y": 791,
+        "width": 390,
+        "height": 53
+      }
+    },
+    {
+      "t": 40505,
+      "step": "p09 touch nav",
+      "orbit": {
+        "before": -0.5585053606381855,
+        "after": -1.838505360638186,
+        "elBefore": 0.5934119456780721,
+        "elAfter": 0.6534119456780721
+      },
+      "pinch": {
+        "before": 33.05030480385218,
+        "after": 11.567606681348261
+      },
+      "living": [
+        {
+          "e": 0,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 1,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 2,
+          "p": "tintex-vip-satin"
+        },
+        {
+          "e": 3,
+          "p": "tintex-vip-satin"
+        }
+      ],
+      "toasts": []
+    },
+    {
+      "t": 42237,
+      "step": "p11 Plan",
+      "overlay": null,
+      "hud": {
+        "x": 11.703125,
+        "y": 593.875,
+        "width": 366.59375,
+        "height": 183.125
+      }
+    },
+    {
+      "t": 43642,
+      "step": "p11b Done",
+      "hud": null,
+      "cartPill": {
+        "x": 231.1875,
+        "y": 729,
+        "width": 142.8125,
+        "height": 44
+      },
+      "cartPillText": "9\nRs 54,941"
+    },
+    {
+      "t": 45656,
+      "step": "p12 cart",
+      "paintLines": [
+        "TintEX VIP Satin\n\nWall paint · satin · base colour · painted on the plan\n\n42.6 m² · 2 coats · needs 8.6 L\n\n1× 5 L + 4× 1 L\n\nRs 2,044\n\nbuys 9 L",
+        "TintEX Cashmere Interior Latex\n\nWall paint · silk · base colour · painted on the plan\n\n34.9 m² · 2 coats · needs 7.7 L\n\n1× 5 L + 3× 1 L\n\nRs 1,835\n\nbuys 8 L",
+        "TintEX Mastertop\n\nWall paint · silk · base colour · painted on the plan\n\n28.5 m² · 2 coats · needs 5.3 L\n\n1× 5 L + 1× 1 L\n\nRs 1,812\n\nbuys 6 L"
+      ]
+    },
+    {
+      "t": 45656,
+      "step": "errors",
+      "count": 0,
+      "errors": []
+    }
+  ],
+  "errors": []
+}

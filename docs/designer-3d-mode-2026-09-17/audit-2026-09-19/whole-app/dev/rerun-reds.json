@@ -1,0 +1,172 @@
+{
+  "R2-3bug-fix-bug2": {
+    "toolbar": true,
+    "stripOnLoad": 0,
+    "thumbsOnLoad": 0,
+    "minimizeExpanded": "false",
+    "syntheticCount": {
+      "count": 0,
+      "notes": [
+        "thumb=false",
+        "add=false",
+        "thumb=false",
+        "add=false"
+      ]
+    },
+    "thumbsAfterCat": 14,
+    "popup0": true,
+    "popup1": true,
+    "realTapCount": {
+      "before": 0,
+      "after": 2
+    },
+    "items": [
+      {
+        "x": 2,
+        "y": 1.5
+      },
+      {
+        "x": 2,
+        "y": 0.5
+      }
+    ],
+    "toast": null
+  },
+  "R3-phone-demo-87": {
+    "stageMs": 17552,
+    "backend": "gl",
+    "overlay": {
+      "x": 0,
+      "y": 57,
+      "width": 390,
+      "height": 787
+    },
+    "helpLauncher": 0,
+    "controls": {
+      "wallpaint-3d-rotate-left": {
+        "w": 40,
+        "h": 40
+      },
+      "wallpaint-3d-fit": {
+        "w": 40,
+        "h": 40
+      },
+      "wallpaint-3d-close": {
+        "w": 44,
+        "h": 40
+      },
+      "wallpaint-3d-colour-base": {
+        "w": 40,
+        "h": 40
+      }
+    },
+    "overlayGone": true,
+    "hudBack": true
+  },
+  "R1-tintex-171": {
+    "stageMs": 959,
+    "backend": "gl",
+    "living0": "satin",
+    "kitchen0": "silk",
+    "wallA": {
+      "edgeIndex": 0,
+      "x": 542.5898667247311,
+      "y": 511.6464240559733
+    },
+    "wallABefore": {
+      "hex": "#EFEDE6",
+      "baseHex": "#EFEDE6",
+      "finish": "silk",
+      "roughness": 0.76,
+      "sheen": 0.22,
+      "hasMap": false,
+      "show": "full"
+    },
+    "colourName": "Light grey",
+    "wallAStored": {
+      "edgeIndex": 0,
+      "paintId": "tintex-vip-satin",
+      "colourHex": "#CBD0CC",
+      "colourName": "Light grey"
+    },
+    "wallAMat": {
+      "hex": "#CBD0CC",
+      "baseHex": "#CBD0CC",
+      "finish": "satin",
+      "roughness": 0.6,
+      "sheen": 0.38,
+      "hasMap": false,
+      "show": "full"
+    },
+    "colourNameAfterLineSwitch": "Light grey",
+    "colourChipsAfterLineSwitch": 27,
+    "wallB": {
+      "edgeIndex": 1,
+      "x": 684.4385555797205,
+      "y": 530.4037507119415
+    },
+    "hitAtB": {
+      "kind": "edge",
+      "roomId": "bedroom",
+      "edgeIndex": 1
+    },
+    "wallBBefore": {
+      "hex": "#EFEDE6",
+      "baseHex": "#EFEDE6",
+      "finish": "silk",
+      "roughness": 0.76,
+      "sheen": 0.22,
+      "hasMap": false,
+      "show": "full"
+    },
+    "wallBHover": {
+      "hex": "#CBD0CC",
+      "baseHex": "#EFEDE6",
+      "finish": "silk",
+      "roughness": 0.76,
+      "sheen": 0.22,
+      "hasMap": false,
+      "show": "full"
+    },
+    "wallBStored": {
+      "edgeIndex": 1,
+      "paintId": "tintex-true-white-matt",
+      "colourHex": "#CBD0CC",
+      "colourName": "Light grey"
+    },
+    "allBedroomPaint": [
+      {
+        "edgeIndex": 2,
+        "paintId": "tintex-cashmere"
+      },
+      {
+        "edgeIndex": 3,
+        "paintId": "tintex-cashmere"
+      },
+      {
+        "edgeIndex": 0,
+        "paintId": "tintex-vip-satin",
+        "colourHex": "#CBD0CC",
+        "colourName": "Light grey"
+      },
+      {
+        "edgeIndex": 1,
+        "paintId": "tintex-true-white-matt",
+        "colourHex": "#CBD0CC",
+        "colourName": "Light grey"
+      }
+    ],
+    "wallBMat": {
+      "hex": "#CBD0CC",
+      "baseHex": "#CBD0CC",
+      "finish": "matt",
+      "roughness": 0.95,
+      "sheen": 0,
+      "hasMap": false,
+      "show": "full"
+    },
+    "caption": "Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase",
+    "live": "106.0 m² · 22.1 L · Rs 5,936",
+    "errors": []
+  }
+}

@@ -1,0 +1,295 @@
+{
+  "ranAt": "2026-09-19T17:48:28.501Z",
+  "prodCommit": "cb0dae8bbc9b2650c5ea34a45747955de0606583",
+  "A": {
+    "scenario": "A-4merchant-1jinko",
+    "withPanel": true,
+    "seededIdsServedByApi": [
+      "m-6",
+      "m-7",
+      "m-9",
+      "m-10"
+    ],
+    "apiStatus": 200,
+    "apiRows": 14,
+    "apiEnergyKeysOnRow0": [],
+    "msGotoToCanvas": 3243,
+    "msGotoToApi200": 3644,
+    "chipAtCanvasAttach": {
+      "chipPresent": true,
+      "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+      "chipStatus": "covered"
+    },
+    "timelineAfterApi200": [
+      {
+        "sAfterApi": 1.1,
+        "chipPresent": true,
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "chipStatus": "covered"
+      },
+      {
+        "sAfterApi": 2.1,
+        "chipPresent": true,
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "chipStatus": "covered"
+      },
+      {
+        "sAfterApi": 3.2,
+        "chipPresent": true,
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "chipStatus": "covered"
+      },
+      {
+        "sAfterApi": 4.2,
+        "chipPresent": true,
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "chipStatus": "covered"
+      },
+      {
+        "sAfterApi": 5.3,
+        "chipPresent": true,
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "chipStatus": "covered"
+      },
+      {
+        "sAfterApi": 6.3,
+        "chipPresent": true,
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "chipStatus": "covered"
+      },
+      {
+        "sAfterApi": 7.4,
+        "chipPresent": true,
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "chipStatus": "covered"
+      },
+      {
+        "sAfterApi": 8.4,
+        "chipPresent": true,
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "chipStatus": "covered"
+      },
+      {
+        "sAfterApi": 9.5,
+        "chipPresent": true,
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "chipStatus": "covered"
+      },
+      {
+        "sAfterApi": 10.5,
+        "chipPresent": true,
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "chipStatus": "covered"
+      },
+      {
+        "sAfterApi": 11.5,
+        "chipPresent": true,
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "chipStatus": "covered"
+      },
+      {
+        "sAfterApi": 12.5,
+        "chipPresent": true,
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "chipStatus": "covered"
+      },
+      {
+        "sAfterApi": 13.5,
+        "chipPresent": true,
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "chipStatus": "covered"
+      },
+      {
+        "sAfterApi": 14.5,
+        "chipPresent": true,
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "chipStatus": "covered"
+      },
+      {
+        "sAfterApi": 15.5,
+        "chipPresent": true,
+        "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+        "chipStatus": "covered"
+      }
+    ],
+    "panelOpenedVia": "chip",
+    "withPanelOpen": {
+      "t": 1789840085686,
+      "chipPresent": true,
+      "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+      "chipStatus": "covered",
+      "panelLoad": "790 Wh/day · 4 items on · peak 820 W",
+      "panelStatus": "Surplus+1.1 kWh/day",
+      "panelItems": 4,
+      "levelReadout": "Ground floor ·"
+    },
+    "controlAfterRoomsChange": {
+      "how": "roof-toggle click",
+      "t": 1789840087156,
+      "chipPresent": true,
+      "chipText": "☀ 1.9 kWh · ⚡ 0 Wh",
+      "chipStatus": "covered",
+      "panelLoad": "790 Wh/day · 4 items on · peak 820 W",
+      "panelStatus": "Surplus+1.1 kWh/day",
+      "panelItems": 4,
+      "levelReadout": "Roof ·"
+    },
+    "storedItems": [
+      "r1:m-6",
+      "r1:m-7",
+      "r1:m-9",
+      "r1:m-10",
+      "roof-r1:emcar-jinko-475"
+    ],
+    "apiCalls": [
+      "200 /api/products?limit=100",
+      "200 /api/products?limit=100"
+    ],
+    "consoleErrors": []
+  },
+  "B": {
+    "scenario": "B-4merchant-nopanel",
+    "withPanel": false,
+    "seededIdsServedByApi": [
+      "m-6",
+      "m-7",
+      "m-9",
+      "m-10"
+    ],
+    "apiStatus": 200,
+    "apiRows": 14,
+    "apiEnergyKeysOnRow0": [],
+    "msGotoToCanvas": 2343,
+    "msGotoToApi200": 2667,
+    "chipAtCanvasAttach": {
+      "chipPresent": false,
+      "chipText": null,
+      "chipStatus": null
+    },
+    "timelineAfterApi200": [
+      {
+        "sAfterApi": 1,
+        "chipPresent": false,
+        "chipText": null,
+        "chipStatus": null
+      },
+      {
+        "sAfterApi": 2,
+        "chipPresent": false,
+        "chipText": null,
+        "chipStatus": null
+      },
+      {
+        "sAfterApi": 3,
+        "chipPresent": false,
+        "chipText": null,
+        "chipStatus": null
+      },
+      {
+        "sAfterApi": 4.1,
+        "chipPresent": false,
+        "chipText": null,
+        "chipStatus": null
+      },
+      {
+        "sAfterApi": 5.1,
+        "chipPresent": false,
+        "chipText": null,
+        "chipStatus": null
+      },
+      {
+        "sAfterApi": 6.1,
+        "chipPresent": false,
+        "chipText": null,
+        "chipStatus": null
+      },
+      {
+        "sAfterApi": 7.1,
+        "chipPresent": false,
+        "chipText": null,
+        "chipStatus": null
+      },
+      {
+        "sAfterApi": 8.1,
+        "chipPresent": false,
+        "chipText": null,
+        "chipStatus": null
+      },
+      {
+        "sAfterApi": 9.1,
+        "chipPresent": false,
+        "chipText": null,
+        "chipStatus": null
+      },
+      {
+        "sAfterApi": 10.1,
+        "chipPresent": false,
+        "chipText": null,
+        "chipStatus": null
+      },
+      {
+        "sAfterApi": 11.2,
+        "chipPresent": false,
+        "chipText": null,
+        "chipStatus": null
+      },
+      {
+        "sAfterApi": 12.2,
+        "chipPresent": false,
+        "chipText": null,
+        "chipStatus": null
+      },
+      {
+        "sAfterApi": 13.2,
+        "chipPresent": false,
+        "chipText": null,
+        "chipStatus": null
+      },
+      {
+        "sAfterApi": 14.2,
+        "chipPresent": false,
+        "chipText": null,
+        "chipStatus": null
+      },
+      {
+        "sAfterApi": 15.2,
+        "chipPresent": false,
+        "chipText": null,
+        "chipStatus": null
+      }
+    ],
+    "panelOpenedVia": "none",
+    "withPanelOpen": {
+      "t": 1789840107140,
+      "chipPresent": false,
+      "chipText": null,
+      "chipStatus": null,
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "levelReadout": null
+    },
+    "controlAfterRoomsChange": {
+      "how": "roof-toggle click",
+      "t": 1789840108156,
+      "chipPresent": true,
+      "chipText": "☀ 0 Wh · ⚡ 790 Wh−790 Wh",
+      "chipStatus": "short",
+      "panelLoad": null,
+      "panelStatus": null,
+      "panelItems": 0,
+      "levelReadout": "Roof ·"
+    },
+    "storedItems": [
+      "r1:m-6",
+      "r1:m-7",
+      "r1:m-9",
+      "r1:m-10"
+    ],
+    "apiCalls": [
+      "200 /api/products?limit=100",
+      "200 /api/products?limit=100"
+    ],
+    "consoleErrors": []
+  }
+}

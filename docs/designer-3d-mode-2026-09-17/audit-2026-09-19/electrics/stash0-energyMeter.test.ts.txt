@@ -1,0 +1,158 @@
+import { describe, expect, it } from 'vitest';
+import { coverageInWords, meterFillPct, meterReading } from '../energyMeter';
+import type { EnergyReport } from '../energy';
+
+/** A report with everything at rest; each test overrides only what it means. */
+function report(over: Partial<EnergyReport> = {}): EnergyReport {
+  return {
+    pshHoursPerDay: 5.17,
+    performanceRatio: 0.775,
+    panelCount: 0,
+    totalWp: 0,
+    panelsOffRoof: 0,
+    generationWhDay: 0,
+    consumers: [],
+    generators: [],
+    loadWhDay: 0,
+    peakLoadW: 0,
+    netWhDay: 0,
+    coveragePct: 0,
+    panelsToCover: 0,
+    coverPanelWp: 450,
+    panelsRoofCanStillHold: Number.POSITIVE_INFINITY,
+    panelsToCoverFitOnRoof: true,
+    batteryKwh: 0,
+    batteryAutonomyHours: 0,
+    inverterKw: 0,
+    inverterOk: true,
+    status: 'none',
+    ...over,
+  };
+}
+
+describe('meterFillPct', () => {
+  it('is zero on an empty plan', () => {
+    expect(meterFillPct(report())).toBe(0);
+  });
+
+  it('tracks coverage while short', () => {
+    expect(meterFillPct(report({ status: 'partial', coveragePct: 62 }))).toBe(62);
+  });
+
+  it('caps at 100 rather than drawing a 340% bar', () => {
+    expect(meterFillPct(report({ status: 'covered', coveragePct: 340 }))).toBe(100);
+  });
+});
+
+describe('coverageInWords', () => {
+  it('reads as a person would say it', () => {
+    expect(coverageInWords(0)).toBe('none of it');
+    expect(coverageInWords(26)).toBe('about a quarter of it');
+    expect(coverageInWords(50)).toBe('about half of it');
+    expect(coverageInWords(65)).toBe('about two thirds of it');
+    expect(coverageInWords(80)).toBe('most of it');
+    expect(coverageInWords(95)).toBe('nearly all of it');
+    expect(coverageInWords(100)).toBe('all of it');
+  });
+});
+
+describe('meterReading', () => {
+  it('invents no problem on an empty plan', () => {
+    const m = meterReading(report());
+    expect(m.headline).toBe('Nothing using power yet');
+    expect(m.action).toBeNull();
+    expect(m.fillPct).toBe(0);
+  });
+
+  it('treats panels with no load as ready, not as waste', () => {
+    const m = meterReading(report({ status: 'covered', panelCount: 4, generationWhDay: 8000 }));
+    expect(m.headline).toBe('Ready for what you add');
+    expect(m.fillPct).toBe(100);
+    expect(m.surplus).toBe(false);
+  });
+
+  it('names the whole system when there are no panels yet', () => {
+    const m = meterReading(
+      report({ status: 'short', loadWhDay: 4000, coveragePct: 0, netWhDay: -4000, panelsToCover: 3, coverPanelWp: 475 }),
+    );
+    expect(m.headline).toBe('No panels yet');
+    expect(m.action).toContain('3 × 475 W panels on the roof');
+    expect(m.action).toContain('Eco tab');
+  });
+
+  it('says surplus in words, never as a longer bar', () => {
+    const m = meterReading(
+      report({ status: 'covered', panelCount: 6, loadWhDay: 3000, generationWhDay: 9000, netWhDay: 6000, coveragePct: 300 }),
+    );
+    expect(m.headline).toBe('Covered, with power to spare');
+    expect(m.fillPct).toBe(100);
+    expect(m.surplus).toBe(true);
+    expect(m.action).toBeNull();
+  });
+
+  it('asks for panels in units a customer can buy', () => {
+    const m = meterReading(
+      report({
+        status: 'partial',
+        panelCount: 2,
+        loadWhDay: 6000,
+        generationWhDay: 3600,
+        netWhDay: -2400,
+        coveragePct: 60,
+        panelsToCover: 2,
+        coverPanelWp: 475,
+      }),
+    );
+    expect(m.headline).toBe('60% covered');
+    expect(m.detail).toBe('Your panels cover about two thirds of it over a day.');
+    expect(m.action).toBe('Add 2 more 475 W panels on the roof to cover the rest.');
+  });
+
+  it('does not promise panels the roof cannot hold', () => {
+    const m = meterReading(
+      report({
+        status: 'short',
+        panelCount: 4,
+        loadWhDay: 20000,
+        generationWhDay: 7000,
+        netWhDay: -13000,
+        coveragePct: 35,
+        panelsToCover: 9,
+        panelsRoofCanStillHold: 2,
+        panelsToCoverFitOnRoof: false,
+      }),
+    );
+    expect(m.action).toContain('room for about 2');
+    expect(m.action).not.toMatch(/^Add 9 more/);
+  });
+
+  it('says the roof is full when it is', () => {
+    const m = meterReading(
+      report({
+        status: 'short',
+        panelCount: 8,
+        loadWhDay: 20000,
+        generationWhDay: 7000,
+        netWhDay: -13000,
+        coveragePct: 35,
+        panelsToCover: 9,
+        panelsRoofCanStillHold: 0,
+        panelsToCoverFitOnRoof: false,
+      }),
+    );
+    expect(m.action).toContain('the roof is full');
+  });
+
+  it('never blames the customer', () => {
+    const shapes: EnergyReport[] = [
+      report(),
+      report({ status: 'short', loadWhDay: 9000, coveragePct: 10, netWhDay: -8000, panelsToCover: 6 }),
+      report({ status: 'partial', panelCount: 3, loadWhDay: 5000, generationWhDay: 3000, netWhDay: -2000, coveragePct: 60, panelsToCover: 2 }),
+    ];
+    for (const r of shapes) {
+      const m = meterReading(r);
+      const all = `${m.headline} ${m.detail} ${m.action ?? ''}`.toLowerCase();
+      expect(all).not.toMatch(/too much|warning|error|problem|fail|!/);
+    }
+  });
+});
