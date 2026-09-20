@@ -1220,6 +1220,19 @@ export function TopBar({
   const setEnergyPanelOpen = useDesignerUIStore((s) => s.setEnergyPanelOpen);
   const energyPanelOpenMd = isMd && energyPanelOpen;
   const sidePanelOpen = floorPanelOpen || wallPaintPanelOpen || energyPanelOpenMd;
+  // Energy button (electrics fix 2026-09-20, E-07): the readout used to be
+  // reachable only through the canvas chip, which hides while nothing is
+  // drawing power — so a customer whose merchant items read 0 W had nothing
+  // to press. md+ toggles the docked panel; below md it opens the phone
+  // sheet scrolled to its Energy section, the way the paint HUDs do.
+  function handleToggleEnergy(): void {
+    if (isMd) {
+      setEnergyPanelOpen(!energyPanelOpen);
+      return;
+    }
+    setSheetScrollTo('energy');
+    setShowMobileMenu(true);
+  }
   useLayoutEffect(() => {
     const root = document.documentElement;
     root.style.setProperty('--floor-panel-w', sidePanelOpen ? `${FLOOR_PANEL_W}px` : '0px');
@@ -1456,6 +1469,23 @@ export function TopBar({
         >
           <Icon name="roof" />
           <span className={lbl(stacked, '1366')}>Roof</span>
+        </button>
+
+        {/* Energy (electrics fix 2026-09-20): sun vs use per day, reachable
+            even when the canvas chip is hidden. Empty plan → the panel says
+            "Nothing using power yet". */}
+        <button
+          type="button"
+          onClick={handleToggleEnergy}
+          data-testid="energy-toggle"
+          className={btn(energyPanelOpen)}
+          title="Energy — sun vs use per day"
+          aria-pressed={energyPanelOpen}
+          aria-label="Energy"
+          aria-controls="ppw-energy-panel"
+        >
+          <Icon name="bolt" />
+          <span className={lbl(stacked, '1366')}>Energy</span>
         </button>
 
         {/* 3D Mode (2026-09-17): the whole plan as a Sims-style room view;

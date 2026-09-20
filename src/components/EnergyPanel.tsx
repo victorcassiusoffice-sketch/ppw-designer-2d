@@ -16,11 +16,12 @@
  * `EnergySummary` is the body both hosts share; `EnergyPanel` is the md+
  * aside (portaled by TopBar, next to the other two).
  */
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usePropertyStore } from '../store/propertyStore';
 import { useToastStore } from '../store/toastStore';
 import { energyDotColour, useEnergyReport } from '../designer/useEnergyReport';
-import { energyStatusLabel } from '../designer/energy';
+import { meterReading } from '../designer/energyMeter';
+import { EnergyMeterBar } from './EnergyMeterBar';
 import { annualGenerationKwh, formatW, formatWh } from '../designer/solarCalc';
 import { MAURITIUS_SOLAR } from '../data/mauritiusSolar';
 import { roofAreaM2 } from '../designer/roof';
@@ -46,12 +47,67 @@ function signedWh(wh: number): string {
   return `${wh < 0 ? '−' : '+'}${formatWh(Math.abs(wh))}`;
 }
 
+const NUM_INPUT =
+  'h-8 rounded-md border border-ppw-rim bg-white px-1.5 text-right text-[12px] font-semibold tabular-nums text-ppw-ink focus:border-ppw-ink focus:outline-none';
+
+/**
+ * The per-item watts field (electrics fix 2026-09-20, E-03). Commits on
+ * Enter / blur rather than per keystroke: a committed figure re-sorts the
+ * list (and moves a "self-powered" row into the counted list), and moving
+ * the row mid-typing would take the caret with it. `value` null = no figure
+ * yet (an unpowered row); an empty commit clears the override.
+ */
+function WattsInput({
+  value,
+  name,
+  instanceId,
+  onCommit,
+}: {
+  value: number | null;
+  name: string;
+  instanceId: string;
+  onCommit: (watts: number | null) => void;
+}): JSX.Element {
+  const [text, setText] = useState(value === null ? '' : String(value));
+  function commit(): void {
+    const n = text.trim() === '' ? null : Number(text);
+    onCommit(n === null || !Number.isFinite(n) ? null : n);
+  }
+  return (
+    <label className="flex items-center gap-1 text-[11px]" style={{ color: CHROME_TEXT_2 }}>
+      <input
+        type="number"
+        min={0}
+        step={1}
+        inputMode="numeric"
+        value={text}
+        placeholder={value === null ? '—' : undefined}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            commit();
+            (e.target as HTMLInputElement).blur();
+          }
+        }}
+        data-testid={`energy-watts-${instanceId}`}
+        className={`${NUM_INPUT} w-16`}
+        aria-label={`${name} watts`}
+        title={value === null ? 'Type the watts this draws to count it' : 'Watts while on — type your own figure, clear to go back to the typical one'}
+      />
+      W
+    </label>
+  );
+}
+
 export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryProps): JSX.Element {
   const r = useEnergyReport();
   const property = usePropertyStore((s) => s.property);
   const ensureRoofLevel = usePropertyStore((s) => s.ensureRoofLevel);
   const setItemPower = usePropertyStore((s) => s.setItemPower);
   const setItemHours = usePropertyStore((s) => s.setItemHours);
+  const setItemPowerW = usePropertyStore((s) => s.setItemPowerW);
   const selectItemAcrossRooms = usePropertyStore((s) => s.selectItemAcrossRooms);
   const pushToast = useToastStore((s) => s.push);
   const sun = MAURITIUS_SOLAR.default;
@@ -59,6 +115,7 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
   const onRoof = isRoofLevel(levelsOf(property).find((l) => l.id === activeLevelIdOf(property)));
   const hasBuilding = property.rooms.some((x) => !isOutdoorRoom(x) && !isRoofRoom(x) && isDrawnPolygon(x.polygon));
   const dot = energyDotColour(r.status);
+  const meter = meterReading(r);
   const annualKwh = r.totalWp > 0 ? annualGenerationKwh(r.totalWp, sun.poaKwhM2DayMonthly, sun.performanceRatio) : 0;
   const itemsOn = r.consumers.filter((c) => c.on).length;
   const consumers = [...r.consumers].sort((a, b) => Number(b.on) - Number(a.on) || b.whDay - a.whDay);
@@ -79,13 +136,23 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
       {/* Headline — the one line that answers "am I covered?" */}
       <div className="flex items-center gap-2 px-1" data-testid="energy-status">
         <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: dot }} aria-hidden="true" />
-        <span className="text-[13px] font-semibold text-[#37362f]">{energyStatusLabel(r)}</span>
+        <span className="text-[13px] font-semibold text-[#37362f]">{meter.headline}</span>
         {r.loadWhDay > 0 && (
           <span className="ml-auto text-[12px] font-semibold tabular-nums" style={{ color: CHROME_TEXT_2 }} data-testid="energy-net">
             {signedWh(r.netWhDay)}/day
           </span>
         )}
       </div>
+
+      {/* The meter. One bar, one sentence: the answer before any number. */}
+      <div className="px-1 pt-0.5">
+        <EnergyMeterBar fillPct={meter.fillPct} status={r.status} />
+      </div>
+      {meter.detail && (
+        <p className={`px-1 pt-1 ${rowText}`} style={{ color: CHROME_TEXT_2 }} data-testid="energy-detail">
+          {meter.detail}
+        </p>
+      )}
 
       <div className={`grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 px-1 ${rowText} tabular-nums`}>
         <span aria-hidden="true">☀</span>
@@ -108,11 +175,12 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
         </span>
       </div>
 
-      {/* What to do about a gap — one sentence, one button. */}
-      {r.netWhDay < 0 && r.panelsToCover > 0 && (
+      {/* What to do about a gap — one sentence, in units the customer can buy.
+          `meterReading` owns the wording, including the case where the roof
+          cannot physically hold the panels the arithmetic asks for. */}
+      {meter.action && (
         <p className={`px-1 ${rowText} font-medium`} data-testid="energy-hint">
-          Add {r.panelsToCover} × {r.coverPanelWp} Wp panel{r.panelsToCover === 1 ? '' : 's'} on the roof to cover it
-          {r.panelCount === 0 ? ' — they are in the Eco tab' : ''}.
+          {meter.action}
         </p>
       )}
       {r.panelsOffRoof > 0 && (
@@ -150,7 +218,7 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
       </div>
 
       {/* Every electrical item on the plan, biggest first. Switch one off to
-          leave it out; set the hours it runs. */}
+          leave it out; set the watts it draws and the hours it runs. */}
       {consumers.length > 0 && (
         <ul className="mt-2 flex flex-col gap-0.5 border-t border-ppw-rim pt-2" data-testid="energy-items" aria-label="Electrical items">
           {consumers.map((c) => (
@@ -164,9 +232,26 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
                 <span className="truncate font-medium">{c.name}</span>
                 <span className="truncate text-[11px] tabular-nums" style={{ color: CHROME_TEXT_2 }}>
                   {c.roomName} · {formatW(c.powerW)}
-                  {c.referenceKey ? ' · typical' : ''}
+                  {c.powerOverridden ? (
+                    <span data-testid={`energy-figure-${c.instanceId}`}> · your figure</span>
+                  ) : c.referenceKey ? (
+                    <span
+                      className="cursor-help underline decoration-dotted underline-offset-2"
+                      title={c.referenceSource ?? `Typical figure (${c.referenceKey})`}
+                      data-testid={`energy-figure-${c.instanceId}`}
+                    >
+                      {' '}· typical
+                    </span>
+                  ) : null}
                 </span>
               </button>
+              <WattsInput
+                key={`${c.instanceId}:${c.powerW}`}
+                value={c.powerW}
+                name={c.name}
+                instanceId={c.instanceId}
+                onCommit={(w) => setItemPowerW(c.instanceId, w)}
+              />
               <label className="flex items-center gap-1 text-[11px]" style={{ color: CHROME_TEXT_2 }}>
                 <input
                   type="number"
@@ -176,7 +261,7 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
                   value={c.hoursPerDay}
                   onChange={(e) => setItemHours(c.instanceId, Number(e.target.value))}
                   data-testid={`energy-hours-${c.instanceId}`}
-                  className="h-8 w-14 rounded-md border border-ppw-rim bg-white px-1.5 text-right text-[12px] font-semibold tabular-nums text-ppw-ink focus:border-ppw-ink focus:outline-none"
+                  className={`${NUM_INPUT} w-14`}
                   aria-label={`${c.name} hours per day`}
                 />
                 h
@@ -191,6 +276,35 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
               >
                 {c.on ? 'on' : 'off'}
               </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {/* Plug-in-looking items the table scored 0 W (a self-powered rower, a
+          smith machine, a lamp nobody has a figure for): shown greyed so the
+          customer can see they are NOT counted, with a field to type the
+          watts — which moves the row into the counted list above. */}
+      {r.unpowered.length > 0 && (
+        <ul
+          className={`${consumers.length > 0 ? 'mt-1' : 'mt-2 border-t border-ppw-rim pt-2'} flex flex-col gap-0.5`}
+          data-testid="energy-unpowered"
+          aria-label="Items with no power figure"
+        >
+          {r.unpowered.map((u) => (
+            <li key={u.instanceId} className="flex items-center gap-2 px-1" data-testid={`energy-unpowered-${u.instanceId}`}>
+              <button
+                type="button"
+                onClick={() => selectItemAcrossRooms(u.instanceId)}
+                className={`flex min-w-0 flex-1 flex-col text-left leading-tight opacity-60 ${rowText}`}
+                title="Select on the plan"
+              >
+                <span className="truncate font-medium">{u.name}</span>
+                <span className="truncate text-[11px]" style={{ color: CHROME_TEXT_2 }}>
+                  {u.roomName} · self-powered · set watts
+                </span>
+              </button>
+              <WattsInput key={`${u.instanceId}:none`} value={null} name={u.name} instanceId={u.instanceId} onCommit={(w) => setItemPowerW(u.instanceId, w)} />
             </li>
           ))}
         </ul>

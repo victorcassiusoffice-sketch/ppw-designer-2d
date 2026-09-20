@@ -173,6 +173,14 @@ export interface PlacedItem {
   powerOn?: boolean;
   /** Per-item hours-per-day override for the energy estimate. Absent = product default. */
   hoursPerDay?: number;
+  /**
+   * Per-item watts override for the energy estimate (electrics fix
+   * 2026-09-20). Absent = the product's `power_w` / reference figure. Set,
+   * it makes the item a consumer even when its product scored 0 W. Persists
+   * with the item like `hoursPerDay` (the persist path stores `property`
+   * whole).
+   */
+  powerW?: number;
 }
 
 /**
@@ -590,6 +598,8 @@ export interface PropertyState {
   setItemPower: (instanceId: string, on: boolean) => void;
   /** Per-item hours-per-day for the energy estimate; null clears the override. */
   setItemHours: (instanceId: string, hoursPerDay: number | null) => void;
+  /** Per-item watts for the energy estimate; null / 0 clears the override. */
+  setItemPowerW: (instanceId: string, watts: number | null) => void;
 
   // ---- site (land plot) ----
   /** Set or clear the plot. Non-finite / non-positive sides are ignored; sides clamp to 1..500 m. */
@@ -1450,6 +1460,35 @@ export const usePropertyStore = create<PropertyState>()(
                       const next: PlacedItem = { ...i };
                       if (clean === null) delete next.hoursPerDay;
                       else next.hoursPerDay = clean;
+                      return next;
+                    }),
+                  }
+                  : r,
+              ),
+            },
+          };
+        }),
+
+      setItemPowerW: (instanceId, watts) =>
+        set((s) => {
+          const owner = findRoomByInstanceId(s.property, instanceId);
+          if (!owner) return s;
+          // Whole watts, capped at 100 kW (an 8 kW sauna heater is the
+          // biggest thing in the reference table); anything else clears.
+          const clean =
+            watts === null || !Number.isFinite(watts) || watts <= 0 ? null : Math.min(100_000, Math.round(watts));
+          return {
+            property: {
+              ...s.property,
+              rooms: s.property.rooms.map((r) =>
+                r.id === owner.id
+                  ? {
+                    ...r,
+                    placedItems: r.placedItems.map((i) => {
+                      if (i.instanceId !== instanceId) return i;
+                      const next: PlacedItem = { ...i };
+                      if (clean === null) delete next.powerW;
+                      else next.powerW = clean;
                       return next;
                     }),
                   }

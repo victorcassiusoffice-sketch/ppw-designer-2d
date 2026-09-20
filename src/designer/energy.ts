@@ -13,7 +13,7 @@
  * come from `data/mauritiusSolar.ts` (or a test override).
  */
 
-import type { EnergyRole, Product } from '../data/products.schema';
+import type { EnergyRole, Product, ProductCategory } from '../data/products.schema';
 import { findApplianceLoad, type ApplianceLoad } from '../data/applianceLoads';
 import { isOutdoorRoom, isRoofRoom, roomLevelId } from './levels';
 import {
@@ -22,6 +22,8 @@ import {
   dailyGenerationWh,
   dailyLoadWh,
   inverterCoversPeak,
+  panelFootprintM2,
+  panelsThatStillFit,
   panelsToCover,
 } from './solarCalc';
 
@@ -30,6 +32,7 @@ export type EnergyProduct = Pick<Product, 'name' | 'category'> &
   Partial<
     Pick<
       Product,
+      | 'dimensions_cm'
       | 'power_w'
       | 'duty_hours_per_day'
       | 'pv_wp'
@@ -51,6 +54,12 @@ export interface EnergyItem {
   powerOn?: boolean;
   /** Per-item override of the product's / reference hours per day. */
   hoursPerDay?: number;
+  /**
+   * Per-item watts the customer typed (electrics fix 2026-09-20, E-03).
+   * Wins over the product's `power_w` and the reference table, and makes
+   * the item a consumer even when its product scored 0 W.
+   */
+  powerW?: number;
 }
 
 export interface EnergyRoom {
@@ -140,6 +149,37 @@ export function itemHoursPerDay(
   return productHoursPerDay(p, table);
 }
 
+/** Watts for a placed item: the customer's override, else the product's. */
+export function itemPowerW(
+  item: Pick<EnergyItem, 'powerW'>,
+  p: EnergyProduct,
+  table?: readonly ApplianceLoad[],
+): number {
+  if (pos(item.powerW) > 0) return item.powerW as number;
+  return productPowerW(p, table);
+}
+
+/**
+ * Categories a customer would expect to plug in. An item in one of these
+ * whose product scored 0 W (and carries no explicit `energy_role`) is
+ * LISTED in `EnergyReport.unpowered` so the readout can say "self-powered ·
+ * set watts" instead of silently dropping it — Vic's "the electrics are not
+ * being calculated" was, in part, rows that vanished.
+ */
+export const ELECTRICAL_CATEGORIES: ReadonlySet<ProductCategory> = new Set<ProductCategory>([
+  'fitness',
+  'appliance',
+  'lighting',
+  'massage',
+  'sauna',
+  'ice-bath',
+  'sleep-pod',
+]);
+
+export function isElectricalCategory(category: ProductCategory | undefined): boolean {
+  return category !== undefined && ELECTRICAL_CATEGORIES.has(category);
+}
+
 export interface EnergyConsumerLine {
   instanceId: string;
   productId: string;
@@ -155,6 +195,20 @@ export interface EnergyConsumerLine {
   whDay: number;
   /** Key of the reference row when the watts were inferred, else null. */
   referenceKey: string | null;
+  /** The reference row's provenance (`ApplianceLoad.source`) for the "typical" tooltip; null when explicit or overridden. */
+  referenceSource: string | null;
+  /** True when `powerW` is the customer's own figure (`EnergyItem.powerW`). */
+  powerOverridden: boolean;
+}
+
+/** An item in an electrical category that scored 0 W and has no override. */
+export interface EnergyUnpoweredLine {
+  instanceId: string;
+  productId: string;
+  name: string;
+  roomId: string;
+  roomName: string;
+  levelId: string;
 }
 
 export interface EnergyGeneratorLine {
@@ -178,6 +232,8 @@ export interface EnergyReport {
   /** Consumers. */
   consumers: EnergyConsumerLine[];
   generators: EnergyGeneratorLine[];
+  /** Plug-in-looking items with no watts yet — shown greyed with a "set watts" input. */
+  unpowered: EnergyUnpoweredLine[];
   loadWhDay: number;
   /** Everything switched on at once, watts. */
   peakLoadW: number;
@@ -188,6 +244,15 @@ export interface EnergyReport {
   panelsToCover: number;
   /** Wp of the panel `panelsToCover` counts in. */
   coverPanelWp: number;
+  /**
+   * How many MORE panels the roof can physically hold, after the ones
+   * already up there and an allowance for walkways and edges. `Infinity`
+   * when the roof area or the panel footprint is unknown - "cannot tell"
+   * must never be shown to a customer as "will not fit".
+   */
+  panelsRoofCanStillHold: number;
+  /** False only when we KNOW the panels needed will not fit the roof. */
+  panelsToCoverFitOnRoof: boolean;
   batteryKwh: number;
   batteryAutonomyHours: number;
   inverterKw: number;
@@ -203,6 +268,10 @@ export interface EnergyReportInput {
   performanceRatio: number;
   /** Panel Wp to size the "add N panels" hint with when the plan has none. */
   defaultPanelWp?: number;
+  /** Usable roof area, m2, for the "will they fit?" check. Omit to skip it. */
+  roofAreaM2?: number;
+  /** Footprint of the panel the hint counts in, m2. Omit to derive it from the plan. */
+  coverPanelAreaM2?: number;
   table?: readonly ApplianceLoad[];
 }
 
@@ -216,6 +285,7 @@ export function energyReport(input: EnergyReportInput): EnergyReport {
   const pr = Math.min(1, pos(input.performanceRatio));
   const consumers: EnergyConsumerLine[] = [];
   const generators: EnergyGeneratorLine[] = [];
+  const unpowered: EnergyUnpoweredLine[] = [];
   let totalWp = 0;
   let panelsOffRoof = 0;
   let batteryKwh = 0;
@@ -223,6 +293,9 @@ export function energyReport(input: EnergyReportInput): EnergyReport {
   let peakLoadW = 0;
   let loadWhDay = 0;
   const wpHistogram = new Map<number, number>();
+  // Footprint of each panel size seen, so the "add N panels" hint can ask
+  // whether N of THAT panel actually fit on THIS roof.
+  const areaByWp = new Map<number, number>();
 
   for (const room of rooms) {
     const onRoof = isRoofRoom(room);
@@ -230,36 +303,59 @@ export function energyReport(input: EnergyReportInput): EnergyReport {
       const p = productById(item.productId);
       if (!p) continue;
       const role = energyRoleOf(p, table);
+      const override = pos(item.powerW);
+      const roomName = isOutdoorRoom(room) ? 'Outdoors' : room.name;
       if (role === 'generator') {
         const wp = pos(p.pv_wp);
         totalWp += wp;
         if (!onRoof) panelsOffRoof += 1;
         wpHistogram.set(wp, (wpHistogram.get(wp) ?? 0) + 1);
+        if (!areaByWp.has(wp)) {
+          const a = panelFootprintM2(p.dimensions_cm);
+          if (a > 0) areaByWp.set(wp, a);
+        }
         generators.push({ instanceId: item.instanceId, productId: item.productId, name: p.name, wp, onRoof });
       } else if (role === 'storage') {
         batteryKwh += pos(p.battery_kwh);
       } else if (role === 'inverter') {
         inverterKw += pos(p.inverter_kw);
-      } else if (role === 'consumer') {
-        const powerW = productPowerW(p, table);
+      } else if (role === 'consumer' || (role === 'none' && override > 0)) {
+        // The customer's own watts win; a 0 W product with an override is a
+        // consumer (E-03) — that is how a self-powered rower with a mains
+        // screen gets counted when the table did not know it.
+        const powerW = itemPowerW(item, p, table);
         const hours = itemHoursPerDay(item, p, table);
         const on = itemPowerOn(item, p);
         const whDay = on ? dailyLoadWh(powerW, hours) : 0;
         if (on) peakLoadW += powerW;
         loadWhDay += whDay;
-        const ref = productLoadReference(p, table);
+        const ref = override > 0 ? null : productLoadReference(p, table);
         consumers.push({
           instanceId: item.instanceId,
           productId: item.productId,
           name: p.name,
           roomId: room.id,
-          roomName: isOutdoorRoom(room) ? 'Outdoors' : room.name,
+          roomName,
           levelId: roomLevelId(room),
           powerW,
           hoursPerDay: hours,
           on,
           whDay,
           referenceKey: ref ? ref.key : null,
+          referenceSource: ref ? ref.source : null,
+          powerOverridden: override > 0,
+        });
+      } else if (role === 'none' && !p.energy_role && isElectricalCategory(p.category)) {
+        // Inferred 0 W in a plug-in category: list it so the customer can
+        // see it was left out and type the watts. A merchant's explicit
+        // `energy_role: 'none'` is respected and stays out of the list.
+        unpowered.push({
+          instanceId: item.instanceId,
+          productId: item.productId,
+          name: p.name,
+          roomId: room.id,
+          roomName,
+          levelId: roomLevelId(room),
         });
       }
     }
@@ -276,8 +372,11 @@ export function energyReport(input: EnergyReportInput): EnergyReport {
       coverPanelWp = wp;
     }
   }
+  const coverPanelAreaM2 = pos(areaByWp.get(coverPanelWp)) || pos(input.coverPanelAreaM2);
   const cov = coveragePct(generationWhDay, loadWhDay);
   const panelCount = generators.length;
+  const stillFit = panelsThatStillFit(pos(input.roofAreaM2), coverPanelAreaM2, panelCount);
+  const needed = netWhDay < 0 ? panelsToCover(-netWhDay, coverPanelWp, psh, pr) : 0;
   let status: EnergyReport['status'];
   if (panelCount === 0 && loadWhDay <= 0) status = 'none';
   else if (netWhDay >= 0 && loadWhDay > 0) status = 'covered';
@@ -294,12 +393,15 @@ export function energyReport(input: EnergyReportInput): EnergyReport {
     generationWhDay,
     consumers,
     generators,
+    unpowered,
     loadWhDay: Math.round(loadWhDay * 10) / 10,
     peakLoadW: Math.round(peakLoadW),
     netWhDay,
     coveragePct: cov,
-    panelsToCover: netWhDay < 0 ? panelsToCover(-netWhDay, coverPanelWp, psh, pr) : 0,
+    panelsToCover: needed,
     coverPanelWp,
+    panelsRoofCanStillHold: stillFit,
+    panelsToCoverFitOnRoof: needed <= stillFit,
     batteryKwh: Math.round(batteryKwh * 100) / 100,
     batteryAutonomyHours: batteryAutonomyHours(batteryKwh, DEFAULT_DEPTH_OF_DISCHARGE, loadWhDay),
     inverterKw: Math.round(inverterKw * 100) / 100,

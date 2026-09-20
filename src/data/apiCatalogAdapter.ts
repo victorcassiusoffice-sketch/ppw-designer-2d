@@ -269,6 +269,17 @@ export function getApiProductFromCache(id: string): Product | undefined {
 }
 
 /**
+ * TEST ONLY — seed or clear one cache entry without a fetch, so a test can
+ * reproduce "the plan loaded before `/api/products` answered" (electrics
+ * audit E-01). Does NOT bump the catalog store; the test decides when the
+ * views learn about it, exactly as `fetchApiProducts` does after its loop.
+ */
+export function __setApiProductForTests(id: string, product: Product | null): void {
+  if (product) _apiProductsCache.set(id, product);
+  else _apiProductsCache.delete(id);
+}
+
+/**
  * Fetch `/api/products` and adapt rows to the bundled `Product` shape.
  * Returns an empty list on any failure (network, schema-missing, etc.)
  * so the Designer Catalog degrades gracefully to bundled seeds only.

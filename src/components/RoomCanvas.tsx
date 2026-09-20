@@ -123,6 +123,8 @@ import { floorTargetRoom } from '../designer/floorTarget';
 import { isRoofProduct } from '../designer/energy';
 import { roofAreaM2 } from '../designer/roof';
 import { energyDotColour, useEnergyReport } from '../designer/useEnergyReport';
+import { EnergyMeterBar } from './EnergyMeterBar';
+import { meterFillPct } from '../designer/energyMeter';
 import { formatWh } from '../designer/solarCalc';
 import { freeWallLengthM, runToFreeWalls, wallsOnLevel } from '../designer/freeWalls';
 import { emitsLight, lightRadiusM, planSymbolOf } from '../designer/lighting';
@@ -3416,6 +3418,14 @@ export function RoomCanvas({
             title="Energy — sun vs use per day. Tap for the breakdown."
           >
             <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: energyDotColour(energy.status) }} aria-hidden="true" />
+            {/* The same meter as the panel, miniaturised, so the answer is
+                readable without opening anything. */}
+            <EnergyMeterBar
+              fillPct={meterFillPct(energy)}
+              status={energy.status}
+              size="chip"
+              label={`${energy.coveragePct}% of a day's use covered by the panels`}
+            />
             <span className="tabular-nums">☀ {formatWh(energy.generationWhDay)} · ⚡ {formatWh(energy.loadWhDay)}</span>
             {energy.loadWhDay > 0 && (
               <span className="tabular-nums opacity-80">
