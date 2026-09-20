@@ -1,0 +1,48 @@
+{
+  "health": {
+    "ok": true,
+    "service": "ppw-designer-2d",
+    "env": "production",
+    "commit": "d50e87d2701fb8515c32202dccc2c3b8eee6f939",
+    "sentryConfigured": true,
+    "timestamp": "2026-09-20T13:21:30.114Z"
+  },
+  "errors": [],
+  "apiRows": 14,
+  "picked": [
+    {
+      "id": 6,
+      "name": "NordicTrack Commercial 2450 Treadmill"
+    },
+    {
+      "id": 7,
+      "name": "NordicTrack Tour de France Indoor Bike"
+    },
+    {
+      "id": 12,
+      "name": "NordicTrack RW900 Rower"
+    }
+  ],
+  "E_apiMs": 4180,
+  "E_chipAtApi": null,
+  "E_chipAfter3s": "☀ 0 Wh · ⚡ 413 Wh\n−413 Wh",
+  "E_energyButton": 1,
+  "E_status": "No panels yet\n−413 Wh/day",
+  "E_load": "413 Wh/day · 3 items on · peak 445 W",
+  "E_meter": "0% of a day's use covered",
+  "E_items": [
+    "NordicTrack Commercial 2450 Treadmill\nGym · 350 W · typical\nW\nh\nON",
+    "NordicTrack Tour de France Indoor Bike\nGym · 60 W · typical\nW\nh\nON",
+    "NordicTrack RW900 Rower\nGym · 35 W · typical\nW\nh\nON"
+  ],
+  "E_wattsInputs": 3,
+  "R_firstFrameMs": 31916,
+  "R_sunControl": 1,
+  "R_sunLabel": "19:30",
+  "R_hoverTag": "Living room · Wall 1 → TintEX VIP Satin · Light grey ≈ 12.7 m² · 2.7 L · Rs 774 — click to paint",
+  "P_wallButtons": [
+    "Up",
+    "Cut",
+    "Down"
+  ]
+}
