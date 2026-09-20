@@ -103,4 +103,10 @@ export const MAURITIUS_SOLAR = {
   cases: [MU_SOLAR_NORTH_20, MU_SOLAR_PVGIS_OPTIMAL, MU_SOLAR_FLAT] as const,
   /** The panel Wp the "add N panels" hint counts in when the plan has none yet. */
   defaultPanelWp: 450,
+  /**
+   * Footprint of that reference panel, m2. A 450-475 Wp mono module is about
+   * 1.90 x 1.13 m (the seeded Jinko 475 is exactly 1.903 x 1.134). Used only
+   * to ask whether the panels a plan needs would fit its roof.
+   */
+  defaultPanelAreaM2: 2.16,
 } as const;

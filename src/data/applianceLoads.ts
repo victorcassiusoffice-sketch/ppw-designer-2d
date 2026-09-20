@@ -22,14 +22,28 @@
  * whole-word hit in the product name wins; then a category-only row (empty
  * `match`). ORDER MATTERS — specific rows come before broad ones
  * ("sauna heater" before "infrared sauna", "mini fridge" before "fridge",
- * a variable-speed pool pump before a single-speed one).
+ * a variable-speed pool pump before a single-speed one, a CONNECTED rower /
+ * bike before the bare self-powered row). Two refinements (electrics fix
+ * 2026-09-20, audit E-02 / E-05):
+ *   - `prefer`: a row tried in a FIRST pass for products of those categories
+ *     — so a "Ceramic Table Lamp" in `lighting` reaches the lamp row before
+ *     the accessory row's bare `table` term can call it 0 W;
+ *   - `exclude`: whole-word terms that veto the row — a "TV Cabinet" is not
+ *     a television, a "Treadmill Mat" is not a treadmill;
+ *   - products in a PASSIVE category (flooring / decor / furniture / walls /
+ *     plant) try the 0 W rows first, so a mat or a cabinet named after the
+ *     machine it goes under never inherits its watts. A merchant that puts
+ *     `power_w` on such a product bypasses the table entirely.
  *
  * Deviations from the research table, deliberate: the bare terms `pool`,
  * `pump`, `ac`, `screen` and `wall unit` were dropped because they mis-hit
  * ordinary furniture (a pool TABLE is not a 2 kW pump, a flat SCREEN is not
  * a monitor); `indoor bike` + `tour de france` were added to the connected
  * bike row so the seeded NordicTrack Tour de France (10-inch touchscreen,
- * powered incline) is not counted as a self-powered spin bike.
+ * powered incline) is not counted as a self-powered spin bike; `rw900` /
+ * `rw700` / `rw600` / `touchscreen` / `ifit` were added to the connected
+ * rows (2026-09-20) so the seeded NordicTrack RW900 (22-inch HD touchscreen)
+ * is not scored as a Concept2-class 0 W rower.
  */
 
 import type { ProductCategory } from './products.schema';
@@ -41,6 +55,10 @@ export interface ApplianceLoad {
   match: string[];
   /** Category this row applies to; absent = any category. */
   category?: ProductCategory;
+  /** Categories whose products try this row in a first pass, before the rest of the table. */
+  prefer?: ProductCategory[];
+  /** Lower-case whole-word terms that VETO the row when found in the product name. */
+  exclude?: string[];
   /** Nameplate watts. */
   ratedW: number;
   /** Realistic average watts while in use. */
@@ -58,26 +76,17 @@ export const APPLIANCE_LOADS: ApplianceLoad[] = [
   {
     key: 'treadmill-commercial',
     match: ['t600', 't600e', 'vision fitness treadmill', 'commercial treadmill', 'ac drive', 'light commercial treadmill'],
+    exclude: ['mat', 'cover'],
     ratedW: 1800, avgW: 700, standbyW: 5, hoursPerDay: 2,
     source: 'Vision T600/T600E page: 4.2 hp AC drive (the page itself calls hp a robustness rating); in-use figure est. from the nameplate band 1800-4400 W',
   },
   {
     key: 'treadmill',
     match: ['treadmill', 'commercial 2450', 'carbon tl', 'walking pad', 'walkingpad', 'running machine'],
+    // A "Treadmill Mat" / "Treadmill Cover" goes under or over the machine.
+    exclude: ['mat', 'cover'],
     ratedW: 700, avgW: 350, standbyW: 4, hoursPerDay: 1,
     source: 'WalkingPad + SOLE: home treadmills 300-900 W, most 600-700 W; average in-use about half the nameplate',
-  },
-  {
-    key: 'rower-connected',
-    match: ['hydrow', 'connected rower', 'rower with screen', 'smart rower', 'ergatta'],
-    ratedW: 210, avgW: 35, standbyW: 5, hoursPerDay: 0.5,
-    source: 'Hydrow published electrical spec (120 V, 60 Hz): 210 W max, screen-dominated draw',
-  },
-  {
-    key: 'rower',
-    match: ['concept2', 'rowerg', 'rower', 'rowing machine', 'air rower', 'water rower', 'waterrower', 'skierg', 'bikeerg', 'magnetic rower'],
-    ratedW: 0, avgW: 0, standbyW: 0, hoursPerDay: 0.5,
-    source: 'Concept2 PM5 runs on two D cells and is powered by the flywheel while rowing — no mains draw',
   },
   {
     key: 'elliptical-self-powered',
@@ -91,9 +100,28 @@ export const APPLIANCE_LOADS: ApplianceLoad[] = [
     ratedW: 150, avgW: 100, standbyW: 3, hoursPerDay: 0.75,
     source: 'Bikemarts: auto-incline models (Sole E95, ProForm Pro HIIT H14) draw 100-150 W plugged in',
   },
+  // The CONNECTED rower / bike rows sit before their bare self-powered
+  // siblings on purpose: a "NordicTrack RW900 Rower" must reach `rw900`
+  // before the bare `rower` term calls it 0 W. The generic `touchscreen` /
+  // `ifit` terms are shared by both connected rows, so each excludes the
+  // other family's words — a "Peloton touchscreen bike" is a bike.
+  {
+    key: 'rower-connected',
+    match: ['hydrow', 'connected rower', 'rower with screen', 'smart rower', 'ergatta', 'rw900', 'rw700', 'rw600', 'touchscreen', 'ifit rower'],
+    exclude: ['bike', 'cycle', 'treadmill', 'elliptical'],
+    ratedW: 210, avgW: 35, standbyW: 5, hoursPerDay: 0.5,
+    source: 'Hydrow published electrical spec (120 V, 60 Hz): 210 W max, screen-dominated draw',
+  },
+  {
+    key: 'rower',
+    match: ['concept2', 'rowerg', 'rower', 'rowing machine', 'air rower', 'water rower', 'waterrower', 'skierg', 'bikeerg', 'magnetic rower'],
+    ratedW: 0, avgW: 0, standbyW: 0, hoursPerDay: 0.5,
+    source: 'Concept2 PM5 runs on two D cells and is powered by the flywheel while rowing — no mains draw',
+  },
   {
     key: 'indoor-bike-connected',
-    match: ['peloton', 'smart bike', 'connected bike', 'touchscreen bike', 'exercise bike', 'spin bike with screen', 'indoor cycle with display', 'indoor bike', 'tour de france'],
+    match: ['peloton', 'smart bike', 'connected bike', 'touchscreen bike', 'exercise bike', 'spin bike with screen', 'indoor cycle with display', 'indoor bike', 'tour de france', 'touchscreen', 'ifit'],
+    exclude: ['rower', 'rowing'],
     ratedW: 144, avgW: 60, standbyW: 12, hoursPerDay: 0.75,
     source: 'Peloton official compare page: 100-240 V, 1.2 A max (144 W at 120 V); screen dominates the draw',
   },
@@ -114,6 +142,14 @@ export const APPLIANCE_LOADS: ApplianceLoad[] = [
     match: ['mat', 'yoga mat', 'foam roller', 'roller', 'resistance band', 'band', 'exercise ball', 'stability ball', 'yoga block', 'balance board', 'rug', 'cushion', 'towel', 'shelf', 'mirror', 'stool', 'table'],
     ratedW: 0, avgW: 0, standbyW: 0, hoursPerDay: 0,
     source: 'Mats, rollers, bands, balls, mirrors, shelves and rugs draw no power — 0 W by definition',
+  },
+  {
+    // Case goods and seating that carry an appliance's name — a "TV Cabinet",
+    // a "TV Stand", a "Lamp Table" — are the thing UNDER the appliance.
+    key: 'furniture',
+    match: ['cabinet', 'stand', 'unit', 'sideboard', 'dresser', 'wardrobe', 'bookcase', 'bookshelf', 'console', 'desk', 'shelving', 'bench', 'ottoman', 'sofa', 'couch', 'bed', 'mattress', 'headboard', 'chest', 'drawers', 'rack', 'trolley', 'cart'],
+    ratedW: 0, avgW: 0, standbyW: 0, hoursPerDay: 0,
+    source: 'Cabinets, stands, sideboards, desks, sofas and beds draw no power — 0 W by definition (the appliance on them is its own product)',
   },
 
   // ---- recovery ------------------------------------------------------------
@@ -149,29 +185,44 @@ export const APPLIANCE_LOADS: ApplianceLoad[] = [
   },
 
   // ---- lighting -------------------------------------------------------------
+  // `prefer: ['lighting']` — a product the merchant filed under lighting
+  // tries these rows FIRST, so "Ceramic Table Lamp" is a lamp, not a table.
   {
     key: 'led-strip',
     match: ['led strip', 'light strip', 'lightstrip', 'strip light', 'led tape', 'cove lighting', 'neon flex', 'rgb strip'],
+    prefer: ['lighting'],
     ratedW: 20, avgW: 15, standbyW: 0.5, hoursPerDay: 5,
     source: 'Philips Hue Lightstrip Plus 2 m: 20 W, 0.5 W standby, 1700 lm — about 10 W per metre',
   },
   {
     key: 'lamp',
     match: ['floor lamp', 'table lamp', 'desk lamp', 'standing lamp', 'lamp', 'arc lamp', 'reading lamp'],
+    prefer: ['lighting'],
     ratedW: 12, avgW: 10, standbyW: 0, hoursPerDay: 4,
     source: 'One LED bulb per lamp: Philips Hue bulb guide, 9-12 W for a 60 W equivalent (about 800 lm)',
   },
   {
     key: 'pendant',
     match: ['pendant', 'pendant light', 'hanging light', 'chandelier', 'ceiling light', 'ceiling lamp', 'drop light'],
+    prefer: ['lighting'],
     ratedW: 12, avgW: 10, standbyW: 0, hoursPerDay: 4,
     source: 'Per LED bulb 9-12 W (Philips Hue bulb guide); a 3-bulb chandelier is 3 x 12 W',
   },
   {
     key: 'sconce',
     match: ['sconce', 'wall sconce', 'wall light', 'wall lamp', 'uplighter', 'picture light'],
+    prefer: ['lighting'],
     ratedW: 12, avgW: 9, standbyW: 0, hoursPerDay: 3,
     source: 'One LED bulb 9-12 W (Philips Hue bulb guide); sconces usually run at the low end',
+  },
+  {
+    // Category fallback: a `lighting` product whose name says nothing the
+    // rows above know ("Nordic Glow") is still one LED bulb, not 0 W.
+    key: 'lighting-generic',
+    match: [],
+    category: 'lighting',
+    ratedW: 12, avgW: 10, standbyW: 0, hoursPerDay: 4,
+    source: 'One LED bulb per fitting: Philips Hue bulb guide, 9-12 W for a 60 W equivalent (about 800 lm)',
   },
 
   // ---- decor / greenery ------------------------------------------------------
@@ -264,6 +315,8 @@ export const APPLIANCE_LOADS: ApplianceLoad[] = [
   {
     key: 'tv',
     match: ['tv', 'television', 'smart tv', '55 inch', '65 inch', 'oled', 'qled', 'flat screen', 'wall tv'],
+    // "TV Cabinet" / "TV Stand" / "TV Unit" / "TV Bench" hold the set; they are not it.
+    exclude: ['cabinet', 'stand', 'unit', 'bench', 'console', 'table', 'mount', 'bracket', 'wall bracket'],
     ratedW: 77, avgW: 77, standbyW: 1.4, hoursPerDay: 3,
     source: 'ecocostsavings dataset of 107 ENERGY STAR TVs: 55-inch average 77 W on-mode, 1.4 W standby',
   },
@@ -281,16 +334,59 @@ export const APPLIANCE_LOADS: ApplianceLoad[] = [
   },
 ];
 
-/** Find the reference row for a product, or null when nothing matches. */
+/**
+ * Categories whose products are furniture, finishes or greenery: never a
+ * consumer by NAME alone (a "Treadmill Mat" is flooring), only by an explicit
+ * `power_w` — which `energyRoleOf` reads before it ever asks this table.
+ */
+export const PASSIVE_CATEGORIES: ReadonlySet<ProductCategory> = new Set<ProductCategory>([
+  'flooring',
+  'decor',
+  'furniture',
+  'walls',
+  'plant',
+]);
+
+function normaliseTerm(s: string): string {
+  return ` ${s.toLowerCase().replace(/[^a-z0-9]+/g, ' ')} `;
+}
+
+function nameHas(name: string, term: string): boolean {
+  return name.includes(normaliseTerm(term).replace(/^ +| +$/g, ' '));
+}
+
+/** Does the row's match list hit the name, with none of its exclusions present? */
+function rowHits(row: ApplianceLoad, name: string, category: ProductCategory): boolean {
+  if (row.category && row.category !== category) return false;
+  if (row.match.length === 0) return false;
+  if (!row.match.some((term) => nameHas(name, term))) return false;
+  if (row.exclude && row.exclude.some((term) => nameHas(name, term))) return false;
+  return true;
+}
+
+/**
+ * Find the reference row for a product, or null when nothing matches.
+ *
+ * Passes, in order: (1) rows that `prefer` the product's category; (2) for a
+ * PASSIVE category, the 0 W rows — furniture, mats and plants named after an
+ * appliance are still not one; (3) every named row in table order; (4) the
+ * category-only fallback row.
+ */
 export function findApplianceLoad(
   p: { name: string; category: ProductCategory },
   table: readonly ApplianceLoad[] = APPLIANCE_LOADS,
 ): ApplianceLoad | null {
-  const name = ` ${p.name.toLowerCase().replace(/[^a-z0-9]+/g, ' ')} `;
+  const name = normaliseTerm(p.name);
   for (const row of table) {
-    if (row.category && row.category !== p.category) continue;
-    if (row.match.length === 0) continue;
-    if (row.match.some((term) => name.includes(` ${term.toLowerCase().replace(/[^a-z0-9]+/g, ' ')} `))) return row;
+    if (row.prefer?.includes(p.category) && rowHits(row, name, p.category)) return row;
+  }
+  if (PASSIVE_CATEGORIES.has(p.category)) {
+    for (const row of table) {
+      if (row.avgW === 0 && rowHits(row, name, p.category)) return row;
+    }
+  }
+  for (const row of table) {
+    if (rowHits(row, name, p.category)) return row;
   }
   for (const row of table) {
     if (row.match.length === 0 && row.category === p.category) return row;

@@ -85,6 +85,41 @@ export function panelsToCover(
 }
 
 /**
+ * The share of a flat roof that panels can actually occupy once walkways,
+ * edge setbacks, vents and mounting rails are taken out. 0.85 is the
+ * conservative end of what MU installers lay on a simple residential roof;
+ * it exists so the "add N panels" hint cannot promise a roof-full that
+ * nobody could physically install.
+ */
+export const ROOF_USABLE_FRACTION = 0.85;
+
+/** A panel's footprint in m2 from its catalogue dimensions. 0 when unknown. */
+export function panelFootprintM2(dimensionsCm?: { length?: number; width?: number }): number {
+  const l = finitePositive(dimensionsCm?.length ?? 0);
+  const w = finitePositive(dimensionsCm?.width ?? 0);
+  if (l <= 0 || w <= 0) return 0;
+  return Math.round((l / 100) * (w / 100) * 100) / 100;
+}
+
+/**
+ * How many panels of `panelAreaM2` still fit on the roof, given how many are
+ * already up there. Returns Infinity when either figure is unknown, because
+ * "we cannot tell" must never read as "it does not fit" - a false negative
+ * here would talk a customer out of a system that would have been fine.
+ */
+export function panelsThatStillFit(
+  roofAreaM2: number,
+  panelAreaM2: number,
+  alreadyPlaced: number,
+): number {
+  const roof = finitePositive(roofAreaM2);
+  const panel = finitePositive(panelAreaM2);
+  if (roof <= 0 || panel <= 0) return Number.POSITIVE_INFINITY;
+  const capacity = Math.floor((roof * ROOF_USABLE_FRACTION) / panel);
+  return Math.max(0, capacity - Math.max(0, Math.floor(alreadyPlaced)));
+}
+
+/**
  * Coverage of the load by generation, as a percentage capped at 999 (a
  * plan with ten panels and one lamp is "covered", not a division blow-up).
  * A zero load with any generation is 100 %; zero and zero is 0 %.

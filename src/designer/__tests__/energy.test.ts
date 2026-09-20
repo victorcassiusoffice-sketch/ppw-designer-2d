@@ -14,6 +14,7 @@ import {
   isRoofProduct,
   itemHoursPerDay,
   itemPowerOn,
+  itemPowerW,
   productHoursPerDay,
   productPowerW,
   type EnergyProduct,
@@ -39,6 +40,8 @@ const P: Record<string, EnergyProduct> = {
   sauna: { name: 'Cedar cabin', category: 'sauna' },
   plant: { name: 'Fiddle-leaf fig', category: 'plant' },
   forced: { name: 'Odd thing', category: 'other', power_w: 500, energy_role: 'none' },
+  smith: { name: 'Smith Machine', category: 'fitness' },
+  forcedFit: { name: 'Odd rack', category: 'fitness', energy_role: 'none' },
 };
 
 describe('roles + figures', () => {
@@ -66,6 +69,12 @@ describe('roles + figures', () => {
     expect(itemHoursPerDay({ hoursPerDay: 8 }, P.treadmill, TABLE)).toBe(8);
     expect(itemHoursPerDay({ hoursPerDay: 40 }, P.treadmill, TABLE)).toBe(24);
     expect(itemHoursPerDay({}, P.treadmill, TABLE)).toBe(1);
+  });
+  it('watts: the item override wins, else the product figure', () => {
+    expect(itemPowerW({ powerW: 420 }, P.treadmill, TABLE)).toBe(420);
+    expect(itemPowerW({}, P.treadmill, TABLE)).toBe(700);
+    expect(itemPowerW({ powerW: 0 }, P.rower, TABLE)).toBe(0);
+    expect(itemPowerW({ powerW: 40 }, P.rower, TABLE)).toBe(40);
   });
   it('switches: powerOn false is off; a light obeys lightOn too', () => {
     expect(itemPowerOn({}, P.treadmill)).toBe(true);
@@ -115,7 +124,38 @@ describe('energyReport', () => {
     expect(r.panelsToCover).toBe(0);
     expect(r.consumers.map((c) => c.roomName)).toEqual(['gym', 'gym', 'Outdoors']);
     expect(r.consumers[0].referenceKey).toBe('treadmill');
+    expect(r.consumers[0].referenceSource).toBe('test');
+    expect(r.consumers[0].powerOverridden).toBe(false);
+    expect(r.unpowered).toEqual([]);
     expect(energyStatusLabel(r)).toBe('Surplus');
+  });
+
+  it('item watt override wins and lists an unpowered rower', () => {
+    const rooms = [
+      room('gym', [
+        ['r1', 'rower'], // 0 W by the table, fitness → listed as unpowered
+        ['r2', 'rower', { powerW: 40 }], // the customer typed 40 W → counted
+        ['t1', 'treadmill', { powerW: 500 }], // override beats the 700 W reference
+        ['s1', 'smith'], // no row at all, fitness → listed as unpowered
+        ['f1', 'forcedFit'], // merchant said `energy_role: 'none'` → respected, not listed
+        ['p1', 'plant'], // not an electrical category → not listed
+      ]),
+    ];
+    const r = energyReport({ rooms, productById: lookup, ...SUN, table: TABLE });
+    expect(r.consumers.map((c) => c.instanceId)).toEqual(['r2', 't1']);
+    expect(r.unpowered.map((u) => u.instanceId)).toEqual(['r1', 's1']);
+    expect(r.unpowered[0]).toMatchObject({ productId: 'rower', name: 'RW900 Rower', roomId: 'gym', roomName: 'gym' });
+    const [r2, t1] = r.consumers;
+    // 40 W for the rower row's 1 h; 500 W for the treadmill row's 1 h.
+    expect(r2).toMatchObject({ powerW: 40, hoursPerDay: 1, whDay: 40, powerOverridden: true, referenceKey: null, referenceSource: null });
+    expect(t1).toMatchObject({ powerW: 500, hoursPerDay: 1, whDay: 500, powerOverridden: true, referenceKey: null });
+    expect(r.loadWhDay).toBe(540);
+    expect(r.peakLoadW).toBe(540);
+    expect(r.status).toBe('short');
+    // A switched-off override still lists as a consumer, contributing nothing.
+    const off = energyReport({ rooms: [room('gym', [['r2', 'rower', { powerW: 40, powerOn: false }]])], productById: lookup, ...SUN, table: TABLE });
+    expect(off.consumers[0]).toMatchObject({ on: false, whDay: 0, powerW: 40 });
+    expect(off.loadWhDay).toBe(0);
   });
 
   it('reports a shortfall with the panels needed to close it', () => {
