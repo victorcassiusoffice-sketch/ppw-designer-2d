@@ -1,6 +1,6 @@
 {
   "url": "https://designer.ppwellness.co/designer?demo=tintex",
-  "startedAt": "2026-09-20T13:25:49.318Z",
+  "startedAt": "2026-09-20T20:16:06.026Z",
   "desktop": {
     "storeRooms": {
       "id": "tintex-show-flat",
@@ -29,8 +29,8 @@
       ]
     },
     "frame01": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\tintex-meeting-pack\\desktop-01-plan-show-flat.png",
-    "firstFrameMs": 29,
-    "stageSettleMs": 841,
+    "firstFrameMs": 23,
+    "stageSettleMs": 833,
     "frame02": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\tintex-meeting-pack\\desktop-02-3d-as-loaded.png",
     "panelRows": [
       "TintEX VIP Satin\nsatin · 11 m²/L · from Rs 242",
@@ -200,8 +200,8 @@
     "hud": "TintEX VIP Satin\nPastel green\n3D\nChange\nMore\nWall\nRoom\nErase\nDone\n\n106.0 m² · 22.6 L · Rs 6,143 · Tap a wall to paint it",
     "hudColour": "Pastel green",
     "frame03": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\tintex-meeting-pack\\phone-03-hud.png",
-    "firstFrameMs": 22,
-    "stageSettleMs": 828,
+    "firstFrameMs": 26,
+    "stageSettleMs": 836,
     "frame04": "C:\\Users\\Victor\\Documents\\PPW-Code\\ppw-designer-2d\\docs\\designer-3d-mode-2026-09-17\\audit-2026-09-19\\tintex-meeting-pack\\phone-04-3d.png"
   },
   "consoleErrors": [],
@@ -209,9 +209,9 @@
     "ok": true,
     "service": "ppw-designer-2d",
     "env": "production",
-    "commit": "d50e87d2701fb8515c32202dccc2c3b8eee6f939",
+    "commit": "61e2c5d0fd4ebad214f8d9883119f19dbe4de720",
     "sentryConfigured": true,
-    "timestamp": "2026-09-20T13:25:50.892Z"
+    "timestamp": "2026-09-20T20:16:07.351Z"
   },
-  "finishedAt": "2026-09-20T13:27:55.855Z"
+  "finishedAt": "2026-09-20T20:16:44.898Z"
 }

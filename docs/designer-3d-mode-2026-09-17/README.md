@@ -271,6 +271,10 @@ Frames: `C-tintex-studio-cutaway.png` (day), `C-tintex-sun-1730.png` (dusk, sun 
 - E2E on the dev server: `realism-3d` **3/3** (wall + floor + exterior pixels, dressing counts, sun on/night/off, the price on hover) · `paint-sims-3d` 4 · `tintex-paint` 4 · `wallpaint-3d` 8 · `view-mode-3d` 4 · `phone-demo` 4 · `wallpaint` 6 · `eco-solar` + `eco-phone-add` 6 (electrics branch). The whole-suite sweep is recorded in the handoff.
 - `tsc --noEmit`, `npm run build` clean.
 
+## 6 · Second pass — "no random table" (`61e2c5d`, 2026-09-20)
+
+Vic: *"there's a random table there and there's no product, 3D product of a table … a design software operating like The Sims … make sure it functions just like the 2D but in 3D."* The table was a CC0 Kenney desk standing in for the demo console table — one of ten Furniture Kit bodies mapped to demo props since P1. **Law from here: a product wears its own generated body or its own art; no generic model ever stands in.** The ten entries are unmapped (files kept under `public/models/kenney/`, unreferenced); `ThreeStage.artBox` draws a body-less product as a box at its catalog size in its own art (the plan's top-down image on the lid at the plan's rotation, the photo cover-cropped on the sides — `p3-realism/artbox/`); the Sofap and TintEX show flats carry no props; the Captamarin terrace drops its bench, hedge and tree. The paint panel's scope + Erase / Clear block moved under the paint lines (in the first screen), only the live total stays pinned, and the help launcher steps left of a docked panel. Production probe `p3-realism/prod-noprops/`: the TintEX flat holds 0 items, an art-box console table and lamp stand beside the treadmill's real body, 0 requests to `/models/kenney/`.
+
 ## Next
 
-The bench photo → one more $0.30 body; P4 merchant data; P5 Soft chrome; the panel polish the paint-UX audit started (help launcher vs the docked panel, the scope block below a 900 px viewport).
+The bench photo → one more $0.30 body; P4 merchant data (bodies for the Courts range are $0.30 each on Fal — a Vic decision); P5 Soft chrome.

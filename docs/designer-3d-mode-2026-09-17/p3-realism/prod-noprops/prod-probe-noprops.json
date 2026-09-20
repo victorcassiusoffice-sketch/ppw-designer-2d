@@ -1,0 +1,36 @@
+{
+  "health": {
+    "ok": true,
+    "service": "ppw-designer-2d",
+    "env": "production",
+    "commit": "61e2c5d0fd4ebad214f8d9883119f19dbe4de720",
+    "sentryConfigured": true,
+    "timestamp": "2026-09-20T20:15:28.798Z"
+  },
+  "errors": [],
+  "kenneyRequests": [],
+  "tintexItems": [
+    {
+      "id": "living",
+      "items": 0,
+      "paint": [
+        "tintex-vip-satin·Pastel green"
+      ]
+    },
+    {
+      "id": "bedroom",
+      "items": 0,
+      "paint": [
+        "tintex-cashmere·Oyster white"
+      ]
+    },
+    {
+      "id": "kitchen",
+      "items": 0,
+      "paint": [
+        "tintex-mastertop·Light grey"
+      ]
+    }
+  ],
+  "treadmillBodyFetched": true
+}
