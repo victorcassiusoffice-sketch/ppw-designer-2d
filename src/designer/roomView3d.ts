@@ -159,6 +159,13 @@ export interface SceneItemInput {
   placement?: string;
   mountHeightCm?: number;
   fill?: string;
+  /**
+   * The product's own art for a product with NO body (Vic 2026-09-20: no
+   * stand-in models — "no random table"): the plan's top-down image lies on
+   * the box's top, the photo dresses its sides, so 3D shows what 2D shows.
+   */
+  artTopUrl?: string;
+  artSideUrl?: string;
   /** 3D Mode bodies (2026-09-17): the product this is, and how its body is fitted. */
   productId?: string;
   frontEdge?: 'top' | 'bottom' | 'left' | 'right';

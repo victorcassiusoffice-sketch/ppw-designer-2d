@@ -54,7 +54,7 @@ import { roomFloorMaterial } from '../designer/floorFinish';
 import { floorKindOf } from '../designer/floorKind';
 import { emitsLight } from '../designer/lighting';
 import { findFloorMaterialById } from '../data/floorMaterials';
-import { getProductById } from '../data/products';
+import { getProductById, productImageUrl, productTopDownUrl } from '../data/products';
 import { productModelFor } from '../data/productModels';
 import { DEFAULT_WALL_HEIGHT_M, findWallPaintById, finishOfPaint, resolveWallColourHex } from '../data/wallPaints';
 import {
@@ -144,7 +144,7 @@ interface RoomView3DBridge {
   /** Bisect the rig live (GL only). */
   tune: (opts: { hemi?: number; sun?: number; fill?: number; env?: boolean; normals?: number; maps?: boolean }) => void;
   /** What the stage has dressed (P3): joinery pieces, corner shades, lamps, contact shadows, floor kinds (GL only). */
-  dressing: () => { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }> } | null;
+  dressing: () => { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }>; bodies: number; artBoxes: number } | null;
 }
 /**
  * The card and the overlay can be mounted together (md+), so each registers
@@ -254,9 +254,15 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
       // Where a lamp's light comes from: a pendant hangs from the ceiling, a
       // sconce sits at its mount height, a floor or table lamp near its top.
       const lightMountM = !lamp ? undefined : p.placement === 'ceiling' ? Math.max(0.5, H - 0.35) : p.placement === 'wall' ? (p.mount_height_cm ?? 170) / 100 + hM * 0.5 : Math.max(0.3, hM * 0.85);
+      // No body → the box wears the product's own art (a data: SVG thumbnail
+      // is the catalog's "no image" — the box stays a shaded box then).
+      const artTop = body ? undefined : productTopDownUrl(p);
+      const artSide = body ? undefined : productImageUrl(p);
       items.push({
         emitsLight: lamp,
         lightMountM,
+        artTopUrl: artTop && !artTop.startsWith('data:') ? artTop : undefined,
+        artSideUrl: artSide && !artSide.startsWith('data:') ? artSide : undefined,
         instanceId: it.instanceId,
         x: it.x,
         y: it.y,

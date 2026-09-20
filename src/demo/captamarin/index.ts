@@ -272,11 +272,9 @@ export function buildCapTamarinApartment(): Property {
     name: 'Terrace',
     polygon: rect(CT_TERRACE),
     openings: [opening('door', 0, 2.4, DOOR)], // north wall -> hall
-    placedItems: [
-      item('demo-outdoor-bench', { x: 9.0, y: 8.6 }),
-      item('demo-hedge', { x: 12.0, y: 9.0 }),
-      item('demo-garden-tree', { x: 11.2, y: 5.9 }),
-    ],
+    // No garden props (Vic 2026-09-20: nothing in the 3D that is not a real
+    // product) — the terrace is furnished from the catalogue.
+    placedItems: [],
   };
 
   return {

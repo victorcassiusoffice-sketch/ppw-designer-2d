@@ -108,6 +108,9 @@ export interface ItemSolid {
   emitsLight?: boolean;
   /** Height of the lamp's light source above the floor, metres. */
   lightMountM?: number;
+  /** For a product with no body: its top-down art (on the box's top) and its photo (on the sides). */
+  artTopUrl?: string;
+  artSideUrl?: string;
 }
 
 export interface SceneSolids {
@@ -220,6 +223,8 @@ export function buildSolids(input: SceneInput): SceneSolids {
         modelUp: it.modelUp,
         emitsLight: it.emitsLight,
         lightMountM: it.lightMountM,
+        artTopUrl: it.artTopUrl,
+        artSideUrl: it.artSideUrl,
       });
     }
   }

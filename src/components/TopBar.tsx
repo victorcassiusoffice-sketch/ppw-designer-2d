@@ -2709,6 +2709,65 @@ export function TopBar({
                 </button>
               )}
 
+              {/* Scope — Wall or Room — Erase and Clear sit right under the lines, in the first screen (the 2026-09-19 paint-UX audit found them 150 px below a 900 px fold). Room IS the action. */}
+              <div
+                className="mt-2 flex gap-2 border-t border-ppw-rim pt-3"
+                role="radiogroup"
+                aria-label="Wall paint scope"
+                data-testid="wallpaint-scope"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  onClick={() => setWallPaintDraft({ scope: 'wall' })}
+                  data-testid="wallpaint-scope-wall"
+                  aria-checked={wallPaintDraft.scope === 'wall'}
+                  className={`${CHIP} flex-1 ${wallPaintDraft.scope === 'wall' ? CHIP_ON : CHIP_REST}`}
+                  title="Wall — click one wall to paint it"
+                >
+                  Wall
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  onClick={handleWallPaintRoom}
+                  data-testid="wallpaint-scope-room"
+                  aria-checked={wallPaintDraft.scope === 'room'}
+                  className={`${CHIP} flex-1 ${wallPaintDraft.scope === 'room' ? CHIP_ON : CHIP_REST}`}
+                  title={
+                    wallPaintDraft.erase
+                      ? 'Room — strips every wall of the active room now'
+                      : 'Room — paints every wall of the active room now'
+                  }
+                >
+                  Room
+                </button>
+              </div>
+
+              {/* Erase toggle + Clear paint. */}
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setWallPaintDraft({ erase: !wallPaintDraft.erase })}
+                  data-testid="wallpaint-erase"
+                  aria-pressed={wallPaintDraft.erase}
+                  className={`${CHIP} flex-1 ${wallPaintDraft.erase ? CHIP_DANGER_ON : CHIP_REST}`}
+                  title="Erase — clicks remove paint from a wall"
+                >
+                  Erase
+                </button>
+                <button
+                  type="button"
+                  onClick={handleWallPaintClearAll}
+                  disabled={!anyWallPainted}
+                  data-testid="wallpaint-clear"
+                  className={`${CHIP} flex-1 ${CHIP_DANGER}`}
+                  title={anyWallPainted ? 'Remove wall paint from the whole plan' : 'No walls painted yet'}
+                >
+                  Clear paint
+                </button>
+              </div>
+
               {/* Colour (2026-09-14): the brand's tints for the chosen line,
                   plus any custom hex — "tint to match" at the counter. A
                   white-only line shows no colours. */}
@@ -2867,65 +2926,6 @@ export function TopBar({
                   above them — on a 900 px laptop they sat 150 px below the
                   fold (the 2026-09-19 paint-UX audit). */}
               <div className="sticky bottom-0 z-[1] -mx-3 mt-2 border-t border-ppw-rim px-3 pb-2" style={{ background: CHROME_BG }} data-testid="wallpaint-actions">
-              {/* Scope — Wall or Room. Room IS the action. */}
-              <div
-                className="flex gap-2 pt-3"
-                role="radiogroup"
-                aria-label="Wall paint scope"
-                data-testid="wallpaint-scope"
-              >
-                <button
-                  type="button"
-                  role="radio"
-                  onClick={() => setWallPaintDraft({ scope: 'wall' })}
-                  data-testid="wallpaint-scope-wall"
-                  aria-checked={wallPaintDraft.scope === 'wall'}
-                  className={`${CHIP} flex-1 ${wallPaintDraft.scope === 'wall' ? CHIP_ON : CHIP_REST}`}
-                  title="Wall — click one wall to paint it"
-                >
-                  Wall
-                </button>
-                <button
-                  type="button"
-                  role="radio"
-                  onClick={handleWallPaintRoom}
-                  data-testid="wallpaint-scope-room"
-                  aria-checked={wallPaintDraft.scope === 'room'}
-                  className={`${CHIP} flex-1 ${wallPaintDraft.scope === 'room' ? CHIP_ON : CHIP_REST}`}
-                  title={
-                    wallPaintDraft.erase
-                      ? 'Room — strips every wall of the active room now'
-                      : 'Room — paints every wall of the active room now'
-                  }
-                >
-                  Room
-                </button>
-              </div>
-
-              {/* Erase toggle + Clear paint. */}
-              <div className="mt-2 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setWallPaintDraft({ erase: !wallPaintDraft.erase })}
-                  data-testid="wallpaint-erase"
-                  aria-pressed={wallPaintDraft.erase}
-                  className={`${CHIP} flex-1 ${wallPaintDraft.erase ? CHIP_DANGER_ON : CHIP_REST}`}
-                  title="Erase — clicks remove paint from a wall"
-                >
-                  Erase
-                </button>
-                <button
-                  type="button"
-                  onClick={handleWallPaintClearAll}
-                  disabled={!anyWallPainted}
-                  data-testid="wallpaint-clear"
-                  className={`${CHIP} flex-1 ${CHIP_DANGER}`}
-                  title={anyWallPainted ? 'Remove wall paint from the whole plan' : 'No walls painted yet'}
-                >
-                  Clear paint
-                </button>
-              </div>
-
               {/* Live line — the cart's own number for the whole plan. */}
               <p
                 className="mt-3 px-1 text-[12px] font-semibold tabular-nums text-[#37362f]"

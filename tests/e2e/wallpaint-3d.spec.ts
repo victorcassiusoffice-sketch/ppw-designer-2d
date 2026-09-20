@@ -64,6 +64,15 @@ async function bridgeReady(page: Page): Promise<boolean> {
 }
 
 async function clickWallIn3D(page: Page, roomId: string, edgeIndex: number): Promise<void> {
+  // The card lives in a scrolling panel: picking a colour lower down can
+  // scroll it out of the panel's viewport (P3 2026-09-20 moved the scope
+  // block under the lines), so bring it back on screen first, as a person
+  // would, then aim.
+  const card = page.locator('[data-testid="wallpaint-3d"]');
+  if (await card.count()) {
+    await card.first().scrollIntoViewIfNeeded();
+    await page.waitForTimeout(150);
+  }
   const pt = await page.evaluate(
     ({ roomId, edgeIndex }) =>
       (window as unknown as { __ppwRoomView3d: { wallScreenPoint: (h: unknown) => { x: number; y: number } | null } })

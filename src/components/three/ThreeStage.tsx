@@ -120,6 +120,110 @@ function bodyObject(it: ItemSolid, tpl: BodyTemplate): THREE.Group {
   return holder;
 }
 
+// ---------------------------------------------------------------------------
+// A product with NO body (Vic 2026-09-20: "there's a random table there and
+// there's no 3D product of a table … it's a design software operating like
+// The Sims"): no stand-in model, ever. The box wears the product's OWN art —
+// the plan's top-down image on its top (what the 2D shows), the photo on its
+// sides — so what you placed is what you see, at its exact catalog size.
+// ---------------------------------------------------------------------------
+const textureLoader = new THREE.TextureLoader();
+textureLoader.setCrossOrigin('anonymous');
+const artCache = new Map<string, Promise<THREE.Texture>>();
+function loadArt(url: string): Promise<THREE.Texture> {
+  let p = artCache.get(url);
+  if (!p) {
+    p = textureLoader.loadAsync(url).then((t) => {
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.anisotropy = 4;
+      return t;
+    });
+    p.catch(() => artCache.delete(url));
+    artCache.set(url, p);
+  }
+  return p;
+}
+
+/** A clone of `tex` cropped to COVER a face of aspect `faceW / faceH` (centre crop, no stretch). */
+function coverTexture(tex: THREE.Texture, faceW: number, faceH: number): THREE.Texture {
+  const img = tex.image as { width?: number; height?: number } | undefined;
+  const t = tex.clone();
+  const iw = img?.width ?? 1;
+  const ih = img?.height ?? 1;
+  const imgAspect = iw / ih;
+  const faceAspect = faceW / faceH;
+  if (imgAspect > faceAspect) {
+    const r = faceAspect / imgAspect;
+    t.repeat.set(r, 1);
+    t.offset.set((1 - r) / 2, 0);
+  } else {
+    const r = imgAspect / faceAspect;
+    t.repeat.set(1, r);
+    t.offset.set(0, (1 - r) / 2);
+  }
+  t.wrapS = THREE.ClampToEdgeWrapping;
+  t.wrapT = THREE.ClampToEdgeWrapping;
+  t.needsUpdate = true;
+  return t;
+}
+
+/**
+ * The art box for one placed item: a shaded box at the catalog size, then —
+ * as the images arrive — the top-down art laid on top at the item's
+ * rotation and the photo on the four sides. Returns the item's root (a
+ * Group carrying `userData.instanceId`).
+ */
+function artBox(it: ItemSolid, requestRender: () => void): THREE.Group {
+  const sx = Math.max(0.01, it.x1 - it.x0);
+  const sy = Math.max(0.01, it.z1 - it.z0);
+  const sz = Math.max(0.01, it.y1 - it.y0);
+  const root = new THREE.Group();
+  root.position.set((it.x0 + it.x1) / 2, (it.z0 + it.z1) / 2, (it.y0 + it.y1) / 2);
+  root.userData = { key: it.key, instanceId: it.instanceId, art: !!(it.artTopUrl || it.artSideUrl) };
+  const base = new THREE.MeshStandardMaterial({ color: it.hex, roughness: ITEM_ROUGHNESS, metalness: 0.02 });
+  const box: THREE.Mesh<THREE.BoxGeometry, THREE.Material | THREE.Material[]> = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), base);
+  box.castShadow = true;
+  box.receiveShadow = true;
+  root.add(box);
+  if (it.artSideUrl) {
+    const sideUrl = it.artSideUrl;
+    loadArt(sideUrl)
+      .then((tex) => {
+        if (!root.parent) return;
+        const side = (w: number, h: number) => new THREE.MeshStandardMaterial({ color: 0xffffff, map: coverTexture(tex, w, h), roughness: 0.8, metalness: 0 });
+        // Box material order: +x, −x, +y (top), −y (bottom), +z, −z.
+        box.material = [side(sz, sy), side(sz, sy), base, base, side(sx, sy), side(sx, sy)];
+        requestRender();
+      })
+      .catch(() => {
+        /* the shaded box stays */
+      });
+  }
+  if (it.artTopUrl) {
+    const topUrl = it.artTopUrl;
+    loadArt(topUrl)
+      .then((tex) => {
+        if (!root.parent) return;
+        // The plan's icon, at the plan's rotation, on the box's lid.
+        const plane = new THREE.Mesh(
+          new THREE.PlaneGeometry(Math.max(0.01, it.lengthM), Math.max(0.01, it.widthM)),
+          new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex, transparent: true, alphaTest: 0.35, roughness: 0.85, metalness: 0, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
+        );
+        plane.rotation.x = -Math.PI / 2; // image top → plan north (−z)
+        const turn = new THREE.Group();
+        turn.rotation.y = (-it.rotationDeg * Math.PI) / 180;
+        turn.position.y = sy / 2 + 0.003;
+        turn.add(plane);
+        root.add(turn);
+        requestRender();
+      })
+      .catch(() => {
+        /* the shaded box stays */
+      });
+  }
+  return root;
+}
+
 export interface ThreeStageHandle {
   /** Wall under a canvas-local point, or null. */
   hitTest(x: number, y: number): WallHit | null;
@@ -145,8 +249,8 @@ export interface ThreeStageHandle {
   moveItemPreview(instanceId: string, dxM: number, dyM: number): void;
   /** Put a previewed body back where the plan has it. */
   resetItemPreview(instanceId: string): void;
-  /** DEV bridge: what is dressed — joinery, shades, lamps — for a spec to count. */
-  dressing(): { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }> };
+  /** DEV bridge: what is dressed — joinery, shades, lamps, bodies, art boxes — for a spec to count. */
+  dressing(): { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }>; bodies: number; artBoxes: number };
 }
 
 export interface ThreeStageProps {
@@ -359,7 +463,7 @@ function structureSignature(s: SceneSolids): string {
     h: s.wallHeightM,
     f: s.floors.map((f) => [f.key, f.hex, f.kind, f.tileM, f.polygon]),
     w: s.walls.map((w) => [w.key, w.a, w.b, w.thicknessM, w.heightM, w.stubHeightM, w.centred, w.openings, w.shared, w.free]),
-    i: s.items.map((it) => [it.key, it.instanceId, it.x0, it.y0, it.z0, it.x1, it.y1, it.z1, it.rotationDeg, it.hex, it.meshUrl, it.modelFront, it.lengthAxis, it.modelUp, it.emitsLight, it.lightMountM]),
+    i: s.items.map((it) => [it.key, it.instanceId, it.x0, it.y0, it.z0, it.x1, it.y1, it.z1, it.rotationDeg, it.hex, it.meshUrl, it.modelFront, it.lengthAxis, it.modelUp, it.emitsLight, it.lightMountM, it.artTopUrl, it.artSideUrl]),
   });
 }
 
@@ -842,14 +946,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
 
     const buildId = ++buildRef.current;
     for (const it of solids.items) {
-      const sx = Math.max(0.01, it.x1 - it.x0);
-      const sy = Math.max(0.01, it.z1 - it.z0);
-      const sz = Math.max(0.01, it.y1 - it.y0);
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), new THREE.MeshStandardMaterial({ color: it.hex, roughness: ITEM_ROUGHNESS, metalness: 0.02 }));
-      mesh.position.set((it.x0 + it.x1) / 2, (it.z0 + it.z1) / 2, (it.y0 + it.y1) / 2);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      mesh.userData = { key: it.key, instanceId: it.instanceId };
+      // The product's own art on a box at its size until (unless) its body arrives.
+      const mesh = artBox(it, requestRender);
       content.add(mesh);
       itemsRef.current.push(mesh);
       bounds.expandByObject(mesh);
@@ -897,8 +995,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
               }
             });
             contentRef.current.remove(mesh);
-            mesh.geometry.dispose();
-            (mesh.material as THREE.Material).dispose();
+            disposeObject(mesh);
             contentRef.current.add(body);
             const i = itemsRef.current.indexOf(mesh);
             if (i >= 0) itemsRef.current[i] = body;
@@ -1293,6 +1390,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
           lamps: lampsRef.current.length,
           contactShadows: shadowsRef.current.length,
           floors: floorsRef.current.map((f) => ({ key: f.userData.key as string, kind: String(f.userData.kind ?? '') })),
+          bodies: itemsRef.current.filter((o) => o.userData.body).length,
+          artBoxes: itemsRef.current.filter((o) => o.userData.art).length,
         };
       },
       debug() {

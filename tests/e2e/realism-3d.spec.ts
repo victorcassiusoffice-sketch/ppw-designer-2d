@@ -35,7 +35,7 @@ interface Bridge {
   hitAt: (x: number, y: number) => Hit | null;
   wallMaterial: (h: Hit) => { hex: string; baseHex: string; finish: string | null; show: string } | null;
   samplePixel: (x: number, y: number) => { r: number; g: number; b: number } | null;
-  dressing: () => { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }> } | null;
+  dressing: () => { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }>; bodies: number; artBoxes: number } | null;
   debug: () => { frames: number; hour: number | null; sun: { elevationDeg: number; azimuthDeg: number } | null };
 }
 // Inside page.evaluate only what the page has exists — spell the bridge out each time.
@@ -54,7 +54,8 @@ async function seedGreyRoom(page: Page): Promise<void> {
     name: 'Vic',
     activeRoomId: 'r1',
     wallHeightM: 2.7,
-    rooms: [{ id: 'r1', name: 'Room 1', polygon: [{ x: 0, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 4 }, { x: 0, y: 4 }], openings: [], placedItems: [], wallPaint: GREY, floorFinish: { materialId: 'gym-interlock' } }],
+    // One floor lamp in a corner: a product with NO body wears its own art on a box (never a stand-in model), lights up after dark, stands on a contact shadow.
+    rooms: [{ id: 'r1', name: 'Room 1', polygon: [{ x: 0, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 4 }, { x: 0, y: 4 }], openings: [], placedItems: [{ instanceId: 'lamp', productId: 'demo-floor-lamp', x: 0.25, y: 3.4, rotation: 0 }], wallPaint: GREY, floorFinish: { materialId: 'gym-interlock' } }],
   });
 }
 
@@ -111,19 +112,25 @@ test.describe('3D Mode — P3 realism (desktop)', () => {
     for (const c of [floor!.r, floor!.g, floor!.b]) {
       expect(Math.abs(c - 0x3a)).toBeLessThanOrEqual(8);
     }
-    // 3. Dressed: skirting on every wall, corner shading, the laid floor's kind.
+    // 3. Dressed: skirting on every wall, corner shading, the laid floor's kind; the lamp is an art box (no stand-in model), a lamp, on a contact shadow.
     const d = (await page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.dressing()))!;
     expect(d.joinery).toBeGreaterThanOrEqual(4);
     expect(d.shades).toBeGreaterThanOrEqual(4);
     expect(d.floors).toEqual([{ key: 'floor-r1', kind: 'interlock' }]);
+    expect(d.artBoxes).toBe(1);
+    expect(d.bodies).toBe(0);
+    expect(d.lamps).toBe(1);
+    expect(d.contactShadows).toBe(1);
   });
 
-  test('the show flat is dressed (doors, windows, lamps, contact shadows); the sun rig turns on, moves the sun, goes dark, and turns off', async ({ page }) => {
+  test('the show flat is dressed (doors, windows) and holds NO props — nothing stands in for a product; the sun rig turns on, moves the sun, goes dark, and turns off', async ({ page }) => {
     await open3D(page, '/designer?demo=tintex');
     const d = (await page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.dressing()))!;
     expect(d.joinery).toBeGreaterThanOrEqual(12); // 12 skirtings + doors + windows shown
-    expect(d.lamps).toBeGreaterThanOrEqual(3); // floor lamp, pendants, sconce
-    expect(d.contactShadows).toBeGreaterThanOrEqual(1);
+    // Vic 2026-09-20: "there's a random table there and there's no 3D product of a table" — the paint pitch carries no props at all.
+    expect(d.bodies + d.artBoxes).toBe(0);
+    expect(d.lamps).toBe(0);
+    expect(d.contactShadows).toBe(0);
     expect(d.floors.map((f) => f.kind)).toEqual(['screed', 'screed', 'screed']);
     // Studio rig by default: no sun position.
     expect((await page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.debug())).sun).toBeNull();

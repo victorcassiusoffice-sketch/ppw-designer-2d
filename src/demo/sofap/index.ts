@@ -14,7 +14,7 @@
  * A handful of the bundled decor pieces furnish it so the rooms read as
  * rooms; the paint lines are the point.
  */
-import type { PlacedItem, Property, Room } from '../../store/propertyStore';
+import type { Property, Room } from '../../store/propertyStore';
 import type { Opening } from '../../designer/openings';
 import type { DemoDefinition } from '../demoCatalog';
 
@@ -38,12 +38,7 @@ function rect(b: Box) {
   ];
 }
 
-let seq = 0;
 let idPrefix = 'sofap';
-function item(productId: string, at: { x: number; y: number }, rotation: 0 | 90 | 180 | 270 = 0, extra: Partial<PlacedItem> = {}): PlacedItem {
-  seq += 1;
-  return { instanceId: `${idPrefix}-${String(seq).padStart(2, '0')}-${productId.replace('demo-', '')}`, productId, x: at.x, y: at.y, rotation, ...extra };
-}
 
 let openingSeq = 0;
 function opening(kind: 'door' | 'window', edgeIndex: number, offsetM: number, widthM: number): Opening {
@@ -118,11 +113,14 @@ export function buildSofapShowFlat(): Property {
 
 /** The same flat for another paint company's pitch (TintEX, 2026-09-19): its lines on the walls, its ids. */
 export function buildShowFlat(opts: ShowFlatOptions): Property {
-  seq = 0;
   openingSeq = 0;
   idPrefix = opts.prefix;
 
-  const console = item('demo-console-table', { x: 0.2, y: 0.1 });
+  // No props (Vic 2026-09-20: "there's a random table there and there's no
+  // 3D product of a table … it's a design software operating like The
+  // Sims"). A paint pitch shows the rooms, their openings and the paint; a
+  // customer furnishes it from the catalogue, and what they place is what
+  // the 3D shows — nothing stands in for a product.
   const living: Room = {
     id: 'living',
     name: 'Living room',
@@ -135,14 +133,7 @@ export function buildShowFlat(opts: ShowFlatOptions): Property {
       opening('door', 2, 4.2, DOOR), // bottom wall at x 4.2 → kitchen
       opening('door', 3, 2.9, DOOR), // left wall, the front door
     ],
-    placedItems: [
-      console,
-      item('demo-potted-plant', { x: 0.3, y: 0.15 }, 0, { parentInstanceId: console.instanceId }),
-      item('demo-aroma-diffuser', { x: 1.1, y: 0.2 }, 0, { parentInstanceId: console.instanceId }),
-      item('demo-floor-lamp', { x: 4.9, y: 3.4 }),
-      item('demo-pendant-light', { x: 2.5, y: 1.8 }),
-      item('demo-wall-mirror', { x: 2.1, y: 3.9 }),
-    ],
+    placedItems: [],
   };
 
   const bedroom: Room = {
@@ -154,10 +145,7 @@ export function buildShowFlat(opts: ShowFlatOptions): Property {
       opening('window', 3, 1.5, 1.2), // left wall, y 5.5–6.7
       opening('window', 2, 1.15, 1.2), // bottom wall, x 1.15–2.35
     ],
-    placedItems: [
-      item('demo-wall-sconce', { x: 0.2, y: 4.0 }),
-      item('demo-wall-shelf', { x: 2.5, y: 4.0 }),
-    ],
+    placedItems: [],
   };
 
   const kitchen: Room = {
@@ -168,7 +156,7 @@ export function buildShowFlat(opts: ShowFlatOptions): Property {
     openings: [
       opening('window', 1, 1.4, 1.0), // right wall, y 5.4–6.4
     ],
-    placedItems: [item('demo-pendant-light', { x: 4.25, y: 5.5 })],
+    placedItems: [],
   };
 
   return {
