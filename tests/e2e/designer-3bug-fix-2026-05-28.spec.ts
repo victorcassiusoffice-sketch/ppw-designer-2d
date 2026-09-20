@@ -95,73 +95,60 @@ test('Bug 3 — Clear repaints the canvas (no ghost items)', async ({ page }) =>
   await expect.poll(() => itemsLayerPixels(page)).toBe(0);
 });
 
-test('Bug 2 — two "+ Add to room" taps both land (no false "won\'t fit")', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await seedProperty(page, []);
-  await page.goto('/designer');
-  await page.waitForSelector('header', { timeout: 15_000 });
+// Phone pass 2026-09-16 + P3 2026-09-20: the strip opens FOLDED to its
+// category row and the popup answers real pointer events (it used to close
+// itself on the tap's own compatibility click). Synthetic `dispatchEvent`
+// taps no longer reach it, so this test drives the phone the way a thumb
+// does — a real category tap, a real thumbnail tap, a real "+ Add to room".
+test.describe('Bug 2 — two "+ Add to room" taps both land (no false "won\'t fit")', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  test('both items land inside the room, at different spots', async ({ page }) => {
+    await seedProperty(page, []);
+    await page.goto('/designer?demo=off');
+    await page.waitForSelector('header', { timeout: 15_000 });
 
-  const toolbar = page.getByTestId('sims-bottom-toolbar');
-  test.skip(
-    !(await toolbar.isVisible({ timeout: 5000 }).catch(() => false)),
-    'Sims mobile toolbar not present in this build',
-  );
+    const toolbar = page.getByTestId('sims-bottom-toolbar');
+    test.skip(
+      !(await toolbar.isVisible({ timeout: 5000 }).catch(() => false)),
+      'Sims mobile toolbar not present in this build',
+    );
 
-  const result = await page.evaluate(async () => {
-    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-    const tap = (el: Element) => {
-      const r = el.getBoundingClientRect();
-      const opt = {
-        bubbles: true,
-        cancelable: true,
-        pointerId: 1,
-        pointerType: 'touch',
-        clientX: r.left + r.width / 2,
-        clientY: r.top + r.height / 2,
-        button: 0,
-      } as PointerEventInit;
-      el.dispatchEvent(new PointerEvent('pointerdown', opt));
-      window.dispatchEvent(new PointerEvent('pointerup', opt));
-    };
-    // By id on dev, by NAME on a deployed build: there /api/products returns
-    // this SKU under a merchant id (m-7) and mergeCatalog drops the bundled
-    // twin (2026-09-07). This spec used to pass on previews only because the
-    // phone strip rendered the product TWICE — the bug that fix removed.
-    const thumb = () =>
-      Array.from(document.querySelectorAll('[data-testid="sims-thumb"]')).find(
-        (t) =>
-          t.getAttribute('data-product-id') === 'k1-nordictrack-tour-de-france' ||
-          (t.getAttribute('aria-label') ?? '').startsWith('NordicTrack Tour de France'),
-      ) as HTMLElement | undefined;
+    const placed = () =>
+      page.evaluate(() => {
+        try {
+          return (JSON.parse(localStorage.getItem('ppw_property_v2') || '{}')?.state?.property?.rooms?.[0]?.placedItems ?? []) as Array<{ x: number; y: number }>;
+        } catch {
+          return [] as Array<{ x: number; y: number }>;
+        }
+      });
     const addOnce = async () => {
-      const t = thumb();
-      if (t) tap(t);
-      await sleep(250);
-      const add = document.querySelector('[data-testid="popup-add-to-room"]') as HTMLElement | null;
-      if (add) add.click();
-      await sleep(350);
+      if ((await page.locator('[data-testid="sims-thumb-strip"]').count()) === 0) await page.locator('[data-testid="sims-cat-cardio"]').tap();
+      await expect(page.locator('[data-testid="sims-thumb-strip"]')).toBeVisible();
+      // By id on dev, by NAME on a deployed build (there /api/products returns
+      // this SKU under a merchant id and mergeCatalog drops the bundled twin).
+      const thumbs = page.locator('[data-testid="sims-thumb"]:visible');
+      const byId = thumbs.filter({ has: page.locator('[data-product-id="k1-nordictrack-tour-de-france"]') });
+      const thumb = (await byId.count()) ? byId.first() : thumbs.first();
+      await thumb.tap();
+      await expect(page.locator('[data-testid="mobile-product-popup"]')).toBeVisible();
+      await page.locator('[data-testid="popup-add-to-room"]').tap();
+      await expect(page.locator('[data-testid="mobile-product-popup"]')).toHaveCount(0);
     };
     await addOnce();
+    await expect.poll(async () => (await placed()).length).toBe(1);
     await addOnce();
-    let items: Array<{ x: number; y: number }> = [];
-    try {
-      items =
-        JSON.parse(localStorage.getItem('ppw_property_v2') || '{}')?.state?.property?.rooms?.[0]
-          ?.placedItems ?? [];
-    } catch {
-      /* ignore */
+    await expect.poll(async () => (await placed()).length).toBe(2);
+    const result = { items: await placed(), count: 2 };
+    // Not stacked at the same spot — the bug was every tap landing at the room centre and colliding.
+    expect(result.items[0].x !== result.items[1].x || result.items[0].y !== result.items[1].y).toBe(true);
+    // Both items inside the 5×4 m room.
+    for (const it of result.items) {
+      expect(it.x).toBeGreaterThanOrEqual(0);
+      expect(it.y).toBeGreaterThanOrEqual(0);
+      expect(it.x).toBeLessThanOrEqual(5);
+      expect(it.y).toBeLessThanOrEqual(4);
     }
-    return { count: items.length, items };
   });
-
-  expect(result.count).toBe(2);
-  // Both items inside the 5×4 m room.
-  for (const it of result.items) {
-    expect(it.x).toBeGreaterThanOrEqual(0);
-    expect(it.y).toBeGreaterThanOrEqual(0);
-    expect(it.x).toBeLessThanOrEqual(5);
-    expect(it.y).toBeLessThanOrEqual(4);
-  }
 });
 
 test('Bug 1 — long-press context menu is suppressed on canvas + catalog tile', async ({ page }) => {

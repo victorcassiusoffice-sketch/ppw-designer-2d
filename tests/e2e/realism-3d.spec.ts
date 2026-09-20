@@ -152,6 +152,21 @@ test.describe('3D Mode — P3 realism (desktop)', () => {
     expect((await page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.debug())).sun).toBeNull();
   });
 
+  test('the paint panel keeps its actions and live line on screen at 900 px, and the help launcher stays clear of it', async ({ page }) => {
+    await open3D(page, '/designer?demo=tintex');
+    await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
+    await page.waitForSelector('[data-testid="wallpaint-palette"]');
+    // Open the chart so the panel is at its longest, then check the pinned block.
+    await page.locator('[data-testid="wallpaint-chart-toggle"]').click();
+    await page.waitForTimeout(300);
+    await expect(page.locator('[data-testid="wallpaint-scope"]')).toBeInViewport();
+    await expect(page.locator('[data-testid="wallpaint-live"]')).toBeInViewport();
+    await expect(page.locator('[data-testid="wallpaint-erase"]')).toBeInViewport();
+    const panel = (await page.locator('[data-testid="wallpaint-palette"]').boundingBox())!;
+    const help = (await page.getByRole('button', { name: 'Open keyboard shortcuts help' }).boundingBox())!;
+    expect(help.x + help.width).toBeLessThanOrEqual(panel.x + 1);
+  });
+
   test('the Sims price on hover: with the brush armed the caption names the brush and the cost of the wall', async ({ page }) => {
     await open3D(page, '/designer?demo=tintex');
     await page.locator('[data-testid="wallpaint-tool-toggle"]').click();

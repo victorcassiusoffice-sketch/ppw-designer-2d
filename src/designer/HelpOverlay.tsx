@@ -231,8 +231,11 @@ export function HelpLauncherIcon({ onOpen }: { onOpen: () => void }): JSX.Elemen
         position: 'fixed',
         bottom:
           'calc(max(1rem, env(safe-area-inset-bottom)) + var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px) + 56px)',
-        // Left of the DetailsPanel (w-80 = 20 rem) while it is open.
-        right: besidePanel ? 'calc(20rem + 1rem)' : '1rem',
+        // Left of the DetailsPanel (w-80 = 20 rem) while it is open, and left
+        // of the docked Floor / Wall paint / Energy panel (which publishes its
+        // width as --floor-panel-w) — it used to sit over the paint panel's
+        // colour row and its Clear button (the 2026-09-19 paint-UX audit).
+        right: besidePanel ? 'calc(max(20rem, var(--floor-panel-w, 0px)) + 1rem)' : 'calc(var(--floor-panel-w, 0px) + 1rem)',
         borderRadius: 8,
         background: CHROME_BG,
         border: `1px solid ${CHROME_RIM}`,

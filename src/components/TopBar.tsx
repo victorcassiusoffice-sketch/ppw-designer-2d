@@ -2862,9 +2862,14 @@ export function TopBar({
                 </p>
               )}
 
+              {/* Scope, Erase / Clear and the live line stay PINNED to the
+                  bottom of the panel while the shades and the chart scroll
+                  above them — on a 900 px laptop they sat 150 px below the
+                  fold (the 2026-09-19 paint-UX audit). */}
+              <div className="sticky bottom-0 z-[1] -mx-3 mt-2 border-t border-ppw-rim px-3 pb-2" style={{ background: CHROME_BG }} data-testid="wallpaint-actions">
               {/* Scope — Wall or Room. Room IS the action. */}
               <div
-                className="mt-2 flex gap-2 border-t border-ppw-rim pt-3"
+                className="flex gap-2 pt-3"
                 role="radiogroup"
                 aria-label="Wall paint scope"
                 data-testid="wallpaint-scope"
@@ -2936,6 +2941,7 @@ export function TopBar({
                     ? 'Click any wall of a room to paint the whole room'
                     : `Click a wall to paint it · ${paintCoatsSetting ?? wallPaintSel.recommended_coats} coats at ${wallHeightM.toFixed(1)} m`}
               </p>
+              </div>
               <p className="px-1 text-[10px] leading-snug" style={{ color: CHROME_TEXT_2 }} data-testid="wallpaint-assumptions">
                 {vatText}
                 {wallPaintSel.priced_at ? ` (${paintBrand?.name ?? 'store'}, ${wallPaintSel.priced_at})` : ''}

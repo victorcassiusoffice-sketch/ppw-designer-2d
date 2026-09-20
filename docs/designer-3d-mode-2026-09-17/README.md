@@ -218,6 +218,59 @@ Tinted tins price on the band the colour's depth needs (Pastel ≥ 72 L*, Mid-ba
 2. **Cashmere** — no yield, no coat count, and it is missing from the live store API: confirm it is still made.
 3. Whether the four tint bands still exist, and VAT treatment of the list.
 
+---
+
+# P3 realism + the electrics (2026-09-19 → 20)
+
+Vic: *"go through the whole app and make sure everything is functioning and people can, just like the Sims game, paint a wall and calculate costs … physically see the wall painted good, not just a graphical color … the electrics are not being calculated … the solar panels are being calculated, but the actual input of the treadmills, of the bicycles … is not working. First, make sure the 3D version is super high level. Just like the game The Sims, identify any flaws, any visual aesthetics, any user interface ability and methods, and upgrade them to the highest level, similar to higher level gaming."*
+
+## 1 · Audit first (`audit-2026-09-19/`)
+
+Three auditors measured before anything was built (the paint-UX and whole-app auditors were cut short by a session limit; their partial evidence is in `paint-3d-ux/` and `whole-app/`):
+
+| Auditor | Verdict, with the numbers |
+|---|---|
+| **3D visuals** (`3d-visual/`, 15 findings) | the engineering sound, the picture not Sims-grade: both show flats read as **unpainted white boxes** (every wall its line's white base hex, on a floor clipping to 255,255,243); **floors rendered ×1.14–1.15 of their swatch**; the room was **6–16 % of the view** in a flat beige void; doors were holes, windows a 32 % pane; no skirting, caps or ceiling; the interior paint bled onto the **outside** of every wall (ExtrudeGeometry gives both caps material 0); selection turned a product into a mint ghost; a 1 px hairline for the wall target; a right-drag orbit carried a product |
+| **Electrics** (`electrics/`, 8 findings, reproduced on production) | the arithmetic is right (treadmill 350 W, bikes 60 W, Jinko 1.9 kWh/day); **Vic's symptom has one root cause** — every merchant product on prod is an `m-<id>` resolved through an async cache, and the energy memo was keyed on `rooms` only, so a reloaded plan of treadmills read **0 Wh** beside a panel that later said 440 Wh (`prod-timing-results.json`); plus the RW900 rower scored 0 W (bare `rower` row first), no way to see or set an item's watts, the stashed "simple meter" WIP never merged (its bar component was never stashed), a 450 Wp hint for a panel not in the catalog, no Energy button |
+| **TintEX pack** | `06-Roadmap/marketing-dept/outreach/TINTEX-MEETING-PACK-2026-09-23/` (proposal, 5-minute demo script, questions, A4 one-pager + PDF, 11 production frames) |
+
+## 2 · What shipped
+
+**3D (b954c14)** — all procedural, nothing fetched, colour truth re-measured:
+
+| Piece | Where |
+|---|---|
+| Floors as real surfaces: rubber tile / interlock / EVA mat / vinyl / EPDM / wood / ceramic / bare screed, joints at the laid tile size, albedo normalised to the hex; sky gradient; ground vignette | `three/surfaces.ts`, `designer/floorKind.ts` |
+| Joinery: skirting (stops at doors), architraves + linings, panelled door leaves with lever handles, window frames + mullion + sill | `three/joinery.ts` |
+| Set dressing: sky dome (day → night), corner shading strips (the phone-safe stand-in for AO), contact shadows under standing bodies, warm night lights at every lamp | `three/dressing.ts` |
+| The sun by the hour: NOAA solar position for Tamarin (Dec noon 3° south of zenith, Jun noon ~46° north, rises east, sets west — pinned) | `designer/sunPosition.ts` |
+| Stage: exterior render on the OUTSIDE cap of room walls (faces re-grouped by z), cap strips, 28 mm face outlines, selection = 0.12 emissive + inverted-hull rim, a cut wall stands up as a ghost under the brush, `compileAsync` before the first frame, anisotropy on bodies, PCFSoft shadows, rig re-balanced (hemi 0.72 π / sun 0.25 π / fill 0.25 π) + measured `FLOOR_GAIN` | `three/ThreeStage.tsx` |
+| Overlay: the ☀ control (off = studio rig, on = 06:00–20:00), phone labels on the wall-view buttons, right-drag always orbits, zoom to 0.18×, **the Sims price on hover** ("Bedroom · Wall 2 → VIP Satin · Light grey ≈ 9.5 m² · 2.0 L · Rs 516 — click to paint", by the quote's own arithmetic) | `RoomView3D.tsx`, `TopBar.tsx` |
+| Framing: the room fills the frame (half-diagonal + 0.3 H at the limiting FOV + 0.4 H), elevation 30° | `roomView3d.fitCamera` |
+| Demos: the TintEX and Sofap show flats carry shades from their own cards (RAL 6019 / 1013 / 7035; Bermuda Beach / Elmwood) | `demo/tintex`, `demo/sofap` |
+
+**Electrics (afd063c, merged e8d63fc)** — `useEnergyReport` re-derives when the catalog lands (E-01); the RW900 and touchscreen bikes draw (E-02); a watts field per item, greyed "self-powered · set watts" rows for inferred 0 W gear (E-03); the stashed meter reading adopted + `EnergyMeterBar` written (E-04); name-table false hits fixed with a table-driven test over all 41 seed products (E-05); the hint names the catalog's real 475 Wp panel (E-06); an Energy button in the bar (E-07). Production DB energy columns (E-08) stay a Vic gate.
+
+## 3 · Measured (`p3-realism/`, dev server, SwiftShader)
+
+| Reading | Before (audit) | After |
+|---|---|---|
+| `#808080` wall, far face, Walls Up | 122,121,119 | **118,117,115** (law 0.78–1.04 of the hex) |
+| Gym-interlock floor `#3A3A3A` (58) | 66 (×1.14) | **56** |
+| EVA mat `#1F2A44` (31,42,68) | 37,49,76 | **30,40,64** |
+| Bare floor `#F1EBDD` (241,235,221) | 255,255,243 (clipped) | **232,225,210** |
+| Outside of a room wall | the room's paint | the exterior render (211,205,193) |
+| Show flat, dressed | 0 | 16 joinery pieces · 38 corner shades · 4 lamps · 2 contact shadows |
+| First 3D frame, TintEX flat | 5.0–9.1 s | 2.8 s (`compileAsync`) |
+
+Frames: `C-tintex-studio-cutaway.png` (day), `C-tintex-sun-1730.png` (dusk, sun from the west), `C-tintex-night-1930.png` (lamps on), `C-tintex-hover-stub-ghost.png`, `D-gym-cutaway.png` / `D-gym-selected.png` / `D-gym-zoomed.png` (bodies, door, window, hull).
+
+## 4 · Gates
+
+- `npx vitest run` — **207 files / 2,582 tests** (joinery 5, dressing 3, sunPosition 4, electrics +36).
+- E2E on the dev server: `realism-3d` **3/3** (wall + floor + exterior pixels, dressing counts, sun on/night/off, the price on hover) · `paint-sims-3d` 4 · `tintex-paint` 4 · `wallpaint-3d` 8 · `view-mode-3d` 4 · `phone-demo` 4 · `wallpaint` 6 · `eco-solar` + `eco-phone-add` 6 (electrics branch). The whole-suite sweep is recorded in the handoff.
+- `tsc --noEmit`, `npm run build` clean.
+
 ## Next
 
-The bench photo → one more $0.30 body; P4 merchant data; P5 Soft chrome.
+The bench photo → one more $0.30 body; P4 merchant data; P5 Soft chrome; the panel polish the paint-UX audit started (help launcher vs the docked panel, the scope block below a 900 px viewport).
