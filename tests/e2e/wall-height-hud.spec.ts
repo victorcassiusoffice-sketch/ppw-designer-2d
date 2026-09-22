@@ -51,6 +51,7 @@ test.describe('Wall height on the plan', () => {
     const hud = page.locator('[data-testid="wall-height-hud"]');
     await expect(hud).toBeVisible();
     await expect(hud).toHaveAttribute('data-placement', 'left');
+    await expect(page.locator('[data-testid="wall-height-hud-label"]')).toBeVisible();
     await expect(page.locator('[data-testid="wall-height-readout"]')).toHaveText('2.7 m');
     await expect(page.locator('[data-testid="wallpaint-palette"]')).toHaveCount(0);
 
@@ -83,12 +84,13 @@ test.describe('Wall height on the plan', () => {
 test.describe('Wall height on a phone', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
-  test('the card docks left and a tap raises the house', async ({ page }) => {
+  test('a slim bar docks left and +/− steps 0.1 m', async ({ page }) => {
     await seed(page);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
     const hud = page.locator('[data-testid="wall-height-hud"]');
     await expect(hud).toBeVisible();
+    await expect(page.locator('[data-testid="wall-height-hud-label"]')).toBeHidden();
     const place = await page.evaluate(() => {
       const card = document.querySelector('[data-testid="wall-height-hud"]') as HTMLElement;
       const bar = document.querySelector('[data-testid="sims-bottom-toolbar"]')!.getBoundingClientRect();
@@ -97,14 +99,22 @@ test.describe('Wall height on a phone', () => {
         placement: card.getAttribute('data-placement'),
         leftish: r.left < window.innerWidth * 0.45,
         clearsBottom: r.bottom < bar.top - 24,
+        // One row: the old card was ~120 px tall and ~240 px wide.
+        short: r.height < 64,
+        narrow: r.width < 220,
       };
     });
     expect(place.placement).toBe('left');
     expect(place.leftish).toBe(true);
     expect(place.clearsBottom).toBe(true);
+    expect(place.short).toBe(true);
+    expect(place.narrow).toBe(true);
 
     await page.locator('[data-testid="wall-height-up"]').tap();
     await expect(page.locator('[data-testid="wall-height-readout"]')).toHaveText('2.8 m');
     await expect.poll(() => storedHeight(page)).toBe(2.8);
+    await page.locator('[data-testid="wall-height-down"]').tap();
+    await expect(page.locator('[data-testid="wall-height-readout"]')).toHaveText('2.7 m');
+    await expect.poll(() => storedHeight(page)).toBe(2.7);
   });
 });

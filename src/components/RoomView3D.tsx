@@ -1186,13 +1186,13 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       </div>
       {solids.walls.length > 0 && (
         <div
-          className="flex items-center justify-between gap-2 border-b border-ppw-rim bg-ppw-chrome px-3 py-1.5"
+          className="flex items-center justify-end gap-2 border-b border-ppw-rim bg-ppw-chrome px-2 py-1 md:justify-between md:px-3 md:py-1.5"
           data-testid="view3d-wall-height"
         >
-          <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-ppw-charcoal">
+          <span className="hidden text-[11px] font-semibold uppercase tracking-[0.06em] text-ppw-charcoal md:inline">
             Wall height
           </span>
-          <div className="w-[180px] shrink-0">
+          <div className="w-auto shrink-0 md:w-[180px]">
             <WallHeightControl idPrefix="view3d-wall-height" />
           </div>
         </div>

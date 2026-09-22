@@ -3662,14 +3662,17 @@ export function RoomCanvas({
       )}
       {/* Wall height (2026-09-22): after the walls exist, raise / lower them
           from the plan — same left dock as the wall pen, not the paint panel.
+          Phone (2026-09-22): a one-row bar, not the labelled card — the card
+          ate the top-left of a 390 px screen. Desktop keeps the card.
           Hidden while the pen owns that dock, and on a phone while cladding's
           own left card is up (md+ cladding lives in the right panel). */}
       {hasDrawnWalls && !drawMode && !wallDrawEnabled && (
         <div
           data-testid="wall-height-hud"
           data-placement="left"
-          className={`pointer-events-auto fixed left-3 z-30 w-[min(70vw,240px)] flex-col gap-1.5 rounded-xl p-2 text-xs top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.5rem)] lg:top-1/2 lg:-translate-y-1/2 ${
-            claddingTool ? 'hidden md:flex' : 'flex'
+          aria-label="Wall height"
+          className={`pointer-events-auto fixed left-3 z-30 flex w-max flex-row items-center gap-0.5 rounded-full px-1 py-0.5 text-xs top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.35rem)] md:w-[min(70vw,240px)] md:flex-col md:items-stretch md:gap-1.5 md:rounded-xl md:p-2 lg:top-1/2 lg:-translate-y-1/2 ${
+            claddingTool ? 'max-md:hidden' : ''
           }`}
           style={{
             background: CHROME_BG,
@@ -3678,10 +3681,10 @@ export function RoomCanvas({
             color: CHROME_TEXT,
           }}
         >
-          <span className="text-[10px] font-semibold uppercase tracking-[0.06em]" data-testid="wall-height-hud-label">
+          <span className="hidden text-[10px] font-semibold uppercase tracking-[0.06em] md:inline" data-testid="wall-height-hud-label">
             Wall height
           </span>
-          <span className="text-[11px] font-medium leading-snug" style={{ color: CHROME_TEXT_2 }}>
+          <span className="hidden text-[11px] font-medium leading-snug md:inline" style={{ color: CHROME_TEXT_2 }} data-testid="wall-height-hud-note">
             Whole house · steps of 0.1 m
           </span>
           <WallHeightControl idPrefix="wall-height" />
