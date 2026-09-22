@@ -19,17 +19,27 @@ export function formatWallHeightM(heightM: number): string {
   return String(Number(heightM.toFixed(2)));
 }
 
-export function WallHeightControl({ idPrefix }: { idPrefix: string }) {
+export function WallHeightControl({
+  idPrefix,
+  className = '',
+  buttonClassName = '',
+  readoutClassName = '',
+}: {
+  idPrefix: string;
+  className?: string;
+  buttonClassName?: string;
+  readoutClassName?: string;
+}) {
   const heightM = usePropertyStore((s) => s.property.wallHeightM ?? DEFAULT_WALL_HEIGHT_M);
   const setWallHeight = usePropertyStore((s) => s.setWallHeight);
   const atMin = heightM <= MIN_WALL_HEIGHT_M + 0.001;
   const atMax = heightM >= MAX_WALL_HEIGHT_M - 0.001;
 
   return (
-    <div className="flex items-center gap-1.5" data-testid={`${idPrefix}-control`}>
+    <div className={`flex items-center gap-1.5 ${className}`} data-testid={`${idPrefix}-control`}>
       <button
         type="button"
-        className={BTN}
+        className={`${BTN} ${buttonClassName}`}
         disabled={atMin}
         onClick={() => setWallHeight(heightM - STEP_M)}
         aria-label="Lower wall height"
@@ -39,7 +49,7 @@ export function WallHeightControl({ idPrefix }: { idPrefix: string }) {
         −
       </button>
       <span
-        className="min-w-[4.5rem] flex-1 text-center text-[14px] font-semibold tabular-nums text-[#37362f]"
+        className={`min-w-[4.5rem] flex-1 text-center text-[14px] font-semibold tabular-nums text-[#37362f] ${readoutClassName}`}
         data-testid={`${idPrefix}-readout`}
         aria-live="polite"
       >
@@ -47,7 +57,7 @@ export function WallHeightControl({ idPrefix }: { idPrefix: string }) {
       </span>
       <button
         type="button"
-        className={BTN}
+        className={`${BTN} ${buttonClassName}`}
         disabled={atMax}
         onClick={() => setWallHeight(heightM + STEP_M)}
         aria-label="Raise wall height"

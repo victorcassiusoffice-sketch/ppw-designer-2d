@@ -1193,7 +1193,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
             Wall height
           </span>
           <div className="w-auto shrink-0 md:w-[180px]">
-            <WallHeightControl idPrefix="view3d-wall-height" />
+            <WallHeightControl
+              idPrefix="view3d-wall-height"
+              buttonClassName="max-md:h-8 max-md:w-8 max-md:border-0 max-md:bg-transparent max-md:shadow-none"
+              readoutClassName="max-md:min-w-0 max-md:text-[12px]"
+            />
           </div>
         </div>
       )}

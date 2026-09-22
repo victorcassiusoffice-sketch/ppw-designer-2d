@@ -99,16 +99,18 @@ test.describe('Wall height on a phone', () => {
         placement: card.getAttribute('data-placement'),
         leftish: r.left < window.innerWidth * 0.45,
         clearsBottom: r.bottom < bar.top - 24,
-        // One row: the old card was ~120 px tall and ~240 px wide.
-        short: r.height < 64,
-        narrow: r.width < 220,
+        // Flush to the screen edge, a small vertical rail — not a floating card.
+        flush: r.left < 2,
+        narrow: r.width < 56,
+        compact: r.height < 140,
       };
     });
     expect(place.placement).toBe('left');
     expect(place.leftish).toBe(true);
     expect(place.clearsBottom).toBe(true);
-    expect(place.short).toBe(true);
+    expect(place.flush).toBe(true);
     expect(place.narrow).toBe(true);
+    expect(place.compact).toBe(true);
 
     await page.locator('[data-testid="wall-height-up"]').tap();
     await expect(page.locator('[data-testid="wall-height-readout"]')).toHaveText('2.8 m');

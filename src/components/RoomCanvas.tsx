@@ -3661,9 +3661,9 @@ export function RoomCanvas({
         </div>
       )}
       {/* Wall height (2026-09-22): after the walls exist, raise / lower them
-          from the plan — same left dock as the wall pen, not the paint panel.
-          Phone (2026-09-22): a one-row bar, not the labelled card — the card
-          ate the top-left of a 390 px screen. Desktop keeps the card.
+          from the plan. Desktop keeps the labelled card. Phone is a small
+          vertical rail flush to the left edge — white pill, soft shadow,
+          − / metres / + only — clear of the bottom catalog.
           Hidden while the pen owns that dock, and on a phone while cladding's
           own left card is up (md+ cladding lives in the right panel). */}
       {hasDrawnWalls && !drawMode && !wallDrawEnabled && (
@@ -3671,15 +3671,10 @@ export function RoomCanvas({
           data-testid="wall-height-hud"
           data-placement="left"
           aria-label="Wall height"
-          className={`pointer-events-auto fixed left-3 z-30 flex w-max flex-row items-center gap-0.5 rounded-full px-1 py-0.5 text-xs top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.35rem)] md:w-[min(70vw,240px)] md:flex-col md:items-stretch md:gap-1.5 md:rounded-xl md:p-2 lg:top-1/2 lg:-translate-y-1/2 ${
+          className={`pointer-events-auto fixed left-0 top-1/2 z-30 flex w-max -translate-y-1/2 flex-col items-center rounded-r-2xl border-0 bg-white px-0.5 py-1 text-xs shadow-[0_2px_10px_rgba(42,41,38,0.12)] md:left-3 md:top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.5rem)] md:w-[min(70vw,240px)] md:translate-y-0 md:items-stretch md:gap-1.5 md:rounded-xl md:border md:border-[#dcd9d0] md:bg-[#faf9f5] md:p-2 md:shadow-[0_12px_32px_rgba(42,41,38,0.18)] lg:top-1/2 lg:-translate-y-1/2 ${
             claddingTool ? 'max-md:hidden' : ''
           }`}
-          style={{
-            background: CHROME_BG,
-            border: `1px solid ${CHROME_RIM}`,
-            boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
-            color: CHROME_TEXT,
-          }}
+          style={{ color: CHROME_TEXT }}
         >
           <span className="hidden text-[10px] font-semibold uppercase tracking-[0.06em] md:inline" data-testid="wall-height-hud-label">
             Wall height
@@ -3687,7 +3682,12 @@ export function RoomCanvas({
           <span className="hidden text-[11px] font-medium leading-snug md:inline" style={{ color: CHROME_TEXT_2 }} data-testid="wall-height-hud-note">
             Whole house · steps of 0.1 m
           </span>
-          <WallHeightControl idPrefix="wall-height" />
+          <WallHeightControl
+            idPrefix="wall-height"
+            className="max-md:flex-col max-md:gap-0"
+            buttonClassName="max-md:h-8 max-md:w-8 max-md:rounded-md max-md:border-0 max-md:bg-transparent max-md:text-[16px] max-md:shadow-none"
+            readoutClassName="max-md:min-w-0 max-md:flex-none max-md:px-1 max-md:py-0.5 max-md:text-[11px] max-md:font-medium max-md:leading-none"
+          />
         </div>
       )}
       {wallPaintHudOn && (
