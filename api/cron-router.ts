@@ -323,7 +323,7 @@ async function handleGumroadReconcile(res: MinRes): Promise<void> {
     );
   }
   res.status(200);
-  res.json({ ok: true, ...result });
+  res.json(result);
 }
 
 async function handleEmailSendReconcile(res: MinRes): Promise<void> {

@@ -74,7 +74,7 @@ export interface EnrichableRow {
 export function enrichImagery<T extends EnrichableRow>(
   rows: T[],
   map: Map<string, SeedImageryEntry>,
-): T[] {
+): Array<T & Pick<EnrichableRow, 'topdownImageUrl'>> {
   return rows.map((row) => {
     const entry = map.get(String(row.sku ?? '').toUpperCase());
     if (!entry) return row;
