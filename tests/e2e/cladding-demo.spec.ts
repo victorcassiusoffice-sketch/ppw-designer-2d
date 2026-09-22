@@ -67,3 +67,60 @@ test.describe('Sample cladding in 3D', () => {
     await expect(page.locator('[data-testid="cladding-live"]')).toContainText(/pack/i);
   });
 });
+
+test.describe('Sample cladding on a phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+  test('left HUD stays off the bottom and a 3D tap stores demo cladding', async ({ page }) => {
+    await seed(page);
+    await page.goto('/designer');
+    await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    await page.getByRole('button', { name: 'Open menu' }).click();
+    await page.locator('[data-testid="cladding-mobile-demo-clad-cedar-140"]').click();
+
+    const hud = page.locator('[data-testid="cladding-hud"]');
+    await expect(hud).toBeVisible();
+    await expect(hud).toHaveAttribute('data-placement', 'left');
+    await expect(page.locator('[data-testid="cladding-hud-sample"]')).toContainText(/sample/i);
+    const place = await page.evaluate(() => {
+      const card = document.querySelector('[data-testid="cladding-hud"]') as HTMLElement;
+      const bar = document.querySelector('[data-testid="sims-bottom-toolbar"]')!.getBoundingClientRect();
+      const r = card.getBoundingClientRect();
+      return {
+        leftish: r.left < window.innerWidth * 0.45,
+        clearsBottom: r.bottom < bar.top - 24,
+        gap: Math.round(bar.top - r.bottom),
+      };
+    });
+    expect(place.leftish).toBe(true);
+    expect(place.clearsBottom).toBe(true);
+    expect(place.gap).toBeGreaterThan(24);
+
+    await page.locator('[data-testid="cladding-hud-3d"]').click();
+    await expect(page.locator('[data-testid="wallpaint-3d-overlay"]')).toBeVisible();
+    await expect(page.locator('[data-testid="cladding-3d-brush-strip"]')).toBeVisible();
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: { faceCount: () => number } }).__ppwRoomView3d.faceCount()))
+      .toBeGreaterThan(0);
+
+    const pt = await page.evaluate(() =>
+      (window as unknown as { __ppwRoomView3d: { wallScreenPoint: (h: unknown) => { x: number; y: number } | null } }).__ppwRoomView3d.wallScreenPoint({
+        kind: 'edge',
+        roomId: 'r1',
+        edgeIndex: 0,
+      }),
+    );
+    expect(pt).not.toBeNull();
+    await page.touchscreen.tap(pt!.x, pt!.y);
+
+    await expect.poll(async () => {
+      const raw = await page.evaluate(() => localStorage.getItem('ppw_property_v2'));
+      const clad = raw ? JSON.parse(raw).state.property.rooms[0].wallCladding : null;
+      return clad?.[0]?.productId ?? '';
+    }).toBe('demo-clad-cedar-140');
+
+    const footer = page.locator('[data-testid="wallpaint-3d-overlay"] [data-testid="wallpaint-3d-footer"]');
+    await expect(footer).toContainText(/board/i);
+    await expect(footer).toContainText(/pack/i);
+  });
+});
