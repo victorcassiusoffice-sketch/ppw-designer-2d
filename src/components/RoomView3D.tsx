@@ -1170,7 +1170,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       <div className="flex items-center justify-between gap-2 border-b border-ppw-rim bg-ppw-chrome px-3 py-1.5">
         <div className="min-w-0">
           <p className="text-[13px] font-semibold leading-tight text-[#37362f]">{title ?? '3D room view'}</p>
-          <p className="truncate text-[11px] font-medium leading-tight text-ppw-charcoal">
+          <p className="hidden truncate text-[11px] font-medium leading-tight text-ppw-charcoal md:block">
             {onPaintWall
               ? 'Drag to look around · pinch or scroll to zoom · click a wall to paint it'
               : onPaintFloor
@@ -1186,17 +1186,18 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       </div>
       {solids.walls.length > 0 && (
         <div
-          className="flex items-center justify-end gap-2 border-b border-ppw-rim bg-ppw-chrome px-2 py-1 md:justify-between md:px-3 md:py-1.5"
+          className="z-10 flex items-center justify-end gap-2 max-md:pointer-events-none max-md:absolute max-md:left-0 max-md:top-1/2 max-md:w-max max-md:-translate-y-1/2 max-md:border-0 max-md:bg-transparent max-md:p-0 md:justify-between md:border-b md:border-ppw-rim md:bg-ppw-chrome md:px-3 md:py-1.5"
           data-testid="view3d-wall-height"
         >
           <span className="hidden text-[11px] font-semibold uppercase tracking-[0.06em] text-ppw-charcoal md:inline">
             Wall height
           </span>
-          <div className="w-auto shrink-0 md:w-[180px]">
+          <div className="pointer-events-auto w-auto shrink-0 max-md:flex max-md:flex-col max-md:items-center max-md:rounded-r-2xl max-md:bg-white max-md:px-0.5 max-md:py-1 max-md:shadow-[0_2px_10px_rgba(42,41,38,0.12)] md:w-[180px]">
             <WallHeightControl
               idPrefix="view3d-wall-height"
-              buttonClassName="max-md:h-8 max-md:w-8 max-md:border-0 max-md:bg-transparent max-md:shadow-none"
-              readoutClassName="max-md:min-w-0 max-md:text-[12px]"
+              className="max-md:flex-col max-md:gap-0"
+              buttonClassName="max-md:h-8 max-md:w-8 max-md:rounded-md max-md:border-0 max-md:bg-transparent max-md:text-[16px] max-md:shadow-none"
+              readoutClassName="max-md:min-w-0 max-md:px-1 max-md:text-[11px] max-md:font-medium"
             />
           </div>
         </div>

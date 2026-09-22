@@ -721,6 +721,10 @@ export function RoomCanvas({
   // until the user rotates the armed ghost manually (R / Shift+R); after
   // that their chosen facing wins, exactly like Sims build mode.
   const [ghostManuallyRotated, setGhostManuallyRotated] = useState(false);
+  // Phone canvas chrome (2026-09-22): zoom, share, area and the price chip
+  // stay in the DOM (specs read them) but fold behind one flush pill so the
+  // plan is the screen. Desktop always shows the row.
+  const [canvasToolsOpen, setCanvasToolsOpen] = useState(false);
 
   // Designer polish (2026-05-29) — placement micro-feedback. When a NEW
   // item commits, its instanceId is captured here so the matching
@@ -3262,7 +3266,7 @@ export function RoomCanvas({
           controls never sit under the notch / rounded corner on a notched
           device. */}
       <div
-        className="pointer-events-none absolute z-10 flex flex-col items-end gap-2"
+        className="pointer-events-none absolute z-10 flex flex-col items-end gap-2 max-md:!right-0 max-md:!top-2"
         style={{
           top: 'max(1rem, env(safe-area-inset-top))',
           // Floor tool (2026-08-31 check R1): slide left of the docked
@@ -3270,6 +3274,17 @@ export function RoomCanvas({
           right: 'calc(max(1rem, env(safe-area-inset-right)) + var(--floor-panel-w, 0px))',
         }}
       >
+        <button
+          type="button"
+          data-testid="canvas-chrome-toggle"
+          aria-expanded={canvasToolsOpen}
+          aria-label={canvasToolsOpen ? 'Hide plan tools' : 'Show plan tools'}
+          onClick={() => setCanvasToolsOpen((v) => !v)}
+          className="pointer-events-auto inline-flex h-8 items-center rounded-l-2xl bg-white px-2.5 text-[11px] font-semibold tabular-nums text-[#37362f] shadow-[0_2px_10px_rgba(42,41,38,0.12)] md:hidden"
+        >
+          {area.toFixed(0)} m²
+        </button>
+        <div className={`flex flex-col items-end gap-2 ${canvasToolsOpen ? '' : 'max-md:hidden'}`}>
         {/* Declutter 2026-07-26 (Vic directive 2): the top-right used to be a
             6-deep VERTICAL stack of full-width buttons + badges that crowded
             the canvas. Actions now sit in ONE compact horizontal row with
@@ -3465,6 +3480,7 @@ export function RoomCanvas({
             )}
           </button>
         )}
+        </div>
       </div>
 
       {/* Floor tool HUD card (PHONE, 2026-08-30). Replaces the old
@@ -5205,7 +5221,7 @@ export function RoomCanvas({
         phone={belowSm}
         cardRef={drawHudRef}
         onHeightChange={setDrawHudH}
-        enabled={drawMode}
+        enabled={drawMode && viewMode !== '3d'}
         vertices={drawVertices}
         setVertices={setDrawVertices}
         hover={drawHover}

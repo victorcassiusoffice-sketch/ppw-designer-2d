@@ -1756,11 +1756,11 @@ export function TopBar({
       {/* ------------------------------------------------------------------ */}
       {/* THE ROW: 56 px strip on the phone, 52 px bar from md up.            */}
       {/* ------------------------------------------------------------------ */}
-      <div className="flex h-14 flex-nowrap items-center gap-2 px-2 md:h-[52px] md:gap-0 md:px-1 lg:px-2">
+      <div className="flex h-14 flex-nowrap items-center gap-1 px-2 md:h-[52px] md:gap-0 md:px-1 lg:px-2">
         {/* 1 IDENTITY — the only group allowed to shrink. md (768–1023) runs
             4 px tighter everywhere it can: measured at 768 the Walls + Quote
             labels and the in-control cart count need those pixels. */}
-        <div className="flex min-w-0 flex-1 shrink items-center gap-2 md:flex-initial md:gap-1 lg:gap-2">
+        <div className="flex min-w-0 shrink items-center gap-2 md:flex-initial md:gap-1 lg:gap-2">
           {/* PPW brand mark — same tile as the shop header. Links back to the
               storefront. 44 on the phone, 40 on desktop (contract control sizes). */}
           <Link
@@ -1778,7 +1778,7 @@ export function TopBar({
             type="button"
             data-testid="rooms-trigger"
             onClick={() => setRoomsMenuOpen && setRoomsMenuOpen(!roomsMenuOpen)}
-            className={`${BTN} ${roomsMenuOpen ? BTN_ON : BTN_REST} h-11 min-w-[128px] flex-1 justify-start md:h-10 md:min-w-[80px] md:max-w-[190px] md:flex-none lg:min-w-[104px] xl:min-w-[128px] xl:max-w-[190px] 2xl:max-w-[190px] min-[1700px]:max-w-[260px]`}
+            className={`${BTN} ${roomsMenuOpen ? BTN_ON : BTN_REST} h-11 min-w-0 max-w-[5.75rem] flex-none justify-start md:h-10 md:min-w-[80px] md:max-w-[190px] md:flex-none lg:min-w-[104px] xl:min-w-[128px] xl:max-w-[190px] 2xl:max-w-[190px] min-[1700px]:max-w-[260px]`}
             style={{ justifyContent: 'flex-start' }}
             aria-label="Open rooms list"
             aria-expanded={roomsMenuOpen}
@@ -1796,7 +1796,7 @@ export function TopBar({
             </span>
             <span className="min-w-0 truncate xl:hidden">
               <span className="font-semibold">{activeRoom?.name ?? property.name}</span>
-              <span className="ml-1 tabular-nums opacity-80 max-md:inline md:hidden lg:inline">· {drawnRoomCount}</span>
+              <span className="ml-1 hidden tabular-nums opacity-80 lg:inline">· {drawnRoomCount}</span>
             </span>
           </button>
 
@@ -1958,7 +1958,7 @@ export function TopBar({
             Custom only while the pen is open; Walls in BUILD is the pen-on
             indicator. The checked-at-rest half reads as a rail wash. */}
         <div
-          className="inline-flex shrink-0 overflow-hidden rounded-lg border border-ppw-rim md:ml-1 lg:ml-2 2xl:ml-3"
+          className="ml-auto inline-flex shrink-0 overflow-hidden rounded-lg border border-ppw-rim md:ml-1 lg:ml-2 2xl:ml-3"
           role="radiogroup"
           aria-label="Room shape"
         >
@@ -2010,6 +2010,24 @@ export function TopBar({
           title="Select — pick an object or a wall to move or delete it"
         >
           <Icon name="cursor" />
+        </button>
+
+        {/* 3D on the PHONE STRIP. The desktop rail's view-mode-3d is md+
+            only, and the sheet row (view-mode-3d-mobile) stays as a second
+            path — but the room view has to be a first-class control here.
+            A burger row that only toggles a flag reads as "tapping 3D does
+            nothing" when the sheet is what the customer is looking at. */}
+        <button
+          type="button"
+          onClick={() => setViewMode(viewMode === '3d' ? 'plan' : '3d')}
+          data-testid="view-mode-3d-phone"
+          className={`${BTN} ${viewMode === '3d' ? BTN_ON : BTN_REST} h-11 shrink-0 gap-1 px-2 md:hidden`}
+          aria-pressed={viewMode === '3d'}
+          aria-label={viewMode === '3d' ? 'Back to plan' : '3D'}
+          title={viewMode === '3d' ? '3D Mode — back to the plan' : '3D Mode — see the room'}
+        >
+          <Icon name="cube" />
+          <span>{viewMode === '3d' ? 'Plan' : '3D'}</span>
         </button>
 
         {/* Phone hamburger → full-height sheet. */}

@@ -299,13 +299,12 @@ export function CartStrip() {
         onClick={() => setMobileOpen(true)}
         aria-label={`Open cart — ${cart.totalItemCount} items, ${formatCurrency(cart.subtotal, currency)}`}
         aria-expanded={mobileOpen}
-        className={`fixed right-4 z-30 flex min-h-[44px] md:min-h-[40px] items-center gap-2 rounded-full bg-ppw-inkDeep px-4 py-2 text-[12px] font-semibold text-ppw-paper transition duration-[120ms] ease-out motion-reduce:transition-none hover:brightness-110 focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] ${
+        className={`fixed z-30 flex items-center bg-ppw-inkDeep text-[12px] font-semibold text-ppw-paper transition duration-[120ms] ease-out motion-reduce:transition-none hover:brightness-110 focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] max-md:right-0 max-md:min-h-8 max-md:gap-1.5 max-md:rounded-l-2xl max-md:rounded-r-none max-md:px-2.5 max-md:py-1.5 max-md:shadow-[0_2px_10px_rgba(42,41,38,0.12)] md:right-4 md:min-h-[40px] md:gap-2 md:rounded-full md:px-4 md:py-2 md:shadow-[0_12px_32px_rgba(42,41,38,0.18)] ${
           mobileOpen ? 'hidden' : ''
         }`}
         style={{
           bottom:
             'calc(max(1rem, env(safe-area-inset-bottom)) + var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))',
-          boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
         }}
       >
         <svg viewBox="0 0 20 20" width={16} height={16} className="text-ppw-paper" aria-hidden="true">
@@ -317,7 +316,7 @@ export function CartStrip() {
         <span className="rounded-full bg-ppw-paper px-1.5 py-[1px] text-[11px] font-bold tabular-nums text-ppw-inkDeep">
           {cart.totalItemCount + floorUnits}
         </span>
-        <span className="tabular-nums">{formatCurrency(cart.subtotal, currency)}</span>
+        <span className="tabular-nums max-md:sr-only">{formatCurrency(cart.subtotal, currency)}</span>
       </button>
 
       {/* Expanded state: the SAME cart body, as a bottom sheet. */}

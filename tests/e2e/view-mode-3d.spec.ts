@@ -207,6 +207,25 @@ test.describe('3D Mode — desktop', () => {
 test.describe('3D Mode — phone', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
+  test('the strip button opens the room without the menu; Plan returns', async ({ page }) => {
+    await seed(page);
+    await page.goto('/designer');
+    await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    const enter = page.locator('[data-testid="view-mode-3d-phone"]');
+    await expect(enter).toBeVisible();
+    await expect(enter).toContainText('3D');
+    await enter.tap();
+    const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
+    await expect(overlay).toBeVisible();
+    const box = (await overlay.boundingBox())!;
+    expect(box.width).toBe(390);
+    expect(box.y).toBeGreaterThan(40);
+    await awaitStage(page);
+    await expect(enter).toContainText('Plan');
+    await enter.tap();
+    await expect(overlay).toHaveCount(0);
+  });
+
   test('the sheet row opens the room edge to edge under the header; Plan returns', async ({ page }) => {
     await seed(page);
     await page.goto('/designer');

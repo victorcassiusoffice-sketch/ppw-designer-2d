@@ -901,12 +901,14 @@ const CTRL_H = 'min-h-[44px] sm:min-h-[40px]';
  * mobile) so the unit can change MID-DRAW with a thumb, not a menu. The
  * ladder itself is `stepSnapUnit` in designerUIStore (keyboard shares it).
  */
-export function SnapUnitStepper({ compact = false }: { compact?: boolean }): JSX.Element {
+export function SnapUnitStepper({ compact = false, dense = false }: { compact?: boolean; dense?: boolean }): JSX.Element {
   const precision = useDesignerUIStore((s) => s.precision);
   const idx = SNAP_UNIT_ORDER.indexOf(precision);
   const canFiner = idx > 0;
   const canCoarser = idx < SNAP_UNIT_ORDER.length - 1;
-  const btn = `${CTRL} ${CTRL_REST} h-11 w-11 !px-0 text-base font-semibold sm:h-10 sm:w-10`;
+  const btn = dense
+    ? `${CTRL} ${CTRL_REST} h-8 w-8 !border-0 !bg-transparent !px-0 text-[16px] font-semibold !shadow-none`
+    : `${CTRL} ${CTRL_REST} h-11 w-11 !px-0 text-base font-semibold sm:h-10 sm:w-10`;
   return (
     <div
       className="pointer-events-auto flex items-center gap-1"
@@ -926,10 +928,12 @@ export function SnapUnitStepper({ compact = false }: { compact?: boolean }): JSX
         −
       </button>
       <span
-        className={`flex h-11 items-center justify-center rounded-lg px-2 text-center text-[12px] font-semibold tabular-nums sm:h-10 ${
-          compact ? 'min-w-[52px]' : 'min-w-[60px]'
+        className={`flex items-center justify-center rounded-lg px-1 text-center font-semibold tabular-nums ${
+          dense
+            ? 'h-8 min-w-[40px] text-[11px]'
+            : `h-11 text-[12px] sm:h-10 ${compact ? 'min-w-[52px]' : 'min-w-[60px]'}`
         }`}
-        style={{ background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT }}
+        style={dense ? { color: CHROME_TEXT } : { background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT }}
         data-testid="snap-unit-current"
         aria-live="polite"
       >
@@ -1120,44 +1124,53 @@ export function RoomDrawHUD({
     </div>
   );
 
+  const phoneBtn = 'h-8 w-full px-1 text-[11px]';
+
   return (
     <div
       ref={setHudEl}
-      // TintEX / Vic 2026-09-22: the card used to sit FIXED at the bottom
-      // centre of the page and blocked drawing walls downward. It now docks
-      // on the LEFT edge of the viewport (mid-height on desktop, top-left on
-      // the phone above the Sims toolbar) so the whole bottom of the canvas
-      // stays drawable. Same chrome, same controls.
-      className={`pointer-events-auto fixed left-3 z-30 flex max-h-[min(70vh,560px)] w-[min(42vw,320px)] flex-col overflow-y-auto rounded-xl text-xs top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.75rem)] lg:top-1/2 lg:-translate-y-1/2 ${
-        phone ? 'gap-1 p-1.5' : 'gap-2 p-3'
-      }`}
-      style={{
-        background: CHROME_BG,
-        border: `1px solid ${CHROME_RIM}`,
-        boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
-        color: CHROME_TEXT,
-      }}
+      // TintEX / Vic 2026-09-22: the card docks on the LEFT so the bottom of
+      // the canvas stays drawable. Phone (2026-09-22): the same flush rail
+      // as wall height — white, rounded on the right, soft shadow, narrow —
+      // instead of a floating card over the plan. Desktop keeps the labelled
+      // card.
+      className={
+        phone
+          ? 'pointer-events-auto fixed left-0 top-1/2 z-30 flex w-[132px] max-h-[min(64vh,440px)] -translate-y-1/2 flex-col gap-1 overflow-y-auto rounded-r-2xl border-0 bg-white p-1 text-[11px] shadow-[0_2px_10px_rgba(42,41,38,0.12)]'
+          : 'pointer-events-auto fixed left-3 top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.75rem)] z-30 flex max-h-[min(70vh,560px)] w-[min(42vw,320px)] flex-col gap-2 overflow-y-auto rounded-xl p-3 text-xs lg:top-1/2 lg:-translate-y-1/2'
+      }
+      style={
+        phone
+          ? { color: CHROME_TEXT }
+          : {
+              background: CHROME_BG,
+              border: `1px solid ${CHROME_RIM}`,
+              boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
+              color: CHROME_TEXT,
+            }
+      }
       data-testid="room-draw-hud"
       data-compact={phone ? 'true' : 'false'}
       data-placement="left"
     >
-      <div className={`flex items-center gap-2 ${phone ? 'flex-nowrap' : 'flex-wrap'}`}>
+      <div className={phone ? 'flex flex-col items-stretch gap-0.5' : 'flex flex-wrap items-center gap-2'}>
         <span
-          className={`shrink-0 rounded-lg px-2 text-[11px] font-semibold uppercase leading-none tracking-[0.06em] ${
-            phone ? 'py-1' : 'py-1.5'
+          className={`shrink-0 rounded-lg text-[11px] font-semibold uppercase leading-none tracking-[0.06em] ${
+            phone ? 'bg-transparent px-1 py-0.5 text-center' : 'px-2 py-1.5'
           }`}
-          style={{ background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT }}
-          title={phone ? 'Tap to drop wall points · Done keeps the walls · tap the first point for a room' : undefined}
+          style={phone ? { color: CHROME_TEXT_2 } : { background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT }}
+          title={phone ? 'Tap each corner. Drag moves the plan. Pinch zooms. Tap the first point to close the room.' : undefined}
         >
-          Wall pen
+          {phone ? 'Walls' : 'Wall pen'}
         </span>
         {/* ONE instruction line, and it changes with the run (Vic 2026-09-08:
             "it needs to be user friendly"). A static sentence made the
             customer read all of it on every click and still not know which
             button finishes; this says the ONE next thing to do, at every
-            width — the phone gets the short form. */}
+            width — the phone gets the short form, visually tucked (the rail
+            is the chrome; the line stays for assistive tech and tests). */}
         <span
-          className={`min-w-0 flex-1 font-medium leading-snug ${phone ? 'text-[11px]' : 'text-[12px]'}`}
+          className={`min-w-0 font-medium leading-snug ${phone ? 'sr-only' : 'flex-1 text-[12px]'}`}
           style={{ color: CHROME_TEXT_2 }}
           data-testid="room-draw-hint"
         >
@@ -1186,23 +1199,23 @@ export function RoomDrawHUD({
           the HUD — auto-named "Room N", renamed inline from the left
           sidebar after close. The HUD now shows only vertex/perim/area
           counters + instruction + action buttons. */}
-      <div className={`flex items-center justify-between gap-2 ${phone ? 'flex-nowrap' : 'flex-wrap'}`}>
+      <div className={phone ? 'flex flex-col items-stretch gap-1' : 'flex flex-wrap items-center justify-between gap-2'}>
         {!phone && readout}
         {/* Polish (2026-08-29): the phone's unit stepper used to be a
             separate fixed strip parked above this card (RoomCanvas); it now
             sits INLINE here so the card is the only thing over the canvas.
-            Same wrapper testid, same control. */}
+            Same wrapper testid, same control. Dense on the phone rail. */}
         {phone && (
-          <div className="pointer-events-auto shrink-0" data-testid="mobile-draw-unit-stepper">
-            <SnapUnitStepper compact />
+          <div className="pointer-events-auto flex justify-center" data-testid="mobile-draw-unit-stepper">
+            <SnapUnitStepper compact dense />
           </div>
         )}
         {/* Typed segment length (units brief D9). The cursor gives the
             direction, this gives the magnitude. */}
-        <div className="pointer-events-auto flex min-w-0 items-center gap-2">
+        <div className={`pointer-events-auto flex min-w-0 items-center gap-1 ${phone ? 'w-full' : 'gap-2'}`}>
           <label
             htmlFor="draw-segment-length"
-            className="text-[11px] font-semibold uppercase tracking-[0.06em]"
+            className={`text-[11px] font-semibold uppercase tracking-[0.06em] ${phone ? 'sr-only' : ''}`}
             style={{ color: CHROME_TEXT_2 }}
           >
             Length
@@ -1232,8 +1245,8 @@ export function RoomDrawHUD({
                 ? 'Type an exact length and press Enter'
                 : 'Point the cursor, then type a length'
             }
-            className={`h-11 rounded-lg border border-ppw-rim bg-ppw-chrome px-2 text-right text-[12px] font-semibold tabular-nums text-[#37362f] transition-colors duration-[120ms] ease-out placeholder:text-[#3D4655]/60 focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none sm:h-10 ${
-              phone ? 'w-[76px]' : 'w-24'
+            className={`rounded-lg border border-ppw-rim bg-ppw-chrome px-2 text-right font-semibold tabular-nums text-[#37362f] transition-colors duration-[120ms] ease-out placeholder:text-[#3D4655]/60 focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none ${
+              phone ? 'h-8 min-w-0 flex-1 text-[11px]' : 'h-11 w-24 text-[12px] sm:h-10'
             }`}
           />
           <span className="text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>
@@ -1252,12 +1265,12 @@ export function RoomDrawHUD({
           is possible; keeping the run open is the deliberate second choice.
           Hierarchy: Make room (ink) · Keep walls (rim) · Room + next (rest,
           sm+) · Undo · Discard. */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className={phone ? 'flex flex-col gap-1' : 'flex flex-wrap items-center gap-2'}>
         <button
           type="button"
           onClick={handleClose}
           disabled={vertices.length < 3}
-          className={`${CTRL} ${vertices.length >= 3 ? CTRL_PRIMARY : CTRL_OUTLINED} ${CTRL_H} flex-1 sm:flex-initial`}
+          className={`${CTRL} ${vertices.length >= 3 ? CTRL_PRIMARY : CTRL_OUTLINED} ${phone ? phoneBtn : `${CTRL_H} flex-1 sm:flex-initial`}`}
           title={
             vertices.length < 3
               ? 'Place at least 3 corners to make a room'
@@ -1273,7 +1286,7 @@ export function RoomDrawHUD({
           type="button"
           onClick={vertices.length >= 2 && onCommitWalls ? handleFinishWalls : handleCancel}
           data-testid="room-draw-finish-walls"
-          className={`${CTRL} ${vertices.length >= 3 ? CTRL_REST : vertices.length === 0 ? CTRL_REST : CTRL_OUTLINED} ${CTRL_H} flex-1 sm:flex-initial`}
+          className={`${CTRL} ${vertices.length >= 3 ? CTRL_REST : vertices.length === 0 ? CTRL_REST : CTRL_OUTLINED} ${phone ? phoneBtn : `${CTRL_H} flex-1 sm:flex-initial`}`}
           title={
             vertices.length >= 2
               ? 'Keep these as open walls, not a room (Esc or Alt+Enter)'
@@ -1301,7 +1314,7 @@ export function RoomDrawHUD({
             type="button"
             onClick={onQuickRectangle}
             data-testid="start-quick-rectangle"
-            className={`${CTRL} ${CTRL_OUTLINED} ${CTRL_H} flex-1 sm:flex-initial`}
+            className={`${CTRL} ${CTRL_OUTLINED} ${phone ? phoneBtn : `${CTRL_H} flex-1 sm:flex-initial`}`}
             title="Lay a 5 x 4 m room instead of drawing one"
           >
             {phone ? '5 × 4 m room' : 'Or use a 5 × 4 m room'}
@@ -1311,12 +1324,12 @@ export function RoomDrawHUD({
           type="button"
           onClick={handleUndo}
           disabled={vertices.length === 0}
-          className={`${CTRL} ${CTRL_REST} ${CTRL_H} w-11 shrink-0 !px-0 sm:w-auto sm:!px-3`}
+          className={`${CTRL} ${CTRL_REST} ${phone ? phoneBtn : `${CTRL_H} w-11 shrink-0 !px-0 sm:w-auto sm:!px-3`}`}
           title="Undo the last wall (Ctrl+Z, or right-click on the plan)"
           aria-label="Undo last wall point"
           data-testid="room-draw-undo"
         >
-          <svg viewBox="0 0 16 16" className="h-4 w-4 sm:hidden" aria-hidden="true">
+          <svg viewBox="0 0 16 16" className={`h-4 w-4 ${phone ? 'hidden' : 'sm:hidden'}`} aria-hidden="true">
             <path
               fill="none"
               stroke="currentColor"
@@ -1326,12 +1339,12 @@ export function RoomDrawHUD({
               d="M6 4.5L3 7.5l3 3M3.5 7.5H10a3 3 0 0 1 0 6H7"
             />
           </svg>
-          <span className="hidden sm:inline">Undo</span>
+          <span className={phone ? '' : 'hidden sm:inline'}>Undo</span>
         </button>
         <button
           type="button"
           onClick={handleCancel}
-          className={`${CTRL} ${CTRL_DANGER} ${CTRL_H} flex-1 sm:ml-auto sm:flex-initial`}
+          className={`${CTRL} ${CTRL_DANGER} ${phone ? phoneBtn : `${CTRL_H} flex-1 sm:ml-auto sm:flex-initial`}`}
           title="Throw these points away (the only exit that does)"
           data-testid="room-draw-cancel"
         >

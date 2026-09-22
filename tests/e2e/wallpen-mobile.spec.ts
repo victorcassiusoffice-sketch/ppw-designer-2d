@@ -121,6 +121,9 @@ test.describe('Wall pen — phone gestures', () => {
         // positive so the lower canvas is drawable (was ~0–16 when stacked
         // on the toolbar).
         gapAboveToolbar: Math.round(bar.top - r.bottom),
+        // Flush to the left edge, and narrow — a rail, not a card.
+        flush: r.left < 2,
+        narrow: r.width < 160,
         // Card sits in the left half of the viewport.
         leftish: r.left < window.innerWidth * 0.45,
         // Bottom edge of the card is well above the toolbar.
@@ -128,6 +131,8 @@ test.describe('Wall pen — phone gestures', () => {
       };
     });
     expect(place.placement).toBe('left');
+    expect(place.flush).toBe(true);
+    expect(place.narrow).toBe(true);
     expect(place.leftish).toBe(true);
     expect(place.clearsBottom).toBe(true);
     expect(place.gapAboveToolbar).toBeGreaterThan(24);
