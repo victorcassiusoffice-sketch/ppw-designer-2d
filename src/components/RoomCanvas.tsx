@@ -124,6 +124,7 @@ import { isRoofProduct } from '../designer/energy';
 import { roofAreaM2 } from '../designer/roof';
 import { energyDotColour, useEnergyReport } from '../designer/useEnergyReport';
 import { EnergyMeterBar } from './EnergyMeterBar';
+import { WallHeightControl } from './WallHeightControl';
 import { meterFillPct } from '../designer/energyMeter';
 import { formatWh } from '../designer/solarCalc';
 import { freeWallLengthM, runToFreeWalls, wallsOnLevel } from '../designer/freeWalls';
@@ -2671,6 +2672,13 @@ export function RoomCanvas({
     () => (selectedWallId ? freeWalls.find((w) => w.id === selectedWallId) ?? null : null),
     [selectedWallId, freeWalls],
   );
+  /** Closed rooms or free walls — the moment height is worth showing. */
+  const hasDrawnWalls = useMemo(
+    () =>
+      rooms.some((r) => !isOutdoorRoom(r) && !isRoofRoom(r) && isDrawnPolygon(r.polygon)) ||
+      freeWalls.length > 0,
+    [rooms, freeWalls],
+  );
   // A wall that is gone (deleted, undone, another storey) must not stay picked.
   useEffect(() => {
     if (selectedWallId && !selectedWall) selectWall(null);
@@ -3644,6 +3652,33 @@ export function RoomCanvas({
           >
             Done
           </button>
+        </div>
+      )}
+      {/* Wall height (2026-09-22): after the walls exist, raise / lower them
+          from the plan — same left dock as the wall pen, not the paint panel.
+          Hidden while the pen owns that dock, and on a phone while cladding's
+          own left card is up (md+ cladding lives in the right panel). */}
+      {hasDrawnWalls && !drawMode && !wallDrawEnabled && (
+        <div
+          data-testid="wall-height-hud"
+          data-placement="left"
+          className={`pointer-events-auto fixed left-3 z-30 w-[min(70vw,240px)] flex-col gap-1.5 rounded-xl p-2 text-xs top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.5rem)] lg:top-1/2 lg:-translate-y-1/2 ${
+            claddingTool ? 'hidden md:flex' : 'flex'
+          }`}
+          style={{
+            background: CHROME_BG,
+            border: `1px solid ${CHROME_RIM}`,
+            boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
+            color: CHROME_TEXT,
+          }}
+        >
+          <span className="text-[10px] font-semibold uppercase tracking-[0.06em]" data-testid="wall-height-hud-label">
+            Wall height
+          </span>
+          <span className="text-[11px] font-medium leading-snug" style={{ color: CHROME_TEXT_2 }}>
+            Whole house · steps of 0.1 m
+          </span>
+          <WallHeightControl idPrefix="wall-height" />
         </div>
       )}
       {wallPaintHudOn && (

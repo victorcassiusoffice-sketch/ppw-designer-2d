@@ -59,6 +59,7 @@ import { findCladdingProduct } from '../data/claddingCatalog';
 import { getProductById, productImageUrl, productTopDownUrl } from '../data/products';
 import { productModelFor } from '../data/productModels';
 import { DEFAULT_WALL_HEIGHT_M, findWallPaintById, finishOfPaint, resolveWallColourHex } from '../data/wallPaints';
+import { WallHeightControl } from './WallHeightControl';
 import {
   boundsOf,
   buildScene,
@@ -1183,6 +1184,19 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           </p>
         )}
       </div>
+      {solids.walls.length > 0 && (
+        <div
+          className="flex items-center justify-between gap-2 border-b border-ppw-rim bg-ppw-chrome px-3 py-1.5"
+          data-testid="view3d-wall-height"
+        >
+          <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-ppw-charcoal">
+            Wall height
+          </span>
+          <div className="w-[180px] shrink-0">
+            <WallHeightControl idPrefix="view3d-wall-height" />
+          </div>
+        </div>
+      )}
       {box}
       {brushStrip}
     </div>
