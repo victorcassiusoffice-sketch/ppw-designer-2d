@@ -88,6 +88,7 @@ export function CartStrip() {
     (acc, l) => acc + l.tins.reduce((a, t) => a + t.count, 0),
     0,
   );
+  const orderUnits = cart.totalItemCount + floorUnits + paintTins + cart.claddingLines.reduce((sum, line) => sum + line.packs, 0);
   if (cart.totalItemCount === 0 && cart.floorLines.length === 0 && cart.wallPaintLines.length === 0 && cart.claddingLines.length === 0) {
     return null;
   }
@@ -297,9 +298,9 @@ export function CartStrip() {
         type="button"
         data-testid="cart-pill"
         onClick={() => setMobileOpen(true)}
-        aria-label={`Open cart — ${cart.totalItemCount} items, ${formatCurrency(cart.subtotal, currency)}`}
+        aria-label={`Open cart — ${orderUnits} units, ${formatCurrency(cart.subtotal, currency)}`}
         aria-expanded={mobileOpen}
-        className={`fixed z-30 flex items-center bg-ppw-inkDeep text-[12px] font-semibold text-ppw-paper transition duration-[120ms] ease-out motion-reduce:transition-none hover:brightness-110 focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] max-md:right-0 max-md:min-h-8 max-md:gap-1.5 max-md:rounded-l-2xl max-md:rounded-r-none max-md:px-2.5 max-md:py-1.5 max-md:shadow-[0_2px_10px_rgba(42,41,38,0.12)] md:right-4 md:min-h-[40px] md:gap-2 md:rounded-full md:px-4 md:py-2 md:shadow-[0_12px_32px_rgba(42,41,38,0.18)] ${
+        className={`fixed z-30 flex items-center bg-ppw-inkDeep text-[12px] font-semibold text-ppw-paper transition duration-[120ms] ease-out motion-reduce:transition-none hover:brightness-110 focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] max-md:right-0 max-md:min-h-11 max-md:min-w-11 max-md:gap-1.5 max-md:rounded-l-2xl max-md:rounded-r-none max-md:px-2.5 max-md:py-1.5 max-md:shadow-[0_2px_10px_rgba(42,41,38,0.12)] md:right-4 md:min-h-[40px] md:gap-2 md:rounded-full md:px-4 md:py-2 md:shadow-[0_12px_32px_rgba(42,41,38,0.18)] ${
           mobileOpen ? 'hidden' : ''
         }`}
         style={{
@@ -314,7 +315,7 @@ export function CartStrip() {
           />
         </svg>
         <span className="rounded-full bg-ppw-paper px-1.5 py-[1px] text-[11px] font-bold tabular-nums text-ppw-inkDeep">
-          {cart.totalItemCount + floorUnits}
+          {orderUnits}
         </span>
         <span className="tabular-nums max-md:sr-only">{formatCurrency(cart.subtotal, currency)}</span>
       </button>

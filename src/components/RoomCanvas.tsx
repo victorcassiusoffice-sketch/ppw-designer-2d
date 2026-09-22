@@ -239,6 +239,8 @@ import {
 import { findFloorMaterialById } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
 import { BARE_PLASTER_HEX, DEFAULT_WALL_HEIGHT_M, findWallPaintById, finishOfPaint, resolveWallColourHex, sheenOfFinish } from '../data/wallPaints';
+import { interiorSide, wallFinishHighlight } from '../designer/wallFinishPlan';
+import { PlanWallPaint } from './PlanWallPaint';
 // Phone pass (2026-09-16): the paint HUD's own colour row — the plan stays
 // on screen while the colour changes (the sheet used to cover it).
 import { WallPaintHudColourStrip } from './mobile/WallPaintHudColourStrip';
@@ -286,14 +288,6 @@ interface WallPaintTarget {
  * Anything travelling further is a pan (the Stage stays draggable with the
  * tool armed) and must not commit a door on release.
  */
-/**
- * One finger has to travel this far while the wall pen is armed before the
- * gesture is read as a PAN rather than a tap (Vic 2026-09-05). Bigger than
- * the tap slop below: a thumb wobbles more than a mouse, and planting a
- * stray wall is worse than a pan that needs a moment to engage.
- */
-const PEN_PAN_SLOP_PX = 10;
-
 const DOOR_TAP_SLOP_PX = 10;
 
 /**
@@ -1132,18 +1126,12 @@ export function RoomCanvas({
 
   /**
    * Wall pen gestures (Vic 2026-09-05). `drawTapSuppressRef` is raised by the
-   * touch handlers below the moment a gesture becomes a pan or a pinch, and
+   * touch handlers below the moment a gesture becomes a two-finger pan/pinch, and
    * RoomDrawLayer refuses to drop a vertex while it is up. Cleared at the
    * START of the next single-finger gesture (not on read) because a touch
    * reaches the Stage twice — Konva `tap` then the compatibility `click`.
    */
   const drawTapSuppressRef = useRef(false);
-  /** `drawMode` for the touch handlers, which must not re-attach per toggle. */
-  const drawModeRef = useRef(drawMode);
-  drawModeRef.current = drawMode;
-  /** One-finger pan while the pen is armed: where the finger started + the viewport then. */
-  const penPanRef = useRef<{ startX: number; startY: number; vx: number; vy: number; panning: boolean } | null>(null);
-
   // Mobile UX (fix/mobile-ux-v1): two-finger pinch zoom.
   const pinchRef = useRef<{
     active: boolean;
@@ -1168,21 +1156,10 @@ export function RoomCanvas({
     }
 
     function onTouchStart(e: TouchEvent) {
-      // A FRESH one-finger gesture: nothing vetoed yet, and while the wall
-      // pen is armed this finger may turn into a pan (Vic 2026-09-05 — the
-      // Stage is not draggable in draw mode, so without this the plan could
-      // not be moved at all and every attempt planted a vertex).
+      // One finger draws in the wall pen; two fingers always move the view.
+      // RoomDrawLayer owns the stroke and cancels its preview for a pinch.
       if (e.touches.length === 1) {
         drawTapSuppressRef.current = false;
-        penPanRef.current = drawModeRef.current
-          ? {
-            startX: e.touches[0].clientX,
-            startY: e.touches[0].clientY,
-            vx: viewport.x,
-            vy: viewport.y,
-            panning: false,
-          }
-          : null;
         return;
       }
       if (e.touches.length !== 2) return;
@@ -1214,7 +1191,6 @@ export function RoomCanvas({
       doorGestureRef.current = null;
       // ...and for the wall pen: a pinch must never plant a vertex.
       drawTapSuppressRef.current = true;
-      penPanRef.current = null;
       e.preventDefault();
     }
 
@@ -1242,19 +1218,6 @@ export function RoomCanvas({
         e.preventDefault();
         return;
       }
-      // One finger while the wall pen is armed: past the slop this is a PAN,
-      // and the lift must not drop a vertex. Under the slop it stays a tap.
-      const pan = penPanRef.current;
-      if (pan && e.touches.length === 1) {
-        const dx = e.touches[0].clientX - pan.startX;
-        const dy = e.touches[0].clientY - pan.startY;
-        if (!pan.panning && Math.hypot(dx, dy) < PEN_PAN_SLOP_PX) return;
-        pan.panning = true;
-        drawTapSuppressRef.current = true;
-        userMovedViewportRef.current = true;
-        setViewport((v) => ({ ...v, x: pan.vx + dx, y: pan.vy + dy }));
-        e.preventDefault();
-      }
     }
 
     function onTouchEnd(e: TouchEvent) {
@@ -1264,7 +1227,6 @@ export function RoomCanvas({
         // not become a fresh tap that plants a vertex.
         drawTapSuppressRef.current = true;
       }
-      if (e.touches.length === 0) penPanRef.current = null;
     }
 
     container.addEventListener('touchstart', onTouchStart, { passive: false });
@@ -2724,6 +2686,7 @@ export function RoomCanvas({
       fill: string;
       /** 0 = matt / plaster. A sheen draws a highlight down the face. */
       sheen: number;
+      finish?: string;
       h: number;
       baseY: number;
       gaps: Array<{ pts: number[] }>;
@@ -2747,7 +2710,8 @@ export function RoomCanvas({
         const paint = paintByEdge.get(e.index);
         const clad = findCladdingProduct(cladByEdge.get(e.index)?.productId);
         const hex = clad?.hex ?? (paint ? resolveWallColourHex(paint.paintId, paint.colourHex, PLASTER) : PLASTER);
-        const sheen = clad ? sheenOfFinish('textured') : sheenOfFinish(paint ? finishOfPaint(paint.paintId) : undefined);
+        const finish = clad ? 'textured' : paint ? finishOfPaint(paint.paintId) : undefined;
+        const sheen = sheenOfFinish(finish);
         const fill = facesDown ? shade(hex, 1) : facesUp ? shade(hex, 0.96) : shade(hex, 0.9);
         const ax = e.a.x * pxPerMetre;
         const ay = e.a.y * pxPerMetre;
@@ -2774,6 +2738,7 @@ export function RoomCanvas({
           pts: [ax, ay, bx, by, bx, by - h, ax, ay - h],
           fill,
           sheen,
+          finish,
           h,
           baseY: Math.min(ay, by),
           gaps,
@@ -2783,7 +2748,8 @@ export function RoomCanvas({
     for (const w of freeWalls) {
       const clad = findCladdingProduct(w.claddingId);
       const hex = clad?.hex ?? (w.paintId ? resolveWallColourHex(w.paintId, w.paintColourHex, PLASTER) : PLASTER);
-      const sheen = clad ? sheenOfFinish('textured') : sheenOfFinish(w.paintId ? finishOfPaint(w.paintId) : undefined);
+      const finish = clad ? 'textured' : w.paintId ? finishOfPaint(w.paintId) : undefined;
+      const sheen = sheenOfFinish(finish);
       const ax = w.a.x * pxPerMetre;
       const ay = w.a.y * pxPerMetre;
       const bx = w.b.x * pxPerMetre;
@@ -2793,6 +2759,7 @@ export function RoomCanvas({
         pts: [ax, ay, bx, by, bx, by - hPx, ax, ay - hPx],
         fill: shade(hex, 0.95),
         sheen,
+        finish,
         h: hPx,
         baseY: Math.min(ay, by),
         gaps: [],
@@ -3278,13 +3245,15 @@ export function RoomCanvas({
           type="button"
           data-testid="canvas-chrome-toggle"
           aria-expanded={canvasToolsOpen}
-          aria-label={canvasToolsOpen ? 'Hide plan tools' : 'Show plan tools'}
+          aria-label={`${area.toFixed(0)} square metres. ${canvasToolsOpen ? 'Hide plan tools' : 'Show plan tools'}`}
+          aria-controls="canvas-plan-tools"
           onClick={() => setCanvasToolsOpen((v) => !v)}
-          className="pointer-events-auto inline-flex h-8 items-center rounded-l-2xl bg-white px-2.5 text-[11px] font-semibold tabular-nums text-[#37362f] shadow-[0_2px_10px_rgba(42,41,38,0.12)] md:hidden"
+          className="pointer-events-auto inline-flex h-11 min-w-11 items-center justify-center gap-1 rounded-l-2xl bg-white px-2.5 text-[12px] font-semibold tabular-nums text-[#37362f] shadow-[0_2px_10px_rgba(42,41,38,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-inkDeep md:hidden"
         >
           {area.toFixed(0)} m²
+          <span aria-hidden="true" className="text-[10px] opacity-60">{canvasToolsOpen ? '−' : '+'}</span>
         </button>
-        <div className={`flex flex-col items-end gap-2 ${canvasToolsOpen ? '' : 'max-md:hidden'}`}>
+        <div id="canvas-plan-tools" className={`flex flex-col items-end gap-2 max-md:max-w-[calc(100vw-1rem)] max-md:rounded-l-xl max-md:bg-[#faf9f5] max-md:p-2 max-md:shadow-lg ${canvasToolsOpen ? '' : 'max-md:hidden'}`}>
         {/* Declutter 2026-07-26 (Vic directive 2): the top-right used to be a
             6-deep VERTICAL stack of full-width buttons + badges that crowded
             the canvas. Actions now sit in ONE compact horizontal row with
@@ -3701,8 +3670,8 @@ export function RoomCanvas({
           <WallHeightControl
             idPrefix="wall-height"
             className="max-md:flex-col max-md:gap-0"
-            buttonClassName="max-md:h-8 max-md:w-8 max-md:rounded-md max-md:border-0 max-md:bg-transparent max-md:text-[16px] max-md:shadow-none"
-            readoutClassName="max-md:min-w-0 max-md:flex-none max-md:px-1 max-md:py-0.5 max-md:text-[11px] max-md:font-medium max-md:leading-none"
+            buttonClassName="max-md:h-11 max-md:w-11 max-md:rounded-md max-md:border-0 max-md:bg-transparent max-md:text-[18px] max-md:shadow-none"
+            readoutClassName="max-md:min-w-0 max-md:flex-none max-md:px-1 max-md:py-1 max-md:text-[11px] max-md:font-semibold max-md:leading-none"
           />
         </div>
       )}
@@ -4538,6 +4507,9 @@ export function RoomCanvas({
                   const wallPx = WALL_THICKNESS_M * pxPerMetre;
                   const halfStrokeM = WALL_HALF_M;
                   const gaps = wallGapsByEdge.get(edgeKey(room.id, edge.index)) ?? [];
+                  const paint = room.wallPaint?.find((p) => p.edgeIndex === edge.index);
+                  const paintWidth = Math.max(2.5 / viewport.scale, wallPx * 0.28);
+                  const showPaint = paint && !room.wallCladding?.some((c) => c.edgeIndex === edge.index);
                   return splitEdgeSpans(edge.lengthM, gaps).map((span, si) => {
                     const atStartCorner = span.t0 <= 0;
                     const atEndCorner = span.t1 >= edge.lengthM;
@@ -4571,6 +4543,16 @@ export function RoomCanvas({
                           strokeWidth={WALL_INNER_STROKE_PX}
                           lineCap="square"
                         />
+                        {showPaint && (
+                          <PlanWallPaint
+                            a={{ x: seg[0], y: seg[1] }}
+                            b={{ x: seg[2], y: seg[3] }}
+                            hex={resolveWallColourHex(paint.paintId, paint.colourHex)}
+                            finish={finishOfPaint(paint.paintId)}
+                            width={paintWidth}
+                            offset={(wallPx + paintWidth) / 2 * interiorSide(room.polygon)}
+                          />
+                        )}
                       </Fragment>
                     );
                   });
@@ -4712,14 +4694,7 @@ export function RoomCanvas({
                       listening={false}
                       fillLinearGradientStartPoint={{ x: f.pts[6], y: f.pts[7] }}
                       fillLinearGradientEndPoint={{ x: f.pts[0], y: f.pts[1] }}
-                      fillLinearGradientColorStops={[
-                        0,
-                        `rgba(255,255,255,${Math.min(0.72, f.sheen * 0.7).toFixed(2)})`,
-                        0.38,
-                        `rgba(255,255,255,${Math.min(0.22, f.sheen * 0.2).toFixed(2)})`,
-                        1,
-                        'rgba(255,255,255,0)',
-                      ]}
+                      fillLinearGradientColorStops={wallFinishHighlight(f.finish)}
                     />
                   )}
                   {f.gaps.map((g, i) => (
@@ -4802,6 +4777,15 @@ export function RoomCanvas({
                   lineCap="square"
                   listening={false}
                 />
+                {w.paintId && !w.claddingId && (
+                  <PlanWallPaint
+                    a={{ x: pts[0], y: pts[1] }}
+                    b={{ x: pts[2], y: pts[3] }}
+                    hex={resolveWallColourHex(w.paintId, w.paintColourHex)}
+                    finish={finishOfPaint(w.paintId)}
+                    width={Math.max(2.5 / viewport.scale, wallPx * 0.42)}
+                  />
+                )}
               </Group>
             );
           })}
@@ -5375,7 +5359,7 @@ export function RoomCanvas({
       {/* …and hidden once ANY floor is laid: a floored room is not empty
           (check R3 — the card re-centred over freshly laid tiles). */}
       {!drawMode && !wallDrawEnabled && !pendingProductId && !floorTool && !doorTool && hasRoom && allItems.length === 0 &&
-        !drawnRooms.some((r) => (r.floorTiles && r.floorTiles.length > 0) || r.floorFinish) && (
+        !drawnRooms.some((r) => (r.floorTiles && r.floorTiles.length > 0) || r.floorFinish || r.wallPaint?.length || r.wallCladding?.length) && (
         <div
           className="pointer-events-none absolute inset-0 flex items-center justify-center"
           data-testid="empty-room-hint"

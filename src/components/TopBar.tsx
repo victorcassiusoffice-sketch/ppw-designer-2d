@@ -744,6 +744,7 @@ export function TopBar({
       return;
     }
     if (roofBlocksWalls()) return;
+    setViewMode('plan');
     setDrawMode(true);
   }
 
@@ -1756,11 +1757,11 @@ export function TopBar({
       {/* ------------------------------------------------------------------ */}
       {/* THE ROW: 56 px strip on the phone, 52 px bar from md up.            */}
       {/* ------------------------------------------------------------------ */}
-      <div className="flex h-14 flex-nowrap items-center gap-1 px-2 md:h-[52px] md:gap-0 md:px-1 lg:px-2">
+      <div className="grid grid-cols-3 items-center gap-1 px-2 py-1 md:flex md:h-[52px] md:flex-nowrap md:gap-0 md:px-1 md:py-0 lg:px-2" data-testid="designer-main-strip">
         {/* 1 IDENTITY — the only group allowed to shrink. md (768–1023) runs
             4 px tighter everywhere it can: measured at 768 the Walls + Quote
             labels and the in-control cart count need those pixels. */}
-        <div className="flex min-w-0 shrink items-center gap-2 md:flex-initial md:gap-1 lg:gap-2">
+        <div className="col-span-2 flex min-w-0 shrink items-center gap-2 max-md:order-1 md:flex-initial md:gap-1 lg:gap-2">
           {/* PPW brand mark — same tile as the shop header. Links back to the
               storefront. 44 on the phone, 40 on desktop (contract control sizes). */}
           <Link
@@ -1778,7 +1779,7 @@ export function TopBar({
             type="button"
             data-testid="rooms-trigger"
             onClick={() => setRoomsMenuOpen && setRoomsMenuOpen(!roomsMenuOpen)}
-            className={`${BTN} ${roomsMenuOpen ? BTN_ON : BTN_REST} h-11 min-w-0 max-w-[5.75rem] flex-none justify-start md:h-10 md:min-w-[80px] md:max-w-[190px] md:flex-none lg:min-w-[104px] xl:min-w-[128px] xl:max-w-[190px] 2xl:max-w-[190px] min-[1700px]:max-w-[260px]`}
+            className={`${BTN} ${roomsMenuOpen ? BTN_ON : BTN_REST} h-11 min-w-0 flex-1 justify-start md:h-10 md:min-w-[80px] md:max-w-[190px] md:flex-none lg:min-w-[104px] xl:min-w-[128px] xl:max-w-[190px] 2xl:max-w-[190px] min-[1700px]:max-w-[260px]`}
             style={{ justifyContent: 'flex-start' }}
             aria-label="Open rooms list"
             aria-expanded={roomsMenuOpen}
@@ -1958,7 +1959,7 @@ export function TopBar({
             Custom only while the pen is open; Walls in BUILD is the pen-on
             indicator. The checked-at-rest half reads as a rail wash. */}
         <div
-          className="ml-auto inline-flex shrink-0 overflow-hidden rounded-lg border border-ppw-rim md:ml-1 lg:ml-2 2xl:ml-3"
+          className="inline-flex shrink-0 overflow-hidden rounded-lg border border-ppw-rim max-md:order-4 md:ml-1 lg:ml-2 2xl:ml-3"
           role="radiogroup"
           aria-label="Room shape"
         >
@@ -1983,9 +1984,13 @@ export function TopBar({
           <button
             type="button"
             role="radio"
-            onClick={() => setDrawMode(true)}
+            onClick={() => {
+              if (drawMode) return;
+              setViewMode('plan');
+              setDrawMode(true);
+            }}
             data-testid="room-draw-toggle"
-            className={`${SEG} ${drawMode ? SEG_CHECKED : SEG_REST} h-11 md:h-10 md:border-l md:border-ppw-rim`}
+            className={`${SEG} ${drawMode ? SEG_ON : SEG_REST} h-11 max-md:w-full md:h-10 md:border-l md:border-ppw-rim`}
             title="Custom — draw walls: close the shape for a room, or Finish walls to leave them open"
             aria-checked={drawMode}
           >
@@ -2004,12 +2009,13 @@ export function TopBar({
           type="button"
           onClick={handleSelect}
           data-testid="select-tool-toggle-phone"
-          className={`${BTN} ${selectActive ? BTN_ON : BTN_REST} h-11 w-11 shrink-0 px-0 md:hidden`}
+          className={`${BTN} ${selectActive ? BTN_ON : BTN_REST} order-3 h-11 w-full shrink-0 px-2 md:hidden`}
           aria-pressed={selectActive}
           aria-label="Select"
           title="Select — pick an object or a wall to move or delete it"
         >
           <Icon name="cursor" />
+          <span>Select</span>
         </button>
 
         {/* 3D on the PHONE STRIP. The desktop rail's view-mode-3d is md+
@@ -2019,15 +2025,18 @@ export function TopBar({
             nothing" when the sheet is what the customer is looking at. */}
         <button
           type="button"
-          onClick={() => setViewMode(viewMode === '3d' ? 'plan' : '3d')}
+          onClick={() => {
+            if (drawMode) setDrawMode(false);
+            setViewMode(viewMode === '3d' ? 'plan' : '3d');
+          }}
           data-testid="view-mode-3d-phone"
-          className={`${BTN} ${viewMode === '3d' ? BTN_ON : BTN_REST} h-11 shrink-0 gap-1 px-2 md:hidden`}
+          className={`${BTN} ${viewMode === '3d' ? BTN_ON : BTN_REST} order-5 h-11 w-full shrink-0 gap-1.5 px-2 md:hidden`}
           aria-pressed={viewMode === '3d'}
           aria-label={viewMode === '3d' ? 'Back to plan' : '3D'}
           title={viewMode === '3d' ? '3D Mode — back to the plan' : '3D Mode — see the room'}
         >
           <Icon name="cube" />
-          <span>{viewMode === '3d' ? 'Plan' : '3D'}</span>
+          <span>{viewMode === '3d' ? '2D Plan' : '3D View'}</span>
         </button>
 
         {/* Phone hamburger → full-height sheet. */}
@@ -2035,12 +2044,13 @@ export function TopBar({
           ref={menuBtnRef}
           type="button"
           onClick={() => setShowMobileMenu((v) => !v)}
-          className={`${BTN} ${BTN_REST} h-11 w-11 px-0 md:hidden`}
+          className={`${BTN} ${BTN_REST} order-2 h-11 justify-self-end px-3 md:hidden`}
           aria-label="Open menu"
           aria-expanded={showMobileMenu}
           aria-controls="ppw-sheet"
         >
           <Icon name="menu" />
+          <span>Build</span>
         </button>
 
         {/* ---- md+: rail B — the rest of ROOM&PLAN + VIEW. `overflow-x:auto`

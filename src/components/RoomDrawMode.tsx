@@ -37,6 +37,7 @@ import {
   screenToRoom,
 } from '../lib/geometry';
 import type { Polygon, Vertex, Viewport } from '../lib/geometry';
+import { anchorWallStroke, completeWallStroke } from '../lib/touchWallStroke';
 import { useToastStore, type ToastKind } from '../store/toastStore';
 import { usePropertyStore } from '../store/propertyStore';
 import { useDrawProgressStore } from '../store/drawProgressStore';
@@ -282,6 +283,10 @@ export function RoomDrawLayer({
     }
 
     function handleMove(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+      if ('touches' in e.evt) {
+        handleTouchMove(e as Konva.KonvaEventObject<TouchEvent>);
+        return;
+      }
       const c = readClient(e.evt as MouseEvent | TouchEvent);
       if (!c) return;
       // The snap KIND and axis-lock flag ride on the HOVER value only — they
@@ -430,6 +435,82 @@ export function RoomDrawLayer({
     const TAP_CLICK_DEDUPE_PX = 16;
     let lastTap: { t: number; x: number; y: number } | null = null;
 
+    // A finger draws a wall just like a mouse. Only the preview anchor is
+    // provisional: a second finger restores the original run for pan/zoom.
+    let touchStroke: { x: number; y: number; start: Vertex; original: Polygon; dragging: boolean } | null = null;
+    let touchHandled = false;
+
+    function publishTouchVertices(next: Polygon) {
+      verticesRef.current = next;
+      setVerticesRef.current(next);
+    }
+
+    function cancelTouchStroke() {
+      if (touchStroke?.dragging) publishTouchVertices(touchStroke.original);
+      touchStroke = null;
+      touchHandled = true;
+      setHoverRef.current(null);
+    }
+
+    function handleTouchStart(e: Konva.KonvaEventObject<TouchEvent>) {
+      if (e.evt.touches.length !== 1) {
+        cancelTouchStroke();
+        return;
+      }
+      const c = readClient(e.evt);
+      if (!c) return;
+      touchHandled = false;
+      // This is a new gesture, so clear the previous pinch's veto before
+      // the canvas ancestor receives the same touchstart.
+      if (tapSuppressRefRef.current) tapSuppressRefRef.current.current = false;
+      touchStroke = {
+        x: c.x, y: c.y,
+        start: resolveDrawPoint({ clientX: c.x, clientY: c.y }, false).point,
+        original: [...verticesRef.current], dragging: false,
+      };
+    }
+
+    function handleTouchMove(e: Konva.KonvaEventObject<TouchEvent>) {
+      if (e.evt.touches.length !== 1 || tapSuppressRefRef.current?.current) {
+        cancelTouchStroke();
+        return;
+      }
+      const c = readClient(e.evt);
+      if (!touchStroke || !c) return;
+      if (!touchStroke.dragging) {
+        if (Math.hypot(c.x - touchStroke.x, c.y - touchStroke.y) < DRAW_TAP_SLOP_PX) return;
+        touchStroke.dragging = true;
+        publishTouchVertices(anchorWallStroke(touchStroke.original, touchStroke.start));
+      }
+      const r = resolveDrawPoint({ clientX: c.x, clientY: c.y }, false);
+      setHoverRef.current({ ...r.point, snap: r.snap, axis: r.axis });
+      e.evt.preventDefault();
+    }
+
+    function handleTouchEnd(e: Konva.KonvaEventObject<TouchEvent>) {
+      const c = readClient(e.evt);
+      if (c) lastTap = { t: performance.now(), x: c.x, y: c.y };
+      if (e.evt.touches.length > 0 || tapSuppressRefRef.current?.current) {
+        cancelTouchStroke();
+        return;
+      }
+      const stroke = touchStroke;
+      touchStroke = null;
+      if (!stroke?.dragging || !c) return; // The ordinary tap path owns taps.
+      touchHandled = true;
+      const end = resolveDrawPoint({ clientX: c.x, clientY: c.y }, false).point;
+      const result = completeWallStroke(stroke.original, stroke.start, end, closeThresholdM(currentSnapStepM()));
+      if (result.closed) {
+        onCommitRef.current(result.vertices, nameRef.current.trim() || 'New Room');
+        publishTouchVertices([]);
+        setHoverRef.current(null);
+      } else {
+        publishTouchVertices(result.vertices);
+        setHoverRef.current(end);
+      }
+      e.evt.preventDefault();
+    }
+
     /** True when this mouse event is the compat echo of the tap just handled. */
     function isCompatAfterTap(c: { x: number; y: number }): boolean {
       if (!lastTap) return false;
@@ -444,6 +525,7 @@ export function RoomDrawLayer({
       if (c) lastTap = { t: performance.now(), x: c.x, y: c.y };
       // A finger never leaves a mouse press behind.
       mouseDownAt = null;
+      if (touchHandled) return;
       handleClickOrTap(e, true);
     }
 
@@ -484,6 +566,9 @@ export function RoomDrawLayer({
     stage.on('contextmenu.roomdraw', handleContextMenu);
     stage.on('mousemove.roomdraw', handleMove);
     stage.on('touchmove.roomdraw', handleMove);
+    stage.on('touchstart.roomdraw', handleTouchStart);
+    stage.on('touchend.roomdraw', handleTouchEnd);
+    stage.on('touchcancel.roomdraw', cancelTouchStroke);
     stage.on('mousedown.roomdraw', handleMouseDown);
     stage.on('click.roomdraw', handleClick);
     stage.on('tap.roomdraw', handleTap);
@@ -493,6 +578,9 @@ export function RoomDrawLayer({
       stage.off('contextmenu.roomdraw');
       stage.off('mousemove.roomdraw');
       stage.off('touchmove.roomdraw');
+      stage.off('touchstart.roomdraw');
+      stage.off('touchend.roomdraw');
+      stage.off('touchcancel.roomdraw');
       stage.off('mousedown.roomdraw');
       stage.off('click.roomdraw');
       stage.off('tap.roomdraw');
@@ -907,11 +995,11 @@ export function SnapUnitStepper({ compact = false, dense = false }: { compact?: 
   const canFiner = idx > 0;
   const canCoarser = idx < SNAP_UNIT_ORDER.length - 1;
   const btn = dense
-    ? `${CTRL} ${CTRL_REST} h-8 w-8 !border-0 !bg-transparent !px-0 text-[16px] font-semibold !shadow-none`
+    ? `${CTRL} ${CTRL_REST} h-11 w-11 !px-0 text-[16px] font-semibold !shadow-none`
     : `${CTRL} ${CTRL_REST} h-11 w-11 !px-0 text-base font-semibold sm:h-10 sm:w-10`;
   return (
     <div
-      className="pointer-events-auto flex items-center gap-1"
+      className={`pointer-events-auto items-center gap-1 ${dense ? 'grid grid-cols-2' : 'flex'}`}
       data-testid="snap-unit-stepper"
       role="group"
       aria-label="Snap unit"
@@ -930,7 +1018,7 @@ export function SnapUnitStepper({ compact = false, dense = false }: { compact?: 
       <span
         className={`flex items-center justify-center rounded-lg px-1 text-center font-semibold tabular-nums ${
           dense
-            ? 'h-8 min-w-[40px] text-[11px]'
+            ? 'order-first col-span-2 min-h-6 text-[11px]'
             : `h-11 text-[12px] sm:h-10 ${compact ? 'min-w-[52px]' : 'min-w-[60px]'}`
         }`}
         style={dense ? { color: CHROME_TEXT } : { background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT }}
@@ -972,6 +1060,7 @@ export function RoomDrawHUD({
 }: RoomDrawHUDProps) {
   const stepM = useDesignerUIStore((s) => PRECISION_STEP_M[s.precision]);
   const [lengthText, setLengthText] = useState('');
+  const [phoneSettingsOpen, setPhoneSettingsOpen] = useState(false);
   const hudRef = useRef<HTMLDivElement | null>(null);
   const onHeightChangeRef = useRef(onHeightChange);
   onHeightChangeRef.current = onHeightChange;
@@ -1111,20 +1200,19 @@ export function RoomDrawHUD({
         <b className="font-semibold" style={{ color: CHROME_TEXT }}>{vertices.length}</b>{' '}
         {phone ? 'pts' : 'vertices'}
       </span>
-      {phone && <span aria-hidden="true">&middot;</span>}
-      <span>
+      <span className={phone ? 'hidden' : undefined}>
         {!phone && 'perim '}
         <b className="font-semibold" style={{ color: CHROME_TEXT }}>{formatLengthForUnit(livePerimeter, stepM)}</b>
       </span>
       {phone && <span aria-hidden="true">&middot;</span>}
       <span>
         {!phone && 'area '}
-        <b className="font-semibold" style={{ color: CHROME_TEXT }}>{liveArea.toFixed(2)} m&sup2;</b>
+        <b className="font-semibold" style={{ color: CHROME_TEXT }}>{liveArea.toFixed(phone ? 1 : 2)} m&sup2;</b>
       </span>
     </div>
   );
 
-  const phoneBtn = 'h-8 w-full px-1 text-[11px]';
+  const phoneBtn = 'min-h-11 w-full px-1 text-[12px]';
 
   return (
     <div
@@ -1136,12 +1224,16 @@ export function RoomDrawHUD({
       // card.
       className={
         phone
-          ? 'pointer-events-auto fixed left-0 top-1/2 z-30 flex w-[132px] max-h-[min(64vh,440px)] -translate-y-1/2 flex-col gap-1 overflow-y-auto rounded-r-2xl border-0 bg-white p-1 text-[11px] shadow-[0_2px_10px_rgba(42,41,38,0.12)]'
+          ? 'pointer-events-auto fixed left-0 z-30 flex w-[120px] -translate-y-1/2 flex-col gap-1.5 overflow-y-auto rounded-r-2xl border-0 bg-white p-1.5 text-[11px] shadow-[0_2px_10px_rgba(42,41,38,0.12)]'
           : 'pointer-events-auto fixed left-3 top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.75rem)] z-30 flex max-h-[min(70vh,560px)] w-[min(42vw,320px)] flex-col gap-2 overflow-y-auto rounded-xl p-3 text-xs lg:top-1/2 lg:-translate-y-1/2'
       }
       style={
         phone
-          ? { color: CHROME_TEXT }
+          ? {
+              color: CHROME_TEXT,
+              top: 'calc(var(--ppw-topbar-h,56px) + (100dvh - var(--ppw-topbar-h,56px) - var(--sims-toolbar-h,0px)) / 2)',
+              maxHeight: 'calc(100dvh - var(--ppw-topbar-h,56px) - var(--sims-toolbar-h,0px) - 24px)',
+            }
           : {
               background: CHROME_BG,
               border: `1px solid ${CHROME_RIM}`,
@@ -1159,7 +1251,7 @@ export function RoomDrawHUD({
             phone ? 'bg-transparent px-1 py-0.5 text-center' : 'px-2 py-1.5'
           }`}
           style={phone ? { color: CHROME_TEXT_2 } : { background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT }}
-          title={phone ? 'Tap each corner. Drag moves the plan. Pinch zooms. Tap the first point to close the room.' : undefined}
+          title={phone ? 'Drag to draw a wall, or tap corners. Two fingers move and zoom the plan.' : undefined}
         >
           {phone ? 'Walls' : 'Wall pen'}
         </span>
@@ -1170,21 +1262,22 @@ export function RoomDrawHUD({
             width — the phone gets the short form, visually tucked (the rail
             is the chrome; the line stays for assistive tech and tests). */}
         <span
-          className={`min-w-0 font-medium leading-snug ${phone ? 'sr-only' : 'flex-1 text-[12px]'}`}
+          className={`min-w-0 font-medium leading-snug ${phone ? 'py-1 text-center text-[11px]' : 'flex-1 text-[12px]'}`}
           style={{ color: CHROME_TEXT_2 }}
           data-testid="room-draw-hint"
         >
           {vertices.length === 0
             ? (phone
-                ? 'Tap each corner of your room'
+                ? 'Drag a wall or tap corners'
                 : 'Drag to draw a wall — or click corner to corner. The length shows as you go.')
             : vertices.length < 3
-              ? (phone ? 'Tap the next corner' : 'Drag the next wall. Right-click takes the last one back.')
+              ? (phone ? 'Drag the next wall or tap a corner' : 'Drag the next wall. Right-click takes the last one back.')
               : (phone
                   ? 'Tap the first point to close the room'
                   : 'Finish on your first point to close the room — Make room does the same')}
         </span>
         {phone && readout}
+        {phone && <span className="text-center text-[10px] leading-snug" style={{ color: CHROME_TEXT_2 }}>2 fingers move / zoom</span>}
         {/* The unit stepper lives INSIDE the HUD so it is reachable mid-draw
             with a thumb; +/- keys step the same ladder. On the phone it
             heads the second row (below) instead — one `snap-unit-*` set in
@@ -1199,7 +1292,7 @@ export function RoomDrawHUD({
           the HUD — auto-named "Room N", renamed inline from the left
           sidebar after close. The HUD now shows only vertex/perim/area
           counters + instruction + action buttons. */}
-      <div className={phone ? 'flex flex-col items-stretch gap-1' : 'flex flex-wrap items-center justify-between gap-2'}>
+      <div id="phone-wall-draw-settings" className={phone ? `${phoneSettingsOpen ? 'flex' : 'hidden'} flex-col items-stretch gap-1` : 'flex flex-wrap items-center justify-between gap-2'}>
         {!phone && readout}
         {/* Polish (2026-08-29): the phone's unit stepper used to be a
             separate fixed strip parked above this card (RoomCanvas); it now
@@ -1246,7 +1339,7 @@ export function RoomDrawHUD({
                 : 'Point the cursor, then type a length'
             }
             className={`rounded-lg border border-ppw-rim bg-ppw-chrome px-2 text-right font-semibold tabular-nums text-[#37362f] transition-colors duration-[120ms] ease-out placeholder:text-[#3D4655]/60 focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none ${
-              phone ? 'h-8 min-w-0 flex-1 text-[11px]' : 'h-11 w-24 text-[12px] sm:h-10'
+              phone ? 'h-11 min-w-0 flex-1 text-[16px]' : 'h-11 w-24 text-[12px] sm:h-10'
             }`}
           />
           <span className="text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>
@@ -1265,7 +1358,7 @@ export function RoomDrawHUD({
           is possible; keeping the run open is the deliberate second choice.
           Hierarchy: Make room (ink) · Keep walls (rim) · Room + next (rest,
           sm+) · Undo · Discard. */}
-      <div className={phone ? 'flex flex-col gap-1' : 'flex flex-wrap items-center gap-2'}>
+      <div className={phone ? 'flex flex-col gap-1.5' : 'flex flex-wrap items-center gap-2'}>
         <button
           type="button"
           onClick={handleClose}
@@ -1344,7 +1437,7 @@ export function RoomDrawHUD({
         <button
           type="button"
           onClick={handleCancel}
-          className={`${CTRL} ${CTRL_DANGER} ${phone ? phoneBtn : `${CTRL_H} flex-1 sm:ml-auto sm:flex-initial`}`}
+          className={`${CTRL} ${CTRL_DANGER} ${phone ? `${phoneBtn} ${phoneSettingsOpen ? '' : 'hidden'}` : `${CTRL_H} flex-1 sm:ml-auto sm:flex-initial`}`}
           title="Throw these points away (the only exit that does)"
           data-testid="room-draw-cancel"
         >
@@ -1363,6 +1456,18 @@ export function RoomDrawHUD({
           </svg>
           Discard
         </button>
+        {phone && (
+          <button
+            type="button"
+            onClick={() => setPhoneSettingsOpen((open) => !open)}
+            aria-expanded={phoneSettingsOpen}
+            aria-controls="phone-wall-draw-settings"
+            data-testid="room-draw-settings"
+            className={`${CTRL} ${CTRL_REST} ${phoneBtn}`}
+          >
+            {phoneSettingsOpen ? 'Less' : 'Snap / length'}
+          </button>
+        )}
       </div>
     </div>
   );

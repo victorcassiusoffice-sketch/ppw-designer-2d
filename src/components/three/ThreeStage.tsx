@@ -40,9 +40,10 @@ import { cameraPosition, GLASS_HEX, type OrbitCamera, type WallHit } from '../..
 import { cutawayState, wallAnchor, type ItemSolid, type SceneSolids, type WallShow, type WallSolid } from '../../designer/roomSolids';
 import { fitToSize, itemPose, pitchedBox, upPitchRad } from '../../designer/fitToSize';
 import { dayOfYear, sunAt, sunColourHex } from '../../designer/sunPosition';
-import { wallFinishLook } from '../../data/wallPaints';
+import { BARE_PLASTER_HEX } from '../../data/wallPaints';
 import type { WallView } from '../../store/designerUIStore';
-import { canvasTexture, noiseField, normalFromHeight, type FloorKind } from './surfaces';
+import type { FloorKind } from './surfaces';
+import { applyWallLook, wallTextures } from './wallSurfaces';
 import { wallJoinery } from './joinery';
 import { contactShadow, cornerShades, floorMesh, groundPlane, lampsOnFactor, nightLight, skyDome, updateSkyDome, type NightLight } from './dressing';
 
@@ -267,6 +268,8 @@ export interface ThreeStageProps {
    * colour (Erase shows bare plaster); undefined = no paint tool.
    */
   brushHex?: string | null;
+  /** Product finish on the brush; null previews bare plaster. */
+  brushFinish?: string | null;
   /** Walls Up / Cutaway / Down (default 'cutaway'). */
   wallView?: WallView;
   /**
@@ -379,75 +382,6 @@ function makeHull(root: THREE.Object3D): THREE.Object3D {
   hull.scale.multiplyScalar(k);
   hull.position.copy(root.position).sub(centre).multiplyScalar(k).add(centre);
   return hull;
-}
-
-// ---------------------------------------------------------------------------
-// Wall surfaces (2026-09-17, Vic: "front end like The Sims 1 but with more
-// realistic identical images"). Bare plaster is a texture, a paint is a
-// finish — matt drinks the light, silk and satin catch the room, gloss
-// mirrors it — all procedural (no assets to fetch), all world-scaled.
-// ---------------------------------------------------------------------------
-interface WallTextures {
-  /** Bare plaster albedo (mean ≈ 0.97, so the plaster hex stays the plaster hex). */
-  plasterMap: THREE.Texture;
-  /** Trowel-mark normal map for bare plaster. */
-  plasterNormal: THREE.Texture;
-  /** Roller-stipple normal map for a painted wall. */
-  rollerNormal: THREE.Texture;
-}
-let wallTexturesCache: WallTextures | null = null;
-function wallTextures(): WallTextures {
-  if (wallTexturesCache) return wallTexturesCache;
-  const N = 256;
-  const trowel = noiseField(N, 7, 4);
-  const grit = noiseField(N, 11, 1);
-  // ExtrudeGeometry UVs are in metres: two tiles per metre → a 0.5 m grain.
-  const plasterMap = canvasTexture(
-    N,
-    (d) => {
-      for (let i = 0; i < N * N; i++) {
-        const v = 236 + trowel[i] * 12 + (grit[i] - 0.5) * 10;
-        d[i * 4] = v;
-        d[i * 4 + 1] = v;
-        d[i * 4 + 2] = v;
-        d[i * 4 + 3] = 255;
-      }
-    },
-    THREE.SRGBColorSpace,
-    2,
-  );
-  wallTexturesCache = { plasterMap, plasterNormal: normalFromHeight(N, trowel, 2.5, 2), rollerNormal: normalFromHeight(N, grit, 2.5, 2) };
-  return wallTexturesCache;
-}
-
-/**
- * The look of one wall face from the plan's truth: its hex and its paint's
- * finish (none = bare plaster). A Physical material so the dielectric
- * specular can be switched OFF for matt paint and plaster
- * (`specularIntensity` 0): the default 4 % specular lobe adds a constant
- * ~0.04 of light to every face, which turned a #4C493F wall into #787468
- * (measured) — dark colours were never dark. Matt = pure diffuse = the hex.
- */
-function applyWallLook(m: THREE.MeshPhysicalMaterial, w: WallSolid, env: THREE.Texture | null): void {
-  const look = wallFinishLook(w.finish);
-  const tex = wallTextures();
-  m.color.set(w.hex);
-  m.roughness = look.roughness;
-  m.metalness = 0;
-  // Matt and plaster: specularIntensity 0 kills the default 4 % lobe so the
-  // face stays the hex. A sheen is a clear coat ON the colour — the highlight
-  // and the room reflection change with the finish, the albedo does not.
-  m.specularIntensity = look.specularIntensity;
-  m.clearcoat = look.clearcoat;
-  m.clearcoatRoughness = look.clearcoatRoughness;
-  m.map = w.finish ? null : tex.plasterMap;
-  m.normalMap = w.finish ? tex.rollerNormal : tex.plasterNormal;
-  m.normalScale.set(look.grain, look.grain);
-  // The room environment goes on the MATERIAL, never on the scene: with
-  // `scene.environment` three ignores `material.envMapIntensity`.
-  m.envMap = look.useEnv ? env : null;
-  m.envMapIntensity = look.envMapIntensity;
-  m.needsUpdate = true;
 }
 
 /**
@@ -645,7 +579,7 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
 const FLOOR_PLANE = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, camera, width, height, hover, selectedInstanceId, brushHex, wallView = 'cutaway', hour = null, dayOfYear: doy, onFailed },
+  { solids, camera, width, height, hover, selectedInstanceId, brushHex, brushFinish, wallView = 'cutaway', hour = null, dayOfYear: doy, onFailed },
   ref,
 ): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -1149,16 +1083,18 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   useEffect(() => {
     const prev = hoveredRef.current;
     if (prev) {
-      prev.paint.color.set(prev.baseHex);
+      applyWallLook(prev.paint, prev.solid, envRef.current);
       prev.outlineFull.visible = false;
       prev.outlineStub.visible = false;
       setGhost(prev, false);
     }
     const next = hover ? wallsRef.current.find((e) => sameHit(hover, e.solid.hit)) ?? null : null;
     if (next) {
-      if (brushHex) next.paint.color.set(brushHex);
+      if (brushHex !== undefined) {
+        applyWallLook(next.paint, { hex: brushHex ?? BARE_PLASTER_HEX, finish: brushHex ? brushFinish : null }, envRef.current);
+      }
       // A cut wall under the brush stands up as a ghost so the whole face previews.
-      const ghost = !!brushHex && next.show === 'stub';
+      const ghost = brushHex !== undefined && next.show === 'stub';
       setGhost(next, ghost);
       next.outlineFull.visible = next.show === 'full' || ghost;
       next.outlineStub.visible = next.show === 'stub' && !ghost;
@@ -1166,7 +1102,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     hoveredRef.current = next;
     requestRender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hover, solids, brushHex]);
+  }, [hover, solids, brushHex, brushFinish]);
 
   useImperativeHandle(
     ref,

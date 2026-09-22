@@ -633,12 +633,12 @@ export const WALL_PAINTS: WallPaint[] = [
  * room the finish reflects (0 = none, matt). Our mapping, not a standard.
  */
 export const FINISH_PBR: Record<WallPaint['finish'], { roughness: number; sheen: number; grain: number }> = {
-  matt: { roughness: 0.95, sheen: 0, grain: 0.16 },
+  matt: { roughness: 0.95, sheen: 0, grain: 0.22 },
   smooth: { roughness: 0.88, sheen: 0.08, grain: 0.05 },
   textured: { roughness: 0.98, sheen: 0, grain: 0.55 },
-  silk: { roughness: 0.62, sheen: 0.35, grain: 0.1 },
-  satin: { roughness: 0.42, sheen: 0.55, grain: 0.07 },
-  gloss: { roughness: 0.16, sheen: 0.92, grain: 0.03 },
+  silk: { roughness: 0.62, sheen: 0.35, grain: 0.14 },
+  satin: { roughness: 0.42, sheen: 0.55, grain: 0.11 },
+  gloss: { roughness: 0.16, sheen: 0.92, grain: 0.055 },
 };
 
 /**
@@ -665,10 +665,10 @@ export function wallFinishLook(finish: string | null | undefined): WallFinishLoo
   return {
     roughness,
     specularIntensity: sheen <= 0 ? 0 : Math.min(1, 0.25 + sheen * 0.8),
-    clearcoat: sheen,
-    clearcoatRoughness: Math.max(0.05, roughness * 0.5),
+    clearcoat: sheen * 0.75,
+    clearcoatRoughness: Math.max(0.08, roughness * 0.85),
     envMapIntensity: sheen * 1.05,
-    grain: sheen > 0.7 ? grain * 0.45 : grain,
+    grain,
     useEnv: sheen > 0.05,
   };
 }

@@ -44,7 +44,7 @@ import { usePlacementIntentStore, isScreenTarget } from '../store/placementInten
 import { useCatalogStore } from '../store/catalogStore';
 import { rotateSelected, deleteSelected } from '../lib/placementActions';
 import { haptic } from '../lib/haptics';
-import type { BrushModifiers } from '../designer/wallPaintBrush';
+import { brushPaintId, type BrushModifiers } from '../designer/wallPaintBrush';
 import { previewFloorDrag } from '../designer/floorPaintBrush';
 import { activeLevelIdOf, isOutdoorRoom, isRoofRoom, roomsOnLevel } from '../designer/levels';
 import { wallsOnLevel } from '../designer/freeWalls';
@@ -395,6 +395,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const selectedInstanceId = usePropertyStore((s) => s.selectedInstanceId);
   const selectItem = usePropertyStore((s) => s.selectItem);
   const tool = useDesignerUIStore((s) => s.tool);
+  const wallPaintDraft = useDesignerUIStore((s) => s.wallPaintDraft);
   const viewMode = useDesignerUIStore((s) => s.viewMode);
   const wallView = useDesignerUIStore((s) => s.wallView);
   const setWallView = useDesignerUIStore((s) => s.setWallView);
@@ -961,6 +962,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               hover={hover}
               selectedInstanceId={variant === 'overlay' ? selectedInstanceId : null}
               brushHex={onPaintWall ? (brushHex ?? null) : undefined}
+              brushFinish={onPaintWall && brushHex ? (tool === 'cladding' ? 'textured' : wallPaintDraft.erase ? null : finishOfPaint(brushPaintId(wallPaintDraft))) : null}
               wallView={wallView}
               hour={sunHour}
               onFailed={() => setBackend('painter')}

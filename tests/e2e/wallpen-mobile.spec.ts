@@ -82,22 +82,39 @@ test.describe('Wall pen — phone gestures', () => {
     expect(await pts(page), 'a pinch must never drop a wall point').toContain('0');
   });
 
-  test('2. a one-finger drag PANS the plan and plants NO vertex', async ({ page }) => {
+  test('2. a one-finger drag draws one wall without moving the plan', async ({ page }) => {
     const { cdp, cx, cy } = await openPen(page);
     const before = await view(page);
 
-    await touch(cdp, 'touchStart', [{ x: cx - 80, y: cy + 40 }]);
+    await touch(cdp, 'touchStart', [{ x: cx + 10, y: cy + 40 }]);
     for (let i = 1; i <= 8; i++) {
-      await touch(cdp, 'touchMove', [{ x: cx - 80 + i * 14, y: cy + 40 - i * 6 }]);
+      await touch(cdp, 'touchMove', [{ x: cx + 10 + i * 14, y: cy + 40 }]);
       await page.waitForTimeout(25);
     }
     await touch(cdp, 'touchEnd', []);
     await page.waitForTimeout(300);
 
     const after = await view(page);
-    expect(after!.x, 'the drag must move the view').not.toBe(before!.x);
-    expect(after!.scale, 'a pan must not change the zoom').toBe(before!.scale);
-    expect(await pts(page), 'a pan must never drop a wall point').toContain('0');
+    expect(after, 'drawing must keep the camera still').toEqual(before);
+    expect(await pts(page), 'one drag should make exactly two endpoints').toContain('2');
+    await page.locator('[data-testid="room-draw-finish-walls"]').click();
+    const property = await storedSimsProperty(page);
+    expect(property!.walls).toHaveLength(1);
+    expect(property!.walls![0].a).not.toEqual(property!.walls![0].b);
+  });
+
+  test('a second finger cancels the provisional wall and pans without stray points', async ({ page }) => {
+    const { cdp, cx, cy } = await openPen(page);
+    const before = await view(page);
+    await touch(cdp, 'touchStart', [{ x: cx + 5, y: cy }]);
+    await touch(cdp, 'touchMove', [{ x: cx + 30, y: cy }]);
+    await touch(cdp, 'touchStart', [{ x: cx + 30, y: cy }, { x: cx + 100, y: cy + 60 }]);
+    await touch(cdp, 'touchMove', [{ x: cx + 55, y: cy + 20 }, { x: cx + 125, y: cy + 80 }]);
+    await touch(cdp, 'touchEnd', []);
+    await expect.poll(() => pts(page)).toContain('0');
+    const after = await view(page);
+    expect(after!.x).not.toBe(before!.x);
+    expect(after!.scale).toBe(before!.scale);
   });
 
   test('3. a plain tap still drops exactly one point per tap', async ({ page }) => {
