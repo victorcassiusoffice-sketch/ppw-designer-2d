@@ -109,6 +109,7 @@ import { TINTEX_COLOUR_DISCLAIMER } from '../data/tintexColours';
 import { coatsFor, deriveWallPaintOrders, litresForArea, paintableEdgeAreaM2, tinsForLitres, wallPaintBreakdown, wastePctFor } from '../designer/wallPaintCalc';
 // Wall paint tints + the Sims-style 3D room view (2026-09-14).
 import { applyWallPaintBrush, brushColour, brushLabel, brushPaintId } from '../designer/wallPaintBrush';
+import { applyFloorPaintBrush } from '../designer/floorPaintBrush';
 import { RoomView3D } from './RoomView3D';
 import { FLOOR_MATERIALS, findFloorMaterialById, type FloorMaterial } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
@@ -965,6 +966,16 @@ export function TopBar({
    */
   function paintFromRoomView(hit: Parameters<typeof applyWallPaintBrush>[0], mods?: Parameters<typeof applyWallPaintBrush>[1]): string | void {
     const r = applyWallPaintBrush(hit, mods);
+    if (r.message) pushToast(r.message, r.kind);
+    return r.detail;
+  }
+
+  /** Floor tool in 3D Mode — same brush as the plan, through ONE helper. */
+  function paintFloorFromRoomView(
+    hit: Parameters<typeof applyFloorPaintBrush>[0],
+    mods?: Parameters<typeof applyFloorPaintBrush>[1],
+  ): string | void {
+    const r = applyFloorPaintBrush(hit, mods);
     if (r.message) pushToast(r.message, r.kind);
     return r.detail;
   }
@@ -2290,6 +2301,38 @@ export function TopBar({
                 </span>
               </div>
 
+              {/* View — Plan or 3D. Same radios as Wall paint so Floor works
+                  in 3D Mode the way paint already does (TintEX 2026-09-22). */}
+              <div className={`${SEG_GROUP} mb-2 flex w-full`} role="radiogroup" aria-label="View" data-testid="floor-paint-view">
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={viewMode !== '3d'}
+                  onClick={() => setViewMode('plan')}
+                  data-testid="floor-paint-view-plan"
+                  className={`${SEG} ${viewMode !== '3d' ? SEG_CHECKED : SEG_REST} h-9 flex-1`}
+                  title="The plan — click the floor on the drawing to lay it"
+                >
+                  Plan
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={viewMode === '3d'}
+                  onClick={() => setViewMode('3d')}
+                  data-testid="floor-paint-view-3d"
+                  className={`${SEG} ${viewMode === '3d' ? SEG_CHECKED : SEG_REST} h-9 flex-1`}
+                  title="The room in 3D — orbit, then click the floor to lay it"
+                >
+                  3D room
+                </button>
+              </div>
+              {viewMode === '3d' && (
+                <p className="mb-2 rounded-lg border border-ppw-rim bg-ppw-chrome px-3 py-2 text-[11px] font-medium text-ppw-charcoal" data-testid="floor-paint-3d-card-note">
+                  The room is in the workspace — click the floor there to lay it.
+                </p>
+              )}
+
               {/* Materials — all six K1 SKUs, the roll included. */}
               {FLOOR_MATERIALS.map((m) => {
                 const on = floorDraft.materialId === m.id;
@@ -3042,10 +3085,11 @@ export function TopBar({
             variant="overlay"
             title="3D Mode"
             onPaintWall={wallPaintActive ? paintFromRoomView : undefined}
+            onPaintFloor={floorPaintActive ? paintFloorFromRoomView : undefined}
             brushHex={wallPaintActive ? wallPaintPreviewHex : undefined}
             hoverTag={wallPaintActive ? hoverWallTag : undefined}
             onClose={() => setViewMode('plan')}
-            footer={wallPaintActive ? wallPaintLiveText : undefined}
+            footer={wallPaintActive ? wallPaintLiveText : floorPaintActive ? floorLiveText : undefined}
             brushStrip={
               wallPaintActive && !isMd ? (
                 <div className="flex items-center gap-1.5 overflow-x-auto border-t border-ppw-rim bg-ppw-chrome px-2 py-1.5" data-testid="wallpaint-3d-brush-strip">
@@ -3093,6 +3137,53 @@ export function TopBar({
                     onClick={() => setWallPaintDraft({ erase: !wallPaintDraft.erase })}
                     className={`${CHIP} h-10 shrink-0 px-2 text-[11px] ${wallPaintDraft.erase ? CHIP_DANGER_ON : CHIP_REST}`}
                     data-testid="wallpaint-3d-erase"
+                  >
+                    Erase
+                  </button>
+                </div>
+              ) : floorPaintActive && !isMd ? (
+                <div className="flex items-center gap-1.5 overflow-x-auto border-t border-ppw-rim bg-ppw-chrome px-2 py-1.5" data-testid="floor-paint-3d-brush-strip">
+                  <button
+                    type="button"
+                    onClick={() => window.dispatchEvent(new CustomEvent('ppw:open-menu', { detail: { section: 'floor' } }))}
+                    className={`${CHIP} h-10 shrink-0 px-2 text-[11px] ${CHIP_REST}`}
+                    data-testid="floor-paint-3d-brush-change"
+                    title="Change the floor"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="mr-1 inline-block h-3.5 w-3.5 rounded-sm border border-ppw-rim"
+                      style={{ background: floorMaterial?.hex ?? '#8a8a84' }}
+                    />
+                    {floorMaterial?.name ?? 'Floor'}
+                  </button>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={floorScope === 'tile'}
+                    onClick={() => setFloorDraft({ scope: 'tile' })}
+                    disabled={floorMaterialIsRoll}
+                    className={`${CHIP} h-10 shrink-0 px-2 text-[11px] ${floorScope === 'tile' && !floorDraft.erase ? CHIP_ON : CHIP_REST}`}
+                    data-testid="floor-paint-3d-scope-tile"
+                  >
+                    Tile
+                  </button>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={floorScope === 'room'}
+                    onClick={handleFloorRoom}
+                    className={`${CHIP} h-10 shrink-0 px-2 text-[11px] ${floorScope === 'room' && !floorDraft.erase ? CHIP_ON : CHIP_REST}`}
+                    data-testid="floor-paint-3d-scope-room"
+                  >
+                    Room
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={floorDraft.erase}
+                    onClick={() => setFloorDraft({ erase: !floorDraft.erase })}
+                    className={`${CHIP} h-10 shrink-0 px-2 text-[11px] ${floorDraft.erase ? CHIP_DANGER_ON : CHIP_REST}`}
+                    data-testid="floor-paint-3d-erase"
                   >
                     Erase
                   </button>

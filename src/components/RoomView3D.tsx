@@ -91,6 +91,12 @@ export interface RoomView3DProps {
    * flash as the caption, if any.
    */
   onPaintWall?: (hit: WallHit, mods?: BrushModifiers) => string | void;
+  /**
+   * Called when the Floor tool taps / clicks the floor in 3D Mode — same
+   * Sims keys as wall paint (Shift = whole room, Ctrl = erase). The point
+   * is in plan metres. Omit when Floor is not armed.
+   */
+  onPaintFloor?: (hit: { x: number; y: number }, mods?: BrushModifiers) => string | void;
   /** The brush colour, previewed ON the hovered wall; null while Erase is on (previews bare plaster). */
   brushHex?: string | null;
   /** The price tag for the wall under the brush — "VIP Satin · Pastel green ≈ 12.7 m² · 2.7 L · Rs 774" (P3). */
@@ -369,7 +375,7 @@ function sunHourLabel(h: number): string {
   return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
 
-export function RoomView3D({ variant, onPaintWall, brushHex, hoverTag, onClose, onExpand, footer, caption, brushStrip, title, className = '', style }: RoomView3DProps): JSX.Element {
+export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hoverTag, onClose, onExpand, footer, caption, brushStrip, title, className = '', style }: RoomView3DProps): JSX.Element {
   const property = usePropertyStore((s) => s.property);
   const selectedInstanceId = usePropertyStore((s) => s.selectedInstanceId);
   const selectItem = usePropertyStore((s) => s.selectItem);
@@ -408,7 +414,7 @@ export function RoomView3D({ variant, onPaintWall, brushHex, hoverTag, onClose, 
   const H = property.wallHeightM ?? DEFAULT_WALL_HEIGHT_M;
 
   // Items are live in the workspace when no wall tool holds the click.
-  const itemsInteractive = variant === 'overlay' && !onPaintWall && tool === 'hand' && backend === 'gl';
+  const itemsInteractive = variant === 'overlay' && !onPaintWall && !onPaintFloor && tool === 'hand' && backend === 'gl';
 
   // Bounds of the storey in view — the camera re-frames when they change.
   const level = activeLevelIdOf(property);
@@ -594,6 +600,13 @@ export function RoomView3D({ variant, onPaintWall, brushHex, hoverTag, onClose, 
     if (detail) showFlash(detail);
   };
 
+  const paintFloorHit = (point: { x: number; y: number }, mods: BrushModifiers) => {
+    if (!onPaintFloor) return;
+    const detail = onPaintFloor(point, mods);
+    haptic('place');
+    if (detail) showFlash(detail);
+  };
+
   const localPoint = (e: { clientX: number; clientY: number }) => {
     const r = containerRef.current?.getBoundingClientRect();
     return r ? { x: e.clientX - r.left, y: e.clientY - r.top } : { x: 0, y: 0 };
@@ -624,6 +637,19 @@ export function RoomView3D({ variant, onPaintWall, brushHex, hoverTag, onClose, 
           stroke.current = { painted: new Set([hitKey(hit)]), mods };
           drag.current = null;
           paintHit(hit, mods);
+          return;
+        }
+      }
+      // Floor tool: a press on the floor lays / clears it (Room or one tile).
+      if (onPaintFloor && stageRef.current) {
+        const p = localPoint(e);
+        const floor = stageRef.current.floorPoint(p.x, p.y);
+        if (floor) {
+          const mods: BrushModifiers = { shift: e.shiftKey, ctrl: e.ctrlKey || e.metaKey };
+          drag.current = null;
+          paintFloorHit(floor, mods);
+          // Mark as a finished "stroke" so the release does not orbit or re-fire.
+          stroke.current = { painted: new Set(['floor']), mods };
           return;
         }
       }
@@ -765,6 +791,12 @@ export function RoomView3D({ variant, onPaintWall, brushHex, hoverTag, onClose, 
       else showFlash('Tap a wall to paint it');
       return;
     }
+    if (onPaintFloor && stageRef.current) {
+      const floor = stageRef.current.floorPoint(p.x, p.y);
+      if (floor) paintFloorHit(floor, { shift: e.shiftKey, ctrl: e.ctrlKey || e.metaKey });
+      else showFlash('Tap the floor to lay it');
+      return;
+    }
     if (!itemsInteractive || !stageRef.current) return;
     // A tap on the floor: place the armed product there, else clear the selection.
     const floor = stageRef.current.floorPoint(p.x, p.y);
@@ -814,17 +846,19 @@ export function RoomView3D({ variant, onPaintWall, brushHex, hoverTag, onClose, 
   const drawn = solids.walls.length + solids.floors.length + solids.items.length;
   const viewLabel = empty
     ? 'Room view — draw a room to see it in 3D'
-    : `Room view in 3D — ${drawn} parts. Drag to orbit${onPaintWall ? '; click a wall to paint it' : itemsInteractive ? '; tap an item to select it, drag it to move it' : ''}.`;
+    : `Room view in 3D — ${drawn} parts. Drag to orbit${onPaintWall ? '; click a wall to paint it' : onPaintFloor ? '; click the floor to lay it' : itemsInteractive ? '; tap an item to select it, drag it to move it' : ''}.`;
   const selectedItem = selectedInstanceId ? findPlacedItem(property, selectedInstanceId) : null;
   const selectedProduct = selectedItem ? getProductById(selectedItem.productId) : undefined;
   const armedProduct = armedProductId ? getProductById(armedProductId) : undefined;
   const defaultCaption = onPaintWall
     ? 'Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase'
-    : armedProduct
-      ? `Tap the floor to place ${armedProduct.name}`
-      : itemsInteractive
-        ? 'Drag to look around · tap an item to select it · drag it to move it'
-        : 'Drag to look around · pinch or scroll to zoom';
+    : onPaintFloor
+      ? 'Click the floor to lay it · Shift = whole room · Ctrl = erase'
+      : armedProduct
+        ? `Tap the floor to place ${armedProduct.name}`
+        : itemsInteractive
+          ? 'Drag to look around · tap an item to select it · drag it to move it'
+          : 'Drag to look around · pinch or scroll to zoom';
 
   const box = (
     <div
@@ -863,7 +897,7 @@ export function RoomView3D({ variant, onPaintWall, brushHex, hoverTag, onClose, 
         role="img"
         aria-label={viewLabel}
         className="absolute inset-0"
-        style={{ cursor: hover ? 'pointer' : hoverItem ? 'move' : armedProduct && itemsInteractive ? 'copy' : 'grab' }}
+        style={{ cursor: hover ? 'pointer' : hoverItem ? 'move' : onPaintFloor ? 'pointer' : armedProduct && itemsInteractive ? 'copy' : 'grab' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={(e) => endPointer(e, false)}
@@ -1029,7 +1063,7 @@ export function RoomView3D({ variant, onPaintWall, brushHex, hoverTag, onClose, 
       style={{
         top: 'var(--ppw-topbar-h, 0px)',
         right: 'var(--floor-panel-w, 0px)',
-        bottom: onPaintWall ? 0 : 'calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))',
+        bottom: onPaintWall || onPaintFloor ? 0 : 'calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))',
         background: '#E7E2D8',
         ...style,
       }}
@@ -1043,7 +1077,9 @@ export function RoomView3D({ variant, onPaintWall, brushHex, hoverTag, onClose, 
           <p className="truncate text-[11px] font-medium leading-tight text-ppw-charcoal">
             {onPaintWall
               ? 'Drag to look around · pinch or scroll to zoom · click a wall to paint it'
-              : 'Drag to look around · pinch or scroll to zoom · tap an item to select it, drag it to move it'}
+              : onPaintFloor
+                ? 'Drag to look around · pinch or scroll to zoom · click the floor to lay it'
+                : 'Drag to look around · pinch or scroll to zoom · tap an item to select it, drag it to move it'}
           </p>
         </div>
         {footer && (

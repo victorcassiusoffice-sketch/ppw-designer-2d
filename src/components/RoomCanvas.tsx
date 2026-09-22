@@ -973,18 +973,16 @@ export function RoomCanvas({
   // nothing to centre on yet (blank canvas — leave the viewport alone).
   const fitViewportToUnion = useCallback((): Viewport | null => {
     if (!union || unionWpx <= 0 || unionHpx <= 0) return null;
-    // Polish (2026-08-29): while the wall pen is open the HUD card covers
-    // the bottom of the stage (on a 390 px phone it used to hide the lower
-    // half of the room). The fit treats the band from the card's top edge
-    // down as unavailable — measured from the card's live rect, so it is
-    // right at every width (below lg the card also clears the 56 px pill
-    // band + the catalog toolbar; from lg it sits 12 px above the dock).
-    // `drawHudH` is a dep so a card that grows (row wrap) re-fits.
+    // TintEX / Vic 2026-09-22: the wall-pen HUD docks on the LEFT, so the
+    // fit treats the band from the card's left edge across as unavailable —
+    // measured from the card's live rect. The bottom of the canvas stays
+    // free for drawing walls downward.
+    let leftInset = 0;
     let bottomInset = 0;
     if (drawMode && drawHudH > 0 && drawHudRef.current && containerRef.current) {
       const hud = drawHudRef.current.getBoundingClientRect();
       const box = containerRef.current.getBoundingClientRect();
-      bottomInset = Math.max(0, Math.min(box.height - 120, box.bottom - hud.top + 12));
+      leftInset = Math.max(0, Math.min(box.width - 160, hud.right - box.left + 12));
     }
     // Floor tool (2026-08-30): the phone Floor HUD card gets the same
     // treatment as the pen card — the band from its top edge down is
@@ -1031,7 +1029,7 @@ export function RoomCanvas({
       }
     }
     const availH = stageSize.height - bottomInset;
-    const availW = stageSize.width - rightInset;
+    const availW = stageSize.width - rightInset - leftInset;
     // Attached multi-room: centre + FIT the whole plan, not the active room.
     // This used to hardcode scale 1 with a 40 px minimum clamp, which pinned
     // a union wider than the stage off-screen with no way back except Reset.
@@ -1040,7 +1038,7 @@ export function RoomCanvas({
       Math.min(1, (availW - 80) / unionWpx, (availH - 80) / unionHpx),
     );
     return {
-      x: (availW - unionWpx * scale) / 2 - union.minX * pxPerMetre * scale,
+      x: leftInset + (availW - unionWpx * scale) / 2 - union.minX * pxPerMetre * scale,
       y: (availH - unionHpx * scale) / 2 - union.minY * pxPerMetre * scale,
       scale,
     };
@@ -3491,6 +3489,16 @@ export function RoomCanvas({
                   } · ${formatCurrency(floorHudLive.cost, displayCurrency)}`
                 : 'No floor yet'}
             </span>
+            <button
+              type="button"
+              data-testid="floor-paint-3d-mobile"
+              aria-pressed={viewMode === '3d'}
+              onClick={() => setViewMode(viewMode === '3d' ? 'plan' : '3d')}
+              className={`${OVL_CTRL} ${viewMode === '3d' ? OVL_ACTIVE : OVL_REST} h-11 shrink-0 px-3`}
+              title="See the room in 3D and lay the floor there"
+            >
+              3D
+            </button>
             <button
               type="button"
               data-testid="floor-paint-change-mobile"

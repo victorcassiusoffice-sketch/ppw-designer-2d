@@ -193,7 +193,7 @@ test.describe('Wall pen — drag to draw (Vic 2026-09-08)', () => {
       await page.waitForTimeout(180);
     }
     await expect(page.locator('[data-testid="room-draw-vertices-count"]')).toContainText('3');
-    // Right-click over the PLAN, not the bottom-centre HUD card — a click that
+    // Right-click over the PLAN, not the left-side HUD card — a click that
     // lands on the card never reaches the canvas.
     await page.mouse.click(o.x + 2 * PX_PER_M, o.y + 2 * PX_PER_M, { button: 'right' });
     await page.waitForTimeout(300);

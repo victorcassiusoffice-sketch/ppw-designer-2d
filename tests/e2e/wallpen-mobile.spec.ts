@@ -109,17 +109,28 @@ test.describe('Wall pen — phone gestures', () => {
     expect(await pts(page)).toContain('3');
   });
 
-  test('4. the pen card sits ON the toolbar — no dead band under it', async ({ page }) => {
+  test('4. the pen card docks on the LEFT — the bottom of the canvas stays free', async ({ page }) => {
     await openPen(page);
-    const gap = await page.evaluate(() => {
-      const hud = document.querySelector('[data-testid="room-draw-hud"]')!.getBoundingClientRect();
+    const place = await page.evaluate(() => {
+      const hud = document.querySelector('[data-testid="room-draw-hud"]') as HTMLElement;
       const bar = document.querySelector('[data-testid="sims-bottom-toolbar"]')!.getBoundingClientRect();
-      return Math.round(bar.top - hud.bottom);
+      const r = hud.getBoundingClientRect();
+      return {
+        placement: hud.getAttribute('data-placement'),
+        // Gap from the card's bottom to the toolbar top — must be clearly
+        // positive so the lower canvas is drawable (was ~0–16 when stacked
+        // on the toolbar).
+        gapAboveToolbar: Math.round(bar.top - r.bottom),
+        // Card sits in the left half of the viewport.
+        leftish: r.left < window.innerWidth * 0.45,
+        // Bottom edge of the card is well above the toolbar.
+        clearsBottom: r.bottom < bar.top - 24,
+      };
     });
-    // Was 68 px (a hard-coded 56 px band for a Clear row that App hides while
-    // drawing, plus the margin). Now just the safe-area margin.
-    expect(gap).toBeGreaterThanOrEqual(0);
-    expect(gap).toBeLessThanOrEqual(16);
+    expect(place.placement).toBe('left');
+    expect(place.leftish).toBe(true);
+    expect(place.clearsBottom).toBe(true);
+    expect(place.gapAboveToolbar).toBeGreaterThan(24);
   });
 });
 

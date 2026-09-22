@@ -861,8 +861,8 @@ export interface RoomDrawHUDProps {
   phone?: boolean;
   /** Parent ref onto the card element (RoomCanvas fit-to-view reads its rect). */
   cardRef?: React.MutableRefObject<HTMLDivElement | null>;
-  /** Live card height (0 when closed) — the CSS var `--draw-hud-h` as a callback. */
-  onHeightChange?: (heightPx: number) => void;
+  /** Live card width (0 when closed) — used as a left inset while the pen sits on the side. */
+  onHeightChange?: (widthPx: number) => void;
   /**
    * Lay a 5 x 4 m room instead of drawing one (Vic 2026-09-08). The old
    * blocking start card ("Draw walls" | "Quick 5 x 4 m room") is gone — the
@@ -981,26 +981,25 @@ export function RoomDrawHUD({
     [cardRef],
   );
 
-  // Toolbar pass (2026-08-29): the card publishes its live height as
-  // `--draw-hud-h` (and the older alias `--room-draw-hud-h`) so anything
-  // bottom-anchored can park itself ABOVE the card instead of guessing.
-  // Polish: it also reports the height to the parent (`onHeightChange`) so
-  // RoomCanvas can subtract it from the fit-to-view height while the pen is
-  // open. Resolves to 0 px the moment the pen closes. ResizeObserver is
-  // absent in jsdom — there the one-shot apply is all that runs.
+  // Left-side pass (2026-09-22): the card publishes its live WIDTH as
+  // `--draw-hud-w` (and keeps `--draw-hud-h` / `--room-draw-hud-h` at 0 so
+  // nothing bottom-anchors under a dialogue that no longer sits there). The
+  // parent still gets `onHeightChange` with the card's width so RoomCanvas
+  // can inset the fit-to-view from the LEFT while the pen is open.
   useEffect(() => {
     const root = document.documentElement;
     const el = hudRef.current;
-    const publish = (h: number) => {
-      root.style.setProperty('--draw-hud-h', `${h}px`);
-      root.style.setProperty('--room-draw-hud-h', `${h}px`);
-      onHeightChangeRef.current?.(h);
+    const publish = (w: number) => {
+      root.style.setProperty('--draw-hud-w', `${w}px`);
+      root.style.setProperty('--draw-hud-h', '0px');
+      root.style.setProperty('--room-draw-hud-h', '0px');
+      onHeightChangeRef.current?.(w);
     };
     if (!enabled || !el) {
       publish(0);
       return undefined;
     }
-    const apply = () => publish(el.offsetHeight);
+    const apply = () => publish(el.offsetWidth);
     apply();
     if (typeof ResizeObserver === 'undefined') {
       return () => publish(0);
@@ -1124,18 +1123,12 @@ export function RoomDrawHUD({
   return (
     <div
       ref={setHudEl}
-      // Toolbar pass (2026-08-29): FIXED, not absolute. The card used to sit
-      // at `absolute bottom-3` inside the canvas section, which on a phone
-      // put every button UNDER the fixed Sims toolbar (the audit's
-      // elementFromPoint at Done / Make room / Discard returned the
-      // toolbar). Below lg it now clears the toolbar's live height plus the
-      // 56 px band the Clear pills / cart pill occupy; from lg up it sits
-      // 12 px above the desktop dock (`--sims-dock-h`) — exactly where the
-      // old `bottom-3` put it.
-      // Polish (2026-08-29): below sm the card is COMPACT — three rows
-      // (badge + readout · stepper + length · actions), 8 px padding, 6 px
-      // gaps — so the phone keeps its drawable canvas.
-      className={`pointer-events-auto fixed left-1/2 z-30 flex w-[min(94vw,600px)] -translate-x-1/2 flex-col rounded-xl text-xs bottom-[calc(max(0.5rem,env(safe-area-inset-bottom))_+_var(--sims-toolbar-h,0px))] lg:bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))_+_var(--sims-dock-h,0px))] ${
+      // TintEX / Vic 2026-09-22: the card used to sit FIXED at the bottom
+      // centre of the page and blocked drawing walls downward. It now docks
+      // on the LEFT edge of the viewport (mid-height on desktop, top-left on
+      // the phone above the Sims toolbar) so the whole bottom of the canvas
+      // stays drawable. Same chrome, same controls.
+      className={`pointer-events-auto fixed left-3 z-30 flex max-h-[min(70vh,560px)] w-[min(42vw,320px)] flex-col overflow-y-auto rounded-xl text-xs top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.75rem)] lg:top-1/2 lg:-translate-y-1/2 ${
         phone ? 'gap-1 p-1.5' : 'gap-2 p-3'
       }`}
       style={{
@@ -1146,6 +1139,7 @@ export function RoomDrawHUD({
       }}
       data-testid="room-draw-hud"
       data-compact={phone ? 'true' : 'false'}
+      data-placement="left"
     >
       <div className={`flex items-center gap-2 ${phone ? 'flex-nowrap' : 'flex-wrap'}`}>
         <span
