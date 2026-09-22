@@ -40,6 +40,10 @@ export interface FreeWall {
    * the conservative default a quote is read at; 2 doubles the area.
    */
   paintFaces?: 1 | 2;
+  /** Sample cladding product id (`demo-clad-…`). Absent = no cladding. */
+  claddingId?: string;
+  /** Faces clad. Absent = 1; 2 = both faces. */
+  claddingFaces?: 1 | 2;
 }
 
 /** A wall shorter than this is a click, not a wall, and is dropped. */

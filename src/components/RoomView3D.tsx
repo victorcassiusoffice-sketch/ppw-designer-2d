@@ -55,6 +55,7 @@ import { roomFloorMaterial } from '../designer/floorFinish';
 import { floorKindOf } from '../designer/floorKind';
 import { emitsLight } from '../designer/lighting';
 import { findFloorMaterialById } from '../data/floorMaterials';
+import { findCladdingProduct } from '../data/claddingCatalog';
 import { getProductById, productImageUrl, productTopDownUrl } from '../data/products';
 import { productModelFor } from '../data/productModels';
 import { DEFAULT_WALL_HEIGHT_M, findWallPaintById, finishOfPaint, resolveWallColourHex } from '../data/wallPaints';
@@ -245,6 +246,13 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
       const finish = finishOfPaint(e.paintId);
       if (finish) wallFinishByEdge.set(e.edgeIndex, finish);
     }
+    // Sample cladding covers the painted face when both are present.
+    for (const e of room.wallCladding ?? []) {
+      const clad = findCladdingProduct(e.productId);
+      if (!clad) continue;
+      wallColourByEdge.set(e.edgeIndex, clad.hex);
+      wallFinishByEdge.set(e.edgeIndex, 'textured');
+    }
     // Floor: the largest painted zone's material, else the whole-room finish —
     // its hex, and (P3) what it reads as and its tile size for the surface.
     let floorMaterial = roomFloorMaterial(room);
@@ -314,7 +322,7 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
       a: w.a,
       b: w.b,
       thicknessM: w.thicknessM,
-      colourHex: w.paintId ? resolveWallColourHex(w.paintId, w.paintColourHex) : undefined,
+      colourHex: findCladdingProduct(w.claddingId)?.hex ?? (w.paintId ? resolveWallColourHex(w.paintId, w.paintColourHex) : undefined),
       finish: finishOfPaint(w.paintId),
     })),
     wallHeightM: H,

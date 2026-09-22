@@ -245,6 +245,8 @@ import { deriveWallPaintOrders } from '../designer/wallPaintCalc';
 // Wall paint tints + the 3D room view (2026-09-14): the brush is applied
 // through ONE helper so the plan and the 3D view paint identically.
 import { applyWallPaintBrush, brushColour, brushPaintId } from '../designer/wallPaintBrush';
+import { applyCladdingBrush } from '../designer/claddingBrush';
+import { findCladdingProduct } from '../data/claddingCatalog';
 // Floor tool (2026-08-30): the phone HUD card's live "n tiles · £x" line
 // uses the cart's own conversion so the two can never disagree.
 import { convert } from '../lib/fx';
@@ -671,6 +673,8 @@ export function RoomCanvas({
   // cart. While this tool (or the wall pen) is on, the canvas lifts into the
   // 2.5D wall-elevation view — display only, objects stay top-down.
   const wallPaintTool = tool === 'wallpaint';
+  const claddingTool = tool === 'cladding';
+  const wallSurfaceTool = wallPaintTool || claddingTool;
   const wallPaintHudRef = useRef<HTMLDivElement | null>(null);
   const [wallPaintHudH, setWallPaintHudH] = useState(0);
   const wallPaintGestureRef = useRef<{ pointerId: number; x: number; y: number; moved: boolean } | null>(null);
@@ -1020,7 +1024,7 @@ export function RoomCanvas({
     // --floor-panel-w (0px closed / below md); subtracting the overlap
     // re-centres the room in the VISIBLE area so the panel never covers it.
     let rightInset = 0;
-    if ((floorTool || wallPaintTool) && containerRef.current) {
+    if ((floorTool || wallPaintTool || claddingTool) && containerRef.current) {
       const raw = getComputedStyle(document.documentElement).getPropertyValue('--floor-panel-w');
       const px = Number.parseFloat(raw);
       if (Number.isFinite(px) && px > 0) {
@@ -1056,6 +1060,7 @@ export function RoomCanvas({
     doorTool,
     doorHudH,
     wallPaintTool,
+    claddingTool,
     wallPaintHudH,
   ]);
 
@@ -1067,7 +1072,7 @@ export function RoomCanvas({
     if (!fitted) return;
     setViewport(fitted);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, pxPerMetre, drawMode, drawHudH, floorTool, floorHudH, doorTool, doorHudH, wallPaintTool, wallPaintHudH]);
+  }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, pxPerMetre, drawMode, drawHudH, floorTool, floorHudH, doorTool, doorHudH, wallPaintTool, claddingTool, wallPaintHudH]);
 
   /**
    * Door tool stale-transform race (2026-08-31, defect 3): arming the tool
@@ -2653,7 +2658,7 @@ export function RoomCanvas({
   // The 2.5D wall-elevation view (Vic 2026-09-02: "if they select add a wall
   // it automatically goes a bit more 3d — just to display the walls").
   // Active ONLY while a wall tool is on; every other tool sees the flat plan.
-  const show25d = drawMode || wallDrawEnabled || wallPaintTool;
+  const show25d = drawMode || wallDrawEnabled || wallPaintTool || claddingTool;
   /**
    * The Select tool is armed and nothing else owns the canvas: a tap on a
    * free wall picks it (Vic 2026-09-05). The sledgehammer keeps its own
@@ -2714,6 +2719,7 @@ export function RoomCanvas({
     for (const room of rooms) {
       if (isOutdoorRoom(room) || !isDrawnPolygon(room.polygon)) continue;
       const paintByEdge = new Map((room.wallPaint ?? []).map((e) => [e.edgeIndex, e]));
+      const cladByEdge = new Map((room.wallCladding ?? []).map((e) => [e.edgeIndex, e]));
       for (const e of roomEdges(room)) {
         const dx = e.b.x - e.a.x;
         const dy = e.b.y - e.a.y;
@@ -2725,7 +2731,8 @@ export function RoomCanvas({
         const facesUp = ny < -0.5; // the room's BOTTOM wall — cutaway stub
         const h = facesUp ? stubPx : hPx;
         const paint = paintByEdge.get(e.index);
-        const hex = paint ? resolveWallColourHex(paint.paintId, paint.colourHex, PLASTER) : PLASTER;
+        const clad = findCladdingProduct(cladByEdge.get(e.index)?.productId);
+        const hex = clad?.hex ?? (paint ? resolveWallColourHex(paint.paintId, paint.colourHex, PLASTER) : PLASTER);
         const fill = facesDown ? shade(hex, 1) : facesUp ? shade(hex, 0.96) : shade(hex, 0.9);
         const ax = e.a.x * pxPerMetre;
         const ay = e.a.y * pxPerMetre;
@@ -2758,7 +2765,8 @@ export function RoomCanvas({
       }
     }
     for (const w of freeWalls) {
-      const hex = w.paintId ? resolveWallColourHex(w.paintId, w.paintColourHex, PLASTER) : PLASTER;
+      const clad = findCladdingProduct(w.claddingId);
+      const hex = clad?.hex ?? (w.paintId ? resolveWallColourHex(w.paintId, w.paintColourHex, PLASTER) : PLASTER);
       const ax = w.a.x * pxPerMetre;
       const ay = w.a.y * pxPerMetre;
       const bx = w.b.x * pxPerMetre;
@@ -3018,6 +3026,17 @@ export function RoomCanvas({
       // whole room, Ctrl = erase, this click only (the Sims keys the Floor
       // tool already honours).
       const r = applyWallPaintBrush(t ? { kind: t.kind, roomId: t.roomId, edgeIndex: t.edgeIndex, wallId: t.wallId } : null, mods);
+      if (r.message) pushToast(r.message, r.kind);
+      if (!t) return;
+      haptic('place');
+    },
+    [computeWallPaintTarget, pushToast],
+  );
+
+  const commitCladdingAt = useCallback(
+    (clientX: number, clientY: number, mods: { shift?: boolean; ctrl?: boolean } = {}) => {
+      const t = computeWallPaintTarget(clientX, clientY);
+      const r = applyCladdingBrush(t ? { kind: t.kind, roomId: t.roomId, edgeIndex: t.edgeIndex, wallId: t.wallId } : null, mods);
       if (r.message) pushToast(r.message, r.kind);
       if (!t) return;
       haptic('place');
@@ -3592,6 +3611,41 @@ export function RoomCanvas({
       {/* Wall-paint HUD (2026-09-02) — the phone's brush card, same
           mechanics as the Floor card: bottom-anchored, publishes
           --draw-hud-h, the toolbar folds, the plan re-fits above it. */}
+      {claddingTool && !drawMode && (
+        <div
+          data-testid="cladding-hud"
+          data-placement="left"
+          className="pointer-events-auto fixed left-3 z-30 flex w-[min(70vw,280px)] flex-col gap-1.5 rounded-xl p-2 text-xs md:hidden top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.5rem)]"
+          style={{
+            background: CHROME_BG,
+            border: `1px solid ${CHROME_RIM}`,
+            boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
+            color: CHROME_TEXT,
+          }}
+        >
+          <span className="text-[10px] font-semibold uppercase tracking-[0.06em]" data-testid="cladding-hud-sample">
+            Sample cladding
+          </span>
+          <span className="text-[12px] font-semibold text-[#37362f]">Tap a wall to clad it</span>
+          <button
+            type="button"
+            data-testid="cladding-hud-3d"
+            aria-pressed={viewMode === '3d'}
+            onClick={() => setViewMode(viewMode === '3d' ? 'plan' : '3d')}
+            className={`${OVL_CTRL} ${viewMode === '3d' ? OVL_ACTIVE : OVL_REST} h-11`}
+          >
+            {viewMode === '3d' ? 'Plan' : '3D'}
+          </button>
+          <button
+            type="button"
+            data-testid="cladding-hud-done"
+            onClick={() => useDesignerUIStore.getState().setTool('hand')}
+            className={`${OVL_CTRL} ${OVL_REST} h-11`}
+          >
+            Done
+          </button>
+        </div>
+      )}
       {wallPaintHudOn && (
         <div
           ref={wallPaintHudRef}
@@ -4048,7 +4102,7 @@ export function RoomCanvas({
             recentOpeningRef.current = null;
             return;
           }
-          if (wallPaintTool) {
+          if (wallSurfaceTool) {
             // Same one-gesture contract as the door tool: commit on
             // pointerUP consuming this record, with tap slop so a pan
             // never paints.
@@ -4083,14 +4137,16 @@ export function RoomCanvas({
             commitDoorAt(evt.clientX, evt.clientY);
             return;
           }
-          if (wallPaintTool) {
+          if (wallSurfaceTool) {
             const g = wallPaintGestureRef.current;
             wallPaintGestureRef.current = null;
             if (!g) return;
             if (evt.isPrimary === false || evt.pointerId !== g.pointerId) return;
             if (g.moved) return;
             if (Math.hypot(evt.clientX - g.x, evt.clientY - g.y) > DOOR_TAP_SLOP_PX) return;
-            commitWallPaintAt(evt.clientX, evt.clientY, { shift: evt.shiftKey, ctrl: evt.ctrlKey || evt.metaKey });
+            const mods = { shift: evt.shiftKey, ctrl: evt.ctrlKey || evt.metaKey };
+            if (claddingTool) commitCladdingAt(evt.clientX, evt.clientY, mods);
+            else commitWallPaintAt(evt.clientX, evt.clientY, mods);
             return;
           }
           if (!floorTool) return;
@@ -4122,7 +4178,7 @@ export function RoomCanvas({
             }
             return;
           }
-          if (wallPaintTool) {
+          if (wallSurfaceTool) {
             const evt = e.evt as PointerEvent;
             if (typeof evt.clientX !== 'number') return;
             const g = wallPaintGestureRef.current;

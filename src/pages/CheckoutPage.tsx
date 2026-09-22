@@ -119,7 +119,7 @@ export default function CheckoutPage() {
     [form, submitted],
   );
 
-  if (cart.totalItemCount === 0 && cart.floorLines.length === 0 && cart.wallPaintLines.length === 0) {
+  if (cart.totalItemCount === 0 && cart.floorLines.length === 0 && cart.wallPaintLines.length === 0 && cart.claddingLines.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-ppw-sand text-ppw-ink">
         <CartPageHeader />
@@ -292,7 +292,17 @@ export default function CheckoutPage() {
         lineTotalDisplay: l.totalMur > 0 ? (l.totalDisplay * t.priceMur * t.count) / l.totalMur : 0,
       })),
     );
-    const lines: OrderLine[] = [...productLines, ...floorOrderLines, ...wallPaintOrderLines];
+    const claddingOrderLines: OrderLine[] = cart.claddingLines.map((l) => ({
+      productId: l.lineId,
+      name: `${l.name} (sample demo) · ${l.boards} boards · ${l.packs} pack${l.packs === 1 ? '' : 's'} · ${l.areaM2.toFixed(1)} m²`,
+      category: 'Cladding (sample)',
+      quantity: l.packs,
+      unitPrice: l.packPriceMur,
+      unitCurrency: 'MUR' as const,
+      unitPriceDisplay: l.packs > 0 ? l.totalDisplay / l.packs : 0,
+      lineTotalDisplay: l.totalDisplay,
+    }));
+    const lines: OrderLine[] = [...productLines, ...floorOrderLines, ...wallPaintOrderLines, ...claddingOrderLines];
     const order: Order = {
       id: orderId,
       timestamp: Date.now(),
@@ -523,6 +533,17 @@ export default function CheckoutPage() {
                   <span className="shrink-0 text-ppw-ink">
                     {formatCurrency(f.lineTotalDisplay, currency)}
                   </span>
+                </li>
+              ))}
+              {cart.claddingLines.map((l) => (
+                <li key={l.lineId} className="flex justify-between gap-2" data-testid="checkout-cladding-line">
+                  <span className="truncate text-ppw-slate">
+                    {l.name}{' '}
+                    <span className="text-[10px]">
+                      sample · {l.boards} boards · {l.packs} pack{l.packs === 1 ? '' : 's'} · {l.areaM2.toFixed(1)} m²
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-ppw-ink">{formatCurrency(l.totalDisplay, currency)}</span>
                 </li>
               ))}
               {cart.wallPaintLines.map((l) => (

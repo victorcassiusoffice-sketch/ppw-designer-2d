@@ -81,6 +81,8 @@ import {
 // Wall paint tints (2026-09-14): one validator for the store, the load
 // normalisers and the UI, so a bad hex is rejected the same way everywhere.
 import { findWallPaintById, isPaintTintable, normalisePaintColourHex, normalisePaintColourName } from '../data/wallPaints';
+import { findCladdingProduct } from '../data/claddingCatalog';
+import type { CladEdge } from '../designer/claddingCalc';
 
 /**
  * One painted edge, tint validated. A tint with no valid hex is dropped, and
@@ -255,6 +257,11 @@ export interface Room {
    * prunes entries whose edge no longer exists.
    */
   wallPaint?: PaintedEdge[];
+  /**
+   * Sample cladding per edge (demo catalog). Sparse — bare walls are absent.
+   * Visual layer sits over paint; the quote is boards/packs, not tins.
+   */
+  wallCladding?: CladEdge[];
   /**
    * Storey this room sits on (2026-08-29). ABSENT MEANS GROUND — that is the
    * canonical form, not a fallback, so a single-storey design saved today is
@@ -552,6 +559,12 @@ export interface PropertyState {
   setWallPaintPrimer: (on: boolean) => void;
   /** Paint one or both faces of a free-standing wall. */
   setFreeWallPaintFaces: (wallId: string, faces: 1 | 2) => void;
+  /** Sample cladding on one room edge. `null` clears it. */
+  setWallCladding: (roomId: string, edgeIndex: number, productId: string | null) => void;
+  /** Clad (or clear) every edge of a room in one undo frame. */
+  setRoomCladding: (roomId: string, productId: string | null) => void;
+  /** Sample cladding on one free-standing wall. */
+  setFreeWallCladding: (wallId: string, productId: string | null) => void;
 
   addOpening: (roomId: string, opening: Omit<Opening, 'id'> & { id?: string }) => string | null;
   /** Removes by opening id from WHICHEVER room owns it (ids are global). */
@@ -801,12 +814,14 @@ export const usePropertyStore = create<PropertyState>()(
               // openings are: an edge that is gone loses its paint and a
               // reversed polygon keeps the paint on the same WORLD wall.
               const wallPaint = remapPaintedEdges(r.wallPaint, canon.edgeMap, canon.polygon);
+              const wallCladding = remapCladEdges(r.wallCladding, canon.edgeMap, canon.polygon);
               return {
                 ...r,
                 polygon: canon.polygon,
                 openings: pruneOpenings(canon.openings, canon.polygon),
                 floorTiles: decodeFloorZones(r.floorTiles, canon.polygon),
                 ...(wallPaint ? { wallPaint } : { wallPaint: undefined }),
+                ...(wallCladding ? { wallCladding } : { wallCladding: undefined }),
               };
             }),
           },
@@ -1129,6 +1144,49 @@ export const usePropertyStore = create<PropertyState>()(
               if (!paintId) return { ...r, wallPaint: undefined };
               const all = r.polygon.map((_, i) => paintedEdge(i, paintId, colour));
               return { ...r, wallPaint: all.length > 0 ? all : undefined };
+            }),
+          },
+        })),
+
+      setWallCladding: (roomId, edgeIndex, productId) =>
+        set((s) => ({
+          property: {
+            ...s.property,
+            rooms: s.property.rooms.map((r) => {
+              if (r.id !== roomId) return r;
+              if (edgeIndex < 0 || edgeIndex >= r.polygon.length) return r;
+              const id = productId && findCladdingProduct(productId) ? productId : null;
+              const rest = (r.wallCladding ?? []).filter((e) => e.edgeIndex !== edgeIndex);
+              const next = id ? [...rest, { edgeIndex, productId: id }] : rest;
+              return { ...r, wallCladding: next.length > 0 ? next : undefined };
+            }),
+          },
+        })),
+
+      setRoomCladding: (roomId, productId) =>
+        set((s) => ({
+          property: {
+            ...s.property,
+            rooms: s.property.rooms.map((r) => {
+              if (r.id !== roomId) return r;
+              const id = productId && findCladdingProduct(productId) ? productId : null;
+              if (!id) return { ...r, wallCladding: undefined };
+              const all = r.polygon.map((_, i) => ({ edgeIndex: i, productId: id }));
+              return { ...r, wallCladding: all.length > 0 ? all : undefined };
+            }),
+          },
+        })),
+
+      setFreeWallCladding: (wallId, productId) =>
+        set((s) => ({
+          property: {
+            ...s.property,
+            walls: (s.property.walls ?? []).map((w) => {
+              if (w.id !== wallId) return w;
+              const next = { ...w };
+              delete next.claddingId;
+              if (productId && findCladdingProduct(productId)) next.claddingId = productId;
+              return next;
             }),
           },
         })),
@@ -1796,6 +1854,11 @@ export function normaliseFreeWalls(walls: unknown): FreeWall[] {
       // Both faces painted (2026-09-14) — only the value 2 is stored.
       if ((w as { paintFaces?: unknown }).paintFaces === 2) clean.paintFaces = 2;
     }
+    const claddingId = (w as { claddingId?: unknown }).claddingId;
+    if (typeof claddingId === 'string' && findCladdingProduct(claddingId)) {
+      clean.claddingId = claddingId;
+      if ((w as { claddingFaces?: unknown }).claddingFaces === 2) clean.claddingFaces = 2;
+    }
     out.push(clean);
   }
   return out;
@@ -1929,7 +1992,45 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
           return wp ? { wallPaint: wp } : {};
         })()
       : {}),
+    ...(Array.isArray((r as { wallCladding?: unknown }).wallCladding)
+      ? (() => {
+          const raw = (r as { wallCladding: Array<{ edgeIndex?: unknown; productId?: unknown }> }).wallCladding;
+          const typed: CladEdge[] = raw
+            .filter(
+              (e): e is { edgeIndex: number; productId: string } =>
+                !!e &&
+                typeof e.edgeIndex === 'number' &&
+                Number.isInteger(e.edgeIndex) &&
+                typeof e.productId === 'string' &&
+                !!findCladdingProduct(e.productId),
+            )
+            .map((e) => ({ edgeIndex: e.edgeIndex, productId: e.productId }));
+          const clad = remapCladEdges(typed, canon.edgeMap, clean);
+          return clad ? { wallCladding: clad } : {};
+        })()
+      : {}),
   };
+}
+
+function remapCladEdges(
+  edges: CladEdge[] | undefined,
+  edgeMap: number[],
+  canonPolygon: Polygon,
+): CladEdge[] | undefined {
+  if (!Array.isArray(edges) || edges.length === 0) return undefined;
+  const m = canonPolygon.length;
+  if (m < 3) return undefined;
+  const seen = new Set<number>();
+  const out: CladEdge[] = [];
+  for (const e of edges) {
+    if (!e || !Number.isInteger(e.edgeIndex) || !findCladdingProduct(e.productId)) continue;
+    if (e.edgeIndex < 0 || e.edgeIndex >= edgeMap.length) continue;
+    const idx = edgeMap[e.edgeIndex];
+    if (idx < 0 || idx >= m || seen.has(idx)) continue;
+    seen.add(idx);
+    out.push({ edgeIndex: idx, productId: e.productId });
+  }
+  return out.length > 0 ? out : undefined;
 }
 
 /** Validate and prune persisted floor zones. Unknown shapes are dropped. */
@@ -2063,6 +2164,9 @@ export function canonicalisePropertyWinding(property: Property): Property {
     const wallPaint = remapPaintedEdges(room.wallPaint, canon.edgeMap, canon.polygon);
     if (wallPaint) next.wallPaint = wallPaint;
     else delete next.wallPaint;
+    const wallCladding = remapCladEdges(room.wallCladding, canon.edgeMap, canon.polygon);
+    if (wallCladding) next.wallCladding = wallCladding;
+    else delete next.wallCladding;
     return next;
   });
   return touched ? { ...property, rooms } : property;

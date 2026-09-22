@@ -75,6 +75,8 @@ function fakeCart(): CartTotals {
     subtotal: 311,
     floorSubtotal: 0,
   wallPaintSubtotal: 0,
+  claddingLines: [],
+  claddingSubtotal: 0,
     subtotalByCurrency: { MUR: 13995, USD: 311, EUR: 286.12, GBP: 245.69 },
     currency: 'USD',
   };

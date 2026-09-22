@@ -51,7 +51,8 @@ export type BuildTool =
   | 'door'
   | 'measure'
   | 'floor'
-  | 'wallpaint';
+  | 'wallpaint'
+  | 'cladding';
 
 /** localStorage key for the persisted unit preference. */
 export const DESIGNER_UI_KEY = 'ppw_designer_ui_v1';
@@ -83,6 +84,16 @@ export interface FloorDraft {
   /** 'tile' lays what you touch; 'room' fills the whole polygon. Transient. */
   scope: 'tile' | 'room';
   /** Transient — an Erase that survived a reload would silently eat floors. */
+  erase: boolean;
+}
+
+/**
+ * Sample cladding on the brush (demo catalog — not a merchant SKU).
+ * Product id is persisted like the floor material; scope and erase are not.
+ */
+export interface CladdingDraft {
+  productId: string;
+  scope: 'wall' | 'room';
   erase: boolean;
 }
 
@@ -172,6 +183,8 @@ interface DesignerUIState {
   floorDraft: FloorDraft;
   wallPaintDraft: WallPaintDraft;
   setWallPaintDraft: (patch: Partial<WallPaintDraft>) => void;
+  claddingDraft: CladdingDraft;
+  setCladdingDraft: (patch: Partial<CladdingDraft>) => void;
   /**
    * Tiles the Floor tool's live preview would lay on release (0 when there
    * is no preview). Published by RoomCanvas so the docked panel / phone HUD
@@ -256,6 +269,11 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         scope: 'wall',
         erase: false,
       },
+      claddingDraft: {
+        productId: 'demo-clad-cedar-140',
+        scope: 'wall',
+        erase: false,
+      },
       energyPanelOpen: false,
       viewMode: 'plan',
       setViewMode: (mode) => set((s) => (s.viewMode === mode ? s : { viewMode: mode })),
@@ -333,6 +351,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         }),
       setFloorDraft: (patch) => set((s) => ({ floorDraft: { ...s.floorDraft, ...patch } })),
       setWallPaintDraft: (patch) => set((s) => ({ wallPaintDraft: { ...s.wallPaintDraft, ...patch } })),
+      setCladdingDraft: (patch) => set((s) => ({ claddingDraft: { ...s.claddingDraft, ...patch } })),
       setFloorPreviewCount: (n) =>
         set((s) => (s.floorPreviewCount === n ? s : { floorPreviewCount: n })),
       toggleDoorFacing: () =>
@@ -354,6 +373,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         floorDraft: { materialId: state.floorDraft.materialId },
         // The tint rides with the paint ONLY when one is chosen, so the
         // default envelope is byte-identical to the pre-tint one.
+        claddingDraft: { productId: state.claddingDraft.productId },
         wallPaintDraft: {
           paintId: state.wallPaintDraft.paintId,
           ...(state.wallPaintDraft.colourHex ? { colourHex: state.wallPaintDraft.colourHex } : {}),
@@ -375,6 +395,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
           ...p,
           floorDraft: { ...current.floorDraft, ...(p.floorDraft ?? {}) },
           wallPaintDraft: { ...current.wallPaintDraft, ...(p.wallPaintDraft ?? {}) },
+          claddingDraft: { ...current.claddingDraft, ...(p.claddingDraft ?? {}) },
         };
       },
     },

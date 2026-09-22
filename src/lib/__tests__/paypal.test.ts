@@ -62,6 +62,8 @@ function fakeCart(): CartTotals {
     subtotal: 200,
     floorSubtotal: 0,
   wallPaintSubtotal: 0,
+  claddingLines: [],
+  claddingSubtotal: 0,
     uniqueProductCount: 1,
     subtotalByCurrency: { MUR: 0, USD: 200, EUR: 0, GBP: 0 } as Record<"MUR"|"USD"|"EUR"|"GBP", number>,
     currency: 'USD',

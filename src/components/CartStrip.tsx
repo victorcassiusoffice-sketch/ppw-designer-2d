@@ -88,7 +88,7 @@ export function CartStrip() {
     (acc, l) => acc + l.tins.reduce((a, t) => a + t.count, 0),
     0,
   );
-  if (cart.totalItemCount === 0 && cart.floorLines.length === 0 && cart.wallPaintLines.length === 0) {
+  if (cart.totalItemCount === 0 && cart.floorLines.length === 0 && cart.wallPaintLines.length === 0 && cart.claddingLines.length === 0) {
     return null;
   }
 
@@ -116,6 +116,11 @@ export function CartStrip() {
             {cart.wallPaintLines.length > 0 && (
               <>
                 {' '}- <b className="text-ppw-inkDeep" data-testid="cart-paint-tins">{paintTins}</b> paint tins
+              </>
+            )}
+            {cart.claddingLines.length > 0 && (
+              <>
+                {' '}- <b className="text-ppw-inkDeep" data-testid="cart-cladding-packs">{cart.claddingLines.reduce((a, l) => a + l.packs, 0)}</b> cladding packs
               </>
             )}
           </span>

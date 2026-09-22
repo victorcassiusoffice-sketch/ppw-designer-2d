@@ -77,7 +77,7 @@ export function CartDrawer() {
   const marketplaceFee = cart.subtotal * MARKETPLACE_FEE_PCT;
   const total = cart.subtotal + marketplaceFee;
   const isEmpty =
-    cart.lines.length === 0 && cart.floorLines.length === 0 && cart.wallPaintLines.length === 0;
+    cart.lines.length === 0 && cart.floorLines.length === 0 && cart.wallPaintLines.length === 0 && cart.claddingLines.length === 0;
 
   function handleCheckout() {
     // Route to the cartStore-backed checkout — the SAME store this drawer
@@ -190,6 +190,28 @@ export function CartDrawer() {
                             {f.surplusUnits > 1 ? 's' : ''} to cover cut edges
                           </p>
                         )}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              )}
+
+              {cart.claddingLines.length > 0 && (
+                <li data-testid="cladding-group">
+                  <div className="flex items-baseline justify-between border-b border-[#C0A67E]/30 pb-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#C0A67E]">Cladding (sample)</p>
+                    <p className="text-[11px] font-medium text-[#0E0E10]">{formatCurrency(cart.claddingSubtotal, currency)}</p>
+                  </div>
+                  <ul className="mt-1.5 space-y-1.5">
+                    {cart.claddingLines.map((l) => (
+                      <li key={l.lineId} className="text-xs" data-testid="cladding-line">
+                        <div className="flex items-baseline justify-between">
+                          <span className="min-w-0 truncate pr-2 text-[#0E0E10]">{l.name}</span>
+                          <span className="shrink-0">{formatCurrency(l.totalDisplay, currency)}</span>
+                        </div>
+                        <p className="text-[10px] text-[#5c5a54]">
+                          sample · {l.areaM2.toFixed(1)} m² · {l.boards} boards · {l.packs} packs
+                        </p>
                       </li>
                     ))}
                   </ul>

@@ -30,6 +30,7 @@ import { type FxSnapshot, FALLBACK_RATES_USD, convert } from '../lib/fx';
 // pack/mat and told how many surplus units the offcuts force them to buy.
 import { roomFloorOrders } from '../designer/floorTiles';
 import { deriveWallPaintOrders } from '../designer/wallPaintCalc';
+import { deriveCladdingOrders } from '../designer/claddingCalc';
 import { DEFAULT_WALL_HEIGHT_M } from '../data/wallPaints';
 import { findFloorMaterialById } from '../data/floorMaterials';
 
@@ -115,12 +116,29 @@ export interface WallPaintLine {
   perRoom: Array<{ roomId: string; roomName: string; areaM2: number }>;
 }
 
+/** Sample cladding quote — boards and packs from the demo catalog, not a merchant SKU. */
+export interface CladdingCartLine {
+  lineId: string;
+  productId: string;
+  name: string;
+  /** Always true — fictitious pack price. */
+  sample: true;
+  areaM2: number;
+  boards: number;
+  packs: number;
+  packPriceMur: number;
+  totalMur: number;
+  totalDisplay: number;
+}
+
 export interface CartTotals {
   lines: CartLine[];
   /** Painted-floor lines, kept separate from product lines (different unit). */
   floorLines: FloorCartLine[];
   /** Wall-paint lines (sold by the tin), separate again. */
   wallPaintLines: WallPaintLine[];
+  /** Sample cladding lines (boards / packs). */
+  claddingLines: CladdingCartLine[];
   uniqueProductCount: number;
   totalItemCount: number;
   /** Combined product + floor subtotal in the active display currency. */
@@ -129,6 +147,8 @@ export interface CartTotals {
   floorSubtotal: number;
   /** Wall-paint-only subtotal in the active display currency. */
   wallPaintSubtotal: number;
+  /** Sample-cladding subtotal in the active display currency. */
+  claddingSubtotal: number;
   /** Same (combined) subtotal expressed in each supported currency. */
   subtotalByCurrency: Record<Currency, number>;
   /** Active display currency at the time of derivation. */
@@ -353,8 +373,22 @@ export function deriveCart(
   const wallPaintLines = deriveWallPaintLines(property, fx, displayCurrency);
   const wallPaintSubtotal = wallPaintLines.reduce((acc, l) => acc + l.totalDisplay, 0);
 
+  const claddingLines: CladdingCartLine[] = deriveCladdingOrders(property).map((o) => ({
+    lineId: `cladding:${o.productId}`,
+    productId: o.productId,
+    name: o.product.name,
+    sample: true as const,
+    areaM2: o.areaM2,
+    boards: o.boards,
+    packs: o.packs,
+    packPriceMur: o.product.samplePackPriceMur,
+    totalMur: o.totalMur,
+    totalDisplay: convert(o.totalMur, 'MUR', displayCurrency, fx),
+  }));
+  const claddingSubtotal = claddingLines.reduce((acc, l) => acc + l.totalDisplay, 0);
+
   const productSubtotal = lines.reduce((acc, l) => acc + l.lineTotalDisplay, 0);
-  const subtotal = productSubtotal + floorSubtotal + wallPaintSubtotal;
+  const subtotal = productSubtotal + floorSubtotal + wallPaintSubtotal + claddingSubtotal;
   const totalItemCount = lines.reduce((acc, l) => acc + l.quantity, 0);
 
   const subtotalByCurrency: Record<Currency, number> = {
@@ -368,11 +402,13 @@ export function deriveCart(
     lines,
     floorLines,
     wallPaintLines,
+    claddingLines,
     uniqueProductCount: lines.length,
     totalItemCount,
     subtotal,
     floorSubtotal,
     wallPaintSubtotal,
+    claddingSubtotal,
     subtotalByCurrency,
     currency: displayCurrency,
   };

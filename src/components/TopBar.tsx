@@ -110,6 +110,9 @@ import { coatsFor, deriveWallPaintOrders, litresForArea, paintableEdgeAreaM2, ti
 // Wall paint tints + the Sims-style 3D room view (2026-09-14).
 import { applyWallPaintBrush, brushColour, brushLabel, brushPaintId } from '../designer/wallPaintBrush';
 import { applyFloorPaintBrush } from '../designer/floorPaintBrush';
+import { applyCladdingBrush, claddingBrushId, claddingBrushLabel } from '../designer/claddingBrush';
+import { deriveCladdingOrders } from '../designer/claddingCalc';
+import { CLADDING_DEMO_DISCLAIMER, CLADDING_PRODUCTS, findCladdingProduct } from '../data/claddingCatalog';
 import { RoomView3D } from './RoomView3D';
 import { FLOOR_MATERIALS, findFloorMaterialById, type FloorMaterial } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
@@ -607,6 +610,7 @@ export function TopBar({
   const measureActive = tool === 'measure';
   const floorPaintActive = tool === 'floor';
   const wallPaintActive = tool === 'wallpaint';
+  const claddingActive = tool === 'cladding';
   const removeActive = tool === 'sledgehammer';
   // Select/Move (P2 2026-08-31, complaint B). The default tool is on when
   // NOTHING else is: hand, no room-draw, no wall run, no door/floor/measure.
@@ -617,11 +621,14 @@ export function TopBar({
     !doorActive &&
     !floorPaintActive &&
     !wallPaintActive &&
+    !claddingActive &&
     !measureActive;
   const floorDraft = useDesignerUIStore((st) => st.floorDraft);
   const setFloorDraft = useDesignerUIStore((st) => st.setFloorDraft);
   const wallPaintDraft = useDesignerUIStore((st) => st.wallPaintDraft);
   const setWallPaintDraft = useDesignerUIStore((st) => st.setWallPaintDraft);
+  const claddingDraft = useDesignerUIStore((st) => st.claddingDraft);
+  const setCladdingDraft = useDesignerUIStore((st) => st.setCladdingDraft);
   // 3D Mode (2026-09-17): the room view is a mode of the whole designer.
   const viewMode = useDesignerUIStore((st) => st.viewMode);
   const setViewMode = useDesignerUIStore((st) => st.setViewMode);
@@ -704,6 +711,13 @@ export function TopBar({
     if (drawMode) setDrawMode(false);
     if (wallActive) setWallDraw({ phase: 'idle' });
     setTool(wallPaintActive ? 'hand' : 'wallpaint');
+  }
+
+  function handleToggleCladding() {
+    if (roofBlocksWalls()) return;
+    if (drawMode) setDrawMode(false);
+    if (wallActive) setWallDraw({ phase: 'idle' });
+    setTool(claddingActive ? 'hand' : 'cladding');
   }
 
   function handleToggleMeasure() {
@@ -964,6 +978,26 @@ export function TopBar({
    * Sims keys (Shift = whole room, Ctrl = erase) — and gets back the one
    * line it flashes as its caption.
    */
+  const claddingProduct = findCladdingProduct(claddingBrushId(claddingDraft)) ?? CLADDING_PRODUCTS[0];
+  const claddingLive = deriveCladdingOrders(property, wallHeightM);
+  const claddingLiveText = claddingLive.length === 0
+    ? 'No cladding yet'
+    : claddingLive
+        .map((o) => `${o.areaM2.toFixed(1)} m² · ${o.boards} boards · ${o.packs} packs`)
+        .join(' · ');
+  const claddingCostText = claddingLive.length === 0
+    ? ''
+    : formatCurrency(
+        convert(claddingLive.reduce((a, o) => a + o.totalMur, 0), 'MUR', displayCurrency, fx),
+        displayCurrency,
+      );
+
+  function cladFromRoomView(hit: Parameters<typeof applyCladdingBrush>[0], mods?: Parameters<typeof applyCladdingBrush>[1]): string | void {
+    const r = applyCladdingBrush(hit, mods);
+    if (r.message) pushToast(r.message, r.kind);
+    return r.detail;
+  }
+
   function paintFromRoomView(hit: Parameters<typeof applyWallPaintBrush>[0], mods?: Parameters<typeof applyWallPaintBrush>[1]): string | void {
     const r = applyWallPaintBrush(hit, mods);
     if (r.message) pushToast(r.message, r.kind);
@@ -1227,12 +1261,13 @@ export function TopBar({
   // `tool` field so at most ONE side panel exists — both publish the same
   // inset var for the canvas auto-fit.
   const wallPaintPanelOpen = isMd && wallPaintActive;
+  const claddingPanelOpen = isMd && claddingActive;
   // Energy readout (2026-09-04): a third docked panel on the same edge. The
   // store guarantees it never coexists with a build tool.
   const energyPanelOpen = useDesignerUIStore((s) => s.energyPanelOpen);
   const setEnergyPanelOpen = useDesignerUIStore((s) => s.setEnergyPanelOpen);
   const energyPanelOpenMd = isMd && energyPanelOpen;
-  const sidePanelOpen = floorPanelOpen || wallPaintPanelOpen || energyPanelOpenMd;
+  const sidePanelOpen = floorPanelOpen || wallPaintPanelOpen || claddingPanelOpen || energyPanelOpenMd;
   // Energy button (electrics fix 2026-09-20, E-07): the readout used to be
   // reachable only through the canvas chip, which hides while nothing is
   // drawing power — so a customer whose merchant items read 0 W had nothing
@@ -1293,13 +1328,13 @@ export function TopBar({
   // tools down (they refuse to arm there, but PageUp / the Storeys popover
   // could move the focus under an armed tool).
   useEffect(() => {
-    if (onRoof && (wallPaintActive || doorActive || floorPaintActive)) setTool('hand');
-  }, [onRoof, wallPaintActive, doorActive, floorPaintActive, setTool]);
+    if (onRoof && (wallPaintActive || claddingActive || doorActive || floorPaintActive)) setTool('hand');
+  }, [onRoof, wallPaintActive, claddingActive, doorActive, floorPaintActive, setTool]);
 
   // Esc = tool off while the Floor tool is on (Done does the same). Inputs
   // keep their own Esc (a level rename in progress must not lose the tool).
   useEffect(() => {
-    if (!floorPaintActive && !wallPaintActive) return;
+    if (!floorPaintActive && !wallPaintActive && !claddingActive) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       const t = e.target as HTMLElement | null;
@@ -1308,7 +1343,7 @@ export function TopBar({
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [floorPaintActive, wallPaintActive, setTool]);
+  }, [floorPaintActive, wallPaintActive, claddingActive, setTool]);
 
   // `ppw:open-menu` — any surface (the phone Floor / Door HUD cards) can
   // ask for the sheet, scrolled to a section.
@@ -1869,6 +1904,19 @@ export function TopBar({
             >
               <Icon name="roller" />
               <span className="hidden min-[1700px]:inline">Paint</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleToggleCladding}
+              data-testid="cladding-tool-toggle"
+              className={segOn(claddingActive)}
+              title="Cladding — sample demo boards. Click a wall to clad it. Not a real Spa Concept product."
+              aria-pressed={claddingActive}
+              aria-controls="ppw-cladding-panel"
+              aria-label="Cladding"
+            >
+              <Icon name="tiles" />
+              <span className="hidden min-[1700px]:inline">Clad</span>
             </button>
             <button
               type="button"
@@ -2469,6 +2517,101 @@ export function TopBar({
                 className={`${CHIP} ${CHIP_ON} mt-3 w-full`}
                 title="Done — put the Floor tool away (Esc)"
               >
+                Done
+              </button>
+            </div>
+          </aside>,
+          document.body,
+        )}
+
+      {claddingPanelOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <aside
+            id="ppw-cladding-panel"
+            role="complementary"
+            aria-label="Cladding"
+            data-testid="cladding-palette"
+            data-ppw-popover=""
+            className="hidden flex-col overflow-y-auto border-l md:flex"
+            style={{
+              position: 'fixed',
+              top: floorPanelTop,
+              right: 0,
+              bottom: 'var(--sims-dock-h, 0px)',
+              width: FLOOR_PANEL_W,
+              zIndex: 30,
+              background: CHROME_BG,
+              color: CHROME_TEXT,
+              borderColor: CHROME_RIM,
+              boxShadow: '-4px 0 16px rgba(42,41,38,0.08)',
+            }}
+          >
+            <div className="flex flex-col gap-0.5 p-3">
+              <div className="mb-1 flex items-baseline justify-between gap-2 px-1">
+                <span className="text-[14px] font-semibold text-[#37362f]">Cladding</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.06em]" data-testid="cladding-sample-badge">
+                  Sample
+                </span>
+              </div>
+              <p className="mb-2 px-1 text-[11px] leading-snug" style={{ color: CHROME_TEXT_2 }} data-testid="cladding-disclaimer">
+                {CLADDING_DEMO_DISCLAIMER}
+              </p>
+              <div className={`${SEG_GROUP} mb-2 flex w-full`} role="radiogroup" aria-label="View" data-testid="cladding-view">
+                <button type="button" role="radio" aria-checked={viewMode !== '3d'} onClick={() => setViewMode('plan')} data-testid="cladding-view-plan" className={`${SEG} ${viewMode !== '3d' ? SEG_CHECKED : SEG_REST} h-9 flex-1`}>
+                  Plan
+                </button>
+                <button type="button" role="radio" aria-checked={viewMode === '3d'} onClick={() => setViewMode('3d')} data-testid="cladding-view-3d" className={`${SEG} ${viewMode === '3d' ? SEG_CHECKED : SEG_REST} h-9 flex-1`}>
+                  3D room
+                </button>
+              </div>
+              {viewMode === '3d' && (
+                <p className="mb-2 rounded-lg border border-ppw-rim bg-ppw-chrome px-3 py-2 text-[11px] font-medium text-ppw-charcoal" data-testid="cladding-3d-note">
+                  Click a wall in the room to clad it. Shift = whole room · Ctrl = erase.
+                </p>
+              )}
+              {CLADDING_PRODUCTS.map((p) => {
+                const on = claddingDraft.productId === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setCladdingDraft({ productId: p.id, erase: false })}
+                    data-testid={`cladding-${p.id}`}
+                    aria-pressed={on}
+                    className={`${ROW} min-h-[44px] py-1 ${on ? ROW_ON : ''}`}
+                  >
+                    <span className="h-6 w-6 shrink-0 rounded border border-ppw-rim" style={{ background: p.hex }} />
+                    <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                      <span className="truncate">{p.name}</span>
+                      <span className="truncate text-[11px] font-medium tabular-nums" style={{ color: on ? undefined : CHROME_TEXT_2 }}>
+                        {(p.boardWidthM * 1000).toFixed(0)}×{(p.boardLengthM * 1000).toFixed(0)} mm · {p.boardsPerPack}/pack · sample
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+              <div className="mt-2 flex gap-2 border-t border-ppw-rim pt-3" role="radiogroup" aria-label="Cladding scope" data-testid="cladding-scope">
+                <button type="button" role="radio" onClick={() => setCladdingDraft({ scope: 'wall', erase: false })} data-testid="cladding-scope-wall" aria-checked={claddingDraft.scope === 'wall'} className={`${CHIP} flex-1 ${claddingDraft.scope === 'wall' && !claddingDraft.erase ? CHIP_ON : CHIP_REST}`}>
+                  Wall
+                </button>
+                <button type="button" role="radio" onClick={() => setCladdingDraft({ scope: 'room', erase: false })} data-testid="cladding-scope-room" aria-checked={claddingDraft.scope === 'room'} className={`${CHIP} flex-1 ${claddingDraft.scope === 'room' && !claddingDraft.erase ? CHIP_ON : CHIP_REST}`}>
+                  Room
+                </button>
+              </div>
+              <div className="mt-2 flex gap-2">
+                <button type="button" aria-pressed={claddingDraft.erase} onClick={() => setCladdingDraft({ erase: !claddingDraft.erase })} data-testid="cladding-erase" className={`${CHIP} flex-1 ${claddingDraft.erase ? CHIP_DANGER_ON : CHIP_REST}`}>
+                  Erase
+                </button>
+              </div>
+              <p className="mt-2 px-1 text-[12px] font-semibold tabular-nums" data-testid="cladding-live">
+                {claddingLiveText}
+                {claddingCostText ? ` · ${claddingCostText}` : ''}
+              </p>
+              <p className="px-1 text-[11px]" style={{ color: CHROME_TEXT_2 }}>
+                {claddingBrushLabel(claddingDraft)} · click a wall. Objects still place with Select.
+              </p>
+              <button type="button" onClick={() => setTool('hand')} data-testid="cladding-done" className={`${CHIP} ${CHIP_ON} mt-3 w-full`}>
                 Done
               </button>
             </div>
@@ -3086,14 +3229,42 @@ export function TopBar({
           <RoomView3D
             variant="overlay"
             title="3D Mode"
-            onPaintWall={wallPaintActive ? paintFromRoomView : undefined}
+            onPaintWall={claddingActive ? cladFromRoomView : wallPaintActive ? paintFromRoomView : undefined}
             onPaintFloor={floorPaintActive ? paintFloorFromRoomView : undefined}
-            brushHex={wallPaintActive ? wallPaintPreviewHex : undefined}
+            brushHex={claddingActive ? (claddingDraft.erase ? null : claddingProduct.hex) : wallPaintActive ? wallPaintPreviewHex : undefined}
             hoverTag={wallPaintActive ? hoverWallTag : undefined}
             onClose={() => setViewMode('plan')}
-            footer={wallPaintActive ? wallPaintLiveText : floorPaintActive ? floorLiveText : undefined}
+            footer={
+              claddingActive
+                ? `${claddingLiveText}${claddingCostText ? ` · ${claddingCostText}` : ''}`
+                : wallPaintActive
+                  ? wallPaintLiveText
+                  : floorPaintActive
+                    ? floorLiveText
+                    : undefined
+            }
             brushStrip={
-              wallPaintActive && !isMd ? (
+              claddingActive && !isMd ? (
+                <div className="flex items-center gap-1.5 overflow-x-auto border-t border-ppw-rim bg-ppw-chrome px-2 py-1.5" data-testid="cladding-3d-brush-strip">
+                  <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>Sample</span>
+                  {CLADDING_PRODUCTS.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      aria-pressed={claddingDraft.productId === p.id}
+                      onClick={() => setCladdingDraft({ productId: p.id, erase: false })}
+                      className={`${CHIP} h-10 shrink-0 px-2 text-[11px] ${claddingDraft.productId === p.id && !claddingDraft.erase ? CHIP_ON : CHIP_REST}`}
+                      data-testid={`cladding-3d-${p.id}`}
+                    >
+                      <span aria-hidden="true" className="mr-1 inline-block h-3.5 w-3.5 rounded-sm border border-ppw-rim" style={{ background: p.hex }} />
+                      {p.boardWidthM * 1000} mm
+                    </button>
+                  ))}
+                  <button type="button" aria-pressed={claddingDraft.erase} onClick={() => setCladdingDraft({ erase: !claddingDraft.erase })} className={`${CHIP} h-10 shrink-0 px-2 text-[11px] ${claddingDraft.erase ? CHIP_DANGER_ON : CHIP_REST}`} data-testid="cladding-3d-erase">
+                    Erase
+                  </button>
+                </div>
+              ) : wallPaintActive && !isMd ? (
                 <div className="flex items-center gap-1.5 overflow-x-auto border-t border-ppw-rim bg-ppw-chrome px-2 py-1.5" data-testid="wallpaint-3d-brush-strip">
                   <button
                     type="button"
@@ -3378,6 +3549,37 @@ export function TopBar({
                     the row arms the tool; a paint row arms it with that paint
                     and closes the sheet. Scope / Erase / Done live on the
                     canvas HUD card (RoomCanvas), not here. */}
+                <div data-testid="cladding-mobile" style={{ scrollMarginTop: 56 }}>
+                  <button
+                    type="button"
+                    data-testid="cladding-toggle-mobile"
+                    onClick={() => {
+                      handleToggleCladding();
+                      setShowMobileMenu(false);
+                    }}
+                    aria-pressed={claddingActive}
+                    className={`${SHEET_ROW} justify-between ${claddingActive ? SHEET_ROW_ON : ''}`}
+                  >
+                    <span className="flex items-center gap-3"><Icon name="tiles" size={20} />Cladding</span>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{claddingActive ? 'on · sample' : 'sample demo'}</span>
+                  </button>
+                  {CLADDING_PRODUCTS.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      data-testid={`cladding-mobile-${p.id}`}
+                      onClick={() => {
+                        setCladdingDraft({ productId: p.id, erase: false });
+                        if (!claddingActive) handleToggleCladding();
+                        setShowMobileMenu(false);
+                      }}
+                      className={`${SHEET_ROW} ${claddingActive && claddingDraft.productId === p.id ? SHEET_ROW_ON : ''}`}
+                    >
+                      <span className="h-6 w-6 shrink-0 rounded border border-ppw-rim" style={{ background: p.hex }} />
+                      <span className="min-w-0 flex-1 truncate text-left">{p.name}</span>
+                    </button>
+                  ))}
+                </div>
                 <div data-testid="wallpaint-mobile" style={{ scrollMarginTop: 56 }}>
                   <button
                     ref={wallPaintRowMobileRef}

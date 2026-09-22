@@ -32,7 +32,7 @@ export default function CartPage() {
 
   // A floor laid with no product is still a cart (Vic 2026-08-31: the floor
   // "doesn't show" at checkout) — the empty gate used to look at products only.
-  if (cart.totalItemCount === 0 && cart.floorLines.length === 0 && cart.wallPaintLines.length === 0) {
+  if (cart.totalItemCount === 0 && cart.floorLines.length === 0 && cart.wallPaintLines.length === 0 && cart.claddingLines.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-ppw-sand text-ppw-ink">
         <CartPageHeader />
@@ -227,6 +227,27 @@ export default function CartPage() {
             </ul>
           )}
 
+          {cart.claddingLines.length > 0 && (
+            <ul className="space-y-3" data-testid="cart-page-cladding-lines">
+              {cart.claddingLines.map((l) => (
+                <li
+                  key={l.lineId}
+                  data-testid="cart-cladding-line"
+                  className="flex flex-col gap-2 rounded-lg border border-dashed border-ppw-stone bg-white p-3 md:flex-row md:items-center"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-ppw-ink">{l.name}</p>
+                    <p className="text-[11px] text-ppw-slate">Sample demo cladding — not a merchant SKU</p>
+                    <p className="mt-0.5 text-[11px] text-ppw-slate">
+                      {l.areaM2.toFixed(1)} m² · {l.boards} boards · {l.packs} pack{l.packs === 1 ? '' : 's'}
+                    </p>
+                  </div>
+                  <p className="text-sm font-bold text-ppw-ink">{formatCurrency(l.totalDisplay, currency)}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+
           {/* Per-room breakdown */}
           <section className="rounded-lg border border-ppw-stone bg-white">
             <button
@@ -281,11 +302,11 @@ export default function CartPage() {
           <div className="sticky top-4 rounded-lg border border-ppw-stone bg-white p-4 shadow-sm">
             <p className="text-sm font-bold text-ppw-ink">Order summary</p>
             <dl className="mt-3 space-y-1.5 text-xs">
-              {(cart.floorLines.length > 0 || cart.wallPaintLines.length > 0) && (
+              {(cart.floorLines.length > 0 || cart.wallPaintLines.length > 0 || cart.claddingLines.length > 0) && (
                 <div className="flex justify-between text-ppw-slate">
                   <dt>Products</dt>
                   <dd className="text-ppw-ink">
-                    {formatCurrency(cart.subtotal - cart.floorSubtotal - cart.wallPaintSubtotal, currency)}
+                    {formatCurrency(cart.subtotal - cart.floorSubtotal - cart.wallPaintSubtotal - cart.claddingSubtotal, currency)}
                   </dd>
                 </div>
               )}
@@ -303,6 +324,12 @@ export default function CartPage() {
                   <dd className="text-ppw-ink">
                     {formatCurrency(cart.wallPaintSubtotal, currency)}
                   </dd>
+                </div>
+              )}
+              {cart.claddingLines.length > 0 && (
+                <div className="flex justify-between text-ppw-slate">
+                  <dt data-testid="cart-page-cladding-subtotal-label">Cladding (sample)</dt>
+                  <dd className="text-ppw-ink">{formatCurrency(cart.claddingSubtotal, currency)}</dd>
                 </div>
               )}
               <div className="flex justify-between text-ppw-slate">
