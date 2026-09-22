@@ -112,4 +112,37 @@ test.describe('Floor tool in 3D — desktop', () => {
     await expect.poll(() => floorTiles(page)).not.toEqual([]);
     expect((await floorTiles(page))[0].materialId).toBe('outdoor-1m');
   });
+
+  test('a drag rectangle on the floor lays many tiles (Sims stroke)', async ({ page }) => {
+    await seed(page);
+    await open3DWithFloor(page);
+    await page.locator('[data-testid="floor-paint-outdoor-1m"]').click();
+    await page.locator('[data-testid="floor-paint-scope-tile"]').click();
+
+    const a = await page.evaluate(() =>
+      (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.floorScreenPoint(0.6, 0.6),
+    );
+    const b = await page.evaluate(() =>
+      (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.floorScreenPoint(3.2, 2.8),
+    );
+    expect(a).not.toBeNull();
+    expect(b).not.toBeNull();
+    await page.mouse.move(a!.x, a!.y);
+    await page.mouse.down();
+    for (let i = 1; i <= 6; i++) {
+      await page.mouse.move(a!.x + ((b!.x - a!.x) * i) / 6, a!.y + ((b!.y - a!.y) * i) / 6);
+    }
+    // Live preview caption while dragging.
+    await expect(page.locator('[data-testid="wallpaint-3d-caption"]')).toContainText(/tile/i);
+    await page.mouse.up();
+
+    await expect.poll(async () => {
+      const zones = await floorTiles(page);
+      if (!zones[0]) return 0;
+      const runs: number[] = zones[0].runs ?? [];
+      let n = 0;
+      for (let i = 0; i + 2 < runs.length; i += 3) n += runs[i + 2];
+      return n;
+    }).toBeGreaterThan(1);
+  });
 });

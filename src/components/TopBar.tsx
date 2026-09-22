@@ -970,12 +970,14 @@ export function TopBar({
     return r.detail;
   }
 
-  /** Floor tool in 3D Mode — same brush as the plan, through ONE helper. */
+  /** Floor tool in 3D Mode — same brush as the plan, through ONE helper.
+   *  Optional `end` is the drag-rectangle release point (Sims floor stroke). */
   function paintFloorFromRoomView(
     hit: Parameters<typeof applyFloorPaintBrush>[0],
     mods?: Parameters<typeof applyFloorPaintBrush>[1],
+    end?: Parameters<typeof applyFloorPaintBrush>[2],
   ): string | void {
-    const r = applyFloorPaintBrush(hit, mods);
+    const r = applyFloorPaintBrush(hit, mods, end);
     if (r.message) pushToast(r.message, r.kind);
     return r.detail;
   }

@@ -1,13 +1,13 @@
 /**
  * floorPaintBrush — 3D Mode flooring (2026-09-22): Shift fills the room,
- * Ctrl strips, this click only; the panel's chips are untouched. The plan's
- * Room chip and the 3D floor tap both land here for room fill / erase /
- * single-tile strokes.
+ * Ctrl strips, this click only; the panel's chips are untouched. Drag-rect
+ * commits on release as one undo (Sims floor paint).
  */
 import { beforeEach, describe, expect, it } from 'vitest';
-import { applyFloorPaintBrush, floorBrushLabel } from '../floorPaintBrush';
+import { applyFloorPaintBrush, floorBrushLabel, previewFloorDrag } from '../floorPaintBrush';
 import { useDesignerUIStore } from '../../store/designerUIStore';
 import { usePropertyStore } from '../../store/propertyStore';
+import { runsToSet } from '../floorTiles';
 
 const ROOM = {
   id: 'r1',
@@ -23,6 +23,11 @@ const ROOM = {
 
 function zones() {
   return usePropertyStore.getState().property.rooms[0].floorTiles ?? [];
+}
+
+function tileCount(): number {
+  const z = zones()[0];
+  return z ? runsToSet(z.runs).size : 0;
 }
 
 describe('applyFloorPaintBrush', () => {
@@ -75,6 +80,19 @@ describe('applyFloorPaintBrush', () => {
     expect(zones().length).toBe(1);
     expect(zones()[0].runs.length).toBeGreaterThan(0);
     expect(r.detail).toContain('Outdoor');
+  });
+
+  it('a drag rectangle lays many tiles in one stroke', () => {
+    const r = applyFloorPaintBrush({ x: 0.5, y: 0.5 }, {}, { x: 2.5, y: 2.5 });
+    expect(tileCount()).toBeGreaterThan(1);
+    expect(r.detail).toMatch(/\d+ tiles/);
+  });
+
+  it('previewFloorDrag reports the pending count without writing', () => {
+    const prev = previewFloorDrag({ x: 0.5, y: 0.5 }, { x: 2.5, y: 2.5 });
+    expect(prev).not.toBeNull();
+    expect(prev!.count).toBeGreaterThan(1);
+    expect(zones().length).toBe(0);
   });
 
   it('floorBrushLabel names the material or Erase', () => {

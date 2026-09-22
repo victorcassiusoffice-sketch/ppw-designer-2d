@@ -45,6 +45,7 @@ import { useCatalogStore } from '../store/catalogStore';
 import { rotateSelected, deleteSelected } from '../lib/placementActions';
 import { haptic } from '../lib/haptics';
 import type { BrushModifiers } from '../designer/wallPaintBrush';
+import { previewFloorDrag } from '../designer/floorPaintBrush';
 import { activeLevelIdOf, isOutdoorRoom, isRoofRoom, roomsOnLevel } from '../designer/levels';
 import { wallsOnLevel } from '../designer/freeWalls';
 import { edgeKey, pointAlongEdge, projectOntoEdge, roomEdges, sharedEdgeMap } from '../designer/wallEdges';
@@ -92,11 +93,16 @@ export interface RoomView3DProps {
    */
   onPaintWall?: (hit: WallHit, mods?: BrushModifiers) => string | void;
   /**
-   * Called when the Floor tool taps / clicks the floor in 3D Mode — same
-   * Sims keys as wall paint (Shift = whole room, Ctrl = erase). The point
-   * is in plan metres. Omit when Floor is not armed.
+   * Called when the Floor tool taps / clicks / drags the floor in 3D Mode —
+   * same Sims keys as wall paint (Shift = whole room, Ctrl = erase). Points
+   * are in plan metres. Pass `end` for a drag-rectangle stroke (commit on
+   * release). Omit when Floor is not armed.
    */
-  onPaintFloor?: (hit: { x: number; y: number }, mods?: BrushModifiers) => string | void;
+  onPaintFloor?: (
+    hit: { x: number; y: number },
+    mods?: BrushModifiers,
+    end?: { x: number; y: number },
+  ) => string | void;
   /** The brush colour, previewed ON the hovered wall; null while Erase is on (previews bare plaster). */
   brushHex?: string | null;
   /** The price tag for the wall under the brush — "VIP Satin · Pastel green ≈ 12.7 m² · 2.7 L · Rs 774" (P3). */
@@ -415,6 +421,22 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
 
   // Items are live in the workspace when no wall tool holds the click.
   const itemsInteractive = variant === 'overlay' && !onPaintWall && !onPaintFloor && tool === 'hand' && backend === 'gl';
+  /**
+   * Floor tool stroke (Sims tile paint): press anchors, drag grows a rect,
+   * release commits once (one undo). Room/Shift fill still fire immediately.
+   */
+  const floorStroke = useRef<{
+    from: { x: number; y: number };
+    mods: BrushModifiers;
+    fillNow: boolean;
+  } | null>(null);
+  const [floorPreview, setFloorPreview] = useState<{ count: number; erase: boolean } | null>(null);
+  useEffect(() => {
+    if (!onPaintFloor) {
+      floorStroke.current = null;
+      setFloorPreview(null);
+    }
+  }, [onPaintFloor]);
 
   // Bounds of the storey in view — the camera re-frames when they change.
   const level = activeLevelIdOf(property);
@@ -600,9 +622,13 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     if (detail) showFlash(detail);
   };
 
-  const paintFloorHit = (point: { x: number; y: number }, mods: BrushModifiers) => {
+  const paintFloorHit = (
+    point: { x: number; y: number },
+    mods: BrushModifiers,
+    end?: { x: number; y: number },
+  ) => {
     if (!onPaintFloor) return;
-    const detail = onPaintFloor(point, mods);
+    const detail = onPaintFloor(point, mods, end);
     haptic('place');
     if (detail) showFlash(detail);
   };
@@ -640,16 +666,31 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           return;
         }
       }
-      // Floor tool: a press on the floor lays / clears it (Room or one tile).
+      // Floor tool (Sims): press anchors a stroke. Room / Shift / Ctrl-room
+      // fill commits immediately; Tile scope waits for release so a drag
+      // lays a rectangle in one undo (docs/floor-paint-2026-08-28).
       if (onPaintFloor && stageRef.current) {
         const p = localPoint(e);
         const floor = stageRef.current.floorPoint(p.x, p.y);
         if (floor) {
           const mods: BrushModifiers = { shift: e.shiftKey, ctrl: e.ctrlKey || e.metaKey };
+          const draft = useDesignerUIStore.getState().floorDraft;
+          const mat = findFloorMaterialById(draft.materialId);
+          // Room chip / Shift / roll → fill or clear the room now. Ctrl alone
+          // with Tile scope still waits for release (erase the drag rect).
+          const fillNow =
+            draft.scope === 'room' || !!mods.shift || (mat ? mat.tile_w_m === null : false);
           drag.current = null;
-          paintFloorHit(floor, mods);
-          // Mark as a finished "stroke" so the release does not orbit or re-fire.
-          stroke.current = { painted: new Set(['floor']), mods };
+          if (fillNow) {
+            paintFloorHit(floor, mods);
+            floorStroke.current = null;
+            setFloorPreview(null);
+            // Swallow the release so it does not orbit or re-fire.
+            stroke.current = { painted: new Set(['floor']), mods };
+            return;
+          }
+          floorStroke.current = { from: floor, mods, fillNow: false };
+          setFloorPreview({ count: 1, erase: draft.erase || !!mods.ctrl });
           return;
         }
       }
@@ -668,6 +709,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     } else if (pointers.current.size === 2) {
       // A second finger ends any carry or stroke and starts a pinch.
       stroke.current = null;
+      floorStroke.current = null;
+      setFloorPreview(null);
       if (itemDrag.current) {
         stageRef.current?.resetItemPreview(itemDrag.current.instanceId);
         itemDrag.current = null;
@@ -689,6 +732,16 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       return;
     }
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const floorRun = floorStroke.current;
+    if (floorRun && pointers.current.size === 1 && stageRef.current) {
+      const p = localPoint(e);
+      const floor = stageRef.current.floorPoint(p.x, p.y);
+      if (floor) {
+        const prev = previewFloorDrag(floorRun.from, floor, floorRun.mods);
+        if (prev) setFloorPreview({ count: Math.max(1, prev.count), erase: prev.erase });
+      }
+      return;
+    }
     const run = stroke.current;
     if (run && pointers.current.size === 1) {
       const p = localPoint(e);
@@ -749,6 +802,18 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       // The stroke painted as it went; the release only ends it.
       stroke.current = null;
       if (pointers.current.size === 0) drag.current = null;
+      return;
+    }
+    if (floorStroke.current && had) {
+      const run = floorStroke.current;
+      floorStroke.current = null;
+      setFloorPreview(null);
+      if (pointers.current.size === 0) drag.current = null;
+      if (!cancelled && stageRef.current) {
+        const p = localPoint(e);
+        const end = stageRef.current.floorPoint(p.x, p.y) ?? run.from;
+        paintFloorHit(run.from, run.mods, end);
+      }
       return;
     }
     const carry = itemDrag.current;
@@ -853,12 +918,17 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const defaultCaption = onPaintWall
     ? 'Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase'
     : onPaintFloor
-      ? 'Click the floor to lay it · Shift = whole room · Ctrl = erase'
+      ? 'Click a tile · drag a rectangle · Shift = whole room · Ctrl = erase'
       : armedProduct
         ? `Tap the floor to place ${armedProduct.name}`
         : itemsInteractive
-          ? 'Drag to look around · tap an item to select it · drag it to move it'
+          ? 'Drag to look around · tap an item to select it · drag it to move it · Turn or R to rotate'
           : 'Drag to look around · pinch or scroll to zoom';
+
+  const liveFloorCaption =
+    floorPreview && onPaintFloor
+      ? `${floorPreview.erase ? 'Erase' : 'Lay'} ${floorPreview.count} tile${floorPreview.count === 1 ? '' : 's'} · release to commit`
+      : null;
 
   const box = (
     <div
@@ -999,15 +1069,32 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           the same actions the plan's keyboard runs, so 2D follows. */}
       {variant === 'overlay' && itemsInteractive && selectedItem && selectedProduct && (
         <div
-          className="absolute left-2 top-2 flex max-w-[calc(100%-200px)] items-center gap-2 rounded-xl border border-ppw-rim bg-ppw-chrome px-3 py-2 shadow-[0_12px_32px_rgba(42,41,38,0.18)]"
+          className="absolute left-2 top-2 flex max-w-[calc(100%-200px)] flex-wrap items-center gap-2 rounded-xl border border-ppw-rim bg-ppw-chrome px-3 py-2 shadow-[0_12px_32px_rgba(42,41,38,0.18)]"
           data-testid="view3d-selection"
         >
           <span className="min-w-0 truncate text-[12px] font-semibold text-[#37362f]">{selectedProduct.name}</span>
+          <span
+            className="shrink-0 text-[11px] font-medium tabular-nums"
+            style={{ color: '#5c5a54' }}
+            data-testid="view3d-rotation"
+            title="Plan rotation — same angle as 2D"
+          >
+            {Math.round(((selectedItem.rotation % 360) + 360) % 360)}°
+          </span>
           <button
             type="button"
             className={`${SEL_BTN} border-ppw-rim bg-ppw-chrome text-ppw-charcoal hover:bg-[#f3f1ec]`}
+            onClick={() => rotateSelected(-90)}
+            title="Turn 90° counter-clockwise (,)"
+            data-testid="view3d-rotate-ccw"
+          >
+            ↺
+          </button>
+          <button
+            type="button"
+            className={`${SEL_BTN} border-ppw-inkDeep bg-ppw-inkDeep text-ppw-paper hover:brightness-110`}
             onClick={() => rotateSelected(90)}
-            title="Turn 90° (R)"
+            title="Turn 90° clockwise (R)"
             data-testid="view3d-rotate"
           >
             Turn ↻
@@ -1030,7 +1117,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         data-testid="wallpaint-3d-caption"
         aria-live="polite"
       >
-        {flash ?? hoverText ?? caption ?? defaultCaption}
+        {flash ?? liveFloorCaption ?? hoverText ?? caption ?? defaultCaption}
       </p>
     </div>
   );
@@ -1078,7 +1165,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
             {onPaintWall
               ? 'Drag to look around · pinch or scroll to zoom · click a wall to paint it'
               : onPaintFloor
-                ? 'Drag to look around · pinch or scroll to zoom · click the floor to lay it'
+                ? 'Drag to look around · pinch or scroll to zoom · click or drag the floor to lay it'
                 : 'Drag to look around · pinch or scroll to zoom · tap an item to select it, drag it to move it'}
           </p>
         </div>

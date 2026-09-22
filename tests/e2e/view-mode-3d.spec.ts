@@ -154,11 +154,18 @@ test.describe('3D Mode — desktop', () => {
     await awaitStage(page);
     await expect(page.locator('[data-testid="view3d-selection"]')).toHaveCount(0);
 
-    // 5. Tap the body → selected in the plan; the card names it; R turns it.
+    // 5. Tap the body → selected in the plan; the card names it; Turn ↻
+    //    and R both write the SAME plan rotation (Sims build mode).
     const on = await itemPoint(page, 'i1');
     expect(on).not.toBeNull();
     await page.mouse.click(on!.x, on!.y);
     await expect(page.locator('[data-testid="view3d-selection"]')).toContainText('NordicTrack');
+    await expect(page.locator('[data-testid="view3d-rotation"]')).toHaveText('0°');
+    await page.locator('[data-testid="view3d-rotate"]').click();
+    await expect.poll(async () => (await items(page))[0].rotation).toBe(90);
+    await expect(page.locator('[data-testid="view3d-rotation"]')).toHaveText('90°');
+    await page.locator('[data-testid="view3d-rotate-ccw"]').click();
+    await expect.poll(async () => (await items(page))[0].rotation).toBe(0);
     await page.keyboard.press('r');
     await expect.poll(async () => (await items(page))[0].rotation).toBe(90);
 

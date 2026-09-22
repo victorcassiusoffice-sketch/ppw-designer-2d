@@ -5081,12 +5081,9 @@ export function RoomCanvas({
         />
       </Stage>
 
-      {/* Units brief (2026-08-28, D9) — the HUD is back, as the home for the
-          typed segment-length field. It was removed in Batch 3 Fix 3.2 for
-          covering the canvas, so it returns on stricter terms: the panel
-          itself is pointer-events-none and only its controls are clickable,
-          and it sits at bottom-3, out of the band where the first row of
-          plan vertices renders. */}
+      {/* Units brief (2026-08-28, D9) — wall-pen HUD. TintEX 2026-09-22:
+          docks on the LEFT (not bottom-centre) so downward wall drawing stays
+          free; only its controls take pointer events. */}
       <RoomDrawHUD
         phone={belowSm}
         cardRef={drawHudRef}
