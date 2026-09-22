@@ -37,7 +37,7 @@
 import type { Polygon, Vertex } from '../lib/geometry';
 import { cmToM, rotatedFootprint } from '../lib/geometry';
 import { roomEdges } from './wallEdges';
-import { BARE_PLASTER_HEX, OPENING_DOOR_HEIGHT_M, OPENING_WINDOW_HEIGHT_M } from '../data/wallPaints';
+import { BARE_PLASTER_HEX, OPENING_DOOR_HEIGHT_M, OPENING_WINDOW_HEIGHT_M, sheenOfFinish } from '../data/wallPaints';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -103,6 +103,8 @@ export interface SceneFace {
   flat?: boolean;
   /** Order nudge among faces of equal depth (caps over faces, tops over sides). */
   order?: number;
+  /** Paint sheen 0–1. The fallback painter draws a highlight down the face. */
+  sheen?: number;
 }
 
 export interface ProjectedFace {
@@ -460,6 +462,7 @@ export function buildScene(input: SceneInput): SceneFace[] {
         const hit: WallHit = { kind: 'edge', roomId: room.id, edgeIndex: e.index };
         const painted = room.wallColourByEdge?.get(e.index);
         const baseHex = painted ?? PLASTER_HEX;
+        const sheen = sheenOfFinish(room.wallFinishByEdge?.get(e.index));
         const hovered = sameHit(input.hover, hit);
         const fill = hovered ? mixHex(baseHex, HOVER_HEX, 0.45) : baseHex;
         const side = cameraSide(e.a, e.b, inward, cam);
@@ -505,6 +508,7 @@ export function buildScene(input: SceneInput): SceneFace[] {
             fill,
             stroke: WALL_CAP_HEX,
             hit,
+            sheen,
           });
           faces.push({
             key: `cap-${room.id}-${e.index}`,
@@ -538,6 +542,7 @@ export function buildScene(input: SceneInput): SceneFace[] {
             fill,
             stroke: WALL_CAP_HEX,
             hit,
+            sheen,
             order: 19,
           });
           faces.push({
@@ -606,6 +611,7 @@ export function buildScene(input: SceneInput): SceneFace[] {
     const hit: WallHit = { kind: 'free', wallId: w.id };
     const hovered = sameHit(input.hover, hit);
     const baseHex = w.colourHex ?? PLASTER_HEX;
+    const sheen = sheenOfFinish(w.finish);
     const fill = hovered ? mixHex(baseHex, HOVER_HEX, 0.45) : baseHex;
     // Nearer the camera than the target → stub, like a front wall.
     const mid: Vec3 = { x: (w.a.x + w.b.x) / 2, y: (w.a.y + w.b.y) / 2, z: 0 };
@@ -624,7 +630,7 @@ export function buildScene(input: SceneInput): SceneFace[] {
     ];
     for (const f of facesOfSlab) {
       if (dot(f.n, sub(cam, mid)) <= 0) continue;
-      faces.push({ key: `fw-${w.id}-${f.s}`, kind: hFace < H ? 'wall-stub' : 'wall', pts: f.pts, fill, stroke: WALL_CAP_HEX, hit, order: 15 });
+      faces.push({ key: `fw-${w.id}-${f.s}`, kind: hFace < H ? 'wall-stub' : 'wall', pts: f.pts, fill, stroke: WALL_CAP_HEX, hit, sheen, order: 15 });
     }
     faces.push({
       key: `fw-${w.id}-cap`,
@@ -852,6 +858,23 @@ export function drawScene(ctx: DrawTarget, projected: ProjectedFace[], vp: Viewp
       ctx.strokeStyle = f.face.stroke;
       ctx.lineWidth = f.face.kind === 'frame' ? 1.5 : f.face.kind === 'wall-cap' ? 0.8 : 1;
       ctx.stroke();
+    }
+    const sheen = f.face.sheen ?? 0;
+    if (sheen > 0.02 && f.pts.length >= 3 && 'createLinearGradient' in ctx) {
+      let top = f.pts[0];
+      let bot = f.pts[0];
+      for (const p of f.pts) {
+        if (p.y < top.y) top = p;
+        if (p.y > bot.y) bot = p;
+      }
+      const g = (ctx as CanvasRenderingContext2D).createLinearGradient(top.x, top.y, bot.x, bot.y);
+      const a = Math.min(0.55, sheen * 0.5);
+      g.addColorStop(0, `rgba(255,255,255,${a.toFixed(3)})`);
+      g.addColorStop(0.45, `rgba(255,255,255,${(a * 0.28).toFixed(3)})`);
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.globalAlpha = 1;
+      ctx.fill('evenodd');
     }
   }
   ctx.globalAlpha = 1;

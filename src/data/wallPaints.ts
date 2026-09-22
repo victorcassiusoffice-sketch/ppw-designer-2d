@@ -633,13 +633,51 @@ export const WALL_PAINTS: WallPaint[] = [
  * room the finish reflects (0 = none, matt). Our mapping, not a standard.
  */
 export const FINISH_PBR: Record<WallPaint['finish'], { roughness: number; sheen: number; grain: number }> = {
-  matt: { roughness: 0.95, sheen: 0, grain: 0.14 },
-  smooth: { roughness: 0.9, sheen: 0.05, grain: 0.06 },
-  textured: { roughness: 0.97, sheen: 0, grain: 0.3 },
-  silk: { roughness: 0.76, sheen: 0.22, grain: 0.1 },
-  satin: { roughness: 0.6, sheen: 0.38, grain: 0.08 },
-  gloss: { roughness: 0.3, sheen: 0.7, grain: 0.04 },
+  matt: { roughness: 0.95, sheen: 0, grain: 0.16 },
+  smooth: { roughness: 0.88, sheen: 0.08, grain: 0.05 },
+  textured: { roughness: 0.98, sheen: 0, grain: 0.55 },
+  silk: { roughness: 0.62, sheen: 0.35, grain: 0.1 },
+  satin: { roughness: 0.42, sheen: 0.55, grain: 0.07 },
+  gloss: { roughness: 0.16, sheen: 0.92, grain: 0.03 },
 };
+
+/**
+ * How a finish becomes a wall material. Matt stays pure diffuse (the chip
+ * colour). Anything with a sheen gets a clear coat and a room reflection
+ * on top of that colour, so the same hex reads dull or shiny.
+ */
+export interface WallFinishLook {
+  roughness: number;
+  /** 0 for matt and plaster — kills the default 4 % specular lobe. */
+  specularIntensity: number;
+  clearcoat: number;
+  clearcoatRoughness: number;
+  envMapIntensity: number;
+  grain: number;
+  useEnv: boolean;
+}
+
+export function wallFinishLook(finish: string | null | undefined): WallFinishLook {
+  const known = finish && finish in FINISH_PBR ? FINISH_PBR[finish as WallPaint['finish']] : undefined;
+  const sheen = known?.sheen ?? 0;
+  const roughness = known?.roughness ?? 0.96;
+  const grain = known?.grain ?? 0.35;
+  return {
+    roughness,
+    specularIntensity: sheen <= 0 ? 0 : Math.min(1, 0.25 + sheen * 0.8),
+    clearcoat: sheen,
+    clearcoatRoughness: Math.max(0.05, roughness * 0.5),
+    envMapIntensity: sheen * 1.05,
+    grain: sheen > 0.7 ? grain * 0.45 : grain,
+    useEnv: sheen > 0.05,
+  };
+}
+
+/** Sheen 0–1 for a plan highlight. Unknown / bare plaster is 0. */
+export function sheenOfFinish(finish: string | null | undefined): number {
+  if (!finish || !(finish in FINISH_PBR)) return 0;
+  return FINISH_PBR[finish as WallPaint['finish']].sheen;
+}
 
 /** The finish of a paint product by id (undefined = bare plaster). */
 export function finishOfPaint(paintId: string | null | undefined): WallPaint['finish'] | undefined {

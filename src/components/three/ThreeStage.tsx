@@ -40,7 +40,7 @@ import { cameraPosition, GLASS_HEX, type OrbitCamera, type WallHit } from '../..
 import { cutawayState, wallAnchor, type ItemSolid, type SceneSolids, type WallShow, type WallSolid } from '../../designer/roomSolids';
 import { fitToSize, itemPose, pitchedBox, upPitchRad } from '../../designer/fitToSize';
 import { dayOfYear, sunAt, sunColourHex } from '../../designer/sunPosition';
-import { FINISH_PBR } from '../../data/wallPaints';
+import { wallFinishLook } from '../../data/wallPaints';
 import type { WallView } from '../../store/designerUIStore';
 import { canvasTexture, noiseField, normalFromHeight, type FloorKind } from './surfaces';
 import { wallJoinery } from './joinery';
@@ -429,26 +429,24 @@ function wallTextures(): WallTextures {
  * (measured) — dark colours were never dark. Matt = pure diffuse = the hex.
  */
 function applyWallLook(m: THREE.MeshPhysicalMaterial, w: WallSolid, env: THREE.Texture | null): void {
-  const fin = w.finish ? FINISH_PBR[w.finish as keyof typeof FINISH_PBR] : undefined;
+  const look = wallFinishLook(w.finish);
   const tex = wallTextures();
-  const sheen = fin ? fin.sheen : 0;
   m.color.set(w.hex);
-  m.roughness = fin ? fin.roughness : 0.96;
+  m.roughness = look.roughness;
   m.metalness = 0;
-  m.specularIntensity = sheen;
-  m.map = fin ? null : tex.plasterMap;
-  m.normalMap = fin ? tex.rollerNormal : tex.plasterNormal;
-  m.normalScale.set(fin ? fin.grain : 0.35, fin ? fin.grain : 0.35);
+  // Matt and plaster: specularIntensity 0 kills the default 4 % lobe so the
+  // face stays the hex. A sheen is a clear coat ON the colour — the highlight
+  // and the room reflection change with the finish, the albedo does not.
+  m.specularIntensity = look.specularIntensity;
+  m.clearcoat = look.clearcoat;
+  m.clearcoatRoughness = look.clearcoatRoughness;
+  m.map = w.finish ? null : tex.plasterMap;
+  m.normalMap = w.finish ? tex.rollerNormal : tex.plasterNormal;
+  m.normalScale.set(look.grain, look.grain);
   // The room environment goes on the MATERIAL, never on the scene: with
-  // `scene.environment` three ignores `material.envMapIntensity`
-  // (WebGLRenderer uses `scene.environmentIntensity` instead), so a matt
-  // wall drank the whole environment and read ×3 its hex. Measured.
-  // The environment lifts a wall's diffuse as well as its reflection, so a
-  // gloss wall took 0.7 of the room and read ×1.5 its chip; the highlight
-  // from the lights (`specularIntensity`) carries the sheen, the room
-  // reflection stays a hint. Measured on #4C7A8C: matt ×0.95, gloss ≤ ×1.15.
-  m.envMap = sheen > 0 ? env : null;
-  m.envMapIntensity = sheen * 0.3;
+  // `scene.environment` three ignores `material.envMapIntensity`.
+  m.envMap = look.useEnv ? env : null;
+  m.envMapIntensity = look.envMapIntensity;
   m.needsUpdate = true;
 }
 

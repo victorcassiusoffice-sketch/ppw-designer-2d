@@ -11,6 +11,7 @@ import {
   coloursForPaint,
   findWallPaintById,
   finishOfPaint,
+  wallFinishLook,
   hexLightness,
   isPaintTintable,
   loadPaintColourChart,
@@ -108,6 +109,19 @@ describe('TintEX wall paints (2026-09-19)', () => {
     expect(FINISH_PBR.silk.sheen).toBeGreaterThan(FINISH_PBR.matt.sheen);
     expect(FINISH_PBR.matt.sheen).toBe(0);
     expect(FINISH_PBR.satin.roughness).toBeLessThan(FINISH_PBR.matt.roughness);
+  });
+
+  it('the same colour gets a clear coat only when the finish has a sheen', () => {
+    const matt = wallFinishLook('matt');
+    const gloss = wallFinishLook('gloss');
+    expect(matt.specularIntensity).toBe(0);
+    expect(matt.clearcoat).toBe(0);
+    expect(matt.useEnv).toBe(false);
+    expect(gloss.clearcoat).toBeGreaterThan(matt.clearcoat);
+    expect(gloss.roughness).toBeLessThan(matt.roughness);
+    expect(gloss.specularIntensity).toBeGreaterThan(0.8);
+    expect(gloss.useEnv).toBe(true);
+    expect(wallFinishLook(undefined).specularIntensity).toBe(0);
   });
 
   it('coverage: quoted where TintEX publishes a yield, flagged as an estimate where it does not', () => {

@@ -238,7 +238,7 @@ import {
 } from '../designer/floorTiles';
 import { findFloorMaterialById } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
-import { BARE_PLASTER_HEX, DEFAULT_WALL_HEIGHT_M, findWallPaintById, resolveWallColourHex } from '../data/wallPaints';
+import { BARE_PLASTER_HEX, DEFAULT_WALL_HEIGHT_M, findWallPaintById, finishOfPaint, resolveWallColourHex, sheenOfFinish } from '../data/wallPaints';
 // Phone pass (2026-09-16): the paint HUD's own colour row — the plan stays
 // on screen while the colour changes (the sheet used to cover it).
 import { WallPaintHudColourStrip } from './mobile/WallPaintHudColourStrip';
@@ -2718,6 +2718,8 @@ export function RoomCanvas({
       key: string;
       pts: number[];
       fill: string;
+      /** 0 = matt / plaster. A sheen draws a highlight down the face. */
+      sheen: number;
       h: number;
       baseY: number;
       gaps: Array<{ pts: number[] }>;
@@ -2741,6 +2743,7 @@ export function RoomCanvas({
         const paint = paintByEdge.get(e.index);
         const clad = findCladdingProduct(cladByEdge.get(e.index)?.productId);
         const hex = clad?.hex ?? (paint ? resolveWallColourHex(paint.paintId, paint.colourHex, PLASTER) : PLASTER);
+        const sheen = clad ? sheenOfFinish('textured') : sheenOfFinish(paint ? finishOfPaint(paint.paintId) : undefined);
         const fill = facesDown ? shade(hex, 1) : facesUp ? shade(hex, 0.96) : shade(hex, 0.9);
         const ax = e.a.x * pxPerMetre;
         const ay = e.a.y * pxPerMetre;
@@ -2766,6 +2769,7 @@ export function RoomCanvas({
           key: `f-${room.id}-${e.index}`,
           pts: [ax, ay, bx, by, bx, by - h, ax, ay - h],
           fill,
+          sheen,
           h,
           baseY: Math.min(ay, by),
           gaps,
@@ -2775,6 +2779,7 @@ export function RoomCanvas({
     for (const w of freeWalls) {
       const clad = findCladdingProduct(w.claddingId);
       const hex = clad?.hex ?? (w.paintId ? resolveWallColourHex(w.paintId, w.paintColourHex, PLASTER) : PLASTER);
+      const sheen = clad ? sheenOfFinish('textured') : sheenOfFinish(w.paintId ? finishOfPaint(w.paintId) : undefined);
       const ax = w.a.x * pxPerMetre;
       const ay = w.a.y * pxPerMetre;
       const bx = w.b.x * pxPerMetre;
@@ -2783,6 +2788,7 @@ export function RoomCanvas({
         key: `f-fw-${w.id}`,
         pts: [ax, ay, bx, by, bx, by - hPx, ax, ay - hPx],
         fill: shade(hex, 0.95),
+        sheen,
         h: hPx,
         baseY: Math.min(ay, by),
         gaps: [],
@@ -4680,6 +4686,23 @@ export function RoomCanvas({
               {wallFaces.map((f) => (
                 <Group key={f.key}>
                   <Line points={f.pts} closed fill={f.fill} stroke={WALL_INK} strokeWidth={1} opacity={0.97} />
+                  {f.sheen > 0.02 && (
+                    <Line
+                      points={f.pts}
+                      closed
+                      listening={false}
+                      fillLinearGradientStartPoint={{ x: f.pts[6], y: f.pts[7] }}
+                      fillLinearGradientEndPoint={{ x: f.pts[0], y: f.pts[1] }}
+                      fillLinearGradientColorStops={[
+                        0,
+                        `rgba(255,255,255,${Math.min(0.72, f.sheen * 0.7).toFixed(2)})`,
+                        0.38,
+                        `rgba(255,255,255,${Math.min(0.22, f.sheen * 0.2).toFixed(2)})`,
+                        1,
+                        'rgba(255,255,255,0)',
+                      ]}
+                    />
+                  )}
                   {f.gaps.map((g, i) => (
                     <Line key={i} points={g.pts} closed fill={CANVAS_GROUND} stroke={WALL_INK} strokeWidth={0.8} opacity={0.95} />
                   ))}
