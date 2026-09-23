@@ -4,13 +4,13 @@ Updated: 23 September 2026 (Mauritius). Owner: Victor.
 
 ## Resume here
 
-Current checkpoint: **Workspace/catalog refinement implemented; final solar/tool integration checks before feature push.** Read this file, then `docs/BUILD-LINKS.md` and `docs/ROOM-DESIGNER-BUILD-NOTES.md` before continuing. Do not assume an unfinished item is deployed.
+Current checkpoint: **`b70c9fd` is deployed and browser-verified; a small camera-spacing follow-up is ready to push.** Read this file, then `docs/BUILD-LINKS.md` and `docs/ROOM-DESIGNER-BUILD-NOTES.md` before continuing. Do not assume an unfinished item is deployed.
 
 - Active checkout: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`
 - Branch: **`cursor/feat-3d-flooring-hud-bc95` only**. Draft PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Starting checkpoint: `f9a6ab8` (clean working tree).
-- Browser-verified feature preview: https://ppw-designer-2d-nevji2gjg-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-nevji2gjg-victor-ppw.vercel.app/designer?demo=tintex
+- Browser-verified feature preview: https://ppw-designer-2d-m7kiu3e7s-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-m7kiu3e7s-victor-ppw.vercel.app/designer?demo=tintex
 - Latest earlier application build `f35731c`: `https://ppw-designer-2d-i7un0iek8-victor-ppw.vercel.app` (both routes HTTP 200; this host timed out in the in-app browser). It only changes a floor-height label relative to the browser-verified build.
 - **Never push or merge main.** Production https://designer.ppwellness.co stays untouched. Handoff §7 requires Victor's explicit emergency instruction.
 - Preserve the original checkout at `C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d`, its other branch and Victor's dirty files. Work in the separate checkout above.
@@ -48,8 +48,8 @@ Earlier validation: 226 test files / 2,666 tests passed; client/API typechecks a
 1. Record the starting state and inspect existing controls. **Done.**
 2. Consolidate 3D house-building controls into a compact workspace with contextual details and clear camera views. **Implemented.**
 3. Improve catalog browsing and make house/solar tools easier to find. **Implemented.**
-4. Run appropriate regression tests, both typechecks, lint and production build. **Initial checks passed; final integration checks underway.**
-5. Commit and push this feature branch; verify the unique Vercel `/designer` and TintEX routes at desktop and phone width.
+4. Run appropriate regression tests, both typechecks, lint and production build. **Passed.** Full initial suite: 2,673 tests; final integration: 36 tests including 3 new roof-covering scenarios. Final production build passed.
+5. Commit and push this feature branch; verify the unique Vercel `/designer` and TintEX routes at desktop and phone width. **Pushed `b70c9fd`; deployment/QA pending.**
 6. Update build links, this log, the handoff pointers and a saveable copy in `outputs`.
 
 ## Known limits carried forward
@@ -61,6 +61,9 @@ Garden terrain consists of rectangular patches, including raised patches. Roofs 
 - **23 Sep — refinement started:** Read handoff and existing build notes. Confirmed clean feature branch. Recorded reference direction and existing functionality to preserve. Next: implement workspace/catalog refinement, then validate and deploy.
 - **23 Sep — UI implementation checkpoint:** BuildingControls now has direct tools and House/Floor view switches, plus a floating desktop inspector/bounded phone sheet. RoomViewControls groups camera navigation, Move view, zoom, wall visibility, height and daylight. RoomView3D exposes paint/floor/solar shortcuts and camera presets, and removes duplicate in-flow heading/height bars. Desktop and mobile catalogs gain search, sorting, named cards, prices and keyboard navigation. Initial production build, lint and client/API typechecks passed; full suite passed 228 files / 2,673 tests.
 - **23 Sep — integration review:** Found and fixed stale catalog arming by making App, plan and 3D use the same armed-product store. Roof selection now reveals an editing surface; in roof-floor editing the covering must be omitted so thin solar panels are not buried. House view retains the roof covering. Existing roof pitch mounting limitations still apply. Next: finish targeted regression checks, commit/push, then inspect the actual Vercel build at desktop and phone widths.
+- **23 Sep — feature pushed:** Commit `b70c9fd1326b03d6be0654001840843904fddb1f` contains the workspace, catalog, regression fixes and initial workflow log. PR #36 is still draft. Production and main unchanged. Final build and 36 targeted integration tests passed. Next action: resolve GitHub deployment for this SHA, open unique Vercel host, verify desktop/phone designer and TintEX, then update links and commit documentation.
+- **23 Sep — deployed QA:** Vercel deployment `6612248907` succeeded at `https://ppw-designer-2d-m7kiu3e7s-victor-ppw.vercel.app`. Both standard and TintEX routes loaded in-browser. Checked 1280px desktop, 390px phone and 360px narrow phone. Searched Jinko in the phone catalog, added a panel to Roof, and verified the existing energy report changed to ~1.9 kWh/day and ~695 kWh/year. The roof slab and panel were visible. No cloud writes or quote requests were submitted. CI client/API typechecks and Vitest passed; unchanged-production Lighthouse still failed.
+- **23 Sep — final polish:** Desktop camera pods now align on one row where space permits, keeping them clearer of the model; phone Move view label stays on one line. Switching to navigation/finish tools deselects the item so the old plan selection toolbar does not linger. Production build and scoped lint passed. Next: push this small follow-up, verify its unique deployment, then mark this pass complete and update all saved links.
 
 ### Current file ownership / continuation details
 

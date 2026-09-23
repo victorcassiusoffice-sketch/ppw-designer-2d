@@ -1001,6 +1001,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   };
 
   function clearLocalTools() {
+    selectItem(null);
     setConstructionTool('select');
     setGardenPlacement(null);
     setGardenOpen(false);

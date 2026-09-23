@@ -21,14 +21,14 @@ interface Props {
   onExpand?: () => void;
 }
 
-const BUTTON = 'inline-flex h-11 min-w-11 items-center justify-center gap-1 rounded-lg px-2 text-xs font-semibold text-[#37362f] transition-colors hover:bg-[#e9eee9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal md:h-9 md:min-w-9';
+const BUTTON = 'inline-flex h-11 min-w-11 items-center justify-center gap-1 whitespace-nowrap rounded-lg px-2 text-xs font-semibold text-[#37362f] transition-colors hover:bg-[#e9eee9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal md:h-9 md:min-w-9';
 const POD = 'rounded-xl border border-white/80 bg-[#fafaf7]/95 p-1 shadow-[0_3px_18px_rgba(35,44,40,0.12)]';
 const ACTIVE = '!bg-[#294e47] !text-white';
 
 /** View-only controls: they never modify the building or a product. */
 export function RoomViewControls({ workspace, pan, onPan, onRotate, onZoom, onFit, onView, wallView, onWallView, hasWalls, sunAvailable, sunHour, onSunHour, onClose, onExpand }: Props) {
   return <>
-    <div className={`absolute bottom-8 left-1/2 flex max-w-[calc(100%-16px)] -translate-x-1/2 flex-col items-center gap-1 ${workspace ? '' : 'bottom-2'}`}>
+    <div className={`absolute bottom-8 left-1/2 flex w-max max-w-[calc(100%-16px)] -translate-x-1/2 flex-col items-center gap-1 md:flex-row md:flex-wrap md:justify-center ${workspace ? '' : 'bottom-2'}`}>
       <div className={`flex max-w-full items-center ${POD}`} role="group" aria-label="Camera navigation">
         {workspace && <button type="button" className={`${BUTTON} ${pan ? ACTIVE : ''}`} aria-pressed={pan} onClick={onPan} data-testid="view3d-pan" title="Move the view without picking up furniture"><span aria-hidden="true">✥</span> Move view</button>}
         <button type="button" className={BUTTON} onClick={() => onRotate(Math.PI / 4)} title="Rotate left" aria-label="Rotate left" data-testid="wallpaint-3d-rotate-left">↺</button>

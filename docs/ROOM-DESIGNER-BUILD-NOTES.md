@@ -4,14 +4,18 @@ Work stays on `cursor/feat-3d-flooring-hud-bc95`, draft PR #36. Production is un
 
 ## Using the new controls
 
-- Enter 3D from the top strip. Pick a floor and use **+ Floor** to copy its room layout, openings, finishes and free walls. Furniture is not duplicated. There is no fixed floor-count cap; rendering capacity depends on the device.
-- **Build +** switches between Whole building and This floor, edits floor heights, and adds a roof. Choose flat, gable or single slope, with felt, tile or metal. Roof visibility is a view setting; the roof configuration is saved with the plan.
-- Choose **Stairs** and tap clear space on either of two adjacent floors, or use **Build + → Fit stairs in room** for an automatic valid position. The same footprint must fit both rooms. The upper slab gains an opening. Build details offer width, run, X/Y, rotation and deletion; stairs also appear on both plan floors.
+- Enter 3D from the top strip. Pick a floor and use **+ Floor** (the + button on a phone) to copy its room layout, openings, finishes and free walls. Furniture is not duplicated. There is no fixed floor-count cap; rendering capacity depends on the device.
+- **House / Floor** switches the scene scope. **Build settings** opens a contextual inspector with Floor, Stairs and Roof categories. The inspector floats on desktop and opens as a bounded phone sheet. Roof designs include flat, gable or single slope, with felt, tile or metal. Roof visibility is a view setting; the configuration is saved with the plan.
+- Choose **Stairs** and tap clear space on either of two adjacent floors, or use **Build settings → Stairs → Fit stairs in room** for an automatic valid position. The same footprint must fit both rooms. The upper slab gains an opening. Stair settings retain width, run, X/Y, rotation and deletion; stairs also appear on both plan floors.
 - Choose **Window** or **Door** and tap a wall on the active floor. The existing opening validation rejects overlaps and insufficient wall space.
-- Open **Garden** in Build details. Add lawn, soil, gravel, paths, raised rectangular terrain, timber/metal fences or hedges. Use dimensions/position fields or Place in 3D. The garden belongs to ground level and uses the existing plot/building limits.
+- Open **Garden** directly from the building toolbar. Add lawn, soil, gravel, paths, raised rectangular terrain, timber/metal fences or hedges. Use dimensions/position fields or Place in 3D. The garden belongs to ground level and uses the existing plot/building limits.
 - Orbit with a drag; pan with two fingers or Shift-drag on empty space; pinch/scroll to zoom. Camera easing respects reduced-motion preferences. Item drags preview the plan's snap/collision rules, including wall orientation, before a single committed drop.
 - Wall paint uses distinct matte, satin and gloss surface responses in WebGL and visible finish bands in plan. Paint and cladding quantities follow each floor's height.
 - Phone wall drawing supports one-finger strokes; two fingers pan/pinch without committing an accidental wall. The wall pen, area tools and cart use compact controls.
+- **Move view** explicitly pans without picking up furniture. The camera menu offers Dollhouse, Above and Front presets; zoom, Fit, wall visibility and Daylight remain immediately available. The existing camera gestures and product movement remain intact.
+- **Paint / Floor / Solar** shortcuts open the existing finish and energy tools. Roof selection exposes the roof slab and panels in Floor view so the covering cannot obscure them during editing. House view restores the configured roof covering; pitched-roof accessory mounting remains future work.
+- The catalog supports search by name, SKU and supplier, plus name/footprint sorting, visible card names/prices, category keyboard navigation and collapse. Every existing category, including Eco/solar, remains available. Product placement and floor-material actions still use the existing validation path.
+- The durable build/continuation record is `docs/DESIGNER-WORKFLOW-LOG.md`, mirrored to Victor's saveable `outputs/Room-Designer-Workflow.md`.
 
 ## Existing backend connections
 
