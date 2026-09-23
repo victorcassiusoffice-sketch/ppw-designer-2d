@@ -626,20 +626,44 @@ export const WALL_PAINTS: WallPaint[] = [
 ];
 
 /**
- * What a finish does to light (3D Mode, 2026-09-17 — "front end like The
- * Sims 1 but with realistic identical images"). Roughness bands derived
- * from the gloss-unit bands the trade uses (matt < 10 GU at 60°, silk /
- * eggshell 10–25, satin 26–40, gloss 70–90); `sheen` is how much of the
- * room the finish reflects (0 = none, matt). Our mapping, not a standard.
+ * What a finish does to light (3D Mode). Roughness bands follow the
+ * gloss-unit bands the trade uses (matt < 10 GU at 60°, silk / eggshell
+ * 10–25, satin 26–40, gloss 70–90). Architectural paint is a dielectric
+ * pigment under an optional clear film — metalness stays 0 on the stage.
+ *
+ * `sheen` is the base-coat specular intensity (0 = none, so a matt wall
+ * stays its hex). `clearcoat` is the film over that pigment: none on matt
+ * and textured emulsions, a soft bloom on silk, a richer film on satin, a
+ * tight one on gloss. `stipple` is how much the albedo may move, in 8-bit
+ * linear steps, around a near-white mean so the swatch colour survives.
+ * Our mapping, not a standard.
  */
-export const FINISH_PBR: Record<WallPaint['finish'], { roughness: number; sheen: number; grain: number }> = {
-  matt: { roughness: 0.95, sheen: 0, grain: 0.14 },
-  smooth: { roughness: 0.9, sheen: 0.05, grain: 0.06 },
-  textured: { roughness: 0.97, sheen: 0, grain: 0.3 },
-  silk: { roughness: 0.76, sheen: 0.22, grain: 0.1 },
-  satin: { roughness: 0.6, sheen: 0.38, grain: 0.08 },
-  gloss: { roughness: 0.3, sheen: 0.7, grain: 0.04 },
+export interface FinishPbr {
+  roughness: number;
+  sheen: number;
+  grain: number;
+  clearcoat: number;
+  clearcoatRoughness: number;
+  stipple: number;
+}
+
+export const FINISH_PBR: Record<WallPaint['finish'], FinishPbr> = {
+  matt: { roughness: 0.94, sheen: 0, grain: 0.45, clearcoat: 0, clearcoatRoughness: 1, stipple: 16 },
+  smooth: { roughness: 0.88, sheen: 0.06, grain: 0.16, clearcoat: 0.05, clearcoatRoughness: 0.55, stipple: 6 },
+  textured: { roughness: 0.97, sheen: 0, grain: 0.62, clearcoat: 0, clearcoatRoughness: 1, stipple: 18 },
+  silk: { roughness: 0.64, sheen: 0.2, grain: 0.28, clearcoat: 0.16, clearcoatRoughness: 0.48, stipple: 10 },
+  satin: { roughness: 0.45, sheen: 0.34, grain: 0.24, clearcoat: 0.4, clearcoatRoughness: 0.22, stipple: 8 },
+  gloss: { roughness: 0.24, sheen: 0.6, grain: 0.12, clearcoat: 0.72, clearcoatRoughness: 0.08, stipple: 4 },
 };
+
+/** Bare plaster, when a wall has no paint finish. No film, no stipple. */
+const PLASTER_PBR: FinishPbr = { roughness: 0.96, sheen: 0, grain: 0.35, clearcoat: 0, clearcoatRoughness: 1, stipple: 0 };
+
+/** The PBR look for a finish. Unknown or absent → bare plaster. Metalness is always 0 (paint is not metal). */
+export function paintPbrOf(finish: WallPaint['finish'] | undefined): FinishPbr & { metalness: 0 } {
+  const fin = finish ? FINISH_PBR[finish] : undefined;
+  return { ...(fin ?? PLASTER_PBR), metalness: 0 };
+}
 
 /** The finish of a paint product by id (undefined = bare plaster). */
 export function finishOfPaint(paintId: string | null | undefined): WallPaint['finish'] | undefined {

@@ -27,9 +27,10 @@
  *     Pantone and Colour Concert fan decks (150,000+ shades). The card and
  *     chart here are RAL Classic (the K7 deck), see `tintexColours.ts`.
  *   • FINISH → 3D: the stage renders each line's finish (FINISH_PBR):
- *     VIP Satin = satin, Mastertop = pearl / eggshell → silk, Cashmere =
- *     "silky rich look" → silk, True White and Trade Pro = matt. TintEX
- *     publishes no gloss units; the words are theirs.
+ *     VIP Satin = satin (clear film, lower roughness), Mastertop = pearl /
+ *     eggshell → silk, Cashmere = "silky rich look" → silk, True White and
+ *     Trade Pro = matt (no film, roller stipple). TintEX publishes no gloss
+ *     units; the words are theirs. Paint stays dielectric (metalness 0).
  */
 import type { PaintBrand, PaintTintBase, WallPaint, WallPaintTin } from './wallPaints';
 

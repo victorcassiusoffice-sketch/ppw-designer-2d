@@ -40,9 +40,9 @@ import { cameraPosition, GLASS_HEX, type OrbitCamera, type WallHit } from '../..
 import { cutawayState, wallAnchor, type ItemSolid, type SceneSolids, type WallShow, type WallSolid } from '../../designer/roomSolids';
 import { fitToSize, itemPose, pitchedBox, upPitchRad } from '../../designer/fitToSize';
 import { dayOfYear, sunAt, sunColourHex } from '../../designer/sunPosition';
-import { FINISH_PBR } from '../../data/wallPaints';
+import { paintPbrOf, type FinishPbr } from '../../data/wallPaints';
 import type { WallView } from '../../store/designerUIStore';
-import { canvasTexture, noiseField, normalFromHeight, type FloorKind } from './surfaces';
+import { canvasTexture, noiseField, normalFromHeight, paintWallMaps, type FloorKind } from './surfaces';
 import { wallJoinery } from './joinery';
 import { contactShadow, cornerShades, floorMesh, groundPlane, lampsOnFactor, nightLight, skyDome, updateSkyDome, type NightLight } from './dressing';
 
@@ -382,18 +382,16 @@ function makeHull(root: THREE.Object3D): THREE.Object3D {
 }
 
 // ---------------------------------------------------------------------------
-// Wall surfaces (2026-09-17, Vic: "front end like The Sims 1 but with more
-// realistic identical images"). Bare plaster is a texture, a paint is a
-// finish — matt drinks the light, silk and satin catch the room, gloss
-// mirrors it — all procedural (no assets to fetch), all world-scaled.
+// Wall surfaces. Bare plaster is a trowel texture. A paint is a pigment
+// (the swatch hex) under a finish: matt drinks the light and keeps a roller
+// stipple, silk and satin carry a soft clear film, gloss a tighter one.
+// All procedural (no assets to fetch), all world-scaled. See FINISH_PBR.
 // ---------------------------------------------------------------------------
 interface WallTextures {
   /** Bare plaster albedo (mean ≈ 0.97, so the plaster hex stays the plaster hex). */
   plasterMap: THREE.Texture;
   /** Trowel-mark normal map for bare plaster. */
   plasterNormal: THREE.Texture;
-  /** Roller-stipple normal map for a painted wall. */
-  rollerNormal: THREE.Texture;
 }
 let wallTexturesCache: WallTextures | null = null;
 function wallTextures(): WallTextures {
@@ -416,9 +414,12 @@ function wallTextures(): WallTextures {
     THREE.SRGBColorSpace,
     2,
   );
-  wallTexturesCache = { plasterMap, plasterNormal: normalFromHeight(N, trowel, 2.5, 2), rollerNormal: normalFromHeight(N, grit, 2.5, 2) };
+  wallTexturesCache = { plasterMap, plasterNormal: normalFromHeight(N, trowel, 2.5, 2) };
   return wallTexturesCache;
 }
+
+type FinishPbrKey = 'matt' | 'silk' | 'satin' | 'gloss' | 'smooth' | 'textured';
+const FINISH_KEYS: Record<FinishPbrKey, true> = { matt: true, silk: true, satin: true, gloss: true, smooth: true, textured: true };
 
 /**
  * The look of one wall face from the plan's truth: its hex and its paint's
@@ -426,31 +427,59 @@ function wallTextures(): WallTextures {
  * specular can be switched OFF for matt paint and plaster
  * (`specularIntensity` 0): the default 4 % specular lobe adds a constant
  * ~0.04 of light to every face, which turned a #4C493F wall into #787468
- * (measured) — dark colours were never dark. Matt = pure diffuse = the hex.
+ * (measured) — dark colours were never dark. Matt = diffuse = the hex,
+ * with a roller stipple that only redistributes it.
+ *
+ * Sheened finishes add a clear film (`clearcoat`) over that pigment.
+ * Architectural paint is not metal, so metalness stays 0. The room
+ * reflection is a soft hint: the environment lifts diffuse as well as
+ * specular, and a gloss wall that took 0.7 of the room read ×1.5 its chip.
  */
-function applyWallLook(m: THREE.MeshPhysicalMaterial, w: WallSolid, env: THREE.Texture | null): void {
-  const fin = w.finish ? FINISH_PBR[w.finish as keyof typeof FINISH_PBR] : undefined;
-  const tex = wallTextures();
-  const sheen = fin ? fin.sheen : 0;
-  m.color.set(w.hex);
-  m.roughness = fin ? fin.roughness : 0.96;
-  m.metalness = 0;
-  m.specularIntensity = sheen;
-  m.map = fin ? null : tex.plasterMap;
-  m.normalMap = fin ? tex.rollerNormal : tex.plasterNormal;
-  m.normalScale.set(fin ? fin.grain : 0.35, fin ? fin.grain : 0.35);
-  // The room environment goes on the MATERIAL, never on the scene: with
-  // `scene.environment` three ignores `material.envMapIntensity`
-  // (WebGLRenderer uses `scene.environmentIntensity` instead), so a matt
-  // wall drank the whole environment and read ×3 its hex. Measured.
-  // The environment lifts a wall's diffuse as well as its reflection, so a
-  // gloss wall took 0.7 of the room and read ×1.5 its chip; the highlight
-  // from the lights (`specularIntensity`) carries the sheen, the room
-  // reflection stays a hint. Measured on #4C7A8C: matt ×0.95, gloss ≤ ×1.15.
-  m.envMap = sheen > 0 ? env : null;
-  m.envMapIntensity = sheen * 0.3;
+function applyPaintFilm(m: THREE.MeshPhysicalMaterial, look: FinishPbr & { metalness: 0 }, env: THREE.Texture | null): void {
+  const maps = paintWallMaps();
+  m.roughness = look.roughness;
+  m.metalness = look.metalness;
+  m.specularIntensity = look.sheen;
+  m.clearcoat = look.clearcoat;
+  m.clearcoatRoughness = look.clearcoatRoughness;
+  m.map = look.stipple > 0 ? maps.albedo(look.stipple) : null;
+  m.roughnessMap = maps.roughness;
+  m.normalMap = maps.normal;
+  m.normalScale.set(look.grain, look.grain);
+  m.clearcoatNormalMap = look.clearcoat > 0 ? maps.normal : null;
+  m.clearcoatNormalScale.set(look.grain * 0.65, look.grain * 0.65);
+  const film = Math.max(look.sheen, look.clearcoat);
+  // On the material, never the scene — see the comment above.
+  m.envMap = film > 0 ? env : null;
+  m.envMapIntensity = film > 0 ? Math.min(0.22, 0.08 + film * 0.2) : 0;
   m.needsUpdate = true;
 }
+
+function applyWallLook(m: THREE.MeshPhysicalMaterial, w: WallSolid, env: THREE.Texture | null): void {
+  const finish = w.finish as FinishPbrKey | undefined;
+  const look = paintPbrOf(finish && finish in FINISH_KEYS ? finish : undefined);
+  m.color.set(w.hex);
+  if (look.stipple > 0) {
+    applyPaintFilm(m, look, env);
+    return;
+  }
+  const tex = wallTextures();
+  m.roughness = look.roughness;
+  m.metalness = 0;
+  m.specularIntensity = 0;
+  m.clearcoat = 0;
+  m.clearcoatRoughness = 1;
+  m.map = tex.plasterMap;
+  m.roughnessMap = null;
+  m.normalMap = tex.plasterNormal;
+  m.normalScale.set(look.grain, look.grain);
+  m.clearcoatNormalMap = null;
+  m.clearcoatNormalScale.set(0, 0);
+  m.envMap = null;
+  m.envMapIntensity = 0;
+  m.needsUpdate = true;
+}
+
 
 /**
  * What a rebuild is FOR: the geometry. A paint click changes a wall's hex
@@ -658,8 +687,10 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const sunRef = useRef<THREE.DirectionalLight | null>(null);
   /** A soft light that rides with the camera so no wall face is ever unlit. */
   const fillRef = useRef<THREE.DirectionalLight | null>(null);
-  /** The room environment, for materials with a sheen. */
+  /** The room environment, for product bodies. */
   const envRef = useRef<THREE.Texture | null>(null);
+  /** A blurrier copy of that room, so a paint film blooms instead of mirroring. */
+  const paintEnvRef = useRef<THREE.Texture | null>(null);
   const skyRef = useRef<THREE.Mesh | null>(null);
   const contentRef = useRef<THREE.Group | null>(null);
   const signatureRef = useRef<string>('');
@@ -813,6 +844,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     sun.shadow.mapSize.set(2048, 2048);
     sun.shadow.bias = -0.0004;
     sun.shadow.normalBias = 0.02;
+    // Soft penumbra. Intensities stay the studio rig so a wall still renders its hex.
+    sun.shadow.radius = 3;
     scene.add(sun);
     scene.add(sun.target);
     sunRef.current = sun;
@@ -823,12 +856,16 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
 
     // Something for a sheen to reflect: a neutral room environment, handed
     // to the materials that have a sheen (silk / satin / gloss, the product
-    // bodies) — never set on the scene, see applyWallLook.
+    // bodies) — never set on the scene, see applyWallLook. Paint gets a
+    // second, blurrier copy so the film reads as a soft reflection.
     const pmrem = new THREE.PMREMGenerator(renderer);
     try {
-      envRef.current = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      const room = new RoomEnvironment();
+      envRef.current = pmrem.fromScene(room, 0.04).texture;
+      paintEnvRef.current = pmrem.fromScene(room, 0.2).texture;
     } catch {
       envRef.current = null; /* no environment: finishes read flat, colours unaffected */
+      paintEnvRef.current = null;
     }
     pmrem.dispose();
 
@@ -859,6 +896,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       disposeObject(sky);
       envRef.current?.dispose();
       envRef.current = null;
+      paintEnvRef.current?.dispose();
+      paintEnvRef.current = null;
       signatureRef.current = '';
       // dispose() only — forceContextLoss() would leave the canvas's context
       // LOST for the next mount (StrictMode remounts in dev; a view that
@@ -892,7 +931,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         if (!w) continue;
         e.solid = w;
         e.baseHex = w.hex;
-        applyWallLook(e.paint, w, envRef.current);
+        applyWallLook(e.paint, w, paintEnvRef.current ?? envRef.current);
       }
       requestRender();
       return;
@@ -927,7 +966,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     const cap = new THREE.MeshPhysicalMaterial({ color: CAP_HEX, roughness: 0.9, metalness: 0, envMapIntensity: 0, specularIntensity: 0 });
     for (const w of solids.walls) {
       const paint = new THREE.MeshPhysicalMaterial();
-      applyWallLook(paint, w, envRef.current);
+      applyWallLook(paint, w, paintEnvRef.current ?? envRef.current);
       const group = new THREE.Group();
       const full = slabObject(w, w.heightM, paint, reveal, exterior, cap);
       const stub = slabObject(w, w.stubHeightM, paint, reveal, exterior, cap);
@@ -1232,7 +1271,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         });
         if (opts.env !== undefined) {
           for (const e of wallsRef.current) {
-            e.paint.envMap = opts.env && e.paint.specularIntensity > 0 ? envRef.current : null;
+            e.paint.envMap = opts.env && (e.paint.specularIntensity > 0 || e.paint.clearcoat > 0) ? (paintEnvRef.current ?? envRef.current) : null;
             e.paint.needsUpdate = true;
           }
         }
