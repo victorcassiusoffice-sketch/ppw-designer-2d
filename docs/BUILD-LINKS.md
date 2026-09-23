@@ -1,12 +1,12 @@
 <!-- verified-preview:start -->
 ## Current feature deployment
 
-Updated: 2026-09-23 09:55 (local) | commit: 08ada24
+Updated: 2026-09-23 10:00 (local) | commit: be8057a
 
-- Designer: https://ppw-designer-2d-rc4uga711-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-rc4uga711-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: All building/paint/mobile/garden/movement work plus paginated live catalog and explicit cloud save/update/load using existing APIs.
-- Verification: Vercel success; both Designer and TintEX routes HTTP 200; standard Designer rendered in browser; typecheck and Vitest CI green. No live cloud writes made.
+- Designer: https://ppw-designer-2d-nevji2gjg-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-nevji2gjg-victor-ppw.vercel.app/designer?demo=tintex
+- Landed: Paint finishes, phone controls, stacked floors, stairs with automatic room fitting and slab openings, windows, roofs/felt, gardens, smoother movement, and existing catalog/cloud APIs.
+- Verification: Both routes HTTP 200. Deployed TintEX rendered desktop and 390 px phone. Phone automatic stair fit succeeds with Ground-to-First connection; earlier deployed lawn placement and felt roof visually verified. 226 test files / 2666 tests pass in GitHub CI; client/API typechecks pass. Public catalog responds with 14 products. Production Lighthouse audit remains failing independently.
 - Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
 - Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.
