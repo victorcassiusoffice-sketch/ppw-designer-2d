@@ -21,7 +21,7 @@ My designs uses the existing `/api/designs` GET/POST/PUT endpoints. Cloud loads 
 
 ## Validation and limits
 
-Client/API typechecks, changed-file lint and the production build pass. Final application commit `be8057a` passes GitHub's complete 226-file / 2,666-test suite and root/API typechecks. Backend requests are covered with mocks; the deployed public catalog also responded with 14 products. No live customer records were written during testing. The separate Lighthouse workflow still audits the unchanged production domain and reports existing performance/PWA/SEO failures.
+Client/API typechecks, changed-file lint and the production build pass. Final application commit `f35731c` passes GitHub's complete 226-file / 2,666-test suite and root/API typechecks. Backend requests are covered with mocks; the deployed public catalog also responded with 14 products. No live customer records were written during testing. The separate Lighthouse workflow still audits the unchanged production domain and reports existing performance/PWA/SEO failures.
 
 Local phone visual checks confirmed two stacked storeys and a flat felt roof. Further localhost browser actions were blocked by automatic approval review. The deployed feature previews were accessible: standard and TintEX routes returned HTTP 200, desktop and phone layouts rendered, garden placement succeeded, and the final phone stair-fit action created a Ground-to-First connection with editable dimensions. Deployment-specific verification is recorded in BUILD-LINKS.md.
 
