@@ -1,12 +1,13 @@
 <!-- verified-preview:start -->
 ## Current feature deployment
 
-Updated: 2026-09-23 10:08 (local) | commit: f35731c
+Updated: 2026-09-23 10:10 (local) | commit: f35731c
 
 - Designer: https://ppw-designer-2d-i7un0iek8-victor-ppw.vercel.app/designer
 - TintEX: https://ppw-designer-2d-i7un0iek8-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: Paint, phone drawing/chrome, stacked floors/stairs/windows, roofs/felt, gardens, smoother movement, and existing catalog/cloud APIs; automatic stair fitting and corrected floor-height labels.
-- Verification: Vercel success; both routes HTTP 200. App feature build reviewed at desktop and 390 px phone, including stair fit/plan footprint, garden placement and felt roof. Final feature CI typechecks and all 2666 tests pass. Public catalog API responds. Cloud writes mocked; unchanged production Lighthouse audit remains failing.
+- Landed: All paint/mobile/building/garden/movement/backend changes and corrected selected-floor height label.
+- Verification: Vercel success and both routes HTTP 200. The newest hostname timed out in the in-app browser; use the browser-verified feature fallback below if needed. Feature app tested at desktop and 390 px phone; stairs, plan footprint, garden placement and felt roof reviewed. Final code passes client/API types and 2666 tests. Cloud writes mocked. Separate production Lighthouse audit still fails.
+- Browser-verified feature fallback (be8057a, all features; preceding the floor-label text correction): https://ppw-designer-2d-nevji2gjg-victor-ppw.vercel.app/designer and https://ppw-designer-2d-nevji2gjg-victor-ppw.vercel.app/designer?demo=tintex
 - Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
 - Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.
