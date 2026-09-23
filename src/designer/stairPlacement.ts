@@ -76,3 +76,23 @@ export function validateStairPlacement(property: Property, stair: BuildingStair)
 export function stairPlacementFits(property: Property, stair: BuildingStair): boolean {
   return validateStairPlacement(property, stair).ok;
 }
+
+/** A keyboard/touch shortcut: try the room centre, then nearby clear positions. */
+export function fitStairInRoom(property: Property, roomId: string, template: BuildingStair): BuildingStair | null {
+  const room = property.rooms.find((entry) => entry.id === roomId);
+  if (!room || room.polygon.length < 3) return null;
+  const xs = room.polygon.map((p) => p.x), ys = room.polygon.map((p) => p.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+  const centre = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+  const points = [centre];
+  // Bound work even for a very large property. Prefer points nearest the centre.
+  for (let ix = 1; ix < 16; ix++) for (let iy = 1; iy < 16; iy++) {
+    points.push({ x: minX + (maxX - minX) * ix / 16, y: minY + (maxY - minY) * iy / 16 });
+  }
+  points.sort((a, b) => Math.hypot(a.x - centre.x, a.y - centre.y) - Math.hypot(b.x - centre.x, b.y - centre.y));
+  for (const point of points) for (const rotation of [template.rotation, (template.rotation + 90) % 360]) {
+    const stair = { ...template, x: point.x, y: point.y, rotation };
+    if (stairFootprintInsideRoom(stairFootprint(stair), room.polygon) && validateStairPlacement(property, stair).ok) return stair;
+  }
+  return null;
+}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { usePropertyStore } from '../store/propertyStore';
 import { activeLevelIdOf, isRoofLevel } from '../designer/levels';
-import { validateStairPlacement } from '../designer/stairPlacement';
+import { fitStairInRoom, validateStairPlacement } from '../designer/stairPlacement';
 import {
   buildingLevels, levelHeightM, MAX_LEVEL_HEIGHT_M, MIN_LEVEL_HEIGHT_M,
   roofConfigOf, stairRiseM, type BuildingStair, type RoofConfig,
@@ -119,6 +119,18 @@ export function BuildingControls({
     return updated;
   }
 
+  function fitStairs() {
+    if (!canPlaceStairs) return;
+    const rise = upperStairLevel.elevationM - lowerStairLevel.elevationM;
+    const fitted = fitStairInRoom(property, property.activeRoomId, {
+      id: 'preview', fromLevelId: lowerStairLevel.level.id, toLevelId: upperStairLevel.level.id,
+      x: 0, y: 0, widthM: 1, runM: Math.max(3, rise * 1.2), rotation: 0,
+    });
+    if (!fitted) { setStairError('No clear fit in this room on both floors. Choose a larger room or use tap placement.'); return; }
+    const id = usePropertyStore.getState().addStair(fitted);
+    if (id) { setSelectedStairId(id); setStairError(null); onToolChange('select'); }
+  }
+
   const toolHelp = tool === 'stair'
     ? canPlaceStairs
       ? `Tap the floor to place stairs from ${lowerStairLevel.level.name} to ${upperStairLevel.level.name}.`
@@ -197,6 +209,7 @@ export function BuildingControls({
 
         <fieldset className="min-w-0 rounded-lg border border-ppw-rim p-3">
           <legend className="px-1 text-xs font-semibold">Stairs</legend>
+          {canPlaceStairs && <button type="button" className={`${BUTTON} mb-2 w-full`} onClick={fitStairs}>Fit stairs in room</button>}
           {stair ? <>
             <select className={`${FIELD} mb-2 w-full`} aria-label="Stair to edit" data-testid="building-stair-select" value={stair.id} onChange={(event) => {
               setSelectedStairId(event.target.value);
@@ -217,8 +230,8 @@ export function BuildingControls({
               <button type="button" className={`${BUTTON} border-ppw-clay`} data-testid="building-stair-delete" onClick={() => { usePropertyStore.getState().removeStair(stair.id); setSelectedStairId(null); }}>Delete stair</button>
             </div>
             <p className="mt-2 text-[11px] text-[#5b5852]">Rise {stairRiseM(property, stair).toFixed(2)} m · rotation {stair.rotation}°</p>
-            {stairError && <p className="mt-2 text-xs text-ppw-coral" role="alert">{stairError}</p>}
           </> : <p className="text-xs text-[#5b5852]">{canPlaceStairs ? 'Choose Stairs in the tool selector, then tap this floor.' : 'Add a second floor, select either connected floor, then choose Stairs.'}</p>}
+          {stairError && <p className="mt-2 text-xs text-ppw-coral" role="alert">{stairError}</p>}
           <p className="mt-2 text-[11px] text-[#5b5852]" title="These dimensions describe a concept model. Stair structure, headroom and compliance need a qualified building professional.">Stair dimensions are for layout planning.</p>
         </fieldset>
       </div>

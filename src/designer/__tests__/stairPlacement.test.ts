@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { BuildingStair } from '../building';
-import { stairFootprintInsideRoom, stairPlacementFits, validateStairPlacement } from '../stairPlacement';
+import { fitStairInRoom, stairFootprintInsideRoom, stairPlacementFits, validateStairPlacement } from '../stairPlacement';
 import type { Property } from '../../store/propertyStore';
 
 const room = [{ x: 0, y: 0 }, { x: 6, y: 0 }, { x: 6, y: 6 }, { x: 0, y: 6 }];
@@ -12,6 +12,14 @@ const property: Property = {
 };
 
 describe('stair placement', () => {
+  it('finds a safe fit in the TintEX-sized room and refuses a missing destination', () => {
+    const polygon = [{ x: 0, y: 0 }, { x: 5.5, y: 0 }, { x: 5.5, y: 4 }, { x: 0, y: 4 }];
+    const p = { ...property, rooms: property.rooms.map((r) => ({ ...r, polygon })) };
+    const fitted = fitStairInRoom(p, 'b', { ...stair, runM: 3.456 });
+    expect(fitted).toMatchObject({ x: 2.75, y: 2 });
+    expect(validateStairPlacement(p, fitted!)).toEqual({ ok: true });
+    expect(fitStairInRoom({ ...p, rooms: p.rooms.slice(0, 1) }, 'a', stair)).toBeNull();
+  });
   it('rejects a flight crossing a concave notch despite all four corners being inside', () => {
     const notched = [{ x: 0, y: 0 }, { x: 6, y: 0 }, { x: 6, y: 6 }, { x: 4, y: 6 }, { x: 4, y: 2 }, { x: 2, y: 2 }, { x: 2, y: 6 }, { x: 0, y: 6 }];
     const across = [{ x: 1, y: 3 }, { x: 5, y: 3 }, { x: 5, y: 4 }, { x: 1, y: 4 }];
