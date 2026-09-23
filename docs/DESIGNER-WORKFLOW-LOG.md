@@ -4,13 +4,14 @@ Updated: 23 September 2026 (Mauritius). Owner: Victor.
 
 ## Resume here
 
-Current checkpoint: **A stronger architectural redesign is now IN PROGRESS from clean `bb5612f`; the previous preview below remains the verified fallback. Previous UI refinement shipped and verified. Application commit `732f50993ebabba990676c0a790c42a59c639948`; Vercel deployment `6612390749`.** Read this file, then `docs/BUILD-LINKS.md` and `docs/ROOM-DESIGNER-BUILD-NOTES.md` before continuing. The follow-up documentation commit only records these results.
+Current checkpoint: **Architectural redesign deployed and browser-verified. Application commit `e6c4e82f14b1f6c0bda3aa3805f5600e82e211ef`; Vercel deployment `6614851004`.** The following documentation commit records verification only. Continue from the specific backlog below.
 
 - Active checkout: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`
 - Branch: **`cursor/feat-3d-flooring-hud-bc95` only**. Draft PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
-- Starting checkpoint: `f9a6ab8` (clean working tree).
-- Browser-verified feature preview: https://ppw-designer-2d-o393v8gqj-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-o393v8gqj-victor-ppw.vercel.app/designer?demo=tintex
+- Original refinement started at `f9a6ab8`; this architectural redesign started clean at `bb5612f`.
+- Browser-verified feature preview: https://ppw-designer-2d-3rl6v0t4b-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-3rl6v0t4b-victor-ppw.vercel.app/designer?demo=tintex
+- Furnished show home: https://ppw-designer-2d-3rl6v0t4b-victor-ppw.vercel.app/designer?demo=courts
 - Earlier verified refinement fallback (`b70c9fd`): `https://ppw-designer-2d-m7kiu3e7s-victor-ppw.vercel.app/designer?demo=tintex`.
 - **Never push or merge main.** Production https://designer.ppwellness.co stays untouched. Handoff §7 requires Victor's explicit emergency instruction.
 - Preserve the original checkout at `C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d`, its other branch and Victor's dirty files. Work in the separate checkout above.
@@ -43,7 +44,7 @@ Earlier validation: 226 test files / 2,666 tests passed; client/API typechecks a
 - [x] Phone controls checked at 360 and 390 pixels; desktop at 1280 pixels.
 - [x] Existing product placement, drag/drop and floor-material paths retained; catalog/placement tests and phone panel placement passed.
 
-## Current work sequence
+## Previous refinement work sequence (completed before the architectural pass)
 
 1. Record the starting state and inspect existing controls. **Done.**
 2. Consolidate 3D house-building controls into a compact workspace with contextual details and clear camera views. **Implemented.**
@@ -69,18 +70,19 @@ Garden terrain consists of rectangular patches, including raised patches. Roofs 
 
 ### Current file ownership / continuation details
 
-All agents and integration work are complete for this pass. Changed files: `src/App.tsx`, `src/store/placementIntentStore.ts`, `src/components/RoomView3D.tsx`, new `RoomViewControls.tsx`, `BuildingControls.tsx`, desktop/mobile catalog components, new `catalogPresentation.ts`, and the building scene roof-editing regression. Relevant tests are under `src/components/__tests__` and `src/designer/__tests__/buildingScene.test.ts`.
+All agents are complete and files integrated. Main application commits in this pass: `9131373` (workspace/room builder/rendering/furniture), `91ad768` (dark panels/phone solar/camera typography), and `e6c4e82` (underlying plan focus isolation and paint caption contrast). Earlier application commits remain documented above.
 
-Validation logs live in the parent `work` folder: `sims-refinement-build.log` and `sims-refinement-tests.log`. The workflow document is ignored by the repo's broad docs pattern, so stage it deliberately with `git add -f docs/DESIGNER-WORKFLOW-LOG.md`.
+Main source: `HouseWorkspace.tsx` / `houseWorkspace.css` own the dark layout. `RoomView3D.tsx` owns gestures and tool transitions. `BuildingControls.tsx` supports the inline inspector. Room gestures/atomic commits are in `designer/roomBuildGesture.ts` and `lib/roomBuildActions.ts`. `ThreeStage.tsx`, `renderPresentation.ts`, `furniturePreview.ts` and `data/dimensionalPreview.ts` own the two lighting profiles and clearly labeled furniture approximations. Existing shop/energy/quote APIs are unchanged. The 2D plan stays mounted but inert while covered by 3D; its controls return when switching to Plan.
 
-Audit clarification: this checkout's existing “moving the house” interaction is camera orbit/pan/zoom, plus moving individual products; no atomic whole-building translation command was found. Those existing actions are preserved. The new Move view makes camera panning explicit and avoids grabbing furniture. Do not claim a new whole-building translate operation.
+Validation logs in parent `work`: `architectural-final-tests.log` (235 files / 2,711 tests), `architectural-focus-tests.log` (21 follow-up workspace/phone tests), `architectural-focus-build.log`. Client/API typechecks, scoped ESLint and final production build passed. Separate Lighthouse workflow still audits unchanged production and has the pre-existing failure. No customer cloud writes or quote submissions during QA.
 
 ### Next concrete continuation
 
-1. Open the active checkout, confirm this same branch and inspect `git status`; preserve any new user changes.
-2. Open the final preview above. This pass has no pending implementation or deployment step. Apply Victor's next requested refinement from this checkpoint.
-3. If continuing the broader visual direction, use the known limits as the backlog: richer licensed/catalog furniture models, joined roofs and pitched solar mounting, freeform terrain, and an explicit whole-building move operation if requested. Keep existing plan/quote/solar data paths; do not invent smart-home telemetry.
-4. After any new code chunk, validate, push only this feature branch, verify the new unique preview, and append the actual result here before stopping.
+1. Open this active checkout, verify the same feature branch and inspect git status; preserve any new user changes. Read this log and BUILD-LINKS before touching code.
+2. Open the furnished show home for furniture/lighting comparisons; TintEX is intentionally a paint demonstration and remains unfurnished. The current feature is deployed; no unpushed implementation is left from this pass.
+3. Next realism work: replace remaining appliance boxes with verified manufacturer/appropriately licensed models, and improve room-specific staging/material detail. Existing Courts geometry is a dimensional preview, not exact product likeness. Do not represent generated imagery or demo telemetry as real backend data.
+4. Remaining Sims/building backlog: wall/room edge editing directly in 3D (rectangular room drag is implemented; arbitrary walls still use Plan), joined roofs and pitched-roof solar mounting, freeform terrain, and an atomic whole-building move if added. Existing Move view is camera panning; it is not whole-building translation. Floors/stairs/openings/garden/pan/item movement/solar paths already work and must be preserved.
+5. After each meaningful change validate, push only this feature branch, verify the unique Vercel deployment, update build links and append a real checkpoint before stopping. Never push/merge main or touch production without explicit handoff §7 authorization.
 
 ## Rules for the next continuation
 
@@ -97,7 +99,12 @@ Victor said the previous pass is still far from the references. Current target: 
 23 Sep validation checkpoint: full suite passed 234 files / 2706 tests. Additional furniture/presentation/Courts coverage passed 18 tests, including exact bounds, rotations/elevation, ray gaps and resource ownership. Client/API typechecks and changed-file ESLint passed. Final Vite build passed (existing large-chunk advisory only). Next: commit/push feature branch, obtain unique Vercel deployment, inspect desktop/phone plus room-drag/undo, furniture, paint and solar paths.
 
 23 Sep feature pushed: `91313733d15248bbcbeca83bcf65869575c000d9` on `cursor/feat-3d-flooring-hud-bc95` only. Architectural workspace, direct room construction, revised catalog, garden theme and 17 furniture previews are committed. Vercel is building; unique URL/browser checks pending. Full integration: 234 files / 2706 tests plus 18 focused furniture/profile/Courts checks, typechecks/lint/build green. No main or production changes.
-23 Sep first deployment QA: application9131373 deployed as6614450087 at https://ppw-designer-2d-4whmaszcq-victor-ppw.vercel.app. Both /designer and TintEX rendered at1280desktop/390phone. Direct drag added a9m2 room (41.3->50.3m2,3->4rooms); one Undo restored the original. Phone +Floor copied the rooms (15->30parts), and Undo restored. Courts show home rendered shaped furniture; sofa selection exposed rotation/duplicate/details plus the dimensional-preview note. Solar report opened with existing PVGIS metadata. No quote/cloud submissions. BUILD-LINKS and Desktop CURRENT-WORK-LINKS updated.
+23 Sep first deployment QA: application `9131373` deployed as `6614450087` at https://ppw-designer-2d-4whmaszcq-victor-ppw.vercel.app. Both /designer and TintEX rendered at 1280 px desktop / 390 px phone. Direct drag added a 9 m² room (41.3 → 50.3 m², 3 → 4 rooms); one Undo restored the original. Phone + Floor copied the rooms (15 → 30 parts), and Undo restored. Courts show home rendered shaped furniture; sofa selection exposed rotation/duplicate/details plus the dimensional-preview note. Solar report opened with existing PVGIS metadata. No quote/cloud submissions. BUILD-LINKS and Desktop CURRENT-WORK-LINKS updated.
 
-23 Sep preview-driven polish: corrected inherited camera-control font sizing, moved/restyled the help launcher to the dark left rail, themed existing finish/energy panels without changing paint swatches, and placed the existing energy summary inside a focused phone details sheet. Final full suite235files/2711tests passed; typechecks, lint and final Vite build passed. Next: push this polish, verify its unique Vercel URLs and phone solar sheet, then refresh all continuation files with the final application SHA.
-23 Sep polish deployment:91ad768 succeeded as6614682207 at https://ppw-designer-2d-2gkxzjc54-victor-ppw.vercel.app. TintEX checked1280x900 desktop and360x800 phone; new phone Solar opens the bounded navy sheet; desktop Paint preserves studio lighting/colour swatches in its dark inspector. Standard route checked390x844 with no horizontal overflow. Final review found underlying plan controls still exposed to keyboard focus; an inert/aria-hidden boundary is being added only while3D overlays them. The same plan components stay mounted, and the visible3D header retains Cart. Also increasing caption contrast over the light paint scene.21targeted workspace/phone tests pass; typecheck/lint and final focus build passed. Next: push focus fix, verify latest unique routes/accessibility tree, finalize links/log.
+23 Sep preview-driven polish: corrected inherited camera-control font sizing, moved/restyled the help launcher to the dark left rail, themed existing finish/energy panels without changing paint swatches, and placed the existing energy summary inside a focused phone details sheet. Final full suite: 235 files / 2,711 tests passed; typechecks, lint and final Vite build passed. Next: push this polish, verify its unique Vercel URLs and phone solar sheet, then refresh all continuation files with the final application SHA.
+23 Sep polish deployment: `91ad768` succeeded as `6614682207` at https://ppw-designer-2d-2gkxzjc54-victor-ppw.vercel.app. TintEX checked at 1280×900 desktop and 360×800 phone; new phone Solar opens the bounded navy sheet; desktop Paint preserves studio lighting/colour swatches in its dark inspector. Standard route checked at 390×844 with no horizontal overflow. Final review found underlying plan controls still exposed to keyboard focus; an inert/aria-hidden boundary is being added only while 3D overlays them. The same plan components stay mounted, and the visible 3D header retains Cart. Also increasing caption contrast over the light paint scene.21 targeted workspace/phone tests pass; typecheck/lint and final focus build passed. Next: push focus fix, verify latest unique routes/accessibility tree, finalize links/log.
+
+23 Sep final deployment checkpoint: `e6c4e82f14b1f6c0bda3aa3805f5600e82e211ef` deployed successfully as `6614851004` at https://ppw-designer-2d-3rl6v0t4b-victor-ppw.vercel.app. See final verification below. No implementation work left uncommitted; only the continuation documentation follows.
+Final verification: standard /designer rendered at 1280 px desktop and 390×844 phone (no horizontal overflow); TintEX rendered at 1280×900 and 360×800. Covered plan toolbar/canvas controls are absent from the 3D accessibility tree; choosing 2D Plan restores them. Phone Solar opens the focused dark sheet, and Roof closes the sheet to reveal the editing slab. Courts rendered all 58 scene parts and the new furniture previews; no console errors observed in that final view. TintEX restored to Ground/Dollhouse for exploration. Temporary QA tabs closed, viewport override reset; final TintEX and furnished tabs retained. BUILD-LINKS, Desktop CURRENT-WORK-LINKS and both handoff pointers updated. Final regression: 235 files / 2,711 tests plus 21 follow-up workspace/phone tests; client/API typechecks, lint and final build passed. No main push/merge, production deploy, customer cloud save or quote submission.
+
+Final GitHub checks for `e6c4e82`: client/API typecheck, Vitest, secret scan and Vercel preview succeeded. The separate Lighthouse job failed against unchanged production as previously recorded. Original checkout branch remains `feat/designer-3d-sims-paint-2026-09-17`; Victor's files were preserved. Final documentation commit records this verification and changes no application code.

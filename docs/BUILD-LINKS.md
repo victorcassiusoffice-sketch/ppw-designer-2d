@@ -1,12 +1,12 @@
 <!-- verified-preview:start -->
 ## Current feature deployment
 
-Updated: 2026-09-23 17:11 (local) | commit: 91ad768609325ab7ac0c1a53cdbf7de1c7cd5356
+Updated: 2026-09-23 17:17 (local) | commit: e6c4e82f14b1f6c0bda3aa3805f5600e82e211ef
 
-- Designer: https://ppw-designer-2d-2gkxzjc54-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-2gkxzjc54-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: Architectural 3D-first workspace, direct room drawing/undo, shaped furniture; dark finish and solar panels, focused phone solar sheet, compact camera controls.
-- Verification: TintEX rendered at1280x900 and360x800; standard route rendered at390x844 without horizontal overflow. Phone Solar opens the focused dark sheet; desktop Paint retains finish and swatch controls. Prior deployment verified room drag/undo, floor copy/undo and furniture selection.235files/2711tests, typechecks/lint/build passed. Final keyboard isolation fix in progress.
+- Designer: https://ppw-designer-2d-3rl6v0t4b-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-3rl6v0t4b-victor-ppw.vercel.app/designer?demo=tintex
+- Landed: Architectural 3D-first workspace, desktop/phone contextual controls, snapped 3D room building with one Undo, detailed dimensional previews for17existing furniture products, coordinated finish/garden/catalog/solar panels, keyboard focus isolation. Original plan/save/cart/quote and solar paths preserved.
+- Verification: Vercel6614851004 successful. Final standard route checked1280desktop/390phone; TintEX1280x900/360x800. Plan controls absent from3D accessibility tree and restored inPlan; phone Solar opens focused sheet and Roof returns to visible slab. Furnished Courts model rendered; no browser console errors observed. Earlier same-code functional checks:9m2room creation + single Undo, phone floor copy + Undo, sofa selection. Full235files/2711tests,21follow-up tests,typechecks,lint,build passed. Separate production Lighthouse remains its existing failure.
 - Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
 - Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.
