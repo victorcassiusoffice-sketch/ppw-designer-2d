@@ -78,7 +78,31 @@ describe('assembled building solids', () => {
     expect(floor.stairs?.[0].baseM).toBe(0);
     const roof = buildingSolids({ ...property(), activeLevelId: 'roof', activeRoomId: 'roof-upper' }, sceneForLevel, 'floor', false);
     expect(roof.floors[0].levelId).toBe('roof');
-    expect(roof.roofs).toHaveLength(1);
+    expect(roof.roofs).toEqual([]);
+  });
+
+  it.each(['flat', 'gable', 'shed'] as const)('keeps thin PV panels accessible on the roof editing slab with a %s covering configured', (style) => {
+    const p = { ...property(), activeLevelId: 'roof', activeRoomId: 'roof-upper' };
+    p.roof = { style, material: 'felt', pitchDeg: 25, overhangM: 0.25 };
+    const withPanel = (source: Property): SceneInput => {
+      const scene = sceneForLevel(source);
+      return { ...scene, rooms: scene.rooms.map((room) => ({ ...room, items: (room.items ?? []).map((item) =>
+        item.instanceId === 'roof-item'
+          ? { ...item, lengthCm: 190.3, widthCm: 113.4, heightCm: 3, placement: 'roof' }
+          : item,
+      ) })) };
+    };
+    const editing = buildingSolids(p, withPanel, 'floor', true);
+    const panel = editing.items.find((item) => item.instanceId === 'roof-item')!;
+    expect(editing.floors).toHaveLength(1);
+    expect(editing.floors[0].levelId).toBe('roof');
+    expect(panel.z0).toBeCloseTo(editing.activeElevationM!);
+    // The stage applies a minimum visible item height; this panel still sits
+    // wholly below the 8 cm flat roof covering without the editing cutaway.
+    expect(panel.z1 - panel.z0).toBeGreaterThan(0);
+    expect(panel.z1 - panel.z0).toBeLessThan(0.08);
+    expect(editing.roofs).toEqual([]);
+    expect(buildingSolids(p, withPanel, 'building', true).roofs).toHaveLength(1);
   });
 
   it('preserves invalid saved placements for repair but cuts no overlapping or out-of-room holes', () => {

@@ -39,7 +39,7 @@ import {
   type ReactNode,
 } from 'react';
 import { usePropertyStore, type Property, type Room } from '../store/propertyStore';
-import { useDesignerUIStore, type WallView } from '../store/designerUIStore';
+import { useDesignerUIStore } from '../store/designerUIStore';
 import { usePlacementIntentStore, isScreenTarget } from '../store/placementIntentStore';
 import { useCatalogStore } from '../store/catalogStore';
 import { rotateSelected, deleteSelected } from '../lib/placementActions';
@@ -67,7 +67,8 @@ import { findCladdingProduct } from '../data/claddingCatalog';
 import { getProductById, productImageUrl, productTopDownUrl } from '../data/products';
 import { productModelFor } from '../data/productModels';
 import { DEFAULT_WALL_HEIGHT_M, findWallPaintById, finishOfPaint, resolveWallColourHex } from '../data/wallPaints';
-import { WallHeightControl } from './WallHeightControl';
+import { RoomViewControls, type CameraView } from './RoomViewControls';
+import { useBelowMd } from '../lib/useBelowMd';
 import {
   boundsOf,
   buildScene,
@@ -132,10 +133,6 @@ export interface RoomView3DProps {
   style?: CSSProperties;
 }
 
-// Phone pass (2026-09-16): 40 px on the phone tier (the overlay is
-// full-screen there and a thumb needs it), 32 px inside the desktop card.
-const BTN =
-  'inline-flex h-10 min-w-[40px] md:h-8 md:min-w-[32px] items-center justify-center rounded-md border border-ppw-rim bg-ppw-chrome px-2 text-[12px] font-semibold text-ppw-charcoal shadow-sm hover:bg-[#f3f1ec] focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]';
 /** Selection card controls (overlay): 44 px on the phone, 36 px from md. */
 const SEL_BTN =
   'inline-flex h-11 md:h-9 items-center justify-center rounded-lg border px-3 text-[12px] font-semibold transition-colors duration-[120ms] ease-out focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]';
@@ -383,21 +380,6 @@ function hitKey(h: WallHit): string {
   return h.kind === 'edge' ? `e:${h.roomId}:${h.edgeIndex}` : `f:${h.wallId}`;
 }
 
-const WALL_VIEWS: Array<{ id: WallView; label: string; short: string; glyph: string; title: string }> = [
-  { id: 'up', label: 'Walls up', short: 'Up', glyph: '▮', title: 'Walls up — every wall stands' },
-  { id: 'cutaway', label: 'Cutaway', short: 'Cut', glyph: '◧', title: 'Cutaway — the walls nearest you drop so the room reads' },
-  { id: 'down', label: 'Walls down', short: 'Down', glyph: '▬', title: 'Walls down — look straight into the plan' },
-];
-
-/** The sun slider's range (P3): dawn to dusk in Mauritius, half-hour steps; off = the studio rig. */
-const SUN_HOUR_MIN = 6;
-const SUN_HOUR_MAX = 20;
-function sunHourLabel(h: number): string {
-  const hh = Math.floor(h);
-  const mm = Math.round((h - hh) * 60);
-  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-}
-
 export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hoverTag, onClose, onExpand, footer, caption, brushStrip, title, className = '', style }: RoomView3DProps): JSX.Element {
   const property = usePropertyStore((s) => s.property);
   const selectedInstanceId = usePropertyStore((s) => s.selectedInstanceId);
@@ -409,6 +391,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const setWallView = useDesignerUIStore((s) => s.setWallView);
   const sunHour = useDesignerUIStore((s) => s.sunHour);
   const setSunHour = useDesignerUIStore((s) => s.setSunHour);
+  const energyOpen = useDesignerUIStore((s) => s.energyPanelOpen);
+  const belowMd = useBelowMd();
+  const [panMode, setPanMode] = useState(false);
   // The merchant catalog arriving makes `m-` items resolvable — re-derive.
   const catalogVersion = useCatalogStore((s) => s.version);
   /** One-line result of the last stroke, shown as the caption for a moment. */
@@ -444,6 +429,23 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const baseDistanceRef = useRef(10);
   const level = activeLevelIdOf(property);
   const levelEntries = buildingLevels(property);
+  const onRoofLevel = isRoofLevel(levelEntries.find((entry) => entry.level.id === level)?.level);
+  // Solar products and the existing energy panel select the roof. Make that
+  // working surface visible, including when roof display was previously off.
+  useEffect(() => {
+    if (onRoofLevel) { setShowRoof(true); setBuildingView('floor'); }
+  }, [level, onRoofLevel]);
+  useEffect(() => {
+    if (tool !== 'hand' || armedProductId) {
+      setPanMode(false);
+      setConstructionTool('select');
+      setGardenPlacement(null);
+      setGardenOpen(false);
+    }
+  }, [tool, armedProductId]);
+  useEffect(() => {
+    if (energyOpen) { setConstructionTool('select'); setGardenPlacement(null); setGardenOpen(false); }
+  }, [energyOpen]);
   const activeHeight = levelHeightM(property, level) || DEFAULT_WALL_HEIGHT_M;
   const baseElevation = buildingView === 'floor' ? levelElevationM(property, level) : 0;
   const H = buildingView === 'building'
@@ -451,7 +453,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     : activeHeight;
 
   // Items are live in the workspace when no wall tool holds the click.
-  const itemsInteractive = variant === 'overlay' && !gardenPlacement && constructionTool === 'select' && !onPaintWall && !onPaintFloor && tool === 'hand' && backend === 'gl';
+  const itemsInteractive = variant === 'overlay' && !panMode && !gardenPlacement && constructionTool === 'select' && !onPaintWall && !onPaintFloor && tool === 'hand' && backend === 'gl';
   /**
    * Floor tool stroke (Sims tile paint): press anchors, drag grows a rect,
    * release commits once (one undo). Room/Shift fill still fire immediately.
@@ -686,7 +688,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     e.currentTarget.setPointerCapture(e.pointerId);
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.current.size === 1) {
-      if (orbitOnly) {
+      if (orbitOnly || panMode) {
         drag.current = { x: e.clientX, y: e.clientY, moved: false, pinchDist: 0 };
         return;
       }
@@ -830,7 +832,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     d.moved = true;
     d.x = e.clientX;
     d.y = e.clientY;
-    if (e.shiftKey) {
+    if ((panMode && e.buttons !== 2) || e.shiftKey) {
       setCamera((c) => c ? panOrbitCamera(c, dx, dy, size.height) : c);
       return;
     }
@@ -902,7 +904,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       d.pinchDist = 0;
       d.moved = true;
     }
-    if (!had || !d || cancelled || d.moved) return;
+    if (!had || !d || cancelled || d.moved || panMode) return;
     const p = localPoint(e);
     if (gardenPlacement && stageRef.current) {
       const point = stageRef.current.floorPoint(p.x, p.y);
@@ -998,6 +1000,43 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     setCamera({ ...fitted, azimuthRad: DEFAULT_AZIMUTH_RAD, elevationRad: DEFAULT_ELEVATION_RAD });
   };
 
+  function clearLocalTools() {
+    setConstructionTool('select');
+    setGardenPlacement(null);
+    setGardenOpen(false);
+    setHover(null);
+    setHoverItem(null);
+  }
+
+  function chooseCameraView(view: CameraView) {
+    if (!bounds) return;
+    const fitted = fitCamera(bounds, H, size.height > 0 ? size.width / size.height : 1.4);
+    fitted.target.z += baseElevation;
+    baseDistanceRef.current = fitted.distanceM;
+    setCamera({ ...fitted, elevationRad: view === 'above' ? 78 * Math.PI / 180 : view === 'front' ? 12 * Math.PI / 180 : 35 * Math.PI / 180,
+      azimuthRad: view === 'dollhouse' ? DEFAULT_AZIMUTH_RAD : 0 });
+  }
+
+  function togglePan() {
+    clearLocalTools();
+    usePlacementIntentStore.getState().setArmed(null);
+    useDesignerUIStore.getState().setTool('hand');
+    useDesignerUIStore.getState().setEnergyPanelOpen(false);
+    setPanMode(!panMode);
+  }
+
+  function quickTool(next: 'wallpaint' | 'floor' | 'energy') {
+    clearLocalTools();
+    setPanMode(false);
+    usePlacementIntentStore.getState().setArmed(null);
+    const ui = useDesignerUIStore.getState();
+    if (next === 'energy') {
+      ui.setTool('hand');
+      if (belowMd) window.dispatchEvent(new CustomEvent('ppw:open-menu', { detail: { section: 'energy' } }));
+      else ui.setEnergyPanelOpen(!energyOpen);
+    } else ui.setTool(tool === next ? 'hand' : next);
+  }
+
   // Overlay: Esc closes.
   useEffect(() => {
     if (variant !== 'overlay' || !onClose) return;
@@ -1006,12 +1045,26 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       // An input in the still-usable docked panel keeps its own Esc.
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+      // The open inspector owns Escape before the workspace does.
+      if (document.getElementById('building-details')) return;
+      if (gardenOpen || gardenPlacement) {
+        e.stopImmediatePropagation();
+        setGardenOpen(false);
+        setGardenPlacement(null);
+        return;
+      }
+      if (panMode || constructionTool !== 'select') {
+        e.stopImmediatePropagation();
+        setPanMode(false);
+        setConstructionTool('select');
+        return;
+      }
       e.stopPropagation();
       onClose();
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [variant, onClose]);
+  }, [variant, onClose, gardenOpen, gardenPlacement, panMode, constructionTool]);
 
   const hoverText = describeHit(property, hover, onPaintWall && hoverTag && hover ? hoverTag(hover) : null);
   const empty = !bounds;
@@ -1022,7 +1075,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const selectedItem = selectedInstanceId ? findPlacedItem(property, selectedInstanceId) : null;
   const selectedProduct = selectedItem ? getProductById(selectedItem.productId) : undefined;
   const armedProduct = armedProductId ? getProductById(armedProductId) : undefined;
-  const defaultCaption = onPaintWall
+  const defaultCaption = panMode ? 'Drag anywhere to move the view · tap Move view again to select furniture'
+    : onPaintWall
     ? 'Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase'
     : onPaintFloor
       ? 'Click a tile · drag a rectangle · Shift = whole room · Ctrl = erase'
@@ -1075,7 +1129,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         role="img"
         aria-label={viewLabel}
         className="absolute inset-0"
-        style={{ cursor: hover ? 'pointer' : hoverItem ? 'move' : onPaintFloor ? 'pointer' : armedProduct && itemsInteractive ? 'copy' : 'grab' }}
+        style={{ cursor: panMode ? 'move' : hover ? 'pointer' : hoverItem ? 'move' : onPaintFloor ? 'pointer' : armedProduct && itemsInteractive ? 'copy' : 'grab' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={(e) => endPointer(e, false)}
@@ -1091,93 +1145,22 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           Draw a room to see it in 3D
         </p>
       )}
-      {/* Orbit controls. */}
-      <div className="absolute right-2 top-2 flex gap-1">
-        <button type="button" className={BTN} onClick={() => rotate(Math.PI / 4)} title="Rotate left" aria-label="Rotate left" data-testid="wallpaint-3d-rotate-left">
-          ↺
-        </button>
-        <button type="button" className={BTN} onClick={() => rotate(-Math.PI / 4)} title="Rotate right" aria-label="Rotate right" data-testid="wallpaint-3d-rotate-right">
-          ↻
-        </button>
-        <button type="button" className={BTN} onClick={refit} title="Fit the whole plan" aria-label="Fit" data-testid="wallpaint-3d-fit">
-          Fit
-        </button>
-        {/* Walls Up / Cutaway / Down — The Sims' wall modes (2026-09-17); the workspace only, the card is too small. */}
-        {variant === 'overlay' && (
-        <div className="ml-1 inline-flex overflow-hidden rounded-md border border-ppw-rim bg-ppw-chrome shadow-sm" role="group" aria-label="Wall view" data-testid="view3d-wall-view">
-          {WALL_VIEWS.map((v) => (
-            <button
-              key={v.id}
-              type="button"
-              className={`inline-flex h-10 min-w-[36px] items-center justify-center px-2 text-[13px] font-semibold md:h-8 md:min-w-[30px] ${
-                wallView === v.id ? 'bg-ppw-inkDeep text-ppw-paper' : 'text-ppw-charcoal hover:bg-[#f3f1ec]'
-              } focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]`}
-              onClick={() => setWallView(v.id)}
-              title={v.title}
-              aria-label={v.label}
-              aria-pressed={wallView === v.id}
-              data-testid={`view3d-walls-${v.id}`}
-            >
-              <span aria-hidden="true" className="hidden md:inline">{v.glyph}</span>
-              <span aria-hidden="true" className="text-[11px] md:hidden">{v.short}</span>
-            </button>
-          ))}
-        </div>
-        )}
-        {/* The sun (P3, 2026-09-19): off = the colour-true studio rig; on = the real Mauritian sun by the hour, lamps after dark. */}
-        {variant === 'overlay' && backend === 'gl' && (
-          <div
-            className="ml-1 inline-flex h-10 items-center gap-1.5 rounded-md border border-ppw-rim bg-ppw-chrome px-2 shadow-sm md:h-8"
-            role="group"
-            aria-label="Sun"
-            data-testid="view3d-sun"
-          >
-            <button
-              type="button"
-              className={`inline-flex h-7 min-w-[28px] items-center justify-center rounded px-1.5 text-[12px] font-semibold ${sunHour === null ? 'text-ppw-charcoal hover:bg-[#f3f1ec]' : 'bg-ppw-inkDeep text-ppw-paper'}`}
-              onClick={() => setSunHour(sunHour === null ? 15.5 : null)}
-              title={sunHour === null ? 'Sun — light the room by the time of day (colours stay the chip until you do)' : 'Sun off — back to the colour-true daylight'}
-              aria-pressed={sunHour !== null}
-              data-testid="view3d-sun-toggle"
-            >
-              <span aria-hidden="true">☀</span>
-            </button>
-            {sunHour !== null && (
-              <>
-                <input
-                  type="range"
-                  min={SUN_HOUR_MIN}
-                  max={SUN_HOUR_MAX}
-                  step={0.5}
-                  value={sunHour}
-                  onChange={(e) => setSunHour(Number(e.target.value))}
-                  className="h-7 w-[92px] accent-[#37362f] md:w-[110px]"
-                  aria-label="Time of day"
-                  data-testid="view3d-sun-hour"
-                />
-                <span className="w-[38px] text-[11px] font-semibold tabular-nums text-ppw-charcoal" data-testid="view3d-sun-label">
-                  {sunHourLabel(sunHour)}
-                </span>
-              </>
-            )}
-          </div>
-        )}
-        {variant === 'card' && onExpand && (
-          <button type="button" className={BTN} onClick={onExpand} title="Open the big room view" aria-label="Expand the room view" data-testid="wallpaint-3d-expand">
-            ⤢
-          </button>
-        )}
-        {variant === 'overlay' && onClose && (
-          <button type="button" className={`${BTN} bg-ppw-inkDeep text-ppw-paper hover:bg-[#3a3835]`} onClick={onClose} title="Back to the plan (Esc)" aria-label="Back to the plan" data-testid="wallpaint-3d-close">
-            Plan
-          </button>
-        )}
-      </div>
+      <RoomViewControls workspace={variant === 'overlay'} pan={panMode} onPan={togglePan}
+        onRotate={rotate} onZoom={zoomBy} onFit={refit} onView={chooseCameraView}
+        wallView={wallView} onWallView={setWallView} hasWalls={solids.walls.length > 0 && !onRoofLevel}
+        sunAvailable={backend === 'gl'} sunHour={sunHour} onSunHour={setSunHour}
+        onClose={onClose} onExpand={onExpand} />
+      {variant === 'overlay' && <div className="absolute left-2 top-2 flex rounded-xl border border-white/80 bg-[#fafaf7]/95 p-1 shadow-[0_3px_18px_rgba(35,44,40,0.12)]" role="group" aria-label="Finishes and energy">
+        {([['wallpaint', 'Paint'], ['floor', 'Floor'], ['energy', 'Solar']] as const).map(([id, label]) => <button key={id} type="button"
+          className={`inline-flex h-11 items-center justify-center rounded-lg px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal md:h-9 ${tool === id || id === 'energy' && energyOpen ? 'bg-[#294e47] text-white' : 'text-[#37362f] hover:bg-[#e9eee9]'}`}
+          aria-label={id === 'energy' ? 'Solar and energy' : `${label} finishes`} aria-pressed={tool === id || id === 'energy' && energyOpen}
+          data-testid={`view3d-quick-${id}`} onClick={() => quickTool(id)}>{label}</button>)}
+      </div>}
       {/* The selection's card (overlay, item tools): what it is, turn it, remove it —
           the same actions the plan's keyboard runs, so 2D follows. */}
       {variant === 'overlay' && itemsInteractive && selectedItem && selectedProduct && (
         <div
-          className="absolute left-2 top-2 flex max-w-[calc(100%-200px)] flex-wrap items-center gap-2 rounded-xl border border-ppw-rim bg-ppw-chrome px-3 py-2 shadow-[0_12px_32px_rgba(42,41,38,0.18)]"
+          className="absolute bottom-[145px] left-2 right-2 flex flex-wrap items-center gap-2 md:left-auto md:max-w-sm rounded-xl border border-ppw-rim bg-ppw-chrome px-3 py-2 shadow-[0_12px_32px_rgba(42,41,38,0.18)]"
           data-testid="view3d-selection"
         >
           <span className="min-w-0 truncate text-[12px] font-semibold text-[#37362f]">{selectedProduct.name}</span>
@@ -1264,47 +1247,13 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       }}
       data-testid="wallpaint-3d-overlay"
       role="region"
-      aria-label="Room view in 3D"
+      aria-label={title ?? "Room view in 3D"}
     >
-      <div className="flex items-center justify-between gap-2 border-b border-ppw-rim bg-ppw-chrome px-3 py-1.5">
-        <div className="min-w-0">
-          <p className="text-[13px] font-semibold leading-tight text-[#37362f]">{title ?? '3D room view'}</p>
-          <p className="hidden truncate text-[11px] font-medium leading-tight text-ppw-charcoal md:block">
-            {onPaintWall
-              ? 'Drag to look around · pinch or scroll to zoom · click a wall to paint it'
-              : onPaintFloor
-                ? 'Drag to look around · pinch or scroll to zoom · click or drag the floor to lay it'
-                : 'Drag to look around · pinch or scroll to zoom · tap an item to select it, drag it to move it'}
-          </p>
-        </div>
-        {footer && (
-          <p className="shrink-0 text-[12px] font-semibold tabular-nums text-[#37362f]" data-testid="wallpaint-3d-footer">
-            {footer}
-          </p>
-        )}
-      </div>
-      <BuildingControls view={buildingView} onViewChange={setBuildingView} showRoof={showRoof} onShowRoofChange={setShowRoof} tool={constructionTool} onToolChange={(next) => { useDesignerUIStore.getState().setTool('hand'); usePlacementIntentStore.getState().setArmed(null); setConstructionTool(next); setGardenPlacement(null); }} gardenOpen={gardenOpen} onGardenToggle={() => { useDesignerUIStore.getState().setTool('hand'); usePlacementIntentStore.getState().setArmed(null); usePropertyStore.getState().setActiveLevel('ground'); setGardenOpen((open) => !open); setConstructionTool('select'); }} />
+      <BuildingControls view={buildingView} onViewChange={setBuildingView} showRoof={showRoof} onShowRoofChange={setShowRoof} tool={constructionTool} onToolChange={(next) => { useDesignerUIStore.getState().setTool('hand'); usePlacementIntentStore.getState().setArmed(null); setConstructionTool(next); setGardenPlacement(null); setGardenOpen(false); setPanMode(false); useDesignerUIStore.getState().setEnergyPanelOpen(false); }} gardenOpen={gardenOpen} onGardenToggle={() => { useDesignerUIStore.getState().setTool('hand'); usePlacementIntentStore.getState().setArmed(null); usePropertyStore.getState().setActiveLevel('ground'); setGardenOpen(!gardenOpen); setConstructionTool('select'); setPanMode(false); useDesignerUIStore.getState().setEnergyPanelOpen(false); }} />
       {gardenOpen && <div className="absolute inset-x-0 bottom-0 z-30 max-h-[52%] overflow-y-auto border-t border-ppw-rim bg-ppw-chrome shadow-xl md:left-auto md:top-24 md:w-80 md:max-h-[75%]"><GardenPanel onClose={() => { setGardenOpen(false); setGardenPlacement(null); }} onRequestPlacement={(intent) => { usePropertyStore.getState().setActiveLevel('ground'); setGardenPlacement(intent); setGardenOpen(false); }} /></div>}
       {gardenPlacement && <p role="status" className="border-b border-ppw-rim bg-white px-3 py-1 text-xs">Tap the ground to place this garden element. <button className="underline" onClick={() => setGardenPlacement(null)}>Cancel</button></p>}
-      {solids.walls.length > 0 && (
-        <div
-          className="z-10 flex items-center justify-end gap-2 max-md:pointer-events-none max-md:absolute max-md:left-0 max-md:top-1/2 max-md:w-max max-md:-translate-y-1/2 max-md:border-0 max-md:bg-transparent max-md:p-0 md:justify-between md:border-b md:border-ppw-rim md:bg-ppw-chrome md:px-3 md:py-1.5"
-          data-testid="view3d-wall-height"
-        >
-          <span className="hidden text-[11px] font-semibold uppercase tracking-[0.06em] text-ppw-charcoal md:inline">
-            Wall height
-          </span>
-          <div className="pointer-events-auto w-auto shrink-0 max-md:flex max-md:flex-col max-md:items-center max-md:rounded-r-2xl max-md:bg-white max-md:px-0.5 max-md:py-1 max-md:shadow-[0_2px_10px_rgba(42,41,38,0.12)] md:w-[180px]">
-            <WallHeightControl
-              idPrefix="view3d-wall-height"
-              className="max-md:flex-col max-md:gap-0"
-              buttonClassName="max-md:h-8 max-md:w-8 max-md:rounded-md max-md:border-0 max-md:bg-transparent max-md:text-[16px] max-md:shadow-none"
-              readoutClassName="max-md:min-w-0 max-md:px-1 max-md:text-[11px] max-md:font-medium"
-            />
-          </div>
-        </div>
-      )}
       {box}
+      {footer && <p className="shrink-0 border-t border-ppw-rim bg-ppw-chrome px-3 py-1 text-xs font-semibold text-[#37362f]" data-testid="wallpaint-3d-footer">{footer}</p>}
       {brushStrip}
     </div>
   );

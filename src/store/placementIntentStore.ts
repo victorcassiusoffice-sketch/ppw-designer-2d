@@ -66,9 +66,8 @@ interface PlacementIntentState {
   /** RoomCanvas calls this once it has handled the current intent. */
   consume: () => void;
   /**
-   * The product armed for tap-to-place (App's `pendingProductId`, mirrored
-   * here so the 3D stage — which is not in RoomCanvas's prop tree — can
-   * place it on a floor tap).
+   * The single product armed for tap-to-place. App passes this to the plan
+   * and catalog; 3D reads it directly. Disarming a tool updates every view.
    */
   armedProductId: string | null;
   setArmed: (productId: string | null) => void;

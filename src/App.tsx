@@ -277,12 +277,11 @@ export default function App() {
 
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [roomsMenuOpen, setRoomsMenuOpen] = useState(false);
-  const [pendingProductId, setPendingProductId] = useState<string | null>(null);
-  // 3D Mode (2026-09-17): the 3D stage is not in RoomCanvas's prop tree, so
-  // the armed product is mirrored into the intent store for a floor tap.
-  useEffect(() => {
-    usePlacementIntentStore.getState().setArmed(pendingProductId);
-  }, [pendingProductId]);
+  // One armed product for the catalog, plan and 3D. A view/tool change must
+  // disarm all three, not leave an old product in the plan's local state.
+  const pendingProductId = usePlacementIntentStore((s) => s.armedProductId);
+  const setPendingProductId = usePlacementIntentStore((s) => s.setArmed);
+  useEffect(() => () => { usePlacementIntentStore.getState().setArmed(null); }, []);
   // Tweak 06 (Phase A) — the OMS Wave 2.4 top-of-screen CSS-perspective
   // 3D preview was removed per Vic's 2026-05-21 designer test (Note 6:
   // "3D Preview at the top is pointless. 2D can work but better to show

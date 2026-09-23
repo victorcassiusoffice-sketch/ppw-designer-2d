@@ -7,15 +7,8 @@
  * takes the drawing surface from 56.7 % of the viewport width to full
  * width — the whole point of complaint 2.
  *
- * Shape (adapted from the mobile `SimsBottomToolbar` Vic already approved,
- * per the brief — presentation only, the placement flow is NOT forked):
- *
- *   [ category macro icons | ─── horizontal product strip ─── | chevron ]
- *
- * ONE row, ~88 px tall, so the canvas keeps ~88 % of the viewport height.
- * The mobile toolbar stacks its categories ABOVE a double-row strip because
- * a phone has no horizontal room; a 1920 px desktop does, so the same parts
- * lie down in a single row and cost half the height.
+ * Search, category tabs and sorting stay visible above a compact product
+ * strip. Collapsing the strip returns its height to the drawing surface.
  *
  * PLACEMENT IS UNCHANGED. Clicking a tile arms `pendingProductId` exactly
  * as the old ProductPalette card did (same toggle-off-on-second-click, same
@@ -23,11 +16,8 @@
  * asserts on), and `RoomCanvas`'s pointer-FSM commits it. No new store, no
  * new intent path, no touch of the Konva stable-lock.
  *
- * Register: the PPWellness Shop skin (`DOCK_*` tokens — Vic's shop-match
- * decision 2026-08-28) with the 2026-08-29 toolbar contract on top: 82 px
- * bar, 56 px category tabs (20 px icon + 11/600 uppercase label), 68 px
- * tiles, radius 8, mint ring ONLY for the armed product, focus ring
- * `CHROME_FOCUS_RING`, no text below 11 px.
+ * PPWellness Shop tokens, visible product names and prices, and the shared
+ * CHROME_FOCUS_RING keep the desktop and phone catalogs consistent.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { productImageUrl, thumbnailFor } from '../../data/products';
@@ -60,6 +50,7 @@ import {
 // item, so the catalog and the Floor panel are one path, not two.
 import { floorMaterialForProduct } from '../../data/floorMaterials';
 import { useDesignerUIStore } from '../../store/designerUIStore';
+import { catalogPrice, filterCatalog, handleCatalogCategoryKey, type CatalogSort } from '../catalogPresentation';
 
 /**
  * Toolbar contract (2026-08-29): the ONE motion + focus recipe every dock
@@ -81,18 +72,16 @@ interface HoverState {
   anchorYPx: number;
 }
 
-function formatPrice(p: Product): string {
-  const v = p.price.value.toLocaleString('en-MU', { maximumFractionDigits: 0 });
-  return `${v} ${p.price.currency}`;
-}
-
 export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProps = {}) {
   const [activeCategory, setActiveCategory] = useState<MacroCategory>('all');
   const [collapsed, setCollapsed] = useState(false);
+  const [query, setQuery] = useState('');
+  const [sort, setSort] = useState<CatalogSort>('catalog');
   const apiProducts = useMerchantCatalog();
   const [hover, setHover] = useState<HoverState | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
+  const stripRef = useRef<HTMLUListElement>(null);
 
   // Publish the dock's live height as `--sims-dock-h` so the DetailsPanel
   // overlay can stop exactly above it instead of covering the toolbar.
@@ -123,10 +112,9 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
 
   const allProducts = useMemo(() => mergeCatalog(apiProducts), [apiProducts]);
 
-  const filtered = useMemo(() => {
-    if (activeCategory === 'all') return allProducts;
-    return allProducts.filter((p) => macroOf(p) === activeCategory);
-  }, [allProducts, activeCategory]);
+  const filtered = useMemo(() => filterCatalog(allProducts, activeCategory, query, sort), [allProducts, activeCategory, query, sort]);
+  useEffect(() => { if (stripRef.current) stripRef.current.scrollLeft = 0; }, [activeCategory, query, sort]);
+  useEffect(() => () => { if (hoverTimer.current) clearTimeout(hoverTimer.current); }, []);
 
   function armHover(product: Product, rect: DOMRect): void {
     if (hoverTimer.current) {
@@ -235,15 +223,11 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
         // so the measured stage height is honest: the canvas really is the
         // remaining height, rather than being overlapped by a floating bar
         // and only appearing to be full-height.
-        className="hidden lg:flex shrink-0 items-stretch gap-3 px-3"
+        className="hidden min-w-0 shrink-0 flex-col gap-2 px-3 py-2 lg:flex"
         style={{
-          // 82 px: 2 rim + 6 + 68 tile + 6. Unchanged from the shop reskin.
-          height: 82,
           background: DOCK_BG,
-          borderTop: `2px solid ${DOCK_ACCENT}`,
-          boxShadow: '0 -8px 24px rgba(42,41,38,0.18)',
-          paddingTop: 6,
-          paddingBottom: 6,
+          borderTop: `1px solid ${DOCK_BORDER}`,
+          boxShadow: '0 -6px 20px rgba(42,41,38,0.10)',
         }}
       >
         <CatalogConnectionNotice />
@@ -252,14 +236,18 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
             single truth, so exactly one preview is ever visible. */}
         {!overCanvas && dockDrag.ghost}
 
-        {/* Category macro icons — the Sims build-mode "what am I placing"
-            rail. Left of the row (not stacked above it) so the dock costs
-            one row of height instead of two. */}
+        <div className="flex min-w-0 items-center gap-2">
+          <label className="flex h-10 w-[210px] shrink-0 items-center gap-2 rounded-xl border bg-white px-2.5 focus-within:ring-2 focus-within:ring-[#79c7ad] xl:w-[250px]" style={{ borderColor: DOCK_BORDER }}>
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="m13 13 4 4" /></svg>
+            <input type="search" value={query} data-testid="dock-search" aria-label="Search product catalog" placeholder="Search products or brands"
+              onChange={(event) => { setQuery(event.target.value); setCollapsed(false); setHover(null); }}
+              onKeyDown={(event) => { event.stopPropagation(); if (event.key === 'Escape') setQuery(''); }}
+              className="min-w-0 flex-1 bg-transparent text-[12px] text-[#37362f] outline-none placeholder:text-[#6e6b61]" />
+          </label>
         <div
           role="tablist"
           aria-label="Product category"
-          className="flex shrink-0 items-center gap-2 pr-3"
-          style={{ borderRight: `1px solid ${DOCK_BORDER}` }}
+          className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto py-1 [scrollbar-width:thin]"
         >
           {visibleMacroCategories(allProducts).map((mc) => {
             const active = activeCategory === mc;
@@ -269,12 +257,14 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                 type="button"
                 role="tab"
                 aria-selected={active}
+                tabIndex={active ? 0 : -1}
+                onKeyDown={handleCatalogCategoryKey}
                 data-testid={`dock-cat-${mc}`}
                 onClick={() => {
                   setActiveCategory(mc);
                   setCollapsed(false);
                 }}
-                className={`flex h-14 min-w-[64px] flex-col items-center justify-center gap-1 rounded-lg px-1.5 ${DOCK_CONTROL} ${
+                className={`flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg px-2.5 ${DOCK_CONTROL} ${
                   active ? '' : 'hover:bg-[#faf9f5]'
                 }`}
                 style={{
@@ -287,35 +277,45 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                 }}
                 title={`${MACRO_CATEGORY_LABEL[mc]} — show this category`}
               >
-                <MacroIcon macro={mc} size={20} />
+                <MacroIcon macro={mc} size={17} />
                 {/* Caption: 11/600 uppercase, .06em — the contract floor.
                     (Was 9 px, below the 11 px minimum.) */}
-                <span className="text-[11px] font-semibold uppercase leading-none tracking-[0.06em]">
+                <span className="text-[12px] font-medium leading-none">
                   {MACRO_CATEGORY_LABEL[mc]}
                 </span>
               </button>
             );
           })}
         </div>
+          <select data-testid="dock-sort" aria-label="Sort products" value={sort} onChange={(event) => { setSort(event.target.value as CatalogSort); setCollapsed(false); }}
+            className={`h-10 w-[124px] shrink-0 rounded-lg border bg-white px-2 text-[12px] ${DOCK_CONTROL}`} style={{ borderColor: DOCK_BORDER, color: DOCK_TEXT }}>
+            <option value="catalog">Catalog order</option><option value="name">Name A–Z</option><option value="footprint">Smallest first</option>
+          </select>
+          <button type="button" data-testid="dock-collapse" aria-label={collapsed ? 'Show product strip' : 'Hide product strip'} aria-expanded={!collapsed} aria-controls="desktop-catalog-products"
+            onClick={() => { setCollapsed((value) => !value); setHover(null); }} title={collapsed ? 'Show product strip' : 'Hide product strip'}
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-white ${DOCK_CONTROL}`} style={{ borderColor: DOCK_BORDER, color: DOCK_TEXT }}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ transform: collapsed ? 'none' : 'rotate(180deg)' }}><path d="m6 14 6-6 6 6" /></svg>
+          </button>
+        </div>
 
         {/* Product strip — horizontally scrollable, one row of tiles. */}
-        {collapsed ? (
-          <div
-            // 12 px copy: CHROME_TEXT_2, not the muted ink (that is only
-            // legible enough at >= 14 px).
-            className="flex flex-1 items-center px-2 text-[12px] font-medium"
-            style={{ color: CHROME_TEXT_2 }}
-          >
-            Catalog hidden. Click a category or the chevron to reopen.
+        {!collapsed && <div className="flex min-w-0 items-stretch gap-3">
+          <div className="flex w-[76px] shrink-0 flex-col justify-center gap-1 border-r pr-2 text-[11px]" style={{ borderColor: DOCK_BORDER, color: CHROME_TEXT_2 }}>
+            <span className="font-semibold text-[#37362f]">{emptyLabel}</span>
+            <span role="status" aria-live="polite">{filtered.length} {filtered.length === 1 ? 'product' : 'products'}</span>
+            <span className="mt-1 leading-snug">Drag into your design</span>
           </div>
-        ) : (
           <ul
+            ref={stripRef}
+            id="desktop-catalog-products"
             data-testid="dock-strip"
-            className="scroll-pane flex flex-1 items-center gap-2 overflow-x-auto overflow-y-hidden"
+            aria-label={`${emptyLabel} products`}
+            className="scroll-pane flex min-w-0 flex-1 items-center gap-2 overflow-x-auto overflow-y-hidden px-1 py-1 [scrollbar-width:thin]"
           >
             {filtered.length === 0 ? (
               <li className="px-3 text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>
-                No products in {emptyLabel} yet.
+                <span>{query.trim() ? `No matches for “${query.trim()}” in ${emptyLabel}.` : `No products in ${emptyLabel} yet.`}</span>
+                {query.trim() && <button type="button" className={`ml-3 min-h-10 rounded-lg px-2 font-semibold underline ${DOCK_CONTROL}`} onClick={() => setQuery('')}>Clear search</button>}
               </li>
             ) : (
               filtered.map((p) => {
@@ -333,7 +333,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                         role="button"
                         tabIndex={0}
                         aria-pressed={isOn}
-                        aria-label={`Lay ${p.name} floor — ${formatPrice(p)}`}
+                        aria-label={`Lay ${p.name} floor — ${catalogPrice(p)}`}
                         title="Laid with the Floor tool"
                         onClick={() => armFloor(floorMat.id)}
                         onKeyDown={(e) => {
@@ -354,16 +354,18 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                         data-macro={macroOf(p)}
                         data-armed="false"
                         data-floor-material={floorMat.id}
-                        className={`ppw-no-callout relative flex h-[68px] w-[68px] cursor-pointer items-center justify-center overflow-hidden rounded-lg ${DOCK_CONTROL}`}
+                        className={`ppw-no-callout relative flex h-[92px] w-[112px] cursor-pointer flex-col items-center justify-start overflow-hidden rounded-xl px-2 pb-1 pt-1 ${DOCK_CONTROL}`}
                         style={{
                           background: DOCK_BG_RAISED,
                           boxShadow: isOn
                             ? `inset 0 0 0 2px ${DOCK_ACCENT}, 0 0 0 3px rgba(121,199,173,0.35)`
-                            : `4px 4px 9px rgba(167,160,144,0.42), -4px -4px 9px rgba(255,255,255,0.95), inset 0 0 0 1px ${DOCK_BORDER}`,
+                            : `inset 0 0 0 1px ${DOCK_BORDER}`,
                         }}
                       >
                         <DockThumb product={p} />
                         <FloorBadge />
+                        <span className="mt-0.5 block w-full truncate text-center text-[11px] font-medium" aria-hidden="true">{p.name}</span>
+                        <span className="block w-full truncate text-center text-[11px] tabular-nums text-[#5b5852]" aria-hidden="true">{catalogPrice(p)}</span>
                       </div>
                     </li>
                   );
@@ -374,8 +376,8 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                       role="button"
                       tabIndex={0}
                       aria-pressed={isPending}
-                      aria-label={`Place ${p.name} — ${formatPrice(p)}`}
-                      title={`${p.name} · ${formatPrice(p)}`}
+                      aria-label={`Place ${p.name} — ${catalogPrice(p)}`}
+                      title={`${p.name} · ${catalogPrice(p)}`}
                       // Same pointer-down arm as the retired ProductPalette
                       // card — the placement FSM is untouched.
                       onPointerDown={(e) => {
@@ -416,7 +418,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                       data-category={p.category}
                       data-macro={macroOf(p)}
                       data-armed={isPending ? 'true' : 'false'}
-                      className={`ppw-no-callout flex h-[68px] w-[68px] cursor-pointer touch-none items-center justify-center rounded-lg ${DOCK_CONTROL}`}
+                      className={`ppw-no-callout relative flex h-[92px] w-[112px] cursor-pointer touch-none flex-col items-center justify-start overflow-hidden rounded-xl px-2 pb-1 pt-1 ${DOCK_CONTROL}`}
                       style={{
                         background: DOCK_BG_RAISED,
                         // Raised soft-neumorphic tile (shop --raise-sm dual
@@ -425,56 +427,20 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                         // shop-match decision).
                         boxShadow: isPending
                           ? `inset 0 0 0 2px ${DOCK_ACCENT}, 0 0 0 3px rgba(121,199,173,0.35)`
-                          : `4px 4px 9px rgba(167,160,144,0.42), -4px -4px 9px rgba(255,255,255,0.95), inset 0 0 0 1px ${DOCK_BORDER}`,
+                          : `inset 0 0 0 1px ${DOCK_BORDER}`,
                       }}
                     >
                       <DockThumb product={p} />
+                      <span className="mt-0.5 block w-full truncate text-center text-[11px] font-medium" aria-hidden="true">{p.name}</span>
+                      <span className="block w-full truncate text-center text-[11px] tabular-nums text-[#5b5852]" aria-hidden="true">{catalogPrice(p)}</span>
                     </div>
                   </li>
                 );
               })
             )}
           </ul>
-        )}
+        </div>}
 
-        <button
-          type="button"
-          data-testid="dock-collapse"
-          // Deliberately NOT "…catalog": placement-fsm.spec.ts opens the
-          // mobile catalog with getByRole('button', {name: /catalog/i}),
-          // which would otherwise match this chevron on desktop and
-          // collapse the strip out from under the test.
-          aria-label={collapsed ? 'Show product strip' : 'Hide product strip'}
-          aria-expanded={!collapsed}
-          onClick={() => setCollapsed((v) => !v)}
-          // 44 x 56 (contract): a full-height control, wide enough to hit.
-          className={`flex h-14 w-11 shrink-0 items-center justify-center self-center rounded-lg hover:bg-[#f3f1ec] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] ${DOCK_CONTROL}`}
-          style={{
-            color: DOCK_TEXT,
-            background: DOCK_BG_RAISED,
-            boxShadow: `inset 0 0 0 1px ${DOCK_BORDER}`,
-          }}
-          title={collapsed ? 'Show the product strip' : 'Hide the product strip (more canvas)'}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            width={16}
-            height={16}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            className="motion-reduce:transition-none"
-            style={{
-              transform: collapsed ? 'rotate(180deg)' : 'none',
-              transition: 'transform 120ms ease-out',
-            }}
-          >
-            <path d="M6 15l6-6 6 6" />
-          </svg>
-        </button>
       </section>
 
       {/* Sims-style floating detail card on hover. Carries the same testid
@@ -551,8 +517,8 @@ function DockThumb({ product }: { product: Product }) {
   if (errored || !src) {
     return (
       <div
-        className="flex h-[52px] w-[52px] items-center justify-center rounded-md"
-        style={{ background: '#F5EBD7' }}
+        className="flex h-[50px] w-[72px] shrink-0 items-center justify-center rounded-md"
+        style={{ background: '#f5f3ed' }}
         dangerouslySetInnerHTML={{ __html: thumbnailFor(product.category) }}
       />
     );
@@ -560,12 +526,12 @@ function DockThumb({ product }: { product: Product }) {
   return (
     <img
       src={src}
-      alt={product.name}
+      alt=""
       loading="lazy"
       draggable={false}
       onError={() => setErrored(true)}
-      className="h-[52px] w-[52px] rounded-md object-contain"
-      style={{ background: '#F5EBD7', padding: 2 }}
+      className="h-[50px] w-[88px] shrink-0 rounded-md object-contain"
+      style={{ background: '#f5f3ed', padding: 2 }}
     />
   );
 }
@@ -579,8 +545,8 @@ function FloorBadge() {
   return (
     <span
       aria-hidden="true"
-      className="pointer-events-none absolute bottom-0 left-0 right-0 flex h-[16px] items-center justify-center text-[11px] font-semibold uppercase leading-none tracking-[0.06em]"
-      style={{ background: 'rgba(250,249,245,0.92)', color: DOCK_TEXT, borderTop: `1px solid ${DOCK_BORDER}` }}
+      className="pointer-events-none absolute left-1 top-1 rounded px-1 py-0.5 text-[11px] font-semibold leading-none"
+      style={{ background: 'rgba(250,249,245,0.94)', color: DOCK_TEXT, border: `1px solid ${DOCK_BORDER}` }}
     >
       Floor
     </span>

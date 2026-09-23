@@ -18,9 +18,30 @@ export interface BuildingControlsProps {
   gardenOpen: boolean;
 }
 
-const BUTTON = 'inline-flex min-h-11 shrink-0 items-center justify-center rounded-lg border border-ppw-rim bg-ppw-chrome px-3 text-xs font-medium text-[#37362f] hover:bg-[#f3f1ec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal disabled:opacity-40';
-const ACTIVE = 'border-ppw-teal bg-ppw-mist text-ppw-teal';
-const FIELD = 'h-11 min-w-0 rounded-lg border border-ppw-rim bg-white px-2 text-base tabular-nums text-[#37362f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal md:text-sm';
+const BUTTON = 'inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-ppw-rim bg-white px-3 text-xs font-medium text-[#37362f] transition-colors hover:bg-[#f3f1ec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal disabled:cursor-not-allowed disabled:opacity-35';
+const ACTIVE = '!border-ppw-teal !bg-[#e7f1eb] !text-ppw-teal';
+const FIELD = 'h-11 min-w-0 rounded-xl border border-ppw-rim bg-white px-2 text-base tabular-nums text-[#37362f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal md:text-sm';
+const TOOL = 'inline-flex min-h-11 min-w-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl border border-transparent px-1 text-[10px] font-medium text-[#5b5852] transition-colors hover:border-ppw-rim hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal disabled:cursor-not-allowed disabled:opacity-35 md:flex-none md:flex-row md:gap-2 md:px-3 md:text-xs';
+
+type BuildIconName = 'floor' | 'house' | 'plus' | 'select' | 'stairs' | 'window' | 'door' | 'garden' | 'roof' | 'settings' | 'close' | 'up' | 'down';
+function BuildIcon({ name, className = 'h-[18px] w-[18px]' }: { name: BuildIconName; className?: string }) {
+  const paths: Record<BuildIconName, string> = {
+    floor: 'M3 8 12 3l9 5-9 5-9-5Zm0 5 9 5 9-5M3 18l9 5 9-5',
+    house: 'm3 10 9-7 9 7M5 9v12h14V9M9 21v-7h6v7',
+    plus: 'M12 5v14M5 12h14',
+    select: 'm5 3 14 9-7 1-3 8-4-18Z',
+    stairs: 'M3 21v-6h6V9h6V3h6M3 21h18V3',
+    window: 'M4 3h16v18H4V3Zm8 0v18M4 12h16',
+    door: 'M5 21V3h14v18M3 21h18M14 12h1',
+    garden: 'M12 21v-9M12 15C4 15 3 9 4 5c5 0 8 3 8 7M12 12c0-6 4-9 9-9 0 6-3 10-9 10M6 21h12',
+    roof: 'm2 13 10-9 10 9M4 13h16M6 13v7h12v-7M9 20v-5h6v5',
+    settings: 'M4 7h16M4 17h16M8 4v6M16 14v6',
+    close: 'm6 6 12 12M6 18 18 6',
+    up: 'm6 14 6-6 6 6',
+    down: 'm6 10 6 6 6-6',
+  };
+  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>;
+}
 
 function BuildingNumber({ label, value, min, max, step = 0.1, unit = 'm', testId, onCommit, invalidMessage }: {
   label: string; value: number; min?: number; max?: number; step?: number; unit?: string;
@@ -61,17 +82,19 @@ function BuildingNumber({ label, value, min, max, step = 0.1, unit = 'm', testId
   </label>;
 }
 
-/** One phone-sized build row. Details expand only while editing dimensions. */
+/** House tools stay in sight; dimensions float over the scene only when needed. */
 export function BuildingControls({
   view, onViewChange, showRoof, onShowRoofChange, tool, onToolChange, onGardenToggle, gardenOpen,
 }: BuildingControlsProps): JSX.Element {
   const property = usePropertyStore((state) => state.property);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [inspector, setInspector] = useState<'floor' | 'roof' | 'stairs'>('floor');
   const [selectedStairId, setSelectedStairId] = useState<string | null>(null);
   const [stairError, setStairError] = useState<string | null>(null);
   const levels = buildingLevels(property);
   const activeId = activeLevelIdOf(property);
   const active = levels.find((entry) => entry.level.id === activeId) ?? levels[0];
+  const activeIndex = levels.findIndex((entry) => entry.level.id === activeId);
   const onRoofLevel = isRoofLevel(active.level);
   const storeys = levels.filter((entry) => !isRoofLevel(entry.level));
   const storeyIndex = storeys.findIndex((entry) => entry.level.id === activeId);
@@ -86,6 +109,26 @@ export function BuildingControls({
   const floorName = (id: string) => levels.find((entry) => entry.level.id === id)?.level.name ?? 'Floor';
   const height = levelHeightM(property, activeId);
   useEffect(() => { setStairError(null); }, [stair?.id]);
+  useEffect(() => {
+    if (!detailsOpen) return;
+    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') setDetailsOpen(false); };
+    document.addEventListener('keydown', close);
+    return () => document.removeEventListener('keydown', close);
+  }, [detailsOpen]);
+
+  function selectFloor(id: string) {
+    usePropertyStore.getState().setActiveLevel(id);
+    onToolChange('select');
+    const selected = levels.find((entry) => entry.level.id === id);
+    if (selected && isRoofLevel(selected.level)) onShowRoofChange(true);
+  }
+
+  function chooseTool(next: BuildingControlsProps['tool']) {
+    if (gardenOpen) onGardenToggle();
+    onToolChange(next);
+    if (next === 'stair') setInspector('stairs');
+    if (next === 'window' || next === 'door') setDetailsOpen(false);
+  }
 
   function addFloor() {
     const source = onRoofLevel ? storeys[storeys.length - 1]?.level.id : activeId;
@@ -93,15 +136,25 @@ export function BuildingControls({
     onToolChange('select');
     onViewChange('building');
     onShowRoofChange(false);
+    setDetailsOpen(false);
+    setInspector('floor');
   }
 
   function toggleRoof() {
+    if (gardenOpen) onGardenToggle();
+    onToolChange('select');
     const nextShow = !hasRoof || !showRoof;
+    if (!nextShow && onRoofLevel) {
+      const highestStorey = storeys[storeys.length - 1];
+      if (highestStorey) usePropertyStore.getState().setActiveLevel(highestStorey.level.id);
+    }
     if (nextShow && (!hasRoof || !property.roof)) {
       usePropertyStore.getState().setRoofConfig(roof);
     }
     onShowRoofChange(nextShow);
     if (nextShow) onViewChange('building');
+    setInspector('roof');
+    setDetailsOpen(nextShow);
   }
 
   function changeRoof(patch: Partial<RoofConfig>) {
@@ -138,47 +191,66 @@ export function BuildingControls({
     : tool === 'window' ? `Tap a wall on ${active.level.name} to add a window.`
       : tool === 'door' ? `Tap a wall on ${active.level.name} to add a door.` : null;
 
-  return <section className="min-w-0 border-b border-ppw-rim bg-ppw-chrome text-[#37362f]" aria-label="Building controls" data-testid="building-controls">
-    <div className="flex min-w-0 items-center gap-1 overflow-x-auto p-1 sm:gap-2 sm:px-2">
-      <select aria-label="Active floor" data-testid="building-floor-select" value={activeId}
-        className={`${FIELD} w-[110px] shrink-0 text-[13px] sm:w-40`}
-        onChange={(event) => { usePropertyStore.getState().setActiveLevel(event.target.value); onToolChange('select'); }}>
-        {levels.map((entry) => <option key={entry.level.id} value={entry.level.id}>{entry.level.name}</option>)}
-      </select>
-      <button type="button" className={`${BUTTON} px-2`} onClick={addFloor} data-testid="building-add-floor"
-        title={`Add a floor using the ${onRoofLevel ? 'top floor' : active.level.name} layout`}>+ Floor</button>
+  return <section className="shrink-0 min-w-0 border-b border-ppw-rim bg-[#faf8f3] text-[#37362f]" aria-label="Building controls" data-testid="building-controls">
+    <div className="flex min-w-0 items-center gap-1.5 px-2 pt-1.5 md:gap-2 md:px-3">
+      <div className="flex min-w-0 flex-1 items-center gap-1 md:flex-none">
+        <span className="hidden text-ppw-teal md:block"><BuildIcon name="floor" /></span>
+        <select aria-label="Active floor" data-testid="building-floor-select" value={activeId}
+          className={`${FIELD} w-full text-[13px] md:w-40`} onChange={(event) => selectFloor(event.target.value)}>
+          {levels.map((entry) => <option key={entry.level.id} value={entry.level.id}>{entry.level.name}</option>)}
+        </select>
+        <div className="hidden gap-1 md:flex">
+          <button type="button" className={`${BUTTON} w-11 px-0`} aria-label="Floor below" title="Floor below" disabled={activeIndex <= 0} onClick={() => selectFloor(levels[activeIndex - 1].level.id)}><BuildIcon name="down" /></button>
+          <button type="button" className={`${BUTTON} w-11 px-0`} aria-label="Floor above" title="Floor above" disabled={activeIndex >= levels.length - 1} onClick={() => selectFloor(levels[activeIndex + 1].level.id)}><BuildIcon name="up" /></button>
+        </div>
+      </div>
+      <button type="button" className={`${BUTTON} w-11 px-2 sm:w-auto`} onClick={addFloor} data-testid="building-add-floor" aria-label="Add floor"
+        title={`Add a floor using the ${onRoofLevel ? 'top floor' : active.level.name} layout`}><BuildIcon name="plus" /><span className="hidden sm:inline">Floor</span></button>
+      <div className="flex shrink-0 gap-0.5 rounded-xl bg-[#ebe7df] p-0.5 md:ml-auto" role="group" aria-label="Building view">
+        <button type="button" className={`${BUTTON} gap-1 border-transparent bg-transparent px-2 ${view === 'building' ? '!border-white !bg-white shadow-sm' : ''}`} aria-label="Whole building" title="Whole building" aria-pressed={view === 'building'} data-testid="building-view-building" onClick={() => onViewChange('building')}><BuildIcon name="house" /><span className="text-[11px] md:text-xs">House</span></button>
+        <button type="button" className={`${BUTTON} gap-1 border-transparent bg-transparent px-2 ${view === 'floor' ? '!border-white !bg-white shadow-sm' : ''}`} aria-label="This floor" title="This floor" aria-pressed={view === 'floor'} data-testid="building-view-floor" onClick={() => onViewChange('floor')}><BuildIcon name="floor" /><span className="text-[11px] md:text-xs">Floor</span></button>
+      </div>
+      <button type="button" className={`${BUTTON} w-11 px-0 ${detailsOpen ? ACTIVE : ''}`}
+        data-testid="building-details-toggle" aria-label="Build settings" title="Build settings" aria-expanded={detailsOpen} aria-controls="building-details"
+        onClick={() => { if (gardenOpen) onGardenToggle(); setDetailsOpen(!detailsOpen); }}><BuildIcon name="settings" /></button>
+    </div>
+
+    <div className="flex min-w-0 items-center gap-0.5 px-2 py-1 md:gap-1 md:px-3" role="group" aria-label="House building tools">
       <select aria-label="3D build tool" data-testid="building-tool-select" value={tool}
-        className={`${FIELD} w-[105px] shrink-0 text-[13px] ${tool !== 'select' ? ACTIVE : ''}`}
-        onChange={(event) => onToolChange(event.target.value as BuildingControlsProps['tool'])}>
+        className={`${FIELD} mr-1 flex-1 text-[13px] md:hidden ${tool !== 'select' ? ACTIVE : ''}`}
+        onChange={(event) => chooseTool(event.target.value as BuildingControlsProps['tool'])}>
         <option value="select">Select / move</option>
         <option value="stair" disabled={!canPlaceStairs}>Stairs</option>
         <option value="window" disabled={onRoofLevel}>Window</option>
         <option value="door" disabled={onRoofLevel}>Door</option>
       </select>
-      <button type="button" className={`${BUTTON} px-2 ${detailsOpen ? ACTIVE : ''}`}
-        data-testid="building-details-toggle" aria-expanded={detailsOpen} aria-controls="building-details"
-        onClick={() => setDetailsOpen(!detailsOpen)}>Build {detailsOpen ? '−' : '+'}</button>
-      <span className="hidden whitespace-nowrap text-[11px] text-[#5b5852] xl:block">{storeys.length} {storeys.length === 1 ? 'floor' : 'floors'} · {view === 'building' ? 'Whole building' : 'This floor'}</span>
+      <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'select' ? ACTIVE : ''}`} aria-pressed={tool === 'select'} onClick={() => chooseTool('select')}><BuildIcon name="select" />Select / move</button>
+      <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'stair' ? ACTIVE : ''}`} aria-pressed={tool === 'stair'} disabled={!canPlaceStairs} title={canPlaceStairs ? `Stairs: ${lowerStairLevel.level.name} to ${upperStairLevel.level.name}` : 'Add a second floor to build stairs'} onClick={() => chooseTool(tool === 'stair' ? 'select' : 'stair')}><BuildIcon name="stairs" />Stairs</button>
+      <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'window' ? ACTIVE : ''}`} aria-pressed={tool === 'window'} disabled={onRoofLevel} onClick={() => chooseTool(tool === 'window' ? 'select' : 'window')}><BuildIcon name="window" />Window</button>
+      <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'door' ? ACTIVE : ''}`} aria-pressed={tool === 'door'} disabled={onRoofLevel} onClick={() => chooseTool(tool === 'door' ? 'select' : 'door')}><BuildIcon name="door" />Door</button>
+      <span className="mx-0.5 h-6 w-px shrink-0 bg-ppw-rim md:mx-2" />
+      <button type="button" className={`${TOOL} ${gardenOpen ? ACTIVE : ''}`} aria-pressed={gardenOpen} data-testid="building-garden-toggle" onClick={() => { setDetailsOpen(false); onToolChange('select'); onGardenToggle(); }}><BuildIcon name="garden" />Garden</button>
+      <button type="button" className={`${TOOL} ${hasRoof && showRoof ? ACTIVE : ''}`} aria-pressed={hasRoof && showRoof} title={hasRoof ? showRoof ? 'Hide roof' : 'Show roof' : 'Add roof'} data-testid="building-roof-toggle" onClick={toggleRoof}><BuildIcon name="roof" />Roof</button>
+      <span className="ml-auto hidden whitespace-nowrap pl-3 text-[11px] text-[#787369] lg:block">{storeys.length} {storeys.length === 1 ? 'floor' : 'floors'} · {active.elevationM.toFixed(2)} m elevation</span>
     </div>
 
-    {toolHelp && <div className="flex items-center justify-between gap-2 border-t border-ppw-rim px-2 text-[11px]" role="status">
+    {toolHelp && !detailsOpen && <div className="absolute inset-x-3 bottom-3 z-20 flex items-center justify-between gap-3 rounded-2xl border border-ppw-rim bg-[#fffdf8]/95 pl-3 text-[11px] shadow-lg backdrop-blur-sm md:left-1/2 md:right-auto md:w-max md:max-w-[calc(100%-24px)] md:-translate-x-1/2" role="status">
       <span>{toolHelp}</span>
-      <button type="button" className="min-h-11 shrink-0 px-2 font-semibold text-ppw-teal" onClick={() => onToolChange('select')}>Done</button>
+      <button type="button" className="min-h-11 shrink-0 rounded-r-2xl px-3 font-semibold text-ppw-teal hover:bg-ppw-mist" onClick={() => onToolChange('select')}>Done</button>
     </div>}
 
-    {detailsOpen && <div id="building-details" className="max-h-[38vh] overflow-y-auto border-t border-ppw-rim p-3" data-testid="building-details">
-      <div className="flex flex-wrap gap-2">
-        <div className="flex gap-1" role="group" aria-label="Building view">
-          <button type="button" className={`${BUTTON} ${view === 'building' ? ACTIVE : ''}`} aria-pressed={view === 'building'} data-testid="building-view-building" onClick={() => onViewChange('building')}>Whole building</button>
-          <button type="button" className={`${BUTTON} ${view === 'floor' ? ACTIVE : ''}`} aria-pressed={view === 'floor'} data-testid="building-view-floor" onClick={() => onViewChange('floor')}>This floor</button>
-        </div>
-        <button type="button" className={`${BUTTON} ${hasRoof && showRoof ? ACTIVE : ''}`} aria-pressed={hasRoof && showRoof} data-testid="building-roof-toggle" onClick={toggleRoof}>{hasRoof ? showRoof ? 'Hide roof' : 'Show roof' : '+ Roof'}</button>
-        <button type="button" className={`${BUTTON} ${gardenOpen ? ACTIVE : ''}`} aria-pressed={gardenOpen} data-testid="building-garden-toggle" onClick={() => { setDetailsOpen(false); onToolChange('select'); onGardenToggle(); }}>Garden</button>
+    {detailsOpen && <div id="building-details" className="absolute inset-x-2 bottom-2 z-30 flex max-h-[55%] flex-col overflow-hidden rounded-2xl border border-ppw-rim bg-[#fffdf8] shadow-[0_12px_40px_rgba(44,43,38,0.18)] md:bottom-3 md:left-auto md:right-3 md:top-[112px] md:max-h-none md:w-[304px]" data-testid="building-details" role="region" aria-label="Build inspector">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-ppw-rim py-1 pl-4 pr-1">
+        <div><p className="text-[13px] font-semibold">Build settings</p><p className="text-[10px] text-[#787369]">{active.level.name}</p></div>
+        <button type="button" className="flex h-11 w-11 items-center justify-center rounded-xl text-[#5b5852] hover:bg-[#f3f1ec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal" aria-label="Close build settings" onClick={() => setDetailsOpen(false)}><BuildIcon name="close" /></button>
       </div>
-
-      <div className="mt-3 grid gap-4 md:grid-cols-3">
-        <fieldset className="min-w-0 rounded-lg border border-ppw-rim p-3">
-          <legend className="px-1 text-xs font-semibold">{active.level.name}</legend>
+      <div className="flex shrink-0 gap-1 border-b border-ppw-rim px-2 py-1" role="group" aria-label="Build setting category">
+        {(['floor', 'stairs', 'roof'] as const).map((section) => <button type="button" key={section} className={`${BUTTON} flex-1 border-transparent px-2 ${inspector === section ? ACTIVE : 'bg-transparent'}`} aria-pressed={inspector === section} onClick={() => setInspector(section)}><BuildIcon name={section === 'stairs' ? 'stairs' : section} />{section === 'floor' ? 'Floor' : section === 'stairs' ? 'Stairs' : 'Roof'}</button>)}
+      </div>
+      <div className="min-h-0 overflow-y-auto overscroll-contain p-4">
+        {toolHelp && <div className="mb-3 rounded-xl bg-[#e7f1eb] p-3 text-xs text-[#315149]" role="status"><p>{toolHelp}</p><button type="button" className="mt-1 min-h-11 font-semibold underline underline-offset-2" onClick={() => setDetailsOpen(false)}>Place in scene</button></div>}
+        {inspector === 'floor' && <fieldset className="min-w-0">
+          <legend className="mb-3 text-[13px] font-semibold">Floor dimensions</legend>
           {!onRoofLevel ? <>
             <BuildingNumber key={`height-${activeId}`} label="Wall height" value={height} min={MIN_LEVEL_HEIGHT_M} max={MAX_LEVEL_HEIGHT_M} testId="building-floor-height"
               onCommit={(value) => usePropertyStore.getState().setLevelHeight(activeId, value)} />
@@ -186,10 +258,11 @@ export function BuildingControls({
             {active.level.heightM !== undefined && <button type="button" className="mt-1 min-h-11 text-xs font-medium text-ppw-teal" onClick={() => usePropertyStore.getState().setLevelHeight(activeId, null)}>Use house wall height</button>}
           </> : <p className="text-xs text-[#5b5852]">Roof level · {active.elevationM.toFixed(2)} m above ground. Choose a floor to edit its wall height.</p>}
           <p className="mt-2 text-[11px] text-[#5b5852]">+ Floor copies rooms, windows and free walls from the selected floor.</p>
-        </fieldset>
+        </fieldset>}
 
-        <fieldset className="min-w-0 rounded-lg border border-ppw-rim p-3">
-          <legend className="px-1 text-xs font-semibold">Roof</legend>
+        {inspector === 'roof' && <fieldset className="min-w-0">
+          <legend className="mb-3 text-[13px] font-semibold">Roof design</legend>
+          <button type="button" className={`${BUTTON} mb-3 w-full ${hasRoof && showRoof ? ACTIVE : ''}`} aria-pressed={hasRoof && showRoof} onClick={toggleRoof}><BuildIcon name="roof" />{hasRoof ? showRoof ? 'Hide roof' : 'Show roof' : 'Add roof'}</button>
           <div className="grid grid-cols-2 gap-2">
             <label className="flex min-w-0 flex-col gap-1 text-xs text-[#5b5852]">Shape
               <select className={FIELD} aria-label="Roof shape" value={roof.style} data-testid="building-roof-style" onChange={(event) => changeRoof({ style: event.target.value as RoofConfig['style'] })}>
@@ -204,12 +277,12 @@ export function BuildingControls({
             {roof.style !== 'flat' && <BuildingNumber label="Pitch" value={roof.pitchDeg} min={5} max={60} step={1} unit="°" testId="building-roof-pitch" onCommit={(pitchDeg) => changeRoof({ pitchDeg })} />}
             <BuildingNumber label="Overhang" value={roof.overhangM} min={0} max={1.5} step={0.05} testId="building-roof-overhang" onCommit={(overhangM) => changeRoof({ overhangM })} />
           </div>
-          {!hasRoof && <p className="mt-2 text-[11px] text-[#5b5852]">Choose + Roof or change a setting to add it.</p>}
-        </fieldset>
+          {!hasRoof && <p className="mt-2 text-[11px] text-[#5b5852]">Add a roof or choose a finish to create it.</p>}
+        </fieldset>}
 
-        <fieldset className="min-w-0 rounded-lg border border-ppw-rim p-3">
-          <legend className="px-1 text-xs font-semibold">Stairs</legend>
-          {canPlaceStairs && <button type="button" className={`${BUTTON} mb-2 w-full`} onClick={fitStairs}>Fit stairs in room</button>}
+        {inspector === 'stairs' && <fieldset className="min-w-0">
+          <legend className="mb-3 text-[13px] font-semibold">Stair placement</legend>
+          {canPlaceStairs && <div className="mb-3 grid grid-cols-2 gap-2"><button type="button" className={`${BUTTON} px-2`} onClick={fitStairs}>Fit in room</button><button type="button" className={`${BUTTON} px-2`} onClick={() => { chooseTool('stair'); setDetailsOpen(false); }}>Tap to place</button></div>}
           {stair ? <>
             <select className={`${FIELD} mb-2 w-full`} aria-label="Stair to edit" data-testid="building-stair-select" value={stair.id} onChange={(event) => {
               setSelectedStairId(event.target.value);
@@ -233,7 +306,7 @@ export function BuildingControls({
           </> : <p className="text-xs text-[#5b5852]">{canPlaceStairs ? 'Choose Stairs in the tool selector, then tap this floor.' : 'Add a second floor, select either connected floor, then choose Stairs.'}</p>}
           {stairError && <p className="mt-2 text-xs text-ppw-coral" role="alert">{stairError}</p>}
           <p className="mt-2 text-[11px] text-[#5b5852]" title="These dimensions describe a concept model. Stair structure, headroom and compliance need a qualified building professional.">Stair dimensions are for layout planning.</p>
-        </fieldset>
+        </fieldset>}
       </div>
     </div>}
   </section>;

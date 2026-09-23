@@ -63,7 +63,10 @@ export function buildingSolids(
       ...it, levelId: level.id, floorElevationM: elevationM, z0: it.z0 + elevationM, z1: it.z1 + elevationM,
       lightMountM: it.lightMountM === undefined ? undefined : it.lightMountM + elevationM,
     })));
-    if (isRoofLevel(level) && (showRoof || view === 'floor')) {
+    // Roof editing uses the slab plane. Thin PV panels would be buried by
+    // even the flat covering; pitched-roof mounting is not modelled yet.
+    // Keep the covering in the whole-building view, not over this work surface.
+    if (isRoofLevel(level) && showRoof && view === 'building') {
       for (const room of rooms.filter(isRoofRoom)) {
         if (room.polygon.length >= 3) result.roofs!.push({ polygon: room.polygon, elevationM, config: roofConfigOf(property) });
       }
