@@ -3693,7 +3693,7 @@ export function RoomCanvas({
             Wall height
           </span>
           <span className="hidden text-[11px] font-medium leading-snug md:inline" style={{ color: CHROME_TEXT_2 }} data-testid="wall-height-hud-note">
-            Whole house · steps of 0.1 m
+            {activeLevel.name} · steps of 0.1 m
           </span>
           <WallHeightControl
             idPrefix="wall-height"
