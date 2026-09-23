@@ -1,12 +1,12 @@
 <!-- verified-preview:start -->
 ## Current feature deployment
 
-Updated: 2026-09-23 15:03 (local) | commit: b70c9fd
+Updated: 2026-09-23 15:10 (local) | commit: 732f509
 
-- Designer: https://ppw-designer-2d-m7kiu3e7s-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-m7kiu3e7s-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: Sims-inspired building workspace, contextual inspectors, searchable catalog, camera navigation and solar roof editing fixes.
-- Verification: Both routes rendered in browser; 1280px desktop and 390/360px phone checks. Catalog search, solar placement and energy estimate verified. Client/API typechecks, build and regression suite pass.
+- Designer: https://ppw-designer-2d-o393v8gqj-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-o393v8gqj-victor-ppw.vercel.app/designer?demo=tintex
+- Landed: Sims-inspired house-building workspace and inspectors, catalog search/sorting, camera presets/Move view, and solar roof editing; final desktop camera spacing polish.
+- Verification: Both designer and TintEX routes rendered at desktop and phone widths. Final camera presets/panning checked; preceding equivalent feature build passed phone solar placement/calculation, catalog search, floor creation, stair fitting and garden access. GitHub client/API typecheck and Vitest pass; production Lighthouse remains separate.
 - Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
 - Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.

@@ -25,9 +25,11 @@ My designs uses the existing `/api/designs` GET/POST/PUT endpoints. Cloud loads 
 
 ## Validation and limits
 
-Client/API typechecks, changed-file lint and the production build pass. Final application commit `f35731c` passes GitHub's complete 226-file / 2,666-test suite and root/API typechecks. Backend requests are covered with mocks; the deployed public catalog also responded with 14 products. No live customer records were written during testing. The separate Lighthouse workflow still audits the unchanged production domain and reports existing performance/PWA/SEO failures.
+Client/API typechecks, changed-file lint and the production build pass. The workspace refinement passed a full local 228-file / 2,673-test suite, followed by 36 focused integration tests including three added solar roof scenarios. GitHub's root/API typechecks and Vitest passed application commit `b70c9fd`. Backend requests are covered with mocks; the deployed public catalog also responded with 14 products. No live customer records were written during testing. The separate Lighthouse workflow still audits the unchanged production domain and reports existing performance/PWA/SEO failures.
 
 Local phone visual checks confirmed two stacked storeys and a flat felt roof. Further localhost browser actions were blocked by automatic approval review. The deployed feature previews were accessible: standard and TintEX routes returned HTTP 200, desktop and phone layouts rendered, garden placement succeeded, and the final phone stair-fit action created a Ground-to-First connection with editable dimensions. Deployment-specific verification is recorded in BUILD-LINKS.md.
+
+The refined workspace was checked on its Vercel preview at 1280px desktop and 390/360px phone widths. The phone walkthrough searched and placed a solar panel on the visible roof slab, verified the existing energy estimate, added a floor, fitted stairs through the inspector and opened the garden tools. The saved workflow log contains the exact commits and continuation checkpoints.
 
 Terrain is rectangular with flat raised elevations, not a freeform sculpting mesh. Roofs follow individual room footprints; complex joined roofs and pitched-roof accessory mounting need further work. The advanced building parts use WebGL; the existing canvas fallback is a basic room view. Stair layout dimensions are conceptual, not structural design. Existing demonstration catalog entries remain labelled as samples; no new supplier prices or APIs were invented.
 

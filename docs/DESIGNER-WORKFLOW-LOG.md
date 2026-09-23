@@ -4,14 +4,14 @@ Updated: 23 September 2026 (Mauritius). Owner: Victor.
 
 ## Resume here
 
-Current checkpoint: **`b70c9fd` is deployed and browser-verified; a small camera-spacing follow-up is ready to push.** Read this file, then `docs/BUILD-LINKS.md` and `docs/ROOM-DESIGNER-BUILD-NOTES.md` before continuing. Do not assume an unfinished item is deployed.
+Current checkpoint: **This UI refinement pass is shipped and verified. Application commit `732f50993ebabba990676c0a790c42a59c639948`; Vercel deployment `6612390749`.** Read this file, then `docs/BUILD-LINKS.md` and `docs/ROOM-DESIGNER-BUILD-NOTES.md` before continuing. The follow-up documentation commit only records these results.
 
 - Active checkout: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`
 - Branch: **`cursor/feat-3d-flooring-hud-bc95` only**. Draft PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Starting checkpoint: `f9a6ab8` (clean working tree).
-- Browser-verified feature preview: https://ppw-designer-2d-m7kiu3e7s-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-m7kiu3e7s-victor-ppw.vercel.app/designer?demo=tintex
-- Latest earlier application build `f35731c`: `https://ppw-designer-2d-i7un0iek8-victor-ppw.vercel.app` (both routes HTTP 200; this host timed out in the in-app browser). It only changes a floor-height label relative to the browser-verified build.
+- Browser-verified feature preview: https://ppw-designer-2d-o393v8gqj-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-o393v8gqj-victor-ppw.vercel.app/designer?demo=tintex
+- Earlier verified refinement fallback (`b70c9fd`): `https://ppw-designer-2d-m7kiu3e7s-victor-ppw.vercel.app/designer?demo=tintex`.
 - **Never push or merge main.** Production https://designer.ppwellness.co stays untouched. Handoff §7 requires Victor's explicit emergency instruction.
 - Preserve the original checkout at `C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d`, its other branch and Victor's dirty files. Work in the separate checkout above.
 
@@ -36,12 +36,12 @@ Earlier validation: 226 test files / 2,666 tests passed; client/API typechecks a
 
 ## Preservation checklist for this pass
 
-- [ ] House move/rotate and plot controls remain reachable.
-- [ ] Energy/solar uses the existing calculation and catalog fields; no invented live readings.
-- [ ] 2D/3D share the same rooms, objects, finishes, openings and active floor.
-- [ ] Stairs, roof settings, garden placement, undo/redo, saved designs and quote/cart survive the UI changes.
-- [ ] Phone controls stay reachable and the design area remains useful.
-- [ ] Existing product placement, drag/drop and floor-material actions retain their behavior.
+- [x] Existing camera pan/orbit/zoom, product movement and plot controls remain reachable (whole-building translation clarification below).
+- [x] Energy/solar uses the existing calculation and catalog fields; no invented live readings. Panel placement and changed estimate checked in-browser.
+- [x] 2D/3D share the same rooms, objects, finishes, openings and active floor. Catalog arming now also has one source.
+- [x] Stairs, roof settings, garden tools, undo/redo, saved designs and quote/cart retained. Full regression suite passed; cloud/quote controls were not submitted during browser QA.
+- [x] Phone controls checked at 360 and 390 pixels; desktop at 1280 pixels.
+- [x] Existing product placement, drag/drop and floor-material paths retained; catalog/placement tests and phone panel placement passed.
 
 ## Current work sequence
 
@@ -49,8 +49,8 @@ Earlier validation: 226 test files / 2,666 tests passed; client/API typechecks a
 2. Consolidate 3D house-building controls into a compact workspace with contextual details and clear camera views. **Implemented.**
 3. Improve catalog browsing and make house/solar tools easier to find. **Implemented.**
 4. Run appropriate regression tests, both typechecks, lint and production build. **Passed.** Full initial suite: 2,673 tests; final integration: 36 tests including 3 new roof-covering scenarios. Final production build passed.
-5. Commit and push this feature branch; verify the unique Vercel `/designer` and TintEX routes at desktop and phone width. **Pushed `b70c9fd`; deployment/QA pending.**
-6. Update build links, this log, the handoff pointers and a saveable copy in `outputs`.
+5. Commit and push this feature branch; verify the unique Vercel `/designer` and TintEX routes at desktop and phone width. **Done; final app commit `732f509`.**
+6. Update build links, this log, the handoff pointers and a saveable copy in `outputs`. **Done; documentation follow-up records final verification.**
 
 ## Known limits carried forward
 
@@ -64,14 +64,23 @@ Garden terrain consists of rectangular patches, including raised patches. Roofs 
 - **23 Sep — feature pushed:** Commit `b70c9fd1326b03d6be0654001840843904fddb1f` contains the workspace, catalog, regression fixes and initial workflow log. PR #36 is still draft. Production and main unchanged. Final build and 36 targeted integration tests passed. Next action: resolve GitHub deployment for this SHA, open unique Vercel host, verify desktop/phone designer and TintEX, then update links and commit documentation.
 - **23 Sep — deployed QA:** Vercel deployment `6612248907` succeeded at `https://ppw-designer-2d-m7kiu3e7s-victor-ppw.vercel.app`. Both standard and TintEX routes loaded in-browser. Checked 1280px desktop, 390px phone and 360px narrow phone. Searched Jinko in the phone catalog, added a panel to Roof, and verified the existing energy report changed to ~1.9 kWh/day and ~695 kWh/year. The roof slab and panel were visible. No cloud writes or quote requests were submitted. CI client/API typechecks and Vitest passed; unchanged-production Lighthouse still failed.
 - **23 Sep — final polish:** Desktop camera pods now align on one row where space permits, keeping them clearer of the model; phone Move view label stays on one line. Switching to navigation/finish tools deselects the item so the old plan selection toolbar does not linger. Production build and scoped lint passed. Next: push this small follow-up, verify its unique deployment, then mark this pass complete and update all saved links.
+- **23 Sep — additional phone QA:** Standard designer at 360px: added First floor, opened the bounded inspector, fitted stairs connecting Ground → First (2.88 m rise), dismissed the inspector with Escape while retaining 3D, and opened Garden directly. Final polish is pushed as `732f50993ebabba990676c0a790c42a59c639948`; awaiting its unique deployment. The previously verified `m7kiu3e7s` host remains the working refinement preview during that wait.
+- **23 Sep — final verification complete:** `732f509` deployed successfully at `https://ppw-designer-2d-o393v8gqj-victor-ppw.vercel.app`. Standard and TintEX routes rendered at desktop/phone widths. Final TintEX checks at 1280×900 and 360×800 confirmed camera spacing, Above/Fit presets, explicit Move view and a pan drag, with the house intact. Standard route also checked at 390×844 and 1280px desktop. GitHub root/API typecheck and Vitest checks passed. Earlier solar/stair/catalog/garden walkthrough applies unchanged to this spacing/deselection-only follow-up. BUILD-LINKS, Desktop CURRENT-WORK-LINKS and both original handoff pointers updated; saveable workflow copy refreshed. Production/main untouched.
 
 ### Current file ownership / continuation details
 
-All agents have completed their UI edits. Root owns integration and deployment. Changed files: `src/App.tsx`, `src/store/placementIntentStore.ts`, `src/components/RoomView3D.tsx`, new `RoomViewControls.tsx`, `BuildingControls.tsx`, desktop/mobile catalog components, new `catalogPresentation.ts`, and the building scene roof-editing regression. Relevant tests are under `src/components/__tests__` and `src/designer/__tests__/buildingScene.test.ts`.
+All agents and integration work are complete for this pass. Changed files: `src/App.tsx`, `src/store/placementIntentStore.ts`, `src/components/RoomView3D.tsx`, new `RoomViewControls.tsx`, `BuildingControls.tsx`, desktop/mobile catalog components, new `catalogPresentation.ts`, and the building scene roof-editing regression. Relevant tests are under `src/components/__tests__` and `src/designer/__tests__/buildingScene.test.ts`.
 
 Validation logs live in the parent `work` folder: `sims-refinement-build.log` and `sims-refinement-tests.log`. The workflow document is ignored by the repo's broad docs pattern, so stage it deliberately with `git add -f docs/DESIGNER-WORKFLOW-LOG.md`.
 
 Audit clarification: this checkout's existing “moving the house” interaction is camera orbit/pan/zoom, plus moving individual products; no atomic whole-building translation command was found. Those existing actions are preserved. The new Move view makes camera panning explicit and avoids grabbing furniture. Do not claim a new whole-building translate operation.
+
+### Next concrete continuation
+
+1. Open the active checkout, confirm this same branch and inspect `git status`; preserve any new user changes.
+2. Open the final preview above. This pass has no pending implementation or deployment step. Apply Victor's next requested refinement from this checkpoint.
+3. If continuing the broader visual direction, use the known limits as the backlog: richer licensed/catalog furniture models, joined roofs and pitched solar mounting, freeform terrain, and an explicit whole-building move operation if requested. Keep existing plan/quote/solar data paths; do not invent smart-home telemetry.
+4. After any new code chunk, validate, push only this feature branch, verify the new unique preview, and append the actual result here before stopping.
 
 ## Rules for the next continuation
 
