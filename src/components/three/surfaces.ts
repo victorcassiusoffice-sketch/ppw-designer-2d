@@ -294,7 +294,25 @@ export function floorSurface(kind: FloorKind, tileM = 0.5): FloorSurface {
  * A vertical sky gradient as a texture for a big inside-out sphere: zenith
  * → horizon → below. Colours are sRGB hexes; `t` blends day (1) to night (0).
  */
-export function skyTexture(day: number): THREE.Texture {
+export function skyTexture(day: number, presentation: 'studio' | 'architectural' = 'studio'): THREE.Texture {
+  if (presentation === 'architectural') {
+    // A blue-hour presentation backdrop, independent of room paint. A tiny
+    // data texture also works without canvas and has no external asset fetch.
+    const pixels = new Uint8Array(256 * 4);
+    const daylight = Math.max(0, Math.min(1, day));
+    const top = [17 + 6 * daylight, 24 + 11 * daylight, 40 + 19 * daylight];
+    const horizon = [25 + 17 * daylight, 34 + 21 * daylight, 54 + 26 * daylight];
+    for (let row = 0; row < 256; row++) {
+      const blend = Math.sin(row / 255 * Math.PI) ** 2;
+      for (let channel = 0; channel < 3; channel++) pixels[row * 4 + channel] = top[channel] + (horizon[channel] - top[channel]) * blend;
+      pixels[row * 4 + 3] = 255;
+    }
+    const texture = new THREE.DataTexture(pixels, 1, 256, THREE.RGBAFormat);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.magFilter = texture.minFilter = THREE.LinearFilter;
+    texture.needsUpdate = true;
+    return texture;
+  }
   const made = makeCanvas(4, 256);
   if (!made) return new THREE.Texture();
   const { canvas: c, ctx } = made;

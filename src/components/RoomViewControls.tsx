@@ -21,12 +21,15 @@ interface Props {
   onExpand?: () => void;
 }
 
-const BUTTON = 'inline-flex h-11 min-w-11 items-center justify-center gap-1 whitespace-nowrap rounded-lg px-2 text-xs font-semibold text-[#37362f] transition-colors hover:bg-[#e9eee9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal md:h-9 md:min-w-9';
-const POD = 'rounded-xl border border-white/80 bg-[#fafaf7]/95 p-1 shadow-[0_3px_18px_rgba(35,44,40,0.12)]';
-const ACTIVE = '!bg-[#294e47] !text-white';
+const LIGHT_BUTTON = 'inline-flex h-11 min-w-11 items-center justify-center gap-1 whitespace-nowrap rounded-lg px-2 text-xs font-semibold text-[#37362f] transition-colors hover:bg-[#e9eee9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal md:h-9 md:min-w-9';
+const LIGHT_POD = 'rounded-xl border border-white/80 bg-[#fafaf7]/95 p-1 shadow-[0_3px_18px_rgba(35,44,40,0.12)]';
+const LIGHT_ACTIVE = '!bg-[#294e47] !text-white';
 
 /** View-only controls: they never modify the building or a product. */
 export function RoomViewControls({ workspace, pan, onPan, onRotate, onZoom, onFit, onView, wallView, onWallView, hasWalls, sunAvailable, sunHour, onSunHour, onClose, onExpand }: Props) {
+  const BUTTON = workspace ? 'inline-flex h-10 min-w-9 items-center justify-center gap-1 whitespace-nowrap rounded px-2 text-[10px] font-medium text-[#c8d7ed] hover:bg-[#344662] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#75d8ea] md:h-9' : LIGHT_BUTTON;
+  const POD = workspace ? 'rounded-md border border-[#495c79]/70 bg-[#1b2a43]/95 p-1 shadow-[0_5px_20px_rgba(6,16,31,0.22)]' : LIGHT_POD;
+  const ACTIVE = workspace ? '!bg-[#36516b] !text-[#a1edf6]' : LIGHT_ACTIVE;
   return <>
     <div className={`absolute bottom-8 left-1/2 flex w-max max-w-[calc(100%-16px)] -translate-x-1/2 flex-col items-center gap-1 md:flex-row md:flex-wrap md:justify-center ${workspace ? '' : 'bottom-2'}`}>
       <div className={`flex max-w-full items-center ${POD}`} role="group" aria-label="Camera navigation">
@@ -43,7 +46,7 @@ export function RoomViewControls({ workspace, pan, onPan, onRotate, onZoom, onFi
         {([
           ['up', 'Walls up'], ['cutaway', 'Cutaway'], ['down', 'Walls down'],
         ] as const).map(([id, label]) => <button key={id} type="button" className={`${BUTTON} ${wallView === id ? ACTIVE : ''}`} onClick={() => onWallView(id)} aria-label={label} aria-pressed={wallView === id} data-testid={`view3d-walls-${id}`}>{label}</button>)}
-        {onClose && <button type="button" className={`${BUTTON} border-l border-ppw-rim !rounded-l-none`} onClick={onClose} title="Back to the plan (Esc)" aria-label="Back to the plan" data-testid="wallpaint-3d-close">2D Plan</button>}
+        {onClose && !workspace && <button type="button" className={`${BUTTON} border-l border-ppw-rim !rounded-l-none`} onClick={onClose} title="Back to the plan (Esc)" aria-label="Back to the plan" data-testid="wallpaint-3d-close">2D Plan</button>}
       </div>}
     </div>
 
@@ -53,13 +56,13 @@ export function RoomViewControls({ workspace, pan, onPan, onRotate, onZoom, onFi
     </div>}
 
     {workspace && hasWalls && <div className={`absolute right-2 top-1/2 -translate-y-1/2 ${POD}`} data-testid="view3d-wall-height">
-      <span className="block text-center text-[10px] font-semibold uppercase tracking-wide text-[#676c63]">Height</span>
-      <WallHeightControl idPrefix="view3d-wall-height" className="flex-col gap-0" buttonClassName="!h-9 !w-9 !border-0 !bg-transparent !shadow-none" readoutClassName="!min-w-0 !px-1 !text-[11px]" />
+      <span className="block text-center text-[10px] font-semibold uppercase tracking-wide text-[#91a9c8]">Height</span>
+      <WallHeightControl idPrefix="view3d-wall-height" className="flex-col gap-0" buttonClassName="!h-9 !w-9 !border-0 !bg-transparent !shadow-none !text-[#bfd2ea]" readoutClassName="!min-w-0 !px-1 !text-[11px] !text-[#bfd2ea]" />
     </div>}
 
     {workspace && sunAvailable && <div className={`absolute right-2 top-2 flex flex-col items-end ${POD}`} role="group" aria-label="Sun" data-testid="view3d-sun">
       <button type="button" className={`${BUTTON} ${sunHour !== null ? ACTIVE : ''}`} onClick={() => onSunHour(sunHour === null ? 15.5 : null)} title="Preview daylight by time of day" aria-pressed={sunHour !== null} data-testid="view3d-sun-toggle"><span aria-hidden="true">☀</span> Daylight</button>
-      {sunHour !== null && <label className="flex items-center gap-2 px-2 py-1 text-xs text-[#37362f]">
+      {sunHour !== null && <label className="flex items-center gap-2 px-2 py-1 text-xs text-[#adc2df]">
         <input type="range" min={6} max={20} step={0.5} value={sunHour} onChange={(event) => onSunHour(Number(event.target.value))} className="h-9 w-24 accent-[#294e47]" aria-label="Time of day" data-testid="view3d-sun-hour" />
         <span className="tabular-nums" data-testid="view3d-sun-label">{`${String(Math.floor(sunHour)).padStart(2, '0')}:${sunHour % 1 ? '30' : '00'}`}</span>
       </label>}

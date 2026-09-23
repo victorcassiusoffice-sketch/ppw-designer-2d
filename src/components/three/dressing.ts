@@ -17,6 +17,7 @@ import type { FloorSolid, ItemSolid, WallOpeningSolid, WallSolid } from '../../d
 import { GROUND_HEX } from '../../designer/roomView3d';
 import { cornerShadeTexture, floorSurface, groundTexture, skyTexture, softShadowTexture, type FloorKind } from './surfaces';
 import { doorRuns } from './joinery';
+import type { ScenePresentation } from './renderPresentation';
 
 export const SKY_RADIUS_M = 220;
 /** How dark the corner shading gets right at the junction (alpha). */
@@ -31,24 +32,27 @@ export const CONTACT_SHADOW_MARGIN_M = 0.1;
 // Sky + ground.
 // ---------------------------------------------------------------------------
 /** An inside-out sphere carrying the sky gradient; unlit, drawn first, never writes depth. */
-export function skyDome(day: number): THREE.Mesh {
+export function skyDome(day: number, presentation: ScenePresentation = 'studio'): THREE.Mesh {
   const geo = new THREE.SphereGeometry(SKY_RADIUS_M, 32, 20);
-  const mat = new THREE.MeshBasicMaterial({ map: skyTexture(day), side: THREE.BackSide, depthWrite: false, fog: false });
+  const mat = new THREE.MeshBasicMaterial({ map: skyTexture(day, presentation), side: THREE.BackSide, depthWrite: false, fog: false, toneMapped: false });
+  mat.userData.dressingTextures = [mat.map];
   const dome = new THREE.Mesh(geo, mat);
   dome.renderOrder = -10;
   dome.name = 'sky';
   dome.frustumCulled = false;
-  dome.userData = { sky: true, day };
+  dome.userData = { sky: true, day, presentation };
   return dome;
 }
 
 /** Re-tint the dome for another hour (day 0..1). */
-export function updateSkyDome(dome: THREE.Mesh, day: number): void {
+export function updateSkyDome(dome: THREE.Mesh, day: number, presentation: ScenePresentation = 'studio'): void {
   const mat = dome.material as THREE.MeshBasicMaterial;
   mat.map?.dispose();
-  mat.map = skyTexture(day);
+  mat.map = skyTexture(day, presentation);
+  mat.userData.dressingTextures = [mat.map];
   mat.needsUpdate = true;
   dome.userData.day = day;
+  dome.userData.presentation = presentation;
 }
 
 /** The ground plane: the plot's neutral ground with a soft radial fall-off so distance reads. */
@@ -61,7 +65,28 @@ export function groundPlane(): THREE.Mesh {
   ground.position.y = -0.002;
   ground.receiveShadow = true;
   ground.name = 'ground';
+  (ground.material as THREE.MeshStandardMaterial).userData.dressingTextures = [(ground.material as THREE.MeshStandardMaterial).map];
   return ground;
+}
+
+/** Tint only the presentation ground. The plot, garden and floor finishes retain their materials. */
+export function updateGroundPresentation(ground: THREE.Mesh, presentation: ScenePresentation): void {
+  const material = ground.material as THREE.MeshStandardMaterial;
+  material.color.set(presentation === 'architectural' ? '#304566' : GROUND_HEX);
+  material.roughness = presentation === 'architectural' ? 0.92 : 1;
+}
+
+/** Private sky/ground and cloned occlusion maps are owned by this stage; cached surface maps are not. */
+export function disposeDressingTextures(root: THREE.Object3D): void {
+  const disposed = new Set<THREE.Texture>();
+  root.traverse((object) => {
+    const material = (object as THREE.Mesh).material;
+    for (const item of Array.isArray(material) ? material : material ? [material] : []) {
+      for (const texture of item.userData.dressingTextures ?? []) {
+        if (texture instanceof THREE.Texture && !disposed.has(texture)) { texture.dispose(); disposed.add(texture); }
+      }
+    }
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -92,6 +117,7 @@ export function floorMesh(f: FloorSolid, kind: FloorKind, tileM: number, env: TH
     envMapIntensity: s.sheen * 0.4,
   });
   const mesh = new THREE.Mesh(geo, mat);
+  mat.userData = { stageSurface: 'floor', floorHex: f.hex };
   mesh.position.y = (f.elevationM ?? 0) + 0.001;
   mesh.receiveShadow = true;
   mesh.userData = { key: f.key, floor: true, kind };
@@ -108,7 +134,9 @@ function shadeMaterial(flip: boolean): THREE.MeshBasicMaterial {
     tex.repeat.set(1, -1);
     tex.offset.set(0, 1);
   }
-  return new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: CORNER_SHADE_ALPHA, alphaMap: tex, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+  const material = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: CORNER_SHADE_ALPHA, alphaMap: tex, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+  material.userData = { stageSurface: 'corner', dressingTextures: [tex] };
+  return material;
 }
 
 /**
@@ -171,6 +199,7 @@ export function contactShadow(it: ItemSolid): THREE.Mesh | null {
   mesh.position.set((it.x0 + it.x1) / 2, it.z0 + 0.006, (it.y0 + it.y1) / 2);
   mesh.renderOrder = 1;
   mesh.userData = { key: `shadow-${it.key}`, shadow: true };
+  (mesh.material as THREE.MeshBasicMaterial).userData.stageSurface = 'contact';
   return mesh;
 }
 

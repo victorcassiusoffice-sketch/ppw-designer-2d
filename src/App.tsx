@@ -201,6 +201,7 @@ export default function App() {
         useToastStore.getState().push('The roof has no walls — switch to a storey to draw.', 'warn');
         return;
       }
+      useDesignerUIStore.getState().setViewMode('plan');
       beginDrawTransaction('draw new room');
       usePropertyStore.getState().selectItem(null);
       const dp = useDrawProgressStore.getState();
@@ -259,8 +260,11 @@ export default function App() {
    * plan already has rooms, so neither is touched.
    */
   const hasDrawnRoom = usePropertyStore((s) => s.property.rooms.some((r) => isDrawnPolygon(r.polygon)));
+  const designView = useDesignerUIStore((s) => s.viewMode);
+  useEffect(() => { if (designView === '3d') setDrawMode(false); }, [designView, setDrawMode]);
   const hadDrawnRoomRef = useRef<boolean | null>(null);
   useEffect(() => {
+    if (designView === '3d') return;
     const previously = hadDrawnRoomRef.current;
     hadDrawnRoomRef.current = hasDrawnRoom;
     // A merchant demo (`?demo=courts`) brings its own finished plan, and it
@@ -273,7 +277,7 @@ export default function App() {
     // `drawMode` is read, not tracked: re-running when the pen closes is
     // exactly the loop this guard exists to prevent.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasDrawnRoom, setDrawMode]);
+  }, [hasDrawnRoom, setDrawMode, designView]);
 
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [roomsMenuOpen, setRoomsMenuOpen] = useState(false);

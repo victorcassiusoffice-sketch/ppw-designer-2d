@@ -41,7 +41,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDesignStore, isActiveRoomRectangle } from '../store/designStore';
 import { usePropertyStore } from '../store/propertyStore';
 import { useDesignsStore } from '../store/designsStore';
@@ -460,6 +460,7 @@ export function TopBar({
   threeDPreview = false,
   setThreeDPreview,
 }: TopBarProps) {
+  const navigate = useNavigate();
   const room = useDesignStore((s) => s.roomDimensions);
   const setRoom = useDesignStore((s) => s.setRoomDimensions);
   const showGrid = useDesignStore((s) => s.showGrid);
@@ -1295,7 +1296,7 @@ export function TopBar({
     if (!sidePanelOpen) return;
     const el = headerRef.current;
     if (!el) return;
-    const measure = () => setFloorPanelTop(Math.round(el.getBoundingClientRect().bottom));
+    const measure = () => setFloorPanelTop(viewMode === '3d' ? 62 : Math.round(el.getBoundingClientRect().bottom));
     measure();
     const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
     ro?.observe(el);
@@ -1304,7 +1305,7 @@ export function TopBar({
       ro?.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, [sidePanelOpen]);
+  }, [sidePanelOpen, viewMode]);
 
   // 3D Mode (2026-09-17) outlives the paint tool: putting the tool away
   // leaves the room on screen (it used to close the view). The mode
@@ -3257,6 +3258,8 @@ export function TopBar({
           <RoomView3D
             variant="overlay"
             title="3D Mode"
+            onSave={handleSaveAs}
+            onCart={() => navigate('/cart')}
             onPaintWall={claddingActive ? cladFromRoomView : wallPaintActive ? paintFromRoomView : undefined}
             onPaintFloor={floorPaintActive ? paintFloorFromRoomView : undefined}
             brushHex={claddingActive ? (claddingDraft.erase ? null : claddingProduct.hex) : wallPaintActive ? wallPaintPreviewHex : undefined}

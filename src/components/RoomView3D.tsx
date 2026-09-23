@@ -39,10 +39,11 @@ import {
   type ReactNode,
 } from 'react';
 import { usePropertyStore, type Property, type Room } from '../store/propertyStore';
-import { useDesignerUIStore } from '../store/designerUIStore';
+import { PRECISION_STEP_M, useDesignerUIStore } from '../store/designerUIStore';
 import { usePlacementIntentStore, isScreenTarget } from '../store/placementIntentStore';
+import { useToastStore } from '../store/toastStore';
 import { useCatalogStore } from '../store/catalogStore';
-import { rotateSelected, deleteSelected } from '../lib/placementActions';
+import { rotateSelected, deleteSelected, duplicateSelected } from '../lib/placementActions';
 import { haptic } from '../lib/haptics';
 import { brushPaintId, type BrushModifiers } from '../designer/wallPaintBrush';
 import { previewFloorDrag } from '../designer/floorPaintBrush';
@@ -50,6 +51,9 @@ import { activeLevelIdOf, isOutdoorRoom, isRoofLevel, isRoofRoom, roomsOnLevel }
 import { buildingLevels, levelElevationM, levelHeightM, type BuildingStair } from '../designer/building';
 import { buildingSolids, type BuildingView } from '../designer/buildingScene';
 import { validateStairPlacement } from '../designer/stairPlacement';
+import { HouseWorkspace, type HouseMode } from './HouseWorkspace';
+import { previewRectRoomBuild, type RoomBuildPreview } from '../designer/roomBuildGesture';
+import { commitRectRoomBuild } from '../lib/roomBuildActions';
 import { BuildingControls } from './BuildingControls';
 import { useSmoothedCamera } from './useSmoothedCamera';
 import { panOrbitCamera } from '../designer/cameraMotion';
@@ -65,6 +69,7 @@ import { emitsLight } from '../designer/lighting';
 import { findFloorMaterialById } from '../data/floorMaterials';
 import { findCladdingProduct } from '../data/claddingCatalog';
 import { getProductById, productImageUrl, productTopDownUrl } from '../data/products';
+import { hasFurniturePreview, FURNITURE_PREVIEW_NOTE } from '../data/dimensionalPreview';
 import { productModelFor } from '../data/productModels';
 import { DEFAULT_WALL_HEIGHT_M, findWallPaintById, finishOfPaint, resolveWallColourHex } from '../data/wallPaints';
 import { RoomViewControls, type CameraView } from './RoomViewControls';
@@ -120,6 +125,8 @@ export interface RoomView3DProps {
   hoverTag?: (hit: WallHit) => string | null;
   /** Overlay: close it. Card: open the overlay. */
   onClose?: () => void;
+  onSave?: () => void;
+  onCart?: () => void;
   onExpand?: () => void;
   /** One line under the view — the live paint quote, typically. */
   footer?: string;
@@ -380,7 +387,7 @@ function hitKey(h: WallHit): string {
   return h.kind === 'edge' ? `e:${h.roomId}:${h.edgeIndex}` : `f:${h.wallId}`;
 }
 
-export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hoverTag, onClose, onExpand, footer, caption, brushStrip, title, className = '', style }: RoomView3DProps): JSX.Element {
+export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hoverTag, onClose, onSave, onCart, onExpand, footer, caption, brushStrip, title, className = '', style }: RoomView3DProps): JSX.Element {
   const property = usePropertyStore((s) => s.property);
   const selectedInstanceId = usePropertyStore((s) => s.selectedInstanceId);
   const selectItem = usePropertyStore((s) => s.selectItem);
@@ -419,7 +426,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const [moveFeedback, setMoveFeedback] = useState<string | null>(null);
   const [buildingView, setBuildingView] = useState<BuildingView>('building');
   const [showRoof, setShowRoof] = useState(false);
-  const [constructionTool, setConstructionTool] = useState<'select' | 'stair' | 'window' | 'door'>('select');
+  const [constructionTool, setConstructionTool] = useState<'select' | 'room' | 'stair' | 'window' | 'door'>('select');
+  const [houseMode, setHouseMode] = useState<HouseMode>('build');
+  const [roomPreview, setRoomPreview] = useState<RoomBuildPreview | null>(null);
+  const roomDrag = useRef<RoomBuildPreview | null>(null);
   const [gardenOpen, setGardenOpen] = useState(false);
   const [gardenPlacement, setGardenPlacement] = useState<GardenPlacement | null>(null);
   const [hover, setHover] = useState<WallHit | null>(null);
@@ -446,6 +456,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   useEffect(() => {
     if (energyOpen) { setConstructionTool('select'); setGardenPlacement(null); setGardenOpen(false); }
   }, [energyOpen]);
+  useEffect(() => { roomDrag.current = null; setRoomPreview(null); }, [level, constructionTool]);
   const activeHeight = levelHeightM(property, level) || DEFAULT_WALL_HEIGHT_M;
   const baseElevation = buildingView === 'floor' ? levelElevationM(property, level) : 0;
   const H = buildingView === 'building'
@@ -472,12 +483,14 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   }, [onPaintFloor]);
 
   // Bounds of the storey in view — the camera re-frames when they change.
-  const bounds = useMemo(() => {
+  const sceneBounds = useMemo(() => {
     const rooms = (buildingView === 'building' ? property.rooms : roomsOnLevel(property.rooms, level)).filter((r) => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon));
     const walls = buildingView === 'building' ? property.walls ?? [] : wallsOnLevel(property.walls ?? [], level);
     const landscape = (buildingView === 'building' || level === 'ground') && property.garden ? gardenPoints(property.garden) : [];
     return boundsOf(landscape.length ? [...rooms, { polygon: landscape }] : rooms, walls);
   }, [property, level, buildingView]);
+  // A blank project still has a buildable 3D ground plane.
+  const bounds = sceneBounds ?? (variant === 'overlay' ? { minX: -2, minY: -2, maxX: 10, maxY: 10 } : null);
   const boundsKey = bounds
     ? [bounds.minX, bounds.minY, bounds.maxX, bounds.maxY].map((v) => Math.round(v * 10) / 10).join(',')
     : '';
@@ -692,6 +705,17 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         drag.current = { x: e.clientX, y: e.clientY, moved: false, pinchDist: 0 };
         return;
       }
+      if (constructionTool === 'room' && stageRef.current) {
+        const p = localPoint(e);
+        const point = stageRef.current.floorPoint(p.x, p.y);
+        if (point) {
+          const preview = previewRectRoomBuild(property, point, point, { levelId: level, stepM: PRECISION_STEP_M[useDesignerUIStore.getState().precision] });
+          roomDrag.current = preview;
+          setRoomPreview(preview);
+          drag.current = null;
+          return;
+        }
+      }
       // The brush, with a mouse: a press on a wall starts a stroke.
       if (onPaintWall && e.pointerType === 'mouse') {
         const p = localPoint(e);
@@ -745,6 +769,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       }
       drag.current = { x: e.clientX, y: e.clientY, moved: false, pinchDist: 0 };
     } else if (pointers.current.size === 2) {
+      // A second finger cancels a room draft without changing the plan.
+      roomDrag.current = null;
+      setRoomPreview(null);
       // A second finger ends any carry or stroke and starts a pinch.
       stroke.current = null;
       floorStroke.current = null;
@@ -771,6 +798,17 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       return;
     }
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (roomDrag.current && pointers.current.size === 1 && stageRef.current) {
+      const p = localPoint(e);
+      const point = stageRef.current.floorPoint(p.x, p.y);
+      if (point) {
+        const { from, stepM, levelId } = roomDrag.current;
+        const preview = previewRectRoomBuild(usePropertyStore.getState().property, from, point, { stepM, levelId });
+        roomDrag.current = preview;
+        setRoomPreview(preview);
+      }
+      return;
+    }
     const floorRun = floorStroke.current;
     if (floorRun && pointers.current.size === 1 && stageRef.current) {
       const p = localPoint(e);
@@ -854,6 +892,19 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       if (pointers.current.size === 0) drag.current = null;
       return;
     }
+    if (roomDrag.current && had) {
+      const draft = roomDrag.current;
+      roomDrag.current = null;
+      setRoomPreview(null);
+      drag.current = null;
+      if (!cancelled && stageRef.current) {
+        const p = localPoint(e);
+        const point = stageRef.current.floorPoint(p.x, p.y) ?? draft.to;
+        const result = commitRectRoomBuild(previewRectRoomBuild(usePropertyStore.getState().property, draft.from, point, { stepM: draft.stepM, levelId: draft.levelId }));
+        showFlash(result.ok ? `Room built · ${result.preview.areaM2.toFixed(1)} m²` : result.message);
+      }
+      return;
+    }
     if (stroke.current && had) {
       // The stroke painted as it went; the release only ends it.
       stroke.current = null;
@@ -923,7 +974,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       showFlash('Garden element placed');
       return;
     }
-    if (constructionTool !== 'select' && stageRef.current && !onPaintWall && !onPaintFloor) {
+    if (constructionTool !== 'select' && constructionTool !== 'room' && stageRef.current && !onPaintWall && !onPaintFloor) {
       const store = usePropertyStore.getState();
       if (constructionTool === 'stair') {
         const storeys = buildingLevels(property).filter((entry) => !isRoofLevel(entry.level));
@@ -1003,6 +1054,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   function clearLocalTools() {
     selectItem(null);
     setConstructionTool('select');
+    roomDrag.current = null;
+    setRoomPreview(null);
     setGardenPlacement(null);
     setGardenOpen(false);
     setHover(null);
@@ -1058,6 +1111,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         e.stopImmediatePropagation();
         setPanMode(false);
         setConstructionTool('select');
+        roomDrag.current = null;
+        setRoomPreview(null);
         return;
       }
       e.stopPropagation();
@@ -1068,7 +1123,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   }, [variant, onClose, gardenOpen, gardenPlacement, panMode, constructionTool]);
 
   const hoverText = describeHit(property, hover, onPaintWall && hoverTag && hover ? hoverTag(hover) : null);
-  const empty = !bounds;
+  const empty = !sceneBounds;
   const drawn = solids.walls.length + solids.floors.length + solids.items.length;
   const viewLabel = empty
     ? 'Room view — draw a room to see it in 3D'
@@ -1077,6 +1132,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const selectedProduct = selectedItem ? getProductById(selectedItem.productId) : undefined;
   const armedProduct = armedProductId ? getProductById(armedProductId) : undefined;
   const defaultCaption = panMode ? 'Drag anywhere to move the view · tap Move view again to select furniture'
+    : constructionTool === 'room' ? 'Drag corner to corner · release to build · two fingers to pan · Esc to cancel'
     : onPaintWall
     ? 'Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase'
     : onPaintFloor
@@ -1092,11 +1148,58 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       ? `${floorPreview.erase ? 'Erase' : 'Lay'} ${floorPreview.count} tile${floorPreview.count === 1 ? '' : 's'} · release to commit`
       : null;
 
+  function chooseBuildTool(next: typeof constructionTool) {
+    if (next === 'room' && backend === 'painter') {
+      useToastStore.getState().push('3D room drawing needs WebGL. Use Draw walls in 2D Plan on this device.', 'info');
+      onClose?.();
+      return;
+    }
+    const ui = useDesignerUIStore.getState();
+    ui.setTool('hand');
+    ui.setEnergyPanelOpen(false);
+    usePlacementIntentStore.getState().setArmed(null);
+    selectItem(null);
+    roomDrag.current = null;
+    setRoomPreview(null);
+    setConstructionTool(next);
+    setGardenPlacement(null);
+    setGardenOpen(false);
+    setPanMode(false);
+    setHouseMode('build');
+    if (next !== 'select') window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
+    if (next === 'room') {
+      if (onRoofLevel) {
+        const storeys = levelEntries.filter((entry) => !isRoofLevel(entry.level));
+        const top = storeys[storeys.length - 1];
+        if (top) usePropertyStore.getState().setActiveLevel(top.level.id);
+      }
+      setBuildingView('floor');
+      setShowRoof(false);
+    }
+  }
+
+  function changeHouseMode(mode: HouseMode) {
+    clearLocalTools();
+    setHouseMode(mode);
+    setPanMode(false);
+    const ui = useDesignerUIStore.getState();
+    ui.setEnergyPanelOpen(false);
+    ui.setTool('hand');
+    usePlacementIntentStore.getState().setArmed(null);
+    if (mode === 'paint' || mode === 'floor' || mode === 'energy') quickTool(mode === 'paint' ? 'wallpaint' : mode);
+    if (mode === 'furnish') window.dispatchEvent(new CustomEvent('ppw:open-catalog'));
+    if (mode === 'garden') {
+      usePropertyStore.getState().setActiveLevel('ground');
+      setGardenOpen(true);
+    }
+  }
+  const activeHouseMode: HouseMode = onPaintWall ? 'paint' : onPaintFloor ? 'floor' : energyOpen ? 'energy' : gardenOpen ? 'garden' : houseMode;
+
   const box = (
     <div
       ref={containerRef}
       className="relative w-full overflow-hidden"
-      style={{ background: '#E7E2D8', touchAction: 'none', ...(variant === 'card' ? { aspectRatio: '16 / 10' } : { flex: 1, minHeight: 0 }) }}
+      style={{ background: variant === 'overlay' ? '#263853' : '#E7E2D8', touchAction: 'none', ...(variant === 'card' ? { aspectRatio: '16 / 10' } : { flex: 1, minHeight: 0 }) }}
       data-testid="wallpaint-3d"
       data-variant={variant}
       data-backend={backend}
@@ -1108,6 +1211,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
             <ThreeStage
               ref={stageRef}
               solids={solids}
+              presentation={variant === 'overlay' && !onPaintWall ? 'architectural' : 'studio'}
               camera={displayedCamera ?? camera}
               width={size.width}
               height={size.height}
@@ -1130,7 +1234,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         role="img"
         aria-label={viewLabel}
         className="absolute inset-0"
-        style={{ cursor: panMode ? 'move' : hover ? 'pointer' : hoverItem ? 'move' : onPaintFloor ? 'pointer' : armedProduct && itemsInteractive ? 'copy' : 'grab' }}
+        style={{ cursor: constructionTool === 'room' ? 'crosshair' : panMode ? 'move' : hover ? 'pointer' : hoverItem ? 'move' : onPaintFloor ? 'pointer' : armedProduct && itemsInteractive ? 'copy' : 'grab' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={(e) => endPointer(e, false)}
@@ -1141,22 +1245,18 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         }}
         onContextMenu={(e) => e.preventDefault()}
       />
-      {empty && (
-        <p className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-center text-[12px] font-medium text-ppw-charcoal">
-          Draw a room to see it in 3D
-        </p>
-      )}
+      {roomPreview && <svg className="house-room-preview" data-valid={roomPreview.ok} aria-hidden="true">
+        <polygon points={roomPreview.polygon.map((point) => stageRef.current?.projectPoint(point.x, point.y, roomPreview.elevationM + 0.03)).filter((point) => !!point).map((point) => `${point.x},${point.y}`).join(' ')} />
+        {(() => { const center = roomPreview.polygon.reduce((p, q) => ({ x: p.x + q.x / 4, y: p.y + q.y / 4 }), { x: 0, y: 0 }); const screen = stageRef.current?.projectPoint(center.x, center.y, roomPreview.elevationM + 0.04); return screen ? <text x={screen.x} y={screen.y} textAnchor="middle">{roomPreview.widthM.toFixed(1)} × {roomPreview.depthM.toFixed(1)} m</text> : null; })()}
+      </svg>}
+      {constructionTool === 'room' && <p className="house-drawing-help" role="status">{roomPreview ? roomPreview.ok ? `${roomPreview.areaM2.toFixed(1)} m² · release to build` : roomPreview.message : 'Drag from one corner to the opposite corner to build a room'}</p>}
+      {empty && constructionTool !== 'room' && variant === 'overlay' && <div className="house-empty"><strong>Your home starts here</strong><p>Draw your first room, add another floor, then shape the spaces around it.</p><button onClick={() => chooseBuildTool('room')}>Draw a room</button></div>}
+      {empty && variant === 'card' && <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs">Draw a room to see it in 3D</p>}
       <RoomViewControls workspace={variant === 'overlay'} pan={panMode} onPan={togglePan}
         onRotate={rotate} onZoom={zoomBy} onFit={refit} onView={chooseCameraView}
         wallView={wallView} onWallView={setWallView} hasWalls={solids.walls.length > 0 && !onRoofLevel}
         sunAvailable={backend === 'gl'} sunHour={sunHour} onSunHour={setSunHour}
         onClose={onClose} onExpand={onExpand} />
-      {variant === 'overlay' && <div className="absolute left-2 top-2 flex rounded-xl border border-white/80 bg-[#fafaf7]/95 p-1 shadow-[0_3px_18px_rgba(35,44,40,0.12)]" role="group" aria-label="Finishes and energy">
-        {([['wallpaint', 'Paint'], ['floor', 'Floor'], ['energy', 'Solar']] as const).map(([id, label]) => <button key={id} type="button"
-          className={`inline-flex h-11 items-center justify-center rounded-lg px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal md:h-9 ${tool === id || id === 'energy' && energyOpen ? 'bg-[#294e47] text-white' : 'text-[#37362f] hover:bg-[#e9eee9]'}`}
-          aria-label={id === 'energy' ? 'Solar and energy' : `${label} finishes`} aria-pressed={tool === id || id === 'energy' && energyOpen}
-          data-testid={`view3d-quick-${id}`} onClick={() => quickTool(id)}>{label}</button>)}
-      </div>}
       {/* The selection's card (overlay, item tools): what it is, turn it, remove it —
           the same actions the plan's keyboard runs, so 2D follows. */}
       {variant === 'overlay' && itemsInteractive && selectedItem && selectedProduct && (
@@ -1191,6 +1291,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           >
             Turn ↻
           </button>
+          <button type="button" className={`${SEL_BTN} border-[#49607d] bg-[#243a55] text-[#d8e8fa]`} onClick={() => duplicateSelected()} title="Duplicate selected product">Duplicate</button>
+          <button type="button" className={`${SEL_BTN} border-[#49607d] bg-[#243a55] text-[#d8e8fa]`} onClick={() => { useDesignerUIStore.getState().setInfoOpen(true); onClose?.(); }}>Details in plan</button>
           <button
             type="button"
             className={`${SEL_BTN} border-ppw-clay bg-ppw-chrome text-ppw-charcoal hover:bg-ppw-clay hover:text-white`}
@@ -1200,6 +1302,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           >
             Remove
           </button>
+          {hasFurniturePreview(selectedProduct.id) && !productModelFor(selectedProduct) && <p className="w-full text-[10px] text-[#a9bfdc]">{FURNITURE_PREVIEW_NOTE}</p>}
         </div>
       )}
       {/* Hover read-out / caption. */}
@@ -1228,33 +1331,19 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   }
 
   return (
-    <div
-      className={`fixed left-0 z-[34] flex flex-col ${className}`}
-      // A WORKSPACE, not a dialog: it takes the plan's place under the top
-      // bar (3D Mode, 2026-09-17: the bar stays usable so tools can be
-      // switched while the room is on screen), ends at the docked panel on
-      // md+ (the brush stays reachable; 0px on the phone) and, in the
-      // workspace, stops ABOVE the catalog (the desktop dock / the phone
-      // strip publish their live heights) so products can be picked while
-      // the room is on screen — buy mode, the Sims way. With a wall tool
-      // live the brush owns the bottom band (phone pass 2026-09-16): the
-      // room runs edge to edge over the folded strip.
-      style={{
-        top: 'var(--ppw-topbar-h, 0px)',
-        right: 'var(--floor-panel-w, 0px)',
-        bottom: onPaintWall || onPaintFloor ? 0 : 'calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))',
-        background: '#E7E2D8',
-        ...style,
-      }}
-      data-testid="wallpaint-3d-overlay"
-      role="region"
-      aria-label={title ?? "Room view in 3D"}
-    >
-      <BuildingControls view={buildingView} onViewChange={setBuildingView} showRoof={showRoof} onShowRoofChange={setShowRoof} tool={constructionTool} onToolChange={(next) => { useDesignerUIStore.getState().setTool('hand'); usePlacementIntentStore.getState().setArmed(null); setConstructionTool(next); setGardenPlacement(null); setGardenOpen(false); setPanMode(false); useDesignerUIStore.getState().setEnergyPanelOpen(false); }} gardenOpen={gardenOpen} onGardenToggle={() => { useDesignerUIStore.getState().setTool('hand'); usePlacementIntentStore.getState().setArmed(null); usePropertyStore.getState().setActiveLevel('ground'); setGardenOpen(!gardenOpen); setConstructionTool('select'); setPanMode(false); useDesignerUIStore.getState().setEnergyPanelOpen(false); }} />
-      {gardenOpen && <div className="absolute inset-x-0 bottom-0 z-30 max-h-[52%] overflow-y-auto border-t border-ppw-rim bg-ppw-chrome shadow-xl md:left-auto md:top-24 md:w-80 md:max-h-[75%]"><GardenPanel onClose={() => { setGardenOpen(false); setGardenPlacement(null); }} onRequestPlacement={(intent) => { usePropertyStore.getState().setActiveLevel('ground'); setGardenPlacement(intent); setGardenOpen(false); }} /></div>}
-      {gardenPlacement && <p role="status" className="border-b border-ppw-rim bg-white px-3 py-1 text-xs">Tap the ground to place this garden element. <button className="underline" onClick={() => setGardenPlacement(null)}>Cancel</button></p>}
-      {box}
-      {footer && <p className="shrink-0 border-t border-ppw-rim bg-ppw-chrome px-3 py-1 text-xs font-semibold text-[#37362f]" data-testid="wallpaint-3d-footer">{footer}</p>}
+    <div className={`fixed left-0 top-0 z-[34] flex flex-col ${className}`}
+      style={{ right: 'var(--floor-panel-w, 0px)', bottom: onPaintWall || onPaintFloor ? 0 : 'calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))', ...style }}
+      data-testid="wallpaint-3d-overlay" role="region" aria-label={title ?? 'Room view in 3D'}>
+      <HouseWorkspace mode={activeHouseMode} onMode={changeHouseMode} onPlan={onClose} onSave={onSave} onCart={onCart}
+        externalPanel={!!onPaintWall || !!onPaintFloor || energyOpen}
+        drawing={constructionTool === 'room'} onDraw={() => chooseBuildTool(constructionTool === 'room' ? 'select' : 'room')} onSelect={() => chooseBuildTool('select')}
+        inspector={gardenOpen ? <div className="house-garden-panel"><GardenPanel architectural onClose={() => { setGardenOpen(false); setGardenPlacement(null); setHouseMode('build'); }} onRequestPlacement={(intent) => { usePropertyStore.getState().setActiveLevel('ground'); setGardenPlacement(intent); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} /></div>
+          : <BuildingControls layout="sidebar" view={buildingView} onViewChange={setBuildingView} showRoof={showRoof} onShowRoofChange={setShowRoof} tool={constructionTool} onToolChange={chooseBuildTool}
+            gardenOpen={gardenOpen} onGardenToggle={() => changeHouseMode('garden')} />}>
+        {gardenPlacement && <p role="status" className="bg-[#29405c] px-3 py-2 text-xs text-[#c4e8f2]">Tap the ground to place this garden element. <button className="underline" onClick={() => setGardenPlacement(null)}>Cancel</button></p>}
+        {box}
+      </HouseWorkspace>
+      {footer && <p className="shrink-0 border-t border-[#34415b] bg-[#172139] px-3 py-1 text-xs font-semibold text-[#c9d8ef]" data-testid="wallpaint-3d-footer">{footer}</p>}
       {brushStrip}
     </div>
   );

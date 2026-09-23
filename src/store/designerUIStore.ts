@@ -275,7 +275,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         erase: false,
       },
       energyPanelOpen: false,
-      viewMode: 'plan',
+      viewMode: '3d',
       setViewMode: (mode) => set((s) => (s.viewMode === mode ? s : { viewMode: mode })),
       wallView: 'cutaway',
       setWallView: (view) => set((s) => (s.wallView === view ? s : { wallView: view })),

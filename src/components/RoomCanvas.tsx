@@ -5321,7 +5321,7 @@ export function RoomCanvas({
           duplicate/delete/details/confirm) happen INLINE, never on a new
           screen. Mobile/tablet only (lg:hidden); desktop keeps keyboard +
           the right-rail DetailsPanel + the on-canvas rotate handle. */}
-      {!drawMode && !wallDrawEnabled && !pendingProductId && (() => {
+      {viewMode !== '3d' && !drawMode && !wallDrawEnabled && !pendingProductId && (() => {
         const sel = placedItems.find((i) => i.instanceId === selectedInstanceId);
         if (!sel) return null;
         const p = getProductById(sel.productId);

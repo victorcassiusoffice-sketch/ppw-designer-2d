@@ -19,6 +19,7 @@ import { SimsBottomToolbar } from '../SimsBottomToolbar';
 import { MobileProductPopup } from '../MobileProductPopup';
 import { getAllProducts } from '../../../data/products';
 import type { Product } from '../../../data/products.schema';
+import { useDesignerUIStore } from '../../../store/designerUIStore';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -26,6 +27,8 @@ let container: HTMLDivElement;
 let root: Root;
 
 beforeEach(() => {
+  // These fixtures exercise the plan catalog; the app now opens in 3D.
+  useDesignerUIStore.setState({ viewMode: 'plan' });
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);

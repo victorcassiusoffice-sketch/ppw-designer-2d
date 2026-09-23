@@ -48,18 +48,10 @@ import {
 import { MacroIcon } from './MacroIcon';
 import { MobileProductPopup } from './MobileProductPopup';
 import { useDragToPlace } from './useDragToPlace';
-import { catalogPrice, filterCatalog, handleCatalogCategoryKey, type CatalogSort } from '../catalogPresentation';
-// Toolbar pass (2026-08-29): the phone toolbar wears the SAME PPWellness
-// Shop skin as the desktop SimsDock — warm off-white ground, hairline rims,
-// dark warm ink, mint accent. The navy/gold constants it used to carry were
-// the one place the two docks disagreed.
-import {
-  DOCK_ACCENT,
-  DOCK_BG,
-  DOCK_BG_RAISED,
-  DOCK_BORDER,
-  DOCK_TEXT,
-} from '../../designer/blueprintTheme';
+import { CATALOG_CHROME, catalogPrice, catalogRequestCategory, filterCatalog, handleCatalogCategoryKey, type CatalogSort } from '../catalogPresentation';
+import '../catalogChrome.css';
+
+const { DOCK_ACCENT, DOCK_BG, DOCK_BG_RAISED, DOCK_BORDER, DOCK_TEXT } = CATALOG_CHROME;
 
 /** Cream photo plate behind every thumbnail — unchanged (product art is shot on it). */
 const THUMB_PLATE = '#F5EBD7';
@@ -69,9 +61,10 @@ const THUMB_PLATE = '#F5EBD7';
  * reduced-motion) + the mint focus ring. Same string the desktop dock uses.
  */
 const DOCK_CONTROL =
-  'transition-colors duration-[120ms] ease-out motion-reduce:transition-none focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]';
+  'transition-colors duration-[120ms] ease-out motion-reduce:transition-none focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--catalog-focus)]';
 
 export function SimsBottomToolbar() {
+  const viewMode = useDesignerUIStore((s) => s.viewMode);
   const [activeCategory, setActiveCategory] = useState<MacroCategory>('all');
   const [minimized, setMinimized] = useState(false);
   const [query, setQuery] = useState('');
@@ -84,6 +77,31 @@ export function SimsBottomToolbar() {
   const sectionRef = useRef<HTMLElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { if (viewMode === '3d') setMinimized(true); }, [viewMode]);
+  useEffect(() => {
+    let focusFrame: number | undefined;
+    const open = (event: Event) => {
+      if (window.innerWidth >= 1024) return;
+      const category = catalogRequestCategory(event);
+      setActiveCategory(category ?? 'all');
+      setQuery('');
+      setMinimized(false);
+      setSelected(null);
+      if (focusFrame !== undefined) cancelAnimationFrame(focusFrame);
+      focusFrame = requestAnimationFrame(() => {
+        // Focus a category without opening the phone keyboard over the scene.
+        const target = sectionRef.current?.querySelector<HTMLButtonElement>(`[data-testid="sims-cat-${category ?? 'all'}"]`);
+        target?.focus({ preventScroll: true });
+        target?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+      });
+    };
+    window.addEventListener('ppw:open-catalog', open);
+    return () => {
+      window.removeEventListener('ppw:open-catalog', open);
+      if (focusFrame !== undefined) cancelAnimationFrame(focusFrame);
+    };
+  }, []);
 
   // Polish (2026-08-29): while the wall pen is open on a phone the thumbnail
   // strip (~150 px) plus the HUD card left ~190 px of drawable canvas. The
@@ -182,8 +200,9 @@ export function SimsBottomToolbar() {
       <section
         ref={sectionRef}
         data-testid="sims-bottom-toolbar"
+        data-catalog-mode={viewMode}
         aria-label="Product catalog"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-30 flex flex-col"
+        className="sims-catalog lg:hidden fixed bottom-0 left-0 right-0 z-30 flex flex-col"
         style={{
           background: DOCK_BG,
           borderTop: `1px solid ${DOCK_BORDER}`,
@@ -216,14 +235,14 @@ export function SimsBottomToolbar() {
                     setMinimized(false);
                   }}
                   className={`flex h-11 min-w-[60px] shrink-0 flex-col items-center justify-center gap-1 rounded-lg px-2 ${DOCK_CONTROL} ${
-                    active ? '' : 'hover:bg-[#faf9f5]'
+                    active ? '' : 'hover:bg-[var(--catalog-hover)]'
                   }`}
                   style={{
                     // Shop selected style: dark ink on a mint tint with a
                     // mint rim — never mint (or gold) TEXT, which fails
                     // contrast on the light ground.
-                    color: DOCK_TEXT,
-                    background: active ? 'rgba(121,199,173,0.20)' : 'transparent',
+                    color: active ? 'var(--catalog-selected-text)' : DOCK_TEXT,
+                    background: active ? 'var(--catalog-selected)' : 'transparent',
                     boxShadow: active ? `inset 0 0 0 1px ${DOCK_ACCENT}` : 'none',
                   }}
                 >
@@ -249,7 +268,7 @@ export function SimsBottomToolbar() {
             aria-expanded={!minimized}
             aria-controls="mobile-catalog-products"
             onClick={() => setMinimized((v) => !v)}
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-[#f3f1ec] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] ${DOCK_CONTROL}`}
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-[var(--catalog-hover)] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] ${DOCK_CONTROL}`}
             style={{
               color: DOCK_TEXT,
               background: DOCK_BG_RAISED,
@@ -275,13 +294,13 @@ export function SimsBottomToolbar() {
         </div>
 
         {!minimized && <div className="flex shrink-0 items-center gap-2 px-2 pt-2">
-          <label className="flex h-11 min-w-0 flex-1 items-center rounded-lg border bg-white px-2.5 focus-within:ring-2 focus-within:ring-[#79c7ad]" style={{ borderColor: DOCK_BORDER }}>
+          <label className="catalog-field flex h-11 min-w-0 flex-1 items-center rounded-lg border px-2.5 focus-within:ring-2 focus-within:ring-[var(--catalog-focus)]" style={{ borderColor: DOCK_BORDER }}>
             <input ref={searchRef} type="search" value={query} data-testid="sims-search" aria-label="Search product catalog"
               placeholder={activeCategory === 'all' ? 'Search products or brands' : `Search ${MACRO_CATEGORY_LABEL[activeCategory].toLowerCase()}`}
-              onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { event.stopPropagation(); if (event.key === 'Escape') setQuery(''); }} className="min-w-0 flex-1 bg-transparent text-[16px] text-[#37362f] outline-none placeholder:text-[12px] placeholder:text-[#6e6b61]" />
+              onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { event.stopPropagation(); if (event.key === 'Escape') setQuery(''); }} className="catalog-field min-w-0 flex-1 text-[16px] outline-none placeholder:text-[12px]" />
           </label>
           <select value={sort} data-testid="sims-sort" aria-label="Sort products" onChange={(event) => setSort(event.target.value as CatalogSort)}
-            className={`h-11 w-[116px] shrink-0 rounded-lg border bg-white px-2 text-[12px] ${DOCK_CONTROL}`} style={{ borderColor: DOCK_BORDER, color: DOCK_TEXT }}>
+            className={`catalog-field h-11 w-[116px] shrink-0 rounded-lg border px-2 text-[12px] ${DOCK_CONTROL}`} style={{ borderColor: DOCK_BORDER, color: DOCK_TEXT }}>
             <option value="catalog">Catalog order</option><option value="name">Name A–Z</option><option value="footprint">Smallest first</option>
           </select>
         </div>}
@@ -334,8 +353,8 @@ export function SimsBottomToolbar() {
                         style={{
                           background: DOCK_BG_RAISED,
                           boxShadow: isOn
-                            ? `inset 0 0 0 2px ${DOCK_ACCENT}, 0 0 0 3px rgba(121,199,173,0.35)`
-                            : `inset 0 0 0 1px ${DOCK_BORDER}`,
+                            ? `inset 0 0 0 2px ${DOCK_ACCENT}, 0 0 0 3px var(--catalog-armed-glow)`
+                            : `inset 0 0 0 1px ${DOCK_BORDER}, 0 3px 8px var(--catalog-card-shadow)`,
                         }}
                       >
                         <span className="relative block h-[52px] w-full shrink-0"><ThumbImage product={p} /></span>
@@ -343,7 +362,7 @@ export function SimsBottomToolbar() {
                           aria-hidden="true"
                           className="pointer-events-none absolute left-1 top-1 rounded px-1 py-0.5 text-[11px] font-semibold leading-none"
                           style={{
-                            background: 'rgba(250,249,245,0.92)',
+                            background: DOCK_BG_RAISED,
                             color: DOCK_TEXT,
                             border: `1px solid ${DOCK_BORDER}`,
                           }}
@@ -351,7 +370,7 @@ export function SimsBottomToolbar() {
                           Floor
                         </span>
                         <span aria-hidden="true" className="mt-1 block w-full truncate text-[11px] font-medium" style={{ color: DOCK_TEXT }}>{p.name}</span>
-                        <span aria-hidden="true" className="block w-full truncate text-[11px] tabular-nums text-[#5b5852]">{catalogPrice(p)}</span>
+                        <span aria-hidden="true" className="catalog-muted block w-full truncate text-[11px] tabular-nums">{catalogPrice(p)}</span>
                       </button>
                     );
                   }
@@ -371,14 +390,14 @@ export function SimsBottomToolbar() {
                     // browser "Save image" menu over the catalog thumbnail.
                     onContextMenu={(e) => e.preventDefault()}
                     className={`ppw-no-callout relative flex h-24 w-[104px] flex-col items-center justify-start overflow-hidden rounded-xl px-1.5 pb-1 pt-1 ${DOCK_CONTROL}`}
-                    style={{ background: DOCK_BG_RAISED, boxShadow: `inset 0 0 0 1px ${DOCK_BORDER}` }}
+                    style={{ background: DOCK_BG_RAISED, boxShadow: `inset 0 0 0 1px ${DOCK_BORDER}, 0 3px 8px var(--catalog-card-shadow)` }}
                   >
                     {/* Polish (2026-05-29) — brand shimmer skeleton while the
                         thumbnail hydrates; fades out on load (or on error,
                         leaving the cream tile). Reduced-motion handled inside. */}
                     <span className="relative block h-[52px] w-full shrink-0"><ThumbImage product={p} /></span>
                     <span aria-hidden="true" className="mt-1 block w-full truncate text-[11px] font-medium" style={{ color: DOCK_TEXT }}>{p.name}</span>
-                    <span aria-hidden="true" className="block w-full truncate text-[11px] tabular-nums text-[#5b5852]">{catalogPrice(p)}</span>
+                    <span aria-hidden="true" className="catalog-muted block w-full truncate text-[11px] tabular-nums">{catalogPrice(p)}</span>
                   </button>
                   );
                 })}
@@ -386,7 +405,7 @@ export function SimsBottomToolbar() {
             )}
           </div>
         )}
-        {!minimized && <div className="flex shrink-0 items-center justify-between gap-2 px-3 pb-1 text-[11px] text-[#5b5852]">
+        {!minimized && <div className="catalog-muted flex shrink-0 items-center justify-between gap-2 px-3 pb-1 text-[11px]">
           <span role="status" aria-live="polite">{filtered.length} {filtered.length === 1 ? 'product' : 'products'}</span>
           <span>Tap for details · hold to place</span>
         </div>}
@@ -423,7 +442,7 @@ function ThumbImage({ product }: { product: Product }) {
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
   const showSkeleton = !loaded && !errored;
-  if (errored || !src) return <span className="flex h-full w-full items-center justify-center [&>svg]:h-11 [&>svg]:w-11" dangerouslySetInnerHTML={{ __html: thumbnailFor(product.category) }} />;
+  if (errored || !src) return <span className="flex h-full w-full items-center justify-center rounded-md [&>svg]:h-11 [&>svg]:w-11" style={{ background: THUMB_PLATE }} dangerouslySetInnerHTML={{ __html: thumbnailFor(product.category) }} />;
   return (
     <>
       {showSkeleton && (
@@ -433,7 +452,7 @@ function ThumbImage({ product }: { product: Product }) {
           style={{
             // Cream plate with a soft mint sheen (the dock accent). Subtle
             // (low-contrast) so it never looks like an error.
-            background: `linear-gradient(110deg, ${THUMB_PLATE} 0%, ${DOCK_ACCENT}55 45%, ${THUMB_PLATE} 90%)`,
+            background: `linear-gradient(110deg, ${THUMB_PLATE} 0%, #79c7ad55 45%, ${THUMB_PLATE} 90%)`,
           }}
         />
       )}
@@ -447,6 +466,8 @@ function ThumbImage({ product }: { product: Product }) {
           width: '100%',
           height: '100%',
           objectFit: 'contain',
+          background: THUMB_PLATE,
+          borderRadius: 6,
           padding: 4,
           position: 'relative',
           opacity: loaded ? 1 : 0,

@@ -30,6 +30,8 @@ let container: HTMLDivElement;
 let root: Root;
 
 beforeEach(() => {
+  // Keep plan auto-fold coverage independent of the app's 3D starting view.
+  useDesignerUIStore.setState({ viewMode: 'plan' });
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);

@@ -4,6 +4,23 @@ import { MACRO_CATEGORY_LABEL, macroOf, type MacroCategory } from './mobile/cata
 
 export type CatalogSort = 'catalog' | 'name' | 'footprint';
 
+/** Scoped CSS variables retain the shop palette in plan and follow the 3D workspace. */
+export const CATALOG_CHROME = {
+  DOCK_BG: 'var(--catalog-bg)',
+  DOCK_BG_RAISED: 'var(--catalog-raised)',
+  DOCK_BORDER: 'var(--catalog-border)',
+  DOCK_TEXT: 'var(--catalog-text)',
+  DOCK_ACCENT: 'var(--catalog-accent)',
+  CHROME_TEXT_2: 'var(--catalog-caption)',
+};
+
+/** The workspace can open either visible dock without coupling it to product placement. */
+export function catalogRequestCategory(event: Event): MacroCategory | undefined {
+  const category = (event as CustomEvent<{ category?: unknown }>).detail?.category;
+  return typeof category === 'string' && Object.prototype.hasOwnProperty.call(MACRO_CATEGORY_LABEL, category)
+    ? category as MacroCategory : undefined;
+}
+
 const normaliseSearch = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
 /** Search the existing range, retaining its original order unless the user chooses a sort. */

@@ -4,7 +4,7 @@ Updated: 23 September 2026 (Mauritius). Owner: Victor.
 
 ## Resume here
 
-Current checkpoint: **This UI refinement pass is shipped and verified. Application commit `732f50993ebabba990676c0a790c42a59c639948`; Vercel deployment `6612390749`.** Read this file, then `docs/BUILD-LINKS.md` and `docs/ROOM-DESIGNER-BUILD-NOTES.md` before continuing. The follow-up documentation commit only records these results.
+Current checkpoint: **A stronger architectural redesign is now IN PROGRESS from clean `bb5612f`; the previous preview below remains the verified fallback. Previous UI refinement shipped and verified. Application commit `732f50993ebabba990676c0a790c42a59c639948`; Vercel deployment `6612390749`.** Read this file, then `docs/BUILD-LINKS.md` and `docs/ROOM-DESIGNER-BUILD-NOTES.md` before continuing. The follow-up documentation commit only records these results.
 
 - Active checkout: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`
 - Branch: **`cursor/feat-3d-flooring-hud-bc95` only**. Draft PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
@@ -85,3 +85,12 @@ Audit clarification: this checkout's existing “moving the house” interaction
 ## Rules for the next continuation
 
 Update this file after each meaningful chunk and before ending work or approaching a limit. Record exact commit, files changed, checks actually run, verified preview URL, open issues and the next concrete step. Keep pending work visibly pending. Mirror the latest log to `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-Workflow.md` for Victor to save. Do not reset existing changes or substitute main for the feature branch.
+
+## Architectural redesign — current active pass
+
+Victor said the previous pass is still far from the references. Current target: the fourth image's dark navy navigation, large scene and right contextual inspector; richer architectural presentation inspired by the furnished cutaways; real drag-to-build rooms in 3D. Preserve paint color truth, solar calculation, saved designs and both views.
+
+23 Sep checkpoint: Started clean at `bb5612f`. Root owns full 3D workspace shell, camera controls and room-drag integration. Parallel agents own architectural rendering, catalog skin/open event, and pure validated room-build helpers/undo. Browser QA and new deployment pending. Previous verified `o393v8gqj` remains available. No changes to main or production.
+
+23 Sep architectural implementation checkpoint: full navy 3D-first shell with slim mode rail, desktop contextual inspector, phone details sheet, actual cart estimate and saved-design/plan/solar access. Direct rectangular 3D room drag has snap, overlap/plot validation and one undo frame. Rendering now has reversible architectural/studio profiles; catalog and garden use coordinated dark surfaces. First full test run: 2694 passed, 3 old fixtures failed because they assumed Plan default; fixtures explicitly set Plan now. Client/API typechecks and first production build passed. Final regression/build and unique-deploy browser QA pending; current source is not yet shipped.
+`n23 Sep validation checkpoint: full suite passed 234 files / 2706 tests. Additional furniture/presentation/Courts coverage passed 18 tests, including exact bounds, rotations/elevation, ray gaps and resource ownership. Client/API typechecks and changed-file ESLint passed. Final Vite build passed (existing large-chunk advisory only). Next: commit/push feature branch, obtain unique Vercel deployment, inspect desktop/phone plus room-drag/undo, furniture, paint and solar paths.

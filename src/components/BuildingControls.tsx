@@ -8,12 +8,13 @@ import {
 } from '../designer/building';
 
 export interface BuildingControlsProps {
+  layout?: 'toolbar' | 'sidebar';
   view: 'building' | 'floor';
   onViewChange: (view: 'building' | 'floor') => void;
   showRoof: boolean;
   onShowRoofChange: (show: boolean) => void;
-  tool: 'select' | 'stair' | 'window' | 'door';
-  onToolChange: (tool: 'select' | 'stair' | 'window' | 'door') => void;
+  tool: 'select' | 'room' | 'stair' | 'window' | 'door';
+  onToolChange: (tool: 'select' | 'room' | 'stair' | 'window' | 'door') => void;
   onGardenToggle: () => void;
   gardenOpen: boolean;
 }
@@ -84,7 +85,7 @@ function BuildingNumber({ label, value, min, max, step = 0.1, unit = 'm', testId
 
 /** House tools stay in sight; dimensions float over the scene only when needed. */
 export function BuildingControls({
-  view, onViewChange, showRoof, onShowRoofChange, tool, onToolChange, onGardenToggle, gardenOpen,
+  layout = 'toolbar', view, onViewChange, showRoof, onShowRoofChange, tool, onToolChange, onGardenToggle, gardenOpen,
 }: BuildingControlsProps): JSX.Element {
   const property = usePropertyStore((state) => state.property);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -184,14 +185,14 @@ export function BuildingControls({
     if (id) { setSelectedStairId(id); setStairError(null); onToolChange('select'); }
   }
 
-  const toolHelp = tool === 'stair'
+  const toolHelp = tool === 'room' ? 'Drag from corner to corner to build a room. Two fingers move the view.' : tool === 'stair'
     ? canPlaceStairs
       ? `Tap the floor to place stairs from ${lowerStairLevel.level.name} to ${upperStairLevel.level.name}.`
       : 'Add a second floor, then select a floor to place stairs.'
     : tool === 'window' ? `Tap a wall on ${active.level.name} to add a window.`
       : tool === 'door' ? `Tap a wall on ${active.level.name} to add a door.` : null;
 
-  return <section className="shrink-0 min-w-0 border-b border-ppw-rim bg-[#faf8f3] text-[#37362f]" aria-label="Building controls" data-testid="building-controls">
+  return <section className="shrink-0 min-w-0 border-b border-ppw-rim bg-[#faf8f3] text-[#37362f]" aria-label="Building controls" data-testid="building-controls" data-layout={layout}>
     <div className="flex min-w-0 items-center gap-1.5 px-2 pt-1.5 md:gap-2 md:px-3">
       <div className="flex min-w-0 flex-1 items-center gap-1 md:flex-none">
         <span className="hidden text-ppw-teal md:block"><BuildIcon name="floor" /></span>
@@ -220,11 +221,13 @@ export function BuildingControls({
         className={`${FIELD} mr-1 flex-1 text-[13px] md:hidden ${tool !== 'select' ? ACTIVE : ''}`}
         onChange={(event) => chooseTool(event.target.value as BuildingControlsProps['tool'])}>
         <option value="select">Select / move</option>
+        <option value="room" disabled={onRoofLevel}>Draw room</option>
         <option value="stair" disabled={!canPlaceStairs}>Stairs</option>
         <option value="window" disabled={onRoofLevel}>Window</option>
         <option value="door" disabled={onRoofLevel}>Door</option>
       </select>
       <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'select' ? ACTIVE : ''}`} aria-pressed={tool === 'select'} onClick={() => chooseTool('select')}><BuildIcon name="select" />Select / move</button>
+      <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'room' ? ACTIVE : ''}`} aria-pressed={tool === 'room'} disabled={onRoofLevel} onClick={() => chooseTool(tool === 'room' ? 'select' : 'room')}><BuildIcon name="house" />Draw room</button>
       <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'stair' ? ACTIVE : ''}`} aria-pressed={tool === 'stair'} disabled={!canPlaceStairs} title={canPlaceStairs ? `Stairs: ${lowerStairLevel.level.name} to ${upperStairLevel.level.name}` : 'Add a second floor to build stairs'} onClick={() => chooseTool(tool === 'stair' ? 'select' : 'stair')}><BuildIcon name="stairs" />Stairs</button>
       <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'window' ? ACTIVE : ''}`} aria-pressed={tool === 'window'} disabled={onRoofLevel} onClick={() => chooseTool(tool === 'window' ? 'select' : 'window')}><BuildIcon name="window" />Window</button>
       <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'door' ? ACTIVE : ''}`} aria-pressed={tool === 'door'} disabled={onRoofLevel} onClick={() => chooseTool(tool === 'door' ? 'select' : 'door')}><BuildIcon name="door" />Door</button>
@@ -234,12 +237,12 @@ export function BuildingControls({
       <span className="ml-auto hidden whitespace-nowrap pl-3 text-[11px] text-[#787369] lg:block">{storeys.length} {storeys.length === 1 ? 'floor' : 'floors'} · {active.elevationM.toFixed(2)} m elevation</span>
     </div>
 
-    {toolHelp && !detailsOpen && <div className="absolute inset-x-3 bottom-3 z-20 flex items-center justify-between gap-3 rounded-2xl border border-ppw-rim bg-[#fffdf8]/95 pl-3 text-[11px] shadow-lg backdrop-blur-sm md:left-1/2 md:right-auto md:w-max md:max-w-[calc(100%-24px)] md:-translate-x-1/2" role="status">
+    {toolHelp && !detailsOpen && layout !== 'sidebar' && <div className="absolute inset-x-3 bottom-3 z-20 flex items-center justify-between gap-3 rounded-2xl border border-ppw-rim bg-[#fffdf8]/95 pl-3 text-[11px] shadow-lg backdrop-blur-sm md:left-1/2 md:right-auto md:w-max md:max-w-[calc(100%-24px)] md:-translate-x-1/2" role="status">
       <span>{toolHelp}</span>
       <button type="button" className="min-h-11 shrink-0 rounded-r-2xl px-3 font-semibold text-ppw-teal hover:bg-ppw-mist" onClick={() => onToolChange('select')}>Done</button>
     </div>}
 
-    {detailsOpen && <div id="building-details" className="absolute inset-x-2 bottom-2 z-30 flex max-h-[55%] flex-col overflow-hidden rounded-2xl border border-ppw-rim bg-[#fffdf8] shadow-[0_12px_40px_rgba(44,43,38,0.18)] md:bottom-3 md:left-auto md:right-3 md:top-[112px] md:max-h-none md:w-[304px]" data-testid="building-details" role="region" aria-label="Build inspector">
+    {(detailsOpen || layout === 'sidebar') && <div id={layout === 'sidebar' ? undefined : "building-details"} className="absolute inset-x-2 bottom-2 z-30 flex max-h-[55%] flex-col overflow-hidden rounded-2xl border border-ppw-rim bg-[#fffdf8] shadow-[0_12px_40px_rgba(44,43,38,0.18)] md:bottom-3 md:left-auto md:right-3 md:top-[112px] md:max-h-none md:w-[304px]" data-testid="building-details" role="region" aria-label="Build inspector">
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-ppw-rim py-1 pl-4 pr-1">
         <div><p className="text-[13px] font-semibold">Build settings</p><p className="text-[10px] text-[#787369]">{active.level.name}</p></div>
         <button type="button" className="flex h-11 w-11 items-center justify-center rounded-xl text-[#5b5852] hover:bg-[#f3f1ec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal" aria-label="Close build settings" onClick={() => setDetailsOpen(false)}><BuildIcon name="close" /></button>
@@ -248,7 +251,7 @@ export function BuildingControls({
         {(['floor', 'stairs', 'roof'] as const).map((section) => <button type="button" key={section} className={`${BUTTON} flex-1 border-transparent px-2 ${inspector === section ? ACTIVE : 'bg-transparent'}`} aria-pressed={inspector === section} onClick={() => setInspector(section)}><BuildIcon name={section === 'stairs' ? 'stairs' : section} />{section === 'floor' ? 'Floor' : section === 'stairs' ? 'Stairs' : 'Roof'}</button>)}
       </div>
       <div className="min-h-0 overflow-y-auto overscroll-contain p-4">
-        {toolHelp && <div className="mb-3 rounded-xl bg-[#e7f1eb] p-3 text-xs text-[#315149]" role="status"><p>{toolHelp}</p><button type="button" className="mt-1 min-h-11 font-semibold underline underline-offset-2" onClick={() => setDetailsOpen(false)}>Place in scene</button></div>}
+        {toolHelp && <div className="mb-3 rounded-xl bg-[#e7f1eb] p-3 text-xs text-[#315149]" role="status"><p>{toolHelp}</p><button type="button" className="mt-1 min-h-11 font-semibold underline underline-offset-2" onClick={() => { setDetailsOpen(false); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }}>Place in scene</button></div>}
         {inspector === 'floor' && <fieldset className="min-w-0">
           <legend className="mb-3 text-[13px] font-semibold">Floor dimensions</legend>
           {!onRoofLevel ? <>

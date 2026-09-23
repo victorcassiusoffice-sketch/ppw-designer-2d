@@ -47,12 +47,15 @@ import { applyWallLook, wallTextures } from './wallSurfaces';
 import { wallJoinery } from './joinery';
 import { stairMesh, roofMesh, disposeBuildingTextures } from './buildingMeshes';
 import { gardenMeshes } from './gardenMeshes';
-import { contactShadow, cornerShades, floorMesh, groundPlane, lampsOnFactor, nightLight, skyDome, updateSkyDome, type NightLight } from './dressing';
+import { contactShadow, cornerShades, disposeDressingTextures, floorMesh, groundPlane, lampsOnFactor, nightLight, skyDome, updateGroundPresentation, updateSkyDome, type NightLight } from './dressing';
+import { applyContentPresentation, applyRendererPresentation, presentationProfile, type ScenePresentation } from './renderPresentation';
+import { disposeFurnitureTextures, furniturePreview } from './furniturePreview';
 
 // ---------------------------------------------------------------------------
 // Product bodies (2026-09-17): a textured glTF per product, fetched once and
 // cloned per placed item, fitted EXACTLY to the catalog's dimensions by
-// `fitToSize`. Until it arrives (or if it cannot), the shaded box stands in.
+// `fitToSize`. Until it arrives (or if it cannot), a supported dimensional
+// preview or the product's art box stands in.
 // ---------------------------------------------------------------------------
 const gltfLoader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
@@ -74,6 +77,8 @@ function loadBody(url: string): Promise<BodyTemplate> {
       scene.traverse((o) => {
         const m = o as THREE.Mesh;
         if (m.isMesh) {
+          // Cached GLTF geometry belongs to the template, not its item clone.
+          m.geometry.userData.cachedProductBody = true;
           m.castShadow = true;
           m.receiveShadow = true;
         }
@@ -124,9 +129,8 @@ function bodyObject(it: ItemSolid, tpl: BodyTemplate): THREE.Group {
 }
 
 // ---------------------------------------------------------------------------
-// A product with NO body (Vic 2026-09-20: "there's a random table there and
-// there's no 3D product of a table … it's a design software operating like
-// The Sims"): no stand-in model, ever. The box wears the product's OWN art —
+// A product without a body or an explicitly supported dimensional preview:
+// the box wears the product's OWN art —
 // the plan's top-down image on its top (what the 2D shows), the photo on its
 // sides — so what you placed is what you see, at its exact catalog size.
 // ---------------------------------------------------------------------------
@@ -258,6 +262,8 @@ export interface ThreeStageHandle {
 }
 
 export interface ThreeStageProps {
+  /** Architectural lighting/backdrop for exploring; studio preserves the measured paint preview. */
+  presentation?: ScenePresentation;
   solids: SceneSolids;
   camera: OrbitCamera;
   width: number;
@@ -303,7 +309,6 @@ const OUTLINE_WIDTH_M = 0.028;
  * shadows and lowered the hemisphere to keep a camera-facing, sun-shaded
  * wall at the same ≈0.95 of its hex the colour-truth probe pins.
  */
-const STUDIO_SUN_DIR = new THREE.Vector3(-0.45, 1, -0.55).normalize();
 const STUDIO = { hemi: 0.72, sun: 0.25, fill: 0.25 };
 /**
  * Floors face the sky, so the hemisphere, the fill from above and the sun
@@ -314,7 +319,6 @@ const STUDIO = { hemi: 0.72, sun: 0.25, fill: 0.25 };
  */
 const FLOOR_GAIN = 0.9;
 /** Night rig: a cool, dim sky and the lamps. */
-const NIGHT = { hemi: 0.14, sun: 0, fill: 0.07 };
 const HEMI_DAY_SKY = new THREE.Color(0xffffff);
 const HEMI_DAY_GROUND = new THREE.Color(0xf2ede4);
 const HEMI_NIGHT_SKY = new THREE.Color(0x9db0d6);
@@ -544,9 +548,11 @@ function placeWall(w: WallSolid, node: THREE.Object3D): void {
 
 function disposeObject(root: THREE.Object3D): void {
   disposeBuildingTextures(root);
+  disposeDressingTextures(root);
+  disposeFurnitureTextures(root);
   root.traverse((o) => {
     const m = o as THREE.Mesh;
-    if (m.geometry) m.geometry.dispose();
+    if (m.geometry && !m.geometry.userData.cachedProductBody) m.geometry.dispose();
     const mat = m.material as THREE.Material | THREE.Material[] | undefined;
     // Shared joinery materials are singletons — never disposed here.
     if (Array.isArray(mat)) mat.forEach((x) => !x.userData?.shared && x.dispose());
@@ -583,7 +589,7 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
 
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, camera, width, height, hover, selectedInstanceId, brushHex, brushFinish, wallView = 'cutaway', hour = null, dayOfYear: doy, onFailed },
+  { solids, camera, width, height, hover, selectedInstanceId, brushHex, brushFinish, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed },
   ref,
 ): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -594,9 +600,12 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const sunRef = useRef<THREE.DirectionalLight | null>(null);
   /** A soft light that rides with the camera so no wall face is ever unlit. */
   const fillRef = useRef<THREE.DirectionalLight | null>(null);
+  const rimRef = useRef<THREE.DirectionalLight | null>(null);
   /** The room environment, for materials with a sheen. */
   const envRef = useRef<THREE.Texture | null>(null);
+  const envTargetRef = useRef<THREE.WebGLRenderTarget | null>(null);
   const skyRef = useRef<THREE.Mesh | null>(null);
+  const groundRef = useRef<THREE.Mesh | null>(null);
   const contentRef = useRef<THREE.Group | null>(null);
   const signatureRef = useRef<string>('');
   const wallsRef = useRef<WallEntry[]>([]);
@@ -650,6 +659,28 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     sc.near = 0.5;
     sc.far = radius * 6 + 40;
     sc.updateProjectionMatrix();
+    const rim = rimRef.current;
+    if (rim) {
+      rim.position.copy(centre).add(new THREE.Vector3(radius, radius * 1.25, -radius));
+      rim.target.position.copy(centre);
+      rim.target.updateMatrixWorld();
+    }
+  };
+
+  /** Presentation switches update the existing scene, never rebuild its room geometry. */
+  const applyPresentation = () => {
+    if (rendererRef.current) applyRendererPresentation(rendererRef.current, presentation);
+    if (contentRef.current) applyContentPresentation(contentRef.current, presentation);
+    const { centre, radius } = boundsRef.current;
+    if (groundRef.current) {
+      updateGroundPresentation(groundRef.current, presentation);
+      groundRef.current.position.x = presentation === 'architectural' ? centre.x : 0;
+      groundRef.current.position.z = presentation === 'architectural' ? centre.z : 0;
+    }
+    if (sceneRef.current) {
+      sceneRef.current.fog = presentation === 'architectural'
+        ? new THREE.Fog('#1b2942', Math.max(24, radius * 3), Math.max(100, radius * 12)) : null;
+    }
   };
 
   /**
@@ -662,37 +693,45 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     const sun = sunRef.current;
     const fill = fillRef.current;
     if (!hemi || !sun || !fill) return;
+    const profile = presentationProfile(presentation);
+    const dayRig = profile.day;
+    const nightRig = profile.night;
+    const daySky = new THREE.Color(profile.sky);
+    const dayBounce = new THREE.Color(profile.bounce);
+    fill.color.set(profile.fill);
     if (h === null || !Number.isFinite(h)) {
-      hemi.intensity = Math.PI * STUDIO.hemi;
-      hemi.color.copy(HEMI_DAY_SKY);
-      hemi.groundColor.copy(HEMI_DAY_GROUND);
-      sun.intensity = Math.PI * STUDIO.sun;
-      sun.color.set(0xfff6ea);
-      fill.intensity = Math.PI * STUDIO.fill;
-      aimSun(STUDIO_SUN_DIR);
+      hemi.intensity = Math.PI * dayRig.hemi;
+      hemi.color.copy(daySky);
+      hemi.groundColor.copy(dayBounce);
+      sun.intensity = Math.PI * dayRig.sun;
+      sun.color.set(profile.sun);
+      fill.intensity = Math.PI * dayRig.fill;
+      if (rimRef.current) rimRef.current.intensity = Math.PI * dayRig.rim;
+      aimSun(new THREE.Vector3(...profile.sunDirection).normalize());
       sunStateRef.current = null;
-      if (skyRef.current && skyRef.current.userData.day !== 1) updateSkyDome(skyRef.current, 1);
+      if (skyRef.current && (skyRef.current.userData.day !== 1 || skyRef.current.userData.presentation !== presentation)) updateSkyDome(skyRef.current, 1, presentation);
       for (const l of lampsRef.current) {
-        l.light.intensity = 0;
-        (l.glow.material as THREE.MeshBasicMaterial).color.set(0xe9e2d3);
+        l.light.intensity = LAMP_INTENSITY * profile.lampFactor;
+        (l.glow.material as THREE.MeshBasicMaterial).color.set(profile.lampFactor > 0 ? 0xffe9c4 : 0xe9e2d3);
       }
       return;
     }
     const s = sunAt(h, doy ?? dayOfYear(new Date().getMonth() + 1, new Date().getDate()));
     const day = s.daylight;
-    hemi.intensity = Math.PI * (STUDIO.hemi * day + NIGHT.hemi * (1 - day));
-    hemi.color.copy(HEMI_NIGHT_SKY).lerp(HEMI_DAY_SKY, day);
-    hemi.groundColor.copy(HEMI_NIGHT_GROUND).lerp(HEMI_DAY_GROUND, day);
-    // The sun's share grows as it climbs; it never adds more than the studio sun did at its brightest.
+    hemi.intensity = Math.PI * (dayRig.hemi * day + nightRig.hemi * (1 - day));
+    hemi.color.copy(HEMI_NIGHT_SKY).lerp(daySky, day);
+    hemi.groundColor.copy(HEMI_NIGHT_GROUND).lerp(dayBounce, day);
+    // The sun's share grows as it climbs, bounded by this presentation's daylight rig.
     const up = Math.max(0, Math.sin((s.elevationDeg * Math.PI) / 180));
-    sun.intensity = Math.PI * STUDIO.sun * Math.min(1, up * 1.4) * day;
+    sun.intensity = Math.PI * dayRig.sun * Math.min(1, up * 1.4) * day;
     sun.color.set(sunColourHex(s.elevationDeg));
-    fill.intensity = Math.PI * (STUDIO.fill * day + NIGHT.fill * (1 - day));
+    fill.intensity = Math.PI * (dayRig.fill * day + nightRig.fill * (1 - day));
+    if (rimRef.current) rimRef.current.intensity = Math.PI * (dayRig.rim * day + nightRig.rim * (1 - day));
     aimSun(new THREE.Vector3(s.direction.x, Math.max(0.05, s.direction.z), s.direction.y));
     sunStateRef.current = { elevationDeg: s.elevationDeg, azimuthDeg: s.azimuthDeg };
     if (skyRef.current) {
       const quant = Math.round(day * 20) / 20;
-      if (skyRef.current.userData.day !== quant) updateSkyDome(skyRef.current, quant);
+      if (skyRef.current.userData.day !== quant || skyRef.current.userData.presentation !== presentation) updateSkyDome(skyRef.current, quant, presentation);
     }
     const lamps = lampsOnFactor(s.elevationDeg);
     for (const l of lampsRef.current) {
@@ -757,20 +796,27 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     scene.add(fill);
     scene.add(fill.target);
     fillRef.current = fill;
+    const rim = new THREE.DirectionalLight(0xb9d3ff, 0);
+    scene.add(rim, rim.target);
+    rimRef.current = rim;
 
     // Something for a sheen to reflect: a neutral room environment, handed
     // to the materials that have a sheen (silk / satin / gloss, the product
     // bodies) — never set on the scene, see applyWallLook.
     const pmrem = new THREE.PMREMGenerator(renderer);
+    const environment = new RoomEnvironment();
     try {
-      envRef.current = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      envTargetRef.current = pmrem.fromScene(environment, 0.04);
+      envRef.current = envTargetRef.current.texture;
     } catch {
       envRef.current = null; /* no environment: finishes read flat, colours unaffected */
     }
     pmrem.dispose();
+    environment.dispose();
 
     const ground = groundPlane();
     scene.add(ground);
+    groundRef.current = ground;
 
     const content = new THREE.Group();
     scene.add(content);
@@ -794,7 +840,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       if (contentRef.current) disposeObject(contentRef.current);
       disposeObject(ground);
       disposeObject(sky);
-      envRef.current?.dispose();
+      envTargetRef.current?.dispose();
+      envTargetRef.current = null;
       envRef.current = null;
       signatureRef.current = '';
       // dispose() only — forceContextLoss() would leave the canvas's context
@@ -807,9 +854,11 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       cameraRef.current = null;
       contentRef.current = null;
       skyRef.current = null;
+      groundRef.current = null;
       hemiRef.current = null;
       sunRef.current = null;
       fillRef.current = null;
+      rimRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -863,6 +912,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     const reveal = new THREE.MeshPhysicalMaterial({ color: REVEAL_HEX, roughness: 0.95, metalness: 0, envMapIntensity: 0, specularIntensity: 0 });
     const exterior = new THREE.MeshPhysicalMaterial({ color: EXTERIOR_HEX, roughness: 0.96, metalness: 0, envMapIntensity: 0, specularIntensity: 0, normalMap: wallTextures().plasterNormal, normalScale: new THREE.Vector2(0.35, 0.35) });
     const cap = new THREE.MeshPhysicalMaterial({ color: CAP_HEX, roughness: 0.9, metalness: 0, envMapIntensity: 0, specularIntensity: 0 });
+    reveal.userData.stageSurface = 'reveal';
+    exterior.userData.stageSurface = 'exterior';
+    cap.userData.stageSurface = 'cap';
     for (const w of solids.walls) {
       const paint = new THREE.MeshPhysicalMaterial();
       applyWallLook(paint, w, envRef.current);
@@ -884,8 +936,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
 
     const buildId = ++buildRef.current;
     for (const it of solids.items) {
-      // The product's own art on a box at its size until (unless) its body arrives.
-      const mesh = artBox(it, requestRender);
+      // Known furniture has a shaped, explicitly approximate planning body.
+      // Other products retain their own art; an exact GLTF always replaces it.
+      const mesh = furniturePreview(it) ?? artBox(it, requestRender);
       content.add(mesh);
       itemsRef.current.push(mesh);
       bounds.expandByObject(mesh);
@@ -902,7 +955,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         content.add(lamp.light, lamp.glow);
         lampsRef.current.push(lamp);
       }
-      // Swap the box for the product's body once it has loaded — unless the
+      // Swap the preview for the product's body once it has loaded — unless the
       // plan has been rebuilt since (a stale load must not resurrect).
       if (it.meshUrl) {
         loadBody(it.meshUrl)
@@ -952,7 +1005,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
             requestRender();
           })
           .catch(() => {
-            /* the box stays */
+            /* the dimensional preview or art box stays */
           });
       }
     }
@@ -977,6 +1030,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       centre: bounds.isEmpty() ? new THREE.Vector3() : bounds.getCenter(new THREE.Vector3()),
       radius: bounds.isEmpty() ? 6 : Math.max(4, bounds.getSize(new THREE.Vector3()).length() / 2),
     };
+    applyPresentation();
     applyHour(hour);
     // Compile every shader variant OFF the main thread's critical path before
     // the first frame (a room with several finishes used to block the page
@@ -998,7 +1052,13 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     applyHour(hour);
     requestRender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hour, doy]);
+  }, [hour, doy, presentation]);
+
+  useEffect(() => {
+    applyPresentation();
+    requestRender();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presentation]);
 
   // ---- camera + cutaway, on orbit / resize -------------------------------------
   useEffect(() => {

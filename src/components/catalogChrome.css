@@ -1,0 +1,61 @@
+.sims-catalog {
+  --catalog-bg: #efede8;
+  --catalog-raised: #faf9f5;
+  --catalog-field: #fff;
+  --catalog-border: #dcd9d0;
+  --catalog-text: #37362f;
+  --catalog-muted: #5b5852;
+  --catalog-caption: #3d4655;
+  --catalog-accent: #79c7ad;
+  --catalog-selected: rgba(121, 199, 173, .2);
+  --catalog-selected-text: #37362f;
+  --catalog-hover: #faf9f5;
+  --catalog-focus: rgba(121, 199, 173, .45);
+  --catalog-armed-glow: rgba(121, 199, 173, .35);
+  --catalog-card-shadow: transparent;
+  color: var(--catalog-text);
+}
+
+.sims-catalog[data-catalog-mode="3d"] {
+  --catalog-bg: #172139;
+  --catalog-raised: #202c45;
+  --catalog-field: #111c31;
+  --catalog-border: #35435e;
+  --catalog-text: #e8eef7;
+  --catalog-muted: #aebed3;
+  --catalog-caption: #b9c8dc;
+  --catalog-accent: #75d8ea;
+  --catalog-selected: #28475e;
+  --catalog-selected-text: #a2effb;
+  --catalog-hover: #293a55;
+  --catalog-focus: rgba(117, 216, 234, .55);
+  --catalog-armed-glow: rgba(117, 216, 234, .2);
+  --catalog-card-shadow: #08111f38;
+  color-scheme: dark;
+}
+
+.sims-catalog .catalog-field {
+  background: var(--catalog-field);
+  color: var(--catalog-text);
+}
+
+.sims-catalog .catalog-field::placeholder {
+  color: var(--catalog-muted);
+}
+
+.sims-catalog .catalog-muted {
+  color: var(--catalog-muted);
+}
+
+.sims-catalog[data-catalog-mode="3d"] [data-testid="catalog-connection"] {
+  color: var(--catalog-muted);
+}
+
+.sims-catalog[data-catalog-mode="3d"] [data-testid="catalog-retry"] {
+  color: var(--catalog-accent);
+}
+
+.sims-catalog[data-catalog-mode="3d"] [data-product-id]:hover {
+  outline: 1px solid var(--catalog-accent);
+  outline-offset: -1px;
+}
