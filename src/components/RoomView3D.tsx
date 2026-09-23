@@ -1203,6 +1203,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       data-testid="wallpaint-3d"
       data-variant={variant}
       data-backend={backend}
+      data-presentation={variant === 'overlay' && !onPaintWall ? 'architectural' : 'studio'}
     >
       {/* The picture: three when it can, the painter when it cannot. */}
       <div className="absolute inset-0">

@@ -1753,6 +1753,7 @@ export function TopBar({
   return (
     <header
       ref={headerRef}
+      {...(viewMode === '3d' ? { inert: '', 'aria-hidden': true as const } : {})}
       className="relative z-20 shrink-0 border-b"
       style={{ background: CHROME_BG, borderColor: CHROME_RIM }}
     >

@@ -330,7 +330,7 @@ export default function App() {
       {/* Separate PLANS (Vic 2026-08-28). Rooms are areas on one canvas; a
           page is a different space or client. Hidden until there is something
           to switch between — i.e. at least two plans. */}
-      {planCount >= 2 && <PageTabs />}
+      {planCount >= 2 && <div {...(designView === '3d' ? { inert: '', 'aria-hidden': true as const } : {})}><PageTabs /></div>}
       {/* RoomList now renders ONLY its dropdown overlay — the permanent
           224 px rail is gone. The TopBar hosts its trigger at every
           viewport width. Same store calls (setActiveRoom / renameRoom /
@@ -346,7 +346,7 @@ export default function App() {
           0 px when it is not mounted). The section — and therefore the
           Konva stage the ResizeObserver measures — is then exactly the
           VISIBLE area; nothing sits under the toolbar any more. */}
-      <main className="flex flex-1 overflow-hidden pb-[var(--sims-toolbar-h,0px)] lg:pb-0">
+      <main {...(designView === '3d' ? { inert: '', 'aria-hidden': true as const } : {})} className="flex flex-1 overflow-hidden pb-[var(--sims-toolbar-h,0px)] lg:pb-0">
         <section className="relative flex-1 overflow-hidden">
           {/* 2026-08-25: MiniCartPill un-mounted. It sat at `right-3 top-3`
               and OVERLAPPED RoomCanvas's own top-right Reset/Share/Capture
@@ -390,7 +390,7 @@ export default function App() {
       {/* Toolbar pass (2026-08-29): the cart pill leaves the bottom band
           while the wall pen is open — the HUD owns it. Conditional at the
           render site; CartStrip itself is untouched. */}
-      {!drawMode && !phoneToolHud && <CartStrip />}
+      {designView !== '3d' && !drawMode && !phoneToolHud && <CartStrip />}
       <CartDrawer />
       {/* Mobile/tablet Sims catalog — sticky bottom toolbar (< 1024 px). */}
       <SimsBottomToolbar />

@@ -1,12 +1,12 @@
 <!-- verified-preview:start -->
 ## Current feature deployment
 
-Updated: 2026-09-23 17:01 (local) | commit: 91313733d15248bbcbeca83bcf65869575c000d9
+Updated: 2026-09-23 17:11 (local) | commit: 91ad768609325ab7ac0c1a53cdbf7de1c7cd5356
 
-- Designer: https://ppw-designer-2d-4whmaszcq-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-4whmaszcq-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: Dark architectural 3D-first workspace; desktop inspector/phone sheets; direct snapped 3D room drag with single undo; shaped dimensional furniture previews; revised catalog/garden; existing solar/save/cart preserved.
-- Verification: Both designer and TintEX loaded at 1280px desktop and 390px phone. Drag created a 9m2 room and one Undo restored the 41.3m2/3-room plan. Phone floor copy showed30parts; Undo restored15. Courts furnished preview rendered. Full234files/2706tests plus18focused checks, typechecks/lint/build passed. Camera/panel theme polish in progress.
+- Designer: https://ppw-designer-2d-2gkxzjc54-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-2gkxzjc54-victor-ppw.vercel.app/designer?demo=tintex
+- Landed: Architectural 3D-first workspace, direct room drawing/undo, shaped furniture; dark finish and solar panels, focused phone solar sheet, compact camera controls.
+- Verification: TintEX rendered at1280x900 and360x800; standard route rendered at390x844 without horizontal overflow. Phone Solar opens the focused dark sheet; desktop Paint retains finish and swatch controls. Prior deployment verified room drag/undo, floor copy/undo and furniture selection.235files/2711tests, typechecks/lint/build passed. Final keyboard isolation fix in progress.
 - Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
 - Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.

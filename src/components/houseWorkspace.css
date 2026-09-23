@@ -20,3 +20,4 @@
 
 .house-project-actions .house-cart{display:flex;align-items:center;justify-content:center}.house-estimate{display:flex;align-items:center;justify-content:space-between;color:#c6d5ed;margin-bottom:3px}.house-estimate strong{font-size:16px;font-weight:400;color:#eaf2ff}.house-estimate-button{margin-top:10px;width:100%;min-height:36px;background:#324e70;border:1px solid #547395;border-radius:4px;color:#d7e9fc;font-size:11px}
 .house-header{margin-right:calc(0px - var(--floor-panel-w,0px))}
+.house-workspace [data-presentation="studio"] [data-testid="wallpaint-3d-caption"]{color:#465368}
