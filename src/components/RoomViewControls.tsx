@@ -27,7 +27,7 @@ const LIGHT_ACTIVE = '!bg-[#294e47] !text-white';
 
 /** View-only controls: they never modify the building or a product. */
 export function RoomViewControls({ workspace, pan, onPan, onRotate, onZoom, onFit, onView, wallView, onWallView, hasWalls, sunAvailable, sunHour, onSunHour, onClose, onExpand }: Props) {
-  const BUTTON = workspace ? 'inline-flex h-10 min-w-9 items-center justify-center gap-1 whitespace-nowrap rounded px-2 text-[10px] font-medium text-[#c8d7ed] hover:bg-[#344662] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#75d8ea] md:h-9' : LIGHT_BUTTON;
+  const BUTTON = workspace ? 'inline-flex h-11 min-w-10 items-center justify-center gap-1 whitespace-nowrap rounded px-2 text-[11px] font-medium text-[#c8d7ed] hover:bg-[#344662] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#75d8ea] md:h-9' : LIGHT_BUTTON;
   const POD = workspace ? 'rounded-md border border-[#495c79]/70 bg-[#1b2a43]/95 p-1 shadow-[0_5px_20px_rgba(6,16,31,0.22)]' : LIGHT_POD;
   const ACTIVE = workspace ? '!bg-[#36516b] !text-[#a1edf6]' : LIGHT_ACTIVE;
   return <>

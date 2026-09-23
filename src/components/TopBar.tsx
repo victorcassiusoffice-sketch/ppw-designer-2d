@@ -114,6 +114,7 @@ import { applyCladdingBrush, claddingBrushId, claddingBrushLabel } from '../desi
 import { deriveCladdingOrders } from '../designer/claddingCalc';
 import { CLADDING_DEMO_DISCLAIMER, CLADDING_PRODUCTS, findCladdingProduct } from '../data/claddingCatalog';
 import { RoomView3D } from './RoomView3D';
+import './houseToolPanels.css';
 import { FLOOR_MATERIALS, findFloorMaterialById, type FloorMaterial } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
 // Floor tool (2026-08-30): the docked panel prices the active room's floor
@@ -2349,11 +2350,12 @@ export function TopBar({
         createPortal(
           <aside
             id="ppw-floor-panel"
+            data-presentation={viewMode}
             role="complementary"
             aria-label="Floor"
             data-testid="floor-paint-palette"
             data-ppw-popover=""
-            className="hidden flex-col overflow-y-auto border-l md:flex"
+            className="house-tool-panel hidden flex-col overflow-y-auto border-l md:flex"
             style={{
               position: 'fixed',
               top: floorPanelTop,
@@ -2558,11 +2560,12 @@ export function TopBar({
         createPortal(
           <aside
             id="ppw-cladding-panel"
+            data-presentation={viewMode}
             role="complementary"
             aria-label="Cladding"
             data-testid="cladding-palette"
             data-ppw-popover=""
-            className="hidden flex-col overflow-y-auto border-l md:flex"
+            className="house-tool-panel hidden flex-col overflow-y-auto border-l md:flex"
             style={{
               position: 'fixed',
               top: floorPanelTop,
@@ -2656,11 +2659,12 @@ export function TopBar({
         createPortal(
           <aside
             id="ppw-wallpaint-panel"
+            data-presentation={viewMode}
             role="complementary"
             aria-label="Wall paint"
             data-testid="wallpaint-palette"
             data-ppw-popover=""
-            className="hidden flex-col overflow-y-auto border-l md:flex"
+            className="house-tool-panel hidden flex-col overflow-y-auto border-l md:flex"
             style={{
               position: 'fixed',
               top: floorPanelTop,
@@ -3402,7 +3406,9 @@ export function TopBar({
       {energyPanelOpenMd &&
         typeof document !== 'undefined' &&
         createPortal(
-          <EnergyPanel top={floorPanelTop} width={FLOOR_PANEL_W} onClose={() => setEnergyPanelOpen(false)} />,
+          <div className="house-tool-panel-host" data-presentation={viewMode}>
+            <EnergyPanel top={floorPanelTop} width={FLOOR_PANEL_W} onClose={() => setEnergyPanelOpen(false)} />
+          </div>,
           document.body,
         )}
 

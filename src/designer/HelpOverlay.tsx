@@ -235,15 +235,16 @@ export function HelpLauncherIcon({ onOpen }: { onOpen: () => void }): JSX.Elemen
         // of the docked Floor / Wall paint / Energy panel (which publishes its
         // width as --floor-panel-w) — it used to sit over the paint panel's
         // colour row and its Clear button (the 2026-09-19 paint-UX audit).
-        right: besidePanel ? 'calc(max(20rem, var(--floor-panel-w, 0px)) + 1rem)' : 'calc(var(--floor-panel-w, 0px) + 1rem)',
+        left: view3d ? 13 : undefined,
+        right: view3d ? undefined : besidePanel ? 'calc(max(20rem, var(--floor-panel-w, 0px)) + 1rem)' : 'calc(var(--floor-panel-w, 0px) + 1rem)',
         borderRadius: 8,
-        background: CHROME_BG,
-        border: `1px solid ${CHROME_RIM}`,
+        background: view3d ? '#1c2b43' : CHROME_BG,
+        border: `1px solid ${view3d ? '#445c77' : CHROME_RIM}`,
         cursor: 'pointer',
         fontSize: 16,
         fontWeight: 600,
         lineHeight: 1,
-        color: CHROME_TEXT,
+        color: view3d ? '#c0d4ed' : CHROME_TEXT,
         zIndex: 35,
         boxShadow: '0 1px 2px rgba(42,41,38,0.08)',
       }}

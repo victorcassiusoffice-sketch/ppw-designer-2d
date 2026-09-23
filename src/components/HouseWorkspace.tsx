@@ -60,7 +60,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
     </header>
     <div className="house-main">
       <nav className="house-rail" aria-label="House design tools">
-        {MODES.map(([id, label, path]) => <button key={id} type="button" aria-pressed={mode === id} title={label} onClick={() => { onMode(id); setMobileInspector(id === 'garden' || id === 'build'); }} data-testid={`house-mode-${id}`}>
+        {MODES.map(([id, label, path]) => <button key={id} type="button" aria-pressed={mode === id} title={label} onClick={() => { onMode(id); setMobileInspector(id === 'garden' || id === 'build' || id === 'energy'); }} data-testid={`house-mode-${id}`}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={path} /></svg><span>{label}</span>
         </button>)}
       </nav>
@@ -78,7 +78,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
       {!externalPanel && <aside className={`house-inspector ${mobileInspector ? 'is-open' : ''}`} aria-label="House details">
         <div className="house-summary">
           <div className="house-eyebrow">YOUR DESIGN<button className="house-close-details" aria-label="Close house details" onClick={() => setMobileInspector(false)}>×</button></div>
-          <h2>{name}</h2><p>{mode === 'garden' ? 'Shape the space around your home' : 'Build a home, room by room'}</p>
+          <h2>{mode === 'energy' ? 'Solar & energy' : name}</h2><p>{mode === 'garden' ? 'Shape the space around your home' : 'Build a home, room by room'}</p>
           <div className="house-metrics"><div><strong>{totalArea.toFixed(1)}</strong><span>m² floor area</span></div><div><strong>{rooms.length}</strong><span>rooms</span></div><div><strong>{levelsOf(property).filter((l) => !isRoofLevel(l)).length}</strong><span>floors</span></div></div>
         </div>
         <div className="house-inspector-content">{inspector}</div>

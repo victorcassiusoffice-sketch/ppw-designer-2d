@@ -1,12 +1,12 @@
 <!-- verified-preview:start -->
 ## Current feature deployment
 
-Updated: 2026-09-23 15:10 (local) | commit: 732f509
+Updated: 2026-09-23 17:01 (local) | commit: 91313733d15248bbcbeca83bcf65869575c000d9
 
-- Designer: https://ppw-designer-2d-o393v8gqj-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-o393v8gqj-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: Sims-inspired house-building workspace and inspectors, catalog search/sorting, camera presets/Move view, and solar roof editing; final desktop camera spacing polish.
-- Verification: Both designer and TintEX routes rendered at desktop and phone widths. Final camera presets/panning checked; preceding equivalent feature build passed phone solar placement/calculation, catalog search, floor creation, stair fitting and garden access. GitHub client/API typecheck and Vitest pass; production Lighthouse remains separate.
+- Designer: https://ppw-designer-2d-4whmaszcq-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-4whmaszcq-victor-ppw.vercel.app/designer?demo=tintex
+- Landed: Dark architectural 3D-first workspace; desktop inspector/phone sheets; direct snapped 3D room drag with single undo; shaped dimensional furniture previews; revised catalog/garden; existing solar/save/cart preserved.
+- Verification: Both designer and TintEX loaded at 1280px desktop and 390px phone. Drag created a 9m2 room and one Undo restored the 41.3m2/3-room plan. Phone floor copy showed30parts; Undo restored15. Courts furnished preview rendered. Full234files/2706tests plus18focused checks, typechecks/lint/build passed. Camera/panel theme polish in progress.
 - Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
 - Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.

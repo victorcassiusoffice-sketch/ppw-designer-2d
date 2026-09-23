@@ -1,0 +1,68 @@
+/* The docked tool panels follow House Studio only in 3D. Product colour
+   chips, photographs and energy-status fills keep their own colours. */
+:is(.house-tool-panel, .house-tool-panel-host)[data-presentation="3d"] {
+  color-scheme: dark;
+  color: #e4ecf8 !important;
+  scrollbar-color: #526580 #172139;
+  scrollbar-width: thin;
+}
+
+.house-tool-panel[data-presentation="3d"],
+.house-tool-panel-host[data-presentation="3d"] #ppw-energy-panel {
+  background: #172139 !important;
+  border-color: #34415b !important;
+  color: #e4ecf8 !important;
+  box-shadow: -4px 0 20px #07101e30 !important;
+}
+
+:is(.house-tool-panel, .house-tool-panel-host)[data-presentation="3d"] :is([class*="text-[#37362f]"], [class*="text-ppw-charcoal"], [class*="text-ppw-ink"]) {
+  color: #e4ecf8 !important;
+}
+
+:is(.house-tool-panel, .house-tool-panel-host)[data-presentation="3d"] [style*="color:"]:not([style*="background"]) {
+  color: #aebdd3 !important;
+}
+
+:is(.house-tool-panel, .house-tool-panel-host)[data-presentation="3d"] :is([class*="border-ppw-rim"], [class*="border-ppw-inkDeep"]) {
+  border-color: #34415b !important;
+}
+
+:is(.house-tool-panel, .house-tool-panel-host)[data-presentation="3d"] :is(button:not([style*="background"]), select, input:not([type="color"]):not([type="checkbox"])) {
+  background: #202c45 !important;
+  color: #e4ecf8 !important;
+  border-color: #40506b !important;
+}
+
+:is(.house-tool-panel, .house-tool-panel-host)[data-presentation="3d"] button:not([style*="background"]):hover:not(:disabled) {
+  background: #2b3d58 !important;
+}
+
+:is(.house-tool-panel, .house-tool-panel-host)[data-presentation="3d"] :is(button[aria-pressed="true"], button[aria-checked="true"], button[data-testid$="-done"]):not([style*="background"]) {
+  background: #29485f !important;
+  color: #a2effb !important;
+  border-color: #75d8ea !important;
+}
+
+:is(.house-tool-panel, .house-tool-panel-host)[data-presentation="3d"] button[aria-checked="true"][style*="background"] {
+  outline: 2px solid #75d8ea;
+  outline-offset: 2px;
+}
+
+:is(.house-tool-panel, .house-tool-panel-host)[data-presentation="3d"] :is(button, input, select):focus-visible {
+  outline: 2px solid #75d8ea;
+  outline-offset: 2px;
+}
+
+:is(.house-tool-panel, .house-tool-panel-host)[data-presentation="3d"] :is([role="radiogroup"][data-testid$="-view"], [data-testid="wallpaint-actions"], p.bg-ppw-chrome) {
+  background: #172139 !important;
+  border-color: #34415b !important;
+}
+
+.house-tool-panel-host[data-presentation="3d"] [data-testid="energy-meter"] {
+  background: #34415b !important;
+}
+
+:is(.house-tool-panel, .house-tool-panel-host)[data-presentation="3d"] :is(.text-ppw-clay, [class*="border-ppw-clay"]) {
+  color: #f6b3a4 !important;
+  border-color: #b6776c !important;
+}

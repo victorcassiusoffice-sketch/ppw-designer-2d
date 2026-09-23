@@ -51,6 +51,7 @@ import { activeLevelIdOf, isOutdoorRoom, isRoofLevel, isRoofRoom, roomsOnLevel }
 import { buildingLevels, levelElevationM, levelHeightM, type BuildingStair } from '../designer/building';
 import { buildingSolids, type BuildingView } from '../designer/buildingScene';
 import { validateStairPlacement } from '../designer/stairPlacement';
+import { EnergySummary } from './EnergyPanel';
 import { HouseWorkspace, type HouseMode } from './HouseWorkspace';
 import { previewRectRoomBuild, type RoomBuildPreview } from '../designer/roomBuildGesture';
 import { commitRectRoomBuild } from '../lib/roomBuildActions';
@@ -1086,8 +1087,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     const ui = useDesignerUIStore.getState();
     if (next === 'energy') {
       ui.setTool('hand');
-      if (belowMd) window.dispatchEvent(new CustomEvent('ppw:open-menu', { detail: { section: 'energy' } }));
-      else ui.setEnergyPanelOpen(!energyOpen);
+      ui.setEnergyPanelOpen(!energyOpen);
     } else ui.setTool(tool === next ? 'hand' : next);
   }
 
@@ -1335,9 +1335,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       style={{ right: 'var(--floor-panel-w, 0px)', bottom: onPaintWall || onPaintFloor ? 0 : 'calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))', ...style }}
       data-testid="wallpaint-3d-overlay" role="region" aria-label={title ?? 'Room view in 3D'}>
       <HouseWorkspace mode={activeHouseMode} onMode={changeHouseMode} onPlan={onClose} onSave={onSave} onCart={onCart}
-        externalPanel={!!onPaintWall || !!onPaintFloor || energyOpen}
+        externalPanel={!!onPaintWall || !!onPaintFloor || (energyOpen && !belowMd)}
         drawing={constructionTool === 'room'} onDraw={() => chooseBuildTool(constructionTool === 'room' ? 'select' : 'room')} onSelect={() => chooseBuildTool('select')}
-        inspector={gardenOpen ? <div className="house-garden-panel"><GardenPanel architectural onClose={() => { setGardenOpen(false); setGardenPlacement(null); setHouseMode('build'); }} onRequestPlacement={(intent) => { usePropertyStore.getState().setActiveLevel('ground'); setGardenPlacement(intent); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} /></div>
+        inspector={energyOpen && belowMd ? <div className="house-tool-panel-host p-4" data-presentation="3d"><EnergySummary compact onJumpToRoof={() => window.dispatchEvent(new CustomEvent('ppw:close-house-details'))} /></div> : gardenOpen ? <div className="house-garden-panel"><GardenPanel architectural onClose={() => { setGardenOpen(false); setGardenPlacement(null); setHouseMode('build'); }} onRequestPlacement={(intent) => { usePropertyStore.getState().setActiveLevel('ground'); setGardenPlacement(intent); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} /></div>
           : <BuildingControls layout="sidebar" view={buildingView} onViewChange={setBuildingView} showRoof={showRoof} onShowRoofChange={setShowRoof} tool={constructionTool} onToolChange={chooseBuildTool}
             gardenOpen={gardenOpen} onGardenToggle={() => changeHouseMode('garden')} />}>
         {gardenPlacement && <p role="status" className="bg-[#29405c] px-3 py-2 text-xs text-[#c4e8f2]">Tap the ground to place this garden element. <button className="underline" onClick={() => setGardenPlacement(null)}>Cancel</button></p>}
