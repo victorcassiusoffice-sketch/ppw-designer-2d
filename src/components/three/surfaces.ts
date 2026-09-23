@@ -112,6 +112,146 @@ export function normalFromHeight(size: number, h: Float32Array, strength: number
   );
 }
 
+// ---------------------------------------------------------------------------
+// Painted walls — roller stipple that modulates the swatch, never replaces it.
+// ---------------------------------------------------------------------------
+
+/** Bilinear expand of a wrapping square field (edge length `from`) up to `size`. */
+function expandField(small: Float32Array, from: number, size: number): Float32Array {
+  const out = new Float32Array(size * size);
+  for (let y = 0; y < size; y++) {
+    const gy = (y / size) * from;
+    const y0 = Math.floor(gy) % from;
+    const y1 = (y0 + 1) % from;
+    const ty = gy - Math.floor(gy);
+    for (let x = 0; x < size; x++) {
+      const gx = (x / size) * from;
+      const x0 = Math.floor(gx) % from;
+      const x1 = (x0 + 1) % from;
+      const tx = gx - Math.floor(gx);
+      const v00 = small[y0 * from + x0];
+      const v10 = small[y0 * from + x1];
+      const v01 = small[y1 * from + x0];
+      const v11 = small[y1 * from + x1];
+      out[y * size + x] = (v00 * (1 - tx) + v10 * tx) * (1 - ty) + (v01 * (1 - tx) + v11 * tx) * ty;
+    }
+  }
+  return out;
+}
+
+/**
+ * Roller lanes, orange peel and a soft blotch, normalised 0..1.
+ * The features are centimetres, not millimetres: a room-distance camera
+ * mipmaps a 2 mm nap into a flat colour. One tile is one metre on the wall
+ * (see `paintWallMaps`).
+ */
+export function paintHeightField(size = 256): Float32Array {
+  const blot = expandField(noiseField(24, 29, 1), 24, size);
+  const peel = expandField(noiseField(48, 17, 1), 48, size);
+  const nap = expandField(noiseField(96, 11, 0), 96, size);
+  const raw = new Float32Array(size * size);
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (let i = 0; i < raw.length; i++) {
+    const v = blot[i] * 0.62 + peel[i] * 0.28 + nap[i] * 0.1;
+    raw[i] = v;
+    if (v < lo) lo = v;
+    if (v > hi) hi = v;
+  }
+  const span = hi - lo || 1;
+  for (let y = 0; y < size; y++) {
+    // A hint of the roller, not a stripe: ±0.045 around the orange peel.
+    const lane = Math.sin((y / size) * Math.PI * 6) * 0.045;
+    for (let x = 0; x < size; x++) {
+      const i = y * size + x;
+      raw[i] = Math.min(1, Math.max(0, (raw[i] - lo) / span * 0.9 + 0.05 + lane));
+    }
+  }
+  return raw;
+}
+
+/**
+ * One linear albedo texel. `stipple` is the half-range in 8-bit steps.
+ * Height 0.5 lands on `255 - stipple`, so the map stays near white and the
+ * material hex remains the swatch (a #808080 wall stays a grey wall).
+ */
+export function paintAlbedoByte(height: number, stipple: number): number {
+  const amp = Math.max(0, stipple);
+  const mid = 255 - amp;
+  return Math.max(0, Math.min(255, Math.round(mid + (height - 0.5) * 2 * amp)));
+}
+
+/**
+ * Roughness multiplier texel (linear, green channel). Spans about 0.84–1.0
+ * so the finish's roughness scalar stays the finish and the highlight breaks
+ * up instead of reading as a plastic sheet.
+ */
+export function paintRoughnessByte(height: number): number {
+  return Math.max(0, Math.min(255, Math.round((0.84 + height * 0.16) * 255)));
+}
+
+export interface PaintWallMaps {
+  /** Linear albedo for a finish's stipple amplitude. Cached per amplitude. */
+  albedo: (stipple: number) => THREE.Texture;
+  /** Linear roughness modulation, shared by every finish. */
+  roughness: THREE.Texture;
+  /** Roller nap + orange peel, for the base coat and the clear film. */
+  normal: THREE.Texture;
+}
+
+let paintMapsCache: PaintWallMaps | null = null;
+const paintAlbedoCache = new Map<number, THREE.Texture>();
+
+/** Procedural paint maps. Albedo and roughness are linear multipliers; the hex is the colour. */
+export function paintWallMaps(): PaintWallMaps {
+  if (paintMapsCache) return paintMapsCache;
+  const N = 256;
+  const height = paintHeightField(N);
+  const repeat = 1;
+  const roughness = canvasTexture(
+    N,
+    (d) => {
+      for (let i = 0; i < N * N; i++) {
+        const v = paintRoughnessByte(height[i]);
+        d[i * 4] = v;
+        d[i * 4 + 1] = v;
+        d[i * 4 + 2] = v;
+        d[i * 4 + 3] = 255;
+      }
+    },
+    THREE.LinearSRGBColorSpace,
+    repeat,
+  );
+  // Coarse bumps have a tiny per-texel slope; a higher strength lets the
+  // sun actually rake across a roller pass instead of shading a flat plane.
+  const normal = normalFromHeight(N, height, 9, repeat);
+  paintMapsCache = {
+    roughness,
+    normal,
+    albedo(stipple: number) {
+      const hit = paintAlbedoCache.get(stipple);
+      if (hit) return hit;
+      const tex = canvasTexture(
+        N,
+        (d) => {
+          for (let i = 0; i < N * N; i++) {
+            const v = paintAlbedoByte(height[i], stipple);
+            d[i * 4] = v;
+            d[i * 4 + 1] = v;
+            d[i * 4 + 2] = v;
+            d[i * 4 + 3] = 255;
+          }
+        },
+        THREE.LinearSRGBColorSpace,
+        repeat,
+      );
+      paintAlbedoCache.set(stipple, tex);
+      return tex;
+    },
+  };
+  return paintMapsCache;
+}
+
 /** Greyscale albedo modulation from a 0..1 field: mean ≈ `mean` (255 = ×1), spread ±`amp`. */
 function greyMap(size: number, field: (i: number) => number, mean: number, amp: number, repeatPerMetre: number): THREE.Texture {
   return canvasTexture(
