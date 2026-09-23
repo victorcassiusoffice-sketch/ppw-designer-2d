@@ -28,7 +28,8 @@ import {
   thumbnailFor,
 } from '../data/products';
 import { mergeCatalog } from '../data/mergeCatalog';
-import { fetchApiProducts } from '../data/apiCatalogAdapter';
+import { useMerchantCatalog } from '../lib/useMerchantCatalog';
+import { CatalogConnectionNotice } from './CatalogConnectionNotice';
 import { DetailCard } from '../designer/DetailCard';
 import type { RegionGroup } from '../data/products';
 import type { Product, ProductCategory } from '../data/products.schema';
@@ -187,16 +188,7 @@ export function ProductPalette({
   // PCF-1 (K1 meeting 2026-05-19) — fetch merchant-supplied products
   // from /api/products on mount and blend with the bundled seeds.
   // Empty array = degrade-silently to bundled-only.
-  const [apiProducts, setApiProducts] = useState<Product[]>([]);
-  useEffect(() => {
-    let cancelled = false;
-    fetchApiProducts().then((rows) => {
-      if (!cancelled) setApiProducts(rows);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const apiProducts = useMerchantCatalog();
 
   useEffect(() => {
     try {
@@ -338,6 +330,7 @@ export function ProductPalette({
         ))}
       </div>
 
+      <CatalogConnectionNotice />
       <div className="scroll-pane flex-1 overflow-y-auto px-3 py-3">
         {filtered.length === 0 ? (
           <p className="px-1 py-6 text-center text-xs text-ppw-slate">

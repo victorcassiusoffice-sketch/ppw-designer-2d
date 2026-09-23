@@ -1,11 +1,12 @@
 <!-- verified-preview:start -->
 ## Current feature deployment
 
-Updated: 2026-09-23 01:56 (local) | commit: 7c62295
+Updated: 2026-09-23 09:48 (local) | commit: 8bdafc8
 
-- Designer: https://ppw-designer-2d-o5dzse946-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-o5dzse946-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: Paint finishes and mobile controls deployed successfully per Vercel. Local visual review and build pass. New-host reachability is intermittent: latest browser and HTTP requests timed out; live route verification remains pending.
+- Designer: https://ppw-designer-2d-3ssvrgub1-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-3ssvrgub1-victor-ppw.vercel.app/designer?demo=tintex
+- Landed: Stacked floors, stair openings and plan arrows, windows/doors, flat/gable/shed roofs with felt/tile/metal, gardens/fences/raised terrain, camera easing and live item snapping.
+- Verification: Vercel success; both routes HTTP 200; deployed TintEX browser loaded desktop and phone (390 px); GitHub typechecks and Vitest green.
 - Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
 - Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.

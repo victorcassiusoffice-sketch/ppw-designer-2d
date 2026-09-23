@@ -29,6 +29,8 @@ export interface SavedDesign {
   savedAt: string;
   /** v2 payload - the whole Property (multi-room). */
   property: Property;
+  /** Present only after loading/saving this page's own cloud copy. */
+  cloud?: { id: number; email: string; savedAt: string };
   /**
    * Pages (2026-08-28) — a saved design is a whole PLAN, not just a Property.
    *
@@ -71,6 +73,7 @@ interface DesignsState {
   remove: (id: string) => void;
   rename: (id: string, name: string) => void;
   setCurrent: (id: string | null) => void;
+  linkCloud: (id: string, cloud: NonNullable<SavedDesign['cloud']>) => void;
   list: () => SavedDesign[];
   getDraft: () => SavedDesign | undefined;
 }
@@ -169,6 +172,7 @@ export const useDesignsStore = create<DesignsState>()(
             name: existing?.name ?? (id === DRAFT_ID ? '(unsaved draft)' : bundle.property.name),
             savedAt: new Date().toISOString(),
             property: bundle.property,
+            cloud: existing?.cloud,
             walls: bundle.walls ?? [],
             floorZones: bundle.floorZones ?? [],
             wallTreatments: bundle.wallTreatments ?? {},
@@ -205,6 +209,11 @@ export const useDesignsStore = create<DesignsState>()(
         }),
 
       setCurrent: (id) => set(() => ({ currentId: id })),
+      linkCloud: (id, cloud) => set((s) => {
+        const design = s.designs[id];
+        if (!design) return s;
+        return { designs: { ...s.designs, [id]: { ...design, cloud } } };
+      }),
 
       list: () =>
         Object.values(get().designs)

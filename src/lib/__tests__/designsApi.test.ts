@@ -8,6 +8,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   saveDesignToApi,
+  updateDesignToApi,
   listDesignsByEmail,
   submitLead,
   type ApiDesign,
@@ -115,10 +116,33 @@ describe('designsApi.listDesignsByEmail', () => {
     expect(String(capturedUrl)).toBe('/api/designs?email=Vic%40PPWellness.co');
   });
 
-  it('returns [] when the server payload is malformed', async () => {
+  it('surfaces malformed responses instead of claiming no designs exist', async () => {
     stubFetch(() => jsonResponse({ ok: true }));
-    const rows = await listDesignsByEmail('x@y.co');
-    expect(rows).toEqual([]);
+    await expect(listDesignsByEmail('x@y.co')).rejects.toThrow(/invalid design list/);
+  });
+});
+
+describe('designsApi.updateDesignToApi', () => {
+  it('uses the existing PUT route and keeps server status/cart in the request', async () => {
+    let capturedInit: RequestInit | undefined;
+    let capturedUrl: FetchInput | null = null;
+    stubFetch((url, init) => {
+      capturedUrl = url;
+      capturedInit = init;
+      return jsonResponse({ design: { id: 42, property: sampleProperty } });
+    });
+    await updateDesignToApi(42, { customerEmail: 'a@b.co', name: 'Updated', property: sampleProperty, status: 'quoted', cart: { total: 50 } });
+    expect(capturedUrl).toBe('/api/designs/42');
+    expect(capturedInit?.method).toBe('PUT');
+    expect(JSON.parse(String(capturedInit?.body))).toMatchObject({ status: 'quoted', cart: { total: 50 }, name: 'Updated' });
+  });
+
+  it('reports a missing remote row and refuses invalid IDs before sending', async () => {
+    stubFetch(() => jsonResponse({ error: 'Design not found.' }, 404));
+    await expect(updateDesignToApi(42, { name: 'Test', property: sampleProperty })).rejects.toThrow(/Design not found/);
+    const calls = vi.mocked(fetch).mock.calls.length;
+    await expect(updateDesignToApi(-1, { name: 'Test', property: sampleProperty })).rejects.toThrow(/Invalid cloud design/);
+    expect(vi.mocked(fetch).mock.calls).toHaveLength(calls);
   });
 });
 

@@ -17,6 +17,7 @@ import {
   type ApiProductSummary,
 } from '../apiCatalogAdapter';
 import { getAllProducts } from '../products';
+import { useCatalogStore } from '../../store/catalogStore';
 
 function apiRow(overrides: Partial<ApiProductSummary> = {}): ApiProductSummary {
   return {
@@ -143,6 +144,44 @@ describe('apiProductToProduct — seed-by-SKU behaviour merge', () => {
 });
 
 describe('fetchApiProducts', () => {
+  it('follows real offset/total pages, preserving filters and resolving late-page placed products', async () => {
+    const calls: string[] = [];
+    const fetchImpl = (async (url: RequestInfo | URL) => {
+      calls.push(String(url));
+      const offset = Number(new URL(String(url), 'https://test.local').searchParams.get('offset') ?? 0);
+      return new Response(JSON.stringify({ products: [apiRow({ id: 8000 + offset })], total: 3, limit: 1, offset }));
+    }) as typeof fetch;
+    const out = await fetchApiProducts(fetchImpl, '/api/products?limit=1&merchant=k1');
+    expect(out.map((product) => product.id)).toEqual(['m-8000', 'm-8001', 'm-8002']);
+    expect(calls).toEqual(['/api/products?limit=1&merchant=k1', '/api/products?limit=1&merchant=k1&offset=1', '/api/products?limit=1&merchant=k1&offset=2']);
+    expect(getApiProductFromCache('m-8002')).toBeDefined();
+    expect(useCatalogStore.getState()).toMatchObject({ status: 'ready', total: 3 });
+  });
+
+  it('retains a successful page and exposes partial status when the next page fails', async () => {
+    let requests = 0;
+    const fetchImpl = (async () => {
+      requests += 1;
+      if (requests === 2) return new Response('', { status: 503 });
+      return new Response(JSON.stringify({ products: [apiRow({ id: 8100 })], total: 2, limit: 1, offset: 0 }));
+    }) as typeof fetch;
+    const out = await fetchApiProducts(fetchImpl);
+    expect(out).toHaveLength(1);
+    expect(useCatalogStore.getState()).toMatchObject({ status: 'partial', total: 2 });
+    expect(useCatalogStore.getState().products[0].id).toBe('m-8100');
+  });
+
+  it('stops when a proxy repeats the first page instead of looping indefinitely', async () => {
+    let calls = 0;
+    const fetchImpl = (async () => {
+      calls += 1;
+      return new Response(JSON.stringify({ products: [apiRow()], total: 2, limit: 1, offset: 0 }));
+    }) as typeof fetch;
+    await fetchApiProducts(fetchImpl);
+    expect(calls).toBe(2);
+    expect(useCatalogStore.getState().status).toBe('partial');
+  });
+
   it('adapts rows and caches them by namespaced id', async () => {
     const fetchImpl = (async () =>
       ({

@@ -87,6 +87,17 @@ export function currentPageId(): string {
   return useDesignsStore.getState().currentId ?? DRAFT_ID;
 }
 
+/** Drawn indoor or outdoor work earns a save even before it contains a room. */
+export function propertyHasContent(property: Property): boolean {
+  return property.rooms.some((room) => (room.polygon?.length ?? 0) >= 3 || (room.placedItems?.length ?? 0) > 0)
+    || (property.walls?.length ?? 0) > 0
+    || (property.garden?.surfaces.length ?? 0) > 0
+    || (property.garden?.fences.length ?? 0) > 0
+    || (property.stairs?.length ?? 0) > 0
+    || !!property.roof
+    || (property.levels?.length ?? 0) > 1;
+}
+
 /**
  * Persist the canvas into the page it belongs to.
  *
@@ -140,13 +151,7 @@ export function switchToPage(id: string): boolean {
 export function promoteDraftToPage(name?: string): string | null {
   if (currentPageId() !== DRAFT_ID) return null;
   const property = usePropertyStore.getState().property;
-  const hasContent =
-    property.rooms.some((r) => (r.polygon?.length ?? 0) >= 3)
-    || property.rooms.some((r) => (r.placedItems?.length ?? 0) > 0)
-    // A free wall is drawn work too — an open run with no room around it
-    // must earn its tab the same way a closed one does.
-    || (property.walls?.length ?? 0) > 0;
-  if (!hasContent) return null;
+  if (!propertyHasContent(property)) return null;
 
   const title = (name ?? property.name ?? '').trim() || 'Untitled plan';
   const id = useDesignsStore.getState().savePropertyAs(title, property);

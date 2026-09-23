@@ -12,13 +12,24 @@
  * merchant product is drawn (and wears its 3D body).
  */
 import { create } from 'zustand';
+import type { Product } from '../data/products.schema';
 
 interface CatalogState {
   version: number;
   bump: () => void;
+  products: Product[];
+  status: 'idle' | 'loading' | 'ready' | 'partial' | 'offline';
+  total: number | null;
+  error: string | null;
+  connection: (state: Partial<Pick<CatalogState, 'products' | 'status' | 'total' | 'error'>>) => void;
 }
 
 export const useCatalogStore = create<CatalogState>((set) => ({
   version: 0,
   bump: () => set((s) => ({ version: s.version + 1 })),
+  products: [],
+  status: 'idle',
+  total: null,
+  error: null,
+  connection: (state) => set(state),
 }));

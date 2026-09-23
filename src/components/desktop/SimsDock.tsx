@@ -31,7 +31,8 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { productImageUrl, thumbnailFor } from '../../data/products';
-import { fetchApiProducts } from '../../data/apiCatalogAdapter';
+import { useMerchantCatalog } from '../../lib/useMerchantCatalog';
+import { CatalogConnectionNotice } from '../CatalogConnectionNotice';
 import type { Product } from '../../data/products.schema';
 import { mergeCatalog } from '../../data/mergeCatalog';
 import {
@@ -88,7 +89,7 @@ function formatPrice(p: Product): string {
 export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProps = {}) {
   const [activeCategory, setActiveCategory] = useState<MacroCategory>('all');
   const [collapsed, setCollapsed] = useState(false);
-  const [apiProducts, setApiProducts] = useState<Product[]>([]);
+  const apiProducts = useMerchantCatalog();
   const [hover, setHover] = useState<HoverState | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
@@ -119,15 +120,6 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
   // Same blend + SKU-dedup as the old ProductPalette so a merchant product
   // still resolves through getProductById on the canvas side, and the 14 K1
   // SKUs that exist in BOTH /api/products and the bundled seed show once.
-  useEffect(() => {
-    let cancelled = false;
-    fetchApiProducts().then((rows) => {
-      if (!cancelled) setApiProducts(rows);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const allProducts = useMemo(() => mergeCatalog(apiProducts), [apiProducts]);
 
@@ -254,6 +246,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
           paddingBottom: 6,
         }}
       >
+        <CatalogConnectionNotice />
         {/* The DOM thumbnail ghost shows only while the pointer is OUTSIDE
             the canvas. Over the canvas the Konva footprint ghost is the
             single truth, so exactly one preview is ever visible. */}

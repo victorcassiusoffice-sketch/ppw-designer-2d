@@ -281,24 +281,54 @@ export function __setApiProductForTests(id: string, product: Product | null): vo
 
 /**
  * Fetch `/api/products` and adapt rows to the bundled `Product` shape.
- * Returns an empty list on any failure (network, schema-missing, etc.)
- * so the Designer Catalog degrades gracefully to bundled seeds only.
+ * Reads every page of the existing offset/total API. A later-page failure
+ * retains the products already loaded and exposes a Retry state in the UI.
  */
 export async function fetchApiProducts(
   fetchImpl: typeof globalThis.fetch = globalThis.fetch,
   url = '/api/products?limit=100',
 ): Promise<Product[]> {
+  const products = new Map<string, Product>();
+  const store = useCatalogStore.getState();
+  store.connection({ status: 'loading', error: null });
   try {
-    const res = await fetchImpl(url);
-    if (!res.ok) return [];
-    const json = (await res.json()) as ApiProductsResponse;
-    if (!json.products || json.schemaMissing) return [];
-    const adapted = json.products.map(apiProductToProduct);
-    for (const p of adapted) _apiProductsCache.set(p.id, p);
-    // Views that draw placed items re-derive now that `m-` ids resolve.
-    if (adapted.length) useCatalogStore.getState().bump();
-    return adapted;
-  } catch {
-    return [];
+    let next = url;
+    let requestedOffset = Number(new URL(url, 'https://catalog.local').searchParams.get('offset') ?? 0);
+    // The endpoint caps offset at 100000. The page budget also prevents a
+    // malformed/proxy response from keeping a phone in an endless fetch loop.
+    for (let page = 0; page < 1000; page++) {
+      const res = await fetchImpl(next);
+      if (!res.ok) throw new Error(`Catalog request failed (${res.status}).`);
+      const json = (await res.json()) as ApiProductsResponse;
+      if (!Array.isArray(json.products) || json.schemaMissing) throw new Error('The live catalog is unavailable.');
+      const offset = Number.isFinite(json.offset) ? json.offset : requestedOffset;
+      if (offset !== requestedOffset) throw new Error('The catalog returned an unexpected page.');
+      const total = Number.isFinite(json.total) && json.total >= 0 ? json.total : null;
+      for (const row of json.products) {
+        const product = apiProductToProduct(row);
+        products.set(product.id, product);
+        _apiProductsCache.set(product.id, product);
+      }
+      const adapted = [...products.values()];
+      store.connection({ products: adapted, total });
+      if (adapted.length) store.bump();
+      const nextOffset = offset + json.products.length;
+      if (total === null || nextOffset >= total) {
+        store.connection({ status: 'ready' });
+        return adapted;
+      }
+      if (nextOffset <= offset || nextOffset > 100000) throw new Error('The catalog stopped before all products arrived.');
+      requestedOffset = nextOffset;
+      const nextUrl = new URL(url, 'https://catalog.local');
+      nextUrl.searchParams.set('offset', String(nextOffset));
+      next = /^https?:/i.test(url) ? nextUrl.toString() : `${nextUrl.pathname}${nextUrl.search}`;
+    }
+    throw new Error('The catalog is too large to load in one session.');
+  } catch (error) {
+    store.connection({
+      status: products.size ? 'partial' : 'offline',
+      error: error instanceof Error ? error.message : 'The live catalog could not be reached.',
+    });
+    return [...products.values()];
   }
 }

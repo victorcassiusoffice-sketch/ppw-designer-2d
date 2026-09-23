@@ -25,6 +25,7 @@ import {
   createPage,
   currentPageId,
   promoteDraftToPage,
+  propertyHasContent,
 } from '../pages';
 
 function wall(x: number) {
@@ -253,6 +254,25 @@ describe('promoting an unsaved draft', () => {
       .filter((d) => d.id !== DRAFT_ID)
       .map((d) => d.name);
     expect(named).toEqual(['Open run']);
+  });
+
+  it('keeps garden-only work reachable when starting the next plan', () => {
+    const garden = { surfaces: [], fences: [{ id: 'boundary', a: { x: 0, y: 0 }, b: { x: 5, y: 0 }, heightM: 1.2, material: 'timber' as const }] };
+    usePropertyStore.setState((state) => ({ property: { ...state.property, name: 'Garden', garden } }));
+    expect(propertyHasContent(usePropertyStore.getState().property)).toBe(true);
+    createPage('Next project');
+    const kept = Object.values(useDesignsStore.getState().designs).find((design) => design.name === 'Garden');
+    expect(kept).toBeDefined();
+    expect(kept?.id).not.toBe(DRAFT_ID);
+    expect(switchToPage(kept!.id)).toBe(true);
+    expect(usePropertyStore.getState().property.garden).toEqual(garden);
+  });
+
+  it('retains configured extra floors before any room is drawn', () => {
+    usePropertyStore.getState().addLevel('First floor');
+    const id = promoteDraftToPage('Structure');
+    expect(id).not.toBeNull();
+    expect(useDesignsStore.getState().designs[id!].property.levels).toHaveLength(2);
   });
 
   it('does not promote a genuinely empty canvas', () => {

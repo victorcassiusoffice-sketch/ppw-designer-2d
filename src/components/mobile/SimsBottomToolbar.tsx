@@ -21,7 +21,8 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { productImageUrl } from '../../data/products';
-import { fetchApiProducts } from '../../data/apiCatalogAdapter';
+import { useMerchantCatalog } from '../../lib/useMerchantCatalog';
+import { CatalogConnectionNotice } from '../CatalogConnectionNotice';
 import type { Product } from '../../data/products.schema';
 import { mergeCatalog } from '../../data/mergeCatalog';
 import { usePlacementIntentStore } from '../../store/placementIntentStore';
@@ -74,7 +75,7 @@ export function SimsBottomToolbar() {
   const [activeCategory, setActiveCategory] = useState<MacroCategory>('all');
   const [minimized, setMinimized] = useState(false);
   const [selected, setSelected] = useState<Product | null>(null);
-  const [apiProducts, setApiProducts] = useState<Product[]>([]);
+  const apiProducts = useMerchantCatalog();
 
   const placeAtCenter = usePlacementIntentStore((s) => s.placeAtCenter);
   const placeAt = usePlacementIntentStore((s) => s.placeAt);
@@ -143,15 +144,6 @@ export function SimsBottomToolbar() {
 
   // Same blend + cache-population path as ProductPalette so a placed
   // merchant product resolves via getProductById on the canvas side.
-  useEffect(() => {
-    let cancelled = false;
-    fetchApiProducts().then((rows) => {
-      if (!cancelled) setApiProducts(rows);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   // SKU-deduped like the desktop dock: the 14 K1 SKUs arrive from BOTH the
   // API and the bundled seed, and this strip used to show each twice.
@@ -198,6 +190,7 @@ export function SimsBottomToolbar() {
           boxShadow: '0 -8px 24px rgba(42,41,38,0.18)',
         }}
       >
+        <CatalogConnectionNotice />
         {/* Category bar + minimize chevron */}
         <div className="flex items-center gap-2 px-2 py-1" style={{ borderBottom: `1px solid ${DOCK_BORDER}` }}>
           <div

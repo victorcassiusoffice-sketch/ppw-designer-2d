@@ -11,21 +11,26 @@
  * rationale).
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { usePropertyStore } from '../store/propertyStore';
+import { useDesignsStore } from '../store/designsStore';
 import { useToastStore } from '../store/toastStore';
 import {
   getCachedCustomerEmail,
   isLikelyEmail,
   setCachedCustomerEmail,
+  clearCachedCustomerEmail,
 } from '../lib/customerIdentity';
 import { listDesignsByEmail, type ApiDesign } from '../lib/designsApi';
+import { openCloudDesign, saveCurrentPageToCloud } from '../lib/cloudDesigns';
+import { propertyHasContent } from '../lib/pages';
 import { EmptyState, ErrorBanner, SkeletonRow } from '../components/uxKit';
 
 export default function MyDesignsPage(): JSX.Element {
   const navigate = useNavigate();
-  const loadProperty = usePropertyStore((s) => s.loadProperty);
+  const property = usePropertyStore((s) => s.property);
+  const activePage = useDesignsStore((s) => s.currentId ? s.designs[s.currentId] : undefined);
   const pushToast = useToastStore((s) => s.push);
 
   const [email, setEmail] = useState<string | null>(() => getCachedCustomerEmail());
@@ -35,19 +40,28 @@ export default function MyDesignsPage(): JSX.Element {
   const [designs, setDesigns] = useState<ApiDesign[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saveName, setSaveName] = useState(() => activePage?.name ?? property.name ?? 'Untitled plan');
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const request = useRef(0);
+  const canUpdate = !!email && activePage?.cloud?.email === email;
+  const hasPlan = propertyHasContent(property);
 
   const fetchDesigns = useCallback(async (forEmail: string) => {
+    const id = ++request.current;
     setLoading(true);
     setError(null);
     try {
       const rows = await listDesignsByEmail(forEmail);
+      if (request.current !== id) return;
       setDesigns(rows);
     } catch (err) {
+      if (request.current !== id) return;
       const msg = err instanceof Error ? err.message : 'Failed to load designs.';
       setError(msg);
       setDesigns([]);
     } finally {
-      setLoading(false);
+      if (request.current === id) setLoading(false);
     }
   }, []);
 
@@ -55,6 +69,7 @@ export default function MyDesignsPage(): JSX.Element {
     if (email) {
       void fetchDesigns(email);
     }
+    return () => { request.current += 1; };
   }, [email, fetchDesigns]);
 
   function submitEmail(e: React.FormEvent) {
@@ -74,13 +89,29 @@ export default function MyDesignsPage(): JSX.Element {
   }
 
   function handleLoad(design: ApiDesign) {
-    if (!design.property) {
-      pushToast('That design has no property data.', 'error');
-      return;
+    if (!email) return;
+    try {
+      openCloudDesign(design, email);
+      pushToast(`Loaded "${design.name}" as a separate plan`, 'success');
+      navigate('/designer');
+    } catch (err) {
+      pushToast(err instanceof Error ? err.message : 'Could not load that design.', 'error');
     }
-    loadProperty(design.property);
-    pushToast(`Loaded "${design.name}"`, 'success');
-    navigate('/designer');
+  }
+
+  async function handleCloudSave(updateExisting: boolean) {
+    if (!email || saving || !hasPlan) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const saved = await saveCurrentPageToCloud(email, saveName, updateExisting);
+      pushToast(`${updateExisting ? 'Updated' : 'Saved'} "${saved.name}" in the cloud.`, 'success');
+      await fetchDesigns(email);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Cloud save failed. Your local plan is still saved on this device.');
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -147,15 +178,43 @@ export default function MyDesignsPage(): JSX.Element {
               <button
                 type="button"
                 onClick={() => {
+                  request.current += 1;
+                  clearCachedCustomerEmail();
                   setEmail(null);
                   setDesigns(null);
                   setEmailDraft('');
+                  setError(null);
+                  setSaveError(null);
                 }}
+                disabled={saving}
                 className="text-[11px] text-ppw-coral hover:underline"
               >
                 Use a different email
               </button>
             </div>
+
+            {hasPlan && (
+              <div className="mb-5 rounded-lg border border-ppw-stone bg-white p-4" data-testid="cloud-save-panel">
+                <h2 className="text-sm font-semibold">Current plan</h2>
+                <p className="mt-1 text-xs text-ppw-slate">Save all floors, walls, finishes, garden and placed items to your cloud designs.</p>
+                <label className="mt-3 block text-xs font-medium" htmlFor="cloud-plan-name">Plan name</label>
+                <input id="cloud-plan-name" value={saveName} onChange={(event) => setSaveName(event.target.value)}
+                  disabled={saving} className="mt-1 w-full rounded-md border border-ppw-stone px-3 py-2 text-sm" />
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {canUpdate && (
+                    <button type="button" onClick={() => void handleCloudSave(true)} disabled={saving || !saveName.trim()}
+                      data-testid="cloud-update" className="min-h-11 rounded-md bg-ppw-teal px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+                      {saving ? 'Saving…' : 'Update cloud copy'}
+                    </button>
+                  )}
+                  <button type="button" onClick={() => void handleCloudSave(false)} disabled={saving || !saveName.trim()}
+                    data-testid="cloud-save-new" className="min-h-11 rounded-md border border-ppw-teal px-4 py-2 text-sm font-semibold text-ppw-teal disabled:opacity-50">
+                    {saving ? 'Saving…' : canUpdate ? 'Save a new copy' : 'Save plan to cloud'}
+                  </button>
+                </div>
+                {saveError && <p className="mt-2 text-sm text-ppw-coral" role="alert">{saveError}</p>}
+              </div>
+            )}
 
             {error && <ErrorBanner error={error} onRetry={() => fetchDesigns(email)} />}
 
@@ -165,10 +224,10 @@ export default function MyDesignsPage(): JSX.Element {
                 <SkeletonRow />
                 <SkeletonRow />
               </div>
-            ) : designs && designs.length === 0 ? (
+            ) : !error && designs && designs.length === 0 ? (
               <EmptyState
                 title="No cloud-saved designs yet."
-                message="Open the Designer, click Save as..., and your design will sync to the cloud automatically once your email is on file."
+                message={hasPlan ? 'Save the current plan above to keep your first cloud copy.' : 'Draw a plan in the Designer, then return here to save it to the cloud.'}
                 actionLabel="Open Designer"
                 onAction={() => navigate('/designer')}
               />
@@ -197,6 +256,7 @@ export default function MyDesignsPage(): JSX.Element {
                         <button
                           type="button"
                           onClick={() => handleLoad(d)}
+                          disabled={saving}
                           className="shrink-0 rounded-md bg-ppw-teal px-3 py-1.5 text-xs font-semibold text-white hover:bg-ppw-teal/90"
                         >
                           Load

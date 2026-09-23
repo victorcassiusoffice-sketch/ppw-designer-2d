@@ -71,6 +71,21 @@ export async function saveDesignToApi(input: SaveDesignInput): Promise<ApiDesign
   return out;
 }
 
+/** PUT /api/designs/:id — only called for an explicit update of a linked page. */
+export async function updateDesignToApi(id: number, input: Omit<SaveDesignInput, 'status'> & { status?: string }): Promise<ApiDesign> {
+  if (!Number.isSafeInteger(id) || id <= 0) throw new Error('Invalid cloud design ID.');
+  const response = await fetch(`/api/designs/${id}`, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  const body = await readBody(response);
+  if (!response.ok) throw new Error(extractErrorMessage(body, `Update failed (${response.status})`));
+  const design = (body as { design?: ApiDesign } | null)?.design;
+  if (!design) throw new Error('Update returned no design payload.');
+  return design;
+}
+
 /** GET /api/designs?email=... — list a customer's designs (newest first). */
 export async function listDesignsByEmail(email: string): Promise<ApiDesign[]> {
   const url = `/api/designs?email=${encodeURIComponent(email)}`;
@@ -80,7 +95,8 @@ export async function listDesignsByEmail(email: string): Promise<ApiDesign[]> {
     throw new Error(extractErrorMessage(body, `Load failed (${response.status})`));
   }
   const designs = (body as { designs?: ApiDesign[] } | null)?.designs;
-  return Array.isArray(designs) ? designs : [];
+  if (!Array.isArray(designs)) throw new Error('The cloud returned an invalid design list. Please retry.');
+  return designs;
 }
 
 /** GET /api/designs/:id — read a single design. */
