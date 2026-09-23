@@ -1,23 +1,14 @@
 /**
- * Raise / lower the one house wall height (Sims-style, after the walls exist).
- *
- * One property value — `propertyStore.setWallHeight` — already drives the 3D
- * extrusion and the paint / cladding area maths. This is the chrome for it,
- * so the customer does not have to open the wall-paint panel to find the
- * number. The paint panel keeps its own input on the same store field.
+ * Raise / lower the active storey's walls, retaining the legacy house height
+ * for single-storey properties without overrides.
  */
-import { MAX_WALL_HEIGHT_M, MIN_WALL_HEIGHT_M, DEFAULT_WALL_HEIGHT_M } from '../data/wallPaints';
 import { usePropertyStore } from '../store/propertyStore';
+import { formatWallHeightM, wallHeightControlTarget } from '../designer/wallHeight';
 
 const STEP_M = 0.1;
 
 const BTN =
   'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-ppw-rim bg-ppw-chrome text-[18px] font-semibold leading-none text-[#37362f] shadow-sm transition-colors duration-[120ms] ease-out hover:bg-[#f3f1ec] focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none';
-
-/** "2.70" → "2.7", "2.75" stays, so the readout matches the paint-panel number. */
-export function formatWallHeightM(heightM: number): string {
-  return String(Number(heightM.toFixed(2)));
-}
 
 export function WallHeightControl({
   idPrefix,
@@ -30,10 +21,21 @@ export function WallHeightControl({
   buttonClassName?: string;
   readoutClassName?: string;
 }) {
-  const heightM = usePropertyStore((s) => s.property.wallHeightM ?? DEFAULT_WALL_HEIGHT_M);
+  const levels = usePropertyStore((s) => s.property.levels);
+  const activeLevelId = usePropertyStore((s) => s.property.activeLevelId);
+  const wallHeightM = usePropertyStore((s) => s.property.wallHeightM);
   const setWallHeight = usePropertyStore((s) => s.setWallHeight);
-  const atMin = heightM <= MIN_WALL_HEIGHT_M + 0.001;
-  const atMax = heightM >= MAX_WALL_HEIGHT_M - 0.001;
+  const setLevelHeight = usePropertyStore((s) => s.setLevelHeight);
+  const target = wallHeightControlTarget({ levels, activeLevelId, wallHeightM });
+  if (!target) return null;
+  const { heightM, minM, maxM } = target;
+  const atMin = heightM <= minM + 0.001;
+  const atMax = heightM >= maxM - 0.001;
+  const adjust = (delta: number) => {
+    const height = Math.round(Math.max(minM, Math.min(maxM, heightM + delta)) * 100) / 100;
+    if (target.levelId) setLevelHeight(target.levelId, height);
+    else setWallHeight(height);
+  };
 
   return (
     <div className={`flex items-center gap-1.5 ${className}`} data-testid={`${idPrefix}-control`}>
@@ -41,9 +43,9 @@ export function WallHeightControl({
         type="button"
         className={`${BTN} ${buttonClassName}`}
         disabled={atMin}
-        onClick={() => setWallHeight(heightM - STEP_M)}
+        onClick={() => adjust(-STEP_M)}
         aria-label="Lower wall height"
-        title={`Lower every wall by ${STEP_M} m (${MIN_WALL_HEIGHT_M}–${MAX_WALL_HEIGHT_M} m)`}
+        title={`Lower ${target.label} by ${STEP_M} m (${minM}–${maxM} m)`}
         data-testid={`${idPrefix}-down`}
       >
         −
@@ -52,6 +54,7 @@ export function WallHeightControl({
         className={`min-w-[4.5rem] flex-1 text-center text-[14px] font-semibold tabular-nums text-[#37362f] ${readoutClassName}`}
         data-testid={`${idPrefix}-readout`}
         aria-live="polite"
+        title={target.levelId ? target.label : 'Wall height'}
       >
         {formatWallHeightM(heightM)} m
       </span>
@@ -59,9 +62,9 @@ export function WallHeightControl({
         type="button"
         className={`${BTN} ${buttonClassName}`}
         disabled={atMax}
-        onClick={() => setWallHeight(heightM + STEP_M)}
+        onClick={() => adjust(STEP_M)}
         aria-label="Raise wall height"
-        title={`Raise every wall by ${STEP_M} m (${MIN_WALL_HEIGHT_M}–${MAX_WALL_HEIGHT_M} m)`}
+        title={`Raise ${target.label} by ${STEP_M} m (${minM}–${maxM} m)`}
         data-testid={`${idPrefix}-up`}
       >
         +

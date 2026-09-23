@@ -13,6 +13,7 @@ import { placementKind, type PlacementKind, type SurfaceRect } from '../attachme
 import { getProductById } from '../../data/products';
 import { cmToM, rotatedFootprint, isRectInsidePolygon, type PlacedRect, type Polygon } from '../../lib/geometry';
 import type { PlacedItem } from '../../store/propertyStore';
+import { usePropertyStore } from '../../store/propertyStore';
 
 const ROOM: Polygon = [
   { x: 0, y: 0 },
@@ -96,6 +97,32 @@ const table = (x: number, y: number, rotation = 0): PlacedItem => ({ instanceId:
 const lamp = (x: number, y: number, id = 'lamp'): PlacedItem => ({ instanceId: id, productId: LAMP.id, x, y, rotation: 0 });
 
 describe('resolveItemDrop — floor items', () => {
+  it('previews an outdoor move without creating a room, then creates it only on drop', () => {
+    const store = usePropertyStore.getState();
+    store.resetToDefault();
+    const item = lamp(1, 1);
+    const context = ctxFor([item]);
+    context.fitsOutdoors = () => true;
+    context.resolveContainer = (_point, options) => {
+      const id = options.create ? store.ensureOutdoorRoom('ground') : '__outdoor_preview__';
+      return { ok: true, outdoor: true, room: { id, polygon: [], placedItems: [] } };
+    };
+    const propertyBefore = usePropertyStore.getState().property;
+    const result = resolveItemDrop(context, item, LAMP, 20.12, 20.2, false, { createContainer: false });
+    expect(result).toMatchObject({ ok: true, roomId: '__outdoor_preview__', crossRoom: true });
+    expect(usePropertyStore.getState().property).toBe(propertyBefore);
+    expect(usePropertyStore.getState().property.rooms.some((room) => room.kind === 'outdoor')).toBe(false);
+
+    const committed = resolveItemDrop(context, item, LAMP, 20.12, 20.2, false);
+    expect(committed.ok).toBe(true);
+    if (!committed.ok || !result.ok) return;
+    expect(committed.roomId).not.toBe('__outdoor_preview__');
+    expect(committed.x).toBe(result.x);
+    expect(committed.y).toBe(result.y);
+    expect(committed.rotation).toBe(result.rotation);
+    expect(usePropertyStore.getState().property.rooms.filter((room) => room.kind === 'outdoor')).toHaveLength(1);
+  });
+
   it('lands on the grid in open floor, keeps its facing, stays in its room', () => {
     const item = table(2, 1.5);
     const r = resolveItemDrop(ctxFor([item]), item, TABLE, 1.37, 2.12, false);

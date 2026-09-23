@@ -20,6 +20,9 @@ describe('dressing — contact shadows, lamps, door runs (3D Mode P3)', () => {
     expect(contactShadow({ ...ITEM, placement: 'wall' })).toBeNull();
     expect(contactShadow({ ...ITEM, placement: 'ceiling' })).toBeNull();
     expect(contactShadow({ ...ITEM, z0: 0.9, z1: 1.2 })).toBeNull();
+    const upstairs = contactShadow({ ...ITEM, floorElevationM: 2.88, z0: 2.88, z1: 4.28 });
+    expect(upstairs?.position.y).toBeCloseTo(2.886);
+    expect(contactShadow({ ...ITEM, floorElevationM: 2.88, z0: 3.78, z1: 4.08 })).toBeNull();
   });
 
   it('a night light sits at the lamp at its mount height, warm, no shadow; lamps fade in around sunset', () => {

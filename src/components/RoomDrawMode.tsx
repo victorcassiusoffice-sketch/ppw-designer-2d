@@ -1106,24 +1106,26 @@ export function RoomDrawHUD({
   }, [enabled]);
 
   const last = vertices.length > 0 ? vertices[vertices.length - 1] : null;
-  // The field needs a vertex to measure FROM and a cursor to take the
-  // direction from. Sitting exactly on the last vertex gives no direction,
-  // so the control disables rather than guessing an axis.
+  // Phones have no hover: resize the last drawn segment in its existing
+  // direction. Desktop keeps the cursor-led exact next-wall workflow.
+  const lengthOrigin = phone ? vertices[vertices.length - 2] ?? null : last;
+  const lengthDirection = phone ? last : hover;
   const lengthReady =
-    last !== null &&
-    hover !== null &&
-    Math.hypot(hover.x - last.x, hover.y - last.y) > 1e-9;
+    lengthOrigin !== null &&
+    lengthDirection !== null &&
+    Math.hypot(lengthDirection.x - lengthOrigin.x, lengthDirection.y - lengthOrigin.y) > 1e-9;
 
   const commitLength = useCallback(() => {
-    if (!last) return;
+    if (!lengthOrigin) return;
     const typed = Number(lengthText);
     if (!Number.isFinite(typed) || typed <= 0) return;
-    const next = nextVertexAtLength(last, hover, typed, stepM);
+    const next = nextVertexAtLength(lengthOrigin, lengthDirection, typed, stepM);
     if (!next) return;
     console.log(DBG, 'HUD typed length', { lengthM: typed, next });
-    setVertices((v) => [...v, next]);
+    setVertices((v) => phone ? [...v.slice(0, -1), next] : [...v, next]);
+    if (phone) setHover(next);
     setLengthText('');
-  }, [last, hover, lengthText, stepM, setVertices]);
+  }, [lengthOrigin, lengthDirection, lengthText, stepM, setVertices, setHover, phone]);
   const livePerimeter = useMemo(() => polygonPerimeter(vertices), [vertices]);
   const liveArea = useMemo(() => polygonArea(vertices), [vertices]);
 
@@ -1303,6 +1305,7 @@ export function RoomDrawHUD({
             <SnapUnitStepper compact dense />
           </div>
         )}
+        {phone && <span className="text-center text-[11px] font-medium">Last wall length</span>}
         {/* Typed segment length (units brief D9). The cursor gives the
             direction, this gives the magnitude. */}
         <div className={`pointer-events-auto flex min-w-0 items-center gap-1 ${phone ? 'w-full' : 'gap-2'}`}>
@@ -1311,7 +1314,7 @@ export function RoomDrawHUD({
             className={`text-[11px] font-semibold uppercase tracking-[0.06em] ${phone ? 'sr-only' : ''}`}
             style={{ color: CHROME_TEXT_2 }}
           >
-            Length
+            {phone ? 'Last wall length' : 'Length'}
           </label>
           <input
             id="draw-segment-length"
@@ -1332,9 +1335,11 @@ export function RoomDrawHUD({
                 e.currentTarget.blur();
               }
             }}
-            placeholder={lengthReady ? formatLengthForUnit(0, stepM) : undefined}
+            placeholder={lengthReady && lengthOrigin && lengthDirection
+              ? phone ? String(Number(Math.hypot(lengthDirection.x - lengthOrigin.x, lengthDirection.y - lengthOrigin.y).toFixed(2))) : formatLengthForUnit(0, stepM)
+              : undefined}
             title={
-              lengthReady
+              phone ? 'Change the last wall length, then tap Set length' : lengthReady
                 ? 'Type an exact length and press Enter'
                 : 'Point the cursor, then type a length'
             }
@@ -1346,6 +1351,8 @@ export function RoomDrawHUD({
             {phone ? 'm' : unitSuffix}
           </span>
         </div>
+        {phone && <button type="button" onClick={commitLength} disabled={!lengthReady || !lengthText.trim()}
+          data-testid="draw-segment-apply" className={`${CTRL} ${CTRL_OUTLINED} ${phoneBtn}`}>Set length</button>}
       </div>
 
       {/* Actions (rebuilt 2026-09-08 after Vic: "the wall draw feature

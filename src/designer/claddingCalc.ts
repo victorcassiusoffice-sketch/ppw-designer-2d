@@ -4,7 +4,8 @@
  */
 import type { Polygon } from '../lib/geometry';
 import type { Opening } from './openings';
-import { edgeLengthM, paintableEdgeAreaM2 } from './wallPaintCalc';
+import { edgeLengthM, paintableEdgeAreaM2, wallFinishHeightM } from './wallPaintCalc';
+import type { Level } from './levels';
 import { DEFAULT_WALL_HEIGHT_M } from '../data/wallPaints';
 import {
   CLADDING_PRODUCTS,
@@ -19,6 +20,7 @@ export interface CladEdge {
 }
 
 interface CladRoom {
+  levelId?: string;
   id: string;
   name: string;
   polygon: Polygon;
@@ -27,6 +29,7 @@ interface CladRoom {
 }
 
 interface CladFreeWall {
+  levelId?: string;
   id: string;
   a: { x: number; y: number };
   b: { x: number; y: number };
@@ -62,7 +65,7 @@ function orderFor(product: CladdingProduct, areaM2: number): { boards: number; n
  * (length × height − openings), same rule as wall paint.
  */
 export function deriveCladdingOrders(
-  property: { rooms: CladRoom[]; walls?: CladFreeWall[]; wallHeightM?: number },
+  property: { rooms: CladRoom[]; walls?: CladFreeWall[]; wallHeightM?: number; levels?: Level[] },
   wallHeightM = property.wallHeightM ?? DEFAULT_WALL_HEIGHT_M,
 ): CladdingOrder[] {
   const areaByProduct = new Map<string, { area: number; rooms: CladdingOrder['perRoom'] }>();
@@ -77,18 +80,20 @@ export function deriveCladdingOrders(
   };
 
   for (const room of property.rooms) {
+    const heightM = wallFinishHeightM(property, room, wallHeightM);
     for (const e of room.wallCladding ?? []) {
       const product = findCladdingProduct(e.productId);
       if (!product) continue;
-      add(product.id, paintableEdgeAreaM2(room, e.edgeIndex, wallHeightM), room);
+      add(product.id, paintableEdgeAreaM2(room, e.edgeIndex, heightM), room);
     }
   }
   for (const w of property.walls ?? []) {
+    const heightM = wallFinishHeightM(property, w, wallHeightM);
     const product = findCladdingProduct(w.claddingId);
     if (!product) continue;
     const faces = w.claddingFaces === 2 ? 2 : 1;
     const len = Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y);
-    add(product.id, len * wallHeightM * faces, { id: `wall:${w.id}`, name: 'Free wall' });
+    add(product.id, len * heightM * faces, { id: `wall:${w.id}`, name: 'Free wall' });
   }
 
   const out: CladdingOrder[] = [];

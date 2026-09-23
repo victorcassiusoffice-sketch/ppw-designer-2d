@@ -70,9 +70,9 @@ import { formatCurrency } from '../lib/currency';
 // Batch 3 Fix 3.2 — vertices live in a tiny shared store so the
 // RoomList sidebar can render the live counters next to the room.
 import { useDrawProgressStore } from '../store/drawProgressStore';
-import { usePlacementIntentStore, isScreenTarget } from '../store/placementIntentStore';
+import { usePlacementIntentStore, isScreenTarget, type MovePreviewResolver } from '../store/placementIntentStore';
 // 3D Mode (2026-09-17): the plan's drop law as a function, for moves made on the 3D floor.
-import { resolveItemDrop } from '../designer/itemDrop';
+import { resolveItemDrop, type DropResult } from '../designer/itemDrop';
 // Sims feature-finish (2026-05-30) — inline floating cluster (flagship),
 // precision snap step, haptics. All additive; Konva stable-lock untouched.
 import { FloatingCluster } from '../designer/FloatingCluster';
@@ -110,6 +110,7 @@ import { contentBoxForImage } from '../designer/imageContent';
 // Sims world (2026-08-29): storeys, outdoor areas, free walls, land plot.
 import {
   activeLevelIdOf,
+  GROUND_LEVEL_ID,
   isOutdoorRoom,
   isRoofLevel,
   isRoofRoom,
@@ -118,6 +119,9 @@ import {
   roomsOnLevel,
 } from '../designer/levels';
 import { floorTargetRoom } from '../designer/floorTarget';
+import { gardenPoints } from '../designer/garden';
+import { GardenLayer } from './GardenLayer';
+import { BuildingPlanLayer } from './BuildingPlanLayer';
 // Roof + energy (eco / solar 2026-09-04): PV panels are roof-placed, snap on
 // their own lattice like tiles, and arming one takes the customer to the roof.
 import { isRoofProduct } from '../designer/energy';
@@ -507,9 +511,11 @@ export function RoomCanvas({
   const propertyLevels = usePropertyStore((s) => s.property.levels);
   const propertyActiveLevelId = usePropertyStore((s) => s.property.activeLevelId);
   const propertyWalls = usePropertyStore((s) => s.property.walls);
+  const propertyGarden = usePropertyStore((s) => s.property.garden);
   const site = usePropertyStore((s) => s.property.site ?? null);
   const levels = useMemo(() => levelsOf({ levels: propertyLevels }), [propertyLevels]);
   const activeLevelId = activeLevelIdOf({ levels: propertyLevels, activeLevelId: propertyActiveLevelId });
+  const garden = activeLevelId === GROUND_LEVEL_ID ? propertyGarden : undefined;
   const activeLevel = levels.find((l) => l.id === activeLevelId) ?? levels[0];
   const belowLevelId = useMemo(() => levelBelow(levels, activeLevelId)?.id ?? null, [levels, activeLevelId]);
   /** Rooms on the level the canvas is showing (outdoor containers included). */
@@ -946,11 +952,17 @@ export function RoomCanvas({
           }
         : b;
     }
+    for (const point of gardenPoints(garden)) {
+      u = u ? {
+        minX: Math.min(u.minX, point.x), minY: Math.min(u.minY, point.y),
+        maxX: Math.max(u.maxX, point.x), maxY: Math.max(u.maxY, point.y),
+      } : { minX: point.x, minY: point.y, maxX: point.x, maxY: point.y };
+    }
     // A single wall has zero extent on one axis; give it a metre to fit on.
     if (u && u.maxX - u.minX < 1) u = { ...u, maxX: u.minX + 1 };
     if (u && u.maxY - u.minY < 1) u = { ...u, maxY: u.minY + 1 };
     return u;
-  }, [sitePolygon, drawnRooms, freeWalls]);
+  }, [sitePolygon, drawnRooms, freeWalls, garden]);
   const unionWpx = union ? (union.maxX - union.minX) * pxPerMetre : 0;
   const unionHpx = union ? (union.maxY - union.minY) * pxPerMetre : 0;
   // Area readout stays the ACTIVE room's — it pairs with the TopBar L/W
@@ -1783,19 +1795,15 @@ export function RoomCanvas({
   // room routing, the same refusals. So a move in 3D IS a move on the plan.
   const moveIntent = usePlacementIntentStore((s) => s.moveIntent);
   const consumeMove = usePlacementIntentStore((s) => s.consumeMove);
-  useEffect(() => {
-    if (!moveIntent) return;
-    const ps = usePropertyStore.getState();
-    const roomsNow = ps.property.rooms;
-    const owner = roomsNow.find((r) => r.placedItems.some((i) => i.instanceId === moveIntent.instanceId));
-    const item = owner?.placedItems.find((i) => i.instanceId === moveIntent.instanceId);
+  const resolveMove = useCallback((instanceId: string, roomX: number, roomY: number, shiftKey: boolean, createContainer: boolean): DropResult | null => {
+    if (!Number.isFinite(roomX) || !Number.isFinite(roomY)) return null;
+    const roomsNow = usePropertyStore.getState().property.rooms;
+    const owner = roomsNow.find((r) => r.placedItems.some((i) => i.instanceId === instanceId));
+    const item = owner?.placedItems.find((i) => i.instanceId === instanceId);
     const product = item ? getProductById(item.productId) : undefined;
-    if (!owner || !item || !product) {
-      consumeMove();
-      return;
-    }
+    if (!owner || !item || !product) return null;
     const outdoorOwner = isOutdoorRoom(owner);
-    const result = resolveItemDrop(
+    return resolveItemDrop(
       {
         snapStep,
         polygon: owner.polygon,
@@ -1811,13 +1819,33 @@ export function RoomCanvas({
       },
       item,
       product,
-      moveIntent.roomX,
-      moveIntent.roomY,
-      moveIntent.shiftKey,
+      roomX,
+      roomY,
+      shiftKey,
+      { createContainer },
     );
+  }, [snapStep, fitsOutdoors, freeWalls, buildingWallsAsFree, freeWallRects, resolveContainer]);
+
+  // One stable registration points at the latest room, wall and snap context.
+  // The bridge does not publish store state on pointermove and the resolver
+  // routes to an ephemeral outdoor container until the actual drop commits.
+  const previewMoveRef = useRef<MovePreviewResolver>(() => null);
+  previewMoveRef.current = (instanceId, x, y, shiftKey) => resolveMove(instanceId, x, y, shiftKey, false);
+  useEffect(() => usePlacementIntentStore.getState().registerMovePreviewResolver(
+    (instanceId, x, y, shiftKey) => previewMoveRef.current(instanceId, x, y, shiftKey),
+  ), []);
+
+  useEffect(() => {
+    if (!moveIntent) return;
+    const ps = usePropertyStore.getState();
+    const result = resolveMove(moveIntent.instanceId, moveIntent.roomX, moveIntent.roomY, moveIntent.shiftKey, true);
+    if (!result) {
+      consumeMove();
+      return;
+    }
     if (result.ok) {
-      if (result.crossRoom) ps.moveItemToRoom(item.instanceId, result.roomId, result.x, result.y, result.rotation);
-      else updateItem(item.instanceId, { x: result.x, y: result.y, rotation: result.rotation, ...(result.parentInstanceId ? { parentInstanceId: result.parentInstanceId } : {}) });
+      if (result.crossRoom) ps.moveItemToRoom(moveIntent.instanceId, result.roomId, result.x, result.y, result.rotation);
+      else updateItem(moveIntent.instanceId, { x: result.x, y: result.y, rotation: result.rotation, ...(result.parentInstanceId ? { parentInstanceId: result.parentInstanceId } : {}) });
       console.log('[drag-move]', { reason: result.crossRoom ? 'cross-room' : 'same-room', via: '3d', rule: result.reason });
     } else {
       haptic('invalid');
@@ -4351,6 +4379,8 @@ export function RoomCanvas({
             </Group>
           )}
 
+          <GardenLayer garden={garden} pxPerMetre={pxPerMetre} scale={viewport.scale} />
+
           {/* STOREY BELOW (Sims world) — the floor underneath as a faint
               outline, so an upper floor can be drawn to line up with the
               walls that carry it. Outline only, never fill, never listening. */}
@@ -4673,6 +4703,8 @@ export function RoomCanvas({
                 ))}
               </Group>
             ))}
+
+          <BuildingPlanLayer property={propertyForPaint} activeLevelId={activeLevelId} pxPerMetre={pxPerMetre} scale={viewport.scale} />
 
           {/* FREE-STANDING WALLS (Sims world 2026-08-29) — open runs the
               customer drew without closing a room. Same poche as room walls,
@@ -5322,7 +5354,7 @@ export function RoomCanvas({
           quiet, non-blocking prompt for the case the pen is NOT armed (the
           customer stood it down on an empty plan) so the canvas is never
           mute. */}
-      {!drawMode && !wallDrawEnabled && !pendingProductId && !hasRoom && (
+      {!drawMode && !wallDrawEnabled && !pendingProductId && !hasRoom && !garden && (
         <div
           className="pointer-events-none absolute inset-0 flex items-center justify-center px-4"
           data-testid="start-room-prompt"
@@ -5358,7 +5390,7 @@ export function RoomCanvas({
           used to sit centred over the very tile the customer had just laid. */}
       {/* …and hidden once ANY floor is laid: a floored room is not empty
           (check R3 — the card re-centred over freshly laid tiles). */}
-      {!drawMode && !wallDrawEnabled && !pendingProductId && !floorTool && !doorTool && hasRoom && allItems.length === 0 &&
+      {!drawMode && !wallDrawEnabled && !pendingProductId && !floorTool && !doorTool && hasRoom && allItems.length === 0 && !garden &&
         !drawnRooms.some((r) => (r.floorTiles && r.floorTiles.length > 0) || r.floorFinish || r.wallPaint?.length || r.wallCladding?.length) && (
         <div
           className="pointer-events-none absolute inset-0 flex items-center justify-center"

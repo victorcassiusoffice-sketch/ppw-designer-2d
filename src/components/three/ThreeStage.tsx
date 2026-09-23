@@ -45,6 +45,8 @@ import type { WallView } from '../../store/designerUIStore';
 import type { FloorKind } from './surfaces';
 import { applyWallLook, wallTextures } from './wallSurfaces';
 import { wallJoinery } from './joinery';
+import { stairMesh, roofMesh, disposeBuildingTextures } from './buildingMeshes';
+import { gardenMeshes } from './gardenMeshes';
 import { contactShadow, cornerShades, floorMesh, groundPlane, lampsOnFactor, nightLight, skyDome, updateSkyDome, type NightLight } from './dressing';
 
 // ---------------------------------------------------------------------------
@@ -228,6 +230,7 @@ function artBox(it: ItemSolid, requestRender: () => void): THREE.Group {
 export interface ThreeStageHandle {
   /** Wall under a canvas-local point, or null. */
   hitTest(x: number, y: number): WallHit | null;
+  wallPoint(x: number, y: number): { x: number; y: number } | null;
   /** Canvas-local point at the middle of a wall's shown face — the e2e bridge aims here. */
   screenPoint(hit: WallHit): { x: number; y: number } | null;
   faceCount(): number;
@@ -247,7 +250,7 @@ export interface ThreeStageHandle {
   /** A PLAN point (x, y on the plan, z up) on the canvas, or null when it is behind the camera. */
   projectPoint(x: number, y: number, z: number): { x: number; y: number } | null;
   /** Slide an item's body by a plan-metre delta while a drag is in progress (no store write). */
-  moveItemPreview(instanceId: string, dxM: number, dyM: number): void;
+  moveItemPreview(instanceId: string, dxM: number, dyM: number, rotationDeg?: number): void;
   /** Put a previewed body back where the plan has it. */
   resetItemPreview(instanceId: string): void;
   /** DEV bridge: what is dressed — joinery, shades, lamps, bodies, art boxes — for a spec to count. */
@@ -393,8 +396,9 @@ function makeHull(root: THREE.Object3D): THREE.Object3D {
 function structureSignature(s: SceneSolids): string {
   return JSON.stringify({
     h: s.wallHeightM,
-    f: s.floors.map((f) => [f.key, f.hex, f.kind, f.tileM, f.polygon]),
-    w: s.walls.map((w) => [w.key, w.a, w.b, w.thicknessM, w.heightM, w.stubHeightM, w.centred, w.openings, w.shared, w.free]),
+    f: s.floors.map((f) => [f.key, f.hex, f.kind, f.tileM, f.polygon, f.elevationM, f.holes]),
+    w: s.walls.map((w) => [w.key, w.a, w.b, w.thicknessM, w.heightM, w.stubHeightM, w.centred, w.openings, w.shared, w.free, w.elevationM]),
+    stairs: s.stairs, roofs: s.roofs, garden: s.garden, gardenObstacles: s.gardenObstacles,
     i: s.items.map((it) => [it.key, it.instanceId, it.x0, it.y0, it.z0, it.x1, it.y1, it.z1, it.rotationDeg, it.hex, it.meshUrl, it.modelFront, it.lengthAxis, it.modelUp, it.emitsLight, it.lightMountM, it.artTopUrl, it.artSideUrl]),
   });
 }
@@ -529,7 +533,7 @@ function placeWall(w: WallSolid, node: THREE.Object3D): void {
   const X = new THREE.Vector3(dx, 0, dy);
   const Y = new THREE.Vector3(0, 1, 0);
   const Z = new THREE.Vector3().crossVectors(X, Y); // = plan (-dy, dx) = the inward normal
-  const origin = new THREE.Vector3(w.a.x, 0, w.a.y);
+  const origin = new THREE.Vector3(w.a.x, w.elevationM ?? 0, w.a.y);
   // Room-edge slabs sit OUTSIDE their line (the inner face is the line);
   // free walls straddle it.
   origin.addScaledVector(Z, w.centred ? -w.thicknessM / 2 : -w.thicknessM);
@@ -539,6 +543,7 @@ function placeWall(w: WallSolid, node: THREE.Object3D): void {
 }
 
 function disposeObject(root: THREE.Object3D): void {
+  disposeBuildingTextures(root);
   root.traverse((o) => {
     const m = o as THREE.Mesh;
     if (m.geometry) m.geometry.dispose();
@@ -576,7 +581,6 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
   });
 }
 
-const FLOOR_PLANE = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
   { solids, camera, width, height, hover, selectedInstanceId, brushHex, brushFinish, wallView = 'cutaway', hour = null, dayOfYear: doy, onFailed },
@@ -611,6 +615,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const targetRef = useRef<number[]>([0, 0, 0]);
   /** Bodies slid by a drag preview, with where the plan has them. */
   const previewRef = useRef(new Map<string, THREE.Vector3>());
+  const previewRotationRef = useRef(new Map<string, number>());
   const selectedRootRef = useRef<THREE.Object3D | null>(null);
   const padRef = useRef<THREE.Mesh | null>(null);
   const hullRef = useRef<THREE.Object3D | null>(null);
@@ -840,6 +845,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     shadowsRef.current = [];
     hoveredRef.current = null;
     previewRef.current.clear();
+    previewRotationRef.current.clear();
     selectedRootRef.current = null;
     padRef.current = null;
     hullRef.current = null;
@@ -951,6 +957,21 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       }
     }
 
+    if (solids.garden) {
+      const garden = gardenMeshes(solids.garden, solids.gardenObstacles ?? []);
+      content.add(garden);
+      bounds.expandByObject(garden);
+    }
+    for (const run of solids.stairs ?? []) {
+      const stairs = stairMesh(run.stair, run.baseM, run.riseM);
+      content.add(stairs);
+      bounds.expandByObject(stairs);
+    }
+    for (const roof of solids.roofs ?? []) {
+      const mesh = roofMesh(roof.polygon, roof.elevationM, roof.config);
+      content.add(mesh);
+      bounds.expandByObject(mesh);
+    }
     // The sun's shadow camera hugs whatever is drawn; the rig for the hour follows.
     boundsRef.current = {
       centre: bounds.isEmpty() ? new THREE.Vector3() : bounds.getCenter(new THREE.Vector3()),
@@ -1066,7 +1087,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         new THREE.MeshBasicMaterial({ color: SELECT_HEX, transparent: true, opacity: 0.55, depthWrite: false }),
       );
       pad.rotation.x = -Math.PI / 2;
-      pad.position.set((s.x0 + s.x1) / 2, 0.012, (s.y0 + s.y1) / 2);
+      pad.position.set((s.x0 + s.x1) / 2, s.z0 + 0.012, (s.y0 + s.y1) / 2);
       pad.userData = { key: `pad-${s.instanceId}` };
       contentRef.current.add(pad);
       padRef.current = pad;
@@ -1114,6 +1135,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
         const targets: THREE.Object3D[] = [];
         for (const e of wallsRef.current) {
+          if (solids.activeLevelId && e.solid.levelId && e.solid.levelId !== solids.activeLevelId) continue;
           const node = e.show === 'full' ? e.full : e.show === 'stub' ? e.stub : null;
           if (!node) continue;
           node.traverse((o) => {
@@ -1138,6 +1160,15 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         if (floorHit) block = Math.min(block, floorHit.distance);
         if (block < wall.distance - 1e-4) return null;
         return (wall.object.userData.hit as WallHit | undefined) ?? null;
+      },
+      wallPoint(x, y) {
+        const c = cameraRef.current;
+        if (!c || width < 8 || height < 8) return null;
+        const ray = new THREE.Raycaster();
+        ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
+        const targets = wallsRef.current.filter((e) => e.show !== 'hidden' && (!solids.activeLevelId || e.solid.levelId === solids.activeLevelId)).map((e) => e.show === 'full' ? e.full : e.stub);
+        const hit = ray.intersectObjects(targets, true).find((h) => h.object.userData.wall);
+        return hit ? { x: hit.point.x, y: hit.point.z } : null;
       },
       wallMaterial(hit) {
         const e = wallsRef.current.find((x) => sameHit(hit, x.solid.hit));
@@ -1228,12 +1259,12 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
         // The body's own surface first (precise for a tap on a leg or a screen)…
+        const activeItems = itemsRef.current.filter((o) => !solids.activeLevelId || solids.items.some((it) => it.instanceId === o.userData.instanceId && it.levelId === solids.activeLevelId));
         const hits = ray.intersectObjects(itemsRef.current, true);
         const root = hits.length ? itemRootOf(hits[0].object) : null;
-        if (root) return { instanceId: root.userData.instanceId as string };
         // …then the exact catalog box the fit guarantees: a treadmill is air
         // above its deck, a lamp is a thin pole — the Sims pick the box.
-        let best: { instanceId: string; d: number } | null = null;
+        let best: { instanceId: string; d: number } | null = root ? { instanceId: root.userData.instanceId as string, d: hits[0].distance } : null;
         const box = new THREE.Box3();
         const p = new THREE.Vector3();
         for (const o of itemsRef.current) {
@@ -1242,7 +1273,18 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
           const d = p.distanceTo(ray.ray.origin);
           if (!best || d < best.d) best = { instanceId: o.userData.instanceId as string, d };
         }
-        return best ? { instanceId: best.instanceId } : null;
+        if (!best || !activeItems.some((o) => o.userData.instanceId === best!.instanceId)) return null;
+        // Visible slabs, walls and roof must block objects on another storey.
+        const blockers: THREE.Object3D[] = [...floorsRef.current];
+        for (const entry of wallsRef.current) {
+          if (entry.show !== 'hidden') blockers.push(entry.show === 'full' ? entry.full : entry.stub);
+        }
+        for (const child of contentRef.current?.children ?? []) {
+          if (child.userData.buildingPart) blockers.push(child);
+        }
+        const obstruction = ray.intersectObjects(blockers, true)[0];
+        if (obstruction && obstruction.distance < best.d - 0.001) return null;
+        return { instanceId: best.instanceId };
       },
       floorPoint(x, y) {
         const c = cameraRef.current;
@@ -1250,7 +1292,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
         const p = new THREE.Vector3();
-        return ray.ray.intersectPlane(FLOOR_PLANE, p) ? { x: p.x, y: p.z } : null;
+        const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -(solids.activeElevationM ?? 0));
+        return ray.ray.intersectPlane(plane, p) ? { x: p.x, y: p.z } : null;
       },
       projectPoint(x, y, z) {
         const c = cameraRef.current;
@@ -1260,9 +1303,20 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         if (v.z > 1) return null;
         return { x: ((v.x + 1) / 2) * width, y: ((1 - v.y) / 2) * height };
       },
-      moveItemPreview(instanceId, dxM, dyM) {
+      moveItemPreview(instanceId, dxM, dyM, rotationDeg) {
         const root = itemsRef.current.find((o) => o.userData.instanceId === instanceId);
         if (!root) return;
+        const solid = solids.items.find((it) => it.instanceId === instanceId);
+        if (!previewRotationRef.current.has(instanceId)) previewRotationRef.current.set(instanceId, root.rotation.y);
+        const rotation = rotationDeg ?? solid?.rotationDeg ?? 0;
+        if (solid) {
+          const radians = rotation * Math.PI / 180;
+          const newWidth = Math.abs(solid.lengthM * Math.cos(radians)) + Math.abs(solid.widthM * Math.sin(radians));
+          const newDepth = Math.abs(solid.lengthM * Math.sin(radians)) + Math.abs(solid.widthM * Math.cos(radians));
+          dxM += (newWidth - (solid.x1 - solid.x0)) / 2;
+          dyM += (newDepth - (solid.y1 - solid.y0)) / 2;
+          root.rotation.y = previewRotationRef.current.get(instanceId)! - (rotation - solid.rotationDeg) * Math.PI / 180;
+        }
         let home = previewRef.current.get(instanceId);
         if (!home) {
           home = root.position.clone();
@@ -1294,6 +1348,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         const root = itemsRef.current.find((o) => o.userData.instanceId === instanceId);
         const home = previewRef.current.get(instanceId);
         if (root && home) root.position.copy(home);
+        const rotation = previewRotationRef.current.get(instanceId);
+        if (root && rotation !== undefined) root.rotation.y = rotation;
+        previewRotationRef.current.delete(instanceId);
         const pad = padRef.current;
         const padHome = previewRef.current.get(`pad:${instanceId}`);
         if (pad && padHome) pad.position.copy(padHome);
@@ -1341,7 +1398,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         };
       },
     }),
-    [width, height, hour],
+    [width, height, hour, solids],
   );
 
   return <canvas ref={canvasRef} data-testid="wallpaint-3d-gl" style={{ display: 'block', width: '100%', height: '100%' }} />;

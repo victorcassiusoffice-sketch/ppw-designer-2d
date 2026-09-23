@@ -69,12 +69,22 @@ export type DropResult =
     }
   | { ok: false; message: string; reason: 'off-plot' | 'off-roof' | 'wall' | 'surface' | 'collision' | 'out-of-bounds' };
 
-export function resolveItemDrop(ctx: DropContext, item: PlacedItem, product: Product, newXm: number, newYm: number, shiftHeld: boolean): DropResult {
+export function resolveItemDrop(
+  ctx: DropContext,
+  item: PlacedItem,
+  product: Product,
+  newXm: number,
+  newYm: number,
+  shiftHeld: boolean,
+  options: { createContainer?: boolean } = {},
+): DropResult {
   const fpUnrotated = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
   const { w, h } = rotatedFootprint(fpUnrotated, item.rotation);
   const ownerRoom = ctx.allRooms.find((r) => r.placedItems.some((i) => i.instanceId === item.instanceId));
 
-  const routed = ctx.resolveContainer({ x: newXm + w / 2, y: newYm + h / 2 }, { create: true });
+  // Preview shares every snap/collision rule but must not create an outdoor
+  // room (or an undo frame) merely because the pointer crosses a wall.
+  const routed = ctx.resolveContainer({ x: newXm + w / 2, y: newYm + h / 2 }, { create: options.createContainer !== false });
   if (!routed.ok) {
     return { ok: false, reason: routed.reason, message: routed.reason === 'off-roof' ? 'Nothing floats off the roof.' : 'That is off the plot.' };
   }

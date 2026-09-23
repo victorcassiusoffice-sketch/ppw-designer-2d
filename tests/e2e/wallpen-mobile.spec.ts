@@ -97,10 +97,14 @@ test.describe('Wall pen — phone gestures', () => {
     const after = await view(page);
     expect(after, 'drawing must keep the camera still').toEqual(before);
     expect(await pts(page), 'one drag should make exactly two endpoints').toContain('2');
+    await page.locator('[data-testid="room-draw-settings"]').click();
+    await page.locator('[data-testid="draw-segment-length"]').fill('3');
+    await page.locator('[data-testid="draw-segment-apply"]').click();
     await page.locator('[data-testid="room-draw-finish-walls"]').click();
     const property = await storedSimsProperty(page);
     expect(property!.walls).toHaveLength(1);
     expect(property!.walls![0].a).not.toEqual(property!.walls![0].b);
+    expect(Math.hypot(property!.walls![0].b.x - property!.walls![0].a.x, property!.walls![0].b.y - property!.walls![0].a.y)).toBeCloseTo(3);
   });
 
   test('a second finger cancels the provisional wall and pans without stray points', async ({ page }) => {

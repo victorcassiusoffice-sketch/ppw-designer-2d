@@ -45,6 +45,9 @@ export interface WallOpeningSolid {
 }
 
 export interface WallSolid {
+  /** Finished floor height in the whole-building view. */
+  elevationM?: number;
+  levelId?: string;
   /** `wall-<roomId>-<edge>` for a room edge, `fw-<id>` for a free wall — the painter's keys. */
   key: string;
   hit: WallHit;
@@ -71,6 +74,9 @@ export interface WallSolid {
 }
 
 export interface FloorSolid {
+  elevationM?: number;
+  levelId?: string;
+  holes?: Vertex[][];
   key: string;
   roomId: string;
   polygon: Vertex[];
@@ -82,6 +88,8 @@ export interface FloorSolid {
 }
 
 export interface ItemSolid {
+  levelId?: string;
+  floorElevationM?: number;
   key: string;
   instanceId: string;
   /** Axis-aligned footprint of the rotated item, plan metres (the painter's convention). */
@@ -114,6 +122,12 @@ export interface ItemSolid {
 }
 
 export interface SceneSolids {
+  garden?: import('./garden').Garden;
+  gardenObstacles?: Vertex[][];
+  activeLevelId?: string;
+  activeElevationM?: number;
+  stairs?: Array<{ stair: import('./building').BuildingStair; baseM: number; riseM: number }>;
+  roofs?: Array<{ polygon: Vertex[]; elevationM: number; config: import('./building').RoofConfig }>;
   wallHeightM: number;
   floors: FloorSolid[];
   walls: WallSolid[];
@@ -283,5 +297,5 @@ export function cutawayState(solids: SceneSolids, cameraPos: Vec3, cameraTarget:
 /** World point at the middle of a wall's inner face, at half its shown height — what an e2e click aims at. */
 export function wallAnchor(w: WallSolid, show: WallShow): Vec3 {
   const h = show === 'stub' ? w.stubHeightM : w.heightM;
-  return { x: (w.a.x + w.b.x) / 2, y: (w.a.y + w.b.y) / 2, z: h / 2 };
+  return { x: (w.a.x + w.b.x) / 2, y: (w.a.y + w.b.y) / 2, z: (w.elevationM ?? 0) + h / 2 };
 }

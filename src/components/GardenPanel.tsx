@@ -1,0 +1,134 @@
+import { useEffect, useState } from 'react';
+import { usePropertyStore } from '../store/propertyStore';
+import {
+  FENCE_MATERIALS, GARDEN_SURFACES, fenceLengthM,
+  type FenceMaterial, type GardenPlacement, type GardenSurfaceKind,
+} from '../designer/garden';
+
+const BUTTON = 'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-ppw-rim bg-white px-3 text-[12px] font-medium text-[#37362f] hover:bg-[#f3f1ec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-inkDeep';
+
+function Metres({ label, value, min = -10000, max = 10000, onCommit }: {
+  label: string; value: number; min?: number; max?: number; onCommit: (n: number) => boolean | void;
+}) {
+  const [text, setText] = useState(String(Number(value.toFixed(2))));
+  useEffect(() => setText(String(Number(value.toFixed(2)))), [value]);
+  return <label className="flex min-w-0 flex-col gap-1 text-[11px] text-[#5b5852]">
+    {label} (m)
+    <input
+      type="number" inputMode="decimal" step="0.1" min={min} max={max} value={text}
+      className="h-11 min-w-0 rounded-lg border border-ppw-rim bg-white px-2 text-[16px] tabular-nums text-[#37362f] md:text-[13px]"
+      onChange={(event) => setText(event.target.value)}
+      onBlur={() => {
+        const number = Number(text);
+        if (!text.trim() || !Number.isFinite(number) || number < min || number > max || onCommit(number) === false) {
+          setText(String(Number(value.toFixed(2))));
+        }
+      }}
+      onKeyDown={(event) => { if (event.key === 'Enter') event.currentTarget.blur(); }}
+    />
+  </label>;
+}
+
+/** The same persisted ground-level landscape can be edited in plan or 3D. */
+export function GardenPanel({ onRequestPlacement, onClose }: {
+  onRequestPlacement?: (intent: GardenPlacement) => void;
+  onClose?: () => void;
+}) {
+  const property = usePropertyStore((s) => s.property);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [fenceMaterial, setFenceMaterial] = useState<FenceMaterial>('timber');
+  const surfaces = property.garden?.surfaces ?? [];
+  const fences = property.garden?.fences ?? [];
+  const surface = surfaces.find((entry) => entry.id === selectedId);
+  const fence = fences.find((entry) => entry.id === selectedId);
+  const totalArea = surfaces.reduce((sum, entry) => sum + entry.widthM * entry.depthM, 0);
+  const totalFence = fences.reduce((sum, entry) => sum + fenceLengthM(entry), 0);
+
+  function defaultOrigin(widthM: number, depthM: number) {
+    const points = property.rooms.filter((room) => !room.levelId || room.levelId === 'ground').flatMap((room) => room.polygon);
+    const x = points.length ? Math.max(...points.map((point) => point.x)) + 1 : 0;
+    const y = points.length ? Math.min(...points.map((point) => point.y)) : 0;
+    const site = property.site;
+    if (!site) return { x, y };
+    return {
+      x: Math.max(site.originM.x, Math.min(x, site.originM.x + site.widthM - widthM)),
+      y: Math.max(site.originM.y, Math.min(y, site.originM.y + site.depthM - depthM)),
+    };
+  }
+
+  function addSurface(kind: GardenSurfaceKind) {
+    const widthM = Math.min(kind === 'path' ? 1.2 : 4, property.site?.widthM ?? 500);
+    const depthM = Math.min(kind === 'soil' ? 2 : 4, property.site?.depthM ?? 500);
+    const id = usePropertyStore.getState().addGardenSurface({ kind, ...defaultOrigin(widthM, depthM), widthM, depthM, elevationM: 0 });
+    if (id) {
+      setSelectedId(id);
+      onRequestPlacement?.({ kind: 'surface', id });
+    }
+  }
+
+  function addFence() {
+    const length = Math.min(4, property.site?.widthM ?? 500);
+    const origin = defaultOrigin(length, 0.2);
+    const id = usePropertyStore.getState().addGardenFence({
+      a: origin, b: { x: origin.x + length, y: origin.y }, heightM: 1.2, material: fenceMaterial,
+    });
+    if (id) {
+      setSelectedId(id);
+      onRequestPlacement?.({ kind: 'fence', id });
+    }
+  }
+
+  return <section data-testid="garden-panel" aria-label="Garden design" className="flex flex-col gap-3 bg-[#faf9f5] p-3 text-[#37362f]">
+    <div className="flex items-center justify-between gap-2">
+      <div><h2 className="text-sm font-semibold">Garden & outdoors</h2><p className="text-[11px] text-[#5b5852]">Ground level · saved with your design</p></div>
+      {onClose && <button type="button" className={BUTTON} onClick={onClose}>Done</button>}
+    </div>
+    <div className="grid grid-cols-2 gap-2">
+      {(Object.keys(GARDEN_SURFACES) as GardenSurfaceKind[]).map((kind) => <button
+        key={kind} type="button" className={BUTTON} onClick={() => addSurface(kind)} data-testid={`garden-add-${kind}`}
+      ><span className="h-4 w-4 rounded" style={{ background: GARDEN_SURFACES[kind].hex }} aria-hidden />+ {GARDEN_SURFACES[kind].label}</button>)}
+    </div>
+    <div className="flex gap-2">
+      <select aria-label="New fence material" className="h-11 min-w-0 flex-1 rounded-lg border border-ppw-rim bg-white px-2 text-[13px]" value={fenceMaterial} onChange={(event) => setFenceMaterial(event.target.value as FenceMaterial)}>
+        {(Object.keys(FENCE_MATERIALS) as FenceMaterial[]).map((kind) => <option key={kind} value={kind}>{FENCE_MATERIALS[kind].label}</option>)}
+      </select>
+      <button type="button" className={BUTTON} onClick={addFence} data-testid="garden-add-fence">+ Boundary</button>
+    </div>
+    <p className="text-[11px] leading-relaxed text-[#5b5852]">Add a surface or boundary, then set its position and size. Raise a surface for a terrace or planting bed. Outdoor furniture comes from the product catalog.</p>
+
+    {(surfaces.length > 0 || fences.length > 0) && <>
+      <label className="flex flex-col gap-1 text-[11px] font-medium">Edit landscape
+        <select aria-label="Landscape element" data-testid="garden-element-select" className="h-11 rounded-lg border border-ppw-rim bg-white px-2 text-[13px]" value={selectedId ?? ''} onChange={(event) => setSelectedId(event.target.value)}>
+          <option value="" disabled>Choose an element</option>
+          {surfaces.map((entry, index) => <option key={entry.id} value={entry.id}>{GARDEN_SURFACES[entry.kind].label} {index + 1} · {(entry.widthM * entry.depthM).toFixed(1)} m²</option>)}
+          {fences.map((entry, index) => <option key={entry.id} value={entry.id}>{FENCE_MATERIALS[entry.material].label} {index + 1} · {fenceLengthM(entry).toFixed(1)} m</option>)}
+        </select>
+      </label>
+      {surface && <div className="grid grid-cols-2 gap-2" data-testid="garden-surface-edit">
+        <Metres label="X" value={surface.x} onCommit={(x) => usePropertyStore.getState().updateGardenSurface(surface.id, { x })} />
+        <Metres label="Y" value={surface.y} onCommit={(y) => usePropertyStore.getState().updateGardenSurface(surface.id, { y })} />
+        <Metres label="Width" min={0.2} max={500} value={surface.widthM} onCommit={(widthM) => usePropertyStore.getState().updateGardenSurface(surface.id, { widthM })} />
+        <Metres label="Depth" min={0.2} max={500} value={surface.depthM} onCommit={(depthM) => usePropertyStore.getState().updateGardenSurface(surface.id, { depthM })} />
+        <Metres label="Raise terrain" min={0} max={2} value={surface.elevationM} onCommit={(elevationM) => usePropertyStore.getState().updateGardenSurface(surface.id, { elevationM })} />
+        <label className="flex flex-col gap-1 text-[11px]">Surface<select aria-label="Surface material" className="h-11 rounded-lg border border-ppw-rim bg-white px-2 text-[13px]" value={surface.kind} onChange={(event) => usePropertyStore.getState().updateGardenSurface(surface.id, { kind: event.target.value as GardenSurfaceKind })}>
+          {(Object.keys(GARDEN_SURFACES) as GardenSurfaceKind[]).map((kind) => <option key={kind} value={kind}>{GARDEN_SURFACES[kind].label}</option>)}
+        </select></label>
+      </div>}
+      {fence && <div className="grid grid-cols-2 gap-2" data-testid="garden-fence-edit">
+        <Metres label="Start X" value={fence.a.x} onCommit={(x) => usePropertyStore.getState().updateGardenFence(fence.id, { a: { ...fence.a, x } })} />
+        <Metres label="Start Y" value={fence.a.y} onCommit={(y) => usePropertyStore.getState().updateGardenFence(fence.id, { a: { ...fence.a, y } })} />
+        <Metres label="End X" value={fence.b.x} onCommit={(x) => usePropertyStore.getState().updateGardenFence(fence.id, { b: { ...fence.b, x } })} />
+        <Metres label="End Y" value={fence.b.y} onCommit={(y) => usePropertyStore.getState().updateGardenFence(fence.id, { b: { ...fence.b, y } })} />
+        <Metres label="Height" min={0.3} max={3} value={fence.heightM} onCommit={(heightM) => usePropertyStore.getState().updateGardenFence(fence.id, { heightM })} />
+        <label className="flex flex-col gap-1 text-[11px]">Boundary<select aria-label="Fence material" className="h-11 rounded-lg border border-ppw-rim bg-white px-2 text-[13px]" value={fence.material} onChange={(event) => usePropertyStore.getState().updateGardenFence(fence.id, { material: event.target.value as FenceMaterial })}>
+          {(Object.keys(FENCE_MATERIALS) as FenceMaterial[]).map((kind) => <option key={kind} value={kind}>{FENCE_MATERIALS[kind].label}</option>)}
+        </select></label>
+      </div>}
+      {(surface || fence) && <div className="flex gap-2">
+        {onRequestPlacement && <button type="button" className={`${BUTTON} flex-1`} data-testid="garden-move" onClick={() => onRequestPlacement({ kind: surface ? 'surface' : 'fence', id: selectedId! })}>Place in view</button>}
+        <button type="button" className={`${BUTTON} border-[#ba725f]`} data-testid="garden-remove" onClick={() => { usePropertyStore.getState().removeGardenElement(selectedId!); setSelectedId(null); }}>Remove</button>
+      </div>}
+    </>}
+    <p className="border-t border-ppw-rim pt-2 text-[11px] tabular-nums" data-testid="garden-quantities">Surfaces {totalArea.toFixed(1)} m² · boundaries {totalFence.toFixed(1)} m<br /><span className="text-[#5b5852]">Design quantities; landscaping has no catalog price. Overlapping surfaces are counted separately.</span></p>
+  </section>;
+}

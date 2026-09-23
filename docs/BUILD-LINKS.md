@@ -1,11 +1,11 @@
 <!-- verified-preview:start -->
-## Latest verified feature preview
+## Current feature deployment
 
-Updated: 2026-09-23 01:45 (local) | commit: fd20af0
+Updated: 2026-09-23 01:56 (local) | commit: 7c62295
 
-- Designer: https://ppw-designer-2d-9u9ru40ur-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-9u9ru40ur-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: API typechecks fixed; CI root/API typecheck and Vitest pass. Both preview routes return HTTP 200. In-app browser navigation currently times out.
+- Designer: https://ppw-designer-2d-o5dzse946-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-o5dzse946-victor-ppw.vercel.app/designer?demo=tintex
+- Landed: Paint finishes and mobile controls deployed successfully per Vercel. Local visual review and build pass. New-host reachability is intermittent: latest browser and HTTP requests timed out; live route verification remains pending.
 - Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
 - Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.
@@ -81,4 +81,3 @@ These exist on the machine or as older worktrees; they are **not** the phone-tes
 - Older flooring / doors / paint branches under `feat/designer-*`
 
 If you need a preview for one of those, deploy or open its PR first — don't invent a Vercel URL.
-

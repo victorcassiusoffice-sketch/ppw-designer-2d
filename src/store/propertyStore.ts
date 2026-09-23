@@ -70,6 +70,18 @@ import {
 } from '../designer/levels';
 // Roof slabs (eco / solar 2026-09-04) — rebuilt from the storey beneath.
 import { roofRoomHasWork, syncRoofRooms } from '../designer/roof';
+import { validateStairPlacement } from '../designer/stairPlacement';
+import {
+  normaliseBuildingStairs,
+  normaliseBuildingMetadata,
+  normaliseLevelElevation,
+  normaliseLevelHeight,
+  normaliseRoofConfig,
+  stairRiseM,
+  type BuildingStair,
+  type NewBuildingStair,
+  type RoofConfig,
+} from '../designer/building';
 import {
   MIN_FREE_WALL_LENGTH_M,
   freeWallLengthM,
@@ -83,6 +95,10 @@ import {
 import { findWallPaintById, isPaintTintable, normalisePaintColourHex, normalisePaintColourName } from '../data/wallPaints';
 import { findCladdingProduct } from '../data/claddingCatalog';
 import type { CladEdge } from '../designer/claddingCalc';
+import {
+  normaliseGarden, normaliseGardenFence, normaliseGardenMetadata, normaliseGardenSurface,
+  type Garden, type GardenFence, type GardenSurface,
+} from '../designer/garden';
 
 /**
  * One painted edge, tint validated. A tint with no valid hex is dropped, and
@@ -299,6 +315,11 @@ export interface Property {
    * DEFAULT_WALL_HEIGHT_M the calculator assumes.
    */
   wallHeightM?: number;
+  /** Whole-building connections and roof finish, carried by all existing save/history paths. */
+  stairs?: BuildingStair[];
+  roof?: RoofConfig;
+  /** Ground-level terrain patches and boundaries; saved with the design. */
+  garden?: Garden;
   /**
    * Paint estimate settings (2026-09-14). `wallPaintCoats` overrides every
    * product's datasheet coats (1–3); `wallPaintWastePct` is the touch-up
@@ -584,8 +605,15 @@ export interface PropertyState {
    * seed it with one blank room which becomes the active room — so the draw
    * tool has somewhere to put its first polygon. Returns the level id.
    */
-  addLevel: (name?: string) => string;
+  addLevel: (name?: string, copyFromLevelId?: string) => string;
   renameLevel: (id: string, name: string) => void;
+  /** Per-storey clear height; null restores the property-wide default. */
+  setLevelHeight: (id: string, heightM: number | null) => void;
+  /** Explicit finished-floor elevation; null restores automatic stacking. */
+  setLevelElevation: (id: string, elevationM: number | null) => void;
+  addStair: (stair: NewBuildingStair) => string | null;
+  updateStair: (id: string, patch: Partial<Omit<BuildingStair, 'id'>>) => boolean;
+  removeStair: (id: string) => void;
   /**
    * Delete a storey. Refuses (returns false, changes nothing) for the ground
    * floor and for any level that still holds a drawn room, a placed item or a
@@ -607,6 +635,8 @@ export interface PropertyState {
   ensureRoofLevel: () => string;
   /** Rebuild the roof slabs (no-op without a roof). Returns true iff anything changed. */
   syncRoof: () => boolean;
+  /** Roof shape and finish. Adds/synchronises the roof without changing floor focus. */
+  setRoofConfig: (config: RoofConfig | null) => void;
   /** Switch an electrical item on/off for the energy estimate (absent = on). */
   setItemPower: (instanceId: string, on: boolean) => void;
   /** Per-item hours-per-day for the energy estimate; null clears the override. */
@@ -617,6 +647,11 @@ export interface PropertyState {
   // ---- site (land plot) ----
   /** Set or clear the plot. Non-finite / non-positive sides are ignored; sides clamp to 1..500 m. */
   setSite: (site: Site | null) => void;
+  addGardenSurface: (surface: Omit<GardenSurface, 'id'>) => string | null;
+  updateGardenSurface: (id: string, patch: Partial<Omit<GardenSurface, 'id'>>) => boolean;
+  addGardenFence: (fence: Omit<GardenFence, 'id'>) => string | null;
+  updateGardenFence: (id: string, patch: Partial<Omit<GardenFence, 'id'>>) => boolean;
+  removeGardenElement: (id: string) => void;
 
   // ---- free-standing walls ----
   /**
@@ -1361,7 +1396,7 @@ export const usePropertyStore = create<PropertyState>()(
 
       // ---- levels (storeys) ----------------------------------------------
 
-      addLevel: (name) => {
+      addLevel: (name, copyFromLevelId) => {
         const id = nanoid(8);
         set((s) => {
           // Materialise the ground floor the first time a second storey
@@ -1375,14 +1410,31 @@ export const usePropertyStore = create<PropertyState>()(
           };
           // The roof always stays on top: it moves up above the new storey.
           const bumped = levels.map((l) => (isRoofLevel(l) ? { ...l, index: index + 1 } : l));
-          const room = makeBlankRoom(nextRoomName(s.property.rooms), id);
+          const sourceLevel = levels.find((l) => l.id === copyFromLevelId && !isRoofLevel(l));
+          if (sourceLevel?.heightM !== undefined) level.heightM = sourceLevel.heightM;
+          // Copy the building layout, with fresh IDs, without duplicating furniture.
+          const copiedRooms: Room[] = sourceLevel ? s.property.rooms
+            .filter((r) => roomLevelId(r) === sourceLevel.id && !isOutdoorRoom(r) && !isRoofRoom(r) && r.polygon.length >= 3)
+            .map((r) => {
+              const copy: Room = JSON.parse(JSON.stringify(r));
+              copy.id = nanoid(8);
+              copy.levelId = id;
+              copy.placedItems = [];
+              if (copy.openings) copy.openings = copy.openings.map((opening) => ({ ...opening, id: nanoid(8) }));
+              return copy;
+            }) : [];
+          const rooms = copiedRooms.length > 0 ? copiedRooms : [makeBlankRoom(nextRoomName(s.property.rooms), id)];
+          const copiedWalls = sourceLevel ? (s.property.walls ?? [])
+            .filter((w) => roomLevelId(w) === sourceLevel.id)
+            .map((w) => ({ ...w, a: { ...w.a }, b: { ...w.b }, id: nanoid(8), levelId: id })) : [];
           return {
             property: {
               ...s.property,
               levels: sortLevels([...bumped, level]),
               activeLevelId: id,
-              rooms: [...s.property.rooms, room],
-              activeRoomId: room.id,
+              rooms: [...s.property.rooms, ...rooms],
+              activeRoomId: rooms[0].id,
+              ...(copiedWalls.length > 0 ? { walls: [...(s.property.walls ?? []), ...copiedWalls] } : {}),
             },
             selectedInstanceId: null,
           };
@@ -1402,6 +1454,69 @@ export const usePropertyStore = create<PropertyState>()(
               levels: levels.map((l) => (l.id === id ? { ...l, name: clean } : l)),
             },
           };
+        }),
+
+      setLevelHeight: (id, heightM) =>
+        set((s) => {
+          const levels = levelsOf(s.property);
+          if (!levels.some((l) => l.id === id && !isRoofLevel(l))) return s;
+          const clean = normaliseLevelHeight(heightM);
+          if (heightM !== null && clean === undefined) return s;
+          return { property: { ...s.property, levels: levels.map((level) => {
+            if (level.id !== id) return level;
+            const next = { ...level };
+            if (clean === undefined) delete next.heightM;
+            else next.heightM = clean;
+            return next;
+          }) } };
+        }),
+
+      setLevelElevation: (id, elevationM) =>
+        set((s) => {
+          const levels = levelsOf(s.property);
+          if (!levels.some((l) => l.id === id && !isRoofLevel(l))) return s;
+          const clean = normaliseLevelElevation(elevationM);
+          if (elevationM !== null && clean === undefined) return s;
+          return { property: { ...s.property, levels: levels.map((level) => {
+            if (level.id !== id) return level;
+            const next = { ...level };
+            if (clean === undefined) delete next.elevationM;
+            else next.elevationM = clean;
+            return next;
+          }) } };
+        }),
+
+      addStair: (input) => {
+        const property = get().property;
+        const rise = stairRiseM(property, input);
+        const candidate: BuildingStair = {
+          x: 0, y: 0, widthM: 1, runM: Math.max(3, Math.round(rise * 1.5 * 10) / 10),
+          rotation: 0, ...input, id: nanoid(8),
+        };
+        const stair = normaliseBuildingStairs([candidate], property)[0];
+        if (!stair || !validateStairPlacement(property, stair).ok) return null;
+        set((s) => ({ property: { ...s.property, stairs: [...(s.property.stairs ?? []), stair] } }));
+        return stair.id;
+      },
+
+      updateStair: (id, patch) => {
+        const property = get().property;
+        const existing = property.stairs?.find((stair) => stair.id === id);
+        if (!existing) return false;
+        const updated = normaliseBuildingStairs([{ ...existing, ...patch, id }], property)[0];
+        if (!updated || !validateStairPlacement(property, updated).ok) return false;
+        set((s) => ({ property: { ...s.property, stairs: s.property.stairs?.map((stair) => stair.id === id ? updated : stair) } }));
+        return true;
+      },
+
+      removeStair: (id) =>
+        set((s) => {
+          if (!s.property.stairs?.some((stair) => stair.id === id)) return s;
+          const property = { ...s.property };
+          const stairs = property.stairs!.filter((stair) => stair.id !== id);
+          if (stairs.length > 0) property.stairs = stairs;
+          else delete property.stairs;
+          return { property };
         }),
 
       removeLevel: (id) => {
@@ -1431,6 +1546,10 @@ export const usePropertyStore = create<PropertyState>()(
           // Canonical form: no walls means no `walls` field.
           if (remainingWalls.length > 0) next.walls = remainingWalls;
           else delete next.walls;
+          const remainingStairs = (st.property.stairs ?? []).filter((stair) => stair.fromLevelId !== id && stair.toLevelId !== id);
+          if (remainingStairs.length > 0) next.stairs = remainingStairs;
+          else delete next.stairs;
+          if (id === ROOF_LEVEL_ID) delete next.roof;
           return { property: focusFirstRoomOnLevel(next, GROUND_LEVEL_ID), selectedInstanceId: null };
         });
         return true;
@@ -1471,6 +1590,23 @@ export const usePropertyStore = create<PropertyState>()(
         });
         return true;
       },
+
+      setRoofConfig: (config) =>
+        set((s) => {
+          if (config === null) {
+            if (!s.property.roof) return s;
+            const property = { ...s.property };
+            delete property.roof;
+            return { property };
+          }
+          const roof = normaliseRoofConfig(config);
+          if (!roof) return s;
+          const levels = levelsOf(s.property);
+          return { property: syncRoofRooms({
+            ...s.property, roof,
+            levels: levels.some(isRoofLevel) ? levels : sortLevels([...levels, roofLevel(levels)]),
+          }) };
+        }),
 
       setItemPower: (instanceId, on) =>
         set((s) => {
@@ -1570,6 +1706,61 @@ export const usePropertyStore = create<PropertyState>()(
           if (!clean) return s;
           return { property: { ...s.property, site: clean } };
         }),
+
+      // ---- garden -----------------------------------------------------------
+
+      addGardenSurface: (surface) => {
+        const clean = normaliseGardenSurface({ ...surface, id: nanoid(10) });
+        if (!clean) return null;
+        set((s) => ({ property: { ...s.property, garden: {
+          surfaces: [...(s.property.garden?.surfaces ?? []), clean],
+          fences: s.property.garden?.fences ?? [],
+        } } }));
+        return clean.id;
+      },
+      updateGardenSurface: (id, patch) => {
+        const original = get().property.garden?.surfaces.find((surface) => surface.id === id);
+        if (!original) return false;
+        const clean = normaliseGardenSurface({ ...original, ...patch, id });
+        if (!clean) return false;
+        set((s) => ({ property: { ...s.property, garden: {
+          surfaces: s.property.garden!.surfaces.map((surface) => surface.id === id ? clean : surface),
+          fences: s.property.garden!.fences,
+        } } }));
+        return true;
+      },
+      addGardenFence: (fence) => {
+        const clean = normaliseGardenFence({ ...fence, id: nanoid(10) });
+        if (!clean) return null;
+        set((s) => ({ property: { ...s.property, garden: {
+          surfaces: s.property.garden?.surfaces ?? [],
+          fences: [...(s.property.garden?.fences ?? []), clean],
+        } } }));
+        return clean.id;
+      },
+      updateGardenFence: (id, patch) => {
+        const original = get().property.garden?.fences.find((fence) => fence.id === id);
+        if (!original) return false;
+        const clean = normaliseGardenFence({ ...original, ...patch, id });
+        if (!clean) return false;
+        set((s) => ({ property: { ...s.property, garden: {
+          surfaces: s.property.garden!.surfaces,
+          fences: s.property.garden!.fences.map((fence) => fence.id === id ? clean : fence),
+        } } }));
+        return true;
+      },
+      removeGardenElement: (id) => set((s) => {
+        if (!s.property.garden) return s;
+        const garden = {
+          surfaces: s.property.garden.surfaces.filter((surface) => surface.id !== id),
+          fences: s.property.garden.fences.filter((fence) => fence.id !== id),
+        };
+        if (garden.surfaces.length + garden.fences.length === s.property.garden.surfaces.length + s.property.garden.fences.length) return s;
+        const property = { ...s.property };
+        if (garden.surfaces.length || garden.fences.length) property.garden = garden;
+        else delete property.garden;
+        return { property };
+      }),
 
       // ---- free walls --------------------------------------------------------
 
@@ -1709,7 +1900,7 @@ export const usePropertyStore = create<PropertyState>()(
       // for a verbatim persist round trip.
       merge: (persisted, current) => {
         const merged = { ...current, ...((persisted ?? {}) as Partial<PropertyState>) };
-        if (merged.property) merged.property = canonicalisePropertyWinding(merged.property);
+        if (merged.property) merged.property = normaliseGardenMetadata(normaliseBuildingMetadata(canonicalisePropertyWinding(merged.property)));
         return merged;
       },
     },
@@ -1777,6 +1968,12 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   const waste = normaliseWallPaintWastePct((property as { wallPaintWastePct?: unknown }).wallPaintWastePct);
   if (waste !== undefined) out.wallPaintWastePct = waste;
   if ((property as { wallPaintPrimer?: unknown }).wallPaintPrimer === true) out.wallPaintPrimer = true;
+  const stairs = normaliseBuildingStairs(property.stairs, out);
+  if (stairs.length > 0) out.stairs = stairs;
+  const roof = normaliseRoofConfig(property.roof);
+  if (roof && levelsOf(out).some(isRoofLevel)) out.roof = roof;
+  const garden = normaliseGarden(property.garden);
+  if (garden) out.garden = garden;
   return out;
 }
 
@@ -1811,6 +2008,12 @@ export function normaliseLevels(levels: unknown): Level[] | undefined {
     // Roof (2026-09-04): whitelist trap — carry the kind or the roof loads
     // back as a plain storey with walls.
     if (l.kind === 'roof' || l.id === ROOF_LEVEL_ID) clean.kind = 'roof';
+    if (!isRoofLevel(clean)) {
+      const height = normaliseLevelHeight(l.heightM);
+      const elevation = normaliseLevelElevation(l.elevationM);
+      if (height !== undefined) clean.heightM = height;
+      if (elevation !== undefined) clean.elevationM = elevation;
+    }
     out.push(clean);
   }
   if (out.length === 0) return undefined;
@@ -1896,6 +2099,9 @@ interface RawProperty {
   activeLevelId?: unknown;
   walls?: unknown;
   site?: unknown;
+  stairs?: unknown;
+  roof?: unknown;
+  garden?: unknown;
 }
 
 export function normaliseLoadedRoom(r: RawRoom): Room {
@@ -2180,4 +2386,4 @@ export function selectActiveRoom(s: PropertyState): Room | undefined {
 export type { Vertex };
 // Re-exported so consumers of the store need not know which designer module
 // owns the shape.
-export type { Level, FreeWall };
+export type { Level, FreeWall, BuildingStair, NewBuildingStair, RoofConfig };

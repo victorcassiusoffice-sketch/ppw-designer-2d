@@ -32,6 +32,9 @@
  * when the same product is placed twice in a row.
  */
 import { create } from 'zustand';
+import type { DropResult } from '../designer/itemDrop';
+
+export type MovePreviewResolver = (instanceId: string, roomX: number, roomY: number, shiftKey: boolean) => DropResult | null;
 
 export type PlacementTarget = 'center' | { clientX: number; clientY: number } | { roomX: number; roomY: number };
 
@@ -72,9 +75,16 @@ interface PlacementIntentState {
   moveIntent: MoveIntent | null;
   moveTo: (instanceId: string, roomX: number, roomY: number, shiftKey?: boolean) => void;
   consumeMove: () => void;
+  /** Synchronous, read-only snap and validity result; never publishes an intent. */
+  previewMove: (instanceId: string, roomX: number, roomY: number, shiftKey?: boolean) => DropResult | null;
+  /** The mounted plan registers its live collision context; cleanup removes only this registration. */
+  registerMovePreviewResolver: (resolver: MovePreviewResolver) => () => void;
 }
 
 let nonceSeq = 0;
+// A callback, not persisted/editor state. Pointermove preview must not notify
+// every subscribed UI component or add a new design/history mutation.
+let movePreviewResolver: MovePreviewResolver | null = null;
 
 export const usePlacementIntentStore = create<PlacementIntentState>((set) => ({
   intent: null,
@@ -87,6 +97,13 @@ export const usePlacementIntentStore = create<PlacementIntentState>((set) => ({
   moveIntent: null,
   moveTo: (instanceId, roomX, roomY, shiftKey = false) => set({ moveIntent: { instanceId, roomX, roomY, shiftKey, nonce: ++nonceSeq } }),
   consumeMove: () => set({ moveIntent: null }),
+  previewMove: (instanceId, roomX, roomY, shiftKey = false) =>
+    Number.isFinite(roomX) && Number.isFinite(roomY)
+      ? movePreviewResolver?.(instanceId, roomX, roomY, shiftKey) ?? null : null,
+  registerMovePreviewResolver: (resolver) => {
+    movePreviewResolver = resolver;
+    return () => { if (movePreviewResolver === resolver) movePreviewResolver = null; };
+  },
 }));
 
 /** True for a target the 3D stage must resolve first (screen or view-centre based). */

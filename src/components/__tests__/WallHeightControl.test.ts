@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatWallHeightM } from '../WallHeightControl';
+import { formatWallHeightM } from '../../designer/wallHeight';
 
 describe('formatWallHeightM', () => {
   it('shows one decimal for the 0.1 m steps and keeps a real hundredth', () => {

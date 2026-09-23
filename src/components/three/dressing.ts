@@ -75,7 +75,8 @@ export function groundPlane(): THREE.Mesh {
  */
 export function floorMesh(f: FloorSolid, kind: FloorKind, tileM: number, env: THREE.Texture | null): THREE.Mesh {
   const shape = new THREE.Shape(f.polygon.map((v) => new THREE.Vector2(v.x, v.y)));
-  const geo = new THREE.ShapeGeometry(shape);
+  for (const hole of f.holes ?? []) shape.holes.push(new THREE.Path(hole.map((v) => new THREE.Vector2(v.x, v.y))));
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.18, bevelEnabled: false, steps: 1 });
   geo.rotateX(Math.PI / 2); // plan (x, y) → three (x, 0, y)
   const s = floorSurface(kind, tileM);
   const mat = new THREE.MeshPhysicalMaterial({
@@ -91,7 +92,7 @@ export function floorMesh(f: FloorSolid, kind: FloorKind, tileM: number, env: TH
     envMapIntensity: s.sheen * 0.4,
   });
   const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.y = 0.001;
+  mesh.position.y = (f.elevationM ?? 0) + 0.001;
   mesh.receiveShadow = true;
   mesh.userData = { key: f.key, floor: true, kind };
   return mesh;
@@ -158,7 +159,8 @@ export function cornerShades(w: WallSolid, heightM: number, openings: readonly W
 // ---------------------------------------------------------------------------
 /** A soft dark pool under a floor-standing item, sized to its footprint; wall and ceiling items get none. */
 export function contactShadow(it: ItemSolid): THREE.Mesh | null {
-  if (it.placement === 'wall' || it.placement === 'ceiling' || it.placement === 'surface' || it.z0 > 0.05) return null;
+  if (it.placement === 'wall' || it.placement === 'ceiling' || it.placement === 'surface'
+    || it.z0 - (it.floorElevationM ?? 0) > 0.05) return null;
   const w = it.x1 - it.x0 + 2 * CONTACT_SHADOW_MARGIN_M;
   const h = it.y1 - it.y0 + 2 * CONTACT_SHADOW_MARGIN_M;
   const mesh = new THREE.Mesh(
@@ -166,7 +168,7 @@ export function contactShadow(it: ItemSolid): THREE.Mesh | null {
     new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: CONTACT_SHADOW_ALPHA, alphaMap: softShadowTexture(), depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }),
   );
   mesh.rotation.x = -Math.PI / 2;
-  mesh.position.set((it.x0 + it.x1) / 2, 0.006, (it.y0 + it.y1) / 2);
+  mesh.position.set((it.x0 + it.x1) / 2, it.z0 + 0.006, (it.y0 + it.y1) / 2);
   mesh.renderOrder = 1;
   mesh.userData = { key: `shadow-${it.key}`, shadow: true };
   return mesh;

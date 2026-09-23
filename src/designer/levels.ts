@@ -38,6 +38,10 @@ export interface Level {
    * a pre-roof save is byte-identical). Read through `isRoofLevel()`.
    */
   kind?: 'roof';
+  /** Clear wall height. Absent inherits the property's wall height. */
+  heightM?: number;
+  /** Finished-floor elevation. Absent stacks this level above the preceding one. */
+  elevationM?: number;
 }
 
 /** True for the roof level. */

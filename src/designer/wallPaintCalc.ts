@@ -17,6 +17,8 @@
 
 import type { Polygon } from '../lib/geometry';
 import type { Opening } from './openings';
+import { levelHeightM, normaliseLevelHeight } from './building';
+import { isRoofLevel, roomLevelId, type Level } from './levels';
 import {
   DEFAULT_PAINT_WASTE_PCT,
   MAX_PAINT_COATS,
@@ -48,12 +50,14 @@ export interface WallPaintedEdge {
 }
 
 interface PaintableRoomShape {
+  levelId?: string;
   polygon: Polygon;
   openings?: Opening[];
   wallPaint?: WallPaintedEdge[];
 }
 
 interface PaintableFreeWall {
+  levelId?: string;
   id?: string;
   a: { x: number; y: number };
   b: { x: number; y: number };
@@ -62,6 +66,21 @@ interface PaintableFreeWall {
   paintColourName?: string;
   /** 2 = both faces painted; absent/1 = one face. */
   paintFaces?: number;
+}
+
+/** Per-floor overrides win over the inherited height used by legacy quote call sites. */
+export function wallFinishHeightM(
+  property: { levels?: Level[]; wallHeightM?: number },
+  target: { levelId?: string },
+  inheritedHeightM = property.wallHeightM ?? 0,
+): number {
+  const id = roomLevelId(target);
+  const level = property.levels?.find((entry) => entry.id === id);
+  if (isRoofLevel(level)) return 0;
+  if (normaliseLevelHeight(level?.heightM) !== undefined) {
+    return levelHeightM({ levels: property.levels, wallHeightM: inheritedHeightM }, id);
+  }
+  return Number.isFinite(inheritedHeightM) && inheritedHeightM > 0 ? inheritedHeightM : 0;
 }
 
 /** Property-level estimate settings the calculator honours. */
@@ -271,11 +290,10 @@ export function deriveWallPaintOrders(
     rooms: Array<PaintableRoomShape & { id: string; name: string }>;
     walls?: PaintableFreeWall[];
     wallHeightM?: number;
+    levels?: Level[];
   } & PaintEstimateSettings,
   wallHeightM?: number,
 ): WallPaintOrder[] {
-  const h = wallHeightM ?? property.wallHeightM ?? 0;
-  if (h <= 0) return [];
   interface Agg {
     paintId: string;
     colourHex?: string;
@@ -310,12 +328,14 @@ export function deriveWallPaintOrders(
   };
 
   for (const room of property.rooms) {
+    const h = wallFinishHeightM(property, room, wallHeightM);
     for (const e of room.wallPaint ?? []) {
       add(e.paintId, e.colourHex, e.colourName, paintableEdgeAreaM2(room, e.edgeIndex, h), room.id, room.name);
     }
   }
   for (const w of property.walls ?? []) {
     if (!w.paintId) continue;
+    const h = wallFinishHeightM(property, w, wallHeightM);
     const len = Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y);
     const faces = w.paintFaces === 2 ? 2 : 1;
     add(w.paintId, w.paintColourHex, w.paintColourName, len * h * faces, 'walls', 'Free walls');
@@ -432,13 +452,14 @@ export function wallPaintBreakdown(
     rooms: Array<PaintableRoomShape & { id: string; name: string }>;
     walls?: PaintableFreeWall[];
     wallHeightM?: number;
+    levels?: Level[];
   } & PaintEstimateSettings,
   wallHeightM?: number,
 ): WallPaintBreakdownRow[] {
-  const h = wallHeightM ?? property.wallHeightM ?? 0;
-  if (h <= 0) return [];
   const rows: WallPaintBreakdownRow[] = [];
   for (const room of property.rooms) {
+    const h = wallFinishHeightM(property, room, wallHeightM);
+    if (h <= 0) continue;
     const painted = [...(room.wallPaint ?? [])].sort((a, b) => a.edgeIndex - b.edgeIndex);
     for (const e of painted) {
       const paint = findWallPaintById(e.paintId);
@@ -475,6 +496,8 @@ export function wallPaintBreakdown(
   let n = 0;
   for (const w of property.walls ?? []) {
     if (!w.paintId) continue;
+    const h = wallFinishHeightM(property, w, wallHeightM);
+    if (h <= 0) continue;
     const paint = findWallPaintById(w.paintId);
     if (!paint) continue;
     const lengthM = Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y);
