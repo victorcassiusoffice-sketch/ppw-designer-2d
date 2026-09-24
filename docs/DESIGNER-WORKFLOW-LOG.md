@@ -4,6 +4,18 @@ Updated: 24 September 2026 (Mauritius). Owner: Victor.
 
 ## Resume here
 
+### Active Home Store / wall surfaces redesign — 24 September, evening
+
+Victor supplied five Sims FreePlay build/store references plus a screenshot where the expanded catalog leaves camera pods across the house. Started clean at `59123ad`, same feature branch. Current implementation is **not yet deployed**; the verified `h13bwlpcz` links below remain the fallback until final verification.
+
+- Root: move camera, wall visibility, height and daylight controls out of the measured scene into a reserved compact dock; consistent bottom Build/Furnish/Paint/Surfaces/Garden/Solar menu; on-demand in-flow build details; named Close/Escape/click-away behavior with first click consumed to avoid accidental edits.
+- Catalog agent: collapsible Home Store with category tiles, Back/Close, bounded product browser and inline product details; hidden collapsed catalog in 3D, existing Plan catalog preserved.
+- Wall agent: saved brick/plastered-brick/concrete construction surfaces, separate interior/exterior paint and procedural scaled textures, existing quantities/undo/persistence integrated.
+- Product agent: additional catalog-supported appliance/light dimensional previews and a research update linking EA's relevant FreePlay build-menu documentation and public code references.
+- Integration checks: full suite passed 244 files / 2,788 tests; client/API typechecks and changed-file lint passed. Final wall follow-ups passed 18 focused tests, including construction save/load/undo and exposed-facade quantities. Final production build is being repeated after these small follow-ups. Browser QA, feature-only push/deploy and link sync remain pending. No changes to main/production; original checkout is preserved.
+
+Next: integrate agents, validate client/API and full suite, deploy only feature branch, test desktop, phone and short landscape with catalog expanded, finish/material/exterior paint and dismissal, then replace this pending checkpoint with exact verified commits/URLs and copy to outputs.
+
 ### Walls, clear controls and outdoor materials — 24 September 2026
 
 Victor reported obstructing wall/item dialogs and requested connected 3D wall drawing, surrounding grass, Espace Maison slabs, and Sims code research. This implementation is pushed to the feature branch and **fully deployed and browser-verified**. Final application commit **`89f7878fe46a53253eec808df47602e61ec1407d`** adds the last lawn-texture and Vercel-feedback polish to the main `8252a7b` implementation. Documentation-only commit **`dc30e250bdb0eddf5afd4f7ff98b715b699fbd4d`** deployed the same application successfully as **`6639900049`**, at the verified `h13bwlpcz` links below. No unshipped implementation remains. The earlier `kl8wen9qw` hostname timeout is recorded in the history; the replacement host resolved it.

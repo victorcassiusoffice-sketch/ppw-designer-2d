@@ -19,6 +19,8 @@ import { WALL_THICKNESS_M } from './wallAwarePlacement';
 import { GROUND_LEVEL_ID, roomLevelId } from './levels';
 
 export interface FreeWall {
+  construction?: import('./wallConstruction').WallConstruction;
+  exteriorPaint?: import('../store/propertyStore').PaintedEdge;
   id: string;
   /** Endpoints in world metres. */
   a: Vertex;

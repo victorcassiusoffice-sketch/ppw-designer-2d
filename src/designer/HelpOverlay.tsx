@@ -216,7 +216,9 @@ export function HelpLauncherIcon({ onOpen }: { onOpen: () => void }): JSX.Elemen
   const toolHudOpen = useDesignerUIStore((s) => s.tool === 'floor' || s.tool === 'door' || s.tool === 'wallpaint');
   const view3d = useDesignerUIStore((s) => s.viewMode === '3d');
   const belowMd = useBelowMd();
-  if (belowMd && (penOpen || itemSelected || toolHudOpen || view3d)) return null;
+  // House Studio exposes Help in Project tools; a floating launcher would
+  // cover the scene now that the old permanent left rail is gone.
+  if (view3d || (belowMd && (penOpen || itemSelected || toolHudOpen))) return null;
   const besidePanel = itemSelected && !belowMd;
   return (
     <button

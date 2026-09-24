@@ -8,9 +8,31 @@ const textures: WallTextures = {
   plasterNormal: new THREE.Texture(),
   rollerNormal: new THREE.Texture(),
   paintRoughness: new THREE.Texture(),
+  brickMap: new THREE.Texture(), brickNormal: new THREE.Texture(),
+  concreteMap: new THREE.Texture(), concreteNormal: new THREE.Texture(),
 };
 
 describe('paint material transitions', () => {
+  it('keeps brick mortar relief under paint and removes its brick colour map', () => {
+    const material = new THREE.MeshPhysicalMaterial();
+    applyWallLook(material, { hex: '#A36B50', construction: 'brick' }, null, textures);
+    expect(material.map).toBe(textures.brickMap);
+    expect(material.normalMap).toBe(textures.brickNormal);
+    applyWallLook(material, { hex: '#557755', finish: 'matt', construction: 'brick' }, null, textures);
+    expect(material.color.getHexString()).toBe('557755');
+    expect(material.map).toBeNull();
+    expect(material.normalMap).toBe(textures.brickNormal);
+  });
+
+  it('gives concrete distinct pores then returns to plaster without stale maps', () => {
+    const material = new THREE.MeshPhysicalMaterial();
+    applyWallLook(material, { hex: '#A7A49C', construction: 'concrete' }, null, textures);
+    expect(material.map).toBe(textures.concreteMap);
+    expect(material.normalMap).toBe(textures.concreteNormal);
+    applyWallLook(material, { hex: BARE_PLASTER_HEX, construction: 'plastered-brick' }, null, textures);
+    expect(material.map).toBe(textures.plasterMap);
+    expect(material.normalMap).toBe(textures.plasterNormal);
+  });
   it('preserves the tint while matt, satin and gloss get visibly different reflections', () => {
     const env = new THREE.Texture();
     const surfaces = ['matt', 'satin', 'gloss'].map((finish) => {

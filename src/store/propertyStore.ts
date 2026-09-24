@@ -94,6 +94,7 @@ import {
 // normalisers and the UI, so a bad hex is rejected the same way everywhere.
 import { findWallPaintById, isPaintTintable, normalisePaintColourHex, normalisePaintColourName } from '../data/wallPaints';
 import { findCladdingProduct } from '../data/claddingCatalog';
+import { exteriorWallSpans, paintSide, sidePaint, isWallConstruction, remapConstruction, type WallSide, type WallConstruction, type ConstructedEdge } from '../designer/wallConstruction';
 import type { CladEdge } from '../designer/claddingCalc';
 import {
   normaliseGarden, normaliseGardenFence, normaliseGardenMetadata, normaliseGardenSurface,
@@ -133,14 +134,14 @@ function remapPaintedEdges(
   if (!Array.isArray(wallPaint) || wallPaint.length === 0) return undefined;
   const m = canonPolygon.length;
   if (m < 3) return undefined;
-  const seen = new Set<number>();
+  const seen = new Set<string>();
   const out: PaintedEdge[] = [];
   for (const e of wallPaint) {
     if (!e || !Number.isInteger(e.edgeIndex) || typeof e.paintId !== 'string' || !e.paintId) continue;
     if (e.edgeIndex < 0 || e.edgeIndex >= edgeMap.length) continue;
     const idx = edgeMap[e.edgeIndex];
-    if (idx < 0 || idx >= m || seen.has(idx)) continue;
-    seen.add(idx);
+    if (idx < 0 || idx >= m || seen.has(`${idx}:${paintSide(e)}`)) continue;
+    seen.add(`${idx}:${paintSide(e)}`);
     out.push({ ...e, edgeIndex: idx });
   }
   return out.length > 0 ? out : undefined;
@@ -153,6 +154,8 @@ function remapPaintedEdges(
  * tin serves ONE colour, so the cart splits tins by paint + tint.
  */
 export interface PaintedEdge {
+  /** Absent preserves the original interior paint. */
+  side?: WallSide;
   edgeIndex: number;
   paintId: string;
   colourHex?: string;
@@ -273,6 +276,7 @@ export interface Room {
    * prunes entries whose edge no longer exists.
    */
   wallPaint?: PaintedEdge[];
+  wallConstruction?: ConstructedEdge[];
   /**
    * Sample cladding per edge (demo catalog). Sparse — bare walls are absent.
    * Visual layer sits over paint; the quote is boards/packs, not tins.
@@ -565,11 +569,11 @@ export interface PropertyState {
    * Wall paint (2026-09-02): set/clear the paint on one room edge. `colour`
    * (2026-09-14) is the chosen tint of that paint; omit it for the base.
    */
-  paintWallEdge: (roomId: string, edgeIndex: number, paintId: string | null, colour?: PaintColourChoice | null) => void;
+  paintWallEdge: (roomId: string, edgeIndex: number, paintId: string | null, colour?: PaintColourChoice | null, side?: WallSide) => void;
   /** Paint (or with null clear) EVERY edge of a room in one frame. */
-  paintRoomWalls: (roomId: string, paintId: string | null, colour?: PaintColourChoice | null) => void;
+  paintRoomWalls: (roomId: string, paintId: string | null, colour?: PaintColourChoice | null, side?: WallSide) => void;
   /** Set/clear the paint on one free-standing wall. */
-  paintFreeWall: (wallId: string, paintId: string | null, colour?: PaintColourChoice | null) => void;
+  paintFreeWall: (wallId: string, paintId: string | null, colour?: PaintColourChoice | null, side?: WallSide) => void;
   /** Property-wide wall height for paint quotes (clamped 2.0–4.0). */
   setWallHeight: (heightM: number) => void;
   /** Coats override for every paint (1–3); null = each product's datasheet figure. */
@@ -580,6 +584,8 @@ export interface PropertyState {
   setWallPaintPrimer: (on: boolean) => void;
   /** Paint one or both faces of a free-standing wall. */
   setFreeWallPaintFaces: (wallId: string, faces: 1 | 2) => void;
+  setWallConstruction: (roomId: string, edgeIndex: number | null, kind: WallConstruction) => void;
+  setFreeWallConstruction: (wallId: string, kind: WallConstruction) => void;
   /** Sample cladding on one room edge. `null` clears it. */
   setWallCladding: (roomId: string, edgeIndex: number, productId: string | null) => void;
   /** Clad (or clear) every edge of a room in one undo frame. */
@@ -849,6 +855,7 @@ export const usePropertyStore = create<PropertyState>()(
               // openings are: an edge that is gone loses its paint and a
               // reversed polygon keeps the paint on the same WORLD wall.
               const wallPaint = remapPaintedEdges(r.wallPaint, canon.edgeMap, canon.polygon);
+              const wallConstruction = remapConstruction(r.wallConstruction, canon.edgeMap, canon.polygon);
               const wallCladding = remapCladEdges(r.wallCladding, canon.edgeMap, canon.polygon);
               return {
                 ...r,
@@ -856,6 +863,7 @@ export const usePropertyStore = create<PropertyState>()(
                 openings: pruneOpenings(canon.openings, canon.polygon),
                 floorTiles: decodeFloorZones(r.floorTiles, canon.polygon),
                 ...(wallPaint ? { wallPaint } : { wallPaint: undefined }),
+                wallConstruction,
                 ...(wallCladding ? { wallCladding } : { wallCladding: undefined }),
               };
             }),
@@ -1156,32 +1164,43 @@ export const usePropertyStore = create<PropertyState>()(
           },
         })),
 
-      paintWallEdge: (roomId, edgeIndex, paintId, colour) =>
+      paintWallEdge: (roomId, edgeIndex, paintId, colour, side = 'interior') =>
         set((s) => ({
           property: {
             ...s.property,
             rooms: s.property.rooms.map((r) => {
               if (r.id !== roomId) return r;
               if (edgeIndex < 0 || edgeIndex >= r.polygon.length) return r;
-              const rest = (r.wallPaint ?? []).filter((e) => e.edgeIndex !== edgeIndex);
-              const next = paintId ? [...rest, paintedEdge(edgeIndex, paintId, colour)] : rest;
+              if (paintId && side === 'exterior' && !exteriorWallSpans(r, edgeIndex, s.property.rooms).length) return r;
+              const rest = (r.wallPaint ?? []).filter((e) => e.edgeIndex !== edgeIndex || paintSide(e) !== side);
+              const next = paintId ? [...rest, sidePaint(paintedEdge(edgeIndex, paintId, colour), side)] : rest;
               return { ...r, wallPaint: next.length > 0 ? next : undefined };
             }),
           },
         })),
 
-      paintRoomWalls: (roomId, paintId, colour) =>
+      paintRoomWalls: (roomId, paintId, colour, side = 'interior') =>
         set((s) => ({
           property: {
             ...s.property,
             rooms: s.property.rooms.map((r) => {
               if (r.id !== roomId) return r;
-              if (!paintId) return { ...r, wallPaint: undefined };
-              const all = r.polygon.map((_, i) => paintedEdge(i, paintId, colour));
+              const rest = (r.wallPaint ?? []).filter((edge) => paintSide(edge) !== side);
+              const all = [...rest, ...(paintId ? r.polygon.flatMap((_, i) => side === 'exterior' && !exteriorWallSpans(r, i, s.property.rooms).length ? [] : [sidePaint(paintedEdge(i, paintId, colour), side)]) : [])];
               return { ...r, wallPaint: all.length > 0 ? all : undefined };
             }),
           },
         })),
+
+      setWallConstruction: (roomId, edgeIndex, kind) =>
+        set((s) => ({ property: { ...s.property, rooms: s.property.rooms.map((room) => {
+          if (room.id !== roomId || !isWallConstruction(kind)) return room;
+          const indices = edgeIndex === null ? room.polygon.map((_, index) => index) : [edgeIndex];
+          const valid = indices.filter((index) => Number.isInteger(index) && index >= 0 && index < room.polygon.length);
+          return { ...room, wallConstruction: [...(room.wallConstruction ?? []).filter((edge) => !valid.includes(edge.edgeIndex)), ...valid.map((index) => ({ edgeIndex: index, kind }))] };
+        }) } })),
+      setFreeWallConstruction: (wallId, kind) =>
+        set((s) => ({ property: { ...s.property, walls: (s.property.walls ?? []).map((wall) => wall.id === wallId && isWallConstruction(kind) ? { ...wall, construction: kind } : wall) } })),
 
       setWallCladding: (roomId, edgeIndex, productId) =>
         set((s) => ({
@@ -1226,7 +1245,7 @@ export const usePropertyStore = create<PropertyState>()(
           },
         })),
 
-      paintFreeWall: (wallId, paintId, colour) =>
+      paintFreeWall: (wallId, paintId, colour, side = 'interior') =>
         set((s) => ({
           property: {
             ...s.property,
@@ -1234,6 +1253,10 @@ export const usePropertyStore = create<PropertyState>()(
               w.id === wallId
                 ? (() => {
                     const next = { ...w };
+                    if (side === 'exterior') {
+                      next.exteriorPaint = paintId ? sidePaint(paintedEdge(0, paintId, colour), side) : undefined;
+                      return next;
+                    }
                     delete next.paintId;
                     delete next.paintColourHex;
                     delete next.paintColourName;
@@ -2057,6 +2080,8 @@ export function normaliseFreeWalls(walls: unknown): FreeWall[] {
       // Both faces painted (2026-09-14) — only the value 2 is stored.
       if ((w as { paintFaces?: unknown }).paintFaces === 2) clean.paintFaces = 2;
     }
+    if (isWallConstruction(w.construction)) clean.construction = w.construction;
+    if (w.exteriorPaint && typeof w.exteriorPaint.paintId === 'string') clean.exteriorPaint = sidePaint(paintedEdge(0, w.exteriorPaint.paintId, w.exteriorPaint.colourHex ? { hex: w.exteriorPaint.colourHex, name: w.exteriorPaint.colourName } : null), 'exterior');
     const claddingId = (w as { claddingId?: unknown }).claddingId;
     if (typeof claddingId === 'string' && findCladdingProduct(claddingId)) {
       clean.claddingId = claddingId;
@@ -2076,7 +2101,8 @@ interface RawRoom {
   id?: string;
   name?: string;
   polygon?: Polygon;
-  wallPaint?: Array<{ edgeIndex?: unknown; paintId?: unknown; colourHex?: unknown; colourName?: unknown }>;
+  wallConstruction?: ConstructedEdge[];
+  wallPaint?: Array<{ side?: WallSide; edgeIndex?: unknown; paintId?: unknown; colourHex?: unknown; colourName?: unknown }>;
   vertices?: Polygon;
   lengthM?: number;
   widthM?: number;
@@ -2166,6 +2192,7 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
     // hand-edited payload would otherwise reach the renderer AND the price
     // calculator. Pruned against the CLEANED polygon.
     floorTiles: decodeFloorZones(r.floorTiles, clean),
+    wallConstruction: remapConstruction(r.wallConstruction, canon.edgeMap, clean),
     // Wall paint (2026-09-02): whitelist + prune — entries must point at an
     // edge that still exists on the CLEANED polygon, exactly like openings.
     // The tint (2026-09-14) is whitelisted field by field too: a bad hex
@@ -2175,7 +2202,7 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
       ? (() => {
           const typed = r.wallPaint
             .filter(
-              (e): e is { edgeIndex: number; paintId: string; colourHex?: unknown; colourName?: unknown } =>
+              (e): e is { side?: WallSide; edgeIndex: number; paintId: string; colourHex?: unknown; colourName?: unknown } =>
                 !!e &&
                 typeof e.edgeIndex === 'number' &&
                 Number.isInteger(e.edgeIndex) &&
@@ -2184,13 +2211,13 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
                 e.paintId.length > 0,
             )
             .map((e) =>
-              paintedEdge(
+              sidePaint(paintedEdge(
                 e.edgeIndex,
                 e.paintId,
                 typeof e.colourHex === 'string'
                   ? { hex: e.colourHex, name: typeof e.colourName === 'string' ? e.colourName : undefined }
                   : null,
-              ),
+              ), paintSide(e)),
             );
           // Remap against the RAW polygon (a CCW seed reverses), then prune
           // to the CLEANED one — the same order the openings take.
@@ -2367,6 +2394,7 @@ export function canonicalisePropertyWinding(property: Property): Property {
     const next: Room = { ...room, polygon: canon.polygon };
     if (room.openings) next.openings = pruneOpenings(canon.openings, canon.polygon);
     // Paint follows the same remap as the openings (2026-09-14).
+    next.wallConstruction = remapConstruction(room.wallConstruction, canon.edgeMap, canon.polygon);
     const wallPaint = remapPaintedEdges(room.wallPaint, canon.edgeMap, canon.polygon);
     if (wallPaint) next.wallPaint = wallPaint;
     else delete next.wallPaint;

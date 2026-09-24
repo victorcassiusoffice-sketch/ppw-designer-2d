@@ -1,3 +1,4 @@
+import { exteriorWallSpans } from './wallConstruction';
 /**
  * Wall-paint measurement algorithm (Vic 2026-09-02).
  *
@@ -42,6 +43,7 @@ import {
 } from '../data/wallPaints';
 
 export interface WallPaintedEdge {
+  side?: 'interior' | 'exterior';
   edgeIndex: number;
   paintId: string;
   /** Chosen tint (2026-09-14), `#RRGGBB`. Absent = the product's base colour. */
@@ -50,6 +52,7 @@ export interface WallPaintedEdge {
 }
 
 interface PaintableRoomShape {
+  kind?: 'room' | 'outdoor' | 'roof';
   levelId?: string;
   polygon: Polygon;
   openings?: Opening[];
@@ -57,6 +60,8 @@ interface PaintableRoomShape {
 }
 
 interface PaintableFreeWall {
+  exteriorPaint?: WallPaintedEdge;
+  outside?: boolean;
   levelId?: string;
   id?: string;
   a: { x: number; y: number };
@@ -66,6 +71,26 @@ interface PaintableFreeWall {
   paintColourName?: string;
   /** 2 = both faces painted; absent/1 = one face. */
   paintFaces?: number;
+}
+
+/** Explicit outside paint replaces the second legacy same-colour face. */
+function freePaintFaces(walls: PaintableFreeWall[]): PaintableFreeWall[] {
+  return walls.flatMap((wall) => [
+    { ...wall, paintFaces: wall.exteriorPaint ? 1 : wall.paintFaces },
+    ...(wall.exteriorPaint ? [{ ...wall, paintId: wall.exteriorPaint.paintId, paintColourHex: wall.exteriorPaint.colourHex,
+      paintColourName: wall.exteriorPaint.colourName, paintFaces: 1, outside: true }] : []),
+  ]);
+}
+
+/** Net exposed façade area, excluding adjoining rooms and opening gaps. */
+export function exteriorPaintAreaM2(room: PaintableRoomShape & { id: string }, edgeIndex: number, heightM: number, rooms: Array<PaintableRoomShape & { id: string }>): number {
+  const spans = exteriorWallSpans(room, edgeIndex, rooms);
+  const gross = spans.reduce((total, span) => total + (span.t1 - span.t0) * heightM, 0);
+  const cut = (room.openings ?? []).filter((opening) => opening.edgeIndex === edgeIndex).reduce((total, opening) => {
+    const width = spans.reduce((sum, span) => sum + Math.max(0, Math.min(span.t1, opening.offsetM + opening.widthM / 2) - Math.max(span.t0, opening.offsetM - opening.widthM / 2)), 0);
+    return total + (opening.widthM > 0 ? openingDeductionM2(opening, heightM) * width / opening.widthM : 0);
+  }, 0);
+  return Math.max(0, gross - cut);
 }
 
 /** Per-floor overrides win over the inherited height used by legacy quote call sites. */
@@ -330,10 +355,10 @@ export function deriveWallPaintOrders(
   for (const room of property.rooms) {
     const h = wallFinishHeightM(property, room, wallHeightM);
     for (const e of room.wallPaint ?? []) {
-      add(e.paintId, e.colourHex, e.colourName, paintableEdgeAreaM2(room, e.edgeIndex, h), room.id, room.name);
+      add(e.paintId, e.colourHex, e.colourName, e.side === 'exterior' ? exteriorPaintAreaM2(room, e.edgeIndex, h, property.rooms) : paintableEdgeAreaM2(room, e.edgeIndex, h), room.id, room.name);
     }
   }
-  for (const w of property.walls ?? []) {
+  for (const w of freePaintFaces(property.walls ?? [])) {
     if (!w.paintId) continue;
     const h = wallFinishHeightM(property, w, wallHeightM);
     const len = Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y);
@@ -464,10 +489,10 @@ export function wallPaintBreakdown(
     for (const e of painted) {
       const paint = findWallPaintById(e.paintId);
       if (!paint) continue;
-      const lengthM = edgeLengthM(room.polygon, e.edgeIndex);
+      const lengthM = e.side === 'exterior' ? exteriorWallSpans(room, e.edgeIndex, property.rooms).reduce((sum, span) => sum + span.t1 - span.t0, 0) : edgeLengthM(room.polygon, e.edgeIndex);
       if (lengthM <= 0) continue;
       const openings = (room.openings ?? []).filter((o) => o.edgeIndex === e.edgeIndex);
-      const openingsM2 = openings.reduce((acc, o) => acc + openingDeductionM2(o, h), 0);
+      const openingsM2 = e.side === 'exterior' ? Math.max(0, lengthM * h - exteriorPaintAreaM2(room, e.edgeIndex, h, property.rooms)) : openings.reduce((acc, o) => acc + openingDeductionM2(o, h), 0);
       const gross = lengthM * h;
       const hex = isPaintTintable(paint) ? normalisePaintColourHex(e.colourHex) : undefined;
       const name = hex ? normalisePaintColourName(e.colourName) : undefined;
@@ -475,7 +500,7 @@ export function wallPaintBreakdown(
         key: wallPaintOrderKey(e.paintId, hex),
         roomId: room.id,
         roomName: room.name,
-        wallLabel: `Wall ${e.edgeIndex + 1}`,
+        wallLabel: `${e.side === 'exterior' ? 'Outside wall' : 'Wall'} ${e.edgeIndex + 1}`,
         kind: 'edge',
         edgeIndex: e.edgeIndex,
         paintId: e.paintId,
@@ -489,12 +514,12 @@ export function wallPaintBreakdown(
         openingsM2: Math.min(gross, openingsM2),
         openingCount: openings.length,
         faces: 1,
-        areaM2: Math.max(0, gross - openingsM2),
+        areaM2: e.side === 'exterior' ? exteriorPaintAreaM2(room, e.edgeIndex, h, property.rooms) : Math.max(0, gross - openingsM2),
       });
     }
   }
   let n = 0;
-  for (const w of property.walls ?? []) {
+  for (const w of freePaintFaces(property.walls ?? [])) {
     if (!w.paintId) continue;
     const h = wallFinishHeightM(property, w, wallHeightM);
     if (h <= 0) continue;
@@ -509,7 +534,7 @@ export function wallPaintBreakdown(
       key: wallPaintOrderKey(w.paintId, hex),
       roomId: 'walls',
       roomName: 'Free walls',
-      wallLabel: `Free wall ${n}`,
+      wallLabel: `${w.outside ? 'Outside free wall' : 'Free wall'} ${n}`,
       kind: 'free',
       ...(w.id ? { wallId: w.id } : {}),
       paintId: w.paintId,

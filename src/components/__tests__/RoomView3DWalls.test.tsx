@@ -31,6 +31,32 @@ function escape(target: EventTarget = window) {
 }
 
 describe('3D wall tool keyboard ownership', () => {
+  it('cancels an armed product before leaving 3D', () => {
+    usePlacementIntentStore.getState().setArmed('test-product');
+    mount(); escape();
+    expect(usePlacementIntentStore.getState().armedProductId).toBeNull();
+    expect(close).not.toHaveBeenCalled();
+  });
+  it('keeps camera controls outside the measured scene and dismisses View before leaving 3D', () => {
+    mount();
+    const canvas = host.querySelector('[data-testid="wallpaint-3d"]')!;
+    expect(canvas.querySelector('[aria-label="Camera navigation"]')).toBeNull();
+    expect(host.querySelector('[data-testid="house-view-dock"]')).not.toBeNull();
+    click('[data-testid="house-view-settings"]');
+    expect(host.querySelector('[data-testid="house-view-options"]')).not.toBeNull();
+    escape();
+    expect(host.querySelector('[data-testid="house-view-options"]')).toBeNull();
+    expect(close).not.toHaveBeenCalled();
+  });
+
+  it('consumes the first scene click when dismissing View settings', () => {
+    mount(); click('[data-testid="house-view-settings"]');
+    const away = new CustomEvent('ppw:house-scene-pointer', { cancelable: true });
+    act(() => window.dispatchEvent(away));
+    expect(away.defaultPrevented).toBe(true);
+    expect(host.querySelector('[data-testid="house-view-options"]')).toBeNull();
+    expect(close).not.toHaveBeenCalled();
+  });
   it('yields Escape to a foreground dialog without leaving 3D or changing tools', () => {
     mount(); click('[data-testid="house-draw-walls"]');
     const dialog = document.createElement('div');

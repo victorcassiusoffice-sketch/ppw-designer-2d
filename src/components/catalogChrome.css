@@ -59,3 +59,103 @@
   outline: 1px solid var(--catalog-accent);
   outline-offset: -1px;
 }
+
+/* House mode has one bottom store, opened from Furnish. No residual category
+   strip takes up space when it is closed. Its measured height belongs to layout. */
+.sims-catalog[data-catalog-mode="3d"][data-catalog-open="false"] { display: none !important; }
+.sims-catalog[data-catalog-mode="3d"] {
+  max-height: min(34dvh, 240px) !important;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding-top: 0;
+  gap: 6px;
+}
+.catalog-browser-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 4px 0;
+  background: var(--catalog-bg);
+}
+.catalog-browser-header > div { min-width: 0; flex: 1; }
+.catalog-browser-header strong { display: block; font-size: 14px; line-height: 1.3; }
+.catalog-browser-header > div > span { display: block; color: var(--catalog-muted); font-size: 11px; }
+.catalog-browser-header button,
+.catalog-detail-back,
+.catalog-detail-place {
+  min-height: 40px;
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: 1px solid var(--catalog-border);
+  border-radius: 9px;
+  color: var(--catalog-text);
+  background: var(--catalog-raised);
+  font-size: 12px;
+  font-weight: 600;
+}
+.catalog-browser-close { display: flex; align-items: center; gap: 9px; }
+.catalog-browser-close span { font-size: 22px; line-height: 1; }
+.catalog-browser-header button:hover,
+.catalog-home-tile:hover { background: var(--catalog-hover); border-color: var(--catalog-accent); }
+.catalog-browser-header button:focus-visible,
+.catalog-home-tile:focus-visible,
+.catalog-product-detail button:focus-visible { outline: 3px solid var(--catalog-focus); outline-offset: 1px; }
+.catalog-home {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+  gap: 8px;
+  min-height: 0;
+  padding: 0 0 6px;
+}
+.catalog-home-tile {
+  display: flex;
+  min-height: 92px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid var(--catalog-border);
+  border-radius: 12px;
+  background: linear-gradient(145deg, var(--catalog-raised), var(--catalog-field));
+  color: var(--catalog-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+.catalog-home-tile svg { color: var(--catalog-accent); }
+.catalog-home-tile small { color: var(--catalog-muted); font-size: 10px; font-weight: 400; }
+.sims-catalog[data-catalog-mode="3d"] .catalog-browser-search > label { flex: 1; width: auto; }
+.sims-catalog[data-catalog-mode="3d"] .catalog-browser-products { min-height: 112px; flex: 0 0 auto; }
+.catalog-product-detail { min-height: 0; overflow: auto; padding: 0 8px 10px; }
+.catalog-detail-back { border: 0; padding-left: 0; min-height: 32px; background: transparent; }
+.catalog-detail-content { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 12px; }
+.catalog-detail-photo { align-self: start; border-radius: 9px; padding: 4px; background: #f5f3ed; }
+.catalog-detail-photo img { width: 100%; height: 88px; object-fit: contain; }
+.catalog-detail-content h3 { font-size: 13px; font-weight: 600; line-height: 1.25; margin: 0 0 3px; }
+.catalog-detail-content strong { font-size: 12px; color: var(--catalog-accent); }
+.catalog-detail-content p { margin: 3px 0 5px; color: var(--catalog-muted); font-size: 11px; line-height: 1.4; }
+.catalog-detail-more { text-decoration: underline; margin-left: 5px; }
+.catalog-detail-place { background: var(--catalog-selected); margin-top: 3px; color: var(--catalog-selected-text); }
+.catalog-tile-details { display: block; width: 100%; min-height: 28px; font-size: 11px; color: var(--catalog-muted); }
+.catalog-tile-details:hover { color: var(--catalog-accent); text-decoration: underline; }
+@media (min-width: 1024px) {
+  .catalog-product-detail { max-width: 700px; }
+  .catalog-detail-content { grid-template-columns: 104px minmax(0, 1fr); }
+}
+@media (max-width: 1023px) {
+  .sims-catalog[data-catalog-mode="3d"] { max-height: min(34dvh, 248px) !important; gap: 0; }
+  .catalog-browser-header { min-height: 48px; gap: 8px; padding: 4px 8px; }
+  .catalog-browser-header > div > span { display: none; }
+  .catalog-browser-header button { min-height: 40px; padding: 6px 9px; }
+  .catalog-home { grid-template-columns: none; grid-template-rows: repeat(2, 70px); grid-auto-flow: column; grid-auto-columns: 92px; gap: 7px; overflow-x: auto; padding: 2px 8px 8px; flex: 0 0 auto; }
+  .catalog-home-tile { min-height: 70px; gap: 2px; border-radius: 10px; font-size: 11px; }
+  .catalog-home-tile svg { width: 22px; height: 22px; }
+  .catalog-home-tile small { font-size: 10px; }
+  .sims-catalog[data-catalog-mode="3d"] .catalog-browser-search { padding-top: 0; }
+  .sims-catalog[data-catalog-mode="3d"] [data-testid="sims-thumb-strip"] { flex: 0 0 auto; }
+}

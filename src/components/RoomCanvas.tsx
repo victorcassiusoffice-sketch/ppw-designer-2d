@@ -1,3 +1,4 @@
+import { constructionHex, paintSide } from '../designer/wallConstruction';
 /**
  * RoomCanvas - react-konva Stage. Week 2.5 build:
  *   - Renders the active room's polygon (Week 2.5 generalisation of
@@ -2708,7 +2709,7 @@ export function RoomCanvas({
     const PLASTER = BARE_PLASTER_HEX;
     for (const room of rooms) {
       if (isOutdoorRoom(room) || !isDrawnPolygon(room.polygon)) continue;
-      const paintByEdge = new Map((room.wallPaint ?? []).map((e) => [e.edgeIndex, e]));
+      const paintByEdge = new Map((room.wallPaint ?? []).filter((e) => paintSide(e) === (wallPaintDraft.side ?? 'interior')).map((e) => [e.edgeIndex, e]));
       const cladByEdge = new Map((room.wallCladding ?? []).map((e) => [e.edgeIndex, e]));
       for (const e of roomEdges(room)) {
         const dx = e.b.x - e.a.x;
@@ -2722,7 +2723,7 @@ export function RoomCanvas({
         const h = facesUp ? stubPx : hPx;
         const paint = paintByEdge.get(e.index);
         const clad = findCladdingProduct(cladByEdge.get(e.index)?.productId);
-        const hex = clad?.hex ?? (paint ? resolveWallColourHex(paint.paintId, paint.colourHex, PLASTER) : PLASTER);
+        const hex = clad?.hex ?? (paint ? resolveWallColourHex(paint.paintId, paint.colourHex, PLASTER) : constructionHex(room.wallConstruction?.find((surface) => surface.edgeIndex === e.index)?.kind));
         const finish = clad ? 'textured' : paint ? finishOfPaint(paint.paintId) : undefined;
         const sheen = sheenOfFinish(finish);
         const fill = facesDown ? shade(hex, 1) : facesUp ? shade(hex, 0.96) : shade(hex, 0.9);
@@ -2780,7 +2781,7 @@ export function RoomCanvas({
     }
     faces.sort((a, b) => a.baseY - b.baseY);
     return faces;
-  }, [show25d, propertyForPaint.wallHeightM, rooms, freeWalls, pxPerMetre]);
+  }, [show25d, propertyForPaint.wallHeightM, rooms, freeWalls, pxPerMetre, wallPaintDraft.side]);
 
 
   /**
@@ -4541,7 +4542,8 @@ export function RoomCanvas({
                   const wallPx = WALL_THICKNESS_M * pxPerMetre;
                   const halfStrokeM = WALL_HALF_M;
                   const gaps = wallGapsByEdge.get(edgeKey(room.id, edge.index)) ?? [];
-                  const paint = room.wallPaint?.find((p) => p.edgeIndex === edge.index);
+                  const paint = room.wallPaint?.find((p) => p.edgeIndex === edge.index && paintSide(p) === (wallPaintDraft.side ?? 'interior'));
+                  const construction = room.wallConstruction?.find((surface) => surface.edgeIndex === edge.index)?.kind;
                   const paintWidth = Math.max(2.5 / viewport.scale, wallPx * 0.28);
                   const showPaint = paint && !room.wallCladding?.some((c) => c.edgeIndex === edge.index);
                   return splitEdgeSpans(edge.lengthM, gaps).map((span, si) => {
@@ -4562,7 +4564,7 @@ export function RoomCanvas({
                       <Fragment key={`w-${edge.index}-${si}`}>
                         <Line
                           points={seg}
-                          stroke={WALL_INK}
+                          stroke={construction ? constructionHex(construction) : WALL_INK}
                           strokeWidth={wallPx}
                           lineCap="square"
                           shadowColor={WALL_SHADOW}
@@ -4584,7 +4586,7 @@ export function RoomCanvas({
                             hex={resolveWallColourHex(paint.paintId, paint.colourHex)}
                             finish={finishOfPaint(paint.paintId)}
                             width={paintWidth}
-                            offset={(wallPx + paintWidth) / 2 * interiorSide(room.polygon)}
+                            offset={(wallPx + paintWidth) / 2 * interiorSide(room.polygon) * (paintSide(paint) === 'exterior' ? -1 : 1)}
                           />
                         )}
                       </Fragment>

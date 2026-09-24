@@ -1,3 +1,5 @@
+import { WallSurfaceOptions } from './WallSurfaceOptions';
+import { constructionHex } from '../designer/wallConstruction';
 /**
  * TopBar — designer chrome, rebuilt to the toolbar contract (2026-08-29).
  *
@@ -107,7 +109,7 @@ import {
 } from '../data/wallPaints';
 import { SOFAP_COLOUR_DISCLAIMER } from '../data/sofapColours';
 import { TINTEX_COLOUR_DISCLAIMER } from '../data/tintexColours';
-import { coatsFor, deriveWallPaintOrders, litresForArea, paintableEdgeAreaM2, tinsForLitres, wallPaintBreakdown, wastePctFor } from '../designer/wallPaintCalc';
+import { coatsFor, deriveWallPaintOrders, exteriorPaintAreaM2, litresForArea, paintableEdgeAreaM2, tinsForLitres, wallPaintBreakdown, wastePctFor } from '../designer/wallPaintCalc';
 // Wall paint tints + the Sims-style 3D room view (2026-09-14).
 import { applyWallPaintBrush, brushColour, brushLabel, brushPaintId } from '../designer/wallPaintBrush';
 import { applyFloorPaintBrush } from '../designer/floorPaintBrush';
@@ -885,7 +887,7 @@ export function TopBar({
   // a demo that shows one brand never lands on another brand's chip.
   const paintBrand =
     paintBrands.find((b) => b.id === paintBrandId) ?? paintBrands.find((b) => b.id === brandIdOfPaint(wallPaintSel)) ?? paintBrands[0] ?? findPaintBrandById(paintBrandId);
-  const wallPaintsShown = paintsForBrand(paintBrand?.id ?? paintBrands[0]?.id ?? paintBrandId);
+  const wallPaintsShown = paintsForBrand(paintBrand?.id ?? paintBrands[0]?.id ?? paintBrandId).filter((paint) => wallPaintDraft.side !== 'exterior' || paint.use !== 'interior');
   const [paintBreakdownOpen, setPaintBreakdownOpen] = useState(false);
   // The short list (featured lines) by default; the rest behind "More lines".
   const [paintMoreLines, setPaintMoreLines] = useState(false);
@@ -957,12 +959,14 @@ export function TopBar({
    * customer picking a colour, then a finish, expects the colour to stay).
    */
   function chooseWallPaint(p: WallPaint) {
+    setWallPaintDraft({ operation: 'paint' });
     if (isPaintTintable(p)) setWallPaintDraft({ paintId: p.id, erase: false });
     else setWallPaintDraft({ paintId: p.id, erase: false, colourHex: undefined, colourName: undefined });
   }
 
   /** Choose a tint (null = the product's base colour). */
   function chooseWallPaintColour(c: PaintColour | null) {
+    setWallPaintDraft({ operation: 'paint' });
     if (!c) {
       setWallPaintDraft({ colourHex: undefined, colourName: undefined, erase: false });
       return;
@@ -972,6 +976,7 @@ export function TopBar({
 
   /** A custom hex from the colour input — "tint to match" at the counter. */
   function chooseCustomWallPaintColour(hex: string) {
+    setWallPaintDraft({ operation: 'paint' });
     const h = normalisePaintColourHex(hex);
     if (!h) return;
     setWallPaintDraft({ colourHex: h, colourName: undefined, erase: false });
@@ -1020,7 +1025,7 @@ export function TopBar({
     return r.detail;
   }
   /** What the hovered wall previews: the brush colour, or bare plaster while Erase is on. */
-  const wallPaintPreviewHex = wallPaintDraft.erase ? BARE_PLASTER_HEX : wallPaintBrushHex;
+  const wallPaintPreviewHex = wallPaintDraft.operation === 'construction' ? constructionHex(wallPaintDraft.construction) : wallPaintDraft.erase ? BARE_PLASTER_HEX : wallPaintBrushHex;
   /**
    * The Sims' price on hover (P3, 2026-09-19): what the click would buy for
    * the wall under the brush — "VIP Satin · Pastel green ≈ 12.7 m² · 2.7 L ·
@@ -1029,12 +1034,13 @@ export function TopBar({
    * base). Erase shows nothing; the wall's own paint is described instead.
    */
   const hoverWallTag = (hit: Parameters<typeof applyWallPaintBrush>[0]): string | null => {
+    if (wallPaintDraft.operation === 'construction') return brushLabel(wallPaintDraft);
     if (!hit || wallPaintDraft.erase) return null;
     let areaM2 = 0;
     if (hit.kind === 'edge' && hit.roomId && typeof hit.edgeIndex === 'number') {
       const room = property.rooms.find((r) => r.id === hit.roomId);
       if (!room) return null;
-      areaM2 = paintableEdgeAreaM2(room, hit.edgeIndex, wallHeightM);
+      areaM2 = wallPaintDraft.side === 'exterior' ? exteriorPaintAreaM2(room, hit.edgeIndex, wallHeightM, property.rooms) : paintableEdgeAreaM2(room, hit.edgeIndex, wallHeightM);
     } else if (hit.kind === 'free' && hit.wallId) {
       const w = property.walls?.find((x) => x.id === hit.wallId);
       if (!w) return null;
@@ -1057,25 +1063,30 @@ export function TopBar({
       pushToast('Draw a room first — Walls', 'warn');
       return;
     }
+    if (wallPaintDraft.operation === 'construction') {
+      usePropertyStore.getState().setWallConstruction(floorRoom.id, null, wallPaintDraft.construction ?? 'plastered-brick');
+      return;
+    }
     if (wallPaintDraft.erase) {
-      paintRoomWalls(floorRoom.id, null);
+      paintRoomWalls(floorRoom.id, null, null, wallPaintDraft.side);
       pushToast(`${floorRoom.name} — wall paint removed`, 'info');
       return;
     }
-    paintRoomWalls(floorRoom.id, wallPaintSel.id, wallPaintTint);
+    paintRoomWalls(floorRoom.id, wallPaintSel.id, wallPaintTint, wallPaintDraft.side);
     pushToast(`${floorRoom.name} — every wall painted`, 'success');
   }
 
   const anyWallPainted =
     property.rooms.some((r) => (r.wallPaint?.length ?? 0) > 0) ||
-    (property.walls ?? []).some((w) => !!w.paintId);
+    (property.walls ?? []).some((w) => !!w.paintId || !!w.exteriorPaint);
 
   function handleWallPaintClearAll() {
     for (const r of property.rooms) {
-      if ((r.wallPaint?.length ?? 0) > 0) paintRoomWalls(r.id, null);
+      if ((r.wallPaint?.length ?? 0) > 0) { paintRoomWalls(r.id, null); paintRoomWalls(r.id, null, null, 'exterior'); }
     }
     for (const w of property.walls ?? []) {
       if (w.paintId) paintFreeWall(w.id, null);
+      if (w.exteriorPaint) paintFreeWall(w.id, null, null, 'exterior');
     }
     pushToast('Wall paint removed everywhere', 'info');
   }
@@ -1306,7 +1317,7 @@ export function TopBar({
     if (!sidePanelOpen) return;
     const el = headerRef.current;
     if (!el) return;
-    const measure = () => setFloorPanelTop(viewMode === '3d' ? 62 : Math.round(el.getBoundingClientRect().bottom));
+    const measure = () => setFloorPanelTop(viewMode === '3d' ? (window.innerHeight <= 560 ? 43 : 56) : Math.round(el.getBoundingClientRect().bottom));
     measure();
     const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
     ro?.observe(el);
@@ -1357,6 +1368,20 @@ export function TopBar({
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [floorPaintActive, wallPaintActive, claddingActive, setTool]);
+
+  // Finish tools occupy a dock. Clicking other workspace chrome dismisses
+  // their options; the canvas remains the intended paint target. A blank
+  // canvas tap is handled by RoomView3D so orbit gestures never close a tool.
+  useEffect(() => {
+    if (viewMode !== '3d' || (!floorPaintActive && !wallPaintActive && !claddingActive)) return;
+    const away = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target || target.closest('.house-tool-panel, [role="dialog"], [role="listbox"], [data-ppw-popover], [data-testid="wallpaint-3d-canvas"], [data-testid$="3d-brush-strip"]')) return;
+      setTool('hand');
+    };
+    document.addEventListener('pointerdown', away, true);
+    return () => document.removeEventListener('pointerdown', away, true);
+  }, [viewMode, floorPaintActive, wallPaintActive, claddingActive, setTool]);
 
   // `ppw:open-menu` — any surface (the phone Floor / Door HUD cards) can
   // ask for the sheet, scrolled to a section.
@@ -2680,6 +2705,7 @@ export function TopBar({
               detail={<span data-testid="wallpaint-room">{floorRoom ? floorRoom.name : `${paintBrand?.name ?? 'Sofap'} · Mauritius`}</span>} />
             <div className="house-tool-panel-body flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-3">
 
+              <WallSurfaceOptions />
               {/* View — Plan (the drawing) or 3D (the room). The 3D workspace
                   takes the plan's place; this panel stays. */}
               <div className={`${SEG_GROUP} mb-2 flex w-full`} role="radiogroup" aria-label="View" data-testid="wallpaint-view">
@@ -3290,6 +3316,7 @@ export function TopBar({
                 </div>
               ) : wallPaintActive && !isMd ? (
                 <div className="flex items-center gap-1.5 overflow-x-auto border-t border-ppw-rim bg-ppw-chrome px-2 py-1.5" data-testid="wallpaint-3d-brush-strip">
+                  <WallSurfaceOptions compact />
                   <button
                     type="button"
                     onClick={() => window.dispatchEvent(new CustomEvent('ppw:open-menu', { detail: { section: 'wallpaint' } }))}
@@ -3624,6 +3651,7 @@ export function TopBar({
                       {wallPaintActive ? `on · ${wallPaintSel.name}` : 'off'}
                     </span>
                   </button>
+                  <div className="px-4"><WallSurfaceOptions /></div>
                   {/* Phone pass (2026-09-16): the brand's featured lines, the
                       rest behind "More lines" — the same short list the
                       panel shows. All 15 rows made the sheet 3,400 px tall

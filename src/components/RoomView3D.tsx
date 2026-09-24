@@ -46,7 +46,7 @@ import { useCatalogStore } from '../store/catalogStore';
 import { rotateSelected, deleteSelected, duplicateSelected } from '../lib/placementActions';
 import { haptic } from '../lib/haptics';
 import { brushPaintId, type BrushModifiers } from '../designer/wallPaintBrush';
-import { previewFloorDrag } from '../designer/floorPaintBrush';
+import { isPaintableFloorPoint, previewFloorDrag } from '../designer/floorPaintBrush';
 import { activeLevelIdOf, isOutdoorRoom, isRoofLevel, isRoofRoom, roomsOnLevel } from '../designer/levels';
 import { buildingLevels, levelElevationM, levelHeightM, type BuildingStair } from '../designer/building';
 import { buildingSolids, type BuildingView } from '../designer/buildingScene';
@@ -70,6 +70,7 @@ import { roomFloorMaterial } from '../designer/floorFinish';
 import { floorKindOf } from '../designer/floorKind';
 import { emitsLight } from '../designer/lighting';
 import { findFloorMaterialById } from '../data/floorMaterials';
+import { resolvedWallSurfaces, constructionHex, paintSide } from '../designer/wallConstruction';
 import { findCladdingProduct } from '../data/claddingCatalog';
 import { getProductById, productImageUrl, productTopDownUrl } from '../data/products';
 import { hasFurniturePreview, FURNITURE_PREVIEW_NOTE } from '../data/dimensionalPreview';
@@ -255,20 +256,7 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
   const sceneRooms: SceneRoomInput[] = rooms.map((room: Room) => {
     // A roof slab has no walls to paint — items only, like outdoors.
     const outdoor = isOutdoorRoom(room) || isRoofRoom(room) || !isDrawnPolygon(room.polygon);
-    const wallColourByEdge = new Map<number, string>();
-    const wallFinishByEdge = new Map<number, string>();
-    for (const e of room.wallPaint ?? []) {
-      wallColourByEdge.set(e.edgeIndex, resolveWallColourHex(e.paintId, e.colourHex));
-      const finish = finishOfPaint(e.paintId);
-      if (finish) wallFinishByEdge.set(e.edgeIndex, finish);
-    }
-    // Sample cladding covers the painted face when both are present.
-    for (const e of room.wallCladding ?? []) {
-      const clad = findCladdingProduct(e.productId);
-      if (!clad) continue;
-      wallColourByEdge.set(e.edgeIndex, clad.hex);
-      wallFinishByEdge.set(e.edgeIndex, 'textured');
-    }
+    const wallSurfaces = resolvedWallSurfaces(room);
     // Floor: the largest painted zone's material, else the whole-room finish —
     // its hex, and (P3) what it reads as and its tile size for the surface.
     let floorMaterial = roomFloorMaterial(room);
@@ -322,8 +310,7 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
       name: room.name,
       polygon: room.polygon,
       openings: openingsByRoom.get(room.id) ?? room.openings,
-      wallColourByEdge,
-      wallFinishByEdge,
+      ...wallSurfaces,
       floorHex,
       floorKind,
       floorTileM,
@@ -338,7 +325,10 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
       a: w.a,
       b: w.b,
       thicknessM: w.thicknessM,
-      colourHex: findCladdingProduct(w.claddingId)?.hex ?? (w.paintId ? resolveWallColourHex(w.paintId, w.paintColourHex) : undefined),
+      colourHex: findCladdingProduct(w.claddingId)?.hex ?? (w.paintId ? resolveWallColourHex(w.paintId, w.paintColourHex) : constructionHex(w.construction)),
+      construction: w.construction,
+      exteriorHex: w.exteriorPaint ? resolveWallColourHex(w.exteriorPaint.paintId, w.exteriorPaint.colourHex) : w.paintFaces === 2 && w.paintId ? resolveWallColourHex(w.paintId, w.paintColourHex) : constructionHex(w.construction),
+      exteriorFinish: finishOfPaint(w.exteriorPaint?.paintId ?? (w.paintFaces === 2 ? w.paintId : undefined)),
       finish: finishOfPaint(w.paintId),
     })),
     wallHeightM: H,
@@ -362,11 +352,11 @@ function describeHit(property: Property, hit: WallHit | null, tag?: string | nul
   if (hit.kind === 'edge') {
     const room = property.rooms.find((r) => r.id === hit.roomId);
     if (!room) return null;
-    const painted = room.wallPaint?.find((e) => e.edgeIndex === hit.edgeIndex);
+    const painted = room.wallPaint?.find((e) => e.edgeIndex === hit.edgeIndex && paintSide(e) === (hit.side ?? 'interior'));
     const paint = painted ? findWallPaintById(painted.paintId) : undefined;
     const colour = painted?.colourName ?? painted?.colourHex;
     const current = `${paint ? ` · ${paint.name}` : ' · unpainted'}${colour ? ` · ${colour}` : ''}`;
-    return `${room.name} · Wall ${(hit.edgeIndex ?? 0) + 1}${tag ? ` → ${tag}` : current} — click to paint`;
+    return `${room.name} · ${hit.side === 'exterior' ? 'Outside' : 'Inside'} wall ${(hit.edgeIndex ?? 0) + 1}${tag ? ` → ${tag}` : current} — click to paint`;
   }
   const w = property.walls?.find((x) => x.id === hit.wallId);
   if (!w) return null;
@@ -387,7 +377,7 @@ function findPlacedItem(property: Property, instanceId: string) {
 
 /** A wall hit as a set key, for a paint stroke's "already painted" list. */
 function hitKey(h: WallHit): string {
-  return h.kind === 'edge' ? `e:${h.roomId}:${h.edgeIndex}` : `f:${h.wallId}`;
+  return h.kind === 'edge' ? `e:${h.roomId}:${h.edgeIndex}:${h.side ?? 'interior'}` : `f:${h.wallId}:${h.side ?? 'interior'}`;
 }
 
 export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hoverTag, onClose, onSave, onCart, onExpand, footer, caption, brushStrip, title, className = '', style }: RoomView3DProps): JSX.Element {
@@ -737,6 +727,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.pointerType === 'mouse' && e.button !== 0 && e.button !== 2) return;
+    // A first click away dismisses browsing/settings without also placing a
+    // product, painting, or drawing. Armed catalog placement opts into the click.
+    if (variant === 'overlay' && !window.dispatchEvent(new CustomEvent('ppw:house-scene-pointer', { cancelable: true }))) return;
     // The right button always orbits (The Sims' camera drag), whatever tool
     // is armed — so a look-around never paints a wall or carries a product.
     const orbitOnly = e.pointerType === 'mouse' && e.button === 2;
@@ -792,7 +785,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       if (onPaintFloor && stageRef.current) {
         const p = localPoint(e);
         const floor = stageRef.current.floorPoint(p.x, p.y);
-        if (floor) {
+        if (floor && isPaintableFloorPoint(floor)) {
           const mods: BrushModifiers = { shift: e.shiftKey, ctrl: e.ctrlKey || e.metaKey };
           const draft = useDesignerUIStore.getState().floorDraft;
           const mat = findFloorMaterialById(draft.materialId);
@@ -1112,12 +1105,14 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       // A tap (touch / pen, or a mouse press that started off a wall).
       const hit = hitAt(p.x, p.y);
       if (hit) paintHit(hit, { shift: e.shiftKey, ctrl: e.ctrlKey || e.metaKey });
+      else if (variant === 'overlay') useDesignerUIStore.getState().setTool('hand');
       else showFlash('Tap a wall to paint it');
       return;
     }
     if (onPaintFloor && stageRef.current) {
       const floor = stageRef.current.floorPoint(p.x, p.y);
-      if (floor) paintFloorHit(floor, { shift: e.shiftKey, ctrl: e.ctrlKey || e.metaKey });
+      if (floor && isPaintableFloorPoint(floor)) paintFloorHit(floor, { shift: e.shiftKey, ctrl: e.ctrlKey || e.metaKey });
+      else if (variant === 'overlay') useDesignerUIStore.getState().setTool('hand');
       else showFlash('Tap the floor to lay it');
       return;
     }
@@ -1196,9 +1191,16 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   useEffect(() => {
     if (variant !== 'overlay' || !onClose) return;
     const onKey = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || [...document.querySelectorAll('.sims-catalog[data-catalog-mode="3d"][data-catalog-open="true"]')].some(element => element.getBoundingClientRect().height > 0)) return;
       // Foreground dialogs and finish/energy panels own their keyboard events.
       // Let their own Close/Escape handlers run without changing the scene behind them.
-      if (document.querySelector('[role="dialog"][aria-modal="true"]') || onPaintWall || onPaintFloor || (energyOpen && !belowMd)) return;
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+      if (e.key === 'Escape' && document.querySelector('[data-testid="house-view-options"]')) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        window.dispatchEvent(new CustomEvent('ppw:close-view-settings'));
+        return;
+      }
+      if (onPaintWall || onPaintFloor || (energyOpen && !belowMd)) return;
       // An input in the still-usable docked panel keeps its own Esc.
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
@@ -1217,7 +1219,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       if (e.key !== 'Escape') return;
       // A phone sheet closes first. The permanent desktop sidebar must never
       // swallow Escape; the older floating build inspector handles its own.
-      if (belowMd && document.querySelector('.house-inspector.is-open')) {
+      if (document.querySelector('.house-inspector.is-open')) {
         e.preventDefault(); e.stopImmediatePropagation();
         window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
         return;
@@ -1240,6 +1242,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         selectItem(null);
         return;
       }
+      if (armedProductId) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        usePlacementIntentStore.getState().setArmed(null);
+        return;
+      }
       if (panMode || constructionTool !== 'select') {
         e.stopImmediatePropagation();
         setPanMode(false);
@@ -1254,7 +1261,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [variant, onClose, gardenOpen, gardenPlacement, panMode, constructionTool, finishWallRun, cancelWallSegment, showFlash, belowMd, onPaintWall, onPaintFloor, energyOpen, selectedInstanceId, selectItem]);
+  }, [variant, onClose, gardenOpen, gardenPlacement, panMode, constructionTool, finishWallRun, cancelWallSegment, showFlash, belowMd, onPaintWall, onPaintFloor, energyOpen, selectedInstanceId, selectItem, armedProductId]);
 
   const hoverText = describeHit(property, hover, onPaintWall && hoverTag && hover ? hoverTag(hover) : null);
   const empty = !sceneBounds;
@@ -1315,6 +1322,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   }
 
   function changeHouseMode(mode: HouseMode) {
+    if (mode !== 'furnish') window.dispatchEvent(new CustomEvent('ppw:close-catalog'));
     clearLocalTools();
     setHouseMode(mode);
     setPanMode(false);
@@ -1378,6 +1386,12 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         </div>
   ) : null;
 
+  const viewControls = <RoomViewControls workspace={variant === 'overlay'} pan={panMode} onPan={togglePan}
+    onRotate={rotate} onZoom={zoomBy} onFit={refit} onView={chooseCameraView}
+    wallView={wallView} onWallView={setWallView} hasWalls={solids.walls.length > 0 && !onRoofLevel}
+    sunAvailable={backend === 'gl'} sunHour={sunHour} onSunHour={setSunHour}
+    onClose={onClose} onExpand={onExpand} />;
+  const statusCaption = moveFeedback ?? flash ?? liveFloorCaption ?? hoverText ?? caption ?? defaultCaption;
   const box = (
     <div
       ref={containerRef}
@@ -1402,6 +1416,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               hover={hover}
               selectedInstanceId={variant === 'overlay' ? selectedInstanceId : null}
               brushHex={onPaintWall ? (brushHex ?? null) : undefined}
+              brushSide={tool === 'wallpaint' ? wallPaintDraft.side ?? 'interior' : 'interior'}
+              brushConstruction={tool === 'wallpaint' && wallPaintDraft.operation === 'construction' ? wallPaintDraft.construction ?? 'plastered-brick' : undefined}
               brushFinish={onPaintWall && brushHex ? (tool === 'cladding' ? 'textured' : wallPaintDraft.erase ? null : finishOfPaint(brushPaintId(wallPaintDraft))) : null}
               wallView={wallView}
               hour={sunHour}
@@ -1434,7 +1450,6 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         <polygon points={roomPreview.polygon.map((point) => stageRef.current?.projectPoint(point.x, point.y, roomPreview.elevationM + 0.03)).filter((point) => !!point).map((point) => `${point.x},${point.y}`).join(' ')} />
         {(() => { const center = roomPreview.polygon.reduce((p, q) => ({ x: p.x + q.x / 4, y: p.y + q.y / 4 }), { x: 0, y: 0 }); const screen = stageRef.current?.projectPoint(center.x, center.y, roomPreview.elevationM + 0.04); return screen ? <text x={screen.x} y={screen.y} textAnchor="middle">{roomPreview.widthM.toFixed(1)} × {roomPreview.depthM.toFixed(1)} m</text> : null; })()}
       </svg>}
-      {constructionTool === 'room' && <p className="house-drawing-help" role="status">{roomPreview ? roomPreview.ok ? `${roomPreview.areaM2.toFixed(1)} m² · release to build` : roomPreview.message : 'Drag from one corner to the opposite corner to build a room'}</p>}
       {wallPreview && wallPreview.lengthM > 0 && Number.isFinite(wallPreview.lengthM) && <svg className="house-room-preview house-wall-preview" data-valid={wallPreview.ok} aria-hidden="true">
         <polygon points={[
           { ...wallPreview.a, z: wallPreview.elevationM }, { ...wallPreview.b, z: wallPreview.elevationM },
@@ -1444,20 +1459,16 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       </svg>}
       {empty && constructionTool !== 'room' && constructionTool !== 'wall' && variant === 'overlay' && <div className="house-empty"><strong>Your home starts here</strong><p>Draw your first room, add another floor, then shape the spaces around it.</p><button onClick={() => chooseBuildTool('room')}>Draw a room</button></div>}
       {empty && variant === 'card' && <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs">Draw a room to see it in 3D</p>}
-      <RoomViewControls workspace={variant === 'overlay'} pan={panMode} onPan={togglePan}
-        onRotate={rotate} onZoom={zoomBy} onFit={refit} onView={chooseCameraView}
-        wallView={wallView} onWallView={setWallView} hasWalls={solids.walls.length > 0 && !onRoofLevel}
-        sunAvailable={backend === 'gl'} sunHour={sunHour} onSunHour={setSunHour}
-        onClose={onClose} onExpand={onExpand} />
+      {variant === 'card' && viewControls}
       {/* Hover read-out / caption. */}
-      <p
+      {variant === 'card' && <p
         className="pointer-events-none absolute bottom-1.5 left-2 right-2 truncate text-[11px] font-medium text-ppw-charcoal"
         style={{ textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}
         data-testid="wallpaint-3d-caption"
         aria-live="polite"
       >
-        {moveFeedback ?? flash ?? liveFloorCaption ?? hoverText ?? caption ?? defaultCaption}
-      </p>
+        {statusCaption}
+      </p>}
     </div>
   );
 
@@ -1487,6 +1498,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           : <BuildingControls layout="sidebar" view={buildingView} onViewChange={setBuildingView} showRoof={showRoof} onShowRoofChange={setShowRoof} tool={constructionTool} onToolChange={chooseBuildTool}
             gardenOpen={gardenOpen} onGardenToggle={() => changeHouseMode('garden')} />)}>
         {gardenPlacement && <p role="status" className="bg-[#29405c] px-3 py-2 text-xs text-[#c4e8f2]">Tap the ground to place this garden element. <button className="underline" onClick={() => setGardenPlacement(null)}>Cancel</button></p>}
+        {constructionTool === 'room' && <div className="house-wall-build-strip"><span role="status">{roomPreview ? roomPreview.ok ? `${roomPreview.areaM2.toFixed(1)} m² · release to build` : roomPreview.message : 'Drag between opposite corners to build a room'}</span><button type="button" onClick={() => chooseBuildTool('select')}>Done</button></div>}
         {constructionTool === 'wall' && <div className="house-wall-build-strip" data-testid="house-wall-build-strip">
           <span role="status">{wallPreview ? wallPreview.ok ? `${wallPreview.lengthM.toFixed(2)} m · ${Math.round(wallPreview.angleDeg)}°${wallPreview.closesRoom ? ' · release to close room' : ''}` : wallPreview.message : wallChain ? 'Continue from the last corner · tap or drag' : 'Drag a wall, or tap its start and end'}</span>
           {wallDrag.current && <button type="button" onClick={cancelWallSegment}>Cancel segment</button>}
@@ -1494,6 +1506,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           <button type="button" onClick={() => chooseBuildTool('select')}>Done</button>
         </div>}
         {box}
+        {viewControls}
+        <p className="house-scene-caption" data-testid="wallpaint-3d-caption" aria-live="polite">{statusCaption}</p>
       </HouseWorkspace>
       {footer && <p className="shrink-0 border-t border-[#34415b] bg-[#172139] px-3 py-1 text-xs font-semibold text-[#c9d8ef]" data-testid="wallpaint-3d-footer">{footer}</p>}
       {brushStrip}

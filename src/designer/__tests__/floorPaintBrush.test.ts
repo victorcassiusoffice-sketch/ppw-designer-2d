@@ -4,7 +4,7 @@
  * commits on release as one undo (Sims floor paint).
  */
 import { beforeEach, describe, expect, it } from 'vitest';
-import { applyFloorPaintBrush, floorBrushLabel, previewFloorDrag } from '../floorPaintBrush';
+import { applyFloorPaintBrush, floorBrushLabel, isPaintableFloorPoint, previewFloorDrag } from '../floorPaintBrush';
 import { useDesignerUIStore } from '../../store/designerUIStore';
 import { usePropertyStore } from '../../store/propertyStore';
 import { runsToSet } from '../floorTiles';
@@ -49,6 +49,14 @@ describe('applyFloorPaintBrush', () => {
 
   it('a miss says what to do', () => {
     expect(applyFloorPaintBrush(null).message).toBe('Tap the floor to lay it.');
+  });
+
+  it('distinguishes a real floor from the infinite ground plane for click-away dismissal', () => {
+    expect(isPaintableFloorPoint({ x: 2, y: 2 })).toBe(true);
+    expect(isPaintableFloorPoint({ x: 20, y: 20 })).toBe(false);
+    const property = usePropertyStore.getState().property;
+    usePropertyStore.setState({ property: { ...property, rooms: [{ ...property.rooms[0], kind: 'outdoor' }] } });
+    expect(isPaintableFloorPoint({ x: 2, y: 2 })).toBe(false);
   });
 
   it('a tap outside every room warns', () => {

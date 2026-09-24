@@ -78,6 +78,7 @@ export type SceneFaceKind =
 
 /** What a click on a wall face paints. */
 export interface WallHit {
+  side?: import('./wallConstruction').WallSide;
   kind: 'edge' | 'free';
   roomId?: string;
   edgeIndex?: number;
@@ -126,6 +127,9 @@ export interface SceneRoomInput {
   wallColourByEdge?: Map<number, string>;
   /** The paint's finish per painted edge (3D Mode: roughness / sheen); absent = bare plaster. */
   wallFinishByEdge?: Map<number, string>;
+  exteriorColourByEdge?: Map<number, string>;
+  exteriorFinishByEdge?: Map<number, string>;
+  wallConstructionByEdge?: Map<number, import('./wallConstruction').WallConstruction>;
   floorHex?: string;
   /** What the laid floor reads as (designer/floorKind.ts) and its tile size, for the 3D surface (P3). */
   floorKind?: string;
@@ -136,6 +140,9 @@ export interface SceneRoomInput {
 }
 
 export interface SceneFreeWallInput {
+  construction?: import('./wallConstruction').WallConstruction;
+  exteriorHex?: string;
+  exteriorFinish?: string;
   id: string;
   a: Vertex;
   b: Vertex;
@@ -529,9 +536,9 @@ export function buildScene(input: SceneInput): SceneFace[] {
             key: `stub-${room.id}-${e.index}`,
             kind: 'wall-stub',
             pts: quadOnEdge(outerA, outerB, 0, stubZ),
-            fill: hovered ? mixHex(PLASTER_HEX, HOVER_HEX, 0.45) : PLASTER_HEX,
+            fill: room.exteriorColourByEdge?.get(e.index) ?? PLASTER_HEX,
             stroke: WALL_CAP_HEX,
-            hit,
+            hit: { ...hit, side: 'exterior' },
             order: 20,
           });
           // The inner face of the stub — painted, seen from above.

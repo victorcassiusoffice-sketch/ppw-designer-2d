@@ -50,6 +50,11 @@ function roomAtHit(hit: FloorHit) {
   return findRoomAt({ x: hit.x, y: hit.y }, levelIndoorRooms(), ps.property.activeRoomId);
 }
 
+/** The infinite 3D ground plane is not necessarily a floor that can be painted. */
+export function isPaintableFloorPoint(hit: FloorHit): boolean {
+  return !!roomAtHit(hit);
+}
+
 export function floorZoneForRoom(
   room: { id: string; polygon: { x: number; y: number }[] },
   materialId: string,

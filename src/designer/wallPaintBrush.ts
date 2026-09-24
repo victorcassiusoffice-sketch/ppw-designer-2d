@@ -13,6 +13,7 @@ import { useDesignerUIStore, type WallPaintDraft } from '../store/designerUIStor
 import { usePropertyStore, type PaintColourChoice } from '../store/propertyStore';
 import { WALL_PAINTS, findWallPaintById, isPaintTintable, normalisePaintColourHex } from '../data/wallPaints';
 import type { WallHit } from './roomView3d';
+import { exteriorWallSpans, WALL_CONSTRUCTIONS } from './wallConstruction';
 
 export interface BrushResult {
   /** What happened, for a toast. `null` when nothing changed. */
@@ -47,7 +48,8 @@ export function brushColour(draft: Pick<WallPaintDraft, 'paintId' | 'colourHex' 
 }
 
 /** "Permoglaze Matt Emulsion · Bronze" — what the brush would lay down. */
-export function brushLabel(draft: Pick<WallPaintDraft, 'paintId' | 'colourHex' | 'colourName' | 'erase'>): string {
+export function brushLabel(draft: Pick<WallPaintDraft, 'paintId' | 'colourHex' | 'colourName' | 'erase' | 'operation' | 'construction'>): string {
+  if (draft.operation === 'construction') return WALL_CONSTRUCTIONS.find((entry) => entry.id === (draft.construction ?? 'plastered-brick'))?.name ?? 'Wall material';
   if (draft.erase) return 'Erase';
   const paint = findWallPaintById(brushPaintId(draft));
   const tint = brushColour(draft);
@@ -59,6 +61,18 @@ export function applyWallPaintBrush(hit: WallHit | null, mods: BrushModifiers = 
   const draft = useDesignerUIStore.getState().wallPaintDraft;
   const ps = usePropertyStore.getState();
   if (!hit) return { message: 'Tap a wall to paint it.', kind: 'warn' };
+  if (draft.operation === 'construction') {
+    const kind = draft.construction ?? 'plastered-brick';
+    if (hit.kind === 'edge' && hit.roomId && typeof hit.edgeIndex === 'number') ps.setWallConstruction(hit.roomId, draft.scope === 'room' || mods.shift ? null : hit.edgeIndex, kind);
+    else if (hit.kind === 'free' && hit.wallId) ps.setFreeWallConstruction(hit.wallId, kind);
+    return { message: 'Wall surface updated.', kind: 'success', detail: WALL_CONSTRUCTIONS.find((entry) => entry.id === kind)?.name };
+  }
+  const side = draft.side ?? 'interior';
+  if (side === 'exterior' && !draft.erase && !mods.ctrl && findWallPaintById(brushPaintId(draft))?.use === 'interior') return { message: 'Choose an exterior paint line for the outside face.', kind: 'warn' };
+  if (side === 'exterior' && !draft.erase && hit.kind === 'edge' && hit.roomId && typeof hit.edgeIndex === 'number' && draft.scope !== 'room' && !mods.shift) {
+    const room = ps.property.rooms.find((candidate) => candidate.id === hit.roomId);
+    if (room && !exteriorWallSpans(room, hit.edgeIndex, ps.property.rooms).length) return { message: 'This is a shared inside wall. Choose Inside or an exterior wall.', kind: 'info' };
+  }
   const erase = draft.erase || !!mods.ctrl;
   const roomScope = draft.scope === 'room' || !!mods.shift;
   const paintId = erase ? null : brushPaintId(draft);
@@ -66,20 +80,20 @@ export function applyWallPaintBrush(hit: WallHit | null, mods: BrushModifiers = 
   const label = brushLabel({ ...draft, erase });
 
   if (hit.kind === 'edge' && roomScope && hit.roomId) {
-    ps.paintRoomWalls(hit.roomId, paintId, colour);
+    ps.paintRoomWalls(hit.roomId, paintId, colour, side);
     return erase
       ? { message: 'Wall paint removed from the room.', kind: 'info', detail: 'Whole room · paint removed' }
       : { message: 'Every wall of the room painted.', kind: 'success', detail: `Whole room · ${label}` };
   }
   if (hit.kind === 'edge' && hit.roomId && typeof hit.edgeIndex === 'number') {
-    ps.paintWallEdge(hit.roomId, hit.edgeIndex, paintId, colour);
+    ps.paintWallEdge(hit.roomId, hit.edgeIndex, paintId, colour, side);
     const wall = `Wall ${hit.edgeIndex + 1}`;
     return erase
       ? { message: 'Wall paint removed.', kind: 'info', detail: `${wall} · paint removed` }
       : { message: null, kind: 'success', detail: `${wall} · ${label}` };
   }
   if (hit.kind === 'free' && hit.wallId) {
-    ps.paintFreeWall(hit.wallId, paintId, colour);
+    ps.paintFreeWall(hit.wallId, paintId, colour, side);
     return erase
       ? { message: 'Wall paint removed.', kind: 'info', detail: 'Free wall · paint removed' }
       : { message: null, kind: 'success', detail: `Free wall · ${label}` };

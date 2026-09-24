@@ -18,7 +18,7 @@
  * Placement is published to placementIntentStore; RoomCanvas runs the
  * validated placement. No engine change — Konva stable-lock untouched.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { productImageUrl, thumbnailFor } from '../../data/products';
 import { useMerchantCatalog } from '../../lib/useMerchantCatalog';
 import { CatalogConnectionNotice } from '../CatalogConnectionNotice';
@@ -50,6 +50,8 @@ import { MobileProductPopup } from './MobileProductPopup';
 import { useDragToPlace } from './useDragToPlace';
 import { CATALOG_CHROME, catalogPrice, catalogRequestCategory, filterCatalog, handleCatalogCategoryKey, type CatalogSort } from '../catalogPresentation';
 import '../catalogChrome.css';
+import { CatalogHeader, CatalogHome } from '../CatalogHome';
+import { useCatalogDismissal } from '../useCatalogDismissal';
 
 const { DOCK_ACCENT, DOCK_BG, DOCK_BG_RAISED, DOCK_BORDER, DOCK_TEXT } = CATALOG_CHROME;
 
@@ -66,7 +68,8 @@ const DOCK_CONTROL =
 export function SimsBottomToolbar() {
   const viewMode = useDesignerUIStore((s) => s.viewMode);
   const [activeCategory, setActiveCategory] = useState<MacroCategory>('all');
-  const [minimized, setMinimized] = useState(false);
+  const [minimized, setMinimized] = useState(viewMode === '3d');
+  const [categoryHome, setCategoryHome] = useState(true);
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<CatalogSort>('catalog');
   const [selected, setSelected] = useState<Product | null>(null);
@@ -85,13 +88,14 @@ export function SimsBottomToolbar() {
       if (window.innerWidth >= 1024) return;
       const category = catalogRequestCategory(event);
       setActiveCategory(category ?? 'all');
+      setCategoryHome(category === undefined);
       setQuery('');
       setMinimized(false);
       setSelected(null);
       if (focusFrame !== undefined) cancelAnimationFrame(focusFrame);
       focusFrame = requestAnimationFrame(() => {
         // Focus a category without opening the phone keyboard over the scene.
-        const target = sectionRef.current?.querySelector<HTMLButtonElement>(`[data-testid="sims-cat-${category ?? 'all'}"]`);
+        const target = sectionRef.current?.querySelector<HTMLButtonElement>(category ? '.catalog-browser-back' : '[data-testid="sims-cat-all"]');
         target?.focus({ preventScroll: true });
         target?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
       });
@@ -186,7 +190,7 @@ export function SimsBottomToolbar() {
   }
 
   // Long-press a thumbnail → drag; tap → open the popup.
-  const { start, ghost } = useDragToPlace({
+  const { start, ghost, dragging } = useDragToPlace({
     mode: 'longpress',
     onDrop: (productId, x, y) => placeAt(productId, x, y),
     onTap: (productId) => {
@@ -195,12 +199,20 @@ export function SimsBottomToolbar() {
     },
   });
 
+  const closeCatalog = useCallback(() => { setMinimized(true); setSelected(null); }, []);
+  useCatalogDismissal({ viewMode, open: !minimized, desktop: false, close: closeCatalog, placing: dragging });
+
+  const productDetails = selected && <MobileProductPopup product={selected} embedded={viewMode === '3d'}
+    onAdd={(productId) => { placeAtCenter(productId); setSelected(null); if (viewMode === '3d') setMinimized(true); }}
+    onDragPlace={(productId, x, y) => placeAt(productId, x, y)} onClose={() => setSelected(null)} />;
+
   return (
     <>
       <section
         ref={sectionRef}
         data-testid="sims-bottom-toolbar"
         data-catalog-mode={viewMode}
+        data-catalog-open={!minimized}
         aria-label="Product catalog"
         className="sims-catalog lg:hidden fixed bottom-0 left-0 right-0 z-30 flex flex-col"
         style={{
@@ -212,8 +224,10 @@ export function SimsBottomToolbar() {
         }}
       >
         <CatalogConnectionNotice />
-        {/* Category bar + minimize chevron */}
-        <div className="flex shrink-0 items-center gap-1 px-2 py-1" style={{ borderBottom: `1px solid ${DOCK_BORDER}` }}>
+        {viewMode === '3d' && <CatalogHeader home={categoryHome} category={activeCategory} onBack={() => { setCategoryHome(true); setQuery(''); setSelected(null); }} onClose={closeCatalog} />}
+        {viewMode === '3d' && categoryHome && !minimized && <CatalogHome prefix="sims" products={allProducts} onCategory={(category) => { setActiveCategory(category); setCategoryHome(false); setQuery(''); }} />}
+        {/* Plan keeps its compact category bar. 3D shows one home-store page at a time. */}
+        {viewMode !== '3d' && <div className="flex shrink-0 items-center gap-1 px-2 py-1" style={{ borderBottom: `1px solid ${DOCK_BORDER}` }}>
           <div
             role="tablist"
             aria-label="Product category"
@@ -291,13 +305,13 @@ export function SimsBottomToolbar() {
               <path d="M6 15l6-6 6 6" />
             </svg>
           </button>
-        </div>
+        </div>}
 
-        {!minimized && <div className="flex shrink-0 items-center gap-2 px-2 pt-2">
+        {!minimized && (viewMode !== '3d' || (!categoryHome && !selected)) && <div className="catalog-browser-search flex shrink-0 items-center gap-2 px-2 pt-2">
           <label className="catalog-field flex h-11 min-w-0 flex-1 items-center rounded-lg border px-2.5 focus-within:ring-2 focus-within:ring-[var(--catalog-focus)]" style={{ borderColor: DOCK_BORDER }}>
             <input ref={searchRef} type="search" value={query} data-testid="sims-search" aria-label="Search product catalog"
               placeholder={activeCategory === 'all' ? 'Search products or brands' : `Search ${MACRO_CATEGORY_LABEL[activeCategory].toLowerCase()}`}
-              onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { event.stopPropagation(); if (event.key === 'Escape') setQuery(''); }} className="catalog-field min-w-0 flex-1 text-[16px] outline-none placeholder:text-[12px]" />
+              onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { event.stopPropagation(); if (event.key === 'Escape' && viewMode !== '3d') setQuery(''); }} className="catalog-field min-w-0 flex-1 text-[16px] outline-none placeholder:text-[12px]" />
           </label>
           <select value={sort} data-testid="sims-sort" aria-label="Sort products" onChange={(event) => setSort(event.target.value as CatalogSort)}
             className={`catalog-field h-11 w-[116px] shrink-0 rounded-lg border px-2 text-[12px] ${DOCK_CONTROL}`} style={{ borderColor: DOCK_BORDER, color: DOCK_TEXT }}>
@@ -306,7 +320,7 @@ export function SimsBottomToolbar() {
         </div>}
 
         {/* One named row keeps products recognizable and leaves the plan visible. */}
-        {!minimized && (
+        {!minimized && (viewMode !== '3d' || (!categoryHome && !selected)) && (
           <div
             ref={stripRef}
             id="mobile-catalog-products"
@@ -405,23 +419,14 @@ export function SimsBottomToolbar() {
             )}
           </div>
         )}
-        {!minimized && <div className="catalog-muted flex shrink-0 items-center justify-between gap-2 px-3 pb-1 text-[11px]">
+        {!minimized && (viewMode !== '3d' || (!categoryHome && !selected)) && <div className="catalog-muted flex shrink-0 items-center justify-between gap-2 px-3 pb-1 text-[11px]">
           <span role="status" aria-live="polite">{filtered.length} {filtered.length === 1 ? 'product' : 'products'}</span>
           <span>Tap for details · hold to place</span>
         </div>}
+        {viewMode === '3d' && !minimized && productDetails}
       </section>
 
-      {selected && (
-        <MobileProductPopup
-          product={selected}
-          onAdd={(productId) => {
-            placeAtCenter(productId);
-            setSelected(null);
-          }}
-          onDragPlace={(productId, x, y) => placeAt(productId, x, y)}
-          onClose={() => setSelected(null)}
-        />
-      )}
+      {viewMode !== '3d' && productDetails}
       {ghost}
     </>
   );

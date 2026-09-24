@@ -23,7 +23,7 @@ function meshes(root: THREE.Object3D): THREE.Mesh<THREE.BufferGeometry, THREE.Me
 describe('existing-product dimensional furniture previews', () => {
   it('fits every supported catalog product to its exact size and raised floor without mutating inputs', () => {
     const supported = COURTS_PRODUCTS.filter((p) => hasFurniturePreview(p.id));
-    expect(supported).toHaveLength(17);
+    expect(supported).toHaveLength(26);
     for (const p of supported) for (const rotation of [0, 90, 180, 270]) {
       const input = solid(p.id, rotation);
       const saved = JSON.stringify(input);
@@ -105,6 +105,36 @@ describe('existing-product dimensional furniture previews', () => {
     disposed.forEach((spy) => expect(spy).toHaveBeenCalledTimes(1));
     untouched.forEach((spy) => expect(spy).not.toHaveBeenCalled());
     disposeFurnitureTextures(second);
+  });
+
+  it('shows vents, separate doors and shaped lamps while keeping mounted screens unlit', () => {
+    const cases = [
+      ['courts-samsung-rb33-fridge', 'fridge door', 2],
+      ['courts-samsung-ar18-ac', 'air direction vane', 9],
+      ['courts-samsung-ar09-ac', 'air outlet louvre', 1],
+      ['courts-hisense-as12-ac', 'recessed outlet', 1],
+      ['courts-bamboo-desk-lamp', 'bamboo shade slat', 16],
+      ['courts-pendant-black-canopy', 'pendant cord', 1],
+      ['courts-ceramic-table-lamp', 'ceramic lamp body', 1],
+    ] as const;
+    for (const [id, part, count] of cases) {
+      const preview = furniturePreview(solid(id))!;
+      expect(preview.userData.previewParts.filter((name: string) => name === part)).toHaveLength(count);
+      disposeFurnitureTextures(preview);
+    }
+    const tv = furniturePreview(solid('courts-hisense-65a6h-tv'))!;
+    const screen = meshes(tv).find((mesh) => mesh.material.name === 'unlit reflective screen')!;
+    expect(screen.material.transparent).toBe(false);
+    expect(screen.material.emissive.getHexString()).toBe('000000');
+    expect((screen.material as THREE.MeshPhysicalMaterial).clearcoat).toBeGreaterThan(0.8);
+    // Catalog TV sizes exclude a stand. An invented foot must not alter wall mounting.
+    expect(tv.userData.previewParts.some((name: string) => /stand|foot/.test(name))).toBe(false);
+    disposeFurnitureTextures(tv);
+    const lamp = furniturePreview(solid('courts-marble-table-lamp', 0, 0))!;
+    lamp.updateMatrixWorld(true);
+    const ray = new THREE.Raycaster(new THREE.Vector3(2.31, 0.31, 6), new THREE.Vector3(0, 0, -1));
+    expect(ray.intersectObject(lamp, true)).toHaveLength(0);
+    disposeFurnitureTextures(lamp);
   });
 
   it('does not fabricate a preview for another merchant, an unknown product, or invalid dimensions', () => {

@@ -280,6 +280,8 @@ export interface ThreeStageProps {
   brushHex?: string | null;
   /** Product finish on the brush; null previews bare plaster. */
   brushFinish?: string | null;
+  brushSide?: 'interior' | 'exterior';
+  brushConstruction?: import('../../designer/wallConstruction').WallConstruction;
   /** Walls Up / Cutaway / Down (default 'cutaway'). */
   wallView?: WallView;
   /**
@@ -299,6 +301,7 @@ const REVEAL_HEX = '#C9C3B6';
 const CAP_HEX = '#B5AFA2';
 /** The OUTSIDE of a room wall: render, never the room's paint (the quote prices one face; the picture painted two). */
 const EXTERIOR_HEX = '#E4E0D6';
+function exteriorLook(w: WallSolid) { return { hex: w.exteriorHex ?? EXTERIOR_HEX, finish: w.exteriorFinish, construction: w.construction }; }
 const ITEM_ROUGHNESS = 0.72;
 /** The target outline on the hovered wall (mint, the plan's selection colour). */
 const TARGET_HEX = '#79C7AD';
@@ -335,6 +338,7 @@ interface WallEntry {
   full: THREE.Object3D;
   stub: THREE.Object3D;
   paint: THREE.MeshPhysicalMaterial;
+  exterior: THREE.MeshPhysicalMaterial;
   /** The wall's own colour (the preview swaps the material colour and restores this). */
   baseHex: string;
   /** Outline of the wall face, shown only while it is the paint target. */
@@ -354,10 +358,9 @@ interface WallEntry {
 function setGhost(e: WallEntry, on: boolean): void {
   if (e.ghost === on) return;
   e.ghost = on;
-  e.paint.transparent = on;
-  e.paint.opacity = on ? 0.55 : 1;
-  e.paint.depthWrite = !on;
-  e.paint.needsUpdate = true;
+  for (const face of [e.paint, e.exterior]) {
+    face.transparent = on; face.opacity = on ? 0.55 : 1; face.depthWrite = !on; face.needsUpdate = true;
+  }
   e.full.traverse((o) => {
     if (o === e.full) return;
     if (o.userData?.joinery || o.userData?.cap || o.name === 'corner-shades') o.visible = !on;
@@ -411,7 +414,7 @@ function structureSignature(s: SceneSolids): string {
 let outlineMaterialCache: THREE.MeshBasicMaterial | null = null;
 function outlineMaterial(): THREE.MeshBasicMaterial {
   if (!outlineMaterialCache) {
-    outlineMaterialCache = new THREE.MeshBasicMaterial({ color: TARGET_HEX, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false });
+    outlineMaterialCache = new THREE.MeshBasicMaterial({ color: TARGET_HEX, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false, side: THREE.DoubleSide });
     outlineMaterialCache.userData.shared = true;
   }
   return outlineMaterialCache;
@@ -448,7 +451,7 @@ function faceOutline(w: WallSolid, heightM: number): THREE.Group {
  * outer face (placeWall puts the inner face on the wall line at z =
  * thickness). Free walls straddle their line and are painted on both faces.
  */
-function splitCaps(geo: THREE.ExtrudeGeometry, depth: number, centred: boolean): void {
+function splitCaps(geo: THREE.ExtrudeGeometry, depth: number, _centred: boolean): void {
   const pos = geo.getAttribute('position');
   const groups = geo.groups.map((g) => ({ ...g }));
   geo.clearGroups();
@@ -460,7 +463,7 @@ function splitCaps(geo: THREE.ExtrudeGeometry, depth: number, centred: boolean):
     let runStart = g.start;
     let runMat = -1;
     for (let i = g.start; i < g.start + g.count; i += 3) {
-      const mat = pos.getZ(i) < depth / 2 && !centred ? 2 : 0;
+      const mat = pos.getZ(i) < depth / 2 ? 2 : 0;
       if (mat !== runMat) {
         if (runMat >= 0) geo.addGroup(runStart, i - runStart, runMat);
         runStart = i;
@@ -591,7 +594,7 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
 
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, camera, width, height, hover, selectedInstanceId, brushHex, brushFinish, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed },
+  { solids, camera, width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed },
   ref,
 ): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -881,6 +884,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         e.solid = w;
         e.baseHex = w.hex;
         applyWallLook(e.paint, w, envRef.current);
+        applyWallLook(e.exterior, exteriorLook(w), envRef.current);
       }
       requestRender();
       return;
@@ -912,12 +916,14 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     }
 
     const reveal = new THREE.MeshPhysicalMaterial({ color: REVEAL_HEX, roughness: 0.95, metalness: 0, envMapIntensity: 0, specularIntensity: 0 });
-    const exterior = new THREE.MeshPhysicalMaterial({ color: EXTERIOR_HEX, roughness: 0.96, metalness: 0, envMapIntensity: 0, specularIntensity: 0, normalMap: wallTextures().plasterNormal, normalScale: new THREE.Vector2(0.35, 0.35) });
     const cap = new THREE.MeshPhysicalMaterial({ color: CAP_HEX, roughness: 0.9, metalness: 0, envMapIntensity: 0, specularIntensity: 0 });
     reveal.userData.stageSurface = 'reveal';
-    exterior.userData.stageSurface = 'exterior';
     cap.userData.stageSurface = 'cap';
     for (const w of solids.walls) {
+      const exterior = new THREE.MeshPhysicalMaterial();
+      // A user's façade material must not be recoloured by the studio/house theme.
+      exterior.userData.wallSurface = 'exterior';
+      applyWallLook(exterior, exteriorLook(w), envRef.current);
       const paint = new THREE.MeshPhysicalMaterial();
       applyWallLook(paint, w, envRef.current);
       const group = new THREE.Group();
@@ -932,7 +938,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       placeWall(w, group);
       content.add(group);
       group.updateMatrixWorld(true);
-      wallsRef.current.push({ solid: w, group, full, stub, paint, baseHex: w.hex, outlineFull, outlineStub, show: 'full', ghost: false });
+      wallsRef.current.push({ solid: w, group, full, stub, paint, exterior, baseHex: w.hex, outlineFull, outlineStub, show: 'full', ghost: false });
       bounds.expandByObject(full);
     }
 
@@ -1170,6 +1176,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     const prev = hoveredRef.current;
     if (prev) {
       applyWallLook(prev.paint, prev.solid, envRef.current);
+      applyWallLook(prev.exterior, exteriorLook(prev.solid), envRef.current);
       prev.outlineFull.visible = false;
       prev.outlineStub.visible = false;
       setGhost(prev, false);
@@ -1177,8 +1184,10 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     const next = hover ? wallsRef.current.find((e) => sameHit(hover, e.solid.hit)) ?? null : null;
     if (next) {
       if (brushHex !== undefined) {
-        applyWallLook(next.paint, { hex: brushHex ?? BARE_PLASTER_HEX, finish: brushHex ? brushFinish : null }, envRef.current);
+        applyWallLook(brushSide === 'exterior' ? next.exterior : next.paint, { hex: brushHex ?? BARE_PLASTER_HEX, finish: brushConstruction ? null : brushHex ? brushFinish : null, construction: brushConstruction ?? next.solid.construction }, envRef.current);
       }
+      const outlineOffset = brushSide === 'exterior' ? -next.solid.thicknessM - 0.012 : 0;
+      next.outlineFull.position.z = outlineOffset; next.outlineStub.position.z = outlineOffset;
       // A cut wall under the brush stands up as a ghost so the whole face previews.
       const ghost = brushHex !== undefined && next.show === 'stub';
       setGhost(next, ghost);
@@ -1188,7 +1197,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     hoveredRef.current = next;
     requestRender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hover, solids, brushHex, brushFinish]);
+  }, [hover, solids, brushHex, brushFinish, brushSide, brushConstruction]);
 
   useImperativeHandle(
     ref,
@@ -1224,7 +1233,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         const floorHit = ray.intersectObjects(floorsRef.current, false)[0];
         if (floorHit) block = Math.min(block, floorHit.distance);
         if (block < wall.distance - 1e-4) return null;
-        return (wall.object.userData.hit as WallHit | undefined) ?? null;
+        const hit = wall.object.userData.hit as WallHit | undefined;
+        return hit ? { ...hit, side: wall.face?.materialIndex === 2 ? 'exterior' : 'interior' } : null;
       },
       wallPoint(x, y) {
         const c = cameraRef.current;
@@ -1238,13 +1248,14 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       wallMaterial(hit) {
         const e = wallsRef.current.find((x) => sameHit(hit, x.solid.hit));
         if (!e) return null;
+        const face = hit.side === 'exterior' ? e.exterior : e.paint;
         return {
-          hex: `#${e.paint.color.getHexString().toUpperCase()}`,
-          baseHex: e.baseHex,
-          finish: e.solid.finish ?? null,
-          roughness: e.paint.roughness,
-          sheen: e.paint.specularIntensity,
-          hasMap: !!e.paint.map,
+          hex: `#${face.color.getHexString().toUpperCase()}`,
+          baseHex: hit.side === 'exterior' ? exteriorLook(e.solid).hex : e.baseHex,
+          finish: (hit.side === 'exterior' ? e.solid.exteriorFinish : e.solid.finish) ?? null,
+          roughness: face.roughness,
+          sheen: face.specularIntensity,
+          hasMap: !!face.map,
           show: e.show,
         };
       },

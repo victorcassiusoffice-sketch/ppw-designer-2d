@@ -19,7 +19,7 @@
  * PPWellness Shop tokens, visible product names and prices, and the shared
  * CHROME_FOCUS_RING keep the desktop and phone catalogs consistent.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { productImageUrl, thumbnailFor } from '../../data/products';
 import { useMerchantCatalog } from '../../lib/useMerchantCatalog';
 import { CatalogConnectionNotice } from '../CatalogConnectionNotice';
@@ -44,6 +44,10 @@ import { floorMaterialForProduct } from '../../data/floorMaterials';
 import { useDesignerUIStore } from '../../store/designerUIStore';
 import { CATALOG_CHROME, catalogPrice, catalogRequestCategory, filterCatalog, handleCatalogCategoryKey, type CatalogSort } from '../catalogPresentation';
 import '../catalogChrome.css';
+import { CatalogHeader, CatalogHome } from '../CatalogHome';
+import { useCatalogDismissal } from '../useCatalogDismissal';
+import { MobileProductPopup } from '../mobile/MobileProductPopup';
+import { usePlacementIntentStore } from '../../store/placementIntentStore';
 
 const { CHROME_TEXT_2, DOCK_ACCENT, DOCK_BG, DOCK_BG_RAISED, DOCK_BORDER, DOCK_TEXT } = CATALOG_CHROME;
 
@@ -70,31 +74,34 @@ interface HoverState {
 export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProps = {}) {
   const viewMode = useDesignerUIStore((s) => s.viewMode);
   const [activeCategory, setActiveCategory] = useState<MacroCategory>('all');
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(viewMode === '3d');
+  const [categoryHome, setCategoryHome] = useState(true);
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<CatalogSort>('catalog');
   const apiProducts = useMerchantCatalog();
   const [hover, setHover] = useState<HoverState | null>(null);
+  const [details, setDetails] = useState<Product | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const stripRef = useRef<HTMLUListElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { setCollapsed(viewMode === '3d'); setHover(null); }, [viewMode]);
+  useEffect(() => { setCollapsed(viewMode === '3d'); setHover(null); setDetails(null); }, [viewMode]);
   useEffect(() => {
     let focusFrame: number | undefined;
     const open = (event: Event) => {
       if (window.innerWidth < 1024) return;
       const category = catalogRequestCategory(event);
       setActiveCategory(category ?? 'all');
+      setCategoryHome(category === undefined);
       setQuery('');
       setCollapsed(false);
       setHover(null);
+      setDetails(null);
       if (focusFrame !== undefined) cancelAnimationFrame(focusFrame);
       focusFrame = requestAnimationFrame(() => {
-        const target = category
-          ? sectionRef.current?.querySelector<HTMLButtonElement>(`[data-testid="dock-cat-${category}"]`)
-          : searchRef.current;
+        const target = category ? searchRef.current
+          : sectionRef.current?.querySelector<HTMLButtonElement>('[data-testid="dock-cat-all"]');
         (target ?? searchRef.current)?.focus({ preventScroll: true });
         target?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
       });
@@ -140,6 +147,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
   useEffect(() => () => { if (hoverTimer.current) clearTimeout(hoverTimer.current); }, []);
 
   function armHover(product: Product, rect: DOMRect): void {
+    if (viewMode === '3d') return;
     if (hoverTimer.current) {
       clearTimeout(hoverTimer.current);
       hoverTimer.current = null;
@@ -208,6 +216,15 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
     onCancel: () => dragPointer.cancel(),
   });
 
+  const closeCatalog = useCallback(() => {
+    setCollapsed(true);
+    setHover(null);
+    setDetails(null);
+    setPendingProductId?.(null);
+  }, [setPendingProductId]);
+  useCatalogDismissal({ viewMode, open: !collapsed, desktop: true, close: closeCatalog,
+    placing: !!pendingProductId || dockDrag.dragging });
+
   function toggleArm(p: Product): void {
     if (!setPendingProductId) return;
     setPendingProductId(pendingProductId === p.id ? null : p.id);
@@ -241,6 +258,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
         ref={sectionRef}
         data-testid="sims-dock"
         data-catalog-mode={viewMode}
+        data-catalog-open={!collapsed}
         aria-label="Build catalog"
         // Desktop only — below 1024 px the mobile SimsBottomToolbar is the
         // catalog. `shrink-0` keeps the dock OUT of the canvas's flex grow
@@ -260,16 +278,17 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
             single truth, so exactly one preview is ever visible. */}
         {!overCanvas && dockDrag.ghost}
 
-        <div className="flex min-w-0 items-center gap-2">
-          {viewMode === '3d' && <span className="mr-1 hidden shrink-0 text-[11px] font-semibold uppercase tracking-[.16em] xl:block" style={{ color: DOCK_ACCENT }}>Furnish</span>}
+        {viewMode === '3d' && <CatalogHeader home={categoryHome} category={activeCategory} onBack={() => { setCategoryHome(true); setQuery(''); setDetails(null); }} onClose={closeCatalog} />}
+        {viewMode === '3d' && categoryHome && !collapsed && <CatalogHome prefix="dock" products={allProducts} onCategory={(category) => { setActiveCategory(category); setCategoryHome(false); setQuery(''); }} />}
+        {(viewMode !== '3d' || (!categoryHome && !details)) && <div className="catalog-browser-search flex min-w-0 items-center gap-2">
           <label className="catalog-field flex h-10 w-[210px] shrink-0 items-center gap-2 rounded-xl border px-2.5 focus-within:ring-2 focus-within:ring-[var(--catalog-focus)] xl:w-[250px]" style={{ borderColor: DOCK_BORDER }}>
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="m13 13 4 4" /></svg>
             <input ref={searchRef} type="search" value={query} data-testid="dock-search" aria-label="Search product catalog" placeholder="Search products or brands"
               onChange={(event) => { setQuery(event.target.value); setCollapsed(false); setHover(null); }}
-              onKeyDown={(event) => { event.stopPropagation(); if (event.key === 'Escape') setQuery(''); }}
+              onKeyDown={(event) => { event.stopPropagation(); if (event.key === 'Escape' && viewMode !== '3d') setQuery(''); }}
               className="catalog-field min-w-0 flex-1 text-[12px] outline-none" />
           </label>
-        <div
+        {viewMode !== '3d' && <div
           role="tablist"
           aria-label="Product category"
           className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto py-1 [scrollbar-width:thin]"
@@ -311,20 +330,20 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
               </button>
             );
           })}
-        </div>
+        </div>}
           <select data-testid="dock-sort" aria-label="Sort products" value={sort} onChange={(event) => { setSort(event.target.value as CatalogSort); setCollapsed(false); }}
             className={`catalog-field h-10 w-[124px] shrink-0 rounded-lg border px-2 text-[12px] ${DOCK_CONTROL}`} style={{ borderColor: DOCK_BORDER, color: DOCK_TEXT }}>
             <option value="catalog">Catalog order</option><option value="name">Name A–Z</option><option value="footprint">Smallest first</option>
           </select>
-          <button type="button" data-testid="dock-collapse" aria-label={collapsed ? 'Show product strip' : 'Hide product strip'} aria-expanded={!collapsed} aria-controls="desktop-catalog-products"
+          {viewMode !== '3d' && <button type="button" data-testid="dock-collapse" aria-label={collapsed ? 'Show product strip' : 'Hide product strip'} aria-expanded={!collapsed} aria-controls="desktop-catalog-products"
             onClick={() => { setCollapsed((value) => !value); setHover(null); }} title={collapsed ? 'Show product strip' : 'Hide product strip'}
             className={`catalog-field flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${DOCK_CONTROL}`} style={{ borderColor: DOCK_BORDER, color: DOCK_TEXT }}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ transform: collapsed ? 'none' : 'rotate(180deg)' }}><path d="m6 14 6-6 6 6" /></svg>
-          </button>
-        </div>
+          </button>}
+        </div>}
 
         {/* Product strip — horizontally scrollable, one row of tiles. */}
-        {!collapsed && <div className="flex min-w-0 items-stretch gap-3">
+        {!collapsed && (viewMode !== '3d' || (!categoryHome && !details)) && <div className="catalog-browser-products flex min-w-0 items-stretch gap-3">
           <div className="flex w-[76px] shrink-0 flex-col justify-center gap-1 border-r pr-2 text-[11px]" style={{ borderColor: DOCK_BORDER, color: CHROME_TEXT_2 }}>
             <span className="font-semibold" style={{ color: DOCK_TEXT }}>{emptyLabel}</span>
             <span role="status" aria-live="polite">{filtered.length} {filtered.length === 1 ? 'product' : 'products'}</span>
@@ -392,6 +411,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                         <span className="mt-0.5 block w-full truncate text-center text-[11px] font-medium" aria-hidden="true">{p.name}</span>
                         <span className="catalog-muted block w-full truncate text-center text-[11px] tabular-nums" aria-hidden="true">{catalogPrice(p)}</span>
                       </div>
+                      {viewMode === '3d' && <button type="button" className="catalog-tile-details" aria-label={`Details for ${p.name}`} onClick={() => { setDetails(p); setPendingProductId?.(null); }}>Details</button>}
                     </li>
                   );
                 }
@@ -459,13 +479,16 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
                       <span className="mt-0.5 block w-full truncate text-center text-[11px] font-medium" aria-hidden="true">{p.name}</span>
                       <span className="catalog-muted block w-full truncate text-center text-[11px] tabular-nums" aria-hidden="true">{catalogPrice(p)}</span>
                     </div>
+                    {viewMode === '3d' && <button type="button" className="catalog-tile-details" aria-label={`Details for ${p.name}`} onClick={() => { setDetails(p); setPendingProductId?.(null); }}>Details</button>}
                   </li>
                 );
               })
             )}
           </ul>
         </div>}
-
+        {viewMode === '3d' && details && !collapsed && <MobileProductPopup product={details} embedded
+          onAdd={(id) => { setPendingProductId?.(id); setDetails(null); }}
+          onDragPlace={(id, x, y) => usePlacementIntentStore.getState().placeAt(id, x, y)} onClose={() => setDetails(null)} />}
       </section>
 
       {/* Sims-style floating detail card on hover. Carries the same testid
@@ -477,7 +500,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
       {/* Also hidden while a product is ARMED: the card used to stay open
           after the arming click and swallowed the placement click on the
           canvas beneath it (bottom-right corner drops never landed). */}
-      {hover && !dockDrag.dragging && !pendingProductId && (
+      {viewMode !== '3d' && hover && !dockDrag.dragging && !pendingProductId && (
         <div
           data-testid="product-hover-card"
           className="hidden lg:block"

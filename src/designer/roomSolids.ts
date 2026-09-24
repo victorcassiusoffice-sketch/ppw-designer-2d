@@ -45,6 +45,9 @@ export interface WallOpeningSolid {
 }
 
 export interface WallSolid {
+  construction?: import('./wallConstruction').WallConstruction;
+  exteriorHex?: string;
+  exteriorFinish?: string;
   /** Finished floor height in the whole-building view. */
   elevationM?: number;
   levelId?: string;
@@ -201,6 +204,9 @@ export function buildSolids(input: SceneInput): SceneSolids {
           centred: false,
           hex: room.wallColourByEdge?.get(e.index) ?? PLASTER_HEX,
           finish: room.wallFinishByEdge?.get(e.index),
+          construction: room.wallConstructionByEdge?.get(e.index),
+          exteriorHex: room.exteriorColourByEdge?.get(e.index),
+          exteriorFinish: room.exteriorFinishByEdge?.get(e.index),
           openings,
           shared: (shared.get(edgeKey(room.id, e.index))?.length ?? 0) > 0,
           free: false,
@@ -262,6 +268,9 @@ export function buildSolids(input: SceneInput): SceneSolids {
       centred: true,
       hex: w.colourHex ?? PLASTER_HEX,
       finish: w.finish,
+      construction: w.construction,
+      exteriorHex: w.exteriorHex,
+      exteriorFinish: w.exteriorFinish,
       openings: [],
       shared: false,
       free: true,

@@ -40,6 +40,24 @@ function button(label: string) {
 }
 
 describe('HouseWorkspace controls', () => {
+  it('dismisses open build options on a scene click without forwarding a destructive gesture', () => {
+    render();
+    click(button('Details'));
+    const away = new CustomEvent('ppw:house-scene-pointer', { cancelable: true });
+    act(() => window.dispatchEvent(away));
+    expect(away.defaultPrevented).toBe(true);
+    expect(host.querySelector('.house-inspector.is-open')).toBeNull();
+    const next = new CustomEvent('ppw:house-scene-pointer', { cancelable: true });
+    act(() => window.dispatchEvent(next));
+    expect(next.defaultPrevented).toBe(false);
+  });
+
+  it('keeps the scene available when a click outside closes house details', () => {
+    render(); click(button('Details'));
+    act(() => button('Project tools').dispatchEvent(new Event('pointerdown', { bubbles: true })));
+    expect(host.querySelector('.house-inspector.is-open')).toBeNull();
+    expect(host.querySelector('[data-testid="scene"]')).not.toBeNull();
+  });
   it('exposes every design mode including Solar and tracks the controlled active mode', () => {
     render();
     expect(host.querySelector('nav[aria-label="House design tools"]')).not.toBeNull();

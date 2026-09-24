@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useCart } from '../store/cartStore';
 import { useCurrencyStore } from '../store/currencyStore';
 import { formatCurrency } from '../lib/currency';
@@ -36,11 +36,24 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
   const precision = useDesignerUIStore((s) => s.precision);
   const property = usePropertyStore((s) => s.property);
   const [mobileInspector, setMobileInspector] = useState(false);
+  const inspectorRef = useRef<HTMLElement>(null);
   useEffect(() => {
     const close = () => setMobileInspector(false);
     window.addEventListener('ppw:close-house-details', close);
     return () => window.removeEventListener('ppw:close-house-details', close);
   }, []);
+  useEffect(() => {
+    if (!mobileInspector) return;
+    const outside = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target || inspectorRef.current?.contains(target) || target.closest('.house-details-button, .house-selection-strip, .house-rail, [data-testid="wallpaint-3d-canvas"]')) return;
+      setMobileInspector(false);
+    };
+    const scene = (event: Event) => { setMobileInspector(false); event.preventDefault(); };
+    document.addEventListener('pointerdown', outside, true);
+    window.addEventListener('ppw:house-scene-pointer', scene);
+    return () => { document.removeEventListener('pointerdown', outside, true); window.removeEventListener('ppw:house-scene-pointer', scene); };
+  }, [mobileInspector]);
   const canUndo = useHistoryStore((s) => s.past.length > 0);
   const canRedo = useHistoryStore((s) => s.future.length > 0);
   const rooms = property.rooms.filter((r) => isDrawnPolygon(r.polygon) && !isOutdoorRoom(r) && !isRoofRoom(r));
@@ -62,18 +75,20 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
     </header>
     <div className="house-main">
       <nav className="house-rail" aria-label="House design tools">
-        {MODES.map(([id, label, path]) => <button key={id} type="button" aria-pressed={mode === id} title={label} onClick={() => { onMode(id); setMobileInspector(id === 'garden' || id === 'build' || id === 'energy'); }} data-testid={`house-mode-${id}`}>
+        {MODES.map(([id, label, path]) => <button key={id} type="button" aria-pressed={mode === id} title={label} onClick={() => { const nextOpen = id === 'garden' || id === 'build' || id === 'energy'; onMode(id); setMobileInspector(nextOpen && !(mobileInspector && mode === id)); window.dispatchEvent(new CustomEvent('ppw:close-view-settings')); }} data-testid={`house-mode-${id}`}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={path} /></svg><span>{label}</span>
         </button>)}
       </nav>
       <div className="house-scene-column">
         <div className="house-scene-bar">
-          <div><span className="house-status-dot" /><strong>{levelName}</strong><span className="house-scene-label">{drawing || wallDrawing ? `Snap ${PRECISION_STEP_M[precision]} m` : mode === 'build' ? 'Build mode' : MODES.find(([id]) => id === mode)?.[1]}</span></div>
+          <div className="house-floor-picker"><span className="house-status-dot" /><strong className="sr-only">{levelName}</strong><select aria-label="View floor" value={current} onChange={event => { onSelect(); usePropertyStore.getState().setActiveLevel(event.target.value); }}>
+            {levelsOf(property).map(level => <option key={level.id} value={level.id}>{level.name}</option>)}
+          </select><span className="house-scene-label">{drawing || wallDrawing ? `Snap ${PRECISION_STEP_M[precision]} m` : `${totalArea.toFixed(1)} m²`}</span></div>
           <div className="house-scene-actions">
             <button aria-pressed={!drawing && !wallDrawing} onClick={onSelect}>Select</button>
             {onWalls && <button aria-pressed={wallDrawing} onClick={() => { setMobileInspector(false); onWalls(); }} data-testid="house-draw-walls">Walls</button>}
             <button aria-pressed={drawing} onClick={() => { setMobileInspector(false); onDraw(); }} data-testid="house-draw-room">▱ <span>Draw room</span></button>
-            {!externalPanel && <button className="house-details-button" aria-expanded={mobileInspector} onClick={() => setMobileInspector(!mobileInspector)}>Details</button>}
+            {!externalPanel && <button className="house-details-button" aria-expanded={mobileInspector} onClick={() => { setMobileInspector(!mobileInspector); window.dispatchEvent(new CustomEvent('ppw:close-catalog')); window.dispatchEvent(new CustomEvent('ppw:close-view-settings')); }}>Details</button>}
           </div>
         </div>
         {selection && <div className="house-selection-strip" data-testid="house-selection-strip">
@@ -83,10 +98,10 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
         </div>}
         {children}
       </div>
-      {!externalPanel && <aside className={`house-inspector ${mobileInspector ? 'is-open' : ''}`} aria-label="House details">
+      {!externalPanel && <aside ref={inspectorRef} className={`house-inspector ${mobileInspector ? 'is-open' : ''}`} aria-label="House details">
         <div className="house-summary">
-          <div className="house-eyebrow">YOUR DESIGN<button className="house-close-details" aria-label="Close house details" onClick={() => setMobileInspector(false)}>×</button></div>
-          <h2>{selection ? 'Selected item' : mode === 'energy' ? 'Solar & energy' : name}</h2><p>{selection ? 'Drag the item in your design to move it' : mode === 'garden' ? 'Shape the space around your home' : 'Build a home, room by room'}</p>
+          <div className="house-eyebrow">{selection ? 'ITEM OPTIONS' : 'HOME TOOLS'}<button className="house-close-details" aria-label="Close house details" onClick={() => setMobileInspector(false)}>Close ×</button></div>
+          <h2>{selection ? 'Selected item' : mode === 'energy' ? 'Solar & energy' : mode === 'garden' ? 'Garden & outdoors' : 'Build your home'}</h2><p>{selection ? 'Drag the item in your design to move it' : mode === 'garden' ? 'Shape the space around your home' : 'Rooms, walls, floors, openings and roof'}</p>
           {!selection && <div className="house-metrics"><div><strong>{totalArea.toFixed(1)}</strong><span>m² floor area</span></div><div><strong>{rooms.length}</strong><span>rooms</span></div><div><strong>{levelsOf(property).filter((l) => !isRoofLevel(l)).length}</strong><span>floors</span></div></div>}
         </div>
         <div className="house-inspector-content">{inspector}</div>

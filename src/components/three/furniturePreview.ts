@@ -42,12 +42,12 @@ class Parts {
   private readonly materials = new Map<string, THREE.MeshStandardMaterial>();
   private readonly maps = new Map<string, THREE.DataTexture>();
 
-  material(name: string, color: string, finish: 'fabric' | 'wood' | 'metal' | 'stone' | 'glass' = 'wood'): THREE.MeshStandardMaterial {
+  material(name: string, color: string, finish: 'fabric' | 'wood' | 'metal' | 'stone' | 'glass' | 'enamel' | 'screen' = 'wood'): THREE.MeshStandardMaterial {
     const existing = this.materials.get(name);
     if (existing) return existing;
     const material = new THREE.MeshPhysicalMaterial({
       color,
-      roughness: finish === 'fabric' ? 0.88 : finish === 'metal' ? 0.34 : finish === 'stone' ? 0.4 : finish === 'glass' ? 0.16 : 0.63,
+      roughness: finish === 'fabric' ? 0.88 : finish === 'metal' ? 0.34 : finish === 'stone' ? 0.4 : finish === 'glass' || finish === 'screen' ? 0.16 : finish === 'enamel' ? 0.28 : 0.63,
       metalness: finish === 'metal' ? 0.65 : 0,
       sheen: finish === 'fabric' ? 0.22 : 0,
       sheenRoughness: 0.8,
@@ -55,6 +55,8 @@ class Parts {
       transparent: finish === 'glass',
       opacity: finish === 'glass' ? 0.55 : 1,
       depthWrite: finish !== 'glass',
+      clearcoat: finish === 'screen' ? 0.95 : finish === 'enamel' ? 0.35 : 0,
+      clearcoatRoughness: finish === 'screen' ? 0.12 : 0.25,
     });
     material.name = name;
     if (finish === 'fabric' || finish === 'wood') {
@@ -91,6 +93,15 @@ class Parts {
     mesh.position.copy(from).add(to).multiplyScalar(0.5);
     mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
     this.root.add(mesh);
+  }
+
+  cylinder(name: string, radii: [number, number], height: number, position: [number, number, number], material: THREE.Material, open = false): THREE.Mesh {
+    const geometry = new THREE.CylinderGeometry(radii[0], radii[1], height, 20, 1, open);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.name = name;
+    mesh.position.set(...position);
+    this.root.add(mesh);
+    return mesh;
   }
 
   legs(w: number, d: number, height: number, material: THREE.Material, inset = 0.08): void {
@@ -260,16 +271,81 @@ function storage(p: Parts, w: number, d: number, h: number, kind: 'cabinet' | 'w
 
 function appliance(p: Parts, w: number, d: number, h: number, kind: 'fridge' | 'tv'): void {
   const metal = p.material('appliance body', kind === 'fridge' ? '#aab1b3' : '#20262c', 'metal');
-  const dark = p.material('appliance trim', '#26333d', 'stone');
+  const dark = p.material('appliance trim', '#192027', 'enamel');
   if (kind === 'fridge') {
-    p.box('fridge cabinet', [w, h, d * 0.92], [0, h / 2, -d * 0.04], metal, 0.02);
-    for (const [y, height] of [[h * 0.2, h * 0.395], [h * 0.705, h * 0.585]]) {
-      p.box('fridge door', [w * 0.98, height, d * 0.1], [0, y, d * 0.45], metal, 0.009);
-      p.box('recessed handle', [w * 0.36, 0.015, 0.01], [w * 0.22, y + height * 0.4, d * 0.501], dark, 0.004);
+    const door = p.material('satin steel doors', '#c2c8c8', 'metal');
+    p.legs(w, d, h * 0.025, dark, 0.14);
+    p.box('fridge cabinet', [w, h * 0.975, d * 0.9], [0, h * 0.5125, -d * 0.05], metal, 0.018);
+    // A visible gasket and separate bottom-freezer door catch light at the seam.
+    p.box('door gasket', [w * 0.985, h * 0.965, d * 0.018], [0, h * 0.51, d * 0.405], dark, 0.007);
+    for (const [y, height] of [[h * 0.202, h * 0.341], [h * 0.69, h * 0.607]]) {
+      p.box('fridge door', [w * 0.985, height, d * 0.085], [0, y, d * 0.4575], door, 0.012);
     }
+    p.box('upper recessed handle', [w * 0.72, h * 0.01, d * 0.018], [0, h * 0.394, d * 0.497], dark, 0.003);
+    p.box('freezer recessed handle', [w * 0.72, h * 0.01, d * 0.018], [0, h * 0.362, d * 0.497], dark, 0.003);
+    p.box('fridge lower plinth', [w * 0.89, h * 0.02, d * 0.06], [0, h * 0.027, d * 0.43], dark, 0.003);
   } else {
-    p.box('television bezel', [w, h, d], [0, h / 2, 0], metal, 0.012);
-    p.box('television screen', [w * 0.976, h * 0.962, d * 0.08], [0, h * 0.507, d * 0.48], dark, 0.004);
+    const screen = p.material('unlit reflective screen', '#101e2a', 'screen');
+    // Both supported sets are wall mounted in the catalog: no invented stand.
+    p.box('television bezel', [w, h, d * 0.36], [0, h / 2, d * 0.32], metal, 0.006);
+    p.box('television screen', [w * 0.976, h * 0.945, d * 0.025], [0, h * 0.509, d * 0.491], screen, 0.003);
+    p.box('television rear housing', [w * 0.61, h * 0.57, d * 0.68], [0, h * 0.325, -d * 0.16], dark, 0.012);
+    p.box('lower television bezel', [w * 0.99, h * 0.031, d * 0.38], [0, h * 0.018, d * 0.311], dark, 0.003);
+    for (let i = 0; i < 12; i++) {
+      p.box('rear ventilation slot', [w * 0.009, h * 0.11, d * 0.012], [(i - 5.5) * w * 0.033, h * 0.47, -d * 0.501], metal);
+    }
+  }
+}
+
+function airConditioner(p: Parts, w: number, d: number, h: number): void {
+  const shell = p.material('white appliance enamel', '#eceeea', 'enamel');
+  const seam = p.material('casing seams', '#bbc3c4', 'enamel');
+  const vent = p.material('air outlet', '#283338', 'enamel');
+  p.box('split unit casing', [w, h, d * 0.92], [0, h / 2, -d * 0.04], shell, Math.min(h * 0.14, d * 0.14));
+  p.box('front cover seam', [w * 0.967, h * 0.63, d * 0.015], [0, h * 0.656, d * 0.423], seam, h * 0.055);
+  p.box('curved front cover', [w * 0.96, h * 0.61, d * 0.12], [0, h * 0.663, d * 0.44], shell, h * 0.05);
+  p.box('recessed outlet', [w * 0.9, h * 0.19, d * 0.04], [0, h * 0.2, d * 0.43], vent, h * 0.018);
+  for (let i = 0; i < 9; i++) {
+    p.box('air direction vane', [w * 0.004, h * 0.145, d * 0.045], [(i - 4) * w * 0.092, h * 0.2, d * 0.458], seam);
+  }
+  const louvre = p.box('air outlet louvre', [w * 0.91, h * 0.048, d * 0.2], [0, h * 0.14, d * 0.435], shell, h * 0.012);
+  louvre.rotation.x = -0.2;
+  p.box('status window', [w * 0.05, h * 0.035, d * 0.015], [w * 0.36, h * 0.43, d * 0.507], vent, h * 0.01);
+}
+
+function lamp(p: Parts, w: number, d: number, h: number, pendant: boolean, id: string): void {
+  const bamboo = id.includes('bamboo');
+  const wood = bamboo || id.includes('wood-d25');
+  const marble = id.includes('marble');
+  const black = id.includes('black-canopy');
+  const frame = p.material('lamp stem', marble ? '#a98a4a' : black ? '#252a2b' : '#8e7760', wood ? 'wood' : 'metal');
+  const base = p.material('lamp base', marble ? '#d9d9d0' : wood ? '#ac8559' : '#b4a287', wood ? 'wood' : marble ? 'stone' : 'enamel');
+  const shade = p.material('lamp shade', black ? '#343638' : '#e6d9be', black ? 'metal' : 'fabric');
+  shade.side = THREE.DoubleSide;
+  const radius = Math.min(w, d) / 2;
+  if (pendant) {
+    p.cylinder('ceiling rose', [radius * 0.23, radius * 0.23], h * 0.045, [0, h * 0.9775, 0], frame);
+    p.cylinder('pendant cord', [radius * 0.02, radius * 0.02], h * 0.685, [0, h * 0.6125, 0], frame);
+    p.cylinder('pendant shade', [radius * 0.33, radius], h * 0.28, [0, h * 0.14, 0], shade, true);
+    p.cylinder('shade lower rim', [radius, radius], h * 0.012, [0, h * 0.006, 0], frame, true);
+  } else if (bamboo) {
+    p.cylinder('bamboo lamp foot', [radius, radius], h * 0.06, [0, h * 0.03, 0], base);
+    p.cylinder('lamp diffuser', [radius * 0.8, radius * 0.8], h * 0.89, [0, h * 0.51, 0], shade);
+    for (let i = 0; i < 16; i++) {
+      const angle = i * Math.PI / 8;
+      p.cylinder('bamboo shade slat', [radius * 0.045, radius * 0.045], h * 0.94, [Math.sin(angle) * radius * 0.95, h * 0.53, Math.cos(angle) * radius * 0.95], frame);
+    }
+    p.cylinder('bamboo top rim', [radius, radius], h * 0.035, [0, h * 0.9825, 0], base, true);
+  } else {
+    p.cylinder('table lamp foot', [radius * 0.58, radius * 0.62], h * 0.06, [0, h * 0.03, 0], base);
+    if (marble || wood) {
+      p.cylinder('table lamp post', [radius * 0.055, radius * 0.08], h * 0.64, [0, h * 0.38, 0], frame);
+    } else {
+      p.cylinder('ceramic lamp body', [radius * 0.22, radius * 0.46], h * 0.38, [0, h * 0.25, 0], base);
+      p.cylinder('ceramic lamp neck', [radius * 0.12, radius * 0.22], h * 0.18, [0, h * 0.53, 0], base);
+    }
+    p.cylinder('tapered fabric shade', [radius * 0.7, radius], h * 0.38, [0, h * 0.81, 0], shade, true);
+    p.cylinder('shade lower seam', [radius, radius], h * 0.012, [0, h * 0.626, 0], shade, true);
   }
 }
 
@@ -287,6 +363,8 @@ export function furniturePreview(it: ItemSolid): THREE.Group | null {
     case 'chair': officeChair(p, w, d, h); break;
     case 'cabinet': case 'wardrobe': case 'shelf': storage(p, w, d, h, kind, it.productId!); break;
     case 'fridge': case 'tv': appliance(p, w, d, h, kind); break;
+    case 'air-conditioner': airConditioner(p, w, d, h); break;
+    case 'table-lamp': case 'pendant': lamp(p, w, d, h, kind === 'pendant', it.productId!); break;
   }
   const model = p.merge();
   model.rotation.y = it.frontEdge === 'top' ? Math.PI : it.frontEdge === 'left' ? -Math.PI / 2 : it.frontEdge === 'right' ? Math.PI / 2 : 0;

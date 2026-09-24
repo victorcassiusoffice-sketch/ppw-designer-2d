@@ -68,6 +68,8 @@ export interface MobileProductPopupProps {
   /** Drag-release placement at an exact screen point. */
   onDragPlace: (productId: string, clientX: number, clientY: number) => void;
   onClose: () => void;
+  /** House mode reserves this detail page inside the catalog instead of covering the scene. */
+  embedded?: boolean;
 }
 
 export function MobileProductPopup({
@@ -75,6 +77,7 @@ export function MobileProductPopup({
   onAdd,
   onDragPlace,
   onClose,
+  embedded = false,
 }: MobileProductPopupProps) {
   const [expanded, setExpanded] = useState(false);
   const imgUrl = productImageUrl(product);
@@ -107,6 +110,24 @@ export function MobileProductPopup({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  if (embedded) return <>
+    <section data-testid="mobile-product-popup" className="catalog-product-detail" aria-label={`${product.name} details`}>
+      <button type="button" className="catalog-detail-back" onClick={onClose}>← Products</button>
+      <div className="catalog-detail-content">
+        <div className="catalog-detail-photo ppw-no-callout" style={{ touchAction: floorMat ? undefined : 'none' }}
+          onPointerDown={floorMat ? undefined : (event) => start(event, product.id, imgUrl)} onContextMenu={(event) => event.preventDefault()}>
+          <img src={imgUrl} alt={product.name} draggable={false} />
+        </div>
+        <div><h3>{product.name}</h3><strong>{formatPrice(product)}</strong><p>{formatDims(product)} · {product.supplier}</p>
+          {desc && <p>{shownDesc}{truncated && <button type="button" className="catalog-detail-more" onClick={() => setExpanded((value) => !value)}>{expanded ? 'less' : 'more'}</button>}</p>}
+          <button type="button" data-testid={floorMat ? 'popup-lay-floor' : 'popup-add-to-room'} className="catalog-detail-place"
+            onClick={floorMat ? layFloor : () => onAdd(product.id)}>{floorMat ? 'Lay this floor' : '+ Add to room'}</button>
+        </div>
+      </div>
+    </section>
+    {ghost}
+  </>;
 
   return (
     <>

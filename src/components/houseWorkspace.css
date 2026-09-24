@@ -22,6 +22,90 @@
 .house-header{margin-right:calc(0px - var(--floor-panel-w,0px))}
 .house-workspace [data-presentation="studio"] [data-testid="wallpaint-3d-caption"]{color:#465368}
 
+/* Home-builder layout: reserve the perimeter for tools; the scene contains only
+   the model, placement ghosts and hit targets. Catalog height is measured by its dock. */
+.house-main{padding-bottom:66px}
+.house-rail{position:absolute;inset:auto 0 0;z-index:4;width:auto;height:66px;display:flex;flex-direction:row;justify-content:center;gap:8px;padding:7px 12px;border:0;border-top:1px solid #4b6a82;background:#142b40}
+.house-rail button{flex:0 1 140px;min-width:0;height:51px;flex-direction:row;gap:10px;padding:0 14px;border:1px solid #43627b;border-radius:10px;background:#203e56;color:#d1e9f5;font-size:12px;font-weight:500}
+.house-rail button svg{width:22px;height:22px;flex-shrink:0}
+.house-rail button[aria-pressed=true]{border-color:#88e3e8;background:#326c7d;color:#f2ffff;box-shadow:inset 0 0 0 1px #79d5df38}
+.house-rail button:hover{background:#305971}
+.house-header{height:56px;background:#12263a;border-bottom-color:#38566e}
+.house-scene-bar{height:43px;background:#193249;border-bottom-color:#45637a66;padding:0 12px}
+.house-scene-actions button{min-height:34px;padding:5px 10px}
+.house-details-button{display:block}
+.house-floor-picker select{max-width:150px;min-width:0;background:#28465d;border:1px solid #476980;border-radius:16px;padding:5px 9px;color:#e2f5fc;font-size:11px}
+.house-inspector{display:none;width:300px;background:#182f45;border-color:#4a6479}
+.house-inspector.is-open{display:flex}
+.house-summary{padding:12px 16px}
+.house-summary h2{font-size:19px;margin:4px 0}
+.house-summary p{margin:0}
+.house-metrics{display:none}
+.house-close-details{display:block;padding:4px 8px;border:1px solid #507389;border-radius:5px;min-height:32px;color:#c7f1f5;font-size:11px;letter-spacing:0}
+.house-inspector-foot{padding:10px 16px}
+.house-inspector-content{background:#182b41}
+.house-selection-strip{display:flex;align-items:center;gap:8px;flex-shrink:0;min-height:43px;padding:4px 12px;background:#20445b;border-bottom:1px solid #537e92}
+.house-selection-strip>span{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.house-selection-strip small{font-size:9px;color:#9ed9e3;letter-spacing:.1em}
+.house-selection-strip strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:500}
+.house-selection-strip button{flex-shrink:0;min-height:32px;min-width:32px;padding:3px 9px;border:1px solid #62889c;border-radius:5px;font-size:11px}
+.house-selection-strip button:last-child{font-size:20px}
+.house-scene-caption{flex-shrink:0;margin:0!important;position:static!important;padding:2px 12px 4px;background:#182f44;color:#a9c5d5!important;font-size:9px!important;line-height:14px;min-height:20px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;text-shadow:none!important}
+.house-view-dock{flex-shrink:0;position:relative;background:#183149;border-top:1px solid #4d6a8080;color:#d5eaf4;min-width:0;z-index:1}
+.house-camera-row{display:flex;align-items:center;justify-content:center;gap:4px;min-height:44px;padding:4px 8px;overflow-x:auto;scrollbar-width:none}
+.house-camera-row>button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:34px;min-width:34px;flex-shrink:0;padding:4px 9px;border:1px solid #486b80;border-radius:7px;background:#26485f;font-size:12px;line-height:20px}
+.house-camera-row>button[aria-pressed=true],.house-view-options button[aria-pressed=true]{background:#377484;color:#fff;border-color:#9ae1e7}
+.house-camera-row>button:hover{background:#355f76}
+.house-control-divider{height:22px;width:1px;flex-shrink:0;background:#456178;margin:0 3px}
+.house-camera-row .house-view-options-trigger{margin-left:8px;padding:4px 13px;background:#d0edf2;color:#15394d;border-color:#c6eaf2;font-weight:600}
+.house-view-options{border-bottom:1px solid #496b7e;max-height:190px;overflow-y:auto;overscroll-behavior:contain;background:#203b50;padding:6px 12px 9px}
+.house-view-options-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px;margin-bottom:5px}
+.house-view-options-heading button{border:1px solid #57788c;border-radius:5px;min-height:30px;padding:3px 9px;font-size:10px}
+.house-view-options-body{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px;font-size:11px}
+.house-view-options-body>label{display:flex;align-items:center;gap:7px}
+.house-view-options select,.house-wall-visibility button,.house-view-daylight>button{min-height:34px;background:#2a4b61;border:1px solid #58798d;border-radius:5px;padding:4px 9px;color:#e0f0f7;font-size:11px}
+.house-wall-visibility{display:flex;gap:3px}
+.house-view-height{display:flex;align-items:center;gap:8px}
+.house-view-height button{background:#2a4b61!important;color:#d0ecf3!important}
+.house-view-height [data-testid="view3d-wall-height-readout"]{color:#d0ecf3!important}
+.house-view-daylight{display:flex;align-items:center;gap:6px}
+.house-view-daylight label{display:flex;align-items:center;gap:6px}
+.house-view-daylight input{width:90px;accent-color:#80d9e2}
+@media(max-width:767px){
+  .house-header{height:49px}
+  .house-main{padding-bottom:57px;flex-direction:column}
+  .house-rail{height:57px;padding:4px;gap:3px}
+  .house-rail button{height:48px;flex:1;flex-direction:column;gap:2px;padding:2px 0;font-size:9px;border-radius:7px}
+  .house-rail button svg{height:19px;width:19px}
+  .house-scene-bar{height:40px;padding:0 6px}
+  .house-floor-picker select{max-width:90px;padding:5px 6px;font-size:10px}
+  .house-floor-picker .house-status-dot{display:none}
+  .house-scene-actions button{padding:5px;min-height:32px;font-size:10px}
+  .house-scene-actions{gap:0!important}
+  .house-inspector{position:static;inset:auto;width:100%;max-height:min(36dvh,290px);flex:0 0 auto;border:0;border-top:1px solid #638397;border-radius:0;box-shadow:none}
+  .house-summary{padding:6px 12px}
+  .house-summary h2{font-size:15px;margin:2px 0}
+  .house-summary .house-eyebrow{height:auto}
+  .house-summary p,.house-inspector-foot{display:none}
+  .house-selection-strip{min-height:39px;padding:3px 7px}
+  .house-selection-strip>span{display:block}
+  .house-selection-strip small{font-size:8px}
+  .house-selection-strip strong{display:block;font-size:10px}
+  .house-camera-row{gap:3px;min-height:42px;padding:3px 5px;justify-content:center}
+  .house-camera-row>button{min-width:31px;min-height:34px;padding:3px 6px;font-size:11px;gap:3px}
+  .house-camera-row .house-view-options-trigger{margin-left:2px;padding:3px 8px}
+  .house-control-divider{margin:0 1px}
+  .house-view-options{max-height:150px;padding:5px 8px}
+  .house-view-options-body{gap:8px;justify-content:flex-start}
+  .house-scene-caption{padding:0 7px 3px;min-height:17px;font-size:8px!important}
+}
+@media(max-height:560px){
+  .house-header{height:43px}.house-scene-bar{height:35px}.house-scene-caption{display:none}
+  .house-main{padding-bottom:50px}.house-rail{height:50px;padding:3px 8px}.house-rail button{height:43px}
+  .house-camera-row{min-height:37px;padding:2px 6px}.house-camera-row>button{min-height:31px}
+  .house-view-options{max-height:118px}
+}
+
 /* Vercel's preview annotation widget is not a design control. Keep its injected
    launcher from covering the wall-height buttons and the drawing viewport. */
 body:has([data-testid="plan-workspace"])>vercel-live-feedback,
@@ -35,7 +119,6 @@ body:has([data-testid="wallpaint-3d-overlay"])>vercel-live-feedback{display:none
 .house-selection-angle{width:100%;margin-bottom:4px}
 .house-selection>button{flex:1 1 40%;font-size:11px;border-radius:5px;min-height:40px}
 .house-selection>p{line-height:1.6;margin:8px 0}
-.house-selection-strip{display:none}
 .house-wall-build-strip{display:flex;align-items:center;gap:8px;flex-shrink:0;min-height:42px;padding:5px 14px;background:#182a40;border-bottom:1px solid #3a546c;color:#c4e8f2;font-size:11px}
 .house-wall-build-strip>span{flex:1;min-width:0;line-height:1.5}
 .house-wall-build-strip button{flex-shrink:0;border:1px solid #456780;border-radius:4px;padding:6px 10px;min-height:32px;color:#d6eff7;background:#28425d}

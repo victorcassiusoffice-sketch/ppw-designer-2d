@@ -329,6 +329,17 @@ export interface EnergyPanelProps {
 
 /** md+ docked aside — TopBar portals it beside the Floor / Wall paint panels. */
 export function EnergyPanel({ top, width, onClose }: EnergyPanelProps): JSX.Element {
+  useEffect(() => {
+    const scene = (event: Event) => { onClose(); event.preventDefault(); };
+    const away = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target || target.closest('#ppw-energy-panel, [role="dialog"], [data-testid="wallpaint-3d-canvas"]')) return;
+      onClose();
+    };
+    window.addEventListener('ppw:house-scene-pointer', scene);
+    document.addEventListener('pointerdown', away, true);
+    return () => { window.removeEventListener('ppw:house-scene-pointer', scene); document.removeEventListener('pointerdown', away, true); };
+  }, [onClose]);
   // Esc puts the readout away, like Done; inputs keep their own Esc.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

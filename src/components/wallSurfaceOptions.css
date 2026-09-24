@@ -1,0 +1,15 @@
+.wall-surface-options { margin: 8px 0; padding: 10px; border: 1px solid #5b708a55; border-radius: 12px; background: #8da9ba0d; }
+.wall-surface-tabs { display: flex; gap: 5px; margin-bottom: 8px; }
+.wall-surface-options button { color: inherit; border: 1px solid #71809666; border-radius: 8px; min-height: 38px; padding: 6px 8px; background: transparent; cursor: pointer; font-size: 12px; }
+.wall-surface-tabs button { flex: 1; }
+.wall-surface-options button[aria-pressed="true"] { border-color: #56aabc; background: #56aabc2b; }
+.wall-construction-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.wall-construction-cards button { display: grid; gap: 6px; place-items: center; text-align: center; font-size: 11px; line-height: 1.2; }
+.wall-surface-sample { width: 100%; height: 38px; border-radius: 4px; background: #dedbd1; }
+.wall-surface-sample--brick { background: repeating-linear-gradient(0deg, transparent 0 10px, #c4bca8 10px 12px), repeating-linear-gradient(90deg, #a87454 0 24px, #c4bca8 24px 26px); }
+.wall-surface-sample--concrete { background: radial-gradient(ellipse at 28% 30%, #8f918a70, transparent 58%), #aaa99f; }
+.wall-surface-sample--plastered-brick { background: linear-gradient(115deg, #e9e7df, #d3d0c6); }
+.wall-surface-options p { margin: 7px 0 0; font-size: 11px; line-height: 1.4; opacity: .8; }
+.wall-surface-apply-room { width: 100%; margin-top: 8px; }
+.wall-surface-compact { display: flex; gap: 5px; flex-shrink: 0; }
+.wall-surface-compact button { min-height: 40px; padding: 5px 8px; border: 1px solid #71809666; border-radius: 8px; background: transparent; color: inherit; font-size: 11px; white-space: nowrap; }

@@ -49,6 +49,19 @@ function escape() {
 }
 
 describe('3D project sheet and panel dismissal', () => {
+  it('dismisses paint when clicking other chrome but keeps canvas paint clicks available', () => {
+    useDesignerUIStore.setState({ tool: 'wallpaint' });
+    render();
+    const canvas = document.createElement('div');
+    canvas.dataset.testid = 'wallpaint-3d-canvas';
+    document.body.append(canvas);
+    act(() => canvas.dispatchEvent(new Event('pointerdown', { bubbles: true })));
+    expect(document.getElementById('ppw-wallpaint-panel')).not.toBeNull();
+    act(() => opener.dispatchEvent(new Event('pointerdown', { bubbles: true })));
+    expect(document.getElementById('ppw-wallpaint-panel')).toBeNull();
+    expect(useDesignerUIStore.getState().viewMode).toBe('3d');
+    canvas.remove();
+  });
   it('opens the project sheet at desktop width outside inert chrome and returns focus to its actual opener', () => {
     render(); openProjects();
     const sheet = document.getElementById('ppw-sheet')!;

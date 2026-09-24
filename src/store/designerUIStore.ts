@@ -98,6 +98,10 @@ export interface CladdingDraft {
 }
 
 export interface WallPaintDraft {
+  side?: import('../designer/wallConstruction').WallSide;
+  construction?: import('../designer/wallConstruction').WallConstruction;
+  /** Surface mode changes the wall substrate without buying paint. */
+  operation?: 'paint' | 'construction';
   /** WALL_PAINTS id on the brush. */
   paintId: string;
   /**
