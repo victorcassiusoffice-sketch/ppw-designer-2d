@@ -1,12 +1,12 @@
 <!-- verified-preview:start -->
 ## Current feature deployment
 
-Updated: 2026-09-23 17:17 (local) | commit: e6c4e82f14b1f6c0bda3aa3805f5600e82e211ef
+Updated: 2026-09-24 17:46 (local) | commit: 8252a7b84db93c6e377c6948dda426be431be63c
 
-- Designer: https://ppw-designer-2d-3rl6v0t4b-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-3rl6v0t4b-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: Architectural 3D-first workspace, desktop/phone contextual controls, snapped 3D room building with one Undo, detailed dimensional previews for17existing furniture products, coordinated finish/garden/catalog/solar panels, keyboard focus isolation. Original plan/save/cart/quote and solar paths preserved.
-- Verification: Vercel6614851004 successful. Final standard route checked1280desktop/390phone; TintEX1280x900/360x800. Plan controls absent from3D accessibility tree and restored inPlan; phone Solar opens focused sheet and Roof returns to visible slab. Furnished Courts model rendered; no browser console errors observed. Earlier same-code functional checks:9m2room creation + single Undo, phone floor copy + Undo, sofa selection. Full235files/2711tests,21follow-up tests,typechecks,lint,build passed. Separate production Lighthouse remains its existing failure.
+- Designer: https://ppw-designer-2d-guazc2nhr-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-guazc2nhr-victor-ppw.vercel.app/designer?demo=tintex
+- Landed: Connected 3D walls with room closure and Undo; compact Plan wall dock; selection moved out of canvas; clear panel Close/Escape; surrounding grass; concrete and sourced Espace Maison paving.
+- Verification: Unique preview loaded desktop and phone. Built 40m2 room in 3D, closed loop, Undo/Redo, matching Plan; phone wall drag; Plan dock no overlap; selected item in inspector; Project/New confirmation and help dismissal; paving placement and measured estimate; TintEX paint/floor Close and Escape. Client/API CI, Vitest and Vercel pass; unchanged-production Lighthouse failure persists.
 - Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
 - Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.

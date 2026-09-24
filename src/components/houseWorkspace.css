@@ -22,6 +22,11 @@
 .house-header{margin-right:calc(0px - var(--floor-panel-w,0px))}
 .house-workspace [data-presentation="studio"] [data-testid="wallpaint-3d-caption"]{color:#465368}
 
+/* Vercel's preview annotation widget is not a design control. Keep its injected
+   launcher from covering the wall-height buttons and the drawing viewport. */
+body:has([data-testid="plan-workspace"])>vercel-live-feedback,
+body:has([data-testid="wallpaint-3d-overlay"])>vercel-live-feedback{display:none!important}
+
 /* Building instructions occupy their own row so they never cover the model or camera tools. */
 .house-selection{display:flex;flex-wrap:wrap;gap:8px;padding:16px;color:#dce5f5;background:transparent;border:0}
 .house-selection-heading{display:flex;align-items:flex-start;gap:8px;width:100%;font-size:14px;line-height:1.6}

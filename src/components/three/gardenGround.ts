@@ -14,7 +14,7 @@ export function gardenSurfaceMap(lawn: boolean): THREE.DataTexture {
   for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
     seed = (1664525 * seed + 1013904223) >>> 0;
     const grain = (seed / 4294967296 - 0.5) * (lawn ? 34 : 13);
-    const variation = Math.sin(x / size * Math.PI * 4 + Math.sin(y / size * Math.PI * 2)) * (lawn ? 8 : 3);
+    const variation = Math.sin(x / size * Math.PI * 4 + Math.sin(y / size * Math.PI * 2)) * (lawn ? 1.5 : 3);
     const i = (y * size + x) * 4;
     data[i] = (lawn ? 96 : 241) + grain + variation;
     data[i + 1] = (lawn ? 126 : 241) + grain + variation;
