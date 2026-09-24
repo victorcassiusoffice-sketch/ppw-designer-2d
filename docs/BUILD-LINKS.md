@@ -1,12 +1,12 @@
 <!-- verified-preview:start -->
 ## Current feature deployment
 
-Updated: 2026-09-24 18:22 (local) | commit: dc30e250bdb0eddf5afd4f7ff98b715b699fbd4d (application 89f7878)
+Updated: 2026-09-25 00:50 (local) | commit: accdec1b3e5fc1c445bfe83af1b37eab62084499
 
-- Designer: https://ppw-designer-2d-h13bwlpcz-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-h13bwlpcz-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: Connected 3D wall drawing and room closure; unobstructed wall and item controls with clear dismissal; grass surrounds; concrete and sourced Espace Maison paving; Sims source research. Existing floors, solar and backend features retained.
-- Verification: Deployment 6639900049 succeeded. Final standard, Courts and TintEX routes rendered on desktop and 360/390px phones without horizontal overflow. Final grass and hidden feedback launcher checked. Main functional walkthrough verified wall closure/undo, panel dismissal and paving placement. CI application 89f7878: 243 files / 2763 tests and root/API typechecks passed. Separate Lighthouse still targets unchanged production.
+- Designer: https://ppw-designer-2d-kvjo7osq8-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-kvjo7osq8-victor-ppw.vercel.app/designer?demo=tintex
+- Landed: Bottom home-build menu, reserved camera/settings, category-first Home store and inline product details; clear dismissal; brick/plastered-brick/concrete walls and independent exterior paint; focused phone Materials sheet; 26 Courts dimensional previews. Existing floors, stairs, roofs, garden, solar and backend hooks retained.
+- Verification: Application accdec1 deployed through docs 0febf0d751001e1707fcafad913c5a1efc220e76, Vercel 6647572658. Standard, TintEX and Courts loaded on desktop and 360/390px phones; room drag created 18.8 m2 and Undo worked. Material, item and catalog dismissal checked. CI: 244 files / 2792 tests, root/API typechecks and secrets scan pass; build/lint pass. No overflow or browser errors observed.
 - Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
 - Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.
