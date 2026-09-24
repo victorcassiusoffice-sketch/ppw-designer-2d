@@ -13,8 +13,8 @@ export interface BuildingControlsProps {
   onViewChange: (view: 'building' | 'floor') => void;
   showRoof: boolean;
   onShowRoofChange: (show: boolean) => void;
-  tool: 'select' | 'room' | 'stair' | 'window' | 'door';
-  onToolChange: (tool: 'select' | 'room' | 'stair' | 'window' | 'door') => void;
+  tool: 'select' | 'wall' | 'room' | 'stair' | 'window' | 'door';
+  onToolChange: (tool: 'select' | 'wall' | 'room' | 'stair' | 'window' | 'door') => void;
   onGardenToggle: () => void;
   gardenOpen: boolean;
 }
@@ -24,11 +24,12 @@ const ACTIVE = '!border-ppw-teal !bg-[#e7f1eb] !text-ppw-teal';
 const FIELD = 'h-11 min-w-0 rounded-xl border border-ppw-rim bg-white px-2 text-base tabular-nums text-[#37362f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal md:text-sm';
 const TOOL = 'inline-flex min-h-11 min-w-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl border border-transparent px-1 text-[10px] font-medium text-[#5b5852] transition-colors hover:border-ppw-rim hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal disabled:cursor-not-allowed disabled:opacity-35 md:flex-none md:flex-row md:gap-2 md:px-3 md:text-xs';
 
-type BuildIconName = 'floor' | 'house' | 'plus' | 'select' | 'stairs' | 'window' | 'door' | 'garden' | 'roof' | 'settings' | 'close' | 'up' | 'down';
+type BuildIconName = 'floor' | 'house' | 'wall' | 'plus' | 'select' | 'stairs' | 'window' | 'door' | 'garden' | 'roof' | 'settings' | 'close' | 'up' | 'down';
 function BuildIcon({ name, className = 'h-[18px] w-[18px]' }: { name: BuildIconName; className?: string }) {
   const paths: Record<BuildIconName, string> = {
     floor: 'M3 8 12 3l9 5-9 5-9-5Zm0 5 9 5 9-5M3 18l9 5 9-5',
     house: 'm3 10 9-7 9 7M5 9v12h14V9M9 21v-7h6v7',
+    wall: 'M3 20V8l12-5v12l-12 5Zm12-5 6 4V7l-6-4M3 12l12-5M3 16l12-5M9 6v4M7 14v4',
     plus: 'M12 5v14M5 12h14',
     select: 'm5 3 14 9-7 1-3 8-4-18Z',
     stairs: 'M3 21v-6h6V9h6V3h6M3 21h18V3',
@@ -128,7 +129,8 @@ export function BuildingControls({
     if (gardenOpen) onGardenToggle();
     onToolChange(next);
     if (next === 'stair') setInspector('stairs');
-    if (next === 'window' || next === 'door') setDetailsOpen(false);
+    if (next === 'window' || next === 'door' || next === 'wall' || next === 'room') setDetailsOpen(false);
+    if (next === 'wall' || next === 'room') window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
   }
 
   function addFloor() {
@@ -185,7 +187,7 @@ export function BuildingControls({
     if (id) { setSelectedStairId(id); setStairError(null); onToolChange('select'); }
   }
 
-  const toolHelp = tool === 'room' ? 'Drag from corner to corner to build a room. Two fingers move the view.' : tool === 'stair'
+  const toolHelp = tool === 'wall' ? 'Drag a wall, then tap or drag the next corner. Return to the first corner to make a room. Finish run keeps open walls.' : tool === 'room' ? 'Drag from corner to corner to build a room. Two fingers move the view.' : tool === 'stair'
     ? canPlaceStairs
       ? `Tap the floor to place stairs from ${lowerStairLevel.level.name} to ${upperStairLevel.level.name}.`
       : 'Add a second floor, then select a floor to place stairs.'
@@ -221,12 +223,14 @@ export function BuildingControls({
         className={`${FIELD} mr-1 flex-1 text-[13px] md:hidden ${tool !== 'select' ? ACTIVE : ''}`}
         onChange={(event) => chooseTool(event.target.value as BuildingControlsProps['tool'])}>
         <option value="select">Select / move</option>
+        <option value="wall" disabled={onRoofLevel}>Draw walls</option>
         <option value="room" disabled={onRoofLevel}>Draw room</option>
         <option value="stair" disabled={!canPlaceStairs}>Stairs</option>
         <option value="window" disabled={onRoofLevel}>Window</option>
         <option value="door" disabled={onRoofLevel}>Door</option>
       </select>
       <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'select' ? ACTIVE : ''}`} aria-pressed={tool === 'select'} onClick={() => chooseTool('select')}><BuildIcon name="select" />Select / move</button>
+      <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'wall' ? ACTIVE : ''}`} aria-pressed={tool === 'wall'} disabled={onRoofLevel} onClick={() => chooseTool(tool === 'wall' ? 'select' : 'wall')}><BuildIcon name="wall" />Draw walls</button>
       <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'room' ? ACTIVE : ''}`} aria-pressed={tool === 'room'} disabled={onRoofLevel} onClick={() => chooseTool(tool === 'room' ? 'select' : 'room')}><BuildIcon name="house" />Draw room</button>
       <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'stair' ? ACTIVE : ''}`} aria-pressed={tool === 'stair'} disabled={!canPlaceStairs} title={canPlaceStairs ? `Stairs: ${lowerStairLevel.level.name} to ${upperStairLevel.level.name}` : 'Add a second floor to build stairs'} onClick={() => chooseTool(tool === 'stair' ? 'select' : 'stair')}><BuildIcon name="stairs" />Stairs</button>
       <button type="button" className={`${TOOL} hidden md:inline-flex ${tool === 'window' ? ACTIVE : ''}`} aria-pressed={tool === 'window'} disabled={onRoofLevel} onClick={() => chooseTool(tool === 'window' ? 'select' : 'window')}><BuildIcon name="window" />Window</button>

@@ -1,0 +1,47 @@
+/* This dock is a normal-flow sibling of the measured drawing viewport. */
+.wall-draw-dock {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 6px 12px 8px;
+}
+.wall-draw-dock__status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 28px;
+  margin-bottom: 4px;
+}
+.wall-draw-dock__hint {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wall-draw-dock__readout { flex-shrink: 0; }
+.wall-draw-dock__controls,
+.wall-draw-dock__settings,
+.wall-draw-dock__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.wall-draw-dock__controls { flex-wrap: wrap; gap: 6px 14px; }
+.wall-draw-dock__settings { flex-shrink: 0; }
+.wall-draw-dock__settings[hidden] { display: none; }
+.wall-draw-dock__actions {
+  flex: 1 1 auto;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding: 2px;
+}
+.wall-draw-dock__actions > button { flex-shrink: 0; }
+.wall-draw-dock[data-compact='true'] { padding: 5px 6px 7px; }
+.wall-draw-dock[data-compact='true'] .wall-draw-dock__status { gap: 6px; }
+.wall-draw-dock[data-compact='true'] .wall-draw-dock__readout { max-width: 100px; }
+.wall-draw-dock[data-compact='true'] .wall-draw-dock__actions { flex-basis: 100%; gap: 5px; }
+.wall-draw-dock[data-compact='true'] .wall-draw-dock__settings {
+  order: 2;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  gap: 6px;
+}

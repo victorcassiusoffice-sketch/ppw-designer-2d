@@ -127,4 +127,17 @@ describe('assembled building solids', () => {
     expect(buildingSolids(p, sceneForLevel, 'floor', false).garden).toBeUndefined();
     expect(buildingSolids({ ...p, activeLevelId: 'ground' }, sceneForLevel, 'floor', false).garden).toBe(p.garden);
   });
+
+  it('supplies the saved plot for automatic lawn without creating saved garden data or showing it under an isolated upper floor', () => {
+    const p = property();
+    p.site = { widthM: 20, depthM: 18, originM: { x: -3, y: -4 } };
+    const before = JSON.stringify(p);
+    const whole = buildingSolids(p, sceneForLevel, 'building', false);
+    expect(whole.gardenVisible).toBe(true);
+    expect(whole.gardenSite).toEqual(p.site);
+    expect(whole.garden).toBeUndefined();
+    expect(buildingSolids(p, sceneForLevel, 'floor', false).gardenVisible).toBe(false);
+    expect(buildingSolids({ ...p, activeLevelId: 'ground' }, sceneForLevel, 'floor', false).gardenVisible).toBe(true);
+    expect(JSON.stringify(p)).toBe(before);
+  });
 });

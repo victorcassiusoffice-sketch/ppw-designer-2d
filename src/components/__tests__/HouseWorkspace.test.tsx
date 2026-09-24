@@ -21,7 +21,7 @@ beforeEach(() => {
   props = {
     mode: 'build', onMode: vi.fn(), onPlan: vi.fn(), onSave: vi.fn(), onCart: vi.fn(),
     children: <div data-testid="scene">House scene</div>, inspector: <div>Build dimensions</div>,
-    externalPanel: false, drawing: false, onDraw: vi.fn(), onSelect: vi.fn(),
+    externalPanel: false, drawing: false, onDraw: vi.fn(), onSelect: vi.fn(), wallDrawing: false, onWalls: vi.fn(),
   };
 });
 
@@ -95,6 +95,33 @@ describe('HouseWorkspace controls', () => {
     click(button('Redo'));
     expect(usePropertyStore.getState().property.name).toBe('Courtyard home');
     expect(button('Redo').disabled).toBe(true);
+  });
+
+  it('closes the phone details sheet when choosing walls and keeps the drawing mode explicit', () => {
+    render();
+    click(button('Details'));
+    click(button('Walls'));
+    expect(props.onWalls).toHaveBeenCalledOnce();
+    expect(button('Details').getAttribute('aria-expanded')).toBe('false');
+    props.wallDrawing = true;
+    render();
+    expect(button('Walls').getAttribute('aria-pressed')).toBe('true');
+    expect(button('Select').getAttribute('aria-pressed')).toBe('false');
+    expect(host.querySelector('[data-testid="house-draw-room"]')?.getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('keeps selected-item actions in details with explicit edit and deselect controls', () => {
+    props.selection = { id: 'sofa-1', name: 'Three seat sofa', onDeselect: vi.fn() };
+    props.inspector = <div data-testid="selected-actions">Rotate / duplicate</div>;
+    render();
+    expect(host.querySelector('aside [data-testid="selected-actions"]')).not.toBeNull();
+    expect(host.querySelector('[data-testid="scene"] [data-testid="selected-actions"]')).toBeNull();
+    expect(host.querySelector('.house-metrics')).toBeNull();
+    click(button('Edit item'));
+    expect(host.querySelector('.house-inspector.is-open')).not.toBeNull();
+    click(button('Clear selected item'));
+    expect(props.selection.onDeselect).toHaveBeenCalledOnce();
+    expect(host.querySelector('.house-inspector.is-open')).toBeNull();
   });
 
   it('counts real interior rooms and storeys without adding garden or roof slab area', () => {

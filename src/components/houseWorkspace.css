@@ -21,3 +21,32 @@
 .house-project-actions .house-cart{display:flex;align-items:center;justify-content:center}.house-estimate{display:flex;align-items:center;justify-content:space-between;color:#c6d5ed;margin-bottom:3px}.house-estimate strong{font-size:16px;font-weight:400;color:#eaf2ff}.house-estimate-button{margin-top:10px;width:100%;min-height:36px;background:#324e70;border:1px solid #547395;border-radius:4px;color:#d7e9fc;font-size:11px}
 .house-header{margin-right:calc(0px - var(--floor-panel-w,0px))}
 .house-workspace [data-presentation="studio"] [data-testid="wallpaint-3d-caption"]{color:#465368}
+
+/* Building instructions occupy their own row so they never cover the model or camera tools. */
+.house-selection{display:flex;flex-wrap:wrap;gap:8px;padding:16px;color:#dce5f5;background:transparent;border:0}
+.house-selection-heading{display:flex;align-items:flex-start;gap:8px;width:100%;font-size:14px;line-height:1.6}
+.house-selection-heading strong{flex:1;min-width:0;font-weight:500}
+.house-selection-heading button{flex-shrink:0;width:36px;height:36px;border:1px solid #51617a;border-radius:5px;font-size:22px;color:#dce5f5}
+.house-selection-angle{width:100%;margin-bottom:4px}
+.house-selection>button{flex:1 1 40%;font-size:11px;border-radius:5px;min-height:40px}
+.house-selection>p{line-height:1.6;margin:8px 0}
+.house-selection-strip{display:none}
+.house-wall-build-strip{display:flex;align-items:center;gap:8px;flex-shrink:0;min-height:42px;padding:5px 14px;background:#182a40;border-bottom:1px solid #3a546c;color:#c4e8f2;font-size:11px}
+.house-wall-build-strip>span{flex:1;min-width:0;line-height:1.5}
+.house-wall-build-strip button{flex-shrink:0;border:1px solid #456780;border-radius:4px;padding:6px 10px;min-height:32px;color:#d6eff7;background:#28425d}
+.house-wall-build-strip button:last-child{background:#397089;border-color:#609ab0;color:#fff}
+@media(max-width:767px){
+  .house-selection-strip{display:flex;align-items:center;gap:6px;flex-shrink:0;min-height:43px;padding:4px 8px;background:#1c3048;border-bottom:1px solid #39536b}
+  .house-selection-strip>span{flex:1;min-width:0}
+  .house-selection-strip small{display:block;font-size:8px;color:#8ecedc;letter-spacing:.1em}
+  .house-selection-strip strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;font-weight:500}
+  .house-selection-strip button{flex-shrink:0;min-height:34px;min-width:34px;padding:4px 8px;border:1px solid #466680;border-radius:4px;font-size:10px}
+  .house-selection-strip button:last-child{font-size:20px}
+  .house-scene-bar{padding:0 6px;gap:4px}
+  .house-scene-bar>div:first-child{min-width:0}
+  .house-scene-bar strong{max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .house-scene-actions{gap:0!important}
+  .house-scene-actions button{padding:7px 6px}
+  .house-wall-build-strip{padding:5px 8px;gap:5px;font-size:10px;min-height:46px}
+  .house-wall-build-strip button{padding:6px;min-height:36px;font-size:10px}
+}

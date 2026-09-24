@@ -1,5 +1,6 @@
 /* The docked tool panels follow House Studio only in 3D. Product colour
    chips, photographs and energy-status fills keep their own colours. */
+.house-tool-panel-body > * { flex-shrink: 0; }
 :is(.house-tool-panel, .house-tool-panel-host)[data-presentation="3d"] {
   color-scheme: dark;
   color: #e4ecf8 !important;

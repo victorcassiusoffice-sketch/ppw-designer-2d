@@ -22,6 +22,7 @@ import { useToastStore } from '../store/toastStore';
 import { energyDotColour, useEnergyReport } from '../designer/useEnergyReport';
 import { meterReading } from '../designer/energyMeter';
 import { EnergyMeterBar } from './EnergyMeterBar';
+import { ToolPanelHeader } from './ToolPanelHeader';
 import { annualGenerationKwh, formatW, formatWh } from '../designer/solarCalc';
 import { MAURITIUS_SOLAR } from '../data/mauritiusSolar';
 import { roofAreaM2 } from '../designer/roof';
@@ -332,6 +333,7 @@ export function EnergyPanel({ top, width, onClose }: EnergyPanelProps): JSX.Elem
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
+      if (e.defaultPrevented || document.querySelector('[role="dialog"][aria-modal="true"]')) return;
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
       onClose();
@@ -347,7 +349,7 @@ export function EnergyPanel({ top, width, onClose }: EnergyPanelProps): JSX.Elem
       aria-label="Energy"
       data-testid="energy-panel"
       data-ppw-popover=""
-      className="hidden flex-col overflow-y-auto border-l md:flex"
+      className="hidden flex-col overflow-hidden border-l md:flex"
       style={{
         position: 'fixed',
         top,
@@ -361,13 +363,8 @@ export function EnergyPanel({ top, width, onClose }: EnergyPanelProps): JSX.Elem
         boxShadow: '-4px 0 16px rgba(42,41,38,0.08)',
       }}
     >
-      <div className="flex flex-col gap-0.5 p-3">
-        <div className="mb-1 flex items-baseline justify-between gap-2 px-1">
-          <span className="text-[14px] font-semibold text-[#37362f]">Energy</span>
-          <span className="text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>
-            sun vs use · per day
-          </span>
-        </div>
+      <ToolPanelHeader title="Energy" detail="sun vs use · per day" onClose={onClose} testId="energy-close" />
+      <div className="house-tool-panel-body flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-3">
         <EnergySummary />
         <button
           type="button"

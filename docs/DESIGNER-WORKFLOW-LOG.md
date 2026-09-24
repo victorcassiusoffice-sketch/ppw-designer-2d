@@ -4,6 +4,19 @@ Updated: 23 September 2026 (Mauritius). Owner: Victor.
 
 ## Resume here
 
+### Active continuation — 24 September 2026
+
+Victor reported obstructing wall/item dialogs and requested connected 3D wall drawing, surrounding grass, Espace Maison slabs, and Sims code research. Implementation is in the active feature checkout, awaiting the final checks/deploy described below. The previously verified preview remains the fallback until a new URL is recorded.
+
+- Added original connected 3D wall drawing: drag or tap corners, grid/angle/endpoint magnets, live height/length ghost, per-segment undo, safe loop closure into a room. Controls occupy a reserved strip; rectangular room drawing remains.
+- Plan wall controls now occupy a compact dock above the measured drawing viewport, replacing the floating left card.
+- Selected-product controls moved out of the scene into the desktop inspector. Phone selection uses a compact named strip with Edit and clear selection. Deselect/Close and Escape behavior are explicit.
+- Fixed desktop Project tools visibility, portaled New-property confirmation above the inert Plan controls, and added persistent Close headers to finish and energy panels. Foreground dialogs own Escape.
+- Automatic grass surrounds the house (actual plot bounds or 3m border), excluding room footprints and explicit surfaces. Added unpriced generic concrete and three sourced UBP slabs from Espace Maison with exact dimensions, per-piece prices checked 2026-09-23, links, saved product IDs and separate measured material estimates. No new purchase API or stock claims.
+- Sims research is in `docs/SIMS-BUILD-RESEARCH.md`: verified UI.dll/BuildController references, MTS tools, and Simitone/FreeSO alternative implementation. No external game code imported.
+- Initial full wall/garden suite passed 242 files / 2,752 tests and production build passed. Final panel-integrated suite/build now running. Next: resolve failures if any, commit/push ONLY cursor/feat-3d-flooring-hud-bc95, verify unique Vercel desktop/phone routes plus actual drawing/dismissal, update all links and saveable log.
+
+
 Current checkpoint: **Architectural redesign deployed and browser-verified. Application commit `e6c4e82f14b1f6c0bda3aa3805f5600e82e211ef`; Vercel deployment `6614851004`.** The following documentation commit records verification only. Continue from the specific backlog below.
 
 - Active checkout: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`

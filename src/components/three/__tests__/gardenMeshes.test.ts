@@ -21,7 +21,7 @@ describe('garden meshes', () => {
   it('keeps large grass areas to a bounded number of instanced details', () => {
     const group = gardenMeshes({ surfaces: [{ id: 'lawn', kind: 'lawn', x: 0, y: 0, widthM: 100, depthM: 100, elevationM: 0 }], fences: [] });
     const counts: number[] = [];
-    group.traverse((object) => { if (object instanceof THREE.InstancedMesh) counts.push(object.count); });
+    group.getObjectByName('garden-surface-lawn')!.traverse((object) => { if (object instanceof THREE.InstancedMesh) counts.push(object.count); });
     expect(counts).toEqual([1500]);
   });
 });

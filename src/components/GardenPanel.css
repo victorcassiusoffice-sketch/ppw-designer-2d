@@ -81,6 +81,15 @@
   padding-top: 12px;
 }
 
+.garden-panel--architectural .garden-product-card {
+  border-color: #34415b;
+  background: #1b2941;
+}
+
+.garden-panel--architectural .garden-source-link {
+  color: #91dce9;
+}
+
 @media (min-width: 768px) {
   .garden-panel--architectural .garden-button {
     min-height: 38px;

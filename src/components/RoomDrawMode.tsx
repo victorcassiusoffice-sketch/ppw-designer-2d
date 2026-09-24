@@ -27,6 +27,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import './roomDrawDock.css';
 import { Layer, Line, Circle, Group, Text } from 'react-konva';
 import type Konva from 'konva';
 import {
@@ -916,7 +917,7 @@ export function RoomDrawLayer({
 }
 
 // ---------------------------------------------------------------------------
-// RoomDrawHUD - DOM-only. MUST be rendered as a SIBLING of <Stage>.
+// RoomDrawHUD - DOM-only. Render outside the measured Stage viewport.
 // ---------------------------------------------------------------------------
 
 export interface RoomDrawHUDProps {
@@ -931,26 +932,10 @@ export interface RoomDrawHUDProps {
   /** Finish the run as free-standing walls (>= 2 vertices). */
   onCommitWalls?: (vertices: Polygon) => void;
   onCancel: () => void;
-  /**
-   * Repair round 1 (2026-08-29): whether the HUD hosts the unit stepper.
-   * RoomCanvas passes `false` below sm (640 px), where it mounts its own
-   * bottom-left copy (`mobile-draw-unit-stepper`) instead — so exactly one
-   * `snap-unit-stepper` / `-coarser` / `-current` / `-finer` set is in the
-   * DOM at any width (Playwright strict mode). Defaults to `true`.
-   */
+  /** Show the single shared snap control in the reserved wall dock. */
   showUnitStepper?: boolean;
-  /**
-   * Polish (2026-08-29): below sm (390 px phones) the card is COMPACT —
-   * badge + readout on one line, the unit stepper inline with the Length
-   * field, Undo as an icon. The stepper is hosted HERE on the phone (the old
-   * separate fixed strip is gone), inside the `mobile-draw-unit-stepper`
-   * wrapper. RoomCanvas passes `useBelowSm()`.
-   */
+  /** Phone exact length edits the last wall; snap/length expand in flow. */
   phone?: boolean;
-  /** Parent ref onto the card element (RoomCanvas fit-to-view reads its rect). */
-  cardRef?: React.MutableRefObject<HTMLDivElement | null>;
-  /** Live card width (0 when closed) — used as a left inset while the pen sits on the side. */
-  onHeightChange?: (widthPx: number) => void;
   /**
    * Lay a 5 x 4 m room instead of drawing one (Vic 2026-09-08). The old
    * blocking start card ("Draw walls" | "Quick 5 x 4 m room") is gone — the
@@ -1055,55 +1040,10 @@ export function RoomDrawHUD({
   showUnitStepper = true,
   phone = false,
   onQuickRectangle,
-  cardRef,
-  onHeightChange,
 }: RoomDrawHUDProps) {
   const stepM = useDesignerUIStore((s) => PRECISION_STEP_M[s.precision]);
   const [lengthText, setLengthText] = useState('');
   const [phoneSettingsOpen, setPhoneSettingsOpen] = useState(false);
-  const hudRef = useRef<HTMLDivElement | null>(null);
-  const onHeightChangeRef = useRef(onHeightChange);
-  onHeightChangeRef.current = onHeightChange;
-  // One element, two owners: the local ResizeObserver below and the parent's
-  // `cardRef` (RoomCanvas reads the card's rect inside its fit-to-view).
-  const setHudEl = useCallback(
-    (el: HTMLDivElement | null) => {
-      hudRef.current = el;
-      if (cardRef) cardRef.current = el;
-    },
-    [cardRef],
-  );
-
-  // Left-side pass (2026-09-22): the card publishes its live WIDTH as
-  // `--draw-hud-w` (and keeps `--draw-hud-h` / `--room-draw-hud-h` at 0 so
-  // nothing bottom-anchors under a dialogue that no longer sits there). The
-  // parent still gets `onHeightChange` with the card's width so RoomCanvas
-  // can inset the fit-to-view from the LEFT while the pen is open.
-  useEffect(() => {
-    const root = document.documentElement;
-    const el = hudRef.current;
-    const publish = (w: number) => {
-      root.style.setProperty('--draw-hud-w', `${w}px`);
-      root.style.setProperty('--draw-hud-h', '0px');
-      root.style.setProperty('--room-draw-hud-h', '0px');
-      onHeightChangeRef.current?.(w);
-    };
-    if (!enabled || !el) {
-      publish(0);
-      return undefined;
-    }
-    const apply = () => publish(el.offsetWidth);
-    apply();
-    if (typeof ResizeObserver === 'undefined') {
-      return () => publish(0);
-    }
-    const ro = new ResizeObserver(apply);
-    ro.observe(el);
-    return () => {
-      ro.disconnect();
-      publish(0);
-    };
-  }, [enabled]);
 
   const last = vertices.length > 0 ? vertices[vertices.length - 1] : null;
   // Phones have no hover: resize the last drawn segment in its existing
@@ -1214,43 +1154,22 @@ export function RoomDrawHUD({
     </div>
   );
 
-  const phoneBtn = 'min-h-11 w-full px-1 text-[12px]';
+  const phoneBtn = 'min-h-11 shrink-0 !px-2.5 text-[12px]';
 
   return (
     <div
-      ref={setHudEl}
-      // TintEX / Vic 2026-09-22: the card docks on the LEFT so the bottom of
-      // the canvas stays drawable. Phone (2026-09-22): the same flush rail
-      // as wall height — white, rounded on the right, soft shadow, narrow —
-      // instead of a floating card over the plan. Desktop keeps the labelled
-      // card.
-      className={
-        phone
-          ? 'pointer-events-auto fixed left-0 z-30 flex w-[120px] -translate-y-1/2 flex-col gap-1.5 overflow-y-auto rounded-r-2xl border-0 bg-white p-1.5 text-[11px] shadow-[0_2px_10px_rgba(42,41,38,0.12)]'
-          : 'pointer-events-auto fixed left-3 top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.75rem)] z-30 flex max-h-[min(70vh,560px)] w-[min(42vw,320px)] flex-col gap-2 overflow-y-auto rounded-xl p-3 text-xs lg:top-1/2 lg:-translate-y-1/2'
-      }
-      style={
-        phone
-          ? {
-              color: CHROME_TEXT,
-              top: 'calc(var(--ppw-topbar-h,56px) + (100dvh - var(--ppw-topbar-h,56px) - var(--sims-toolbar-h,0px)) / 2)',
-              maxHeight: 'calc(100dvh - var(--ppw-topbar-h,56px) - var(--sims-toolbar-h,0px) - 24px)',
-            }
-          : {
-              background: CHROME_BG,
-              border: `1px solid ${CHROME_RIM}`,
-              boxShadow: '0 12px 32px rgba(42,41,38,0.18)',
-              color: CHROME_TEXT,
-            }
-      }
+      className="wall-draw-dock pointer-events-auto"
+      style={{ background: CHROME_BG, borderBottom: `1px solid ${CHROME_RIM}`, color: CHROME_TEXT }}
       data-testid="room-draw-hud"
       data-compact={phone ? 'true' : 'false'}
-      data-placement="left"
+      data-placement="top"
+      role="region"
+      aria-label="Wall drawing controls"
     >
-      <div className={phone ? 'flex flex-col items-stretch gap-0.5' : 'flex flex-wrap items-center gap-2'}>
+      <div className="wall-draw-dock__status">
         <span
           className={`shrink-0 rounded-lg text-[11px] font-semibold uppercase leading-none tracking-[0.06em] ${
-            phone ? 'bg-transparent px-1 py-0.5 text-center' : 'px-2 py-1.5'
+            phone ? 'bg-transparent px-1 py-0.5' : 'px-2 py-1.5'
           }`}
           style={phone ? { color: CHROME_TEXT_2 } : { background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT }}
           title={phone ? 'Drag to draw a wall, or tap corners. Two fingers move and zoom the plan.' : undefined}
@@ -1264,51 +1183,32 @@ export function RoomDrawHUD({
             width — the phone gets the short form, visually tucked (the rail
             is the chrome; the line stays for assistive tech and tests). */}
         <span
-          className={`min-w-0 font-medium leading-snug ${phone ? 'py-1 text-center text-[11px]' : 'flex-1 text-[12px]'}`}
+          className="wall-draw-dock__hint min-w-0 flex-1 text-[12px] font-medium leading-snug"
           style={{ color: CHROME_TEXT_2 }}
           data-testid="room-draw-hint"
         >
           {vertices.length === 0
             ? (phone
                 ? 'Drag a wall or tap corners'
-                : 'Drag to draw a wall — or click corner to corner. The length shows as you go.')
+                : 'Drag a wall or click corners')
             : vertices.length < 3
-              ? (phone ? 'Drag the next wall or tap a corner' : 'Drag the next wall. Right-click takes the last one back.')
+              ? (phone ? 'Draw the next wall' : 'Draw the next wall · right-click to undo')
               : (phone
                   ? 'Tap the first point to close the room'
-                  : 'Finish on your first point to close the room — Make room does the same')}
+                  : 'Click the first corner or Make room')}
         </span>
-        {phone && readout}
-        {phone && <span className="text-center text-[10px] leading-snug" style={{ color: CHROME_TEXT_2 }}>2 fingers move / zoom</span>}
-        {/* The unit stepper lives INSIDE the HUD so it is reachable mid-draw
-            with a thumb; +/- keys step the same ladder. On the phone it
-            heads the second row (below) instead — one `snap-unit-*` set in
-            the DOM at any width. */}
-        {!phone && showUnitStepper && (
-          <div className="ml-auto">
+        <div className="wall-draw-dock__readout">{readout}</div>
+      </div>
+      <div className="wall-draw-dock__controls">
+      <div id="phone-wall-draw-settings" className="wall-draw-dock__settings" hidden={phone && !phoneSettingsOpen}>
+        {showUnitStepper && (
+          <div className="pointer-events-auto shrink-0" data-testid={phone ? 'mobile-draw-unit-stepper' : undefined}>
             <SnapUnitStepper compact />
           </div>
         )}
-      </div>
-      {/* Fix 2.4 (Vic 2026-05-22): the ROOM name input was removed from
-          the HUD — auto-named "Room N", renamed inline from the left
-          sidebar after close. The HUD now shows only vertex/perim/area
-          counters + instruction + action buttons. */}
-      <div id="phone-wall-draw-settings" className={phone ? `${phoneSettingsOpen ? 'flex' : 'hidden'} flex-col items-stretch gap-1` : 'flex flex-wrap items-center justify-between gap-2'}>
-        {!phone && readout}
-        {/* Polish (2026-08-29): the phone's unit stepper used to be a
-            separate fixed strip parked above this card (RoomCanvas); it now
-            sits INLINE here so the card is the only thing over the canvas.
-            Same wrapper testid, same control. Dense on the phone rail. */}
-        {phone && (
-          <div className="pointer-events-auto flex justify-center" data-testid="mobile-draw-unit-stepper">
-            <SnapUnitStepper compact dense />
-          </div>
-        )}
-        {phone && <span className="text-center text-[11px] font-medium">Last wall length</span>}
         {/* Typed segment length (units brief D9). The cursor gives the
             direction, this gives the magnitude. */}
-        <div className={`pointer-events-auto flex min-w-0 items-center gap-1 ${phone ? 'w-full' : 'gap-2'}`}>
+        <div className="pointer-events-auto flex min-w-0 shrink-0 items-center gap-1.5">
           <label
             htmlFor="draw-segment-length"
             className={`text-[11px] font-semibold uppercase tracking-[0.06em] ${phone ? 'sr-only' : ''}`}
@@ -1344,15 +1244,16 @@ export function RoomDrawHUD({
                 : 'Point the cursor, then type a length'
             }
             className={`rounded-lg border border-ppw-rim bg-ppw-chrome px-2 text-right font-semibold tabular-nums text-[#37362f] transition-colors duration-[120ms] ease-out placeholder:text-[#3D4655]/60 focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none ${
-              phone ? 'h-11 min-w-0 flex-1 text-[16px]' : 'h-11 w-24 text-[12px] sm:h-10'
+              phone ? 'h-11 w-16 min-w-0 text-[16px]' : 'h-10 w-20 text-[12px]'
             }`}
           />
           <span className="text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>
             {phone ? 'm' : unitSuffix}
           </span>
         </div>
-        {phone && <button type="button" onClick={commitLength} disabled={!lengthReady || !lengthText.trim()}
-          data-testid="draw-segment-apply" className={`${CTRL} ${CTRL_OUTLINED} ${phoneBtn}`}>Set length</button>}
+        <button type="button" onClick={commitLength} disabled={!lengthReady || !lengthText.trim()}
+          data-testid="draw-segment-apply" className={`${CTRL} ${CTRL_OUTLINED} ${phone ? phoneBtn : CTRL_H}`}>{phone ? 'Set length' : 'Set'}</button>
+        {phone && <span className="w-full text-[11px]" style={{ color: CHROME_TEXT_2 }}>Last wall length in metres · 2 fingers move / zoom</span>}
       </div>
 
       {/* Actions (rebuilt 2026-09-08 after Vic: "the wall draw feature
@@ -1365,12 +1266,12 @@ export function RoomDrawHUD({
           is possible; keeping the run open is the deliberate second choice.
           Hierarchy: Make room (ink) · Keep walls (rim) · Room + next (rest,
           sm+) · Undo · Discard. */}
-      <div className={phone ? 'flex flex-col gap-1.5' : 'flex flex-wrap items-center gap-2'}>
+      <div className="wall-draw-dock__actions" role="group" aria-label="Finish or edit drawn walls">
         <button
           type="button"
           onClick={handleClose}
           disabled={vertices.length < 3}
-          className={`${CTRL} ${vertices.length >= 3 ? CTRL_PRIMARY : CTRL_OUTLINED} ${phone ? phoneBtn : `${CTRL_H} flex-1 sm:flex-initial`}`}
+          className={`${CTRL} ${vertices.length >= 3 ? CTRL_PRIMARY : CTRL_OUTLINED} ${phone ? phoneBtn : CTRL_H}`}
           title={
             vertices.length < 3
               ? 'Place at least 3 corners to make a room'
@@ -1386,7 +1287,7 @@ export function RoomDrawHUD({
           type="button"
           onClick={vertices.length >= 2 && onCommitWalls ? handleFinishWalls : handleCancel}
           data-testid="room-draw-finish-walls"
-          className={`${CTRL} ${vertices.length >= 3 ? CTRL_REST : vertices.length === 0 ? CTRL_REST : CTRL_OUTLINED} ${phone ? phoneBtn : `${CTRL_H} flex-1 sm:flex-initial`}`}
+          className={`${CTRL} ${vertices.length >= 3 ? CTRL_REST : vertices.length === 0 ? CTRL_REST : CTRL_OUTLINED} ${phone ? phoneBtn : CTRL_H}`}
           title={
             vertices.length >= 2
               ? 'Keep these as open walls, not a room (Esc or Alt+Enter)'
@@ -1409,22 +1310,22 @@ export function RoomDrawHUD({
         {/* The 5 x 4 m shortcut the removed start card used to offer. It is
             NOT a blocking choice any more: the pen is already armed, and this
             only shows while nothing has been drawn. */}
-        {vertices.length === 0 && onQuickRectangle && (
+        {!phone && vertices.length === 0 && onQuickRectangle && (
           <button
             type="button"
             onClick={onQuickRectangle}
             data-testid="start-quick-rectangle"
-            className={`${CTRL} ${CTRL_OUTLINED} ${phone ? phoneBtn : `${CTRL_H} flex-1 sm:flex-initial`}`}
+            className={`${CTRL} ${CTRL_OUTLINED} ${CTRL_H}`}
             title="Lay a 5 x 4 m room instead of drawing one"
           >
-            {phone ? '5 × 4 m room' : 'Or use a 5 × 4 m room'}
+            5 × 4 m room
           </button>
         )}
         <button
           type="button"
           onClick={handleUndo}
           disabled={vertices.length === 0}
-          className={`${CTRL} ${CTRL_REST} ${phone ? phoneBtn : `${CTRL_H} w-11 shrink-0 !px-0 sm:w-auto sm:!px-3`}`}
+          className={`${CTRL} ${CTRL_REST} ${phone ? phoneBtn : CTRL_H}`}
           title="Undo the last wall (Ctrl+Z, or right-click on the plan)"
           aria-label="Undo last wall point"
           data-testid="room-draw-undo"
@@ -1475,6 +1376,13 @@ export function RoomDrawHUD({
             {phoneSettingsOpen ? 'Less' : 'Snap / length'}
           </button>
         )}
+      </div>
+      {phone && vertices.length === 0 && onQuickRectangle && (
+        <button type="button" onClick={onQuickRectangle} data-testid="start-quick-rectangle"
+          className={`${CTRL} ${CTRL_OUTLINED} ${phoneBtn}`} title="Lay a 5 x 4 m room instead of drawing one">
+          5 × 4 m room
+        </button>
+      )}
       </div>
     </div>
   );

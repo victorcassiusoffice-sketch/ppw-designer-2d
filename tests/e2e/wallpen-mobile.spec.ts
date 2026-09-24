@@ -35,6 +35,7 @@ test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true
 async function openPen(page: Page): Promise<{ cdp: CDPSession; cx: number; cy: number }> {
   await seedSimsProperty(page, oneRoomFixture());
   await page.goto('/designer');
+  await page.getByRole('button', { name: '2D Plan', exact: true }).click();
   await page.waitForSelector('.konvajs-content canvas', { state: 'attached', timeout: 30_000 });
   if (!(await requireGeomBridgeGenerous(page))) test.skip(true, GEOM_BRIDGE_SKIP);
   await waitForGeom(page);
@@ -130,33 +131,33 @@ test.describe('Wall pen — phone gestures', () => {
     expect(await pts(page)).toContain('3');
   });
 
-  test('4. the pen card docks on the LEFT — the bottom of the canvas stays free', async ({ page }) => {
+  test('4. wall controls reserve a top row outside the drawable canvas', async ({ page }) => {
     await openPen(page);
     const place = await page.evaluate(() => {
       const hud = document.querySelector('[data-testid="room-draw-hud"]') as HTMLElement;
-      const bar = document.querySelector('[data-testid="sims-bottom-toolbar"]')!.getBoundingClientRect();
+      const viewport = document.querySelector('[data-testid="plan-drawing-viewport"]')!.getBoundingClientRect();
       const r = hud.getBoundingClientRect();
       return {
         placement: hud.getAttribute('data-placement'),
-        // Gap from the card's bottom to the toolbar top — must be clearly
-        // positive so the lower canvas is drawable (was ~0–16 when stacked
-        // on the toolbar).
-        gapAboveToolbar: Math.round(bar.top - r.bottom),
-        // Flush to the left edge, and narrow — a rail, not a card.
-        flush: r.left < 2,
-        narrow: r.width < 160,
-        // Card sits in the left half of the viewport.
-        leftish: r.left < window.innerWidth * 0.45,
-        // Bottom edge of the card is well above the toolbar.
-        clearsBottom: r.bottom < bar.top - 24,
+        gap: viewport.top - r.bottom,
+        height: r.height,
+        width: r.width,
+        drawableHeight: viewport.height,
+        outsideViewport: !document.querySelector('[data-testid="plan-drawing-viewport"]')!.contains(hud),
       };
     });
-    expect(place.placement).toBe('left');
-    expect(place.flush).toBe(true);
-    expect(place.narrow).toBe(true);
-    expect(place.leftish).toBe(true);
-    expect(place.clearsBottom).toBe(true);
-    expect(place.gapAboveToolbar).toBeGreaterThan(24);
+    expect(place.placement).toBe('top');
+    expect(place.outsideViewport).toBe(true);
+    expect(place.gap).toBeGreaterThanOrEqual(-1);
+    expect(place.height).toBeLessThanOrEqual(100);
+    expect(place.width).toBeGreaterThan(380);
+    expect(place.drawableHeight).toBeGreaterThan(280);
+    await page.getByTestId('room-draw-settings').click();
+    const expanded = await page.getByTestId('room-draw-hud').boundingBox();
+    const canvas = await page.getByTestId('plan-drawing-viewport').boundingBox();
+    expect(expanded).not.toBeNull();
+    expect(canvas!.y).toBeGreaterThanOrEqual(expanded!.y + expanded!.height - 1);
+    expect(canvas!.height).toBeGreaterThan(200);
   });
 });
 

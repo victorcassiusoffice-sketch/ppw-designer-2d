@@ -123,6 +123,9 @@ export interface ItemSolid {
 
 export interface SceneSolids {
   garden?: import('./garden').Garden;
+  gardenSite?: { widthM: number; depthM: number; originM: Vertex };
+  /** False while inspecting an upper storey in isolation. */
+  gardenVisible?: boolean;
   gardenObstacles?: Vertex[][];
   activeLevelId?: string;
   activeElevationM?: number;

@@ -1,9 +1,12 @@
 import * as THREE from 'three';
 import { pointInPolygon, type Polygon } from '../../lib/geometry';
 import {
-  FENCE_MATERIALS, GARDEN_SURFACES, fenceLengthM, gardenElevationAt,
+  FENCE_MATERIALS, GARDEN_SURFACES, fenceLengthM, gardenElevationAt, gardenSurfacePolygon,
   type Garden, type GardenFence, type GardenSurface,
 } from '../../designer/garden';
+import { findOutdoorPavingProduct } from '../../data/outdoorPaving';
+import { gardenSurfaceMap, surroundingLawn } from './gardenGround';
+import type { GardenSite } from './gardenSurround';
 
 function box(width: number, height: number, depth: number, material: THREE.Material, x = 0, y = 0, z = 0) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
@@ -18,12 +21,21 @@ function surfaceMesh(surface: GardenSurface, order: number, occupied: readonly P
   group.name = `garden-surface-${surface.id}`;
   group.userData = { gardenId: surface.id, gardenKind: 'surface' };
   const top = surface.elevationM + 0.0003 + order * 0.000001;
-  const material = new THREE.MeshStandardMaterial({ color: GARDEN_SURFACES[surface.kind].hex, roughness: 0.98 });
+  const paving = surface.kind === 'path' ? findOutdoorPavingProduct(surface.pavingProductId) : undefined;
+  const map = gardenSurfaceMap(surface.kind === 'lawn');
+  map.repeat.set(surface.widthM / 1.6, surface.depthM / 1.6);
+  const material = new THREE.MeshStandardMaterial({ color: surface.kind === 'lawn' ? '#ffffff' : paving?.renderHex ?? GARDEN_SURFACES[surface.kind].hex, map, roughness: 0.98 });
+  material.userData.gardenTextures = [map];
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(surface.widthM, surface.depthM), material);
   floor.rotation.x = -Math.PI / 2;
   floor.position.set(surface.x + surface.widthM / 2, top, surface.y + surface.depthM / 2);
   floor.receiveShadow = true;
   group.add(floor);
+  if (paving) {
+    const edge = new THREE.MeshStandardMaterial({ color: paving.renderHex, roughness: 0.95 });
+    group.add(box(surface.widthM, paving.thicknessM, surface.depthM, edge,
+      surface.x + surface.widthM / 2, top - paving.thicknessM / 2 - 0.0001, surface.y + surface.depthM / 2));
+  }
   if (surface.elevationM > 0.01) {
     const soil = new THREE.MeshStandardMaterial({ color: '#6b503b', roughness: 1 });
     group.add(box(surface.widthM, surface.elevationM, surface.depthM, soil,
@@ -33,18 +45,20 @@ function surfaceMesh(surface: GardenSurface, order: number, occupied: readonly P
   const area = surface.widthM * surface.depthM;
   if (surface.kind === 'path') {
     const points: number[] = [];
-    const tile = 0.6;
-    for (let x = tile; x < surface.widthM; x += tile) {
+    const tileWidth = paving?.tileWidthM ?? 0.6;
+    const tileDepth = paving?.tileDepthM ?? 0.6;
+    for (let x = tileWidth; x < surface.widthM; x += tileWidth) {
       points.push(surface.x + x, top + 0.0001, surface.y, surface.x + x, top + 0.0001, surface.y + surface.depthM);
     }
-    for (let y = tile; y < surface.depthM; y += tile) {
+    for (let y = tileDepth; y < surface.depthM; y += tileDepth) {
       points.push(surface.x, top + 0.0001, surface.y + y, surface.x + surface.widthM, top + 0.0001, surface.y + y);
     }
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
-    group.add(new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: '#9a927f', transparent: true, opacity: 0.55 })));
+    group.add(new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: '#747773', transparent: true, opacity: 0.6 })));
     return group;
   }
+  if (surface.kind === 'concrete') return group;
 
   // Instancing keeps texture detail inexpensive on phones. A deterministic
   // scatter is stable during edits and never plants blades through a room.
@@ -111,11 +125,17 @@ function fenceMesh(fence: GardenFence, garden: Garden): THREE.Group {
 }
 
 /** Plan (x,y,height) maps to THREE (x,height,y), like all room meshes. */
-export function gardenMeshes(garden: Garden | undefined, occupiedPolygons: readonly Polygon[] = []): THREE.Group {
+export function gardenMeshes(garden: Garden | undefined, occupiedPolygons: readonly Polygon[] = [], site?: GardenSite): THREE.Group {
   const group = new THREE.Group();
   group.name = 'garden';
+  group.add(surroundingLawn(occupiedPolygons, garden, site));
   if (!garden) return group;
-  garden.surfaces.forEach((surface, index) => group.add(surfaceMesh(surface, index, occupiedPolygons)));
+  garden.surfaces.forEach((surface, index) => {
+    // Later patches at the same elevation win, just as their surface plane
+    // does; earlier grass/gravel must not poke through a newly laid path.
+    const covered = garden.surfaces.filter((candidate, i) => candidate.elevationM > surface.elevationM || (candidate.elevationM === surface.elevationM && i > index));
+    group.add(surfaceMesh(surface, index, [...occupiedPolygons, ...covered.map(gardenSurfacePolygon)]));
+  });
   garden.fences.forEach((fence) => group.add(fenceMesh(fence, garden)));
   return group;
 }

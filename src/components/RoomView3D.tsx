@@ -55,6 +55,8 @@ import { EnergySummary } from './EnergyPanel';
 import { HouseWorkspace, type HouseMode } from './HouseWorkspace';
 import { previewRectRoomBuild, type RoomBuildPreview } from '../designer/roomBuildGesture';
 import { commitRectRoomBuild } from '../lib/roomBuildActions';
+import { previewWallBuild, reconcileWallBuildChain, type WallBuildChain, type WallBuildPreview } from '../designer/wallBuildGesture';
+import { commitWallBuild } from '../lib/wallBuildActions';
 import { BuildingControls } from './BuildingControls';
 import { useSmoothedCamera } from './useSmoothedCamera';
 import { panOrbitCamera } from '../designer/cameraMotion';
@@ -427,10 +429,30 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const [moveFeedback, setMoveFeedback] = useState<string | null>(null);
   const [buildingView, setBuildingView] = useState<BuildingView>('building');
   const [showRoof, setShowRoof] = useState(false);
-  const [constructionTool, setConstructionTool] = useState<'select' | 'room' | 'stair' | 'window' | 'door'>('select');
+  const [constructionTool, setConstructionTool] = useState<'select' | 'room' | 'wall' | 'stair' | 'window' | 'door'>('select');
   const [houseMode, setHouseMode] = useState<HouseMode>('build');
   const [roomPreview, setRoomPreview] = useState<RoomBuildPreview | null>(null);
   const roomDrag = useRef<RoomBuildPreview | null>(null);
+  const [wallChain, setWallChain] = useState<WallBuildChain | null>(null);
+  const wallChainRef = useRef<WallBuildChain | null>(null);
+  // Keep the complete run through undo: redo can restore walls beyond the
+  // currently surviving prefix. A new commit or Finish replaces this memory.
+  const authoredWallChainRef = useRef<WallBuildChain | null>(null);
+  const [wallPreview, setWallPreview] = useState<WallBuildPreview | null>(null);
+  const wallDrag = useRef<WallBuildPreview | null>(null);
+  const updateWallChain = useCallback((next: WallBuildChain | null) => {
+    authoredWallChainRef.current = next;
+    wallChainRef.current = next;
+    setWallChain(next);
+  }, []);
+  const cancelWallSegment = useCallback(() => {
+    wallDrag.current = null;
+    setWallPreview(null);
+  }, []);
+  const finishWallRun = useCallback(() => {
+    cancelWallSegment();
+    updateWallChain(null);
+  }, [cancelWallSegment, updateWallChain]);
   const [gardenOpen, setGardenOpen] = useState(false);
   const [gardenPlacement, setGardenPlacement] = useState<GardenPlacement | null>(null);
   const [hover, setHover] = useState<WallHit | null>(null);
@@ -457,7 +479,20 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   useEffect(() => {
     if (energyOpen) { setConstructionTool('select'); setGardenPlacement(null); setGardenOpen(false); }
   }, [energyOpen]);
-  useEffect(() => { roomDrag.current = null; setRoomPreview(null); }, [level, constructionTool]);
+  useEffect(() => { roomDrag.current = null; setRoomPreview(null); finishWallRun(); }, [level, constructionTool, finishWallRun]);
+  useEffect(() => {
+    const previous = wallChainRef.current;
+    const next = reconcileWallBuildChain(property, authoredWallChainRef.current);
+    if (!next) authoredWallChainRef.current = null;
+    // Reconciliation may create the same trimmed prefix again on unrelated
+    // property updates. Only a changed continuation should cancel a gesture.
+    if (next !== previous && (next?.wallIds.length !== previous?.wallIds.length
+      || reconcileWallBuildChain(property, previous) !== previous)) {
+      wallChainRef.current = next;
+      setWallChain(next);
+      cancelWallSegment();
+    }
+  }, [property, cancelWallSegment]);
   const activeHeight = levelHeightM(property, level) || DEFAULT_WALL_HEIGHT_M;
   const baseElevation = buildingView === 'floor' ? levelElevationM(property, level) : 0;
   const H = buildingView === 'building'
@@ -491,7 +526,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     return boundsOf(landscape.length ? [...rooms, { polygon: landscape }] : rooms, walls);
   }, [property, level, buildingView]);
   // A blank project still has a buildable 3D ground plane.
-  const bounds = sceneBounds ?? (variant === 'overlay' ? { minX: -2, minY: -2, maxX: 10, maxY: 10 } : null);
+  const bounds = sceneBounds ?? (variant === 'overlay'
+    ? property.site ? { minX: property.site.originM.x, minY: property.site.originM.y, maxX: property.site.originM.x + property.site.widthM, maxY: property.site.originM.y + property.site.depthM }
+      : { minX: -2, minY: -2, maxX: 10, maxY: 10 }
+    : null);
   const boundsKey = bounds
     ? [bounds.minX, bounds.minY, bounds.maxX, bounds.maxY].map((v) => Math.round(v * 10) / 10).join(',')
     : '';
@@ -504,12 +542,15 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     const aspect = size.height > 0 ? size.width / size.height : 1.4;
     const fitted = fitCamera(bounds, H, aspect);
     fitted.target.z += baseElevation;
-    baseDistanceRef.current = fitted.distanceM;
-    setCamera((prev) =>
-      prev
+    setCamera((prev) => {
+      // Adding a connected segment must not shift the next corner under the
+      // pointer. The customer can use Fit after finishing the run.
+      if (constructionTool === 'wall' && wallChainRef.current?.wallIds.length && prev) return prev;
+      baseDistanceRef.current = fitted.distanceM;
+      return prev
         ? { ...fitted, azimuthRad: prev.azimuthRad, elevationRad: prev.elevationRad, distanceM: fitted.distanceM }
-        : fitted,
-    );
+        : fitted;
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boundsKey, H, baseElevation, level, size.width > 0 ? Math.round((size.width / Math.max(1, size.height)) * 10) : 0]);
 
@@ -703,8 +744,24 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.current.size === 1) {
       if (orbitOnly || panMode) {
+        cancelWallSegment();
         drag.current = { x: e.clientX, y: e.clientY, moved: false, pinchDist: 0 };
         return;
+      }
+      if (constructionTool === 'wall' && stageRef.current) {
+        const p = localPoint(e);
+        const point = stageRef.current.floorPoint(p.x, p.y);
+        if (point) {
+          const chain = wallChainRef.current;
+          const from = chain?.vertices[chain.vertices.length - 1] ?? point;
+          const preview = previewWallBuild(usePropertyStore.getState().property, from, point, {
+            levelId: level, stepM: PRECISION_STEP_M[useDesignerUIStore.getState().precision], freeAngle: e.shiftKey, chain,
+          });
+          wallDrag.current = preview;
+          setWallPreview(preview);
+          drag.current = null;
+          return;
+        }
       }
       if (constructionTool === 'room' && stageRef.current) {
         const p = localPoint(e);
@@ -773,6 +830,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       // A second finger cancels a room draft without changing the plan.
       roomDrag.current = null;
       setRoomPreview(null);
+      cancelWallSegment();
       // A second finger ends any carry or stroke and starts a pinch.
       stroke.current = null;
       floorStroke.current = null;
@@ -793,12 +851,29 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       // Hover (mouse only): tint the wall under the pointer, or show a hand over an item.
       if (e.pointerType === 'mouse') {
         const p = localPoint(e);
-        if (onPaintWall) setHover(hitAt(p.x, p.y));
+        const chain = wallChainRef.current;
+        if (constructionTool === 'wall' && chain && stageRef.current) {
+          const point = stageRef.current.floorPoint(p.x, p.y);
+          if (point) setWallPreview(previewWallBuild(usePropertyStore.getState().property, chain.vertices[chain.vertices.length - 1], point, {
+            levelId: chain.levelId, stepM: PRECISION_STEP_M[useDesignerUIStore.getState().precision], freeAngle: e.shiftKey, chain,
+          }));
+        } else if (onPaintWall) setHover(hitAt(p.x, p.y));
         else if (itemsInteractive) setHoverItem(stageRef.current?.hitItem(p.x, p.y)?.instanceId ?? null);
       }
       return;
     }
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (wallDrag.current && pointers.current.size === 1 && stageRef.current) {
+      const p = localPoint(e);
+      const point = stageRef.current.floorPoint(p.x, p.y);
+      if (point) {
+        const { from, stepM, levelId } = wallDrag.current;
+        const preview = previewWallBuild(usePropertyStore.getState().property, from, point, { stepM, levelId, freeAngle: e.shiftKey, chain: wallChainRef.current });
+        wallDrag.current = preview;
+        setWallPreview(preview);
+      }
+      return;
+    }
     if (roomDrag.current && pointers.current.size === 1 && stageRef.current) {
       const p = localPoint(e);
       const point = stageRef.current.floorPoint(p.x, p.y);
@@ -893,6 +968,31 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       if (pointers.current.size === 0) drag.current = null;
       return;
     }
+    if (wallDrag.current && had) {
+      const draft = wallDrag.current;
+      cancelWallSegment();
+      drag.current = null;
+      if (!cancelled && stageRef.current) {
+        const p = localPoint(e);
+        const point = stageRef.current.floorPoint(p.x, p.y) ?? draft.to;
+        const chain = wallChainRef.current;
+        const preview = previewWallBuild(usePropertyStore.getState().property, draft.from, point, {
+          levelId: draft.levelId, stepM: draft.stepM, freeAngle: e.shiftKey, chain,
+        });
+        if (!preview.ok && preview.reason === 'too-short' && !chain) {
+          updateWallChain({ propertyId: property.id, levelId: preview.levelId, vertices: [preview.a], wallIds: [] });
+          showFlash('Start set · tap the next corner or drag to draw a wall');
+        } else {
+          const result = commitWallBuild(preview, chain);
+          if (result.ok) {
+            updateWallChain(result.chain);
+            haptic('place');
+            showFlash(result.roomId ? 'Room enclosed · ready for finishes and furniture' : `Wall built · ${result.preview.lengthM.toFixed(2)} m`);
+          } else { setWallPreview(preview); showFlash(result.message); }
+        }
+      }
+      return;
+    }
     if (roomDrag.current && had) {
       const draft = roomDrag.current;
       roomDrag.current = null;
@@ -975,7 +1075,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       showFlash('Garden element placed');
       return;
     }
-    if (constructionTool !== 'select' && constructionTool !== 'room' && stageRef.current && !onPaintWall && !onPaintFloor) {
+    if (constructionTool !== 'select' && constructionTool !== 'room' && constructionTool !== 'wall' && stageRef.current && !onPaintWall && !onPaintFloor) {
       const store = usePropertyStore.getState();
       if (constructionTool === 'stair') {
         const storeys = buildingLevels(property).filter((entry) => !isRoofLevel(entry.level));
@@ -1053,6 +1153,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   };
 
   function clearLocalTools() {
+    finishWallRun();
     selectItem(null);
     setConstructionTool('select');
     roomDrag.current = null;
@@ -1095,16 +1196,48 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   useEffect(() => {
     if (variant !== 'overlay' || !onClose) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
+      // Foreground dialogs and finish/energy panels own their keyboard events.
+      // Let their own Close/Escape handlers run without changing the scene behind them.
+      if (document.querySelector('[role="dialog"][aria-modal="true"]') || onPaintWall || onPaintFloor || (energyOpen && !belowMd)) return;
       // An input in the still-usable docked panel keeps its own Esc.
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
-      // The open inspector owns Escape before the workspace does.
-      if (document.getElementById('building-details')) return;
+      if (constructionTool === 'wall') {
+        if (e.key === 'Enter') {
+          if (t?.closest('button, a, [role="button"]')) return;
+          e.preventDefault(); e.stopImmediatePropagation(); finishWallRun();
+          showFlash('Wall run finished · drag to start another');
+          return;
+        }
+        if (wallDrag.current && (e.key === 'Escape' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z'))) {
+          e.preventDefault(); e.stopImmediatePropagation(); cancelWallSegment();
+          return;
+        }
+      }
+      if (e.key !== 'Escape') return;
+      // A phone sheet closes first. The permanent desktop sidebar must never
+      // swallow Escape; the older floating build inspector handles its own.
+      if (belowMd && document.querySelector('.house-inspector.is-open')) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
+        return;
+      }
+      const floatingInspector = document.getElementById('building-details');
+      if (floatingInspector && !floatingInspector.closest('.house-inspector')) return;
+      if (energyOpen) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        useDesignerUIStore.getState().setEnergyPanelOpen(false);
+        return;
+      }
       if (gardenOpen || gardenPlacement) {
         e.stopImmediatePropagation();
         setGardenOpen(false);
         setGardenPlacement(null);
+        return;
+      }
+      if (selectedInstanceId) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        selectItem(null);
         return;
       }
       if (panMode || constructionTool !== 'select') {
@@ -1113,6 +1246,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         setConstructionTool('select');
         roomDrag.current = null;
         setRoomPreview(null);
+        finishWallRun();
         return;
       }
       e.stopPropagation();
@@ -1120,7 +1254,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [variant, onClose, gardenOpen, gardenPlacement, panMode, constructionTool]);
+  }, [variant, onClose, gardenOpen, gardenPlacement, panMode, constructionTool, finishWallRun, cancelWallSegment, showFlash, belowMd, onPaintWall, onPaintFloor, energyOpen, selectedInstanceId, selectItem]);
 
   const hoverText = describeHit(property, hover, onPaintWall && hoverTag && hover ? hoverTag(hover) : null);
   const empty = !sceneBounds;
@@ -1132,6 +1266,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const selectedProduct = selectedItem ? getProductById(selectedItem.productId) : undefined;
   const armedProduct = armedProductId ? getProductById(armedProductId) : undefined;
   const defaultCaption = panMode ? 'Drag anywhere to move the view · tap Move view again to select furniture'
+    : constructionTool === 'wall' ? 'Drag or tap corners · close the loop to make a room · Enter finishes · Shift frees angles'
     : constructionTool === 'room' ? 'Drag corner to corner · release to build · two fingers to pan · Esc to cancel'
     : onPaintWall
     ? 'Click a wall to paint it · drag along walls to paint a run · Shift = whole room · Ctrl = erase'
@@ -1149,7 +1284,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       : null;
 
   function chooseBuildTool(next: typeof constructionTool) {
-    if (next === 'room' && backend === 'painter') {
+    if ((next === 'room' || next === 'wall') && backend === 'painter') {
       useToastStore.getState().push('3D room drawing needs WebGL. Use Draw walls in 2D Plan on this device.', 'info');
       onClose?.();
       return;
@@ -1159,6 +1294,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     ui.setEnergyPanelOpen(false);
     usePlacementIntentStore.getState().setArmed(null);
     selectItem(null);
+    finishWallRun();
     roomDrag.current = null;
     setRoomPreview(null);
     setConstructionTool(next);
@@ -1167,7 +1303,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     setPanMode(false);
     setHouseMode('build');
     if (next !== 'select') window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
-    if (next === 'room') {
+    if (next === 'room' || next === 'wall') {
       if (onRoofLevel) {
         const storeys = levelEntries.filter((entry) => !isRoofLevel(entry.level));
         const top = storeys[storeys.length - 1];
@@ -1194,6 +1330,53 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     }
   }
   const activeHouseMode: HouseMode = onPaintWall ? 'paint' : onPaintFloor ? 'floor' : energyOpen ? 'energy' : gardenOpen ? 'garden' : houseMode;
+
+  const selectionPanel = variant === 'overlay' && itemsInteractive && selectedItem && selectedProduct ? (
+        <div
+          className="house-selection"
+          data-testid="view3d-selection"
+        >
+          <div className="house-selection-heading"><strong>{selectedProduct.name}</strong><button type="button" aria-label="Deselect item" title="Deselect item (Esc)" onClick={() => selectItem(null)}>×</button></div>
+          <span
+            className="house-selection-angle shrink-0 text-[11px] font-medium tabular-nums"
+            style={{ color: '#5c5a54' }}
+            data-testid="view3d-rotation"
+            title="Plan rotation — same angle as 2D"
+          >
+            Rotation: {Math.round(((selectedItem.rotation % 360) + 360) % 360)}°
+          </span>
+          <button
+            type="button"
+            className={`${SEL_BTN} border-ppw-rim bg-ppw-chrome text-ppw-charcoal hover:bg-[#f3f1ec]`}
+            onClick={() => rotateSelected(-90)}
+            title="Turn 90° counter-clockwise (,)"
+            data-testid="view3d-rotate-ccw"
+          >
+            ↺
+          </button>
+          <button
+            type="button"
+            className={`${SEL_BTN} border-ppw-inkDeep bg-ppw-inkDeep text-ppw-paper hover:brightness-110`}
+            onClick={() => rotateSelected(90)}
+            title="Turn 90° clockwise (R)"
+            data-testid="view3d-rotate"
+          >
+            Turn ↻
+          </button>
+          <button type="button" className={`${SEL_BTN} border-[#49607d] bg-[#243a55] text-[#d8e8fa]`} onClick={() => duplicateSelected()} title="Duplicate selected product">Duplicate</button>
+          <button type="button" className={`${SEL_BTN} border-[#49607d] bg-[#243a55] text-[#d8e8fa]`} onClick={() => { useDesignerUIStore.getState().setInfoOpen(true); onClose?.(); }}>Details in plan</button>
+          <button
+            type="button"
+            className={`${SEL_BTN} border-ppw-clay bg-ppw-chrome text-ppw-charcoal hover:bg-ppw-clay hover:text-white`}
+            onClick={() => deleteSelected()}
+            title="Remove from the room (Delete)"
+            data-testid="view3d-delete"
+          >
+            Remove
+          </button>
+          {hasFurniturePreview(selectedProduct.id) && !productModelFor(selectedProduct) && <p className="w-full text-[10px] text-[#a9bfdc]">{FURNITURE_PREVIEW_NOTE}</p>}
+        </div>
+  ) : null;
 
   const box = (
     <div
@@ -1235,7 +1418,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         role="img"
         aria-label={viewLabel}
         className="absolute inset-0"
-        style={{ cursor: constructionTool === 'room' ? 'crosshair' : panMode ? 'move' : hover ? 'pointer' : hoverItem ? 'move' : onPaintFloor ? 'pointer' : armedProduct && itemsInteractive ? 'copy' : 'grab' }}
+        style={{ cursor: constructionTool === 'room' || constructionTool === 'wall' ? 'crosshair' : panMode ? 'move' : hover ? 'pointer' : hoverItem ? 'move' : onPaintFloor ? 'pointer' : armedProduct && itemsInteractive ? 'copy' : 'grab' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={(e) => endPointer(e, false)}
@@ -1243,6 +1426,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         onPointerLeave={() => {
           setHover(null);
           setHoverItem(null);
+          if (!wallDrag.current) setWallPreview(null);
         }}
         onContextMenu={(e) => e.preventDefault()}
       />
@@ -1251,61 +1435,20 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         {(() => { const center = roomPreview.polygon.reduce((p, q) => ({ x: p.x + q.x / 4, y: p.y + q.y / 4 }), { x: 0, y: 0 }); const screen = stageRef.current?.projectPoint(center.x, center.y, roomPreview.elevationM + 0.04); return screen ? <text x={screen.x} y={screen.y} textAnchor="middle">{roomPreview.widthM.toFixed(1)} × {roomPreview.depthM.toFixed(1)} m</text> : null; })()}
       </svg>}
       {constructionTool === 'room' && <p className="house-drawing-help" role="status">{roomPreview ? roomPreview.ok ? `${roomPreview.areaM2.toFixed(1)} m² · release to build` : roomPreview.message : 'Drag from one corner to the opposite corner to build a room'}</p>}
-      {empty && constructionTool !== 'room' && variant === 'overlay' && <div className="house-empty"><strong>Your home starts here</strong><p>Draw your first room, add another floor, then shape the spaces around it.</p><button onClick={() => chooseBuildTool('room')}>Draw a room</button></div>}
+      {wallPreview && wallPreview.lengthM > 0 && Number.isFinite(wallPreview.lengthM) && <svg className="house-room-preview house-wall-preview" data-valid={wallPreview.ok} aria-hidden="true">
+        <polygon points={[
+          { ...wallPreview.a, z: wallPreview.elevationM }, { ...wallPreview.b, z: wallPreview.elevationM },
+          { ...wallPreview.b, z: wallPreview.elevationM + activeHeight }, { ...wallPreview.a, z: wallPreview.elevationM + activeHeight },
+        ].map((point) => stageRef.current?.projectPoint(point.x, point.y, point.z)).filter((point) => !!point).map((point) => `${point.x},${point.y}`).join(' ')} />
+        {(() => { const screen = stageRef.current?.projectPoint((wallPreview.a.x + wallPreview.b.x) / 2, (wallPreview.a.y + wallPreview.b.y) / 2, wallPreview.elevationM + activeHeight + 0.12); return screen ? <text x={screen.x} y={screen.y} textAnchor="middle">{wallPreview.lengthM.toFixed(2)} m{wallPreview.closesRoom ? ' · close room' : ''}</text> : null; })()}
+      </svg>}
+      {empty && constructionTool !== 'room' && constructionTool !== 'wall' && variant === 'overlay' && <div className="house-empty"><strong>Your home starts here</strong><p>Draw your first room, add another floor, then shape the spaces around it.</p><button onClick={() => chooseBuildTool('room')}>Draw a room</button></div>}
       {empty && variant === 'card' && <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs">Draw a room to see it in 3D</p>}
       <RoomViewControls workspace={variant === 'overlay'} pan={panMode} onPan={togglePan}
         onRotate={rotate} onZoom={zoomBy} onFit={refit} onView={chooseCameraView}
         wallView={wallView} onWallView={setWallView} hasWalls={solids.walls.length > 0 && !onRoofLevel}
         sunAvailable={backend === 'gl'} sunHour={sunHour} onSunHour={setSunHour}
         onClose={onClose} onExpand={onExpand} />
-      {/* The selection's card (overlay, item tools): what it is, turn it, remove it —
-          the same actions the plan's keyboard runs, so 2D follows. */}
-      {variant === 'overlay' && itemsInteractive && selectedItem && selectedProduct && (
-        <div
-          className="absolute bottom-[145px] left-2 right-2 flex flex-wrap items-center gap-2 md:left-auto md:max-w-sm rounded-xl border border-ppw-rim bg-ppw-chrome px-3 py-2 shadow-[0_12px_32px_rgba(42,41,38,0.18)]"
-          data-testid="view3d-selection"
-        >
-          <span className="min-w-0 truncate text-[12px] font-semibold text-[#37362f]">{selectedProduct.name}</span>
-          <span
-            className="shrink-0 text-[11px] font-medium tabular-nums"
-            style={{ color: '#5c5a54' }}
-            data-testid="view3d-rotation"
-            title="Plan rotation — same angle as 2D"
-          >
-            {Math.round(((selectedItem.rotation % 360) + 360) % 360)}°
-          </span>
-          <button
-            type="button"
-            className={`${SEL_BTN} border-ppw-rim bg-ppw-chrome text-ppw-charcoal hover:bg-[#f3f1ec]`}
-            onClick={() => rotateSelected(-90)}
-            title="Turn 90° counter-clockwise (,)"
-            data-testid="view3d-rotate-ccw"
-          >
-            ↺
-          </button>
-          <button
-            type="button"
-            className={`${SEL_BTN} border-ppw-inkDeep bg-ppw-inkDeep text-ppw-paper hover:brightness-110`}
-            onClick={() => rotateSelected(90)}
-            title="Turn 90° clockwise (R)"
-            data-testid="view3d-rotate"
-          >
-            Turn ↻
-          </button>
-          <button type="button" className={`${SEL_BTN} border-[#49607d] bg-[#243a55] text-[#d8e8fa]`} onClick={() => duplicateSelected()} title="Duplicate selected product">Duplicate</button>
-          <button type="button" className={`${SEL_BTN} border-[#49607d] bg-[#243a55] text-[#d8e8fa]`} onClick={() => { useDesignerUIStore.getState().setInfoOpen(true); onClose?.(); }}>Details in plan</button>
-          <button
-            type="button"
-            className={`${SEL_BTN} border-ppw-clay bg-ppw-chrome text-ppw-charcoal hover:bg-ppw-clay hover:text-white`}
-            onClick={() => deleteSelected()}
-            title="Remove from the room (Delete)"
-            data-testid="view3d-delete"
-          >
-            Remove
-          </button>
-          {hasFurniturePreview(selectedProduct.id) && !productModelFor(selectedProduct) && <p className="w-full text-[10px] text-[#a9bfdc]">{FURNITURE_PREVIEW_NOTE}</p>}
-        </div>
-      )}
       {/* Hover read-out / caption. */}
       <p
         className="pointer-events-none absolute bottom-1.5 left-2 right-2 truncate text-[11px] font-medium text-ppw-charcoal"
@@ -1338,10 +1481,18 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       <HouseWorkspace mode={activeHouseMode} onMode={changeHouseMode} onPlan={onClose} onSave={onSave} onCart={onCart}
         externalPanel={!!onPaintWall || !!onPaintFloor || (energyOpen && !belowMd)}
         drawing={constructionTool === 'room'} onDraw={() => chooseBuildTool(constructionTool === 'room' ? 'select' : 'room')} onSelect={() => chooseBuildTool('select')}
-        inspector={energyOpen && belowMd ? <div className="house-tool-panel-host p-4" data-presentation="3d"><EnergySummary compact onJumpToRoof={() => window.dispatchEvent(new CustomEvent('ppw:close-house-details'))} /></div> : gardenOpen ? <div className="house-garden-panel"><GardenPanel architectural onClose={() => { setGardenOpen(false); setGardenPlacement(null); setHouseMode('build'); }} onRequestPlacement={(intent) => { usePropertyStore.getState().setActiveLevel('ground'); setGardenPlacement(intent); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} /></div>
+        wallDrawing={constructionTool === 'wall'} onWalls={() => chooseBuildTool(constructionTool === 'wall' ? 'select' : 'wall')}
+        selection={selectionPanel && selectedProduct && selectedInstanceId ? { id: selectedInstanceId, name: selectedProduct.name, onDeselect: () => selectItem(null) } : undefined}
+        inspector={selectionPanel ?? (energyOpen && belowMd ? <div className="house-tool-panel-host p-4" data-presentation="3d"><EnergySummary compact onJumpToRoof={() => window.dispatchEvent(new CustomEvent('ppw:close-house-details'))} /></div> : gardenOpen ? <div className="house-garden-panel"><GardenPanel architectural onClose={() => { setGardenOpen(false); setGardenPlacement(null); setHouseMode('build'); }} onRequestPlacement={(intent) => { usePropertyStore.getState().setActiveLevel('ground'); setGardenPlacement(intent); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} /></div>
           : <BuildingControls layout="sidebar" view={buildingView} onViewChange={setBuildingView} showRoof={showRoof} onShowRoofChange={setShowRoof} tool={constructionTool} onToolChange={chooseBuildTool}
-            gardenOpen={gardenOpen} onGardenToggle={() => changeHouseMode('garden')} />}>
+            gardenOpen={gardenOpen} onGardenToggle={() => changeHouseMode('garden')} />)}>
         {gardenPlacement && <p role="status" className="bg-[#29405c] px-3 py-2 text-xs text-[#c4e8f2]">Tap the ground to place this garden element. <button className="underline" onClick={() => setGardenPlacement(null)}>Cancel</button></p>}
+        {constructionTool === 'wall' && <div className="house-wall-build-strip" data-testid="house-wall-build-strip">
+          <span role="status">{wallPreview ? wallPreview.ok ? `${wallPreview.lengthM.toFixed(2)} m · ${Math.round(wallPreview.angleDeg)}°${wallPreview.closesRoom ? ' · release to close room' : ''}` : wallPreview.message : wallChain ? 'Continue from the last corner · tap or drag' : 'Drag a wall, or tap its start and end'}</span>
+          {wallDrag.current && <button type="button" onClick={cancelWallSegment}>Cancel segment</button>}
+          <button type="button" disabled={!wallChain && !wallPreview} onClick={() => { finishWallRun(); showFlash('Walls kept · drag to start another run'); }} data-testid="wall-build-finish">Finish run</button>
+          <button type="button" onClick={() => chooseBuildTool('select')}>Done</button>
+        </div>}
         {box}
       </HouseWorkspace>
       {footer && <p className="shrink-0 border-t border-[#34415b] bg-[#172139] px-3 py-1 text-xs font-semibold text-[#c9d8ef]" data-testid="wallpaint-3d-footer">{footer}</p>}

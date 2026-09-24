@@ -29,6 +29,8 @@ export function buildingSolids(
     activeLevelId: active, activeElevationM: levelElevationM(property, active),
     floors: [], walls: [], items: [], stairs: [], roofs: [],
     garden: view === 'building' || active === GROUND_LEVEL_ID ? property.garden : undefined,
+    gardenSite: property.site ?? undefined,
+    gardenVisible: view === 'building' || active === GROUND_LEVEL_ID,
     gardenObstacles: property.rooms.filter((room) =>
       roomLevelId(room) === GROUND_LEVEL_ID && !isOutdoorRoom(room) && !isRoofRoom(room) && room.polygon.length >= 3,
     ).map((room) => room.polygon),

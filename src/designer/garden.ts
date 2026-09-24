@@ -1,4 +1,4 @@
-/** Ground-level landscaping. These are design quantities, not priced products. */
+/** Ground-level landscaping; optional sourced paving remains part of its surface. */
 import { pointInPolygon, type Polygon, type Vertex } from '../lib/geometry';
 
 export const GARDEN_SURFACES = {
@@ -6,6 +6,7 @@ export const GARDEN_SURFACES = {
   soil: { label: 'Planting bed', hex: '#795841' },
   gravel: { label: 'Gravel', hex: '#b5afa0' },
   path: { label: 'Paved path', hex: '#c5bca9' },
+  concrete: { label: 'Concrete', hex: '#a7aaa8' },
 } as const;
 export type GardenSurfaceKind = keyof typeof GARDEN_SURFACES;
 export const FENCE_MATERIALS = {
@@ -25,6 +26,8 @@ export interface GardenSurface {
   depthM: number;
   /** Raised planting / terrace level above the ground, 0–2 m. */
   elevationM: number;
+  /** Dated outdoor paving reference; absent means a generic, unpriced surface. */
+  pavingProductId?: string;
 }
 export interface GardenFence {
   id: string;
@@ -52,7 +55,10 @@ export function normaliseGardenSurface(value: unknown): GardenSurface | null {
     || !finite(v.x, -10000, 10000) || !finite(v.y, -10000, 10000)
     || !finite(v.widthM, 0.2, 500) || !finite(v.depthM, 0.2, 500)
     || !finite(v.elevationM, 0, 2)) return null;
-  return { id: v.id, kind: v.kind, x: v.x, y: v.y, widthM: v.widthM, depthM: v.depthM, elevationM: v.elevationM };
+  return {
+    id: v.id, kind: v.kind, x: v.x, y: v.y, widthM: v.widthM, depthM: v.depthM, elevationM: v.elevationM,
+    ...(typeof v.pavingProductId === 'string' && idValid(v.pavingProductId.trim()) ? { pavingProductId: v.pavingProductId.trim() } : {}),
+  };
 }
 
 export const fenceLengthM = (fence: Pick<GardenFence, 'a' | 'b'>): number =>

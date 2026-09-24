@@ -653,13 +653,8 @@ export function RoomCanvas({
    */
   const userMovedViewportRef = useRef(false);
   const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
-  // Polish (2026-08-29): the wall-pen HUD card. Its live height (state, so
-  // the fit effect below re-runs when it changes) + a ref onto the element
-  // (so the fit reads WHERE the card sits over the stage, at any width).
-  const drawHudRef = useRef<HTMLDivElement | null>(null);
-  const [drawHudH, setDrawHudH] = useState(0);
   // Floor tool (2026-08-30): the phone Floor HUD card — same mechanism as
-  // the wall-pen card above (ref for WHERE it sits, height state so the
+  // other overlaid tool cards (ref for WHERE it sits, height state so the
   // fit effect re-runs when it grows). `floorTool` is declared HERE (not
   // with the rest of the floor-tool state below) because the fit-to-view
   // effect reads it.
@@ -988,17 +983,9 @@ export function RoomCanvas({
   // nothing to centre on yet (blank canvas — leave the viewport alone).
   const fitViewportToUnion = useCallback((): Viewport | null => {
     if (!union || unionWpx <= 0 || unionHpx <= 0) return null;
-    // TintEX / Vic 2026-09-22: the wall-pen HUD docks on the LEFT, so the
-    // fit treats the band from the card's left edge across as unavailable —
-    // measured from the card's live rect. The bottom of the canvas stays
-    // free for drawing walls downward.
-    let leftInset = 0;
+    // Wall controls occupy their own layout row outside containerRef. Its
+    // measured dimensions already describe the entire drawable viewport.
     let bottomInset = 0;
-    if (drawMode && drawHudH > 0 && drawHudRef.current && containerRef.current) {
-      const hud = drawHudRef.current.getBoundingClientRect();
-      const box = containerRef.current.getBoundingClientRect();
-      leftInset = Math.max(0, Math.min(box.width - 160, hud.right - box.left + 12));
-    }
     // Floor tool (2026-08-30): the phone Floor HUD card gets the same
     // treatment as the pen card — the band from its top edge down is
     // unavailable, so the seeded room re-centres ABOVE the card.
@@ -1044,7 +1031,7 @@ export function RoomCanvas({
       }
     }
     const availH = stageSize.height - bottomInset;
-    const availW = stageSize.width - rightInset - leftInset;
+    const availW = stageSize.width - rightInset;
     // Attached multi-room: centre + FIT the whole plan, not the active room.
     // This used to hardcode scale 1 with a 40 px minimum clamp, which pinned
     // a union wider than the stage off-screen with no way back except Reset.
@@ -1053,7 +1040,7 @@ export function RoomCanvas({
       Math.min(1, (availW - 80) / unionWpx, (availH - 80) / unionHpx),
     );
     return {
-      x: leftInset + (availW - unionWpx * scale) / 2 - union.minX * pxPerMetre * scale,
+      x: (availW - unionWpx * scale) / 2 - union.minX * pxPerMetre * scale,
       y: (availH - unionHpx * scale) / 2 - union.minY * pxPerMetre * scale,
       scale,
     };
@@ -1064,8 +1051,6 @@ export function RoomCanvas({
     stageSize.width,
     stageSize.height,
     pxPerMetre,
-    drawMode,
-    drawHudH,
     floorTool,
     floorHudH,
     doorTool,
@@ -1083,7 +1068,7 @@ export function RoomCanvas({
     if (!fitted) return;
     setViewport(fitted);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, pxPerMetre, drawMode, drawHudH, floorTool, floorHudH, doorTool, doorHudH, wallPaintTool, claddingTool, wallPaintHudH]);
+  }, [stageSize.width, stageSize.height, unionWpx, unionHpx, union?.minX, union?.minY, pxPerMetre, drawMode, floorTool, floorHudH, doorTool, doorHudH, wallPaintTool, claddingTool, wallPaintHudH]);
 
   /**
    * Door tool stale-transform race (2026-08-31, defect 3): arming the tool
@@ -3236,9 +3221,28 @@ export function RoomCanvas({
   }, [rooms]);
 
   return (
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-col" data-testid="plan-workspace">
+      {/* Normal-flow controls reserve space before the measured Stage.
+          containerRef stays on the drawable element so pointer coordinates,
+          fitting and pinch/pan all share its actual origin and dimensions. */}
+      <RoomDrawHUD
+        phone={belowSm}
+        enabled={drawMode && viewMode !== '3d'}
+        vertices={drawVertices}
+        setVertices={setDrawVertices}
+        hover={drawHover}
+        setHover={setDrawHover}
+        name={drawName}
+        setName={setDrawName}
+        onCommit={handleDrawCommit}
+        onCommitWalls={handleDrawCommitWalls}
+        onCancel={handleDrawCancel}
+        onQuickRectangle={hasRoom ? undefined : handleQuickRectangle}
+      />
     <div
       ref={containerRef}
-      className={`relative h-full w-full transition-colors ${
+      data-testid="plan-drawing-viewport"
+      className={`relative min-h-0 w-full min-w-0 flex-1 overflow-hidden transition-colors ${
         pendingProductId && !drawMode ? 'ring-2 ring-inset' : ''
       } ${drawMode ? 'cursor-crosshair' : ''} ${pendingProductId && !drawMode ? 'cursor-crosshair' : ''}`}
       // Paper ground (2026-08-29): warm cream, the land outside the plot.
@@ -5230,26 +5234,6 @@ export function RoomCanvas({
         />
       </Stage>
 
-      {/* Units brief (2026-08-28, D9) — wall-pen HUD. TintEX 2026-09-22:
-          docks on the LEFT (not bottom-centre) so downward wall drawing stays
-          free; only its controls take pointer events. */}
-      <RoomDrawHUD
-        phone={belowSm}
-        cardRef={drawHudRef}
-        onHeightChange={setDrawHudH}
-        enabled={drawMode && viewMode !== '3d'}
-        vertices={drawVertices}
-        setVertices={setDrawVertices}
-        hover={drawHover}
-        setHover={setDrawHover}
-        name={drawName}
-        setName={setDrawName}
-        onCommit={handleDrawCommit}
-        onCommitWalls={handleDrawCommitWalls}
-        onCancel={handleDrawCancel}
-        onQuickRectangle={hasRoom ? undefined : handleQuickRectangle}
-      />
-
       {/* Measure popover (units brief D10). Says out loud what it does:
           in a polygon you cannot change one edge in isolation. */}
       {measureTool && measureSel && (
@@ -5428,6 +5412,7 @@ export function RoomCanvas({
           Toolbar pass (2026-08-29): the draw-mode tip card that replaced it
           bottom-left is gone too — it duplicated the ONE instruction line
           the wall-pen HUD carries (and the CoachMark's first step). */}
+    </div>
     </div>
   );
 }

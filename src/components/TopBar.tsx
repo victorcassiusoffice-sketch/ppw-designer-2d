@@ -72,6 +72,7 @@ import {
 import { roofAreaM2 } from '../designer/roof';
 // Energy readout (eco / solar 2026-09-04): docked aside + phone sheet section.
 import { EnergyPanel, EnergySummary } from './EnergyPanel';
+import { ToolPanelHeader } from './ToolPanelHeader';
 import { performUndo, performRedo } from '../lib/undoIntent';
 // Polish (2026-08-29): "New plan" under More — PageTabs is hidden while there
 // is a single plan, so this is how a second plan gets started.
@@ -1238,14 +1239,22 @@ export function TopBar({
       if (e.key === 'Escape') setShowMobileMenu(false);
     };
     document.addEventListener('keydown', onKey);
-    const opener = menuBtnRef.current;
+    const opener = document.activeElement instanceof HTMLElement && document.activeElement !== document.body
+      ? document.activeElement : menuBtnRef.current;
     sheetCloseRef.current?.focus();
     return () => {
       document.body.style.overflow = prev;
       document.removeEventListener('keydown', onKey);
-      opener?.focus();
+      // A 3D project button can open this sheet too. Do not return focus to
+      // the inert plan toolbar, or steal it from the New confirmation.
+      if (opener?.isConnected && !opener.closest('[inert]') && !document.querySelector('[role="dialog"][aria-modal="true"]')) opener.focus();
     };
   }, [showMobileMenu]);
+
+  useEffect(() => {
+    // A plan-only phone sheet must not survive becoming CSS-hidden on resize.
+    if (isMd && viewMode !== '3d') setShowMobileMenu(false);
+  }, [isMd, viewMode]);
 
   // "Start a new property?" — Esc cancels (Cancel also takes autoFocus).
   useEffect(() => {
@@ -1340,6 +1349,7 @@ export function TopBar({
     if (!floorPaintActive && !wallPaintActive && !claddingActive) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
+      if (e.defaultPrevented || document.querySelector('[role="dialog"][aria-modal="true"]')) return;
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
       setTool('hand');
@@ -2356,7 +2366,7 @@ export function TopBar({
             aria-label="Floor"
             data-testid="floor-paint-palette"
             data-ppw-popover=""
-            className="house-tool-panel hidden flex-col overflow-y-auto border-l md:flex"
+            className="house-tool-panel hidden flex-col overflow-hidden border-l md:flex"
             style={{
               position: 'fixed',
               top: floorPanelTop,
@@ -2370,18 +2380,9 @@ export function TopBar({
               boxShadow: '-4px 0 16px rgba(42,41,38,0.08)',
             }}
           >
-            <div className="flex flex-col gap-0.5 p-3">
-              {/* Title + the room the tool works on. */}
-              <div className="mb-1 flex items-baseline justify-between gap-2 px-1">
-                <span className="text-[14px] font-semibold text-[#37362f]">Floor</span>
-                <span
-                  className="min-w-0 truncate text-[12px] font-medium"
-                  style={{ color: CHROME_TEXT_2 }}
-                  data-testid="floor-paint-room"
-                >
-                  {floorRoom ? floorRoom.name : 'Draw a room first'}
-                </span>
-              </div>
+            <ToolPanelHeader title="Floor" onClose={() => setTool('hand')} testId="floor-paint-close"
+              detail={<span data-testid="floor-paint-room">{floorRoom ? floorRoom.name : 'Draw a room first'}</span>} />
+            <div className="house-tool-panel-body flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-3">
 
               {/* View — Plan or 3D. Same radios as Wall paint so Floor works
                   in 3D Mode the way paint already does (TintEX 2026-09-22). */}
@@ -2566,7 +2567,7 @@ export function TopBar({
             aria-label="Cladding"
             data-testid="cladding-palette"
             data-ppw-popover=""
-            className="house-tool-panel hidden flex-col overflow-y-auto border-l md:flex"
+            className="house-tool-panel hidden flex-col overflow-hidden border-l md:flex"
             style={{
               position: 'fixed',
               top: floorPanelTop,
@@ -2580,13 +2581,9 @@ export function TopBar({
               boxShadow: '-4px 0 16px rgba(42,41,38,0.08)',
             }}
           >
-            <div className="flex flex-col gap-0.5 p-3">
-              <div className="mb-1 flex items-baseline justify-between gap-2 px-1">
-                <span className="text-[14px] font-semibold text-[#37362f]">Cladding</span>
-                <span className="text-[11px] font-semibold uppercase tracking-[0.06em]" data-testid="cladding-sample-badge">
-                  Sample
-                </span>
-              </div>
+            <ToolPanelHeader title="Cladding" onClose={() => setTool('hand')} testId="cladding-close"
+              detail={<span data-testid="cladding-sample-badge">Sample</span>} />
+            <div className="house-tool-panel-body flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-3">
               <p className="mb-2 px-1 text-[11px] leading-snug" style={{ color: CHROME_TEXT_2 }} data-testid="cladding-disclaimer">
                 {CLADDING_DEMO_DISCLAIMER}
               </p>
@@ -2665,7 +2662,7 @@ export function TopBar({
             aria-label="Wall paint"
             data-testid="wallpaint-palette"
             data-ppw-popover=""
-            className="house-tool-panel hidden flex-col overflow-y-auto border-l md:flex"
+            className="house-tool-panel hidden flex-col overflow-hidden border-l md:flex"
             style={{
               position: 'fixed',
               top: floorPanelTop,
@@ -2679,18 +2676,9 @@ export function TopBar({
               boxShadow: '-4px 0 16px rgba(42,41,38,0.08)',
             }}
           >
-            <div className="flex flex-col gap-0.5 p-3">
-              {/* Title + the room the Room scope works on. */}
-              <div className="mb-1 flex items-baseline justify-between gap-2 px-1">
-                <span className="text-[14px] font-semibold text-[#37362f]">Wall paint</span>
-                <span
-                  className="min-w-0 truncate text-[12px] font-medium"
-                  style={{ color: CHROME_TEXT_2 }}
-                  data-testid="wallpaint-room"
-                >
-                  {floorRoom ? floorRoom.name : `${paintBrand?.name ?? 'Sofap'} · Mauritius`}
-                </span>
-              </div>
+            <ToolPanelHeader title="Wall paint" onClose={() => setTool('hand')} testId="wallpaint-close"
+              detail={<span data-testid="wallpaint-room">{floorRoom ? floorRoom.name : `${paintBrand?.name ?? 'Sofap'} · Mauritius`}</span>} />
+            <div className="house-tool-panel-body flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-3">
 
               {/* View — Plan (the drawing) or 3D (the room). The 3D workspace
                   takes the plan's place; this panel stays. */}
@@ -3419,7 +3407,7 @@ export function TopBar({
       {showMobileMenu &&
         typeof document !== 'undefined' &&
         createPortal(
-          <div className="md:hidden">
+          <div className={viewMode === '3d' ? undefined : 'md:hidden'} data-testid="project-sheet-host">
             <div
               className="fixed inset-0 z-40 bg-black/30"
               onClick={() => setShowMobileMenu(false)}
@@ -4147,12 +4135,15 @@ export function TopBar({
         </div>
       </Popover>
 
-      {confirmingNew && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      {confirmingNew && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={(event) => {
+          if (event.target === event.currentTarget) setConfirmingNew(false);
+        }}>
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="ppw-confirm-new-title"
+            data-testid="new-property-dialog"
             className="w-80 rounded-xl border p-5"
             style={{ background: CHROME_BG, borderColor: CHROME_RIM, boxShadow: '0 12px 32px rgba(42,41,38,0.18)' }}
           >
@@ -4178,7 +4169,8 @@ export function TopBar({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </header>
   );

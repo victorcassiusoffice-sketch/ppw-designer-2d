@@ -24,10 +24,12 @@ function area(points: { x: number; y: number }[]) {
 }
 
 /** The architectural workspace uses the same property, catalog and history as Plan. */
-export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children, inspector, externalPanel, drawing, onDraw, onSelect }: {
+export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children, inspector, externalPanel, drawing, onDraw, onSelect, wallDrawing = false, onWalls, selection }: {
   mode: HouseMode; onMode: (mode: HouseMode) => void; onPlan?: () => void; onSave?: () => void; onCart?: () => void;
   children: ReactNode; inspector: ReactNode; externalPanel: boolean; drawing: boolean;
   onDraw: () => void; onSelect: () => void;
+  wallDrawing?: boolean; onWalls?: () => void;
+  selection?: { id: string; name: string; onDeselect: () => void };
 }) {
   const cart = useCart();
   const currency = useCurrencyStore((s) => s.currency);
@@ -66,20 +68,26 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
       </nav>
       <div className="house-scene-column">
         <div className="house-scene-bar">
-          <div><span className="house-status-dot" /><strong>{levelName}</strong><span className="house-scene-label">{drawing ? `Snap ${PRECISION_STEP_M[precision]} m` : mode === 'build' ? 'Build mode' : MODES.find(([id]) => id === mode)?.[1]}</span></div>
+          <div><span className="house-status-dot" /><strong>{levelName}</strong><span className="house-scene-label">{drawing || wallDrawing ? `Snap ${PRECISION_STEP_M[precision]} m` : mode === 'build' ? 'Build mode' : MODES.find(([id]) => id === mode)?.[1]}</span></div>
           <div className="house-scene-actions">
-            <button aria-pressed={!drawing} onClick={onSelect}>Select</button>
-            <button aria-pressed={drawing} onClick={onDraw} data-testid="house-draw-room">▱ <span>Draw room</span></button>
+            <button aria-pressed={!drawing && !wallDrawing} onClick={onSelect}>Select</button>
+            {onWalls && <button aria-pressed={wallDrawing} onClick={() => { setMobileInspector(false); onWalls(); }} data-testid="house-draw-walls">Walls</button>}
+            <button aria-pressed={drawing} onClick={() => { setMobileInspector(false); onDraw(); }} data-testid="house-draw-room">▱ <span>Draw room</span></button>
             {!externalPanel && <button className="house-details-button" aria-expanded={mobileInspector} onClick={() => setMobileInspector(!mobileInspector)}>Details</button>}
           </div>
         </div>
+        {selection && <div className="house-selection-strip" data-testid="house-selection-strip">
+          <span><small>SELECTED</small><strong>{selection.name}</strong></span>
+          <button type="button" onClick={() => setMobileInspector(!mobileInspector)} aria-expanded={mobileInspector}>Edit item</button>
+          <button type="button" aria-label="Clear selected item" title="Deselect item" onClick={() => { setMobileInspector(false); selection.onDeselect(); }}>×</button>
+        </div>}
         {children}
       </div>
       {!externalPanel && <aside className={`house-inspector ${mobileInspector ? 'is-open' : ''}`} aria-label="House details">
         <div className="house-summary">
           <div className="house-eyebrow">YOUR DESIGN<button className="house-close-details" aria-label="Close house details" onClick={() => setMobileInspector(false)}>×</button></div>
-          <h2>{mode === 'energy' ? 'Solar & energy' : name}</h2><p>{mode === 'garden' ? 'Shape the space around your home' : 'Build a home, room by room'}</p>
-          <div className="house-metrics"><div><strong>{totalArea.toFixed(1)}</strong><span>m² floor area</span></div><div><strong>{rooms.length}</strong><span>rooms</span></div><div><strong>{levelsOf(property).filter((l) => !isRoofLevel(l)).length}</strong><span>floors</span></div></div>
+          <h2>{selection ? 'Selected item' : mode === 'energy' ? 'Solar & energy' : name}</h2><p>{selection ? 'Drag the item in your design to move it' : mode === 'garden' ? 'Shape the space around your home' : 'Build a home, room by room'}</p>
+          {!selection && <div className="house-metrics"><div><strong>{totalArea.toFixed(1)}</strong><span>m² floor area</span></div><div><strong>{rooms.length}</strong><span>rooms</span></div><div><strong>{levelsOf(property).filter((l) => !isRoofLevel(l)).length}</strong><span>floors</span></div></div>}
         </div>
         <div className="house-inspector-content">{inspector}</div>
         <div className="house-inspector-foot"><div className="house-estimate"><span>Product estimate</span><strong>{formatCurrency(cart.subtotal, currency)}</strong></div><p>From the products and finishes in your plan.</p>{onCart && <button className="house-estimate-button" onClick={onCart}>View products & quantities ↗</button>}</div>
