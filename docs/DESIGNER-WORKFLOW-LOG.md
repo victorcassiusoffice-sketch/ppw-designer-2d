@@ -1,20 +1,22 @@
 # Room Designer — workflow and continuation log
 
-Updated: 24 September 2026 (Mauritius). Owner: Victor.
+Updated: 25 September 2026 (Mauritius). Owner: Victor.
 
 ## Resume here
 
-### Active Home Store / wall surfaces redesign — 24 September, evening
+### Home Store / wall surfaces redesign — 25 September 2026
 
-Victor supplied five Sims FreePlay build/store references plus a screenshot where the expanded catalog leaves camera pods across the house. Started clean at `59123ad`, same feature branch. Application `f93655a1e26ba0114834c0905c81b6a0a1ca070c` is pushed. Vercel deployment `6646609800` reports success at `p4kfu94f6`, but browser and HTTPS checks timed out. The verified `h13bwlpcz` links below remain the fallback until a reachable new deployment is browser-verified.
+The latest implementation is pushed as **`accdec1b3e5fc1c445bfe83af1b37eab62084499`**, following main implementation `f93655a`. All implementation agents are finished. Work remains on the authorized feature branch and PR #36; production/main and Victor's original checkout are preserved.
 
-- Root: move camera, wall visibility, height and daylight controls out of the measured scene into a reserved compact dock; consistent bottom Build/Furnish/Paint/Surfaces/Garden/Solar menu; on-demand in-flow build details; named Close/Escape/click-away behavior with first click consumed to avoid accidental edits.
-- Catalog agent: collapsible Home Store with category tiles, Back/Close, bounded product browser and inline product details; hidden collapsed catalog in 3D, existing Plan catalog preserved.
-- Wall agent: saved brick/plastered-brick/concrete construction surfaces, separate interior/exterior paint and procedural scaled textures, existing quantities/undo/persistence integrated.
-- Product agent: additional catalog-supported appliance/light dimensional previews and a research update linking EA's relevant FreePlay build-menu documentation and public code references.
-- Integration checks: full suite passed 244 files / 2,788 tests; client/API typechecks and changed-file lint passed. Final wall follow-ups passed 18 focused tests, including construction save/load/undo and exposed-facade quantities. Final production build passed after these small follow-ups. Browser QA and link sync remain pending while the new hostname is unreachable. No changes to main/production; original checkout is preserved.
+- One bottom Build/Furnish/Paint/Surfaces/Garden/Solar menu, reserved camera row and on-demand in-flow details replace controls across the house. View contains camera presets, wall visibility, height and daylight; Close, Escape and click-away dismiss foreground controls first.
+- Furnish opens Home Store category tiles, then a bounded product browser with Back/Close and inline details. Closing the catalog restores the canvas. Existing Plan browsing and actual catalog prices remain.
+- Brick, plastered brick and concrete construction are saved and rendered with scaled procedural textures. Interior/exterior paint are independent, including compatible exterior products, quantities and undo. Phone Materials now opens a focused wall-material sheet rather than the entire project menu.
+- Shaped Courts dimensional previews now cover 26 catalog products, adding air conditioners and lamps and improving fridges/TVs. These remain planning approximations. Sims/FreePlay/GitHub/MTS research is in `docs/SIMS-BUILD-RESEARCH.md`; no EA code or assets were imported.
+- **Final validation:** production build, client/API typechecks and changed-file lint pass. Final feature CI passes **244 files / 2,792 tests**, typechecks and secret scan. The separate Lighthouse workflow still audits unchanged production and fails.
+- **Main-pass live QA:** `f93655a` deployed via docs `b82cbaf`, Vercel `6646831397`, at `https://ppw-designer-2d-h0er19n09-victor-ppw.vercel.app`. Standard/TintEX/Courts loaded at desktop/phone widths; also checked 952×710 and 844×390. Camera/catalog stay outside the canvas, inline product details and dismissal work, phone Walls/Done and Build/Solar details work. Outside Pigeon blue with TintEX Mastertop applied to a facade independently, changed quantities and undid correctly. Brick courses are visible. No horizontal overflow/browser errors observed.
+- **Final phone-panel live QA:** Vercel `6647251472`, `https://ppw-designer-2d-3yakkhlme-victor-ppw.vercel.app`, loaded TintEX at desktop and 390×844. The dedicated material sheet showed all three choices immediately; applying concrete, Undo, Close, Escape and backdrop dismissal worked. A subsequent standard-route navigation timed out at connection level; final multi-route verification is being recovered before promoting the current links. The main-pass host above remains the browser-verified fallback.
 
-Next: integrate agents, validate client/API and full suite, deploy only feature branch, test desktop, phone and short landscape with catalog expanded, finish/material/exterior paint and dismissal, then replace this pending checkpoint with exact verified commits/URLs and copy to outputs.
+Next: resolve a consistently reachable final preview, verify standard/TintEX routes desktop/phone, update BUILD-LINKS/Desktop CURRENT-WORK-LINKS/handoff/PR and this checkpoint, refresh saveable outputs. No further implementation is pending from this pass.
 
 ### Walls, clear controls and outdoor materials — 24 September 2026
 
