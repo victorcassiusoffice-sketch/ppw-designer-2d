@@ -13,3 +13,14 @@
 .wall-surface-apply-room { width: 100%; margin-top: 8px; }
 .wall-surface-compact { display: flex; gap: 5px; flex-shrink: 0; }
 .wall-surface-compact button { min-height: 40px; padding: 5px 8px; border: 1px solid #71809666; border-radius: 8px; background: transparent; color: inherit; font-size: 11px; white-space: nowrap; }
+.wall-material-sheet-layer { position: fixed; inset: 0; z-index: 90; }
+.wall-material-sheet-backdrop { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #07162955; }
+.wall-material-sheet { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; width: min(100%, 480px); max-height: min(440px, 58dvh); border: 1px solid #6d849a; border-bottom: 0; border-radius: 18px 18px 0 0; background: #1b2c42; color: #ecf4fa; box-shadow: 0 -10px 36px #07162955; padding-bottom: env(safe-area-inset-bottom); }
+.wall-material-sheet-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-shrink: 0; padding: 10px 14px; border-bottom: 1px solid #71809655; }
+.wall-material-sheet-header h2 { margin: 0; font-size: 16px; font-weight: 650; }
+.wall-material-sheet-header button, .wall-material-sheet footer button { min-height: 40px; padding: 6px 12px; border: 1px solid #71809688; border-radius: 9px; color: inherit; background: #30465f; }
+.wall-material-sheet-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 12px; }
+.wall-material-sheet .wall-surface-options { border: 0; padding: 6px 0; background: transparent; }
+.wall-material-sheet .wall-construction-cards button { min-height: 88px; }
+.wall-material-sheet footer { padding: 8px 12px; flex-shrink: 0; }
+.wall-material-sheet footer button { width: 100%; border-color: #6dc4cf; background: #347382; font-weight: 600; }

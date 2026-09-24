@@ -5,10 +5,10 @@ import { brandIdOfPaint, findWallPaintById, WALL_PAINTS } from '../data/wallPain
 import './wallSurfaceOptions.css';
 
 /** Shared by the desktop palette and the phone sheet: no floating controls. */
-export function WallSurfaceOptions({ compact = false }: { compact?: boolean }): JSX.Element {
+export function WallSurfaceOptions({ compact = false, materialsOnly = false }: { compact?: boolean; materialsOnly?: boolean }): JSX.Element {
   const draft = useDesignerUIStore((state) => state.wallPaintDraft);
   const setDraft = useDesignerUIStore((state) => state.setWallPaintDraft);
-  const surfaceMode = draft.operation === 'construction';
+  const surfaceMode = materialsOnly || draft.operation === 'construction';
   const chooseSide = (side: 'interior' | 'exterior') => {
     const current = findWallPaintById(draft.paintId);
     const compatible = side === 'exterior' && current?.use === 'interior'
@@ -20,13 +20,13 @@ export function WallSurfaceOptions({ compact = false }: { compact?: boolean }): 
     <button type="button" onClick={() => { setDraft({ operation: 'paint' }); chooseSide(draft.side === 'exterior' ? 'interior' : 'exterior'); }} title="Switch between painting the inside and outside face">
       {draft.side === 'exterior' ? 'Outside' : 'Inside'} ↔
     </button>
-    <button type="button" onClick={() => { setDraft({ operation: 'construction', erase: false }); window.dispatchEvent(new CustomEvent('ppw:open-menu', { detail: { section: 'wallpaint' } })); }}>Materials</button>
+    <button type="button" onClick={() => { setDraft({ operation: 'construction', erase: false }); window.dispatchEvent(new CustomEvent('ppw:open-wall-materials')); }}>Materials</button>
   </div>;
   return <section className="wall-surface-options" aria-label="Wall surface and paint side">
-    <div className="wall-surface-tabs" role="group" aria-label="Wall tool">
+    {!materialsOnly && <div className="wall-surface-tabs" role="group" aria-label="Wall tool">
       <button type="button" aria-pressed={!surfaceMode} onClick={() => setDraft({ operation: 'paint' })}>Paint colour</button>
       <button type="button" aria-pressed={surfaceMode} onClick={() => setDraft({ operation: 'construction', erase: false })}>Wall material</button>
-    </div>
+    </div>}
     {surfaceMode ? <>
       <div className="wall-construction-cards">
         {WALL_CONSTRUCTIONS.map((surface) => <button type="button" key={surface.id} aria-pressed={(draft.construction ?? 'plastered-brick') === surface.id}

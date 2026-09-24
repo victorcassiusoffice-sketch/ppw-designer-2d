@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { act } from 'react';
+import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -7,7 +7,7 @@ import { TopBar } from '../TopBar';
 import { useDesignerUIStore, type BuildTool } from '../../store/designerUIStore';
 import { usePropertyStore } from '../../store/propertyStore';
 
-vi.mock('../RoomView3D', () => ({ RoomView3D: () => <div data-testid="test-scene" /> }));
+vi.mock('../RoomView3D', () => ({ RoomView3D: ({ brushStrip }: { brushStrip?: ReactNode }) => <div data-testid="test-scene">{brushStrip}</div> }));
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let host: HTMLDivElement;
 let opener: HTMLButtonElement;
@@ -49,6 +49,46 @@ function escape() {
 }
 
 describe('3D project sheet and panel dismissal', () => {
+  function phonePaint() {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 390 });
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query.includes('min-width') ? 390 >= Number(query.match(/\d+/)?.[0] ?? 0) : false,
+      media: query, onchange: null, addEventListener() {}, removeEventListener() {},
+    }));
+    useDesignerUIStore.setState({ tool: 'wallpaint' });
+    render();
+    const materials = button('Materials');
+    materials.focus(); click(materials);
+    return materials;
+  }
+
+  it('opens phone Materials directly with three choices and no unrelated project menu', () => {
+    const materials = phonePaint();
+    const sheet = document.querySelector('[aria-labelledby="wall-material-sheet-title"]')!;
+    expect(sheet).not.toBeNull();
+    expect(document.getElementById('ppw-sheet')).toBeNull();
+    expect(sheet.querySelectorAll('.wall-construction-cards button')).toHaveLength(3);
+    expect(sheet.textContent).toContain('Exposed brick');
+    expect(sheet.textContent).not.toContain('Flooring');
+    expect(document.activeElement).toBe(button('Close wall materials', sheet));
+    click(button('Exposed brick', sheet));
+    expect(useDesignerUIStore.getState().wallPaintDraft.construction).toBe('brick');
+    click(button('Use on walls', sheet));
+    expect(document.querySelector('[data-testid="wall-material-sheet-host"]')).toBeNull();
+    expect(useDesignerUIStore.getState().tool).toBe('wallpaint');
+    expect(useDesignerUIStore.getState().viewMode).toBe('3d');
+    expect(document.activeElement).toBe(materials);
+  });
+
+  it.each(['Close wall materials', 'Dismiss wall materials', 'Escape'])('dismisses phone Materials through %s without leaving 3D', (exit) => {
+    phonePaint();
+    if (exit === 'Escape') escape(); else click(button(exit));
+    expect(document.querySelector('[data-testid="wall-material-sheet-host"]')).toBeNull();
+    expect(document.body.style.overflow).not.toBe('hidden');
+    expect(useDesignerUIStore.getState().viewMode).toBe('3d');
+    expect(document.getElementById('ppw-sheet')).toBeNull();
+  });
+
   it('dismisses paint when clicking other chrome but keeps canvas paint clicks available', () => {
     useDesignerUIStore.setState({ tool: 'wallpaint' });
     render();
