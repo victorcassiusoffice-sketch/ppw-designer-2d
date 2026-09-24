@@ -1,12 +1,12 @@
 <!-- verified-preview:start -->
 ## Current feature deployment
 
-Updated: 2026-09-24 17:46 (local) | commit: 8252a7b84db93c6e377c6948dda426be431be63c
+Updated: 2026-09-24 18:22 (local) | commit: dc30e250bdb0eddf5afd4f7ff98b715b699fbd4d (application 89f7878)
 
-- Designer: https://ppw-designer-2d-guazc2nhr-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-guazc2nhr-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: Connected 3D walls with room closure and Undo; compact Plan wall dock; selection moved out of canvas; clear panel Close/Escape; surrounding grass; concrete and sourced Espace Maison paving.
-- Verification: Unique preview loaded desktop and phone. Built 40m2 room in 3D, closed loop, Undo/Redo, matching Plan; phone wall drag; Plan dock no overlap; selected item in inspector; Project/New confirmation and help dismissal; paving placement and measured estimate; TintEX paint/floor Close and Escape. Client/API CI, Vitest and Vercel pass; unchanged-production Lighthouse failure persists.
+- Designer: https://ppw-designer-2d-h13bwlpcz-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-h13bwlpcz-victor-ppw.vercel.app/designer?demo=tintex
+- Landed: Connected 3D wall drawing and room closure; unobstructed wall and item controls with clear dismissal; grass surrounds; concrete and sourced Espace Maison paving; Sims source research. Existing floors, solar and backend features retained.
+- Verification: Deployment 6639900049 succeeded. Final standard, Courts and TintEX routes rendered on desktop and 360/390px phones without horizontal overflow. Final grass and hidden feedback launcher checked. Main functional walkthrough verified wall closure/undo, panel dismissal and paving placement. CI application 89f7878: 243 files / 2763 tests and root/API typechecks passed. Separate Lighthouse still targets unchanged production.
 - Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
 - Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.
