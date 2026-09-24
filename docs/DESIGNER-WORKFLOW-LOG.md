@@ -1,31 +1,28 @@
 # Room Designer — workflow and continuation log
 
-Updated: 23 September 2026 (Mauritius). Owner: Victor.
+Updated: 24 September 2026 (Mauritius). Owner: Victor.
 
 ## Resume here
 
-### Active continuation — 24 September 2026
+### Walls, clear controls and outdoor materials — 24 September 2026
 
-Victor reported obstructing wall/item dialogs and requested connected 3D wall drawing, surrounding grass, Espace Maison slabs, and Sims code research. Implementation is in the active feature checkout, awaiting the final checks/deploy described below. The previously verified preview remains the fallback until a new URL is recorded.
+Victor reported obstructing wall/item dialogs and requested connected 3D wall drawing, surrounding grass, Espace Maison slabs, and Sims code research. This implementation is pushed to the feature branch. The main change (`8252a7b`) is deployed and browser-verified. Final application commit **`89f7878fe46a53253eec808df47602e61ec1407d`** only softens the lawn texture and hides Vercel's preview-feedback launcher while the Designer is mounted. Vercel reports deployment **`6639356970`** successful, but its `kl8wen9qw` hostname times out in both the browser and curl while the verified `guazc2nhr` hostname responds HTTP 200. Keep the working `guazc2nhr` links below as the current preview. Final-polish browser verification is pending; a documentation-only push will request a fresh deployment of the same application.
 
 - Added original connected 3D wall drawing: drag or tap corners, grid/angle/endpoint magnets, live height/length ghost, per-segment undo, safe loop closure into a room. Controls occupy a reserved strip; rectangular room drawing remains.
 - Plan wall controls now occupy a compact dock above the measured drawing viewport, replacing the floating left card.
 - Selected-product controls moved out of the scene into the desktop inspector. Phone selection uses a compact named strip with Edit and clear selection. Deselect/Close and Escape behavior are explicit.
 - Fixed desktop Project tools visibility, portaled New-property confirmation above the inert Plan controls, and added persistent Close headers to finish and energy panels. Foreground dialogs own Escape.
 - Automatic grass surrounds the house (actual plot bounds or 3m border), excluding room footprints and explicit surfaces. Added unpriced generic concrete and three sourced UBP slabs from Espace Maison with exact dimensions, per-piece prices checked 2026-09-23, links, saved product IDs and separate measured material estimates. No new purchase API or stock claims.
-- Sims research is in `docs/SIMS-BUILD-RESEARCH.md`: verified UI.dll/BuildController references, MTS tools, and Simitone/FreeSO alternative implementation. No external game code imported.
-- Initial full wall/garden suite passed 242 files / 2,752 tests and production build passed. Final panel-integrated suite/build now running. Next: resolve failures if any, commit/push ONLY cursor/feat-3d-flooring-hud-bc95, verify unique Vercel desktop/phone routes plus actual drawing/dismissal, update all links and saveable log.
-
-
-Current checkpoint: **Architectural redesign deployed and browser-verified. Application commit `e6c4e82f14b1f6c0bda3aa3805f5600e82e211ef`; Vercel deployment `6614851004`.** The following documentation commit records verification only. Continue from the specific backlog below.
+- Sims research is in `docs/SIMS-BUILD-RESEARCH.md`: verified `UI.dll`, `Sims3.UI.BuildController`, MTS assembly/tool references and Simitone/FreeSO's public alternative implementation. These are not a verified portable Sims 3/4 browser build engine. No game DLLs, assets or external game code were imported.
+- Full panel-integrated local regression passed **243 files / 2,762 tests**. Subsequent focused dismissal/gesture coverage passed 3 files / 22 tests, including one added test; final grass checks passed 9 tests. Client/API typechecks, scoped lint and production build passed. The final `89f7878` GitHub Vitest job then passed the full **243 files / 2,763 tests**, and its client/API typechecks, secret scan and Vercel checks passed. The separate Lighthouse failure still targets unchanged production.
+- Main preview QA passed: standard, TintEX and Courts at desktop and phone widths; a connected 3D wall run closed a 40 m² room and Undo/Redo preserved it; 2D wall dock and phone selection strip stayed outside the canvas; finish, item, Project tools and Solar dismissal worked. A sourced Grey Rustic paving patch measured 4.8 m², 48 whole pieces and Rs8,928. No cloud save, quote request or purchase was submitted.
 
 - Active checkout: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`
 - Branch: **`cursor/feat-3d-flooring-hud-bc95` only**. Draft PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
-- Original refinement started at `f9a6ab8`; this architectural redesign started clean at `bb5612f`.
-- Browser-verified feature preview: https://ppw-designer-2d-3rl6v0t4b-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-3rl6v0t4b-victor-ppw.vercel.app/designer?demo=tintex
-- Furnished show home: https://ppw-designer-2d-3rl6v0t4b-victor-ppw.vercel.app/designer?demo=courts
-- Earlier verified refinement fallback (`b70c9fd`): `https://ppw-designer-2d-m7kiu3e7s-victor-ppw.vercel.app/designer?demo=tintex`.
+- Current browser-verified feature preview (`8252a7b`, deployment `6638773147`): https://ppw-designer-2d-guazc2nhr-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-guazc2nhr-victor-ppw.vercel.app/designer?demo=tintex
+- Furnished show home: https://ppw-designer-2d-guazc2nhr-victor-ppw.vercel.app/designer?demo=courts
+- Final-polish host with reachability failure, **not the current preview**: `https://ppw-designer-2d-kl8wen9qw-victor-ppw.vercel.app` (`89f7878`, deployment `6639356970`). Await a working replacement before changing current links.
 - **Never push or merge main.** Production https://designer.ppwellness.co stays untouched. Handoff §7 requires Victor's explicit emergency instruction.
 - Preserve the original checkout at `C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d`, its other branch and Victor's dirty files. Work in the separate checkout above.
 
@@ -34,6 +31,8 @@ Current checkpoint: **Architectural redesign deployed and browser-verified. Appl
 Refine house design to feel more like The Sims, guided by the four supplied screenshots: a prominent furnished dollhouse view, readable floor plans, stacked storeys, garden context and restrained contextual controls. Preserve existing capabilities, explicitly moving the house and solar calculations. Use an original PPW interface; the screenshots are visual references, not new APIs or product data.
 
 Reference files: `C:\Users\Victor\Pictures\Screenshots\Screenshot 2026-09-23 143045.png`, `142930.png`, `142837.png`, `142751.png` (all share the full `Screenshot 2026-09-23 ` filename prefix).
+
+Latest reported defect: the selected Lavis sideboard toolbar covered the house and lacked an obvious dismissal. The new desktop inspector and optional phone item sheet address that class of obstruction; wall controls now reserve their own space. Maintain this rule for future tools: keep persistent controls outside the drawing viewport and give every temporary panel a named Close/Cancel action.
 
 ## Completed foundation before this refinement
 
@@ -83,25 +82,31 @@ Garden terrain consists of rectangular patches, including raised patches. Roofs 
 
 ### Current file ownership / continuation details
 
-All agents are complete and files integrated. Main application commits in this pass: `9131373` (workspace/room builder/rendering/furniture), `91ad768` (dark panels/phone solar/camera typography), and `e6c4e82` (underlying plan focus isolation and paint caption contrast). Earlier application commits remain documented above.
+All implementation agents are complete and integrated. Current application commits: `8252a7b` (connected walls, clear controls, grass and sourced paving), then `89f7878` (subtle lawn texture and removal of Vercel preview feedback from design controls). The final deployment reports success but its hostname times out; final-polish browser verification and the fresh deployment remain pending. The main implementation's `guazc2nhr` preview remains working and verified. Earlier architectural commits and their checks remain in the history below.
 
-Main source: `HouseWorkspace.tsx` / `houseWorkspace.css` own the dark layout. `RoomView3D.tsx` owns gestures and tool transitions. `BuildingControls.tsx` supports the inline inspector. Room gestures/atomic commits are in `designer/roomBuildGesture.ts` and `lib/roomBuildActions.ts`. `ThreeStage.tsx`, `renderPresentation.ts`, `furniturePreview.ts` and `data/dimensionalPreview.ts` own the two lighting profiles and clearly labeled furniture approximations. Existing shop/energy/quote APIs are unchanged. The 2D plan stays mounted but inert while covered by 3D; its controls return when switching to Plan.
+- `HouseWorkspace.tsx` / `houseWorkspace.css`, `BuildingControls.tsx` and `RoomView3D.tsx`: dark workspace, desktop inspector, phone selection/Edit/clear strip, drawing status and shared tool transitions. The 2D plan stays mounted but inert while 3D covers it.
+- `designer/wallBuildGesture.ts` / `lib/wallBuildActions.ts`: connected 3D wall snapping, validation, live preview, atomic segment commits and safe room closure. The older `roomBuildGesture.ts` / `roomBuildActions.ts` retain rectangular room dragging.
+- `RoomDrawMode.tsx`, `RoomCanvas.tsx`, `roomDrawDock.css`: compact in-flow Plan wall controls and separately measured drawing viewport.
+- `TopBar.tsx`, `ToolPanelHeader.tsx`, `EnergyPanel.tsx`, `houseToolPanels.css`: visible Project tools, correctly layered New-property confirmation, persistent Close actions and foreground-first Escape handling.
+- `three/gardenGround.ts` / `gardenSurround.ts`, `ThreeStage.tsx`, `gardenMeshes.ts`: bounded automatic lawn, room/surface exclusion, product-sized slab joints and resource cleanup. The automatic lawn is render-only and does not add saved plan objects or distort house camera/shadow bounds.
+- `data/outdoorPaving.ts`, `designer/gardenPaving.ts`, `garden.ts`, `GardenPanel.tsx`, `GardenLayer.tsx`: three sourced Espace Maison UBP products, generic concrete, saved optional paving product IDs and whole-piece material estimates. Existing shop, energy, quote and cloud APIs remain unchanged.
+- `docs/SIMS-BUILD-RESEARCH.md`: source URLs, verified game UI identifiers, research limits and the mapping to this repository's original code.
 
-Validation logs in parent `work`: `architectural-final-tests.log` (235 files / 2,711 tests), `architectural-focus-tests.log` (21 follow-up workspace/phone tests), `architectural-focus-build.log`. Client/API typechecks, scoped ESLint and final production build passed. Separate Lighthouse workflow still audits unchanged production and has the pre-existing failure. No customer cloud writes or quote submissions during QA.
+Validation logs in parent `work`: `walls-garden-tests.log`, `walls-garden-build.log`, `walls-garden-final-tests.log` (243 files / 2,762 tests), and `walls-garden-final-build.log`. Client/API typechecks, scoped lint and production build passed; follow-up targeted checks are recorded above. Final `89f7878` GitHub client/API typechecks, secret scan and Vercel passed; its full Vitest log confirms 243 files / 2,763 tests. Separate Lighthouse still audits unchanged production and has the previously recorded failure. No customer cloud writes, quotes or purchases were submitted during QA.
 
 ### Next concrete continuation
 
 1. Open this active checkout, verify the same feature branch and inspect git status; preserve any new user changes. Read this log and BUILD-LINKS before touching code.
-2. Open the furnished show home for furniture/lighting comparisons; TintEX is intentionally a paint demonstration and remains unfurnished. The current feature is deployed; no unpushed implementation is left from this pass.
+2. Push the documentation-only checkpoint to request a fresh deployment of the unchanged final application; inspect its actual hostname reachability. The `89f7878` host `kl8wen9qw` times out despite Vercel's success status, so keep verified `guazc2nhr` in current links until a replacement passes desktop/phone route checks. Confirm the softened lawn and absence of the Vercel feedback circle over height controls; then update BUILD-LINKS, CURRENT-WORK-LINKS, both handoff pointers, PR #36 and the saveable workflow copy. The substantial wall/dismissal/paving walkthrough has already passed on `8252a7b`. No unpushed implementation remains.
 3. Next realism work: replace remaining appliance boxes with verified manufacturer/appropriately licensed models, and improve room-specific staging/material detail. Existing Courts geometry is a dimensional preview, not exact product likeness. Do not represent generated imagery or demo telemetry as real backend data.
-4. Remaining Sims/building backlog: wall/room edge editing directly in 3D (rectangular room drag is implemented; arbitrary walls still use Plan), joined roofs and pitched-roof solar mounting, freeform terrain, and an atomic whole-building move if added. Existing Move view is camera panning; it is not whole-building translation. Floors/stairs/openings/garden/pan/item movement/solar paths already work and must be preserved.
+4. Remaining Sims/building backlog: editing/moving existing wall and room edges directly in 3D, joined roofs and pitched-roof solar mounting, freeform terrain, and an atomic whole-building move if added. Connected arbitrary 3D wall runs and validated closed-room creation are now implemented, alongside rectangular room drag. Existing Move view is camera panning; it is not whole-building translation. Floors/stairs/openings/garden/pan/item movement/solar paths already work and must be preserved.
 5. After each meaningful change validate, push only this feature branch, verify the unique Vercel deployment, update build links and append a real checkpoint before stopping. Never push/merge main or touch production without explicit handoff §7 authorization.
 
 ## Rules for the next continuation
 
 Update this file after each meaningful chunk and before ending work or approaching a limit. Record exact commit, files changed, checks actually run, verified preview URL, open issues and the next concrete step. Keep pending work visibly pending. Mirror the latest log to `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-Workflow.md` for Victor to save. Do not reset existing changes or substitute main for the feature branch.
 
-## Architectural redesign — current active pass
+## Architectural redesign — historical 23 September pass
 
 Victor said the previous pass is still far from the references. Current target: the fourth image's dark navy navigation, large scene and right contextual inspector; richer architectural presentation inspired by the furnished cutaways; real drag-to-build rooms in 3D. Preserve paint color truth, solar calculation, saved designs and both views.
 
@@ -121,3 +126,11 @@ Victor said the previous pass is still far from the references. Current target: 
 Final verification: standard /designer rendered at 1280 px desktop and 390×844 phone (no horizontal overflow); TintEX rendered at 1280×900 and 360×800. Covered plan toolbar/canvas controls are absent from the 3D accessibility tree; choosing 2D Plan restores them. Phone Solar opens the focused dark sheet, and Roof closes the sheet to reveal the editing slab. Courts rendered all 58 scene parts and the new furniture previews; no console errors observed in that final view. TintEX restored to Ground/Dollhouse for exploration. Temporary QA tabs closed, viewport override reset; final TintEX and furnished tabs retained. BUILD-LINKS, Desktop CURRENT-WORK-LINKS and both handoff pointers updated. Final regression: 235 files / 2,711 tests plus 21 follow-up workspace/phone tests; client/API typechecks, lint and final build passed. No main push/merge, production deploy, customer cloud save or quote submission.
 
 Final GitHub checks for `e6c4e82`: client/API typecheck, Vitest, secret scan and Vercel preview succeeded. The separate Lighthouse job failed against unchanged production as previously recorded. Original checkout branch remains `feat/designer-3d-sims-paint-2026-09-17`; Victor's files were preserved. Final documentation commit records this verification and changes no application code.
+
+## Walls and garden continuation — 24 September
+
+**Implementation checkpoint:** Investigated the obstructing selected-item toolbar, floating Plan wall controls, hidden desktop Project tools and panel dismissal layers. Moved persistent controls outside the drawing canvas, added explicit close/clear actions and made foreground panels receive Escape first. Added original connected 3D wall gestures and safe closed-room construction with shared plan data. Added render-only surrounding lawn, generic concrete and three sourced Espace Maison paving products with optional saved product IDs and whole-piece material estimates. Public Sims source research is recorded separately; no external game engine or assets were imported.
+
+**Main feature pushed and verified:** `8252a7b84db93c6e377c6948dda426be431be63c` deployed as `6638773147` at `https://ppw-designer-2d-guazc2nhr-victor-ppw.vercel.app`. Standard, TintEX and Courts loaded at desktop and phone widths. On a disposable plan, four connected 3D wall segments formed a 40 m² room; Undo/Redo preserved the room and Plan matched its area. Plan wall controls reserved their own space, including expanded phone snap/length controls. Selected furniture stayed in the desktop inspector; phone Edit, Close and clear-selection actions worked without covering the canvas persistently. Project tools/New-property Cancel, Paint/Floor Close/Escape and phone Solar Escape behaved correctly. Grey Rustic paving placed beside the house and showed 4.8 m², 48 pieces and Rs8,928. No observed TintEX console errors; no cloud, quote or purchase submissions.
+
+**Final polish CI passed; hostname verification blocked:** `89f7878fe46a53253eec808df47602e61ec1407d` reduces the grass texture's repeated pattern and hides the Vercel preview feedback launcher while Plan or 3D is mounted; the launcher had covered wall-height controls. GitHub client/API typechecks, secret scan and Vercel passed; Vitest passed 243 files / 2,763 tests. Vercel reports deployment `6639356970` successful at `https://ppw-designer-2d-kl8wen9qw-victor-ppw.vercel.app`, but browser and curl requests time out. The verified `guazc2nhr` preview still responds HTTP 200 and remains the current working link. Next: request a fresh deployment with a documentation-only push, confirm its desktop/phone routes and the two visual changes, then synchronize build links, both handoff pointers, PR #36 and the saveable workflow log. The separate Lighthouse failure targets unchanged production. Main and production remain untouched; the original checkout's other branch and Victor's changes are preserved.
