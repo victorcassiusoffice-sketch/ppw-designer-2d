@@ -4,6 +4,19 @@ Updated: 25 September 2026 (Mauritius). Owner: Victor.
 
 ## Resume here
 
+### Developer / merchant pitch and standalone Studio — 25 September 2026 — preview verification pending
+
+Latest Victor request: rename TintEX demo to Demo (designer only), create two compact interactive presentations for property developers and merchants, and a standalone Studio with Shop/merchant catalogue access. Include 2D/Premium 3D, the supplied Calendly meeting URL, original concept imagery and an embeddable designer. Show proposed deadlines, delivery coordination, materials, custom products, partnerships, optional AI/e-signature/finance honestly. No live orders, payments or quote emails in preview.
+
+- Branch remains `cursor/feat-3d-flooring-hud-bc95`, draft PR #36. Previous verified application is the 9dar1nmsw deployment below. New work is not yet deployed. Production/main and original dirty checkout stay untouched.
+- Routes being added: `/pitch/developers`, `/pitch/merchants`, `/studio`, `/studio/designer`, `/studio/shop`, `/studio/merchants`, `/demo`, `/embed/designer`. Designer embed accepts `scene=home|paint` and `view=2d|3d`; legacy `/designer?demo=tintex` remains.
+- Root owns Studio, route integration, endpoint-specific embed headers, deployment, verification and docs. `catalog_layout` owns pitch pages; `building_foundation` owns generic demo and local-only designer commerce UI; `wall_materials` owns trusted server preview safety and source maps.
+- Two original generated architectural concepts are in `public/showcase/`. OpenArt was unavailable, so the available imagegen skill produced them. They are labelled concepts, not actual product renders.
+- Backend guard depends on trusted `VERCEL_ENV=preview` or `DEMO_ONLY`; browser flags cannot enable transactions. Browser-delivered code cannot be made uncopyable. Public source maps are disabled/deleted; private keys/logic stay server-side.
+- Implementation complete. Local production build, API typecheck and scoped lint pass; integrated regression run passed 262 files / 2,929 tests. Final view-message/autosave refinements passed focused tests. Build contains zero public .map files. Existing large designer/Three chunks remain build warnings.
+- Integration corrections: lazy-load the designer from pitch/Studio; keep one embedded browsing context while switching Plan/3D, validate same-origin sender/source/message and synchronize parent controls, flush pending edits on pagehide/beforeunload/unmount, use document navigation on Studio exits so parent stores reload current data. Direct Shop entry marks a demo session; checkout components never mount in read-only mode.
+- Pending: push this completed chunk, verify desktop/phone/embeds and no-order responses on a unique Vercel deployment; update BUILD-LINKS, Desktop CURRENT-WORK-LINKS, handoffs, PR and saveable outputs. Integration guide is docs/PITCH-STUDIO.md and outputs/Room-Designer-Pitch-Guide.md.
+
 ### Floor / roof / checkout workspace pass — 25 September 2026 — shipped
 
 Application **`c7782d0cacc219e40dbc8904054da07fd537efe6`**, following main implementation `1687058bc57ea4674df362d0ed54e16ce34f6007`, is pushed on `cursor/feat-3d-flooring-hud-bc95` only. Vercel deployment **`6658137187`** is verified at the links below. All implementation agents are finished. Victor's brief for direct Plan controls, whole-building roof/solar work, Add floor, openings and visible product costs is implemented; documentation synchronization is the final follow-up. Production/main and the original dirty checkout remain untouched.

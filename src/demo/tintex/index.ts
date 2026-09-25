@@ -11,12 +11,14 @@ import type { DemoDefinition } from '../demoCatalog';
 import { buildShowFlat } from '../sofap';
 
 export const TINTEX_SLUG = 'tintex';
-export const TINTEX_PAGE_NAME = 'TintEX · Painted show flat';
+export const TINTEX_PAGE_NAME = 'Demo';
 
 export const TINTEX_DEMO: DemoDefinition = {
   slug: TINTEX_SLUG,
   merchant: 'TintEX',
   pageName: TINTEX_PAGE_NAME,
+  legacyPageNames: ['TintEX · Painted show flat'],
+  propertyId: 'tintex-show-flat',
   products: [],
   currency: 'MUR',
   paintBrandIds: ['tintex'],

@@ -27,6 +27,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../store/cartStore';
+import { isShowcaseReadOnly, DEMO_NOTICE } from '../lib/showcaseSafety';
 import { useCurrencyStore } from '../store/currencyStore';
 import { CATEGORY_LABELS } from '../data/products';
 import { formatCurrency } from '../lib/currency';
@@ -76,6 +77,7 @@ export function CartStrip() {
   const cart = useCart();
   const currency = useCurrencyStore((s) => s.currency);
   const navigate = useNavigate();
+  const readOnly = isShowcaseReadOnly();
   // The sheet is opened deliberately, so show the line items straight away.
   const [expanded, setExpanded] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -262,9 +264,9 @@ export function CartStrip() {
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
             <p className="text-[11px] font-medium text-ppw-charcoal">
-              Shipping + tax calculated at checkout. FX live-fetched daily.
+              {readOnly ? DEMO_NOTICE : 'Shipping + tax calculated at checkout. FX live-fetched daily.'}
             </p>
-            <div className="flex gap-2">
+            {!readOnly && <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => { setMobileOpen(false); navigate('/cart'); }}
@@ -279,7 +281,7 @@ export function CartStrip() {
               >
                 Checkout
               </button>
-            </div>
+            </div>}
           </div>
         </div>
       )}

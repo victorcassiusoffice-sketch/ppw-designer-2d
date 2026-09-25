@@ -19,12 +19,14 @@ import { useEffect, useState } from 'react';
 import { registerAllDemos } from './index';
 import { activeDemo, setActiveDemo, type DemoDefinition } from './demoCatalog';
 import { useDesignsStore, DRAFT_ID } from '../store/designsStore';
+import { usePropertyStore } from '../store/propertyStore';
 import { useHistoryStore } from '../store/historyStore';
 import { useToastStore } from '../store/toastStore';
 import { useCurrencyStore } from '../store/currencyStore';
 import { applyPage, currentPageId, flushCurrentPage, promoteDraftToPage, switchToPage } from '../lib/pages';
 import { useDesignerUIStore } from '../store/designerUIStore';
 import { brandIdOfPaint, findWallPaintById, paintsForBrand } from '../data/wallPaints';
+import { demoRoute } from './demoRoute';
 
 /**
  * A paint company's pitch opens with ITS first line on the brush (TintEX,
@@ -56,8 +58,10 @@ export function readDemoParam(search: string): string | null {
  * Register + activate from the URL. Returns the active demo (which may have
  * been activated on an earlier navigation in this tab — sessionStorage).
  */
-export function activateDemoFromUrl(search: string): DemoDefinition | null {
+export function activateDemoFromUrl(search: string, pathname = '/designer'): DemoDefinition | null {
   registerAllDemos();
+  const route = demoRoute(pathname, search);
+  if (route) { setActiveDemo(`demo-${route.scene}`); return activeDemo(); }
   const slug = readDemoParam(search);
   if (slug === 'off') setActiveDemo(null);
   else if (slug) setActiveDemo(slug); // an unknown slug is ignored, not an error
@@ -73,10 +77,18 @@ export function ensureDemoPage(demo: DemoDefinition): DemoPageOutcome {
   ensureDemoPaintBrush(demo);
   const designs = useDesignsStore.getState();
   const existing = Object.values(designs.designs).find(
-    (d) => d.id !== DRAFT_ID && d.name === demo.pageName,
+    (d) => d.id !== DRAFT_ID && (demo.propertyId ? d.property.id === demo.propertyId : d.name === demo.pageName),
   );
   if (existing) {
+    const isCurrent = currentPageId() === existing.id;
+    const existingName = isCurrent ? usePropertyStore.getState().property.name : existing.property.name;
+    if (demo.legacyPageNames?.includes(existing.name) && demo.legacyPageNames.includes(existingName)) {
+      if (isCurrent) flushCurrentPage();
+      designs.rename(existing.id, demo.pageName);
+      if (isCurrent) usePropertyStore.getState().renameProperty(demo.pageName);
+    }
     if (currentPageId() === existing.id) return 'current';
+    promoteDraftToPage();
     switchToPage(existing.id);
     return 'switched';
   }
@@ -97,15 +109,17 @@ export function useDemoMode(): DemoDefinition | null {
   // useState's initialiser runs synchronously in the FIRST render, before any
   // child mounts — the one moment early enough for the catalogs (see header).
   const [demo] = useState<DemoDefinition | null>(() =>
-    typeof window === 'undefined' ? null : activateDemoFromUrl(window.location.search),
+    typeof window === 'undefined' ? null : activateDemoFromUrl(window.location.search, window.location.pathname),
   );
   const pushToast = useToastStore((s) => s.push);
   useEffect(() => {
     if (!demo) return;
     const outcome = ensureDemoPage(demo);
+    const route = demoRoute(window.location.pathname, window.location.search);
+    if (route) useDesignerUIStore.getState().setViewMode(route.view === '2d' ? 'plan' : '3d');
     if (outcome !== 'current') {
       pushToast(
-        `${demo.merchant} show home — ${demo.products.length} products from their own catalog, at their prices.`,
+        'Demo — edit rooms, products and finishes. Preview only; no orders.',
         'success',
       );
     }

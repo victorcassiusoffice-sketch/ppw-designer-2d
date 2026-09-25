@@ -23,6 +23,7 @@
  */
 
 import { sql } from 'drizzle-orm';
+import { rejectShowcaseTransaction } from './_lib/showcaseSafety.js';
 import { withSentry, type MinReq, type MinRes } from './_lib/sentry.js';
 import { getDb } from './_db/client.js';
 import { recordAudit } from './_lib/auditLog.js';
@@ -184,6 +185,9 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
   const parts = url.split('/').filter(Boolean);
   // ['api', 'cron', 'escalate-orders']
   const action = parts[2];
+
+  if (['escalate-orders', 'disburse-payouts', 'gumroad-reconcile', 'email-send-reconcile'].includes(action ?? '')
+    && rejectShowcaseTransaction(res)) return;
 
   if (action === 'escalate-orders') {
     try {

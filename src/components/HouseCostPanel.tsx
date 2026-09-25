@@ -2,12 +2,14 @@ import { getProductById, productImageUrl } from '../data/products';
 import { hasSolarPanelPreview, SOLAR_PANEL_PREVIEW_NOTE } from '../data/solarPreview';
 import { formatCurrency } from '../lib/currency';
 import { useCart } from '../store/cartStore';
+import { isShowcaseReadOnly, DEMO_NOTICE } from '../lib/showcaseSafety';
 
 /** A read-only view of the same product and finish lines used by the cart page. */
 export function HouseCostPanel({ productId, onEdit, onCart }: {
   productId?: string; onEdit?: () => void; onCart?: () => void;
 }) {
   const cart = useCart();
+  const readOnly = isShowcaseReadOnly();
   const product = productId ? getProductById(productId) : undefined;
   const money = (amount: number) => formatCurrency(amount, cart.currency);
   return <div className="house-cost-panel">
@@ -31,6 +33,7 @@ export function HouseCostPanel({ productId, onEdit, onCart }: {
     </section>
     <div className="house-cost-total"><span>Product estimate</span><strong data-testid="house-cost-total">{money(cart.subtotal)}</strong></div>
     <p className="house-cost-note">Products and finishes only. Building structure, labour and delivery are not included.</p>
-    {onCart && <button type="button" className="house-review-cart" onClick={onCart}>Review cart & checkout ↗</button>}
+    {readOnly && <p className="house-cost-note" data-testid="demo-order-notice">{DEMO_NOTICE}</p>}
+    {!readOnly && onCart && <button type="button" className="house-review-cart" onClick={onCart}>Review cart & checkout ↗</button>}
   </div>;
 }

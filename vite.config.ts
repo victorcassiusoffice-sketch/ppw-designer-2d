@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import path from 'path';
+import { readdir } from 'node:fs/promises';
 
 // Sentry source-map upload runs only when an auth token is present
 // (so local builds don't try to publish). SENTRY_AUTH_TOKEN +
@@ -21,7 +22,10 @@ export default defineConfig({
             org: process.env.SENTRY_ORG,
             project: process.env.SENTRY_PROJECT,
             authToken: process.env.SENTRY_AUTH_TOKEN,
-            sourcemaps: { assets: ['./dist/**/*.{js,map}'] },
+            sourcemaps: {
+              assets: ['./dist/**/*.{js,map}'],
+              filesToDeleteAfterUpload: ['./dist/**/*.map'],
+            },
             telemetry: false,
             // OMS Wave 1.10 — tag deploys with the Vercel commit SHA so
             // error frames link back to the exact build.
@@ -34,6 +38,18 @@ export default defineConfig({
           }),
         ]
       : []),
+    {
+      name: 'no-public-source-maps',
+      apply: 'build',
+      // Sentry's writeBundle upload/deletion completes before closeBundle.
+      // Its deletion failures are non-fatal, so fail this build if any map remains.
+      async closeBundle() {
+        const files = await readdir(path.resolve(__dirname, 'dist'), { recursive: true });
+        if (files.some((file) => file.endsWith('.map'))) {
+          throw new Error('Public source maps remain in dist; refusing to publish this build.');
+        }
+      },
+    },
   ],
   resolve: {
     alias: {
@@ -45,6 +61,9 @@ export default defineConfig({
   // Vercel sets VERCEL_GIT_COMMIT_SHA at build; local falls back to a
   // timestamp. Surfaced bottom-left in App.tsx.
   define: {
+    __SHOWCASE_READ_ONLY__: JSON.stringify(
+      process.env.VERCEL_ENV === 'preview' || /^(1|true)$/i.test(process.env.DEMO_ONLY?.trim() ?? ''),
+    ),
     __APP_BUILD__: JSON.stringify(
       process.env.VERCEL_GIT_COMMIT_SHA
         ? process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7)
@@ -64,7 +83,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: sentryEnabled ? 'hidden' : false,
     rollupOptions: {
       // jsPDF references canvg + dompurify as OPTIONAL deps for its
       // SVG-to-PDF rendering. We never use those code paths (we render

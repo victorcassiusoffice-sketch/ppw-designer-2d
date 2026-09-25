@@ -9,6 +9,7 @@ import { activeLevelIdOf, isOutdoorRoom, isRoofRoom, levelsOf, isRoofLevel } fro
 import { isDrawnPolygon } from '../designer/roomLayout';
 import type { BuildingControlsProps } from './BuildingControls';
 import { HouseCostPanel } from './HouseCostPanel';
+import { isShowcaseReadOnly, DEMO_NOTICE } from '../lib/showcaseSafety';
 import './houseWorkspace.css';
 
 export type HouseMode = 'build' | 'furnish' | 'paint' | 'floor' | 'garden' | 'energy';
@@ -35,6 +36,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
   buildTool?: BuildingControlsProps['tool']; onBuildTool?: BuildingControlsProps['onToolChange']; onFloorAdded?: () => void;
 }) {
   const cart = useCart();
+  const readOnly = isShowcaseReadOnly();
   const currency = useCurrencyStore((s) => s.currency);
   const precision = useDesignerUIStore((s) => s.precision);
   const property = usePropertyStore((s) => s.property);
@@ -91,14 +93,14 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
   }
   return <div className="house-workspace">
     <header className="house-header">
-      <div className="house-brand" aria-label="PPW House Studio"><span className="house-mark">P</span><div><strong>HOUSE STUDIO</strong><span>{name}</span></div></div>
+      <div className="house-brand" aria-label="PPW House Studio"><span className="house-mark">P</span><div><strong>{readOnly ? 'DEMO' : 'HOUSE STUDIO'}</strong><span title={readOnly ? DEMO_NOTICE : name}>{readOnly ? 'Preview · no orders' : name}</span></div></div>
       <div className="house-view-switch" aria-label="Design view"><button onClick={onPlan}>2D Plan</button><button aria-pressed="true">3D House</button></div>
       <div className="house-project-actions">
         <button title="Undo (Ctrl+Z)" aria-label="Undo" disabled={!canUndo} onClick={() => useHistoryStore.getState().undo()}>↶</button>
         <button title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled={!canRedo} onClick={() => useHistoryStore.getState().redo()}>↷</button>
-        {onCart && <button className="house-cart house-checkout-toggle" title="Products, cost and checkout" aria-label="Products and cost" aria-expanded={costOpen} onClick={toggleCost}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="m3 7 9-4 9 4v11l-9 4-9-4V7Zm0 0 9 4 9-4M12 11v11M7.5 5 9 4l9 4v5" /></svg><span className="house-cart-count">{cart.totalItemCount}</span></button>}
+        {onCart && <button className="house-cart house-checkout-toggle" title={readOnly ? 'Products and estimate' : 'Products, cost and checkout'} aria-label="Products and cost" aria-expanded={costOpen} onClick={toggleCost}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="m3 7 9-4 9 4v11l-9 4-9-4V7Zm0 0 9 4 9-4M12 11v11M7.5 5 9 4l9 4v5" /></svg><span className="house-cart-count">{cart.totalItemCount}</span></button>}
         {onSave && <button className="house-save" onClick={onSave}>Save</button>}
-        <button title="Save, load, quote and project tools" aria-label="Project tools" onClick={() => window.dispatchEvent(new CustomEvent('ppw:open-menu'))}>•••</button>
+        <button title={readOnly ? 'Save locally, load and project tools' : 'Save, load, quote and project tools'} aria-label="Project tools" onClick={() => window.dispatchEvent(new CustomEvent('ppw:open-menu'))}>•••</button>
       </div>
     </header>
     <div className="house-main">

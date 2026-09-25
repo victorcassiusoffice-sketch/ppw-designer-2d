@@ -31,6 +31,12 @@ export interface DemoDefinition {
   pageName: string;
   /** The merchant's range. Ids MUST be prefixed `<slug>-` so they never collide with seed ids. */
   products: Product[];
+  /** Reuse existing supplier demo catalogs without copying or renaming their product IDs. */
+  includeDemoSlugs?: string[];
+  /** Previous page names retained for non-destructive preset renames. */
+  legacyPageNames?: string[];
+  /** Stable preset identity avoids mistaking a customer's similarly named plan for a demo. */
+  propertyId?: string;
   /**
    * Display currency the pitch should open in (the store's default is not
    * the merchant's). Absent = leave whatever the visitor had.
@@ -118,7 +124,10 @@ export function activeDemo(): DemoDefinition | null {
 
 /** The active demo's products, or an empty list. Never the seed. */
 export function demoProducts(): Product[] {
-  return activeDemo()?.products ?? [];
+  const demo = activeDemo();
+  if (!demo) return [];
+  const products = [...demo.products, ...(demo.includeDemoSlugs ?? []).flatMap((slug) => REGISTRY.get(slug)?.products ?? [])];
+  return [...new Map(products.map((product) => [product.id, product])).values()];
 }
 
 /**

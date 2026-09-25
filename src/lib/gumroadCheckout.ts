@@ -15,6 +15,8 @@
  * until the Ping webhook flips it pending → captured.
  */
 
+import { assertShowcaseWritable } from './showcaseSafety';
+
 export const GUMROAD_PENDING_REF_KEY = 'ppw_gumroad_pending_ref';
 
 export function saveGumroadPendingRef(ref: string): void {
@@ -81,6 +83,7 @@ export interface GumroadCreateResponse {
 /** POST the cart to the create-order endpoint. Throws on HTTP failure
  *  with the server's safe error message. */
 export async function createGumroadOrder(body: unknown): Promise<GumroadCreateResponse> {
+  assertShowcaseWritable();
   const res = await fetch('/api/gumroad/create-order', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },

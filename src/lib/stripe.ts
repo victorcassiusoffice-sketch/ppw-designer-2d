@@ -19,6 +19,7 @@ import type { Currency } from '../data/products.schema';
 import type { CartTotals } from '../store/cartStore';
 import type { CheckoutFormValues } from '../store/checkoutStore';
 import { confirmAdjustedPrices } from './priceAdjust';
+import { DEMO_NOTICE, isShowcaseReadOnly } from './showcaseSafety';
 
 /**
  * Read the publishable key from Vite's `import.meta.env`.
@@ -175,6 +176,7 @@ export async function startStripeCheckout(
   payload: CreateCheckoutPayload,
   doFetch: typeof fetch | undefined = typeof fetch !== 'undefined' ? fetch : undefined,
 ): Promise<RedirectResult> {
+  if (isShowcaseReadOnly()) return { status: 'error', message: DEMO_NOTICE };
   if (!isStripeConfigured()) {
     return {
       status: 'pending',

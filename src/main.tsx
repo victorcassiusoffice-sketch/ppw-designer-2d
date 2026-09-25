@@ -1,14 +1,13 @@
 import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import App from './App';
 import { bootstrapFx } from './store/currencyStore';
+import RouteFallback from './components/RouteFallback';
 import './index.css';
 
-// Route-level code splitting (designer-loop 2026-07-05): the designer (App)
-// is the primary customer surface and stays eager; every other page loads
-// on navigation. This keeps Clerk (admin-only) and jsPDF (order-success
-// only) out of the main chunk entirely.
+// Pitch and Studio visitors load the designer only when they open it.
+// Keep Clerk (admin-only) and jsPDF (order-success only) route-scoped too.
+const App = lazy(() => import('./App'));
 const CartPage = lazy(() => import('./pages/CartPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const OrderSuccessPage = lazy(() => import('./pages/OrderSuccessPage'));
@@ -40,15 +39,15 @@ const MerchantOnboardingPage = lazy(() => import('./pages/MerchantOnboardingPage
 const MerchantAddProductPage = lazy(() => import('./pages/MerchantAddProductPage'));
 const RequireMerchant = lazy(() => import('./components/RequireMerchant'));
 const MyDesignsPage = lazy(() => import('./pages/MyDesignsPage'));
-
-/** Full-screen fallback shown while a lazy route chunk downloads. */
-function RouteFallback(): JSX.Element {
-  return (
-    <div className="flex h-screen w-screen items-center justify-center bg-ppw-sand">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-ppw-ink border-t-transparent" />
-    </div>
-  );
-}
+const DemoDesignerPage = lazy(() => import('./pages/DemoDesignerPage'));
+const DeveloperPitchPage = lazy(() => import('./pages/pitch/DeveloperPitchPage'));
+const MerchantPitchPage = lazy(() => import('./pages/pitch/MerchantPitchPage'));
+const StudioPage = lazy(() => import('./pages/studio/StudioPage'));
+const StudioDesignerPage = lazy(() => import('./pages/studio/StudioPage').then((m) => ({ default: m.StudioDesignerPage })));
+const StudioMerchantsPage = lazy(() => import('./pages/studio/StudioPage').then((m) => ({ default: m.StudioMerchantsPage })));
+const StudioShopFrame = lazy(() => import('./pages/studio/StudioPage').then((m) => ({ default: m.StudioShopFrame })));
+const PreviewShopRoute = lazy(() => import('./pages/studio/StudioPage').then((m) => ({ default: m.PreviewShopRoute })));
+const ShowcaseCheckoutGuard = lazy(() => import('./pages/studio/StudioPage').then((m) => ({ default: m.ShowcaseCheckoutGuard })));
 
 // Fire-and-forget FX bootstrap - refreshes the live rate snapshot if
 // the cached one is stale.
@@ -117,10 +116,18 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         {/* WD rework 2026-07-26 (Vic directive 5): the SHOP is the front door.
             "Browse and buy" is the primary journey; the Sims-style room
             designer is an optional extra mode at /designer. */}
-        <Route path="/" element={<PublicProductsPage />} />
+        <Route path="/" element={<PreviewShopRoute><PublicProductsPage /></PreviewShopRoute>} />
         <Route path="/designer" element={<App />} />
+        <Route path="/demo" element={<DemoDesignerPage />} />
+        <Route path="/embed/designer" element={<DemoDesignerPage />} />
+        <Route path="/pitch/developers" element={<DeveloperPitchPage />} />
+        <Route path="/pitch/merchants" element={<MerchantPitchPage />} />
+        <Route path="/studio" element={<StudioPage />} />
+        <Route path="/studio/designer" element={<StudioDesignerPage />} />
+        <Route path="/studio/shop" element={<StudioShopFrame><PublicProductsPage /></StudioShopFrame>} />
+        <Route path="/studio/merchants" element={<StudioMerchantsPage />} />
         <Route path="/cart" element={<CartPage />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/checkout" element={<ShowcaseCheckoutGuard><CheckoutPage /></ShowcaseCheckoutGuard>} />
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/order/success" element={<OrderSuccessPage />} />
         <Route path="/order/cancelled" element={<OrderCancelledPage />} />
@@ -132,12 +139,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/suppliers/signup/complete" element={<SuppliersSignupCompletePage />} />
 
         {/* OMS Phase 3 - Public storefront product listing */}
-        <Route path="/products" element={<PublicProductsPage />} />
-        <Route path="/products/:id" element={<ProductDetailPage />} />
+        <Route path="/products" element={<PreviewShopRoute><PublicProductsPage /></PreviewShopRoute>} />
+        <Route path="/products/:id" element={<PreviewShopRoute><ProductDetailPage /></PreviewShopRoute>} />
 
         {/* OMS Wave 1 - Marketplace checkout flow */}
-        <Route path="/marketplace/cart" element={<MarketplaceCartPage />} />
-        <Route path="/marketplace/checkout" element={<MarketplaceCheckoutPage />} />
+        <Route path="/marketplace/cart" element={<PreviewShopRoute><MarketplaceCartPage /></PreviewShopRoute>} />
+        <Route path="/marketplace/checkout" element={<ShowcaseCheckoutGuard><MarketplaceCheckoutPage /></ShowcaseCheckoutGuard>} />
         <Route path="/order/track/:orderRef" element={<OrderTrackPage />} />
         {/* Gumroad interim rail — static redirect-after-purchase target */}
         <Route path="/order/gumroad-return" element={<GumroadReturnPage />} />

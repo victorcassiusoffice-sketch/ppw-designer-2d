@@ -10,6 +10,9 @@ declare const __APP_BUILD__: string;
 // window.__designer bridge tree-shakes out of production builds.
 declare const __TEST_HOOKS__: boolean;
 
+// Trusted deployment flag; server transaction guards enforce the same policy.
+declare const __SHOWCASE_READ_ONLY__: boolean;
+
 declare module 'jspdf' {
   export interface jsPDFOptions {
     orientation?: 'portrait' | 'landscape' | 'p' | 'l';

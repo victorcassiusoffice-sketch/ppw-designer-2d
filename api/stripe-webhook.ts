@@ -28,6 +28,7 @@
  */
 
 import Stripe from 'stripe';
+import { rejectShowcaseTransaction } from './_lib/showcaseSafety.js';
 import { withSentry, captureException, flushSentry } from "./_lib/sentry.js";
 import {
   sendOrderConfirmation,
@@ -188,6 +189,7 @@ interface MinimalRes {
 
 /** Vercel function entry point. */
 async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
+  if (rejectShowcaseTransaction(res)) return;
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     res.status(405).end();

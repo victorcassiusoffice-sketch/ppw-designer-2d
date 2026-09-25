@@ -11,6 +11,7 @@
  */
 
 import type { Property } from '../store/propertyStore';
+import { assertShowcaseWritable } from './showcaseSafety';
 
 export interface ApiDesign {
   id: number;
@@ -57,6 +58,7 @@ function extractErrorMessage(body: unknown, fallback: string): string {
 
 /** POST /api/designs — create a new design row. */
 export async function saveDesignToApi(input: SaveDesignInput): Promise<ApiDesign> {
+  assertShowcaseWritable();
   const response = await fetch('/api/designs', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -73,6 +75,7 @@ export async function saveDesignToApi(input: SaveDesignInput): Promise<ApiDesign
 
 /** PUT /api/designs/:id — only called for an explicit update of a linked page. */
 export async function updateDesignToApi(id: number, input: Omit<SaveDesignInput, 'status'> & { status?: string }): Promise<ApiDesign> {
+  assertShowcaseWritable();
   if (!Number.isSafeInteger(id) || id <= 0) throw new Error('Invalid cloud design ID.');
   const response = await fetch(`/api/designs/${id}`, {
     method: 'PUT',
@@ -140,6 +143,7 @@ export interface ApiLead {
 
 /** POST /api/leads — submit a Request-Quote lead. */
 export async function submitLead(input: SubmitLeadInput): Promise<ApiLead> {
+  assertShowcaseWritable();
   const response = await fetch('/api/leads', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },

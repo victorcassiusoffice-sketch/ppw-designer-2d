@@ -15,8 +15,14 @@ export function useAutoSave(debounceMs = 250): void {
   const timer = useRef<number | null>(null);
 
   useEffect(() => {
+    const flushPending = () => {
+      if (timer.current === null) return;
+      window.clearTimeout(timer.current);
+      timer.current = null;
+      flushCurrentPage();
+    };
     const unsub = usePropertyStore.subscribe(() => {
-      if (timer.current) window.clearTimeout(timer.current);
+      if (timer.current !== null) window.clearTimeout(timer.current);
       timer.current = window.setTimeout(() => {
         // Write into the CURRENT PAGE, not always `__draft__`.
         //
@@ -24,12 +30,18 @@ export function useAutoSave(debounceMs = 250): void {
         // a NAMED plan were never saved back to it and switching away silently
         // discarded them. flushCurrentPage falls back to the draft slot when
         // nothing is named, so the unsaved-work behaviour is unchanged.
+        timer.current = null;
         flushCurrentPage();
       }, debounceMs);
     });
+    // A containing Studio/pitch page can navigate before the debounce expires.
+    window.addEventListener('pagehide', flushPending);
+    window.addEventListener('beforeunload', flushPending);
     return () => {
       unsub();
-      if (timer.current) window.clearTimeout(timer.current);
+      flushPending();
+      window.removeEventListener('pagehide', flushPending);
+      window.removeEventListener('beforeunload', flushPending);
     };
   }, [debounceMs]);
 }

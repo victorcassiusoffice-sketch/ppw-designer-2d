@@ -10,6 +10,7 @@
  */
 
 import { handler as createOrderHandler } from './_lib/paypal/createOrder.js';
+import { rejectShowcaseTransaction } from './_lib/showcaseSafety.js';
 import { withSentry } from "./_lib/sentry.js";
 import { handler as captureOrderHandler } from './_lib/paypal/captureOrder.js';
 import { handler as webhookHandler } from './_lib/paypal/webhook.js';
@@ -45,6 +46,7 @@ function getAction(req: MinimalReq): string | null {
 }
 
 async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
+  if (rejectShowcaseTransaction(res)) return;
   const action = getAction(req);
   if (action === 'createOrder') return createOrderHandler(req as never, res as never);
   if (action === 'captureOrder') return captureOrderHandler(req as never, res as never);

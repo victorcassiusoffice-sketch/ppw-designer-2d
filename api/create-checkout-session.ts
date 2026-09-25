@@ -19,6 +19,7 @@
  */
 
 import Stripe from 'stripe';
+import { rejectShowcaseTransaction } from './_lib/showcaseSafety.js';
 import { withSentry } from "./_lib/sentry.js";
 import { repriceCart, type Repricer } from './_lib/pricing/repriceCart.js';
 import {
@@ -284,6 +285,7 @@ export async function processCheckoutRequest(
 
 /** Vercel function entry point. */
 async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
+  if (rejectShowcaseTransaction(res)) return;
   const origin = typeof req.headers.origin === 'string' ? req.headers.origin : undefined;
   const cors = corsHeaders(origin);
   for (const [k, v] of Object.entries(cors)) res.setHeader(k, v);

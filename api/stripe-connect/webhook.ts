@@ -15,6 +15,7 @@
  */
 
 import Stripe from 'stripe';
+import { rejectShowcaseTransaction } from '../_lib/showcaseSafety.js';
 import { withSentry } from "../_lib/sentry.js";
 import { drizzleMerchantStore } from '../_db/merchantStore.js';
 import { STRIPE_API_VERSION, getConnectWebhookSecret } from '../_lib/stripeConnect.js';
@@ -75,6 +76,7 @@ interface MinimalRes {
 }
 
 async function handler(req: MinimalReq, res: MinimalRes): Promise<void> {
+  if (rejectShowcaseTransaction(res)) return;
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     res.status(405).end();

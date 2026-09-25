@@ -27,6 +27,7 @@
  */
 
 import { eq, desc, inArray } from 'drizzle-orm';
+import { rejectShowcaseTransaction } from './_lib/showcaseSafety.js';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { withSentry, type MinReq, type MinRes } from './_lib/sentry.js';
 import { getDb, schema } from './_db/client.js';
@@ -1503,6 +1504,11 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
   }
 
   const { resource, segments } = parseSegments(req);
+
+  const transaction = resource === 'gumroad' || resource === 'leads' || resource === 'k1'
+    || (resource === 'designs' && req.method !== 'GET' && req.method !== 'HEAD')
+    || (resource === 'merchants' && ['order-update', 'magic-link'].includes(segments[1] ?? ''));
+  if (transaction && rejectShowcaseTransaction(res)) return;
 
   if (resource === 'orders') {
     if (req.method !== 'GET') {

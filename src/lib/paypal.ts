@@ -23,6 +23,7 @@ import type { Currency } from '../data/products.schema';
 import type { CartTotals } from '../store/cartStore';
 import type { CheckoutFormValues } from '../store/checkoutStore';
 import { confirmAdjustedPrices } from './priceAdjust';
+import { DEMO_NOTICE, isShowcaseReadOnly } from './showcaseSafety';
 
 export function isPaypalEnabled(): boolean {
   // Direct dotted access - Vite inlines the literal at build time.
@@ -114,6 +115,7 @@ export async function startPaypalCheckout(
   payload: CreatePaypalOrderPayload,
   doFetch: typeof fetch | undefined = typeof fetch !== 'undefined' ? fetch : undefined,
 ): Promise<PaypalRedirectResult> {
+  if (isShowcaseReadOnly()) return { status: 'error', message: DEMO_NOTICE };
   if (!isPaypalEnabled()) {
     return { status: 'pending', message: 'PayPal is disabled in this environment.' };
   }
@@ -194,6 +196,7 @@ export async function capturePaypalOrder(
   ppwOrderId: string,
   doFetch: typeof fetch | undefined = typeof fetch !== 'undefined' ? fetch : undefined,
 ): Promise<{ ok: boolean; error?: string }> {
+  if (isShowcaseReadOnly()) return { ok: false, error: DEMO_NOTICE };
   if (!doFetch) return { ok: false, error: 'fetch is unavailable in this environment.' };
   try {
     const res = await doFetch('/api/capturePaypalOrder', {

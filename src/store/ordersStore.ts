@@ -12,6 +12,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import type { CheckoutFormValues } from './checkoutStore';
 import type { Property } from './propertyStore';
 import type { Currency } from '../data/products.schema';
+import { assertShowcaseWritable } from '../lib/showcaseSafety';
 
 export type OrderStatus = 'pending' | 'paid' | 'cancelled';
 
@@ -50,11 +51,13 @@ export const useOrdersStore = create<OrdersState>()(
   persist(
     (set, get) => ({
       orders: [],
-      saveOrder: (order) =>
+      saveOrder: (order) => {
+        assertShowcaseWritable();
         set((s) => ({
           // Newest first; cap at 50 to keep localStorage bounded.
           orders: [order, ...s.orders.filter((o) => o.id !== order.id)].slice(0, 50),
-        })),
+        }));
+      },
       updateStatus: (id, status) =>
         set((s) => ({
           orders: s.orders.map((o) => (o.id === id ? { ...o, status } : o)),

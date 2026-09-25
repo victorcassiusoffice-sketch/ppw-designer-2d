@@ -20,6 +20,7 @@
  */
 
 import { Buffer } from 'node:buffer';
+import { rejectShowcaseTransaction } from './_lib/showcaseSafety.js';
 import { handler as signupHandler } from './_lib/merchants/signup.js';
 import {
   generateReferencePagePdf,
@@ -117,6 +118,7 @@ async function rootHandler(req: MinimalReq, res: MinimalRes): Promise<void> {
 
   // POST /api/merchants/signup
   if (segments[0] === 'merchants' && segments[1] === 'signup') {
+    if (rejectShowcaseTransaction(res)) return;
     return signupHandler(req, res);
   }
 

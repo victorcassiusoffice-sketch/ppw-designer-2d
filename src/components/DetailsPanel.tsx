@@ -29,6 +29,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
+import { isShowcaseReadOnly } from '../lib/showcaseSafety';
 import { useDesignStore } from '../store/designStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
 import { CATEGORY_LABELS, getProductById, productImageUrl } from '../data/products';
@@ -281,7 +282,7 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
                     (CTRL_REST), left-aligned, with the URL truncating
                     inside it. Same href, same target, same rel. */}
                 <a
-                  href={selectedProduct.source_url}
+                  href={isShowcaseReadOnly() ? undefined : selectedProduct.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   title={selectedProduct.source_url}
@@ -451,7 +452,7 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
   // (audit defect 18). Same attribution URL as before — presentation moved,
   // the P0-ε redirect did not.
   const footer =
-    selected && selectedProduct && isK1Product ? (
+    selected && selectedProduct && isK1Product && !isShowcaseReadOnly() ? (
       <div className="shrink-0 border-t border-ppw-rim bg-ppw-chrome px-4 py-3">
         <a
           data-testid="buy-from-k1-sport"

@@ -59,6 +59,9 @@ import { performUndo, performRedo } from '../lib/undoIntent';
 // is a single plan, so this is how a second plan gets started.
 import { createPage, switchToPage } from '../lib/pages';
 import { activeDemo, setActiveDemo } from '../demo/demoCatalog';
+import { DemoEstimateDialog } from '../demo/DemoEstimateDialog';
+import { demoRoute } from '../demo/demoRoute';
+import { isShowcaseReadOnly, DEMO_NOTICE } from '../lib/showcaseSafety';
 import {
   DEFAULT_WALL_HEIGHT_M,
   MAX_WALL_HEIGHT_M,
@@ -466,6 +469,10 @@ export function TopBar({
   // Merchant demo pill (2026-09-05) — read at render; App activates the demo
   // synchronously before this component ever mounts, and leaving reloads.
   const demoPill = activeDemo();
+  const readOnly = isShowcaseReadOnly();
+  const designerOnly = typeof window !== 'undefined' && demoRoute(window.location.pathname, window.location.search) !== null;
+  const [demoEstimateOpen, setDemoEstimateOpen] = useState(false);
+  const closeDemoEstimate = useCallback(() => setDemoEstimateOpen(false), []);
 
   const cart = useCart();
   const activeRoomIsRect = isActiveRoomRectangle();
@@ -1088,6 +1095,7 @@ export function TopBar({
     const id = savePropertyAs(trimmed, property);
     setCurrent(id);
     pushToast(`Saved "${trimmed}"`, 'success');
+    if (isShowcaseReadOnly()) return;
 
     // M1.C.6 — cloud-save sync. Only fire if we already have a cached
     // customer email so the Save UX stays one-prompt for new users.
@@ -1115,6 +1123,7 @@ export function TopBar({
   // message on first use; reuses the cached email afterwards.
   const [submittingQuote, setSubmittingQuote] = useState(false);
   async function handleRequestQuote() {
+    if (isShowcaseReadOnly()) { pushToast(DEMO_NOTICE, 'info'); return; }
     if (submittingQuote) return;
     const email =
       getCachedCustomerEmail() ??
@@ -1787,15 +1796,16 @@ export function TopBar({
             4 px tighter everywhere it can: measured at 768 the Walls + Quote
             labels and the in-control cart count need those pixels. */}
         <div className="plan-identity flex min-w-0 shrink items-center gap-2">
-          {/* PPW brand mark — same tile as the shop header. Links back to the
-              storefront. 44 on the phone, 40 on desktop (contract control sizes). */}
-          <Link
-            to="/products"
-            title="Back to PPWellness Shop"
+          {/* Embedded and standalone Demo stay inside the designer. */}
+          {designerOnly ? <span className="flex h-10 w-7 shrink-0 items-center justify-center" title="PPWellness Demo">
+            <img src="/brand/ppw-mark-512.png" alt="PPWellness" width={24} height={24} className="block" />
+          </span> : <Link
+            to={readOnly ? '/studio' : '/products'}
+            title={readOnly ? 'Demo studio' : 'Back to PPWellness Shop'}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-ppw-rim bg-ppw-chrome shadow-[3px_3px_7px_rgba(167,160,144,0.42),-3px_-3px_7px_rgba(255,255,255,0.95)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] md:h-10 md:w-10"
           >
             <img src="/brand/ppw-mark-512.png" alt="PPWellness" width={24} height={24} className="block" />
-          </Link>
+          </Link>}
 
           {/* Rooms trigger — the ONLY way into the rooms list at every width
               (the permanent rail was deleted 2026-08-25). The property rename
@@ -1828,14 +1838,14 @@ export function TopBar({
 
           {/* Short demo badge; the real supplier names remain in product details.
               Leaving keeps the show-home page and restores the standard range. */}
-          {demoPill && (
+          {(demoPill || readOnly) && (
             <span
               data-testid="demo-pill"
-              className="hidden h-10 shrink-0 items-center gap-1.5 rounded-xl border border-ppw-inkDeep bg-ppw-inkDeep pl-3 pr-1 text-[12px] font-semibold text-ppw-paper md:inline-flex"
-              title={`${demoPill.merchant}: their catalog is loaded in this tab. Close the tab or press × for the standard catalog.`}
+              className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-ppw-inkDeep bg-ppw-inkDeep px-2 text-[10px] font-semibold text-ppw-paper md:text-[12px]"
+              title={readOnly ? DEMO_NOTICE : `${demoPill?.merchant}: their catalog is loaded in this tab. Close the tab or press × for the standard catalog.`}
             >
-              <span>Demo</span>
-              <button
+              <span>{readOnly ? 'Demo · no orders' : 'Demo'}</span>
+              {!readOnly && <button
                 type="button"
                 data-testid="demo-pill-exit"
                 onClick={() => {
@@ -1847,7 +1857,7 @@ export function TopBar({
                 title="Leave demo mode"
               >
                 ×
-              </button>
+              </button>}
             </span>
           )}
         </div>
@@ -2083,7 +2093,8 @@ export function TopBar({
                 where the label fits, icon + "3" at narrower tiers. No badge
                 floating into the bar padding. */}
             <Link
-              to="/cart"
+              to={readOnly ? '#' : '/cart'}
+              onClick={event => { if (readOnly) { event.preventDefault(); setDemoEstimateOpen(true); } }}
               className={`${BTN} ${BTN_REST} min-[1700px]:px-3`}
               title={`Cart: ${cart.uniqueProductCount} unique products`}
               aria-label={`Cart, ${cart.uniqueProductCount} products`}
@@ -2095,7 +2106,7 @@ export function TopBar({
 
             {/* M1.C.7 — Request Quote. THE call-to-action on the Designer —
                 never icon-only: "Quote" from md, "Request quote" from 2xl. */}
-            <button
+            {!readOnly && <button
               type="button"
               onClick={handleRequestQuote}
               disabled={submittingQuote}
@@ -2106,7 +2117,7 @@ export function TopBar({
               <Icon name="send" className="hidden 2xl:block" />
               <span className="2xl:hidden">{submittingQuote ? 'Sending…' : 'Quote'}</span>
               <span className="hidden 2xl:inline">{submittingQuote ? 'Sending…' : 'Request quote'}</span>
-            </button>
+            </button>}
 
             {/* More — New · Save as… · Load (n) · Shop · Help. */}
             <button
@@ -2148,7 +2159,7 @@ export function TopBar({
                 role="menuitem"
                 onClick={() => { setMoreOpen(false); handleSaveAs(); }}
                 className={ROW}
-                title="Save the current property under a name (syncs to cloud once you've entered an email)"
+                title={readOnly ? 'Save the current property locally in this browser' : "Save the current property under a name (syncs to cloud once you've entered an email)"}
               >
                 Save as…
               </button>
@@ -2165,15 +2176,15 @@ export function TopBar({
                 <span className="tabular-nums opacity-80">{savedList.length}</span>
               </button>
               <div className="my-1 h-px bg-ppw-rim" aria-hidden="true" />
-              <Link
-                to="/products"
+              {!designerOnly && <Link
+                to={readOnly ? '/studio' : '/products'}
                 role="menuitem"
                 onClick={() => setMoreOpen(false)}
                 className={ROW}
-                title="Browse the full product shop"
+                title={readOnly ? 'Open Demo studio' : 'Browse the full product shop'}
               >
-                Shop
-              </Link>
+                {readOnly ? 'Demo studio' : 'Shop'}
+              </Link>}
               <button
                 type="button"
                 role="menuitem"
@@ -3211,7 +3222,7 @@ export function TopBar({
             variant="overlay"
             title="3D Mode"
             onSave={handleSaveAs}
-            onCart={() => navigate('/cart')}
+            onCart={() => { if (isShowcaseReadOnly()) setDemoEstimateOpen(true); else navigate('/cart'); }}
             onPaintWall={claddingActive ? cladFromRoomView : wallPaintActive ? paintFromRoomView : undefined}
             onPaintFloor={floorPaintActive ? paintFloorFromRoomView : undefined}
             brushHex={claddingActive ? (claddingDraft.erase ? null : claddingProduct.hex) : wallPaintActive ? wallPaintPreviewHex : undefined}
@@ -3933,38 +3944,38 @@ export function TopBar({
                   <span>Load</span>
                   <span className="tabular-nums" style={{ color: CHROME_TEXT_2 }}>{savedList.length}</span>
                 </button>
-                <Link
+                {!readOnly && <Link
                   to="/my-designs"
                   onClick={() => setShowMobileMenu(false)}
                   className={SHEET_ROW}
                 >
                   My designs (cloud)
-                </Link>
+                </Link>}
 
                 {/* 5 SHOP */}
-                <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>Shop</p>
+                <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>{readOnly ? 'Estimate' : 'Shop'}</p>
                 <div className="flex min-h-[48px] items-center justify-between px-3">
                   <span className="text-[14px] font-medium text-[#37362f]">Currency</span>
                   <CurrencySwitcher compact />
                 </div>
                 <Link
-                  to="/cart"
-                  onClick={() => setShowMobileMenu(false)}
+                  to={readOnly ? '#' : '/cart'}
+                  onClick={event => { setShowMobileMenu(false); if (readOnly) { event.preventDefault(); setDemoEstimateOpen(true); } }}
                   className={`${SHEET_ROW} justify-between`}
                 >
-                  <span className="flex items-center gap-3"><Icon name="cart" size={20} />Cart</span>
+                  <span className="flex items-center gap-3"><Icon name="cart" size={20} />{readOnly ? 'Product estimate' : 'Cart'}</span>
                   <span className="inline-flex h-6 min-w-[24px] items-center justify-center rounded-full bg-ppw-inkDeep px-1.5 text-[11px] font-semibold tabular-nums text-ppw-paper">
                     {cart.uniqueProductCount}
                   </span>
                 </Link>
                 {/* 3b (2026-07-26): mobile route back to the storefront. */}
-                <Link
-                  to="/products"
+                {!designerOnly && <Link
+                  to={readOnly ? '/studio' : '/products'}
                   onClick={() => setShowMobileMenu(false)}
                   className={SHEET_ROW}
                 >
-                  ← Back to Shop
-                </Link>
+                  {readOnly ? '← Demo studio' : '← Back to Shop'}
+                </Link>}
                 <button
                   type="button"
                   onClick={() => {
@@ -3982,7 +3993,7 @@ export function TopBar({
                 className="sticky bottom-0 z-10 border-t p-3"
                 style={{ background: CHROME_BG, borderColor: CHROME_RIM }}
               >
-                <button
+                {readOnly ? <p className="text-xs" data-testid="demo-order-notice">{DEMO_NOTICE}</p> : <button
                   type="button"
                   onClick={() => {
                     setShowMobileMenu(false);
@@ -3993,7 +4004,7 @@ export function TopBar({
                 >
                   <Icon name="send" />
                   {submittingQuote ? 'Sending…' : 'Request quote'}
-                </button>
+                </button>}
               </div>
             </div>
           </div>,
@@ -4055,13 +4066,13 @@ export function TopBar({
         <div>
           <div className="mb-2 flex items-center justify-between gap-2">
             <p className="font-semibold text-[#37362f]">Saved properties</p>
-            <Link
+            {!readOnly && <Link
               to="/my-designs"
               onClick={() => setShowLoad(false)}
               className="text-[11px] font-semibold text-[#37362f] underline underline-offset-2"
             >
               My designs (cloud)
-            </Link>
+            </Link>}
           </div>
           {savedList.length === 0 ? (
             <p className="py-2" style={{ color: CHROME_TEXT_2 }}>No saved properties yet. Use <em>Save as…</em></p>
@@ -4146,6 +4157,7 @@ export function TopBar({
         </div>,
         document.body,
       )}
+      {demoEstimateOpen && <DemoEstimateDialog onClose={closeDemoEstimate} />}
     </header>
   );
 }

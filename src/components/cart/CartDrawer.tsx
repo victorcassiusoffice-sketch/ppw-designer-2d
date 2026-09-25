@@ -26,6 +26,7 @@ import { useCurrencyStore } from '../../store/currencyStore';
 import { useCartUIStore } from '../../store/cartUIStore';
 import { formatCurrency } from '../../lib/currency';
 import { PPW_COMMISSION_RATE, PPW_COMMISSION_PCT_LABEL } from '../../lib/commission';
+import { isShowcaseReadOnly, DEMO_NOTICE } from '../../lib/showcaseSafety';
 
 const MARKETPLACE_FEE_PCT = PPW_COMMISSION_RATE;
 const PPW_MARKETPLACE = 'Peak Performance Wellness Marketplace';
@@ -61,6 +62,7 @@ export function CartDrawer() {
   const isOpen = useCartUIStore((s) => s.isDrawerOpen);
   const close = useCartUIStore((s) => s.close);
   const navigate = useNavigate();
+  const readOnly = isShowcaseReadOnly();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -80,6 +82,7 @@ export function CartDrawer() {
     cart.lines.length === 0 && cart.floorLines.length === 0 && cart.wallPaintLines.length === 0 && cart.claddingLines.length === 0;
 
   function handleCheckout() {
+    if (isShowcaseReadOnly()) return;
     // Route to the cartStore-backed checkout — the SAME store this drawer
     // reads (useCart). Previously navigated to /marketplace/checkout, which
     // reads a DIFFERENT store (marketplaceCartStore), so the customer's
@@ -282,8 +285,7 @@ export function CartDrawer() {
               </span>
             </div>
             <p className="mt-2 text-[10px] leading-snug text-[#0E0E10]/60">
-              Shipping + tax calculated at checkout. P.S. your fascia thanks you — the right
-              environment is half the protocol.
+              {readOnly ? DEMO_NOTICE : 'Shipping + tax calculated at checkout. P.S. your fascia thanks you — the right environment is half the protocol.'}
             </p>
           </div>
         )}
@@ -296,7 +298,7 @@ export function CartDrawer() {
           >
             Keep designing
           </button>
-          <button
+          {!readOnly && <button
             type="button"
             onClick={handleCheckout}
             disabled={isEmpty}
@@ -304,7 +306,7 @@ export function CartDrawer() {
             className="flex-1 rounded-md bg-[#0E0E10] px-3 py-2 text-xs font-semibold text-[#F5EFE6] ring-1 ring-[#C0A67E] hover:bg-[#0E0E10]/90 disabled:opacity-50"
           >
             Checkout
-          </button>
+          </button>}
         </footer>
       </aside>
     </>

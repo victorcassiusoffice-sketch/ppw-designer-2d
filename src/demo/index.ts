@@ -9,21 +9,17 @@
  * Add a demo: create `src/demo/<slug>/index.ts` exporting a `DemoDefinition`,
  * then list it here. Nothing else changes.
  */
-import { registerDemo, registeredDemoSlugs, type DemoDefinition } from './demoCatalog';
+import { getDemo, registerDemo, registeredDemoSlugs, type DemoDefinition } from './demoCatalog';
 import { COURTS_DEMO } from './courts';
 import { SOFAP_DEMO } from './sofap';
 import { CAPTAMARIN_DEMO } from './captamarin';
 import { TINTEX_DEMO } from './tintex';
+import { HOME_DEMO, PAINT_DEMO } from './generic';
 
-const ALL: DemoDefinition[] = [COURTS_DEMO, SOFAP_DEMO, CAPTAMARIN_DEMO, TINTEX_DEMO];
-
-let registered = false;
+const ALL: DemoDefinition[] = [COURTS_DEMO, SOFAP_DEMO, CAPTAMARIN_DEMO, TINTEX_DEMO, HOME_DEMO, PAINT_DEMO];
 
 /** Idempotent — safe under HMR and repeated hook mounts. */
 export function registerAllDemos(): string[] {
-  if (!registered) {
-    for (const demo of ALL) registerDemo(demo);
-    registered = true;
-  }
+  for (const demo of ALL) if (!getDemo(demo.slug)) registerDemo(demo);
   return registeredDemoSlugs();
 }
