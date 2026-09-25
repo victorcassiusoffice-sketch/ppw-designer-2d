@@ -4,6 +4,7 @@ import type { SceneInput } from './roomView3d';
 import { GROUND_LEVEL_ID, activeLevelIdOf, isOutdoorRoom, isRoofLevel, isRoofRoom, roomLevelId, roomsOnLevel } from './levels';
 import { buildingLevels, levelElevationM, normaliseBuildingStairs, roofConfigOf, stairFootprint, stairRiseM, type BuildingStair } from './building';
 import { stairFootprintInsideRoom, stairPlacementFits } from './stairPlacement';
+import { createRoofSurface, roofItemMount } from './roofSurface';
 
 export type BuildingView = 'building' | 'floor';
 
@@ -27,6 +28,7 @@ export function buildingSolids(
   const result: SceneSolids = {
     wallHeightM: Math.max(2.7, ...visible.map((e) => e.elevationM + e.heightM)),
     activeLevelId: active, activeElevationM: levelElevationM(property, active),
+    activeRoof: entries.some((entry) => entry.level.id === active && isRoofLevel(entry.level)),
     floors: [], walls: [], items: [], stairs: [], roofs: [],
     garden: view === 'building' || active === GROUND_LEVEL_ID ? property.garden : undefined,
     gardenSite: property.site ?? undefined,
@@ -61,16 +63,19 @@ export function buildingSolids(
       result.floors.push({ ...floor, elevationM, levelId: level.id, holes });
     }
     result.walls.push(...local.walls.map((w) => ({ ...w, elevationM, levelId: level.id })));
-    result.items.push(...local.items.map((it) => ({
-      ...it, levelId: level.id, floorElevationM: elevationM, z0: it.z0 + elevationM, z1: it.z1 + elevationM,
-      lightMountM: it.lightMountM === undefined ? undefined : it.lightMountM + elevationM,
-    })));
-    // Roof editing uses the slab plane. Thin PV panels would be buried by
-    // even the flat covering; pitched-roof mounting is not modelled yet.
-    // Keep the covering in the whole-building view, not over this work surface.
-    if (isRoofLevel(level) && showRoof && view === 'building') {
+    result.items.push(...local.items.map((it) => {
+      const owner = isRoofLevel(level) && it.placement === 'roof'
+        ? rooms.find((room) => isRoofRoom(room) && room.placedItems.some((item) => item.instanceId === it.instanceId)) : undefined;
+      const surface = owner && showRoof ? createRoofSurface(owner.polygon, elevationM, roofConfigOf(property)) : null;
+      const mount = surface ? roofItemMount(surface, it) : undefined;
+      const base = mount?.elevationM ?? elevationM;
+      return { ...it, levelId: level.id, roofRoomId: owner?.id, roofMount: mount,
+        floorElevationM: base, z0: it.z0 + base, z1: it.z1 + base,
+        lightMountM: it.lightMountM === undefined ? undefined : it.lightMountM + base };
+    }));
+    if (isRoofLevel(level) && showRoof) {
       for (const room of rooms.filter(isRoofRoom)) {
-        if (room.polygon.length >= 3) result.roofs!.push({ polygon: room.polygon, elevationM, config: roofConfigOf(property) });
+        if (room.polygon.length >= 3) result.roofs!.push({ roomId: room.id, levelId: level.id, polygon: room.polygon, elevationM, config: roofConfigOf(property) });
       }
     }
   }

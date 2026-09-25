@@ -4,6 +4,16 @@ Updated: 25 September 2026 (Mauritius). Owner: Victor.
 
 ## Resume here
 
+### Active floor / roof / checkout workspace pass — 25 September 2026
+
+Started clean at `a32bf15` on the same feature branch. Victor requests a directly accessible 2D toolbar (3D/Roof/Plot/Snap), generic Demo label, whole-building roof editing with visible 3D solar panels, Add floor inside the 3D floor selector, direct door/window/stair tools and a collapsible product-detail/cost panel. All edits must use the existing shared Plan/3D property and cart model. The two new pill-toolbar screenshots guide spacing and shape. Existing `kvjo7osq8` preview remains the verified fallback while this pass is in progress.
+
+- Root owns HouseWorkspace/BuildingControls and new product-cost panel, floor/menu integration and final QA/deployment/docs.
+- catalog_layout owns TopBar and the 2D toolbar/demo label; no 3D scene edits.
+- building_foundation owns RoomView3D/buildingScene/ThreeStage and shared roof geometry/solar mounting. Roof selection will retain whole-building view; render mounts preserve saved XY/catalog IDs.
+- wall_materials audits shared data and solar routing, and owns any confirmed roof-rotation collision fix in placementActions/tests.
+- User briefly requested a pause to switch internet, then explicitly resumed. Continue from this checkpoint; no reset/stash/discard. Implementation integrated. Full regression passed 250 files / 2,823 tests before final roof-navigation/mobile-drop fixes; those fixes add focused regression coverage (13 UI tests), and final floor/workspace checks pass 18 tests. Client/API typechecks and changed-file lint pass. Final production build is being checked before feature-only push and unique desktop/phone preview QA. Save/load preserves roof identity, roof PV rotation stays inside bounds, and adding an exact-footprint floor transfers rooftop PV without duplicate slabs. Roof selection shows the whole building; normal floor selection hides the roof. Next: publish and verify preview, then synchronize links, handoff, PR and outputs.
+
 ### Home Store / wall surfaces redesign — 25 September 2026
 
 The latest implementation is pushed as **`accdec1b3e5fc1c445bfe83af1b37eab62084499`**, following main implementation `f93655a`. All implementation agents are finished. Work remains on the authorized feature branch and PR #36; production/main and Victor's original checkout are preserved.

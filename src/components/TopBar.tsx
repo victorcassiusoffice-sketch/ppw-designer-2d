@@ -1,40 +1,19 @@
 import { WallSurfaceOptions } from './WallSurfaceOptions';
 import { constructionHex } from '../designer/wallConstruction';
 /**
- * TopBar — designer chrome, rebuilt to the toolbar contract (2026-08-29).
+ * TopBar — direct Plan tools in reserved header space.
  *
- * Audit: docs/sims-world-2026-08-29/audit-2026-08-29b/ — at 1366 the
- * Rectangle|Draw segment was flex-shrunk to 9 px and Draw was unclickable;
- * with the door tool on, Save/Load/Quote/Help fell off the right edge.
+ * The primary row contains identity, drawing and commerce controls and wraps
+ * rather than shrinking controls off screen. A labelled pill row exposes
+ * Floors, Roof, Solar, 3D, Plot, Snap and Grid directly. The phone retains its
+ * first-class 3D entry and wraps the other controls into a small grid.
  *
- * Layout (md+): ONE 52 px row, flex-nowrap, five groups left → right:
- *   1 IDENTITY   brand tile · rooms trigger (the only group that may shrink)
- *   2 BUILD      Walls · Door · Floor · Measure   (segmented, ink when on)
- *   3 ROOM&PLAN  Box | Custom · Storeys · Plot
- *   4 VIEW       Snap · Grid · 3D · Undo/Redo
- *   5 COMMERCE   Currency · Cart · Request quote (the ONE gold CTA) · More
- * Door options live in a 40 px sub-bar under the row while the door tool
- * is on. The Floor tool (2026-08-30) gets a DOCKED 272 px panel on the right
- * edge (fixed, header-bottom → dock-top) rather than a popover over the room:
- * the popover sat on 17 % of the auto-centred room at 1366 and the first
- * click hit its own Erase button. The panel publishes `--floor-panel-w` on
- * <html> (0px when closed) so the canvas insets its fit around it.
- * Every popover is portaled to <body> and positioned from its
- * anchor's rect, so the middle rail can fall back to `overflow-x:auto`
- * without ever clipping a dropdown.
- *
- * Responsive tiers: ≥1536 all labels · 1280–1535 ROOM&PLAN + VIEW icon-only
- * (labels → title tooltips) · 768–1279 ROOM&PLAN collapses into a "Room"
- * popover and VIEW into a "View" popover (BUILD goes icon-only too — at
- * 1024 the labels do not fit). The Box|Custom segment stays inline at every
- * width so `room-draw-toggle` is always directly clickable.
- *
- * <md: a 56 px strip — brand · rooms · Walls (the Custom half) · hamburger —
- * and a full-height right sheet (portal) holding every mobile control.
- *
- * Invariants (Playwright strict mode): every data-testid renders ONCE. The
- * collapsed Room / View groups render the SAME fragment either inline or
- * inside their popover, decided by a JS media query, never both.
+ * Plot, Floors, Snap and room dimensions expand in the header's measured
+ * options host. One panel is open at a time; Close, Escape and click-away
+ * dismiss it. No scrolling toolbar or nested Room/View menu is required.
+ * Existing floor/paint panels still publish their reserved canvas inset;
+ * project dialogs and the mobile build menu retain their existing portals.
+ * Each data-testid and placement handler continues to have one owner.
  *
  * Carryover: CurrencySwitcher · Cart badge Link · Save/Load v2 under
  * `ppw_properties_v2` · L/W inputs only edit the active room AND only when
@@ -118,6 +97,8 @@ import { deriveCladdingOrders } from '../designer/claddingCalc';
 import { CLADDING_DEMO_DISCLAIMER, CLADDING_PRODUCTS, findCladdingProduct } from '../data/claddingCatalog';
 import { RoomView3D } from './RoomView3D';
 import './houseToolPanels.css';
+import { PlanControlPanel } from './PlanControlPanel';
+import './planToolbar.css';
 import { FLOOR_MATERIALS, findFloorMaterialById, type FloorMaterial } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
 // Floor tool (2026-08-30): the docked panel prices the active room's floor
@@ -1199,13 +1180,10 @@ export function TopBar({
   // -------------------------------------------------------------------------
   // Toolbar pass (2026-08-29): responsive tiers + popover plumbing.
   // -------------------------------------------------------------------------
-  const isXl = useMedia('(min-width: 1280px)');
   // Polish (2026-08-29): the desktop Paint palette is anchored to the md+
   // Paint segment; on the phone that segment is display:none, so the palette
   // must not mount at all (the sheet's material rows arm the brush instead).
   const isMd = useMedia('(min-width: 768px)');
-  const [roomGroupOpen, setRoomGroupOpen] = useState(false);
-  const [viewGroupOpen, setViewGroupOpen] = useState(false);
   const [sizeOpen, setSizeOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -1214,6 +1192,7 @@ export function TopBar({
   // bottom edge (53 px; 93 px would be the door sub-bar, but door and floor
   // are the same `tool` field so they never coexist — measured anyway).
   const headerRef = useRef<HTMLElement>(null);
+  const [planOptionsHost, setPlanOptionsHost] = useState<HTMLDivElement | null>(null);
   const [floorPanelTop, setFloorPanelTop] = useState(53);
   // Phone: `ppw:open-menu {section:'floor'|'door'}` (from a canvas HUD card)
   // opens the sheet AT that section's row.
@@ -1226,22 +1205,11 @@ export function TopBar({
   const landRef = useRef<HTMLButtonElement>(null);
   const snapRef = useRef<HTMLButtonElement>(null);
   const moreRef = useRef<HTMLButtonElement>(null);
-  const roomGroupRef = useRef<HTMLButtonElement>(null);
-  const viewGroupRef = useRef<HTMLButtonElement>(null);
   // Phone: the hamburger anchors Help / Load (More is display:none there) and
   // gets focus back when the sheet closes.
   const menuBtnRef = useRef<HTMLButtonElement>(null);
   const sheetCloseRef = useRef<HTMLButtonElement>(null);
   const helpAnchor = isMd ? moreRef : menuBtnRef;
-
-  // The collapsed group popovers only exist below xl; drop them on the way up
-  // so the same fragment is never asked to render in two places.
-  useEffect(() => {
-    if (isXl) {
-      setRoomGroupOpen(false);
-      setViewGroupOpen(false);
-    }
-  }, [isXl]);
 
   // Mobile sheet: Esc closes, body scroll locked while open. Focus moves to
   // the sheet's Close button on open and returns to the hamburger on close.
@@ -1454,8 +1422,6 @@ export function TopBar({
   const closeLand = useCallback(() => setLandOpen(false), []);
   const closeUnit = useCallback(() => setUnitOpen(false), []);
   const closeMore = useCallback(() => setMoreOpen(false), []);
-  const closeRoomGroup = useCallback(() => setRoomGroupOpen(false), []);
-  const closeViewGroup = useCallback(() => setViewGroupOpen(false), []);
   const closeHelp = useCallback(() => setShowHelp(false), []);
   const closeLoad = useCallback(() => setShowLoad(false), []);
 
@@ -1472,25 +1438,11 @@ export function TopBar({
     levels.length > 1
       ? `${activeLevel?.index === 0 ? 'Ground' : `Floor ${activeLevel?.index ?? 0}`} · ${levels.length}`
       : 'Storeys';
-  const plotLabel = site ? `Plot ${site.widthM}×${site.depthM}` : 'Plot';
+  const plotLabel = 'Plot';
   const snapUnit = SNAP_UNIT_LABEL[precision];
 
-  /** Label span: always shown when the group is stacked in a popover,
-   *  otherwise only at the tier that has room for it. */
-  const lbl = (stacked: boolean, tier: 'xl' | '1366' | '2xl' | '3xl') =>
-    stacked
-      ? 'inline'
-      : tier === 'xl'
-        ? 'hidden xl:inline'
-        : tier === '1366'
-          ? 'hidden min-[1366px]:inline'
-          : tier === '2xl'
-            ? 'hidden 2xl:inline'
-            : 'hidden min-[1700px]:inline';
-
   // -------------------------------------------------------------------------
-  // ROOM & PLAN group body — Finish · Storeys · Plot. Rendered ONCE: inline
-  // at xl+, inside the "Room" popover below xl.
+  // Direct building/site controls at every width. Options use reserved header space.
   // -------------------------------------------------------------------------
   const roomPlanGroup = (stacked: boolean) => {
     const btn = (on: boolean) =>
@@ -1504,7 +1456,7 @@ export function TopBar({
         <button
           ref={levelsRef}
           type="button"
-          onClick={() => setLevelsOpen((v) => !v)}
+          onClick={() => { setLevelsOpen((v) => !v); setLandOpen(false); setUnitOpen(false); setSizeOpen(false); }}
           data-testid="levels-toggle"
           className={btn(levelsOpen)}
           title={`Storeys — now on ${activeLevel?.name ?? 'Ground floor'} (PageUp / PageDown to switch)`}
@@ -1513,12 +1465,12 @@ export function TopBar({
           aria-label="Storeys"
         >
           <Icon name="storeys" />
-          <span className={`${lbl(stacked, '1366')} tabular-nums`}>{storeysLabel}</span>
+          <span className="plan-control-label" title={storeysLabel}>Floors</span>
           {!stacked && levels.length > 1 && (
             <span className="font-semibold tabular-nums min-[1366px]:hidden">{levels.length}</span>
           )}
         </button>
-        <Popover anchor={levelsRef} open={levelsOpen} onClose={closeLevels} width={224} id="ppw-pop-levels" label="Storeys">
+        <PlanControlPanel anchor={levelsRef} open={levelsOpen} onClose={closeLevels} target={planOptionsHost} id="ppw-pop-levels" title="Storeys">
           <div data-testid="levels-picker" className="flex flex-col gap-0.5">
           {[...levels].sort((a, b) => b.index - a.index).map((l) => (
             <div key={l.id} className="flex items-center gap-1">
@@ -1576,7 +1528,7 @@ export function TopBar({
             + Add floor above
           </button>
         </div>
-        </Popover>
+        </PlanControlPanel>
 
         {/* Roof (eco / solar 2026-09-04) — the slab on top of the building:
             solar panels, air-con, planters, flooring. Toggles back to the
@@ -1591,7 +1543,7 @@ export function TopBar({
           aria-label="Roof"
         >
           <Icon name="roof" />
-          <span className={lbl(stacked, '1366')}>Roof</span>
+          <span className="plan-control-label">Roof</span>
         </button>
 
         {/* Energy (electrics fix 2026-09-20): sun vs use per day, reachable
@@ -1608,7 +1560,7 @@ export function TopBar({
           aria-controls="ppw-energy-panel"
         >
           <Icon name="bolt" />
-          <span className={lbl(stacked, '1366')}>Energy</span>
+          <span className="plan-control-label">Solar</span>
         </button>
 
         {/* 3D Mode (2026-09-17): the whole plan as a Sims-style room view;
@@ -1617,7 +1569,7 @@ export function TopBar({
           type="button"
           onClick={() => setViewMode(viewMode === '3d' ? 'plan' : '3d')}
           data-testid="view-mode-3d"
-          className={btn(viewMode === '3d')}
+          className={`${btn(viewMode === '3d')} plan-desktop-3d`}
           title={viewMode === '3d' ? '3D Mode — back to the plan (Esc)' : '3D Mode — see the whole plan as a room'}
           aria-pressed={viewMode === '3d'}
           aria-label="3D Mode"
@@ -1625,14 +1577,14 @@ export function TopBar({
           <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
             <path fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" d="M8 1.8 13.6 5v6L8 14.2 2.4 11V5zM8 8l5.6-3M8 8 2.4 5M8 8v6.2" />
           </svg>
-          <span className={lbl(stacked, '1366')}>3D</span>
+          <span className="plan-control-label">3D</span>
         </button>
 
         {/* Plot — lock the scale + capacity. */}
         <button
           ref={landRef}
           type="button"
-          onClick={() => setLandOpen((v) => !v)}
+          onClick={() => { setLandOpen((v) => !v); setLevelsOpen(false); setUnitOpen(false); setSizeOpen(false); }}
           data-testid="land-toggle"
           className={btn(landOpen || !!site)}
           title={
@@ -1645,12 +1597,10 @@ export function TopBar({
           aria-label="Plot"
         >
           <Icon name="plot" />
-          <span className={`${lbl(stacked, '1366')} tabular-nums`}>{plotLabel}</span>
-          {!stacked && site && (
-            <span className="font-semibold tabular-nums min-[1366px]:hidden">{site.widthM}×{site.depthM}</span>
-          )}
+          <span className="plan-control-label">{plotLabel}</span>
+
         </button>
-        <Popover anchor={landRef} open={landOpen} onClose={closeLand} width={272} id="ppw-pop-land" label="Plot">
+        <PlanControlPanel anchor={landRef} open={landOpen} onClose={closeLand} target={planOptionsHost} id="ppw-pop-land" title="Plot">
           <div data-testid="land-picker" className="flex flex-col gap-0.5">
           <p className="px-1 pb-2 text-[11px] leading-snug" style={{ color: CHROME_TEXT_2 }}>
             The plot is the outer boundary: rooms, walls and items stay inside it.
@@ -1703,7 +1653,7 @@ export function TopBar({
             </button>
           </div>
         </div>
-        </Popover>
+        </PlanControlPanel>
       </>
     );
   };
@@ -1721,7 +1671,7 @@ export function TopBar({
         <button
           ref={snapRef}
           type="button"
-          onClick={() => setUnitOpen((v) => !v)}
+          onClick={() => { setUnitOpen((v) => !v); setLevelsOpen(false); setLandOpen(false); setSizeOpen(false); }}
           data-testid="snap-unit-toggle"
           className={btn(unitOpen)}
           title={`Snap ${snapUnit} — choose the snap unit for drawing rooms and walls`}
@@ -1729,10 +1679,10 @@ export function TopBar({
           aria-controls="ppw-pop-snap"
         >
           <Icon name="snap" />
-          <span className={lbl(stacked, 'xl')}>{'Snap '}</span>
+          <span className="plan-control-label">Snap </span>
           <span className="font-semibold tabular-nums">{snapUnit}</span>
         </button>
-        <Popover anchor={snapRef} open={unitOpen} onClose={closeUnit} width={200} id="ppw-pop-snap" label="Snap unit">
+        <PlanControlPanel anchor={snapRef} open={unitOpen} onClose={closeUnit} target={planOptionsHost} id="ppw-pop-snap" title="Snap unit">
           <div data-testid="snap-unit-picker" className="flex flex-col gap-0.5">
           {SNAP_UNIT_ORDER.map((u, i) => (
             <button
@@ -1751,7 +1701,7 @@ export function TopBar({
             </button>
           ))}
         </div>
-        </Popover>
+        </PlanControlPanel>
 
         <button
           type="button"
@@ -1762,7 +1712,7 @@ export function TopBar({
           title={`Grid · ${snapUnit}`}
         >
           <Icon name="grid" />
-          {stacked && <span>Grid · {snapUnit}</span>}
+          <span className="plan-control-label">Grid</span>
         </button>
 
         {/* Polish B / V4-AU-1: 3D preview toggle relocated from canvas
@@ -1826,17 +1776,17 @@ export function TopBar({
     <header
       ref={headerRef}
       {...(viewMode === '3d' ? { inert: '', 'aria-hidden': true as const } : {})}
-      className="relative z-20 shrink-0 border-b"
+      className="plan-topbar relative z-20 shrink-0 border-b"
       style={{ background: CHROME_BG, borderColor: CHROME_RIM }}
     >
       {/* ------------------------------------------------------------------ */}
       {/* THE ROW: 56 px strip on the phone, 52 px bar from md up.            */}
       {/* ------------------------------------------------------------------ */}
-      <div className="grid grid-cols-3 items-center gap-1 px-2 py-1 md:flex md:h-[52px] md:flex-nowrap md:gap-0 md:px-1 md:py-0 lg:px-2" data-testid="designer-main-strip">
+      <div className="plan-primary-row" data-testid="designer-main-strip">
         {/* 1 IDENTITY — the only group allowed to shrink. md (768–1023) runs
             4 px tighter everywhere it can: measured at 768 the Walls + Quote
             labels and the in-control cart count need those pixels. */}
-        <div className="col-span-2 flex min-w-0 shrink items-center gap-2 max-md:order-1 md:flex-initial md:gap-1 lg:gap-2">
+        <div className="plan-identity flex min-w-0 shrink items-center gap-2">
           {/* PPW brand mark — same tile as the shop header. Links back to the
               storefront. 44 on the phone, 40 on desktop (contract control sizes). */}
           <Link
@@ -1876,20 +1826,15 @@ export function TopBar({
             </span>
           </button>
 
-          {/* MERCHANT DEMO pill (Courts Mammouth push, 2026-09-05). Shown only
-              while `/designer?demo=<slug>` is active in this tab: names whose
-              range is in the catalog, and the × leaves demo mode (the show
-              home page stays; only the catalog returns to the standard seed).
-              md+ only — the phone strip has no spare pixels and the page name
-              already carries the merchant. */}
+          {/* Short demo badge; the real supplier names remain in product details.
+              Leaving keeps the show-home page and restores the standard range. */}
           {demoPill && (
             <span
               data-testid="demo-pill"
               className="hidden h-10 shrink-0 items-center gap-1.5 rounded-xl border border-ppw-inkDeep bg-ppw-inkDeep pl-3 pr-1 text-[12px] font-semibold text-ppw-paper md:inline-flex"
               title={`${demoPill.merchant}: their catalog is loaded in this tab. Close the tab or press × for the standard catalog.`}
             >
-              <span className="truncate max-w-[160px]">{demoPill.merchant}</span>
-              <span className="opacity-70">· demo</span>
+              <span>Demo</span>
               <button
                 type="button"
                 data-testid="demo-pill-exit"
@@ -1910,7 +1855,7 @@ export function TopBar({
         {/* ---- md+: rail A — BUILD. shrink-0; the Box|Custom segment follows
             OUTSIDE the rails because its Custom half is the phone strip's
             "Walls" button too (one node, one testid, every width). ---- */}
-        <div className="hidden shrink-0 items-center md:flex">
+        <div className="plan-build-tools hidden shrink-0 items-center md:flex">
           <span className={DIVIDER} aria-hidden="true" />
 
           {/* 2 BUILD — segmented: Walls · Door · Paint · Measure. Walls keeps
@@ -2034,7 +1979,7 @@ export function TopBar({
             Custom only while the pen is open; Walls in BUILD is the pen-on
             indicator. The checked-at-rest half reads as a rail wash. */}
         <div
-          className="inline-flex shrink-0 overflow-hidden rounded-lg border border-ppw-rim max-md:order-4 md:ml-1 lg:ml-2 2xl:ml-3"
+          className="plan-room-shape inline-flex shrink-0 overflow-hidden rounded-lg border border-ppw-rim"
           role="radiogroup"
           aria-label="Room shape"
         >
@@ -2044,7 +1989,7 @@ export function TopBar({
             role="radio"
             onClick={() => {
               setDrawMode(false);
-              setSizeOpen((v) => !v);
+              setSizeOpen((v) => !v); setLevelsOpen(false); setLandOpen(false); setUnitOpen(false);
             }}
             className={`${SEG} ${sizeOpen ? SEG_ON : !drawMode ? SEG_CHECKED : SEG_REST} hidden md:inline-flex`}
             title="Box — a rectangular room; set its size"
@@ -2128,115 +2073,8 @@ export function TopBar({
           <span>Build</span>
         </button>
 
-        {/* ---- md+: rail B — the rest of ROOM&PLAN + VIEW. `overflow-x:auto`
-            is the last resort so nothing is ever clipped; every popover is
-            portaled so the rail can never clip one. ---- */}
-        <div className="hidden min-w-0 flex-1 items-center md:flex md:overflow-x-auto md:overflow-y-hidden md:[scrollbar-width:thin]">
-          <Popover anchor={boxRef} open={sizeOpen} onClose={closeSize} width={232} mode="mounted" id="ppw-pop-size" label="Room size">
-          <div data-testid="room-size-popover" className="flex flex-col gap-0.5">
-            <p className="px-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>
-              Room size
-            </p>
-            {activeRoomIsRect ? (
-              <div className="flex items-center gap-2 px-1">
-                <label className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>L</label>
-                <input
-                  type="number"
-                  min={Math.max(0.1, snapStepM)}
-                  max={50}
-                  step={snapStepM}
-                  value={room.lengthM}
-                  onChange={(e) =>
-                    setRoom({ lengthM: Number(e.target.value) || room.lengthM, widthM: room.widthM })
-                  }
-                  aria-label="Room length (m)"
-                  className={`${INPUT} w-16`}
-                />
-                <span className="text-[11px]" style={{ color: CHROME_TEXT_2 }}>m</span>
-                <label className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>W</label>
-                <input
-                  type="number"
-                  min={Math.max(0.1, snapStepM)}
-                  max={50}
-                  step={snapStepM}
-                  value={room.widthM}
-                  onChange={(e) =>
-                    setRoom({ lengthM: room.lengthM, widthM: Number(e.target.value) || room.widthM })
-                  }
-                  aria-label="Room width (m)"
-                  className={`${INPUT} w-16`}
-                />
-                <span className="text-[11px]" style={{ color: CHROME_TEXT_2 }}>m</span>
-              </div>
-            ) : activeRoom && isOutdoorRoom(activeRoom) ? (
-              // Sims world (2026-08-29): focus follows a selected garden item
-              // into the Outdoors container, which has no walls to measure.
-              <p className="px-1 text-[12px]" style={{ color: CHROME_TEXT_2 }}>Outdoors · garden</p>
-            ) : room.lengthM < 0.5 ? (
-              // Blank-canvas-on-open (2026-06-09) — no room drawn yet.
-              <p className="px-1 text-[12px]" style={{ color: CHROME_TEXT_2 }}>
-                {drawnRoomCount === 0 ? 'Draw a room first — Walls or Custom.' : 'Pick a room from the rooms list.'}
-              </p>
-            ) : (
-              <p className="px-1 text-[12px]" style={{ color: CHROME_TEXT_2 }}>
-                This room is a custom shape — use Measure to retype a wall.
-              </p>
-            )}
-          </div>
-        </Popover>
-
-          {isXl ? (
-            <div className="ml-2 flex items-center gap-2">{roomPlanGroup(false)}</div>
-          ) : (
-            <>
-              <button
-                ref={roomGroupRef}
-                type="button"
-                onClick={() => setRoomGroupOpen((v) => !v)}
-                className={`${BTN} ${roomGroupOpen ? BTN_ON : BTN_REST} ml-1 lg:ml-2`}
-                title="Room — storeys, plot"
-                aria-expanded={roomGroupOpen}
-                aria-controls="ppw-pop-room"
-                aria-label="Room"
-              >
-                <Icon name="room" />
-                <span className="hidden lg:inline">Room</span>
-              </button>
-              <Popover anchor={roomGroupRef} open={roomGroupOpen} onClose={closeRoomGroup} width={232} id="ppw-pop-room" label="Room">
-                <div className="flex flex-col gap-1">{roomPlanGroup(true)}</div>
-              </Popover>
-            </>
-          )}
-
-          <span className={DIVIDER} aria-hidden="true" />
-
-          {/* 4 VIEW — Snap · Grid · 3D · Undo/Redo. */}
-          {isXl ? (
-            <div className="flex items-center gap-2">{viewGroup(false)}</div>
-          ) : (
-            <>
-              <button
-                ref={viewGroupRef}
-                type="button"
-                onClick={() => setViewGroupOpen((v) => !v)}
-                className={`${BTN} ${viewGroupOpen ? BTN_ON : BTN_REST}`}
-                title="View — snap unit, grid, undo / redo"
-                aria-expanded={viewGroupOpen}
-                aria-controls="ppw-pop-view"
-                aria-label="View"
-              >
-                <Icon name="view" />
-                <span className="hidden lg:inline">View</span>
-              </button>
-              <Popover anchor={viewGroupRef} open={viewGroupOpen} onClose={closeViewGroup} width={232} id="ppw-pop-view" label="View">
-                <div className="flex flex-col gap-1">{viewGroup(true)}</div>
-              </Popover>
-            </>
-          )}
-        </div>
-
         {/* 5 COMMERCE — Currency · Cart · Request quote · More. Never shrinks. */}
-        <div className="hidden shrink-0 items-center md:flex">
+        <div className="plan-commerce hidden shrink-0 items-center md:flex">
           <span className={DIVIDER} aria-hidden="true" />
           <div className="flex items-center gap-1 lg:gap-2">
             <CurrencySwitcher compact />
@@ -2352,6 +2190,64 @@ export function TopBar({
           </div>
         </div>
       </div>
+
+      <div className="plan-navigation" data-testid="plan-navigation" aria-label="Plan and view controls">
+        <div className="plan-pill-group plan-house-controls" role="group" aria-label="Building and site">{roomPlanGroup(false)}</div>
+        <div className="plan-pill-group plan-precision-controls" role="group" aria-label="Drawing precision and history">{viewGroup(false)}</div>
+      </div>
+      <div ref={setPlanOptionsHost} className="plan-options-host" data-testid="plan-options-host" />
+          <PlanControlPanel anchor={boxRef} open={sizeOpen} onClose={closeSize} target={planOptionsHost} id="ppw-pop-size" title="Room size" keepMounted>
+          <div data-testid="room-size-popover" className="flex flex-col gap-0.5">
+            <p className="px-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>
+              Room size
+            </p>
+            {activeRoomIsRect ? (
+              <div className="flex items-center gap-2 px-1">
+                <label className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>L</label>
+                <input
+                  type="number"
+                  min={Math.max(0.1, snapStepM)}
+                  max={50}
+                  step={snapStepM}
+                  value={room.lengthM}
+                  onChange={(e) =>
+                    setRoom({ lengthM: Number(e.target.value) || room.lengthM, widthM: room.widthM })
+                  }
+                  aria-label="Room length (m)"
+                  className={`${INPUT} w-16`}
+                />
+                <span className="text-[11px]" style={{ color: CHROME_TEXT_2 }}>m</span>
+                <label className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>W</label>
+                <input
+                  type="number"
+                  min={Math.max(0.1, snapStepM)}
+                  max={50}
+                  step={snapStepM}
+                  value={room.widthM}
+                  onChange={(e) =>
+                    setRoom({ lengthM: room.lengthM, widthM: Number(e.target.value) || room.widthM })
+                  }
+                  aria-label="Room width (m)"
+                  className={`${INPUT} w-16`}
+                />
+                <span className="text-[11px]" style={{ color: CHROME_TEXT_2 }}>m</span>
+              </div>
+            ) : activeRoom && isOutdoorRoom(activeRoom) ? (
+              // Sims world (2026-08-29): focus follows a selected garden item
+              // into the Outdoors container, which has no walls to measure.
+              <p className="px-1 text-[12px]" style={{ color: CHROME_TEXT_2 }}>Outdoors · garden</p>
+            ) : room.lengthM < 0.5 ? (
+              // Blank-canvas-on-open (2026-06-09) — no room drawn yet.
+              <p className="px-1 text-[12px]" style={{ color: CHROME_TEXT_2 }}>
+                {drawnRoomCount === 0 ? 'Draw a room first — Walls or Custom.' : 'Pick a room from the rooms list.'}
+              </p>
+            ) : (
+              <p className="px-1 text-[12px]" style={{ color: CHROME_TEXT_2 }}>
+                This room is a custom shape — use Measure to retype a wall.
+              </p>
+            )}
+          </div>
+        </PlanControlPanel>
 
       {/* ------------------------------------------------------------------ */}
       {/* Tool options sub-bar — 52 px strip / 40 px controls, door tool only. */}

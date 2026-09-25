@@ -17,6 +17,7 @@ export interface BuildingControlsProps {
   onToolChange: (tool: 'select' | 'wall' | 'room' | 'stair' | 'window' | 'door') => void;
   onGardenToggle: () => void;
   gardenOpen: boolean;
+  onSolarCatalog?: () => void;
 }
 
 const BUTTON = 'inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-ppw-rim bg-white px-3 text-xs font-medium text-[#37362f] transition-colors hover:bg-[#f3f1ec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-teal disabled:cursor-not-allowed disabled:opacity-35';
@@ -86,7 +87,7 @@ function BuildingNumber({ label, value, min, max, step = 0.1, unit = 'm', testId
 
 /** House tools stay in sight; dimensions float over the scene only when needed. */
 export function BuildingControls({
-  layout = 'toolbar', view, onViewChange, showRoof, onShowRoofChange, tool, onToolChange, onGardenToggle, gardenOpen,
+  layout = 'toolbar', view, onViewChange, showRoof, onShowRoofChange, tool, onToolChange, onGardenToggle, gardenOpen, onSolarCatalog,
 }: BuildingControlsProps): JSX.Element {
   const property = usePropertyStore((state) => state.property);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -119,10 +120,12 @@ export function BuildingControls({
   }, [detailsOpen]);
 
   function selectFloor(id: string) {
+    if (id === '__add-floor') { addFloor(); return; }
     usePropertyStore.getState().setActiveLevel(id);
     onToolChange('select');
     const selected = levels.find((entry) => entry.level.id === id);
-    if (selected && isRoofLevel(selected.level)) onShowRoofChange(true);
+    if (selected && isRoofLevel(selected.level)) { onShowRoofChange(true); onViewChange('building'); }
+    else onShowRoofChange(false);
   }
 
   function chooseTool(next: BuildingControlsProps['tool']) {
@@ -130,7 +133,7 @@ export function BuildingControls({
     onToolChange(next);
     if (next === 'stair') setInspector('stairs');
     if (next === 'window' || next === 'door' || next === 'wall' || next === 'room') setDetailsOpen(false);
-    if (next === 'wall' || next === 'room') window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
+    if (next !== 'select') window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
   }
 
   function addFloor() {
@@ -201,6 +204,7 @@ export function BuildingControls({
         <select aria-label="Active floor" data-testid="building-floor-select" value={activeId}
           className={`${FIELD} w-full text-[13px] md:w-40`} onChange={(event) => selectFloor(event.target.value)}>
           {levels.map((entry) => <option key={entry.level.id} value={entry.level.id}>{entry.level.name}</option>)}
+          <option value="__add-floor">＋ Add floor</option>
         </select>
         <div className="hidden gap-1 md:flex">
           <button type="button" className={`${BUTTON} w-11 px-0`} aria-label="Floor below" title="Floor below" disabled={activeIndex <= 0} onClick={() => selectFloor(levels[activeIndex - 1].level.id)}><BuildIcon name="down" /></button>
@@ -285,6 +289,15 @@ export function BuildingControls({
             <BuildingNumber label="Overhang" value={roof.overhangM} min={0} max={1.5} step={0.05} testId="building-roof-overhang" onCommit={(overhangM) => changeRoof({ overhangM })} />
           </div>
           {!hasRoof && <p className="mt-2 text-[11px] text-[#5b5852]">Add a roof or choose a finish to create it.</p>}
+          {onSolarCatalog && <button type="button" className={`${BUTTON} mt-3 w-full`} onClick={() => {
+            const store = usePropertyStore.getState();
+            const id = store.ensureRoofLevel();
+            store.setActiveLevel(id);
+            onShowRoofChange(true); onViewChange('building');
+            window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
+            onSolarCatalog();
+          }}>Add solar panels</button>}
+          <p className="mt-2 text-[11px] text-[#5b5852]">Orbit or zoom to work on the roof while the house stays visible. Panels follow the roof pitch; a panel crossing a ridge uses a raised, level preview mount.</p>
         </fieldset>}
 
         {inspector === 'stairs' && <fieldset className="min-w-0">

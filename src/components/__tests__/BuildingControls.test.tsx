@@ -35,6 +35,25 @@ function byTestId(id: string) { return container.querySelector<HTMLElement>(`[da
 function click(element: HTMLElement) { act(() => element.click()); }
 
 describe('BuildingControls house tools', () => {
+  it('adds a real copied floor from the floor selector and hides the roof when returning to a floor', () => {
+    const roofId = usePropertyStore.getState().ensureRoofLevel();
+    usePropertyStore.getState().setActiveLevel(roofId);
+    props.showRoof = true;
+    render();
+    const select = byTestId('building-floor-select') as HTMLSelectElement;
+    act(() => { select.value = '__add-floor'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    const property = usePropertyStore.getState().property;
+    const floors = levelsOf(property).filter(level => !isRoofLevel(level));
+    expect(floors).toHaveLength(2);
+    expect(property.activeLevelId).toBe(floors[1].id);
+    expect(property.rooms.some(room => room.levelId === floors[1].id && room.polygon.length === 4)).toBe(true);
+    expect(props.onShowRoofChange).toHaveBeenLastCalledWith(false);
+    act(() => { select.value = roofId; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(props.onShowRoofChange).toHaveBeenLastCalledWith(true);
+    act(() => { select.value = 'ground'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(props.onShowRoofChange).toHaveBeenLastCalledWith(false);
+  });
+
   it('shows a selected roof, then returns to the highest floor when hiding it without deleting the roof', () => {
     const upperId = usePropertyStore.getState().addLevel('Upper', 'ground');
     usePropertyStore.getState().setRoofConfig({ style: 'gable', material: 'felt', pitchDeg: 25, overhangM: 0.2 });

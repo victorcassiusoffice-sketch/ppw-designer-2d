@@ -2164,7 +2164,7 @@ export function normaliseLoadedRoom(r: RawRoom): Room {
   // turns into a wall-less "room", on the first save/load round trip.
   // Ground is canonicalised to ABSENT; an unknown `kind` is dropped.
   const levelId = canonicalLevelId(r.levelId);
-  const kind = r.kind === 'outdoor' || r.kind === 'room' ? r.kind : undefined;
+  const kind = r.kind === 'outdoor' || r.kind === 'room' || r.kind === 'roof' ? r.kind : undefined;
   return {
     id: r.id ?? nanoid(8),
     name: r.name ?? 'Room',

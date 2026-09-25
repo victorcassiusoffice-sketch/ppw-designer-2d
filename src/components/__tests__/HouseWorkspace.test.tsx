@@ -6,6 +6,8 @@ import { HouseWorkspace } from '../HouseWorkspace';
 import { BuildingControls } from '../BuildingControls';
 import { usePropertyStore } from '../../store/propertyStore';
 import { useHistoryStore } from '../../store/historyStore';
+import { getAllProducts } from '../../data/products';
+import { isRoofLevel, levelsOf } from '../../designer/levels';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let host: HTMLDivElement;
@@ -40,6 +42,53 @@ function button(label: string) {
 }
 
 describe('HouseWorkspace controls', () => {
+  it('adds a real copied floor from the main floor selector and can select the roof', () => {
+    const store = usePropertyStore.getState();
+    store.setRoomPolygon(store.property.activeRoomId, [{x:0,y:0},{x:6,y:0},{x:6,y:5},{x:0,y:5}]);
+    props.onFloorAdded = vi.fn();
+    render();
+    const select = host.querySelector<HTMLSelectElement>('[aria-label="View floor"]')!;
+    act(() => { select.value = '__add-floor'; select.dispatchEvent(new Event('change', { bubbles:true })); });
+    const added = usePropertyStore.getState().property;
+    expect(levelsOf(added).filter(level => !isRoofLevel(level))).toHaveLength(2);
+    expect(added.rooms.find(room => room.id === added.activeRoomId)?.polygon).toHaveLength(4);
+    expect(props.onFloorAdded).toHaveBeenCalledOnce();
+    act(() => { select.value = '__roof'; select.dispatchEvent(new Event('change', { bubbles:true })); });
+    expect(levelsOf(usePropertyStore.getState().property).find(level => level.id === usePropertyStore.getState().property.activeLevelId)?.kind).toBe('roof');
+  });
+
+  it('shows selected product descriptions and shared basket, then collapses without clearing selection', () => {
+    const product = getAllProducts()[0];
+    const id = usePropertyStore.getState().addItem({productId:product.id,x:2,y:2,rotation:0});
+    props.selection = {id,productId:product.id,name:product.name,onDeselect:vi.fn()};
+    render();
+    expect(host.querySelector('[aria-label="Selected product description"]')?.textContent).toContain(product.name);
+    expect(host.querySelector('[aria-label="Selected product description"]')?.textContent).toContain(product.supplier);
+    expect(host.querySelector('.house-cost-lines')?.textContent).toContain(`1 × ${product.name}`);
+    expect(host.querySelector('[data-testid="house-cost-total"]')?.textContent).toBe(host.querySelector('.house-cost-pill strong')?.textContent);
+    click(button('Products and cost'));
+    expect(host.querySelector('.house-inspector.is-open')).toBeNull();
+    expect(props.selection.onDeselect).not.toHaveBeenCalled();
+    click(button('Products and cost'));
+    const away = new CustomEvent('ppw:house-scene-pointer', {cancelable:true});
+    act(() => window.dispatchEvent(away));
+    expect(away.defaultPrevented).toBe(true);
+    expect(host.querySelector('.house-inspector.is-open')).toBeNull();
+    expect(host.querySelector('.house-cost-pill strong')).not.toBeNull();
+  });
+
+  it('exposes direct door/window tools and enables stairs only with another floor', () => {
+    props.onBuildTool = vi.fn();
+    render();
+    expect(button('Stairs').disabled).toBe(true);
+    click(button('Door')); click(button('Window'));
+    expect(props.onBuildTool).toHaveBeenNthCalledWith(1,'door');
+    expect(props.onBuildTool).toHaveBeenNthCalledWith(2,'window');
+    act(() => usePropertyStore.getState().addLevel('First','ground'));
+    expect(button('Stairs').disabled).toBe(false);
+    click(button('Stairs'));
+    expect(props.onBuildTool).toHaveBeenLastCalledWith('stair');
+  });
   it('dismisses open build options on a scene click without forwarding a destructive gesture', () => {
     render();
     click(button('Details'));
@@ -82,7 +131,9 @@ describe('HouseWorkspace controls', () => {
     click(host.querySelector<HTMLElement>('[data-testid="house-draw-room"]')!);
     click(button('Select'));
     click(button('Project tools'));
-    click(button('View cart'));
+    click(button('Products and cost'));
+    click(button('Review cart & checkout ↗'));
+    click(button('Close house details'));
     click(button('View products & quantities ↗'));
     expect(props.onPlan).toHaveBeenCalledOnce();
     expect(props.onSave).toHaveBeenCalledOnce();
@@ -183,7 +234,7 @@ describe('HouseWorkspace controls', () => {
     expect(host.querySelector('aside[aria-label="House details"]')).toBeNull();
     expect(button('Details')).toBeUndefined();
     expect(button('Save')).toBeUndefined();
-    expect(button('View cart')).toBeUndefined();
+    expect(button('Products and cost')).toBeUndefined();
     expect(button('Project tools')).toBeDefined();
     expect(host.querySelector('[data-testid="scene"]')).not.toBeNull();
   });

@@ -39,7 +39,7 @@ import {
   type ReactNode,
 } from 'react';
 import { usePropertyStore, type Property, type Room } from '../store/propertyStore';
-import { PRECISION_STEP_M, useDesignerUIStore } from '../store/designerUIStore';
+import { PRECISION_STEP_M, currentSnapStepM, useDesignerUIStore } from '../store/designerUIStore';
 import { usePlacementIntentStore, isScreenTarget } from '../store/placementIntentStore';
 import { useToastStore } from '../store/toastStore';
 import { useCatalogStore } from '../store/catalogStore';
@@ -48,7 +48,11 @@ import { haptic } from '../lib/haptics';
 import { brushPaintId, type BrushModifiers } from '../designer/wallPaintBrush';
 import { isPaintableFloorPoint, previewFloorDrag } from '../designer/floorPaintBrush';
 import { activeLevelIdOf, isOutdoorRoom, isRoofLevel, isRoofRoom, roomsOnLevel } from '../designer/levels';
-import { buildingLevels, levelElevationM, levelHeightM, type BuildingStair } from '../designer/building';
+import { buildingLevels, levelElevationM, levelHeightM, roofConfigOf, type BuildingStair } from '../designer/building';
+import { createRoofSurface, roofHeightAt, roofMaximumHeight } from '../designer/roofSurface';
+import { roofPlacementPoint } from '../designer/roofPlacement';
+import { isRoofProduct } from '../designer/energy';
+import { pointInPolygon } from '../lib/geometry';
 import { buildingSolids, type BuildingView } from '../designer/buildingScene';
 import { validateStairPlacement } from '../designer/stairPlacement';
 import { EnergySummary } from './EnergyPanel';
@@ -294,7 +298,7 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
         lengthCm: p.dimensions_cm.length,
         widthCm: p.dimensions_cm.width,
         heightCm: p.dimensions_cm.height,
-        placement: p.placement,
+        placement: isRoofProduct(p) ? 'roof' : p.placement,
         mountHeightCm: p.mount_height_cm,
         fill: itemFillForCategory(p.category),
         productId: p.id,
@@ -453,10 +457,20 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const level = activeLevelIdOf(property);
   const levelEntries = buildingLevels(property);
   const onRoofLevel = isRoofLevel(levelEntries.find((entry) => entry.level.id === level)?.level);
+  useEffect(() => {
+    const product = armedProductId ? getProductById(armedProductId) : undefined;
+    if (variant === 'overlay' && product && isRoofProduct(product)) {
+      setShowRoof(true);
+      setBuildingView('building');
+      const state = usePropertyStore.getState();
+      if (!isRoofLevel(buildingLevels(state.property).find((entry) => entry.level.id === activeLevelIdOf(state.property))?.level)) state.ensureRoofLevel();
+    }
+  }, [armedProductId, catalogVersion, variant]);
   // Solar products and the existing energy panel select the roof. Make that
   // working surface visible, including when roof display was previously off.
   useEffect(() => {
-    if (onRoofLevel) { setShowRoof(true); setBuildingView('floor'); }
+    if (onRoofLevel) { setShowRoof(true); setBuildingView('building'); }
+    else setShowRoof(false);
   }, [level, onRoofLevel]);
   useEffect(() => {
     if (tool !== 'hand' || armedProductId) {
@@ -485,9 +499,14 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   }, [property, cancelWallSegment]);
   const activeHeight = levelHeightM(property, level) || DEFAULT_WALL_HEIGHT_M;
   const baseElevation = buildingView === 'floor' ? levelElevationM(property, level) : 0;
-  const H = buildingView === 'building'
+  const wallTop = buildingView === 'building'
     ? Math.max(activeHeight, ...levelEntries.filter((e) => !isRoofLevel(e.level)).map((e) => e.elevationM + e.heightM))
     : activeHeight;
+  const roofTop = showRoof ? Math.max(0, ...property.rooms.filter((room) => isRoofRoom(room) && (buildingView === 'building' || room.levelId === level)).map((room) => {
+    const surface = createRoofSurface(room.polygon, levelElevationM(property, room.levelId ?? level), roofConfigOf(property));
+    return surface ? roofMaximumHeight(surface) - baseElevation + 0.15 : 0;
+  })) : 0;
+  const H = Math.max(wallTop, roofTop);
 
   // Items are live in the workspace when no wall tool holds the click.
   const itemsInteractive = variant === 'overlay' && !panMode && !gardenPlacement && constructionTool === 'select' && !onPaintWall && !onPaintFloor && tool === 'hand' && backend === 'gl';
@@ -610,11 +629,26 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       intent.target === 'center'
         ? { x: size.width / 2, y: size.height / 2 }
         : { x: intent.target.clientX - box.left, y: intent.target.clientY - box.top };
-    const p = stage.floorPoint(local.x, local.y);
+    const product = getProductById(intent.productId);
+    if (product && isRoofProduct(product) && !onRoofLevel) {
+      usePropertyStore.getState().ensureRoofLevel();
+      return; // Resolve after the renderer has received the roof surface.
+    }
+    if (product && isRoofProduct(product) && !showRoof) {
+      setShowRoof(true);
+      setBuildingView('building');
+      return; // Its covering is built by ThreeStage before the next effect.
+    }
+    const p = intent.target === 'center' && product && isRoofProduct(product)
+      ? roofPlacementPoint(property, product, currentSnapStepM())
+      : stage.floorPoint(local.x, local.y);
     if (p) placeAtPoint(intent.productId, p.x, p.y);
-    else consumeIntent();
+    else {
+      consumeIntent();
+      if (product && isRoofProduct(product)) showFlash(intent.target === 'center' ? 'No free roof space for this panel' : 'Drop the panel within the roof footprint');
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [intent?.nonce, variant, viewMode]);
+  }, [intent?.nonce, variant, viewMode, onRoofLevel, showRoof]);
 
   // e2e bridge (DEV builds only, like the plan's geometry bridge).
   useEffect(() => {
@@ -663,7 +697,12 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       },
       floorScreenPoint: (roomX, roomY) => {
         if (!camera) return null;
-        const elevation = solids.activeElevationM ?? 0;
+        let elevation = solids.activeElevationM ?? 0;
+        if (solids.activeRoof) {
+          const roof = solids.roofs?.find((entry) => entry.levelId === solids.activeLevelId && pointInPolygon({ x: roomX, y: roomY }, entry.polygon));
+          const surface = roof ? createRoofSurface(roof.polygon, roof.elevationM, roof.config) : null;
+          if (surface) elevation = roofHeightAt(surface, { x: roomX, y: roomY });
+        }
         if (backend === 'gl') return clientOf(stageRef.current?.projectPoint(roomX, roomY, elevation) ?? null);
         const faces = projectScene([{ key: 'probe', kind: 'floor', pts: [{ x: roomX, y: roomY, z: elevation }], fill: '#000' }], camera, size);
         return faces[0] ? clientOf(faces[0].pts[0]) : null;
@@ -903,7 +942,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     if (carry && pointers.current.size === 1 && stageRef.current) {
       const p = localPoint(e);
       const floor = stageRef.current.floorPoint(p.x, p.y);
-      if (!floor) return;
+      if (!floor) {
+        if (onRoofLevel) setMoveFeedback('Keep the panel over the roof · release outside to cancel');
+        return;
+      }
       carry.dx = floor.x - carry.start.x;
       carry.dy = floor.y - carry.start.y;
       if (!carry.moved && Math.hypot(carry.dx, carry.dy) < 0.03) return;
@@ -1027,6 +1069,12 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         if (!cancelled) selectItem(carry.instanceId);
         return;
       }
+      const release = localPoint(e);
+      if (onRoofLevel && !stage?.floorPoint(release.x, release.y)) {
+        stage?.resetItemPreview(carry.instanceId);
+        showFlash('Panel kept in its original position · drop within the roof');
+        return;
+      }
       // The drop lands through the plan's own law — RoomCanvas resolves it
       // and the plan changes (the stage rebuilds the body where it landed)
       // or refuses it with the plan's own words. The preview is put back a
@@ -1120,6 +1168,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     // A tap on the floor: place the armed product there, else clear the selection.
     const floor = stageRef.current.floorPoint(p.x, p.y);
     if (armedProductId && floor) placeAtPoint(armedProductId, floor.x, floor.y);
+    else if (armedProductId && onRoofLevel) showFlash('Tap within the roof footprint to place the panel');
     else if (selectedInstanceId) selectItem(null);
   };
 
@@ -1271,8 +1320,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     : `Room view in 3D — ${drawn} parts. Drag to orbit${onPaintWall ? '; click a wall to paint it' : onPaintFloor ? '; click the floor to lay it' : itemsInteractive ? '; tap an item to select it, drag it to move it' : ''}.`;
   const selectedItem = selectedInstanceId ? findPlacedItem(property, selectedInstanceId) : null;
   const selectedProduct = selectedItem ? getProductById(selectedItem.productId) : undefined;
+  const selectedRoofMount = selectedInstanceId ? solids.items.find((item) => item.instanceId === selectedInstanceId)?.roofMount : undefined;
   const armedProduct = armedProductId ? getProductById(armedProductId) : undefined;
-  const defaultCaption = panMode ? 'Drag anywhere to move the view · tap Move view again to select furniture'
+  const defaultCaption = backend === 'painter' && onRoofLevel ? 'Roof and solar editing needs WebGL on this device · use 2D Plan to edit the solar layout'
+    : panMode ? 'Drag anywhere to move the view · tap Move view again to select furniture'
     : constructionTool === 'wall' ? 'Drag or tap corners · close the loop to make a room · Enter finishes · Shift frees angles'
     : constructionTool === 'room' ? 'Drag corner to corner · release to build · two fingers to pan · Esc to cancel'
     : onPaintWall
@@ -1280,7 +1331,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     : onPaintFloor
       ? 'Click a tile · drag a rectangle · Shift = whole room · Ctrl = erase'
       : armedProduct
-        ? `Tap the floor to place ${armedProduct.name}`
+        ? `Tap the ${onRoofLevel ? 'roof' : 'floor'} to place ${armedProduct.name}`
         : itemsInteractive
           ? 'Drag to orbit · two fingers or Shift-drag to pan · pinch to zoom · drag items to move'
           : 'Drag to orbit · two fingers or Shift-drag to pan · pinch or scroll to zoom';
@@ -1383,12 +1434,15 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
             Remove
           </button>
           {hasFurniturePreview(selectedProduct.id) && !productModelFor(selectedProduct) && <p className="w-full text-[10px] text-[#a9bfdc]">{FURNITURE_PREVIEW_NOTE}</p>}
+          {selectedRoofMount && <p className="w-full text-[11px] text-[#c5d8ec]" data-testid="view3d-roof-mount">{selectedRoofMount.bridgesRidge
+            ? 'Level preview mount across ridge · move onto one slope for flush mounting.'
+            : 'Panel follows the roof pitch. Plan footprint and energy inputs stay linked.'}</p>}
         </div>
   ) : null;
 
   const viewControls = <RoomViewControls workspace={variant === 'overlay'} pan={panMode} onPan={togglePan}
     onRotate={rotate} onZoom={zoomBy} onFit={refit} onView={chooseCameraView}
-    wallView={wallView} onWallView={setWallView} hasWalls={solids.walls.length > 0 && !onRoofLevel}
+    wallView={wallView} onWallView={setWallView} hasWalls={solids.walls.length > 0}
     sunAvailable={backend === 'gl'} sunHour={sunHour} onSunHour={setSunHour}
     onClose={onClose} onExpand={onExpand} />;
   const statusCaption = moveFeedback ?? flash ?? liveFloorCaption ?? hoverText ?? caption ?? defaultCaption;
@@ -1490,12 +1544,14 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       style={{ right: 'var(--floor-panel-w, 0px)', bottom: onPaintWall || onPaintFloor ? 0 : 'calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))', ...style }}
       data-testid="wallpaint-3d-overlay" role="region" aria-label={title ?? 'Room view in 3D'}>
       <HouseWorkspace mode={activeHouseMode} onMode={changeHouseMode} onPlan={onClose} onSave={onSave} onCart={onCart}
+        buildTool={constructionTool} onBuildTool={chooseBuildTool} onFloorAdded={() => { chooseBuildTool('select'); setBuildingView('building'); setShowRoof(false); }}
         externalPanel={!!onPaintWall || !!onPaintFloor || (energyOpen && !belowMd)}
         drawing={constructionTool === 'room'} onDraw={() => chooseBuildTool(constructionTool === 'room' ? 'select' : 'room')} onSelect={() => chooseBuildTool('select')}
         wallDrawing={constructionTool === 'wall'} onWalls={() => chooseBuildTool(constructionTool === 'wall' ? 'select' : 'wall')}
-        selection={selectionPanel && selectedProduct && selectedInstanceId ? { id: selectedInstanceId, name: selectedProduct.name, onDeselect: () => selectItem(null) } : undefined}
+        selection={selectionPanel && selectedProduct && selectedInstanceId ? { id: selectedInstanceId, productId: selectedProduct.id, name: selectedProduct.name, onDeselect: () => selectItem(null) } : undefined}
         inspector={selectionPanel ?? (energyOpen && belowMd ? <div className="house-tool-panel-host p-4" data-presentation="3d"><EnergySummary compact onJumpToRoof={() => window.dispatchEvent(new CustomEvent('ppw:close-house-details'))} /></div> : gardenOpen ? <div className="house-garden-panel"><GardenPanel architectural onClose={() => { setGardenOpen(false); setGardenPlacement(null); setHouseMode('build'); }} onRequestPlacement={(intent) => { usePropertyStore.getState().setActiveLevel('ground'); setGardenPlacement(intent); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} /></div>
           : <BuildingControls layout="sidebar" view={buildingView} onViewChange={setBuildingView} showRoof={showRoof} onShowRoofChange={setShowRoof} tool={constructionTool} onToolChange={chooseBuildTool}
+            onSolarCatalog={() => { changeHouseMode('furnish'); window.dispatchEvent(new CustomEvent('ppw:open-catalog', { detail: { category: 'eco' } })); }}
             gardenOpen={gardenOpen} onGardenToggle={() => changeHouseMode('garden')} />)}>
         {gardenPlacement && <p role="status" className="bg-[#29405c] px-3 py-2 text-xs text-[#c4e8f2]">Tap the ground to place this garden element. <button className="underline" onClick={() => setGardenPlacement(null)}>Cancel</button></p>}
         {constructionTool === 'room' && <div className="house-wall-build-strip"><span role="status">{roomPreview ? roomPreview.ok ? `${roomPreview.areaM2.toFixed(1)} m² · release to build` : roomPreview.message : 'Drag between opposite corners to build a room'}</span><button type="button" onClick={() => chooseBuildTool('select')}>Done</button></div>}

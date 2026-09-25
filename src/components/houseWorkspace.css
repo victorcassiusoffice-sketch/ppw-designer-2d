@@ -111,6 +111,39 @@
 body:has([data-testid="plan-workspace"])>vercel-live-feedback,
 body:has([data-testid="wallpaint-3d-overlay"])>vercel-live-feedback{display:none!important}
 
+/* Shared floor/build navigation and a collapsible basket stay in reserved space. */
+.house-project-actions .house-checkout-toggle{position:relative;border:1px solid #496f81;border-radius:12px;background:#244758;min-width:40px}
+.house-cart-count{position:absolute;right:-3px;top:-5px;min-width:17px;height:17px;padding:1px 3px;border-radius:9px;background:#93dce0;color:#17364a;font-size:9px;line-height:15px;font-weight:700}
+.house-cost-pill{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto;padding:5px 10px;min-height:31px;border:1px solid #4a7486;border-radius:18px;background:#224555;font-size:11px;white-space:nowrap}
+.house-cost-pill>span{color:#a9c7d6;font-size:10px}.house-cost-pill strong{color:#d0f3f3;font-weight:600}
+.house-opening-tools{display:flex;align-items:center;gap:6px;flex-shrink:0;min-height:41px;padding:4px 12px;background:#193249;border-bottom:1px solid #45637a66}
+.house-opening-tools button{min-height:31px;padding:4px 13px;border:1px solid #486b80;border-radius:16px;background:#244359;font-size:11px;color:#d3e7ee}
+.house-opening-tools button[aria-pressed=true]{background:#36717c;border-color:#9ee0df;color:#fff}
+.house-opening-tools span{font-size:10px;color:#a5c0cf;line-height:1.4;margin-left:6px}
+.house-cost-panel{padding:12px 14px;font-size:11px;line-height:1.65}
+.house-cost-panel h3{font-size:13px;line-height:1.5;color:#ecf8fb;margin:0 0 8px;font-weight:600}
+.house-cost-panel p{margin:7px 0;color:#b1c9d9}
+.house-product-detail{padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid #446074}
+.house-product-heading{display:flex;gap:10px;align-items:flex-start}
+.house-product-heading img{width:68px;height:68px;object-fit:contain;border-radius:10px;background:#f5f0e5;flex-shrink:0}
+.house-product-heading>div{min-width:0}.house-product-heading h3{font-size:12px;margin-bottom:3px}
+.house-product-heading span{display:block;font-size:10px;color:#a8c1d1}.house-product-heading strong{display:block;color:#8fe0e2;font-size:13px;margin-top:4px}
+.house-cost-panel .house-product-dimensions{color:#d4e3ee;font-size:10px}
+.house-product-detail button,.house-review-cart{min-height:38px;border:1px solid #5d8b9b;border-radius:10px;padding:6px 10px;color:#d5f6f7;background:#2a5469;font-size:11px}
+.house-cost-lines{list-style:none;padding:0;margin:0}.house-cost-lines li{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:9px 0;border-bottom:1px solid #324b60;color:#bcd0df}
+.house-cost-lines li>span{min-width:0;overflow-wrap:anywhere}.house-cost-lines strong{flex-shrink:0;color:#e1edf5;font-weight:500;font-variant-numeric:tabular-nums}.house-cost-lines small{display:block;color:#93abbf;font-size:10px}
+.house-cost-total{display:flex;justify-content:space-between;gap:10px;align-items:center;padding-top:15px;font-size:12px}.house-cost-total strong{color:#a6eff0;font-size:16px;white-space:nowrap}
+.house-cost-panel .house-cost-note{font-size:10px;line-height:1.6}.house-review-cart{width:100%;margin-top:8px;background:#347382;color:white;min-height:42px}
+@media(max-width:767px){
+  .house-scene-bar{height:auto;min-height:76px;flex-wrap:wrap;padding:4px 7px;gap:3px}
+  .house-scene-bar .house-floor-picker{flex:1}.house-floor-picker select{max-width:135px}
+  .house-cost-pill{padding:3px 8px;font-size:10px;gap:5px;min-height:28px}.house-cost-pill>span{font-size:9px}
+  .house-scene-bar .house-scene-actions{flex-basis:100%;justify-content:center;gap:4px!important}.house-scene-actions button{flex:1;min-height:31px!important;padding:4px!important}
+  .house-opening-tools{padding:4px 7px;gap:4px;min-height:39px}.house-opening-tools button{padding:4px 9px;font-size:10px;min-height:30px}.house-opening-tools span{font-size:9px;margin-left:2px}
+  .house-selection-strip:has(button[aria-expanded]){flex-wrap:wrap}.house-selection-strip>span{flex-basis:100%;max-width:100%}
+  .house-cost-panel{padding:10px 12px}.house-inspector:has(.house-cost-panel){max-height:min(42dvh,340px)}
+}
+
 /* Building instructions occupy their own row so they never cover the model or camera tools. */
 .house-selection{display:flex;flex-wrap:wrap;gap:8px;padding:16px;color:#dce5f5;background:transparent;border:0}
 .house-selection-heading{display:flex;align-items:flex-start;gap:8px;width:100%;font-size:14px;line-height:1.6}

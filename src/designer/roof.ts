@@ -82,6 +82,7 @@ export function syncRoofRooms(property: Property): Property {
   if (!levels.some((l) => isRoofLevel(l))) return property;
 
   const sources = roofSourceRooms(property);
+  const sourceSlabIds = new Set(sources.map((source) => roofRoomIdFor(source.id)));
   const existing = new Map<string, Room>();
   for (const r of property.rooms) if (isRoofRoom(r)) existing.set(r.id, r);
 
@@ -99,6 +100,19 @@ export function syncRoofRooms(property: Property): Property {
         changed = true;
       }
     } else {
+      // Adding a copied storey changes source room IDs while retaining its
+      // exact footprint. Move the existing roof work to that unique successor
+      // instead of leaving an overlapping orphan slab and double-counting PV
+      // space. Ambiguous or changed footprints remain untouched below.
+      const successors = sources.filter((source) => samePolygon(source.polygon, src.polygon));
+      const previousSlabs = [...existing.values()].filter((slab) => !sourceSlabIds.has(slab.id) && samePolygon(slab.polygon, src.polygon));
+      const predecessor = successors.length === 1 && previousSlabs.length === 1 ? previousSlabs[0] : undefined;
+      if (predecessor) {
+        existing.delete(predecessor.id);
+        slabs.push({ ...predecessor, id, name: src.name, polygon: src.polygon.map((vertex) => ({ ...vertex })), kind: 'roof', levelId: ROOF_LEVEL_ID });
+        changed = true;
+        continue;
+      }
       slabs.push({
         id,
         name: src.name,

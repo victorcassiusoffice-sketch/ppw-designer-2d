@@ -91,6 +91,8 @@ export interface FloorSolid {
 }
 
 export interface ItemSolid {
+  roofRoomId?: string;
+  roofMount?: import('./roofSurface').RoofItemMount;
   levelId?: string;
   floorElevationM?: number;
   key: string;
@@ -132,8 +134,9 @@ export interface SceneSolids {
   gardenObstacles?: Vertex[][];
   activeLevelId?: string;
   activeElevationM?: number;
+  activeRoof?: boolean;
   stairs?: Array<{ stair: import('./building').BuildingStair; baseM: number; riseM: number }>;
-  roofs?: Array<{ polygon: Vertex[]; elevationM: number; config: import('./building').RoofConfig }>;
+  roofs?: Array<{ roomId?: string; levelId?: string; polygon: Vertex[]; elevationM: number; config: import('./building').RoofConfig }>;
   wallHeightM: number;
   floors: FloorSolid[];
   walls: WallSolid[];

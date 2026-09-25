@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import type { Polygon, Vertex } from '../../lib/geometry';
 import type { BuildingStair, RoofConfig } from '../../designer/building';
-import { normaliseRoofConfig } from '../../designer/building';
+import { createRoofSurface, roofHeightAt } from '../../designer/roofSurface';
 
 function box(width: number, height: number, depth: number, material: THREE.Material): THREE.Mesh {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
@@ -138,31 +138,6 @@ export function disposeBuildingTextures(root: THREE.Object3D): void {
   });
 }
 
-function expandedPolygon(polygon: Polygon, overhangM: number): Polygon {
-  if (overhangM === 0) return polygon.map((point) => ({ ...point }));
-  const area = polygon.reduce((sum, point, i) => {
-    const next = polygon[(i + 1) % polygon.length];
-    return sum + point.x * next.y - next.x * point.y;
-  }, 0);
-  const sign = area >= 0 ? 1 : -1;
-  return polygon.map((point, i) => {
-    const previous = polygon[(i + polygon.length - 1) % polygon.length];
-    const next = polygon[(i + 1) % polygon.length];
-    const normal = (a: Vertex, b: Vertex) => {
-      const length = Math.hypot(b.x - a.x, b.y - a.y) || 1;
-      return { x: sign * (b.y - a.y) / length, y: -sign * (b.x - a.x) / length };
-    };
-    const a = normal(previous, point);
-    const b = normal(point, next);
-    const divisor = 1 + a.x * b.x + a.y * b.y;
-    if (Math.abs(divisor) < 1e-5) return { x: point.x + b.x * overhangM, y: point.y + b.y * overhangM };
-    const dx = (a.x + b.x) * overhangM / divisor;
-    const dy = (a.y + b.y) * overhangM / divisor;
-    const cap = Math.min(1, 4 * overhangM / (Math.hypot(dx, dy) || 1));
-    return { x: point.x + dx * cap, y: point.y + dy * cap };
-  });
-}
-
 /** Clip individual triangulated faces at the gable ridge; works for concave footprints. */
 function clippedHalf(polygon: Polygon, axis: 'x' | 'y', ridge: number, direction: 1 | -1): Polygon {
   const output: Polygon = [];
@@ -185,21 +160,10 @@ export function roofMesh(polygon: Polygon, elevationM: number, config: RoofConfi
   const group = new THREE.Group();
   group.name = 'building-roof';
   group.userData = { buildingPart: 'roof', material: config.material };
-  const clean = normaliseRoofConfig(config);
-  if (!clean || !Number.isFinite(elevationM) || polygon.length < 3
-    || polygon.some((point) => !Number.isFinite(point.x) || !Number.isFinite(point.y))) return group;
-  const points = expandedPolygon(polygon, clean.overhangM);
-  const minX = Math.min(...points.map((p) => p.x));
-  const maxX = Math.max(...points.map((p) => p.x));
-  const minY = Math.min(...points.map((p) => p.y));
-  const maxY = Math.max(...points.map((p) => p.y));
-  const axis = maxX - minX <= maxY - minY ? 'x' : 'y';
-  const low = axis === 'x' ? minX : minY;
-  const high = axis === 'x' ? maxX : maxY;
-  const ridge = (low + high) / 2;
-  const slope = Math.tan(clean.pitchDeg * Math.PI / 180);
-  const height = (point: Vertex) => 0.08 + (clean.style === 'flat' ? 0 : clean.style === 'shed'
-    ? (point[axis] - low) * slope : Math.max(0, (high - low) / 2 - Math.abs(point[axis] - ridge)) * slope);
+  const surface = createRoofSurface(polygon, elevationM, config);
+  if (!surface) return group;
+  const { polygon: points, config: clean, axis, ridge } = surface;
+  const height = (point: Vertex) => roofHeightAt(surface, point) - elevationM;
   const topPositions: number[] = [];
   const uv: number[] = [];
   const addTop = (a: Vertex, b: Vertex, c: Vertex) => {

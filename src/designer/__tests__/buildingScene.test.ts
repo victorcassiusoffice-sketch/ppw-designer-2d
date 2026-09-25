@@ -4,6 +4,7 @@ import { buildingSolids } from '../buildingScene';
 import { levelsOf, roomsOnLevel, activeLevelIdOf, isRoofRoom } from '../levels';
 import type { SceneInput } from '../roomView3d';
 import type { BuildingStair } from '../building';
+import { createRoofSurface, roofHeightAt } from '../roofSurface';
 
 const rectangle = (x = 0, width = 8) => [{ x, y: 0 }, { x: x + width, y: 0 }, { x: x + width, y: 8 }, { x, y: 8 }];
 const stair: BuildingStair = { id: 's', fromLevelId: 'ground', toLevelId: 'first', x: 3, y: 4, widthM: 1, runM: 5, rotation: 0 };
@@ -81,7 +82,7 @@ describe('assembled building solids', () => {
     expect(roof.roofs).toEqual([]);
   });
 
-  it.each(['flat', 'gable', 'shed'] as const)('keeps thin PV panels accessible on the roof editing slab with a %s covering configured', (style) => {
+  it.each(['flat', 'gable', 'shed'] as const)('mounts thin PV on the visible %s covering while keeping the whole building', (style) => {
     const p = { ...property(), activeLevelId: 'roof', activeRoomId: 'roof-upper' };
     p.roof = { style, material: 'felt', pitchDeg: 25, overhangM: 0.25 };
     const withPanel = (source: Property): SceneInput => {
@@ -92,17 +93,20 @@ describe('assembled building solids', () => {
           : item,
       ) })) };
     };
-    const editing = buildingSolids(p, withPanel, 'floor', true);
+    const before = JSON.stringify(p);
+    const editing = buildingSolids(p, withPanel, 'building', true);
     const panel = editing.items.find((item) => item.instanceId === 'roof-item')!;
-    expect(editing.floors).toHaveLength(1);
-    expect(editing.floors[0].levelId).toBe('roof');
-    expect(panel.z0).toBeCloseTo(editing.activeElevationM!);
-    // The stage applies a minimum visible item height; this panel still sits
-    // wholly below the 8 cm flat roof covering without the editing cutaway.
+    expect(editing.floors.map((floor) => floor.levelId)).toEqual(['ground', 'first', 'roof']);
+    expect(editing.activeRoof).toBe(true);
+    expect(editing.activeLevelId).toBe('roof');
+    const surface = createRoofSurface(p.rooms[2].polygon, editing.activeElevationM!, p.roof)!;
+    expect(panel.z0).toBeGreaterThan(roofHeightAt(surface, { x: (panel.x0 + panel.x1) / 2, y: (panel.y0 + panel.y1) / 2 }));
+    expect(panel.roofMount?.bridgesRidge).toBe(false);
     expect(panel.z1 - panel.z0).toBeGreaterThan(0);
     expect(panel.z1 - panel.z0).toBeLessThan(0.08);
-    expect(editing.roofs).toEqual([]);
-    expect(buildingSolids(p, withPanel, 'building', true).roofs).toHaveLength(1);
+    expect(editing.roofs).toHaveLength(1);
+    expect(buildingSolids(p, withPanel, 'floor', true).roofs).toHaveLength(1);
+    expect(JSON.stringify(p)).toBe(before);
   });
 
   it('preserves invalid saved placements for repair but cuts no overlapping or out-of-room holes', () => {

@@ -25,8 +25,8 @@ import type { PlacedItem } from '../store/designStore';
 import { haptic } from './haptics';
 import { currentSnapStepM } from '../store/designerUIStore';
 import { emitsLight } from '../designer/lighting';
-import { energyRoleOf } from '../designer/energy';
-import { activeLevelIdOf, isOutdoorRoom } from '../designer/levels';
+import { energyRoleOf, isRoofProduct } from '../designer/energy';
+import { activeLevelIdOf, isOutdoorRoom, isRoofRoom } from '../designer/levels';
 import { wallsOnLevel } from '../designer/freeWalls';
 import {
   WALL_HALF_M,
@@ -166,19 +166,22 @@ export function rotateSelected(deltaDeg: number, opts: { snapshot?: boolean } = 
     .getState()
     .property.rooms.find((r) => r.id === usePropertyStore.getState().property.activeRoomId);
   const unbounded = !!activeRoom && isOutdoorRoom(activeRoom) && state.polygon.length < 3;
+  // A roof slab has a boundary, but no indoor wall face or wall-facing pivot.
+  // Keep PV collisions and the centre rotation while allowing the full slab.
+  const roofItem = !!activeRoom && isRoofRoom(activeRoom) && isRoofProduct(product);
   // Inside the polygon AND inside the wall faces — `validatePlacement`
   // alone let a corner item rotate into the 5 cm wall band.
   const fits = (x: number, y: number): boolean =>
     unbounded
       ? !collidesWithAny({ x, y, w, h }, others)
       : validatePlacement({ x, y, w, h }, others, state.polygon).ok &&
-        insideInnerFaces({ x, y, w, h }, state.polygon);
+        (roofItem || insideInnerFaces({ x, y, w, h }, state.polygon));
   const candidates: Array<[number, number]> = [];
   // Vic 2026-08-29: an item flush on a wall (or in a corner) stays flush
   // after a quarter turn — re-seat it through the SAME wall-aware resolver
   // a drop uses, at the new rotation, from the same centre. Only when that
   // does not fit fall back to the centre-preserving nearby slots.
-  if (!unbounded) {
+  if (!unbounded && !roofItem) {
     const property = usePropertyStore.getState().property;
     // Pivot about the wall faces the item touches, not the free centre: a
     // corner item turns IN the corner (both faces kept), a wall-flush item

@@ -51,6 +51,9 @@ import { disposeGardenResources } from './gardenGround';
 import { contactShadow, cornerShades, disposeDressingTextures, floorMesh, groundPlane, lampsOnFactor, nightLight, skyDome, updateGroundPresentation, updateSkyDome, type NightLight } from './dressing';
 import { applyContentPresentation, applyRendererPresentation, presentationProfile, type ScenePresentation } from './renderPresentation';
 import { disposeFurnitureTextures, furniturePreview } from './furniturePreview';
+import { mountRoofItem, poseRoofItem, roofPointFromRay } from './roofItems';
+import { createRoofSurface, roofItemMount } from '../../designer/roofSurface';
+import { pointInPolygon } from '../../lib/geometry';
 
 // ---------------------------------------------------------------------------
 // Product bodies (2026-09-17): a textured glTF per product, fetched once and
@@ -182,11 +185,12 @@ function coverTexture(tex: THREE.Texture, faceW: number, faceH: number): THREE.T
  * Group carrying `userData.instanceId`).
  */
 function artBox(it: ItemSolid, requestRender: () => void): THREE.Group {
-  const sx = Math.max(0.01, it.x1 - it.x0);
-  const sy = Math.max(0.01, it.z1 - it.z0);
-  const sz = Math.max(0.01, it.y1 - it.y0);
+  const sx = Math.max(0.01, it.roofMount ? it.lengthM : it.x1 - it.x0);
+  const sy = Math.max(0.01, it.roofMount ? it.heightM : it.z1 - it.z0);
+  const sz = Math.max(0.01, it.roofMount ? it.widthM : it.y1 - it.y0);
   const root = new THREE.Group();
-  root.position.set((it.x0 + it.x1) / 2, (it.z0 + it.z1) / 2, (it.y0 + it.y1) / 2);
+  root.position.set((it.x0 + it.x1) / 2, it.z0 + sy / 2, (it.y0 + it.y1) / 2);
+  if (it.roofMount) root.rotation.y = -it.rotationDeg * Math.PI / 180;
   root.userData = { key: it.key, instanceId: it.instanceId, art: !!(it.artTopUrl || it.artSideUrl) };
   const base = new THREE.MeshStandardMaterial({ color: it.hex, roughness: ITEM_ROUGHNESS, metalness: 0.02 });
   const box: THREE.Mesh<THREE.BoxGeometry, THREE.Material | THREE.Material[]> = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), base);
@@ -197,7 +201,7 @@ function artBox(it: ItemSolid, requestRender: () => void): THREE.Group {
     const sideUrl = it.artSideUrl;
     loadArt(sideUrl)
       .then((tex) => {
-        if (!root.parent) return;
+        if (!root.parent || root.userData.disposed) return;
         const side = (w: number, h: number) => new THREE.MeshStandardMaterial({ color: 0xffffff, map: coverTexture(tex, w, h), roughness: 0.8, metalness: 0 });
         // Box material order: +x, −x, +y (top), −y (bottom), +z, −z.
         box.material = [side(sz, sy), side(sz, sy), base, base, side(sx, sy), side(sx, sy)];
@@ -211,7 +215,7 @@ function artBox(it: ItemSolid, requestRender: () => void): THREE.Group {
     const topUrl = it.artTopUrl;
     loadArt(topUrl)
       .then((tex) => {
-        if (!root.parent) return;
+        if (!root.parent || root.userData.disposed) return;
         // The plan's icon, at the plan's rotation, on the box's lid.
         const plane = new THREE.Mesh(
           new THREE.PlaneGeometry(Math.max(0.01, it.lengthM), Math.max(0.01, it.widthM)),
@@ -219,7 +223,7 @@ function artBox(it: ItemSolid, requestRender: () => void): THREE.Group {
         );
         plane.rotation.x = -Math.PI / 2; // image top → plan north (−z)
         const turn = new THREE.Group();
-        turn.rotation.y = (-it.rotationDeg * Math.PI) / 180;
+        turn.rotation.y = it.roofMount ? 0 : (-it.rotationDeg * Math.PI) / 180;
         turn.position.y = sy / 2 + 0.003;
         turn.add(plane);
         root.add(turn);
@@ -407,7 +411,7 @@ function structureSignature(s: SceneSolids): string {
     f: s.floors.map((f) => [f.key, f.hex, f.kind, f.tileM, f.polygon, f.elevationM, f.holes]),
     w: s.walls.map((w) => [w.key, w.a, w.b, w.thicknessM, w.heightM, w.stubHeightM, w.centred, w.openings, w.shared, w.free, w.elevationM]),
     stairs: s.stairs, roofs: s.roofs, garden: s.garden, gardenObstacles: s.gardenObstacles, gardenSite: s.gardenSite, gardenVisible: s.gardenVisible,
-    i: s.items.map((it) => [it.key, it.instanceId, it.x0, it.y0, it.z0, it.x1, it.y1, it.z1, it.rotationDeg, it.hex, it.meshUrl, it.modelFront, it.lengthAxis, it.modelUp, it.emitsLight, it.lightMountM, it.artTopUrl, it.artSideUrl]),
+    i: s.items.map((it) => [it.key, it.instanceId, it.x0, it.y0, it.z0, it.x1, it.y1, it.z1, it.rotationDeg, it.hex, it.meshUrl, it.modelFront, it.lengthAxis, it.modelUp, it.emitsLight, it.lightMountM, it.artTopUrl, it.artSideUrl, it.roofMount]),
   });
 }
 
@@ -556,6 +560,7 @@ function disposeObject(root: THREE.Object3D): void {
   disposeFurnitureTextures(root);
   disposeGardenResources(root);
   root.traverse((o) => {
+    o.userData.disposed = true;
     const m = o as THREE.Mesh;
     if (m.geometry && !m.geometry.userData.cachedProductBody) m.geometry.dispose();
     const mat = m.material as THREE.Material | THREE.Material[] | undefined;
@@ -616,6 +621,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const wallsRef = useRef<WallEntry[]>([]);
   const floorsRef = useRef<THREE.Mesh[]>([]);
   const itemsRef = useRef<THREE.Object3D[]>([]);
+  const roofsRef = useRef<THREE.Object3D[]>([]);
   const lampsRef = useRef<NightLight[]>([]);
   const shadowsRef = useRef<THREE.Mesh[]>([]);
   /** Where the plan is and how big, for the sun's shadow frustum. */
@@ -896,6 +902,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     wallsRef.current = [];
     floorsRef.current = [];
     itemsRef.current = [];
+    roofsRef.current = [];
     lampsRef.current = [];
     shadowsRef.current = [];
     hoveredRef.current = null;
@@ -946,12 +953,12 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     for (const it of solids.items) {
       // Known furniture has a shaped, explicitly approximate planning body.
       // Other products retain their own art; an exact GLTF always replaces it.
-      const mesh = furniturePreview(it) ?? artBox(it, requestRender);
+      const mesh = mountRoofItem(furniturePreview(it) ?? artBox(it, requestRender), it);
       content.add(mesh);
       itemsRef.current.push(mesh);
       bounds.expandByObject(mesh);
       // Grounded on the floor: a soft contact shadow under every standing body.
-      const shadow = contactShadow(it);
+      const shadow = it.roofMount ? null : contactShadow(it);
       if (shadow) {
         content.add(shadow);
         shadowsRef.current.push(shadow);
@@ -969,7 +976,16 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         loadBody(it.meshUrl)
           .then((tpl) => {
             if (buildRef.current !== buildId || !contentRef.current) return;
-            const body = bodyObject(it, tpl);
+            const body = mountRoofItem(bodyObject(it, tpl), it);
+            if (it.roofMount) {
+              // A model may arrive midway through a pointer drag. Keep the
+              // current preview's pose instead of jumping to the saved slot.
+              body.position.copy(mesh.position);
+              body.quaternion.copy(mesh.quaternion);
+              const heading = body.getObjectByName('roof-item-heading');
+              const previousHeading = mesh.getObjectByName('roof-item-heading');
+              if (heading && previousHeading) heading.rotation.copy(previousHeading.rotation);
+            }
             // A product's PBR textures pick up a little of the room, and
             // stay sharp at grazing angles (anisotropy is free on a GPU).
             const env = envRef.current;
@@ -1033,7 +1049,10 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     }
     for (const roof of solids.roofs ?? []) {
       const mesh = roofMesh(roof.polygon, roof.elevationM, roof.config);
+      mesh.userData.levelId = roof.levelId;
       content.add(mesh);
+      mesh.updateMatrixWorld(true);
+      roofsRef.current.push(mesh);
       bounds.expandByObject(mesh);
     }
     // The sun's shadow camera hugs whatever is drawn; the rig for the hour follows.
@@ -1151,7 +1170,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     }
     selectedRootRef.current = next;
     const s = selectedInstanceId ? solids.items.find((i) => i.instanceId === selectedInstanceId) : undefined;
-    if (s && contentRef.current) {
+    if (s && !s.roofMount && contentRef.current) {
       const m = 0.06;
       const pad = new THREE.Mesh(
         new THREE.PlaneGeometry(s.x1 - s.x0 + 2 * m, s.y1 - s.y0 + 2 * m),
@@ -1344,6 +1363,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         const box = new THREE.Box3();
         const p = new THREE.Vector3();
         for (const o of itemsRef.current) {
+          // A tilted, thin panel has mostly empty space inside its world AABB.
+          // Its visible model is the useful target, not that inflated box.
+          if (o.userData.roofMounted) continue;
           box.setFromObject(o);
           if (box.isEmpty() || !ray.ray.intersectBox(box, p)) continue;
           const d = p.distanceTo(ray.ray.origin);
@@ -1367,6 +1389,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         if (!c || width < 8 || height < 8) return null;
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
+        if (solids.activeRoof) {
+          return roofPointFromRay(ray, roofsRef.current.filter((roof) => !roof.userData.levelId || roof.userData.levelId === solids.activeLevelId));
+        }
         const p = new THREE.Vector3();
         const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -(solids.activeElevationM ?? 0));
         return ray.ray.intersectPlane(plane, p) ? { x: p.x, y: p.z } : null;
@@ -1383,6 +1408,27 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         const root = itemsRef.current.find((o) => o.userData.instanceId === instanceId);
         if (!root) return;
         const solid = solids.items.find((it) => it.instanceId === instanceId);
+        if (solid?.roofMount) {
+          const rotation = rotationDeg ?? solid.rotationDeg;
+          const radians = rotation * Math.PI / 180;
+          const w = Math.abs(solid.lengthM * Math.cos(radians)) + Math.abs(solid.widthM * Math.sin(radians));
+          const h = Math.abs(solid.lengthM * Math.sin(radians)) + Math.abs(solid.widthM * Math.cos(radians));
+          const next = { x0: solid.x0 + dxM, y0: solid.y0 + dyM, x1: solid.x0 + dxM + w, y1: solid.y0 + dyM + h, rotationDeg: rotation };
+          const centre = { x: (next.x0 + next.x1) / 2, y: (next.y0 + next.y1) / 2 };
+          const roof = solids.roofs?.find((entry) => pointInPolygon(centre, entry.polygon))
+            ?? solids.roofs?.find((entry) => entry.roomId === solid.roofRoomId);
+          const surface = roof && createRoofSurface(roof.polygon, roof.elevationM, roof.config);
+          if (surface) poseRoofItem(root, next, roofItemMount(surface, next));
+          // Keep the selection rim on the moving panel too.
+          const hull = hullRef.current;
+          if (hull && selectedRootRef.current === root) {
+            hull.position.copy(root.position); hull.quaternion.copy(root.quaternion);
+            const heading = hull.getObjectByName('roof-item-heading');
+            if (heading) heading.rotation.y = root.getObjectByName('roof-item-heading')!.rotation.y;
+          }
+          requestRender();
+          return;
+        }
         if (!previewRotationRef.current.has(instanceId)) previewRotationRef.current.set(instanceId, root.rotation.y);
         const rotation = rotationDeg ?? solid?.rotationDeg ?? 0;
         if (solid) {
@@ -1422,6 +1468,18 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       },
       resetItemPreview(instanceId) {
         const root = itemsRef.current.find((o) => o.userData.instanceId === instanceId);
+        const solid = solids.items.find((it) => it.instanceId === instanceId);
+        if (root && solid?.roofMount) {
+          poseRoofItem(root, solid, solid.roofMount);
+          const hull = hullRef.current;
+          if (hull && selectedRootRef.current === root) {
+            hull.position.copy(root.position); hull.quaternion.copy(root.quaternion);
+            const heading = hull.getObjectByName('roof-item-heading');
+            if (heading) heading.rotation.y = 0;
+          }
+          requestRender();
+          return;
+        }
         const home = previewRef.current.get(instanceId);
         if (root && home) root.position.copy(home);
         const rotation = previewRotationRef.current.get(instanceId);
