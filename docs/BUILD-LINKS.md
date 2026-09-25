@@ -1,17 +1,17 @@
 <!-- verified-preview:start -->
 ## Current feature deployment
 
-Updated: 2026-09-25 23:31 (local) | commit: 466f64b26b3171416c8224488e3589409460061f
+Updated: 2026-09-25 23:45 (local) | commit: 7b1837e912b3f50f85f09ace627732828931c558
 
-- Standalone Studio + Shop: https://ppw-designer-2d-9155rg884-victor-ppw.vercel.app/studio
-- Property developer presentation: https://ppw-designer-2d-9155rg884-victor-ppw.vercel.app/pitch/developers
-- Merchant presentation: https://ppw-designer-2d-9155rg884-victor-ppw.vercel.app/pitch/merchants
-- Designer-only Demo: https://ppw-designer-2d-9155rg884-victor-ppw.vercel.app/demo
-- Embeddable Demo: https://ppw-designer-2d-9155rg884-victor-ppw.vercel.app/embed/designer?scene=home&view=3d
-- Designer: https://ppw-designer-2d-9155rg884-victor-ppw.vercel.app/designer
-- Demo (legacy TintEX URL): https://ppw-designer-2d-9155rg884-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: Interactive developer and merchant pitch pages, standalone Studio with Shop, generic designer-only Demo, embeddable 2D/Premium 3D and server-enforced no-order preview.
-- Verification: Vercel 6663893552 verified: Studio, both pitches, real catalogue (14 products), Demo, standard Designer and legacy TintEX load. Demo and TintEX checked at 390/360px; merchant pitch phone has no horizontal overflow. Deadline interactions, 2D/3D embed switching, product details and cart work; checkout never mounts payment UI. Four empty transaction API probes return 403 SHOWCASE_READ_ONLY. Embed-only HTTPS framing headers verified. CI passes 262 files / 2931 tests, client/API types and secrets. Unchanged production Lighthouse still fails. Final canvas-area polish deployment follows.
+- Standalone Studio + Shop: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/studio
+- Property developer presentation: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/pitch/developers
+- Merchant presentation: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/pitch/merchants
+- Designer-only Demo: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/demo
+- Embeddable Demo: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/embed/designer?scene=home&view=3d
+- Designer: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/designer
+- Demo (legacy TintEX URL): https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/designer?demo=tintex
+- Landed: Interactive developer and merchant presentations, standalone Studio with Shop and existing merchant tools, designer-only Demo and embeddable 2D/Premium 3D; server-enforced no-order preview.
+- Verification: Final application CI passes 262 files / 2,931 tests, client/API typechecks and secret scan. Production build and scoped lint pass; zero public source maps. Unique preview browser checks pass for both pitches, Studio, Demo and preserved Designer/TintEX routes on desktop and 360/390px phones. Final embedded frames measure 420/423px on desktop and about 480px on phone; no horizontal overflow or browser errors observed. Added a floor in Studio 3D, switched to Plan, and undid it without resetting history. Real catalogue/product/cart reads work; checkout renders the no-order screen. Empty Stripe/PayPal/Gumroad/lead probes return 403 SHOWCASE_READ_ONLY; final deployment Stripe guard and embed-only HTTPS framing headers rechecked. No customer data, order, payment, email or booking submitted. Separate Lighthouse continues to fail against unchanged production.
 - Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
 - Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.

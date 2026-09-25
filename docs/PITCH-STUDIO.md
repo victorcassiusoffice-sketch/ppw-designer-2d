@@ -1,6 +1,16 @@
 # PPW Studio — presentation and integration guide
 
-Status: implementation completed; final integrated checks and unique-preview verification are in progress. Use the newest verified URL in BUILD-LINKS after that checkpoint is recorded.
+Status: shipped and verified. Application `7b1837e912b3f50f85f09ace627732828931c558`, Vercel `6664311042`. Production/main remain untouched.
+
+- Standalone Studio + Shop: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/studio
+- Developer presentation: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/pitch/developers
+- Merchant presentation: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/pitch/merchants
+- Designer-only Demo: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/demo
+- Embed: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/embed/designer?scene=home&view=3d
+- Standard Designer: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/designer
+- Demo (legacy TintEX URL): https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/designer?demo=tintex
+
+Final application CI passes 262 files / 2,931 tests, client/API typechecks and secret scan. Production build and scoped lint pass; zero public source maps. Unique preview browser checks pass for both pitches, Studio, Demo and preserved Designer/TintEX routes on desktop and 360/390px phones. Final embedded frames measure 420/423px on desktop and about 480px on phone; no horizontal overflow or browser errors observed. Added a floor in Studio 3D, switched to Plan, and undid it without resetting history. Real catalogue/product/cart reads work; checkout renders the no-order screen. Empty Stripe/PayPal/Gumroad/lead probes return 403 SHOWCASE_READ_ONLY; final deployment Stripe guard and embed-only HTTPS framing headers rechecked. No customer data, order, payment, email or booking submitted. Separate Lighthouse continues to fail against unchanged production.
 
 ## Public experiences
 
@@ -22,11 +32,11 @@ Status: implementation completed; final integrated checks and unique-preview ver
 
 ## Embedding
 
-Replace `PREVIEW_HOST` with the verified host. Serve the parent website over HTTPS.
+This embed uses the current verified preview. Serve the parent website over HTTPS. Update the host when a later deployment is selected.
 
 ```html
 <iframe
-  src="https://PREVIEW_HOST/embed/designer?scene=home&view=3d"
+  src="https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/embed/designer?scene=home&view=3d"
   title="Demo — design your home"
   style="width:100%;height:760px;border:0;border-radius:18px"
   loading="lazy"
