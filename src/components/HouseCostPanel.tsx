@@ -1,4 +1,5 @@
 import { getProductById, productImageUrl } from '../data/products';
+import { hasSolarPanelPreview, SOLAR_PANEL_PREVIEW_NOTE } from '../data/solarPreview';
 import { formatCurrency } from '../lib/currency';
 import { useCart } from '../store/cartStore';
 
@@ -14,6 +15,7 @@ export function HouseCostPanel({ productId, onEdit, onCart }: {
       <div className="house-product-heading"><img src={productImageUrl(product)} alt="" /><div><h3>{product.name}</h3><span>{product.supplier}</span><strong>{formatCurrency(product.price.value, product.price.currency)}</strong></div></div>
       <p className="house-product-dimensions">{product.dimensions_cm.length} × {product.dimensions_cm.width} × {product.dimensions_cm.height} cm · L × W × H</p>
       {product.notes && <p>{product.notes}</p>}
+      {hasSolarPanelPreview(product) && <p>{SOLAR_PANEL_PREVIEW_NOTE}</p>}
       {onEdit && <button type="button" onClick={onEdit}>Move / rotate / duplicate</button>}
     </section>}
     <section aria-label="Products and finishes in your design">

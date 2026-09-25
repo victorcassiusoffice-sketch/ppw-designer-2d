@@ -52,7 +52,7 @@
   .plan-primary-row .plan-identity > button { padding-left: 8px; }
   .plan-navigation { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 5px; padding: 3px 8px 6px; }
   .plan-pill-group { display: contents; }
-  .plan-pill-group > button { min-width: 0; height: 40px; padding: 0 6px; border-color: var(--plan-pill-rim); background: var(--plan-pill-bg); }
+  .plan-pill-group > button { width: 100%; min-width: 0; height: 40px; padding: 0 6px; border-color: var(--plan-pill-rim); background: var(--plan-pill-bg); }
   .plan-pill-group .plan-desktop-3d { display: none; }
   .plan-pill-group > button [class*="min-[1366px]:hidden"] { display: none; }
   .plan-pill-group [aria-label="Toggle 3D preview"] { display: none; }

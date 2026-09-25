@@ -1,12 +1,12 @@
 <!-- verified-preview:start -->
 ## Current feature deployment
 
-Updated: 2026-09-25 00:50 (local) | commit: accdec1b3e5fc1c445bfe83af1b37eab62084499
+Updated: 2026-09-25 13:38 (local) | commit: 1687058bc57ea4674df362d0ed54e16ce34f6007
 
-- Designer: https://ppw-designer-2d-kvjo7osq8-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-kvjo7osq8-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: Bottom home-build menu, reserved camera/settings, category-first Home store and inline product details; clear dismissal; brick/plastered-brick/concrete walls and independent exterior paint; focused phone Materials sheet; 26 Courts dimensional previews. Existing floors, stairs, roofs, garden, solar and backend hooks retained.
-- Verification: Application accdec1 deployed through docs 0febf0d751001e1707fcafad913c5a1efc220e76, Vercel 6647572658. Standard, TintEX and Courts loaded on desktop and 360/390px phones; room drag created 18.8 m2 and Undo worked. Material, item and catalog dismissal checked. CI: 244 files / 2792 tests, root/API typechecks and secrets scan pass; build/lint pass. No overflow or browser errors observed.
+- Designer: https://ppw-designer-2d-b4softmgz-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-b4softmgz-victor-ppw.vercel.app/designer?demo=tintex
+- Landed: Direct Plan controls and Demo badge; Add floor and direct door/window/stair tools in 3D; whole-building roof and roof-mounted PV; collapsible shared product details and cost.
+- Verification: Vercel 6657674260 succeeds. Standard, TintEX and Courts load; desktop and 360/390px phone checked. Live second floor, pitched-roof PV placement/rotation, stairs, window, door, Plan round-trip and cost/dismissal passed. Final phone Grid sizing and PV material polish follow-up in progress.
 - Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
 - Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.

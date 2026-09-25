@@ -112,6 +112,7 @@ export function BuildingControls({
   const floorName = (id: string) => levels.find((entry) => entry.level.id === id)?.level.name ?? 'Floor';
   const height = levelHeightM(property, activeId);
   useEffect(() => { setStairError(null); }, [stair?.id]);
+  useEffect(() => { setInspector(onRoofLevel ? 'roof' : 'floor'); }, [onRoofLevel]);
   useEffect(() => {
     if (!detailsOpen) return;
     const close = (event: KeyboardEvent) => { if (event.key === 'Escape') setDetailsOpen(false); };

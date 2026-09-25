@@ -79,6 +79,7 @@ import { findCladdingProduct } from '../data/claddingCatalog';
 import { getProductById, productImageUrl, productTopDownUrl } from '../data/products';
 import { hasFurniturePreview, FURNITURE_PREVIEW_NOTE } from '../data/dimensionalPreview';
 import { productModelFor } from '../data/productModels';
+import { hasSolarPanelPreview, SOLAR_PANEL_PREVIEW_NOTE } from '../data/solarPreview';
 import { DEFAULT_WALL_HEIGHT_M, findWallPaintById, finishOfPaint, resolveWallColourHex } from '../data/wallPaints';
 import { RoomViewControls, type CameraView } from './RoomViewControls';
 import { useBelowMd } from '../lib/useBelowMd';
@@ -1434,6 +1435,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
             Remove
           </button>
           {hasFurniturePreview(selectedProduct.id) && !productModelFor(selectedProduct) && <p className="w-full text-[10px] text-[#a9bfdc]">{FURNITURE_PREVIEW_NOTE}</p>}
+          {hasSolarPanelPreview(selectedProduct) && <p className="w-full text-[11px] text-[#c5d8ec]" data-testid="view3d-solar-preview">{SOLAR_PANEL_PREVIEW_NOTE}</p>}
           {selectedRoofMount && <p className="w-full text-[11px] text-[#c5d8ec]" data-testid="view3d-roof-mount">{selectedRoofMount.bridgesRidge
             ? 'Level preview mount across ridge · move onto one slope for flush mounting.'
             : 'Panel follows the roof pitch. Plan footprint and energy inputs stay linked.'}</p>}

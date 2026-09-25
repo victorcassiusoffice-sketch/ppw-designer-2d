@@ -166,6 +166,7 @@ body:has([data-testid="wallpaint-3d-overlay"])>vercel-live-feedback{display:none
   .house-scene-bar{padding:0 6px;gap:4px}
   .house-scene-bar>div:first-child{min-width:0}
   .house-scene-bar strong{max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .house-scene-bar .house-cost-pill strong{max-width:none}
   .house-scene-actions{gap:0!important}
   .house-scene-actions button{padding:7px 6px}
   .house-wall-build-strip{padding:5px 8px;gap:5px;font-size:10px;min-height:46px}

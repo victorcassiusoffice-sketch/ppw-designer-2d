@@ -52,6 +52,7 @@ import { contactShadow, cornerShades, disposeDressingTextures, floorMesh, ground
 import { applyContentPresentation, applyRendererPresentation, presentationProfile, type ScenePresentation } from './renderPresentation';
 import { disposeFurnitureTextures, furniturePreview } from './furniturePreview';
 import { mountRoofItem, poseRoofItem, roofPointFromRay } from './roofItems';
+import { solarPanelPreview } from './solarPanelPreview';
 import { createRoofSurface, roofItemMount } from '../../designer/roofSurface';
 import { pointInPolygon } from '../../lib/geometry';
 
@@ -581,7 +582,7 @@ function itemRootOf(o: THREE.Object3D | null): THREE.Object3D | null {
 function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): void {
   root.traverse((o) => {
     const m = o as THREE.Mesh;
-    if (!m.isMesh) return;
+    if (!m.isMesh || m.userData.selectionKeepsColour) return;
     const mats = Array.isArray(m.material) ? m.material : [m.material];
     for (const mat of mats) {
       const std = mat as THREE.MeshStandardMaterial;
@@ -953,7 +954,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     for (const it of solids.items) {
       // Known furniture has a shaped, explicitly approximate planning body.
       // Other products retain their own art; an exact GLTF always replaces it.
-      const mesh = mountRoofItem(furniturePreview(it) ?? artBox(it, requestRender), it);
+      const solarPreview = solarPanelPreview(it);
+      const mesh = mountRoofItem(solarPreview ?? furniturePreview(it) ?? artBox(it, requestRender), it);
       content.add(mesh);
       itemsRef.current.push(mesh);
       bounds.expandByObject(mesh);
@@ -972,7 +974,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       }
       // Swap the preview for the product's body once it has loaded — unless the
       // plan has been rebuilt since (a stale load must not resurrect).
-      if (it.meshUrl) {
+      if (it.meshUrl && !solarPreview) {
         loadBody(it.meshUrl)
           .then((tpl) => {
             if (buildRef.current !== buildId || !contentRef.current) return;
