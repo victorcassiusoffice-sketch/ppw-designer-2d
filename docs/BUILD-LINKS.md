@@ -1,12 +1,17 @@
 <!-- verified-preview:start -->
 ## Current feature deployment
 
-Updated: 2026-09-25 14:00 (local) | commit: c7782d0cacc219e40dbc8904054da07fd537efe6
+Updated: 2026-09-25 23:31 (local) | commit: 466f64b26b3171416c8224488e3589409460061f
 
-- Designer: https://ppw-designer-2d-9dar1nmsw-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-9dar1nmsw-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: Direct Plan controls and Demo badge; Add floor and direct doors/windows/stairs in 3D; whole-building roof with pitched solar and dark Jinko preview; collapsible shared product details, cart and estimate.
-- Verification: Application c7782d0 deployed via documentation commit 14c65902200ebaf8204fd45b440f6b883d6a7eda, Vercel 6658137187. Standard, TintEX and Courts load on desktop and 360/390px phones. Final dark-cell roof PV, automatic roof settings, full-width phone Grid, product-cost dismissal and Plan/3D synchronization passed; no horizontal overflow or browser errors observed. Final application CI passed 251 files / 2829 tests, client/API types and secret scan. Separate Lighthouse still audits unchanged production and fails. Earlier final-polish hostname 6vzfucs1g timed out; this replacement completed live checks. Main and production untouched.
+- Standalone Studio + Shop: https://ppw-designer-2d-9155rg884-victor-ppw.vercel.app/studio
+- Property developer presentation: https://ppw-designer-2d-9155rg884-victor-ppw.vercel.app/pitch/developers
+- Merchant presentation: https://ppw-designer-2d-9155rg884-victor-ppw.vercel.app/pitch/merchants
+- Designer-only Demo: https://ppw-designer-2d-9155rg884-victor-ppw.vercel.app/demo
+- Embeddable Demo: https://ppw-designer-2d-9155rg884-victor-ppw.vercel.app/embed/designer?scene=home&view=3d
+- Designer: https://ppw-designer-2d-9155rg884-victor-ppw.vercel.app/designer
+- Demo (legacy TintEX URL): https://ppw-designer-2d-9155rg884-victor-ppw.vercel.app/designer?demo=tintex
+- Landed: Interactive developer and merchant pitch pages, standalone Studio with Shop, generic designer-only Demo, embeddable 2D/Premium 3D and server-enforced no-order preview.
+- Verification: Vercel 6663893552 verified: Studio, both pitches, real catalogue (14 products), Demo, standard Designer and legacy TintEX load. Demo and TintEX checked at 390/360px; merchant pitch phone has no horizontal overflow. Deadline interactions, 2D/3D embed switching, product details and cart work; checkout never mounts payment UI. Four empty transaction API probes return 403 SHOWCASE_READ_ONLY. Embed-only HTTPS framing headers verified. CI passes 262 files / 2931 tests, client/API types and secrets. Unchanged production Lighthouse still fails. Final canvas-area polish deployment follows.
 - Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
 - Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.

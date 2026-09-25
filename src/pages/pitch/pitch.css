@@ -13,3 +13,23 @@
 @media(prefers-reduced-motion:no-preference){.pitch-app button,.pitch-app a{transition:background-color .16s ease,border-color .16s ease,color .16s ease}.pitch-stage>div{animation:pitch-appear .25s ease-out}@keyframes pitch-appear{from{opacity:.3;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}}
 
 .pitch-deadline-preview{display:flex;flex-direction:column;gap:10px}
+
+/* Keep the live workspace tall: generic responsive panel padding must not shrink it. */
+.pitch-panel.pitch-storefront-preview,.pitch-panel.pitch-live-panel{padding:0;gap:0;overflow:hidden}
+.pitch-storefront-preview .pitch-preview-browser{display:none}
+.pitch-storefront-preview .pitch-storefront-title{padding:8px 18px;gap:12px;flex-shrink:0;flex-wrap:nowrap}
+.pitch-storefront-preview .pitch-storefront-title .pitch-eyebrow{margin-bottom:3px;font-size:9px!important}
+.pitch-storefront-preview .pitch-storefront-title h3{font-size:20px;line-height:1.15}
+.pitch-storefront-preview .pitch-preview-actions{padding:8px 18px;font-size:10px;line-height:1.5;flex-shrink:0}
+.pitch-storefront-preview .pitch-designer-frame{flex:1 1 0;min-height:300px;height:0}
+.pitch-live-panel .pitch-section-heading{padding:6px 12px;gap:8px;flex-shrink:0}
+.pitch-live-panel .pitch-section-heading>.pitch-segment{flex-direction:row;gap:3px;padding:2px}
+.pitch-live-panel .pitch-segment button{min-height:34px;padding:7px 11px;font-size:10px}
+.pitch-live-panel .pitch-live-stage{min-height:0;gap:0;overflow:hidden}
+.pitch-live-panel .pitch-designer-frame{flex:1 1 0;min-height:300px;height:0;border-radius:0;border-left:0;border-right:0}
+.pitch-live-footer{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:8px 13px;flex-shrink:0}
+.pitch-live-footer .pitch-fine{font-size:9px;line-height:1.5}
+.pitch-live-footer a{font-size:10px;color:#bfe2d0;white-space:nowrap}
+@media(max-width:1050px) and (min-width:761px){.pitch-live-panel .pitch-section-heading{padding:6px 8px;gap:5px}.pitch-live-panel .pitch-segment button{padding:7px 8px;font-size:9px}}
+@media(max-width:760px){.pitch-storefront-preview .pitch-designer-frame,.pitch-live-panel .pitch-designer-frame{flex:none;min-height:480px;height:480px}.pitch-storefront-preview .pitch-storefront-title{flex-wrap:wrap;padding:12px 16px;gap:9px}.pitch-live-panel .pitch-section-heading{padding:10px 12px;justify-content:center}.pitch-live-panel .pitch-live-stage{flex:none}.pitch-live-footer{padding:10px 13px}.pitch-live-footer .pitch-fine{max-width:58%}}
+@media(max-height:520px) and (min-width:761px){.pitch-storefront-preview .pitch-designer-frame,.pitch-live-panel .pitch-designer-frame{flex:none;min-height:420px;height:420px}}
