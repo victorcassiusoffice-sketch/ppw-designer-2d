@@ -1,12 +1,12 @@
 <!-- verified-preview:start -->
 ## Current feature deployment
 
-Updated: 2026-09-25 13:38 (local) | commit: 1687058bc57ea4674df362d0ed54e16ce34f6007
+Updated: 2026-09-25 14:00 (local) | commit: c7782d0cacc219e40dbc8904054da07fd537efe6
 
-- Designer: https://ppw-designer-2d-b4softmgz-victor-ppw.vercel.app/designer
-- TintEX: https://ppw-designer-2d-b4softmgz-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: Direct Plan controls and Demo badge; Add floor and direct door/window/stair tools in 3D; whole-building roof and roof-mounted PV; collapsible shared product details and cost.
-- Verification: Vercel 6657674260 succeeds. Standard, TintEX and Courts load; desktop and 360/390px phone checked. Live second floor, pitched-roof PV placement/rotation, stairs, window, door, Plan round-trip and cost/dismissal passed. Final phone Grid sizing and PV material polish follow-up in progress.
+- Designer: https://ppw-designer-2d-9dar1nmsw-victor-ppw.vercel.app/designer
+- TintEX: https://ppw-designer-2d-9dar1nmsw-victor-ppw.vercel.app/designer?demo=tintex
+- Landed: Direct Plan controls and Demo badge; Add floor and direct doors/windows/stairs in 3D; whole-building roof with pitched solar and dark Jinko preview; collapsible shared product details, cart and estimate.
+- Verification: Application c7782d0 deployed via documentation commit 14c65902200ebaf8204fd45b440f6b883d6a7eda, Vercel 6658137187. Standard, TintEX and Courts load on desktop and 360/390px phones. Final dark-cell roof PV, automatic roof settings, full-width phone Grid, product-cost dismissal and Plan/3D synchronization passed; no horizontal overflow or browser errors observed. Final application CI passed 251 files / 2829 tests, client/API types and secret scan. Separate Lighthouse still audits unchanged production and fails. Earlier final-polish hostname 6vzfucs1g timed out; this replacement completed live checks. Main and production untouched.
 - Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
 - Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
 - Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.
