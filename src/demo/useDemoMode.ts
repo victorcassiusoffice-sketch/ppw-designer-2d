@@ -106,6 +106,18 @@ export function ensureDemoPage(demo: DemoDefinition): DemoPageOutcome {
   return 'loaded';
 }
 
+/**
+ * Which view a demo opens in. A show flat is built to be walked, so every
+ * demo opens in 3D unless the URL asks for the plan with `view=2d`. /demo and
+ * the embed carry the view in their route; the legacy /designer?demo=<slug>
+ * reads the same query. (A blank /designer is not a demo and opens in Plan.)
+ */
+export function demoViewFor(pathname: string, search: string): 'plan' | '3d' {
+  const route = demoRoute(pathname, search);
+  const view = route ? route.view : new URLSearchParams(search).get('view') === '2d' ? '2d' : '3d';
+  return view === '2d' ? 'plan' : '3d';
+}
+
 export function useDemoMode(): DemoDefinition | null {
   // useState's initialiser runs synchronously in the FIRST render, before any
   // child mounts — the one moment early enough for the catalogs (see header).
@@ -116,8 +128,7 @@ export function useDemoMode(): DemoDefinition | null {
   useEffect(() => {
     if (!demo) return;
     const outcome = ensureDemoPage(demo);
-    const route = demoRoute(window.location.pathname, window.location.search);
-    if (route) useDesignerUIStore.getState().setViewMode(route.view === '2d' ? 'plan' : '3d');
+    useDesignerUIStore.getState().setViewMode(demoViewFor(window.location.pathname, window.location.search));
     if (outcome !== 'current') {
       // "No orders" is only true on the read-only routes (/demo, the embed, a
       // preview build). The legacy /designer?demo=<slug> URL still takes a

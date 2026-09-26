@@ -144,3 +144,15 @@ describe('ensureDemoPage', () => {
     expect(copies).toHaveLength(1);
   });
 });
+
+describe('demoViewFor (2026-09-26: demos open in 3D, the plan on request)', () => {
+  it('opens every demo in 3D unless the URL asks for the plan', async () => {
+    const { demoViewFor } = await import('../useDemoMode');
+    expect(demoViewFor('/designer', '?demo=tintex')).toBe('3d');
+    expect(demoViewFor('/designer', '?demo=courts&view=2d')).toBe('plan');
+    expect(demoViewFor('/demo', '')).toBe('3d');
+    expect(demoViewFor('/demo', '?scene=home&view=2d')).toBe('plan');
+    expect(demoViewFor('/embed/designer', '?scene=paint&view=3d')).toBe('3d');
+    expect(demoViewFor('/embed/designer', '?scene=home&view=2d')).toBe('plan');
+  });
+});

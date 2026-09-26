@@ -204,3 +204,9 @@ describe('designerUIStore — selected wall', () => {
     expect(useDesignerUIStore.getState().selectedWallId).toBeNull();
   });
 });
+
+describe('view mode default (2026-09-26)', () => {
+  it('a fresh store opens in Plan — you draw first, then walk it in 3D; demos ask for 3D themselves', () => {
+    expect(useDesignerUIStore.getInitialState().viewMode).toBe('plan');
+  });
+});

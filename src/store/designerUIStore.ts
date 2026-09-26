@@ -279,7 +279,10 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         erase: false,
       },
       energyPanelOpen: false,
-      viewMode: '3d',
+      // A blank plan opens in Plan: you draw first, then walk it in 3D. The
+      // furnished routes (/demo, /embed, /studio/designer?view=3d and the
+      // supplier show flats on /designer?demo=<slug>) ask for 3D themselves.
+      viewMode: 'plan',
       setViewMode: (mode) => set((s) => (s.viewMode === mode ? s : { viewMode: mode })),
       wallView: 'cutaway',
       setWallView: (view) => set((s) => (s.wallView === view ? s : { wallView: view })),
