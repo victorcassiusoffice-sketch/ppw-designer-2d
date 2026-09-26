@@ -70,6 +70,26 @@ async function waitForStrip(page: Page): Promise<Locator> {
 }
 
 /**
+ * Press `button` until `appears` is on screen. A press can be lost when the
+ * shell re-renders between pointerdown and pointerup — on a cold dev server
+ * the 3D shell's rail re-mounts as its lazy chunks land, and the first press
+ * on Furnish changed nothing (eco-solar, 2026-09-26) — so the press is
+ * repeated a couple of times before it is reported as a failure.
+ */
+async function pressUntil(button: Locator, appears: Locator, label: string): Promise<void> {
+  const attempts = 3;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    await button.click();
+    try {
+      await expect(appears, label).toBeVisible({ timeout: attempt === attempts ? 10_000 : 4_000 });
+      return;
+    } catch (error) {
+      if (attempt === attempts) throw error;
+    }
+  }
+}
+
+/**
  * Open the product catalogue, whatever view the designer is in, and leave
  * the product strip on screen.
  *
@@ -119,8 +139,7 @@ export async function openCatalog(page: Page, category?: MacroCategory): Promise
   ] as const) {
     const pill = page.locator(launcher);
     if (await shows(pill)) {
-      await pill.click();
-      await expect(page.locator(strip), `${launcher} opens the catalogue`).toBeVisible({ timeout: 10_000 });
+      await pressUntil(pill, page.locator(strip), `${launcher} opens the catalogue`);
       if (category) await pickCategory(page, category);
       return;
     }
@@ -129,8 +148,7 @@ export async function openCatalog(page: Page, category?: MacroCategory): Promise
   // 4. 3D view: the house rail's Furnish mode → home store → a category tile.
   const furnish = page.locator(FURNISH);
   if (await shows(furnish)) {
-    await furnish.click();
-    await expect(categoryControl(page, 'all'), 'Furnish opens the home store').toBeVisible({ timeout: 10_000 });
+    await pressUntil(furnish, categoryControl(page, 'all'), 'Furnish opens the home store');
     await categoryControl(page, category ?? 'all').click();
     await waitForStrip(page);
     return;
