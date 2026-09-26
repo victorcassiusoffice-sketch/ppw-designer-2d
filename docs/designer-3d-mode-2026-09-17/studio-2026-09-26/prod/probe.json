@@ -1,0 +1,182 @@
+{
+  "base": "https://designer.ppwellness.co",
+  "at": "2026-09-26T14:09:24.661Z",
+  "health": {
+    "ok": true,
+    "service": "ppw-designer-2d",
+    "env": "production",
+    "commit": "8214ff44e429ac074698a5995256a78bfb79e89b",
+    "sentryConfigured": true,
+    "timestamp": "2026-09-26T14:09:26.446Z"
+  },
+  "healthMatchesExpected": true,
+  "headers": {
+    "designer": {
+      "x-frame-options": "SAMEORIGIN",
+      "content-security-policy": "frame-ancestors 'self'",
+      "cache-control": "public, max-age=0, must-revalidate"
+    },
+    "embed": {
+      "x-frame-options": null,
+      "content-security-policy": "frame-ancestors 'self' https:",
+      "cache-control": "no-cache, must-revalidate"
+    },
+    "pitch": {
+      "x-frame-options": "SAMEORIGIN",
+      "content-security-policy": "frame-ancestors 'self'",
+      "cache-control": "public, max-age=0, must-revalidate"
+    }
+  },
+  "sourceMap": {
+    "chunk": "/assets/index-DDo9CtPL.js",
+    "mapStatus": 200,
+    "contentType": "text/html; charset=utf-8",
+    "publicMap": false
+  },
+  "routes": {
+    "tintex-3d": {
+      "status": 200,
+      "ms": 17262,
+      "title": "Wellness Room Designer · Peak Performance Wellness",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": "gl",
+      "text": "Demo · Living room Demo × Select Walls Openings Floor Paint Cladding Measure Remove Garden Room Custom MUR USD EUR GBP approximate rates 0 Quote Floors Roof Solar 3D Plot Snap 0.5 m Grid 22 m² + Fit Share Capture 22.0 m² · 100% · 0.5 m 0 Rs 6,143 WALL HEIGHT Ground floor · steps of 0.1 m − 2.7 m + Clear products Clear all P HOUSE STUDIO Demo 2D Plan 3D House ↶ ↷ 0 Save ••• Build Furnish Paint Surf"
+    },
+    "tintex-2d": {
+      "status": 200,
+      "ms": 35911,
+      "title": "Wellness Room Designer · Peak Performance Wellness",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": null,
+      "text": "Demo · Living room Demo × Select Walls Openings Floor Paint Cladding Measure Remove Garden Room Custom MUR USD EUR GBP approximate rates 0 Quote Floors Roof Solar 3D Plot Snap 0.5 m Grid 22 m² + Fit Share Capture 22.0 m² · 83% · 0.5 m 0 Rs 6,143 WALL HEIGHT Ground floor · steps of 0.1 m − 2.7 m + Clear products Clear all Furnish Products ⌃ 10 Rs 6,143 ?"
+    },
+    "demo-3d": {
+      "status": 200,
+      "ms": 16822,
+      "title": "Demo · Room Designer",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": "gl",
+      "text": "Demo · Living room Demo · no orders Select Walls Openings Floor Paint Cladding Measure Remove Garden Room Custom MUR USD EUR GBP approximate rates 33 Floors Roof Solar 3D Plot Snap 0.5 m Grid 27 m² + Fit Share Capture 27.0 m² · 90% · 0.5 m 33 ☀ 0 Wh · ⚡ 26.3 kWh −26.3 kWh WALL HEIGHT Ground floor · steps of 0.1 m − 2.7 m + Clear products Clear all P DEMO Preview · no orders 2D Plan 3D House ↶ ↷ 33"
+    },
+    "studio": {
+      "status": 200,
+      "ms": 34961,
+      "title": "PPW Studio · Design, discover, connect",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": null,
+      "text": "P · PPW STUDIO Designer Shop Merchants Meet Victor ↗ YOUR SPACE. EVERY POSSIBILITY. From a floor plan to a place to live. Design your home in a 2D plan and Premium 3D, paint it in colours that stay true in every view, explore real merchant catalogues and bring your merchants into one connected workspace. ▦ 2D Plan with precision ◇ Premium 3D Explore every angle Open Premium 3D → Both views are inc"
+    },
+    "studio-designer-3d": {
+      "status": 200,
+      "ms": 49029,
+      "title": "Wellness Room Designer · Peak Performance Wellness",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": null,
+      "text": "PPW Studio Shop Merchants 2D Premium 3D Demo · saved locally Expand ↗"
+    },
+    "pitch-developers": {
+      "status": 200,
+      "ms": 36023,
+      "title": "Property Developer Experience | PPW Studio",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": null,
+      "text": "P · PPW STUDIO FOR DEVELOPERS For merchants Meet Victor ↗ 01 The vision 02 Make it yours 03 Plan delivery 04 One shared brief 05 Build together PROPERTY, WITH POSSIBILITY A home they can make their own. Let buyers walk their apartment as a 2D plan and in Premium 3D, pick paint and finishes that show true in every view, and see what each choice means for the handover. ● 2D plan + Premium 3D · live "
+    },
+    "pitch-cap-tamarin": {
+      "status": 200,
+      "ms": 35989,
+      "title": "Property Developer Experience | PPW Studio",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": null,
+      "text": "P · PPW STUDIO FOR DEVELOPERS For merchants Meet Victor ↗ 01 The vision 02 Make it yours 03 Plan delivery 04 One shared brief 05 Build together CAP TAMARIN · OFF-PLAN BUYERS Let your buyers make their Cap Tamarin home their own, before it is built. A buyer opens their unit as a plan and in 3D from the day they reserve, chooses paint, floors and furniture, and keeps changing until the deadline you "
+    },
+    "pitch-merchants": {
+      "status": 200,
+      "ms": 36009,
+      "title": "Merchant Experience | PPW Studio",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": null,
+      "text": "P · PPW STUDIO FOR MERCHANTS For developers Meet Victor ↗ 01 The opportunity 02 Your categories 03 Your storefront 04 Partner together 05 Grow with care PRODUCTS, IN THE PLACES THEY BELONG From browsing to “that’s my home.” Give customers a place to try your products at true scale, in a 2D plan and Premium 3D, with colour-true paint and honest quantities, and hand your team a confident brief. ● Li"
+    },
+    "pitch-spa-concept": {
+      "status": 200,
+      "ms": 39049,
+      "title": "Merchant Experience | PPW Studio",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": null,
+      "text": "P · PPW STUDIO FOR MERCHANTS For developers Meet Victor ↗ 01 The opportunity 02 Your categories 03 Your storefront 04 Partner together 05 Grow with care SPA CONCEPT · INTERNAL TOOL FIRST Design a hammam or sauna in 3D, and know the wood the moment you do. Your staff design in the studio and share a design when they choose to. Today the room, its walls, floors and finishes design in 2D and 3D; the "
+    },
+    "embed-3d": {
+      "status": 200,
+      "ms": 18486,
+      "title": "Demo · Room Designer",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": "gl",
+      "text": "Living room· 5 Demo · no orders Select Walls Openings Floor Paint Cladding Measure Remove Garden Room MUR USD EUR GBP approximate rates 33 Floors Roof Solar 3D Plot Snap 0.5 m Grid 27 m² + Fit Share Capture 27.0 m² · 66% · 0.5 m 33 ☀ 0 Wh · ⚡ 26.3 kWh −26.3 kWh WALL HEIGHT Ground floor · steps of 0.1 m − 2.7 m + Clear products Clear all P DEMO Preview · no orders 2D Plan 3D House ↶ ↷ 33 Save ••• B"
+    },
+    "designer-plain": {
+      "status": 200,
+      "ms": 35817,
+      "title": "Wellness Room Designer · Peak Performance Wellness",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": null,
+      "text": "Wellness Property · Main Room Select Walls Openings Floor Paint Cladding Measure Remove Garden Room Custom MUR USD EUR GBP approximate rates 0 Quote Floors Roof Solar 3D Plot Snap 0.5 m Grid WALL PEN Drag a wall or click corners 0 vertices perim 0.00 m area 0.00 m² − 0.5 m + LENGTH m Set Make room Done 5 × 4 m room Undo Discard 0 m² + Fit Share Capture 0.0 m² · 100% · 0.5 m 0 £0 Furnish Products ⌃"
+    },
+    "phone-tintex-3d": {
+      "status": 200,
+      "ms": 16956,
+      "title": "Wellness Room Designer · Peak Performance Wellness",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": "gl",
+      "text": "Living room Select Walls Openings Floor Paint Cladding Measure Remove Garden Walls Select 2D Floors Roof Solar Plot Snap 0.5 m Grid 22 m² + − 2.7 m + 0.5 m Products Clear all P HOUSE STUDIO 2D Plan 3D House ↶ 0 ••• Build Furnish Paint Surfaces Garden Solar Ground Ground floor Roof ＋ Add floor Estimate Rs 6,143 Select Walls ▱ Draw room Details Door Window Stairs Add floor for stairs ✥ Move view ↺ ↻"
+    },
+    "phone-studio": {
+      "status": 200,
+      "ms": 34907,
+      "title": "PPW Studio · Design, discover, connect",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": null,
+      "text": "P · PPW STUDIO Designer Shop Merchants YOUR SPACE. EVERY POSSIBILITY. From a floor plan to a place to live. Design your home in a 2D plan and Premium 3D, paint it in colours that stay true in every view, explore real merchant catalogues and bring your merchants into one connected workspace. ▦ 2D Plan with precision ◇ Premium 3D Explore every angle Open Premium 3D → Both views are included in this "
+    },
+    "phone-pitch-developers": {
+      "status": 200,
+      "ms": 36164,
+      "title": "Property Developer Experience | PPW Studio",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": null,
+      "text": "P · PPW STUDIO For merchants Meet Victor ↗ 01 The vision 02 Make it yours 03 Plan delivery 04 One shared brief 05 Build together PROPERTY, WITH POSSIBILITY A home they can make their own. Let buyers walk their apartment as a 2D plan and in Premium 3D, pick paint and finishes that show true in every view, and see what each choice means for the handover. ● 2D plan + Premium 3D · live ● Colour-true p"
+    },
+    "phone-pitch-merchants": {
+      "status": 200,
+      "ms": 36280,
+      "title": "Merchant Experience | PPW Studio",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": null,
+      "text": "P · PPW STUDIO For developers Meet Victor ↗ 01 The opportunity 02 Your categories 03 Your storefront 04 Partner together 05 Grow with care PRODUCTS, IN THE PLACES THEY BELONG From browsing to “that’s my home.” Give customers a place to try your products at true scale, in a 2D plan and Premium 3D, with colour-true paint and honest quantities, and hand your team a confident brief. ● Live design expe"
+    },
+    "phone-designer-2d": {
+      "status": 200,
+      "ms": 36012,
+      "title": "Wellness Room Designer · Peak Performance Wellness",
+      "errors": [],
+      "horizontalOverflowPx": 0,
+      "backend": null,
+      "text": "Living room Select Walls Openings Floor Paint Cladding Measure Remove Garden Walls Select 3D Floors Roof Solar Plot Snap 0.5 m Grid 22 m² + − 2.7 m + 0.5 m Products Clear all 10 Rs 6,143 Furnish Products ⌃ ?"
+    }
+  }
+}

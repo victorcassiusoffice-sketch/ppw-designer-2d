@@ -274,3 +274,44 @@ Frames: `C-tintex-studio-cutaway.png` (day), `C-tintex-sun-1730.png` (dusk, sun 
 ## Next
 
 The bench photo → one more $0.30 body; P4 merchant data; P5 Soft chrome; the panel polish the paint-UX audit started (help launcher vs the docked panel, the scope block below a 900 px viewport).
+
+---
+
+# Studio + pitch pass — 2026-09-26 (`studio-2026-09-26/`)
+
+Vic, 26 Sep: "Do the colour fix … continue the builds and push to main and update the pitch deck pages accordingly and provide the links with all the information of the datamapping." The second agent's Studio/pitch branch (`cursor/feat-3d-flooring-hud-bc95`, PR #36, 41 commits over `61e2c5d`) plus its 50 uncommitted files were taken over, finished and merged to `main`. Production = `8214ff4`.
+
+## 1 · The colour fault (found on the branch, fixed first)
+
+The branch's "architectural" presentation (the default whenever the Paint tool is closed) set ACES filmic tone mapping, exposure 1.05, hemisphere 0.34 π with a tinted sky and bounce, sun 1.05 π from a different direction, a rim light, floor gain 1 and day-lit lamps. Every one of those moves a painted pixel, so a shade picked in the Paint tool changed the moment the tool closed. Now `ARCHITECTURAL = { ...STUDIO, reveal, cap }`: the same measured rig in both looks; the look keeps only the sky dome, the navy ground, a far fog that follows the camera (`near = |camera − centre| + radius + 2`) and the unpriced wall edges; floors never cast in either mode. `debug()` on the DEV bridge now reports `presentation`, `toneMapping`, `exposure`, `fog`, `cameraDistance`.
+
+Measured (dev server, SwiftShader, `realism-3d.spec.ts`): the same `#808080` wall with Paint open (studio) and closed (architectural) reads within ±3 on every channel and inside the 0.78–1.04 band at fit and after 7× Zoom out; `toneMapping === 0`, `exposure === 1`, `fog.near > cameraDistance + 6`.
+
+## 2 · What else shipped
+
+| Item | Where |
+|---|---|
+| Solar panels stay in the House view with the roof covering off (only slab + covering follow the Roof toggle); the energy button names the catalogue product and price | `designer/buildingScene.ts`, `RoomView3D.tsx`, `BuildingControls.tsx`, `EnergyPanel.tsx`, `data/solarPreview.ts` |
+| Duraco 1,000 L tank: D 1,140 × H 1,305 mm, Rs 11,500 list (Ah-Ling World + QBM, 26 Sep 2026), own plan + side illustration, 3D body, Outdoor tab | `data/products.json`, `three/waterTankPreview.ts`, `public/products/illustrations/` |
+| Seven art-less Courts rows wear dimensional silhouettes (treadmill, exercise bike, multi-gym, foot spa, rug, roller blind); `dressing().bareBoxes`; unit tests pin every placed Courts / Cap Tamarin item | `data/dimensionalPreview.ts`, `three/furniturePreview.ts`, `demo/__tests__/courtsDemo.test.ts` |
+| Capsule Plan chrome: one token set, darker active inner pill, vertical rail with Box \| Custom, icon+tooltip header pills (labels visually hidden, in the DOM), capsule zoom cluster / Clear / undo strip / Furnish launcher; HUDs right of the rail | `planToolbar.css`, `catalogChrome.css`, `RoomCanvas.tsx`, `TopBar.tsx` |
+| Garden editing in 2D (select / drag / resize / draw), garden workspace + store | `GardenLayer.tsx`, `GardenDrawLayer.tsx`, `PlanGardenWorkspace.tsx`, `store/gardenEditorStore.ts` |
+| Read-only only on /demo, /embed, /studio*, /pitch*; legacy `/designer?demo=` transactional; `?demo=off` clean; flag clears on other routes | `lib/showcaseSafety.ts` (27 tests), `docs/PITCH-STUDIO.md` |
+| Pitch pages: real app captures (WebP, guarded by a test), WebP heroes, built-today copy, `?client=cap-tamarin` and `?client=spa-concept` overlays, no PPW prices; the 0×0-canvas embed crash parked in CSS | `pages/pitch/*`, `tools/shoot-pitch-captures.mjs`, `tools/shoot-pitch-pages-2026-09-26.mjs` |
+| View defaults: blank `/designer` → Plan; every demo → 3D unless `?view=2d` (`demoViewFor`) | `store/designerUIStore.ts`, `demo/useDemoMode.ts` |
+| E2E migrated to the shell: `catalog-helpers.ts` (`openCatalog`), House-Studio helpers, `&view=2d` for plan-only specs | `tests/e2e/*` |
+
+## 3 · Evidence (`studio-2026-09-26/`)
+
+`grey-boxes-after-1440.png` (the gym room, no bare blocks) · `toolbar/` (blank + TintEX plan at 1366 and 390) · `pitch/` (25 frames, `evidence.json`: 0 overflow, 0 console errors, captures show the app) · `prod/` (production probe after the merge: healthcheck, framing headers, no public map, 16 routes desktop + phone, console errors).
+
+## 4 · Gates
+
+``npx tsc --noEmit` client + api clean · `npx vitest run` **266 files / 2,985 tests** · `eslint --max-warnings=0` on the 108 changed source files + every touched spec · `npm run build` clean, **0 `.map` in `dist/`** (the public-source-map guard) · Playwright on the dev server, whole suite, two workers: **185 passed / 41 skipped / 2 failed**, the two being the cladding spec's 5 s first-frame poll under load (2/2 alone in 12 s; budget widened to the 3D-spec standard in `8214ff4`) · the earlier sweep before the fixers: 152 / 35 / 41 · colour truth measured Paint-open vs Paint-closed ±3 (`realism-3d` 6/6 incl. `/demo` bareBoxes === 0) · `paint-sims-3d` 4/4 · `tintex-paint` 4/4 · `wallpaint-3d` 8/8 · `view-mode-3d` 5/5 · `phone-demo` 4/4 · preview `5013erpyc` probe: healthcheck `312de8b`, 14/16 routes 200 with 0 console errors and 0 horizontal overflow (2 network drops from this box), framing headers as designed, the `.map` URL answers the SPA shell (`text/html`), not a map`
+
+## 5 · Open for Vic
+
+- The embed CSP is `frame-ancestors 'self' https:` — narrow to partner hostnames before a merchant launch.
+- Two rate cards disagree (public page: Rs 30,000 + Rs 275/185/95 per product + care; TintEX pack: MUR 50,000 + ~400/SKU + retainer); the interactive pitches carry no price by design.
+- Courts silhouettes are labelled dimensional previews, not manufacturer models; photo licences are not recorded.
+- Seen only on software GL: a stepped lawn edge at 390 px and a lost lawn plane after a ~180° orbit — worth one look on a real phone.

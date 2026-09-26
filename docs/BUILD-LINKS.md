@@ -1,21 +1,26 @@
 <!-- verified-preview:start -->
-## Current feature deployment
+## Current deployment — production (main)
 
-Updated: 2026-09-25 23:45 (local) | commit: 7b1837e912b3f50f85f09ace627732828931c558
+Updated: 2026-09-26 (Mauritius) | production commit: 8214ff4 (cache-busted `/api/healthcheck`, 2026-09-26 14:08:56Z (first cache-busted `/api/healthcheck` showing this commit; env production; `git ls-remote origin main` == local main))
 
-- Standalone Studio + Shop: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/studio
-- Property developer presentation: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/pitch/developers
-- Merchant presentation: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/pitch/merchants
-- Designer-only Demo: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/demo
-- Embeddable Demo: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/embed/designer?scene=home&view=3d
-- Designer: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/designer
-- Demo (legacy TintEX URL): https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/designer?demo=tintex
-- Landed: Interactive developer and merchant presentations, standalone Studio with Shop and existing merchant tools, designer-only Demo and embeddable 2D/Premium 3D; server-enforced no-order preview.
-- Verification: Final application CI passes 262 files / 2,931 tests, client/API typechecks and secret scan. Production build and scoped lint pass; zero public source maps. Unique preview browser checks pass for both pitches, Studio, Demo and preserved Designer/TintEX routes on desktop and 360/390px phones. Final embedded frames measure 420/423px on desktop and about 480px on phone; no horizontal overflow or browser errors observed. Added a floor in Studio 3D, switched to Plan, and undid it without resetting history. Real catalogue/product/cart reads work; checkout renders the no-order screen. Empty Stripe/PayPal/Gumroad/lead probes return 403 SHOWCASE_READ_ONLY; final deployment Stripe guard and embed-only HTTPS framing headers rechecked. No customer data, order, payment, email or booking submitted. Separate Lighthouse continues to fail against unchanged production.
-- Branch: cursor/feat-3d-flooring-hud-bc95 | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
-- Active clean checkout: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
-- Victor's previous checkout and its changes remain preserved at C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d.
-- Production remains https://designer.ppwellness.co/designer?demo=tintex and is untouched.
+Everything below is LIVE on the production host. The same tree is also on the unique preview https://ppw-designer-2d-5013erpyc-victor-ppw.vercel.app (healthcheck 312de8b, env preview) if a preview link is ever needed.
+
+- Standalone Studio + Shop: https://designer.ppwellness.co/studio
+- Studio designer, Premium 3D: https://designer.ppwellness.co/studio/designer?view=3d
+- Property developer presentation: https://designer.ppwellness.co/pitch/developers
+- Cap Tamarin variant (off-plan buyers, two-bed scene, models A/B, no numbers): https://designer.ppwellness.co/pitch/developers?client=cap-tamarin
+- Merchant presentation: https://designer.ppwellness.co/pitch/merchants
+- Spa Concept variant (hammam/sauna, internal-first, Build preselected, "in build" labels, no price): https://designer.ppwellness.co/pitch/merchants?client=spa-concept
+- Designer-only Demo (read-only, no orders): https://designer.ppwellness.co/demo
+- Cap Tamarin two-bed in the Demo: https://designer.ppwellness.co/demo?scene=captamarin&view=3d
+- Embeddable Demo: https://designer.ppwellness.co/embed/designer?scene=home&view=3d
+- Designer (blank plan, opens in Plan): https://designer.ppwellness.co/designer
+- TintEX painted show flat (opens in 3D; add &view=2d for the plan; cart and quote work as before): https://designer.ppwellness.co/designer?demo=tintex
+- Courts show home: https://designer.ppwellness.co/designer?demo=courts · Sofap: https://designer.ppwellness.co/designer?demo=sofap · Cap Tamarin: https://designer.ppwellness.co/designer?demo=captamarin
+- Read-only on production is UI-level on /demo, /embed, /studio and /pitch (no checkout, quote, cloud save or K1 link is offered there); the API stays transactional for the real /designer, /products and /cart. A hard no-order host needs a separate Vercel project with DEMO_ONLY=true.
+- Landed in this pass: colour truth outside the Paint tool, solar panels that stay on the house, Duraco tank, no bare boxes in the furnished demo, capsule Plan chrome, garden editing in 2D, collapsed catalogue, slim Studio toolbar, production-safe read-only, pitch pages with real app captures and the Cap Tamarin / Spa Concept overlays. Details: docs/DESIGNER-WORKFLOW-LOG.md "Resume here".
+- Branch: cursor/feat-3d-flooring-hud-bc95 (= main after the merge) | PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
+- Working checkout for this pass: `C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d\.claude\worktrees\astra-finish` (branch feat/studio-pitch-finish-2026-09-26). The second checkout at `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer` still holds its uncommitted copy of the imported files; it is superseded by 62947b7 and later.
 <!-- verified-preview:end -->
 
 # Room Designer — build links
