@@ -473,9 +473,12 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   }, [armedProductId, catalogVersion, variant]);
   // Solar products and the existing energy panel select the roof. Make that
   // working surface visible, including when roof display was previously off.
+  // Leaving the roof for a storey does NOT hide it again: forcing the roof
+  // off on every level change dropped the whole roof level from the House
+  // view, so a panel placed on the Roof vanished the moment the customer
+  // looked at the Ground floor (2026-09-26). Only the Roof toggle hides it.
   useEffect(() => {
     if (onRoofLevel) { setShowRoof(true); setBuildingView('building'); }
-    else setShowRoof(false);
   }, [level, onRoofLevel]);
   useEffect(() => {
     if (tool !== 'hand' || armedProductId) {
@@ -1401,8 +1404,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         const top = storeys[storeys.length - 1];
         if (top) usePropertyStore.getState().setActiveLevel(top.level.id);
       }
+      // The floor view isolates the storey being drawn; the roof keeps its
+      // own state for when the House view returns.
       setBuildingView('floor');
-      setShowRoof(false);
     }
   }
 
@@ -1588,7 +1592,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       style={{ right: 'var(--floor-panel-w, 0px)', bottom: onPaintWall || onPaintFloor ? 0 : 'calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))', ...style }}
       data-testid="wallpaint-3d-overlay" role="region" aria-label={title ?? 'Room view in 3D'}>
       <HouseWorkspace mode={activeHouseMode} onMode={changeHouseMode} onPlan={onClose} onSave={onSave} onCart={onCart}
-        buildTool={constructionTool} onBuildTool={chooseBuildTool} onFloorAdded={() => { chooseBuildTool('select'); setBuildingView('building'); setShowRoof(false); }}
+        buildTool={constructionTool} onBuildTool={chooseBuildTool} onFloorAdded={() => { chooseBuildTool('select'); setBuildingView('building'); }}
         externalPanel={!!onPaintWall || !!onPaintFloor || (energyOpen && !belowMd)}
         drawing={constructionTool === 'room'} onDraw={() => chooseBuildTool(constructionTool === 'room' ? 'select' : 'room')} onSelect={() => chooseBuildTool('select')}
         wallDrawing={constructionTool === 'wall'} onWalls={() => chooseBuildTool(constructionTool === 'wall' ? 'select' : 'wall')}

@@ -17,16 +17,21 @@ export function buildingSolids(
 ): SceneSolids {
   const active = activeLevelIdOf(property);
   const entries = buildingLevels(property);
-  const visible = entries.filter((entry) =>
-    (view === 'building' || entry.level.id === active)
-    && !(view === 'building' && isRoofLevel(entry.level) && !showRoof),
-  );
+  // The House view carries every level, a floor view only its own. The roof
+  // level stays in the House view with the roof OFF: only its slab and its
+  // covering follow the Roof toggle (below), never what stands on it — a
+  // panel placed on the Roof must not vanish the moment the customer looks
+  // at the Ground floor (2026-09-26). A roof-only floor view always shows
+  // its slab, so the customer can see what they are laying panels on.
+  const visible = entries.filter((entry) => view === 'building' || entry.level.id === active);
+  const roofSlabVisible = showRoof || view !== 'building';
+  const heightEntries = visible.filter((entry) => !isRoofLevel(entry.level) || roofSlabVisible);
   // Older saved stairs remain visible/editable after a room reshape. Only safe
   // placements cut the structure; these read-only queries never erase the save.
   const stairs = normaliseBuildingStairs(property.stairs, property);
   const openingStairs = stairs.filter((stair) => stairPlacementFits(property, stair));
   const result: SceneSolids = {
-    wallHeightM: Math.max(2.7, ...visible.map((e) => e.elevationM + e.heightM)),
+    wallHeightM: Math.max(2.7, ...heightEntries.map((e) => e.elevationM + e.heightM)),
     activeLevelId: active, activeElevationM: levelElevationM(property, active),
     activeRoof: entries.some((entry) => entry.level.id === active && isRoofLevel(entry.level)),
     floors: [], walls: [], items: [], stairs: [], roofs: [],
@@ -45,7 +50,7 @@ export function buildingSolids(
     // treats them as outdoor item containers, so restore their slab explicitly.
     const source = isRoofLevel(level) ? { ...mapped, rooms: mapped.rooms.map((room) => ({ ...room, kind: 'outdoor' })) } : mapped;
     const local = buildSolids(source);
-    if (isRoofLevel(level)) {
+    if (isRoofLevel(level) && roofSlabVisible) {
       for (const room of rooms.filter(isRoofRoom)) {
         if (room.polygon.length < 3) continue;
         const input = source.rooms.find((candidate) => candidate.id === room.id);
@@ -66,6 +71,7 @@ export function buildingSolids(
     result.items.push(...local.items.map((it) => {
       const owner = isRoofLevel(level) && it.placement === 'roof'
         ? rooms.find((room) => isRoofRoom(room) && room.placedItems.some((item) => item.instanceId === it.instanceId)) : undefined;
+      // With the covering hidden there is nothing to seat on: the panel lies on the storey top.
       const surface = owner && showRoof ? createRoofSurface(owner.polygon, elevationM, roofConfigOf(property)) : null;
       const mount = surface ? roofItemMount(surface, it) : undefined;
       const base = mount?.elevationM ?? elevationM;
