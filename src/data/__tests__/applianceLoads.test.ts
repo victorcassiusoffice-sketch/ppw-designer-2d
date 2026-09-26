@@ -179,6 +179,8 @@ describe('the whole seed, row by row (2026-09-20)', () => {
     'emcar-victron-superpack-12-100': [null, 0],
     'emcar-victron-agm-200': [null, 0],
     'emcar-victron-mppt-100-30': [null, 0],
+    // A water tank stores water, not power: explicit energy_role 'none', no row, 0 W.
+    'duraco-water-tank-1000': [null, 0],
   };
 
   it('every seed product lands on the expected row with the expected watts', () => {

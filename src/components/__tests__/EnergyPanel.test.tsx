@@ -20,6 +20,7 @@ import { EnergySummary } from '../EnergyPanel';
 import { usePropertyStore, type Property } from '../../store/propertyStore';
 import { usePlacementIntentStore } from '../../store/placementIntentStore';
 import { useDesignerUIStore } from '../../store/designerUIStore';
+import { useToastStore } from '../../store/toastStore';
 import { isRoofRoom } from '../../designer/levels';
 
 const RECT = [
@@ -100,13 +101,16 @@ describe('solar and water placement shortcuts', () => {
     act(() => $('energy-add-panel')!.click());
     expect(usePlacementIntentStore.getState().intent).toBeNull();
   });
-  it('arms the tank on the ground instead of leaving it on a roof or charging an unknown price', () => {
+  it('arms the tank on the ground instead of leaving it on a roof, and quotes the retailers\' list price', () => {
     seed([]);
     usePropertyStore.getState().ensureRoofLevel();
+    useToastStore.getState().clear();
     render();
     act(() => $('energy-add-tank')!.click());
     expect(usePropertyStore.getState().property.activeLevelId).toBe('ground');
     expect(usePlacementIntentStore.getState().armedProductId).toBe('duraco-water-tank-1000');
+    const toasts = useToastStore.getState().toasts;
+    expect(toasts[toasts.length - 1]?.message).toBe('Tap the ground to place the Duraco tank. Rs 11,500 list price at Mauritian retailers; delivery and installation not included.');
   });
 });
 afterEach(() => {

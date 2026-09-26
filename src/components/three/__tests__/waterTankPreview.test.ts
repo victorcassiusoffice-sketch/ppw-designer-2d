@@ -21,12 +21,18 @@ describe('Duraco dimensional water tank', () => {
     expect(model.getObjectByName('tank-outlet')).toBeDefined();
     expect(model.userData.approximatePreview).toBe(true);
   });
-  it('is discoverable outdoors and never presents an unpublished supplier quote as a free tank', () => {
+  it('is discoverable outdoors and carries the Mauritian retailers\' list price, not a supplier quote', () => {
+    // Priced 2026-09-26: Rs 11,500 list at Ah-Ling World and Quincaillerie Bon
+    // Marché (QBM sale Rs 10,350 that day); Duraco itself publishes no price.
     const product = getProductById(item.productId!)!;
     expect(product.dimensions_cm).toEqual({ length: 114, width: 114, height: 130.5 });
     expect(macroOf(product)).toBe('outdoor');
-    expect(catalogPrice(product)).toBe('Price on request');
-    expect(product.source_url).toBe('https://www.duraco.mu/products/water/');
+    expect(product.price).toEqual({ value: 11500, currency: 'MUR' });
+    expect(product.price_on_request).toBe(false);
+    expect(catalogPrice(product)).toBe('11,500 MUR');
+    expect(product.source_url).toBe('https://quincailleriebonmarche.com/product/duraco-water-tank-1000l/');
+    expect(product.notes).toMatch(/Rs 11,500/);
+    expect('price_note' in product).toBe(false);
     expect(product.energy_role).toBe('none');
   });
   it('keeps unrelated models unchanged and rejects invalid geometry', () => {

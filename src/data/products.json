@@ -1250,8 +1250,7 @@
    "source_url": "https://quincailleriebonmarche.com/product/duraco-water-tank-1000l/",
    "placement": "floor",
    "outdoor": true,
-   "energy_role": "none",
-   "price_note": "List price Rs 11,500 at Ah-Ling World and Quincaillerie Bon Marché, checked 2026-09-26; QBM sale price Rs 10,350 the same day. Manufacturer Duraco does not publish a price."
+   "energy_role": "none"
   }
  ]
 }

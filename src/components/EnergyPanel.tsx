@@ -31,6 +31,19 @@ import { roofAreaM2 } from '../designer/roof';
 import { activeLevelIdOf, isOutdoorRoom, isRoofLevel, isRoofRoom, levelsOf } from '../designer/levels';
 import { isDrawnPolygon } from '../designer/roomLayout';
 import { CHROME_BG, CHROME_RIM, CHROME_TEXT, CHROME_TEXT_2 } from '../designer/blueprintTheme';
+import { getProductById } from '../data/products';
+import type { Product } from '../data/products.schema';
+
+/** The tank the Energy panel arms on the ground (Duraco 1,000 L, priced at Mauritian retailers). */
+const WATER_TANK_PRODUCT_ID = 'duraco-water-tank-1000';
+
+const rs = (value: number) => `Rs ${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
+
+/** What the tank toast says about money — the catalogue's price, or that there is none yet. */
+function tankPriceLine(product: Product | undefined): string {
+  if (!product || product.price_on_request) return 'Supplier price is on request.';
+  return `${rs(product.price.value)} list price at Mauritian retailers; delivery and installation not included.`;
+}
 
 const CHIP =
   'inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border px-3 text-[13px] font-medium transition-colors duration-[120ms] ease-out motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]';
@@ -161,8 +174,8 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
     useDesignerUIStore.getState().setEnergyPanelOpen(false);
     window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
     window.dispatchEvent(new CustomEvent('ppw:close-catalog'));
-    usePlacementIntentStore.getState().setArmed('duraco-water-tank-1000');
-    pushToast('Tap the ground to place the Duraco tank. Supplier price is on request.', 'info');
+    usePlacementIntentStore.getState().setArmed(WATER_TANK_PRODUCT_ID);
+    pushToast(`Tap the ground to place the Duraco tank. ${tankPriceLine(getProductById(WATER_TANK_PRODUCT_ID))}`, 'info');
     onJumpToRoof?.();
   }
 
