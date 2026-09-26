@@ -281,8 +281,8 @@ export interface ThreeStageHandle {
   moveItemPreview(instanceId: string, dxM: number, dyM: number, rotationDeg?: number): void;
   /** Put a previewed body back where the plan has it. */
   resetItemPreview(instanceId: string): void;
-  /** DEV bridge: what is dressed — joinery, shades, lamps, bodies, art boxes — for a spec to count. */
-  dressing(): { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }>; bodies: number; artBoxes: number };
+  /** DEV bridge: what is dressed — joinery, shades, lamps, bodies, art boxes, previews, bare boxes — for a spec to count. */
+  dressing(): { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }>; bodies: number; artBoxes: number; previews: number; bareBoxes: number };
 }
 
 export interface ThreeStageProps {
@@ -1007,7 +1007,11 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       // Other products retain their own art; an exact GLTF always replaces it.
       const solarPreview = solarPanelPreview(it);
       const tankPreview = waterTankPreview(it);
-      const mesh = mountRoofItem(solarPreview ?? tankPreview ?? furniturePreview(it) ?? artBox(it, requestRender), it);
+      const preview = solarPreview ?? tankPreview ?? furniturePreview(it);
+      // A dimensional preview is flagged so the DEV bridge can tell it from a
+      // loaded body and from a bare box (`dressing().bareBoxes`).
+      if (preview) preview.userData.preview = true;
+      const mesh = mountRoofItem(preview ?? artBox(it, requestRender), it);
       content.add(mesh);
       itemsRef.current.push(mesh);
       bounds.expandByObject(mesh);
@@ -1573,6 +1577,10 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
           floors: floorsRef.current.map((f) => ({ key: f.userData.key as string, kind: String(f.userData.kind ?? '') })),
           bodies: itemsRef.current.filter((o) => o.userData.body).length,
           artBoxes: itemsRef.current.filter((o) => o.userData.art).length,
+          previews: itemsRef.current.filter((o) => o.userData.preview).length,
+          // The law (2026-09-20): a product wears its own body, its own art or
+          // a purpose-built preview — never a bare category-coloured box.
+          bareBoxes: itemsRef.current.filter((o) => !o.userData.body && !o.userData.art && !o.userData.preview).length,
         };
       },
       debug() {

@@ -1,7 +1,14 @@
 /** Planning previews of existing products, not exact manufacturer models. */
 export const FURNITURE_PREVIEW_NOTE = 'Dimensional preview — see product details for exact appearance.';
 
-export type FurniturePreviewKind = 'sofa' | 'corner' | 'bed' | 'coffee' | 'dining' | 'desk' | 'chair' | 'cabinet' | 'wardrobe' | 'shelf' | 'fridge' | 'tv' | 'air-conditioner' | 'table-lamp' | 'pendant';
+export type FurniturePreviewKind = 'sofa' | 'corner' | 'bed' | 'coffee' | 'dining' | 'desk' | 'chair' | 'cabinet' | 'wardrobe' | 'shelf' | 'fridge' | 'tv' | 'air-conditioner' | 'table-lamp' | 'pendant'
+  | 'treadmill' | 'exercise-bike' | 'multi-gym' | 'foot-spa' | 'rug' | 'roller-blind';
+/**
+ * Every Courts row placed by a show home (the Courts flat, the Cap Tamarin
+ * two-bed and `/demo`) is listed here or wears a body — the law is that a
+ * product never falls through to a bare category-coloured box
+ * (`src/demo/__tests__/courtsDemo.test.ts` pins it).
+ */
 const previews: Record<string, FurniturePreviewKind> = {
   'courts-marco-sofa-corner': 'sofa',
   'courts-tamarin-corner': 'corner',
@@ -29,6 +36,15 @@ const previews: Record<string, FurniturePreviewKind> = {
   'courts-bamboo-desk-lamp': 'table-lamp',
   'courts-pendant-lamp-7254': 'pendant',
   'courts-pendant-black-canopy': 'pendant',
+  // 2026-09-26: the seven rows that used to render as grey blocks (four of
+  // them in the Wellness room of the furnished demo).
+  'courts-horizon-tr50-treadmill': 'treadmill',
+  'courts-horizon-gr7-cycle': 'exercise-bike',
+  'courts-jdm-home-gym': 'multi-gym',
+  'courts-homedics-footspa': 'foot-spa',
+  'courts-elit-rug': 'rug',
+  'courts-blind-white-180': 'roller-blind',
+  'courts-blind-beige-120': 'roller-blind',
 };
 
 export function furniturePreviewKind(productId: string | undefined): FurniturePreviewKind | null {

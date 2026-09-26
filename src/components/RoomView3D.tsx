@@ -179,8 +179,8 @@ interface RoomView3DBridge {
   samplePixel: (clientX: number, clientY: number) => { r: number; g: number; b: number } | null;
   /** Bisect the rig live (GL only). */
   tune: (opts: { hemi?: number; sun?: number; fill?: number; env?: boolean; normals?: number; maps?: boolean }) => void;
-  /** What the stage has dressed (P3): joinery pieces, corner shades, lamps, contact shadows, floor kinds (GL only). */
-  dressing: () => { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }>; bodies: number; artBoxes: number } | null;
+  /** What the stage has dressed (P3): joinery pieces, corner shades, lamps, contact shadows, floor kinds, and what every product wears — a body, its art, a dimensional preview, or (never) a bare box (GL only). */
+  dressing: () => { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }>; bodies: number; artBoxes: number; previews: number; bareBoxes: number } | null;
 }
 /**
  * The card and the overlay can be mounted together (md+), so each registers

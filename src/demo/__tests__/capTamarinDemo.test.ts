@@ -18,6 +18,9 @@ import { normaliseLoadedProperty } from '../../store/propertyStore';
 import { rotatedFootprint, cmToM } from '../../lib/geometry';
 import { validateOpening, canonicaliseRoomGeometry } from '../../designer/openings';
 import { WALL_PAINTS } from '../../data/wallPaints';
+import { productModelFor } from '../../data/productModels';
+import { productImageUrl } from '../../data/products';
+import { hasFurniturePreview } from '../../data/dimensionalPreview';
 
 registerAllDemos();
 
@@ -131,6 +134,20 @@ describe('Cap Tamarin — two-bedroom apartment demo', () => {
     expect(painted.length).toBeGreaterThanOrEqual(5);
     for (const r of painted) {
       for (const wp of r.wallPaint!) expect(ids.has(wp.paintId), `${r.id} → ${wp.paintId}`).toBe(true);
+    }
+  });
+
+  it('every placed product has something to wear in 3D — a body, its own art, or a dimensional preview (never a bare box)', () => {
+    // Same law as the Courts show home (2026-09-26): this apartment places the
+    // Courts range, including the rug and both blinds that used to fall
+    // through to a bare category-coloured box.
+    for (const r of prop.rooms) {
+      for (const it of r.placedItems) {
+        const p = getProductById(it.productId)!;
+        const image = productImageUrl(p);
+        const dressed = !!productModelFor(p) || hasFurniturePreview(p.id) || (!!image && !image.startsWith('data:'));
+        expect(dressed, `${it.instanceId} (${p.id}) has no body, no art and no dimensional preview`).toBe(true);
+      }
     }
   });
 

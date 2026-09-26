@@ -13,6 +13,9 @@ import { rotatedFootprint, cmToM } from '../../lib/geometry';
 import { validateOpening, canonicaliseRoomGeometry } from '../../designer/openings';
 import { findFloorMaterialById } from '../../data/floorMaterials';
 import { WALL_PAINTS } from '../../data/wallPaints';
+import { productModelFor } from '../../data/productModels';
+import { productImageUrl } from '../../data/products';
+import { hasFurniturePreview } from '../../data/dimensionalPreview';
 
 const byId = new Map(COURTS_PRODUCTS.map((p) => [p.id, p]));
 
@@ -140,6 +143,22 @@ describe('Courts show home', () => {
     for (const room of property.rooms) {
       for (const wp of room.wallPaint ?? []) expect(paintIds.has(wp.paintId), wp.paintId).toBe(true);
       if (room.floorFinish) expect(findFloorMaterialById(room.floorFinish.materialId)).toBeTruthy();
+    }
+  });
+
+  it('every placed product has something to wear in 3D — a body, its own art, or a dimensional preview (never a bare box)', () => {
+    // 2026-09-26: /demo, /embed/designer and ?demo=courts all build this show
+    // home. Seven rows (treadmill, cycle, home gym, foot spa, rug, two blinds)
+    // had image_url "" and no preview, so ThreeStage drew them as category-
+    // coloured blocks — the grey boxes Vic saw in the Wellness room. This
+    // pins those seven and blocks any new art-less row from being placed.
+    const placed = property.rooms.flatMap((r) => r.placedItems);
+    expect(placed).toHaveLength(33);
+    for (const item of placed) {
+      const p = byId.get(item.productId)!;
+      const image = productImageUrl(p);
+      const dressed = !!productModelFor(p) || hasFurniturePreview(p.id) || (!!image && !image.startsWith('data:'));
+      expect(dressed, `${item.instanceId} (${p.id}) has no body, no art and no dimensional preview`).toBe(true);
     }
   });
 

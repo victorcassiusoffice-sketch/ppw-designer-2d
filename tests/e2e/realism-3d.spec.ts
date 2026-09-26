@@ -35,13 +35,12 @@ interface Bridge {
   hitAt: (x: number, y: number) => Hit | null;
   wallMaterial: (h: Hit) => { hex: string; baseHex: string; finish: string | null; show: string } | null;
   samplePixel: (x: number, y: number) => { r: number; g: number; b: number } | null;
-  dressing: () => { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }>; bodies: number; artBoxes: number } | null;
+  dressing: () => { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }>; bodies: number; artBoxes: number; previews: number; bareBoxes: number } | null;
   debug: () => {
     frames: number; hour: number | null; sun: { elevationDeg: number; azimuthDeg: number } | null;
     presentation: 'studio' | 'architectural'; toneMapping: number | null; exposure: number | null;
     fog: { near: number; far: number } | null; cameraDistance: number | null;
-  };
-}
+  };}
 // Inside page.evaluate only what the page has exists — spell the bridge out each time.
 
 const GREY = [0, 1, 2, 3].map((edgeIndex) => ({ edgeIndex, paintId: 'permoglaze-matt-emulsion', colourHex: '#808080', colourName: 'Grey' }));
@@ -237,6 +236,7 @@ test.describe('3D Mode — P3 realism (desktop)', () => {
     expect(d.joinery).toBeGreaterThanOrEqual(12); // 12 skirtings + doors + windows shown
     // Vic 2026-09-20: "there's a random table there and there's no 3D product of a table" — the paint pitch carries no props at all.
     expect(d.bodies + d.artBoxes).toBe(0);
+    expect(d.bareBoxes).toBe(0);
     expect(d.lamps).toBe(0);
     expect(d.contactShadows).toBe(0);
     expect(d.floors.map((f) => f.kind)).toEqual(['screed', 'screed', 'screed']);
@@ -266,6 +266,24 @@ test.describe('3D Mode — P3 realism (desktop)', () => {
     await page.locator('[data-testid="view3d-sun-toggle"]').click();
     await expect(page.locator('[data-testid="view3d-sun-hour"]')).toHaveCount(0);
     expect((await page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.debug())).sun).toBeNull();
+  });
+
+  test('the furnished demo home (/demo) puts a body or a dimensional preview on EVERY product — no bare grey boxes in the gym', async ({ page }) => {
+    // 2026-09-26: /demo, /embed/designer and ?demo=courts all build the Courts
+    // show home. Seven of its 33 rows (treadmill, cycle, home gym, foot spa,
+    // rug, two blinds) had no photo, no body and no preview, so they fell
+    // through to the category-coloured box — the grey blocks Vic saw in the
+    // Wellness room. The law: a product wears its own body, its own art or a
+    // purpose-built dimensional preview at catalogue size; never a bare box.
+    await open3D(page, '/demo?view=3d');
+    // Every preview is built synchronously with the plan; the count is what the stage draws now.
+    const d = (await page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.dressing()))!;
+    expect(d.bareBoxes).toBe(0);
+    expect(d.bodies + d.previews).toBeGreaterThan(0);
+    // The whole range placed by the show home is previews today (no Courts GLB exists).
+    expect(d.previews).toBeGreaterThanOrEqual(30);
+    // The Wellness room is in the scene with its laid rubber-composite floor (reads as interlock).
+    expect(d.floors.map((f) => f.kind)).toContain('interlock');
   });
 
   test('the paint panel keeps its actions and live line on screen at 900 px, and the help launcher stays clear of it', async ({ page }) => {
