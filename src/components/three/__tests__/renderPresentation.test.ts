@@ -27,7 +27,7 @@ describe('architectural presentation without changing the saved finishes', () =>
     expect(presentationProfile('architectural').exterior).toBe(presentationProfile().exterior);
   });
 
-  it('changes edge contrast and floor shadows in place, preserving paint colour, finish and geometry', () => {
+  it('changes edge contrast in place, preserving paint colour, finish, geometry and the floor shadow flags', () => {
     const root = new THREE.Group();
     const paint = new THREE.MeshPhysicalMaterial({ color: '#4c493f', roughness: 0.3, clearcoat: 0.2, normalMap: new THREE.Texture() });
     const wall = new THREE.Mesh(new THREE.BoxGeometry(4, 2.7, 0.15), paint);
@@ -44,7 +44,8 @@ describe('architectural presentation without changing the saved finishes', () =>
     const normalMap = paint.normalMap;
     applyContentPresentation(root, 'architectural');
     expect(edge.color.getHexString()).toBe('cbd6e2');
-    expect(floor.castShadow).toBe(true);
+    // Floors never cast a shadow, in either look — a cast floor moved the priced pixels beside it.
+    expect(floor.castShadow).toBe(false);
     // The laid floor is a priced product: the measured 0.9 gain holds in both looks.
     expect(floorMaterial.color.equals(new THREE.Color('#66717a').multiplyScalar(0.9))).toBe(true);
     applyContentPresentation(root, 'studio');

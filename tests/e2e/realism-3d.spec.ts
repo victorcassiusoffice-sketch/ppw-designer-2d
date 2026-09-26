@@ -36,7 +36,11 @@ interface Bridge {
   wallMaterial: (h: Hit) => { hex: string; baseHex: string; finish: string | null; show: string } | null;
   samplePixel: (x: number, y: number) => { r: number; g: number; b: number } | null;
   dressing: () => { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }>; bodies: number; artBoxes: number } | null;
-  debug: () => { frames: number; hour: number | null; sun: { elevationDeg: number; azimuthDeg: number } | null };
+  debug: () => {
+    frames: number; hour: number | null; sun: { elevationDeg: number; azimuthDeg: number } | null;
+    presentation: 'studio' | 'architectural'; toneMapping: number | null; exposure: number | null;
+    fog: { near: number; far: number } | null; cameraDistance: number | null;
+  };
 }
 // Inside page.evaluate only what the page has exists — spell the bridge out each time.
 
@@ -163,6 +167,31 @@ test.describe('3D Mode — P3 realism (desktop)', () => {
       expect(closed.px[k]).toBeLessThanOrEqual(Math.round(0x80 * 1.04) + 3);
       expect(Math.abs(closed.px[k] - open.px[k])).toBeLessThanOrEqual(3);
     }
+    // The renderer under the architectural look: no tone mapping (0 = NoToneMapping), exposure 1,
+    // and the fog — the only thing this look adds in depth — starts beyond the plan.
+    const readStage = () => page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.debug());
+    const stageState = await readStage();
+    expect(stageState.presentation).toBe('architectural');
+    expect(stageState.toneMapping).toBe(0);
+    expect(stageState.exposure).toBe(1);
+    expect(stageState.fog === null || stageState.fog.near > stageState.cameraDistance! + 6).toBe(true);
+    // Zoomed all the way out (the clamp allows 3× the fit distance) the fog still keeps
+    // clear of the plan and the far wall still reads its hex: fog never tints a priced pixel.
+    const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
+    for (let i = 0; i < 7; i++) await overlay.getByRole('button', { name: 'Zoom out' }).click();
+    await page.waitForTimeout(900);
+    await settle(page);
+    const far = await readStage();
+    expect(far.cameraDistance!).toBeGreaterThan(stageState.cameraDistance! * 2);
+    expect(far.fog === null || far.fog.near > far.cameraDistance! + 6).toBe(true);
+    const farWall = await readWall();
+    for (const k of ['r', 'g', 'b'] as const) {
+      expect(farWall.px[k]).toBeGreaterThanOrEqual(Math.round(0x80 * 0.78));
+      expect(farWall.px[k]).toBeLessThanOrEqual(Math.round(0x80 * 1.04) + 3);
+    }
+    await overlay.locator('[data-testid="wallpaint-3d-fit"]').click();
+    await page.waitForTimeout(900);
+    await settle(page);
     // And the look did change where it may: the ground plane under the house is the navy backdrop, not the studio grey.
     const ground = await page.evaluate(() => {
       const b = (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d;

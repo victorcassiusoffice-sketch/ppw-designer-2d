@@ -104,6 +104,7 @@ import {
 } from '../designer/roomView3d';
 import type { SceneSolids } from '../designer/roomSolids';
 import type { ThreeStageHandle } from './three/ThreeStage';
+import type { ScenePresentation } from './three/renderPresentation';
 
 // The GL renderer and three itself arrive in their own chunk, on first use.
 const ThreeStage = lazy(() => import('./three/ThreeStage'));
@@ -164,7 +165,7 @@ interface RoomView3DBridge {
   backend: () => 'gl' | 'painter';
   /** The wall a click at these CLIENT coordinates would paint — lets a spec check its aim before it fires. */
   hitAt: (clientX: number, clientY: number) => WallHit | null;
-  /** The GL stage's own account of itself (frames drawn, parts, camera). */
+  /** The GL stage's own account of itself (frames drawn, parts, camera, presentation, tone mapping, exposure, fog planes, camera distance). */
   debug: () => ReturnType<ThreeStageHandle['debug']> | null;
   /** CLIENT point over an item's body (its plan centre projected), for a spec to tap or drag. */
   itemScreenPoint: (instanceId: string) => { x: number; y: number } | null;
@@ -1474,6 +1475,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         </div>
   ) : null;
 
+  // ONE presentation for the container attribute and the stage: the house
+  // view explores under the architectural look; the Paint tool (and the
+  // card) keep the studio look the paint preview is measured under. Both
+  // share the rig — the look may change sky, ground, fog and wall edges only.
+  const presentation: ScenePresentation = variant === 'overlay' && !onPaintWall ? 'architectural' : 'studio';
   const viewControls = <RoomViewControls workspace={variant === 'overlay'} pan={panMode} onPan={togglePan}
     onRotate={rotate} onZoom={zoomBy} onFit={refit} onView={chooseCameraView}
     wallView={wallView} onWallView={setWallView} hasWalls={solids.walls.length > 0}
@@ -1488,7 +1494,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       data-testid="wallpaint-3d"
       data-variant={variant}
       data-backend={backend}
-      data-presentation={variant === 'overlay' && !onPaintWall ? 'architectural' : 'studio'}
+      data-presentation={presentation}
     >
       {/* The picture: three when it can, the painter when it cannot. */}
       <div className="absolute inset-0">
@@ -1497,7 +1503,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
             <ThreeStage
               ref={stageRef}
               solids={solids}
-              presentation={variant === 'overlay' && !onPaintWall ? 'architectural' : 'studio'}
+              presentation={presentation}
               camera={displayedCamera ?? camera}
               width={size.width}
               height={size.height}

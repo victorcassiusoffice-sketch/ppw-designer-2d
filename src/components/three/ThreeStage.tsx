@@ -25,11 +25,17 @@
  * plan (x, y, z) → three (x, z, y). Right-handed either way (verified: the
  * camera south of a room looking north has east on its right).
  *
- * COLOUR TRUTH (measured, pinned by paint-sims-3d.spec.ts): with no hour
- * set the rig is the STUDIO rig — hemisphere 0.8 π + camera fill 0.25 π +
- * a fixed high sun 0.15 π, NoToneMapping — under which a painted wall
- * renders its hex (a #808080 room reads 119–127 on every wall). The
- * time-of-day rig only replaces it while the customer drags the sun.
+ * COLOUR TRUTH (measured, pinned by paint-sims-3d.spec.ts and
+ * realism-3d.spec.ts): with no hour set the rig is the STUDIO rig —
+ * hemisphere 0.72 π + camera fill 0.25 π + a fixed high sun 0.25 π,
+ * NoToneMapping, exposure 1, floors at the measured 0.9 gain
+ * (three/renderPresentation.ts holds the numbers) — under which a painted
+ * wall renders its hex (a #808080 room reads 118–127 on every wall). The
+ * time-of-day rig only replaces it while the customer drags the sun. THE
+ * RULE for every presentation (studio / architectural): it may change the
+ * sky dome, the ground plane, the far fog and the unpriced reveal / cap
+ * edges of the walls — never the rig, the tone mapping, the exposure or a
+ * priced surface's material.
  */
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import * as THREE from 'three';
@@ -246,8 +252,19 @@ export interface ThreeStageHandle {
   screenPoint(hit: WallHit): { x: number; y: number } | null;
   faceCount(): number;
   faces(): Array<{ key: string; holes: number }>;
-  /** DEV bridge: what the stage has done so far. */
-  debug(): { frames: number; children: number; camera: number[]; target: number[]; renderer: string; hour: number | null; sun: { elevationDeg: number; azimuthDeg: number } | null };
+  /**
+   * DEV bridge: what the stage has done so far, and the colour-truth state
+   * it draws under — the presentation, the renderer's tone mapping (0 =
+   * NoToneMapping) and exposure, the fog planes (null when the studio look
+   * has none) and the camera's distance to the plan's bounds centre, so a
+   * spec can prove the fog starts beyond every priced surface.
+   */
+  debug(): {
+    frames: number; children: number; camera: number[]; target: number[]; renderer: string; hour: number | null;
+    sun: { elevationDeg: number; azimuthDeg: number } | null;
+    presentation: ScenePresentation; toneMapping: number | null; exposure: number | null;
+    fog: { near: number; far: number } | null; cameraDistance: number | null;
+  };
   /** The placed item under a canvas-local point (its body or its box), or null. */
   hitItem(x: number, y: number): { instanceId: string } | null;
   /** DEV bridge: what a wall's material shows right now (the preview or its own paint). */
@@ -337,6 +354,15 @@ const LAMP_INTENSITY = 26;
 
 const toThree = (p: { x: number; y: number; z: number }): THREE.Vector3 => new THREE.Vector3(p.x, p.z, p.y);
 const SELECT_HEX = '#79C7AD';
+/** The architectural look's fog: a horizon fade on the ground plane, the navy of its sky. */
+const FOG_HEX = '#1b2942';
+/**
+ * Clear air between the farthest point of the plan and where the fade may
+ * start, metres. With the 4 m minimum plan radius the fog therefore begins
+ * more than 6 m past the camera-to-plan distance at every zoom
+ * (realism-3d.spec.ts pins that).
+ */
+const FOG_CLEARANCE_M = 3;
 
 interface WallEntry {
   solid: WallSolid;
@@ -642,6 +668,23 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const padRef = useRef<THREE.Mesh | null>(null);
   const hullRef = useRef<THREE.Object3D | null>(null);
 
+  /**
+   * The architectural fog is a horizon fade on the ground plane and nothing
+   * else. Its near plane follows the camera: FOG_CLEARANCE_M beyond the
+   * farthest point the plan can reach from where the camera is, so no wall,
+   * floor or item is ever tinted at any zoom (the zoom clamp allows 3× the
+   * fit distance; a fixed near plane left a 10 × 8 m plan's far wall in
+   * 9–39 % fog out there). Cheap, so it runs before every frame.
+   */
+  const updateFog = () => {
+    const fog = sceneRef.current?.fog;
+    const c = cameraRef.current;
+    if (!fog || !(fog instanceof THREE.Fog) || !c) return;
+    const { centre, radius } = boundsRef.current;
+    fog.near = c.position.distanceTo(centre) + radius + FOG_CLEARANCE_M;
+    fog.far = fog.near + Math.max(60, radius * 8);
+  };
+
   const requestRender = () => {
     if (rafRef.current !== null || failedRef.current) return;
     rafRef.current = requestAnimationFrame(() => {
@@ -650,6 +693,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       const s = sceneRef.current;
       const c = cameraRef.current;
       if (r && s && c) {
+        updateFog();
         r.render(s, c);
         framesRef.current += 1;
       }
@@ -684,18 +728,18 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const applyPresentation = () => {
     if (rendererRef.current) applyRendererPresentation(rendererRef.current, presentation);
     if (contentRef.current) applyContentPresentation(contentRef.current, presentation);
-    const { centre, radius } = boundsRef.current;
+    const { centre } = boundsRef.current;
     if (groundRef.current) {
       updateGroundPresentation(groundRef.current, presentation);
       groundRef.current.position.x = presentation === 'architectural' ? centre.x : 0;
       groundRef.current.position.z = presentation === 'architectural' ? centre.z : 0;
     }
     if (sceneRef.current) {
-      // Fog is a horizon fade on the ground plane only. It must start well
-      // beyond the house at any fit or zoom, or it would tint painted walls
-      // and break colour truth; six radii is past the far wall at 0.18× zoom.
-      sceneRef.current.fog = presentation === 'architectural'
-        ? new THREE.Fog('#1b2942', Math.max(60, radius * 6), Math.max(200, radius * 18)) : null;
+      // Fog is a horizon fade on the ground plane only. Its planes are not
+      // fixed: updateFog keeps the near plane beyond the plan for wherever the
+      // camera is (a fixed plane tinted painted walls at 3× zoom-out).
+      sceneRef.current.fog = presentation === 'architectural' ? new THREE.Fog(FOG_HEX, 1, 2) : null;
+      updateFog();
     }
   };
 
@@ -774,10 +818,13 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     // 2D chip and the merchant's colour card. Filmic tone mapping remaps
     // every pixel (ACES washed tints toward grey), so none — a lit face
     // renders its albedo. The rig sums to ≈1.0 on a camera-facing wall:
-    // hemisphere 0.8 (flat, everywhere) + fill 0.2 · cos (from the camera)
-    // + sun 0.2 · cos (for the shadows). Measured, not assumed: a wall
-    // painted #4C493F reads back within a few points of #4C493F on the far
-    // walls (the pixel probe in paint-sims-3d.spec.ts pins it).
+    // hemisphere 0.72 π (flat, everywhere) + fill 0.25 π · cos (from the
+    // camera) + sun 0.25 π · cos (for the shadows) — the STUDIO numbers in
+    // renderPresentation.ts, which EVERY presentation keeps; a presentation
+    // may change sky, ground, fog and the reveal / cap edges only. Measured,
+    // not assumed: a wall painted #4C493F reads back within a few points of
+    // #4C493F on the far walls (the pixel probe in paint-sims-3d.spec.ts
+    // pins it; realism-3d.spec.ts pins the architectural look to ±3 of it).
     renderer.toneMapping = THREE.NoToneMapping;
     renderer.toneMappingExposure = 1;
     renderer.shadowMap.enabled = true;
@@ -1116,6 +1163,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     // a bridge call between an orbit and that frame would otherwise aim
     // with the previous camera (the e2e's first click landed on nothing).
     c.updateMatrixWorld(true);
+    // The fog's near plane follows the camera (colour truth at any zoom).
+    updateFog();
 
     // The fill rides with the camera, a little above it, so whichever walls
     // face the viewer are lit to their colour. The sky dome rides too, so
@@ -1528,18 +1577,27 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       },
       debug() {
         const r = rendererRef.current;
+        const c = cameraRef.current;
+        const fog = sceneRef.current?.fog;
         return {
           frames: framesRef.current,
           children: contentRef.current?.children.length ?? 0,
-          camera: cameraRef.current?.position.toArray() ?? [],
+          camera: c?.position.toArray() ?? [],
           target: targetRef.current,
           renderer: r ? `${r.domElement.width}x${r.domElement.height} calls=${r.info.render.calls} tris=${r.info.render.triangles}` : 'none',
           hour: hour ?? null,
           sun: sunStateRef.current,
+          presentation,
+          toneMapping: r ? (r.toneMapping as number) : null,
+          exposure: r ? r.toneMappingExposure : null,
+          fog: fog instanceof THREE.Fog ? { near: fog.near, far: fog.far } : null,
+          cameraDistance: c ? c.position.distanceTo(boundsRef.current.centre) : null,
         };
       },
     }),
-    [width, height, hour, solids],
+    // requestRender is a per-render closure over refs only — a stale copy renders the same scene.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [width, height, hour, solids, presentation],
   );
 
   return <canvas ref={canvasRef} data-testid="wallpaint-3d-gl" style={{ display: 'block', width: '100%', height: '100%' }} />;
