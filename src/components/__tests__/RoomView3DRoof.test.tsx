@@ -64,17 +64,35 @@ describe('3D roof working surface', () => {
     const calls = vi.mocked(buildingSolids).mock.calls;
     expect(calls[calls.length - 1].slice(2)).toEqual(['building', true]);
   });
-  it('removes the covering when returning from Roof to a regular floor', () => {
+  it('keeps the covering when returning from Roof to a regular floor — only the Roof toggle hides it', () => {
+    // 2026-09-26: switching level used to force the roof off, which dropped the
+    // whole roof level from the House view — a placed solar panel vanished the
+    // moment the customer looked at the Ground floor.
     act(() => root.render(<RoomView3D variant="overlay" />));
     act(() => usePropertyStore.getState().ensureRoofLevel());
     act(() => usePropertyStore.getState().setActiveLevel('ground'));
+    expect(usePropertyStore.getState().property.activeLevelId).toBe('ground');
     const calls = vi.mocked(buildingSolids).mock.calls;
-    expect(calls[calls.length - 1].slice(2)).toEqual(['building', false]);
+    expect(calls[calls.length - 1].slice(2)).toEqual(['building', true]);
     const results = vi.mocked(buildingSolids).mock.results;
-    expect(results[results.length - 1].value.roofs).toHaveLength(0);
+    expect(results[results.length - 1].value.roofs).toHaveLength(1);
     act(() => usePropertyStore.getState().ensureRoofLevel());
     const latest = vi.mocked(buildingSolids).mock.calls;
     expect(latest[latest.length - 1].slice(2)).toEqual(['building', true]);
+  });
+  it('keeps a panel placed on the Roof in the 3D solids after the customer switches to the Ground floor', () => {
+    act(() => root.render(<RoomView3D variant="overlay" />));
+    act(() => usePropertyStore.getState().ensureRoofLevel());
+    const roofRoom = usePropertyStore.getState().property.rooms.find((room) => room.kind === 'roof')!;
+    act(() => { usePropertyStore.getState().addItem({ productId: 'emcar-jinko-475', x: 1, y: 1, rotation: 0 }, roofRoom.id); });
+    act(() => usePropertyStore.getState().setActiveLevel('ground'));
+    expect(usePropertyStore.getState().property.activeLevelId).toBe('ground');
+    const results = vi.mocked(buildingSolids).mock.results;
+    const scene = results[results.length - 1].value;
+    const panel = scene.items.find((item: { productId?: string }) => item.productId === 'emcar-jinko-475');
+    expect(panel).toBeDefined();
+    expect(panel.levelId).toBe('roof');
+    expect(scene.roofs).toHaveLength(1);
   });
   it('keeps the first mobile screen-drop pending until Roof is visible and its covering can be picked', async () => {
     vi.stubGlobal('matchMedia', vi.fn((query: string) => ({ matches: query.includes('prefers-reduced-motion'), addEventListener: vi.fn(), removeEventListener: vi.fn() })));

@@ -20,7 +20,9 @@ import { EnergySummary } from '../EnergyPanel';
 import { usePropertyStore, type Property } from '../../store/propertyStore';
 import { usePlacementIntentStore } from '../../store/placementIntentStore';
 import { useDesignerUIStore } from '../../store/designerUIStore';
+import { useToastStore } from '../../store/toastStore';
 import { isRoofRoom } from '../../designer/levels';
+import { SOLAR_PANEL_PRODUCT_ID } from '../../data/solarPreview';
 
 const RECT = [
   { x: 0, y: 0 },
@@ -87,10 +89,13 @@ describe('solar and water placement shortcuts', () => {
     seed([]);
     useDesignerUIStore.getState().setEnergyPanelOpen(true);
     render();
+    // The button names the catalogue product and its price — one id, shared by the 2D and 3D paths.
+    expect(SOLAR_PANEL_PRODUCT_ID).toBe('emcar-jinko-475');
+    expect($('energy-add-panel')!.textContent).toBe('Add Jinko 475 W panel · Rs 12,075');
     act(() => $('energy-add-panel')!.click());
     expect(usePropertyStore.getState().property.rooms.some(isRoofRoom)).toBe(true);
     expect(usePropertyStore.getState().property.activeLevelId).toBe('roof');
-    expect(usePlacementIntentStore.getState().intent).toMatchObject({ productId: 'emcar-jinko-475', target: 'center' });
+    expect(usePlacementIntentStore.getState().intent).toMatchObject({ productId: SOLAR_PANEL_PRODUCT_ID, target: 'center' });
     expect(useDesignerUIStore.getState().energyPanelOpen).toBe(false);
   });
   it('does not create a panel when the building has no drawn footprint', () => {
@@ -100,13 +105,16 @@ describe('solar and water placement shortcuts', () => {
     act(() => $('energy-add-panel')!.click());
     expect(usePlacementIntentStore.getState().intent).toBeNull();
   });
-  it('arms the tank on the ground instead of leaving it on a roof or charging an unknown price', () => {
+  it('arms the tank on the ground instead of leaving it on a roof, and quotes the retailers\' list price', () => {
     seed([]);
     usePropertyStore.getState().ensureRoofLevel();
+    useToastStore.getState().clear();
     render();
     act(() => $('energy-add-tank')!.click());
     expect(usePropertyStore.getState().property.activeLevelId).toBe('ground');
     expect(usePlacementIntentStore.getState().armedProductId).toBe('duraco-water-tank-1000');
+    const toasts = useToastStore.getState().toasts;
+    expect(toasts[toasts.length - 1]?.message).toBe('Tap the ground to place the Duraco tank. Rs 11,500 list price at Mauritian retailers; delivery and installation not included.');
   });
 });
 afterEach(() => {

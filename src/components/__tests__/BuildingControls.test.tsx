@@ -35,7 +35,9 @@ function byTestId(id: string) { return container.querySelector<HTMLElement>(`[da
 function click(element: HTMLElement) { act(() => element.click()); }
 
 describe('BuildingControls house tools', () => {
-  it('adds a real copied floor from the floor selector and hides the roof when returning to a floor', () => {
+  it('adds a real copied floor from the floor selector and leaves the roof showing when returning to a floor', () => {
+    // 2026-09-26: choosing a floor or adding one no longer hides the roof —
+    // that took a placed solar panel with it. Only the Roof toggle hides it.
     const roofId = usePropertyStore.getState().ensureRoofLevel();
     usePropertyStore.getState().setActiveLevel(roofId);
     props.showRoof = true;
@@ -47,11 +49,13 @@ describe('BuildingControls house tools', () => {
     expect(floors).toHaveLength(2);
     expect(property.activeLevelId).toBe(floors[1].id);
     expect(property.rooms.some(room => room.levelId === floors[1].id && room.polygon.length === 4)).toBe(true);
-    expect(props.onShowRoofChange).toHaveBeenLastCalledWith(false);
+    expect(props.onShowRoofChange).not.toHaveBeenCalled();
     act(() => { select.value = roofId; select.dispatchEvent(new Event('change', { bubbles: true })); });
     expect(props.onShowRoofChange).toHaveBeenLastCalledWith(true);
     act(() => { select.value = 'ground'; select.dispatchEvent(new Event('change', { bubbles: true })); });
-    expect(props.onShowRoofChange).toHaveBeenLastCalledWith(false);
+    expect(usePropertyStore.getState().property.activeLevelId).toBe('ground');
+    expect(props.onShowRoofChange).toHaveBeenCalledTimes(1);
+    expect(props.onShowRoofChange).not.toHaveBeenCalledWith(false);
   });
 
   it('shows a selected roof, then returns to the highest floor when hiding it without deleting the roof', () => {

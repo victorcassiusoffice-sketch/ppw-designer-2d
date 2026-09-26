@@ -42,14 +42,18 @@ export function applyRendererPresentation(
   renderer.toneMappingExposure = profile.exposure;
 }
 
-/** Only renderer-owned, unpriced building edges change colour. Paint is untouched. */
+/**
+ * Only renderer-owned, unpriced building edges change colour. Paint is
+ * untouched, and so are the shadow flags: a laid floor never casts a shadow
+ * in either look (a floor that cast in one presentation and not the other
+ * moved the priced pixels beside it).
+ */
 export function applyContentPresentation(root: THREE.Object3D, presentation: ScenePresentation): void {
   const profile = presentationProfile(presentation);
   const seen = new Set<THREE.Material>();
   root.traverse((object) => {
     const mesh = object as THREE.Mesh;
     if (!mesh.isMesh) return;
-    if (mesh.userData.floor) mesh.castShadow = presentation === 'architectural';
     const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
     for (const material of materials) {
       if (seen.has(material)) continue;

@@ -104,6 +104,7 @@ import {
 } from '../designer/roomView3d';
 import type { SceneSolids } from '../designer/roomSolids';
 import type { ThreeStageHandle } from './three/ThreeStage';
+import type { ScenePresentation } from './three/renderPresentation';
 
 // The GL renderer and three itself arrive in their own chunk, on first use.
 const ThreeStage = lazy(() => import('./three/ThreeStage'));
@@ -164,7 +165,7 @@ interface RoomView3DBridge {
   backend: () => 'gl' | 'painter';
   /** The wall a click at these CLIENT coordinates would paint — lets a spec check its aim before it fires. */
   hitAt: (clientX: number, clientY: number) => WallHit | null;
-  /** The GL stage's own account of itself (frames drawn, parts, camera). */
+  /** The GL stage's own account of itself (frames drawn, parts, camera, presentation, tone mapping, exposure, fog planes, camera distance). */
   debug: () => ReturnType<ThreeStageHandle['debug']> | null;
   /** CLIENT point over an item's body (its plan centre projected), for a spec to tap or drag. */
   itemScreenPoint: (instanceId: string) => { x: number; y: number } | null;
@@ -472,9 +473,12 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   }, [armedProductId, catalogVersion, variant]);
   // Solar products and the existing energy panel select the roof. Make that
   // working surface visible, including when roof display was previously off.
+  // Leaving the roof for a storey does NOT hide it again: forcing the roof
+  // off on every level change dropped the whole roof level from the House
+  // view, so a panel placed on the Roof vanished the moment the customer
+  // looked at the Ground floor (2026-09-26). Only the Roof toggle hides it.
   useEffect(() => {
     if (onRoofLevel) { setShowRoof(true); setBuildingView('building'); }
-    else setShowRoof(false);
   }, [level, onRoofLevel]);
   useEffect(() => {
     if (tool !== 'hand' || armedProductId) {
@@ -1400,8 +1404,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         const top = storeys[storeys.length - 1];
         if (top) usePropertyStore.getState().setActiveLevel(top.level.id);
       }
+      // The floor view isolates the storey being drawn; the roof keeps its
+      // own state for when the House view returns.
       setBuildingView('floor');
-      setShowRoof(false);
     }
   }
 
@@ -1474,6 +1479,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         </div>
   ) : null;
 
+  // ONE presentation for the container attribute and the stage: the house
+  // view explores under the architectural look; the Paint tool (and the
+  // card) keep the studio look the paint preview is measured under. Both
+  // share the rig — the look may change sky, ground, fog and wall edges only.
+  const presentation: ScenePresentation = variant === 'overlay' && !onPaintWall ? 'architectural' : 'studio';
   const viewControls = <RoomViewControls workspace={variant === 'overlay'} pan={panMode} onPan={togglePan}
     onRotate={rotate} onZoom={zoomBy} onFit={refit} onView={chooseCameraView}
     wallView={wallView} onWallView={setWallView} hasWalls={solids.walls.length > 0}
@@ -1488,7 +1498,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       data-testid="wallpaint-3d"
       data-variant={variant}
       data-backend={backend}
-      data-presentation={variant === 'overlay' && !onPaintWall ? 'architectural' : 'studio'}
+      data-presentation={presentation}
     >
       {/* The picture: three when it can, the painter when it cannot. */}
       <div className="absolute inset-0">
@@ -1497,7 +1507,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
             <ThreeStage
               ref={stageRef}
               solids={solids}
-              presentation={variant === 'overlay' && !onPaintWall ? 'architectural' : 'studio'}
+              presentation={presentation}
               camera={displayedCamera ?? camera}
               width={size.width}
               height={size.height}
@@ -1582,7 +1592,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       style={{ right: 'var(--floor-panel-w, 0px)', bottom: onPaintWall || onPaintFloor ? 0 : 'calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))', ...style }}
       data-testid="wallpaint-3d-overlay" role="region" aria-label={title ?? 'Room view in 3D'}>
       <HouseWorkspace mode={activeHouseMode} onMode={changeHouseMode} onPlan={onClose} onSave={onSave} onCart={onCart}
-        buildTool={constructionTool} onBuildTool={chooseBuildTool} onFloorAdded={() => { chooseBuildTool('select'); setBuildingView('building'); setShowRoof(false); }}
+        buildTool={constructionTool} onBuildTool={chooseBuildTool} onFloorAdded={() => { chooseBuildTool('select'); setBuildingView('building'); }}
         externalPanel={!!onPaintWall || !!onPaintFloor || (energyOpen && !belowMd)}
         drawing={constructionTool === 'room'} onDraw={() => chooseBuildTool(constructionTool === 'room' ? 'select' : 'room')} onSelect={() => chooseBuildTool('select')}
         wallDrawing={constructionTool === 'wall'} onWalls={() => chooseBuildTool(constructionTool === 'wall' ? 'select' : 'wall')}

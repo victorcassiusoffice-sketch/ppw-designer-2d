@@ -38,7 +38,8 @@ describe('BuildingControls sidebar', () => {
     expect(property.levels?.length).toBe(2);
     expect(property.rooms.find((room) => room.levelId === property.activeLevelId)?.polygon).toEqual(polygon);
     expect(props.onViewChange).toHaveBeenLastCalledWith('building');
-    expect(props.onShowRoofChange).toHaveBeenLastCalledWith(false);
+    // Adding a floor leaves the roof (and anything placed on it) as it was.
+    expect(props.onShowRoofChange).not.toHaveBeenCalled();
     expect(host.querySelector('[data-testid="building-floor-height"]')).not.toBeNull();
   });
 

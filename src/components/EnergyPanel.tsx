@@ -31,6 +31,31 @@ import { roofAreaM2 } from '../designer/roof';
 import { activeLevelIdOf, isOutdoorRoom, isRoofLevel, isRoofRoom, levelsOf } from '../designer/levels';
 import { isDrawnPolygon } from '../designer/roomLayout';
 import { CHROME_BG, CHROME_RIM, CHROME_TEXT, CHROME_TEXT_2 } from '../designer/blueprintTheme';
+import { getProductById } from '../data/products';
+import type { Product } from '../data/products.schema';
+import { SOLAR_PANEL_PRODUCT_ID } from '../data/solarPreview';
+
+/** The tank the Energy panel arms on the ground (Duraco 1,000 L, priced at Mauritian retailers). */
+const WATER_TANK_PRODUCT_ID = 'duraco-water-tank-1000';
+
+const rs = (value: number) => `Rs ${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
+
+/**
+ * The panel button names the catalogue record, never a hard-coded figure:
+ * the brand and the peak watts of the product, and its price — so a catalogue
+ * change (a new panel, a new price) changes the button with it.
+ */
+function panelButtonLabel(product: Product | undefined): string {
+  if (!product) return 'Add solar panel';
+  const name = product.pv_wp ? `${product.name.split(' ')[0]} ${product.pv_wp} W panel` : product.name;
+  return product.price_on_request ? `Add ${name} · price on request` : `Add ${name} · ${rs(product.price.value)}`;
+}
+
+/** What the tank toast says about money — the catalogue's price, or that there is none yet. */
+function tankPriceLine(product: Product | undefined): string {
+  if (!product || product.price_on_request) return 'Supplier price is on request.';
+  return `${rs(product.price.value)} list price at Mauritian retailers; delivery and installation not included.`;
+}
 
 const CHIP =
   'inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border px-3 text-[13px] font-medium transition-colors duration-[120ms] ease-out motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)]';
@@ -144,7 +169,7 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
     useDesignerUIStore.getState().setEnergyPanelOpen(false);
     window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
     window.dispatchEvent(new CustomEvent('ppw:close-catalog'));
-    usePlacementIntentStore.getState().placeAtCenter('emcar-jinko-475');
+    usePlacementIntentStore.getState().placeAtCenter(SOLAR_PANEL_PRODUCT_ID);
     onJumpToRoof?.();
   }
 
@@ -161,8 +186,8 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
     useDesignerUIStore.getState().setEnergyPanelOpen(false);
     window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
     window.dispatchEvent(new CustomEvent('ppw:close-catalog'));
-    usePlacementIntentStore.getState().setArmed('duraco-water-tank-1000');
-    pushToast('Tap the ground to place the Duraco tank. Supplier price is on request.', 'info');
+    usePlacementIntentStore.getState().setArmed(WATER_TANK_PRODUCT_ID);
+    pushToast(`Tap the ground to place the Duraco tank. ${tankPriceLine(getProductById(WATER_TANK_PRODUCT_ID))}`, 'info');
     onJumpToRoof?.();
   }
 
@@ -171,7 +196,7 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
   return (
     <div className="flex flex-col gap-1" data-testid="energy-summary" data-status={r.status}>
       <div className="mb-2 grid grid-cols-2 gap-1.5" aria-label="Solar and water products">
-        <button type="button" className={`${CHIP} ${CHIP_ON} col-span-2`} onClick={addSolarPanel} data-testid="energy-add-panel">Add 3D solar panel · 475 W</button>
+        <button type="button" className={`${CHIP} ${CHIP_ON} col-span-2`} onClick={addSolarPanel} data-testid="energy-add-panel">{panelButtonLabel(getProductById(SOLAR_PANEL_PRODUCT_ID))}</button>
         <button type="button" className={`${CHIP} ${CHIP_REST} px-2 text-xs`} onClick={browseSolar} data-testid="energy-browse-solar">Browse solar</button>
         <button type="button" className={`${CHIP} ${CHIP_REST} px-2 text-xs`} onClick={addWaterTank} data-testid="energy-add-tank">Duraco water tank</button>
       </div>

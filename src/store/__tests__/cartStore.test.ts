@@ -57,11 +57,13 @@ function makeProperty(roomItems: Array<Array<{ productId: string }>>): Property 
 }
 
 describe('deriveCart - empty / edge cases', () => {
-  it('keeps supplier-quoted tanks in quantities without adding an invented cost', () => {
+  it('prices the Duraco tank at the Mauritian retailers\' Rs 11,500 list price (2026-09-26)', () => {
     const cart = deriveCart(makeProperty([[{ productId: 'duraco-water-tank-1000' }, { productId: NT2450_ID }]]), EMPTY_MUT, STUB_FX, 'MUR');
     expect(cart.totalItemCount).toBe(2);
-    expect(cart.lines.find(line => line.productId === 'duraco-water-tank-1000')?.product.price_on_request).toBe(true);
-    expect(cart.subtotal).toBe(NT2450_MUR);
+    const tank = cart.lines.find(line => line.productId === 'duraco-water-tank-1000')!;
+    expect(tank.product.price_on_request).toBe(false);
+    expect(tank.product.price).toEqual({ value: 11_500, currency: 'MUR' });
+    expect(cart.subtotal).toBe(NT2450_MUR + 11_500);
   });
   it('returns zero totals for an empty property', () => {
     const cart = deriveCart(makeProperty([[]]), EMPTY_MUT, STUB_FX, 'MUR');

@@ -120,13 +120,14 @@ export function BuildingControls({
     return () => document.removeEventListener('keydown', close);
   }, [detailsOpen]);
 
+  // Choosing a floor or adding one never hides the roof — that used to take a
+  // placed solar panel with it. Only the Roof toggle hides the covering.
   function selectFloor(id: string) {
     if (id === '__add-floor') { addFloor(); return; }
     usePropertyStore.getState().setActiveLevel(id);
     onToolChange('select');
     const selected = levels.find((entry) => entry.level.id === id);
     if (selected && isRoofLevel(selected.level)) { onShowRoofChange(true); onViewChange('building'); }
-    else onShowRoofChange(false);
   }
 
   function chooseTool(next: BuildingControlsProps['tool']) {
@@ -142,7 +143,6 @@ export function BuildingControls({
     usePropertyStore.getState().addLevel(undefined, source);
     onToolChange('select');
     onViewChange('building');
-    onShowRoofChange(false);
     setDetailsOpen(false);
     setInspector('floor');
   }
