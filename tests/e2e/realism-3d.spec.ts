@@ -78,12 +78,36 @@ async function open3D(page: Page, url: string): Promise<void> {
 
 const settle = (page: Page) => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(1)))));
 
+/**
+ * The 3D-first shell (2026-09-26) folds the wall-view buttons and the sun rig
+ * behind the camera dock's View button; open it before reaching for them.
+ * Idempotent — the dock stays open until a house-mode change or a scene tap.
+ */
+async function openViewSettings(page: Page): Promise<void> {
+  const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
+  if (await overlay.locator('[data-testid="house-view-options"]').isVisible()) return;
+  await overlay.locator('[data-testid="house-view-settings"]').click();
+  await expect(overlay.locator('[data-testid="house-view-options"]')).toBeVisible();
+}
+
+/**
+ * In the 3D shell the Paint tool opens from the house header's Paint mode;
+ * the plan toolbar's toggle sits under the fixed overlay and cannot be clicked.
+ */
+async function openPaintTool(page: Page): Promise<void> {
+  const mode = page.locator('[data-testid="wallpaint-3d-overlay"] [data-testid="house-mode-paint"]');
+  if (await mode.isVisible()) await mode.click();
+  else await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
+  await page.waitForSelector('[data-testid="wallpaint-palette"]');
+}
+
 test.describe('3D Mode — P3 realism (desktop)', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
   test('colour truth holds on walls AND floors; the outside of a wall is render, not paint; the room is dressed', async ({ page }) => {
     await seedGreyRoom(page);
     await open3D(page, '/designer?demo=off');
+    await openViewSettings(page);
     await page.locator('[data-testid="view3d-walls-up"]').click();
     await page.waitForTimeout(500);
     await settle(page);
@@ -107,6 +131,7 @@ test.describe('3D Mode — P3 realism (desktop)', () => {
     });
     expect(outside!.r).toBeGreaterThan(170);
     // 1b. The floor (Walls Down, the room centre) reads its laid swatch #3A3A3A within ±8.
+    await openViewSettings(page);
     await page.locator('[data-testid="view3d-walls-down"]').click();
     await page.waitForTimeout(500);
     await settle(page);
@@ -137,6 +162,7 @@ test.describe('3D Mode — P3 realism (desktop)', () => {
     // the shade the customer sees once the tool closes.
     await seedGreyRoom(page);
     await open3D(page, '/designer?demo=off');
+    await openViewSettings(page);
     await page.locator('[data-testid="view3d-walls-up"]').click();
     await page.waitForTimeout(500);
     await settle(page);
@@ -160,7 +186,10 @@ test.describe('3D Mode — P3 realism (desktop)', () => {
     await page.waitForTimeout(600);
     await settle(page);
     const closed = await readWall();
-    expect(closed.pt).toEqual(open.pt);
+    // Same wall, both times. (Not the same screen point: the paint panel docks
+    // on the overlay's right and the mode bar returns below when it closes, so
+    // the canvas re-lays out and the wall's projection moves — its colour must not.)
+    expect(closed.hex).toBe(open.hex);
     for (const k of ['r', 'g', 'b'] as const) {
       // The law: a #808080 wall reads 118–127 (the spec's measured band) in EVERY view.
       expect(closed.px[k]).toBeGreaterThanOrEqual(Math.round(0x80 * 0.78));
@@ -192,13 +221,13 @@ test.describe('3D Mode — P3 realism (desktop)', () => {
     await overlay.locator('[data-testid="wallpaint-3d-fit"]').click();
     await page.waitForTimeout(900);
     await settle(page);
-    // And the look did change where it may: the ground plane under the house is the navy backdrop, not the studio grey.
-    const ground = await page.evaluate(() => {
+    // And the look did change where it may: the ground plane around the house is the navy backdrop, not the studio grey.
+    // The seeded plan carries a lawn around the house, so sample the canvas's bottom-left corner — past the lawn, on the ground plane.
+    const glBox = (await page.locator('[data-testid="wallpaint-3d-gl"]').boundingBox())!;
+    const ground = await page.evaluate(([x, y]) => {
       const b = (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d;
-      const pt = b.floorScreenPoint(2.5, 2)!;
-      // Sample well below the room's near edge: outside the plan, on the ground plane.
-      return b.samplePixel(pt.x, Math.min(pt.y + 260, 880));
-    });
+      return b.samplePixel(x, y);
+    }, [glBox.x + 12, glBox.y + glBox.height - 12] as const);
     expect(ground!.b).toBeGreaterThan(ground!.r + 10);
   });
 
@@ -214,6 +243,7 @@ test.describe('3D Mode — P3 realism (desktop)', () => {
     // Studio rig by default: no sun position.
     expect((await page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.debug())).sun).toBeNull();
     // Sun on: an afternoon sun, west of the flat, above the horizon.
+    await openViewSettings(page);
     await page.locator('[data-testid="view3d-sun-toggle"]').click();
     await expect(page.locator('[data-testid="view3d-sun-hour"]')).toBeVisible();
     await expect(page.locator('[data-testid="view3d-sun-label"]')).toHaveText('15:30');
@@ -240,8 +270,7 @@ test.describe('3D Mode — P3 realism (desktop)', () => {
 
   test('the paint panel keeps its actions and live line on screen at 900 px, and the help launcher stays clear of it', async ({ page }) => {
     await open3D(page, '/designer?demo=tintex');
-    await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
-    await page.waitForSelector('[data-testid="wallpaint-palette"]');
+    await openPaintTool(page);
     // Open the chart so the panel is at its longest, then check the pinned block.
     await page.locator('[data-testid="wallpaint-chart-toggle"]').click();
     await page.waitForTimeout(300);
@@ -249,14 +278,17 @@ test.describe('3D Mode — P3 realism (desktop)', () => {
     await expect(page.locator('[data-testid="wallpaint-live"]')).toBeInViewport();
     await expect(page.locator('[data-testid="wallpaint-erase"]')).toBeInViewport();
     const panel = (await page.locator('[data-testid="wallpaint-palette"]').boundingBox())!;
-    const help = (await page.getByRole('button', { name: 'Open keyboard shortcuts help' }).boundingBox())!;
-    expect(help.x + help.width).toBeLessThanOrEqual(panel.x + 1);
+    // The 3D shell (2026-09-26) keeps the plan's help launcher off the house view; whenever it is shown it must not sit under the panel.
+    const help = page.getByRole('button', { name: 'Open keyboard shortcuts help' });
+    if (await help.count()) {
+      const box = (await help.boundingBox())!;
+      expect(box.x + box.width).toBeLessThanOrEqual(panel.x + 1);
+    }
   });
 
   test('the Sims price on hover: with the brush armed the caption names the brush and the cost of the wall', async ({ page }) => {
     await open3D(page, '/designer?demo=tintex');
-    await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
-    await page.waitForSelector('[data-testid="wallpaint-palette"]');
+    await openPaintTool(page);
     await page.locator('[data-testid="wallpaint-tintex-vip-satin"]').click();
     await page.locator('[data-testid="wallpaint-colour-ral-7035"]').click();
     // A full wall of the bedroom whose hit test lands on it.
@@ -275,7 +307,8 @@ test.describe('3D Mode — P3 realism (desktop)', () => {
     await page.mouse.move(target!.x, target!.y);
     await page.waitForTimeout(250);
     const caption = page.locator('[data-testid="wallpaint-3d-overlay"] [data-testid="wallpaint-3d-caption"]');
-    await expect(caption).toContainText(`Bedroom · Wall ${target!.e + 1} → TintEX VIP Satin · Light grey ≈`);
+    // The caption names the face since 2026-09-26 ("Inside wall 1"); the brush, the shade and the price line are what this pins.
+    await expect(caption).toContainText(new RegExp(`Bedroom · (Inside )?[Ww]all ${target!.e + 1} → TintEX VIP Satin · Light grey ≈`));
     await expect(caption).toContainText(/≈ \d+\.\d m² · \d+\.\d L · Rs [\d,]+ — click to paint/);
   });
 });
