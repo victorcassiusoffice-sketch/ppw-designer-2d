@@ -9,11 +9,18 @@ import { usePropertyStore } from '../../store/propertyStore';
 import { activeLevelIdOf, isRoofLevel, levelsOf } from '../../designer/levels';
 import { COURTS_DEMO } from '../../demo/courts';
 import { activeDemo, registerDemo, setActiveDemo } from '../../demo/demoCatalog';
+// The real stylesheet, as text: vitest strips every `.css` import (even
+// `?raw`) to an empty module, so the file is read off disk and attached by
+// hand in the tests that guard against its rules hiding a control again.
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+const planToolbarCss = readFileSync(resolve(__dirname, '../planToolbar.css'), 'utf8');
 
 vi.mock('../RoomView3D', () => ({ RoomView3D: () => <div data-testid="test-scene" /> }));
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let host: HTMLDivElement;
 let root: Root;
+let sheet: HTMLStyleElement | null = null;
 
 function viewport(width: number) {
   vi.stubGlobal('innerWidth', width);
@@ -27,7 +34,13 @@ beforeEach(() => {
   setActiveDemo(null);
   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
 });
-afterEach(() => { act(() => root.unmount()); host.remove(); setActiveDemo(null); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+afterEach(() => { act(() => root.unmount()); host.remove(); sheet?.remove(); sheet = null; setActiveDemo(null); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+function attachPlanToolbarCss() {
+  expect(typeof planToolbarCss).toBe('string');
+  expect(planToolbarCss).toContain('.plan-control-label');
+  sheet = document.createElement('style'); sheet.textContent = planToolbarCss; document.head.append(sheet);
+  expect(sheet.sheet?.cssRules.length ?? 0).toBeGreaterThan(50);
+}
 function render() { act(() => root.render(<MemoryRouter><TopBar drawMode={false} setDrawMode={vi.fn()} roomsMenuOpen={false} setRoomsMenuOpen={vi.fn()} /></MemoryRouter>)); }
 const byId = (id: string) => document.querySelector<HTMLElement>(`[data-testid="${id}"]`)!;
 const click = (node: HTMLElement) => act(() => node.click());
@@ -45,6 +58,50 @@ describe('direct Plan controls', () => {
     expect(host.querySelector('[aria-controls="ppw-pop-view"]')).toBeNull();
     expect(host.querySelector('[class*="overflow-x-auto"]')).toBeNull();
     expect(byId(width < 768 ? 'view-mode-3d-phone' : 'view-mode-3d')).not.toBeNull();
+  });
+
+  // Capsule pass (2026-09-26). The first cut of planToolbar.css hid the
+  // phone Select and the Custom radio with display:none and dropped the pill
+  // labels from the DOM; 11 e2e click sites, wallpen-mobile.spec and
+  // units.spec (`toHaveText('Snap 0.5 m')`) depend on all three. The real
+  // stylesheet is attached so a hiding rule fails here, not in Playwright.
+  it('keeps the phone Select and the Custom radio rendered and un-hidden at 390px under the capsule stylesheet', () => {
+    viewport(390); attachPlanToolbarCss(); render();
+    const select = byId('select-tool-toggle-phone');
+    const custom = byId('room-draw-toggle');
+    expect(select).not.toBeNull();
+    expect(custom).not.toBeNull();
+    for (const node of [select, custom]) {
+      expect(node.hidden).toBe(false);
+      expect(node.closest('[hidden], [aria-hidden="true"]')).toBeNull();
+      expect(getComputedStyle(node).display).not.toBe('none');
+      expect(getComputedStyle(node).visibility).not.toBe('hidden');
+    }
+    // Custom stays a radio inside the Room-shape radiogroup, folded into the
+    // construction rail; the testid lives on that one node only.
+    expect(custom.getAttribute('role')).toBe('radio');
+    expect(custom.hasAttribute('aria-checked')).toBe(true);
+    expect(custom.closest('[role="radiogroup"]')).not.toBeNull();
+    expect(custom.closest('[aria-label="Construction tools"]')).not.toBeNull();
+    expect(document.querySelectorAll('[data-testid="room-draw-toggle"]')).toHaveLength(1);
+    expect(document.querySelectorAll('[data-testid="select-tool-toggle-phone"]')).toHaveLength(1);
+  });
+
+  it.each([390, 1280])('keeps every pill label in the DOM (visually hidden, never display:none) at %ipx', (width) => {
+    viewport(width); attachPlanToolbarCss(); render();
+    const labels = Array.from(document.querySelectorAll<HTMLElement>('.plan-pill-group .plan-control-label'));
+    expect(labels.length).toBeGreaterThanOrEqual(5);
+    for (const label of labels) {
+      const style = getComputedStyle(label);
+      // Positive control that the stylesheet is live in this DOM: the label
+      // rule clips to 1 px off-flow. Then the guard itself.
+      expect(style.position).toBe('absolute');
+      expect(style.display).not.toBe('none');
+    }
+    // What units.spec reads: the label + the visible unit value, one node.
+    const snap = byId('snap-unit-toggle');
+    expect(snap.textContent?.replace(/\s+/g, ' ').trim()).toBe('Snap 0.5 m');
+    expect(getComputedStyle(snap.querySelector('span:not(.plan-control-label)')!).position).not.toBe('absolute');
   });
 
   it('changes snap directly and closes its in-flow options without opening a menu', () => {
