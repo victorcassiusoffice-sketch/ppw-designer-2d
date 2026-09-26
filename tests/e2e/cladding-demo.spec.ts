@@ -4,6 +4,9 @@
  */
 import { test, expect, type Page } from '@playwright/test';
 
+// The first 3D frame compiles a shader variant per finish and can block 20–70 s on software GL; same budget as the other 3D specs.
+test.describe.configure({ timeout: 180_000 });
+
 const ROOM = {
   id: 'r1',
   name: 'Room 1',
@@ -48,7 +51,7 @@ test.describe('Sample cladding in 3D', () => {
     await expect(page.locator('[data-testid="wallpaint-3d-overlay"]')).toBeVisible();
     await expect(page.locator('[data-testid="cladding-view-3d"]')).toHaveAttribute('aria-checked', 'true');
     await expect
-      .poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: { faceCount: () => number } }).__ppwRoomView3d.faceCount()))
+      .poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: { faceCount: () => number } }).__ppwRoomView3d.faceCount()), { timeout: 90_000 })
       .toBeGreaterThan(0);
     await page.locator('[data-testid="cladding-demo-clad-cedar-140"]').click();
 
@@ -105,7 +108,7 @@ test.describe('Sample cladding on a phone', () => {
     await expect(page.locator('[data-testid="wallpaint-3d-overlay"]')).toBeVisible();
     await expect(page.locator('[data-testid="cladding-3d-brush-strip"]')).toBeVisible();
     await expect
-      .poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: { faceCount: () => number } }).__ppwRoomView3d.faceCount()))
+      .poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: { faceCount: () => number } }).__ppwRoomView3d.faceCount()), { timeout: 90_000 })
       .toBeGreaterThan(0);
 
     const pt = await page.evaluate(() =>
