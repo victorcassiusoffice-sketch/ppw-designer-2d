@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { demoRoute } from '../demoRoute';
-import { HOME_DEMO, PAINT_DEMO } from '../generic';
+import { CAPTAMARIN_SCENE_DEMO, HOME_DEMO, PAINT_DEMO } from '../generic';
 import { TINTEX_DEMO } from '../tintex';
 import { COURTS_DEMO } from '../courts';
+import { CAPTAMARIN_DEMO, CAPTAMARIN_PAGE_NAME } from '../captamarin';
 import { activateDemoFromUrl, ensureDemoPage } from '../useDemoMode';
 import { __resetDemosForTests, activeDemo, demoProducts } from '../demoCatalog';
 import { usePropertyStore } from '../../store/propertyStore';
@@ -40,6 +41,23 @@ describe('generic designer demos', () => {
     expect(activeDemo()?.slug).toBe(PAINT_DEMO.slug);
     expect(activeDemo()?.paintBrandIds).toBeUndefined();
     expect(demoProducts()).toEqual(COURTS_DEMO.products);
+  });
+
+  it('serves the Cap Tamarin two-bedroom on the read-only demo route under its own page id', () => {
+    expect(demoRoute('/embed/designer', '?scene=captamarin&view=3d')).toEqual({ scene: 'captamarin', view: '3d', embedded: true });
+    expect(demoRoute('/demo', '?scene=CapTamarin')).toMatchObject({ scene: 'home' });
+    activateDemoFromUrl('?scene=captamarin&demo=tintex', '/demo');
+    expect(activeDemo()?.slug).toBe(CAPTAMARIN_SCENE_DEMO.slug);
+    expect(activeDemo()?.paintBrandIds).toBeUndefined();
+    expect(demoProducts()).toEqual(COURTS_DEMO.products);
+    const property = CAPTAMARIN_SCENE_DEMO.buildProperty();
+    expect(property.id).toBe('generic-demo-captamarin');
+    expect(property.name).toBe(CAPTAMARIN_PAGE_NAME);
+    expect(property.rooms.map((room) => room.name)).toEqual(CAPTAMARIN_DEMO.buildProperty().rooms.map((room) => room.name));
+    for (const id of property.rooms.flatMap((room) => room.placedItems.map((item) => item.productId))) expect(getProductById(id)?.price.value).toBeGreaterThan(0);
+    expect(ensureDemoPage(CAPTAMARIN_SCENE_DEMO)).toBe('loaded');
+    expect(usePropertyStore.getState().property.id).toBe('generic-demo-captamarin');
+    expect(ensureDemoPage(CAPTAMARIN_SCENE_DEMO)).toBe('current');
   });
 
   it('keeps legacy supplier filtering and attribution while naming the TintEX preset Demo', () => {

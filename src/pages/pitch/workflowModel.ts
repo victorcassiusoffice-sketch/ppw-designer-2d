@@ -44,4 +44,24 @@ export function examplePartnerShare(orderValue: number, ratePercent: number) {
   return Math.round(orderValue * ratePercent) / 100;
 }
 
-export const MEETING_URL = 'https://calendly.com/victorcassius-office/ppw-client-meeting-1-hour?month=2026-09';
+export const MEETING_URL = 'https://calendly.com/victorcassius-office/ppw-client-meeting-1-hour';
+
+/** Client overlays: the same page, with the hero, scene and a few blocks tuned for one prospect. */
+export type DeveloperClient = 'cap-tamarin';
+export type MerchantClient = 'spa-concept';
+export const DEVELOPER_CLIENTS: readonly DeveloperClient[] = ['cap-tamarin'];
+export const MERCHANT_CLIENTS: readonly MerchantClient[] = ['spa-concept'];
+
+/** `?client=<slug>` picks a known overlay; anything else is the default page. */
+export function readPitchClient<T extends string>(search: string, known: readonly T[]): T | null {
+  try {
+    const value = new URLSearchParams(search).get('client')?.trim().toLowerCase() ?? '';
+    return known.find((slug) => slug === value) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function currentSearch(): string {
+  return typeof window === 'undefined' ? '' : window.location.search;
+}
