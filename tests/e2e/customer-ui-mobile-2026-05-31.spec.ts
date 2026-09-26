@@ -22,6 +22,7 @@
 import { test, expect, devices, type Page } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
+import { openCatalog } from './catalog-helpers';
 
 const EVID =
   process.env.PPW_CUSTOMERUI_EVID ??
@@ -76,6 +77,8 @@ async function bootstrap(page: Page) {
 async function placeOne(page: Page) {
   const toolbar = page.locator('[data-testid="sims-bottom-toolbar"]');
   await expect(toolbar).toBeVisible({ timeout: 20_000 });
+  // The strip starts collapsed behind the Furnish launcher (2026-09-26).
+  await openCatalog(page);
   // Prefer a small floor tile so duplicate's ±0.5 m offset always fits.
   const small = page.locator('[data-testid="sims-thumb"][data-product-id="k1-floor-eva-kids"]');
   const thumb = (await small.count()) > 0 ? small.first() : page.locator('[data-testid="sims-thumb"]').first();

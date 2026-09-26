@@ -15,6 +15,7 @@
  * Each test skips gracefully against a build that predates the fix.
  */
 import { test, expect, type Page } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 
 const roomPolygon = [
   { x: 0, y: 0 },
@@ -122,7 +123,9 @@ test.describe('Bug 2 — two "+ Add to room" taps both land (no false "won\'t fi
         }
       });
     const addOnce = async () => {
-      if ((await page.locator('[data-testid="sims-thumb-strip"]').count()) === 0) await page.locator('[data-testid="sims-cat-cardio"]').tap();
+      // Collapsed at every width (2026-09-26): open the strip on Cardio (a
+      // no-op for the strip itself when a previous add left it open).
+      await openCatalog(page, 'cardio');
       await expect(page.locator('[data-testid="sims-thumb-strip"]')).toBeVisible();
       // By id on dev, by NAME on a deployed build (there /api/products returns
       // this SKU under a merchant id and mergeCatalog drops the bundled twin).
@@ -156,6 +159,8 @@ test('Bug 1 — long-press context menu is suppressed on canvas + catalog tile',
   await seedProperty(page, [{ instanceId: 'i1', productId: 'k1-nordictrack-2450', x: 1, y: 1, rotation: 0 }]);
   await page.goto('/designer');
   await page.waitForSelector('header', { timeout: 15_000 });
+  // The thumbnails render only while the (collapsed-by-default) strip is open.
+  await openCatalog(page);
 
   const res = await page.evaluate(() => {
     const out: Record<string, boolean | string> = {};

@@ -24,6 +24,7 @@ import { WALL_HALF_M } from '../../src/designer/wallAwarePlacement';
 // this spec used to inline looked for the pre-reskin `r < 40` border — the
 // paper theme's wall is (42, 41, 38), so that predicate finds nothing.
 import { PX_PER_M, roomOrigin } from './multiroom-helpers';
+import { openCatalog } from './catalog-helpers';
 
 interface StoredItem {
   instanceId: string;
@@ -35,6 +36,7 @@ interface StoredItem {
 }
 
 async function placeAt(page: Page, productId: string, xM: number, yM: number) {
+  await openCatalog(page);
   const card = page.locator(`[data-product-id="${productId}"]:visible`).first();
   await expect(card).toBeVisible();
   await card.click();
@@ -153,6 +155,7 @@ test.describe('surface slots + wall-mounted items', () => {
     await page.goto('/designer');
     await page.locator('[data-testid="start-quick-rectangle"]').click();
 
+    await openCatalog(page);
     const card = page.locator('[data-product-id="demo-aroma-diffuser"]:visible').first();
     await card.click();
     await expect(page.locator('[data-armed="true"]')).toHaveCount(2);

@@ -3,8 +3,9 @@
  * tested it. No DEV bridge needed: runs on a dev server, a preview or prod.
  *
  * Pins:
- *   1. the show flat opens with the catalog strip folded to its category
- *      row, and a category tap unfolds it;
+ *   1. the show flat opens with the catalog strip folded behind the Furnish
+ *      launcher (2026-09-26: collapsed at every width), and opening it then
+ *      tapping a category shows the strip;
  *   2. a tap on a thumbnail leaves the popup OPEN, and "+ Add to room"
  *      places the product (it used to flash shut on the tap's own click);
  *   3. arming Wall paint: the Products / Clear-all row, the cart pill and the
@@ -14,6 +15,7 @@
  *      floating over it.
  */
 import { test, expect, type Page } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
@@ -36,7 +38,14 @@ test('the show flat opens with the strip folded; a category tap unfolds it', asy
   await openDemo(page);
   await expect(page.locator('[data-testid="sims-bottom-toolbar"]')).toBeVisible();
   await expect(page.locator('[data-testid="sims-thumb-strip"]')).toHaveCount(0);
-  await expect(page.locator('[data-testid="sims-toolbar-minimize"]')).toHaveAttribute('aria-expanded', 'false');
+  // Collapsed: the Furnish launcher is the only catalogue control on the bar;
+  // the strip's close button is not rendered until the strip is open.
+  const launcher = page.locator('[data-testid="sims-catalog-open"]');
+  await expect(launcher).toBeVisible();
+  await expect(launcher).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('[data-testid="sims-toolbar-minimize"]')).toHaveCount(0);
+  await openCatalog(page);
+  await expect(page.locator('[data-testid="sims-toolbar-minimize"]')).toHaveAttribute('aria-expanded', 'true');
   await page.locator('[data-testid="sims-cat-cardio"]').tap();
   await expect(page.locator('[data-testid="sims-thumb-strip"]')).toBeVisible();
 });
@@ -44,7 +53,7 @@ test('the show flat opens with the strip folded; a category tap unfolds it', asy
 test('a thumbnail tap keeps the popup open and "+ Add to room" places the product', async ({ page }) => {
   await openDemo(page);
   const before = await placedCount(page);
-  await page.locator('[data-testid="sims-cat-cardio"]').tap();
+  await openCatalog(page, 'cardio');
   await page.locator('[data-testid="sims-thumb"]:visible').first().tap();
   const popup = page.locator('[data-testid="mobile-product-popup"]');
   await expect(popup).toBeVisible();

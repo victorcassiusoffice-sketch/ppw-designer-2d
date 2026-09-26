@@ -110,6 +110,10 @@ export async function seedProperty(page: Page, prop: SeedProperty): Promise<void
  * (dev has no API, so the bundled id renders). The name is the same in both
  * sources. Only VISIBLE cards count — the phone strip carries hidden twins
  * of every id at desktop widths.
+ *
+ * A locator only: the catalogue starts COLLAPSED (2026-09-26), so callers
+ * `await openCatalog(page)` (catalog-helpers.ts) before the card can be
+ * seen or clicked.
  */
 export function dockCard(page: Page, id: string, name: string): Locator {
   const strip = page.locator('[data-testid="dock-strip"]');

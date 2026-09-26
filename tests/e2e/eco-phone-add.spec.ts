@@ -11,6 +11,7 @@
  * Run: PPW_E2E_BASE_URL=http://127.0.0.1:5188 npx playwright test eco-phone-add
  */
 import { test, expect } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 import { GEOM_BRIDGE_SKIP } from './multiroom-helpers';
 import { oneRoomFixture, requireGeomBridgeGenerous, seedSimsProperty, storedSimsProperty, waitForGeom } from './sims-world-helpers';
 
@@ -23,7 +24,8 @@ test('Eco tab → panel tile → "+ Add to room" places the panel on the roof sl
   if (!(await requireGeomBridgeGenerous(page))) test.skip(true, GEOM_BRIDGE_SKIP);
   await waitForGeom(page);
 
-  await page.locator('[data-testid="sims-cat-eco"]').click();
+  // The strip starts collapsed behind the Furnish launcher; open it on Eco.
+  await openCatalog(page, 'eco');
   const tile = page.locator('[data-testid="sims-bottom-toolbar"] [data-product-id="emcar-jinko-475"]').first();
   await expect(tile).toBeVisible();
   await tile.click();

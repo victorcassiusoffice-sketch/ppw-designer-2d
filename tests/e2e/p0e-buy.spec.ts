@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 
 test('P0-ε — BUY button visible for K1 product + /api/k1/redirect 302 with attribution', async ({ page }) => {
   await page.addInitScript(() => {
@@ -13,6 +14,7 @@ test('P0-ε — BUY button visible for K1 product + /api/k1/redirect 302 with at
   await page.locator('[data-testid="start-quick-rectangle"]').click();
   await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
 
+  await openCatalog(page);
   await page.locator('[data-product-id]').first().click();
   const stage = page.locator('.konva-stage').first();
   const box = await stage.boundingBox();

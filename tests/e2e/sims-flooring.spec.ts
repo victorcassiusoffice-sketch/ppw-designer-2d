@@ -24,6 +24,7 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 import {
   allStoredItems,
   armAndClickWorld,
@@ -136,7 +137,7 @@ test.describe('Sims flooring + floor cost', () => {
 
   test('3. a K1 tile SKU card in the dock arms the Floor tool on that material', async ({ page }) => {
     await open(page);
-    await page.locator('[data-testid="dock-cat-flooring"]').click();
+    await openCatalog(page, 'flooring');
 
     // The EVA combat mat IS a Floor-tool material (same SKU). Its card is a
     // FLOOR card: clicking it opens the Floor panel on that material and
@@ -160,7 +161,7 @@ test.describe('Sims flooring + floor cost', () => {
 
   test('4. loose-mat flooring tiles drop, Duplicate and Fill floor edge to edge on the tile lattice', async ({ page }) => {
     await open(page);
-    await page.locator('[data-testid="dock-cat-flooring"]').click();
+    await openCatalog(page, 'flooring');
 
     // The 0.5 x 0.5 m EVA kids mat has NO Floor-tool material row, so it stays
     // a loose placeable item. The lattice with no tile yet starts at the

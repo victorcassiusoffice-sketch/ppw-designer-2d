@@ -21,6 +21,7 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 import { worldToScreen } from './multiroom-helpers';
 
 /**
@@ -131,6 +132,7 @@ async function ghostPaint(
  * so the caller can inspect the ghost before releasing.
  */
 async function dragFirstTileTo(page: Page, target: { x: number; y: number }): Promise<void> {
+  await openCatalog(page);
   const tile = page.locator('[data-testid="dock-strip"] [data-product-id]').first();
   const tileBox = await tile.boundingBox();
   if (!tileBox) throw new Error('no dock tile');
@@ -278,6 +280,7 @@ test.describe('Sims drag-drop — desktop', () => {
     await openDesigner(page);
     const before = await placedCount(page);
 
+    await openCatalog(page);
     const tile = page.locator('[data-testid="dock-strip"] [data-product-id]').first();
     const box = (await tile.boundingBox())!;
     const cx = box.x + box.width / 2;

@@ -27,6 +27,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 import { targetHasNoApi, NO_API_SKIP } from './multiroom-helpers';
 import { PREVIEW_NO_SECRET_SKIP, previewWithoutSecret } from './deploy-env';
 
@@ -57,6 +58,11 @@ test.describe('Wellness-Designer-App (i) · Customer journey', () => {
     // catalog is now SimsDock (ProductPalette.tsx has zero importers left).
     // Pin the dock AND that it really lists product tiles - what this test's
     // title always claimed but the old search-input probe never checked.
+    // The dock starts collapsed (2026-09-26): a Furnish launcher pill in the
+    // plan view, and not shown at all in 3D until the rail's Furnish mode
+    // opens it — so open it FIRST, then pin that the dock is up and lists
+    // product tiles (what this test's title always claimed).
+    await openCatalog(page);
     await expect(page.locator('[data-testid="sims-dock"]')).toBeVisible({ timeout: 15_000 });
     await expect(
       page.locator('[data-testid="dock-strip"] [data-product-id]').first(),
@@ -69,6 +75,9 @@ test.describe('Wellness-Designer-App (i) · Customer journey', () => {
     // 2026-08-25 Sims build-mode rebuild (bae63c0) retired (zero importers
     // left); SimsDock has no search box. The probe is kept, not deleted, so
     // the test resumes by itself the day the dock grows one.
+    // 2026-09-26: the dock's search field renders only while the (collapsed
+    // by default) catalogue is open, so open it before probing.
+    await openCatalog(page);
     const searchInput = page.locator('input[type="search"]').first();
     if (await searchInput.count() === 0) {
       test.skip(true, 'catalog search input retired with ProductPalette (bae63c0); SimsDock has none yet — resumes automatically when a type="search" input returns to /designer.');

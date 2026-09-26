@@ -12,6 +12,7 @@
  */
 import { test, expect } from '@playwright/test';
 import * as path from 'node:path';
+import { openCatalog } from './catalog-helpers';
 import { PREVIEW_NO_SECRET_SKIP, previewWithoutSecret } from './deploy-env';
 
 const SHOT_DIR =
@@ -51,6 +52,7 @@ test('c) M1 — click catalog card + click canvas → ITEMS PLACED = 1', async (
   await page.locator('[data-testid="start-quick-rectangle"]').click();
   await expect(page.locator('[data-testid="start-room-prompt"]')).toHaveCount(0);
 
+  await openCatalog(page);
   const card = page.locator('[data-product-id]').first();
   await expect(card).toBeVisible();
   await card.click();
@@ -102,6 +104,7 @@ test('d) M5+M5.b — /merchant/demo-supplier-cn renders sign-in form (not design
 // is wired back up. Un-skip then; do not weaken it.
 test.skip('e) M3 — place 1 item in 2D, switch to BABYLON → 1 product mesh', async ({ page }) => {
   await page.goto('/designer?fresh=1');
+  await openCatalog(page);
   const card = page.locator('[data-product-id]').first();
   await expect(card).toBeVisible({ timeout: 15_000 });
   await card.click();

@@ -22,6 +22,7 @@
  * Runs on a dev server (the bridge is DEV-only): PPW_E2E_BASE_URL=http://127.0.0.1:5199
  */
 import { test, expect, type Page } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 
 const ROOM = {
   id: 'r1',
@@ -76,6 +77,17 @@ async function awaitStage(page: Page): Promise<void> {
   expect((await bridge(page))?.backend).toBe('gl');
 }
 
+/**
+ * Switch to 3D unless the room is already showing. The 3D-first shell
+ * (2026-09-23) opens furnished plans straight in 3D, and a click on the
+ * Plan-bar switch while the overlay is up is intercepted by the overlay.
+ */
+async function enter3D(page: Page): Promise<void> {
+  const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
+  if (!(await overlay.isVisible())) await page.locator('[data-testid="view-mode-3d"]').click();
+  await expect(overlay).toBeVisible();
+}
+
 test.describe('3D Mode — desktop', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -89,9 +101,8 @@ test.describe('3D Mode — desktop', () => {
     await page.waitForTimeout(500);
     expect(await threeLoads(), 'three must not load with the 2D designer').toHaveLength(0);
 
-    await page.locator('[data-testid="view-mode-3d"]').click();
+    await enter3D(page);
     const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
-    await expect(overlay).toBeVisible();
     await expect(page.locator('[data-testid="view-mode-3d"]')).toHaveAttribute('aria-pressed', 'true');
     // The bar stays above the room.
     const bar = (await page.locator('header').first().boundingBox())!;
@@ -125,8 +136,7 @@ test.describe('3D Mode — desktop', () => {
     await seed(page);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-    await page.locator('[data-testid="view-mode-3d"]').click();
-    await expect(page.locator('[data-testid="wallpaint-3d-overlay"]')).toBeVisible();
+    await enter3D(page);
     await awaitStage(page);
     await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
     await page.waitForSelector('[data-testid="wallpaint-palette"]');
@@ -148,9 +158,7 @@ test.describe('3D Mode — desktop', () => {
     await seed(page, { ...ROOM, placedItems: [{ instanceId: 'i1', productId: 'k1-nordictrack-2450', x: 1.5, y: 1.5, rotation: 0 }] });
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-    await page.locator('[data-testid="view-mode-3d"]').click();
-    const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
-    await expect(overlay).toBeVisible();
+    await enter3D(page);
     await awaitStage(page);
     await expect(page.locator('[data-testid="view3d-selection"]')).toHaveCount(0);
 
@@ -186,6 +194,8 @@ test.describe('3D Mode — desktop', () => {
     await expect(page.locator('[data-testid="view3d-selection"]')).toContainText('NordicTrack');
 
     // 7. Arm a product from the dock under the room, tap the floor: placed there.
+    //    The catalogue starts collapsed: in 3D it opens from the Furnish mode.
+    await openCatalog(page);
     const tile = page.locator('[data-testid="dock-strip"] [data-product-id="demo-floor-lamp"]');
     await tile.scrollIntoViewIfNeeded();
     await tile.click();
