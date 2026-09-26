@@ -35,7 +35,12 @@ test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true
 async function openPen(page: Page): Promise<{ cdp: CDPSession; cx: number; cy: number }> {
   await seedSimsProperty(page, oneRoomFixture());
   await page.goto('/designer');
-  await page.getByRole('button', { name: '2D Plan', exact: true }).click();
+  // A seeded /designer opens in Plan (2026-09-26: only the demos open in 3D).
+  // Should the House view be up instead, its header's "2D Plan" switches back.
+  await page.waitForSelector('.konvajs-content canvas, [data-testid="wallpaint-3d-overlay"]', { state: 'attached', timeout: 30_000 });
+  if (await page.getByTestId('wallpaint-3d-overlay').isVisible()) {
+    await page.getByRole('button', { name: '2D Plan', exact: true }).click();
+  }
   await page.waitForSelector('.konvajs-content canvas', { state: 'attached', timeout: 30_000 });
   if (!(await requireGeomBridgeGenerous(page))) test.skip(true, GEOM_BRIDGE_SKIP);
   await waitForGeom(page);

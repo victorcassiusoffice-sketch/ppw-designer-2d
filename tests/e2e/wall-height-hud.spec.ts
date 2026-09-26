@@ -64,12 +64,37 @@ test.describe('Wall height on the plan', () => {
     await page.locator('[data-testid="wallpaint-height"]').fill('3');
     await expect(page.locator('[data-testid="wall-height-readout"]')).toHaveText('3 m');
 
+    // House Studio (2026-09-26): the paint panel rides into 3D as the rail's
+    // Paint mode; the 3D wall-height stepper lives behind the camera dock's
+    // View button, and the header's "2D Plan" is the way back.
     await page.locator('[data-testid="view-mode-3d"]').click();
+    const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
+    await expect(overlay).toBeVisible();
+    await expect(overlay.locator('[data-testid="house-mode-paint"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d?: { faceCount: () => number } }).__ppwRoomView3d?.faceCount() ?? 0), { timeout: 20_000 })
+      .toBeGreaterThan(0);
+    // Pressing workspace chrome while a finish tool is docked dismisses that
+    // tool first (TopBar's away handler), and the dock re-centres as the
+    // panel leaves — so the press that closes Paint can miss the button.
+    // A person simply presses View again; do the same.
+    const options = overlay.locator('[data-testid="house-view-options"]');
+    for (let attempt = 1; attempt <= 3 && !(await options.isVisible()); attempt++) {
+      await overlay.locator('[data-testid="house-view-settings"]').click();
+      await expect(options).toBeVisible({ timeout: attempt === 3 ? 5_000 : 1_500 }).catch(() => undefined);
+    }
+    await expect(options).toBeVisible();
     await expect(page.locator('[data-testid="view3d-wall-height-readout"]')).toHaveText('3 m');
     await page.locator('[data-testid="view3d-wall-height-up"]').click();
     await expect(page.locator('[data-testid="view3d-wall-height-readout"]')).toHaveText('3.1 m');
     await expect.poll(() => storedHeight(page)).toBe(3.1);
-    await page.locator('[data-testid="wallpaint-3d-close"]').click();
+    await overlay.getByRole('button', { name: '2D Plan', exact: true }).click();
+    await expect(overlay).toHaveCount(0);
+    // Back on the plan the HUD and the paint field both read the 3D change.
+    await expect(page.locator('[data-testid="wall-height-readout"]')).toHaveText('3.1 m');
+    if (!(await page.locator('[data-testid="wallpaint-height"]').isVisible())) {
+      await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
+    }
     await expect(page.locator('[data-testid="wallpaint-height"]')).toHaveValue('3.1');
   });
 
