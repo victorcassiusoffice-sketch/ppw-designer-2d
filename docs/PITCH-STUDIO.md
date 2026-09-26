@@ -1,42 +1,47 @@
 # PPW Studio — presentation and integration guide
 
-Status: shipped and verified. Application `7b1837e912b3f50f85f09ace627732828931c558`, Vercel `6664311042`. Production/main remain untouched.
+Production truth for the pitch, Studio, Demo and embed routes. They ship on **https://designer.ppwellness.co** — the same host as the real designer and shop — once the branch carrying them is merged to `main` (Vercel builds production from `main` automatically). A deploy is live only when a cache-busted `curl https://designer.ppwellness.co/api/healthcheck?cb=<unique>` reports the expected commit; a preview URL is never production.
 
-- Standalone Studio + Shop: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/studio
-- Developer presentation: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/pitch/developers
-- Merchant presentation: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/pitch/merchants
-- Designer-only Demo: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/demo
-- Embed: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/embed/designer?scene=home&view=3d
-- Standard Designer: https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/designer
-- Demo (legacy TintEX URL): https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/designer?demo=tintex
+## Routes on production
 
-Final application CI passes 262 files / 2,931 tests, client/API typechecks and secret scan. Production build and scoped lint pass; zero public source maps. Unique preview browser checks pass for both pitches, Studio, Demo and preserved Designer/TintEX routes on desktop and 360/390px phones. Final embedded frames measure 420/423px on desktop and about 480px on phone; no horizontal overflow or browser errors observed. Added a floor in Studio 3D, switched to Plan, and undid it without resetting history. Real catalogue/product/cart reads work; checkout renders the no-order screen. Empty Stripe/PayPal/Gumroad/lead probes return 403 SHOWCASE_READ_ONLY; final deployment Stripe guard and embed-only HTTPS framing headers rechecked. No customer data, order, payment, email or booking submitted. Separate Lighthouse continues to fail against unchanged production.
+| URL | What it is | Orders? |
+| --- | --- | --- |
+| https://designer.ppwellness.co/pitch/developers | Five interactive chapters for property developers: apartment vision, finish alternatives, deadline/delivery simulation, material and electrical-load brief, partnership meeting | No (read-only) |
+| https://designer.ppwellness.co/pitch/merchants | Five interactive chapters for merchants: opportunity, product categories, embedded/standalone/Shop channels, hypothetical partnerships, catalogue access and proposed finance/signing | No (read-only) |
+| https://designer.ppwellness.co/studio | Standalone website entry with 2D, Premium 3D, Shop and merchant access | No (read-only) |
+| https://designer.ppwellness.co/studio/designer?view=3d | Studio with the real Premium 3D designer (`view=2d` for the plan) | No (read-only) |
+| https://designer.ppwellness.co/studio/shop | The public product API and Shop inside the Studio frame, with the preview notice | No (read-only) |
+| https://designer.ppwellness.co/studio/merchants | Links to the existing authenticated merchant workspaces and platform administration | n/a |
+| https://designer.ppwellness.co/demo | Generic designer-only Demo; no Shop navigation (`?scene=home\|paint&view=2d\|3d`) | No (read-only) |
+| https://designer.ppwellness.co/embed/designer?scene=home&view=3d | The embeddable designer-only Demo (`scene=paint&view=2d` for the paint scene) | No (read-only) |
+| https://designer.ppwellness.co/designer?demo=tintex | The legacy meeting-pack URL merchants already hold (`tintex`, `courts`, `sofap`, `captamarin`) | **Yes** — transactional, exactly as before |
+| https://designer.ppwellness.co/designer | The standard designer | **Yes** |
 
-## Public experiences
+2D and Premium 3D are both included in the presentations. "Premium" describes the richer view, not an active subscription or paywall. Existing local plans are preserved when a demo scene opens. Actual products, dimensions, attributed suppliers, paint quantities, roof/floor tools and solar estimates use the existing designer.
 
-| Path | Purpose |
-| --- | --- |
-| `/pitch/developers` | Five interactive chapters: apartment vision, finish alternatives, deadline/delivery simulation, material and electrical-load brief, partnership meeting |
-| `/pitch/merchants` | Five interactive chapters: opportunity, product categories, embedded/standalone/Shop channels, hypothetical partnerships, catalogue access and proposed finance/signing |
-| `/studio` | Standalone website entry with 2D, Premium 3D, Shop and merchant access |
-| `/studio/designer?view=2d` | Studio with the real 2D designer |
-| `/studio/designer?view=3d` | Studio with the real Premium 3D designer |
-| `/studio/shop` | Existing public product API and Shop, with a preview notice |
-| `/studio/merchants` | Links to existing authenticated merchant workspaces and platform administration |
-| `/demo` | Generic, designer-only Demo; no Shop navigation |
-| `/embed/designer?scene=home&view=3d` | Embeddable designer-only Demo |
-| `/embed/designer?scene=paint&view=2d` | Paint scene in 2D |
-| `/designer?demo=tintex` | Preserved legacy supplier URL; public demo name is Demo |
+## What "read-only" means on production
 
-2D and Premium 3D are both included for this presentation. “Premium” describes the richer view, not an active subscription or paywall. Existing local plans are preserved when a demo scene opens. Actual products, dimensions, attributed suppliers, paint quantities, roof/floor tools and solar estimates use the existing designer.
+The guard is **UI-level only** (`src/lib/showcaseSafety.ts`). On production the API stays fully transactional; the server-side guard (`api/_lib/showcaseSafety.ts`) is active only on Vercel **preview** deployments (`VERCEL_ENV=preview`) or on a separate host built and run with `DEMO_ONLY=true`. There is no `403 SHOWCASE_READ_ONLY` on production URLs — that response belongs to previews and to a dedicated demo host.
+
+Three kinds of route:
+
+1. **Read-only families** — `/demo`, `/embed/designer`, `/studio` and its sub-routes, `/pitch` and its sub-routes. Opening one marks the tab (in memory and in `sessionStorage` under `ppw_showcase_read_only`). On these the designer hides checkout, request-quote and cloud save; the cart button opens a local product estimate; the badge reads **Demo · no orders**.
+2. **Checkout pages** — `/checkout` and `/marketplace/checkout` only consult the mark. A tab that came straight from the Demo, Studio or a pitch sees the "You are in the demo — no orders are placed" screen instead of a payment form, including after a reload on the payment page.
+3. **Everything else** — `/designer`, `/products`, `/cart`, `/marketplace/cart`, `/` and the rest of the app clear the mark. Pitch → designer → checkout in one tab is a normal purchase again.
+
+`/designer?demo=<slug>` is **not** a read-only route: cart, request-quote, cloud save and the K1 link behave exactly as on the standard designer, and its badge reads plain **Demo** with the × to leave. `?demo=off` leaves demo mode and is never read-only.
+
+Preview builds and `DEMO_ONLY` builds compile `__SHOWCASE_READ_ONLY__` to `true`, which makes every route read-only in the browser regardless of URL, on top of the server guard.
+
+Do not present the UI guard as a security boundary: a visitor on `/demo` who types `/designer` gets the real product, by design. Payment webhooks, transactional cron jobs and the public order/payment/quote/email handlers are refused only where the server guard is active (preview or `DEMO_ONLY`). Pure catalogue reads and cart calculation work everywhere; authorized catalogue editing keeps its existing access checks.
 
 ## Embedding
 
-This embed uses the current verified preview. Serve the parent website over HTTPS. Update the host when a later deployment is selected.
+Serve the parent website over HTTPS.
 
 ```html
 <iframe
-  src="https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app/embed/designer?scene=home&view=3d"
+  src="https://designer.ppwellness.co/embed/designer?scene=home&view=3d"
   title="Demo — design your home"
   style="width:100%;height:760px;border:0;border-radius:18px"
   loading="lazy"
@@ -44,13 +49,13 @@ This embed uses the current verified preview. Serve the parent website over HTTP
 </iframe>
 ```
 
-Only `/embed/designer` permits HTTPS parent sites. Other routes keep same-origin framing protection, including Shop, checkout, merchant administration and the main designer. Before a live merchant launch, agree the allowed hostnames and restrict the embed policy accordingly. Header matching follows [Vercel’s documented configuration syntax](https://vercel.com/docs/project-configuration/vercel-json#headers).
+Only `/embed/designer` may be framed by other sites: it is sent with `Content-Security-Policy: frame-ancestors 'self' https:` (any HTTPS parent). Every other route — Shop, checkout, merchant administration, the main designer — keeps `X-Frame-Options: SAMEORIGIN` and `frame-ancestors 'self'`. Before a live merchant launch, agree the allowed hostnames and narrow the embed policy to them in `vercel.json` (header matching follows [Vercel's documented configuration syntax](https://vercel.com/docs/project-configuration/vercel-json#headers)).
 
-The embedded designer has its own editing controls. Internal PPW pitch/Studio view switches use a narrowly scoped same-origin parent message; external sites do not receive access to designer state or customer information.
+The embedded designer has its own editing controls. The Studio and pitch pages switch its view through a narrowly scoped same-origin `postMessage`; external sites receive no access to designer state or customer information. The embed shares the tab's `sessionStorage` with its parent, so an embed on a Studio or pitch page marks that tab read-only as described above.
 
 ## Working now and proposed connections
 
-**Working:** shared measured Plan/3D design, local plan saving, actual bundled/connected catalogue data, existing product API and authenticated merchant/admin maintenance, material estimates, roof solar planning, guided presentation interactions and the supplied meeting link.
+**Working:** shared measured Plan/3D design, local plan saving, actual bundled/connected catalogue data, existing product API and authenticated merchant/admin maintenance, material estimates, roof solar planning, guided presentation interactions and the meeting link.
 
 **Interactive examples:** finish studies, local duplicate alternatives, lead-time/deadline dependencies, example paint pack calculation, connected lighting load, recipient assignment and hypothetical partner share. These do not modify the live embedded design or create project contracts. Their inputs and assumptions are labelled.
 
@@ -58,17 +63,21 @@ The embedded designer has its own editing controls. Internal PPW pitch/Studio vi
 
 The intended project workflow is: clients may revise choices before the approved deadline; the latest approved choices are frozen and released only with purchasing authorization; delivery precedes the agreed contractor visit. Supplier confirmation, customer consent and partner connections must be implemented before this can run automatically.
 
-## Demo safety and deployment
+## Other notes
 
-- All feature Vercel preview deployments are transaction-disabled from trusted server `VERCEL_ENV=preview`, independently of browser flags.
-- For a separate permanent demo host, set **`DEMO_ONLY=true` at build time and runtime**. Do not reuse a live transactional production host as a security boundary for a demo URL.
-- Public order/payment/quote/email/design-submission handlers reject demo requests before side effects; payment webhooks and transactional scheduled jobs are disabled on preview. Pure catalogue reads and cart calculation remain. Authorized catalogue editing retains its existing access checks.
-- The client also guards payment routes, payment libraries, manual local order creation and designer quote/cloud-save entries. Local design editing, estimates and saved plans remain available.
-- No ID documents or payment applications are collected by the presentations. Book a meeting opens the provided Calendly page; it does not create a booking automatically.
+- No ID documents or payment applications are collected by the presentations. "Book a meeting" opens the Calendly page; it does not create a booking automatically.
 - Browser JavaScript and rendered assets cannot be made impossible to copy. Private API keys and server logic are not shipped to the browser. Public source maps are disabled; when Sentry is configured, hidden maps are uploaded privately and removed before release. The build fails if a map survives.
-
-Product models use supplied dimensions where available; 3D previews are not guaranteed exact manufacturer models. Solar output is an estimate, not telemetry or guaranteed generation. Material quantities still depend on coverage, waste, substrate, measurements and supplier specifications. Generated artwork is explicitly labelled architectural concept imagery.
+- Product models use supplied dimensions where available; 3D previews are not guaranteed exact manufacturer models. Solar output is an estimate, not telemetry or guaranteed generation. Material quantities still depend on coverage, waste, substrate, measurements and supplier specifications. Generated artwork is explicitly labelled architectural concept imagery.
 
 Meeting: https://calendly.com/victorcassius-office/ppw-client-meeting-1-hour?month=2026-09
 
-Branch: `cursor/feat-3d-flooring-hud-bc95`. Draft PR #36. Never push/merge main. Production stays untouched. Resume from `docs/DESIGNER-WORKFLOW-LOG.md`.
+## Tests that pin this behaviour
+
+- `src/lib/__tests__/showcaseSafety.test.ts` — the three route kinds, pitch → designer → checkout transactional, demo → checkout blocked, `/designer?demo=tintex` and `?demo=off` never read-only, `/studio/shop` and `/embed/designer` read-only, the preview build flag, blocked-storage fallback.
+- `src/pages/studio/StudioPage.test.tsx` — the checkout guard never mounts a payment form in a demo and leaves the live checkout alone otherwise.
+- `src/demo/__tests__/demoDesignerControls.test.tsx` — `/demo` and the embed keep design controls without Studio, shop, cloud or checkout exits.
+- `api/__tests__/showcaseSafety.test.ts` — the server guard on previews / `DEMO_ONLY`, and production requests passing through untouched.
+
+## History
+
+The routes were first built and verified on the Vercel preview `ppw-designer-2d-egshdczue-victor-ppw.vercel.app` (branch `cursor/feat-3d-flooring-hud-bc95`, draft PR #36, 25 September 2026). On that preview the server guard is active, so payment, quote and email probes return `403 SHOWCASE_READ_ONLY` there; that is preview behaviour, not production behaviour. The production-safe read-only rules above were set on 26 September 2026 after the sticky tab mark was found to lock a real customer out of checkout once they had looked at a pitch. Continuation notes: `docs/DESIGNER-WORKFLOW-LOG.md`.

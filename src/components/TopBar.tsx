@@ -1822,14 +1822,16 @@ export function TopBar({
           </button>
 
           {/* Short demo badge; the real supplier names remain in product details.
-              Leaving keeps the show-home page and restores the standard range. */}
+              Leaving keeps the show-home page and restores the standard range.
+              Only the read-only routes (/demo, /studio, /pitch, the embed) say
+              "no orders" — the legacy /designer?demo=<slug> URL still sells. */}
           {(demoPill || readOnly) && (
             <span
               data-testid="demo-pill"
               className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-ppw-inkDeep bg-ppw-inkDeep px-2 text-[10px] font-semibold text-ppw-paper md:text-[12px]"
               title={readOnly ? DEMO_NOTICE : `${demoPill?.merchant}: their catalog is loaded in this tab. Close the tab or press × for the standard catalog.`}
             >
-              <span>{'Demo'}</span>
+              <span>{readOnly ? 'Demo · no orders' : 'Demo'}</span>
               {!readOnly && <button
                 type="button"
                 data-testid="demo-pill-exit"

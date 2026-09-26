@@ -27,6 +27,7 @@ import { applyPage, currentPageId, flushCurrentPage, promoteDraftToPage, switchT
 import { useDesignerUIStore } from '../store/designerUIStore';
 import { brandIdOfPaint, findWallPaintById, paintsForBrand } from '../data/wallPaints';
 import { demoRoute } from './demoRoute';
+import { isShowcaseReadOnly } from '../lib/showcaseSafety';
 
 /**
  * A paint company's pitch opens with ITS first line on the brush (TintEX,
@@ -118,8 +119,15 @@ export function useDemoMode(): DemoDefinition | null {
     const route = demoRoute(window.location.pathname, window.location.search);
     if (route) useDesignerUIStore.getState().setViewMode(route.view === '2d' ? 'plan' : '3d');
     if (outcome !== 'current') {
+      // "No orders" is only true on the read-only routes (/demo, the embed, a
+      // preview build). The legacy /designer?demo=<slug> URL still takes a
+      // cart and a quote, so it keeps the merchant-facing line from main.
       pushToast(
-        'Demo — edit rooms, products and finishes. Preview only; no orders.',
+        isShowcaseReadOnly()
+          ? 'Demo — edit rooms, products and finishes. Preview only; no orders.'
+          : demo.products.length > 0
+            ? `${demo.merchant} show home — ${demo.products.length} products from their own catalog, at their prices.`
+            : `${demo.merchant} show home — their range is loaded in this tab.`,
         'success',
       );
     }
