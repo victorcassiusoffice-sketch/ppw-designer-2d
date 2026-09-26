@@ -14,21 +14,26 @@ import type { ItemSolid } from '../../designer/roomSolids';
 import { itemPose } from '../../designer/fitToSize';
 import { furniturePreviewKind, FURNITURE_PREVIEW_NOTE } from '../../data/dimensionalPreview';
 
-/** Small neutral height maps add fabric weave / wood pores, never a fake photo. */
-function surfaceMap(kind: 'fabric' | 'wood'): THREE.DataTexture {
+type SurfaceMapKind = 'fabric' | 'wood' | 'weave';
+
+/** Small neutral height maps add fabric weave / wood pores / rug knots, never a fake photo. */
+function surfaceMap(kind: SurfaceMapKind): THREE.DataTexture {
   const size = 64;
   const data = new Uint8Array(size * size * 4);
   for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
     const i = (y * size + x) * 4;
     const weave = ((x % 4 < 2) === (y % 4 < 2) ? 14 : -14);
     const grain = Math.sin((x + Math.sin(y * 0.17) * 0.75) * 1.6) * 18;
-    const value = 128 + (kind === 'fabric' ? weave : grain);
+    // A coarse twill: knots on an 8 px pitch, each row shifted by two, so a
+    // flat 1 cm rug pile still catches grazing light.
+    const knot = (((x + (y >> 3) * 2) % 8 < 4) === ((y % 8) < 4) ? 22 : -22) + (((x + y) % 2) ? 4 : -4);
+    const value = 128 + (kind === 'fabric' ? weave : kind === 'weave' ? knot : grain);
     data[i] = data[i + 1] = data[i + 2] = value;
     data[i + 3] = 255;
   }
   const map = new THREE.DataTexture(data, size, size);
   map.wrapS = map.wrapT = THREE.RepeatWrapping;
-  map.repeat.set(kind === 'fabric' ? 5 : 2, kind === 'fabric' ? 5 : 1);
+  map.repeat.set(kind === 'fabric' ? 5 : kind === 'weave' ? 9 : 2, kind === 'fabric' ? 5 : kind === 'weave' ? 6 : 1);
   map.magFilter = THREE.LinearFilter;
   map.minFilter = THREE.LinearMipmapLinearFilter;
   map.generateMipmaps = true;
@@ -42,16 +47,17 @@ class Parts {
   private readonly materials = new Map<string, THREE.MeshStandardMaterial>();
   private readonly maps = new Map<string, THREE.DataTexture>();
 
-  material(name: string, color: string, finish: 'fabric' | 'wood' | 'metal' | 'stone' | 'glass' | 'enamel' | 'screen' = 'wood'): THREE.MeshStandardMaterial {
+  material(name: string, color: string, finish: 'fabric' | 'weave' | 'wood' | 'metal' | 'stone' | 'glass' | 'enamel' | 'screen' | 'rubber' = 'wood'): THREE.MeshStandardMaterial {
     const existing = this.materials.get(name);
     if (existing) return existing;
+    const soft = finish === 'fabric' || finish === 'weave';
     const material = new THREE.MeshPhysicalMaterial({
       color,
-      roughness: finish === 'fabric' ? 0.88 : finish === 'metal' ? 0.34 : finish === 'stone' ? 0.4 : finish === 'glass' || finish === 'screen' ? 0.16 : finish === 'enamel' ? 0.28 : 0.63,
+      roughness: finish === 'fabric' ? 0.88 : finish === 'weave' || finish === 'rubber' ? 0.94 : finish === 'metal' ? 0.34 : finish === 'stone' ? 0.4 : finish === 'glass' || finish === 'screen' ? 0.16 : finish === 'enamel' ? 0.28 : 0.63,
       metalness: finish === 'metal' ? 0.65 : 0,
-      sheen: finish === 'fabric' ? 0.22 : 0,
+      sheen: soft ? 0.22 : 0,
       sheenRoughness: 0.8,
-      sheenColor: finish === 'fabric' ? color : '#000000',
+      sheenColor: soft ? color : '#000000',
       transparent: finish === 'glass',
       opacity: finish === 'glass' ? 0.55 : 1,
       depthWrite: finish !== 'glass',
@@ -59,7 +65,7 @@ class Parts {
       clearcoatRoughness: finish === 'screen' ? 0.12 : 0.25,
     });
     material.name = name;
-    if (finish === 'fabric' || finish === 'wood') {
+    if (soft || finish === 'wood') {
       let map = this.maps.get(finish);
       if (!map) {
         map = surfaceMap(finish);
@@ -67,7 +73,7 @@ class Parts {
         this.textures.push(map);
       }
       material.bumpMap = map;
-      material.bumpScale = finish === 'fabric' ? 0.002 : 0.001;
+      material.bumpScale = finish === 'weave' ? 0.004 : finish === 'fabric' ? 0.002 : 0.001;
     }
     this.materials.set(name, material);
     return material;
@@ -349,6 +355,176 @@ function lamp(p: Parts, w: number, d: number, h: number, pendant: boolean, id: s
   }
 }
 
+// ---------------------------------------------------------------------------
+// 2026-09-26 — the fitness, recovery and soft-furnishing rows of the Courts
+// range. Vic saw plain grey blocks in the Wellness room of the furnished demo:
+// these seven products had no photo, no top-down, no body and no preview, so
+// they fell through to the category-coloured box. Each silhouette below is
+// built from the catalogue's own dimensions (the machine's length is its
+// running / riding direction along x; the console or handlebar end is -x).
+// ---------------------------------------------------------------------------
+
+function treadmill(p: Parts, w: number, d: number, h: number): void {
+  // Horizon TR5.0: a deck with a belt between two foot rails, the motor hood
+  // at the front carrying two uprights, handrails and a leaned-back console.
+  const frame = p.material('treadmill frame', '#2c3033', 'metal');
+  const shell = p.material('motor hood and console', '#3c4145', 'enamel');
+  const belt = p.material('running belt', '#171a1c', 'rubber');
+  const rail = p.material('foot rails and handrails', '#8d9296', 'metal');
+  const screen = p.material('console screen', '#0f1a24', 'screen');
+  const r = Math.min(w, d);
+  p.box('deck', [w * 0.78, h * 0.05, d * 0.9], [w * 0.1, h * 0.05, 0], frame, 0.012);
+  p.box('running belt', [w * 0.7, h * 0.012, d * 0.62], [w * 0.11, h * 0.081, 0], belt);
+  for (const side of [-1, 1]) p.box('foot rail', [w * 0.74, h * 0.016, d * 0.11], [w * 0.1, h * 0.083, side * d * 0.4], rail, 0.004);
+  p.box('rear roller cap', [w * 0.05, h * 0.055, d * 0.8], [w * 0.475, h * 0.05, 0], shell, 0.01);
+  p.box('motor hood', [w * 0.2, h * 0.11, d * 0.86], [-w * 0.38, h * 0.1, 0], shell, 0.02);
+  for (const side of [-1, 1]) {
+    p.rod('upright', new THREE.Vector3(-w * 0.34, h * 0.14, side * d * 0.4), new THREE.Vector3(-w * 0.44, h * 0.86, side * d * 0.4), r * 0.03, frame);
+    p.rod('handrail', new THREE.Vector3(-w * 0.43, h * 0.8, side * d * 0.4), new THREE.Vector3(-w * 0.12, h * 0.72, side * d * 0.4), r * 0.02, rail);
+  }
+  p.box('console crossbar', [w * 0.05, h * 0.05, d * 0.84], [-w * 0.44, h * 0.84, 0], frame, 0.01);
+  // The console leans back; its screen tilts up towards the person on the belt.
+  const console = p.box('console', [w * 0.13, h * 0.13, d * 0.78], [-w * 0.47, h * 0.935, 0], shell, 0.015);
+  console.rotation.z = 0.3;
+  const face = p.box('console screen', [w * 0.012, h * 0.08, d * 0.4], [-w * 0.41, h * 0.95, 0], screen, 0.003);
+  face.rotation.z = 0.3;
+}
+
+function exerciseBike(p: Parts, w: number, d: number, h: number): void {
+  // Horizon GR7 indoor cycle: two stabiliser feet the width of the bike, a
+  // heavy flywheel at the front, a tube frame, the saddle behind the cranks
+  // and a full-width handlebar with forward grips.
+  const frame = p.material('bike frame', '#2b2e31', 'enamel');
+  const steel = p.material('bike steel', '#a3a8ac', 'metal');
+  const wheel = p.material('flywheel', '#3b4045', 'metal');
+  const pad = p.material('saddle and grips', '#1c1e20', 'rubber');
+  const r = Math.min(w, d);
+  for (const x of [-0.44, 0.44]) p.box('stabiliser', [w * 0.08, h * 0.05, d], [x * w, h * 0.025, 0], frame, 0.012);
+  p.box('spine rail', [w * 0.88, h * 0.045, d * 0.14], [0, h * 0.05, 0], frame, 0.01);
+  const disc = p.cylinder('flywheel', [h * 0.24, h * 0.24], d * 0.08, [-w * 0.24, h * 0.29, 0], wheel);
+  disc.rotation.x = Math.PI / 2;
+  const hub = p.cylinder('flywheel hub', [h * 0.05, h * 0.05], d * 0.16, [-w * 0.24, h * 0.29, 0], steel);
+  hub.rotation.x = Math.PI / 2;
+  const tube = r * 0.04;
+  const v = (x: number, y: number, z = 0) => new THREE.Vector3(x * w, y * h, z * d);
+  p.rod('fork', v(-0.24, 0.29), v(-0.42, 0.06), tube, frame);
+  p.rod('flywheel brace', v(-0.24, 0.29), v(0.06, 0.2), tube * 0.8, frame);
+  p.rod('down tube', v(-0.32, 0.75), v(0.06, 0.2), tube, frame);
+  p.rod('seat tube', v(0.06, 0.2), v(0.28, 0.8), tube, frame);
+  p.rod('top tube', v(-0.3, 0.66), v(0.22, 0.62), tube * 0.9, frame);
+  p.rod('rear stay', v(0.06, 0.2), v(0.42, 0.06), tube, frame);
+  p.rod('handlebar stem', v(-0.32, 0.75), v(-0.4, 0.95), tube, steel);
+  p.rod('seat post', v(0.28, 0.8), v(0.3, 0.83), tube * 0.7, steel);
+  const crank = p.cylinder('crank housing', [h * 0.045, h * 0.045], d * 0.2, [w * 0.06, h * 0.2, 0], frame);
+  crank.rotation.x = Math.PI / 2;
+  for (const side of [-1, 1]) {
+    p.rod('crank arm', v(0.06, 0.2, side * 0.12), v(0.06 + side * 0.1, 0.2 - side * 0.08, side * 0.12), tube * 0.45, steel);
+    p.box('pedal', [w * 0.06, h * 0.015, d * 0.1], [w * (0.06 + side * 0.1), h * (0.2 - side * 0.08), side * d * 0.18], pad, 0.004);
+  }
+  p.box('saddle', [w * 0.2, h * 0.045, d * 0.34], [w * 0.3, h * 0.85, 0], pad, 0.02);
+  p.box('handlebar', [w * 0.05, h * 0.035, d], [-w * 0.4, h * 0.965, 0], pad, 0.015);
+  for (const side of [-1, 1]) p.box('forward grip', [w * 0.12, h * 0.03, d * 0.07], [-w * 0.45, h * 0.975, side * d * 0.15], pad, 0.012);
+}
+
+function multiGym(p: Parts, w: number, d: number, h: number): void {
+  // JDM one-station home gym: the weight stack on guide rods at the back,
+  // the seat and back pad facing forward under the pulley arm, press arms
+  // swinging out from the uprights and a leg developer at the front.
+  const frame = p.material('gym frame', '#26292c', 'enamel');
+  const chrome = p.material('guide rods and bars', '#b9bec2', 'metal');
+  const plates = p.material('weight plates', '#4a4f53', 'metal');
+  const pad = p.material('vinyl pads', '#1b1d1f', 'rubber');
+  const t = Math.min(w, d) * 0.055;
+  for (const side of [-1, 1]) {
+    p.box('base runner', [t, t, d], [side * (w - t) / 2, t / 2, 0], frame, 0.004);
+    p.box('rear upright', [t, h - t, t], [side * (w - t) / 2, (h + t) / 2, -d * 0.42], frame, 0.004);
+  }
+  p.box('rear cross member', [w, t, t], [0, t / 2, -(d - t) / 2], frame, 0.004);
+  p.box('front cross member', [w * 0.6, t, t], [0, t / 2, d * 0.2], frame, 0.004);
+  p.box('top beam', [w, t, t], [0, h - t / 2, -d * 0.42], frame, 0.004);
+  p.box('pulley arm', [t, t, d * 0.62], [0, h - t / 2, -d * 0.12], frame, 0.004);
+  const pulley = p.cylinder('top pulley', [t * 0.7, t * 0.7], t * 0.6, [0, h - t * 1.3, d * 0.17], chrome);
+  pulley.rotation.z = Math.PI / 2;
+  const plateH = h * 0.032;
+  for (const side of [-1, 1]) p.cylinder('guide rod', [t * 0.18, t * 0.18], h * 0.86, [side * w * 0.12, t + h * 0.43, -d * 0.34], chrome);
+  for (let i = 0; i < 10; i++) p.box('weight plate', [w * 0.34, plateH * 0.86, d * 0.2], [0, t + plateH * (i + 0.5), -d * 0.34], plates, 0.004);
+  const pin = p.cylinder('selector pin', [t * 0.12, t * 0.12], d * 0.16, [0, t + plateH * 3.5, -d * 0.25], chrome);
+  pin.rotation.x = Math.PI / 2;
+  p.cylinder('cable', [t * 0.06, t * 0.06], h * 0.2, [0, h * 0.86, d * 0.17], chrome);
+  p.box('lat bar', [w * 0.92, t * 0.4, t * 0.4], [0, h * 0.76, d * 0.17], chrome, 0.004);
+  p.box('seat post', [t, h * 0.4, t], [0, h * 0.2 + t, d * 0.22], frame, 0.004);
+  p.box('seat pad', [w * 0.34, h * 0.03, d * 0.3], [0, h * 0.42, d * 0.22], pad, 0.012);
+  p.box('back pad', [w * 0.34, h * 0.26, t * 0.9], [0, h * 0.57, d * 0.04], pad, 0.012);
+  for (const side of [-1, 1]) {
+    p.rod('press arm', new THREE.Vector3(side * (w - t) / 2, h * 0.66, -d * 0.36), new THREE.Vector3(side * w * 0.4, h * 0.6, d * 0.42), t * 0.4, frame);
+    p.rod('press handle', new THREE.Vector3(side * w * 0.4, h * 0.52, d * 0.42), new THREE.Vector3(side * w * 0.4, h * 0.7, d * 0.42), t * 0.35, pad);
+  }
+  for (const y of [h * 0.13, h * 0.24]) {
+    const roller = p.cylinder('leg roller', [h * 0.028, h * 0.028], w * 0.42, [0, y, d * 0.44], pad);
+    roller.rotation.z = Math.PI / 2;
+  }
+}
+
+function footSpa(p: Parts, w: number, d: number, h: number): void {
+  // Homedics FB-350: a rounded tub under a dark rim, two foot wells of still
+  // water with massage nodes, a control panel on the front face.
+  const shell = p.material('spa shell', '#eeeeea', 'enamel');
+  const trim = p.material('spa rim', '#3a3d40', 'enamel');
+  const water = p.material('water', '#3d6f80', 'screen');
+  const nodes = p.material('massage nodes', '#c9cbc8', 'enamel');
+  const rimH = h * 0.14;
+  const lip = Math.min(w, d) * 0.09;
+  const bodyD = d * 0.97;
+  p.box('tub body', [w * 0.97, h - rimH, bodyD], [0, (h - rimH) / 2, 0], shell, Math.min(w, d) * 0.1);
+  for (const side of [-1, 1]) {
+    p.box('rim side', [lip, rimH, d], [side * (w - lip) / 2, h - rimH / 2, 0], trim, lip * 0.3);
+    p.box('rim end', [w - 2 * lip, rimH, lip], [0, h - rimH / 2, side * (d - lip) / 2], trim, lip * 0.3);
+  }
+  const wellW = (w - 2 * lip) * 0.46;
+  const wellD = d - 2 * lip - lip * 0.6;
+  for (const side of [-1, 1]) {
+    const x = side * (wellW / 2 + lip * 0.25);
+    p.box('foot well', [wellW, rimH * 0.25, wellD], [x, h - rimH + rimH * 0.125, -lip * 0.1], water, 0.004);
+    for (const z of [-0.25, 0.15]) p.cylinder('massage node', [wellW * 0.09, wellW * 0.09], rimH * 0.4, [x, h - rimH + rimH * 0.3, z * wellD], nodes);
+  }
+  p.box('well divider', [lip * 0.5, rimH * 0.5, wellD], [0, h - rimH + rimH * 0.25, -lip * 0.1], shell, 0.003);
+  p.box('control panel', [w * 0.4, h * 0.08, d * 0.03], [0, h * 0.5, bodyD / 2], trim, 0.004);
+}
+
+function rug(p: Parts, w: number, d: number, h: number): void {
+  // Elit acrylic rug: a soft pile field inside a darker woven border. The
+  // thickness IS the catalogue's 1 cm; the knots come from a height map.
+  const field = p.material('rug pile', '#b99d82', 'weave');
+  const border = p.material('rug border', '#6d5646', 'weave');
+  const band = Math.min(w, d) * 0.09;
+  const radius = h * 0.3;
+  p.box('pile field', [w - 2 * band, h, d - 2 * band], [0, h / 2, 0], field, radius);
+  for (const side of [-1, 1]) {
+    p.box('border', [w, h, band], [0, h / 2, side * (d - band) / 2], border, radius);
+    p.box('border', [band, h, d - 2 * band], [side * (w - band) / 2, h / 2, 0], border, radius);
+  }
+}
+
+function rollerBlind(p: Parts, w: number, d: number, h: number, id: string): void {
+  // Rainbow roller blind: a slim headrail against the wall, the fabric hanging
+  // on the room side with shallow horizontal welts, a weighted hem bar and a
+  // pull chain. Mounts on the wall at the catalogue height like the split units.
+  const beige = id.includes('beige');
+  const fabric = p.material('blind fabric', beige ? '#d8c5a6' : '#f1efe8', 'fabric');
+  const rail = p.material('headrail', beige ? '#e7dfd2' : '#e8e8e4', 'enamel');
+  const hem = p.material('hem bar', beige ? '#c6b092' : '#d9d8d2', 'enamel');
+  const chain = p.material('pull chain', '#9a9a96', 'metal');
+  const railH = Math.min(h * 0.04, 0.08);
+  p.box('headrail', [w, railH, d], [0, h - railH / 2, 0], rail, d * 0.25);
+  const panelT = d * 0.12;
+  const panelH = h - railH - h * 0.015;
+  p.box('fabric panel', [w * 0.985, panelH, panelT], [0, h * 0.015 + panelH / 2, d * 0.3], fabric, panelT * 0.3);
+  const ribs = Math.max(6, Math.round(h / 0.16));
+  for (let i = 1; i < ribs; i++) p.box('rib', [w * 0.985, panelH * 0.004, panelT * 0.5], [0, h * 0.015 + panelH * i / ribs, d * 0.3 + panelT * 0.5], fabric);
+  p.box('hem bar', [w * 0.985, h * 0.02, panelT * 1.8], [0, h * 0.01, d * 0.3], hem, panelT * 0.4);
+  p.rod('pull chain', new THREE.Vector3(w * 0.47, h - railH, d * 0.42), new THREE.Vector3(w * 0.47, h * 0.45, d * 0.42), Math.min(0.003, d * 0.05), chain);
+}
+
 /** Returns null for every product without an explicitly supported preview. */
 export function furniturePreview(it: ItemSolid): THREE.Group | null {
   const kind = furniturePreviewKind(it.productId);
@@ -365,6 +541,12 @@ export function furniturePreview(it: ItemSolid): THREE.Group | null {
     case 'fridge': case 'tv': appliance(p, w, d, h, kind); break;
     case 'air-conditioner': airConditioner(p, w, d, h); break;
     case 'table-lamp': case 'pendant': lamp(p, w, d, h, kind === 'pendant', it.productId!); break;
+    case 'treadmill': treadmill(p, w, d, h); break;
+    case 'exercise-bike': exerciseBike(p, w, d, h); break;
+    case 'multi-gym': multiGym(p, w, d, h); break;
+    case 'foot-spa': footSpa(p, w, d, h); break;
+    case 'rug': rug(p, w, d, h); break;
+    case 'roller-blind': rollerBlind(p, w, d, h, it.productId!); break;
   }
   const model = p.merge();
   model.rotation.y = it.frontEdge === 'top' ? Math.PI : it.frontEdge === 'left' ? -Math.PI / 2 : it.frontEdge === 'right' ? Math.PI / 2 : 0;

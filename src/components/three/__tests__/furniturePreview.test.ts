@@ -23,7 +23,7 @@ function meshes(root: THREE.Object3D): THREE.Mesh<THREE.BufferGeometry, THREE.Me
 describe('existing-product dimensional furniture previews', () => {
   it('fits every supported catalog product to its exact size and raised floor without mutating inputs', () => {
     const supported = COURTS_PRODUCTS.filter((p) => hasFurniturePreview(p.id));
-    expect(supported).toHaveLength(26);
+    expect(supported).toHaveLength(33);
     for (const p of supported) for (const rotation of [0, 90, 180, 270]) {
       const input = solid(p.id, rotation);
       const saved = JSON.stringify(input);
@@ -135,6 +135,57 @@ describe('existing-product dimensional furniture previews', () => {
     const ray = new THREE.Raycaster(new THREE.Vector3(2.31, 0.31, 6), new THREE.Vector3(0, 0, -1));
     expect(ray.intersectObject(lamp, true)).toHaveLength(0);
     disposeFurnitureTextures(lamp);
+  });
+
+  it('gives the gym, recovery and soft-furnishing rows shaped bodies at catalogue size — no grey block (2026-09-26)', () => {
+    // The seven rows that fell through to the category-coloured box in the
+    // furnished demo. Each must be recognisable by its named parts.
+    const cases = [
+      ['courts-horizon-tr50-treadmill', 'upright', 2],
+      ['courts-horizon-tr50-treadmill', 'handrail', 2],
+      ['courts-horizon-tr50-treadmill', 'running belt', 1],
+      ['courts-horizon-gr7-cycle', 'stabiliser', 2],
+      ['courts-horizon-gr7-cycle', 'flywheel', 1],
+      ['courts-horizon-gr7-cycle', 'pedal', 2],
+      ['courts-jdm-home-gym', 'weight plate', 10],
+      ['courts-jdm-home-gym', 'guide rod', 2],
+      ['courts-jdm-home-gym', 'press arm', 2],
+      ['courts-homedics-footspa', 'foot well', 2],
+      ['courts-homedics-footspa', 'massage node', 4],
+      ['courts-elit-rug', 'border', 4],
+      ['courts-blind-white-180', 'headrail', 1],
+      ['courts-blind-white-180', 'hem bar', 1],
+      ['courts-blind-white-180', 'rib', 12],
+      ['courts-blind-beige-120', 'rib', 8],
+    ] as const;
+    for (const [id, part, count] of cases) {
+      const preview = furniturePreview(solid(id))!;
+      expect(preview.userData.previewParts.filter((name: string) => name === part), `${id} ${part}`).toHaveLength(count);
+      disposeFurnitureTextures(preview);
+    }
+    // The treadmill is open above its deck: a ray across the belt at knee height meets nothing.
+    const treadmill = furniturePreview(solid('courts-horizon-tr50-treadmill', 0, 0))!;
+    treadmill.updateMatrixWorld(true);
+    const ray = new THREE.Raycaster(new THREE.Vector3(2 + 1.625 * 0.7, 0.5, 6), new THREE.Vector3(0, 0, -1));
+    expect(ray.intersectObject(treadmill, true)).toHaveLength(0);
+    disposeFurnitureTextures(treadmill);
+    // The rug lies flat at the catalogue's 1 cm and reads as a woven surface (a bump map, not a photo).
+    const rug = furniturePreview(solid('courts-elit-rug', 0, 0))!;
+    const bounds = new THREE.Box3().setFromObject(rug);
+    expect(bounds.max.y - bounds.min.y).toBeCloseTo(0.01, 5);
+    expect(meshes(rug).every((mesh) => mesh.material.bumpMap !== null && mesh.material.map === null)).toBe(true);
+    disposeFurnitureTextures(rug);
+    // The blind mounts at its wall height, the fabric on the room side (+z) of the headrail.
+    const blind = furniturePreview(solid('courts-blind-white-180', 0, 0.6))!;
+    const blindBounds = new THREE.Box3().setFromObject(blind);
+    expect(blindBounds.min.y).toBeCloseTo(0.6, 5);
+    expect(blindBounds.max.y).toBeCloseTo(2.6, 5);
+    const fabric = meshes(blind).find((mesh) => mesh.material.name === 'blind fabric')!;
+    fabric.geometry.computeBoundingBox();
+    const headrail = meshes(blind).find((mesh) => mesh.material.name === 'headrail')!;
+    headrail.geometry.computeBoundingBox();
+    expect(fabric.geometry.boundingBox!.getCenter(new THREE.Vector3()).z).toBeGreaterThan(headrail.geometry.boundingBox!.getCenter(new THREE.Vector3()).z);
+    disposeFurnitureTextures(blind);
   });
 
   it('does not fabricate a preview for another merchant, an unknown product, or invalid dimensions', () => {
