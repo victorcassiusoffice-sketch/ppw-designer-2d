@@ -1,11 +1,56 @@
-/* The plan keeps a paper drawing surface, framed by compact glass controls. */
+/* The plan keeps a paper drawing surface, framed by compact dark capsules
+   (Vic 2026-09-26: "the 2D toolbars are too bulky; compact dark capsule
+   controls like the references"). ONE token set drives every capsule — the
+   header pills, the fixed left construction rail, the canvas top-right
+   cluster, Clear, the phone undo strip and the catalogue launcher — so a
+   horizontal pill and the vertical rail are the same control at two angles.
+   The active button sits in a DARKER inner pill (--capsule-on). Labels stay
+   in the DOM for screen readers + textContent tests; they are visually
+   hidden, never display:none. */
+.designer-app[data-view="plan"] {
+  --capsule-bg: rgba(22, 42, 49, .82);
+  --capsule-bg-solid: #16282e;
+  --capsule-blur: 20px;
+  --capsule-rim: rgba(174, 214, 220, .19);
+  --capsule-ink: #e1edef;
+  --capsule-ink-dim: #bfd0d2;
+  --capsule-hover: #ffffff15;
+  --capsule-on: #0d1b20cc;
+  --capsule-on-ink: #f4ffff;
+  --capsule-r: 999px;
+  --capsule-hit: 40px;
+  --capsule-pad: 4px;
+  --capsule-gap: 2px;
+  --plan-rail-w: 56px;
+  --capsule-shadow: inset 0 1px 0 #ffffff0c, 0 6px 16px #08181c2e;
+}
+@media (max-width: 767px) {
+  .designer-app[data-view="plan"] { --capsule-hit: 44px; --plan-rail-w: 49px; }
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .designer-app[data-view="plan"] { --capsule-bg: var(--capsule-bg-solid); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .designer-app[data-view="plan"] { --capsule-bg: var(--capsule-bg-solid); --capsule-blur: 0px; }
+}
+
+/* Visually hidden, still read + still in textContent (units.spec asserts
+   toHaveText('Snap 0.5 m'); every button also carries title + aria-label). */
+.plan-pill-group .plan-control-label,
+.plan-topbar .plan-build-tools button > span,
+.plan-primary-row > [data-testid="select-tool-toggle-phone"] > span,
+.designer-app[data-view="plan"] #canvas-plan-tools > div:first-child > button > span,
+.designer-app[data-view="plan"] [data-testid="clear-controls"] > button > span {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+/* ---- Header ------------------------------------------------------------ */
 .plan-topbar {
-  --plan-pill-rim: rgba(174, 214, 220, .19);
-  --plan-pill-ink: #e1edef;
   display: grid; grid-template-columns: minmax(140px, 1fr) auto auto; align-items: center;
   column-gap: 10px; padding: 4px 10px; min-height: 52px;
-  background: linear-gradient(115deg, #162a31, #153a40) !important;
-  border-color: #ffffff15 !important; color: var(--plan-pill-ink);
+  background: linear-gradient(115deg, #1a3138, #1a434a) !important;
+  border-color: #ffffff15 !important; color: var(--capsule-ink, #e1edef);
 }
 .plan-primary-row { display: contents; }
 .plan-identity { grid-column: 1; grid-row: 1; min-width: 0; gap: 4px; }
@@ -18,49 +63,89 @@
 .plan-topbar .plan-commerce a,
 .plan-topbar .plan-commerce select,
 .plan-topbar .plan-primary-row > button {
-  height: 38px; min-height: 38px; border: 0; border-radius: 24px; color: #e1edef; background: transparent; box-shadow: none;
+  height: 38px; min-height: 38px; border: 0; border-radius: var(--capsule-r, 999px); color: var(--capsule-ink, #e1edef); background: transparent; box-shadow: none;
 }
 .plan-topbar .plan-identity > button { max-width: 180px; min-width: 0; flex: 1; padding: 0 8px; }
 .plan-topbar [data-testid="demo-pill"] { border: 0; background: #ffffff0a; color: #aac8ca; font-size: 10px; height: 24px; padding: 0 7px; border-radius: 14px; }
 .plan-commerce [role="group"] { border: 0; }
 .plan-commerce > div { gap: 2px; }
 .plan-commerce [aria-label="Currency"] { max-width: 70px; font-size: 11px; }
-.plan-pill-group { display: flex; align-items: center; gap: 1px; padding: 3px; border: 1px solid var(--plan-pill-rim); border-radius: 28px; background: #ffffff05; box-shadow: inset 0 1px 0 #ffffff0c; }
-.plan-pill-group > button { height: 36px; min-width: 42px; gap: 4px; padding: 0 9px; border: 0; border-radius: 23px; color: var(--plan-pill-ink); background: transparent; }
-.plan-pill-group > button svg { width: 18px; height: 18px; }
-.plan-control-label { display: none; }
-.plan-pill-group [data-testid="levels-toggle"] .plan-control-label,
-.plan-pill-group [data-testid="view-mode-3d"] .plan-control-label { display: inline; font-size: 11px; }
-.plan-pill-group [aria-label="History"] { display: flex; border: 0; margin: 0; background: transparent; }
-.plan-pill-group [aria-label="History"] button { border: 0; height: 36px; min-width: 34px; width: 34px; padding: 0; background: transparent; color: #e1edef; }
-.plan-topbar .plan-navigation button:hover,
-.plan-topbar .plan-primary-row button:hover { background: #ffffff15; color: #fff; }
-.plan-topbar .plan-navigation button[aria-pressed="true"],
-.plan-topbar .plan-navigation button[aria-expanded="true"],
-.plan-topbar .plan-primary-row button[aria-pressed="true"],
-.plan-topbar .plan-primary-row button[aria-expanded="true"] { background: #ffffff20; color: #eafff9; box-shadow: inset 0 1px 0 #ffffff12; }
-/* A dedicated gutter keeps this rail completely outside the measured canvas. */
-.plan-build-tools {
-  position: fixed; left: 7px; top: calc(var(--ppw-topbar-h, 52px) + 42px);
-  bottom: calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px) + 14px);
-  width: 56px; height: max-content; max-height: calc(100dvh - var(--ppw-topbar-h, 52px) - var(--sims-dock-h, 0px) - var(--sims-toolbar-h, 0px) - 60px);
-  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 5px;
-  overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
-  border: 1px solid #c3e1e52b; border-radius: 32px;
-  background: linear-gradient(155deg, #213b40f5, #16282eeb); color: #e3eff0;
-  box-shadow: inset 0 1px 0 #ffffff10, 0 10px 28px #12292c19;
-  backdrop-filter: blur(20px);
+
+/* The horizontal capsule: frosted dark pill, 4 px inset, icon buttons. */
+.plan-pill-group {
+  display: flex; align-items: center; gap: var(--capsule-gap, 2px); padding: var(--capsule-pad, 4px);
+  border: 1px solid var(--capsule-rim, rgba(174, 214, 220, .19)); border-radius: var(--capsule-r, 999px);
+  background: var(--capsule-bg, #16282e); box-shadow: var(--capsule-shadow, none);
+  -webkit-backdrop-filter: blur(var(--capsule-blur, 20px)); backdrop-filter: blur(var(--capsule-blur, 20px));
 }
-.plan-build-tools > [role="group"] { display: contents; }
-.plan-topbar .plan-build-tools button { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; width: 44px; min-width: 44px; height: 43px; flex-shrink: 0; padding: 3px 0; border: 0; border-radius: 24px; background: transparent; color: #bfd0d2; box-shadow: none; }
-.plan-topbar .plan-build-tools button svg { height: 19px; width: 19px; }
-.plan-topbar .plan-build-tools button > span { display: block; font-size: 8px; font-weight: 500; letter-spacing: .01em; }
-.plan-topbar .plan-build-tools button[aria-pressed="true"] { background: #ffffff20; color: #f4ffff; }
-.plan-topbar .plan-build-tools button[aria-label="Select"] { border-radius: 25px; }
+.plan-pill-group > button {
+  position: relative; height: var(--capsule-hit, 40px); min-width: var(--capsule-hit, 40px); gap: 4px; padding: 0 10px;
+  border: 0; border-radius: var(--capsule-r, 999px); color: var(--capsule-ink, #e1edef); background: transparent; box-shadow: none;
+}
+.plan-pill-group > button svg { width: 18px; height: 18px; }
+/* The Snap value and the storey count stay visible: they are readings, not labels. */
+.plan-pill-group > button > span:not(.plan-control-label) { font-size: 11px; }
+.plan-topbar .plan-pill-group [aria-label="History"] { display: flex; gap: var(--capsule-gap, 2px); border: 0; margin: 0; background: transparent; overflow: visible; border-radius: 0; }
+.plan-topbar .plan-pill-group [aria-label="History"] > button {
+  position: relative; height: var(--capsule-hit, 40px); width: var(--capsule-hit, 40px); min-width: var(--capsule-hit, 40px); padding: 0;
+  border: 0; border-radius: var(--capsule-r, 999px); background: transparent; color: var(--capsule-ink, #e1edef);
+}
+.plan-topbar .plan-navigation button:hover,
+.plan-topbar .plan-primary-row button:hover { background: var(--capsule-hover, #ffffff15); color: #fff; }
+.plan-topbar .plan-navigation button:is([aria-pressed="true"], [aria-expanded="true"], [aria-checked="true"]),
+.plan-topbar .plan-primary-row button:is([aria-pressed="true"], [aria-expanded="true"], [aria-checked="true"]) {
+  background: var(--capsule-on, #0d1b20cc); color: var(--capsule-on-ink, #f4ffff); box-shadow: inset 0 1px 0 #ffffff14;
+}
+.plan-topbar button:disabled { opacity: .4; }
+
+/* ---- The vertical capsule: fixed left construction rail ---------------- */
+/* Its own gutter keeps the rail completely outside the measured canvas
+   (`main` pads by --plan-rail-w below); the two fixed left HUDs in
+   RoomCanvas start at the same gutter, so no two fixed left controls overlap. */
+.plan-build-tools {
+  position: fixed; left: 8px; top: calc(var(--ppw-topbar-h, 52px) + 42px);
+  width: var(--plan-rail-w, 56px); height: max-content;
+  max-height: calc(100dvh - var(--ppw-topbar-h, 52px) - var(--sims-dock-h, 0px) - var(--sims-toolbar-h, 0px) - 60px);
+  display: flex; flex-direction: column; align-items: center; gap: var(--capsule-gap, 2px);
+  padding: var(--capsule-pad, 4px) calc((var(--plan-rail-w, 56px) - var(--capsule-hit, 40px) - 2px) / 2);
+  overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+  border: 1px solid var(--capsule-rim, rgba(174, 214, 220, .19)); border-radius: var(--capsule-r, 999px);
+  background: var(--capsule-bg, #16282e); color: var(--capsule-ink, #e1edef);
+  box-shadow: inset 0 1px 0 #ffffff10, 0 10px 28px #12292c26;
+  -webkit-backdrop-filter: blur(var(--capsule-blur, 20px)); backdrop-filter: blur(var(--capsule-blur, 20px));
+}
+.plan-build-tools::-webkit-scrollbar { display: none; }
+.plan-build-tools > [role="group"],
 .plan-topbar .plan-build-tools .plan-room-shape { display: contents; }
-.plan-topbar .plan-build-tools [data-testid="room-draw-toggle"] { display: none; }
 .plan-topbar .plan-build-tools > [aria-hidden="true"] { display: none; }
-.plan-primary-row > [data-testid="select-tool-toggle-phone"] { display: none; }
+/* The rail's buttons: square icon radios/toggles. The :is() arm out-ranks
+   Tailwind's `divide-x` child rule and Custom's `md:border-l`, which would
+   otherwise draw a light hairline on every second button. `display` is left
+   to the button's own classes so Box keeps its `hidden md:inline-flex`. */
+.plan-topbar .plan-build-tools button,
+.plan-topbar .plan-build-tools :is([role="group"], [role="radiogroup"]) > button {
+  position: relative; align-items: center; justify-content: center; gap: 0;
+  width: var(--capsule-hit, 40px); min-width: var(--capsule-hit, 40px); height: var(--capsule-hit, 40px); flex-shrink: 0; padding: 0;
+  border: 0; border-radius: var(--capsule-r, 999px); background: transparent; color: var(--capsule-ink-dim, #bfd0d2); box-shadow: none;
+}
+.plan-topbar .plan-build-tools .plan-garden-tool { display: inline-flex; }
+.plan-topbar .plan-build-tools button svg { width: 19px; height: 19px; }
+.plan-topbar .plan-build-tools button:hover { background: var(--capsule-hover, #ffffff15); color: #fff; }
+.plan-topbar .plan-build-tools button:is([aria-pressed="true"], [aria-expanded="true"]),
+.plan-topbar .plan-build-tools [data-testid="room-draw-toggle"][aria-checked="true"] {
+  background: var(--capsule-on, #0d1b20cc); color: var(--capsule-on-ink, #f4ffff); box-shadow: inset 0 1px 0 #ffffff14;
+}
+/* Box is CHECKED at rest whenever the pen is closed: a faint wash, never the
+   dark "on" pill — that is reserved for a tool that is armed or a panel open. */
+.plan-topbar .plan-build-tools [role="radio"][aria-checked="true"]:not([aria-expanded="true"]):not([data-testid="room-draw-toggle"]) {
+  background: #ffffff0e; color: var(--capsule-ink, #e1edef); box-shadow: none;
+}
+.plan-topbar .plan-build-tools button:focus-visible { outline: 2px solid #81e5d6; outline-offset: -2px; }
+
+/* Phone-strip Select lives in the header row (md:hidden in TopBar.tsx). */
+.plan-primary-row > [data-testid="select-tool-toggle-phone"] { position: relative; }
+
+/* ---- Option panels (unchanged surface) --------------------------------- */
 .plan-options-host { grid-column: 1 / -1; padding: 0; }
 .plan-control-panel { margin: 4px 0 0; overflow: hidden; border: 1px solid #d1dedc; border-radius: 18px; background: #f5f8f5; color: #263b41; }
 .plan-control-panel[hidden] { display: none; }
@@ -77,18 +162,57 @@
 .plan-control-panel [data-testid="level-add"] { width: auto; flex: 0 1 180px; border-radius: 20px; }
 .plan-control-panel [data-testid="land-picker"] { max-width: 440px; }
 .plan-topbar button:focus-visible { outline: 2px solid #81e5d6; outline-offset: 1px; }
-.designer-app[data-view="plan"] > main { padding-left: 70px; }
-.designer-app[data-view="plan"] [data-testid="page-tabs"] { height: 34px; min-height: 34px; padding: 0 10px 0 76px; gap: 5px; background: #e4ebe5; border-color: #cdd9d0; }
+
+/* ---- The gutter the rail owns ------------------------------------------ */
+.designer-app[data-view="plan"] > main { padding-left: calc(var(--plan-rail-w, 56px) + 14px); }
+.designer-app[data-view="plan"] [data-testid="page-tabs"] { height: 34px; min-height: 34px; padding: 0 10px 0 calc(var(--plan-rail-w, 56px) + 20px); gap: 5px; background: #e4ebe5; border-color: #cdd9d0; }
 .designer-app[data-view="plan"] [data-testid="page-tabs"] button { height: 28px; min-height: 28px; padding: 0 10px; border: 0; border-radius: 18px; font-size: 10px; }
 .designer-app[data-view="plan"] [data-testid="page-tabs"] > span { font-size: 9px; }
-.designer-app[data-view="plan"] [data-testid="canvas-chrome-toggle"] { display: flex; border-radius: 24px; background: #203b40ed; color: #e2eff0; height: 36px; min-height: 36px; margin-right: 5px; }
-.designer-app[data-view="plan"] #canvas-plan-tools[data-open="false"] { display: none; }
-.designer-app[data-view="plan"] #canvas-plan-tools { padding: 8px; border: 1px solid #ffffff20; border-radius: 18px; background: #1c353bec; box-shadow: 0 8px 24px #152f3620; backdrop-filter: blur(12px); }
-.designer-app[data-view="plan"] #canvas-plan-tools button { background: transparent; color: #e3eef0; border-color: #ffffff17; border-radius: 20px; box-shadow: none; }
-.designer-app[data-view="plan"] #canvas-plan-tools button span { display: none; }
-.designer-app[data-view="plan"] [data-testid="clear-controls"] { left: 8px; gap: 3px; }
-.designer-app[data-view="plan"] [data-testid="clear-controls"] > button { min-width: 32px; width: 32px; height: 32px; padding: 0; border-radius: 20px; }
-.designer-app[data-view="plan"] [data-testid="clear-controls"] > button span { display: none; }
+
+/* ---- Canvas top-right cluster: area toggle + one horizontal capsule ----- */
+.designer-app[data-view="plan"] [data-testid="canvas-chrome-toggle"] {
+  display: inline-flex; height: var(--capsule-hit, 40px); min-height: var(--capsule-hit, 40px); min-width: var(--capsule-hit, 40px); padding: 0 12px; gap: 6px;
+  border: 1px solid var(--capsule-rim, rgba(174, 214, 220, .19)); border-radius: var(--capsule-r, 999px);
+  background: var(--capsule-bg, #16282e); color: var(--capsule-ink, #e1edef); box-shadow: var(--capsule-shadow, none);
+  -webkit-backdrop-filter: blur(var(--capsule-blur, 20px)); backdrop-filter: blur(var(--capsule-blur, 20px));
+}
+.designer-app[data-view="plan"] [data-testid="canvas-chrome-toggle"]:hover { background: var(--capsule-bg-solid, #16282e); color: #fff; }
+.designer-app[data-view="plan"] #canvas-plan-tools { gap: 6px; }
+.designer-app[data-view="plan"] #canvas-plan-tools > div:first-child {
+  gap: var(--capsule-gap, 2px); padding: var(--capsule-pad, 4px);
+  border: 1px solid var(--capsule-rim, rgba(174, 214, 220, .19)); border-radius: var(--capsule-r, 999px);
+  background: var(--capsule-bg, #16282e); box-shadow: var(--capsule-shadow, none);
+  -webkit-backdrop-filter: blur(var(--capsule-blur, 20px)); backdrop-filter: blur(var(--capsule-blur, 20px));
+}
+.designer-app[data-view="plan"] #canvas-plan-tools > div:first-child > button {
+  position: relative; height: var(--capsule-hit, 40px); width: var(--capsule-hit, 40px); min-width: var(--capsule-hit, 40px); padding: 0;
+  border: 0; border-radius: var(--capsule-r, 999px); background: transparent; color: var(--capsule-ink, #e1edef); box-shadow: none;
+}
+.designer-app[data-view="plan"] #canvas-plan-tools > div:first-child > button:hover { background: var(--capsule-hover, #ffffff15); color: #fff; }
+.designer-app[data-view="plan"] #canvas-plan-tools > div:first-child > button[aria-pressed="true"] { background: var(--capsule-on, #0d1b20cc); color: var(--capsule-on-ink, #f4ffff); }
+
+/* ---- Clear (bottom-left) and the phone undo strip (top-left) ----------- */
+.designer-app[data-view="plan"] [data-testid="clear-controls"] { gap: 4px; }
+.designer-app[data-view="plan"] [data-testid="clear-controls"] > button,
+.designer-app[data-view="plan"] :is([data-testid="mobile-undo"], [data-testid="mobile-redo"], [data-testid="mobile-precision"]) {
+  position: relative; height: var(--capsule-hit, 40px); min-width: var(--capsule-hit, 40px); padding: 0;
+  border: 1px solid var(--capsule-rim, rgba(174, 214, 220, .19)); border-radius: var(--capsule-r, 999px);
+  background: var(--capsule-bg, #16282e); color: var(--capsule-ink, #e1edef); box-shadow: var(--capsule-shadow, none);
+  -webkit-backdrop-filter: blur(var(--capsule-blur, 20px)); backdrop-filter: blur(var(--capsule-blur, 20px));
+}
+.designer-app[data-view="plan"] [data-testid="clear-controls"] > button,
+.designer-app[data-view="plan"] :is([data-testid="mobile-undo"], [data-testid="mobile-redo"]) { width: var(--capsule-hit, 40px); }
+.designer-app[data-view="plan"] [data-testid="mobile-precision"] { padding: 0 12px; }
+.designer-app[data-view="plan"] div:has(> [data-testid="mobile-undo"]) { gap: 4px; }
+.designer-app[data-view="plan"] [data-testid="clear-controls"] > button:hover,
+.designer-app[data-view="plan"] :is([data-testid="mobile-undo"], [data-testid="mobile-redo"], [data-testid="mobile-precision"]):hover { background: var(--capsule-bg-solid, #16282e); color: #fff; }
+/* Clear all keeps its destructive cue: clay icon at rest, clay fill on hover. */
+.designer-app[data-view="plan"] [data-testid="clear-all-button"]:hover { background: #c9553f; border-color: #c9553f; }
+.designer-app[data-view="plan"] [data-testid="mobile-precision"][aria-pressed="true"] { background: var(--capsule-on, #0d1b20cc); color: var(--capsule-on-ink, #f4ffff); }
+.designer-app[data-view="plan"] :is(#canvas-plan-tools, [data-testid="canvas-chrome-toggle"], [data-testid="clear-controls"], [data-testid="mobile-undo"], [data-testid="mobile-redo"], [data-testid="mobile-precision"]):focus-visible,
+.designer-app[data-view="plan"] :is(#canvas-plan-tools, [data-testid="clear-controls"]) button:focus-visible { outline: 2px solid #81e5d6; outline-offset: 1px; }
+
+/* ---- Widths ------------------------------------------------------------ */
 @media (max-width: 1099px) {
   .plan-topbar { grid-template-columns: minmax(100px, 1fr) auto; gap: 2px 6px; padding: 3px 7px; }
   .plan-navigation { grid-column: 1 / -1; grid-row: 2; justify-content: center; padding: 0 0 3px; }
@@ -97,29 +221,33 @@
   .plan-topbar .plan-identity > button { max-width: 230px; }
 }
 @media (max-width: 767px) {
-  .plan-topbar { grid-template-columns: minmax(120px,1fr) 52px 44px; min-height: 42px; }
+  /* Row 1: identity · Select · 3D · Menu (44 px wide, 40 px tall — the row
+     is 42 px). Row 2: the two pills at the phone's 44 px hit. */
+  .plan-topbar { grid-template-columns: minmax(96px, 1fr) 44px 52px 44px; min-height: 42px; }
   .plan-identity { grid-area: 1 / 1 / 2 / 2; }
-  .plan-primary-row > [data-testid="view-mode-3d-phone"] { grid-area: 1 / 2 / 2 / 3; display: flex; width: 52px; gap: 3px; padding: 0; }
-  .plan-primary-row > button[aria-label="Open menu"] { grid-area: 1 / 3 / 2 / 4; display: flex; width: 44px; padding: 0; }
+  .plan-topbar .plan-primary-row > button { height: 40px; min-height: 40px; }
+  .plan-primary-row > [data-testid="select-tool-toggle-phone"] { grid-area: 1 / 2 / 2 / 3; display: inline-flex; width: 44px; padding: 0; }
+  .plan-primary-row > [data-testid="view-mode-3d-phone"] { grid-area: 1 / 3 / 2 / 4; display: flex; width: 52px; gap: 3px; padding: 0; }
+  .plan-primary-row > button[aria-label="Open menu"] { grid-area: 1 / 4 / 2 / 5; display: flex; width: 44px; padding: 0; }
   .plan-primary-row > button[aria-label="Open menu"] span { display: none; }
   .plan-navigation { gap: 2px; justify-content: space-between; }
-  .plan-pill-group { padding: 2px; gap: 0; }
-  .plan-pill-group > button { height: 36px; min-width: 36px; padding: 0 6px; }
+  .plan-pill-group { padding: 3px; gap: 0; }
+  .plan-pill-group > button { padding: 0 8px; }
   .plan-pill-group [data-testid="levels-toggle"] { gap: 2px; }
-  .plan-pill-group [data-testid="levels-toggle"] .plan-control-label { display: none; }
-  .plan-pill-group .plan-desktop-3d, .plan-pill-group [aria-label="Toggle 3D preview"], .plan-pill-group [aria-label="History"] { display: none; }
+  .plan-pill-group .plan-desktop-3d, .plan-pill-group [aria-label="Toggle 3D preview"], .plan-topbar .plan-pill-group [aria-label="History"] { display: none; }
   .plan-topbar .plan-identity > button { max-width: 145px; font-size: 11px; }
   .plan-topbar .plan-identity > a, .plan-topbar .plan-identity > span:first-child { width: 22px; flex-shrink: 0; }
   .plan-topbar [data-testid="demo-pill"] { display: none; }
-  .plan-build-tools { left: 5px; width: 49px; padding: 3px; top: calc(var(--ppw-topbar-h, 84px) + 40px); border-radius: 28px; }
-  .plan-topbar .plan-build-tools button { width: 41px; min-width: 41px; height: 42px; }
-  .designer-app[data-view="plan"] > main { padding-left: 59px; }
-  .designer-app[data-view="plan"] [data-testid="page-tabs"] { padding-left: 62px; }
+  .plan-build-tools { left: 5px; top: calc(var(--ppw-topbar-h, 84px) + 40px); }
+  .designer-app[data-view="plan"] > main { padding-left: calc(var(--plan-rail-w, 49px) + 10px); }
+  .designer-app[data-view="plan"] [data-testid="page-tabs"] { padding-left: calc(var(--plan-rail-w, 49px) + 13px); }
+  .designer-app[data-view="plan"] [data-testid="canvas-chrome-toggle"] { margin-right: 8px; }
+  .designer-app[data-view="plan"] #canvas-plan-tools { padding: 0 8px 0 0; background: transparent; box-shadow: none; border-radius: 0; }
+  .designer-app[data-view="plan"] #canvas-plan-tools[data-open="false"] { display: none; }
   .plan-control-panel-content { max-height: min(24dvh, 180px); }
-  .plan-control-panel [data-testid="snap-unit-picker"] { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .plan-control-panel [data-testid="snap-unit-picker"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .plan-control-panel [data-testid="levels-picker"] > div { flex-basis: 130px; }
 }
-@media (max-height: 560px) {
-  .plan-topbar .plan-build-tools button { height: 36px; }
-  .plan-topbar .plan-build-tools button > span { display: none; }
+@media (max-width: 359px) {
+  .plan-pill-group > button { padding: 0 5px; }
 }

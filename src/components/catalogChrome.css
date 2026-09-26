@@ -51,24 +51,30 @@
   color-scheme: dark;
   backdrop-filter: blur(14px);
 }
+/* Collapsed launcher = one more capsule (tokens from planToolbar.css, scoped
+   to .designer-app[data-view="plan"]; the fallbacks keep the old look if the
+   launcher is ever mounted outside that scope). Same frosted dark ground,
+   1 px rim, 999 radius and hit height as the header pills and the rail. */
 .sims-catalog[data-catalog-mode="plan"][data-catalog-open="false"] {
   align-self: center;
   width: max-content;
   max-width: calc(100% - 24px);
   margin: 5px auto;
-  padding: 0 !important;
-  border: 1px solid #789b9666 !important;
-  border-radius: 26px;
-  box-shadow: 0 4px 16px #102f3824 !important;
+  padding: var(--capsule-pad, 4px) !important;
+  border: 1px solid var(--capsule-rim, #789b9666) !important;
+  border-radius: var(--capsule-r, 26px);
+  background: var(--capsule-bg, rgba(15, 49, 55, .95));
+  box-shadow: var(--capsule-shadow, 0 4px 16px #102f3824) !important;
+  -webkit-backdrop-filter: blur(var(--capsule-blur, 14px)); backdrop-filter: blur(var(--capsule-blur, 14px));
 }
-.plan-catalog-launcher { display: flex; align-items: center; min-height: 40px; }
-.plan-catalog-launcher button { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 40px; border: 0; background: transparent; color: var(--catalog-text); padding: 0 15px; border-radius: 25px; font-size: 12px; }
-.plan-catalog-launcher button:first-child { padding-right: 12px; }
-.plan-catalog-launcher button:last-child { border-left: 1px solid #789b9645; border-radius: 0 25px 25px 0; min-width: 43px; padding: 0 12px; }
+.plan-catalog-launcher { display: flex; align-items: center; gap: var(--capsule-gap, 2px); min-height: var(--capsule-hit, 40px); }
+.plan-catalog-launcher button { display: flex; align-items: center; justify-content: center; gap: 8px; height: var(--capsule-hit, 40px); min-height: var(--capsule-hit, 40px); border: 0; background: transparent; color: var(--capsule-ink, var(--catalog-text)); padding: 0 12px; border-radius: var(--capsule-r, 25px); font-size: 12px; }
+.plan-catalog-launcher button:first-child { padding-right: 10px; }
+.plan-catalog-launcher button:last-child { min-width: var(--capsule-hit, 40px); width: var(--capsule-hit, 40px); padding: 0; }
 .plan-catalog-launcher strong { font-weight: 600; }
-.plan-catalog-launcher button>span { font-size: 10px; color: var(--catalog-muted); }
-.plan-catalog-launcher button:hover { background: var(--catalog-hover); }
-.plan-catalog-launcher button:focus-visible { outline: 3px solid var(--catalog-focus); outline-offset: -3px; }
+.plan-catalog-launcher button>span { font-size: 10px; color: var(--capsule-ink-dim, var(--catalog-muted)); }
+.plan-catalog-launcher button:hover { background: var(--capsule-hover, var(--catalog-hover)); color: #fff; }
+.plan-catalog-launcher button:focus-visible { outline: 2px solid #81e5d6; outline-offset: -2px; }
 .sims-catalog[data-catalog-mode="plan"] [data-testid="catalog-connection"] { color: var(--catalog-muted); }
 .sims-catalog[data-catalog-mode="plan"] [data-testid="catalog-retry"] { color: var(--catalog-accent); }
 @media(max-width:1023px) {

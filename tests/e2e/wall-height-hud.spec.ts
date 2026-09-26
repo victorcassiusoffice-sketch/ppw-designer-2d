@@ -94,13 +94,17 @@ test.describe('Wall height on a phone', () => {
     const place = await page.evaluate(() => {
       const card = document.querySelector('[data-testid="wall-height-hud"]') as HTMLElement;
       const bar = document.querySelector('[data-testid="sims-bottom-toolbar"]')!.getBoundingClientRect();
+      const rail = document.querySelector('.plan-build-tools')?.getBoundingClientRect() ?? null;
       const r = card.getBoundingClientRect();
       return {
         placement: card.getAttribute('data-placement'),
         leftish: r.left < window.innerWidth * 0.45,
         clearsBottom: r.bottom < bar.top - 24,
-        // Flush to the screen edge, a small vertical rail — not a floating card.
-        flush: r.left < 2,
+        // Capsule pass (2026-09-26): the fixed construction rail owns the
+        // screen edge, so the slim bar docks in the rail's gutter — right of
+        // the rail, never over it — a small vertical pill, not a floating card.
+        railGutter: rail ? r.left >= rail.right : r.left < 2,
+        overlapsRail: rail ? r.left < rail.right && r.right > rail.left && r.top < rail.bottom && r.bottom > rail.top : false,
         narrow: r.width < 56,
         compact: r.height < 140,
       };
@@ -108,7 +112,8 @@ test.describe('Wall height on a phone', () => {
     expect(place.placement).toBe('left');
     expect(place.leftish).toBe(true);
     expect(place.clearsBottom).toBe(true);
-    expect(place.flush).toBe(true);
+    expect(place.railGutter).toBe(true);
+    expect(place.overlapsRail).toBe(false);
     expect(place.narrow).toBe(true);
     expect(place.compact).toBe(true);
 

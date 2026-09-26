@@ -3650,7 +3650,7 @@ export function RoomCanvas({
         <div
           data-testid="cladding-hud"
           data-placement="left"
-          className="pointer-events-auto fixed left-3 z-30 flex w-[min(70vw,280px)] flex-col gap-1.5 rounded-xl p-2 text-xs md:hidden top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.5rem)]"
+          className="pointer-events-auto fixed left-[calc(var(--plan-rail-w,56px)+16px)] z-30 flex w-[min(70vw,280px)] flex-col gap-1.5 rounded-xl p-2 text-xs md:hidden top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.5rem)]"
           style={{
             background: CHROME_BG,
             border: `1px solid ${CHROME_RIM}`,
@@ -3683,8 +3683,14 @@ export function RoomCanvas({
       )}
       {/* Wall height (2026-09-22): after the walls exist, raise / lower them
           from the plan. Desktop keeps the labelled card. Phone is a small
-          vertical rail flush to the left edge — white pill, soft shadow,
-          − / metres / + only — clear of the bottom catalog.
+          vertical pill — white, soft shadow, − / metres / + only — clear of
+          the bottom catalog. Capsule pass (2026-09-26): the fixed left
+          construction rail owns the screen edge at every width, so both this
+          card and the phone cladding card start at the rail's gutter
+          (`--plan-rail-w` + 16 px: the rail sits 8 px in from the edge, so
+          this leaves an 8 px breath after it; `--plan-rail-w` is published
+          by planToolbar.css) instead of `left-0` / `left-3` — no two fixed
+          left controls overlap.
           Hidden while the pen owns that dock, and on a phone while cladding's
           own left card is up (md+ cladding lives in the right panel). */}
       {hasDrawnWalls && !drawMode && !wallDrawEnabled && (
@@ -3692,7 +3698,7 @@ export function RoomCanvas({
           data-testid="wall-height-hud"
           data-placement="left"
           aria-label="Wall height"
-          className={`pointer-events-auto fixed left-0 top-1/2 z-30 flex w-max -translate-y-1/2 flex-col items-center rounded-r-2xl border-0 bg-white px-0.5 py-1 text-xs shadow-[0_2px_10px_rgba(42,41,38,0.12)] md:left-3 md:top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.5rem)] md:w-[min(70vw,240px)] md:translate-y-0 md:items-stretch md:gap-1.5 md:rounded-xl md:border md:border-[#dcd9d0] md:bg-[#faf9f5] md:p-2 md:shadow-[0_12px_32px_rgba(42,41,38,0.18)] lg:top-1/2 lg:-translate-y-1/2 ${
+          className={`pointer-events-auto fixed left-[calc(var(--plan-rail-w,56px)+16px)] top-1/2 z-30 flex w-max -translate-y-1/2 flex-col items-center rounded-2xl border-0 bg-white px-0.5 py-1 text-xs shadow-[0_2px_10px_rgba(42,41,38,0.12)] md:top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.5rem)] md:w-[min(70vw,240px)] md:translate-y-0 md:items-stretch md:gap-1.5 md:rounded-xl md:border md:border-[#dcd9d0] md:bg-[#faf9f5] md:p-2 md:shadow-[0_12px_32px_rgba(42,41,38,0.18)] lg:top-1/2 lg:-translate-y-1/2 ${
             claddingTool ? 'max-md:hidden' : ''
           }`}
           style={{ color: CHROME_TEXT }}
