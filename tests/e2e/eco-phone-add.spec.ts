@@ -42,6 +42,15 @@ test('Eco tab → panel tile → "+ Add to room" places the panel on the roof sl
   expect(roof!.placedItems.map((i) => i.productId), 'the panel is ON the slab, not lost').toEqual(['emcar-jinko-475']);
   expect(prop!.rooms.find((r) => r.id === 'r1')!.placedItems, 'nothing landed on the storey').toHaveLength(0);
   await expect(page.locator('text=Your room is empty')).toHaveCount(0);
-  // The energy chip now has a generator to report.
-  await expect(page.locator('[data-testid="energy-readout"]')).toBeVisible();
+  // The energy chip now has a generator to report. On the phone it sits in
+  // the top-right plan-tools cluster, folded behind the "m²" pill (2026-09-26
+  // capsule chrome): open the cluster the way a customer does, then read it.
+  const readout = page.locator('[data-testid="energy-readout"]');
+  await expect(readout).toHaveAttribute('data-status', /covered|surplus|short|partial|ok|good|low/);
+  const chrome = page.locator('[data-testid="canvas-chrome-toggle"]');
+  await expect(chrome).toHaveAttribute('aria-expanded', 'false');
+  await chrome.tap();
+  await expect(chrome).toHaveAttribute('aria-expanded', 'true');
+  await expect(readout).toBeVisible();
+  await expect(readout).toContainText('☀');
 });
