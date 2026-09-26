@@ -143,6 +143,7 @@ test.describe('Object top-down rendering', () => {
           total: imgs.length,
           loaded: imgs.filter((i) => i.naturalWidth > 0).length,
           webp: imgs.filter((i) => (i.getAttribute('src') ?? '').endsWith('.webp')).length,
+          svg: imgs.filter((i) => (i.getAttribute('src') ?? '').endsWith('.svg')).length,
         };
       });
     // "No blank tiles" means every thumbnail has DECODED PIXELS
@@ -153,6 +154,20 @@ test.describe('Object top-down rendering', () => {
     // off-screen tail reports `complete: false` with its dimensions already
     // known — a lazy-loading artefact, not a blank tile. Polled because the
     // last images can still be in flight a second after mount.
+    //
+    // The "All" strip is now ~5,000 px wide (42 products), so the browser
+    // never fetches the tail until it comes near the viewport: walk the strip
+    // to its end the way a customer scrolls it, then every tile must decode.
+    const strip = page.locator('[data-testid="dock-strip"]');
+    await expect(strip).toBeVisible();
+    for (let step = 0; step < 12; step++) {
+      const atEnd = await strip.evaluate((el) => {
+        el.scrollLeft += el.clientWidth;
+        return el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+      });
+      await page.waitForTimeout(150);
+      if (atEnd) break;
+    }
     await expect.poll(async () => {
       const q = await readProbe();
       return q.total > 5 && q.loaded === q.total;
@@ -160,7 +175,10 @@ test.describe('Object top-down rendering', () => {
     const probe = await readProbe();
     expect(probe.total).toBeGreaterThan(5);
     expect(probe.loaded).toBe(probe.total);
-    // The catalog must be on the optimized assets.
-    expect(probe.webp).toBe(probe.total);
+    // The catalog must be on the optimized assets: WebP photos / top-downs,
+    // plus a product's OWN vector art (the Duraco tank's plan illustration
+    // under /products/illustrations/ is an SVG by design, not a stray PNG).
+    expect(probe.webp + probe.svg).toBe(probe.total);
+    expect(probe.webp).toBeGreaterThan(probe.svg);
   });
 });

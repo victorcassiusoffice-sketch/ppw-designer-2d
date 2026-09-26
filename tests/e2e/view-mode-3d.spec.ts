@@ -7,8 +7,9 @@
  *      three chunk is fetched only once the mode opens;
  *   2. the room renders on the GL stage (not the canvas fallback), with
  *      every wall, floor and item the plan holds;
- *   3. tools still work inside the mode: arm Wall paint from the bar while
- *      the room shows, click a wall in 3D, the plan is painted;
+ *   3. tools still work inside the mode: arm Wall paint from the House
+ *      rail's Paint mode while the room shows, click a wall in 3D, the plan
+ *      is painted;
  *   4. Plan returns.
  *
  * Sims build mode in 3D (Vic 2026-09-17: "it should reflect what's done on
@@ -18,6 +19,16 @@
  *      drop rules (the grid here);
  *   7. a dock tile armed while the room shows + a tap on the floor places
  *      the product there, and the tile disarms.
+ *
+ * House Studio shell (2026-09-26): the 3D view is a full-screen workspace
+ * with its own header (2D Plan | 3D House, undo/redo, estimate), a mode rail
+ * (Build · Furnish · Paint · Surfaces · Garden · Solar) and a camera dock.
+ * While it is up the plan's <main> and toolbar are inert, so every control
+ * these specs press lives INSIDE [data-testid="wallpaint-3d-overlay"]; Plan
+ * returns through the header's "2D Plan" button. A selected product shows in
+ * the selection strip with its Products & cost panel; "Edit item" swaps the
+ * panel for the item options (turn, duplicate, remove). A first tap on the
+ * scene while a panel is open only dismisses the panel (Sims click-away).
  *
  * Runs on a dev server (the bridge is DEV-only): PPW_E2E_BASE_URL=http://127.0.0.1:5199
  */
@@ -88,26 +99,37 @@ async function enter3D(page: Page): Promise<void> {
   await expect(overlay).toBeVisible();
 }
 
+/** The House Studio's own header switch: the plan bar is inert under the overlay. */
+function planSwitch(page: Page) {
+  return page.locator('[data-testid="wallpaint-3d-overlay"]').getByRole('button', { name: '2D Plan' });
+}
+
 test.describe('3D Mode — desktop', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test('the switch opens the room on the GL stage, fetches three only then, keeps the bar, and Plan returns', async ({ page }) => {
+  test('the switch opens the room on the GL stage, fetches three only then, fills the screen as the House Studio, and Plan returns', async ({ page }) => {
     await seed(page);
     // The page's own resource timeline: what the browser actually fetched.
     const threeLoads = () =>
       page.evaluate(() => performance.getEntriesByType('resource').map((e) => e.name).filter((n) => /three|ThreeStage/i.test(n)));
+    // A seeded plan on /designer is not a demo: it opens in Plan (demos open in 3D).
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
     await page.waitForTimeout(500);
+    await expect(page.locator('[data-testid="wallpaint-3d-overlay"]')).toHaveCount(0);
     expect(await threeLoads(), 'three must not load with the 2D designer').toHaveLength(0);
 
     await enter3D(page);
     const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
     await expect(page.locator('[data-testid="view-mode-3d"]')).toHaveAttribute('aria-pressed', 'true');
-    // The bar stays above the room.
-    const bar = (await page.locator('header').first().boundingBox())!;
+    // The House Studio owns the whole screen: its own header (2D Plan | 3D
+    // House) replaces the plan bar, which sits inert underneath.
     const box = (await overlay.boundingBox())!;
-    expect(box.y).toBeGreaterThanOrEqual(bar.y + bar.height - 1);
+    expect(box.y).toBe(0);
+    expect(box.width).toBe(1440);
+    await expect(overlay.getByRole('button', { name: '3D House' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(planSwitch(page)).toBeVisible();
+    await expect(page.locator('main')).toHaveAttribute('inert', '');
     await expect.poll(async () => (await threeLoads()).length, { timeout: 15_000 }).toBeGreaterThan(0);
 
     // The GL stage draws it: walls, the floor and the item are all there.
@@ -127,19 +149,24 @@ test.describe('3D Mode — desktop', () => {
     await expect(page.locator('[data-testid="wallpaint-3d-overlay"] [data-testid="wallpaint-3d-caption"]')).not.toContainText('paint');
     await expect(page.locator('[data-testid="wallpaint-palette"]')).toHaveCount(0);
 
-    await page.locator('[data-testid="wallpaint-3d-close"]').click();
+    await planSwitch(page).click();
     await expect(overlay).toHaveCount(0);
     await expect(page.locator('[data-testid="view-mode-3d"]')).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.locator('main')).not.toHaveAttribute('inert', '');
   });
 
-  test('a tool works inside the mode: arm Wall paint from the bar, click a wall in 3D, the plan is painted', async ({ page }) => {
+  test('a tool works inside the mode: arm Wall paint from the House rail, click a wall in 3D, the plan is painted', async ({ page }) => {
     await seed(page);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
     await enter3D(page);
     await awaitStage(page);
-    await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
+    // The plan toolbar's Paint toggle is inert under the overlay; the rail's Paint mode arms the same tool.
+    const paintMode = page.locator('[data-testid="wallpaint-3d-overlay"] [data-testid="house-mode-paint"]');
+    await paintMode.click();
     await page.waitForSelector('[data-testid="wallpaint-palette"]');
+    await expect(paintMode).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('[data-testid="wallpaint-tool-toggle"]')).toHaveAttribute('aria-pressed', 'true');
     // The panel's card and the overlay both carry a caption — read the overlay's.
     await expect(page.locator('[data-testid="wallpaint-3d-overlay"] [data-testid="wallpaint-3d-caption"]')).toContainText('paint');
     // The default camera looks from the south-west: the north wall (edge 0) is a far wall.
@@ -161,21 +188,33 @@ test.describe('3D Mode — desktop', () => {
     await enter3D(page);
     await awaitStage(page);
     await expect(page.locator('[data-testid="view3d-selection"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="house-selection-strip"]')).toHaveCount(0);
 
-    // 5. Tap the body → selected in the plan; the card names it; Turn ↻
-    //    and R both write the SAME plan rotation (Sims build mode).
+    // 5. Tap the body → selected in the plan: the selection strip names it and
+    //    its Products & cost panel opens. "Edit item" swaps that panel for the
+    //    item options, where Turn ↻ and R both write the SAME plan rotation
+    //    (Sims build mode).
     const on = await itemPoint(page, 'i1');
     expect(on).not.toBeNull();
     await page.mouse.click(on!.x, on!.y);
+    const strip = page.locator('[data-testid="house-selection-strip"]');
+    await expect(strip).toContainText('NordicTrack');
+    const editItem = strip.getByRole('button', { name: 'Edit item' });
+    await editItem.click();
+    await expect(editItem).toHaveAttribute('aria-expanded', 'true');
     await expect(page.locator('[data-testid="view3d-selection"]')).toContainText('NordicTrack');
-    await expect(page.locator('[data-testid="view3d-rotation"]')).toHaveText('0°');
+    await expect(page.locator('[data-testid="view3d-rotation"]')).toHaveText('Rotation: 0°');
     await page.locator('[data-testid="view3d-rotate"]').click();
     await expect.poll(async () => (await items(page))[0].rotation).toBe(90);
-    await expect(page.locator('[data-testid="view3d-rotation"]')).toHaveText('90°');
+    await expect(page.locator('[data-testid="view3d-rotation"]')).toHaveText('Rotation: 90°');
     await page.locator('[data-testid="view3d-rotate-ccw"]').click();
     await expect.poll(async () => (await items(page))[0].rotation).toBe(0);
     await page.keyboard.press('r');
     await expect.poll(async () => (await items(page))[0].rotation).toBe(90);
+    // Fold the item options away: while a panel is open the first tap on the
+    // scene only dismisses it (click-away), and the drag below must carry.
+    await editItem.click();
+    await expect(editItem).toHaveAttribute('aria-expanded', 'false');
 
     // 6. Drag it 1 m east across the floor: the move lands through the plan's
     //    resolver, on the grid — so x is exactly +1 (the seed is on the grid).
@@ -184,14 +223,20 @@ test.describe('3D Mode — desktop', () => {
     const startFloor = (await floorAt(page, start.x, start.y))!;
     expect(startFloor).not.toBeNull();
     const end = (await floorPoint(page, startFloor.x + 1, startFloor.y))!;
+    // Grab it the way a person does: hover until the stage's own hit test
+    // offers the body (the cursor turns to "move"), then press. The turn
+    // above rebuilt the body; pressing before the stage re-projects it lands
+    // on bare floor and orbits instead of carrying.
+    const scene = page.locator('[data-testid="wallpaint-3d-overlay"] [data-testid="wallpaint-3d-canvas"]');
     await page.mouse.move(start.x, start.y);
+    await expect.poll(() => scene.evaluate((el) => (el as HTMLElement).style.cursor), { timeout: 10_000 }).toBe('move');
     await page.mouse.down();
     for (let i = 1; i <= 8; i++) await page.mouse.move(start.x + ((end.x - start.x) * i) / 8, start.y + ((end.y - start.y) * i) / 8);
     await page.mouse.up();
     await expect.poll(async () => (await items(page))[0].x).toBeCloseTo(before.x + 1, 5);
     expect((await items(page))[0].y).toBeCloseTo(before.y, 5);
-    // The camera did not orbit for a carry: the item is still where it was aimed.
-    await expect(page.locator('[data-testid="view3d-selection"]')).toContainText('NordicTrack');
+    // The camera did not orbit for a carry: the item is still selected where it was aimed.
+    await expect(strip).toContainText('NordicTrack');
 
     // 7. Arm a product from the dock under the room, tap the floor: placed there.
     //    The catalogue starts collapsed: in 3D it opens from the Furnish mode.
@@ -217,7 +262,7 @@ test.describe('3D Mode — desktop', () => {
 test.describe('3D Mode — phone', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
-  test('the strip button opens the room without the menu; Plan returns', async ({ page }) => {
+  test('the strip button opens the room full-screen without the menu; the House header returns to Plan', async ({ page }) => {
     await seed(page);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
@@ -227,16 +272,21 @@ test.describe('3D Mode — phone', () => {
     await enter.tap();
     const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
     await expect(overlay).toBeVisible();
+    // The House Studio covers the phone strip (the plan chrome is inert
+    // underneath) and runs edge to edge.
     const box = (await overlay.boundingBox())!;
     expect(box.width).toBe(390);
-    expect(box.y).toBeGreaterThan(40);
+    expect(box.y).toBe(0);
+    await expect(overlay.getByRole('button', { name: '3D House' })).toHaveAttribute('aria-pressed', 'true');
     await awaitStage(page);
-    await expect(enter).toContainText('Plan');
-    await enter.tap();
+    // The strip button reads "2D" for the way back, but the House header owns the switch while the room shows.
+    await expect(enter).toContainText('2D');
+    await planSwitch(page).tap();
     await expect(overlay).toHaveCount(0);
+    await expect(enter).toContainText('3D');
   });
 
-  test('the sheet row opens the room edge to edge under the header; Plan returns', async ({ page }) => {
+  test('the sheet row opens the room edge to edge; Plan returns', async ({ page }) => {
     await seed(page);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
@@ -246,9 +296,9 @@ test.describe('3D Mode — phone', () => {
     await expect(overlay).toBeVisible();
     const box = (await overlay.boundingBox())!;
     expect(box.width).toBe(390);
-    expect(box.y).toBeGreaterThan(40); // under the 56 px strip
+    expect(box.y).toBe(0);
     await awaitStage(page);
-    await page.locator('[data-testid="wallpaint-3d-close"]').tap();
+    await planSwitch(page).tap();
     await expect(overlay).toHaveCount(0);
   });
 });
