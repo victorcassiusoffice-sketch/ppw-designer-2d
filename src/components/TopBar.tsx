@@ -1,23 +1,8 @@
 import { WallSurfaceOptions } from './WallSurfaceOptions';
 import { constructionHex } from '../designer/wallConstruction';
-/**
- * TopBar — direct Plan tools in reserved header space.
- *
- * The primary row contains identity, drawing and commerce controls and wraps
- * rather than shrinking controls off screen. A labelled pill row exposes
- * Floors, Roof, Solar, 3D, Plot, Snap and Grid directly. The phone retains its
- * first-class 3D entry and wraps the other controls into a small grid.
- *
- * Plot, Floors, Snap and room dimensions expand in the header's measured
- * options host. One panel is open at a time; Close, Escape and click-away
- * dismiss it. No scrolling toolbar or nested Room/View menu is required.
- * Existing floor/paint panels still publish their reserved canvas inset;
- * project dialogs and the mobile build menu retain their existing portals.
- * Each data-testid and placement handler continues to have one owner.
- *
- * Carryover: CurrencySwitcher · Cart badge Link · Save/Load v2 under
- * `ppw_properties_v2` · L/W inputs only edit the active room AND only when
- * its polygon is rectangular · rooms dropdown state lifted to App.
+/** Compact Plan header, construction rail and in-flow options.
+ * The rail occupies a reserved canvas gutter; secondary controls expand only
+ * when requested. Existing tool handlers and Plan/3D stores remain shared.
  */
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
@@ -1844,7 +1829,7 @@ export function TopBar({
               className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-ppw-inkDeep bg-ppw-inkDeep px-2 text-[10px] font-semibold text-ppw-paper md:text-[12px]"
               title={readOnly ? DEMO_NOTICE : `${demoPill?.merchant}: their catalog is loaded in this tab. Close the tab or press × for the standard catalog.`}
             >
-              <span>{readOnly ? 'Demo · no orders' : 'Demo'}</span>
+              <span>{'Demo'}</span>
               {!readOnly && <button
                 type="button"
                 data-testid="demo-pill-exit"
@@ -1865,7 +1850,7 @@ export function TopBar({
         {/* ---- md+: rail A — BUILD. shrink-0; the Box|Custom segment follows
             OUTSIDE the rails because its Custom half is the phone strip's
             "Walls" button too (one node, one testid, every width). ---- */}
-        <div className="plan-build-tools hidden shrink-0 items-center md:flex">
+        <div className="plan-build-tools" aria-label="Construction tools">
           <span className={DIVIDER} aria-hidden="true" />
 
           {/* 2 BUILD — segmented: Walls · Door · Paint · Measure. Walls keeps
@@ -1883,7 +1868,7 @@ export function TopBar({
               aria-label="Select"
             >
               <Icon name="cursor" />
-              <span className="hidden min-[1366px]:inline">Select</span>
+              <span>Select</span>
             </button>
             <button
               type="button"
@@ -1907,7 +1892,7 @@ export function TopBar({
               aria-label="Door"
             >
               <Icon name="door" />
-              <span className="hidden min-[1700px]:inline">Door</span>
+              <span>Openings</span>
             </button>
             <button
               type="button"
@@ -1921,7 +1906,7 @@ export function TopBar({
             >
               <Icon name="tiles" />
               {/* Vic could not find the floor — its label shows from 1366. */}
-              <span className="hidden min-[1366px]:inline">Floor</span>
+              <span>Floor</span>
             </button>
             <button
               type="button"
@@ -1934,7 +1919,7 @@ export function TopBar({
               aria-label="Wall paint"
             >
               <Icon name="roller" />
-              <span className="hidden min-[1700px]:inline">Paint</span>
+              <span>Paint</span>
             </button>
             <button
               type="button"
@@ -1947,7 +1932,7 @@ export function TopBar({
               aria-label="Cladding"
             >
               <Icon name="tiles" />
-              <span className="hidden min-[1700px]:inline">Clad</span>
+              <span>Cladding</span>
             </button>
             <button
               type="button"
@@ -1959,7 +1944,7 @@ export function TopBar({
               aria-label="Measure"
             >
               <Icon name="ruler" />
-              <span className="hidden min-[1700px]:inline">Measure</span>
+              <span>Measure</span>
             </button>
             {/* Remove — the sledgehammer. Click a wall or object to delete it
                 (complaint "I can't remove walls"). Terracotta-tinted when on. */}
@@ -1973,13 +1958,13 @@ export function TopBar({
               aria-label="Remove"
             >
               <Icon name="hammer" />
-              <span className="hidden min-[1700px]:inline">Remove</span>
+              <span>Remove</span>
             </button>
           </div>
 
-          <span className={`${DIVIDER} mr-0`} aria-hidden="true" />
-        </div>
-
+          <button type="button" className="plan-garden-tool" aria-label="Garden" title="Garden — draw, move and resize outdoor surfaces" data-testid="plan-garden-toggle" onClick={() => { handleSelect(); window.dispatchEvent(new CustomEvent('ppw:open-garden')); }}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21v-6m0 0C3 17 3 7 3 7s9-1 9 8Zm0 0C21 17 21 4 21 4s-9 0-9 11Z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg><span>Garden</span>
+          </button>
         {/* 3 ROOM & PLAN — Box | Custom. Always inline, every width. On the
             phone only the Custom half shows and reads "Walls" (the strip's
             wall pen); from md the Box half joins it as one segmented control.
@@ -2009,7 +1994,7 @@ export function TopBar({
             aria-label="Box"
           >
             <Icon name="box" />
-            <span className="hidden xl:inline">Box</span>
+            <span>Room</span>
           </button>
           <button
             type="button"
@@ -2029,6 +2014,9 @@ export function TopBar({
             <span className="md:hidden">Walls</span>
             <span className="hidden xl:inline">Custom</span>
           </button>
+        </div>
+
+          <span className={`${DIVIDER} mr-0`} aria-hidden="true" />
         </div>
 
         {/* Select on the PHONE STRIP (Vic 2026-09-05: "Select toolbar should
@@ -2066,7 +2054,7 @@ export function TopBar({
           title={viewMode === '3d' ? '3D Mode — back to the plan' : '3D Mode — see the room'}
         >
           <Icon name="cube" />
-          <span>{viewMode === '3d' ? '2D Plan' : '3D View'}</span>
+          <span>{viewMode === '3d' ? '2D' : '3D'}</span>
         </button>
 
         {/* Phone hamburger → full-height sheet. */}
@@ -2080,7 +2068,7 @@ export function TopBar({
           aria-controls="ppw-sheet"
         >
           <Icon name="menu" />
-          <span>Build</span>
+          <span>Menu</span>
         </button>
 
         {/* 5 COMMERCE — Currency · Cart · Request quote · More. Never shrinks. */}

@@ -126,7 +126,7 @@ describe('SimsBottomToolbar — a furnished plan opens folded on a phone', () =>
     Object.defineProperty(window, 'matchMedia', { configurable: true, writable: true, value: originalMatchMedia });
   });
 
-  it('folds to the category row for the Sofap show flat and a category tap unfolds it', async () => {
+  it('opens the Sofap show flat with a compact launcher and lets the user browse categories', async () => {
     stubPhone(true);
     usePropertyStore.getState().loadProperty(buildSofapShowFlat());
     act(() => {
@@ -134,20 +134,21 @@ describe('SimsBottomToolbar — a furnished plan opens folded on a phone', () =>
     });
     await flushAsync();
     expect(container.querySelector('[data-testid="sims-thumb-strip"]')).toBeNull();
-    const minBtn = container.querySelector('[data-testid="sims-toolbar-minimize"]') as HTMLButtonElement;
+    const minBtn = container.querySelector('[data-testid="sims-catalog-open"]') as HTMLButtonElement;
     expect(minBtn.getAttribute('aria-expanded')).toBe('false');
+    act(() => minBtn.click());
     const cardio = container.querySelector('[data-testid="sims-cat-cardio"]') as HTMLButtonElement;
     act(() => cardio.click());
     expect(container.querySelector('[data-testid="sims-thumb-strip"]')).not.toBeNull();
   });
 
-  it('stays open on a blank plan on a phone, and on a furnished plan at md+', async () => {
+  it('keeps blank and furnished plans collapsed until products are requested at every width', async () => {
     stubPhone(true);
     act(() => {
       flushSync(() => root.render(<SimsBottomToolbar />));
     });
     await flushAsync();
-    expect(container.querySelector('[data-testid="sims-thumb-strip"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="sims-thumb-strip"]')).toBeNull();
     act(() => root.unmount());
     root = createRoot(container);
 
@@ -157,7 +158,7 @@ describe('SimsBottomToolbar — a furnished plan opens folded on a phone', () =>
       flushSync(() => root.render(<SimsBottomToolbar />));
     });
     await flushAsync();
-    expect(container.querySelector('[data-testid="sims-thumb-strip"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="sims-thumb-strip"]')).toBeNull();
   });
 });
 

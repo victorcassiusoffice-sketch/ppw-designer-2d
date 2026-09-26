@@ -65,7 +65,7 @@ import { BuildingControls } from './BuildingControls';
 import { useSmoothedCamera } from './useSmoothedCamera';
 import { panOrbitCamera } from '../designer/cameraMotion';
 import { GardenPanel } from './GardenPanel';
-import { gardenPoints, moveGardenFence, type GardenPlacement } from '../designer/garden';
+import { gardenPoints, gardenRectFromPoints, gardenSurfacePolygon, moveGardenFence, type GardenPlacement } from '../designer/garden';
 import { wallsOnLevel } from '../designer/freeWalls';
 import { edgeKey, pointAlongEdge, projectOntoEdge, roomEdges, sharedEdgeMap } from '../designer/wallEdges';
 import { openingSpan } from '../designer/openings';
@@ -450,6 +450,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   }, [cancelWallSegment, updateWallChain]);
   const [gardenOpen, setGardenOpen] = useState(false);
   const [gardenPlacement, setGardenPlacement] = useState<GardenPlacement | null>(null);
+  const gardenDrag = useRef<{ x: number; y: number } | null>(null);
+  const [gardenPreview, setGardenPreview] = useState<ReturnType<typeof gardenRectFromPoints>>(null);
+  useEffect(() => { gardenDrag.current = null; setGardenPreview(null); }, [gardenPlacement]);
   const [hover, setHover] = useState<WallHit | null>(null);
   const [hoverItem, setHoverItem] = useState<string | null>(null);
   // 'gl' until WebGL refuses to start; then the canvas painter takes over.
@@ -808,6 +811,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         }
       }
       // The brush, with a mouse: a press on a wall starts a stroke.
+      if (gardenPlacement?.mode === 'resize' && stageRef.current) {
+        const p = localPoint(e);
+        const point = stageRef.current.floorPoint(p.x, p.y);
+        if (point) { gardenDrag.current = point; setGardenPreview(null); drag.current = null; return; }
+      }
       if (onPaintWall && e.pointerType === 'mouse') {
         const p = localPoint(e);
         const hit = hitAt(p.x, p.y);
@@ -860,6 +868,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       }
       drag.current = { x: e.clientX, y: e.clientY, moved: false, pinchDist: 0 };
     } else if (pointers.current.size === 2) {
+      gardenDrag.current = null;
+      setGardenPreview(null);
       // A second finger cancels a room draft without changing the plan.
       roomDrag.current = null;
       setRoomPreview(null);
@@ -919,6 +929,12 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       return;
     }
     const floorRun = floorStroke.current;
+    if (gardenDrag.current && pointers.current.size === 1 && stageRef.current) {
+      const p = localPoint(e);
+      const point = stageRef.current.floorPoint(p.x, p.y);
+      if (point) setGardenPreview(gardenRectFromPoints(gardenDrag.current, point));
+      return;
+    }
     if (floorRun && pointers.current.size === 1 && stageRef.current) {
       const p = localPoint(e);
       const floor = stageRef.current.floorPoint(p.x, p.y);
@@ -1026,6 +1042,22 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
             showFlash(result.roomId ? 'Room enclosed · ready for finishes and furniture' : `Wall built · ${result.preview.lengthM.toFixed(2)} m`);
           } else { setWallPreview(preview); showFlash(result.message); }
         }
+      }
+      return;
+    }
+    if (gardenDrag.current && had) {
+      const from = gardenDrag.current;
+      gardenDrag.current = null;
+      setGardenPreview(null);
+      drag.current = null;
+      if (!cancelled && gardenPlacement && stageRef.current) {
+        const p = localPoint(e);
+        const point = stageRef.current.floorPoint(p.x, p.y);
+        const patch = point && gardenRectFromPoints(from, point);
+        if (patch && usePropertyStore.getState().updateGardenSurface(gardenPlacement.id, patch)) {
+          setGardenPlacement(null);
+          showFlash(`Garden resized · ${(patch.widthM * patch.depthM).toFixed(1)} m²`);
+        } else showFlash('Drag an area at least 0.2 m wide and deep.');
       }
       return;
     }
@@ -1490,7 +1522,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         role="img"
         aria-label={viewLabel}
         className="absolute inset-0"
-        style={{ cursor: constructionTool === 'room' || constructionTool === 'wall' ? 'crosshair' : panMode ? 'move' : hover ? 'pointer' : hoverItem ? 'move' : onPaintFloor ? 'pointer' : armedProduct && itemsInteractive ? 'copy' : 'grab' }}
+        style={{ cursor: gardenPlacement || constructionTool === 'room' || constructionTool === 'wall' ? 'crosshair' : panMode ? 'move' : hover ? 'pointer' : hoverItem ? 'move' : onPaintFloor ? 'pointer' : armedProduct && itemsInteractive ? 'copy' : 'grab' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={(e) => endPointer(e, false)}
@@ -1502,6 +1534,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         }}
         onContextMenu={(e) => e.preventDefault()}
       />
+      {gardenPreview && <svg className="house-room-preview" data-valid="true" aria-hidden="true">
+        <polygon points={gardenSurfacePolygon({ ...gardenPreview, id: 'preview', kind: 'lawn', elevationM: 0 }).map((point) => stageRef.current?.projectPoint(point.x, point.y, 0.04)).filter((point) => !!point).map((point) => `${point.x},${point.y}`).join(' ')} />
+        {(() => { const p = stageRef.current?.projectPoint(gardenPreview.x + gardenPreview.widthM / 2, gardenPreview.y + gardenPreview.depthM / 2, 0.05); return p ? <text x={p.x} y={p.y} textAnchor="middle">{gardenPreview.widthM.toFixed(1)} × {gardenPreview.depthM.toFixed(1)} m</text> : null; })()}
+      </svg>}
       {roomPreview && <svg className="house-room-preview" data-valid={roomPreview.ok} aria-hidden="true">
         <polygon points={roomPreview.polygon.map((point) => stageRef.current?.projectPoint(point.x, point.y, roomPreview.elevationM + 0.03)).filter((point) => !!point).map((point) => `${point.x},${point.y}`).join(' ')} />
         {(() => { const center = roomPreview.polygon.reduce((p, q) => ({ x: p.x + q.x / 4, y: p.y + q.y / 4 }), { x: 0, y: 0 }); const screen = stageRef.current?.projectPoint(center.x, center.y, roomPreview.elevationM + 0.04); return screen ? <text x={screen.x} y={screen.y} textAnchor="middle">{roomPreview.widthM.toFixed(1)} × {roomPreview.depthM.toFixed(1)} m</text> : null; })()}
@@ -1555,7 +1591,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           : <BuildingControls layout="sidebar" view={buildingView} onViewChange={setBuildingView} showRoof={showRoof} onShowRoofChange={setShowRoof} tool={constructionTool} onToolChange={chooseBuildTool}
             onSolarCatalog={() => { changeHouseMode('furnish'); window.dispatchEvent(new CustomEvent('ppw:open-catalog', { detail: { category: 'eco' } })); }}
             gardenOpen={gardenOpen} onGardenToggle={() => changeHouseMode('garden')} />)}>
-        {gardenPlacement && <p role="status" className="bg-[#29405c] px-3 py-2 text-xs text-[#c4e8f2]">Tap the ground to place this garden element. <button className="underline" onClick={() => setGardenPlacement(null)}>Cancel</button></p>}
+        {gardenPlacement && <p role="status" className="bg-[#29405c] px-3 py-2 text-xs text-[#c4e8f2]">{gardenPlacement.mode === 'resize' ? 'Drag two corners on the ground to resize this surface.' : 'Tap the ground to place this garden element.'} <button className="underline" onClick={() => setGardenPlacement(null)}>Cancel</button></p>}
         {constructionTool === 'room' && <div className="house-wall-build-strip"><span role="status">{roomPreview ? roomPreview.ok ? `${roomPreview.areaM2.toFixed(1)} m² · release to build` : roomPreview.message : 'Drag between opposite corners to build a room'}</span><button type="button" onClick={() => chooseBuildTool('select')}>Done</button></div>}
         {constructionTool === 'wall' && <div className="house-wall-build-strip" data-testid="house-wall-build-strip">
           <span role="status">{wallPreview ? wallPreview.ok ? `${wallPreview.lengthM.toFixed(2)} m · ${Math.round(wallPreview.angleDeg)}°${wallPreview.closesRoom ? ' · release to close room' : ''}` : wallPreview.message : wallChain ? 'Continue from the last corner · tap or drag' : 'Drag a wall, or tap its start and end'}</span>

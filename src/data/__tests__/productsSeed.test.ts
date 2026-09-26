@@ -52,12 +52,12 @@ describe('catalog metadata', () => {
   });
 
   it('keeps the 27 pre-existing products first, then the 6 new seeds', () => {
-    expect(ALL).toHaveLength(41); // 33 + 8 Emcar solar products (eco / solar 2026-09-04)
+    expect(ALL).toHaveLength(42); // 33 + 8 Emcar solar products + one sourced Duraco tank
     expect(ALL[0].id).toBe('k1-nordictrack-2450');
     expect(ALL[26].id).toBe('demo-potted-plant');
     expect(ALL.slice(27, 33).map((p) => p.id)).toEqual(NEW_IDS);
     // Eco / solar (2026-09-04): the eight priced Emcar products come last.
-    expect(ALL.slice(33).map((p) => p.id)).toEqual(SOLAR_IDS);
+    expect(ALL.slice(33, 41).map((p) => p.id)).toEqual(SOLAR_IDS);
     for (const id of SOLAR_IDS) expect(ALL.find((p) => p.id === id)?.category).toBe('solar');
   });
 

@@ -31,6 +31,10 @@ describe('Studio safety and view navigation', () => {
   it('opens the same editable demo in the selected 2D or 3D view', () => {
     act(() => root.render(<MemoryRouter initialEntries={['/studio/designer?view=2d']}><StudioDesignerPage /></MemoryRouter>));
     const frame = container.querySelector('iframe')!;
+    expect(container.querySelectorAll('header')).toHaveLength(1);
+    expect(container.querySelector('.studio-workspace-bar')).toBeNull();
+    expect(container.querySelector('[data-testid="studio-designer-toolbar"] a[href="/studio/shop"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="studio-designer-toolbar"] a[href="/studio/merchants"]')).not.toBeNull();
     const posted = vi.spyOn(frame.contentWindow!, 'postMessage');
     expect(frame.getAttribute('src')).toBe('/embed/designer?scene=home&view=2d');
     const premium = [...container.querySelectorAll('button')].find((button) => button.textContent === 'Premium 3D')!;

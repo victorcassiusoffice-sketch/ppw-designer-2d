@@ -1220,6 +1220,38 @@
    "placement": "wall",
    "mount_height_cm": 130,
    "energy_role": "none"
+  },
+  {
+   "id": "duraco-water-tank-1000",
+   "sku": "DURACO-WATER-CYL-1000",
+   "name": "Duraco 1,000 L cylindrical water tank",
+   "category": "other",
+   "supplier": "Duraco Ltée (via Mauritian hardware retailers)",
+   "dimensions_cm": {
+    "length": 114,
+    "width": 114,
+    "height": 130.5
+   },
+   "weight_kg": 0,
+   "price": {
+    "value": 11500,
+    "currency": "MUR"
+   },
+   "price_on_request": false,
+   "commission_pct": 0,
+   "shopify_ready": false,
+   "image_url": "/products/illustrations/duraco-water-tank-1000.svg",
+   "topdown_image_url": "/products/illustrations/duraco-water-tank-1000-plan.svg",
+   "designer_status": "Done",
+   "delivery_regions": [
+    "MU"
+   ],
+   "notes": "1,000 L above-ground cylindrical water storage tank, UV-stabilised food-grade polyethylene, 12-year warranty; ½-inch inlet, 1-inch outlet. Dimensions D 1,140 × H 1,305 mm as listed by Quincaillerie Bon Marché (checked 26 September 2026; Ah-Ling World lists 1,130 × 1,260 mm for the same model). Price Rs 11,500 is the list price shown by both Ah-Ling World and Quincaillerie Bon Marché on 26 September 2026 (QBM showed a Rs 10,350 sale price that day); VAT status unstated; delivery and installation excluded. Original dimensional planning model, not a manufacturer CAD model or product photograph; colour and fittings indicative.",
+   "source_url": "https://quincailleriebonmarche.com/product/duraco-water-tank-1000l/",
+   "placement": "floor",
+   "outdoor": true,
+   "energy_role": "none",
+   "price_note": "List price Rs 11,500 at Ah-Ling World and Quincaillerie Bon Marché, checked 2026-09-26; QBM sale price Rs 10,350 the same day. Manufacturer Duraco does not publish a price."
   }
  ]
 }

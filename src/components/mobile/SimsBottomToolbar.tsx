@@ -1,14 +1,14 @@
 /**
  * SimsBottomToolbar — Phase 2 + 4 of the mobile Sims rebuild.
  *
- * The persistent catalog. Replaces the old mobile bottom-sheet + floating
- * "Catalog" button. Sticky to the bottom of the viewport on screens
- * < 1024 px, with SimsDock handling the desktop catalog.
+ * A compact Furnish / Search launcher opens the Plan catalog on demand.
+ * Sticky to the bottom of the viewport on screens < 1024 px, with SimsDock
+ * handling the desktop catalog. House mode keeps its existing store browser.
  *
  * Layout, left → right (per Vic's Sims-3 screenshot):
  *   • category icons (macro groups), active = ink on a mint tint (shop skin)
  *   • search and sorting above a horizontal strip of named product cards
- *   • a minimize chevron that collapses the strip (icons stay visible)
+ *   • a close control that returns to the small launcher
  *
  * Interactions:
  *   • tap a thumbnail        → MobileProductPopup (bigger image + desc + "+")
@@ -52,6 +52,7 @@ import { CATALOG_CHROME, catalogPrice, catalogRequestCategory, filterCatalog, ha
 import '../catalogChrome.css';
 import { CatalogHeader, CatalogHome } from '../CatalogHome';
 import { useCatalogDismissal } from '../useCatalogDismissal';
+import { PlanCatalogLauncher } from '../PlanCatalogLauncher';
 
 const { DOCK_ACCENT, DOCK_BG, DOCK_BG_RAISED, DOCK_BORDER, DOCK_TEXT } = CATALOG_CHROME;
 
@@ -68,7 +69,7 @@ const DOCK_CONTROL =
 export function SimsBottomToolbar() {
   const viewMode = useDesignerUIStore((s) => s.viewMode);
   const [activeCategory, setActiveCategory] = useState<MacroCategory>('all');
-  const [minimized, setMinimized] = useState(viewMode === '3d');
+  const [minimized, setMinimized] = useState(true);
   const [categoryHome, setCategoryHome] = useState(true);
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<CatalogSort>('catalog');
@@ -81,7 +82,7 @@ export function SimsBottomToolbar() {
   const stripRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { if (viewMode === '3d') setMinimized(true); }, [viewMode]);
+  useEffect(() => { setMinimized(true); }, [viewMode]);
   useEffect(() => {
     let focusFrame: number | undefined;
     const open = (event: Event) => {
@@ -214,6 +215,7 @@ export function SimsBottomToolbar() {
         data-catalog-mode={viewMode}
         data-catalog-open={!minimized}
         aria-label="Product catalog"
+        onKeyDownCapture={event => { if (viewMode === 'plan' && event.key === 'Escape' && !minimized) { event.preventDefault(); event.stopPropagation(); closeCatalog(); requestAnimationFrame(() => sectionRef.current?.querySelector<HTMLButtonElement>('[data-testid="sims-catalog-open"]')?.focus()); } }}
         className="sims-catalog lg:hidden fixed bottom-0 left-0 right-0 z-30 flex flex-col"
         style={{
           background: DOCK_BG,
@@ -223,11 +225,14 @@ export function SimsBottomToolbar() {
           boxShadow: '0 -6px 20px rgba(42,41,38,0.12)',
         }}
       >
-        <CatalogConnectionNotice />
+        {!minimized && <CatalogConnectionNotice />}
+        {viewMode === 'plan' && minimized && <PlanCatalogLauncher prefix="sims"
+          onOpen={() => { setMinimized(false); requestAnimationFrame(() => sectionRef.current?.querySelector<HTMLButtonElement>('[data-testid="sims-cat-all"]')?.focus()); }}
+          onSearch={() => { setMinimized(false); requestAnimationFrame(() => searchRef.current?.focus()); }} />}
         {viewMode === '3d' && <CatalogHeader home={categoryHome} category={activeCategory} onBack={() => { setCategoryHome(true); setQuery(''); setSelected(null); }} onClose={closeCatalog} />}
         {viewMode === '3d' && categoryHome && !minimized && <CatalogHome prefix="sims" products={allProducts} onCategory={(category) => { setActiveCategory(category); setCategoryHome(false); setQuery(''); }} />}
         {/* Plan keeps its compact category bar. 3D shows one home-store page at a time. */}
-        {viewMode !== '3d' && <div className="flex shrink-0 items-center gap-1 px-2 py-1" style={{ borderBottom: `1px solid ${DOCK_BORDER}` }}>
+        {viewMode !== '3d' && !minimized && <div className="plan-catalog-categories flex shrink-0 items-center gap-1 px-2 py-1" style={{ borderBottom: `1px solid ${DOCK_BORDER}` }}>
           <div
             role="tablist"
             aria-label="Product category"
@@ -278,10 +283,10 @@ export function SimsBottomToolbar() {
           <button
             type="button"
             data-testid="sims-toolbar-minimize"
-            aria-label={minimized ? 'Expand catalog' : 'Minimize catalog'}
+            aria-label="Close product catalog"
             aria-expanded={!minimized}
             aria-controls="mobile-catalog-products"
-            onClick={() => setMinimized((v) => !v)}
+            onClick={closeCatalog}
             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-[var(--catalog-hover)] active:shadow-[inset_0_1px_2px_rgba(42,41,38,0.18)] ${DOCK_CONTROL}`}
             style={{
               color: DOCK_TEXT,
@@ -289,7 +294,7 @@ export function SimsBottomToolbar() {
               boxShadow: `inset 0 0 0 1px ${DOCK_BORDER}`,
             }}
           >
-            <svg
+            <span className="sr-only">Close</span><svg
               viewBox="0 0 24 24"
               width={20}
               height={20}

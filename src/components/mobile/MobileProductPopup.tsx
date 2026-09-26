@@ -50,6 +50,7 @@ const CAPTION = 'text-[11px] font-semibold uppercase tracking-[0.06em] text-ppw-
 const POPOVER_SHADOW = '0 12px 32px rgba(42,41,38,0.18)';
 
 function formatPrice(p: Product): string {
+  if (p.price_on_request) return 'Price on request';
   const { value, currency } = p.price;
   return `${value.toLocaleString('en-MU', { maximumFractionDigits: 0 })} ${currency}`;
 }

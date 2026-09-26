@@ -41,6 +41,7 @@ import { PageTabs } from './components/PageTabs';
 import { TopBar } from './components/TopBar';
 import { CoachMark } from './components/uxKit';
 import { RoomCanvas } from './components/RoomCanvas';
+import { PlanGardenWorkspace } from './components/PlanGardenWorkspace';
 import { DetailsPanel } from './components/DetailsPanel';
 import { ToastProvider } from './components/ToastProvider';
 import { RoomList } from './components/RoomList';
@@ -320,7 +321,7 @@ export default function App() {
   );
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#efede8] text-ppw-ink">
+    <div data-view={designView} className="designer-app flex h-screen w-screen flex-col overflow-hidden bg-[#efede8] text-ppw-ink">
       <TopBar
         drawMode={drawMode}
         setDrawMode={setDrawMode}
@@ -378,6 +379,7 @@ export default function App() {
         {/* Overlay, not a rail — slides in from the right only while an
             item is selected (see DetailsPanel). */}
         <DetailsPanel armedProductId={pendingProductId} />
+        <PlanGardenWorkspace />
       </main>
       {/* Desktop Sims catalog dock (>= 1024 px). Mounted BEFORE
           SimsBottomToolbar so a `[data-product-id=...]` .first() in the e2e

@@ -54,11 +54,14 @@ export function StudioDesignerPage() {
   const [params, setParams] = useSearchParams();
   const mode = params.get('view') === '2d' ? '2d' : '3d';
   isShowcaseReadOnly();
-  return <main className="studio-page studio-workspace"><StudioHeader active="design" />
-    <div className="studio-workspace-bar"><div><strong>Demo</strong><span>Your design · saved on this device</span></div>
+  return <main className="studio-page studio-workspace">
+    <header className="studio-designer-toolbar" data-testid="studio-designer-toolbar">
+      <a href="/studio" className="studio-designer-brand" title="Back to Studio"><strong>PPW</strong><span>Studio</span></a>
+      <nav aria-label="Studio navigation"><a href="/studio/shop">Shop</a><a href="/studio/merchants">Merchants</a></nav>
       <div className="studio-view-toggle" role="group" aria-label="Designer view"><button type="button" aria-pressed={mode === '2d'} onClick={() => setParams({ view: '2d' })}>2D</button><button type="button" aria-pressed={mode === '3d'} onClick={() => setParams({ view: '3d' })}>Premium 3D</button></div>
-      <Link to={`/demo?view=${mode}`} target="_blank" rel="noreferrer" aria-label="Open designer alone in a new tab">Expand ↗</Link>
-    </div>
+      <span className="studio-designer-status">Demo · saved locally</span>
+      <Link className="studio-designer-expand" to={`/demo?view=${mode}`} target="_blank" rel="noreferrer" aria-label="Open designer alone in a new tab">Expand ↗</Link>
+    </header>
     <EmbeddedDesigner scene="home" view={mode} onViewChange={view => setParams({ view })} className="studio-designer-frame" title="Demo — interactive home designer" />
   </main>;
 }

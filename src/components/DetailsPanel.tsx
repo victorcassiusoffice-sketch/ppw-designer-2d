@@ -265,7 +265,7 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
             />
             <Stat
               label="Price"
-              value={`${selectedProduct.price.value.toLocaleString('en-MU')} ${selectedProduct.price.currency}`}
+              value={selectedProduct.price_on_request ? 'Price on request' : `${selectedProduct.price.value.toLocaleString('en-MU')} ${selectedProduct.price.currency}`}
             />
             <Stat label="Commission" value={`${(selectedProduct.commission_pct * 100).toFixed(1)} %`} />
             <Stat label="Supplier" value={selectedProduct.supplier} />
@@ -572,7 +572,7 @@ function ArmedProductDetails({ product }: { product: Product }) {
       />
       <Stat
         label="Price"
-        value={`${product.price.value.toLocaleString('en-MU')} ${product.price.currency}`}
+        value={product.price_on_request ? 'Price on request' : `${product.price.value.toLocaleString('en-MU')} ${product.price.currency}`}
       />
       <Stat label="Supplier" value={product.supplier} />
       {product.notes?.trim() && <Stat label="About" value={product.notes.trim()} multiline />}

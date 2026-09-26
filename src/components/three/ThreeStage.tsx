@@ -53,6 +53,7 @@ import { applyContentPresentation, applyRendererPresentation, presentationProfil
 import { disposeFurnitureTextures, furniturePreview } from './furniturePreview';
 import { mountRoofItem, poseRoofItem, roofPointFromRay } from './roofItems';
 import { solarPanelPreview } from './solarPanelPreview';
+import { waterTankPreview } from './waterTankPreview';
 import { createRoofSurface, roofItemMount } from '../../designer/roofSurface';
 import { pointInPolygon } from '../../lib/geometry';
 
@@ -690,8 +691,11 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       groundRef.current.position.z = presentation === 'architectural' ? centre.z : 0;
     }
     if (sceneRef.current) {
+      // Fog is a horizon fade on the ground plane only. It must start well
+      // beyond the house at any fit or zoom, or it would tint painted walls
+      // and break colour truth; six radii is past the far wall at 0.18× zoom.
       sceneRef.current.fog = presentation === 'architectural'
-        ? new THREE.Fog('#1b2942', Math.max(24, radius * 3), Math.max(100, radius * 12)) : null;
+        ? new THREE.Fog('#1b2942', Math.max(60, radius * 6), Math.max(200, radius * 18)) : null;
     }
   };
 
@@ -955,7 +959,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       // Known furniture has a shaped, explicitly approximate planning body.
       // Other products retain their own art; an exact GLTF always replaces it.
       const solarPreview = solarPanelPreview(it);
-      const mesh = mountRoofItem(solarPreview ?? furniturePreview(it) ?? artBox(it, requestRender), it);
+      const tankPreview = waterTankPreview(it);
+      const mesh = mountRoofItem(solarPreview ?? tankPreview ?? furniturePreview(it) ?? artBox(it, requestRender), it);
       content.add(mesh);
       itemsRef.current.push(mesh);
       bounds.expandByObject(mesh);
@@ -974,7 +979,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       }
       // Swap the preview for the product's body once it has loaded — unless the
       // plan has been rebuilt since (a stale load must not resurrect).
-      if (it.meshUrl && !solarPreview) {
+      if (it.meshUrl && !solarPreview && !tankPreview) {
         loadBody(it.meshUrl)
           .then((tpl) => {
             if (buildRef.current !== buildId || !contentRef.current) return;

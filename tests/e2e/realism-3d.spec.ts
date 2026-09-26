@@ -61,10 +61,12 @@ async function seedGreyRoom(page: Page): Promise<void> {
 
 async function open3D(page: Page, url: string): Promise<void> {
   await page.goto(url);
-  await page.waitForSelector('.konvajs-content canvas', { state: 'attached', timeout: 30_000 });
+  await page.waitForSelector('.konvajs-content canvas, [data-testid="wallpaint-3d-overlay"]', { state: 'attached', timeout: 30_000 });
   await page.waitForTimeout(600);
-  await page.locator('[data-testid="view-mode-3d"]').click();
-  await expect(page.locator('[data-testid="wallpaint-3d-overlay"]')).toBeVisible();
+  // The 3D-first shell (2026-09-23) opens furnished plans straight in 3D; only switch when Plan is showing.
+  const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
+  if (!(await overlay.isVisible())) await page.locator('[data-testid="view-mode-3d"]').click();
+  await expect(overlay).toBeVisible();
   await expect.poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.faceCount()), { timeout: STAGE_TIMEOUT }).toBeGreaterThan(0);
   expect(await page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.backend())).toBe('gl');
   await expect.poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.debug().frames), { timeout: STAGE_TIMEOUT }).toBeGreaterThan(0);
@@ -121,6 +123,54 @@ test.describe('3D Mode — P3 realism (desktop)', () => {
     expect(d.bodies).toBe(0);
     expect(d.lamps).toBe(1);
     expect(d.contactShadows).toBe(1);
+  });
+
+  test('colour truth survives closing the Paint tool — the architectural look reads the SAME wall pixel as the studio rig (±3)', async ({ page }) => {
+    // 2026-09-26: the house view switches to the "architectural" presentation
+    // (navy sky, dark ground, far fog, cool edges) whenever the Paint tool is
+    // closed. That look must never move a painted pixel: same rig, no tone
+    // mapping, exposure 1. A TintEX shade picked with Paint open has to be
+    // the shade the customer sees once the tool closes.
+    await seedGreyRoom(page);
+    await open3D(page, '/designer?demo=off');
+    await page.locator('[data-testid="view3d-walls-up"]').click();
+    await page.waitForTimeout(500);
+    await settle(page);
+    const stage = page.locator('[data-testid="wallpaint-3d"]');
+    const readWall = () => page.evaluate(() => {
+      const b = (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d;
+      const h = { kind: 'edge' as const, roomId: 'r1', edgeIndex: 0 };
+      const pt = b.wallScreenPoint(h)!;
+      return { hex: b.wallMaterial(h)?.baseHex, px: b.samplePixel(pt.x, pt.y)!, pt };
+    });
+    // Paint OPEN → the studio presentation.
+    await page.locator('[data-testid="house-mode-paint"]').click();
+    await expect(stage).toHaveAttribute('data-presentation', 'studio');
+    await page.waitForTimeout(600);
+    await settle(page);
+    const open = await readWall();
+    expect(open.hex).toBe('#808080');
+    // Paint CLOSED → the architectural presentation, same camera, same wall point.
+    await page.locator('[data-testid="house-mode-build"]').click();
+    await expect(stage).toHaveAttribute('data-presentation', 'architectural');
+    await page.waitForTimeout(600);
+    await settle(page);
+    const closed = await readWall();
+    expect(closed.pt).toEqual(open.pt);
+    for (const k of ['r', 'g', 'b'] as const) {
+      // The law: a #808080 wall reads 118–127 (the spec's measured band) in EVERY view.
+      expect(closed.px[k]).toBeGreaterThanOrEqual(Math.round(0x80 * 0.78));
+      expect(closed.px[k]).toBeLessThanOrEqual(Math.round(0x80 * 1.04) + 3);
+      expect(Math.abs(closed.px[k] - open.px[k])).toBeLessThanOrEqual(3);
+    }
+    // And the look did change where it may: the ground plane under the house is the navy backdrop, not the studio grey.
+    const ground = await page.evaluate(() => {
+      const b = (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d;
+      const pt = b.floorScreenPoint(2.5, 2)!;
+      // Sample well below the room's near edge: outside the plan, on the ground plane.
+      return b.samplePixel(pt.x, Math.min(pt.y + 260, 880));
+    });
+    expect(ground!.b).toBeGreaterThan(ground!.r + 10);
   });
 
   test('the show flat is dressed (doors, windows) and holds NO props — nothing stands in for a product; the sun rig turns on, moves the sun, goes dark, and turns off', async ({ page }) => {

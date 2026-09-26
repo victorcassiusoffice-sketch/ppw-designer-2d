@@ -7,8 +7,8 @@
  * takes the drawing surface from 56.7 % of the viewport width to full
  * width — the whole point of complaint 2.
  *
- * Search, category tabs and sorting stay visible above a compact product
- * strip. Collapsing the strip returns its height to the drawing surface.
+ * Plan starts with a small Furnish / Search capsule. Opening it reveals
+ * categories, sorting and the product strip; Close returns the canvas space.
  *
  * PLACEMENT IS UNCHANGED. Clicking a tile arms `pendingProductId` exactly
  * as the old ProductPalette card did (same toggle-off-on-second-click, same
@@ -46,6 +46,7 @@ import { CATALOG_CHROME, catalogPrice, catalogRequestCategory, filterCatalog, ha
 import '../catalogChrome.css';
 import { CatalogHeader, CatalogHome } from '../CatalogHome';
 import { useCatalogDismissal } from '../useCatalogDismissal';
+import { PlanCatalogLauncher } from '../PlanCatalogLauncher';
 import { MobileProductPopup } from '../mobile/MobileProductPopup';
 import { usePlacementIntentStore } from '../../store/placementIntentStore';
 
@@ -74,7 +75,7 @@ interface HoverState {
 export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProps = {}) {
   const viewMode = useDesignerUIStore((s) => s.viewMode);
   const [activeCategory, setActiveCategory] = useState<MacroCategory>('all');
-  const [collapsed, setCollapsed] = useState(viewMode === '3d');
+  const [collapsed, setCollapsed] = useState(true);
   const [categoryHome, setCategoryHome] = useState(true);
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<CatalogSort>('catalog');
@@ -86,7 +87,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
   const stripRef = useRef<HTMLUListElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { setCollapsed(viewMode === '3d'); setHover(null); setDetails(null); }, [viewMode]);
+  useEffect(() => { setCollapsed(true); setHover(null); setDetails(null); }, [viewMode]);
   useEffect(() => {
     let focusFrame: number | undefined;
     const open = (event: Event) => {
@@ -260,6 +261,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
         data-catalog-mode={viewMode}
         data-catalog-open={!collapsed}
         aria-label="Build catalog"
+        onKeyDownCapture={event => { if (viewMode === 'plan' && event.key === 'Escape' && !collapsed) { event.preventDefault(); event.stopPropagation(); closeCatalog(); requestAnimationFrame(() => sectionRef.current?.querySelector<HTMLButtonElement>('[data-testid="dock-catalog-open"]')?.focus()); } }}
         // Desktop only — below 1024 px the mobile SimsBottomToolbar is the
         // catalog. `shrink-0` keeps the dock OUT of the canvas's flex grow
         // so the measured stage height is honest: the canvas really is the
@@ -272,7 +274,10 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
           boxShadow: '0 -6px 20px rgba(42,41,38,0.10)',
         }}
       >
-        <CatalogConnectionNotice />
+        {!collapsed && <CatalogConnectionNotice />}
+        {viewMode === 'plan' && collapsed && <PlanCatalogLauncher prefix="dock"
+          onOpen={() => { setCollapsed(false); requestAnimationFrame(() => sectionRef.current?.querySelector<HTMLButtonElement>('[data-testid="dock-cat-all"]')?.focus()); }}
+          onSearch={() => { setCollapsed(false); requestAnimationFrame(() => searchRef.current?.focus()); }} />}
         {/* The DOM thumbnail ghost shows only while the pointer is OUTSIDE
             the canvas. Over the canvas the Konva footprint ghost is the
             single truth, so exactly one preview is ever visible. */}
@@ -280,7 +285,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
 
         {viewMode === '3d' && <CatalogHeader home={categoryHome} category={activeCategory} onBack={() => { setCategoryHome(true); setQuery(''); setDetails(null); }} onClose={closeCatalog} />}
         {viewMode === '3d' && categoryHome && !collapsed && <CatalogHome prefix="dock" products={allProducts} onCategory={(category) => { setActiveCategory(category); setCategoryHome(false); setQuery(''); }} />}
-        {(viewMode !== '3d' || (!categoryHome && !details)) && <div className="catalog-browser-search flex min-w-0 items-center gap-2">
+        {!collapsed && (viewMode !== '3d' || (!categoryHome && !details)) && <div className="catalog-browser-search flex min-w-0 items-center gap-2">
           <label className="catalog-field flex h-10 w-[210px] shrink-0 items-center gap-2 rounded-xl border px-2.5 focus-within:ring-2 focus-within:ring-[var(--catalog-focus)] xl:w-[250px]" style={{ borderColor: DOCK_BORDER }}>
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="m13 13 4 4" /></svg>
             <input ref={searchRef} type="search" value={query} data-testid="dock-search" aria-label="Search product catalog" placeholder="Search products or brands"
@@ -335,10 +340,10 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
             className={`catalog-field h-10 w-[124px] shrink-0 rounded-lg border px-2 text-[12px] ${DOCK_CONTROL}`} style={{ borderColor: DOCK_BORDER, color: DOCK_TEXT }}>
             <option value="catalog">Catalog order</option><option value="name">Name A–Z</option><option value="footprint">Smallest first</option>
           </select>
-          {viewMode !== '3d' && <button type="button" data-testid="dock-collapse" aria-label={collapsed ? 'Show product strip' : 'Hide product strip'} aria-expanded={!collapsed} aria-controls="desktop-catalog-products"
-            onClick={() => { setCollapsed((value) => !value); setHover(null); }} title={collapsed ? 'Show product strip' : 'Hide product strip'}
-            className={`catalog-field flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${DOCK_CONTROL}`} style={{ borderColor: DOCK_BORDER, color: DOCK_TEXT }}>
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ transform: collapsed ? 'none' : 'rotate(180deg)' }}><path d="m6 14 6-6 6 6" /></svg>
+          {viewMode !== '3d' && <button type="button" data-testid="dock-collapse" aria-label="Close product catalog" aria-expanded="true" aria-controls="desktop-catalog-products"
+            onClick={closeCatalog} title="Close product catalog"
+            className={`catalog-field flex h-10 shrink-0 items-center justify-center rounded-lg border px-3 text-xs ${DOCK_CONTROL}`} style={{ borderColor: DOCK_BORDER, color: DOCK_TEXT }}>
+            Close ×
           </button>}
         </div>}
 
@@ -517,6 +522,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
             thumbUrl={productImageUrl(hover.product)}
             name={hover.product.name}
             priceMur={Math.round(hover.product.price?.value ?? 0)}
+            priceLabel={catalogPrice(hover.product)}
             description={
               hover.product.notes?.trim()
                 ? `${hover.product.notes.trim()}\n${hover.product.dimensions_cm.length}×${hover.product.dimensions_cm.width}×${hover.product.dimensions_cm.height} cm · ${hover.product.supplier}`

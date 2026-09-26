@@ -13,16 +13,19 @@ const STUDIO = {
   floorGain: 0.9, cornerAlpha: 0.16, contactAlpha: 0.3, lampFactor: 0,
 };
 
+/**
+ * The architectural presentation keeps the studio LIGHT RIG byte for byte.
+ * Colour truth (measured 2026-09-19: a #808080 wall reads 118–127 on every
+ * wall and camera; floors take the measured 0.9 gain) forbids tone mapping,
+ * any exposure other than 1, a tinted sky/bounce, a rim light or day-lit
+ * lamps on priced surfaces. What this look changes is only what is not for
+ * sale: the sky dome, the ground plane, the far fog and the unpriced
+ * reveal / cap edges of the walls. A paint picked in the Paint tool must
+ * look the same the moment the tool closes.
+ */
 const ARCHITECTURAL = {
-  toneMapping: THREE.ACESFilmicToneMapping, exposure: 1.05,
-  // A large neutral sky supplies bounce; warm directional light describes
-  // wall thickness and floor texture. The cool rim separates the silhouette.
-  day: { hemi: 0.34, sun: 1.05, fill: 0.18, rim: 0.22 },
-  night: { hemi: 0.09, sun: 0, fill: 0.055, rim: 0.07 },
-  sky: '#dce7f5', bounce: '#6a7581', fill: '#e5edff', sun: '#ffe5c5',
-  sunDirection: [-0.65, 1, 0.5] as const,
-  reveal: '#a6b1bc', cap: '#cbd6e2', exterior: '#64768c',
-  floorGain: 1, cornerAlpha: 0.23, contactAlpha: 0.4, lampFactor: 0.25,
+  ...STUDIO,
+  reveal: '#a6b1bc', cap: '#cbd6e2',
 };
 
 export function presentationProfile(presentation: ScenePresentation = 'studio') {

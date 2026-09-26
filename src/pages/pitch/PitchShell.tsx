@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type ReactNode, type KeyboardEvent } from 'react';
 import { MEETING_URL } from './workflowModel';
 import { EmbeddedDesigner } from '../../demo/EmbeddedDesigner';
 import './pitch.css';
@@ -36,23 +36,28 @@ export function ConceptNote({ children }: { children?: ReactNode }) { return <di
 export function StatusChip({ available, children }: { available?: boolean; children: ReactNode }) { return <span className={`pitch-chip ${available ? 'is-available' : ''}`}>{available ? '● ' : '◇ '}{children}</span>; }
 export function MeetingCard() { return <div className="pitch-meeting-card"><span className="pitch-avatar">VC</span><div><strong>Victor Cassius</strong><p>Your ongoing partner for ideas, workflow design and customization.</p></div><a href={MEETING_URL} target="_blank" rel="noreferrer">Book a 1-hour meeting ↗</a></div>; }
 
-export function ApartmentDiagram({ wall, floor = '#c5a685', showServices = false }: { wall: string; floor?: string; showServices?: boolean }) {
-  return <svg className="pitch-apartment-diagram" viewBox="0 0 500 350" role="img" aria-label={`Illustrative apartment plan with ${showServices ? 'electrical points and structural pillars' : 'selected wall and floor finishes'}`}>
-    <defs><pattern id="pitch-floor-lines" width="35" height="35" patternUnits="userSpaceOnUse"><path d="M0 0h35v35" fill="none" stroke="#ffffff" strokeOpacity=".16" /></pattern></defs>
-    <rect x="27" y="28" width="448" height="294" rx="13" fill="#ffffff" opacity=".07" />
-    <path d="M52 52H443V296H52Z" fill={floor} /><path d="M52 52H443V296H52Z" fill="url(#pitch-floor-lines)" />
-    <path d="M52 52H443V296H52ZM302 52V206M302 246V296M302 171H443M52 209H132M172 209H302" fill="none" stroke={wall} strokeWidth="14" strokeLinejoin="round" />
-    <rect x="329" y="76" width="83" height="60" rx="5" fill="#ede8dc" /><rect x="334" y="80" width="33" height="16" rx="4" fill="#fff" /><rect x="374" y="80" width="33" height="16" rx="4" fill="#fff" />
-    <rect x="80" y="78" width="53" height="99" rx="8" fill="#556b62" /><rect x="84" y="82" width="15" height="89" rx="5" fill="#759281" />
-    <rect x="161" y="95" width="69" height="59" rx="24" fill="#e8d9bd" /><circle cx="195" cy="124" r="10" fill="#516c52" />
-    <rect x="83" y="237" width="111" height="31" rx="6" fill="#d8cfbc" /><rect x="82" y="267" width="44" height="15" rx="3" fill="#64716b" />
-    <rect x="330" y="202" width="74" height="45" rx="5" fill="#dfdbd1" /><rect x="337" y="209" width="60" height="31" rx="12" fill="#aac5c2" />
-    <path d="M62 48H139M222 48H280M349 48H420M447 210V270" stroke="#93cbd3" strokeWidth="8" />
-    {[[52,52],[302,52],[443,171],[52,209]].map(([x,y]) => <rect key={`${x}-${y}`} x={x-9} y={y-9} width="18" height="18" fill="#53666e" stroke="#e4ded0" strokeWidth="2" />)}
-    <g fill="#233b40" fontSize="12" fontFamily="inherit"><text x="176" y="186">Living</text><text x="344" y="158">Bedroom</text><text x="205" y="270">Kitchen</text><text x="346" y="276">Bathroom</text></g>
-    {showServices && <g fill="#7befcc" stroke="#173f43" strokeWidth="2">{[[72,94],[275,111],[426,89],[281,239],[321,280]].map(([x,y]) => <g key={`${x}-${y}`}><circle cx={x} cy={y} r="10" /><path d={`M${x+1} ${y-6}l-5 7h4l-1 5 5-7h-4Z`} strokeWidth="1" /></g>)}</g>}
-    <path d="M52 329H443M52 324V334M443 324V334" stroke="#879fa7" /><text x="215" y="345" fontSize="11" fill="#b9cbd2">Example layout · not to scale</text>
-  </svg>;
+const CAPTURED_VIEWS = {
+  '2d': { src: '/showcase/designer-plan.png', label: '2D plan', alt: 'Room Designer 2D plan captured with its drawing and product controls' },
+  '3d': { src: '/showcase/designer-3d.png', label: 'Premium 3D', alt: 'Room Designer Premium 3D captured with its building and camera controls' },
+};
+
+export function DesignerCapture({ view = '2d', onOpenLive }: { view?: '2d' | '3d'; onOpenLive?: () => void }) {
+  const capture = CAPTURED_VIEWS[view];
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const failed = failedSrc === capture.src;
+  return <figure className="pitch-app-capture">
+    <figcaption><span>{failed ? 'App view unavailable' : 'Captured in the app'}</span><strong>{capture.label}</strong>{!failed && <span>Tap to enlarge ↗</span>}</figcaption>
+    {failed ? <div className="pitch-capture-unavailable" role="status"><p>This screenshot could not load. Explore the working designer below.</p></div> : <a className="pitch-capture-image" href={capture.src} target="_blank" rel="noreferrer" aria-label={`Enlarge ${capture.label} screenshot`}><img src={capture.src} alt={capture.alt} loading="lazy" onError={() => setFailedSrc(capture.src)} /></a>}
+    <dl className="pitch-capture-tools" aria-label={`${capture.label} controls`}>
+      {view === '2d' ? <><div><dt>Walls</dt><dd>Draw the room footprint.</dd></div><div><dt>Furnish</dt><dd>Open products, search and categories.</dd></div></> : <><div><dt>Build</dt><dd>Choose a floor, walls, openings or roof.</dd></div><div><dt>Move view</dt><dd>Pan the camera; drag to orbit when off.</dd></div></>}
+    </dl>
+    <div className="pitch-capture-actions"><p className="pitch-fine">A saved view of the app. Brief samples do not change this image.</p>{onOpenLive ? <button type="button" onClick={onOpenLive}>Try these tools ↗</button> : <a href={`/demo?scene=home&view=${view}`} target="_blank" rel="noreferrer">Try these tools ↗</a>}</div>
+  </figure>;
+}
+
+export function DesignerCaptureGallery({ onOpenLive }: { onOpenLive: () => void }) {
+  const [view, setView] = useState<'2d' | '3d'>('2d');
+  return <div className="pitch-capture-gallery"><div className="pitch-segment" role="group" aria-label="Captured designer view">{(['2d', '3d'] as const).map((value) => <button type="button" key={value} aria-pressed={view === value} onClick={() => setView(value)}>{CAPTURED_VIEWS[value].label}</button>)}</div><DesignerCapture view={view} onOpenLive={onOpenLive} /></div>;
 }
 
 export function LiveDesigner({ paint = false, view = '3d', onViewChange }: { paint?: boolean; view?: '2d' | '3d'; onViewChange?: (view: '2d' | '3d') => void }) {

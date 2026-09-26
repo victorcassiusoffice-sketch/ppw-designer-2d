@@ -34,6 +34,49 @@
   color-scheme: dark;
 }
 
+/* Plan keeps a small translucent launcher until the user needs the catalogue. */
+.sims-catalog[data-catalog-mode="plan"] {
+  --catalog-bg: rgba(15, 49, 55, .95);
+  --catalog-raised: #22494e;
+  --catalog-field: #163b40;
+  --catalog-border: #52777a;
+  --catalog-text: #e6f2ee;
+  --catalog-muted: #adcbc6;
+  --catalog-caption: #bdd8d1;
+  --catalog-accent: #9ad9bf;
+  --catalog-selected: #35675f;
+  --catalog-selected-text: #edfff5;
+  --catalog-hover: #2b5759;
+  --catalog-focus: rgba(154, 217, 191, .6);
+  color-scheme: dark;
+  backdrop-filter: blur(14px);
+}
+.sims-catalog[data-catalog-mode="plan"][data-catalog-open="false"] {
+  align-self: center;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  margin: 5px auto;
+  padding: 0 !important;
+  border: 1px solid #789b9666 !important;
+  border-radius: 26px;
+  box-shadow: 0 4px 16px #102f3824 !important;
+}
+.plan-catalog-launcher { display: flex; align-items: center; min-height: 40px; }
+.plan-catalog-launcher button { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 40px; border: 0; background: transparent; color: var(--catalog-text); padding: 0 15px; border-radius: 25px; font-size: 12px; }
+.plan-catalog-launcher button:first-child { padding-right: 12px; }
+.plan-catalog-launcher button:last-child { border-left: 1px solid #789b9645; border-radius: 0 25px 25px 0; min-width: 43px; padding: 0 12px; }
+.plan-catalog-launcher strong { font-weight: 600; }
+.plan-catalog-launcher button>span { font-size: 10px; color: var(--catalog-muted); }
+.plan-catalog-launcher button:hover { background: var(--catalog-hover); }
+.plan-catalog-launcher button:focus-visible { outline: 3px solid var(--catalog-focus); outline-offset: -3px; }
+.sims-catalog[data-catalog-mode="plan"] [data-testid="catalog-connection"] { color: var(--catalog-muted); }
+.sims-catalog[data-catalog-mode="plan"] [data-testid="catalog-retry"] { color: var(--catalog-accent); }
+@media(max-width:1023px) {
+  .sims-catalog[data-catalog-mode="plan"][data-catalog-open="false"] { left: 50%; right: auto; bottom: calc(6px + env(safe-area-inset-bottom)); transform: translateX(-50%); margin: 0; }
+  .sims-catalog[data-catalog-mode="plan"][data-catalog-open="true"] { border-radius: 18px 18px 0 0; }
+  .plan-catalog-categories [role="tab"] { height: 40px; min-width: 54px; }
+}
+
 .sims-catalog .catalog-field {
   background: var(--catalog-field);
   color: var(--catalog-text);

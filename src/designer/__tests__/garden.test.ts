@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  fenceLengthM, gardenElevationAt, gardenPoints, gardenSurfacePolygon, moveGardenFence, normaliseGarden,
+  fenceLengthM, gardenElevationAt, gardenPoints, gardenRectFromPoints, gardenSurfacePolygon, moveGardenFence, normaliseGarden,
   type Garden, type GardenFence,
 } from '../garden';
 
@@ -10,6 +10,14 @@ const garden: Garden = {
 };
 
 describe('garden geometry and untrusted saves', () => {
+  it('resizes from either drag direction while retaining an exact minimum and rejecting accidental taps', () => {
+    expect(gardenRectFromPoints({ x: 5, y: 8 }, { x: 1, y: 2 })).toEqual({ x: 1, y: 2, widthM: 4, depthM: 6 });
+    expect(gardenRectFromPoints({ x: 1, y: 2 }, { x: 5, y: 8 })).toEqual({ x: 1, y: 2, widthM: 4, depthM: 6 });
+    expect(gardenRectFromPoints({ x: 2.1, y: 3.1 }, { x: 2.3, y: 3.3 })).toMatchObject({ widthM: 0.2, depthM: 0.2 });
+    expect(gardenRectFromPoints({ x: 1, y: 2 }, { x: 1.02, y: 2.03 })).toBeNull();
+    expect(gardenRectFromPoints({ x: 1, y: 2 }, { x: Infinity, y: 2 })).toBeNull();
+    expect(gardenRectFromPoints({ x: 0, y: 0 }, { x: 501, y: 2 })).toBeNull();
+  });
   it('preserves valid raised terrain and fences, dropping malformed and duplicate elements independently', () => {
     const dirty = {
       surfaces: [...garden.surfaces, { ...garden.surfaces[0], id: 'invalid', widthM: NaN }, { ...garden.surfaces[0] }],

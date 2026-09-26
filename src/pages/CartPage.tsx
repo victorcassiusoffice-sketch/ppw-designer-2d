@@ -85,7 +85,7 @@ export default function CartPage() {
                     {CATEGORY_LABELS[line.product.category]} · {line.product.supplier}
                   </p>
                   <p className="mt-0.5 text-[11px] text-ppw-slate">
-                    Unit: {formatCurrency(line.unitPriceDisplay, currency)}
+                    Unit: {line.product.price_on_request ? 'Price on request' : formatCurrency(line.unitPriceDisplay, currency)}
                     {line.unitCurrency !== currency && (
                       <span className="ml-1 text-[10px]">
                         ({formatCurrency(line.unitPrice, line.unitCurrency)})
@@ -125,7 +125,7 @@ export default function CartPage() {
 
                 <div className="text-right md:w-32">
                   <p className="text-sm font-bold text-ppw-ink">
-                    {formatCurrency(line.lineTotalDisplay, currency)}
+                    {line.product.price_on_request ? 'Price on request' : formatCurrency(line.lineTotalDisplay, currency)}
                   </p>
                   {line.placedCount !== line.quantity && (
                     <p className="text-[10px] text-ppw-slate">

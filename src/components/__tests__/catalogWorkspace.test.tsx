@@ -36,10 +36,40 @@ function openCatalog(category?: string) {
 }
 
 describe('workspace catalog navigation', () => {
+  it.each([390, 1440])('starts Plan with a launcher and keeps products, search, categories and Close reachable at %ipx', width => {
+    vi.stubGlobal('innerWidth', width);
+    act(() => root.render(<><SimsDock /><SimsBottomToolbar /></>));
+    const prefix = width < 1024 ? 'sims' : 'dock';
+    const strip = () => host.querySelector(width < 1024 ? '[data-testid="sims-thumb-strip"]' : '[data-testid="dock-strip"]');
+    const launcher = () => host.querySelector<HTMLButtonElement>(`[data-testid="${prefix}-catalog-open"]`)!;
+    expect(strip()).toBeNull();
+    expect(host.querySelector(`[data-testid="${prefix}-search"]`)).toBeNull();
+    expect(host.querySelector(`[data-testid="${prefix}-cat-all"]`)).toBeNull();
+    expect(launcher().textContent).toContain('Furnish');
+    act(() => launcher().click());
+    expect(strip()?.querySelectorAll('[data-product-id]').length).toBeGreaterThan(0);
+    act(() => host.querySelector<HTMLButtonElement>(`[data-testid="${prefix}-cat-eco"]`)!.click());
+    expect([...strip()!.querySelectorAll('[data-product-id]')].every(card => card.getAttribute('data-macro') === 'eco')).toBe(true);
+    act(() => host.querySelector<HTMLButtonElement>(width < 1024 ? '[data-testid="sims-toolbar-minimize"]' : '[data-testid="dock-collapse"]')!.click());
+    expect(strip()).toBeNull();
+    expect(launcher().getAttribute('aria-expanded')).toBe('false');
+    act(() => host.querySelector<HTMLButtonElement>(`[data-testid="${prefix}-search-open"]`)!.click());
+    act(() => { frames.splice(0).forEach(callback => callback(0)); });
+    const input = host.querySelector<HTMLInputElement>(`[data-testid="${prefix}-search"]`)!;
+    expect(document.activeElement).toBe(input);
+    act(() => input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
+    act(() => { frames.splice(0).forEach(callback => callback(0)); });
+    expect(strip()).toBeNull();
+    expect(document.activeElement).toBe(launcher());
+    openCatalog('eco');
+    expect(strip()).not.toBeNull();
+  });
+
   it('opens and focuses the requested desktop category without opening the hidden phone dock', () => {
     vi.stubGlobal('innerWidth', 1440);
     act(() => root.render(<><SimsDock /><SimsBottomToolbar /></>));
-    expect(host.querySelector('[data-testid="dock-strip"]')).not.toBeNull();
+    expect(host.querySelector('[data-testid="dock-strip"]')).toBeNull();
+    expect(host.querySelector('[data-testid="dock-catalog-open"]')).not.toBeNull();
     act(() => useDesignerUIStore.getState().setViewMode('3d'));
     expect(host.querySelector('[data-testid="sims-dock"]')?.getAttribute('data-catalog-mode')).toBe('3d');
     expect(host.querySelector('[data-testid="dock-strip"]')).toBeNull();

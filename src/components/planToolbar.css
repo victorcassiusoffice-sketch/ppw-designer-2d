@@ -1,64 +1,125 @@
+/* The plan keeps a paper drawing surface, framed by compact glass controls. */
 .plan-topbar {
-  --plan-pill-bg: rgba(255, 255, 255, .72);
-  --plan-pill-rim: rgba(125, 143, 155, .25);
-  --plan-pill-ink: #273e4b;
-  background: linear-gradient(135deg, #edf2f3, #f5f5ef) !important;
+  --plan-pill-rim: rgba(174, 214, 220, .19);
+  --plan-pill-ink: #e1edef;
+  display: grid; grid-template-columns: minmax(140px, 1fr) auto auto; align-items: center;
+  column-gap: 10px; padding: 4px 10px; min-height: 52px;
+  background: linear-gradient(115deg, #162a31, #153a40) !important;
+  border-color: #ffffff15 !important; color: var(--plan-pill-ink);
 }
-.plan-primary-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 7px 10px 4px; }
-.plan-identity { flex: 1 1 215px; }
-.plan-commerce { margin-left: auto; }
+.plan-primary-row { display: contents; }
+.plan-identity { grid-column: 1; grid-row: 1; min-width: 0; gap: 4px; }
+.plan-commerce { grid-column: 3; grid-row: 1; margin: 0; }
+.plan-navigation { grid-column: 2; grid-row: 1; display: flex; align-items: center; gap: 6px; }
 .plan-topbar .plan-primary-row > div > [aria-hidden="true"] { display: none; }
-.plan-primary-row button,
-.plan-primary-row a,
-.plan-primary-row [role="group"],
-.plan-room-shape { border-radius: 20px; }
-.plan-primary-row button,
-.plan-primary-row a { box-shadow: none; }
-.plan-navigation { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 4px 10px 8px; }
-.plan-pill-group { display: flex; flex-wrap: wrap; align-items: center; gap: 3px; padding: 3px; border: 1px solid var(--plan-pill-rim); border-radius: 26px; background: rgba(255,255,255,.36); box-shadow: inset 0 1px 0 rgba(255,255,255,.86), 0 3px 10px #263e4b09; }
-.plan-pill-group > button { height: 38px; min-width: 68px; gap: 5px; padding: 0 11px; border: 1px solid transparent; border-radius: 22px; color: var(--plan-pill-ink); background: transparent; }
-.plan-pill-group > button[aria-pressed="true"],
-.plan-pill-group > button[aria-expanded="true"] { background: #234657; border-color: #234657; color: #f2ffff; box-shadow: 0 3px 9px #17394a24; }
-.plan-pill-group > button:hover { background: var(--plan-pill-bg); border-color: var(--plan-pill-rim); color: var(--plan-pill-ink); }
-.plan-pill-group [data-testid="snap-unit-toggle"] { background: var(--plan-pill-bg); }
-.plan-pill-group [data-testid="snap-unit-toggle"][aria-expanded="true"] { background: #234657; color: #f2ffff; }
-.plan-control-label { display: inline; font-size: 12px; font-weight: 600; }
-.plan-pill-group [aria-label="History"] { border-radius: 22px; margin-left: 3px; background: var(--plan-pill-bg); }
-.plan-pill-group [aria-label="History"] button { height: 38px; border-radius: 20px; }
-.plan-options-host { padding: 0 10px; }
-.plan-control-panel { margin-bottom: 8px; overflow: hidden; border: 1px solid var(--plan-pill-rim); border-radius: 18px; background: rgba(255,255,255,.82); color: var(--plan-pill-ink); box-shadow: inset 0 1px 0 #fff; }
+.plan-topbar .plan-identity > button,
+.plan-topbar .plan-identity > a,
+.plan-topbar .plan-commerce button,
+.plan-topbar .plan-commerce a,
+.plan-topbar .plan-commerce select,
+.plan-topbar .plan-primary-row > button {
+  height: 38px; min-height: 38px; border: 0; border-radius: 24px; color: #e1edef; background: transparent; box-shadow: none;
+}
+.plan-topbar .plan-identity > button { max-width: 180px; min-width: 0; flex: 1; padding: 0 8px; }
+.plan-topbar [data-testid="demo-pill"] { border: 0; background: #ffffff0a; color: #aac8ca; font-size: 10px; height: 24px; padding: 0 7px; border-radius: 14px; }
+.plan-commerce [role="group"] { border: 0; }
+.plan-commerce > div { gap: 2px; }
+.plan-commerce [aria-label="Currency"] { max-width: 70px; font-size: 11px; }
+.plan-pill-group { display: flex; align-items: center; gap: 1px; padding: 3px; border: 1px solid var(--plan-pill-rim); border-radius: 28px; background: #ffffff05; box-shadow: inset 0 1px 0 #ffffff0c; }
+.plan-pill-group > button { height: 36px; min-width: 42px; gap: 4px; padding: 0 9px; border: 0; border-radius: 23px; color: var(--plan-pill-ink); background: transparent; }
+.plan-pill-group > button svg { width: 18px; height: 18px; }
+.plan-control-label { display: none; }
+.plan-pill-group [data-testid="levels-toggle"] .plan-control-label,
+.plan-pill-group [data-testid="view-mode-3d"] .plan-control-label { display: inline; font-size: 11px; }
+.plan-pill-group [aria-label="History"] { display: flex; border: 0; margin: 0; background: transparent; }
+.plan-pill-group [aria-label="History"] button { border: 0; height: 36px; min-width: 34px; width: 34px; padding: 0; background: transparent; color: #e1edef; }
+.plan-topbar .plan-navigation button:hover,
+.plan-topbar .plan-primary-row button:hover { background: #ffffff15; color: #fff; }
+.plan-topbar .plan-navigation button[aria-pressed="true"],
+.plan-topbar .plan-navigation button[aria-expanded="true"],
+.plan-topbar .plan-primary-row button[aria-pressed="true"],
+.plan-topbar .plan-primary-row button[aria-expanded="true"] { background: #ffffff20; color: #eafff9; box-shadow: inset 0 1px 0 #ffffff12; }
+/* A dedicated gutter keeps this rail completely outside the measured canvas. */
+.plan-build-tools {
+  position: fixed; left: 7px; top: calc(var(--ppw-topbar-h, 52px) + 42px);
+  bottom: calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px) + 14px);
+  width: 56px; height: max-content; max-height: calc(100dvh - var(--ppw-topbar-h, 52px) - var(--sims-dock-h, 0px) - var(--sims-toolbar-h, 0px) - 60px);
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 5px;
+  overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+  border: 1px solid #c3e1e52b; border-radius: 32px;
+  background: linear-gradient(155deg, #213b40f5, #16282eeb); color: #e3eff0;
+  box-shadow: inset 0 1px 0 #ffffff10, 0 10px 28px #12292c19;
+  backdrop-filter: blur(20px);
+}
+.plan-build-tools > [role="group"] { display: contents; }
+.plan-topbar .plan-build-tools button { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; width: 44px; min-width: 44px; height: 43px; flex-shrink: 0; padding: 3px 0; border: 0; border-radius: 24px; background: transparent; color: #bfd0d2; box-shadow: none; }
+.plan-topbar .plan-build-tools button svg { height: 19px; width: 19px; }
+.plan-topbar .plan-build-tools button > span { display: block; font-size: 8px; font-weight: 500; letter-spacing: .01em; }
+.plan-topbar .plan-build-tools button[aria-pressed="true"] { background: #ffffff20; color: #f4ffff; }
+.plan-topbar .plan-build-tools button[aria-label="Select"] { border-radius: 25px; }
+.plan-topbar .plan-build-tools .plan-room-shape { display: contents; }
+.plan-topbar .plan-build-tools [data-testid="room-draw-toggle"] { display: none; }
+.plan-topbar .plan-build-tools > [aria-hidden="true"] { display: none; }
+.plan-primary-row > [data-testid="select-tool-toggle-phone"] { display: none; }
+.plan-options-host { grid-column: 1 / -1; padding: 0; }
+.plan-control-panel { margin: 4px 0 0; overflow: hidden; border: 1px solid #d1dedc; border-radius: 18px; background: #f5f8f5; color: #263b41; }
 .plan-control-panel[hidden] { display: none; }
-.plan-control-panel-heading { display: flex; justify-content: space-between; align-items: center; min-height: 42px; gap: 12px; padding: 3px 12px; border-bottom: 1px solid var(--plan-pill-rim); }
+.plan-control-panel-heading { display: flex; justify-content: space-between; align-items: center; min-height: 34px; gap: 12px; padding: 2px 12px; border-bottom: 1px solid #d8e3df; }
 .plan-control-panel-heading strong { font-size: 12px; }
-.plan-control-panel-heading button { min-height: 36px; padding: 4px 9px; border-radius: 18px; font-size: 12px; font-weight: 600; }
+.plan-control-panel-heading button { min-height: 32px; padding: 3px 9px; border-radius: 18px; font-size: 12px; font-weight: 600; }
 .plan-control-panel-heading button:hover { background: #e6edf0; }
 .plan-control-panel-content { max-height: min(25dvh, 190px); overflow: auto; overscroll-behavior: contain; padding: 8px 10px; }
 .plan-control-panel [data-testid="snap-unit-picker"] { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
-.plan-control-panel [data-testid="snap-unit-picker"] > button { min-height: 40px; border-radius: 20px; border: 1px solid var(--plan-pill-rim); }
+.plan-control-panel [data-testid="snap-unit-picker"] > button { min-height: 40px; border-radius: 20px; border: 1px solid #d1dedc; }
 .plan-control-panel [data-testid="snap-unit-picker"] > button > span:last-child { display: none; }
 .plan-control-panel [data-testid="levels-picker"] { display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px; }
 .plan-control-panel [data-testid="levels-picker"] > div { min-width: 140px; flex: 1 1 160px; }
 .plan-control-panel [data-testid="level-add"] { width: auto; flex: 0 1 180px; border-radius: 20px; }
 .plan-control-panel [data-testid="land-picker"] { max-width: 440px; }
-.plan-control-panel button:focus-visible { outline: 3px solid #69bfbd77; outline-offset: 1px; }
+.plan-topbar button:focus-visible { outline: 2px solid #81e5d6; outline-offset: 1px; }
+.designer-app[data-view="plan"] > main { padding-left: 70px; }
+.designer-app[data-view="plan"] [data-testid="page-tabs"] { height: 34px; min-height: 34px; padding: 0 10px 0 76px; gap: 5px; background: #e4ebe5; border-color: #cdd9d0; }
+.designer-app[data-view="plan"] [data-testid="page-tabs"] button { height: 28px; min-height: 28px; padding: 0 10px; border: 0; border-radius: 18px; font-size: 10px; }
+.designer-app[data-view="plan"] [data-testid="page-tabs"] > span { font-size: 9px; }
+.designer-app[data-view="plan"] [data-testid="canvas-chrome-toggle"] { display: flex; border-radius: 24px; background: #203b40ed; color: #e2eff0; height: 36px; min-height: 36px; margin-right: 5px; }
+.designer-app[data-view="plan"] #canvas-plan-tools[data-open="false"] { display: none; }
+.designer-app[data-view="plan"] #canvas-plan-tools { padding: 8px; border: 1px solid #ffffff20; border-radius: 18px; background: #1c353bec; box-shadow: 0 8px 24px #152f3620; backdrop-filter: blur(12px); }
+.designer-app[data-view="plan"] #canvas-plan-tools button { background: transparent; color: #e3eef0; border-color: #ffffff17; border-radius: 20px; box-shadow: none; }
+.designer-app[data-view="plan"] #canvas-plan-tools button span { display: none; }
+.designer-app[data-view="plan"] [data-testid="clear-controls"] { left: 8px; gap: 3px; }
+.designer-app[data-view="plan"] [data-testid="clear-controls"] > button { min-width: 32px; width: 32px; height: 32px; padding: 0; border-radius: 20px; }
+.designer-app[data-view="plan"] [data-testid="clear-controls"] > button span { display: none; }
+@media (max-width: 1099px) {
+  .plan-topbar { grid-template-columns: minmax(100px, 1fr) auto; gap: 2px 6px; padding: 3px 7px; }
+  .plan-navigation { grid-column: 1 / -1; grid-row: 2; justify-content: center; padding: 0 0 3px; }
+  .plan-commerce { grid-column: 2; }
+  .plan-options-host { grid-row: 3; }
+  .plan-topbar .plan-identity > button { max-width: 230px; }
+}
 @media (max-width: 767px) {
-  .plan-primary-row { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 5px; padding: 6px 8px 3px; }
-  .plan-identity { grid-area: 1 / 1 / 2 / 3; }
-  .plan-primary-row > button[aria-label="Open menu"] { grid-area: 1 / 3 / 2 / 4; width: 100%; }
-  .plan-primary-row > [data-testid="select-tool-toggle-phone"] { grid-area: 2 / 1 / 3 / 2; }
-  .plan-room-shape { grid-area: 2 / 2 / 3 / 3; }
-  .plan-primary-row > [data-testid="view-mode-3d-phone"] { grid-area: 2 / 3 / 3 / 4; }
-  .plan-primary-row .plan-identity > a { width: 36px; height: 40px; border: 0; background: transparent; }
-  .plan-primary-row .plan-identity > button { padding-left: 8px; }
-  .plan-navigation { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 5px; padding: 3px 8px 6px; }
-  .plan-pill-group { display: contents; }
-  .plan-pill-group > button { width: 100%; min-width: 0; height: 40px; padding: 0 6px; border-color: var(--plan-pill-rim); background: var(--plan-pill-bg); }
-  .plan-pill-group .plan-desktop-3d { display: none; }
-  .plan-pill-group > button [class*="min-[1366px]:hidden"] { display: none; }
-  .plan-pill-group [aria-label="Toggle 3D preview"] { display: none; }
-  .plan-options-host { padding: 0 8px; }
+  .plan-topbar { grid-template-columns: minmax(120px,1fr) 52px 44px; min-height: 42px; }
+  .plan-identity { grid-area: 1 / 1 / 2 / 2; }
+  .plan-primary-row > [data-testid="view-mode-3d-phone"] { grid-area: 1 / 2 / 2 / 3; display: flex; width: 52px; gap: 3px; padding: 0; }
+  .plan-primary-row > button[aria-label="Open menu"] { grid-area: 1 / 3 / 2 / 4; display: flex; width: 44px; padding: 0; }
+  .plan-primary-row > button[aria-label="Open menu"] span { display: none; }
+  .plan-navigation { gap: 2px; justify-content: space-between; }
+  .plan-pill-group { padding: 2px; gap: 0; }
+  .plan-pill-group > button { height: 36px; min-width: 36px; padding: 0 6px; }
+  .plan-pill-group [data-testid="levels-toggle"] { gap: 2px; }
+  .plan-pill-group [data-testid="levels-toggle"] .plan-control-label { display: none; }
+  .plan-pill-group .plan-desktop-3d, .plan-pill-group [aria-label="Toggle 3D preview"], .plan-pill-group [aria-label="History"] { display: none; }
+  .plan-topbar .plan-identity > button { max-width: 145px; font-size: 11px; }
+  .plan-topbar .plan-identity > a, .plan-topbar .plan-identity > span:first-child { width: 22px; flex-shrink: 0; }
+  .plan-topbar [data-testid="demo-pill"] { display: none; }
+  .plan-build-tools { left: 5px; width: 49px; padding: 3px; top: calc(var(--ppw-topbar-h, 84px) + 40px); border-radius: 28px; }
+  .plan-topbar .plan-build-tools button { width: 41px; min-width: 41px; height: 42px; }
+  .designer-app[data-view="plan"] > main { padding-left: 59px; }
+  .designer-app[data-view="plan"] [data-testid="page-tabs"] { padding-left: 62px; }
   .plan-control-panel-content { max-height: min(24dvh, 180px); }
   .plan-control-panel [data-testid="snap-unit-picker"] { grid-template-columns: repeat(3,minmax(0,1fr)); }
   .plan-control-panel [data-testid="levels-picker"] > div { flex-basis: 130px; }
-  .plan-control-panel-heading { min-height: 40px; padding: 2px 10px; }
+}
+@media (max-height: 560px) {
+  .plan-topbar .plan-build-tools button { height: 36px; }
+  .plan-topbar .plan-build-tools button > span { display: none; }
 }

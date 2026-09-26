@@ -19,6 +19,8 @@
 import { useEffect, useState } from 'react';
 import { usePropertyStore } from '../store/propertyStore';
 import { useToastStore } from '../store/toastStore';
+import { usePlacementIntentStore } from '../store/placementIntentStore';
+import { useDesignerUIStore } from '../store/designerUIStore';
 import { energyDotColour, useEnergyReport } from '../designer/useEnergyReport';
 import { meterReading } from '../designer/energyMeter';
 import { EnergyMeterBar } from './EnergyMeterBar';
@@ -130,10 +132,49 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
     onJumpToRoof?.();
   }
 
+  function addSolarPanel(): void {
+    if (!hasBuilding) {
+      pushToast('Draw a room first — panels need a roof.', 'warn');
+      return;
+    }
+    const store = usePropertyStore.getState();
+    store.ensureRoofLevel();
+    store.syncRoof();
+    useDesignerUIStore.getState().setTool('hand');
+    useDesignerUIStore.getState().setEnergyPanelOpen(false);
+    window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
+    window.dispatchEvent(new CustomEvent('ppw:close-catalog'));
+    usePlacementIntentStore.getState().placeAtCenter('emcar-jinko-475');
+    onJumpToRoof?.();
+  }
+
+  function browseSolar(): void {
+    useDesignerUIStore.getState().setEnergyPanelOpen(false);
+    window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
+    window.dispatchEvent(new CustomEvent('ppw:open-catalog', { detail: { category: 'eco' } }));
+    onJumpToRoof?.();
+  }
+
+  function addWaterTank(): void {
+    usePropertyStore.getState().setActiveLevel('ground');
+    useDesignerUIStore.getState().setTool('hand');
+    useDesignerUIStore.getState().setEnergyPanelOpen(false);
+    window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
+    window.dispatchEvent(new CustomEvent('ppw:close-catalog'));
+    usePlacementIntentStore.getState().setArmed('duraco-water-tank-1000');
+    pushToast('Tap the ground to place the Duraco tank. Supplier price is on request.', 'info');
+    onJumpToRoof?.();
+  }
+
   const rowText = compact ? 'text-[12px]' : 'text-[13px]';
 
   return (
     <div className="flex flex-col gap-1" data-testid="energy-summary" data-status={r.status}>
+      <div className="mb-2 grid grid-cols-2 gap-1.5" aria-label="Solar and water products">
+        <button type="button" className={`${CHIP} ${CHIP_ON} col-span-2`} onClick={addSolarPanel} data-testid="energy-add-panel">Add 3D solar panel · 475 W</button>
+        <button type="button" className={`${CHIP} ${CHIP_REST} px-2 text-xs`} onClick={browseSolar} data-testid="energy-browse-solar">Browse solar</button>
+        <button type="button" className={`${CHIP} ${CHIP_REST} px-2 text-xs`} onClick={addWaterTank} data-testid="energy-add-tank">Duraco water tank</button>
+      </div>
       {/* Headline — the one line that answers "am I covered?" */}
       <div className="flex items-center gap-2 px-1" data-testid="energy-status">
         <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: dot }} aria-hidden="true" />

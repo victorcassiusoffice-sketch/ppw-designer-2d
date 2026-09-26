@@ -42,6 +42,8 @@ export interface DetailCardProps {
   thumbUrl: string;
   name: string;
   priceMur: number;
+  /** Human-readable price, including supplier-quote-only planning products. */
+  priceLabel?: string;
   description: string;
   variants?: DetailCardVariant[];
   activeVariant?: string;
@@ -173,7 +175,7 @@ function CardBody(props: DetailCardProps): JSX.Element {
         <div style={{ flex: 1, minWidth: 0 }}>
           <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{props.name}</h3>
           <p style={{ margin: '4px 0 0', fontSize: 13, color: PALETTE.gold, fontWeight: 600 }}>
-            Rs {props.priceMur}
+            {props.priceLabel ?? `Rs ${props.priceMur}`}
           </p>
         </div>
         <button

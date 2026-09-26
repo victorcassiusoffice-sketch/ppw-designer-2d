@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { usePropertyStore } from '../store/propertyStore';
+import { useGardenEditorStore } from '../store/gardenEditorStore';
 import {
   FENCE_MATERIALS, GARDEN_SURFACES, fenceLengthM,
   type FenceMaterial, type GardenPlacement, type GardenSurfaceKind,
@@ -52,7 +53,8 @@ export interface GardenPanelProps {
 /** The same persisted ground-level landscape can be edited in plan or 3D. */
 export function GardenPanel({ onRequestPlacement, onClose, architectural = false }: GardenPanelProps) {
   const property = usePropertyStore((s) => s.property);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selectedId = useGardenEditorStore((s) => s.selectedId);
+  const setSelectedId = useGardenEditorStore((s) => s.select);
   const [fenceMaterial, setFenceMaterial] = useState<FenceMaterial>('timber');
   const [pavingId, setPavingId] = useState(OUTDOOR_PAVING_PRODUCTS[0].id);
   const surfaces = property.garden?.surfaces ?? [];
@@ -126,7 +128,7 @@ export function GardenPanel({ onRequestPlacement, onClose, architectural = false
       </select>
       <button type="button" className={BUTTON} onClick={addFence} data-testid="garden-add-fence">+ Boundary</button>
     </div>
-    <p className="garden-muted text-[11px] leading-relaxed text-[#5b5852]">Add a surface or boundary, then set its position and size. Raise a surface for a terrace or planting bed. Outdoor furniture comes from the product catalog.</p>
+    <p className="garden-muted text-[11px] leading-relaxed text-[#5b5852]">Add a surface, then drag its edges in the plan or use Draw area to set two corners. Raise a surface for a terrace or planting bed. Outdoor furniture comes from the product catalog.</p>
 
     {(surfaces.length > 0 || fences.length > 0) && <>
       <label className="flex min-w-0 flex-col gap-1 text-[11px] font-medium">Edit landscape
@@ -136,6 +138,11 @@ export function GardenPanel({ onRequestPlacement, onClose, architectural = false
           {fences.map((entry, index) => <option key={entry.id} value={entry.id}>{FENCE_MATERIALS[entry.material].label} {index + 1} · {fenceLengthM(entry).toFixed(1)} m</option>)}
         </select>
       </label>
+      {(surface || fence) && <div className="flex flex-wrap gap-2">
+        {onRequestPlacement && <button type="button" className={`${BUTTON} flex-1`} data-testid="garden-move" onClick={() => onRequestPlacement({ kind: surface ? 'surface' : 'fence', id: selectedId! })}>Place in view</button>}
+        {surface && onRequestPlacement && <button type="button" className={`${BUTTON} flex-1`} data-testid="garden-resize" onClick={() => onRequestPlacement({ kind: 'surface', id: surface.id, mode: 'resize' })}>Draw area</button>}
+        <button type="button" className={`${BUTTON} garden-button--remove border-[#ba725f]`} data-testid="garden-remove" onClick={() => { usePropertyStore.getState().removeGardenElement(selectedId!); setSelectedId(null); }}>Remove</button>
+      </div>}
       {surface && <div className="grid grid-cols-2 gap-2" data-testid="garden-surface-edit">
         <Metres label="X" value={surface.x} onCommit={(x) => usePropertyStore.getState().updateGardenSurface(surface.id, { x })} />
         <Metres label="Y" value={surface.y} onCommit={(y) => usePropertyStore.getState().updateGardenSurface(surface.id, { y })} />
@@ -168,10 +175,6 @@ export function GardenPanel({ onRequestPlacement, onClose, architectural = false
         <label className="garden-muted flex min-w-0 flex-col gap-1 text-[11px]">Boundary<select aria-label="Fence material" className="garden-field h-11 min-w-0 rounded-lg border border-ppw-rim bg-white px-2 text-[13px]" value={fence.material} onChange={(event) => usePropertyStore.getState().updateGardenFence(fence.id, { material: event.target.value as FenceMaterial })}>
           {(Object.keys(FENCE_MATERIALS) as FenceMaterial[]).map((kind) => <option key={kind} value={kind}>{FENCE_MATERIALS[kind].label}</option>)}
         </select></label>
-      </div>}
-      {(surface || fence) && <div className="flex gap-2">
-        {onRequestPlacement && <button type="button" className={`${BUTTON} flex-1`} data-testid="garden-move" onClick={() => onRequestPlacement({ kind: surface ? 'surface' : 'fence', id: selectedId! })}>Place in view</button>}
-        <button type="button" className={`${BUTTON} garden-button--remove border-[#ba725f]`} data-testid="garden-remove" onClick={() => { usePropertyStore.getState().removeGardenElement(selectedId!); setSelectedId(null); }}>Remove</button>
       </div>}
     </>}
     <p className="garden-quantities border-t border-ppw-rim pt-2 text-[11px] tabular-nums" data-testid="garden-quantities">Surfaces {totalArea.toFixed(1)} m² · boundaries {totalFence.toFixed(1)} m<br />

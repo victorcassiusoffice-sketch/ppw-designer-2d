@@ -347,7 +347,7 @@ export function deriveCart(
     if (quantity === 0) continue;
 
     const unitPriceDisplay = convert(
-      product.price.value,
+      product.price_on_request ? 0 : product.price.value,
       product.price.currency,
       displayCurrency,
       fx,
@@ -357,7 +357,7 @@ export function deriveCart(
       product,
       quantity,
       placedCount,
-      unitPrice: product.price.value,
+      unitPrice: product.price_on_request ? 0 : product.price.value,
       unitCurrency: product.price.currency,
       unitPriceDisplay,
       lineTotalDisplay: unitPriceDisplay * quantity,

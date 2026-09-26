@@ -119,6 +119,8 @@ export interface Product {
   dimensions_cm: Dimensions;
   weight_kg: number;
   price: Price;
+  /** Supplier has not published a price. Numeric price is excluded from estimates. */
+  price_on_request?: boolean;
   /** 0–1 (i.e. 0.15 = 15%) — commission paid to PPW on sale. */
   commission_pct: number;
   shopify_ready: boolean;

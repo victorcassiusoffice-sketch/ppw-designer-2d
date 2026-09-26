@@ -55,6 +55,8 @@ describe('SimsBottomToolbar', () => {
     });
     await flushAsync();
     expect(container.querySelector('[data-testid="sims-bottom-toolbar"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="sims-thumb-strip"]')).toBeNull();
+    act(() => (container.querySelector('[data-testid="sims-catalog-open"]') as HTMLButtonElement).click());
     // Empty tabs hide (2026-09-07): the seed fills these eight; Furniture,
     // Recovery and Sauna stay out until a range brings them (Courts does).
     for (const cat of ['all', 'cardio', 'flooring', 'walls', 'decor', 'lighting', 'outdoor', 'eco']) {
@@ -72,12 +74,13 @@ describe('SimsBottomToolbar', () => {
       flushSync(() => root.render(<SimsBottomToolbar />));
     });
     await flushAsync();
+    act(() => (container.querySelector('[data-testid="sims-catalog-open"]') as HTMLButtonElement).click());
     expect(container.querySelector('[data-testid="sims-thumb-strip"]')).not.toBeNull();
     const minBtn = container.querySelector('[data-testid="sims-toolbar-minimize"]') as HTMLButtonElement;
     expect(minBtn.getAttribute('aria-expanded')).toBe('true');
     act(() => minBtn.click());
     expect(container.querySelector('[data-testid="sims-thumb-strip"]')).toBeNull();
-    expect(minBtn.getAttribute('aria-expanded')).toBe('false');
+    expect(container.querySelector('[data-testid="sims-catalog-open"]')?.getAttribute('aria-expanded')).toBe('false');
   });
 });
 

@@ -122,6 +122,8 @@ import {
 import { floorTargetRoom } from '../designer/floorTarget';
 import { gardenPoints } from '../designer/garden';
 import { GardenLayer } from './GardenLayer';
+import { GardenDrawLayer } from './GardenDrawLayer';
+import { useGardenEditorStore } from '../store/gardenEditorStore';
 import { BuildingPlanLayer } from './BuildingPlanLayer';
 // Roof + energy (eco / solar 2026-09-04): PV panels are roof-placed, snap on
 // their own lattice like tiles, and arming one takes the customer to the roof.
@@ -513,6 +515,7 @@ export function RoomCanvas({
   const propertyActiveLevelId = usePropertyStore((s) => s.property.activeLevelId);
   const propertyWalls = usePropertyStore((s) => s.property.walls);
   const propertyGarden = usePropertyStore((s) => s.property.garden);
+  const gardenPlacement = useGardenEditorStore((s) => s.placement);
   const site = usePropertyStore((s) => s.property.site ?? null);
   const levels = useMemo(() => levelsOf({ levels: propertyLevels }), [propertyLevels]);
   const activeLevelId = activeLevelIdOf({ levels: propertyLevels, activeLevelId: propertyActiveLevelId });
@@ -3281,12 +3284,12 @@ export function RoomCanvas({
           aria-label={`${area.toFixed(0)} square metres. ${canvasToolsOpen ? 'Hide plan tools' : 'Show plan tools'}`}
           aria-controls="canvas-plan-tools"
           onClick={() => setCanvasToolsOpen((v) => !v)}
-          className="pointer-events-auto inline-flex h-11 min-w-11 items-center justify-center gap-1 rounded-l-2xl bg-white px-2.5 text-[12px] font-semibold tabular-nums text-[#37362f] shadow-[0_2px_10px_rgba(42,41,38,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-inkDeep md:hidden"
+          className="pointer-events-auto inline-flex h-11 min-w-11 items-center justify-center gap-1 rounded-l-2xl bg-white px-2.5 text-[12px] font-semibold tabular-nums text-[#37362f] shadow-[0_2px_10px_rgba(42,41,38,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-inkDeep"
         >
           {area.toFixed(0)} m²
           <span aria-hidden="true" className="text-[10px] opacity-60">{canvasToolsOpen ? '−' : '+'}</span>
         </button>
-        <div id="canvas-plan-tools" className={`flex flex-col items-end gap-2 max-md:max-w-[calc(100vw-1rem)] max-md:rounded-l-xl max-md:bg-[#faf9f5] max-md:p-2 max-md:shadow-lg ${canvasToolsOpen ? '' : 'max-md:hidden'}`}>
+        <div id="canvas-plan-tools" data-open={canvasToolsOpen} className={`flex flex-col items-end gap-2 max-md:max-w-[calc(100vw-1rem)] max-md:rounded-l-xl max-md:bg-[#faf9f5] max-md:p-2 max-md:shadow-lg ${canvasToolsOpen ? '' : 'max-md:hidden'}`}>
         {/* Declutter 2026-07-26 (Vic directive 2): the top-right used to be a
             6-deep VERTICAL stack of full-width buttons + badges that crowded
             the canvas. Actions now sit in ONE compact horizontal row with
@@ -4120,7 +4123,7 @@ export function RoomCanvas({
         // its headline gesture is a press-and-drag rectangle, and a
         // draggable Stage would swallow it as a canvas pan. Single clicks
         // would still work, so the failure would look like "mostly fine".
-        draggable={!drawMode && !pendingProductId && !wallDrawEnabled && !floorTool}
+        draggable={!drawMode && !pendingProductId && !wallDrawEnabled && !floorTool && !gardenPlacement}
         onDragMove={(e) => {
           if (e.target === e.target.getStage()) {
             userMovedViewportRef.current = true;
@@ -4321,6 +4324,7 @@ export function RoomCanvas({
           if (wallDrawEnabled) return; // M2: wall layer owns tap
           if (doorTool) return; // door commits live on pointerup (defect 1)
           if (e.target !== e.target.getStage()) return;
+          if (!gardenPlacement) useGardenEditorStore.getState().close();
           if (pendingProductId && setPendingProductId) {
             const touch = (e.evt as TouchEvent).changedTouches?.[0];
             if (touch) {
@@ -4339,6 +4343,7 @@ export function RoomCanvas({
           if (wallDrawEnabled) return; // M2: wall layer owns click
           if (doorTool) return; // door commits live on pointerup (defect 1)
           if (e.target !== e.target.getStage()) return;
+          if (!gardenPlacement) useGardenEditorStore.getState().close();
           if (pendingProductId && setPendingProductId) {
             const placed = placeProductAt(e.evt.clientX, e.evt.clientY, pendingProductId);
             // D4 (desktop) — Shift+click STAMPS: keep the ghost on the
@@ -4384,7 +4389,7 @@ export function RoomCanvas({
             </Group>
           )}
 
-          <GardenLayer garden={garden} pxPerMetre={pxPerMetre} scale={viewport.scale} />
+          <GardenLayer garden={garden} pxPerMetre={pxPerMetre} scale={viewport.scale} interactive={tool === 'hand' && !drawMode && !wallDrawEnabled && !pendingProductId && !gardenPlacement} />
 
           {/* STOREY BELOW (Sims world) — the floor underneath as a faint
               outline, so an upper floor can be drawn to line up with the
@@ -5234,6 +5239,7 @@ export function RoomCanvas({
           viewport={viewport}
           pxPerMetre={pxPerMetre}
         />
+        {activeLevelId === GROUND_LEVEL_ID && gardenPlacement && <GardenDrawLayer pxPerMetre={pxPerMetre} scale={viewport.scale} />}
       </Stage>
 
       {/* Measure popover (units brief D10). Says out loud what it does:

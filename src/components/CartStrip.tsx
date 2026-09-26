@@ -139,6 +139,8 @@ export function CartStrip() {
         </div>
       </button>
 
+      {cart.lines.some(line => line.product.price_on_request) && <p className="px-4 py-1 text-xs text-ppw-charcoal">Supplier-quoted products are excluded from this estimate.</p>}
+
       {expanded && (
         <div className="border-t border-ppw-rim bg-ppw-rail px-4 py-3">
           {/* 390 px phones (polish 2026-08-29): the table used to be a
@@ -166,7 +168,7 @@ export function CartStrip() {
                   <td className="py-1.5 pr-2 font-medium text-ppw-inkDeep max-w-[180px] sm:max-w-[200px]">
                     <span className="block truncate">{l.product.name}</span>
                     <span className="block text-[11px] font-medium tabular-nums text-ppw-charcoal sm:hidden">
-                      {formatCurrency(l.unitPriceDisplay, currency)} each · {CATEGORY_LABELS[l.product.category]}
+                      {l.product.price_on_request ? 'Price on request' : formatCurrency(l.unitPriceDisplay, currency)} each · {CATEGORY_LABELS[l.product.category]}
                     </span>
                   </td>
                   <td className="hidden py-1.5 pr-2 text-ppw-charcoal sm:table-cell">
@@ -174,10 +176,10 @@ export function CartStrip() {
                   </td>
                   <td className="py-1.5 text-right tabular-nums text-ppw-inkDeep">{l.quantity}</td>
                   <td className="hidden py-1.5 text-right tabular-nums text-ppw-charcoal sm:table-cell">
-                    {formatCurrency(l.unitPriceDisplay, currency)}
+                    {l.product.price_on_request ? 'Price on request' : formatCurrency(l.unitPriceDisplay, currency)}
                   </td>
                   <td className="py-1.5 pl-2 text-right font-semibold tabular-nums text-ppw-inkDeep whitespace-nowrap">
-                    {formatCurrency(l.lineTotalDisplay, currency)}
+                    {l.product.price_on_request ? 'Price on request' : formatCurrency(l.lineTotalDisplay, currency)}
                   </td>
                 </tr>
               ))}

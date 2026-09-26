@@ -1,4 +1,24 @@
-/* Opt-in 3D inspector palette. The plan's light garden controls are unchanged. */
+.plan-garden-workspace {
+  flex: 0 0 310px;
+  width: 310px;
+  min-height: 0;
+  overflow: auto;
+  background: #172139;
+  border-left: 1px solid #34415b;
+}
+.plan-garden-workspace.is-drawing { flex-basis: 220px; width: 220px; }
+.plan-garden-instruction { padding: 14px; color: #dce5f5; font-size: 12px; line-height: 1.6; }
+.plan-garden-instruction button { display: block; margin-top: 10px; border-radius: 18px; border: 1px solid #719a9a; padding: 7px 14px; }
+@media (max-width: 767px) {
+  main:has(> .plan-garden-workspace) { flex-direction: column; }
+  main:has(> .plan-garden-workspace) > section { min-height: 150px; }
+  .plan-garden-workspace { flex: 0 1 34vh; width: 100%; border-left: 0; border-top: 1px solid #34415b; }
+  .plan-garden-workspace.is-drawing { flex: 0 0 auto; width: 100%; }
+  .plan-garden-instruction { display: flex; align-items: center; gap: 12px; padding: 8px 12px; }
+  .plan-garden-instruction button { margin-top: 0; flex-shrink: 0; }
+}
+
+/* Opt-in navy inspector palette in either view. */
 .garden-panel.garden-panel--architectural {
   color-scheme: dark;
   background: #172139;

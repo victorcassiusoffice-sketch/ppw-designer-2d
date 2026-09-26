@@ -5,16 +5,26 @@ import { disposeDressingTextures, groundPlane, skyDome, updateGroundPresentation
 import { GROUND_HEX } from '../../../designer/roomView3d';
 
 describe('architectural presentation without changing the saved finishes', () => {
-  it('restores the measured studio renderer and daylight rig after architectural viewing', () => {
-    const renderer = { toneMapping: THREE.NoToneMapping as THREE.ToneMapping, toneMappingExposure: 1 };
-    applyRendererPresentation(renderer, 'architectural');
-    expect(renderer.toneMapping).toBe(THREE.ACESFilmicToneMapping);
-    expect(presentationProfile('architectural').day.sun).toBeGreaterThan(presentationProfile().day.sun);
-    expect(presentationProfile('architectural').day.hemi).toBeLessThan(presentationProfile().day.hemi);
-    applyRendererPresentation(renderer, 'studio');
-    expect(renderer).toEqual({ toneMapping: THREE.NoToneMapping, toneMappingExposure: 1 });
-    expect(presentationProfile().day).toEqual({ hemi: 0.72, sun: 0.25, fill: 0.25, rim: 0 });
-    expect(presentationProfile().lampFactor).toBe(0);
+  it('keeps the measured studio renderer and light rig in BOTH presentations (colour truth outside the Paint tool)', () => {
+    // Colour-truth law: no tone mapping, exposure 1, the studio rig, white sky,
+    // no rim, no day-lit lamps, the measured floor gain — in every presentation.
+    for (const presentation of ['studio', 'architectural'] as const) {
+      const renderer = { toneMapping: THREE.ACESFilmicToneMapping as THREE.ToneMapping, toneMappingExposure: 1.05 };
+      applyRendererPresentation(renderer, presentation);
+      expect(renderer).toEqual({ toneMapping: THREE.NoToneMapping, toneMappingExposure: 1 });
+      const profile = presentationProfile(presentation);
+      expect(profile.day).toEqual({ hemi: 0.72, sun: 0.25, fill: 0.25, rim: 0 });
+      expect(profile.night).toEqual(presentationProfile().night);
+      expect([profile.sky, profile.bounce, profile.fill, profile.sun]).toEqual(['#ffffff', '#f2ede4', '#ffffff', '#fff6ea']);
+      expect(profile.sunDirection).toEqual(presentationProfile().sunDirection);
+      expect(profile.floorGain).toBe(0.9);
+      expect(profile.lampFactor).toBe(0);
+      expect(profile.cornerAlpha).toBe(presentationProfile().cornerAlpha);
+      expect(profile.contactAlpha).toBe(presentationProfile().contactAlpha);
+    }
+    // What the architectural look may change: the unpriced wall edges only.
+    expect(presentationProfile('architectural').cap).not.toBe(presentationProfile().cap);
+    expect(presentationProfile('architectural').exterior).toBe(presentationProfile().exterior);
   });
 
   it('changes edge contrast and floor shadows in place, preserving paint colour, finish and geometry', () => {
@@ -35,7 +45,8 @@ describe('architectural presentation without changing the saved finishes', () =>
     applyContentPresentation(root, 'architectural');
     expect(edge.color.getHexString()).toBe('cbd6e2');
     expect(floor.castShadow).toBe(true);
-    expect(floorMaterial.color.getHexString()).toBe('66717a');
+    // The laid floor is a priced product: the measured 0.9 gain holds in both looks.
+    expect(floorMaterial.color.equals(new THREE.Color('#66717a').multiplyScalar(0.9))).toBe(true);
     applyContentPresentation(root, 'studio');
     expect(edge.color.getHexString()).toBe('b5afa2');
     expect(floor.castShadow).toBe(false);

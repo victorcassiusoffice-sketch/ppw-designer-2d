@@ -4,6 +4,12 @@ Updated: 25 September 2026 (Mauritius). Owner: Victor.
 
 ## Resume here
 
+### Compact Plan controls, garden editing and utility models — 26 September 2026 — in progress
+
+Start: clean `a908cd8` on `cursor/feat-3d-flooring-hud-bc95`. Current verified fallback preview remains `https://ppw-designer-2d-egshdczue-victor-ppw.vercel.app`. Production/main and original checkout are untouched.
+
+User requests compact dark capsule controls matching supplied references, actual app screenshots in presentations, working garden expansion, visible solar placement and a Duraco tank. Root owns Plan toolbar and final screenshots/QA; garden agent owns garden editing; solar agent owns catalogue/model/pricing; catalog agent owns collapsed catalogue and slim Studio header. Existing solar mesh exists; reachability under investigation. Garden had no selectable 2D layer. No feature has shipped in this pass yet. Continue with implementation, tests, feature-only push, unique deployment QA and final link/doc synchronization.
+
 ### Developer / merchant pitch and standalone Studio — 25 September 2026 — shipped
 
 Application **`7b1837e912b3f50f85f09ace627732828931c558`**, following main implementation `466f64b26b3171416c8224488e3589409460061f`, is pushed on `cursor/feat-3d-flooring-hud-bc95` only. Vercel deployment **`6664311042`** is verified. All agents are finished; no implementation or deployment work remains. Final documentation sync records this state and changes no application code. Main/production and Victor's original code checkout are preserved.

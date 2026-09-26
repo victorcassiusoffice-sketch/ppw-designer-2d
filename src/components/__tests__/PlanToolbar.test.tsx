@@ -99,6 +99,17 @@ describe('direct Plan controls', () => {
     expect(useDesignerUIStore.getState().viewMode).toBe('3d');
   });
 
+  it('opens the garden editor from the construction rail and stops an armed tool', () => {
+    useDesignerUIStore.setState({ tool: 'floor' });
+    const listener = vi.fn();
+    window.addEventListener('ppw:open-garden', listener);
+    render(); click(byId('plan-garden-toggle'));
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(useDesignerUIStore.getState().tool).toBe('hand');
+    expect(byId('plan-garden-toggle').closest('[aria-label="Construction tools"]')).not.toBeNull();
+    window.removeEventListener('ppw:open-garden', listener);
+  });
+
   it('shows a short Demo badge while preserving merchant and product attribution', () => {
     registerDemo(COURTS_DEMO); setActiveDemo(COURTS_DEMO.slug); render();
     const badge = byId('demo-pill');

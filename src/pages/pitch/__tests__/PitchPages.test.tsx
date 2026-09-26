@@ -45,6 +45,53 @@ describe('interactive pitch chapters', () => {
     expect(button('Coastal satin').getAttribute('aria-pressed')).toBe('true');
     expect(host.textContent).toContain('local examples');
   });
+  it('opens the working designer by default and preserves it while browsing actual app captures', () => {
+    renderDeveloper(); chapter(1);
+    const frame = host.querySelector('iframe')!;
+    expect(frame.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d');
+    expect(button('Live designer').getAttribute('aria-pressed')).toBe('true');
+    click(button('App screenshots'));
+    expect(host.querySelector('iframe')).toBe(frame);
+    expect(host.querySelector<HTMLElement>('.pitch-live-stage')?.hidden).toBe(true);
+    let capture = host.querySelector<HTMLImageElement>('.pitch-app-capture img')!;
+    expect(capture.getAttribute('src')).toBe('/showcase/designer-plan.png');
+    expect(host.querySelector('.pitch-app-capture figcaption')?.textContent).toContain('Captured in the app');
+    expect(host.querySelector('.pitch-capture-tools')?.textContent).toContain('Furnish');
+    click(button('Premium 3D'));
+    capture = host.querySelector<HTMLImageElement>('.pitch-app-capture img')!;
+    expect(capture.getAttribute('src')).toBe('/showcase/designer-3d.png');
+    expect(host.querySelector('.pitch-capture-tools')?.textContent).toContain('Move view');
+    click(button('Coastal satin')); click(button('Stone'));
+    expect(host.querySelector('.pitch-app-capture img')).toBe(capture);
+    expect(capture.getAttribute('src')).toBe('/showcase/designer-3d.png');
+    expect(capture.getAttribute('style')).toBeNull();
+    expect(host.textContent).toContain('Brief samples only; they do not repaint the screenshots or live designer');
+    click(button('Try these tools'));
+    expect(host.querySelector('iframe')).toBe(frame);
+    expect(host.querySelector<HTMLElement>('.pitch-live-stage')?.hidden).toBe(false);
+  });
+  it('uses a real plan capture in the materials chapter and opens that plan in the live designer', () => {
+    renderDeveloper();
+    expect(host.querySelector('.pitch-hero-art img')?.getAttribute('src')).toBe('/showcase/developer-vision.png');
+    chapter(3);
+    expect(host.querySelector('.pitch-app-capture img')?.getAttribute('src')).toBe('/showcase/designer-plan.png');
+    expect(host.querySelector('svg')).toBeNull();
+    expect(host.textContent).toContain('not data extracted from this screenshot');
+    click(button('Try these tools'));
+    expect(host.querySelector('iframe')?.getAttribute('src')).toBe('/embed/designer?scene=home&view=2d');
+    expect(button('2D · to scale').getAttribute('aria-pressed')).toBe('true');
+  });
+  it('offers the live designer when a capture fails instead of showing a fabricated image', () => {
+    renderDeveloper(); chapter(1); click(button('App screenshots'));
+    act(() => host.querySelector('.pitch-app-capture img')!.dispatchEvent(new Event('error')));
+    expect(host.querySelector('.pitch-app-capture img')).toBeNull();
+    expect(host.querySelector('.pitch-app-capture')?.textContent).toContain('App view unavailable');
+    expect(host.querySelector('.pitch-app-capture')?.textContent).not.toContain('Captured in the app');
+    click(button('Premium 3D'));
+    expect(host.querySelector('.pitch-app-capture img')?.getAttribute('src')).toBe('/showcase/designer-3d.png');
+    click(button('Try these tools'));
+    expect(host.querySelector<HTMLElement>('.pitch-live-stage')?.hidden).toBe(false);
+  });
   it('updates the deadline simulation when the finish allowance changes', () => {
     renderDeveloper(); chapter(2);
     expect(host.querySelector('[data-testid="timing-result"]')?.textContent).toContain('5 days in reserve');

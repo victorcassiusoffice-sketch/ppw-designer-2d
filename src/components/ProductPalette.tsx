@@ -115,6 +115,7 @@ function macroOf(p: Product): MacroCategory {
 }
 
 function formatPrice(p: Product): string {
+  if (p.price_on_request) return 'Price on request';
   const { value, currency } = p.price;
   const formatted = value.toLocaleString('en-MU', { maximumFractionDigits: 0 });
   return `${formatted} ${currency}`;
@@ -430,6 +431,7 @@ export function ProductPalette({
             thumbUrl={productImageUrl(hover.product)}
             name={hover.product.name}
             priceMur={Math.round(hover.product.price?.value ?? 0)}
+            priceLabel={formatPrice(hover.product)}
             // Real product blurb first; the dimensions/supplier line is
             // appended so the card still carries the footprint + source.
             description={

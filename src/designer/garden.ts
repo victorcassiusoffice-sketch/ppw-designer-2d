@@ -40,7 +40,19 @@ export interface Garden {
   surfaces: GardenSurface[];
   fences: GardenFence[];
 }
-export type GardenPlacement = { kind: 'surface' | 'fence'; id: string };
+export type GardenPlacement = { kind: 'surface' | 'fence'; id: string; mode?: 'move' | 'resize' };
+
+/** A floor-style drag sets both corners, in either direction, in one edit. */
+export function gardenRectFromPoints(a: Vertex, b: Vertex, stepM = 0.1): Pick<GardenSurface, 'x' | 'y' | 'widthM' | 'depthM'> | null {
+  const step = Number.isFinite(stepM) && stepM > 0 ? stepM : 0.1;
+  const snap = (n: number) => Number((Math.round(n / step) * step).toFixed(6));
+  const x = snap(Math.min(a.x, b.x));
+  const y = snap(Math.min(a.y, b.y));
+  const widthM = snap(Math.max(a.x, b.x)) - x;
+  const depthM = snap(Math.max(a.y, b.y)) - y;
+  if (![x, y, widthM, depthM].every(Number.isFinite) || widthM < 0.2 - 1e-8 || depthM < 0.2 - 1e-8 || widthM > 500 || depthM > 500) return null;
+  return { x, y, widthM: Number(Math.max(0.2, widthM).toFixed(6)), depthM: Number(Math.max(0.2, depthM).toFixed(6)) };
+}
 
 const finite = (n: unknown, min: number, max: number): n is number =>
   typeof n === 'number' && Number.isFinite(n) && n >= min && n <= max;

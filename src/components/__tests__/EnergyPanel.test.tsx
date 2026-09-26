@@ -18,6 +18,9 @@ import { act } from 'react';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 import { EnergySummary } from '../EnergyPanel';
 import { usePropertyStore, type Property } from '../../store/propertyStore';
+import { usePlacementIntentStore } from '../../store/placementIntentStore';
+import { useDesignerUIStore } from '../../store/designerUIStore';
+import { isRoofRoom } from '../../designer/levels';
 
 const RECT = [
   { x: 0, y: 0 },
@@ -72,9 +75,39 @@ function powerWOf(instanceId: string): number | undefined {
 }
 
 beforeEach(() => {
+  usePlacementIntentStore.getState().consume();
+  usePlacementIntentStore.getState().setArmed(null);
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
+});
+
+describe('solar and water placement shortcuts', () => {
+  it('opens a real roof and requests one known 3D panel through the shared placement path', () => {
+    seed([]);
+    useDesignerUIStore.getState().setEnergyPanelOpen(true);
+    render();
+    act(() => $('energy-add-panel')!.click());
+    expect(usePropertyStore.getState().property.rooms.some(isRoofRoom)).toBe(true);
+    expect(usePropertyStore.getState().property.activeLevelId).toBe('roof');
+    expect(usePlacementIntentStore.getState().intent).toMatchObject({ productId: 'emcar-jinko-475', target: 'center' });
+    expect(useDesignerUIStore.getState().energyPanelOpen).toBe(false);
+  });
+  it('does not create a panel when the building has no drawn footprint', () => {
+    seed([]);
+    usePropertyStore.setState(state => ({ property: { ...state.property, rooms: [] } }));
+    render();
+    act(() => $('energy-add-panel')!.click());
+    expect(usePlacementIntentStore.getState().intent).toBeNull();
+  });
+  it('arms the tank on the ground instead of leaving it on a roof or charging an unknown price', () => {
+    seed([]);
+    usePropertyStore.getState().ensureRoofLevel();
+    render();
+    act(() => $('energy-add-tank')!.click());
+    expect(usePropertyStore.getState().property.activeLevelId).toBe('ground');
+    expect(usePlacementIntentStore.getState().armedProductId).toBe('duraco-water-tank-1000');
+  });
 });
 afterEach(() => {
   act(() => {
