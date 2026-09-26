@@ -20,6 +20,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 
 test.describe('Design Tweak 1 — Phase A.0 (Tweak 07 Undo foundation)', () => {
   test.beforeEach(async ({ page }) => {
@@ -80,8 +81,9 @@ test.describe('Design Tweak 1 — Phase A.0 (Tweak 07 Undo foundation)', () => {
     // Drive the propertyStore directly — it's the same code-path UI
     // clicks would exercise, just deterministic.
     await page.evaluate(() => {
-      // @ts-expect-error — Zustand stores aren't on window by default;
-      // use the React DevTools-style global if present.
+      // Zustand stores aren't on window by default; use the React
+      // DevTools-style global if present. (The cast keeps this type-clean —
+      // the old `@ts-expect-error` here had nothing to suppress.)
       const ps = (window as unknown as { usePropertyStore?: { getState: () => unknown } }).usePropertyStore;
       void ps;
     });
@@ -95,6 +97,7 @@ test.describe('Design Tweak 1 — Phase A.0 (Tweak 07 Undo foundation)', () => {
     expect(initialDisabled).toBe(true);
 
     // Trigger one place via the catalog tile (first tile in the grid).
+    await openCatalog(page);
     const firstTile = page.locator('[data-product-id]').first();
     await expect(firstTile).toBeVisible({ timeout: 10_000 });
     await firstTile.click();
@@ -120,6 +123,7 @@ test.describe('Design Tweak 1 — Phase A.0 (Tweak 07 Undo foundation)', () => {
 
   test.skip('sessionStorage holds top-10 frames after a mutation (criterion 6)', async ({ page }) => {
     // Place one item to generate at least one history frame.
+    await openCatalog(page);
     const firstTile = page.locator('[data-product-id]').first();
     await expect(firstTile).toBeVisible({ timeout: 10_000 });
     await firstTile.click();
@@ -167,6 +171,9 @@ test.describe('Design Tweak 1 — Phase A surface checks', () => {
     // Empty tabs hide (2026-09-07): the wellness seed has no furniture,
     // recovery or sauna products, so those three do not render until a
     // range brings them. Flooring + Walls always show (they host tools).
+    // The dock starts collapsed behind its Furnish launcher (2026-09-26); the
+    // tab bar renders only once it is open.
+    await openCatalog(page);
     const labels = ['All', 'Cardio', 'Flooring', 'Walls', 'Decor', 'Lighting', 'Outdoor', 'Eco'];
     for (const label of labels) {
       // The catalog moved from ProductPalette's plain <button> chips to
@@ -180,9 +187,8 @@ test.describe('Design Tweak 1 — Phase A surface checks', () => {
 
   test.skip('catalog tiles render in a grid with ≥4 columns at 320 px width (Tweak 05)', async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 800 });
-    // Open the mobile catalog drawer.
-    const catalogPill = page.getByRole('button', { name: /Catalog/i }).first();
-    await catalogPill.click();
+    // Open the mobile catalog drawer (the Furnish launcher, 2026-09-26).
+    await openCatalog(page);
     const tiles = page.locator('[data-product-id]');
     const count = await tiles.count();
     expect(count).toBeGreaterThanOrEqual(4);
@@ -207,6 +213,7 @@ test.describe('Design Tweak 1 — Phase A surface checks', () => {
 
   test.skip('CLEAR button + confirm modal flow (Tweak 04)', async ({ page }) => {
     // Place an item first so CLEAR has something to wipe.
+    await openCatalog(page);
     const firstTile = page.locator('[data-product-id]').first();
     await firstTile.click();
     const stage = page.locator('.konvajs-content canvas').first();

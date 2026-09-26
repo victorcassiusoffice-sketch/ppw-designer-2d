@@ -22,6 +22,7 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 import { GEOM_BRIDGE_SKIP, renderedRoomCount } from './multiroom-helpers';
 import {
   allStoredItems,
@@ -138,8 +139,9 @@ test.describe('Sims world', () => {
     // below cannot race the dismissal on a slow run.
     await installToastLog(page);
 
-    // The new Outdoor dock tab (absent on the old build).
-    await page.locator('[data-testid="dock-cat-outdoor"]').click();
+    // The new Outdoor dock tab (absent on the old build). The catalogue starts
+    // collapsed (2026-09-26), so open it on that tab.
+    await openCatalog(page, 'outdoor');
     await armAndClickWorld(page, 'demo-outdoor-bench', 7, 2);
 
     await expect.poll(() => allStoredItems(page).then((i) => i.length)).toBe(1);

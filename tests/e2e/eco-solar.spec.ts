@@ -25,6 +25,7 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 import { GEOM_BRIDGE_SKIP } from './multiroom-helpers';
 import {
   armAndClickWorld,
@@ -62,9 +63,10 @@ test.describe('Eco / solar — roof + energy', () => {
   test('1. the Eco tab lists the Emcar solar products', async ({ page }) => {
     await seedSimsProperty(page, oneRoomFixture());
     await openSeeded(page);
-    const tab = page.locator('[data-testid="dock-cat-eco"]');
-    await expect(tab).toBeVisible();
-    await tab.click();
+    // The Eco tab exists — a plan tab or a 3D home-store tile, whichever this
+    // view renders; openCatalog presses it — and the strip is then on it.
+    await openCatalog(page, 'eco');
+    await expect(page.locator('[data-testid="dock-strip"]')).toHaveAttribute('aria-label', 'Eco products');
     const tiles = page.locator('[data-testid="dock-strip"] [data-product-id]');
     await expect(tiles).toHaveCount(8);
     await expect(page.locator(`[data-product-id="${PANEL}"]`).first()).toBeVisible();
@@ -83,7 +85,7 @@ test.describe('Eco / solar — roof + energy', () => {
     await expect(page.locator('[data-testid="level-readout"]')).toHaveCount(0);
 
     // Arm from the Eco tab → the roof level appears and is active.
-    await page.locator('[data-testid="dock-cat-eco"]').click();
+    await openCatalog(page, 'eco');
     const card = page.locator(`[data-product-id="${PANEL}"]`).first();
     await card.click();
     await expect(page.locator('[data-armed="true"]')).toHaveCount(2);

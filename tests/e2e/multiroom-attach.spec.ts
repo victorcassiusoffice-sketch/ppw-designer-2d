@@ -11,6 +11,7 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 import {
   PX_PER_M,
   canvasOrigin,
@@ -179,6 +180,7 @@ test.describe('Attached multi-room — draw-attach', () => {
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
 
+    await openCatalog(page);
     const card = dockCard(page, 'k1-schwinn-700ic', 'Schwinn 700IC Indoor Bike');
     await card.click();
     await expect(page.locator('[data-armed="true"]')).toHaveCount(2);

@@ -12,6 +12,7 @@
  *   PPW_E2E_BASE_URL=<preview-url> npx playwright test tests/e2e/mobile-sims-toolbar.spec.ts
  */
 import { test, expect, type Page } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
@@ -35,6 +36,10 @@ async function toolbarOrSkip(page: Page) {
 test.describe('Mobile Sims toolbar', () => {
   test('M.S.1 — sticky toolbar is visible at the bottom on mobile', async ({ page }) => {
     const toolbar = await toolbarOrSkip(page);
+    // The catalogue starts collapsed (2026-09-26) as a small Furnish pill
+    // floating 6 px above the bottom edge; the category tabs render only
+    // once it is open, and open it sits flush on the bottom edge.
+    await openCatalog(page);
     const box = await toolbar.boundingBox();
     expect(box).not.toBeNull();
     // Anchored to the bottom of the viewport.
@@ -73,6 +78,7 @@ test.describe('Mobile Sims toolbar', () => {
     await page.locator('[data-testid="start-quick-rectangle"]').click();
     await expect(page.locator('[data-testid="start-room-prompt"]')).toBeHidden();
     const placedBefore = Number((await page.locator('[data-testid="items-placed"]').first().textContent()) ?? '0');
+    await openCatalog(page);
     await page.locator('[data-testid="sims-thumb"]').first().click();
     const popup = page.locator('[data-testid="mobile-product-popup"]');
     await expect(popup).toBeVisible();
@@ -92,12 +98,22 @@ test.describe('Mobile Sims toolbar', () => {
     // auto-folds for it. Lay the starter room — which puts the pen away —
     // so this spec pins what it was written to pin: the CHEVRON.
     await page.locator('[data-testid="start-quick-rectangle"]').click();
+    // Collapsed at every width (2026-09-26): the strip is behind the Furnish
+    // launcher until asked for, and the close chevron exists only while open.
+    const launcher = page.locator('[data-testid="sims-catalog-open"]');
+    await expect(launcher).toBeVisible();
+    await expect(launcher).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('[data-testid="sims-toolbar-minimize"]')).toHaveCount(0);
+    await openCatalog(page);
     await expect(page.locator('[data-testid="sims-thumb-strip"]')).toBeVisible();
     const minBtn = page.locator('[data-testid="sims-toolbar-minimize"]');
     await expect(minBtn).toHaveAttribute('aria-expanded', 'true');
     await minBtn.click();
     await expect(page.locator('[data-testid="sims-thumb-strip"]')).toBeHidden();
-    await expect(minBtn).toHaveAttribute('aria-expanded', 'false');
+    // Closed again: back to the launcher, chevron gone.
+    await expect(minBtn).toHaveCount(0);
+    await expect(launcher).toBeVisible();
+    await expect(launcher).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('M.S.4 — Cancel in the popup closes without placing', async ({ page }) => {
@@ -105,6 +121,7 @@ test.describe('Mobile Sims toolbar', () => {
     // Same as M.S.3: put the auto-armed pen away first (2026-09-08).
     await page.locator('[data-testid="start-quick-rectangle"]').click();
     const placedBefore = Number((await page.locator('[data-testid="items-placed"]').first().textContent()) ?? '0');
+    await openCatalog(page);
     await page.locator('[data-testid="sims-thumb"]').first().click();
     const popup = page.locator('[data-testid="mobile-product-popup"]');
     await expect(popup).toBeVisible();

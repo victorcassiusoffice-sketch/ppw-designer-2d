@@ -46,8 +46,12 @@ async function seed(page: Page): Promise<void> {
 async function open3DWithFloor(page: Page): Promise<void> {
   await page.goto('/designer');
   await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-  await page.locator('[data-testid="view-mode-3d"]').click();
-  await expect(page.locator('[data-testid="wallpaint-3d-overlay"]')).toBeVisible();
+  // The 3D-first shell (2026-09-23) opens furnished plans straight in 3D; a
+  // click on the Plan-bar switch under the overlay is intercepted, so only
+  // switch when Plan is showing.
+  const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
+  if (!(await overlay.isVisible())) await page.locator('[data-testid="view-mode-3d"]').click();
+  await expect(overlay).toBeVisible();
   await expect
     .poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.faceCount()), {
       timeout: 20_000,

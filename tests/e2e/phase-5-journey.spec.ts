@@ -9,6 +9,7 @@
  * Outputs to `_handoff/preview/sims-level-pass-complete-2026-05-21/`.
  */
 import { test, expect, devices } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 import { targetHasNoApi, NO_API_SKIP } from './multiroom-helpers';
 import * as path from 'node:path';
 
@@ -74,6 +75,7 @@ test.describe('Phase 5 — desktop journey', () => {
     await page.screenshot({ path: path.join(SHOT_DIR, '01-arrive-desktop.png'), fullPage: true });
 
     // 2. Place a K1 product via the M1 pointer-FSM.
+    await openCatalog(page);
     await page.locator('[data-product-id]').first().click();
     const stage = page.locator('.konva-stage').first();
     const box = await stage.boundingBox();
@@ -142,6 +144,7 @@ test.describe('Phase 5 — desktop journey', () => {
     await page.goto('/designer');
     await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
     // Place a fresh item so the BUY button has something to attach to.
+    await openCatalog(page);
     await page.locator('[data-product-id]').first().click();
     const stage3 = page.locator('.konva-stage').first();
     const box3 = await stage3.boundingBox();

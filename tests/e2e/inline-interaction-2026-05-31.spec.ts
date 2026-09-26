@@ -12,6 +12,7 @@
  *   PPW_E2E_BASE_URL=http://localhost:5173 npx playwright test inline-interaction
  */
 import { test, expect } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 
 // Dismiss the 3-step coach-mark + mobile preview banner before each test so
 // their overlays don't intercept canvas clicks (they're localStorage-gated).
@@ -36,6 +37,7 @@ async function placeFirstProduct(page: import('@playwright/test').Page) {
   await page.locator('[data-testid="start-quick-rectangle"]').click();
   const box = await stage.boundingBox();
   if (!box) throw new Error('no stage box');
+  await openCatalog(page);
   const card = page.locator('[data-product-id]').first();
   await card.click();
   const cx = box.x + box.width / 2;
@@ -112,6 +114,7 @@ test.describe('Inline interaction — mobile cluster', () => {
     await page.locator('[data-testid="start-quick-rectangle"]').click();
     const toolbar = page.locator('[data-testid="sims-bottom-toolbar"]');
     await expect(toolbar).toBeVisible({ timeout: 10_000 });
+    await openCatalog(page);
     const thumb = page.locator('[data-testid="sims-thumb"]').first();
     await expect(thumb).toBeVisible();
     await thumb.click(); // quick tap → opens the product popup

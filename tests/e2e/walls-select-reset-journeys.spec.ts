@@ -8,6 +8,7 @@
  *   PPW_E2E_BASE_URL=http://127.0.0.1:5188 npx playwright test walls-select-reset-journeys --workers=3
  */
 import { test, expect, type Page } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 import {
   seedSimsProperty,
   storedSimsProperty,
@@ -183,6 +184,7 @@ test.describe('(B) select tool', () => {
     REC.B_wallPressedAfterSelect = false;
 
     // Place a K1 item (arm from dock, click canvas), then Select + click it + Delete.
+    await openCatalog(page);
     const card = page.locator(`[data-product-id="${K1}"]`).first();
     await expect(card).toBeVisible();
     await card.click();

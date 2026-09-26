@@ -17,6 +17,7 @@
  *   PPW_E2E_BASE_URL=http://localhost:5187 npx playwright test flooring
  */
 import { test, expect } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 import {
   TWO_ROOM_FIXTURE,
   cloneFixture,
@@ -196,6 +197,7 @@ test('equipment can be placed ON TOP of a flooring product', async ({ page }) =>
   // Arming sequence mirrors placement-fsm: click the card, then CONFIRM the
   // FSM actually armed before clicking the canvas. Without that check a
   // missed card click looks identical to a refused placement.
+  await openCatalog(page);
   const card = page.locator('[data-product-id="k1-schwinn-700ic"]').first();
   await card.scrollIntoViewIfNeeded();
   await expect(card).toBeVisible();

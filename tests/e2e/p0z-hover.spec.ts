@@ -1,12 +1,14 @@
 import { test, expect } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 
 test('P0-ζ — pointer enter catalog card shows floating DetailCard', async ({ page }) => {
   await page.addInitScript(() => {
-    try { localStorage.setItem('ppw_designer_coach_v1', '1'); localStorage.removeItem('ppw_walls_v1'); } catch {}
+    try { localStorage.setItem('ppw_designer_coach_v1', '1'); localStorage.removeItem('ppw_walls_v1'); } catch { /* private mode */ }
   });
   await page.goto('/designer?fresh=1');
   await page.waitForSelector('[data-testid="items-placed"]', { timeout: 15_000 });
 
+  await openCatalog(page);
   const card = page.locator('[data-product-id]').first();
   await expect(card).toBeVisible();
   // No hover card before pointer enter

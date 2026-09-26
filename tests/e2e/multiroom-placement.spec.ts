@@ -18,6 +18,7 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 import {
   PX_PER_M,
   TWO_ROOM_FIXTURE,
@@ -44,6 +45,7 @@ type StoredRoom = SeedRoom & { kind?: 'room' | 'outdoor' };
 
 /** Arm the catalog card, then click at a WORLD point. */
 async function armAndClickAt(page: Page, xM: number, yM: number): Promise<void> {
+  await openCatalog(page);
   const card = dockCard(page, PRODUCT_ID, PRODUCT_NAME);
   await expect(card).toBeVisible();
   armedProductId = (await card.getAttribute('data-product-id')) ?? PRODUCT_ID;

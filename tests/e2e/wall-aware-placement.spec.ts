@@ -27,6 +27,7 @@ import { WALL_HALF_M } from '../../src/designer/wallAwarePlacement';
 // construction), falling back to the charcoal wall pixel-scan that shares
 // `blueprintTheme.ROOM_BORDER_SCAN` with the theme it tracks. Both live in
 // the shared helper so this spec can never drift onto a stale palette.
+import { openCatalog } from './catalog-helpers';
 import { GEOM_BRIDGE_SKIP, PX_PER_M, dockCard, roomOrigin } from './multiroom-helpers';
 import { requireGeomBridgeGenerous } from './sims-world-helpers';
 
@@ -48,6 +49,7 @@ interface StoredItem {
 }
 
 async function placeAt(page: Page, xM: number, yM: number) {
+  await openCatalog(page);
   const card = dockCard(page, PRODUCT_ID, PRODUCT_NAME);
   await expect(card).toBeVisible();
   await card.click();
@@ -190,6 +192,7 @@ test.describe('Sims wall-aware placement', () => {
     test.skip(!(await requireGeomBridgeGenerous(page)), GEOM_BRIDGE_SKIP);
     await page.locator('[data-testid="start-quick-rectangle"]').click();
 
+    await openCatalog(page);
     const card = dockCard(page, PRODUCT_ID, PRODUCT_NAME);
     await card.click();
     await expect(page.locator('[data-armed="true"]')).toHaveCount(2);

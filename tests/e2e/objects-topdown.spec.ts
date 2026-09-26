@@ -21,6 +21,7 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 
 type Seed = Record<string, unknown>;
 
@@ -130,6 +131,8 @@ test.describe('Object top-down rendering', () => {
     await seed(page, []);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    // The dock starts collapsed (2026-09-26): its thumbnails mount once it is open.
+    await openCatalog(page);
     await page.waitForTimeout(1000);
     const readProbe = () =>
       page.evaluate(() => {

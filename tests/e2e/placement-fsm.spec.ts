@@ -19,6 +19,7 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 
 /**
  * 2026-08-25 REPAIR — this spec was red on `main` for two reasons that
@@ -61,11 +62,10 @@ test.describe('M1.5 pointer-FSM placement', () => {
     await expect(itemsPlaced).toBeVisible({ timeout: 10_000 });
     const before = (await itemsPlaced.textContent())?.trim() ?? '';
 
-    // Open the catalog (mobile sheet on narrow viewports, no-op on desktop).
-    const catalogToggle = page.getByRole('button', { name: /catalog/i }).first();
-    if (await catalogToggle.isVisible().catch(() => false)) {
-      await catalogToggle.click().catch(() => undefined);
-    }
+    // Open the catalog. It starts collapsed at EVERY width (2026-09-26): the
+    // old `getByRole('button', { name: /catalog/i })` probe would now land on
+    // the "Search product catalog" button instead of the Furnish launcher.
+    await openCatalog(page);
 
     // Pick the first available product card. The catalog adapter merges
     // bundled seeds with /api/products rows so the IDs vary by env; use
@@ -107,6 +107,7 @@ test.describe('M1.5 pointer-FSM placement', () => {
     const itemsPlaced = page.locator('[data-testid="items-placed"]');
     const before = (await itemsPlaced.textContent())?.trim() ?? '';
 
+    await openCatalog(page);
     const card = page.locator('[data-product-id]').first();
     await card.click();
 

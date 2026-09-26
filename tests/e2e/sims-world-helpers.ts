@@ -10,6 +10,7 @@
  */
 
 import { expect, test, type Page } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 import { GEOM_BRIDGE_SKIP, worldToScreen } from './multiroom-helpers';
 
 export interface SimsSeedItem {
@@ -229,6 +230,9 @@ export async function clickWorld(page: Page, xM: number, yM: number): Promise<vo
  * WORLD point. Mirrors `placeAt` in wall-aware-placement.spec: the armed
  * count is 2 (dock tile + canvas container) and returns to 0 on commit.
  * The screen point is read AFTER arming — the viewport can re-centre.
+ *
+ * The catalogue starts collapsed (2026-09-26) and can fold again between
+ * picks, so it is opened on every call (a no-op when already open).
  */
 export async function armAndClickWorld(
   page: Page,
@@ -237,6 +241,7 @@ export async function armAndClickWorld(
   yM: number,
   opts: { expectDisarm?: boolean } = {},
 ): Promise<void> {
+  await openCatalog(page);
   const card = page.locator(`[data-product-id="${productId}"]`).first();
   await expect(card).toBeVisible();
   await card.click();

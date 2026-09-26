@@ -18,6 +18,7 @@
  */
 
 import { test, expect, devices } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 import { targetHasNoApi, NO_API_SKIP } from './multiroom-helpers';
 
 const BASE_URL =
@@ -76,6 +77,8 @@ test.describe('K1 critical paths — desktop', () => {
     test.skip(NO_API, NO_API_SKIP);
     await seedReturningUser(page);
     await page.goto(DESIGNER_URL);
+    // The catalogue starts collapsed (2026-09-26): the rows mount once it is open.
+    await openCatalog(page);
     await expect(page.locator('[data-product-id^="m-"]').first())
       .toBeVisible({ timeout: 25_000 });
   });
@@ -125,7 +128,9 @@ test.describe('K1 critical paths — mobile (390 px)', () => {
   // which aborted the ENTIRE suite run before a single test executed, hiding
   // every other failure in the repo. Emulate the device without the browser
   // switch: the configured project is chromium-desktop, so webkit was never
-  // going to be honoured here anyway.
+  // going to be honoured here anyway. (The rest-destructure is the drop; the
+  // named binding is unused by design.)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { defaultBrowserType: _ignored, ...iPhone12 } = devices['iPhone 12'];
   test.use(iPhone12);
 
@@ -148,6 +153,8 @@ test.describe('K1 critical paths — mobile (390 px)', () => {
     // the locator resolves to m-6 but reports hidden). 25s because
     // fetchApiProducts() resolves noticeably slower under mobile emulation
     // (measured 3-8s), and the merged catalog only gains m- rows once it lands.
+    // The strip starts collapsed (2026-09-26): its rows mount once it is open.
+    await openCatalog(page);
     await expect(page.locator('[data-product-id^="m-"]').first())
       .toBeAttached({ timeout: 25_000 });
   });

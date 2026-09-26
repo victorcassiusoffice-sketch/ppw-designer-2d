@@ -20,6 +20,7 @@
  * Runs on a dev server (the bridge is DEV-only): PPW_E2E_BASE_URL=http://127.0.0.1:5199
  */
 import { test, expect, type Page } from '@playwright/test';
+import { openCatalog } from './catalog-helpers';
 
 const ROOM = {
   id: 'r1',
@@ -28,6 +29,17 @@ const ROOM = {
   openings: [],
   placedItems: [] as Array<{ instanceId: string; productId: string; x: number; y: number; rotation: number }>,
 };
+
+/**
+ * Switch to 3D unless the room is already showing. The 3D-first shell
+ * (2026-09-23) opens furnished plans straight in 3D, and a click on the
+ * Plan-bar switch while the overlay is up is intercepted by the overlay.
+ */
+async function enter3D(page: Page): Promise<void> {
+  const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
+  if (!(await overlay.isVisible())) await page.locator('[data-testid="view-mode-3d"]').click();
+  await expect(overlay).toBeVisible();
+}
 
 type Hit = { kind: 'edge'; roomId: string; edgeIndex: number };
 type Pt = { x: number; y: number } | null;
@@ -60,8 +72,7 @@ async function seed(page: Page, room: typeof ROOM = ROOM, ui: Record<string, unk
 async function open3DWithPaint(page: Page): Promise<void> {
   await page.goto('/designer');
   await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-  await page.locator('[data-testid="view-mode-3d"]').click();
-  await expect(page.locator('[data-testid="wallpaint-3d-overlay"]')).toBeVisible();
+  await enter3D(page);
   await expect.poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.faceCount()), { timeout: 20_000 }).toBeGreaterThan(0);
   expect(await page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.backend())).toBe('gl');
   await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
@@ -218,6 +229,7 @@ test.describe('The Sims paint tool in 3D — desktop', () => {
     await seed(page);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
+    await openCatalog(page);
     const tile = page.locator('[data-testid="dock-strip"] [data-product-id="m-6"]');
     await expect(tile).toBeVisible();
     await expect(page.locator('[data-testid="dock-strip"] [data-product-id="k1-nordictrack-2450"]')).toHaveCount(0);
@@ -234,8 +246,7 @@ test.describe('The Sims paint tool in 3D — desktop', () => {
     // listener, not the resource timeline: a dev server's module flood
     // fills that buffer long before the GLB.)
     const glb = page.waitForRequest((req) => /\/models\/k1-nordictrack-2450\.glb/.test(req.url()), { timeout: 20_000 });
-    await page.locator('[data-testid="view-mode-3d"]').click();
-    await expect(page.locator('[data-testid="wallpaint-3d-overlay"]')).toBeVisible();
+    await enter3D(page);
     await glb;
     await expect.poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.faceCount()), { timeout: 20_000 }).toBeGreaterThan(0);
     // The stage drew the body, not the box: a body carries thousands of triangles.
