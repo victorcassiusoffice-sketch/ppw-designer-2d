@@ -136,12 +136,18 @@ test.describe('Wall pen — phone gestures', () => {
     const place = await page.evaluate(() => {
       const hud = document.querySelector('[data-testid="room-draw-hud"]') as HTMLElement;
       const viewport = document.querySelector('[data-testid="plan-drawing-viewport"]')!.getBoundingClientRect();
+      const rail = document.querySelector('.plan-build-tools')?.getBoundingClientRect() ?? null;
       const r = hud.getBoundingClientRect();
       return {
         placement: hud.getAttribute('data-placement'),
         gap: viewport.top - r.bottom,
         height: r.height,
         width: r.width,
+        // Capsule pass (2026-09-26): the fixed construction rail owns the
+        // left edge, so the row runs from the rail's gutter to the right
+        // edge of the screen instead of edge to edge.
+        startsPastRail: rail ? r.left >= rail.right : r.left < 2,
+        reachesRightEdge: r.right >= window.innerWidth - 2,
         drawableHeight: viewport.height,
         outsideViewport: !document.querySelector('[data-testid="plan-drawing-viewport"]')!.contains(hud),
       };
@@ -150,7 +156,9 @@ test.describe('Wall pen — phone gestures', () => {
     expect(place.outsideViewport).toBe(true);
     expect(place.gap).toBeGreaterThanOrEqual(-1);
     expect(place.height).toBeLessThanOrEqual(100);
-    expect(place.width).toBeGreaterThan(380);
+    expect(place.startsPastRail).toBe(true);
+    expect(place.reachesRightEdge).toBe(true);
+    expect(place.width).toBeGreaterThan(300);
     expect(place.drawableHeight).toBeGreaterThan(280);
     await page.getByTestId('room-draw-settings').click();
     const expanded = await page.getByTestId('room-draw-hud').boundingBox();
