@@ -1,0 +1,261 @@
+{
+  "base": "http://127.0.0.1:5186",
+  "at": "2026-09-26T11:47:31.966Z",
+  "frames": [
+    {
+      "name": "developers-desktop-1366-01-hero",
+      "file": "developers-desktop-1366-01-hero.png",
+      "innerWidth": 1366,
+      "scrollWidth": 1366,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "heroLoaded": true
+    },
+    {
+      "name": "developers-desktop-1366-02-captures-2d",
+      "file": "developers-desktop-1366-02-captures-2d.png",
+      "innerWidth": 1366,
+      "scrollWidth": 1366,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "captureLoaded": true,
+      "caption": "Captured in the app2D planTap to enlarge ↗"
+    },
+    {
+      "name": "developers-desktop-1366-03-captures-3d",
+      "file": "developers-desktop-1366-03-captures-3d.png",
+      "innerWidth": 1366,
+      "scrollWidth": 1366,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "captureLoaded": true,
+      "caption": "Captured in the appPremium 3DTap to enlarge ↗"
+    },
+    {
+      "name": "developers-desktop-1366-04-live-returns",
+      "file": "developers-desktop-1366-04-live-returns.png",
+      "innerWidth": 1366,
+      "scrollWidth": 1366,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "liveReturns": true
+    },
+    {
+      "name": "developers-desktop-1366-05-build-together",
+      "file": "developers-desktop-1366-05-build-together.png",
+      "innerWidth": 1366,
+      "scrollWidth": 1366,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "developers-cap-tamarin-desktop-1366-01-hero",
+      "file": "developers-cap-tamarin-desktop-1366-01-hero.png",
+      "innerWidth": 1366,
+      "scrollWidth": 1366,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "heroLoaded": true
+    },
+    {
+      "name": "developers-cap-tamarin-desktop-1366-02-operating-models",
+      "file": "developers-cap-tamarin-desktop-1366-02-operating-models.png",
+      "innerWidth": 1366,
+      "scrollWidth": 1366,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "modelsHaveDigits": false
+    },
+    {
+      "name": "merchants-desktop-1366-01-hero",
+      "file": "merchants-desktop-1366-01-hero.png",
+      "innerWidth": 1366,
+      "scrollWidth": 1366,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "heroLoaded": true
+    },
+    {
+      "name": "merchants-desktop-1366-02-categories-paint",
+      "file": "merchants-desktop-1366-02-categories-paint.png",
+      "innerWidth": 1366,
+      "scrollWidth": 1366,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "merchants-spa-concept-desktop-1366-01-hero",
+      "file": "merchants-spa-concept-desktop-1366-01-hero.png",
+      "innerWidth": 1366,
+      "scrollWidth": 1366,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "heroLoaded": true
+    },
+    {
+      "name": "merchants-spa-concept-desktop-1366-02-categories-build",
+      "file": "merchants-spa-concept-desktop-1366-02-categories-build.png",
+      "innerWidth": 1366,
+      "scrollWidth": 1366,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "buildPressed": "true"
+    },
+    {
+      "name": "merchants-spa-concept-desktop-1366-03-storefront",
+      "file": "merchants-spa-concept-desktop-1366-03-storefront.png",
+      "innerWidth": 1366,
+      "scrollWidth": 1366,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "studioPressed": "true",
+      "embeddedMounted": true
+    },
+    {
+      "name": "studio-desktop-1366-01-hero",
+      "file": "studio-desktop-1366-01-hero.png",
+      "innerWidth": 1366,
+      "scrollWidth": 1366,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "heroLoaded": true
+    },
+    {
+      "name": "developers-phone-390-01-hero",
+      "file": "developers-phone-390-01-hero.png",
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "heroLoaded": true
+    },
+    {
+      "name": "developers-phone-390-02-captures-2d",
+      "file": "developers-phone-390-02-captures-2d.png",
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "captureLoaded": true,
+      "caption": "Captured in the app2D planTap to enlarge ↗"
+    },
+    {
+      "name": "developers-phone-390-03-captures-3d",
+      "file": "developers-phone-390-03-captures-3d.png",
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "captureLoaded": true,
+      "caption": "Captured in the appPremium 3DTap to enlarge ↗"
+    },
+    {
+      "name": "developers-phone-390-04-live-returns",
+      "file": "developers-phone-390-04-live-returns.png",
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "liveReturns": true
+    },
+    {
+      "name": "developers-phone-390-05-build-together",
+      "file": "developers-phone-390-05-build-together.png",
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "developers-cap-tamarin-phone-390-01-hero",
+      "file": "developers-cap-tamarin-phone-390-01-hero.png",
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "heroLoaded": true
+    },
+    {
+      "name": "developers-cap-tamarin-phone-390-02-operating-models",
+      "file": "developers-cap-tamarin-phone-390-02-operating-models.png",
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "modelsHaveDigits": false
+    },
+    {
+      "name": "merchants-phone-390-01-hero",
+      "file": "merchants-phone-390-01-hero.png",
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "heroLoaded": true
+    },
+    {
+      "name": "merchants-spa-concept-phone-390-01-hero",
+      "file": "merchants-spa-concept-phone-390-01-hero.png",
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "heroLoaded": true
+    },
+    {
+      "name": "merchants-spa-concept-phone-390-02-categories-build",
+      "file": "merchants-spa-concept-phone-390-02-categories-build.png",
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "buildPressed": "true"
+    },
+    {
+      "name": "studio-phone-390-01-hero",
+      "file": "studio-phone-390-01-hero.png",
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "heroLoaded": true
+    },
+    {
+      "name": "developers-cap-tamarin-desktop-1366-03-live-3d",
+      "file": "developers-cap-tamarin-desktop-1366-03-live-3d.png",
+      "innerWidth": 1366,
+      "scrollWidth": 1366,
+      "overflow": false,
+      "wide": [],
+      "consoleErrors": [],
+      "designerIframe": true,
+      "glFirstFrame": true,
+      "embeddedTitle": "Demo · Room Designer"
+    }
+  ],
+  "defects": 0
+}

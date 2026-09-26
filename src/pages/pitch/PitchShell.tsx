@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode, type KeyboardEvent } from 'react';
 import { MEETING_URL } from './workflowModel';
 import { EmbeddedDesigner } from '../../demo/EmbeddedDesigner';
+import type { DemoScene } from '../../demo/demoRoute';
 import './pitch.css';
 
 export function PitchShell({ audience, chapters, chapter, onChapter, children }: {
@@ -33,13 +34,17 @@ export function PitchShell({ audience, chapters, chapter, onChapter, children }:
 
 export function Eyebrow({ children }: { children: ReactNode }) { return <p className="pitch-eyebrow">{children}</p>; }
 export function ConceptNote({ children }: { children?: ReactNode }) { return <div className="pitch-concept-note"><span>Workflow preview</span><p>{children ?? 'Integration required. This example does not send orders, book contractors or notify anyone.'}</p></div>; }
-export function StatusChip({ available, children }: { available?: boolean; children: ReactNode }) { return <span className={`pitch-chip ${available ? 'is-available' : ''}`}>{available ? '● ' : '◇ '}{children}</span>; }
-export function MeetingCard() { return <div className="pitch-meeting-card"><span className="pitch-avatar">VC</span><div><strong>Victor Cassius</strong><p>Your ongoing partner for ideas, workflow design and customization.</p></div><a href={MEETING_URL} target="_blank" rel="noreferrer">Book a 1-hour meeting ↗</a></div>; }
+/** ● live in the designer today · ◐ in build · ◇ integration required / later phase. */
+export function StatusChip({ available, building, children }: { available?: boolean; building?: boolean; children: ReactNode }) {
+  return <span className={`pitch-chip ${available ? 'is-available' : building ? 'is-build' : ''}`}>{available ? '● ' : building ? '◐ ' : '◇ '}{children}</span>;
+}
+export function MeetingCard() { return <div className="pitch-meeting-card"><span className="pitch-avatar">VC</span><div><strong>Victor Cassius Bhatoolaul</strong><p>Your ongoing partner for ideas, workflow design and customization.</p></div><a href={MEETING_URL} target="_blank" rel="noreferrer">Book a 1-hour meeting ↗</a></div>; }
 
-const CAPTURED_VIEWS = {
-  '2d': { src: '/showcase/designer-plan.png', label: '2D plan', alt: 'Room Designer 2D plan captured with its drawing and product controls' },
-  '3d': { src: '/showcase/designer-3d.png', label: 'Premium 3D', alt: 'Room Designer Premium 3D captured with its building and camera controls' },
-};
+/** Shot from the running app by tools/shoot-pitch-captures.mjs; a test asserts both files exist. */
+export const CAPTURED_VIEWS = {
+  '2d': { src: '/showcase/designer-plan.webp', label: '2D plan', alt: 'Room Designer 2D plan captured with its drawing and product controls' },
+  '3d': { src: '/showcase/designer-3d.webp', label: 'Premium 3D', alt: 'Room Designer Premium 3D captured with its building and camera controls' },
+} as const;
 
 export function DesignerCapture({ view = '2d', onOpenLive }: { view?: '2d' | '3d'; onOpenLive?: () => void }) {
   const capture = CAPTURED_VIEWS[view];
@@ -60,6 +65,8 @@ export function DesignerCaptureGallery({ onOpenLive }: { onOpenLive: () => void 
   return <div className="pitch-capture-gallery"><div className="pitch-segment" role="group" aria-label="Captured designer view">{(['2d', '3d'] as const).map((value) => <button type="button" key={value} aria-pressed={view === value} onClick={() => setView(value)}>{CAPTURED_VIEWS[value].label}</button>)}</div><DesignerCapture view={view} onOpenLive={onOpenLive} /></div>;
 }
 
-export function LiveDesigner({ paint = false, view = '3d', onViewChange }: { paint?: boolean; view?: '2d' | '3d'; onViewChange?: (view: '2d' | '3d') => void }) {
-  return <EmbeddedDesigner scene={paint ? 'paint' : 'home'} view={view} onViewChange={onViewChange} className="pitch-designer-frame" title={paint ? 'Interactive paint designer' : 'Interactive house designer'} loading="lazy" />;
+const SCENE_TITLES: Record<DemoScene, string> = { home: 'Interactive house designer', paint: 'Interactive paint designer', captamarin: 'Interactive Cap Tamarin two-bedroom designer' };
+
+export function LiveDesigner({ scene = 'home', view = '3d', onViewChange }: { scene?: DemoScene; view?: '2d' | '3d'; onViewChange?: (view: '2d' | '3d') => void }) {
+  return <EmbeddedDesigner scene={scene} view={view} onViewChange={onViewChange} className="pitch-designer-frame" title={SCENE_TITLES[scene]} loading="lazy" />;
 }

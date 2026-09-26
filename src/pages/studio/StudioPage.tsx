@@ -4,7 +4,7 @@ import { isShowcaseReadOnly } from '../../lib/showcaseSafety';
 import { EmbeddedDesigner } from '../../demo/EmbeddedDesigner';
 import './studio.css';
 
-const MEETING_URL = 'https://calendly.com/victorcassius-office/ppw-client-meeting-1-hour?month=2026-09';
+import { MEETING_URL } from '../pitch/workflowModel';
 
 function StudioHeader({ active }: { active?: 'design' | 'shop' | 'merchants' }) {
   return <header className="studio-header">
@@ -30,22 +30,22 @@ export default function StudioPage() {
         <div className="studio-hero-copy">
           <p className="studio-eyebrow">YOUR SPACE. EVERY POSSIBILITY.</p>
           <h1>From a floor plan<br />to a place to live.</h1>
-          <p className="studio-intro">Design your home, explore real products and bring your merchants into one connected workspace.</p>
+          <p className="studio-intro">Design your home in a 2D plan and Premium 3D, paint it in colours that stay true in every view, explore real merchant catalogues and bring your merchants into one connected workspace.</p>
           <div className="studio-mode" role="group" aria-label="Choose designer view">
             <button type="button" aria-pressed={mode === '2d'} onClick={() => setMode('2d')}><span aria-hidden="true">▦</span><strong>2D</strong><small>Plan with precision</small></button>
             <button type="button" aria-pressed={mode === '3d'} onClick={() => setMode('3d')}><span aria-hidden="true">◇</span><strong>Premium 3D</strong><small>Explore every angle</small></button>
           </div>
           <Link className="studio-primary" to={`/studio/designer?view=${mode}`}>Open {mode === '3d' ? 'Premium 3D' : '2D designer'} <span aria-hidden="true">→</span></Link>
-          <p className="studio-fine">Both views are included in this demo. Your changes stay on this device. No purchases or payments.</p>
+          <p className="studio-fine">Both views are included in this read-only demo. Your changes stay on this device. No orders, purchases or payments.</p>
         </div>
-        <figure className="studio-hero-art"><img src="/showcase/developer-vision.png" alt="Architectural concept of an apartment with a plan, furnishings and material samples" /><figcaption>THE CONNECTED HOME · CONCEPT ART</figcaption></figure>
+        <figure className="studio-hero-art"><img src="/showcase/developer-vision.webp" alt="Architectural concept of an apartment with a plan, furnishings and material samples" /><figcaption>THE CONNECTED HOME · CONCEPT ART</figcaption></figure>
       </section>
       <section className="studio-paths" aria-label="Explore Studio">
         <Link to="/studio/shop"><span className="studio-path-icon" aria-hidden="true">▤</span><div><small>DISCOVER</small><h2>The Shop</h2><p>Browse the connected merchant catalogue.</p></div><span aria-hidden="true">↗</span></Link>
         <Link to="/pitch/developers"><span className="studio-path-icon" aria-hidden="true">⌂</span><div><small>FOR DEVELOPERS</small><h2>Every apartment. One plan.</h2><p>Explore the client-to-delivery workflow.</p></div><span aria-hidden="true">↗</span></Link>
         <Link to="/pitch/merchants"><span className="studio-path-icon" aria-hidden="true">◇</span><div><small>FOR MERCHANTS</small><h2>Your products. In their home.</h2><p>See the website and partner experience.</p></div><span aria-hidden="true">↗</span></Link>
       </section>
-      <footer className="studio-home-footer"><span><i /> Interactive design & catalogue preview</span><Link to="/demo">Designer-only Demo ↗</Link><span>Built with Victor Cassius · Mauritius</span></footer>
+      <footer className="studio-home-footer"><span><i /> Interactive design & catalogue preview</span><Link to="/demo">Designer-only Demo ↗</Link><span>Built with Victor Cassius Bhatoolaul · Mauritius</span></footer>
     </div>
   </main>;
 }

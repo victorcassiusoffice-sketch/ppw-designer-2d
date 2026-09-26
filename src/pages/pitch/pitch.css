@@ -15,7 +15,11 @@
 .pitch-deadline-preview{display:flex;flex-direction:column;gap:10px}
 
 /* Captures retain the complete app chrome; finish samples never filter or recolour them. */
-.pitch-live-stage[hidden]{display:none!important}
+/* The live stage is PARKED, not display:none: a 0x0 iframe gives the embedded designer a 0-size canvas, its
+   drawImage throws, the canvas error boundary trips and the designer never comes back when the tab returns
+   (probe 2026-09-26). Keep it laid out at the panel's size, invisible and inert. */
+.pitch-live-panel{position:relative}
+.pitch-live-stage[hidden]{display:flex!important;position:absolute;inset:0;visibility:hidden;pointer-events:none;z-index:-1}
 .pitch-capture-gallery{display:flex;flex-direction:column;gap:12px;flex:1;min-height:0;padding:14px;overflow:auto}
 .pitch-capture-gallery>.pitch-segment{align-self:center}
 .pitch-app-capture{display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0}
@@ -58,3 +62,30 @@
 @media(max-width:1050px) and (min-width:761px){.pitch-live-panel .pitch-section-heading{padding:6px 8px;gap:5px}.pitch-live-panel .pitch-segment button{padding:7px 8px;font-size:9px}}
 @media(max-width:760px){.pitch-storefront-preview .pitch-designer-frame,.pitch-live-panel .pitch-designer-frame{flex:none;min-height:480px;height:480px}.pitch-storefront-preview .pitch-storefront-title{flex-wrap:wrap;padding:12px 16px;gap:9px}.pitch-live-panel .pitch-section-heading{padding:10px 12px;justify-content:center}.pitch-live-panel .pitch-live-stage{flex:none}.pitch-live-footer{padding:10px 13px}.pitch-live-footer .pitch-fine{max-width:58%}}
 @media(max-height:520px) and (min-width:761px){.pitch-storefront-preview .pitch-designer-frame,.pitch-live-panel .pitch-designer-frame{flex:none;min-height:420px;height:420px}}
+
+/* Client overlays (?client=): a longer hero line, an "in build" chip tone, the A/B operating-model block. */
+.pitch-app h1.pitch-h1-client{font-size:clamp(28px,3.2vw,50px);line-height:1.12}
+.pitch-chip.is-build{color:#f1d9a6;border-color:#dfb76b4d;background:#c8933a10}
+.pitch-panel-ivory .pitch-chip.is-build{color:#7f6124;border-color:#b8964f4a;background:#f1e2bd5c}
+.pitch-model-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;flex-shrink:0}
+.pitch-model-grid .pitch-panel{gap:10px;overflow:visible;min-height:auto;padding:22px 26px}
+.pitch-model-grid h3{font-size:clamp(20px,1.7vw,26px)}
+.pitch-model-grid .pitch-check-list{gap:8px}
+.pitch-later-phase{grid-column:1/-1;font-size:11px;line-height:1.55;color:#93adb6;max-width:76ch;padding:0 6px}
+/* With the A/B block above them, the two capability panels take their natural height and the whole stage scrolls; no panel scrolls inside a scrolling page. */
+.pitch-partnership-stage.has-models .pitch-capability-grid{flex:none;min-height:auto}
+.pitch-partnership-stage.has-models .pitch-capability-grid .pitch-panel{overflow:visible;min-height:auto}
+.pitch-partnership-stage.has-models .pitch-meeting-card{flex-shrink:0}
+.pitch-build-list{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;width:100%;padding:12px 14px;border:1px solid #dfb76b2e;border-radius:14px;background:#0b212940}
+.pitch-build-list>.pitch-eyebrow,.pitch-build-list>.pitch-fine{grid-column:1/-1}
+.pitch-build-list>div{display:flex;gap:8px;align-items:center;font-size:11px;line-height:1.35;color:#d3e2df}
+.pitch-build-list>div>.pitch-chip{flex:none;padding:4px 8px;font-size:9px}
+.pitch-build-list>div>span:last-child{flex:1;min-width:0}
+.pitch-build-list .pitch-fine{margin-top:0}
+.pitch-category-story.has-build-list{gap:14px;justify-content:flex-start}
+.pitch-category-story.has-build-list .pitch-category-symbol{display:none}
+.pitch-category-story.has-build-list .pitch-lead{font-size:14px}
+.pitch-category-story.has-build-list .pitch-flow-diagram>span{padding:11px 8px}
+.pitch-category-story.has-build-list .pitch-category-metric{font-size:21px}
+.pitch-live-footer .pitch-fine{max-width:70ch}
+@media(max-width:760px){.pitch-app h1.pitch-h1-client{font-size:30px}.pitch-model-grid{display:flex;flex-direction:column;gap:14px}.pitch-later-phase{padding:0 4px}.pitch-build-list{display:flex;flex-direction:column;padding:12px}.pitch-build-list>div{font-size:12px}.pitch-category-story.has-build-list{gap:18px}}
