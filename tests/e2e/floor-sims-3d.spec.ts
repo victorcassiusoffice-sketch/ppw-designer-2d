@@ -60,7 +60,11 @@ async function open3DWithFloor(page: Page): Promise<void> {
   expect(await page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.backend())).toBe(
     'gl',
   );
-  await page.locator('[data-testid="floor-paint-toggle"]').click();
+  // The House Studio shell (2026-09-26): the plan toolbar and its
+  // `floor-paint-toggle` are inert under the overlay; the Floor tool is armed
+  // from the rail's Surfaces mode (`house-mode-floor`). The same docked Floor
+  // panel opens either way.
+  await overlay.locator('[data-testid="house-mode-floor"]').click();
   await page.waitForSelector('[data-testid="floor-paint-palette"]');
 }
 

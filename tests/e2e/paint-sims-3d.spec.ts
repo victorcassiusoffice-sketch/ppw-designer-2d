@@ -41,6 +41,45 @@ async function enter3D(page: Page): Promise<void> {
   await expect(overlay).toBeVisible();
 }
 
+/**
+ * Arm the Paint tool from the House Studio's rail. While the 3D overlay is
+ * up the plan toolbar (and its `wallpaint-tool-toggle`) is inert under it;
+ * the rail's Paint mode is what a person presses. Idempotent: the rail
+ * button toggles, so it is only pressed while the palette is closed.
+ */
+async function ensurePaintTool(page: Page): Promise<void> {
+  const palette = page.locator('[data-testid="wallpaint-palette"]');
+  if (!(await palette.isVisible())) await page.locator('[data-testid="wallpaint-3d-overlay"] [data-testid="house-mode-paint"]').click();
+  await expect(palette).toBeVisible();
+}
+
+/**
+ * Walls Up / Cutaway / Walls Down live behind the camera dock's View button
+ * (2026-09-26). Chrome outside the paint panel puts an armed finish tool
+ * away (the shell's rule), and the workspace widens as the panel goes — so
+ * the brush is put away first with Done, the dock is opened on the settled
+ * layout, and the caller re-arms with `ensurePaintTool`, as a person would.
+ * The dock is closed again so its options never sit over the wall about to
+ * be clicked.
+ */
+async function setWallView(page: Page, view: 'up' | 'cutaway' | 'down'): Promise<void> {
+  const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
+  const done = page.locator('[data-testid="wallpaint-done"]');
+  if (await done.isVisible()) {
+    await done.click();
+    await expect(page.locator('[data-testid="wallpaint-palette"]')).toHaveCount(0);
+    await page.waitForTimeout(200);
+  }
+  const options = overlay.locator('[data-testid="house-view-options"]');
+  if (!(await options.isVisible())) await overlay.locator('[data-testid="house-view-settings"]').click();
+  await expect(options).toBeVisible();
+  await overlay.locator(`[data-testid="view3d-walls-${view}"]`).click();
+  await expect(overlay.locator(`[data-testid="view3d-walls-${view}"]`)).toHaveAttribute('aria-pressed', 'true');
+  await overlay.getByRole('button', { name: 'Close view settings' }).click();
+  await expect(options).toHaveCount(0);
+  await page.waitForTimeout(200);
+}
+
 type Hit = { kind: 'edge'; roomId: string; edgeIndex: number };
 type Pt = { x: number; y: number } | null;
 interface Bridge {
@@ -75,8 +114,7 @@ async function open3DWithPaint(page: Page): Promise<void> {
   await enter3D(page);
   await expect.poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.faceCount()), { timeout: 20_000 }).toBeGreaterThan(0);
   expect(await page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.backend())).toBe('gl');
-  await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
-  await page.waitForSelector('[data-testid="wallpaint-palette"]');
+  await ensurePaintTool(page);
 }
 
 const wallPoint = (page: Page, edgeIndex: number) => page.evaluate((e) => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.wallScreenPoint({ kind: 'edge', roomId: 'r1', edgeIndex: e }), edgeIndex);
@@ -179,20 +217,19 @@ test.describe('The Sims paint tool in 3D — desktop', () => {
     // 5. Default cutaway: the two near walls are stubs.
     const keys = async () => (await page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.faces())).map((f) => f.key);
     expect((await keys()).filter((k) => k.startsWith('stub-r1-'))).toHaveLength(2);
-    await page.locator('[data-testid="view3d-walls-up"]').click();
-    await page.waitForTimeout(200);
+    // Walls Up sits in the View dock (2026-09-26); opening it puts the brush
+    // away, so the paint is re-armed from the rail before the near wall is clicked.
+    await setWallView(page, 'up');
     expect((await keys()).filter((k) => k.startsWith('stub-r1-'))).toHaveLength(0);
     expect((await keys()).filter((k) => k.startsWith('wall-r1-'))).toHaveLength(4);
-    await expect(page.locator('[data-testid="view3d-walls-up"]')).toHaveAttribute('aria-pressed', 'true');
     // The near wall can now be painted like any other.
+    await ensurePaintTool(page);
     const near = (await wallPoint(page, 2))!;
     await page.mouse.click(near.x, near.y);
     await expect.poll(() => paintedEdges(page)).toEqual([2]);
-    await page.locator('[data-testid="view3d-walls-down"]').click();
-    await page.waitForTimeout(200);
+    await setWallView(page, 'down');
     expect((await keys()).filter((k) => k.startsWith('stub-r1-'))).toHaveLength(4);
-    await page.locator('[data-testid="view3d-walls-cutaway"]').click();
-    await page.waitForTimeout(200);
+    await setWallView(page, 'cutaway');
     expect((await keys()).filter((k) => k.startsWith('stub-r1-'))).toHaveLength(2);
   });
 
@@ -242,13 +279,16 @@ test.describe('The Sims paint tool in 3D — desktop', () => {
     await expect
       .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('ppw_property_v2')!).state.property.rooms[0].placedItems.map((i: { productId: string }) => i.productId)))
       .toEqual(['m-6']);
-    // 6. In 3D the body is fetched and drawn — not a box. (A request
-    // listener, not the resource timeline: a dev server's module flood
-    // fills that buffer long before the GLB.)
-    const glb = page.waitForRequest((req) => /\/models\/k1-nordictrack-2450\.glb/.test(req.url()), { timeout: 20_000 });
+    // 6. In 3D the body is fetched and drawn — not a box. The proof is what
+    // the stage holds, read through the bridge: one body, no bare box. (Not a
+    // request listener — the GLB may already be in flight or cached by the
+    // time the House view opens, and a listener armed then waits forever.)
     await enter3D(page);
-    await glb;
     await expect.poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.faceCount()), { timeout: 20_000 }).toBeGreaterThan(0);
+    type Dressing = { bodies: number; bareBoxes: number } | null;
+    const dressing = () => page.evaluate(() => (window as unknown as { __ppwRoomView3d: { dressing: () => Dressing } }).__ppwRoomView3d.dressing());
+    await expect.poll(async () => (await dressing())?.bodies ?? 0, { timeout: 20_000 }).toBe(1);
+    expect((await dressing())?.bareBoxes).toBe(0);
     // The stage drew the body, not the box: a body carries thousands of triangles.
     await expect
       .poll(() => page.evaluate(() => Number((/tris=(\d+)/.exec((window as unknown as { __ppwRoomView3d: { debug: () => { renderer: string } } }).__ppwRoomView3d.debug().renderer) ?? [])[1] ?? 0)), { timeout: 20_000 })

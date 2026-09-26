@@ -147,7 +147,7 @@ test.describe('Wall paint — 3D room view (desktop)', () => {
     await expect(page.locator('[data-testid="cart-page-wallpaint-lines"]')).toContainText('Morning Haze');
   });
 
-  test('the big view opens from the card, closes on Esc, and outlives the tool (3D Mode, 2026-09-17)', async ({ page }) => {
+  test('the big view opens from the card; Esc puts the brush away first and leaves the house second; the room outlives the tool (House Studio, 2026-09-26)', async ({ page }) => {
     await seed(page);
     await openDesigner(page);
     await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
@@ -155,22 +155,32 @@ test.describe('Wall paint — 3D room view (desktop)', () => {
     await page.locator('[data-testid="wallpaint-3d-expand"]').click();
     const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
     await expect(overlay).toBeVisible();
-    // The docked panel stays usable beside it.
+    // The docked panel stays usable beside it; the card is replaced by a note
+    // while the room fills the workspace (one GL stage at a time).
     await expect(page.locator('[data-testid="wallpaint-palette"]')).toBeVisible();
+    await expect(page.locator('[data-testid="wallpaint-3d-card-note"]')).toBeVisible();
+    await expect(page.locator('[data-testid="wallpaint-3d-expand"]')).toHaveCount(0);
+    // Esc with the brush armed puts the BRUSH away — the room stays: 3D is the
+    // designer's mode now, and the paint caption goes with the tool.
     await page.keyboard.press('Escape');
-    await expect(overlay).toHaveCount(0);
-    // Still in the tool after Esc closed the overlay.
-    await expect(page.locator('[data-testid="wallpaint-palette"]')).toBeVisible();
-    await page.locator('[data-testid="wallpaint-3d-expand"]').click();
+    await expect(page.locator('[data-testid="wallpaint-palette"]')).toHaveCount(0);
     await expect(overlay).toBeVisible();
-    // Putting the paint away no longer closes the room: 3D is the
-    // designer's mode now, and the brush strip / paint caption simply go.
+    await expect(overlay.locator('[data-testid="wallpaint-3d-caption"]')).not.toContainText('paint');
+    // The brush comes back from the house rail, beside the same room.
+    await overlay.locator('[data-testid="house-mode-paint"]').click();
+    await expect(page.locator('[data-testid="wallpaint-palette"]')).toBeVisible();
+    await expect(overlay).toBeVisible();
+    // Done puts the paint away the same way: the room outlives the tool.
     await page.locator('[data-testid="wallpaint-done"]').click();
     await expect(page.locator('[data-testid="wallpaint-palette"]')).toHaveCount(0);
     await expect(overlay).toBeVisible();
-    await expect(page.locator('[data-testid="wallpaint-3d-caption"]')).not.toContainText('paint');
-    await page.locator('[data-testid="wallpaint-3d-close"]').click();
+    await expect(overlay.locator('[data-testid="wallpaint-3d-caption"]')).not.toContainText('paint');
+    // With no tool armed, Esc leaves the house view for the plan — and the
+    // paint card is a card again.
+    await page.keyboard.press('Escape');
     await expect(overlay).toHaveCount(0);
+    await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
+    await expect(page.locator('[data-testid="wallpaint-3d-expand"]')).toBeVisible();
   });
 
   test('a white-only line offers no tints; Xtreme White drops the tint from the brush', async ({ page }) => {
@@ -192,7 +202,7 @@ test.describe('Wall paint — 3D room view (desktop)', () => {
 test.describe('Wall paint — 3D room view (phone)', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
-  test('the HUD 3D chip opens the big view; Close returns to the plan', async ({ page }) => {
+  test('the HUD 3D chip opens the house view with the brush strip; 2D Plan returns to the plan', async ({ page }) => {
     await seed(page);
     await openDesigner(page);
     await page.getByRole('button', { name: 'Open menu' }).click();
@@ -203,9 +213,16 @@ test.describe('Wall paint — 3D room view (phone)', () => {
     await page.locator('[data-testid="wallpaint-3d-mobile"]').click();
     const overlay = page.locator('[data-testid="wallpaint-3d-overlay"]');
     await expect(overlay).toBeVisible();
-    await page.locator('[data-testid="wallpaint-3d-close"]').click();
+    // The brush rides along: the phone's paint strip sits under the room.
+    await expect(page.locator('[data-testid="wallpaint-3d-brush-strip"]')).toBeVisible();
+    // Back through the house header's view switch (the House Studio shell
+    // replaced the old Close button). Chrome outside the paint panel puts the
+    // brush away as it goes — the shell's rule for every finish tool — so the
+    // plan comes back with its own toolbar, ready for the next tool.
+    await overlay.getByRole('button', { name: '2D Plan', exact: true }).click();
     await expect(overlay).toHaveCount(0);
-    await expect(hud).toBeVisible();
+    await expect(page.locator('[data-testid="sims-bottom-toolbar"]')).toBeVisible();
+    await expect(page.locator('.konvajs-content').first()).toBeVisible();
   });
 });
 

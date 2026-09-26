@@ -54,7 +54,10 @@ test.describe('Paint finish on a wall', () => {
     await expect
       .poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: { faceCount: () => number } }).__ppwRoomView3d.faceCount()))
       .toBeGreaterThan(0);
-    await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
+    // The House Studio shell (2026-09-26): the plan toolbar is inert under the
+    // overlay, so the brush is armed from the rail's Paint mode.
+    await page.locator('[data-testid="wallpaint-3d-overlay"] [data-testid="house-mode-paint"]').click();
+    await page.waitForSelector('[data-testid="wallpaint-palette"]');
     await page.locator('[data-testid="wallpaint-colour-sofap-alc-bronze"]').click();
 
     const pt = await page.evaluate(() =>
@@ -85,7 +88,10 @@ test.describe('Paint finish on a wall', () => {
     await expect(page.locator('[data-testid="wallpaint-live"]')).toContainText('m²');
     await expect(page.locator('[data-testid="wallpaint-live"]')).toContainText('L');
 
-    await page.locator('[data-testid="wallpaint-3d-close"]').click();
+    // Back to the plan through the house header's view switch (the old
+    // `wallpaint-3d-close` button went with the House Studio shell).
+    await page.locator('[data-testid="wallpaint-3d-overlay"]').getByRole('button', { name: '2D Plan', exact: true }).click();
+    await expect(page.locator('[data-testid="wallpaint-3d-overlay"]')).toHaveCount(0);
     await expect(page.locator('[data-testid="wall-height-readout"]')).toHaveText('2.7 m');
     await page.locator('[data-testid="wall-height-up"]').click();
     await expect(page.locator('[data-testid="wall-height-readout"]')).toHaveText('2.8 m');

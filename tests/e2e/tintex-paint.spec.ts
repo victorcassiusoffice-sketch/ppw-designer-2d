@@ -74,8 +74,13 @@ async function armPaintIn3D(page: Page): Promise<void> {
   await expect(overlay).toBeVisible();
   await expect.poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.faceCount()), { timeout: STAGE_TIMEOUT }).toBeGreaterThan(0);
   expect(await page.evaluate(() => (window as unknown as { __ppwRoomView3d: Bridge }).__ppwRoomView3d.backend())).toBe('gl');
-  await page.locator('[data-testid="wallpaint-tool-toggle"]').click();
-  await page.waitForSelector('[data-testid="wallpaint-palette"]');
+  // The House Studio shell (2026-09-26): the plan toolbar and its
+  // `wallpaint-tool-toggle` are inert under the overlay; the brush is armed
+  // from the rail's Paint mode. The rail button toggles, so it is pressed
+  // only while the palette is closed.
+  const palette = page.locator('[data-testid="wallpaint-palette"]');
+  if (!(await palette.isVisible())) await overlay.locator('[data-testid="house-mode-paint"]').click();
+  await expect(palette).toBeVisible();
 }
 
 const material = (page: Page, roomId: string, edgeIndex: number) =>
@@ -257,7 +262,9 @@ test.describe('TintEX paints — phone', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
   test('the phone sheet lists the five TintEX lines in the TintEX show flat, and the HUD carries RAL chips', async ({ page }) => {
-    await page.goto('/designer?demo=tintex');
+    // The phone sheet and the paint HUD belong to the PLAN experience; a demo
+    // opens in 3D by default (2026-09-26), so the URL asks for the plan.
+    await page.goto('/designer?demo=tintex&view=2d');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached', timeout: 30_000 });
     await page.waitForTimeout(800);
     await page.getByRole('button', { name: 'Open menu' }).tap();

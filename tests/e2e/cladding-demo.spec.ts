@@ -37,14 +37,19 @@ test.describe('Sample cladding in 3D', () => {
     await seed(page);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-    await page.locator('[data-testid="view-mode-3d"]').click();
-    await expect(page.locator('[data-testid="wallpaint-3d-overlay"]')).toBeVisible();
-    await expect
-      .poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: { faceCount: () => number } }).__ppwRoomView3d.faceCount()))
-      .toBeGreaterThan(0);
+    // The House Studio shell (2026-09-26) has no Cladding mode on its rail and
+    // the plan toolbar is inert under the 3D overlay, so the sample boards are
+    // armed in the plan first and the room is opened from the Cladding panel's
+    // own "3D room" radio — the panel stays docked beside the house view.
     await page.locator('[data-testid="cladding-tool-toggle"]').click();
     await expect(page.locator('[data-testid="cladding-palette"]')).toBeVisible();
     await expect(page.locator('[data-testid="cladding-disclaimer"]')).toContainText(/sample/i);
+    await page.locator('[data-testid="cladding-view-3d"]').click();
+    await expect(page.locator('[data-testid="wallpaint-3d-overlay"]')).toBeVisible();
+    await expect(page.locator('[data-testid="cladding-view-3d"]')).toHaveAttribute('aria-checked', 'true');
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as { __ppwRoomView3d: { faceCount: () => number } }).__ppwRoomView3d.faceCount()))
+      .toBeGreaterThan(0);
     await page.locator('[data-testid="cladding-demo-clad-cedar-140"]').click();
 
     const pt = await page.evaluate(() =>
