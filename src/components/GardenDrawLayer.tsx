@@ -1,15 +1,27 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type Konva from 'konva';
 import { Layer, Rect, Text } from 'react-konva';
 import { gardenRectFromPoints, moveGardenFence } from '../designer/garden';
 import { useGardenEditorStore } from '../store/gardenEditorStore';
 import { usePropertyStore } from '../store/propertyStore';
+import { useToastStore } from '../store/toastStore';
 
 /** A transient top layer owns only the explicitly armed garden gesture. */
 export function GardenDrawLayer({ pxPerMetre, scale }: { pxPerMetre: number; scale: number }) {
   const placement = useGardenEditorStore((s) => s.placement);
   const anchor = useRef<{ x: number; y: number; pointerId: number } | null>(null);
   const [preview, setPreview] = useState<ReturnType<typeof gardenRectFromPoints>>(null);
+  const captured = useRef<Pick<Konva.Shape, 'releaseCapture'> | null>(null);
+  const resetGesture = useCallback(() => {
+    if (anchor.current) captured.current?.releaseCapture(anchor.current.pointerId);
+    captured.current = null;
+    anchor.current = null;
+  }, []);
+  useEffect(() => {
+    resetGesture();
+    setPreview(null);
+    return resetGesture;
+  }, [placement, resetGesture]);
   const point = (event: Konva.KonvaEventObject<PointerEvent>) => {
     const p = event.target.getStage()?.getRelativePointerPosition();
     return p ? { x: p.x / pxPerMetre, y: p.y / pxPerMetre } : null;
@@ -19,10 +31,12 @@ export function GardenDrawLayer({ pxPerMetre, scale }: { pxPerMetre: number; sca
     <Rect x={-10000 * pxPerMetre} y={-10000 * pxPerMetre} width={20000 * pxPerMetre} height={20000 * pxPerMetre} fill="rgba(0,0,0,0)"
       onPointerDown={(event) => {
         event.cancelBubble = true;
-        if (event.evt.isPrimary === false || (event.evt.pointerType === 'mouse' && event.evt.button !== 0)) return;
+        if (event.evt.isPrimary === false) { resetGesture(); setPreview(null); return; }
+        if (event.evt.pointerType === 'mouse' && event.evt.button !== 0) return;
         const p = point(event);
         if (!p) return;
         anchor.current = { ...p, pointerId: event.evt.pointerId };
+        captured.current = event.target;
         event.target.setPointerCapture(event.evt.pointerId);
       }}
       onPointerMove={(event) => {
@@ -34,9 +48,9 @@ export function GardenDrawLayer({ pxPerMetre, scale }: { pxPerMetre: number; sca
         event.cancelBubble = true;
         const from = anchor.current;
         if (!from || from.pointerId !== event.evt.pointerId) return;
-        anchor.current = null;
+        resetGesture();
         setPreview(null);
-        event.target.releaseCapture(event.evt.pointerId);
+        if (useGardenEditorStore.getState().placement !== placement) return;
         const p = point(event);
         if (!p) return;
         const store = usePropertyStore.getState();
@@ -50,8 +64,9 @@ export function GardenDrawLayer({ pxPerMetre, scale }: { pxPerMetre: number; sca
           if (fence) committed = store.updateGardenFence(fence.id, moveGardenFence(fence, p));
         }
         if (committed) useGardenEditorStore.getState().place(null);
+        else useToastStore.getState().push(placement.mode === 'resize' ? 'Drag an area at least 0.2 m wide and deep, up to 500 m.' : 'Choose a valid position for this garden element.', 'info');
       }}
-      onPointerCancel={(event) => { event.cancelBubble = true; anchor.current = null; setPreview(null); }}
+      onPointerCancel={(event) => { event.cancelBubble = true; resetGesture(); setPreview(null); }}
       onClick={(event) => { event.cancelBubble = true; }} onTap={(event) => { event.cancelBubble = true; }} />
     {preview && <>
       <Rect listening={false} x={preview.x * pxPerMetre} y={preview.y * pxPerMetre} width={preview.widthM * pxPerMetre} height={preview.depthM * pxPerMetre} stroke="#2c8a75" fill="rgba(64,155,126,0.22)" strokeWidth={2 / scale} dash={[5 / scale, 3 / scale]} />

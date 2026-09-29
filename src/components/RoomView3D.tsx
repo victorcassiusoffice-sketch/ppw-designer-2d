@@ -463,6 +463,20 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const levelEntries = buildingLevels(property);
   const onRoofLevel = isRoofLevel(levelEntries.find((entry) => entry.level.id === level)?.level);
   useEffect(() => {
+    gardenDrag.current = null;
+    setGardenPreview(null);
+    setGardenPlacement(null);
+    if (level !== 'ground') {
+      setGardenOpen(false);
+      setHouseMode((mode) => mode === 'garden' ? 'build' : mode);
+    }
+  }, [level, property.id]);
+  useEffect(() => {
+    if (!gardenPlacement) return;
+    const entries = gardenPlacement.kind === 'surface' ? property.garden?.surfaces : property.garden?.fences;
+    if (!entries?.some((entry) => entry.id === gardenPlacement.id)) setGardenPlacement(null);
+  }, [gardenPlacement, property.garden]);
+  useEffect(() => {
     const product = armedProductId ? getProductById(armedProductId) : undefined;
     if (variant === 'overlay' && product && isRoofProduct(product)) {
       setShowRoof(true);
@@ -1136,7 +1150,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     }
     if (!had || !d || cancelled || d.moved || panMode) return;
     const p = localPoint(e);
-    if (gardenPlacement && stageRef.current) {
+    if (gardenPlacement && gardenPlacement.mode !== 'resize' && stageRef.current) {
       const point = stageRef.current.floorPoint(p.x, p.y);
       if (!point) return;
       const store = usePropertyStore.getState();
@@ -1290,6 +1304,13 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       // An input in the still-usable docked panel keeps its own Esc.
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+      if (gardenDrag.current && (e.key === 'Escape' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z'))) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        gardenDrag.current = null;
+        setGardenPreview(null);
+        setGardenPlacement(null);
+        return;
+      }
       if (constructionTool === 'wall') {
         if (e.key === 'Enter') {
           if (t?.closest('button, a, [role="button"]')) return;
@@ -1318,8 +1339,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         return;
       }
       if (gardenOpen || gardenPlacement) {
-        e.stopImmediatePropagation();
-        setGardenOpen(false);
+        e.preventDefault(); e.stopImmediatePropagation();
+        if (!gardenPlacement) { setGardenOpen(false); setHouseMode('build'); }
         setGardenPlacement(null);
         return;
       }

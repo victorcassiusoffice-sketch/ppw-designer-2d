@@ -31,6 +31,7 @@ import { isShowcaseReadOnly, DEMO_NOTICE } from '../lib/showcaseSafety';
 import { useCurrencyStore } from '../store/currencyStore';
 import { CATEGORY_LABELS } from '../data/products';
 import { formatCurrency } from '../lib/currency';
+import { hasQuotedProducts } from '../lib/quotedProducts';
 
 // Chrome recipe (toolbar contract 2026-08-29) — same strings as the
 // DetailsPanel so the two surfaces are one control set.
@@ -139,7 +140,7 @@ export function CartStrip() {
         </div>
       </button>
 
-      {cart.lines.some(line => line.product.price_on_request) && <p className="px-4 py-1 text-xs text-ppw-charcoal">Supplier-quoted products are excluded from this estimate.</p>}
+      {expanded && hasQuotedProducts(cart) && <p className="px-4 py-1 text-xs text-ppw-charcoal">Supplier quote required before checkout · excluded from this estimate.</p>}
 
       {expanded && (
         <div className="border-t border-ppw-rim bg-ppw-rail px-4 py-3">
@@ -279,6 +280,7 @@ export function CartStrip() {
               <button
                 type="button"
                 onClick={() => { setMobileOpen(false); navigate('/checkout'); }}
+                disabled={hasQuotedProducts(cart)}
                 className={CTRL_INK}
               >
                 Checkout
@@ -321,7 +323,7 @@ export function CartStrip() {
         <span className="rounded-full bg-ppw-paper px-1.5 py-[1px] text-[11px] font-bold tabular-nums text-ppw-inkDeep">
           {orderUnits}
         </span>
-        <span className="tabular-nums max-md:sr-only">{formatCurrency(cart.subtotal, currency)}</span>
+        <span className="tabular-nums">{formatCurrency(cart.subtotal, currency)}</span>
       </button>
 
       {/* Expanded state: the SAME cart body, as a bottom sheet. */}

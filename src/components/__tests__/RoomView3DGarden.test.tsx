@@ -7,6 +7,7 @@ import { usePropertyStore } from '../../store/propertyStore';
 import { useDesignerUIStore } from '../../store/designerUIStore';
 import { usePlacementIntentStore } from '../../store/placementIntentStore';
 import { useGardenEditorStore } from '../../store/gardenEditorStore';
+import { installHistorySubscriptions, useHistoryStore, __test as historyTest } from '../../store/historyStore';
 import type { ThreeStageHandle, ThreeStageProps } from '../three/ThreeStage';
 
 vi.mock('../three/ThreeStage', async () => {
@@ -19,7 +20,11 @@ vi.mock('../three/ThreeStage', async () => {
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let host: HTMLDivElement;
 let root: Root;
+let stopHistory: (() => void) | undefined;
+const onClose = vi.fn();
 beforeEach(async () => {
+  historyTest.resetSubscriptions();
+  onClose.mockReset();
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ x: 0, y: 0, left: 0, top: 0, right: 640, bottom: 400, width: 640, height: 400, toJSON: () => ({}) });
   usePropertyStore.getState().resetToDefault();
@@ -27,9 +32,9 @@ beforeEach(async () => {
   usePlacementIntentStore.setState({ armedProductId: null, intent: null });
   useGardenEditorStore.getState().close();
   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
-  await act(async () => { root.render(<RoomView3D variant="overlay" />); });
+  await act(async () => { root.render(<RoomView3D variant="overlay" onClose={onClose} />); });
 });
-afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+afterEach(() => { stopHistory?.(); stopHistory = undefined; act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 function click(selector: string) { act(() => host.querySelector<HTMLButtonElement>(selector)!.click()); }
 function pointer(type: string, x: number, y: number, pointerId = 1) {
   const canvas = host.querySelector<HTMLDivElement>('[data-testid="wallpaint-3d-canvas"]')!;
@@ -48,12 +53,16 @@ describe('3D garden drawing', () => {
   it('previews a floor-style rectangle and commits its size once on release to the shared plan', () => {
     armResize();
     const before = usePropertyStore.getState().property.garden!.surfaces[0];
+    stopHistory = installHistorySubscriptions({ coalesceMs: 0 });
     pointer('pointerdown', 50, 80); pointer('pointermove', 10, 20);
     expect(usePropertyStore.getState().property.garden!.surfaces[0]).toEqual(before);
     expect(host.querySelector('.house-room-preview')?.textContent).toContain('4.0 × 6.0 m');
     pointer('pointerup', 10, 20);
     expect(usePropertyStore.getState().property.garden!.surfaces[0]).toMatchObject({ id: before.id, x: 1, y: 2, widthM: 4, depthM: 6 });
     expect(host.querySelector('.house-room-preview')).toBeNull();
+    expect(useHistoryStore.getState().past).toHaveLength(1);
+    act(() => useHistoryStore.getState().undo());
+    expect(usePropertyStore.getState().property.garden!.surfaces[0]).toEqual(before);
   });
   it('cancels an interrupted resize without changing the surface', () => {
     armResize();
@@ -61,5 +70,30 @@ describe('3D garden drawing', () => {
     pointer('pointerdown', 50, 80); pointer('pointermove', 10, 20); pointer('pointercancel', 10, 20);
     expect(usePropertyStore.getState().property.garden!.surfaces[0]).toEqual(before);
     expect(host.querySelector('.house-room-preview')).toBeNull();
+  });
+  it('discards a resize when a second finger starts navigation', () => {
+    armResize();
+    const before = usePropertyStore.getState().property.garden!.surfaces[0];
+    pointer('pointerdown', 50, 80); pointer('pointermove', 10, 20);
+    pointer('pointerdown', 80, 80, 2); pointer('pointerup', 80, 80, 2); pointer('pointerup', 10, 20);
+    expect(usePropertyStore.getState().property.garden!.surfaces[0]).toEqual(before);
+    expect(host.querySelector('.house-room-preview')).toBeNull();
+  });
+  it('cancels on Escape and on floor changes without modifying the saved surface', () => {
+    armResize();
+    const before = usePropertyStore.getState().property.garden!.surfaces[0];
+    pointer('pointerdown', 50, 80); pointer('pointermove', 10, 20);
+    act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', cancelable: true })));
+    pointer('pointerup', 10, 20);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(host.querySelector('.house-room-preview')).toBeNull();
+    expect(usePropertyStore.getState().property.garden!.surfaces[0]).toEqual(before);
+    click('[data-testid="garden-resize"]');
+    pointer('pointerdown', 50, 80); pointer('pointermove', 10, 20);
+    act(() => usePropertyStore.getState().addLevel('Upper floor'));
+    pointer('pointerup', 10, 20);
+    expect(host.querySelector('.house-room-preview')).toBeNull();
+    expect(host.querySelector('[data-testid="garden-panel"]')).toBeNull();
+    expect(usePropertyStore.getState().property.garden!.surfaces[0]).toEqual(before);
   });
 });

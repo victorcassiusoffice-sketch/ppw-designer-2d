@@ -98,6 +98,21 @@
 }
 .plan-topbar button:disabled { opacity: .4; }
 
+/* Door settings belong to a full-width in-flow row, never the identity grid cell. */
+.plan-topbar > [data-testid="door-options"] {
+  grid-column: 1 / -1; min-width: 0; height: auto; min-height: 48px;
+  flex-wrap: wrap; gap: 6px; padding: 4px 0;
+  background: transparent !important; border-color: var(--capsule-rim) !important;
+}
+.plan-topbar [data-testid="door-options"] :is(button, span) { color: var(--capsule-ink) !important; }
+.plan-topbar [data-testid="door-options"] [role="group"] { border: 0; background: transparent; gap: 2px; }
+.plan-topbar [data-testid="door-options"] button {
+  height: 40px; min-height: 40px; border: 0; border-radius: 999px;
+  background: var(--capsule-hover); box-shadow: none;
+}
+.plan-topbar [data-testid="door-options"] button[aria-pressed="true"] { background: var(--capsule-on); }
+.plan-topbar [data-testid="door-options"] > button:last-child { margin-left: auto; }
+
 /* ---- The vertical capsule: fixed left construction rail ---------------- */
 /* Its own gutter keeps the rail completely outside the measured canvas
    (`main` pads by --plan-rail-w below); the two fixed left HUDs in
@@ -192,6 +207,27 @@
 .designer-app[data-view="plan"] #canvas-plan-tools > div:first-child > button[aria-pressed="true"] { background: var(--capsule-on, #0d1b20cc); color: var(--capsule-on-ink, #f4ffff); }
 
 /* ---- Clear (bottom-left) and the phone undo strip (top-left) ----------- */
+/* The height control uses the same narrow capsule at every width. Its
+   explanatory text stays accessible without another card covering the plan. */
+.designer-app[data-view="plan"] [data-testid="wall-height-hud"] {
+  width: max-content; padding: 4px; gap: 0; align-items: center;
+  border: 1px solid var(--capsule-rim); border-radius: var(--capsule-r);
+  background: var(--capsule-bg); color: var(--capsule-ink) !important;
+  box-shadow: var(--capsule-shadow); backdrop-filter: blur(var(--capsule-blur));
+}
+.designer-app[data-view="plan"] [data-testid="wall-height-hud"]:not(:has([data-testid="wall-height-control"])) { display: none; }
+.designer-app[data-view="plan"] :is([data-testid="wall-height-hud-label"], [data-testid="wall-height-hud-note"]) {
+  display: block; position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+.designer-app[data-view="plan"] [data-testid="wall-height-control"] { flex-direction: column; gap: 0; }
+.designer-app[data-view="plan"] [data-testid="wall-height-control"] button {
+  width: var(--capsule-hit); height: var(--capsule-hit); border: 0; border-radius: 999px;
+  background: transparent; color: var(--capsule-ink); box-shadow: none;
+}
+.designer-app[data-view="plan"] [data-testid="wall-height-control"] button:hover { background: var(--capsule-hover); }
+.designer-app[data-view="plan"] [data-testid="wall-height-readout"] {
+  min-width: 0; flex: none; padding: 4px 0; font-size: 11px; color: var(--capsule-ink);
+}
 .designer-app[data-view="plan"] [data-testid="clear-controls"] { gap: 4px; }
 .designer-app[data-view="plan"] [data-testid="clear-controls"] > button,
 .designer-app[data-view="plan"] :is([data-testid="mobile-undo"], [data-testid="mobile-redo"], [data-testid="mobile-precision"]) {

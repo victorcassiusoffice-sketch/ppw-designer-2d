@@ -24,6 +24,7 @@ import type { CartTotals } from '../store/cartStore';
 import type { CheckoutFormValues } from '../store/checkoutStore';
 import { confirmAdjustedPrices } from './priceAdjust';
 import { DEMO_NOTICE, isShowcaseReadOnly } from './showcaseSafety';
+import { assertCartIsPriced } from './quotedProducts';
 
 export function isPaypalEnabled(): boolean {
   // Direct dotted access - Vite inlines the literal at build time.
@@ -74,6 +75,7 @@ export function buildPaypalCheckoutPayload(args: {
   successUrl?: string;
   cancelUrl?: string;
 }): CreatePaypalOrderPayload {
+  assertCartIsPriced(args.cart);
   const cart: PaypalCheckoutLineItem[] = args.cart.lines.map((l) => ({
     productId: l.productId,
     name: l.product.name,

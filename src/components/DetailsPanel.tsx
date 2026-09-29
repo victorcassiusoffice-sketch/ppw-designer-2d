@@ -258,7 +258,7 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
               value={`${selectedProduct.dimensions_cm.length} × ${selectedProduct.dimensions_cm.width} cm`}
             />
             <Stat label="Height" value={`${selectedProduct.dimensions_cm.height} cm`} />
-            <Stat label="Weight" value={`${selectedProduct.weight_kg} kg`} />
+            <Stat label="Weight" value={selectedProduct.weight_kg > 0 ? `${selectedProduct.weight_kg} kg` : 'Confirm with supplier'} />
             <Stat
               label="Position"
               value={`${selected.x.toFixed(2)} m, ${selected.y.toFixed(2)} m · ${selected.rotation}°`}

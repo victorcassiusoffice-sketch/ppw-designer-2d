@@ -11,7 +11,7 @@
  *
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createRoot, type Root } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 import { act } from 'react';
@@ -23,6 +23,7 @@ import { usePropertyStore } from '../../store/propertyStore';
 import { useCurrencyStore } from '../../store/currencyStore';
 import { useCartUIStore } from '../../store/cartUIStore';
 import { getAllProducts, getProductById } from '../../data/products';
+import * as productCatalog from '../../data/products';
 
 let container: HTMLDivElement;
 let root: Root;
@@ -58,6 +59,7 @@ afterEach(() => {
     root.unmount();
   });
   container.remove();
+  vi.restoreAllMocks();
 });
 
 describe('CartDrawer — visibility', () => {
@@ -79,6 +81,20 @@ describe('CartDrawer — visibility', () => {
 });
 
 describe('CartDrawer — totals + 5% marketplace fee', () => {
+  it('labels supplier-quoted catalog products clearly and prevents zero-price checkout', () => {
+    const lookup = productCatalog.getProductById;
+    vi.spyOn(productCatalog, 'getProductById').mockImplementation(id => {
+      const product = lookup(id);
+      return product && id === 'duraco-water-tank-1000' ? { ...product, price_on_request: true } : product;
+    });
+    usePropertyStore.getState().addItem({ productId: 'duraco-water-tank-1000', x: 0, y: 0, rotation: 0 });
+    useCartUIStore.getState().open();
+    render();
+    expect(container.querySelector('[data-testid="cart-line"]')?.textContent).toContain('Price on request');
+    expect(container.querySelector('[data-testid="merchant-group"]')?.textContent).not.toMatch(/MUR\s*0/);
+    expect((container.querySelector('[data-testid="cart-drawer-checkout"]') as HTMLButtonElement).disabled).toBe(true);
+    expect(container.querySelector('[role="status"]')?.textContent).toContain('excluded from the estimate');
+  });
   it('renders both subtotal and 5% marketplace-fee line (locked commission rate)', () => {
     const product = getAllProducts()[0];
     usePropertyStore.getState().addItem({

@@ -5,6 +5,7 @@ import { useDesignerUIStore } from '../store/designerUIStore';
 import { usePropertyStore } from '../store/propertyStore';
 import { useWallStore } from '../store/wallStore';
 import { usePlacementIntentStore } from '../store/placementIntentStore';
+import { useDrawProgressStore } from '../store/drawProgressStore';
 import './GardenPanel.css';
 
 /** Reserved layout space, never a modal laid over the garden being edited. */
@@ -13,11 +14,17 @@ export function PlanGardenWorkspace() {
   const placement = useGardenEditorStore((s) => s.placement);
   const view = useDesignerUIStore((s) => s.viewMode);
   const tool = useDesignerUIStore((s) => s.tool);
+  const activeLevel = usePropertyStore((s) => s.property.activeLevelId ?? 'ground');
+  const propertyId = usePropertyStore((s) => s.property.id);
+  const armedProduct = usePlacementIntentStore((s) => s.armedProductId);
+  const energyOpen = useDesignerUIStore((s) => s.energyPanelOpen);
+  const drawingWalls = useDrawProgressStore((s) => s.enabled);
   useEffect(() => {
     const show = () => {
       if (useDesignerUIStore.getState().viewMode === '3d') return;
       usePropertyStore.getState().setActiveLevel('ground');
       useDesignerUIStore.getState().setTool('hand');
+      useDesignerUIStore.getState().setEnergyPanelOpen(false);
       usePlacementIntentStore.getState().setArmed(null);
       useWallStore.getState().setDraw({ phase: 'idle' });
       useGardenEditorStore.getState().open();
@@ -27,8 +34,9 @@ export function PlanGardenWorkspace() {
     return () => { window.removeEventListener('ppw:open-garden', show); window.removeEventListener('ppw:edit-garden', show); };
   }, []);
   useEffect(() => {
-    if (view === '3d' || tool !== 'hand') useGardenEditorStore.getState().close();
-  }, [view, tool]);
+    if (view === '3d' || tool !== 'hand' || activeLevel !== 'ground' || armedProduct || energyOpen || drawingWalls) useGardenEditorStore.getState().close();
+  }, [view, tool, activeLevel, armedProduct, energyOpen, drawingWalls]);
+  useEffect(() => () => useGardenEditorStore.getState().close(), [propertyId]);
   useEffect(() => {
     if (!open) return;
     const escape = (event: KeyboardEvent) => {

@@ -6,6 +6,8 @@ import { PlanGardenWorkspace } from '../PlanGardenWorkspace';
 import { usePropertyStore } from '../../store/propertyStore';
 import { useDesignerUIStore } from '../../store/designerUIStore';
 import { useGardenEditorStore } from '../../store/gardenEditorStore';
+import { usePlacementIntentStore } from '../../store/placementIntentStore';
+import { useDrawProgressStore } from '../../store/drawProgressStore';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let host: HTMLDivElement;
@@ -13,7 +15,9 @@ let root: Root;
 beforeEach(() => {
   usePropertyStore.getState().resetToDefault();
   useGardenEditorStore.getState().close();
-  useDesignerUIStore.setState({ viewMode: 'plan', tool: 'hand' });
+  useDesignerUIStore.setState({ viewMode: 'plan', tool: 'hand', energyPanelOpen: false });
+  useDrawProgressStore.getState().reset();
+  usePlacementIntentStore.getState().setArmed(null);
   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
   act(() => root.render(<PlanGardenWorkspace />));
 });
@@ -45,5 +49,28 @@ describe('plan garden workspace', () => {
     act(() => useDesignerUIStore.getState().setTool('floor'));
     expect(host.children).toHaveLength(0);
     expect(useGardenEditorStore.getState().placement).toBeNull();
+  });
+  it('cancels garden placement when selecting a product or another floor', () => {
+    act(() => window.dispatchEvent(new CustomEvent('ppw:open-garden')));
+    act(() => host.querySelector<HTMLButtonElement>('[data-testid="garden-add-lawn"]')!.click());
+    const before = usePropertyStore.getState().property.garden;
+    act(() => usePlacementIntentStore.getState().setArmed('next-product'));
+    expect(useGardenEditorStore.getState().placement).toBeNull();
+    expect(host.children).toHaveLength(0);
+    act(() => window.dispatchEvent(new CustomEvent('ppw:open-garden')));
+    expect(usePlacementIntentStore.getState().armedProductId).toBeNull();
+    act(() => usePropertyStore.setState((state) => ({ property: { ...state.property, activeLevelId: 'first' } })));
+    expect(host.children).toHaveLength(0);
+    expect(usePropertyStore.getState().property.garden).toEqual(before);
+  });
+  it('exits for Solar or wall drawing even though both retain the hand tool', () => {
+    act(() => window.dispatchEvent(new CustomEvent('ppw:open-garden')));
+    act(() => useDesignerUIStore.getState().setEnergyPanelOpen(true));
+    expect(host.children).toHaveLength(0);
+    act(() => window.dispatchEvent(new CustomEvent('ppw:open-garden')));
+    expect(useDesignerUIStore.getState().energyPanelOpen).toBe(false);
+    act(() => useDrawProgressStore.getState().setEnabled(true));
+    expect(host.children).toHaveLength(0);
+    expect(useDesignerUIStore.getState().tool).toBe('hand');
   });
 });

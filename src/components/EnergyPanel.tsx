@@ -169,7 +169,9 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
     useDesignerUIStore.getState().setEnergyPanelOpen(false);
     window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
     window.dispatchEvent(new CustomEvent('ppw:close-catalog'));
-    usePlacementIntentStore.getState().placeAtCenter(SOLAR_PANEL_PRODUCT_ID);
+    const placement = usePlacementIntentStore.getState();
+    placement.setArmed(null);
+    placement.placeAtCenter(SOLAR_PANEL_PRODUCT_ID);
     onJumpToRoof?.();
   }
 
@@ -186,7 +188,9 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
     useDesignerUIStore.getState().setEnergyPanelOpen(false);
     window.dispatchEvent(new CustomEvent('ppw:close-house-details'));
     window.dispatchEvent(new CustomEvent('ppw:close-catalog'));
-    usePlacementIntentStore.getState().setArmed(WATER_TANK_PRODUCT_ID);
+    const placement = usePlacementIntentStore.getState();
+    placement.consume();
+    placement.setArmed(WATER_TANK_PRODUCT_ID);
     pushToast(`Tap the ground to place the Duraco tank. ${tankPriceLine(getProductById(WATER_TANK_PRODUCT_ID))}`, 'info');
     onJumpToRoof?.();
   }

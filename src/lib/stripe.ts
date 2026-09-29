@@ -20,6 +20,7 @@ import type { CartTotals } from '../store/cartStore';
 import type { CheckoutFormValues } from '../store/checkoutStore';
 import { confirmAdjustedPrices } from './priceAdjust';
 import { DEMO_NOTICE, isShowcaseReadOnly } from './showcaseSafety';
+import { assertCartIsPriced } from './quotedProducts';
 
 /**
  * Read the publishable key from Vite's `import.meta.env`.
@@ -134,6 +135,7 @@ export function buildCheckoutPayload(args: {
   orderId: string;
   property?: PropertySnapshotForCheckout;
 }): CreateCheckoutPayload {
+  assertCartIsPriced(args.cart);
   const lineItems: CheckoutLineItem[] = args.cart.lines.map((l) => ({
     productId: l.productId,
     name: l.product.name,

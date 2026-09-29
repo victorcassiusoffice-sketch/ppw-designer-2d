@@ -88,6 +88,7 @@ describe('solar and water placement shortcuts', () => {
   it('opens a real roof and requests one known 3D panel through the shared placement path', () => {
     seed([]);
     useDesignerUIStore.getState().setEnergyPanelOpen(true);
+    usePlacementIntentStore.getState().setArmed('duraco-water-tank-1000');
     render();
     // The button names the catalogue product and its price — one id, shared by the 2D and 3D paths.
     expect(SOLAR_PANEL_PRODUCT_ID).toBe('emcar-jinko-475');
@@ -97,6 +98,7 @@ describe('solar and water placement shortcuts', () => {
     expect(usePropertyStore.getState().property.activeLevelId).toBe('roof');
     expect(usePlacementIntentStore.getState().intent).toMatchObject({ productId: SOLAR_PANEL_PRODUCT_ID, target: 'center' });
     expect(useDesignerUIStore.getState().energyPanelOpen).toBe(false);
+    expect(usePlacementIntentStore.getState().armedProductId).toBeNull();
   });
   it('does not create a panel when the building has no drawn footprint', () => {
     seed([]);
@@ -108,11 +110,13 @@ describe('solar and water placement shortcuts', () => {
   it('arms the tank on the ground instead of leaving it on a roof, and quotes the retailers\' list price', () => {
     seed([]);
     usePropertyStore.getState().ensureRoofLevel();
+    usePlacementIntentStore.getState().placeAtCenter('emcar-jinko-475');
     useToastStore.getState().clear();
     render();
     act(() => $('energy-add-tank')!.click());
     expect(usePropertyStore.getState().property.activeLevelId).toBe('ground');
     expect(usePlacementIntentStore.getState().armedProductId).toBe('duraco-water-tank-1000');
+    expect(usePlacementIntentStore.getState().intent).toBeNull();
     const toasts = useToastStore.getState().toasts;
     expect(toasts[toasts.length - 1]?.message).toBe('Tap the ground to place the Duraco tank. Rs 11,500 list price at Mauritian retailers; delivery and installation not included.');
   });

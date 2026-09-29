@@ -46,6 +46,7 @@ import { COUNTRY_OPTIONS } from '../lib/region';
 import { CATEGORY_LABELS, getProductById } from '../data/products';
 import { roomFloorOrders } from '../designer/floorTiles';
 import { findFloorMaterialById } from '../data/floorMaterials';
+import { hasQuotedProducts, QUOTED_PRODUCTS_NOTICE } from '../lib/quotedProducts';
 import {
   saveLastOrderSnapshot,
   type LastOrderSnapshot,
@@ -113,6 +114,7 @@ export default function CheckoutPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [serverMessage, setServerMessage] = useState<string | null>(null);
+  const needsSupplierPrice = hasQuotedProducts(cart);
 
   const errors: ValidationErrors = useMemo(
     () => (submitted ? validateCheckoutForm(form) : {}),
@@ -240,6 +242,7 @@ export default function CheckoutPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (needsSupplierPrice) { setServerMessage(QUOTED_PRODUCTS_NOTICE); return; }
     setSubmitted(true);
     const v = validateCheckoutForm(form);
     if (hasErrors(v)) {
@@ -483,6 +486,7 @@ export default function CheckoutPage() {
             </div>
           </section>
 
+          {needsSupplierPrice && <p role="status" className="rounded-md border border-ppw-stone bg-white p-3 text-sm">{QUOTED_PRODUCTS_NOTICE}</p>}
           {serverMessage && (
             <p className="rounded-md border border-ppw-coral bg-ppw-coral/10 p-2.5 text-xs text-ppw-coral">
               {serverMessage}
@@ -498,7 +502,7 @@ export default function CheckoutPage() {
             </Link>
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || needsSupplierPrice}
               className="rounded-md bg-ppw-teal px-5 py-2.5 text-sm font-semibold text-white hover:bg-ppw-teal/90 disabled:opacity-60"
             >
               {submitting ? 'Placing order...' : `Place order - ${formatCurrency(cart.subtotal, currency)}`}
@@ -516,7 +520,7 @@ export default function CheckoutPage() {
                     {l.product.name} <span className="text-[10px]">x {l.quantity}</span>
                   </span>
                   <span className="shrink-0 text-ppw-ink">
-                    {formatCurrency(l.lineTotalDisplay, currency)}
+                    {l.product.price_on_request ? 'Price on request' : formatCurrency(l.lineTotalDisplay, currency)}
                   </span>
                 </li>
               ))}

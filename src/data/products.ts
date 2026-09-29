@@ -163,35 +163,38 @@ export const CATEGORY_FILL: Record<ProductCategory, { fill: string; stroke: stri
  * SVG placeholder thumbnails. Real product photography lands Week 3.
  */
 export function thumbnailFor(category: ProductCategory): string {
+  // Canvas crop coordinates use natural image pixels. A viewBox alone leaves
+  // SVG intrinsic size browser-dependent; the loaded image can succeed while
+  // Konva's cropped draw is blank. Keep every fallback's size equal to its viewBox.
   switch (category) {
     case 'solar':
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="6" y="14" width="52" height="36" rx="3" fill="#2F4F7F" stroke="#1B2A44" stroke-width="2"/>
         <path d="M6 26h52M6 38h52M23 14v36M41 14v36" stroke="#8FB3E6" stroke-width="1.5" opacity="0.8"/>
         <circle cx="52" cy="10" r="4" fill="#F6D58A"/>
       </svg>`;
     case 'ice-bath':
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="6" y="20" width="52" height="34" rx="6" fill="#5EEAD4" stroke="#0F766E" stroke-width="2"/>
         <path d="M14 30 Q22 24 32 30 T54 30" stroke="#0F766E" stroke-width="2" fill="none" stroke-linecap="round"/>
         <path d="M14 38 Q22 32 32 38 T54 38" stroke="#0F766E" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
         <circle cx="50" cy="14" r="3" fill="#0F766E"/>
       </svg>`;
     case 'sleep-pod':
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M8 44 Q8 16 32 16 Q56 16 56 44 L56 52 L8 52 Z" fill="#E9EDEF" stroke="#3B4A52" stroke-width="2"/>
         <rect x="18" y="40" width="28" height="6" rx="2" fill="#84A98C"/>
         <circle cx="48" cy="30" r="2" fill="#0F766E"/>
       </svg>`;
     case 'ergo-chair':
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="20" y="10" width="24" height="26" rx="4" fill="#3B4A52" stroke="#0E1B1F" stroke-width="2"/>
         <rect x="16" y="34" width="32" height="10" rx="3" fill="#3B4A52" stroke="#0E1B1F" stroke-width="2"/>
         <line x1="32" y1="44" x2="32" y2="54" stroke="#0E1B1F" stroke-width="3"/>
         <path d="M20 54 L44 54" stroke="#0E1B1F" stroke-width="3" stroke-linecap="round"/>
       </svg>`;
     case 'plant':
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M32 50 L32 14" stroke="#84A98C" stroke-width="3" stroke-linecap="round"/>
         <path d="M32 30 Q22 18 18 26 Q20 30 32 30" fill="#84A98C"/>
         <path d="M32 24 Q44 14 48 22 Q46 28 32 24" fill="#84A98C"/>
@@ -199,7 +202,7 @@ export function thumbnailFor(category: ProductCategory): string {
         <rect x="22" y="48" width="20" height="10" rx="2" fill="#3B4A52"/>
       </svg>`;
     case 'eco-office-kit':
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="6" y="28" width="52" height="6" rx="1" fill="#C4CBCD" stroke="#3B4A52" stroke-width="2"/>
         <rect x="10" y="34" width="3" height="18" fill="#3B4A52"/>
         <rect x="51" y="34" width="3" height="18" fill="#3B4A52"/>
@@ -208,27 +211,27 @@ export function thumbnailFor(category: ProductCategory): string {
       </svg>`;
     // PCF-1 (K1) — V4-AU-1 gold thumbs for merchant-API categories.
     case 'massage':
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="14" y="20" width="36" height="24" rx="6" fill="#E9DCC2" stroke="#C0A67E" stroke-width="2"/>
         <rect x="20" y="14" width="24" height="10" rx="3" fill="#C0A67E"/>
         <rect x="22" y="44" width="20" height="8" rx="2" fill="#C0A67E"/>
       </svg>`;
     case 'sauna':
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="10" y="12" width="44" height="44" rx="6" fill="#DAA060" stroke="#7A4F1F" stroke-width="2"/>
         <rect x="20" y="22" width="24" height="4" rx="1" fill="#7A4F1F" opacity="0.6"/>
         <rect x="20" y="30" width="24" height="4" rx="1" fill="#7A4F1F" opacity="0.6"/>
         <rect x="20" y="38" width="24" height="4" rx="1" fill="#7A4F1F" opacity="0.6"/>
       </svg>`;
     case 'fitness':
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="10" y="26" width="44" height="14" rx="3" fill="#C0C0C0" stroke="#404040" stroke-width="2"/>
         <circle cx="18" cy="33" r="4" fill="#404040"/>
         <circle cx="46" cy="33" r="4" fill="#404040"/>
         <rect x="22" y="18" width="20" height="6" rx="1" fill="#0E0E10"/>
       </svg>`;
     case 'flooring':
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="8" y="8" width="48" height="48" rx="2" fill="#D7C3A0" stroke="#7C5E3C" stroke-width="2"/>
         <line x1="8" y1="20" x2="56" y2="20" stroke="#7C5E3C" stroke-width="1.2" opacity="0.5"/>
         <line x1="8" y1="32" x2="56" y2="32" stroke="#7C5E3C" stroke-width="1.2" opacity="0.5"/>
@@ -238,38 +241,38 @@ export function thumbnailFor(category: ProductCategory): string {
         <line x1="44" y1="8" x2="44" y2="56" stroke="#7C5E3C" stroke-width="1.2" opacity="0.3"/>
       </svg>`;
     case 'walls':
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="6" y="10" width="52" height="44" fill="#C8D0D8" stroke="#3B4A52" stroke-width="2"/>
         <rect x="12" y="16" width="10" height="14" fill="none" stroke="#3B4A52" stroke-width="1.2" opacity="0.5"/>
         <rect x="26" y="16" width="10" height="14" fill="none" stroke="#3B4A52" stroke-width="1.2" opacity="0.5"/>
         <rect x="40" y="16" width="10" height="14" fill="none" stroke="#3B4A52" stroke-width="1.2" opacity="0.5"/>
       </svg>`;
     case 'decor':
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <circle cx="32" cy="32" r="20" fill="#B6C8B0" stroke="#5A7A60" stroke-width="2"/>
         <path d="M32 14 L36 28 L50 28 L38 36 L42 50 L32 42 L22 50 L26 36 L14 28 L28 28 Z" fill="#5A7A60" opacity="0.4"/>
       </svg>`;
     case 'lighting':
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M22 30a10 10 0 1 1 20 0c0 5-4 7-4 12H26c0-5-4-7-4-12z" fill="#F6D58A" stroke="#B7791F" stroke-width="2"/>
         <rect x="26" y="44" width="12" height="5" rx="1.5" fill="#B7791F"/>
         <path d="M32 8v5M14 16l3.5 3.5M50 16l-3.5 3.5M10 30h5M49 30h5" stroke="#B7791F" stroke-width="2" stroke-linecap="round"/>
       </svg>`;
     case 'furniture':
       // Retail (2026-09-05): a sofa silhouette in the furniture oak.
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="8" y="26" width="48" height="20" rx="5" fill="#D9B98A" stroke="#8A6A3F" stroke-width="2"/>
         <rect x="14" y="18" width="36" height="12" rx="4" fill="#E8D2AE" stroke="#8A6A3F" stroke-width="2"/>
         <path d="M12 46v6M52 46v6" stroke="#8A6A3F" stroke-width="2" stroke-linecap="round"/>
       </svg>`;
     case 'appliance':
       // Retail (2026-09-05): a fridge outline in brushed steel.
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="18" y="8" width="28" height="48" rx="4" fill="#D8DCE0" stroke="#6B7480" stroke-width="2"/>
         <path d="M18 26h28M24 14v6M24 32v10" stroke="#6B7480" stroke-width="2" stroke-linecap="round"/>
       </svg>`;
     case 'other':
-      return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="12" y="12" width="40" height="40" rx="4" fill="#F5EFE6" stroke="#C0A67E" stroke-width="2"/>
         <text x="32" y="40" text-anchor="middle" font-family="sans-serif" font-size="22" fill="#C0A67E">★</text>
       </svg>`;

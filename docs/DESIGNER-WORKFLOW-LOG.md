@@ -1,8 +1,35 @@
 # Room Designer — workflow and continuation log
 
-Updated: 25 September 2026 (Mauritius). Owner: Victor.
+Updated: 29 September 2026 (Mauritius). Owner: Victor.
 
 ## Resume here
+
+### Compact controls, garden cancellation and product placement — 29 September 2026 — deployment pending
+
+Continue from this checkpoint. Work is in `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`, on **`cursor/feat-3d-flooring-hud-bc95` only**. The checkout was brought forward to **`3bed2f70e9786238f703192c05ed33567885a720`** before selectively reapplying this continuation's fixes. **The implementation has passed local validation; the new feature deployment and its unique URL are still pending.** The root agent must finish deployment verification and update this status before reporting it as shipped.
+
+Preservation and branch context:
+
+- All work present before synchronizing the feature branch is preserved in stash **`649569db5766b86c5880321f6cfea782f356da1f`**. Its tracked snapshot contains the original working changes; **`649569db5766b86c5880321f6cfea782f356da1f^3`** contains the previously untracked files. Keep this recovery point; do not pop or discard it wholesale over the newer checkout.
+- The remote had already imported the earlier uncommitted build as `62947b7` and then advanced to `3bed2f7`. This continuation preserved those newer compact controls, real app captures, paint presentation and roof/solar visibility changes. The review fixes were reapplied selectively, including a checked garden-only patch to `RoomView3D.tsx`.
+- **PR #36 was merged externally on 26 September 2026.** The historical checkpoint below records that other delivery. It is not authority for this continuation to push/merge main or deploy production. This continuation remains feature-preview work; production `https://designer.ppwellness.co` stays untouched unless Victor explicitly authorizes it under handoff §7.
+
+What changed in this continuation:
+
+- Garden Draw area now clears stale anchors, previews and pointer capture when cancelled, replaced, interrupted by a second touch, or left for another tool/floor. Plan garden editing exits for wall drawing, Solar, product placement and view changes; opening Garden closes Solar. Invalid draws give feedback. Snapped or rejected Konva transforms return to the saved geometry instead of leaving a misleading visual position.
+- The 3D garden draft cancels on floor/project changes or removal of its surface. Escape/Ctrl+Z cancels an unfinished resize before it can commit; Escape leaves placement before closing the garden inspector. Resize commits through the shared property store as one undoable edit in both Plan and 3D.
+- Plan door controls and wall-height controls use the compact dark capsule theme. The phone keeps its running estimate visible. These changes retain existing height limits, floor-specific heights, opening controls and product-cost access.
+- SVG intrinsic dimensions are restored for plan category sprites and the Duraco tank, so the 2D symbols render at their intended size. Existing real app screenshots remain the presentation examples; the concept advert remains distinct from those screenshots.
+- Solar and Duraco placement remain connected to the real catalog dimensions and estimate. Quote-only product guards prevent unpriced selections from silently entering payment flows; no fake supplier API, order, payment, email or confirmed stock claim was introduced.
+
+Validation completed before deployment:
+
+- Full unit suite: **269 files / 3,000 tests passed**. Client typecheck, API typecheck and production build passed. Scoped lint passed for the reviewed garden files.
+- Focused garden/roof regressions: **8 files / 34 tests passed**, including 2D/3D resize, single-step undo, second-touch cancellation, Escape, floor/tool switching and existing roof visibility behavior.
+- Browser checks observed a garden patch change from **16 m² to 9.5 m²**. Phone 3D checks placed a solar panel and a Duraco tank; the tank addition changed the displayed estimate from **Rs 531,012 to Rs 542,512**. The solar panel remained visible when returning to Ground. These checks do not yet establish a new unique Vercel deployment.
+- Appearance limit: **33 Courts products still use category fallback illustrations rather than actual product photographs**. Dimensional previews and generic category symbols must remain described honestly; do not present them as exact manufacturer models or newly captured product photos.
+
+Finish this checkpoint: push only the feature branch, obtain and open its unique Vercel deployment, verify `/designer`, `/designer?demo=tintex` and the affected Studio/phone interactions, then record the application SHA, deployment ID and verified URLs here. Update BUILD-LINKS, CURRENT-WORK-LINKS, continuation handoffs and saveable output copies after that verification. Preserve the recovery stash and the complete historical entries below. Do not recreate, reopen or merge PR #36 as part of publishing the preview.
 
 ### Studio + pitch pass finished and merged to main — 26 September 2026 — shipped
 

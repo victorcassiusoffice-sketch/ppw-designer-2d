@@ -23,6 +23,10 @@ function SurfaceShape({ surface, pxPerMetre, scale, interactive, selected }: {
     usePropertyStore.getState().selectItemAcrossRooms(null);
   };
   const edit = () => { select(); window.dispatchEvent(new CustomEvent('ppw:edit-garden', { detail: { id: surface.id } })); };
+  const syncShape = () => {
+    const saved = usePropertyStore.getState().property.garden?.surfaces.find((entry) => entry.id === surface.id) ?? surface;
+    rectRef.current?.setAttrs({ x: saved.x * pxPerMetre, y: saved.y * pxPerMetre, width: saved.widthM * pxPerMetre, height: saved.depthM * pxPerMetre, scaleX: 1, scaleY: 1 });
+  };
   return <Group name={`garden-surface-${surface.id}`}>
     <Rect ref={rectRef} x={surface.x * pxPerMetre} y={surface.y * pxPerMetre} width={surface.widthM * pxPerMetre} height={surface.depthM * pxPerMetre}
       fill={paving?.renderHex ?? GARDEN_SURFACES[surface.kind].hex} stroke={selected ? '#28786e' : '#536344'} strokeWidth={(selected ? 2 : 1) / scale} opacity={0.85}
@@ -33,6 +37,7 @@ function SurfaceShape({ surface, pxPerMetre, scale, interactive, selected }: {
         e.cancelBubble = true;
         const snap = (n: number) => Math.round(n / pxPerMetre * 10) / 10;
         usePropertyStore.getState().updateGardenSurface(surface.id, { x: snap(e.target.x()), y: snap(e.target.y()) });
+        syncShape();
       }}
       onTransformEnd={(e) => {
         e.cancelBubble = true;
@@ -42,6 +47,7 @@ function SurfaceShape({ surface, pxPerMetre, scale, interactive, selected }: {
         const patch = { x: round(rect.x() / pxPerMetre), y: round(rect.y() / pxPerMetre), widthM: Math.max(0.2, round(rect.width() * rect.scaleX() / pxPerMetre)), depthM: Math.max(0.2, round(rect.height() * rect.scaleY() / pxPerMetre)) };
         rect.scale({ x: 1, y: 1 });
         usePropertyStore.getState().updateGardenSurface(surface.id, patch);
+        syncShape();
       }} />
     {surface.widthM * pxPerMetre * scale > 85 && <Text listening={false}
       x={surface.x * pxPerMetre + 5 / scale} y={surface.y * pxPerMetre + 5 / scale}

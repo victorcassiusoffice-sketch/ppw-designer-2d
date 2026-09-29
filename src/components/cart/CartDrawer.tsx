@@ -27,6 +27,7 @@ import { useCartUIStore } from '../../store/cartUIStore';
 import { formatCurrency } from '../../lib/currency';
 import { PPW_COMMISSION_RATE, PPW_COMMISSION_PCT_LABEL } from '../../lib/commission';
 import { isShowcaseReadOnly, DEMO_NOTICE } from '../../lib/showcaseSafety';
+import { hasQuotedProducts, QUOTED_PRODUCTS_NOTICE } from '../../lib/quotedProducts';
 
 const MARKETPLACE_FEE_PCT = PPW_COMMISSION_RATE;
 const PPW_MARKETPLACE = 'Peak Performance Wellness Marketplace';
@@ -63,6 +64,7 @@ export function CartDrawer() {
   const close = useCartUIStore((s) => s.close);
   const navigate = useNavigate();
   const readOnly = isShowcaseReadOnly();
+  const needsSupplierPrice = hasQuotedProducts(cart);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -82,7 +84,7 @@ export function CartDrawer() {
     cart.lines.length === 0 && cart.floorLines.length === 0 && cart.wallPaintLines.length === 0 && cart.claddingLines.length === 0;
 
   function handleCheckout() {
-    if (isShowcaseReadOnly()) return;
+    if (isShowcaseReadOnly() || needsSupplierPrice) return;
     // Route to the cartStore-backed checkout — the SAME store this drawer
     // reads (useCart). Previously navigated to /marketplace/checkout, which
     // reads a DIFFERENT store (marketplaceCartStore), so the customer's
@@ -142,7 +144,7 @@ export function CartDrawer() {
                       {g.merchant}
                     </p>
                     <p className="text-[11px] font-medium text-[#0E0E10]">
-                      {formatCurrency(g.subtotal, currency)}
+                      {g.lines.every(line => line.product.price_on_request) ? 'Price on request' : formatCurrency(g.subtotal, currency)}
                     </p>
                   </div>
                   <ul className="mt-1.5 space-y-1.5">
@@ -157,7 +159,7 @@ export function CartDrawer() {
                           <span className="text-[#0E0E10]/80">×</span> {l.product.name}
                         </span>
                         <span className="tabular-nums text-[#0E0E10]/80">
-                          {formatCurrency(l.lineTotalDisplay, currency)}
+                          {l.product.price_on_request ? 'Price on request' : formatCurrency(l.lineTotalDisplay, currency)}
                         </span>
                       </li>
                     ))}
@@ -290,6 +292,7 @@ export function CartDrawer() {
           </div>
         )}
 
+        {needsSupplierPrice && <p role="status" className="px-4 py-2 text-xs text-[#0E0E10]/70">{QUOTED_PRODUCTS_NOTICE}</p>}
         <footer className="flex gap-2 border-t border-[#C0A67E]/30 bg-[#F5EFE6] px-4 py-3">
           <button
             type="button"
@@ -301,7 +304,7 @@ export function CartDrawer() {
           {!readOnly && <button
             type="button"
             onClick={handleCheckout}
-            disabled={isEmpty}
+            disabled={isEmpty || needsSupplierPrice}
             data-testid="cart-drawer-checkout"
             className="flex-1 rounded-md bg-[#0E0E10] px-3 py-2 text-xs font-semibold text-[#F5EFE6] ring-1 ring-[#C0A67E] hover:bg-[#0E0E10]/90 disabled:opacity-50"
           >

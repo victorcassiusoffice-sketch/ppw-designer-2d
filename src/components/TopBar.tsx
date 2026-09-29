@@ -20,6 +20,7 @@ import {
   SNAP_UNIT_LABEL,
 } from '../store/designerUIStore';
 import { useDrawProgressStore } from '../store/drawProgressStore';
+import { useGardenEditorStore } from '../store/gardenEditorStore';
 import { isDrawnPolygon } from '../designer/roomLayout';
 import { floorTargetRoom } from '../designer/floorTarget';
 // Sims world (2026-08-29): storeys + land plot live on the property.
@@ -730,6 +731,7 @@ export function TopBar({
   // object: stand down every build tool (App-level drawMode, the wallStore
   // draw run, and the designerUIStore tool) so nothing is left half-armed.
   function handleSelect() {
+    useGardenEditorStore.getState().close();
     if (drawMode) setDrawMode(false);
     if (wallActive) setWallDraw({ phase: 'idle' });
     setTool('hand');
@@ -1852,7 +1854,7 @@ export function TopBar({
         {/* ---- md+: rail A — BUILD. shrink-0; the Box|Custom segment follows
             OUTSIDE the rails because its Custom half is the phone strip's
             "Walls" button too (one node, one testid, every width). ---- */}
-        <div className="plan-build-tools" aria-label="Construction tools">
+        <div className="plan-build-tools" aria-label="Construction tools" onClickCapture={() => useGardenEditorStore.getState().close()}>
           <span className={DIVIDER} aria-hidden="true" />
 
           {/* 2 BUILD — segmented: Walls · Door · Paint · Measure. Walls keeps
@@ -2304,6 +2306,9 @@ export function TopBar({
             title="Swap the hinge to the other end (H)"
           >
             Flip hinge
+          </button>
+          <button type="button" onClick={handleSelect} className={`${BTN} ${BTN_REST}`} aria-label="Done adding doors and windows">
+            Done
           </button>
         </div>
       )}

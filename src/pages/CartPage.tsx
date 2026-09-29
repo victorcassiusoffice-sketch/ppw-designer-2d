@@ -20,6 +20,7 @@ import { CATEGORY_LABELS, thumbnailFor } from '../data/products';
 import { findFloorMaterialById } from '../data/floorMaterials';
 import { formatCurrency } from '../lib/currency';
 import { useState } from 'react';
+import { hasQuotedProducts, QUOTED_PRODUCTS_NOTICE } from '../lib/quotedProducts';
 
 export default function CartPage() {
   const cart = useCart();
@@ -29,6 +30,7 @@ export default function CartPage() {
   const removeProduct = useCartMutations((s) => s.removeProduct);
   const navigate = useNavigate();
   const [breakdownOpen, setBreakdownOpen] = useState(true);
+  const needsSupplierPrice = hasQuotedProducts(cart);
 
   // A floor laid with no product is still a cart (Vic 2026-08-31: the floor
   // "doesn't show" at checkout) — the empty gate used to look at products only.
@@ -86,7 +88,7 @@ export default function CartPage() {
                   </p>
                   <p className="mt-0.5 text-[11px] text-ppw-slate">
                     Unit: {line.product.price_on_request ? 'Price on request' : formatCurrency(line.unitPriceDisplay, currency)}
-                    {line.unitCurrency !== currency && (
+                    {!line.product.price_on_request && line.unitCurrency !== currency && (
                       <span className="ml-1 text-[10px]">
                         ({formatCurrency(line.unitPrice, line.unitCurrency)})
                       </span>
@@ -361,10 +363,12 @@ export default function CartPage() {
                 .join(' · ')}
             </p>
 
+            {needsSupplierPrice && <p role="status" className="mt-3 text-xs text-ppw-slate">{QUOTED_PRODUCTS_NOTICE}</p>}
             <button
               type="button"
               onClick={() => navigate('/checkout')}
-              className="mt-4 block w-full rounded-md bg-ppw-teal px-4 py-2.5 text-sm font-semibold text-white hover:bg-ppw-teal/90"
+              disabled={needsSupplierPrice}
+              className="mt-4 block w-full rounded-md bg-ppw-teal px-4 py-2.5 text-sm font-semibold text-white hover:bg-ppw-teal/90 disabled:opacity-50"
             >
               Checkout →
             </button>
