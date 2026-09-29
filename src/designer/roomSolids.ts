@@ -114,6 +114,7 @@ export interface ItemSolid {
   productId?: string;
   frontEdge?: 'top' | 'bottom' | 'left' | 'right';
   meshUrl?: string;
+  preferMesh?: boolean;
   modelFront?: '+z' | '-z' | '+x' | '-x';
   lengthAxis?: 'x' | 'z' | 'auto';
   modelUp?: '+y' | '+z' | '-z';
@@ -244,6 +245,7 @@ export function buildSolids(input: SceneInput): SceneSolids {
         productId: it.productId,
         frontEdge: it.frontEdge,
         meshUrl: it.meshUrl,
+        preferMesh: it.preferMesh,
         modelFront: it.modelFront,
         lengthAxis: it.lengthAxis,
         modelUp: it.modelUp,

@@ -1,10 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { cameraAtRest, dampOrbitCamera, shortestAngleDelta, panOrbitCamera } from '../cameraMotion';
+import { cameraAtRest, cameraForViewport, dampOrbitCamera, shortestAngleDelta, panOrbitCamera } from '../cameraMotion';
 import type { OrbitCamera } from '../roomView3d';
 
 const camera: OrbitCamera = { target: { x: 0, y: 0, z: 1 }, azimuthRad: 0, elevationRad: 0.7, distanceM: 8, fovRad: 0.8 };
 
 describe('smooth 3D camera', () => {
+  it('preserves apparent object size and pan precision when the catalog takes some canvas height', () => {
+    const initialHeight = 640;
+    for (const height of [240, 400, 640, 900]) {
+      const adjusted = cameraForViewport(camera, height, initialHeight);
+      const initialFocal = initialHeight / (2 * Math.tan(camera.fovRad / 2));
+      const currentFocal = height / (2 * Math.tan(adjusted.fovRad / 2));
+      expect(currentFocal / adjusted.distanceM).toBeCloseTo(initialFocal / camera.distanceM, 10);
+      expect(adjusted.target).toEqual(camera.target);
+      // Same screen drag covers the same ground at the same zoom.
+      expect(panOrbitCamera(adjusted, 20, 10, height).target.x).toBeCloseTo(panOrbitCamera(camera, 20, 10, initialHeight).target.x, 10);
+    }
+    expect(cameraForViewport(camera, 0, initialHeight)).toBe(camera);
+  });
   it('pans parallel to the ground and rotates the screen axes with the view', () => {
     const horizontal = panOrbitCamera(camera, 100, 0, 600);
     expect(horizontal.target.x).toBeLessThan(0);
@@ -47,5 +60,11 @@ describe('smooth 3D camera', () => {
     expect(current).toBe(target);
     expect(cameraAtRest(current, target)).toBe(true);
     expect(dampOrbitCamera(camera, target, 16, 0)).toBe(target);
+  });
+  it('settles more than 90 percent of a gesture within 100ms for precise placement', () => {
+    const target = { ...camera, distanceM: 4, target: { x: 2, y: 3, z: 1 } };
+    const next = dampOrbitCamera(camera, target, 100);
+    expect(Math.abs(next.distanceM - target.distanceM)).toBeLessThan(0.4);
+    expect(Math.abs(next.target.x - target.target.x)).toBeLessThan(0.2);
   });
 });

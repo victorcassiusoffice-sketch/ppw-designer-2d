@@ -81,12 +81,15 @@ export function GardenPanel({ onRequestPlacement, onClose, architectural = false
   }
 
   function addSurface(kind: GardenSurfaceKind, pavingProductId?: string) {
+    if (onRequestPlacement) {
+      onRequestPlacement({ kind: 'surface', mode: 'draw', surfaceKind: kind, ...(pavingProductId ? { pavingProductId } : {}) });
+      return;
+    }
     const widthM = Math.min(kind === 'path' ? 1.2 : 4, property.site?.widthM ?? 500);
     const depthM = Math.min(kind === 'soil' ? 2 : 4, property.site?.depthM ?? 500);
     const id = usePropertyStore.getState().addGardenSurface({ kind, ...defaultOrigin(widthM, depthM), widthM, depthM, elevationM: 0, ...(pavingProductId ? { pavingProductId } : {}) });
     if (id) {
       setSelectedId(id);
-      onRequestPlacement?.({ kind: 'surface', id });
     }
   }
 
@@ -128,7 +131,7 @@ export function GardenPanel({ onRequestPlacement, onClose, architectural = false
       </select>
       <button type="button" className={BUTTON} onClick={addFence} data-testid="garden-add-fence">+ Boundary</button>
     </div>
-    <p className="garden-muted text-[11px] leading-relaxed text-[#5b5852]">Add a surface, then drag its edges in the plan or use Draw area to set two corners. Raise a surface for a terrace or planting bed. Outdoor furniture comes from the product catalog.</p>
+    <p className="garden-muted text-[11px] leading-relaxed text-[#5b5852]">Choose a surface, then drag an area on the ground. Select an existing patch to change its material, move it, or resize its corners in Plan and 3D. Cancel or Escape leaves an unfinished area unchanged.</p>
 
     {(surfaces.length > 0 || fences.length > 0) && <>
       <label className="flex min-w-0 flex-col gap-1 text-[11px] font-medium">Edit landscape
@@ -139,7 +142,7 @@ export function GardenPanel({ onRequestPlacement, onClose, architectural = false
         </select>
       </label>
       {(surface || fence) && <div className="flex flex-wrap gap-2">
-        {onRequestPlacement && <button type="button" className={`${BUTTON} flex-1`} data-testid="garden-move" onClick={() => onRequestPlacement({ kind: surface ? 'surface' : 'fence', id: selectedId! })}>Place in view</button>}
+        {onRequestPlacement && <button type="button" className={`${BUTTON} flex-1`} data-testid="garden-move" onClick={() => onRequestPlacement({ kind: surface ? 'surface' : 'fence', id: selectedId! })}>Move</button>}
         {surface && onRequestPlacement && <button type="button" className={`${BUTTON} flex-1`} data-testid="garden-resize" onClick={() => onRequestPlacement({ kind: 'surface', id: surface.id, mode: 'resize' })}>Draw area</button>}
         <button type="button" className={`${BUTTON} garden-button--remove border-[#ba725f]`} data-testid="garden-remove" onClick={() => { usePropertyStore.getState().removeGardenElement(selectedId!); setSelectedId(null); }}>Remove</button>
       </div>}

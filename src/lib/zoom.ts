@@ -4,7 +4,8 @@
  * stage. Side-effect-free.
  */
 
-export const ZOOM_MIN_SCALE = 0.3;
+// Leave enough room around a whole plot to draw gardens and extensions.
+export const ZOOM_MIN_SCALE = 0.04;
 export const ZOOM_MAX_SCALE = 3;
 export const ZOOM_WHEEL_FACTOR = 1.08;
 

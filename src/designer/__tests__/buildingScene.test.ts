@@ -66,18 +66,10 @@ describe('assembled building solids', () => {
     expect(solids.walls.find((wall) => wall.key === 'wall-upper-1')?.shared).toBe(false);
   });
 
-  it('hides the roof slab and covering but keeps what stands on the roof, while a selected floor keeps its real elevation', () => {
-    // 2026-09-26: a panel placed on the Roof used to vanish the moment the
-    // customer looked at the Ground floor — the whole roof level was dropped
-    // with its covering. Only the slab and the covering follow the Roof toggle
-    // now; the roof's items stay in the House view, seated on the storey top.
+  it('hides roof items away from Roof, while a selected floor keeps its real elevation', () => {
     const whole = buildingSolids(property(), sceneForLevel, 'building', false);
     expect(whole.floors.some((floor) => floor.levelId === 'roof')).toBe(false);
-    const roofItem = whole.items.find((item) => item.instanceId === 'roof-item')!;
-    expect(roofItem).toBeDefined();
-    expect(roofItem.levelId).toBe('roof');
-    expect(roofItem.floorElevationM).toBeCloseTo(7.36);
-    expect(roofItem.roofMount).toBeUndefined();
+    expect(whole.items.some((item) => item.instanceId === 'roof-item')).toBe(false);
     expect(whole.roofs).toEqual([]);
     const floor = buildingSolids(property(), sceneForLevel, 'floor', false);
     expect(floor.floors).toHaveLength(1);
@@ -87,6 +79,7 @@ describe('assembled building solids', () => {
     expect(floor.stairs?.[0].baseM).toBe(0);
     const roof = buildingSolids({ ...property(), activeLevelId: 'roof', activeRoomId: 'roof-upper' }, sceneForLevel, 'floor', false);
     expect(roof.floors[0].levelId).toBe('roof');
+    expect(roof.items.find((item) => item.instanceId === 'roof-item')?.floorElevationM).toBeCloseTo(7.36);
     expect(roof.roofs).toEqual([]);
   });
 
@@ -100,27 +93,25 @@ describe('assembled building solids', () => {
     ) })) };
   };
 
-  it('keeps a placed PV panel in the House view after the customer switches to the Ground floor with the roof off', () => {
+  it('hides a saved PV panel on lower floors even with the covering on, and restores it when Roof is selected', () => {
     const p = { ...property(), activeLevelId: 'ground', activeRoomId: 'lower' };
     p.roof = { style: 'gable', material: 'felt', pitchDeg: 25, overhangM: 0.25 };
-    const ground = buildingSolids(p, withPanel, 'building', false);
-    const panel = ground.items.find((item) => item.instanceId === 'roof-item')!;
-    expect(panel).toBeDefined();
-    expect(panel.productId).toBe('emcar-jinko-475');
-    expect(panel.levelId).toBe('roof');
-    // No covering to seat on: the panel lies on the top storey's slab, its own 3 cm thick.
-    expect(panel.roofMount).toBeUndefined();
-    expect(panel.z0).toBeCloseTo(7.36);
-    expect(panel.z1 - panel.z0).toBeGreaterThan(0);
-    expect(panel.z1 - panel.z0).toBeLessThan(0.08);
-    expect(ground.roofs).toEqual([]);
-    expect(ground.activeLevelId).toBe('ground');
-    // Roof back on: the same panel seats on the covering again.
-    const covered = buildingSolids(p, withPanel, 'building', true);
+    const before = JSON.stringify(p);
+    for (const level of ['ground', 'first']) {
+      for (const showRoof of [false, true]) {
+        const scene = buildingSolids({ ...p, activeLevelId: level }, withPanel, 'building', showRoof);
+        expect(scene.items.some((item) => item.instanceId === 'roof-item')).toBe(false);
+        expect(scene.activeLevelId).toBe(level);
+      }
+    }
+    const covered = buildingSolids({ ...p, activeLevelId: 'roof', activeRoomId: 'roof-upper' }, withPanel, 'building', true);
     const seated = covered.items.find((item) => item.instanceId === 'roof-item')!;
+    expect(seated.productId).toBe('emcar-jinko-475');
+    expect(seated.levelId).toBe('roof');
     expect(seated.roofMount).toBeDefined();
-    expect(seated.z0).toBeGreaterThan(panel.z0);
+    expect(seated.z0).toBeGreaterThan(7.36);
     expect(covered.roofs).toHaveLength(1);
+    expect(JSON.stringify(p)).toBe(before);
   });
 
   it.each(['flat', 'gable', 'shed'] as const)('mounts thin PV on the visible %s covering while keeping the whole building', (style) => {

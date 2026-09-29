@@ -6,6 +6,7 @@ import { usePropertyStore } from '../store/propertyStore';
 import { useWallStore } from '../store/wallStore';
 import { usePlacementIntentStore } from '../store/placementIntentStore';
 import { useDrawProgressStore } from '../store/drawProgressStore';
+import { activeLevelIdOf } from '../designer/levels';
 import './GardenPanel.css';
 
 /** Reserved layout space, never a modal laid over the garden being edited. */
@@ -22,7 +23,8 @@ export function PlanGardenWorkspace() {
   useEffect(() => {
     const show = () => {
       if (useDesignerUIStore.getState().viewMode === '3d') return;
-      usePropertyStore.getState().setActiveLevel('ground');
+      const store = usePropertyStore.getState();
+      if (activeLevelIdOf(store.property) !== 'ground') store.setActiveLevel('ground');
       useDesignerUIStore.getState().setTool('hand');
       useDesignerUIStore.getState().setEnergyPanelOpen(false);
       usePlacementIntentStore.getState().setArmed(null);
@@ -52,7 +54,7 @@ export function PlanGardenWorkspace() {
   if (!open || view === '3d') return null;
   return <aside className={`plan-garden-workspace${placement ? ' is-drawing' : ''}`} aria-label="Garden tools" data-testid="plan-garden-workspace">
     {placement ? <div className="plan-garden-instruction" role="status">
-      <span>{placement.mode === 'resize' ? 'Drag two corners to resize the surface.' : 'Tap the plan to place this garden element.'}</span>
+      <span>{placement.mode === 'draw' ? 'Drag two corners to draw the surface. Nothing is added until you release.' : placement.mode === 'resize' ? 'Drag two corners to resize the surface.' : 'Tap the plan to place this garden element.'}</span>
       <button type="button" onClick={() => useGardenEditorStore.getState().place(null)}>Cancel</button>
     </div> : <GardenPanel architectural onClose={() => useGardenEditorStore.getState().close()} onRequestPlacement={(intent) => useGardenEditorStore.getState().place(intent)} />}
   </aside>;

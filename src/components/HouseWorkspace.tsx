@@ -10,6 +10,7 @@ import { isDrawnPolygon } from '../designer/roomLayout';
 import type { BuildingControlsProps } from './BuildingControls';
 import { HouseCostPanel } from './HouseCostPanel';
 import { isShowcaseReadOnly, DEMO_NOTICE } from '../lib/showcaseSafety';
+import { DOOR_WIDTHS_M } from '../designer/openings';
 import './houseWorkspace.css';
 
 export type HouseMode = 'build' | 'furnish' | 'paint' | 'floor' | 'garden' | 'energy';
@@ -39,6 +40,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
   const readOnly = isShowcaseReadOnly();
   const currency = useCurrencyStore((s) => s.currency);
   const precision = useDesignerUIStore((s) => s.precision);
+  const doorDraft = useDesignerUIStore((s) => s.doorDraft);
   const property = usePropertyStore((s) => s.property);
   const [mobileInspector, setMobileInspector] = useState(false);
   const [costOpen, setCostOpen] = useState(false);
@@ -46,8 +48,10 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
   const inspectorRef = useRef<HTMLElement>(null);
   useEffect(() => {
     const close = () => { setMobileInspector(false); setCostOpen(false); };
+    const open = () => { setMobileInspector(true); setCostOpen(false); };
     window.addEventListener('ppw:close-house-details', close);
-    return () => window.removeEventListener('ppw:close-house-details', close);
+    window.addEventListener('ppw:show-house-details', open);
+    return () => { window.removeEventListener('ppw:close-house-details', close); window.removeEventListener('ppw:show-house-details', open); };
   }, []);
   useEffect(() => {
     if (!panelOpen) return;
@@ -56,7 +60,13 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
       if (!target || inspectorRef.current?.contains(target) || target.closest('.house-details-button, .house-checkout-toggle, .house-selection-strip, .house-rail, [data-testid="wallpaint-3d-canvas"]')) return;
       setMobileInspector(false); setCostOpen(false);
     };
-    const scene = (event: Event) => { setMobileInspector(false); setCostOpen(false); event.preventDefault(); };
+    const scene = (event: Event) => {
+      const position = inspectorRef.current ? getComputedStyle(inspectorRef.current).position : '';
+      // A dock beside/below the scene must not swallow the next editing
+      // gesture. An overlay still consumes the click that dismisses it.
+      setMobileInspector(false); setCostOpen(false);
+      if (position === 'absolute' || position === 'fixed') event.preventDefault();
+    };
     document.addEventListener('pointerdown', outside, true);
     window.addEventListener('ppw:house-scene-pointer', scene);
     return () => { document.removeEventListener('pointerdown', outside, true); window.removeEventListener('ppw:house-scene-pointer', scene); };
@@ -126,8 +136,15 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
         </div>
         {onBuildTool && mode === 'build' && <div className="house-opening-tools" role="group" aria-label="Doors windows and stairs">
           {(['door', 'window', 'stair'] as const).map(tool => <button key={tool} type="button" aria-pressed={buildTool === tool} disabled={onRoof || (tool === 'stair' && !canUseStairs)} title={tool === 'stair' && !canUseStairs ? 'Add another floor first' : undefined} onClick={() => { setCostOpen(false); setMobileInspector(false); onBuildTool(buildTool === tool ? 'select' : tool); }}>{tool === 'door' ? 'Door' : tool === 'window' ? 'Window' : 'Stairs'}</button>)}
-          <span>{onRoof ? 'Choose a floor to add openings' : buildTool === 'door' || buildTool === 'window' ? `Tap a wall to add a ${buildTool}` : buildTool === 'stair' ? 'Tap clear floor space to place stairs' : !canUseStairs ? 'Add floor for stairs' : 'Build on the selected floor'}</span>
+          <span>{onRoof ? 'Choose a floor to add openings' : buildTool === 'door' || buildTool === 'window' ? 'Slide along a wall · release to place · repeat or Done' : buildTool === 'stair' ? 'Tap clear floor space to place stairs' : !canUseStairs ? 'Add floor for stairs' : 'Build on the selected floor'}</span>
           {buildTool !== 'select' && buildTool !== 'wall' && buildTool !== 'room' && <button type="button" onClick={() => onBuildTool('select')}>Done</button>}
+        </div>}
+        {onBuildTool && (buildTool === 'door' || buildTool === 'window') && <div className="house-opening-options" role="group" aria-label="Opening placement options">
+          <label>Width <select aria-label="Opening width" value={doorDraft.widthM} onChange={event => useDesignerUIStore.getState().setDoorDraft({ widthM: Number(event.target.value) })}>
+            {[...new Set([...(buildTool === 'window' ? [0.6, 0.9, 1.2, 1.5, 1.8, 2.4] : DOOR_WIDTHS_M), doorDraft.widthM])].sort((a, b) => a - b).map(width => <option key={width} value={width}>{width} m</option>)}
+          </select></label>
+          {buildTool === 'door' && <><button type="button" aria-pressed={doorDraft.flipFacing} onClick={() => useDesignerUIStore.getState().toggleDoorFacing()} title="Flip swing side (F)">Flip side</button><button type="button" aria-pressed={doorDraft.flipHand} onClick={() => useDesignerUIStore.getState().toggleDoorHand()} title="Swap hinge (H)">Flip hinge</button></>}
+          <small>Esc cancels · right-drag or two fingers move the view</small>
         </div>}
         {selection && <div className="house-selection-strip" data-testid="house-selection-strip">
           <span><small>SELECTED</small><strong>{selection.name}</strong></span>

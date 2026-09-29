@@ -61,5 +61,6 @@ describe('productModelFor', () => {
   it("a product's own mesh_url wins over the manifest", () => {
     const e = productModelFor({ id: 'k1-nordictrack-2450', sku: 'K1-CDIO-NT2450', mesh_url: 'https://cdn/x.glb' });
     expect(e?.url).toBe('https://cdn/x.glb');
+    expect(e?.preferMesh).toBe(true);
   });
 });

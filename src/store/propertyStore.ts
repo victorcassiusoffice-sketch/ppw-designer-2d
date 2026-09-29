@@ -37,6 +37,7 @@ import { translatePolygon, unstackLegacyRooms } from '../designer/roomLayout';
 import type { Opening } from '../designer/openings';
 import { canonicaliseRoomGeometry, openingSpan, validateOpening } from '../designer/openings';
 import { roomEdges } from '../designer/wallEdges';
+import { openingsOnPhysicalWall } from '../designer/openingPlacement';
 // Per-tile floor painting (floor-painting brief 2026-08-28).
 import {
   pruneZone,
@@ -1336,7 +1337,7 @@ export const usePropertyStore = create<PropertyState>()(
         const edge = roomEdges(room).find((e) => e.index === opening.edgeIndex);
         if (!edge) return null;
 
-        const others = roomOpenings(room).filter((o) => o.edgeIndex === opening.edgeIndex);
+        const others = openingsOnPhysicalWall(s.property.rooms, room, edge);
         if (!validateOpening(edge.lengthM, opening, others).ok) return null;
 
         const id = opening.id ?? nanoid(10);
@@ -1379,9 +1380,7 @@ export const usePropertyStore = create<PropertyState>()(
 
         // Re-validate against the (possibly new) host wall, excluding itself,
         // so a drag past the jamb margin is refused rather than committed.
-        const others = roomOpenings(room).filter(
-          (o) => o.id !== openingId && o.edgeIndex === merged.edgeIndex,
-        );
+        const others = openingsOnPhysicalWall(s.property.rooms, room, edge, openingId);
         if (!validateOpening(edge.lengthM, merged, others).ok) return false;
 
         set((st) => ({

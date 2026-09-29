@@ -180,6 +180,7 @@ export interface SceneItemInput {
   frontEdge?: 'top' | 'bottom' | 'left' | 'right';
   /** A textured body (glTF) fitted to `dimensions_cm`; absent → the shaded box. */
   meshUrl?: string;
+  preferMesh?: boolean;
   /** Fit hints from the model manifest. */
   modelFront?: '+z' | '-z' | '+x' | '-x';
   lengthAxis?: 'x' | 'z' | 'auto';

@@ -42,6 +42,27 @@ function pointer(name: string, x: number, y: number, isPrimary = true) {
 }
 
 describe('plan garden drawing', () => {
+  it('creates a paving rectangle on release only and undoes the whole creation once', () => {
+    act(() => useGardenEditorStore.getState().place({ kind: 'surface', mode: 'draw', surfaceKind: 'path', pavingProductId: 'em-ubp-rusclaord001' }));
+    stopHistory = installHistorySubscriptions({ coalesceMs: 0 });
+    pointer('onPointerDown', 60, 80); pointer('onPointerMove', 10, 20);
+    expect(usePropertyStore.getState().property.garden?.surfaces).toHaveLength(1);
+    pointer('onPointerUp', 10, 20);
+    expect(usePropertyStore.getState().property.garden?.surfaces).toHaveLength(2);
+    expect(usePropertyStore.getState().property.garden?.surfaces[1]).toMatchObject({ kind: 'path', pavingProductId: 'em-ubp-rusclaord001', x: 1, y: 2, widthM: 5, depthM: 6 });
+    expect(useHistoryStore.getState().past).toHaveLength(1);
+    act(() => useHistoryStore.getState().undo());
+    expect(usePropertyStore.getState().property.garden?.surfaces).toHaveLength(1);
+  });
+  it('invalid or cancelled new areas never add a patch', () => {
+    act(() => useGardenEditorStore.getState().place({ kind: 'surface', mode: 'draw', surfaceKind: 'soil' }));
+    pointer('onPointerDown', 60, 80); pointer('onPointerUp', 60, 80);
+    expect(usePropertyStore.getState().property.garden?.surfaces).toHaveLength(1);
+    pointer('onPointerDown', 60, 80); pointer('onPointerMove', 10, 20);
+    act(() => useGardenEditorStore.getState().place(null));
+    pointer('onPointerUp', 10, 20);
+    expect(usePropertyStore.getState().property.garden?.surfaces).toHaveLength(1);
+  });
   it('previews a rectangle without changing the plan, then records one undoable resize', () => {
     const before = usePropertyStore.getState().property.garden!.surfaces[0];
     stopHistory = installHistorySubscriptions({ coalesceMs: 0 });

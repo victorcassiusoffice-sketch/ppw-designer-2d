@@ -27,6 +27,7 @@ import { constructionHex, paintSide } from '../designer/wallConstruction';
  */
 
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { openingsOnPhysicalWall } from '../designer/openingPlacement';
 import {
   Stage,
   Layer,
@@ -57,7 +58,7 @@ import {
 } from '../lib/geometry';
 import type { PlacedRect, Polygon, Viewport } from '../lib/geometry';
 import { fitPlanViewport } from '../lib/fitPlanViewport';
-import { computeZoomScale } from '../lib/zoom';
+import { computeZoomScale, ZOOM_MIN_SCALE, ZOOM_MAX_SCALE } from '../lib/zoom';
 import { RoomDrawLayer, RoomDrawHUD, type HoverVertex } from './RoomDrawMode';
 import { WallDrawLayer, WallDrawHUD, CommittedWallsLayer } from '../designer/WallDrawMode';
 import { useWallStore } from '../store/wallStore';
@@ -381,8 +382,8 @@ function sortItemsForRender(items: PlacedItem[]): PlacedItem[] {
 const PAN_BTN: number = 0;
 
 const INITIAL_VIEWPORT: Viewport = { x: 0, y: 0, scale: 1 };
-const MIN_SCALE = 0.3;
-const MAX_SCALE = 3;
+const MIN_SCALE = ZOOM_MIN_SCALE;
+const MAX_SCALE = ZOOM_MAX_SCALE;
 /** Toolbar zoom step — the same 1.12 the +/- keys use. */
 const ZOOM_STEP = 1.12;
 
@@ -3114,7 +3115,7 @@ export function RoomCanvas({
         return { mode: 'invalid', roomId: hit.edge.roomId, edge: hit.edge, offsetM: hit.offsetM };
       }
       const room = live.find((r) => r.id === hit.edge.roomId)!;
-      const others = roomOpenings(room).filter((o) => o.edgeIndex === hit.edge.index);
+      const others = openingsOnPhysicalWall(live, room, hit.edge);
       const v = validateOpening(hit.edge.lengthM, { offsetM, widthM: draft.widthM }, others);
       return {
         mode: v.ok ? 'place' : 'invalid',

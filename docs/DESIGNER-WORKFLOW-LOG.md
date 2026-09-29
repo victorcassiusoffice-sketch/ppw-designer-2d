@@ -4,6 +4,14 @@ Updated: 29 September 2026 (Mauritius). Owner: Victor.
 
 ## Resume here
 
+### Door placement, garden drawing and camera stability — 29 September 2026 — preview verification pending
+
+Latest request overrides the old roof-visibility policy: roof-mounted solar panels must be visible only while Roof is selected. Preserve them in saved geometry and costing on all floors. Active branch remains cursor/feat-3d-flooring-hud-bc95; no main/production work is authorized.
+
+Work underway: remove automatic camera refits on selection/tool/dock/geometry changes; preserve screen scale when canvas height changes; fix async model replacement during dragging; implement repeatable wall-snapped door/window preview with Done/Escape; drag-to-create garden surfaces with transient drafts and direct corner resize; lower Plan zoom-out limit from30% to4%; connect supplier SketchUp GLB exports to the existing model manifest/renderer with validation, source/licence records and exact catalog sizing.
+
+Root causes: RoomView3D refit effect followed aspect/bounds/floor changes; default Plan min scale0.3; garden Add created a saved fixed rectangle before drawing; door tool had one-shot placement and no live snapped preview. Implementation is integrated and locally verified: 274 files / 3,036 tests passed, followed by 13 passing garden tests for the final phantom-undo fix; seven importer integration tests, client/API typechecks, scoped lint, build and desktop/phone browser checks passed. Full details and remaining limits are in docs/DESIGNER-INTERACTION-AUDIT-2026-09-29.md. Do not mark this checkpoint shipped until the final checks, feature push, unique deployment health/browser checks and document sync complete. Research and import instructions: docs/SKETCHUP-MODELS.md. No supplier SketchUp model has yet been supplied; pipeline tests use original fixture geometry.
+
 ### Compact controls, garden cancellation and product placement — 29 September 2026 — shipped
 
 Final application source `22aaf0e2980c4e00ab4a4e0681bad6f385aa9fb6` adds phone Fit below 30%, moves height controls entirely into the reserved construction rail and refreshes both genuine app screenshots. Local validation passes **270 files / 3,006 tests**, client/API typechecks, scoped lint and production build. It is now verified at https://ppw-designer-2d-1nbevf4ny-victor-ppw.vercel.app through deployed documentation revision `ee2f11dee0b7499caf3be60f90b7de6345d2ef0e`, Vercel Preview deployment **`6732390807`**. The healthcheck reports that deployed revision and `env=preview`; desktop and 390px phone browser checks passed.

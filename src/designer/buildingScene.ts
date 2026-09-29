@@ -17,12 +17,9 @@ export function buildingSolids(
 ): SceneSolids {
   const active = activeLevelIdOf(property);
   const entries = buildingLevels(property);
-  // The House view carries every level, a floor view only its own. The roof
-  // level stays in the House view with the roof OFF: only its slab and its
-  // covering follow the Roof toggle (below), never what stands on it — a
-  // panel placed on the Roof must not vanish the moment the customer looks
-  // at the Ground floor (2026-09-26). A roof-only floor view always shows
-  // its slab, so the customer can see what they are laying panels on.
+  // The House view carries every storey; roof products are visible only while
+  // Roof is selected. Hiding them changes presentation, never the saved layout
+  // or solar calculation. A roof-only floor view still shows its working slab.
   const visible = entries.filter((entry) => view === 'building' || entry.level.id === active);
   const roofSlabVisible = showRoof || view !== 'building';
   const heightEntries = visible.filter((entry) => !isRoofLevel(entry.level) || roofSlabVisible);
@@ -68,7 +65,7 @@ export function buildingSolids(
       result.floors.push({ ...floor, elevationM, levelId: level.id, holes });
     }
     result.walls.push(...local.walls.map((w) => ({ ...w, elevationM, levelId: level.id })));
-    result.items.push(...local.items.map((it) => {
+    result.items.push(...local.items.filter(() => !isRoofLevel(level) || level.id === active).map((it) => {
       const owner = isRoofLevel(level) && it.placement === 'roof'
         ? rooms.find((room) => isRoofRoom(room) && room.placedItems.some((item) => item.instanceId === it.instanceId)) : undefined;
       // With the covering hidden there is nothing to seat on: the panel lies on the storey top.

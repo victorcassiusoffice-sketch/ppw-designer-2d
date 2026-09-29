@@ -8,6 +8,7 @@ import { usePropertyStore } from '../../store/propertyStore';
 import { useHistoryStore } from '../../store/historyStore';
 import { getAllProducts } from '../../data/products';
 import { isRoofLevel, levelsOf } from '../../designer/levels';
+import { useDesignerUIStore } from '../../store/designerUIStore';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let host: HTMLDivElement;
@@ -42,6 +43,17 @@ function button(label: string) {
 }
 
 describe('HouseWorkspace controls', () => {
+  it('keeps opening dimensions and swing in the shared Plan draft and exits with Done', () => {
+    useDesignerUIStore.setState({ doorDraft: { kind: 'door', widthM: 0.838, flipFacing: false, flipHand: false } });
+    props.buildTool = 'door'; props.onBuildTool = vi.fn();
+    render();
+    const width = host.querySelector<HTMLSelectElement>('[aria-label="Opening width"]')!;
+    act(() => { width.value = '0.914'; width.dispatchEvent(new Event('change', { bubbles: true })); });
+    click(button('Flip side')); click(button('Flip hinge'));
+    expect(useDesignerUIStore.getState().doorDraft).toMatchObject({ widthM: 0.914, flipFacing: true, flipHand: true });
+    click(button('Done'));
+    expect(props.onBuildTool).toHaveBeenLastCalledWith('select');
+  });
   it('adds a real copied floor from the main floor selector and can select the roof', () => {
     const store = usePropertyStore.getState();
     store.setRoomPolygon(store.property.activeRoomId, [{x:0,y:0},{x:6,y:0},{x:6,y:5},{x:0,y:5}]);
@@ -72,7 +84,7 @@ describe('HouseWorkspace controls', () => {
     click(button('Products and cost'));
     const away = new CustomEvent('ppw:house-scene-pointer', {cancelable:true});
     act(() => window.dispatchEvent(away));
-    expect(away.defaultPrevented).toBe(true);
+    expect(away.defaultPrevented).toBe(false);
     expect(host.querySelector('.house-inspector.is-open')).toBeNull();
     expect(host.querySelector('.house-cost-pill strong')).not.toBeNull();
   });
@@ -89,16 +101,25 @@ describe('HouseWorkspace controls', () => {
     click(button('Stairs'));
     expect(props.onBuildTool).toHaveBeenLastCalledWith('stair');
   });
-  it('dismisses open build options on a scene click without forwarding a destructive gesture', () => {
+  it('dismisses docked build options without swallowing the next scene gesture', () => {
     render();
     click(button('Details'));
     const away = new CustomEvent('ppw:house-scene-pointer', { cancelable: true });
     act(() => window.dispatchEvent(away));
-    expect(away.defaultPrevented).toBe(true);
+    expect(away.defaultPrevented).toBe(false);
     expect(host.querySelector('.house-inspector.is-open')).toBeNull();
     const next = new CustomEvent('ppw:house-scene-pointer', { cancelable: true });
     act(() => window.dispatchEvent(next));
     expect(next.defaultPrevented).toBe(false);
+  });
+
+  it('consumes the dismissal click if house details are displayed as an overlay', () => {
+    render(); click(button('Details'));
+    host.querySelector<HTMLElement>('.house-inspector')!.style.position = 'absolute';
+    const away = new CustomEvent('ppw:house-scene-pointer', { cancelable: true });
+    act(() => window.dispatchEvent(away));
+    expect(away.defaultPrevented).toBe(true);
+    expect(host.querySelector('.house-inspector.is-open')).toBeNull();
   });
 
   it('keeps the scene available when a click outside closes house details', () => {

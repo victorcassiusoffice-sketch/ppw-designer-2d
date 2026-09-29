@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GardenPanel } from '../GardenPanel';
 import { usePropertyStore } from '../../store/propertyStore';
+import { commitGardenRectangle } from '../../lib/gardenDrawActions';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let host: HTMLDivElement;
@@ -23,9 +24,11 @@ describe('GardenPanel sourced paving', () => {
     const product = host.querySelector<HTMLSelectElement>('[aria-label="New paving product"]')!;
     act(() => { product.value = 'em-ubp-rusclaord001'; product.dispatchEvent(new Event('change', { bubbles: true })); });
     act(() => host.querySelector<HTMLButtonElement>('[data-testid="garden-add-paving"]')!.click());
+    expect(usePropertyStore.getState().property.garden).toBeUndefined();
+    expect(place).toHaveBeenCalledWith({ kind: 'surface', mode: 'draw', surfaceKind: 'path', pavingProductId: 'em-ubp-rusclaord001' });
+    act(() => commitGardenRectangle(place.mock.calls[0][0], { x: 6, y: 0 }, { x: 7.2, y: 4 }));
     const patch = usePropertyStore.getState().property.garden!.surfaces[0];
     expect(patch).toMatchObject({ kind: 'path', pavingProductId: 'em-ubp-rusclaord001', widthM: 1.2, depthM: 4 });
-    expect(place).toHaveBeenCalledWith({ kind: 'surface', id: patch.id });
     expect(host.querySelector('[data-testid="garden-paving-estimate"]')?.textContent).toContain('48 pieces');
     act(() => usePropertyStore.getState().updateGardenSurface(patch.id, { widthM: 2, depthM: 1 }));
     expect(host.querySelector('[data-testid="garden-paving-estimate"]')?.textContent).toContain('16 pieces');

@@ -60,6 +60,7 @@ import { disposeFurnitureTextures, furniturePreview } from './furniturePreview';
 import { mountRoofItem, poseRoofItem, roofPointFromRay } from './roofItems';
 import { solarPanelPreview } from './solarPanelPreview';
 import { waterTankPreview } from './waterTankPreview';
+import { carryItemPreviewPose } from './itemPreviewPose';
 import { createRoofSurface, roofItemMount } from '../../designer/roofSurface';
 import { pointInPolygon } from '../../lib/geometry';
 
@@ -439,7 +440,7 @@ function structureSignature(s: SceneSolids): string {
     f: s.floors.map((f) => [f.key, f.hex, f.kind, f.tileM, f.polygon, f.elevationM, f.holes]),
     w: s.walls.map((w) => [w.key, w.a, w.b, w.thicknessM, w.heightM, w.stubHeightM, w.centred, w.openings, w.shared, w.free, w.elevationM]),
     stairs: s.stairs, roofs: s.roofs, garden: s.garden, gardenObstacles: s.gardenObstacles, gardenSite: s.gardenSite, gardenVisible: s.gardenVisible,
-    i: s.items.map((it) => [it.key, it.instanceId, it.x0, it.y0, it.z0, it.x1, it.y1, it.z1, it.rotationDeg, it.hex, it.meshUrl, it.modelFront, it.lengthAxis, it.modelUp, it.emitsLight, it.lightMountM, it.artTopUrl, it.artSideUrl, it.roofMount]),
+    i: s.items.map((it) => [it.key, it.instanceId, it.x0, it.y0, it.z0, it.x1, it.y1, it.z1, it.rotationDeg, it.hex, it.meshUrl, it.preferMesh, it.modelFront, it.lengthAxis, it.modelUp, it.emitsLight, it.lightMountM, it.artTopUrl, it.artSideUrl, it.roofMount]),
   });
 }
 
@@ -1030,7 +1031,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       }
       // Swap the preview for the product's body once it has loaded — unless the
       // plan has been rebuilt since (a stale load must not resurrect).
-      if (it.meshUrl && !solarPreview && !tankPreview) {
+      if (it.meshUrl && (it.preferMesh || (!solarPreview && !tankPreview))) {
         loadBody(it.meshUrl)
           .then((tpl) => {
             if (buildRef.current !== buildId || !contentRef.current) return;
@@ -1043,6 +1044,12 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
               const heading = body.getObjectByName('roof-item-heading');
               const previousHeading = mesh.getObjectByName('roof-item-heading');
               if (heading && previousHeading) heading.rotation.copy(previousHeading.rotation);
+            } else {
+              const home = previewRef.current.get(it.instanceId);
+              const rotation = previewRotationRef.current.get(it.instanceId);
+              const baseline = carryItemPreviewPose(mesh, body, home, rotation);
+              if (home) previewRef.current.set(it.instanceId, baseline.home);
+              if (rotation !== undefined) previewRotationRef.current.set(it.instanceId, baseline.rotation);
             }
             // A product's PBR textures pick up a little of the room, and
             // stay sharp at grazing angles (anisotropy is free on a GPU).

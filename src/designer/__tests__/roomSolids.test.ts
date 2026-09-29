@@ -38,6 +38,15 @@ function input(extra: Partial<SceneInput> = {}, cam: Vec3 = { x: 2.5, y: 12, z: 
 }
 
 describe('buildSolids — one slab per edge, the painter’s keys', () => {
+  it('preserves an imported supplier model and exact catalog dimensions in the rendered solid', () => {
+    const scene = input();
+    scene.rooms[0].items![0] = { ...scene.rooms[0].items![0], meshUrl: '/models/supplier-chair.glb', preferMesh: true };
+    const item = buildSolids(scene).items[0];
+    expect(item.meshUrl).toBe('/models/supplier-chair.glb');
+    expect(item.preferMesh).toBe(true);
+    expect([item.lengthM, item.widthM, item.heightM]).toEqual([2, 0.9, 1.5]);
+  });
+
   it('a rectangle gives a floor and four walls', () => {
     const s = buildSolids(input());
     expect(s.floors.map((f) => f.key)).toEqual(['floor-r1']);

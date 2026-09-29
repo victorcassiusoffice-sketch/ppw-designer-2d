@@ -40,7 +40,21 @@ export interface Garden {
   surfaces: GardenSurface[];
   fences: GardenFence[];
 }
-export type GardenPlacement = { kind: 'surface' | 'fence'; id: string; mode?: 'move' | 'resize' };
+export type GardenPlacement =
+  | { kind: 'surface' | 'fence'; id: string; mode?: 'move' | 'resize' }
+  | { kind: 'surface'; mode: 'draw'; surfaceKind: GardenSurfaceKind; pavingProductId?: string; id?: never };
+
+export const isGardenAreaGesture = (placement: GardenPlacement | null): boolean => placement?.mode === 'draw' || placement?.mode === 'resize';
+
+/** Last-drawn surfaces win, matching their visual stacking order. */
+export function gardenElementAt(garden: Garden | undefined, point: Vertex, toleranceM = 0.2): string | null {
+  for (const fence of [...(garden?.fences ?? [])].reverse()) {
+    const dx = fence.b.x - fence.a.x, dy = fence.b.y - fence.a.y;
+    const t = Math.max(0, Math.min(1, ((point.x - fence.a.x) * dx + (point.y - fence.a.y) * dy) / (dx * dx + dy * dy)));
+    if (Math.hypot(point.x - fence.a.x - t * dx, point.y - fence.a.y - t * dy) <= toleranceM) return fence.id;
+  }
+  return [...(garden?.surfaces ?? [])].reverse().find(surface => pointInPolygon(point, gardenSurfacePolygon(surface)))?.id ?? null;
+}
 
 /** A floor-style drag sets both corners, in either direction, in one edit. */
 export function gardenRectFromPoints(a: Vertex, b: Vertex, stepM = 0.1): Pick<GardenSurface, 'x' | 'y' | 'widthM' | 'depthM'> | null {

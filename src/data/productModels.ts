@@ -26,6 +26,8 @@ export interface ProductModelEntry {
   source?: Record<string, unknown>;
   /** Licence note for bundled third-party bodies (e.g. "CC0 — Kenney Furniture Kit"). */
   licence?: string;
+  /** Reviewed supplier import takes precedence over a procedural utility preview. */
+  preferMesh?: boolean;
 }
 
 const manifest: Record<string, ProductModelEntry> = manifestJson as Record<string, ProductModelEntry>;
@@ -41,10 +43,13 @@ const manifest: Record<string, ProductModelEntry> = manifestJson as Record<strin
 const seedIdBySku = new Map<string, string>(
   ((catalogJson as unknown as { products: Array<{ id: string; sku: string }> }).products ?? []).map((p) => [p.sku, p.id]),
 );
+for (const [id, entry] of Object.entries(manifest)) {
+  if (typeof entry.source?.sku === 'string') seedIdBySku.set(entry.source.sku, id);
+}
 
 /** The body for a product, or undefined → the shaded box. */
 export function productModelFor(p: Pick<Product, 'id' | 'mesh_url'> & { sku?: string }): ProductModelEntry | undefined {
-  if (p.mesh_url) return { url: p.mesh_url, modelFront: '+z', lengthAxis: 'auto' };
+  if (p.mesh_url) return { url: p.mesh_url, modelFront: '+z', lengthAxis: 'auto', preferMesh: true };
   const byId = manifest[p.id];
   if (byId) return byId;
   if (!p.sku) return undefined;

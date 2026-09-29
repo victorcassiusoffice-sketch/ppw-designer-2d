@@ -5,7 +5,7 @@ import { computeZoomScale, ZOOM_MIN_SCALE, ZOOM_MAX_SCALE } from '../zoom';
 // pinned. computeZoomScale is the pure core the functional setViewport now
 // uses; these lock its behaviour.
 describe('M5 — computeZoomScale (wheel zoom)', () => {
-  it('wheel up (deltaY < 0) raises scale above 1, within [0.3, 3]', () => {
+  it('wheel up (deltaY < 0) raises scale above 1, within the allowed range', () => {
     const s = computeZoomScale(1, -100, ZOOM_MIN_SCALE, ZOOM_MAX_SCALE);
     expect(s).toBeGreaterThan(1);
     expect(s).toBeLessThanOrEqual(ZOOM_MAX_SCALE);
@@ -33,5 +33,12 @@ describe('M5 — computeZoomScale (wheel zoom)', () => {
     const up = computeZoomScale(1, -1);
     const down = computeZoomScale(1, 1);
     expect(up).toBeGreaterThan(down);
+  });
+
+  it('can pull back from the old 30% limit to view the whole site', () => {
+    let scale = 0.3;
+    for (let i = 0; i < 60; i++) scale = computeZoomScale(scale, 100);
+    expect(scale).toBe(0.04);
+    expect(computeZoomScale(scale, -100)).toBeGreaterThan(scale);
   });
 });

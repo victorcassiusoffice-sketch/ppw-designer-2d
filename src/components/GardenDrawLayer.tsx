@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type Konva from 'konva';
 import { Layer, Rect, Text } from 'react-konva';
-import { gardenRectFromPoints, moveGardenFence } from '../designer/garden';
+import { gardenRectFromPoints, isGardenAreaGesture, moveGardenFence } from '../designer/garden';
+import { commitGardenRectangle } from '../lib/gardenDrawActions';
 import { useGardenEditorStore } from '../store/gardenEditorStore';
 import { usePropertyStore } from '../store/propertyStore';
 import { useToastStore } from '../store/toastStore';
@@ -42,7 +43,7 @@ export function GardenDrawLayer({ pxPerMetre, scale }: { pxPerMetre: number; sca
       onPointerMove={(event) => {
         event.cancelBubble = true;
         const p = point(event);
-        if (p && anchor.current && event.evt.pointerId === anchor.current.pointerId && placement.mode === 'resize') setPreview(gardenRectFromPoints(anchor.current, p));
+        if (p && anchor.current && event.evt.pointerId === anchor.current.pointerId && isGardenAreaGesture(placement)) setPreview(gardenRectFromPoints(anchor.current, p));
       }}
       onPointerUp={(event) => {
         event.cancelBubble = true;
@@ -55,16 +56,18 @@ export function GardenDrawLayer({ pxPerMetre, scale }: { pxPerMetre: number; sca
         if (!p) return;
         const store = usePropertyStore.getState();
         let committed = false;
-        if (placement.kind === 'surface') {
+        if (isGardenAreaGesture(placement)) {
+          committed = !!commitGardenRectangle(placement, from, p);
+        } else if (placement.kind === 'surface' && placement.mode !== 'draw') {
           const surface = store.property.garden?.surfaces.find((s) => s.id === placement.id);
           const patch = placement.mode === 'resize' ? gardenRectFromPoints(from, p) : surface ? { x: Math.round((p.x - surface.widthM / 2) * 10) / 10, y: Math.round((p.y - surface.depthM / 2) * 10) / 10 } : null;
           if (patch) committed = store.updateGardenSurface(placement.id, patch);
-        } else {
+        } else if (placement.kind === 'fence') {
           const fence = store.property.garden?.fences.find((f) => f.id === placement.id);
           if (fence) committed = store.updateGardenFence(fence.id, moveGardenFence(fence, p));
         }
         if (committed) useGardenEditorStore.getState().place(null);
-        else useToastStore.getState().push(placement.mode === 'resize' ? 'Drag an area at least 0.2 m wide and deep, up to 500 m.' : 'Choose a valid position for this garden element.', 'info');
+        else useToastStore.getState().push(isGardenAreaGesture(placement) ? 'Drag an area at least 0.2 m wide and deep, up to 500 m.' : 'Choose a valid position for this garden element.', 'info');
       }}
       onPointerCancel={(event) => { event.cancelBubble = true; resetGesture(); setPreview(null); }}
       onClick={(event) => { event.cancelBubble = true; }} onTap={(event) => { event.cancelBubble = true; }} />

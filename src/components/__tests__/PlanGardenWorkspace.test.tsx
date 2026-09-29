@@ -24,16 +24,30 @@ beforeEach(() => {
 afterEach(() => { act(() => root.unmount()); host.remove(); });
 const escape = () => act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', cancelable: true })));
 describe('plan garden workspace', () => {
-  it('opens from the toolbar, adds a patch and replaces the large inspector with cancellable placement instructions', () => {
+  it('opening and cancelling a garden draw does not refocus or mutate a ground-floor design', () => {
+    act(() => usePropertyStore.getState().addRoom({ name: 'Second room' }));
+    const before = usePropertyStore.getState().property;
+    act(() => window.dispatchEvent(new CustomEvent('ppw:open-garden')));
+    act(() => host.querySelector<HTMLButtonElement>('[data-testid="garden-add-lawn"]')!.click());
+    escape();
+    expect(usePropertyStore.getState().property).toEqual(before);
+  });
+  it('opens a cancellable draw without a phantom patch, then can redraw an existing patch', () => {
     act(() => window.dispatchEvent(new CustomEvent('ppw:open-garden')));
     expect(host.querySelector('[data-testid="garden-panel"]')).not.toBeNull();
     act(() => host.querySelector<HTMLButtonElement>('[data-testid="garden-add-lawn"]')!.click());
-    const patch = usePropertyStore.getState().property.garden!.surfaces[0];
-    expect(useGardenEditorStore.getState().placement?.id).toBe(patch.id);
+    expect(usePropertyStore.getState().property.garden).toBeUndefined();
+    expect(useGardenEditorStore.getState().placement).toEqual({ kind: 'surface', mode: 'draw', surfaceKind: 'lawn' });
     expect(host.querySelector('[data-testid="garden-panel"]')).toBeNull();
-    expect(host.querySelector('[role="status"]')?.textContent).toContain('Tap the plan');
+    expect(host.querySelector('[role="status"]')?.textContent).toContain('Drag two corners');
     escape();
     expect(host.querySelector('[data-testid="garden-panel"]')).not.toBeNull();
+    expect(usePropertyStore.getState().property.garden).toBeUndefined();
+    act(() => {
+      const id = usePropertyStore.getState().addGardenSurface({ kind: 'lawn', x: 6, y: 0, widthM: 4, depthM: 4, elevationM: 0 });
+      useGardenEditorStore.getState().select(id);
+    });
+    const patch = usePropertyStore.getState().property.garden!.surfaces[0];
     act(() => host.querySelector<HTMLButtonElement>('[data-testid="garden-resize"]')!.click());
     expect(host.querySelector('[role="status"]')?.textContent).toContain('Drag two corners');
     escape(); escape();

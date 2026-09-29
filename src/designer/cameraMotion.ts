@@ -1,5 +1,11 @@
 import type { OrbitCamera } from './roomView3d';
 
+/** Keep world-to-screen scale fixed when an inspector/catalog changes the canvas height. */
+export function cameraForViewport(camera: OrbitCamera, viewportHeight: number, referenceHeight: number): OrbitCamera {
+  if (viewportHeight <= 0 || referenceHeight <= 0 || viewportHeight === referenceHeight) return camera;
+  return { ...camera, fovRad: 2 * Math.atan(Math.tan(camera.fovRad / 2) * viewportHeight / referenceHeight) };
+}
+
 /** Move the view along the ground, keeping the point under a dragged finger. */
 export function panOrbitCamera(camera: OrbitCamera, dxPixels: number, dyPixels: number, viewportHeight: number): OrbitCamera {
   if (viewportHeight <= 0) return camera;
@@ -29,7 +35,7 @@ export function cameraAtRest(current: OrbitCamera, target: OrbitCamera): boolean
 }
 
 /** Frame-rate-independent easing: one response period closes 63% of the gap. */
-export function dampOrbitCamera(current: OrbitCamera, target: OrbitCamera, elapsedMs: number, responseMs = 80): OrbitCamera {
+export function dampOrbitCamera(current: OrbitCamera, target: OrbitCamera, elapsedMs: number, responseMs = 35): OrbitCamera {
   if (responseMs <= 0 || cameraAtRest(current, target)) return target;
   const alpha = 1 - Math.exp(-Math.max(0, Number.isFinite(elapsedMs) ? elapsedMs : 0) / responseMs);
   const mix = (from: number, to: number) => from + (to - from) * alpha;
