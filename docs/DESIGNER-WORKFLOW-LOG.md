@@ -6,6 +6,8 @@ Updated: 29 September 2026 (Mauritius). Owner: Victor.
 
 ### Compact controls, garden cancellation and product placement — 29 September 2026 — deployment pending
 
+Final application follow-up `22aaf0e2980c4e00ab4a4e0681bad6f385aa9fb6` adds phone Fit below 30%, moves height controls entirely into the reserved construction rail and refreshes both genuine app screenshots. Final local validation passes **270 files / 3,006 tests**, client/API typechecks, scoped lint and production build. The earlier application `943b045` is verified at https://ppw-designer-2d-go7zyvs6j-victor-ppw.vercel.app (Preview deployment 6731041492). Vercel reports the final application build successful (deployment 6732151478), but its unique `qpt42xyc3` URL timed out on both the browser and health request from this connection. This documentation checkpoint triggers a fresh preview of the same final application; verify that deployment before updating the pinned live links. Production remains untouched.
+
 Continue from this checkpoint. Work is in `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`, on **`cursor/feat-3d-flooring-hud-bc95` only**. The checkout was brought forward to **`3bed2f70e9786238f703192c05ed33567885a720`** before selectively reapplying this continuation's fixes. **The implementation has passed local validation; the new feature deployment and its unique URL are still pending.** The root agent must finish deployment verification and update this status before reporting it as shipped.
 
 Preservation and branch context:
