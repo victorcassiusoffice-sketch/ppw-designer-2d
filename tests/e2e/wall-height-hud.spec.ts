@@ -40,6 +40,33 @@ async function storedHeight(page: Page): Promise<number> {
   });
 }
 
+async function expectHeightInReservedRail(page: Page): Promise<void> {
+  const hud = page.locator('[data-testid="wall-height-hud"]');
+  await expect(hud).toBeVisible();
+  await expect(hud).toHaveAttribute('data-dock', 'construction-rail');
+  await expect(hud).toHaveAttribute('aria-label', 'Wall height');
+  await expect(page.locator('[data-testid="wall-height-hud-label"]')).toHaveText('Wall height');
+  // Height now belongs to the existing scrollable rail, not a second card
+  // floating inside the drawing. These bounds guard both phone and desktop.
+  await expect.poll(() => page.evaluate(() => {
+    const control = document.querySelector<HTMLElement>('[data-testid="wall-height-hud"]');
+    const rail = document.querySelector<HTMLElement>('.plan-build-tools');
+    const canvas = document.querySelector<HTMLElement>('[data-testid="plan-workspace"] .konva-stage');
+    const readout = document.querySelector<HTMLElement>('[data-testid="wall-height-readout"]');
+    if (!control || !rail || !canvas || !readout) return false;
+    const box = control.getBoundingClientRect();
+    const railBox = rail.getBoundingClientRect();
+    const canvasBox = canvas.getBoundingClientRect();
+    return rail.contains(control)
+      && getComputedStyle(control).position === 'relative'
+      && getComputedStyle(readout).position !== 'absolute'
+      && box.left >= railBox.left - 1 && box.right <= railBox.right + 1
+      && box.top >= railBox.top - 1 && box.bottom <= railBox.bottom + 1
+      && railBox.right <= canvasBox.left + 1
+      && box.width >= 40 && box.width < 56 && box.height < 140;
+  })).toBe(true);
+}
+
 test.describe('Wall height on the plan', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -48,10 +75,7 @@ test.describe('Wall height on the plan', () => {
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
 
-    const hud = page.locator('[data-testid="wall-height-hud"]');
-    await expect(hud).toBeVisible();
-    await expect(hud).toHaveAttribute('data-placement', 'left');
-    await expect(page.locator('[data-testid="wall-height-hud-label"]')).toBeVisible();
+    await expectHeightInReservedRail(page);
     await expect(page.locator('[data-testid="wall-height-readout"]')).toHaveText('2.7 m');
     await expect(page.locator('[data-testid="wallpaint-palette"]')).toHaveCount(0);
 
@@ -98,7 +122,7 @@ test.describe('Wall height on the plan', () => {
     await expect(page.locator('[data-testid="wallpaint-height"]')).toHaveValue('3.1');
   });
 
-  test('a blank plan has no height card', async ({ page }) => {
+  test('a blank plan has no height controls', async ({ page }) => {
     await seed(page, 2.7, [{ ...ROOM, polygon: [] }]);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
@@ -109,38 +133,11 @@ test.describe('Wall height on the plan', () => {
 test.describe('Wall height on a phone', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
-  test('a slim bar docks left and +/− steps 0.1 m', async ({ page }) => {
+  test('height stays inside the reserved rail and +/− steps 0.1 m', async ({ page }) => {
     await seed(page);
     await page.goto('/designer');
     await page.waitForSelector('.konvajs-content canvas', { state: 'attached' });
-    const hud = page.locator('[data-testid="wall-height-hud"]');
-    await expect(hud).toBeVisible();
-    await expect(page.locator('[data-testid="wall-height-hud-label"]')).toBeHidden();
-    const place = await page.evaluate(() => {
-      const card = document.querySelector('[data-testid="wall-height-hud"]') as HTMLElement;
-      const bar = document.querySelector('[data-testid="sims-bottom-toolbar"]')!.getBoundingClientRect();
-      const rail = document.querySelector('.plan-build-tools')?.getBoundingClientRect() ?? null;
-      const r = card.getBoundingClientRect();
-      return {
-        placement: card.getAttribute('data-placement'),
-        leftish: r.left < window.innerWidth * 0.45,
-        clearsBottom: r.bottom < bar.top - 24,
-        // Capsule pass (2026-09-26): the fixed construction rail owns the
-        // screen edge, so the slim bar docks in the rail's gutter — right of
-        // the rail, never over it — a small vertical pill, not a floating card.
-        railGutter: rail ? r.left >= rail.right : r.left < 2,
-        overlapsRail: rail ? r.left < rail.right && r.right > rail.left && r.top < rail.bottom && r.bottom > rail.top : false,
-        narrow: r.width < 56,
-        compact: r.height < 140,
-      };
-    });
-    expect(place.placement).toBe('left');
-    expect(place.leftish).toBe(true);
-    expect(place.clearsBottom).toBe(true);
-    expect(place.railGutter).toBe(true);
-    expect(place.overlapsRail).toBe(false);
-    expect(place.narrow).toBe(true);
-    expect(place.compact).toBe(true);
+    await expectHeightInReservedRail(page);
 
     await page.locator('[data-testid="wall-height-up"]').tap();
     await expect(page.locator('[data-testid="wall-height-readout"]')).toHaveText('2.8 m');

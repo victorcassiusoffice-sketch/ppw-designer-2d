@@ -41,12 +41,42 @@ function attachPlanToolbarCss() {
   sheet = document.createElement('style'); sheet.textContent = planToolbarCss; document.head.append(sheet);
   expect(sheet.sheet?.cssRules.length ?? 0).toBeGreaterThan(50);
 }
-function render() { act(() => root.render(<MemoryRouter><TopBar drawMode={false} setDrawMode={vi.fn()} roomsMenuOpen={false} setRoomsMenuOpen={vi.fn()} /></MemoryRouter>)); }
+function render(drawMode = false) { act(() => root.render(<MemoryRouter><TopBar drawMode={drawMode} setDrawMode={vi.fn()} roomsMenuOpen={false} setRoomsMenuOpen={vi.fn()} /></MemoryRouter>)); }
 const byId = (id: string) => document.querySelector<HTMLElement>(`[data-testid="${id}"]`)!;
 const click = (node: HTMLElement) => act(() => node.click());
 const escape = () => act(() => (document.activeElement ?? document).dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
 
 describe('direct Plan controls', () => {
+  it.each([390, 1280])('keeps editable wall height inside the reserved construction rail at %ipx', (width) => {
+    viewport(width); attachPlanToolbarCss();
+    host.className = 'designer-app'; host.dataset.view = 'plan';
+    const store = usePropertyStore.getState();
+    store.setRoomPolygon(store.property.rooms[0].id, [{ x: 0, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 4 }, { x: 0, y: 4 }]);
+    render();
+    const hud = byId('wall-height-hud');
+    expect(hud.closest('[aria-label="Construction tools"]')).not.toBeNull();
+    expect(hud.dataset.dock).toBe('construction-rail');
+    expect(getComputedStyle(hud).position).toBe('relative');
+    const readout = byId('wall-height-readout');
+    expect(getComputedStyle(readout).position).not.toBe('absolute');
+    expect(getComputedStyle(readout).display).not.toBe('none');
+    click(byId('wall-height-up'));
+    expect(readout.textContent).toBe('2.8 m');
+    expect(usePropertyStore.getState().property.wallHeightM).toBe(2.8);
+    click(byId('wall-height-down'));
+    expect(readout.textContent).toBe('2.7 m');
+    render(true);
+    expect(host.querySelector('[data-testid="wall-height-hud"]')).toBeNull();
+    render();
+    act(() => usePropertyStore.getState().ensureRoofLevel());
+    expect(host.querySelector('[data-testid="wall-height-hud"]')).toBeNull();
+  });
+  it('shows rail height for free walls but not for an empty plan', () => {
+    render();
+    expect(host.querySelector('[data-testid="wall-height-hud"]')).toBeNull();
+    act(() => usePropertyStore.setState((state) => ({ property: { ...state.property, walls: [{ id: 'wall', a: { x: 0, y: 0 }, b: { x: 2, y: 0 }, thicknessM: 0.15 }] } })));
+    expect(byId('wall-height-hud').closest('[aria-label="Construction tools"]')).not.toBeNull();
+  });
   it.each([360, 768, 1280])('keeps Roof, Plot and Snap directly in the reserved toolbar at %ipx', (width) => {
     viewport(width); render();
     const row = byId('plan-navigation');

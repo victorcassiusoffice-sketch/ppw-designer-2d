@@ -56,6 +56,7 @@ import {
   screenToRoom,
 } from '../lib/geometry';
 import type { PlacedRect, Polygon, Viewport } from '../lib/geometry';
+import { fitPlanViewport } from '../lib/fitPlanViewport';
 import { computeZoomScale } from '../lib/zoom';
 import { RoomDrawLayer, RoomDrawHUD, type HoverVertex } from './RoomDrawMode';
 import { WallDrawLayer, WallDrawHUD, CommittedWallsLayer } from '../designer/WallDrawMode';
@@ -131,7 +132,6 @@ import { isRoofProduct } from '../designer/energy';
 import { roofAreaM2 } from '../designer/roof';
 import { energyDotColour, useEnergyReport } from '../designer/useEnergyReport';
 import { EnergyMeterBar } from './EnergyMeterBar';
-import { WallHeightControl } from './WallHeightControl';
 import { meterFillPct } from '../designer/energyMeter';
 import { formatWh } from '../designer/solarCalc';
 import { freeWallLengthM, runToFreeWalls, wallsOnLevel } from '../designer/freeWalls';
@@ -656,6 +656,7 @@ export function RoomCanvas({
    * or the room itself appears/changes.
    */
   const userMovedViewportRef = useRef(false);
+  const fittedMinimumScaleRef = useRef(MIN_SCALE);
   const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
   // Floor tool (2026-08-30): the phone Floor HUD card — same mechanism as
   // other overlaid tool cards (ref for WHERE it sits, height state so the
@@ -867,7 +868,7 @@ export function RoomCanvas({
         case '-':
         case '_':
           e.preventDefault();
-          setViewport((v) => ({ ...v, scale: Math.max(MIN_SCALE, v.scale / factor) }));
+          setViewport((v) => ({ ...v, scale: Math.max(Math.min(v.scale, fittedMinimumScaleRef.current), v.scale / factor) }));
           break;
         case 'w':
         case 'W':
@@ -1039,15 +1040,10 @@ export function RoomCanvas({
     // Attached multi-room: centre + FIT the whole plan, not the active room.
     // This used to hardcode scale 1 with a 40 px minimum clamp, which pinned
     // a union wider than the stage off-screen with no way back except Reset.
-    const scale = Math.max(
-      MIN_SCALE,
-      Math.min(1, (availW - 80) / unionWpx, (availH - 80) / unionHpx),
-    );
-    return {
-      x: (availW - unionWpx * scale) / 2 - union.minX * pxPerMetre * scale,
-      y: (availH - unionHpx * scale) / 2 - union.minY * pxPerMetre * scale,
-      scale,
-    };
+    return fitPlanViewport({
+      minX: union.minX * pxPerMetre, minY: union.minY * pxPerMetre,
+      maxX: union.maxX * pxPerMetre, maxY: union.maxY * pxPerMetre,
+    }, availW, availH);
   }, [
     union,
     unionWpx,
@@ -1065,10 +1061,11 @@ export function RoomCanvas({
   ]);
 
   useEffect(() => {
-    if (userMovedViewportRef.current) return;
     // Nothing to centre on until a room exists — leave the viewport alone
     // so the blank-canvas prompt is not fighting a pointless transform.
     const fitted = fitViewportToUnion();
+    fittedMinimumScaleRef.current = Math.min(MIN_SCALE, fitted?.scale ?? MIN_SCALE);
+    if (userMovedViewportRef.current) return;
     if (!fitted) return;
     setViewport(fitted);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1116,7 +1113,7 @@ export function RoomCanvas({
         x: (pointer.x - v.x) / oldScale,
         y: (pointer.y - v.y) / oldScale,
       };
-      const newScale = computeZoomScale(oldScale, e.evt.deltaY, MIN_SCALE, MAX_SCALE);
+      const newScale = computeZoomScale(oldScale, e.evt.deltaY, Math.min(oldScale, fittedMinimumScaleRef.current), MAX_SCALE);
       return {
         x: pointer.x - mousePointTo.x * newScale,
         y: pointer.y - mousePointTo.y * newScale,
@@ -1201,7 +1198,7 @@ export function RoomCanvas({
         const d = dist(e.touches[0], e.touches[1]);
         if (startDist <= 0) return;
         let newScale = startScale * (d / startDist);
-        newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+        newScale = Math.max(Math.min(startScale, fittedMinimumScaleRef.current), Math.min(MAX_SCALE, newScale));
         // Track the LIVE midpoint, so two fingers pan as well as zoom. The
         // old code froze the centre at gesture start, which meant a customer
         // could zoom but never move the plan with two fingers.
@@ -1854,7 +1851,7 @@ export function RoomCanvas({
   function zoomBy(factor: number) {
     userMovedViewportRef.current = true;
     setViewport((v) => {
-      const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, v.scale * factor));
+      const next = Math.min(MAX_SCALE, Math.max(Math.min(v.scale, fittedMinimumScaleRef.current), v.scale * factor));
       if (next === v.scale) return v;
       const cx = stageSize.width / 2;
       const cy = stageSize.height / 2;
@@ -1871,7 +1868,9 @@ export function RoomCanvas({
     // the room actually re-centre instead of sitting in the corner. The ref
     // is still cleared so later auto-fits (resize, new room) keep working.
     userMovedViewportRef.current = false;
-    setViewport(fitViewportToUnion() ?? INITIAL_VIEWPORT);
+    const fitted = fitViewportToUnion();
+    fittedMinimumScaleRef.current = Math.min(MIN_SCALE, fitted?.scale ?? MIN_SCALE);
+    setViewport(fitted ?? INITIAL_VIEWPORT);
   }
 
   // V-RENDER-4 (2026-05-27) — "Share render". Primary path: export the
@@ -2654,13 +2653,6 @@ export function RoomCanvas({
   const selectedWall = useMemo(
     () => (selectedWallId ? freeWalls.find((w) => w.id === selectedWallId) ?? null : null),
     [selectedWallId, freeWalls],
-  );
-  /** Closed rooms or free walls — the moment height is worth showing. */
-  const hasDrawnWalls = useMemo(
-    () =>
-      rooms.some((r) => !isOutdoorRoom(r) && !isRoofRoom(r) && isDrawnPolygon(r.polygon)) ||
-      freeWalls.length > 0,
-    [rooms, freeWalls],
   );
   // A wall that is gone (deleted, undone, another storey) must not stay picked.
   useEffect(() => {
@@ -3679,42 +3671,6 @@ export function RoomCanvas({
           >
             Done
           </button>
-        </div>
-      )}
-      {/* Wall height (2026-09-22): after the walls exist, raise / lower them
-          from the plan. Desktop keeps the labelled card. Phone is a small
-          vertical pill — white, soft shadow, − / metres / + only — clear of
-          the bottom catalog. Capsule pass (2026-09-26): the fixed left
-          construction rail owns the screen edge at every width, so both this
-          card and the phone cladding card start at the rail's gutter
-          (`--plan-rail-w` + 16 px: the rail sits 8 px in from the edge, so
-          this leaves an 8 px breath after it; `--plan-rail-w` is published
-          by planToolbar.css) instead of `left-0` / `left-3` — no two fixed
-          left controls overlap.
-          Hidden while the pen owns that dock, and on a phone while cladding's
-          own left card is up (md+ cladding lives in the right panel). */}
-      {hasDrawnWalls && !drawMode && !wallDrawEnabled && (
-        <div
-          data-testid="wall-height-hud"
-          data-placement="left"
-          aria-label="Wall height"
-          className={`pointer-events-auto fixed left-[calc(var(--plan-rail-w,56px)+16px)] top-1/2 z-30 flex w-max -translate-y-1/2 flex-col items-center rounded-2xl border-0 bg-white px-0.5 py-1 text-xs shadow-[0_2px_10px_rgba(42,41,38,0.12)] md:top-[calc(var(--ppw-topbar-h,3.5rem)_+_0.5rem)] md:w-[min(70vw,240px)] md:translate-y-0 md:items-stretch md:gap-1.5 md:rounded-xl md:border md:border-[#dcd9d0] md:bg-[#faf9f5] md:p-2 md:shadow-[0_12px_32px_rgba(42,41,38,0.18)] lg:top-1/2 lg:-translate-y-1/2 ${
-            claddingTool ? 'max-md:hidden' : ''
-          }`}
-          style={{ color: CHROME_TEXT }}
-        >
-          <span className="hidden text-[10px] font-semibold uppercase tracking-[0.06em] md:inline" data-testid="wall-height-hud-label">
-            Wall height
-          </span>
-          <span className="hidden text-[11px] font-medium leading-snug md:inline" style={{ color: CHROME_TEXT_2 }} data-testid="wall-height-hud-note">
-            {activeLevel.name} · steps of 0.1 m
-          </span>
-          <WallHeightControl
-            idPrefix="wall-height"
-            className="max-md:flex-col max-md:gap-0"
-            buttonClassName="max-md:h-11 max-md:w-11 max-md:rounded-md max-md:border-0 max-md:bg-transparent max-md:text-[18px] max-md:shadow-none"
-            readoutClassName="max-md:min-w-0 max-md:flex-none max-md:px-1 max-md:py-1 max-md:text-[11px] max-md:font-semibold max-md:leading-none"
-          />
         </div>
       )}
       {wallPaintHudOn && (

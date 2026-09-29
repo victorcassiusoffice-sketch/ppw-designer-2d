@@ -118,9 +118,9 @@
    (`main` pads by --plan-rail-w below); the two fixed left HUDs in
    RoomCanvas start at the same gutter, so no two fixed left controls overlap. */
 .plan-build-tools {
-  position: fixed; left: 8px; top: calc(var(--ppw-topbar-h, 52px) + 42px);
+  position: fixed; left: 8px; top: calc(var(--ppw-topbar-h, 52px) + 8px);
   width: var(--plan-rail-w, 56px); height: max-content;
-  max-height: calc(100dvh - var(--ppw-topbar-h, 52px) - var(--sims-dock-h, 0px) - var(--sims-toolbar-h, 0px) - 60px);
+  max-height: calc(100dvh - var(--ppw-topbar-h, 52px) - var(--sims-dock-h, 0px) - var(--sims-toolbar-h, 0px) - 20px);
   display: flex; flex-direction: column; align-items: center; gap: var(--capsule-gap, 2px);
   padding: var(--capsule-pad, 4px) calc((var(--plan-rail-w, 56px) - var(--capsule-hit, 40px) - 2px) / 2);
   overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
@@ -207,13 +207,13 @@
 .designer-app[data-view="plan"] #canvas-plan-tools > div:first-child > button[aria-pressed="true"] { background: var(--capsule-on, #0d1b20cc); color: var(--capsule-on-ink, #f4ffff); }
 
 /* ---- Clear (bottom-left) and the phone undo strip (top-left) ----------- */
-/* The height control uses the same narrow capsule at every width. Its
-   explanatory text stays accessible without another card covering the plan. */
-.designer-app[data-view="plan"] [data-testid="wall-height-hud"] {
-  width: max-content; padding: 4px; gap: 0; align-items: center;
-  border: 1px solid var(--capsule-rim); border-radius: var(--capsule-r);
-  background: var(--capsule-bg); color: var(--capsule-ink) !important;
-  box-shadow: var(--capsule-shadow); backdrop-filter: blur(var(--capsule-blur));
+/* Height lives inside the rail's reserved gutter, never over the fitted
+   drawing. The rail scrolls on small screens to keep every control reachable. */
+.plan-topbar .plan-build-tools .plan-wall-height {
+  position: relative; display: flex; flex-direction: column; flex-shrink: 0;
+  width: var(--capsule-hit); margin-top: 4px; padding-top: 4px; gap: 0; align-items: center;
+  border: 0; border-top: 1px solid var(--capsule-rim); border-radius: 0;
+  background: transparent; color: var(--capsule-ink); box-shadow: none;
 }
 .designer-app[data-view="plan"] [data-testid="wall-height-hud"]:not(:has([data-testid="wall-height-control"])) { display: none; }
 .designer-app[data-view="plan"] :is([data-testid="wall-height-hud-label"], [data-testid="wall-height-hud-note"]) {
@@ -274,7 +274,7 @@
   .plan-topbar .plan-identity > button { max-width: 145px; font-size: 11px; }
   .plan-topbar .plan-identity > a, .plan-topbar .plan-identity > span:first-child { width: 22px; flex-shrink: 0; }
   .plan-topbar [data-testid="demo-pill"] { display: none; }
-  .plan-build-tools { left: 5px; top: calc(var(--ppw-topbar-h, 84px) + 40px); }
+  .plan-build-tools { left: 5px; top: calc(var(--ppw-topbar-h, 84px) + 8px); }
   .designer-app[data-view="plan"] > main { padding-left: calc(var(--plan-rail-w, 49px) + 10px); }
   .designer-app[data-view="plan"] [data-testid="page-tabs"] { padding-left: calc(var(--plan-rail-w, 49px) + 13px); }
   .designer-app[data-view="plan"] [data-testid="canvas-chrome-toggle"] { margin-right: 8px; }

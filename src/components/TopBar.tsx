@@ -22,6 +22,8 @@ import {
 import { useDrawProgressStore } from '../store/drawProgressStore';
 import { useGardenEditorStore } from '../store/gardenEditorStore';
 import { isDrawnPolygon } from '../designer/roomLayout';
+import { wallsOnLevel } from '../designer/freeWalls';
+import { WallHeightControl } from './WallHeightControl';
 import { floorTargetRoom } from '../designer/floorTarget';
 // Sims world (2026-08-29): storeys + land plot live on the property.
 import {
@@ -32,6 +34,7 @@ import {
   visibleRooms,
   roomsOnLevel,
   isRoofLevel,
+  isRoofRoom,
   roofLevelOf,
   storeyLevels,
 } from '../designer/levels';
@@ -487,6 +490,8 @@ export function TopBar({
   // wall tools refuse it (a roof has no walls) and the Roof button toggles
   // between it and the top storey.
   const onRoof = isRoofLevel(activeLevel);
+  const hasDrawnWalls = roomsOnLevel(property.rooms, activeLevelId).some((room) => !isOutdoorRoom(room) && !isRoofRoom(room) && isDrawnPolygon(room.polygon))
+    || wallsOnLevel(property.walls ?? [], activeLevelId).length > 0;
   const ensureRoofLevel = usePropertyStore((s) => s.ensureRoofLevel);
   const addLevel = usePropertyStore((s) => s.addLevel);
   const renameLevel = usePropertyStore((s) => s.renameLevel);
@@ -2021,6 +2026,13 @@ export function TopBar({
         </div>
 
           <span className={`${DIVIDER} mr-0`} aria-hidden="true" />
+          {viewMode === 'plan' && hasDrawnWalls && !drawMode && !wallActive && !onRoof && (
+            <div className="plan-wall-height" data-testid="wall-height-hud" data-placement="left" data-dock="construction-rail" role="group" aria-label="Wall height">
+              <span className="sr-only" data-testid="wall-height-hud-label">Wall height</span>
+              <span className="sr-only" data-testid="wall-height-hud-note">{activeLevel.name} · steps of 0.1 m</span>
+              <WallHeightControl idPrefix="wall-height" />
+            </div>
+          )}
         </div>
 
         {/* Select on the PHONE STRIP (Vic 2026-09-05: "Select toolbar should
