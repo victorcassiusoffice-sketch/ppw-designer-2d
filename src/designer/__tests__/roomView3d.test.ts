@@ -77,6 +77,20 @@ describe('roomView3d — camera', () => {
     expect(c.elevationRad).toBeLessThan(1.5);
     expect(boundsOf([{ polygon: [], kind: 'outdoor' }])).toBeNull();
   });
+  it.each([{ width: 240, height: 900 }, { width: 390, height: 844 }, { width: 1280, height: 800 }])('fits the complete building in a $width × $height viewport', (viewport) => {
+    const bounds = { minX: -2, minY: -3, maxX: 12, maxY: 9 };
+    const height = 6;
+    const camera = fitCamera(bounds, height, viewport.width / viewport.height);
+    const corners = [bounds.minX, bounds.maxX].flatMap(x => [bounds.minY, bounds.maxY].flatMap(y => [0, height].map(z => ({ x, y, z }))));
+    const projected = projectScene([{ key: 'building-bounds', kind: 'item', pts: corners, fill: '#fff' }], camera, viewport)[0];
+    expect(projected.pts).toHaveLength(8);
+    for (const point of projected.pts) {
+      expect(point.x).toBeGreaterThanOrEqual(0);
+      expect(point.x).toBeLessThanOrEqual(viewport.width);
+      expect(point.y).toBeGreaterThanOrEqual(0);
+      expect(point.y).toBeLessThanOrEqual(viewport.height);
+    }
+  });
 });
 
 describe('roomView3d — cutaway', () => {

@@ -802,7 +802,10 @@ export function fitCamera(b: Bounds2, wallHeightM: number, aspect = 1.4): OrbitC
   const d = Math.max(1, b.maxY - b.minY);
   const radius = Math.hypot(w, d) / 2;
   const fov = DEFAULT_FOV_RAD;
-  const hfov = 2 * Math.atan(Math.tan(fov / 2) * Math.max(0.6, aspect));
+  // The real portrait aspect is essential: a 0.6 minimum assumed a wider
+  // canvas and clipped both sides of tall phone views even after pressing Fit.
+  const viewportAspect = Number.isFinite(aspect) && aspect > 0 ? aspect : 1.4;
+  const hfov = 2 * Math.atan(Math.tan(fov / 2) * viewportAspect);
   const limiting = Math.min(fov, hfov);
   const distance = (radius + wallHeightM * 0.3) / Math.tan(limiting / 2) + wallHeightM * 0.4;
   return {
