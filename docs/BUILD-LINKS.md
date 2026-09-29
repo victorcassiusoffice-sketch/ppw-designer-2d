@@ -1,25 +1,31 @@
 <!-- verified-preview:start -->
-## Current verified feature preview — 29 September 2026
+## Current verified feature preview — 29 September 2026, interaction fixes
 
-Application source commit: `22aaf0e2980c4e00ab4a4e0681bad6f385aa9fb6` · Deployed revision: `ee2f11dee0b7499caf3be60f90b7de6345d2ef0e` · Vercel Preview deployment `6732390807`.
-This is the pinned, verified application build; later documentation-only commits do not replace this link.
+Verified deployed application: `1be7bf68002c47bf96e29de2a69d386159edd0c5` · Vercel Preview deployment `6739155621`.
+Pinned verified application URL; later documentation-only commits do not replace it.
 
-- Demo in 2D: https://ppw-designer-2d-1nbevf4ny-victor-ppw.vercel.app/demo?view=2d
-- Demo in Premium 3D: https://ppw-designer-2d-1nbevf4ny-victor-ppw.vercel.app/demo?view=3d
-- Standalone Studio + Shop: https://ppw-designer-2d-1nbevf4ny-victor-ppw.vercel.app/studio
-- Studio designer: https://ppw-designer-2d-1nbevf4ny-victor-ppw.vercel.app/studio/designer?view=3d
-- Developer presentation: https://ppw-designer-2d-1nbevf4ny-victor-ppw.vercel.app/pitch/developers
-- Merchant presentation: https://ppw-designer-2d-1nbevf4ny-victor-ppw.vercel.app/pitch/merchants
-- Embedded designer: https://ppw-designer-2d-1nbevf4ny-victor-ppw.vercel.app/embed/designer?scene=home&view=3d
-- Standard Designer: https://ppw-designer-2d-1nbevf4ny-victor-ppw.vercel.app/designer
-- Demo, legacy TintEX route: https://ppw-designer-2d-1nbevf4ny-victor-ppw.vercel.app/designer?demo=tintex
-- Shipped: compact dark door/height controls, phone cart total, restored 2D fallback art, reliable garden draw/resize cancellation, solar/tank placement state fixes, genuine refreshed app screenshots, and phone Fit correction.
-- Verified: 270 files / 3,006 tests passed, focused follow-up tests, client/API typechecks, lint, production build, no public source maps; desktop and 390px phone browser checks. Preview reports `env=preview`; no order, payment, email or merchant data was submitted.
-- Branch: `cursor/feat-3d-flooring-hud-bc95` only. Historical PR #36 was merged externally on 26 September; no new main push/merge or production deployment was performed in this continuation.
-- Active checkout: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`.
-- Previous local changes remain in recovery stash `649569db5766b86c5880321f6cfea782f356da1f`; its third parent contains the untracked files. Do not pop/drop it wholesale.
-- Product appearance limit: the Courts 2D catalog still uses category illustrations where product photography is missing. The tank is an original dimensional model; neither is manufacturer CAD.
-- Production fallback: https://designer.ppwellness.co/designer?demo=tintex (untouched in this continuation).
+Later portrait-Fit correction `23eb787122a3a11e5b8052b408dc012933fd65dd` is pushed and passes 31 focused tests/build. Its previews `n7pw1fmhm` (deployment 6739702746) and `mxkxb9qu1` (documentation revision `4816a9ada76460aad4176790984f476530753fe7`, deployment 6739997387) time out on this network and are NOT pinned as browser-verified. Retry those normal URLs when connectivity permits. The verified link below contains all main interaction fixes but not that extra portrait-Fit correction.
+
+- Designer-only 2D Demo: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/demo?view=2d
+- Designer-only Premium 3D: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/demo?view=3d
+- Standalone Studio + Shop: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/studio
+- Studio designer: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/studio/designer?view=3d
+- Shop preview: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/studio/shop
+- Developer pitch: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/pitch/developers
+- Merchant pitch: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/pitch/merchants
+- Embedded designer: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/embed/designer?scene=home&view=3d
+- Standard Designer: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/designer
+- Paint Demo, legacy TintEX route: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/designer?demo=tintex
+- Latest changes: stable 3D camera and on-screen scale across tool/catalog/scene changes; faster movement; repeatable wall-snapped door/window placement; direct garden draw/resize; reliable tool exits; Plan zoom out to 4%; roof solar visible only while Roof is selected.
+- SketchUp: tested supplier GLB import pipeline, documented in `docs/SKETCHUP-MODELS.md`. No direct `.skp` editor or supplier model was added.
+- Verification: 274 files / 3,036 tests passed, followed by 13 garden and 31 camera/Fit/motion tests; seven importer integration tests; client/API typecheck, scoped lint, final build, zero public maps, desktop/390px phone browser checks and deployed healthcheck matching `1be7bf68002c47bf96e29de2a69d386159edd0c5` with `env=preview`.
+- Branch: `cursor/feat-3d-flooring-hud-bc95` only. Main and production were untouched. PR #36 was merged externally on 26 September and is historical.
+- Active source: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`.
+- Previous work remains preserved in stash `649569db5766b86c5880321f6cfea782f356da1f` (untracked files in its third parent); do not restore/drop it wholesale.
+- No orders, payments, customer emails or supplier mutations were submitted. Preview ordering stays blocked.
+- Remaining limits: door/window hosts require enclosed rooms; edit/remove openings in Plan. Garden surfaces are rectangular; fence placement and freeform terrain remain limited. Product art/model fidelity depends on available supplier assets.
+- Previous verified UI build: https://ppw-designer-2d-1nbevf4ny-victor-ppw.vercel.app/demo
+- Production fallback: https://designer.ppwellness.co/designer (unchanged).
 <!-- verified-preview:end -->
 
 # Room Designer — build links
@@ -37,7 +43,7 @@ One place for production and the feature builds Victor / Spa Concept / Cap Tamar
 
 Production is **main**. Do not treat preview branches as production.
 
-## Current feature build (phone-test this)
+## Historical feature snapshot — 22 September 2026
 
 **Branch:** `cursor/feat-3d-flooring-hud-bc95`  
 **Historical PR #36 (merged 26 September 2026):** https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/36
