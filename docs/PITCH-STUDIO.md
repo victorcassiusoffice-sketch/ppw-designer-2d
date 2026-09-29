@@ -1,3 +1,7 @@
+<!-- continuation-preview:start -->
+Current feature preview, 29 September 2026: https://ppw-designer-2d-1nbevf4ny-victor-ppw.vercel.app/studio. Latest developer and merchant presentations use refreshed, genuine app captures (`designer-plan.webp`, `designer-3d.webp`) taken from the running app via the browser: final local Plan UI and deployed 3D application `943b045`. They show the real current interface, including category illustrations where merchant photos are unavailable. Concept advert artwork remains separately labelled. Main/production were not updated by this continuation; production behavior documented below is historical context. Full verification and recovery notes are in DESIGNER-WORKFLOW-LOG.md.
+<!-- continuation-preview:end -->
+
 # PPW Studio — presentation and integration guide
 
 Production truth for the pitch, Studio, Demo and embed routes. They ship on **https://designer.ppwellness.co** — the same host as the real designer and shop — once the branch carrying them is merged to `main` (Vercel builds production from `main` automatically). A deploy is live only when a cache-busted `curl https://designer.ppwellness.co/api/healthcheck?cb=<unique>` reports the expected commit; a preview URL is never production.
