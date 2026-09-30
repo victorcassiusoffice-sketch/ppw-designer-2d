@@ -41,6 +41,7 @@ const RequireMerchant = lazy(() => import('./components/RequireMerchant'));
 const MyDesignsPage = lazy(() => import('./pages/MyDesignsPage'));
 const DemoDesignerPage = lazy(() => import('./pages/DemoDesignerPage'));
 const DeveloperPitchPage = lazy(() => import('./pages/pitch/DeveloperPitchPage'));
+const ConstructionPitchPage = lazy(() => import('./pages/pitch/ConstructionPitchPage'));
 const MerchantPitchPage = lazy(() => import('./pages/pitch/MerchantPitchPage'));
 const StudioPage = lazy(() => import('./pages/studio/StudioPage'));
 const StudioDesignerPage = lazy(() => import('./pages/studio/StudioPage').then((m) => ({ default: m.StudioDesignerPage })));
@@ -121,6 +122,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/demo" element={<DemoDesignerPage />} />
         <Route path="/embed/designer" element={<DemoDesignerPage />} />
         <Route path="/pitch/developers" element={<DeveloperPitchPage />} />
+        <Route path="/pitch/construction" element={<ConstructionPitchPage />} />
         <Route path="/pitch/merchants" element={<MerchantPitchPage />} />
         <Route path="/studio" element={<StudioPage />} />
         <Route path="/studio/designer" element={<StudioDesignerPage />} />

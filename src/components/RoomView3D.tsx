@@ -55,6 +55,7 @@ import { isRoofProduct } from '../designer/energy';
 import { pointInPolygon } from '../lib/geometry';
 import { buildingSolids, type BuildingView } from '../designer/buildingScene';
 import { validateStairPlacement } from '../designer/stairPlacement';
+import { MaterialsPanel } from './MaterialsPanel';
 import { EnergySummary } from './EnergyPanel';
 import { HouseWorkspace, type HouseMode } from './HouseWorkspace';
 import { previewRectRoomBuild, type RoomBuildPreview } from '../designer/roomBuildGesture';
@@ -293,7 +294,7 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
       const artTop = body ? undefined : productTopDownUrl(p);
       const artSide = body ? undefined : productImageUrl(p);
       items.push({
-        emitsLight: lamp,
+        emitsLight: lamp && it.lightOn !== false,
         lightMountM,
         artTopUrl: artTop && !artTop.startsWith('data:') ? artTop : undefined,
         artSideUrl: artSide && !artSide.startsWith('data:') ? artSide : undefined,
@@ -402,6 +403,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const setWallView = useDesignerUIStore((s) => s.setWallView);
   const sunHour = useDesignerUIStore((s) => s.sunHour);
   const setSunHour = useDesignerUIStore((s) => s.setSunHour);
+  const materialsOpen = useDesignerUIStore(s => s.materialsPanelOpen);
   const energyOpen = useDesignerUIStore((s) => s.energyPanelOpen);
   const belowMd = useBelowMd();
   const [panMode, setPanMode] = useState(false);
@@ -1502,6 +1504,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       return;
     }
     const ui = useDesignerUIStore.getState();
+    ui.setMaterialsPanelOpen(false);
     if (next === 'door' || next === 'window') ui.setDoorDraft({ kind: next });
     ui.setTool('hand');
     ui.setEnergyPanelOpen(false);
@@ -1532,6 +1535,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     if (mode !== 'furnish') window.dispatchEvent(new CustomEvent('ppw:close-catalog'));
     clearLocalTools();
     setHouseMode(mode);
+    useDesignerUIStore.getState().setMaterialsPanelOpen(mode === 'materials');
     setPanMode(false);
     const ui = useDesignerUIStore.getState();
     ui.setEnergyPanelOpen(false);
@@ -1545,7 +1549,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       setGardenOpen(true);
     }
   }
-  const activeHouseMode: HouseMode = onPaintWall ? 'paint' : onPaintFloor ? 'floor' : energyOpen ? 'energy' : gardenOpen ? 'garden' : houseMode;
+  const activeHouseMode: HouseMode = materialsOpen ? 'materials' : onPaintWall ? 'paint' : onPaintFloor ? 'floor' : energyOpen ? 'energy' : gardenOpen ? 'garden' : houseMode === 'materials' ? 'build' : houseMode;
 
   const selectionPanel = variant === 'overlay' && itemsInteractive && selectedItem && selectedProduct ? (
         <div
@@ -1722,7 +1726,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         drawing={constructionTool === 'room'} onDraw={() => chooseBuildTool(constructionTool === 'room' ? 'select' : 'room')} onSelect={() => chooseBuildTool('select')}
         wallDrawing={constructionTool === 'wall'} onWalls={() => chooseBuildTool(constructionTool === 'wall' ? 'select' : 'wall')}
         selection={selectionPanel && selectedProduct && selectedInstanceId ? { id: selectedInstanceId, productId: selectedProduct.id, name: selectedProduct.name, onDeselect: () => selectItem(null) } : undefined}
-        inspector={selectionPanel ?? (energyOpen && belowMd ? <div className="house-tool-panel-host p-4" data-presentation="3d"><EnergySummary compact onJumpToRoof={() => window.dispatchEvent(new CustomEvent('ppw:close-house-details'))} /></div> : gardenOpen ? <div className="house-garden-panel"><GardenPanel architectural onClose={() => { setGardenOpen(false); setGardenPlacement(null); setHouseMode('build'); }} onRequestPlacement={(intent) => { setGardenPlacement(intent); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} /></div>
+        inspector={materialsOpen ? <MaterialsPanel /> : selectionPanel ?? (energyOpen && belowMd ? <div className="house-tool-panel-host p-4" data-presentation="3d"><EnergySummary compact onJumpToRoof={() => window.dispatchEvent(new CustomEvent('ppw:close-house-details'))} /></div> : gardenOpen ? <div className="house-garden-panel"><GardenPanel architectural onClose={() => { setGardenOpen(false); setGardenPlacement(null); setHouseMode('build'); }} onRequestPlacement={(intent) => { setGardenPlacement(intent); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); }} /></div>
           : <BuildingControls layout="sidebar" view={buildingView} onViewChange={setBuildingView} showRoof={showRoof} onShowRoofChange={setShowRoof} tool={constructionTool} onToolChange={chooseBuildTool}
             onSolarCatalog={() => { changeHouseMode('furnish'); window.dispatchEvent(new CustomEvent('ppw:open-catalog', { detail: { category: 'eco' } })); }}
             gardenOpen={gardenOpen} onGardenToggle={() => changeHouseMode('garden')} />)}>

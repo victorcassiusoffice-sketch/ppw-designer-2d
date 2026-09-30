@@ -1,8 +1,9 @@
 /** Planning previews of existing products, not exact manufacturer models. */
+import { MAURITIUS_OUTDOOR_SHAPES, type MauritiusOutdoorShape } from './mauritiusOutdoor';
 export const FURNITURE_PREVIEW_NOTE = 'Dimensional preview — see product details for exact appearance.';
 
 export type FurniturePreviewKind = 'sofa' | 'corner' | 'bed' | 'coffee' | 'dining' | 'desk' | 'chair' | 'cabinet' | 'wardrobe' | 'shelf' | 'fridge' | 'tv' | 'air-conditioner' | 'table-lamp' | 'pendant'
-  | 'treadmill' | 'exercise-bike' | 'multi-gym' | 'foot-spa' | 'rug' | 'roller-blind';
+  | 'treadmill' | 'exercise-bike' | 'multi-gym' | 'foot-spa' | 'rug' | 'roller-blind' | MauritiusOutdoorShape;
 /**
  * Every Courts row placed by a show home (the Courts flat, the Cap Tamarin
  * two-bed and `/demo`) is listed here or wears a body — the law is that a
@@ -10,6 +11,7 @@ export type FurniturePreviewKind = 'sofa' | 'corner' | 'bed' | 'coffee' | 'dinin
  * (`src/demo/__tests__/courtsDemo.test.ts` pins it).
  */
 const previews: Record<string, FurniturePreviewKind> = {
+  ...MAURITIUS_OUTDOOR_SHAPES,
   'courts-marco-sofa-corner': 'sofa',
   'courts-tamarin-corner': 'corner',
   'courts-mika-bed-160': 'bed',

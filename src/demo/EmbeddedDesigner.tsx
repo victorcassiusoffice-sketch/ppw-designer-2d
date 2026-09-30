@@ -9,6 +9,8 @@ export interface EmbeddedDesignerProps {
   title?: string;
   loading?: 'eager' | 'lazy';
   onViewChange?: (view: EmbeddedDesignerView) => void;
+  /** Optional entry panel; switching the view still preserves the same editing session. */
+  panel?: 'materials';
 }
 
 /** Switching view leaves the browsing context, local edits and undo history intact. */
@@ -16,7 +18,7 @@ export function EmbeddedDesigner(props: EmbeddedDesignerProps) {
   return <DesignerFrame key={props.scene} {...props} />;
 }
 
-function DesignerFrame({ scene, view, className, title = 'Demo — interactive designer', loading, onViewChange }: EmbeddedDesignerProps) {
+function DesignerFrame({ scene, view, className, title = 'Demo — interactive designer', loading, onViewChange, panel }: EmbeddedDesignerProps) {
   const frame = useRef<HTMLIFrameElement>(null);
   const [initialView] = useState(view);
   const currentView = useRef(view);
@@ -42,5 +44,5 @@ function DesignerFrame({ scene, view, className, title = 'Demo — interactive d
   }, [sendView]);
   useEffect(() => { sendView(); }, [view, sendView]);
 
-  return <iframe ref={frame} className={className} src={`/embed/designer?scene=${scene}&view=${initialView}`} title={title} loading={loading} allowFullScreen onLoad={sendView} />;
+  return <iframe ref={frame} className={className} src={`/embed/designer?scene=${scene}&view=${initialView}${panel ? `&panel=${panel}` : ''}`} title={title} loading={loading} allowFullScreen onLoad={sendView} />;
 }

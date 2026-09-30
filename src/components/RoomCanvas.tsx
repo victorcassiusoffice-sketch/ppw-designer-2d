@@ -136,7 +136,7 @@ import { EnergyMeterBar } from './EnergyMeterBar';
 import { meterFillPct } from '../designer/energyMeter';
 import { formatWh } from '../designer/solarCalc';
 import { freeWallLengthM, runToFreeWalls, wallsOnLevel } from '../designer/freeWalls';
-import { emitsLight, lightRadiusM, planSymbolOf } from '../designer/lighting';
+import { emitsLight, lightRadiusM, planSymbolOf, lampSceneFactor, planLightGradientStops } from '../designer/lighting';
 // Sims flooring (2026-08-29): tiles snap to their own lattice, edge to edge.
 import { snapToTileLattice, tileLatticeFor, usesTileLattice } from '../designer/flooringLattice';
 // Rotate-handle re-seat (2026-08-29): same wall-aware path as the R key.
@@ -184,8 +184,6 @@ import {
   SITE_FILL,
   SITE_STROKE,
   DIM_LINE,
-  LIGHT_GLOW_CORE,
-  LIGHT_GLOW_EDGE,
   GREENERY_FILL,
   GREENERY_STROKE,
   ITEM_SHADOW,
@@ -444,6 +442,7 @@ export function RoomCanvas({
   const selectItem = useDesignStore((s) => s.selectItem);
   // Wall selection (Vic 2026-09-05) — the Select tool can pick a free wall,
   // read its length and delete it.
+  const sunHour = useDesignerUIStore(s => s.sunHour);
   const selectedWallId = useDesignerUIStore((s) => s.selectedWallId);
   const selectWall = useDesignerUIStore((s) => s.selectWall);
   const updateItem = useDesignStore((s) => s.updateItem);
@@ -595,9 +594,7 @@ export function RoomCanvas({
   const energyPanelOpen = useDesignerUIStore((s) => s.energyPanelOpen);
   const setEnergyPanelOpen = useDesignerUIStore((s) => s.setEnergyPanelOpen);
   const openEnergy = useCallback(() => {
-    const md = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(min-width: 768px)').matches;
-    if (md) setEnergyPanelOpen(!energyPanelOpen);
-    else window.dispatchEvent(new CustomEvent('ppw:open-menu', { detail: { section: 'energy' } }));
+    setEnergyPanelOpen(!energyPanelOpen);
   }, [energyPanelOpen, setEnergyPanelOpen]);
 
   // "No room drawn yet" is now a PROPERTY-wide question, not an active-room
@@ -3236,39 +3233,13 @@ export function RoomCanvas({
         onCancel={handleDrawCancel}
         onQuickRectangle={hasRoom ? undefined : handleQuickRectangle}
       />
-    <div
-      ref={containerRef}
-      data-testid="plan-drawing-viewport"
-      className={`relative min-h-0 w-full min-w-0 flex-1 overflow-hidden transition-colors ${
-        pendingProductId && !drawMode ? 'ring-2 ring-inset' : ''
-      } ${drawMode ? 'cursor-crosshair' : ''} ${pendingProductId && !drawMode ? 'cursor-crosshair' : ''}`}
-      // Paper ground (2026-08-29): warm cream, the land outside the plot.
-      style={{
-        background: CANVAS_GROUND,
-        ...(pendingProductId && !drawMode
-          ? { '--tw-ring-color': `${SELECT_STROKE}66` } as React.CSSProperties
-          : {}),
-      }}
-      data-armed={pendingProductId ? 'true' : 'false'}
-      // Designer 3-Bug Fix (2026-05-28, Bug 1) — long-press on a placed
-      // item (Konva.Image on the canvas) popped the browser "Save image"
-      // menu and hijacked drag-drop. CSS `-webkit-touch-callout: none`
-      // (index.css) kills the iOS callout; this handler kills the Android
-      // long-press contextmenu over the whole canvas surface.
-      onContextMenu={(e) => e.preventDefault()}
-    >
       {/* M6 (Customer-UI fix 2026-05-31) — top-right floating button column.
           Both top AND right offsets fold in env(safe-area-inset-*) so the
           controls never sit under the notch / rounded corner on a notched
           device. */}
       <div
-        className="pointer-events-none absolute z-10 flex flex-col items-end gap-2 max-md:!right-0 max-md:!top-2"
-        style={{
-          top: 'max(1rem, env(safe-area-inset-top))',
-          // Floor tool (2026-08-31 check R1): slide left of the docked
-          // panel so Reset / Share / Capture + the readouts stay visible.
-          right: 'calc(max(1rem, env(safe-area-inset-right)) + var(--floor-panel-w, 0px))',
-        }}
+        className="plan-view-toolbar"
+        style={{ paddingRight: 'max(8px, env(safe-area-inset-right))' }}
       >
         <button
           type="button"
@@ -3481,6 +3452,27 @@ export function RoomCanvas({
         </div>
       </div>
 
+    <div
+      ref={containerRef}
+      data-testid="plan-drawing-viewport"
+      className={`relative min-h-0 w-full min-w-0 flex-1 overflow-hidden transition-colors ${
+        pendingProductId && !drawMode ? 'ring-2 ring-inset' : ''
+      } ${drawMode ? 'cursor-crosshair' : ''} ${pendingProductId && !drawMode ? 'cursor-crosshair' : ''}`}
+      // Paper ground (2026-08-29): warm cream, the land outside the plot.
+      style={{
+        background: CANVAS_GROUND,
+        ...(pendingProductId && !drawMode
+          ? { '--tw-ring-color': `${SELECT_STROKE}66` } as React.CSSProperties
+          : {}),
+      }}
+      data-armed={pendingProductId ? 'true' : 'false'}
+      // Designer 3-Bug Fix (2026-05-28, Bug 1) — long-press on a placed
+      // item (Konva.Image on the canvas) popped the browser "Save image"
+      // menu and hijacked drag-drop. CSS `-webkit-touch-callout: none`
+      // (index.css) kills the iOS callout; this handler kills the Android
+      // long-press contextmenu over the whole canvas surface.
+      onContextMenu={(e) => e.preventDefault()}
+    >
       {/* Floor tool HUD card (PHONE, 2026-08-30). Replaces the old
           "Paint on · Done" chip. md:hidden — from md up the docked Floor
           panel (TopBar) is the tool's indicator. Bottom-anchored exactly
@@ -4937,7 +4929,8 @@ export function RoomCanvas({
                   fillRadialGradientEndPoint={{ x: 0, y: 0 }}
                   fillRadialGradientStartRadius={0}
                   fillRadialGradientEndRadius={r}
-                  fillRadialGradientColorStops={[0, LIGHT_GLOW_CORE, 0.55, 'rgba(255,214,140,0.22)', 1, LIGHT_GLOW_EDGE]}
+                  opacity={lampSceneFactor(sunHour)}
+                  fillRadialGradientColorStops={planLightGradientStops()}
                   listening={false}
                 />
               );

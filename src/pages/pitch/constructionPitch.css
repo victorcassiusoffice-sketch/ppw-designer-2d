@@ -1,0 +1,31 @@
+.pitch-construction{background:#172027;color:#ebeff0;--pitch-cream:#f3efe8;--pitch-green:#ab2a33}
+.pitch-construction .pitch-brand-mark,.pitch-construction .pitch-primary{background:#a92b33;color:#fff}
+.pitch-construction .pitch-chapters button[aria-selected=true]{background:#792a32;border-color:#cb7479;color:#fff}
+.pitch-construction h1 em{color:#e8b5a3}
+.pitch-construction .pitch-status-dot{background:#e39b84}
+.pitch-construction .pitch-panel-dark{background:#1c2931;border-color:#465058}
+.construction-intro-preview{justify-content:center}
+.construction-intro-preview .pitch-app-capture{min-height:0}
+.construction-live-layout{display:grid;grid-template-columns:minmax(250px,.65fr) minmax(0,1.65fr);height:100%;gap:20px;min-height:0}
+.construction-live-layout>aside{overflow:auto}
+.construction-steps{padding-left:20px;display:grid;gap:12px;line-height:1.5}
+.construction-live-frame{padding:0!important;display:flex;flex-direction:column;overflow:hidden;min-height:400px}
+.construction-live-frame iframe{border:0;width:100%;flex:1;min-height:330px;background:#172d32}
+.construction-live-caption{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 15px;font-size:11px;flex-wrap:wrap}
+.construction-source-card{justify-content:center}
+.construction-dimension{font-size:clamp(25px,3vw,44px);font-weight:650;letter-spacing:-.03em}
+.construction-dimension small{font-size:16px;font-weight:400}
+.construction-block-symbol{width:180px;height:87px;background:linear-gradient(135deg,#d8d7ce,#979e9e);border:6px solid #bec3be;border-radius:4px;display:flex;gap:17px;padding:13px 16px;transform:skewY(-8deg);box-shadow:13px 15px 0 #667577,19px 22px 24px #07131555;margin:10px 0 24px}
+.construction-block-symbol span{background:#465153;flex:1;border:4px solid #858e8d;border-bottom-color:#bdc2bc;border-radius:3px}
+.construction-block-symbol.is-u{border-top-width:0}
+.construction-block-symbol.is-u span{border-top:0}
+.construction-phase-picker{display:grid;gap:8px}
+.construction-phase-picker button{padding:12px;border:1px solid #c9d1c8;border-radius:10px;text-align:left;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.construction-phase-picker button[aria-pressed=true]{background:#792a32;color:#fff;border-color:#792a32}
+.construction-schedule{padding:0;list-style:none;display:grid;gap:16px;align-content:start}
+.construction-schedule li{display:grid;grid-template-columns:1fr auto;gap:7px 16px;padding:16px 0;border-bottom:1px solid #ffffff25}
+.construction-schedule li>span{font-size:14px;font-weight:650}
+.construction-schedule time{font-size:14px;color:#efc2b1;font-variant-numeric:tabular-nums}
+.construction-schedule small{grid-column:1/-1;color:#b0bfbe}
+@media(max-width:900px){.construction-live-layout{grid-template-columns:minmax(230px,.8fr) minmax(0,1.2fr);gap:12px}.construction-live-layout .pitch-panel{padding:18px}}
+@media(max-width:760px){.construction-live-layout{height:auto;display:flex;flex-direction:column}.construction-live-frame{height:640px;min-height:560px}.construction-live-frame iframe{min-height:500px}.construction-intro-preview{min-height:380px!important}.construction-schedule li{grid-template-columns:1fr}.construction-live-caption{font-size:10px}.construction-source-card{min-height:430px!important}}

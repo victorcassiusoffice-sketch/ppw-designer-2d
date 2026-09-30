@@ -201,6 +201,8 @@ interface DesignerUIState {
    * opening it puts the tool away, so it never shares the right edge with
    * the Floor / Wall paint panels.
    */
+  materialsPanelOpen: boolean;
+  setMaterialsPanelOpen: (open: boolean) => void;
   energyPanelOpen: boolean;
   setEnergyPanelOpen: (open: boolean) => void;
   /** 3D Mode (2026-09-17) — see `ViewMode`. */
@@ -278,6 +280,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
         scope: 'wall',
         erase: false,
       },
+      materialsPanelOpen: false,
       energyPanelOpen: false,
       // A blank plan opens in Plan: you draw first, then walk it in 3D. The
       // furnished routes (/demo, /embed, /studio/designer?view=3d and the
@@ -288,8 +291,9 @@ export const useDesignerUIStore = create<DesignerUIState>()(
       setWallView: (view) => set((s) => (s.wallView === view ? s : { wallView: view })),
       sunHour: null,
       setSunHour: (hour) => set((s) => (s.sunHour === hour ? s : { sunHour: hour })),
+      setMaterialsPanelOpen: (open) => set(s => open ? { materialsPanelOpen: true, energyPanelOpen: false, tool: 'hand' } : s.materialsPanelOpen ? { materialsPanelOpen: false } : s),
       setEnergyPanelOpen: (open) =>
-        set((s) => (open ? { energyPanelOpen: true, tool: 'hand' } : s.energyPanelOpen ? { energyPanelOpen: false } : s)),
+        set((s) => (open ? { energyPanelOpen: true, materialsPanelOpen: false, tool: 'hand' } : s.energyPanelOpen ? { energyPanelOpen: false } : s)),
       selectedWallId: null,
       selectWall: (id) => set((s) => (s.selectedWallId === id ? s : { selectedWallId: id })),
       lastIndoorRoomId: null,
@@ -318,6 +322,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
                 tool,
                 // A build tool takes the right edge; the Energy panel yields.
                 energyPanelOpen: false,
+                materialsPanelOpen: false,
                 // ...and a picked wall belongs to the Select tool only.
                 selectedWallId: null,
                 doorDraft: {
@@ -331,6 +336,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
             : {
               tool,
               energyPanelOpen: tool === 'hand' ? s.energyPanelOpen : false,
+              materialsPanelOpen: tool === 'hand' ? s.materialsPanelOpen : false,
               // A different tool means the picked wall is no longer picked.
               selectedWallId: tool === 'hand' ? s.selectedWallId : null,
             },

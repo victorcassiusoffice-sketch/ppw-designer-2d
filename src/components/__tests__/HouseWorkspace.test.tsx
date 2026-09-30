@@ -43,6 +43,42 @@ function button(label: string) {
 }
 
 describe('HouseWorkspace controls', () => {
+  it('opens the Materials inspector on an initial deep-link render after selection state is initialized', () => {
+    props.mode = 'materials';
+    props.inspector = <section aria-label="Materials quantity estimate">Blocks, mortar and concrete quantities</section>;
+    render();
+    const inspector = host.querySelector('.house-inspector.is-open');
+    expect(inspector).not.toBeNull();
+    expect(inspector?.querySelector('[aria-label="Materials quantity estimate"]')?.textContent).toContain('Blocks, mortar and concrete');
+    expect(button('Details').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Products and cost').getAttribute('aria-expanded')).toBe('false');
+    expect(host.querySelector('[data-testid="scene"]')).not.toBeNull();
+  });
+
+  it('reopens Materials when returning directly to its mode after closing its inspector', () => {
+    props.mode = 'materials';
+    props.inspector = <section aria-label="Materials quantity estimate">Measured wall quantities</section>;
+    render();
+    click(button('Close house details'));
+    expect(host.querySelector('.house-inspector.is-open')).toBeNull();
+    click(host.querySelector<HTMLButtonElement>('[data-testid="house-mode-materials"]')!);
+    expect(props.onMode).toHaveBeenLastCalledWith('materials');
+    expect(host.querySelector('.house-inspector.is-open [aria-label="Materials quantity estimate"]')).not.toBeNull();
+    click(button('Close house details'));
+    const furnish = host.querySelector<HTMLButtonElement>('[data-testid="house-mode-furnish"]')!;
+    click(furnish);
+    expect(props.onMode).toHaveBeenLastCalledWith('furnish');
+    props.mode = 'furnish';
+    render();
+    const materials = host.querySelector<HTMLButtonElement>('[data-testid="house-mode-materials"]')!;
+    click(materials);
+    expect(props.onMode).toHaveBeenLastCalledWith('materials');
+    props.mode = 'materials';
+    render();
+    expect(host.querySelector('.house-inspector.is-open [aria-label="Materials quantity estimate"]')?.textContent).toContain('Measured wall quantities');
+    expect(button('Details').getAttribute('aria-expanded')).toBe('true');
+  });
+
   it('keeps opening dimensions and swing in the shared Plan draft and exits with Done', () => {
     useDesignerUIStore.setState({ doorDraft: { kind: 'door', widthM: 0.838, flipFacing: false, flipHand: false } });
     props.buildTool = 'door'; props.onBuildTool = vi.fn();
@@ -69,19 +105,24 @@ describe('HouseWorkspace controls', () => {
     expect(levelsOf(usePropertyStore.getState().property).find(level => level.id === usePropertyStore.getState().property.activeLevelId)?.kind).toBe('roof');
   });
 
-  it('shows selected product descriptions and shared basket, then collapses without clearing selection', () => {
+  it('keeps selection compact until Product details is opened, then collapses without clearing selection', () => {
     const product = getAllProducts()[0];
     const id = usePropertyStore.getState().addItem({productId:product.id,x:2,y:2,rotation:0});
     props.selection = {id,productId:product.id,name:product.name,onDeselect:vi.fn()};
     render();
+    expect(host.querySelector('[data-testid="house-selection-strip"]')?.textContent).toContain(product.name);
+    expect(host.querySelector('[aria-label="Selected product description"]')).toBeNull();
+    expect(host.querySelector('.house-inspector.is-open')).toBeNull();
+    expect(button('Product details').getAttribute('aria-expanded')).toBe('false');
+    click(button('Product details'));
     expect(host.querySelector('[aria-label="Selected product description"]')?.textContent).toContain(product.name);
     expect(host.querySelector('[aria-label="Selected product description"]')?.textContent).toContain(product.supplier);
     expect(host.querySelector('.house-cost-lines')?.textContent).toContain(`1 × ${product.name}`);
     expect(host.querySelector('[data-testid="house-cost-total"]')?.textContent).toBe(host.querySelector('.house-cost-pill strong')?.textContent);
-    click(button('Products and cost'));
+    click(button('Product details'));
     expect(host.querySelector('.house-inspector.is-open')).toBeNull();
     expect(props.selection.onDeselect).not.toHaveBeenCalled();
-    click(button('Products and cost'));
+    click(button('Product details'));
     const away = new CustomEvent('ppw:house-scene-pointer', {cancelable:true});
     act(() => window.dispatchEvent(away));
     expect(away.defaultPrevented).toBe(false);

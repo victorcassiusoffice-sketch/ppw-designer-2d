@@ -41,6 +41,7 @@ import { PageTabs } from './components/PageTabs';
 import { TopBar } from './components/TopBar';
 import { CoachMark } from './components/uxKit';
 import { RoomCanvas } from './components/RoomCanvas';
+import { PlanAnalysisWorkspace } from './components/PlanAnalysisWorkspace';
 import { PlanGardenWorkspace } from './components/PlanGardenWorkspace';
 import { DetailsPanel } from './components/DetailsPanel';
 import { ToastProvider } from './components/ToastProvider';
@@ -380,6 +381,7 @@ export default function App() {
             item is selected (see DetailsPanel). */}
         <DetailsPanel armedProductId={pendingProductId} />
         <PlanGardenWorkspace />
+        <PlanAnalysisWorkspace />
       </main>
       {/* Desktop Sims catalog dock (>= 1024 px). Mounted BEFORE
           SimsBottomToolbar so a `[data-product-id=...]` .first() in the e2e

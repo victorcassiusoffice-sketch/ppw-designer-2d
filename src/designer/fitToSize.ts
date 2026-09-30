@@ -154,16 +154,19 @@ export function fitToSize(input: FitInput): FitResult {
     swapped = turned + EPS < asIs;
   }
 
-  // Scale in the model's own frame so that, once it is turned into the plan
-  // frame, x spans the length and z the width.
-  const sx = (swapped ? W : L) / ex;
-  const sz = (swapped ? L : W) / ez;
-  const sy = H / ey;
-
   // Yaw: bring the model's front to +z, then turn a swapped model by 90° so
   // its length lies along x, then turn the front onto the catalog's edge.
   const swapYaw = swapped ? Math.PI / 2 : 0;
   const yawRad = normalise(modelFrontYawRad(input.modelFront) + swapYaw + frontEdgeYawRad(input.frontEdge));
+
+  // Fit against the FINAL heading. Front metadata can add another quarter
+  // turn, so `swapped` alone is not enough: scaling first by that flag made
+  // a left-facing 2 × 0.9 m product occupy 0.9 × 2 m in the scene even at
+  // rotation zero. Every allowed facing is an exact quarter turn.
+  const finalAxesSwapped = Math.abs(Math.sin(yawRad)) > 0.5;
+  const sx = (finalAxesSwapped ? W : L) / ex;
+  const sz = (finalAxesSwapped ? L : W) / ez;
+  const sy = H / ey;
 
   // Offset: the scaled box's footprint centre at the origin, its base on the ground.
   const cx = ((bbox.min.x + bbox.max.x) / 2) * sx;

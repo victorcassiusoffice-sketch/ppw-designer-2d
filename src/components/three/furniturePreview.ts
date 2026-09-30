@@ -1,5 +1,5 @@
 /**
- * Dimensional furniture previews for the existing, sourced Courts range.
+ * Dimensional furniture previews for the sourced indoor and Mauritius outdoor range.
  * These are purpose-built planning silhouettes, NOT manufacturer models or
  * product photographs. The catalog remains the source of size and price;
  * no extra objects are placed and an available product GLTF takes priority.
@@ -47,13 +47,13 @@ class Parts {
   private readonly materials = new Map<string, THREE.MeshStandardMaterial>();
   private readonly maps = new Map<string, THREE.DataTexture>();
 
-  material(name: string, color: string, finish: 'fabric' | 'weave' | 'wood' | 'metal' | 'stone' | 'glass' | 'enamel' | 'screen' | 'rubber' = 'wood'): THREE.MeshStandardMaterial {
+  material(name: string, color: string, finish: 'fabric' | 'weave' | 'wood' | 'metal' | 'stone' | 'glass' | 'enamel' | 'screen' | 'rubber' | 'plastic' = 'wood'): THREE.MeshStandardMaterial {
     const existing = this.materials.get(name);
     if (existing) return existing;
     const soft = finish === 'fabric' || finish === 'weave';
     const material = new THREE.MeshPhysicalMaterial({
       color,
-      roughness: finish === 'fabric' ? 0.88 : finish === 'weave' || finish === 'rubber' ? 0.94 : finish === 'metal' ? 0.34 : finish === 'stone' ? 0.4 : finish === 'glass' || finish === 'screen' ? 0.16 : finish === 'enamel' ? 0.28 : 0.63,
+      roughness: finish === 'fabric' ? 0.88 : finish === 'weave' || finish === 'rubber' ? 0.94 : finish === 'metal' ? 0.34 : finish === 'stone' ? 0.4 : finish === 'glass' || finish === 'screen' ? 0.16 : finish === 'enamel' ? 0.28 : finish === 'plastic' ? 0.52 : 0.63,
       metalness: finish === 'metal' ? 0.65 : 0,
       sheen: soft ? 0.22 : 0,
       sheenRoughness: 0.8,
@@ -525,6 +525,73 @@ function rollerBlind(p: Parts, w: number, d: number, h: number, id: string): voi
   p.rod('pull chain', new THREE.Vector3(w * 0.47, h - railH, d * 0.42), new THREE.Vector3(w * 0.47, h * 0.45, d * 0.42), Math.min(0.003, d * 0.05), chain);
 }
 
+/** Original material-aware shapes; catalogue overall dimensions remain the
+ * envelope. No joinery dimensions or exact manufacturer CAD are implied. */
+function gardenTable(p: Parts, w: number, d: number, h: number, id: string): void {
+  const frame = p.material('powder coated garden frame', '#555b60', 'metal');
+  const top = p.material('garden table top', '#707679', 'metal');
+  const feet = p.material('garden foot caps', '#24282a', 'rubber');
+  const thick = Math.min(0.035, h * 0.06);
+  p.box('outdoor table surface', [w, thick, d], [0, h - thick / 2, 0], top, 0.012);
+  if (id.includes('mistral')) {
+    for (const z of [-d * 0.35, d * 0.35]) {
+      p.rod('folding cross leg', new THREE.Vector3(-w * 0.37, 0.015, z), new THREE.Vector3(w * 0.33, h - thick, z), 0.014, frame);
+      p.rod('folding cross leg', new THREE.Vector3(w * 0.37, 0.015, z), new THREE.Vector3(-w * 0.33, h - thick, z), 0.014, frame);
+    }
+    for (const x of [-w * 0.37, w * 0.37]) for (const z of [-d * 0.35, d * 0.35])
+      p.box('non-slip foot', [0.035, 0.025, 0.04], [x, 0.0125, z], feet, 0.004);
+  } else {
+    p.legs(w, d, h - thick, frame, 0.06);
+    for (const z of [-d * 0.43, d * 0.43]) p.box('aluminium apron', [w * 0.9, 0.06, 0.025], [0, h - thick - 0.03, z], frame, 0.004);
+    // A closed centre seam, not a second unsupported 270 cm placement.
+    p.box('closed extension seam', [0.002, 0.0005, d * 0.95], [0, h - 0.0005, 0], frame);
+  }
+}
+
+function gardenChair(p: Parts, w: number, d: number, h: number, id: string): void {
+  const armchair = id.includes('1798');
+  const shell = p.material('moulded polypropylene', armchair ? '#777d80' : '#e8e8e3', 'plastic');
+  const seatHeight = h * 0.52;
+  const legWidth = Math.min(w, d) * 0.065;
+  for (const x of [-1, 1]) for (const z of [-1, 1]) {
+    const leg = p.box('moulded chair leg', [legWidth, seatHeight, legWidth], [x * w * 0.39, seatHeight / 2, z * d * 0.39], shell, legWidth * 0.25);
+    leg.rotation.z = x * -0.04;
+    leg.rotation.x = z * 0.04;
+  }
+  p.box('outdoor chair seat', [w * 0.94, h * 0.055, d * 0.91], [0, seatHeight, 0.01 * d], shell, 0.018);
+  // Open slats reveal the ground and catch light; no box behind the chair.
+  for (const side of [-1, 1]) p.box('chair back edge', [w * 0.045, h * 0.46, d * 0.08], [side * w * 0.43, h * 0.76, -d * 0.415], shell, 0.008);
+  for (let i = 0; i < 4; i++) p.box('chair back slat', [w * 0.9, h * 0.062, d * 0.055], [0, h * (0.66 + i * 0.1), -d * 0.42], shell, 0.009);
+  if (armchair) for (const side of [-1, 1]) {
+    p.box('armrest', [w * 0.06, h * 0.035, d * 0.82], [side * w * 0.47, h * 0.73, 0], shell, 0.01);
+    p.box('arm support', [w * 0.045, h * 0.2, d * 0.055], [side * w * 0.47, h * 0.625, d * 0.32], shell, 0.006);
+  }
+}
+
+function gardenSwing(p: Parts, w: number, d: number, h: number): void {
+  const steel = p.material('swing steel frame', '#596068', 'metal');
+  const canvas = p.material('swing canopy fabric', '#767f85', 'fabric');
+  const cushion = p.material('outdoor seat cushions', '#b3b0a6', 'fabric');
+  const radius = Math.min(w, d) * 0.015;
+  for (const side of [-1, 1]) {
+    const top = new THREE.Vector3(side * w * 0.43, h * 0.9, 0);
+    for (const z of [-1, 1]) p.rod('swing A-frame', new THREE.Vector3(side * w * 0.45, radius, z * d * 0.44), top, radius, steel);
+    p.rod('swing side brace', new THREE.Vector3(side * w * 0.444, h * 0.25, -d * 0.31), new THREE.Vector3(side * w * 0.444, h * 0.25, d * 0.31), radius * 0.65, steel);
+    for (const z of [-1, 1]) p.rod('suspended seat hanger', new THREE.Vector3(side * w * 0.32, h * 0.88, 0), new THREE.Vector3(side * w * 0.32, h * 0.28, z * d * 0.22), radius * 0.5, steel);
+  }
+  p.rod('swing cross beam', new THREE.Vector3(-w * 0.45, h * 0.9, 0), new THREE.Vector3(w * 0.45, h * 0.9, 0), radius, steel);
+  p.box('three seat bench', [w * 0.71, h * 0.035, d * 0.5], [0, h * 0.28, 0], steel, 0.008);
+  for (let i = -1; i <= 1; i++) {
+    p.box('individual outdoor seat cushion', [w * 0.232, h * 0.045, d * 0.48], [i * w * 0.237, h * 0.32, 0], cushion, 0.02);
+    const back = p.box('outdoor back cushion', [w * 0.232, h * 0.29, d * 0.055], [i * w * 0.237, h * 0.475, -d * 0.21], cushion, 0.022);
+    back.rotation.x = -0.12;
+  }
+  for (const side of [-1, 1]) {
+    const roof = p.box('sloped fabric canopy', [w, 0.014, d * 0.51], [0, h * 0.95, side * d * 0.235], canvas, 0.005);
+    roof.rotation.x = side * 0.16;
+  }
+}
+
 /** Returns null for every product without an explicitly supported preview. */
 export function furniturePreview(it: ItemSolid): THREE.Group | null {
   const kind = furniturePreviewKind(it.productId);
@@ -547,6 +614,10 @@ export function furniturePreview(it: ItemSolid): THREE.Group | null {
     case 'foot-spa': footSpa(p, w, d, h); break;
     case 'rug': rug(p, w, d, h); break;
     case 'roller-blind': rollerBlind(p, w, d, h, it.productId!); break;
+    case 'garden-table': gardenTable(p, w, d, h, it.productId!); break;
+    case 'garden-chair': gardenChair(p, w, d, h, it.productId!); break;
+    case 'garden-swing': gardenSwing(p, w, d, h); break;
+    case 'hanging-chair': return null; // No verified overall-size product yet.
   }
   const model = p.merge();
   model.rotation.y = it.frontEdge === 'top' ? Math.PI : it.frontEdge === 'left' ? -Math.PI / 2 : it.frontEdge === 'right' ? Math.PI / 2 : 0;

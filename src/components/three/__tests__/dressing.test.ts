@@ -31,6 +31,10 @@ describe('dressing — contact shadows, lamps, door runs (3D Mode P3)', () => {
     expect(light.castShadow).toBe(false);
     expect(light.decay).toBe(2);
     expect(glow.position.equals(light.position)).toBe(true);
+    // A spherical light's reach at floor level matches the plan radius.
+    expect(light.distance).toBeCloseTo(Math.hypot(3.5, 2.3));
+    const upstairs = nightLight({ ...ITEM, floorElevationM: 3, z0: 3 }, 5.3);
+    expect(upstairs.light.distance).toBeCloseTo(light.distance);
     expect(lampsOnFactor(30)).toBe(0);
     expect(lampsOnFactor(8)).toBe(0);
     expect(lampsOnFactor(3)).toBeCloseTo(0.5, 5);

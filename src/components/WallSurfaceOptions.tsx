@@ -20,7 +20,7 @@ export function WallSurfaceOptions({ compact = false, materialsOnly = false }: {
     <button type="button" onClick={() => { setDraft({ operation: 'paint' }); chooseSide(draft.side === 'exterior' ? 'interior' : 'exterior'); }} title="Switch between painting the inside and outside face">
       {draft.side === 'exterior' ? 'Outside' : 'Inside'} ↔
     </button>
-    <button type="button" onClick={() => { setDraft({ operation: 'construction', erase: false }); window.dispatchEvent(new CustomEvent('ppw:open-wall-materials')); }}>Materials</button>
+    <button type="button" onClick={() => { setDraft({ operation: 'construction', erase: false }); window.dispatchEvent(new CustomEvent('ppw:open-wall-materials')); }}>Wall type</button>
   </div>;
   return <section className="wall-surface-options" aria-label="Wall surface and paint side">
     {!materialsOnly && <div className="wall-surface-tabs" role="group" aria-label="Wall tool">

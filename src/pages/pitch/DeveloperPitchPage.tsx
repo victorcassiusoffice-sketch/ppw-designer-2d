@@ -20,6 +20,8 @@ const BUILT_TODAY = [
   'Colour-true paint: a wall shows the picked shade in every view · TintEX and Sofap ranges with real tin prices',
   'Floors, roof and solar with a plain-English energy meter',
   'Garden, paving and a Duraco water tank',
+  'Optional Materials: blocks, mortar, concrete and roof quantity estimates from the shared design, with editable assumptions',
+  'Measured garden products from Mr. Bricolage Mauritius and JKalachand; supplier confirmation required',
   'Real merchant catalogues: the Courts range and the Cap Tamarin two-bedroom scene',
   'Read-only demo: nothing is ordered from the demo',
 ];

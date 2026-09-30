@@ -287,3 +287,18 @@
 @media (max-width: 359px) {
   .plan-pill-group > button { padding: 0 5px; }
 }
+
+/* Camera/readout controls are a reserved edge row, never cards over the house. */
+.designer-app[data-view="plan"] .plan-view-toolbar { display:flex; align-items:center; gap:6px; flex-shrink:0; padding:4px 8px; background:#e7e8e1; border-bottom:1px solid #bec7c4; min-height:48px; }
+.designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools { display:flex; flex-direction:row; align-items:center; flex-wrap:wrap; gap:5px; min-width:0; padding:0; }
+.designer-app[data-view="plan"] .plan-view-toolbar [data-testid="canvas-chrome-toggle"] { height:38px; min-height:38px; flex-shrink:0; margin:0; }
+.designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools>div:first-child { padding:2px; }
+.designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools>div:first-child>button { height:36px; min-height:36px; width:36px; min-width:36px; }
+.designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools[data-open="false"]>:not(:first-child) { display:none; }
+.designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools[data-open="true"] [data-testid="energy-readout"] { border-radius:20px; font-size:10px; min-height:32px; }
+@media(max-width:767px) {
+ .designer-app[data-view="plan"] .plan-view-toolbar { padding:3px 4px; gap:4px; align-items:flex-start; }
+ .designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools>div:first-child>button { height:40px; min-height:40px; width:40px; min-width:40px; }
+ .designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools>div:first-child>button:nth-child(n+4) { display:none; }
+ .designer-app[data-view="plan"] .plan-view-toolbar [data-testid="canvas-chrome-toggle"] { height:44px; min-height:44px; }
+}

@@ -8,6 +8,7 @@
  */
 
 import catalogJson from './products.json';
+import { MAURITIUS_OUTDOOR_PRODUCTS } from './mauritiusOutdoor';
 import { getApiProductFromCache } from './apiCatalogAdapter';
 import { demoProductById, demoProducts } from '../demo/demoCatalog';
 import type {
@@ -17,7 +18,8 @@ import type {
   Region,
 } from './products.schema';
 
-const catalog = catalogJson as unknown as ProductCatalog;
+const seed = catalogJson as unknown as ProductCatalog;
+const catalog: ProductCatalog = { ...seed, products: [...seed.products, ...MAURITIUS_OUTDOOR_PRODUCTS] };
 
 export function getCatalog(): ProductCatalog {
   return catalog;

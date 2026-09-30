@@ -181,6 +181,12 @@ describe('the whole seed, row by row (2026-09-20)', () => {
     'emcar-victron-mppt-100-30': [null, 0],
     // A water tank stores water, not power: explicit energy_role 'none', no row, 0 W.
     'duraco-water-tank-1000': [null, 0],
+    // Sourced outdoor furniture is passive: no invented electrical demand.
+    'mrbricolage-mistral-70': ['accessory', 0],
+    'mrbricolage-aurore-135': ['accessory', 0],
+    'jkalachand-1798-e': [null, 0],
+    'jkalachand-1799-w': [null, 0],
+    'jkalachand-gs1004-swing': [null, 0],
   };
 
   it('every seed product lands on the expected row with the expected watts', () => {

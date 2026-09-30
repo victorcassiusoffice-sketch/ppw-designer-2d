@@ -5,12 +5,12 @@ import type { DemoScene } from '../../demo/demoRoute';
 import './pitch.css';
 
 export function PitchShell({ audience, chapters, chapter, onChapter, children }: {
-  audience: 'Developers' | 'Merchants'; chapters: readonly string[]; chapter: number; onChapter: (chapter: number) => void; children: ReactNode;
+  audience: 'Developers' | 'Merchants' | 'Construction'; chapters: readonly string[]; chapter: number; onChapter: (chapter: number) => void; children: ReactNode;
 }) {
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   useEffect(() => {
     const previous = document.title;
-    document.title = `${audience === 'Developers' ? 'Property Developer' : 'Merchant'} Experience | PPW Studio`;
+    document.title = `${audience === 'Developers' ? 'Property Developer' : audience === 'Construction' ? 'Construction & Materials' : 'Merchant'} Experience | PPW Studio`;
     return () => { document.title = previous; };
   }, [audience]);
   const navigate = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
@@ -19,7 +19,7 @@ export function PitchShell({ audience, chapters, chapter, onChapter, children }:
     const next = event.key === 'Home' ? 0 : event.key === 'End' ? chapters.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + chapters.length) % chapters.length;
     onChapter(next); buttons.current[next]?.focus();
   };
-  return <main className="pitch-app">
+  return <main className={`pitch-app${audience === 'Construction' ? ' pitch-construction' : ''}`}>
     <header className="pitch-header"><a className="pitch-brand" href="/studio" aria-label="PPW Studio home"><span className="pitch-brand-mark">P<span>·</span></span><span>PPW <strong>STUDIO</strong></span></a>
       <span className="pitch-audience">For {audience.toLowerCase()}</span>
       <nav aria-label="Pitch links"><a href={audience === 'Developers' ? '/pitch/merchants' : '/pitch/developers'}>{audience === 'Developers' ? 'For merchants' : 'For developers'}</a><a className="pitch-meeting" href={MEETING_URL} target="_blank" rel="noreferrer">Meet Victor <span aria-hidden="true">↗</span></a></nav>
@@ -28,7 +28,7 @@ export function PitchShell({ audience, chapters, chapter, onChapter, children }:
       {chapters.map((label, index) => <button key={label} ref={(node) => { buttons.current[index] = node; }} type="button" role="tab" id={`pitch-tab-${index}`} aria-selected={chapter === index} aria-controls="pitch-stage" tabIndex={chapter === index ? 0 : -1} onClick={() => onChapter(index)} onKeyDown={(event) => navigate(event, index)}><span>{String(index + 1).padStart(2, '0')}</span>{label}</button>)}
     </div>
     <section id="pitch-stage" role="tabpanel" aria-labelledby={`pitch-tab-${chapter}`} tabIndex={0} className="pitch-stage" key={chapter}>{children}</section>
-    <footer className="pitch-footer"><span><span className="pitch-status-dot" /> Real design tools. A workflow built around you.</span><div><a href="/studio">Studio</a><a href="/demo">Explore the demo ↗</a><button type="button" onClick={() => onChapter((chapter + 1) % chapters.length)} aria-label={chapter === chapters.length - 1 ? 'Return to first chapter' : 'Next chapter'}>{chapter === chapters.length - 1 ? 'Start again' : 'Next chapter'} <span aria-hidden="true">→</span></button></div></footer>
+    <footer className="pitch-footer"><span><span className="pitch-status-dot" /> Real design tools. A workflow built around you.</span><div><a href="/pitch/construction">Materials</a><a href="/studio">Studio</a><a href="/demo">Explore the demo ↗</a><button type="button" onClick={() => onChapter((chapter + 1) % chapters.length)} aria-label={chapter === chapters.length - 1 ? 'Return to first chapter' : 'Next chapter'}>{chapter === chapters.length - 1 ? 'Start again' : 'Next chapter'} <span aria-hidden="true">→</span></button></div></footer>
   </main>;
 }
 

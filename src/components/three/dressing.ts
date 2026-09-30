@@ -14,6 +14,9 @@
  */
 import * as THREE from 'three';
 import type { FloorSolid, ItemSolid, WallOpeningSolid, WallSolid } from '../../designer/roomSolids';
+import { getProductById } from '../../data/products';
+import { lightPreviewProfile } from '../../designer/lighting';
+export { lampsOnFactor } from '../../designer/lighting';
 import { GROUND_HEX } from '../../designer/roomView3d';
 import { cornerShadeTexture, floorSurface, groundTexture, skyTexture, softShadowTexture, type FloorKind } from './surfaces';
 import { doorRuns } from './joinery';
@@ -209,6 +212,7 @@ export function contactShadow(it: ItemSolid): THREE.Mesh | null {
 export interface NightLight {
   light: THREE.PointLight;
   glow: THREE.Mesh;
+  baseIntensity: number;
 }
 
 /**
@@ -217,20 +221,20 @@ export interface NightLight {
  * the floor (a pendant hangs from the ceiling, a sconce sits at 1.7 m, a
  * floor lamp's shade is near its top).
  */
-export function nightLight(it: ItemSolid, mountM: number, intensity = 22): NightLight {
+export function nightLight(it: ItemSolid, mountM: number, intensity?: number): NightLight {
   const x = (it.x0 + it.x1) / 2;
   const z = (it.y0 + it.y1) / 2;
-  const light = new THREE.PointLight(0xffd9a3, intensity, 8, 2);
+  const product = it.productId ? getProductById(it.productId) : undefined;
+  const profile = lightPreviewProfile(product ?? { name: 'Lamp', category: 'lighting',
+    dimensions_cm: { length: it.lengthM * 100, width: it.widthM * 100, height: it.heightM * 100 } },
+  mountM - (it.floorElevationM ?? 0));
+  const baseIntensity = intensity ?? profile.intensityCd;
+  const light = new THREE.PointLight(profile.colorHex, baseIntensity, profile.rangeM, profile.decay);
   light.position.set(x, mountM, z);
   light.castShadow = false;
   light.userData = { key: `light-${it.key}`, nightLight: true };
   const glow = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffe9c4 }));
   glow.position.copy(light.position);
   glow.userData = { key: `glow-${it.key}`, nightLight: true };
-  return { light, glow };
-}
-
-/** Blend factor for the lamps: fully on below −2° sun, off above +8°. */
-export function lampsOnFactor(sunElevationDeg: number): number {
-  return Math.max(0, Math.min(1, (8 - sunElevationDeg) / 10));
+  return { light, glow, baseIntensity };
 }

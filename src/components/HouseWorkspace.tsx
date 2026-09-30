@@ -13,13 +13,14 @@ import { isShowcaseReadOnly, DEMO_NOTICE } from '../lib/showcaseSafety';
 import { DOOR_WIDTHS_M } from '../designer/openings';
 import './houseWorkspace.css';
 
-export type HouseMode = 'build' | 'furnish' | 'paint' | 'floor' | 'garden' | 'energy';
+export type HouseMode = 'build' | 'furnish' | 'paint' | 'floor' | 'garden' | 'energy' | 'materials';
 const MODES: Array<[HouseMode, string, string]> = [
   ['build', 'Build', 'm3 10 9-7 9 7M5 9v12h14V9M9 21v-7h6v7'],
   ['furnish', 'Furnish', 'M4 13V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6M3 12h3v5h12v-5h3v8H3v-8ZM5 20v2m14-2v2'],
   ['paint', 'Paint', 'M4 3h13v7H4V3Zm13 3h3v8H11v7'],
   ['floor', 'Surfaces', 'm3 8 9-5 9 5-9 5-9-5Zm0 5 9 5 9-5M3 18l9 5 9-5'],
   ['garden', 'Garden', 'M12 21v-9M12 15C4 15 3 9 4 5c5 0 8 3 8 7M12 12c0-6 4-9 9-9 0 6-3 10-9 10M6 21h12'],
+  ['materials', 'Materials', 'M3 4h18v16H3zM3 9h18M3 15h18M9 4v5m6 0v6M9 15v5'],
   ['energy', 'Solar', 'm13 2-9 12h7l-1 8 10-12h-7l1-8Z'],
 ];
 
@@ -72,8 +73,10 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
     return () => { document.removeEventListener('pointerdown', outside, true); window.removeEventListener('ppw:house-scene-pointer', scene); };
   }, [panelOpen]);
   useEffect(() => {
-    if (selection?.productId) { setCostOpen(true); setMobileInspector(false); }
+    setCostOpen(false); setMobileInspector(false);
   }, [selection?.id, selection?.productId]);
+  useEffect(() => { if (mode === 'materials') { setMobileInspector(true); setCostOpen(false); } }, [mode]);
+
   const canUndo = useHistoryStore((s) => s.past.length > 0);
   const canRedo = useHistoryStore((s) => s.future.length > 0);
   const rooms = property.rooms.filter((r) => isDrawnPolygon(r.polygon) && !isOutdoorRoom(r) && !isRoofRoom(r));
@@ -97,6 +100,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
   function toggleCost() {
     useDesignerUIStore.getState().setTool('hand');
     useDesignerUIStore.getState().setEnergyPanelOpen(false);
+    useDesignerUIStore.getState().setMaterialsPanelOpen(false);
     setMobileInspector(false); setCostOpen(!costOpen);
     window.dispatchEvent(new CustomEvent('ppw:close-catalog'));
     window.dispatchEvent(new CustomEvent('ppw:close-view-settings'));
@@ -115,7 +119,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
     </header>
     <div className="house-main">
       <nav className="house-rail" aria-label="House design tools">
-        {MODES.map(([id, label, path]) => <button key={id} type="button" aria-pressed={mode === id} title={label} onClick={() => { setCostOpen(false); const nextOpen = id === 'garden' || id === 'build' || id === 'energy'; onMode(id); setMobileInspector(nextOpen && !(mobileInspector && mode === id)); window.dispatchEvent(new CustomEvent('ppw:close-view-settings')); }} data-testid={`house-mode-${id}`}>
+        {MODES.map(([id, label, path]) => <button key={id} type="button" aria-pressed={mode === id} title={label} onClick={() => { setCostOpen(false); const nextOpen = id === 'garden' || id === 'build' || id === 'energy' || id === 'materials'; onMode(id); setMobileInspector(nextOpen && !(mobileInspector && mode === id)); window.dispatchEvent(new CustomEvent('ppw:close-view-settings')); }} data-testid={`house-mode-${id}`}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={path} /></svg><span>{label}</span>
         </button>)}
       </nav>
@@ -157,7 +161,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
       {(!externalPanel || costOpen) && <aside ref={inspectorRef} className={`house-inspector ${panelOpen ? 'is-open' : ''}`} aria-label="House details">
         <div className="house-summary">
           <div className="house-eyebrow">{costOpen ? 'PRODUCTS & COST' : selection ? 'ITEM OPTIONS' : 'HOME TOOLS'}<button className="house-close-details" aria-label="Close house details" onClick={() => { setMobileInspector(false); setCostOpen(false); }}>Close ×</button></div>
-          <h2>{costOpen ? 'Your design basket' : selection ? 'Selected item' : mode === 'energy' ? 'Solar & energy' : mode === 'garden' ? 'Garden & outdoors' : 'Build your home'}</h2><p>{costOpen ? 'Catalog products and measured finishes' : selection ? 'Drag the item in your design to move it' : mode === 'garden' ? 'Shape the space around your home' : 'Rooms, walls, floors, openings and roof'}</p>
+          <h2>{costOpen ? 'Your design basket' : selection ? 'Selected item' : mode === 'materials' ? 'Materials' : mode === 'energy' ? 'Solar & energy' : mode === 'garden' ? 'Garden & outdoors' : 'Build your home'}</h2><p>{costOpen ? 'Catalog products and measured finishes' : selection ? 'Drag the item in your design to move it' : mode === 'materials' ? 'Measured quantities · editable assumptions' : mode === 'garden' ? 'Shape the space around your home' : 'Rooms, walls, floors, openings and roof'}</p>
           {!selection && <div className="house-metrics"><div><strong>{totalArea.toFixed(1)}</strong><span>m² floor area</span></div><div><strong>{rooms.length}</strong><span>rooms</span></div><div><strong>{levelsOf(property).filter((l) => !isRoofLevel(l)).length}</strong><span>floors</span></div></div>}
         </div>
         <div className="house-inspector-content">{costOpen ? <HouseCostPanel productId={selection?.productId} onCart={onCart} onEdit={selection ? () => { setCostOpen(false); setMobileInspector(true); } : undefined} /> : inspector}</div>

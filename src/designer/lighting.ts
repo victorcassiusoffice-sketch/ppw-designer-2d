@@ -13,6 +13,7 @@
  */
 
 import type { PlanSymbol, Product } from '../data/products.schema';
+import { dayOfYear, sunAt } from './sunPosition';
 
 /** The product fields these helpers read; a full `Product` satisfies it. */
 export type LightingInput = Pick<Product, 'name' | 'category'> &
@@ -65,8 +66,41 @@ export function lightRadiusM(p: LightingInput): number {
   const d = p.dimensions_cm;
   // Multiply in whole centimetres, then convert: 3 x 40 cm is exactly 1.2 m,
   // where 3 x 0.4 would be 1.2000000000000002.
-  const derived = d ? (LIGHT_RADIUS_PER_LONG_SIDE * Math.max(d.length, d.width)) / 100 : 0;
+  const sides = d ? [d.length, d.width].filter(value => Number.isFinite(value) && value > 0) : [];
+  const derived = sides.length ? (LIGHT_RADIUS_PER_LONG_SIDE * Math.max(...sides)) / 100 : 0;
   return Math.min(MAX_LIGHT_RADIUS_M, Math.max(MIN_LIGHT_RADIUS_M, derived));
+}
+
+/** Shared colour and extent of illustrative lamp previews in Plan and 3D.
+ * This is a visual calibration, not a manufacturer's photometric/IES file
+ * or a lux compliance calculation. Watts alone cannot establish lumens. */
+export const LIGHT_PREVIEW_COLOUR = '#ffd9a3';
+export const LIGHT_PREVIEW_REFERENCE_CD = 26;
+
+export function lightPreviewProfile(p: LightingInput, mountHeightM = 1.5) {
+  const radiusM = lightRadiusM(p);
+  const heightM = Number.isFinite(mountHeightM) ? Math.max(0.15, mountHeightM) : 1.5;
+  // PointLight distance is a 3D sphere radius. A flat radius was cutting a
+  // pendant's light off before it reached the floor. Pythagoras gives the
+  // same horizontal coverage that Plan draws, at the actual source height.
+  return { radiusM, rangeM: Math.hypot(radiusM, heightM), intensityCd: LIGHT_PREVIEW_REFERENCE_CD,
+    colorHex: LIGHT_PREVIEW_COLOUR, decay: 2 as const };
+}
+
+/** Blend used by both views; neutral daylight must not tint catalog paint. */
+export function lampsOnFactor(sunElevationDeg: number): number {
+  return Number.isFinite(sunElevationDeg) ? Math.max(0, Math.min(1, (8 - sunElevationDeg) / 10)) : 0;
+}
+
+export function lampSceneFactor(hour: number | null, doy?: number): number {
+  if (hour === null || !Number.isFinite(hour)) return 0;
+  const today = new Date();
+  return lampsOnFactor(sunAt(hour, doy ?? dayOfYear(today.getMonth() + 1, today.getDate())).elevationDeg);
+}
+
+/** Plan uses the same warm source colour; alpha remains illustrative. */
+export function planLightGradientStops(): Array<number | string> {
+  return [0, 'rgba(255,217,163,0.42)', 0.55, 'rgba(255,217,163,0.22)', 1, 'rgba(255,217,163,0)'];
 }
 
 /** True when the product may be placed outside rooms (garden / plot). */

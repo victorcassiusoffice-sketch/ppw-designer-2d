@@ -44,7 +44,7 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { cameraPosition, GLASS_HEX, type OrbitCamera, type WallHit } from '../../designer/roomView3d';
 import { cutawayState, wallAnchor, type ItemSolid, type SceneSolids, type WallShow, type WallSolid } from '../../designer/roomSolids';
-import { fitToSize, itemPose, pitchedBox, upPitchRad } from '../../designer/fitToSize';
+import { bodyObject, bodyTemplate, productEnvelope, type BodyTemplate } from './productBody';
 import { dayOfYear, sunAt, sunColourHex } from '../../designer/sunPosition';
 import { BARE_PLASTER_HEX } from '../../data/wallPaints';
 import type { WallView } from '../../store/designerUIStore';
@@ -75,10 +75,6 @@ const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('/draco/');
 gltfLoader.setDRACOLoader(dracoLoader);
 
-interface BodyTemplate {
-  scene: THREE.Group;
-  bbox: THREE.Box3;
-}
 const bodyCache = new Map<string, Promise<BodyTemplate>>();
 
 function loadBody(url: string): Promise<BodyTemplate> {
@@ -96,49 +92,12 @@ function loadBody(url: string): Promise<BodyTemplate> {
           m.receiveShadow = true;
         }
       });
-      return { scene, bbox: new THREE.Box3().setFromObject(scene) };
+      return bodyTemplate(scene);
     });
     p.catch(() => bodyCache.delete(url));
     bodyCache.set(url, p);
   }
   return p;
-}
-
-/** The body for one placed item: fitted to its catalog box, posed on the plan. */
-function bodyObject(it: ItemSolid, tpl: BodyTemplate): THREE.Group {
-  // A flat product generated from a photo arrives as an upright slab: the
-  // `modelUp` pitch lays it down first, and the fit sees the pitched box.
-  const fit = fitToSize({
-    bbox: pitchedBox(tpl.bbox, it.modelUp),
-    lengthCm: it.lengthM * 100,
-    widthCm: it.widthM * 100,
-    heightCm: it.heightM * 100,
-    frontEdge: it.frontEdge,
-    modelFront: it.modelFront,
-    lengthAxis: it.lengthAxis,
-  });
-  const model = tpl.scene.clone(true);
-  // Own materials per placed item: a shared material would tint every copy
-  // of the product when one is selected or hovered.
-  model.traverse((o) => {
-    const m = o as THREE.Mesh;
-    if (m.isMesh) m.material = Array.isArray(m.material) ? m.material.map((x) => x.clone()) : (m.material as THREE.Material).clone();
-  });
-  const upright = new THREE.Group();
-  upright.rotation.set(upPitchRad(it.modelUp), 0, 0);
-  upright.add(model);
-  const inner = new THREE.Group();
-  inner.add(upright);
-  inner.scale.set(fit.scale.x, fit.scale.y, fit.scale.z);
-  inner.rotation.set(0, fit.yawRad, 0);
-  inner.position.set(fit.offset.x, fit.offset.y, fit.offset.z);
-  const pose = itemPose({ x: it.x0, y: it.y0, footprintW: it.x1 - it.x0, footprintH: it.y1 - it.y0, rotationDeg: it.rotationDeg, z0: it.z0 });
-  const holder = new THREE.Group();
-  holder.position.set(pose.centre.x, pose.centre.z, pose.centre.y);
-  holder.rotation.set(0, pose.yawRad, 0);
-  holder.add(inner);
-  holder.userData = { key: it.key, instanceId: it.instanceId, body: true };
-  return holder;
 }
 
 // ---------------------------------------------------------------------------
@@ -194,12 +153,13 @@ function coverTexture(tex: THREE.Texture, faceW: number, faceH: number): THREE.T
  * Group carrying `userData.instanceId`).
  */
 function artBox(it: ItemSolid, requestRender: () => void): THREE.Group {
-  const sx = Math.max(0.01, it.roofMount ? it.lengthM : it.x1 - it.x0);
-  const sy = Math.max(0.01, it.roofMount ? it.heightM : it.z1 - it.z0);
-  const sz = Math.max(0.01, it.roofMount ? it.widthM : it.y1 - it.y0);
+  const envelope = productEnvelope(it);
+  const sx = envelope.size.x;
+  const sy = envelope.size.y;
+  const sz = envelope.size.z;
   const root = new THREE.Group();
-  root.position.set((it.x0 + it.x1) / 2, it.z0 + sy / 2, (it.y0 + it.y1) / 2);
-  if (it.roofMount) root.rotation.y = -it.rotationDeg * Math.PI / 180;
+  root.position.copy(envelope.position);
+  root.rotation.y = envelope.yawRad;
   root.userData = { key: it.key, instanceId: it.instanceId, art: !!(it.artTopUrl || it.artSideUrl) };
   const base = new THREE.MeshStandardMaterial({ color: it.hex, roughness: ITEM_ROUGHNESS, metalness: 0.02 });
   const box: THREE.Mesh<THREE.BoxGeometry, THREE.Material | THREE.Material[]> = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), base);
@@ -232,7 +192,7 @@ function artBox(it: ItemSolid, requestRender: () => void): THREE.Group {
         );
         plane.rotation.x = -Math.PI / 2; // image top → plan north (−z)
         const turn = new THREE.Group();
-        turn.rotation.y = it.roofMount ? 0 : (-it.rotationDeg * Math.PI) / 180;
+        turn.rotation.y = 0; // The envelope already carries the saved item rotation.
         turn.position.y = sy / 2 + 0.003;
         turn.add(plane);
         root.add(turn);
@@ -351,7 +311,6 @@ const HEMI_DAY_SKY = new THREE.Color(0xffffff);
 const HEMI_DAY_GROUND = new THREE.Color(0xf2ede4);
 const HEMI_NIGHT_SKY = new THREE.Color(0x9db0d6);
 const HEMI_NIGHT_GROUND = new THREE.Color(0x3b3f4a);
-const LAMP_INTENSITY = 26;
 
 const toThree = (p: { x: number; y: number; z: number }): THREE.Vector3 => new THREE.Vector3(p.x, p.z, p.y);
 const SELECT_HEX = '#79C7AD';
@@ -772,7 +731,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       sunStateRef.current = null;
       if (skyRef.current && (skyRef.current.userData.day !== 1 || skyRef.current.userData.presentation !== presentation)) updateSkyDome(skyRef.current, 1, presentation);
       for (const l of lampsRef.current) {
-        l.light.intensity = LAMP_INTENSITY * profile.lampFactor;
+        l.light.intensity = l.baseIntensity * profile.lampFactor;
+        l.glow.visible = profile.lampFactor > 0;
         (l.glow.material as THREE.MeshBasicMaterial).color.set(profile.lampFactor > 0 ? 0xffe9c4 : 0xe9e2d3);
       }
       return;
@@ -796,7 +756,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     }
     const lamps = lampsOnFactor(s.elevationDeg);
     for (const l of lampsRef.current) {
-      l.light.intensity = LAMP_INTENSITY * lamps;
+      l.light.intensity = l.baseIntensity * lamps;
+      l.glow.visible = lamps > 0;
       (l.glow.material as THREE.MeshBasicMaterial).color.set(lamps > 0.5 ? 0xffe9c4 : 0xe9e2d3);
     }
   };

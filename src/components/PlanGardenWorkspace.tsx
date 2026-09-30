@@ -19,6 +19,7 @@ export function PlanGardenWorkspace() {
   const propertyId = usePropertyStore((s) => s.property.id);
   const armedProduct = usePlacementIntentStore((s) => s.armedProductId);
   const energyOpen = useDesignerUIStore((s) => s.energyPanelOpen);
+  const materialsOpen = useDesignerUIStore(s => s.materialsPanelOpen);
   const drawingWalls = useDrawProgressStore((s) => s.enabled);
   useEffect(() => {
     const show = () => {
@@ -27,6 +28,7 @@ export function PlanGardenWorkspace() {
       if (activeLevelIdOf(store.property) !== 'ground') store.setActiveLevel('ground');
       useDesignerUIStore.getState().setTool('hand');
       useDesignerUIStore.getState().setEnergyPanelOpen(false);
+      useDesignerUIStore.getState().setMaterialsPanelOpen(false);
       usePlacementIntentStore.getState().setArmed(null);
       useWallStore.getState().setDraw({ phase: 'idle' });
       useGardenEditorStore.getState().open();
@@ -36,8 +38,8 @@ export function PlanGardenWorkspace() {
     return () => { window.removeEventListener('ppw:open-garden', show); window.removeEventListener('ppw:edit-garden', show); };
   }, []);
   useEffect(() => {
-    if (view === '3d' || tool !== 'hand' || activeLevel !== 'ground' || armedProduct || energyOpen || drawingWalls) useGardenEditorStore.getState().close();
-  }, [view, tool, activeLevel, armedProduct, energyOpen, drawingWalls]);
+    if (view === '3d' || tool !== 'hand' || activeLevel !== 'ground' || armedProduct || energyOpen || materialsOpen || drawingWalls) useGardenEditorStore.getState().close();
+  }, [view, tool, activeLevel, armedProduct, energyOpen, materialsOpen, drawingWalls]);
   useEffect(() => () => useGardenEditorStore.getState().close(), [propertyId]);
   useEffect(() => {
     if (!open) return;

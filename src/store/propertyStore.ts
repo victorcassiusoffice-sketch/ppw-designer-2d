@@ -1,3 +1,4 @@
+import { normaliseMaterialsSettings, type MaterialsSettings } from '../designer/materials';
 /**
  * propertyStore — Week 2.5 multi-room model (Model A — separate
  * canvases per room, RoomSketcher-style). One Property contains many
@@ -302,6 +303,8 @@ export interface Room {
 }
 
 export interface Property {
+  /** Versioned estimating assumptions; persisted with every save and history snapshot. */
+  materials?: MaterialsSettings;
   id: string;
   name: string;
   activeRoomId: string;
@@ -643,6 +646,7 @@ export interface PropertyState {
   /** Rebuild the roof slabs (no-op without a roof). Returns true iff anything changed. */
   syncRoof: () => boolean;
   /** Roof shape and finish. Adds/synchronises the roof without changing floor focus. */
+  setMaterialsSettings: (settings: MaterialsSettings) => void;
   setRoofConfig: (config: RoofConfig | null) => void;
   /** Switch an electrical item on/off for the energy estimate (absent = on). */
   setItemPower: (instanceId: string, on: boolean) => void;
@@ -1613,6 +1617,8 @@ export const usePropertyStore = create<PropertyState>()(
         return true;
       },
 
+      setMaterialsSettings: (settings) => set(s => ({ property: { ...s.property, materials: normaliseMaterialsSettings(settings) } })),
+
       setRoofConfig: (config) =>
         set((s) => {
           if (config === null) {
@@ -1923,6 +1929,7 @@ export const usePropertyStore = create<PropertyState>()(
       merge: (persisted, current) => {
         const merged = { ...current, ...((persisted ?? {}) as Partial<PropertyState>) };
         if (merged.property) merged.property = normaliseGardenMetadata(normaliseBuildingMetadata(canonicalisePropertyWinding(merged.property)));
+        if (merged.property?.materials !== undefined) merged.property = { ...merged.property, materials: normaliseMaterialsSettings(merged.property.materials) };
         return merged;
       },
     },
@@ -1963,6 +1970,7 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   };
   // Every field below is OPTIONAL and only written when it carries something,
   // so a property saved before the Sims world round-trips byte-identical.
+  if (property.materials !== undefined) out.materials = normaliseMaterialsSettings(property.materials);
   if (levels) out.levels = levels;
   const activeRoom = rooms.find((r) => r.id === activeRoomId)!;
   const roomLevel = roomLevelId(activeRoom);
@@ -2127,6 +2135,7 @@ interface RawProperty {
   stairs?: unknown;
   roof?: unknown;
   garden?: unknown;
+  materials?: unknown;
 }
 
 export function normaliseLoadedRoom(r: RawRoom): Room {

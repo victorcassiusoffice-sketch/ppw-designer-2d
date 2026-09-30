@@ -24,7 +24,7 @@
  * doesn't clip them. Tap targets ≥44px.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../store/cartStore';
 import { isShowcaseReadOnly, DEMO_NOTICE } from '../lib/showcaseSafety';
@@ -82,6 +82,7 @@ export function CartStrip() {
   // The sheet is opened deliberately, so show the line items straight away.
   const [expanded, setExpanded] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  useEffect(() => { const open = () => setMobileOpen(true); window.addEventListener('ppw:open-design-cart', open); return () => window.removeEventListener('ppw:open-design-cart', open); }, []);
 
   // Vic 2026-08-29: a painted / whole-room floor with no product yet is
   // STILL a cart — the strip used to hide until the first product landed,

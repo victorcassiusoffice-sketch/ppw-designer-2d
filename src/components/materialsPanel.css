@@ -1,0 +1,24 @@
+.materials-panel { padding:16px; color:#dce9ec; font-size:12px; line-height:1.5; background:#16282e; }
+.materials-panel p { margin:6px 0 12px; }
+.materials-intro strong { font-size:16px; }.materials-intro p,.materials-note { color:#aec2c7; }
+.materials-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:14px 0; }
+.materials-metrics>div { border:1px solid #ffffff18; padding:10px; border-radius:12px; background:#0e1f24; }
+.materials-metrics strong { display:block; font-size:21px; font-weight:500; color:#9ce1e1; }.materials-metrics span { color:#b1c5ca; font-size:11px; }
+.materials-tabs { display:flex; border:1px solid #ffffff20; border-radius:99px; padding:3px; margin:12px 0 16px; background:#0c1e24; }
+.materials-tabs button { flex:1; padding:8px 3px; border-radius:99px; }.materials-tabs button[aria-pressed=true] { background:#355961; color:#fff; }
+.materials-fields { display:flex; flex-direction:column; gap:10px; }.materials-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.materials-field { display:flex; flex-direction:column; gap:4px; min-width:0; }.materials-field span { color:#b9d0d5; font-size:11px; }
+.materials-field input,.materials-field select { width:100%; min-width:0; min-height:38px; padding:7px 9px; color:#e4eff1; background:#0d2027; border:1px solid #415b63; border-radius:8px; }
+.materials-check { display:flex; align-items:center; gap:9px; padding:7px 0; }.materials-check input { width:18px; height:18px; accent-color:#71d1cf; }
+.materials-panel details { border-top:1px solid #ffffff20; padding-top:10px; margin-top:4px; }.materials-panel summary { cursor:pointer; padding:6px 0; color:#dfeff1; }.materials-panel details[open]>summary { margin-bottom:10px; }
+.materials-panel article { padding:10px 0; }.materials-panel a,.materials-link { color:#92dce0; text-decoration:underline; text-underline-offset:3px; text-align:left; }.materials-panel a:focus-visible,.materials-panel button:focus-visible,.materials-panel input:focus-visible,.materials-panel select:focus-visible,.materials-panel summary:focus-visible { outline:2px solid #80dce1; outline-offset:3px; }
+.materials-result summary span { display:inline-block; width:65%; }.materials-result summary strong { color:#9ce1e1; }.materials-export { border:1px solid #83bfca; border-radius:9px; padding:10px; background:#244952; }.materials-warnings { color:#e1cfad; }
+.plan-analysis-workspace { display:flex; flex-direction:column; flex:0 0 350px; width:350px; min-height:0; max-width:42vw; overflow:hidden; background:#16282e; color:#dce9ec; border-left:1px solid #ffffff22; }
+.plan-analysis-header { display:flex; flex:none; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid #ffffff22; }.plan-analysis-header button { padding:6px 9px; border-radius:20px; background:#29454e; }.plan-analysis-body { min-height:0; overflow:auto; overscroll-behavior:contain; }
+.plan-analysis-workspace.is-energy { display:none; }
+@media(min-width:768px) { .designer-app[data-view=plan]>main { padding-right:var(--floor-panel-w,0px); } }
+@media(max-width:767px) { .designer-app[data-view=plan]>main:has(.plan-analysis-workspace) { flex-direction:column; }.plan-analysis-workspace,.plan-analysis-workspace.is-energy { display:flex; width:100%; max-width:none; flex:0 1 36vh; min-height:140px; border-left:0; border-top:1px solid #ffffff22; }.materials-panel { padding:12px; }.plan-analysis-body { flex:1; } }
+
+.analysis-cart-summary{display:flex;flex:none;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-top:1px solid #ffffff24;background:#172c35;color:#b9d0d5;font-size:10px}.analysis-cart-summary strong{display:block;font-size:13px;color:#ddf2f2}.analysis-cart-summary button{min-height:38px;border:1px solid #5a7e85;border-radius:20px;padding:6px 10px;color:#dff5f4}.analysis-cart-summary button:disabled{opacity:.5}
+.designer-app[data-view=plan]:has(.plan-analysis-workspace) [data-testid=cart-pill]{display:none}
+body:has(.plan-analysis-workspace) button[aria-label="Open keyboard shortcuts help"]{left:8px;right:auto;bottom:8px;width:40px;min-width:40px}

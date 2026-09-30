@@ -1295,6 +1295,7 @@ export function TopBar({
   // store guarantees it never coexists with a build tool.
   const energyPanelOpen = useDesignerUIStore((s) => s.energyPanelOpen);
   const setEnergyPanelOpen = useDesignerUIStore((s) => s.setEnergyPanelOpen);
+  const materialsPanelOpen = useDesignerUIStore(s => s.materialsPanelOpen);
   const energyPanelOpenMd = isMd && energyPanelOpen;
   const sidePanelOpen = floorPanelOpen || wallPaintPanelOpen || claddingPanelOpen || energyPanelOpenMd;
   // Energy button (electrics fix 2026-09-20, E-07): the readout used to be
@@ -1303,12 +1304,8 @@ export function TopBar({
   // to press. md+ toggles the docked panel; below md it opens the phone
   // sheet scrolled to its Energy section, the way the paint HUDs do.
   function handleToggleEnergy(): void {
-    if (isMd) {
-      setEnergyPanelOpen(!energyPanelOpen);
-      return;
-    }
-    setSheetScrollTo('energy');
-    setShowMobileMenu(true);
+    setDrawMode(false);
+    setEnergyPanelOpen(!energyPanelOpen);
   }
   useLayoutEffect(() => {
     const root = document.documentElement;
@@ -1563,6 +1560,8 @@ export function TopBar({
           <Icon name="bolt" />
           <span className="plan-control-label">Solar</span>
         </button>
+
+        <button type="button" onClick={() => { setDrawMode(false); useDesignerUIStore.getState().setMaterialsPanelOpen(!materialsPanelOpen); }} className={btn(materialsPanelOpen)} title="Materials — wall, concrete and roof quantities" aria-label="Materials" aria-pressed={materialsPanelOpen} data-testid="materials-toggle"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M3 4h18v16H3zM3 9h18M3 15h18M9 4v5m6 0v6M9 15v5" /></svg><span className="plan-control-label">Materials</span></button>
 
         {/* 3D Mode (2026-09-17): the whole plan as a Sims-style room view;
             every tool keeps working inside it. Esc / Plan returns. */}

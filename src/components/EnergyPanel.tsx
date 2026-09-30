@@ -1,3 +1,4 @@
+import { AnalysisCartSummary } from './AnalysisCartSummary';
 /**
  * EnergyPanel — the sun-vs-use readout (eco / solar 2026-09-04).
  *
@@ -400,7 +401,7 @@ export interface EnergyPanelProps {
 /** md+ docked aside — TopBar portals it beside the Floor / Wall paint panels. */
 export function EnergyPanel({ top, width, onClose }: EnergyPanelProps): JSX.Element {
   useEffect(() => {
-    const scene = (event: Event) => { onClose(); event.preventDefault(); };
+    const scene = () => { onClose(); };
     const away = (event: PointerEvent) => {
       const target = event.target as HTMLElement | null;
       if (!target || target.closest('#ppw-energy-panel, [role="dialog"], [data-testid="wallpaint-3d-canvas"]')) return;
@@ -457,6 +458,7 @@ export function EnergyPanel({ top, width, onClose }: EnergyPanelProps): JSX.Elem
           Done
         </button>
       </div>
+      <AnalysisCartSummary />
     </aside>
   );
 }

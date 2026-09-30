@@ -21,7 +21,7 @@ beforeEach(() => {
     media: query, onchange: null, addEventListener() {}, removeEventListener() {},
   }));
   usePropertyStore.getState().resetToDefault();
-  useDesignerUIStore.setState({ viewMode: '3d', tool: 'hand', energyPanelOpen: false });
+  useDesignerUIStore.setState({ viewMode: '3d', tool: 'hand', energyPanelOpen: false, materialsPanelOpen: false });
   host = document.createElement('div');
   opener = document.createElement('button');
   opener.textContent = 'Project tools';
@@ -57,12 +57,12 @@ describe('3D project sheet and panel dismissal', () => {
     }));
     useDesignerUIStore.setState({ tool: 'wallpaint' });
     render();
-    const materials = button('Materials');
+    const materials = button('Wall type');
     materials.focus(); click(materials);
     return materials;
   }
 
-  it('opens phone Materials directly with three choices and no unrelated project menu', () => {
+  it('opens phone Wall type directly with three choices, separately from the Materials estimator', () => {
     const materials = phonePaint();
     const sheet = document.querySelector('[aria-labelledby="wall-material-sheet-title"]')!;
     expect(sheet).not.toBeNull();
@@ -80,7 +80,7 @@ describe('3D project sheet and panel dismissal', () => {
     expect(document.activeElement).toBe(materials);
   });
 
-  it.each(['Close wall materials', 'Dismiss wall materials', 'Escape'])('dismisses phone Materials through %s without leaving 3D', (exit) => {
+  it.each(['Close wall materials', 'Dismiss wall materials', 'Escape'])('dismisses phone Wall type through %s without leaving 3D', (exit) => {
     phonePaint();
     if (exit === 'Escape') escape(); else click(button(exit));
     expect(document.querySelector('[data-testid="wall-material-sheet-host"]')).toBeNull();
