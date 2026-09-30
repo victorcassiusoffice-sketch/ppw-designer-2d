@@ -1,22 +1,32 @@
-# Room Designer — Materials release checkpoint · 30 September 2026
+# Materials release checkpoint
 
-Active repository: C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer
-Branch: cursor/feat-3d-flooring-hud-bc95. Starting commit: 643f0068e46fb60e728b63c2ea1320e5ab284735.
+## Verified Materials release — 30 September 2026
 
-Victor explicitly authorized this release to main on 30 September: “Once done — Push to main, and demos where needed.” Previous no-main instructions are superseded for this verified release only. Feature preview must be built and checked before production. No production push yet at this checkpoint.
+**Production is updated and verified.** Application commit `2801861d4a6acfc332f2ecf77ed6ec64c7983a62` is on both `main` and `cursor/feat-3d-flooring-hud-bc95`. Victor explicitly authorized this release: “Once done — Push to main, and demos where needed.” This supersedes older no-main notes for this release. Future production changes still need their own applicable authorization. Development checkout remains on the feature branch.
 
-Implemented, currently under verification:
-- Versioned pure Materials engine, editable block/mortar/plaster/site-mix/ready-mix/base/pillar/RC roof/rebar/sheet roof estimates; real Mauritius supplier sources, no invented prices or structural approval.
-- Property geometry adapter deduplicates shared walls/openings and unions room footprints. Independent tests/review in progress.
-- Optional Materials input persisted with property saves/history. Plan side/phone bottom dock and 3D Materials rail; report JSON export.
-- Five sourced outdoor catalog products; original dimensioned procedural bodies and images; Mr. Bricolage Mauritius and JKalachand.
-- 3D model orientation/envelope accuracy; shared plan/3D lamp brightness/radius/day-night controls and light-off behavior.
-- New /pitch/construction using independent UBP reference branding and the actual embedded Materials designer; existing pitch pages updated.
+- Production Designer: https://designer.ppwellness.co/designer
+- Production Materials demo: https://designer.ppwellness.co/demo?view=3d&panel=materials
+- 2D demo: https://designer.ppwellness.co/demo?view=2d
+- Construction pitch, independent UBP example: https://designer.ppwellness.co/pitch/construction
+- Developer pitch: https://designer.ppwellness.co/pitch/developers
+- Merchant pitch: https://designer.ppwellness.co/pitch/merchants
+- Standalone Studio + Shop: https://designer.ppwellness.co/studio
+- Shop: https://designer.ppwellness.co/studio/shop
+- Embed: https://designer.ppwellness.co/embed/designer?scene=home&view=3d&panel=materials
+- Legacy paint demo route: https://designer.ppwellness.co/designer?demo=tintex
+- Latest unique feature preview: https://ppw-designer-2d-dpt7ob6s5-victor-ppw.vercel.app/designer
+- Feature Materials demo: https://ppw-designer-2d-dpt7ob6s5-victor-ppw.vercel.app/demo?view=3d&panel=materials
+- Feature paint demo: https://ppw-designer-2d-dpt7ob6s5-victor-ppw.vercel.app/designer?demo=tintex
+- Feature deployment: `6765248709` (Preview). Production deployment: `6765494476`, unique host `https://ppw-designer-2d-gtx0q9cov-victor-ppw.vercel.app`. Both Vercel deployments report success. Production-domain health confirms `2801861d4a6acfc332f2ecf77ed6ec64c7983a62` with `env:production`. New and previously working Vercel preview hosts timed out from this connection during the final check; use the healthy production domain for pitches. The core Materials preview `https://ppw-designer-2d-ffzgdd9ou-victor-ppw.vercel.app` was verified in the browser and by its healthcheck before that connectivity issue.
 
-Pending: finish integration tests, desktop/phone visual checks, full build/typechecks, scoped lint (repo-wide lint has existing unrelated failures), feature commit/push and unique Vercel verification, authorized main release and production verification, all build-link/handoff synchronization.
+Landed: permanent/versioned Materials settings saved with designs; physical shared-wall/opening and footprint measurements; editable concrete-block/mortar/plaster/base/pillar estimates; concrete/rebar and profiled-sheet roof quantities; formula/source report export. Supplier references include UBP, Gamma, Kolos, Joonas, Grewals and Profilage. Five measured garden furniture products from Mr. Bricolage Mauritius and JKalachand have original dimensional previews and dated source records. Model-facing/envelope accuracy is corrected; Plan/3D lamp radius, colour and day/night behavior share one calibration. Plan camera and energy controls are docked, Materials/Solar reserve side/bottom space, basket totals use a fixed panel footer, and selected 3D items open full details only on request.
 
-Local Vite server: http://127.0.0.1:5173, exec session 61837. CUA tab12 local Materials demo. Do not lose or overwrite existing user designs; demos use isolated demo workflow.
+Validation: **282 test files / 3,118 tests passed** on core release `5b3f5f9`; client/API typechecks and build passed; changed-file ESLint passed; no public source maps. GitHub Quality gates and Secrets scan passed for that core release. Final follow-up `2801861d4a6acfc332f2ecf77ed6ec64c7983a62` fixes phone Solar contrast through theme variables; 17 existing Solar/Materials tests, typecheck and changed-file ESLint pass. Desktop and 390px phone UI checked; deployed Materials roof depth changed 91m²×0.15m×1.05 = 14.333m³ to 91m²×0.20m×1.05 = 19.11m³ and carried into Plan. Designer, legacy paint demo, Studio and all three pitches return HTTP200 on production. Actual screenshot: `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-Materials-Live-2026-09-30.png`.
 
-Permanent extension docs: docs/MATERIALS-RESEARCH-MAURITIUS.md, docs/MAURITIUS-OUTDOOR-SOURCES.md, docs/RENDERING-ACCURACY.md. Materials lives in src/designer/materials; geometry in src/designer/propertyMaterials.ts; optional UI in src/components/MaterialsPanel.tsx. Routes all use one application source, not separately forked builds.
+Limits are visible in the app: quantities are planning estimates, not structural/cyclone design or supplier orders. One selected wall construction applies to the measured wall scope. Ground bases and roofs remain whole-building measurements. Roof penetrations/overhangs require a verified area override; irregular steel/sheet layouts need a checked rectangle/cutting schedule. Rebar allocation is conservative per-run stock, not optimized cut-and-bend. Models remain dimensional previews unless supplier CAD is provided; lighting is visual, not certified lux. No orders, payments, emails or supplier mutations were submitted. Global repository lint has existing unrelated issues; changed files are clean.
 
-Preserve recovery stash 649569db5766b86c5880321f6cfea782f356da1f and its ^3 untracked snapshot. Original repository C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d remains preserved; sync docs only unless explicitly needed.
+Active source: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`. Preserve the original checkout `C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d` and recovery stash `649569db5766b86c5880321f6cfea782f356da1f` (`^3` contains its untracked files). Do not restore/drop it wholesale. Historical PR #36 was merged externally on 26 September.
+
+Extension contracts: `docs/DESIGNER-INTELLIGENCE.md`, `docs/MATERIALS-RESEARCH-MAURITIUS.md`, `docs/RENDERING-ACCURACY.md`, `docs/MAURITIUS-OUTDOOR-SOURCES.md`. No chat/AI service is required to run these algorithms. All routes use one source application.
+
+All requested changes in this release are implemented and live. Continue from the feature branch, preserving source and saved designs. Documentation-only follow-up commits may have newer HEAD hashes while the application release remains the commit above.

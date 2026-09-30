@@ -1,36 +1,38 @@
 <!-- verified-preview:start -->
-## Current verified feature preview — 29 September 2026, interaction fixes
+## Verified Materials release — 30 September 2026
 
-Verified deployed application: `1be7bf68002c47bf96e29de2a69d386159edd0c5` · Vercel Preview deployment `6739155621`.
-Pinned verified application URL; later documentation-only commits do not replace it.
+**Production is updated and verified.** Application commit `2801861d4a6acfc332f2ecf77ed6ec64c7983a62` is on both `main` and `cursor/feat-3d-flooring-hud-bc95`. Victor explicitly authorized this release: “Once done — Push to main, and demos where needed.” This supersedes older no-main notes for this release. Future production changes still need their own applicable authorization. Development checkout remains on the feature branch.
 
-Later portrait-Fit correction `23eb787122a3a11e5b8052b408dc012933fd65dd` is pushed and passes 31 focused tests/build. Its previews `n7pw1fmhm` (deployment 6739702746) and `mxkxb9qu1` (documentation revision `4816a9ada76460aad4176790984f476530753fe7`, deployment 6739997387) time out on this network and are NOT pinned as browser-verified. Retry those normal URLs when connectivity permits. The verified link below contains all main interaction fixes but not that extra portrait-Fit correction.
+- Production Designer: https://designer.ppwellness.co/designer
+- Production Materials demo: https://designer.ppwellness.co/demo?view=3d&panel=materials
+- 2D demo: https://designer.ppwellness.co/demo?view=2d
+- Construction pitch, independent UBP example: https://designer.ppwellness.co/pitch/construction
+- Developer pitch: https://designer.ppwellness.co/pitch/developers
+- Merchant pitch: https://designer.ppwellness.co/pitch/merchants
+- Standalone Studio + Shop: https://designer.ppwellness.co/studio
+- Shop: https://designer.ppwellness.co/studio/shop
+- Embed: https://designer.ppwellness.co/embed/designer?scene=home&view=3d&panel=materials
+- Legacy paint demo route: https://designer.ppwellness.co/designer?demo=tintex
+- Latest unique feature preview: https://ppw-designer-2d-dpt7ob6s5-victor-ppw.vercel.app/designer
+- Feature Materials demo: https://ppw-designer-2d-dpt7ob6s5-victor-ppw.vercel.app/demo?view=3d&panel=materials
+- Feature paint demo: https://ppw-designer-2d-dpt7ob6s5-victor-ppw.vercel.app/designer?demo=tintex
+- Feature deployment: `6765248709` (Preview). Production deployment: `6765494476`, unique host `https://ppw-designer-2d-gtx0q9cov-victor-ppw.vercel.app`. Both Vercel deployments report success. Production-domain health confirms `2801861d4a6acfc332f2ecf77ed6ec64c7983a62` with `env:production`. New and previously working Vercel preview hosts timed out from this connection during the final check; use the healthy production domain for pitches. The core Materials preview `https://ppw-designer-2d-ffzgdd9ou-victor-ppw.vercel.app` was verified in the browser and by its healthcheck before that connectivity issue.
 
-- Designer-only 2D Demo: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/demo?view=2d
-- Designer-only Premium 3D: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/demo?view=3d
-- Standalone Studio + Shop: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/studio
-- Studio designer: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/studio/designer?view=3d
-- Shop preview: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/studio/shop
-- Developer pitch: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/pitch/developers
-- Merchant pitch: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/pitch/merchants
-- Embedded designer: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/embed/designer?scene=home&view=3d
-- Standard Designer: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/designer
-- Paint Demo, legacy TintEX route: https://ppw-designer-2d-55airl1ig-victor-ppw.vercel.app/designer?demo=tintex
-- Latest changes: stable 3D camera and on-screen scale across tool/catalog/scene changes; faster movement; repeatable wall-snapped door/window placement; direct garden draw/resize; reliable tool exits; Plan zoom out to 4%; roof solar visible only while Roof is selected.
-- SketchUp: tested supplier GLB import pipeline, documented in `docs/SKETCHUP-MODELS.md`. No direct `.skp` editor or supplier model was added.
-- Verification: 274 files / 3,036 tests passed, followed by 13 garden and 31 camera/Fit/motion tests; seven importer integration tests; client/API typecheck, scoped lint, final build, zero public maps, desktop/390px phone browser checks and deployed healthcheck matching `1be7bf68002c47bf96e29de2a69d386159edd0c5` with `env=preview`.
-- Branch: `cursor/feat-3d-flooring-hud-bc95` only. Main and production were untouched. PR #36 was merged externally on 26 September and is historical.
-- Active source: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`.
-- Previous work remains preserved in stash `649569db5766b86c5880321f6cfea782f356da1f` (untracked files in its third parent); do not restore/drop it wholesale.
-- No orders, payments, customer emails or supplier mutations were submitted. Preview ordering stays blocked.
-- Remaining limits: door/window hosts require enclosed rooms; edit/remove openings in Plan. Garden surfaces are rectangular; fence placement and freeform terrain remain limited. Product art/model fidelity depends on available supplier assets.
-- Previous verified UI build: https://ppw-designer-2d-1nbevf4ny-victor-ppw.vercel.app/demo
-- Production fallback: https://designer.ppwellness.co/designer (unchanged).
+Landed: permanent/versioned Materials settings saved with designs; physical shared-wall/opening and footprint measurements; editable concrete-block/mortar/plaster/base/pillar estimates; concrete/rebar and profiled-sheet roof quantities; formula/source report export. Supplier references include UBP, Gamma, Kolos, Joonas, Grewals and Profilage. Five measured garden furniture products from Mr. Bricolage Mauritius and JKalachand have original dimensional previews and dated source records. Model-facing/envelope accuracy is corrected; Plan/3D lamp radius, colour and day/night behavior share one calibration. Plan camera and energy controls are docked, Materials/Solar reserve side/bottom space, basket totals use a fixed panel footer, and selected 3D items open full details only on request.
+
+Validation: **282 test files / 3,118 tests passed** on core release `5b3f5f9`; client/API typechecks and build passed; changed-file ESLint passed; no public source maps. GitHub Quality gates and Secrets scan passed for that core release. Final follow-up `2801861d4a6acfc332f2ecf77ed6ec64c7983a62` fixes phone Solar contrast through theme variables; 17 existing Solar/Materials tests, typecheck and changed-file ESLint pass. Desktop and 390px phone UI checked; deployed Materials roof depth changed 91m²×0.15m×1.05 = 14.333m³ to 91m²×0.20m×1.05 = 19.11m³ and carried into Plan. Designer, legacy paint demo, Studio and all three pitches return HTTP200 on production. Actual screenshot: `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-Materials-Live-2026-09-30.png`.
+
+Limits are visible in the app: quantities are planning estimates, not structural/cyclone design or supplier orders. One selected wall construction applies to the measured wall scope. Ground bases and roofs remain whole-building measurements. Roof penetrations/overhangs require a verified area override; irregular steel/sheet layouts need a checked rectangle/cutting schedule. Rebar allocation is conservative per-run stock, not optimized cut-and-bend. Models remain dimensional previews unless supplier CAD is provided; lighting is visual, not certified lux. No orders, payments, emails or supplier mutations were submitted. Global repository lint has existing unrelated issues; changed files are clean.
+
+Active source: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`. Preserve the original checkout `C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d` and recovery stash `649569db5766b86c5880321f6cfea782f356da1f` (`^3` contains its untracked files). Do not restore/drop it wholesale. Historical PR #36 was merged externally on 26 September.
+
+Extension contracts: `docs/DESIGNER-INTELLIGENCE.md`, `docs/MATERIALS-RESEARCH-MAURITIUS.md`, `docs/RENDERING-ACCURACY.md`, `docs/MAURITIUS-OUTDOOR-SOURCES.md`. No chat/AI service is required to run these algorithms. All routes use one source application.
+
 <!-- verified-preview:end -->
 
 # Room Designer — build links
 
-Last updated: 2026-09-22 (Mauritius time)
+Historical baseline: 2026-09-22 (Mauritius time)
 
 One place for production and the feature builds Victor / Spa Concept / Cap Tamarin can open on phone or desktop. Prefer this file over hunting chat history.
 
