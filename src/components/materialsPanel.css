@@ -15,7 +15,7 @@
 .materials-result summary span { display:inline-block; width:65%; }.materials-result summary strong { color:#9ce1e1; }.materials-export { border:1px solid #83bfca; border-radius:9px; padding:10px; background:#244952; }.materials-warnings { color:#e1cfad; }
 .plan-analysis-workspace { display:flex; flex-direction:column; flex:0 0 350px; width:350px; min-height:0; max-width:42vw; overflow:hidden; background:#16282e; color:#dce9ec; border-left:1px solid #ffffff22; }
 .plan-analysis-header { display:flex; flex:none; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid #ffffff22; }.plan-analysis-header button { padding:6px 9px; border-radius:20px; background:#29454e; }.plan-analysis-body { min-height:0; overflow:auto; overscroll-behavior:contain; }
-.plan-analysis-workspace.is-energy { display:none; }
+.plan-analysis-workspace.is-energy { display:none; --energy-text:#dce9ec; --energy-text-muted:#b9d0d5; }
 @media(min-width:768px) { .designer-app[data-view=plan]>main { padding-right:var(--floor-panel-w,0px); } }
 @media(max-width:767px) { .designer-app[data-view=plan]>main:has(.plan-analysis-workspace) { flex-direction:column; }.plan-analysis-workspace,.plan-analysis-workspace.is-energy { display:flex; width:100%; max-width:none; flex:0 1 36vh; min-height:140px; border-left:0; border-top:1px solid #ffffff22; }.materials-panel { padding:12px; }.plan-analysis-body { flex:1; } }
 

@@ -65,6 +65,10 @@ const CHIP_ON = 'border-ppw-inkDeep bg-ppw-inkDeep font-semibold text-ppw-paper'
 const TOGGLE =
   'inline-flex h-8 min-w-[44px] items-center justify-center rounded-md border px-2 text-[11px] font-semibold uppercase tracking-[0.04em] transition-colors duration-[120ms] ease-out motion-reduce:transition-none';
 
+// Hosts can use a dark dock without inheriting the paper canvas text colours.
+const ENERGY_TEXT = `var(--energy-text, ${CHROME_TEXT})`;
+const ENERGY_TEXT_MUTED = `var(--energy-text-muted, ${CHROME_TEXT_2})`;
+
 export interface EnergySummaryProps {
   /** Phone sheet: tighter rows, no footer chip row. */
   compact?: boolean;
@@ -103,7 +107,7 @@ function WattsInput({
     onCommit(n === null || !Number.isFinite(n) ? null : n);
   }
   return (
-    <label className="flex items-center gap-1 text-[11px]" style={{ color: CHROME_TEXT_2 }}>
+    <label className="flex items-center gap-1 text-[11px]" style={{ color: ENERGY_TEXT_MUTED }}>
       <input
         type="number"
         min={0}
@@ -199,7 +203,7 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
   const rowText = compact ? 'text-[12px]' : 'text-[13px]';
 
   return (
-    <div className="flex flex-col gap-1" data-testid="energy-summary" data-status={r.status}>
+    <div className="flex flex-col gap-1" style={{ color: ENERGY_TEXT }} data-testid="energy-summary" data-status={r.status}>
       <div className="mb-2 grid grid-cols-2 gap-1.5" aria-label="Solar and water products">
         <button type="button" className={`${CHIP} ${CHIP_ON} col-span-2`} onClick={addSolarPanel} data-testid="energy-add-panel">{panelButtonLabel(getProductById(SOLAR_PANEL_PRODUCT_ID))}</button>
         <button type="button" className={`${CHIP} ${CHIP_REST} px-2 text-xs`} onClick={browseSolar} data-testid="energy-browse-solar">Browse solar</button>
@@ -208,9 +212,9 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
       {/* Headline — the one line that answers "am I covered?" */}
       <div className="flex items-center gap-2 px-1" data-testid="energy-status">
         <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: dot }} aria-hidden="true" />
-        <span className="text-[13px] font-semibold text-[#37362f]">{meter.headline}</span>
+        <span className="text-[13px] font-semibold" style={{ color: ENERGY_TEXT }}>{meter.headline}</span>
         {r.loadWhDay > 0 && (
-          <span className="ml-auto text-[12px] font-semibold tabular-nums" style={{ color: CHROME_TEXT_2 }} data-testid="energy-net">
+          <span className="ml-auto text-[12px] font-semibold tabular-nums" style={{ color: ENERGY_TEXT_MUTED }} data-testid="energy-net">
             {signedWh(r.netWhDay)}/day
           </span>
         )}
@@ -221,7 +225,7 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
         <EnergyMeterBar fillPct={meter.fillPct} status={r.status} />
       </div>
       {meter.detail && (
-        <p className={`px-1 pt-1 ${rowText}`} style={{ color: CHROME_TEXT_2 }} data-testid="energy-detail">
+        <p className={`px-1 pt-1 ${rowText}`} style={{ color: ENERGY_TEXT_MUTED }} data-testid="energy-detail">
           {meter.detail}
         </p>
       )}
@@ -231,17 +235,17 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
         <span data-testid="energy-generation">
           <span className="font-semibold">{formatWh(r.generationWhDay)}</span>/day
           {r.panelCount > 0 ? (
-            <span style={{ color: CHROME_TEXT_2 }}>
+            <span style={{ color: ENERGY_TEXT_MUTED }}>
               {' '}· {r.panelCount} panel{r.panelCount === 1 ? '' : 's'} · {(r.totalWp / 1000).toFixed(2)} kWp
             </span>
           ) : (
-            <span style={{ color: CHROME_TEXT_2 }}> · no panels yet</span>
+            <span style={{ color: ENERGY_TEXT_MUTED }}> · no panels yet</span>
           )}
         </span>
         <span aria-hidden="true">⚡</span>
         <span data-testid="energy-load">
           <span className="font-semibold">{formatWh(r.loadWhDay)}</span>/day
-          <span style={{ color: CHROME_TEXT_2 }}>
+          <span style={{ color: ENERGY_TEXT_MUTED }}>
             {' '}· {itemsOn} item{itemsOn === 1 ? '' : 's'} on · peak {formatW(r.peakLoadW)}
           </span>
         </span>
@@ -261,7 +265,7 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
         </p>
       )}
       {(r.batteryKwh > 0 || r.inverterKw > 0) && (
-        <p className={`px-1 ${rowText} tabular-nums`} style={{ color: CHROME_TEXT_2 }} data-testid="energy-storage">
+        <p className={`px-1 ${rowText} tabular-nums`} style={{ color: ENERGY_TEXT_MUTED }} data-testid="energy-storage">
           {r.batteryKwh > 0 && (
             <>
               Battery {r.batteryKwh} kWh{r.loadWhDay > 0 ? ` · ~${Math.round(r.batteryAutonomyHours)} h at this use` : ''}
@@ -302,7 +306,7 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
                 title="Select on the plan"
               >
                 <span className="truncate font-medium">{c.name}</span>
-                <span className="truncate text-[11px] tabular-nums" style={{ color: CHROME_TEXT_2 }}>
+                <span className="truncate text-[11px] tabular-nums" style={{ color: ENERGY_TEXT_MUTED }}>
                   {c.roomName} · {formatW(c.powerW)}
                   {c.powerOverridden ? (
                     <span data-testid={`energy-figure-${c.instanceId}`}> · your figure</span>
@@ -324,7 +328,7 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
                 instanceId={c.instanceId}
                 onCommit={(w) => setItemPowerW(c.instanceId, w)}
               />
-              <label className="flex items-center gap-1 text-[11px]" style={{ color: CHROME_TEXT_2 }}>
+              <label className="flex items-center gap-1 text-[11px]" style={{ color: ENERGY_TEXT_MUTED }}>
                 <input
                   type="number"
                   min={0}
@@ -372,7 +376,7 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
                 title="Select on the plan"
               >
                 <span className="truncate font-medium">{u.name}</span>
-                <span className="truncate text-[11px]" style={{ color: CHROME_TEXT_2 }}>
+                <span className="truncate text-[11px]" style={{ color: ENERGY_TEXT_MUTED }}>
                   {u.roomName} · self-powered · set watts
                 </span>
               </button>
@@ -383,7 +387,7 @@ export function EnergySummary({ compact = false, onJumpToRoof }: EnergySummaryPr
       )}
 
       {/* Where the sun figure comes from — one honest line. */}
-      <p className="mt-2 px-1 text-[11px] leading-snug" style={{ color: CHROME_TEXT_2 }} data-testid="energy-assumptions">
+      <p className="mt-2 px-1 text-[11px] leading-snug" style={{ color: ENERGY_TEXT_MUTED }} data-testid="energy-assumptions">
         Sun: {sun.poaKwhM2DayAnnual} kWh/m²/day on a {sun.label} roof, {MAURITIUS_SOLAR.location.split(' (')[0]} (PVGIS SARAH3 2005–23) ·{' '}
         {Math.round(sun.performanceRatio * 100)} % performance ratio ≈ {Math.round(sun.yieldKwhPerKwpYear)} kWh/yr per kWp
         {annualKwh > 0 ? ` · your panels ≈ ${Math.round(annualKwh).toLocaleString('en-GB')} kWh/yr` : ''}.
