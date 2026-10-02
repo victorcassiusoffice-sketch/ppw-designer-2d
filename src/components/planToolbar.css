@@ -304,3 +304,12 @@
  .plan-document-actions [data-testid="clear-all-button"] { padding:0 8px !important; }
  .plan-document-actions [data-testid="clear-all-button"] svg { display:none; }
 }
+@media(max-width:380px) {
+ .designer-app[data-view="plan"] .plan-view-toolbar [data-testid="canvas-chrome-toggle"] { width:56px; min-width:56px; padding:0 3px; gap:2px; font-size:10px; }
+ .designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools { flex:none; }
+ .designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools>div:first-child { gap:0; }
+ .designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools>div:first-child>button { width:31px; min-width:31px; }
+ .plan-document-actions .ai-design-trigger { width:34px; min-width:34px; padding:3px; gap:2px; font-size:10px!important; }
+ .plan-document-actions .ai-design-trigger>span { font-size:12px; }
+ .plan-document-actions [data-testid="clear-all-button"] { width:46px; min-width:46px; padding:0 4px!important; font-size:10px; }
+}
