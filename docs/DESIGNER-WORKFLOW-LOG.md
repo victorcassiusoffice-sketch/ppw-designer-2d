@@ -1,3 +1,41 @@
+<!-- oct2-release:start -->
+## Live phone + AI + merchant release — 2 October 2026
+
+Production and feature preview are verified. Application commit `71db6af8cfdd6f0128ae8ea663c69fab104b6e5e` includes the AI/phone/pitch work. The checkout remains on `cursor/feat-3d-flooring-hud-bc95`; the same application is on main under Victor's earlier explicit instruction to push the completed app and demos to main. Do not force-push or overwrite other work. Older release notes below are historical.
+
+| Experience | Live URL |
+|---|---|
+| Main Designer | https://designer.ppwellness.co/designer |
+| AI / guided house demo | https://designer.ppwellness.co/demo?view=3d&panel=ai |
+| 2D demo | https://designer.ppwellness.co/demo?view=2d |
+| Materials demo | https://designer.ppwellness.co/demo?view=3d&panel=materials |
+| Legacy paint demo | https://designer.ppwellness.co/designer?demo=tintex |
+| Standalone Studio + Shop | https://designer.ppwellness.co/studio |
+| Merchant connection wizard | https://designer.ppwellness.co/studio/merchants/connect |
+| Developer pitch | https://designer.ppwellness.co/pitch/developers |
+| Merchant pitch | https://designer.ppwellness.co/pitch/merchants |
+| Construction pitch | https://designer.ppwellness.co/pitch/construction |
+| Embeddable AI designer | https://designer.ppwellness.co/embed/designer?scene=home&view=3d&panel=ai |
+| Public MCP endpoint | https://designer.ppwellness.co/api/mcp |
+| Unique feature Designer | https://ppw-designer-2d-328mv0s8r-victor-ppw.vercel.app/designer |
+| Unique feature paint demo | https://ppw-designer-2d-328mv0s8r-victor-ppw.vercel.app/designer?demo=tintex |
+| Unique feature AI demo | https://ppw-designer-2d-328mv0s8r-victor-ppw.vercel.app/demo?view=3d&panel=ai |
+
+Vercel Preview deployment `6805264942`; Production deployment `6805478562`, unique production host `https://ppw-designer-2d-2ba1kqcy0-victor-ppw.vercel.app`. Production health reports the application commit above. Later documentation-only commits may have a newer build hash without changing the app.
+
+Landed: stable two-finger zoom/pan baseline and inverse zoom steps; visible Clear in Plan and 3D with confirmation, keyboard isolation and full-design Undo; measured guided layouts; signed-in hosted AI briefs; validated JSON import; public MCP schema/catalogue/draft/validation tools; authenticated merchant CSV/JSON catalogue onboarding; three refreshed interactive AI pitches with real app imagery, private feedback/project enquiries, one-hour Calendly and in-person meeting requests. AI concepts open as a separate plan, preserving existing pages. At 390px and desktop, the new controls are verified. Final 320px-only fixes are on feature commits a7fd7e9 and 14f61ec; those are not yet on production. Their Vercel build succeeded but unique host https://ppw-designer-2d-52dg7ucgp-victor-ppw.vercel.app times out. Automatic approval review rejected publishing those corrections until a unique preview loads successfully. Do not bypass that block; obtain a healthy preview or explicit approval.
+
+Validation: 292 files / 3,226 tests passed on the core release, followed by the five-test Clear keyboard check. Client/API typechecks, changed-file lint, production build and GitHub Quality gates/Secrets scan passed. CSS-only follow-ups were visually checked at 320px and built by Vercel. Desktop and 390px views, two-storey guided generation/apply, previous-plan preservation, Clear/Undo, twelve paired zoom cycles, embedded AI and merchant example validation were checked. Preview and production MCP tools respond; provider/authentication/quotas all report configured. Sign-in UI renders; **paid hosted inference was not exercised with a real signed-in customer**. Physical-phone pinch remains a useful hardware check; repeated pointer-event pinch tests pass.
+
+Boundaries: proposals are conceptual design, not engineered/approved construction plans. MCP uses the bundled public reference catalogue and cannot read private saved designs, publish products, send messages or place orders. It rejects unsupported roof/wall/surface hosts in room proposals. Real hosted AI uses configured Gemini through OpenRouter after sign-in and quota checks; guided generation is explicitly rule based. Merchant publication requires an owned merchant session and confirmation; ERP/webhook scheduling is not claimed. Pitch requests are saved to the existing private leads backend; no automatic email or calendar booking is made. No live enquiries, paid inference, merchant writes, orders or payments were submitted during verification.
+
+Full source: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`.
+Continuation: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\docs\PHONE-AI-MERCHANT-2026-10-02.md`.
+AI extension contract: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\docs\AI-DESIGN-MCP.md`.
+Actual production screenshot: `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-AI-Live-2026-10-02.png`.
+Preserve original checkout `C:\Users\Victor\Documents\PPW-Code\ppw-designer-2d` and stash `649569db5766b86c5880321f6cfea782f356da1f` (including `^3`). PR #36 is historical and already merged.
+<!-- oct2-release:end -->
+
 <!-- phone-ai-merchant-2026-10-02:start -->
 ## Phone navigation, Clear, AI/MCP, merchant setup and pitches — 2 October 2026
 
