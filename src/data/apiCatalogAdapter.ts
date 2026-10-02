@@ -90,6 +90,7 @@ export function normaliseCategory(raw: string): ProductCategory {
     case 'plant':
     case 'eco-office-kit':
     case 'massage':
+    case 'recovery':
     case 'sauna':
     case 'fitness':
     case 'flooring':
@@ -100,6 +101,13 @@ export function normaliseCategory(raw: string): ProductCategory {
     case 'furniture':
     case 'appliance':
       return c as ProductCategory;
+    // Public import categories use the familiar catalogue tab names.
+    case 'cardio':
+      return 'fitness';
+    case 'eco':
+      return 'solar';
+    case 'outdoor':
+      return 'decor'; // Outdoor behaviour is carried separately below.
     case 'tables':
     case 'beds':
     case 'storage':
@@ -212,6 +220,7 @@ export function apiProductToProduct(api: ApiProductSummary): Product {
     // Prefer the live DB description; fall back to the curated bundled notes
     // so the detail panel is never blank.
     notes: api.description?.trim() || seed?.notes || '',
+    ...(api.category.trim().toLowerCase() === 'outdoor' ? { outdoor: true } : {}),
     ...seedBehaviour(seed),
     ...apiEnergyFields(api),
   };

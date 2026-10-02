@@ -10,7 +10,7 @@ export interface EmbeddedDesignerProps {
   loading?: 'eager' | 'lazy';
   onViewChange?: (view: EmbeddedDesignerView) => void;
   /** Optional entry panel; switching the view still preserves the same editing session. */
-  panel?: 'materials';
+  panel?: 'materials' | 'ai';
 }
 
 /** Switching view leaves the browsing context, local edits and undo history intact. */

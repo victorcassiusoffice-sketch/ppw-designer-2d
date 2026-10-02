@@ -30,13 +30,14 @@ export default function StudioPage() {
         <div className="studio-hero-copy">
           <p className="studio-eyebrow">YOUR SPACE. EVERY POSSIBILITY.</p>
           <h1>From a floor plan<br />to a place to live.</h1>
-          <p className="studio-intro">Design your home in a 2D plan and Premium 3D, paint it in colours that stay true in every view, explore real merchant catalogues and bring your merchants into one connected workspace.</p>
+          <p className="studio-intro">Start from a measured guided draft or the AI workspace, refine the same home in 2D and Premium 3D, then review real products, materials and energy estimates.</p>
           <div className="studio-mode" role="group" aria-label="Choose designer view">
             <button type="button" aria-pressed={mode === '2d'} onClick={() => setMode('2d')}><span aria-hidden="true">▦</span><strong>2D</strong><small>Plan with precision</small></button>
             <button type="button" aria-pressed={mode === '3d'} onClick={() => setMode('3d')}><span aria-hidden="true">◇</span><strong>Premium 3D</strong><small>Explore every angle</small></button>
           </div>
           <Link className="studio-primary" to={`/studio/designer?view=${mode}`}>Open {mode === '3d' ? 'Premium 3D' : '2D designer'} <span aria-hidden="true">→</span></Link>
-          <p className="studio-fine">Both views are included in this read-only demo. Your changes stay on this device. No orders, purchases or payments.</p>
+          <p className="studio-fine">Both views are included in this read-only demo. Your changes stay on this device. No orders, purchases or payments. AI generation needs sign-in and a configured provider.</p>
+          <Link to="/demo?view=3d&panel=ai">Open guided design & AI workspace ↗</Link>
         </div>
         <figure className="studio-hero-art"><img src="/showcase/developer-vision.webp" alt="Architectural concept of an apartment with a plan, furnishings and material samples" /><figcaption>THE CONNECTED HOME · CONCEPT ART</figcaption></figure>
       </section>
@@ -81,7 +82,7 @@ export function StudioMerchantsPage() {
   const validSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
   isShowcaseReadOnly();
   return <main className="studio-page"><StudioHeader active="merchants" /><section className="studio-merchant-main">
-    <div><p className="studio-eyebrow">THE PEOPLE BEHIND THE PRODUCTS</p><h1>Keep your catalogue<br />connected.</h1><p className="studio-intro">Use your existing merchant workspace to manage product dimensions, photos, pricing and availability. Published catalogue data feeds the Shop and Designer.</p><a className="studio-primary" href={MEETING_URL} target="_blank" rel="noreferrer">Plan your integration with Victor ↗</a></div>
+    <div><p className="studio-eyebrow">THE PEOPLE BEHIND THE PRODUCTS</p><h1>Keep your catalogue<br />connected.</h1><p className="studio-intro">Prepare JSON or CSV products, check dimensions and prices, then publish through your merchant account. Get embed code and an MCP connection address for your AI client.</p><Link className="studio-primary" to="/studio/merchants/connect">Prepare a catalogue connection →</Link><p className="studio-fine">New merchant? <Link to="/suppliers">Apply to join ↗</Link> · <a href={MEETING_URL} target="_blank" rel="noreferrer">Plan your integration with Victor ↗</a></p></div>
     <div className="studio-merchant-card"><span className="studio-card-kicker">EXISTING MERCHANTS</span><h2>Open your workspace</h2><p>Enter your assigned merchant identifier. Your normal merchant sign-in and permissions still apply.</p><label htmlFor="studio-merchant-slug">Merchant identifier</label><input id="studio-merchant-slug" value={slug} onChange={(event) => setSlug(event.target.value.toLowerCase().trim())} autoComplete="off" placeholder="your-company" aria-describedby="studio-merchant-hint" /><small id="studio-merchant-hint">Lowercase letters, numbers and single hyphens.</small>
       {validSlug ? <Link className="studio-primary" to={`/merchant/${slug}`}>Continue to secure workspace →</Link> : <button className="studio-primary" disabled>Continue to secure workspace →</button>}
       <div className="studio-merchant-admin"><Link to="/admin/products">Platform administration ↗</Link><span>Authorized staff only</span></div>

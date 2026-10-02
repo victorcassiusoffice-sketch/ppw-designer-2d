@@ -14,6 +14,49 @@
 
 .pitch-deadline-preview{display:flex;flex-direction:column;gap:10px}
 
+/* Compact, chapter-based AI/business narrative; the design stays the focal point. */
+.pitch-connect-stage{height:100%;min-height:0;display:flex;flex-direction:column;gap:18px;overflow:auto}
+.pitch-connect-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.pitch-connect-heading h2{font-size:clamp(25px,2.3vw,36px);margin-top:7px}
+.pitch-connect-grid{display:grid;grid-template-columns:minmax(280px,.85fr) minmax(0,1.3fr);gap:20px;min-height:0;flex:1}
+.pitch-connect-grid>.pitch-panel{overflow:auto;gap:15px}
+.pitch-connect-grid h3{font-size:clamp(22px,2vw,29px)}
+.pitch-connect-grid p{font-size:12px;line-height:1.65}
+.pitch-ai-prompt{margin:0;padding:15px 17px;border-left:3px solid #649a86;background:#e0e8db;border-radius:0 12px 12px 0;color:#31584c;font-size:13px;line-height:1.5}
+.pitch-ai-steps{display:flex;flex-direction:column;gap:10px;margin:0;padding-left:19px;font-size:12px;color:#55766b}
+.pitch-ai-steps li{padding-left:4px}.pitch-ai-steps strong{color:#305f50}
+.pitch-ai-demo{display:flex;flex-direction:column;padding:17px!important;min-height:0}
+.pitch-connect-ai-grid>.pitch-ai-demo{grid-column:2;grid-row:1}
+.pitch-connect-ai-grid>aside{grid-column:1;grid-row:1}
+.pitch-ai-review-note{border-top:1px solid #71967b44;padding-top:10px;color:#466c5e;font-size:11px}
+.pitch-ai-review-note summary{cursor:pointer;min-height:32px;display:list-item;list-style-position:inside;padding:6px 0}
+.pitch-ai-review-note summary:focus-visible{outline:3px solid #268b76;outline-offset:2px}
+.pitch-ai-review-note p{margin-top:6px;font-size:11px;line-height:1.55}
+.pitch-ai-demo>.pitch-designer-frame{width:100%;flex:1;min-height:360px;border-radius:13px}
+.pitch-ai-capture{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;min-height:230px;border:1px solid #92c7b82b;border-radius:14px;background:#102733;padding:0;overflow:hidden}
+.pitch-ai-capture img{display:block;width:100%;height:auto;max-height:45vh;object-fit:contain}
+.pitch-ai-capture>span{display:flex;gap:24px;align-items:center;padding:12px 18px;background:#234c4c;border:1px solid #83c2ad5c;border-radius:22px;margin:13px;font-size:12px}
+.pitch-automation-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pitch-automation-cards>div{border:1px solid #82b09f33;border-radius:15px;padding:15px;background:#23495122}
+.pitch-automation-cards>div>span{display:block;font-size:9px;letter-spacing:.12em;color:#99d7c6;margin-bottom:8px}.pitch-automation-cards strong{font-size:13px;font-weight:550}.pitch-automation-cards p{margin-top:8px}
+.pitch-contact-grid{grid-template-columns:minmax(260px,.72fr) minmax(0,1.3fr)}
+.pitch-contact-person{display:flex;align-items:center;gap:13px;padding:19px 0;border-top:1px solid #97b9b32d}.pitch-contact-person strong{font-size:13px}.pitch-contact-person p{margin-top:4px;font-size:11px}
+.pitch-enquiry{display:flex;flex-direction:column;gap:13px;min-width:0}.pitch-enquiry label{display:flex;flex-direction:column;gap:5px;font-size:11px;color:#466b60}
+.pitch-enquiry-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 13px}
+.pitch-enquiry input:not([type=checkbox]),.pitch-enquiry textarea{display:block;width:100%;min-width:0;border:1px solid #779b8d55;border-radius:10px;background:#fffdf6;color:#22483d;padding:10px 12px;font:inherit;font-size:13px;line-height:1.4;color-scheme:light}
+.pitch-enquiry input:not([type=checkbox]){min-height:42px}.pitch-enquiry textarea{resize:vertical;min-height:88px}.pitch-enquiry textarea:focus-visible{outline:3px solid #268b76;outline-offset:2px}
+.pitch-enquiry .pitch-enquiry-consent{flex-direction:row;align-items:flex-start;gap:9px;font-size:10px;line-height:1.5}.pitch-enquiry-consent input{flex:none;margin-top:2px;width:17px;height:17px;accent-color:#32725d}
+.pitch-enquiry .pitch-honeypot{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.pitch-enquiry-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.pitch-enquiry-actions button,.pitch-enquiry-actions a{font-size:11px;min-height:42px}.pitch-enquiry button:disabled{opacity:.6;cursor:default}
+.pitch-enquiry p.pitch-enquiry-result{border-radius:10px;padding:11px 13px;font-size:12px;line-height:1.5}.pitch-enquiry-result.is-success{background:#d6e8d9;color:#275d3e}.pitch-enquiry-result.is-error{background:#f3dfd5;color:#8a3c29}
+.pitch-enquiry .pitch-fine a{color:#205d4e;text-decoration:underline;text-underline-offset:2px}
+.pitch-footer .pitch-feedback-link{border:0;padding:5px;background:transparent;color:#c2dedb;font:inherit;min-height:36px}
+.pitch-footer .pitch-feedback-link:hover{color:#fff;background:#234751}
+@media(min-width:761px){.pitch-ai-capture{display:grid;grid-template-rows:minmax(0,1fr) auto;align-items:stretch}.pitch-ai-capture img{min-height:0;height:100%;max-height:none;object-fit:contain}.pitch-ai-capture>span{justify-self:center}}
+@media(max-width:1000px){.pitch-connect-heading{gap:12px}.pitch-connect-heading h2 br{display:none}.pitch-connect-grid{grid-template-columns:minmax(255px,.8fr) minmax(0,1.2fr);gap:14px}.pitch-automation-cards{grid-template-columns:1fr}}
+@media(max-width:760px){.pitch-chapters{grid-template-columns:repeat(6,minmax(0,1fr))}.pitch-chapters button{font-size:8px;min-height:54px}.pitch-connect-stage{height:auto;min-height:100%;overflow:visible;gap:14px}.pitch-connect-heading{padding:5px}.pitch-connect-heading .pitch-segment{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr}.pitch-connect-heading .pitch-segment button{padding:9px 6px;font-size:10px;line-height:1.35}.pitch-connect-grid{display:flex;flex-direction:column}.pitch-connect-grid>.pitch-panel{overflow:visible}.pitch-ai-demo>.pitch-designer-frame{height:570px;flex:none;min-height:570px}.pitch-ai-capture img{max-height:none}.pitch-enquiry-grid{gap:10px}.pitch-enquiry-grid input{font-size:16px!important}.pitch-enquiry textarea{font-size:16px}.pitch-footer>div{gap:6px;flex-wrap:wrap}.pitch-footer .pitch-feedback-link{font-size:9px}.pitch-footer a[href="/pitch/construction"]{display:none}.pitch-automation-cards{grid-template-columns:1fr 1fr}}
+@media(max-width:390px){.pitch-enquiry-grid{grid-template-columns:1fr}.pitch-automation-cards{grid-template-columns:1fr}.pitch-connect-grid>.pitch-panel{padding:18px}}
+@media(max-width:760px){.pitch-connect-ai-grid>.pitch-ai-demo{padding:12px!important;gap:10px}.pitch-connect-ai-grid .pitch-ai-capture{min-height:180px}.pitch-connect-ai-grid .pitch-ai-capture>span{margin:10px;padding:10px 14px}.pitch-connect-ai-grid>aside{gap:12px}.pitch-connect-ai-grid .pitch-ai-steps{gap:7px}.pitch-connect-ai-grid .pitch-ai-prompt{font-size:12px;padding:12px 14px}}
+
 /* Captures retain the complete app chrome; finish samples never filter or recolour them. */
 /* The live stage is PARKED, not display:none: a 0x0 iframe gives the embedded designer a 0-size canvas, its
    drawImage throws, the canvas error boundary trips and the designer never comes back when the tab returns

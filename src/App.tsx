@@ -42,6 +42,7 @@ import { TopBar } from './components/TopBar';
 import { CoachMark } from './components/uxKit';
 import { RoomCanvas } from './components/RoomCanvas';
 import { PlanAnalysisWorkspace } from './components/PlanAnalysisWorkspace';
+import { AiDesignWorkspace } from './components/AiDesignWorkspace';
 import { PlanGardenWorkspace } from './components/PlanGardenWorkspace';
 import { DetailsPanel } from './components/DetailsPanel';
 import { ToastProvider } from './components/ToastProvider';
@@ -83,7 +84,6 @@ import { unstackLegacyRooms } from './designer/roomLayout';
 // untouched; classic UI surfaces via `?ui=classic`.
 import { GamingLayer1Surfaces } from './designer/GamingLayer1Surfaces';
 import { RoomEstimatePanel } from './components/RoomEstimatePanel';
-import { ClearControls } from './components/ClearControls';
 import { useBelowMd } from './lib/useBelowMd';
 import { usePlacementIntentStore } from './store/placementIntentStore';
 import { isPaintEstimateActive } from './designer/paintEstimateFlag';
@@ -371,11 +371,6 @@ export default function App() {
           </CanvasErrorBoundary>
           {/* P3-2 — room estimate: paint + flooring (beta, OFF by default; ?paint=1). */}
           {paintEstimateActive && <RoomEstimatePanel />}
-          {/* Blank-canvas + clear (2026-06-09) — two sticky, always-visible
-              clear buttons pinned to the canvas (Clear products / Clear all).
-              Toolbar pass (2026-08-29): hidden while the wall pen is open so
-              the HUD owns the bottom band (Discard is the pen's own clear). */}
-          {!drawMode && !phoneToolHud && <ClearControls />}
         </section>
         {/* Overlay, not a rail — slides in from the right only while an
             item is selected (see DetailsPanel). */}
@@ -396,6 +391,7 @@ export default function App() {
           render site; CartStrip itself is untouched. */}
       {designView !== '3d' && !drawMode && !phoneToolHud && <CartStrip />}
       <CartDrawer />
+      <AiDesignWorkspace onBeforeOpen={() => setDrawMode(false)} />
       {/* Mobile/tablet Sims catalog — sticky bottom toolbar (< 1024 px). */}
       <SimsBottomToolbar />
       <AddRoomChooser

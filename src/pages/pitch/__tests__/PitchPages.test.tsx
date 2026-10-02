@@ -33,7 +33,7 @@ describe('interactive pitch chapters', () => {
     expect(document.activeElement).toBe(selected);
     expect(host.querySelector('[role="tabpanel"]')?.getAttribute('aria-labelledby')).toBe(selected.id);
     act(() => selected.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true })));
-    expect(host.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toContain('Build together');
+    expect(host.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toContain('AI & connect');
     click(button('Start again'));
     expect(host.querySelector('h1')?.textContent).toContain('make their own');
   });

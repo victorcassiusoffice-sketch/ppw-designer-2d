@@ -39,8 +39,7 @@
 .plan-pill-group .plan-control-label,
 .plan-topbar .plan-build-tools button > span,
 .plan-primary-row > [data-testid="select-tool-toggle-phone"] > span,
-.designer-app[data-view="plan"] #canvas-plan-tools > div:first-child > button > span,
-.designer-app[data-view="plan"] [data-testid="clear-controls"] > button > span {
+.designer-app[data-view="plan"] #canvas-plan-tools > div:first-child > button > span {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
   overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
 }
@@ -236,8 +235,8 @@
   background: var(--capsule-bg, #16282e); color: var(--capsule-ink, #e1edef); box-shadow: var(--capsule-shadow, none);
   -webkit-backdrop-filter: blur(var(--capsule-blur, 20px)); backdrop-filter: blur(var(--capsule-blur, 20px));
 }
-.designer-app[data-view="plan"] [data-testid="clear-controls"] > button,
 .designer-app[data-view="plan"] :is([data-testid="mobile-undo"], [data-testid="mobile-redo"]) { width: var(--capsule-hit, 40px); }
+.designer-app[data-view="plan"] [data-testid="clear-controls"] > button { width: auto; padding: 0 10px; }
 .designer-app[data-view="plan"] [data-testid="mobile-precision"] { padding: 0 12px; }
 .designer-app[data-view="plan"] div:has(> [data-testid="mobile-undo"]) { gap: 4px; }
 .designer-app[data-view="plan"] [data-testid="clear-controls"] > button:hover,
@@ -296,9 +295,12 @@
 .designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools>div:first-child>button { height:36px; min-height:36px; width:36px; min-width:36px; }
 .designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools[data-open="false"]>:not(:first-child) { display:none; }
 .designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools[data-open="true"] [data-testid="energy-readout"] { border-radius:20px; font-size:10px; min-height:32px; }
+.plan-document-actions { margin-left:auto; display:flex; gap:4px; align-items:center; flex-shrink:0; }
 @media(max-width:767px) {
  .designer-app[data-view="plan"] .plan-view-toolbar { padding:3px 4px; gap:4px; align-items:flex-start; }
  .designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools>div:first-child>button { height:40px; min-height:40px; width:40px; min-width:40px; }
  .designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools>div:first-child>button:nth-child(n+4) { display:none; }
  .designer-app[data-view="plan"] .plan-view-toolbar [data-testid="canvas-chrome-toggle"] { height:44px; min-height:44px; }
+ .plan-document-actions [data-testid="clear-all-button"] { padding:0 8px !important; }
+ .plan-document-actions [data-testid="clear-all-button"] svg { display:none; }
 }

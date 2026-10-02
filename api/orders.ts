@@ -28,6 +28,7 @@
 
 import { eq, desc, inArray } from 'drizzle-orm';
 import { rejectShowcaseTransaction } from './_lib/showcaseSafety.js';
+import { handlePitchEnquiry } from './_lib/pitchEnquiry.js';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { withSentry, type MinReq, type MinRes } from './_lib/sentry.js';
 import { getDb, schema } from './_db/client.js';
@@ -1504,6 +1505,12 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
   }
 
   const { resource, segments } = parseSegments(req);
+
+  // Explicit pitch feedback is separate from protected demo checkout/quote flows.
+  if (resource === 'pitch-enquiry') {
+    await handlePitchEnquiry(req, res, () => readJsonBody(req));
+    return;
+  }
 
   const transaction = resource === 'gumroad' || resource === 'leads' || resource === 'k1'
     || (resource === 'designs' && req.method !== 'GET' && req.method !== 'HEAD')

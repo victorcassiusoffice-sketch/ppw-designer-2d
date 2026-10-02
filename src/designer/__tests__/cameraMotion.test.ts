@@ -1,10 +1,41 @@
 import { describe, expect, it } from 'vitest';
-import { cameraAtRest, cameraForViewport, dampOrbitCamera, shortestAngleDelta, panOrbitCamera } from '../cameraMotion';
+import { cameraAtRest, cameraForViewport, dampOrbitCamera, shortestAngleDelta, panOrbitCamera, pinchOrbitCamera } from '../cameraMotion';
 import type { OrbitCamera } from '../roomView3d';
 
 const camera: OrbitCamera = { target: { x: 0, y: 0, z: 1 }, azimuthRad: 0, elevationRad: 0.7, distanceM: 8, fovRad: 0.8 };
 
 describe('smooth 3D camera', () => {
+  it('does not accumulate translation from individually delivered finger moves during repeated zoom cycles', () => {
+    const start = {x:195, y:320, distance:100};
+    let current = camera;
+    for (let cycle=0; cycle<100; cycle++) {
+      const baseline = current;
+      // Left then right finger move out; their temporary midpoint differs.
+      current = pinchOrbitCamera(baseline, start, {x:170,y:320,distance:150},640,1,40);
+      current = pinchOrbitCamera(baseline, start, {x:195,y:320,distance:200},640,1,40);
+      expect(current.target).toEqual(camera.target);
+      expect(current.distanceM).toBe(4);
+      current = pinchOrbitCamera(baseline, start, {x:220,y:320,distance:150},640,1,40);
+      current = pinchOrbitCamera(baseline, start, start,640,1,40);
+    }
+    expect(current).toEqual(camera);
+  });
+  it('combines deliberate two-finger translation with zoom independently of event order', () => {
+    const start = {x:180,y:320,distance:100};
+    const next = pinchOrbitCamera(camera,start,{x:210,y:360,distance:200},640,1,40);
+    expect(next.target).toEqual(panOrbitCamera(camera,30,40,640).target);
+    expect(next.distanceM).toBe(4);
+    const differentPath = pinchOrbitCamera(camera,start,{x:170,y:290,distance:130},640,1,40);
+    expect(differentPath.target).not.toEqual(next.target);
+    expect(pinchOrbitCamera(camera,start,{x:210,y:360,distance:200},640,1,40)).toEqual(next);
+  });
+  it('recovers the starting view exactly after reaching zoom limits', () => {
+    const start = {x:195,y:320,distance:100};
+    expect(pinchOrbitCamera(camera,start,{...start,distance:10000},640,1,40).distanceM).toBe(1);
+    expect(pinchOrbitCamera(camera,start,{...start,distance:2},640,1,40).distanceM).toBe(40);
+    expect(pinchOrbitCamera(camera,start,start,640,1,40)).toEqual(camera);
+    expect(pinchOrbitCamera(camera,{...start,distance:0},start,640,1,40)).toBe(camera);
+  });
   it('preserves apparent object size and pan precision when the catalog takes some canvas height', () => {
     const initialHeight = 640;
     for (const height of [240, 400, 640, 900]) {

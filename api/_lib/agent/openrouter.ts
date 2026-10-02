@@ -31,6 +31,11 @@ export interface ChatRequest {
   model?: AgentModel;
   maxTokens?: number;
   temperature?: number;
+  /** Structured proposals are validated again against the app contract. */
+  responseFormat?: { type: 'json_object' };
+  timeoutMs?: number;
+  /** Internal design route override; never accepted from an HTTP caller. */
+  providerModel?: 'google/gemini-2.5-flash';
 }
 
 export interface ChatResponse {
@@ -64,7 +69,7 @@ export async function openRouterChat(
   fetchFn: typeof fetch = fetch,
 ): Promise<ChatResponse> {
   const model = req.model ?? 'gemini-flash';
-  const slug = MODEL_SLUGS[model];
+  const slug = req.providerModel ?? MODEL_SLUGS[model];
   if (!slug) throw new Error(`Unknown agent model: ${model}`);
 
   const body = {
@@ -72,6 +77,7 @@ export async function openRouterChat(
     messages: req.messages,
     max_tokens: req.maxTokens ?? 1024,
     temperature: req.temperature ?? 0.3,
+    ...(req.responseFormat ? { response_format: req.responseFormat } : {}),
   };
 
   const res = await fetchFn(`${OPENROUTER_BASE}/chat/completions`, {
@@ -83,6 +89,7 @@ export async function openRouterChat(
       'X-Title': 'PPW Merchant Integration Agent',
     },
     body: JSON.stringify(body),
+    ...(req.timeoutMs ? { signal: AbortSignal.timeout(req.timeoutMs) } : {}),
   });
 
   if (!res.ok) {

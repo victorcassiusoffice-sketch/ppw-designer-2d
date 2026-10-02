@@ -64,7 +64,7 @@ import { previewWallBuild, reconcileWallBuildChain, type WallBuildChain, type Wa
 import { commitWallBuild } from '../lib/wallBuildActions';
 import { BuildingControls } from './BuildingControls';
 import { useSmoothedCamera } from './useSmoothedCamera';
-import { cameraForViewport, panOrbitCamera } from '../designer/cameraMotion';
+import { cameraForViewport, panOrbitCamera, pinchOrbitCamera, type PinchSample } from '../designer/cameraMotion';
 import { GardenPanel } from './GardenPanel';
 import { gardenElementAt, gardenPoints, gardenRectFromPoints, gardenSurfacePolygon, isGardenAreaGesture, moveGardenFence, type GardenPlacement } from '../designer/garden';
 import { useGardenEditorStore } from '../store/gardenEditorStore';
@@ -770,6 +770,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   // ---- gestures -----------------------------------------------------------
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const drag = useRef<{ x: number; y: number; moved: boolean; pinchDist: number } | null>(null);
+  const pinchGesture = useRef<{ camera: OrbitCamera; start: PinchSample } | null>(null);
+  function seedPinchGesture() {
+    const [a, b] = [...pointers.current.values()];
+    pinchGesture.current = a && b && camera ? { camera, start: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, distance: Math.hypot(a.x - b.x, a.y - b.y) } } : null;
+  }
   /** An item being carried across the floor. */
   const itemDrag = useRef<{ instanceId: string; start: { x: number; y: number }; dx: number; dy: number; moved: boolean } | null>(null);
   /**
@@ -972,6 +977,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       }
       const [a, b] = [...pointers.current.values()];
       drag.current = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, moved: true, pinchDist: Math.hypot(a.x - b.x, a.y - b.y) };
+      seedPinchGesture();
+    } else {
+      // Pause for a third finger; removing it establishes a fresh baseline.
+      pinchGesture.current = null;
     }
   };
 
@@ -1072,15 +1081,15 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       return;
     }
     if (!d) return;
-    if (pointers.current.size >= 2) {
+    if (pointers.current.size > 2) return;
+    if (pointers.current.size === 2) {
       const [a, b] = [...pointers.current.values()];
       const dist = Math.hypot(a.x - b.x, a.y - b.y);
       const midX = (a.x + b.x) / 2, midY = (a.y + b.y) / 2;
-      const dx = midX - d.x, dy = midY - d.y;
-      setCamera((c) => c ? panOrbitCamera(c, dx, dy, cameraViewportHeightRef.current) : c);
+      const pinch = pinchGesture.current;
+      if (pinch) setCamera(pinchOrbitCamera(pinch.camera, pinch.start, { x: midX, y: midY, distance: dist }, cameraViewportHeightRef.current, baseDistanceRef.current * 0.18, baseDistanceRef.current * 3));
       d.x = midX;
       d.y = midY;
-      if (d.pinchDist > 0 && dist > 0) zoomBy(d.pinchDist / dist);
       d.pinchDist = dist;
       d.moved = true;
       return;
@@ -1108,6 +1117,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
 
   const endPointer = (e: React.PointerEvent<HTMLDivElement>, cancelled: boolean) => {
     const had = pointers.current.delete(e.pointerId);
+    if (pointers.current.size === 2) seedPinchGesture();
+    else pinchGesture.current = null;
     if (openingDrag.current === e.pointerId) {
       openingDrag.current = null;
       drag.current = null;
@@ -1352,6 +1363,18 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       elevationRad: view === 'above' ? 78 * Math.PI / 180 : view === 'front' ? 12 * Math.PI / 180 : 35 * Math.PI / 180,
       azimuthRad: view === 'dollhouse' ? DEFAULT_AZIMUTH_RAD : 0 } : current);
   }
+
+  useEffect(() => {
+    const clear = () => {
+      clearLocalTools();
+      pointers.current.clear();
+      drag.current = null;
+      pinchGesture.current = null;
+      setPanMode(false);
+    };
+    window.addEventListener('ppw:before-design-clear', clear);
+    return () => window.removeEventListener('ppw:before-design-clear', clear);
+  });
 
   function togglePan() {
     clearLocalTools();

@@ -46,6 +46,7 @@ const MerchantPitchPage = lazy(() => import('./pages/pitch/MerchantPitchPage'));
 const StudioPage = lazy(() => import('./pages/studio/StudioPage'));
 const StudioDesignerPage = lazy(() => import('./pages/studio/StudioPage').then((m) => ({ default: m.StudioDesignerPage })));
 const StudioMerchantsPage = lazy(() => import('./pages/studio/StudioPage').then((m) => ({ default: m.StudioMerchantsPage })));
+const MerchantConnectPage = lazy(() => import('./pages/studio/MerchantConnectPage'));
 const StudioShopFrame = lazy(() => import('./pages/studio/StudioPage').then((m) => ({ default: m.StudioShopFrame })));
 const PreviewShopRoute = lazy(() => import('./pages/studio/StudioPage').then((m) => ({ default: m.PreviewShopRoute })));
 const ShowcaseCheckoutGuard = lazy(() => import('./pages/studio/StudioPage').then((m) => ({ default: m.ShowcaseCheckoutGuard })));
@@ -128,6 +129,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/studio/designer" element={<StudioDesignerPage />} />
         <Route path="/studio/shop" element={<StudioShopFrame><PublicProductsPage /></StudioShopFrame>} />
         <Route path="/studio/merchants" element={<StudioMerchantsPage />} />
+        <Route path="/studio/merchants/connect" element={<MerchantConnectPage />} />
+        <Route path="/merchant/:slug/connect" element={<RequireMerchant><MerchantConnectPage /></RequireMerchant>} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<ShowcaseCheckoutGuard><CheckoutPage /></ShowcaseCheckoutGuard>} />
         <Route path="/orders" element={<OrdersPage />} />

@@ -58,8 +58,10 @@ import {
 } from '../lib/geometry';
 import type { PlacedRect, Polygon, Viewport } from '../lib/geometry';
 import { fitPlanViewport } from '../lib/fitPlanViewport';
-import { computeZoomScale, ZOOM_MIN_SCALE, ZOOM_MAX_SCALE } from '../lib/zoom';
+import { computeZoomScale, pinchPlanViewport, zoomViewportAt, type PlanPinch, ZOOM_MIN_SCALE, ZOOM_MAX_SCALE } from '../lib/zoom';
 import { RoomDrawLayer, RoomDrawHUD, type HoverVertex } from './RoomDrawMode';
+import { ClearControls } from './ClearControls';
+import { AiDesignButton } from './AiDesignWorkspace';
 import { WallDrawLayer, WallDrawHUD, CommittedWallsLayer } from '../designer/WallDrawMode';
 import { useWallStore } from '../store/wallStore';
 import { useHistoryStore, endDrawTransaction } from '../store/historyStore';
@@ -637,6 +639,8 @@ export function RoomCanvas({
   }, [onDrawComplete, pushToast]);
 
   const [viewport, setViewport] = useState<Viewport>(INITIAL_VIEWPORT);
+  const liveViewportRef = useRef(viewport);
+  liveViewportRef.current = viewport;
   /**
    * True once the user has deliberately panned / zoomed / pinched. Until
    * then the room stays auto-centred in the stage.
@@ -861,12 +865,14 @@ export function RoomCanvas({
         case '+':
         case '=': // unshifted "+" key
           e.preventDefault();
-          setViewport((v) => ({ ...v, scale: Math.min(MAX_SCALE, v.scale * factor) }));
+          userMovedViewportRef.current = true;
+          setViewport((v) => zoomViewportAt(v, factor, { x: (stageRef.current?.width() ?? 800) / 2, y: (stageRef.current?.height() ?? 600) / 2 }, fittedMinimumScaleRef.current, MAX_SCALE));
           break;
         case '-':
         case '_':
           e.preventDefault();
-          setViewport((v) => ({ ...v, scale: Math.max(Math.min(v.scale, fittedMinimumScaleRef.current), v.scale / factor) }));
+          userMovedViewportRef.current = true;
+          setViewport((v) => zoomViewportAt(v, 1 / factor, { x: (stageRef.current?.width() ?? 800) / 2, y: (stageRef.current?.height() ?? 600) / 2 }, fittedMinimumScaleRef.current, MAX_SCALE));
           break;
         case 'w':
         case 'W':
@@ -1129,13 +1135,25 @@ export function RoomCanvas({
    */
   const drawTapSuppressRef = useRef(false);
   // Mobile UX (fix/mobile-ux-v1): two-finger pinch zoom.
-  const pinchRef = useRef<{
-    active: boolean;
-    startDist: number;
-    startScale: number;
-    centerStage: { x: number; y: number };
-    centerWorld: { x: number; y: number };
-  } | null>(null);
+  const pinchRef = useRef<(PlanPinch & { ids: [number, number] }) | null>(null);
+  // The remaining finger after a pinch must lift before Konva starts a new
+  // single-finger drag; otherwise its pre-pinch drag origin jumps the plan.
+  const suppressStageDragRef = useRef(false);
+
+  useEffect(() => {
+    const clear = (event: Event) => {
+      pinchRef.current = null;
+      suppressStageDragRef.current = false;
+      floorAnchorRef.current = null;
+      doorGestureRef.current = null;
+      if ((event as CustomEvent<{ all: boolean }>).detail?.all) {
+        userMovedViewportRef.current = false;
+        setViewport(INITIAL_VIEWPORT);
+      }
+    };
+    window.addEventListener('ppw:before-design-clear', clear);
+    return () => window.removeEventListener('ppw:before-design-clear', clear);
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -1151,14 +1169,29 @@ export function RoomCanvas({
       return { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 };
     }
 
+    function seedPinch(e: TouchEvent) {
+      const stage = stageRef.current;
+      if (!stage || e.touches.length !== 2) { pinchRef.current = null; return; }
+      stage.stopDrag();
+      const rect = stage.container().getBoundingClientRect();
+      const mid = midpoint(e.touches[0], e.touches[1]);
+      pinchRef.current = {
+        viewport: { x: stage.x(), y: stage.y(), scale: stage.scaleX() },
+        midpoint: { x: mid.x - rect.left, y: mid.y - rect.top },
+        distance: dist(e.touches[0], e.touches[1]),
+        ids: [e.touches[0].identifier, e.touches[1].identifier],
+      };
+    }
+
     function onTouchStart(e: TouchEvent) {
       // One finger draws in the wall pen; two fingers always move the view.
       // RoomDrawLayer owns the stroke and cancels its preview for a pinch.
       if (e.touches.length === 1) {
         drawTapSuppressRef.current = false;
+        suppressStageDragRef.current = false;
         return;
       }
-      if (e.touches.length !== 2) return;
+      suppressStageDragRef.current = true;
       const stage = stageRef.current;
       if (!stage) return;
       try {
@@ -1166,20 +1199,7 @@ export function RoomCanvas({
       } catch {
         /* no-op */
       }
-      const rect = container!.getBoundingClientRect();
-      const mid = midpoint(e.touches[0], e.touches[1]);
-      const stageX = mid.x - rect.left;
-      const stageY = mid.y - rect.top;
-      pinchRef.current = {
-        active: true,
-        startDist: dist(e.touches[0], e.touches[1]),
-        startScale: viewport.scale,
-        centerStage: { x: stageX, y: stageY },
-        centerWorld: {
-          x: (stageX - viewport.x) / viewport.scale,
-          y: (stageY - viewport.y) / viewport.scale,
-        },
-      };
+      seedPinch(e);
       // A second finger means pinch, not a floor stroke — drop any anchor
       // so lifting the fingers cannot commit one (Floor tool 2026-08-30).
       floorAnchorRef.current = null;
@@ -1191,38 +1211,43 @@ export function RoomCanvas({
     }
 
     function onTouchMove(e: TouchEvent) {
-      if (pinchRef.current?.active && e.touches.length === 2) {
-        const { startDist, startScale, centerWorld } = pinchRef.current;
+      if (pinchRef.current && e.touches.length === 2) {
+        const pinch = pinchRef.current;
+        if (!pinch.ids.every(id => Array.from(e.touches).some(t => t.identifier === id))) { seedPinch(e); return; }
         const d = dist(e.touches[0], e.touches[1]);
-        if (startDist <= 0) return;
-        let newScale = startScale * (d / startDist);
-        newScale = Math.max(Math.min(startScale, fittedMinimumScaleRef.current), Math.min(MAX_SCALE, newScale));
         // Track the LIVE midpoint, so two fingers pan as well as zoom. The
         // old code froze the centre at gesture start, which meant a customer
         // could zoom but never move the plan with two fingers.
-        const rectNow = container!.getBoundingClientRect();
+        const stage = stageRef.current;
+        if (!stage) return;
+        stage.stopDrag();
+        const rectNow = stage.container().getBoundingClientRect();
         const midNow = midpoint(e.touches[0], e.touches[1]);
         const stageX = midNow.x - rectNow.left;
         const stageY = midNow.y - rectNow.top;
         userMovedViewportRef.current = true;
         drawTapSuppressRef.current = true;
-        setViewport({
-          x: stageX - centerWorld.x * newScale,
-          y: stageY - centerWorld.y * newScale,
-          scale: newScale,
-        });
+        const next = pinchPlanViewport(pinch, { x: stageX, y: stageY }, d, fittedMinimumScaleRef.current, MAX_SCALE);
+        // Keep Konva's event-time transform current even if React batches a
+        // rapid touchmove → lift → new pinch into one render.
+        stage.position({ x: next.x, y: next.y });
+        stage.scale({ x: next.scale, y: next.scale });
+        liveViewportRef.current = next;
+        setViewport(next);
         e.preventDefault();
         return;
       }
     }
 
     function onTouchEnd(e: TouchEvent) {
-      if (e.touches.length < 2 && pinchRef.current?.active) {
+      if (e.touches.length === 2 && suppressStageDragRef.current) seedPinch(e);
+      else if (e.touches.length < 2 && suppressStageDragRef.current) {
         pinchRef.current = null;
         // Lifting one finger of a pinch leaves the other one down; it must
         // not become a fresh tap that plants a vertex.
         drawTapSuppressRef.current = true;
       }
+      if (e.touches.length === 0) suppressStageDragRef.current = false;
     }
 
     container.addEventListener('touchstart', onTouchStart, { passive: false });
@@ -1235,8 +1260,7 @@ export function RoomCanvas({
       container.removeEventListener('touchend', onTouchEnd);
       container.removeEventListener('touchcancel', onTouchEnd);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewport.scale, viewport.x, viewport.y]);
+  }, []);
 
   // M1.5 pointer-FSM commit path. Snaps to the 0.5 m grid, validates
   // against the room polygon + existing placed items, and commits with
@@ -1849,13 +1873,9 @@ export function RoomCanvas({
   function zoomBy(factor: number) {
     userMovedViewportRef.current = true;
     setViewport((v) => {
-      const next = Math.min(MAX_SCALE, Math.max(Math.min(v.scale, fittedMinimumScaleRef.current), v.scale * factor));
-      if (next === v.scale) return v;
       const cx = stageSize.width / 2;
       const cy = stageSize.height / 2;
-      // Keep the world point under the stage centre pinned while the scale moves.
-      const k = next / v.scale;
-      return { scale: next, x: cx - (cx - v.x) * k, y: cy - (cy - v.y) * k };
+      return zoomViewportAt(v, factor, { x: cx, y: cy }, fittedMinimumScaleRef.current, MAX_SCALE);
     });
   }
 
@@ -3450,6 +3470,10 @@ export function RoomCanvas({
           </button>
         )}
         </div>
+        {viewMode === 'plan' && <div className="plan-document-actions">
+          <AiDesignButton onBeforeOpen={() => onDrawComplete?.()} />
+          <ClearControls inline enabled={viewMode === 'plan'} onBeforeClear={() => onDrawComplete?.()} />
+        </div>}
       </div>
 
     <div
@@ -4081,6 +4105,11 @@ export function RoomCanvas({
         draggable={!drawMode && !pendingProductId && !wallDrawEnabled && !floorTool && !gardenPlacement}
         onDragMove={(e) => {
           if (e.target === e.target.getStage()) {
+            if (suppressStageDragRef.current) {
+              e.target.stopDrag();
+              e.target.position({ x: liveViewportRef.current.x, y: liveViewportRef.current.y });
+              return;
+            }
             userMovedViewportRef.current = true;
             setViewport((v) => ({ ...v, x: e.target.x(), y: e.target.y() }));
           }

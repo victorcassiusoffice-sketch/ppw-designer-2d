@@ -35,6 +35,8 @@ export type ProductCategory =
   // PCF-1 (K1 meeting 2026-05-19) — categories surfaced from merchant API.
   // Sourced from migration 0004 product_status / agent category enums.
   | 'massage'
+  // Merchant imports may describe a recovery device without claiming it is a massage chair.
+  | 'recovery'
   | 'sauna'
   | 'fitness'
   // Wellness-Designer-App (e) — engineering plumbing for the Flooring

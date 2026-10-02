@@ -76,6 +76,7 @@ export const CATEGORY_LABELS: Record<ProductCategory, string> = {
   'eco-office-kit': 'Eco Office Kit',
   // PCF-1 (K1) — merchant-API category labels.
   massage: 'Massage',
+  recovery: 'Recovery',
   sauna: 'Sauna',
   fitness: 'Fitness',
   // Wellness-Designer-App (e/h) — Tweak 05 macro-category alignment.
@@ -142,6 +143,7 @@ export const CATEGORY_FILL: Record<ProductCategory, { fill: string; stroke: stri
   // PCF-1 — V4-AU-1 gold tint for merchant-supplied SKUs so they're
   // visually distinct from the bundled DEMO seeds.
   massage:          { fill: '#E9DCC2', stroke: '#C0A67E' },
+  recovery:         { fill: '#D2E6E2', stroke: '#5C8C82' },
   sauna:            { fill: '#DAA060', stroke: '#7A4F1F' },
   fitness:          { fill: '#C0C0C0', stroke: '#404040' },
   // Wellness-Designer-App (e/h) — Tweak 05 macro fills. Warm earth
@@ -273,6 +275,7 @@ export function thumbnailFor(category: ProductCategory): string {
         <rect x="18" y="8" width="28" height="48" rx="4" fill="#D8DCE0" stroke="#6B7480" stroke-width="2"/>
         <path d="M18 26h28M24 14v6M24 32v10" stroke="#6B7480" stroke-width="2" stroke-linecap="round"/>
       </svg>`;
+    case 'recovery':
     case 'other':
       return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="12" y="12" width="40" height="40" rx="4" fill="#F5EFE6" stroke="#C0A67E" stroke-width="2"/>

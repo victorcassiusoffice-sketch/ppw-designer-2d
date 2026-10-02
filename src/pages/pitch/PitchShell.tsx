@@ -2,11 +2,15 @@ import { useEffect, useRef, useState, type ReactNode, type KeyboardEvent } from 
 import { MEETING_URL } from './workflowModel';
 import { EmbeddedDesigner } from '../../demo/EmbeddedDesigner';
 import type { DemoScene } from '../../demo/demoRoute';
+import { PitchConnectChapter } from './PitchConnectChapter';
 import './pitch.css';
 
 export function PitchShell({ audience, chapters, chapter, onChapter, children }: {
   audience: 'Developers' | 'Merchants' | 'Construction'; chapters: readonly string[]; chapter: number; onChapter: (chapter: number) => void; children: ReactNode;
 }) {
+  const allChapters = [...chapters, 'AI & connect'];
+  const [connectEntry, setConnectEntry] = useState<'ai' | 'contact'>('ai');
+  const selectChapter = (index: number) => { setConnectEntry('ai'); onChapter(index); };
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   useEffect(() => {
     const previous = document.title;
@@ -16,8 +20,8 @@ export function PitchShell({ audience, chapters, chapter, onChapter, children }:
   const navigate = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
-    const next = event.key === 'Home' ? 0 : event.key === 'End' ? chapters.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + chapters.length) % chapters.length;
-    onChapter(next); buttons.current[next]?.focus();
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? allChapters.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + allChapters.length) % allChapters.length;
+    selectChapter(next); buttons.current[next]?.focus();
   };
   return <main className={`pitch-app${audience === 'Construction' ? ' pitch-construction' : ''}`}>
     <header className="pitch-header"><a className="pitch-brand" href="/studio" aria-label="PPW Studio home"><span className="pitch-brand-mark">P<span>·</span></span><span>PPW <strong>STUDIO</strong></span></a>
@@ -25,10 +29,10 @@ export function PitchShell({ audience, chapters, chapter, onChapter, children }:
       <nav aria-label="Pitch links"><a href={audience === 'Developers' ? '/pitch/merchants' : '/pitch/developers'}>{audience === 'Developers' ? 'For merchants' : 'For developers'}</a><a className="pitch-meeting" href={MEETING_URL} target="_blank" rel="noreferrer">Meet Victor <span aria-hidden="true">↗</span></a></nav>
     </header>
     <div className="pitch-chapters" role="tablist" aria-label={`${audience} presentation chapters`}>
-      {chapters.map((label, index) => <button key={label} ref={(node) => { buttons.current[index] = node; }} type="button" role="tab" id={`pitch-tab-${index}`} aria-selected={chapter === index} aria-controls="pitch-stage" tabIndex={chapter === index ? 0 : -1} onClick={() => onChapter(index)} onKeyDown={(event) => navigate(event, index)}><span>{String(index + 1).padStart(2, '0')}</span>{label}</button>)}
+      {allChapters.map((label, index) => <button key={label} ref={(node) => { buttons.current[index] = node; }} type="button" role="tab" id={`pitch-tab-${index}`} aria-selected={chapter === index} aria-controls="pitch-stage" tabIndex={chapter === index ? 0 : -1} onClick={() => selectChapter(index)} onKeyDown={(event) => navigate(event, index)}><span>{String(index + 1).padStart(2, '0')}</span>{label}</button>)}
     </div>
-    <section id="pitch-stage" role="tabpanel" aria-labelledby={`pitch-tab-${chapter}`} tabIndex={0} className="pitch-stage" key={chapter}>{children}</section>
-    <footer className="pitch-footer"><span><span className="pitch-status-dot" /> Real design tools. A workflow built around you.</span><div><a href="/pitch/construction">Materials</a><a href="/studio">Studio</a><a href="/demo">Explore the demo ↗</a><button type="button" onClick={() => onChapter((chapter + 1) % chapters.length)} aria-label={chapter === chapters.length - 1 ? 'Return to first chapter' : 'Next chapter'}>{chapter === chapters.length - 1 ? 'Start again' : 'Next chapter'} <span aria-hidden="true">→</span></button></div></footer>
+    <section id="pitch-stage" role="tabpanel" aria-labelledby={`pitch-tab-${chapter}`} tabIndex={0} className="pitch-stage" key={chapter}>{chapter === allChapters.length - 1 ? <PitchConnectChapter key={connectEntry} audience={audience.toLowerCase() as 'developers' | 'merchants' | 'construction'} initialSection={connectEntry} /> : children}</section>
+    <footer className="pitch-footer"><span><span className="pitch-status-dot" /> Real design tools. A workflow built around you.</span><div><button type="button" className="pitch-feedback-link" onClick={() => { setConnectEntry('contact'); onChapter(allChapters.length - 1); }}>Feedback & meetings</button><a href="/pitch/construction">Materials</a><a href="/studio">Studio</a><a href="/demo">Explore the demo ↗</a><button type="button" onClick={() => selectChapter((chapter + 1) % allChapters.length)} aria-label={chapter === allChapters.length - 1 ? 'Return to first chapter' : 'Next chapter'}>{chapter === allChapters.length - 1 ? 'Start again' : 'Next chapter'} <span aria-hidden="true">→</span></button></div></footer>
   </main>;
 }
 

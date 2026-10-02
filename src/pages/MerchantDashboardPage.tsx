@@ -246,7 +246,8 @@ function Header({ slug }: { slug: string }): JSX.Element {
             {slug || '—'}
           </h1>
         </div>
-        <nav style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        <nav style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Link to={`/merchant/${encodeURIComponent(slug)}/connect`} data-testid="merchant-dashboard-connect" style={{ color: BRAND.cream, padding: '8px 12px', border: `1px solid ${BRAND.creamLine}`, borderRadius: 6, fontSize: 13, textDecoration: 'none' }}>Connect catalogue</Link>
           <Link
             to={`/merchant/${encodeURIComponent(slug)}/products/new`}
             data-testid="merchant-dashboard-add-product"

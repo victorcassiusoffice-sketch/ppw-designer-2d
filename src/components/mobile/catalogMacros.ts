@@ -90,6 +90,7 @@ const PRODUCT_TO_MACRO: Record<ProductCategory, MacroCategory> = {
   fitness: 'cardio',
   'ice-bath': 'recovery',
   massage: 'recovery',
+  recovery: 'recovery',
   'sleep-pod': 'recovery',
   sauna: 'sauna',
   plant: 'decor',

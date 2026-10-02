@@ -51,7 +51,7 @@ export function RoomViewControls({ workspace, pan, onPan, onRotate, onZoom, onFi
       <button type="button" onClick={() => onRotate(-Math.PI / 4)} aria-label="Rotate right" title="Rotate right" data-testid="wallpaint-3d-rotate-right">↻</button>
       <span className="house-control-divider" />
       <button type="button" onClick={() => onZoom(0.82)} aria-label="Zoom in" title="Zoom in">+</button>
-      <button type="button" onClick={() => onZoom(1.22)} aria-label="Zoom out" title="Zoom out">−</button>
+      <button type="button" onClick={() => onZoom(1 / 0.82)} aria-label="Zoom out" title="Zoom out">−</button>
       <button type="button" onClick={onFit} aria-label="Fit" title="Fit the whole plan" data-testid="wallpaint-3d-fit">Fit</button>
       <button type="button" className="house-view-options-trigger" aria-expanded={expanded} onClick={() => { setExpanded(!expanded); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); window.dispatchEvent(new CustomEvent('ppw:close-catalog')); }} data-testid="house-view-settings">View <span aria-hidden="true">{expanded ? '⌄' : '⌃'}</span></button>
     </div>

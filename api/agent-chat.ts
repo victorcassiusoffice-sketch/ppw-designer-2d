@@ -36,6 +36,8 @@ import { authoriseMerchantBearer } from './_lib/merchantSession.js';
 import { getClientIp } from './_lib/rateLimit.js';
 import { eq, sql } from 'drizzle-orm';
 import { getDb, schema } from './_db/client.js';
+import { handleDesignAssistant } from './_lib/designAssistant.js';
+import { handleDesignMcp } from './_lib/designMcp.js';
 
 const MAX_MESSAGES = 30;
 const MAX_MESSAGE_CHARS = 4000;
@@ -250,6 +252,10 @@ export function buildAgentHealthBody(env: { configured: boolean; error?: string 
 }
 
 async function rawHandler(req: ChatReq, res: MinRes): Promise<void> {
+  // Reuse this existing Vercel function; merchant chat authorization below is unchanged.
+  const path=(req.url??'').split('?')[0].replace(/\/$/,'');
+  if(path==='/api/design-assistant'){await handleDesignAssistant(req,res);return;}
+  if(path==='/api/mcp'){await handleDesignMcp(req,res);return;}
   if (req.method === 'OPTIONS') {
     res.status(204).end();
     return;

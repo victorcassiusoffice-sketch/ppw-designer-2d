@@ -1,3 +1,23 @@
+<!-- phone-ai-merchant-2026-10-02:start -->
+## Phone navigation, Clear, AI/MCP, merchant setup and pitches — 2 October 2026
+
+**Local implementation checkpoint — new deployment not yet verified.** Continue in `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`, branch `cursor/feat-3d-flooring-hud-bc95`. Checkout base is `0a93ac7d91b9edb207bbce2d54cdbf3ee1179810`; this work is in the current changes. The older production evidence below remains historical and does not establish that these October features are live.
+
+- Fixed phone pinch drift using stable gesture-start baselines in Plan and 3D, retained world anchors for zoom controls, and suppressed the stale one-finger drag when a pinch ends. Two-finger navigation cancels transient drawing/placement actions rather than accidentally committing them.
+- Restored a named **Clear** action in both views. Current-page full reset or active-room product-only clear is confirmed, cancellable, focus-managed and undoable; other saved pages remain intact.
+- Added a review-first design workbench: local guided layout, signed-in hosted AI, validated JSON import/export and MCP connection details. Drafts create a new page, preserving the previous plan. Permanent metre-based contract/geometry checks feed the existing room/floor/opening/stair/roof/garden model. Product centre coordinates are converted to the editor's top-left representation using verified dimensions.
+- Added `/api/design-assistant` and `/api/mcp` through the existing agent function. Hosted model requests require signed Clerk identity and fail-closed distributed quotas; public MCP exposes only schema/catalogue/guided/validation tools with no customer records or mutations. The provider key is configured on existing production, but successful new hosted inference remains to be verified after deployment.
+- Added JSON/CSV merchant preparation, dimension/currency validation, review/download packs, embed/MCP examples, and protected sequential publication through the existing merchant product endpoint. Public demos cannot publish. Confirmed SKU receipts and unknown outcomes are tracked, preventing automatic uncertain retries.
+- Updated all three pitches with a concise AI/connect/contact chapter, actual app screenshots and optional live demo. Added project feedback and physical meeting requests with consent, real leads-table persistence and saved receipts. Calendly remains the one-hour booking path; a physical request or downloaded form is not a booking.
+- Root validation: **292 files / 3,214 tests passed**, followed by **42 targeted tests** after review fixes. API typecheck and scoped lint passed. Root is rebuilding after the final client TypeScript fix; final build success, browser checks and deployment evidence are still to be appended.
+- Placement-host review correction: actual catalogue placement metadata is retained in the browser/API, and generated/imported room proposals reject roof/wall/surface/ceiling products without defined hosts. Add those products through the existing editor after applying a concept. The converter enforces the same rule. A later **58-test / four-file** focused run, API typecheck and scoped lint passed.
+
+Full change summary, absolute source paths, endpoint map, honest limits and extension instructions: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\docs\PHONE-AI-MERCHANT-2026-10-02.md`. AI/MCP protocol/auth details: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\docs\AI-DESIGN-MCP.md`.
+
+Next: finish rebuild and UI verification, refresh actual screenshots, release the authorized feature preview, verify its unique host/health commit/routes, then update BUILD-LINKS and handoff records. Never describe a local change as live based on an earlier deployment. Preserve the original checkout and recovery stash `649569db5766b86c5880321f6cfea782f356da1f` (`^3` untracked snapshot).
+
+<!-- phone-ai-merchant-2026-10-02:end -->
+
 <!-- materials-release:start -->
 ## Verified Materials release — 30 September 2026
 

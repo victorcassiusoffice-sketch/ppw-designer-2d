@@ -29,6 +29,7 @@ let viewport = { width: 960, height: 640 };
 beforeEach(async () => {
   viewport = { width: 960, height: 640 };
   renderer.camera = null;
+  HTMLElement.prototype.setPointerCapture = vi.fn();
   vi.stubGlobal('matchMedia', vi.fn((query: string) => ({ matches: query.includes('prefers-reduced-motion'), addEventListener: vi.fn(), removeEventListener: vi.fn() })));
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(() => ({ ...viewport, x: 0, y: 0, left: 0, top: 0, right: viewport.width, bottom: viewport.height, toJSON: () => ({}) }));
   usePropertyStore.getState().resetToDefault();
@@ -43,6 +44,13 @@ afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(
 function click(selector: string) { act(() => host.querySelector<HTMLButtonElement>(selector)!.click()); }
 function zoomIn() { click('[aria-label="Zoom in"]'); click('[aria-label="Zoom in"]'); return structuredClone(renderer.camera!); }
 function resize(width: number, height: number) { viewport = { width, height }; act(() => window.dispatchEvent(new Event('resize'))); }
+function finger(type: string, id: number, x: number, y: number) {
+  act(() => {
+    const event = new MouseEvent(type, {clientX:x,clientY:y,bubbles:true,buttons:type === 'pointerup' ? 0 : 1});
+    Object.defineProperties(event,{pointerId:{value:id},pointerType:{value:'touch'},isPrimary:{value:id===1}});
+    host.querySelector('[data-testid="wallpaint-3d-canvas"]')!.dispatchEvent(event);
+  });
+}
 function expectSameFraming(camera: OrbitCamera, initialHeight = 640) {
   expect(renderer.camera).toMatchObject({ distanceM: camera.distanceM, target: camera.target, azimuthRad: camera.azimuthRad, elevationRad: camera.elevationRad });
   const pixelsPerMetre = (c: OrbitCamera, height: number) => height / (2 * c.distanceM * Math.tan(c.fovRad / 2));
@@ -50,6 +58,38 @@ function expectSameFraming(camera: OrbitCamera, initialHeight = 640) {
 }
 
 describe('3D camera stays where the customer leaves it', () => {
+  it('keeps the house centred through 30 phone pinch cycles delivered one finger at a time', () => {
+    resize(390,640);
+    const before = structuredClone(renderer.camera!);
+    finger('pointerdown',1,145,320); finger('pointerdown',2,245,320);
+    for (let cycle=0; cycle<30; cycle++) {
+      finger('pointermove',1,95,320); finger('pointermove',2,295,320);
+      expect(renderer.camera!.target).toEqual(before.target);
+      expect(renderer.camera!.distanceM).toBeCloseTo(before.distanceM/2,10);
+      finger('pointermove',1,145,320); finger('pointermove',2,245,320);
+    }
+    finger('pointerup',1,145,320); finger('pointerup',2,245,320);
+    expect(renderer.camera).toEqual(before);
+  });
+  it('does not creep in scale when phone plus and minus are alternated', () => {
+    const before = structuredClone(renderer.camera!);
+    for (let cycle=0;cycle<40;cycle++) { click('[aria-label="Zoom in"]'); click('[aria-label="Zoom out"]'); }
+    expect(renderer.camera!.distanceM).toBeCloseTo(before.distanceM,10);
+    expect(renderer.camera!.target).toEqual(before.target);
+  });
+  it('rebases a second pinch after a finger lifts and a third-finger interruption without a jump', () => {
+    finger('pointerdown',1,100,200); finger('pointerdown',2,200,200);
+    finger('pointermove',1,50,200); finger('pointermove',2,250,200);
+    finger('pointerup',2,250,200);
+    const afterLift = structuredClone(renderer.camera!);
+    finger('pointerdown',3,250,200); finger('pointermove',3,250,200);
+    expect(renderer.camera).toEqual(afterLift);
+    finger('pointerdown',4,190,400); finger('pointermove',4,210,410);
+    expect(renderer.camera).toEqual(afterLift);
+    finger('pointerup',4,210,410); finger('pointermove',3,250,200);
+    expect(renderer.camera).toEqual(afterLift);
+    finger('pointercancel',1,50,200); finger('pointerup',3,250,200);
+  });
   it('keeps zoom and target through Furnish and catalog/inspector viewport resizing', () => {
     const camera = zoomIn();
     click('[data-testid="house-mode-furnish"]');

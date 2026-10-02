@@ -9,6 +9,8 @@ import { activeLevelIdOf, isOutdoorRoom, isRoofRoom, levelsOf, isRoofLevel } fro
 import { isDrawnPolygon } from '../designer/roomLayout';
 import type { BuildingControlsProps } from './BuildingControls';
 import { HouseCostPanel } from './HouseCostPanel';
+import { ClearControls } from './ClearControls';
+import { AiDesignButton } from './AiDesignWorkspace';
 import { isShowcaseReadOnly, DEMO_NOTICE } from '../lib/showcaseSafety';
 import { DOOR_WIDTHS_M } from '../designer/openings';
 import './houseWorkspace.css';
@@ -110,6 +112,8 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
       <div className="house-brand" aria-label="PPW House Studio"><span className="house-mark">P</span><div><strong>{readOnly ? 'DEMO' : 'HOUSE STUDIO'}</strong><span title={readOnly ? DEMO_NOTICE : name}>{readOnly ? 'Preview · no orders' : name}</span></div></div>
       <div className="house-view-switch" aria-label="Design view"><button onClick={onPlan}>2D Plan</button><button aria-pressed="true">3D House</button></div>
       <div className="house-project-actions">
+        <AiDesignButton onBeforeOpen={onSelect} />
+        <ClearControls inline />
         <button title="Undo (Ctrl+Z)" aria-label="Undo" disabled={!canUndo} onClick={() => useHistoryStore.getState().undo()}>↶</button>
         <button title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled={!canRedo} onClick={() => useHistoryStore.getState().redo()}>↷</button>
         {onCart && <button className="house-cart house-checkout-toggle" title={readOnly ? 'Products and estimate' : 'Products, cost and checkout'} aria-label="Products and cost" aria-expanded={costOpen} onClick={toggleCost}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="m3 7 9-4 9 4v11l-9 4-9-4V7Zm0 0 9 4 9-4M12 11v11M7.5 5 9 4l9 4v5" /></svg><span className="house-cart-count">{cart.totalItemCount}</span></button>}

@@ -30,6 +30,8 @@ const API_REACHABLE_SRC_ENTRIES = [
   'src/lib/capture/types.ts',
   // Phase 0 money-path: server re-pricing imports the fallback FX rates.
   'src/lib/fx.ts',
+  'src/designer/aiDesignContract.ts',
+  'src/data/mauritiusOutdoor.ts',
 ];
 
 /** Match relative import/export specifiers, skipping `import type ...`. */

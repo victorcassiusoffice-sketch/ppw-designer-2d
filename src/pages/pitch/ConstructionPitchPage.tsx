@@ -30,9 +30,9 @@ export default function ConstructionPitchPage() {
     {chapter === 0 && <div className="pitch-hero">
       <div className="pitch-hero-copy"><Eyebrow>Construction in Mauritius · supplier example: UBP</Eyebrow>
         <h1>Draw the wall.<br /><em>Understand the materials.</em></h1>
-        <p className="pitch-lead">One shared design connects the buyer, the builder and the supplier. Explore the home in 2D and Premium 3D, then open Materials when you need the quantities behind it.</p>
+        <p className="pitch-lead">Start with an AI-assisted layout or draw by hand. Review the same home in 2D and Premium 3D, then open Materials for the blocks, concrete and roof quantities behind it.</p>
         <div className="pitch-chip-row"><StatusChip available>Materials · editable quantity estimates</StatusChip><StatusChip>Supplier ordering · integration required</StatusChip></div>
-        <button type="button" className="pitch-primary" onClick={() => setChapter(1)}>Try the live Materials workspace ↗</button>
+        <button type="button" className="pitch-primary" onClick={() => setChapter(1)}>Try the live Materials workspace ↗</button><button type="button" className="pitch-secondary" onClick={() => setChapter(5)}>Explore AI automation ↗</button>
         <p className="pitch-fine">An independent PPW presentation using publicly documented UBP products. This is not an official UBP platform, partnership or endorsement.</p>
         <div className="pitch-hero-metrics"><span><strong>Draw</strong>Walls & openings</span><span><strong>Inspect</strong>Editable assumptions</span><span><strong>Review</strong>Supplier quantities</span></div>
       </div>

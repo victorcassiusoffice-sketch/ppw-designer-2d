@@ -18,6 +18,8 @@ import {
 } from '../apiCatalogAdapter';
 import { getAllProducts } from '../products';
 import { useCatalogStore } from '../../store/catalogStore';
+import { macroOf } from '../../components/mobile/catalogMacros';
+import { ImportProductSchema } from '../../lib/merchants/catalogImport';
 
 function apiRow(overrides: Partial<ApiProductSummary> = {}): ApiProductSummary {
   return {
@@ -40,6 +42,17 @@ function apiRow(overrides: Partial<ApiProductSummary> = {}): ApiProductSummary {
 }
 
 describe('normaliseCategory', () => {
+  it('keeps every accepted merchant import category in its intended catalogue tab', () => {
+    for (const category of ImportProductSchema.shape.category.options) {
+      const product = apiProductToProduct(apiRow({ category }));
+      expect(macroOf(product)).toBe(category);
+      expect(product.category).not.toBe('other');
+      if (category === 'outdoor') expect(product.outdoor).toBe(true);
+    }
+    expect(normaliseCategory(' RECOVERY ')).toBe('recovery');
+    expect(normaliseCategory('cardio')).toBe('fitness');
+    expect(normaliseCategory('eco')).toBe('solar');
+  });
   it('passes lighting through (was folded into other before Sims world)', () => {
     expect(normaliseCategory('lighting')).toBe('lighting');
     expect(normaliseCategory('  Lighting ')).toBe('lighting');

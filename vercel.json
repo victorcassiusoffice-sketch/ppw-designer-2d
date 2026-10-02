@@ -78,6 +78,9 @@
     }
   ],
   "rewrites": [
+    { "source": "/api/design-assistant", "destination": "/api/agent-chat" },
+    { "source": "/api/mcp", "destination": "/api/agent-chat" },
+    { "source": "/api/pitch-enquiry", "destination": "/api/orders" },
     { "source": "/api/createPaypalOrder", "destination": "/api/paypal-router" },
     { "source": "/api/capturePaypalOrder", "destination": "/api/paypal-router" },
     { "source": "/api/paypal-webhook", "destination": "/api/paypal-router" },

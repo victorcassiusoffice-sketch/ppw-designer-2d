@@ -17,6 +17,7 @@ const DEADLINE_PHASES = [
 /** What the designer does today; the right-hand column of chapter 05 is what still needs integration. */
 const BUILT_TODAY = [
   '2D plan and Premium 3D on the same plan',
+  'Guided layout drafts with dimensions, explicit review and undo; AI workspace with provider setup',
   'Colour-true paint: a wall shows the picked shade in every view · TintEX and Sofap ranges with real tin prices',
   'Floors, roof and solar with a plain-English energy meter',
   'Garden, paving and a Duraco water tank',
@@ -30,7 +31,7 @@ const INTEGRATION_REQUIRED = [
   'Approved purchasing and routing to your suppliers',
   'Contractor scheduling and recipient emails',
   'E-signature, secure identity and finance providers',
-  'AI-assisted design with buyer review',
+  'Project-specific design rules and approval roles',
 ];
 /** A client overlay changes words and the scene, never routes or structure. No prices anywhere. */
 const CLIENTS: Record<DeveloperClient, { name: string; eyebrow: string; headline: string; lead: string; scene: DemoScene; artLabel: string; liveNote: string; managed: string[]; team: string[]; laterPhases: string }> = {
@@ -76,7 +77,7 @@ export default function DeveloperPitchPage() {
 
   return <PitchShell audience="Developers" chapters={CHAPTERS} chapter={chapter} onChapter={setChapter}>
     {chapter === 0 && <div className="pitch-hero">
-      <div className="pitch-hero-copy"><Eyebrow>{overlay?.eyebrow ?? 'Property, with possibility'}</Eyebrow>{overlay ? <h1 className="pitch-h1-client">{overlay.headline}</h1> : <h1>A home they can <em>make their own.</em></h1>}<p className="pitch-lead">{overlay?.lead ?? 'Let buyers walk their apartment as a 2D plan and in Premium 3D, pick paint and finishes that show true in every view, and see what each choice means for the handover.'}</p><div className="pitch-chip-row"><StatusChip available>2D plan + Premium 3D · live</StatusChip><StatusChip available>Colour-true paint · live</StatusChip><StatusChip>Delivery workflow · integration required</StatusChip></div><button type="button" className="pitch-primary" onClick={() => setChapter(1)}>Shape an apartment <span aria-hidden="true">↗</span></button><div className="pitch-hero-metrics"><span><strong>01</strong>Explore the space</span><span><strong>02</strong>Agree the choices</span><span><strong>03</strong>Coordinate the people</span></div></div>
+      <div className="pitch-hero-copy"><Eyebrow>{overlay?.eyebrow ?? 'Property, with possibility'}</Eyebrow>{overlay ? <h1 className="pitch-h1-client">{overlay.headline}</h1> : <h1>A home they can <em>make their own.</em></h1>}<p className="pitch-lead">{overlay?.lead ?? 'Let buyers describe a home, review an AI-assisted draft, then refine it in a 2D plan and Premium 3D. Keep finishes, real products and Materials quantities together.'}</p><div className="pitch-chip-row"><StatusChip available>2D plan + Premium 3D · live</StatusChip><StatusChip available>Guided drafts + AI workspace</StatusChip><StatusChip>Delivery workflow · integration required</StatusChip></div><button type="button" className="pitch-primary" onClick={() => setChapter(1)}>Shape an apartment <span aria-hidden="true">↗</span></button><button type="button" className="pitch-secondary" onClick={() => setChapter(5)}>Explore AI automation ↗</button><div className="pitch-hero-metrics"><span><strong>01</strong>Explore the space</span><span><strong>02</strong>Agree the choices</span><span><strong>03</strong>Coordinate the people</span></div></div>
       <figure className="pitch-hero-art"><img src="/showcase/developer-vision.webp" alt="Architectural concept of a warmly furnished apartment, garden and material palette" /><figcaption>Architectural concept imagery · explore the actual designer in chapter 02</figcaption><div className="pitch-art-label"><span className="pitch-status-dot" /> {overlay?.artLabel ?? 'The apartment becomes a conversation.'}</div></figure>
     </div>}
 

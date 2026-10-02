@@ -1,5 +1,20 @@
 import type { OrbitCamera } from './roomView3d';
 
+export interface PinchSample { x: number; y: number; distance: number }
+
+/** Resolve every two-finger frame against its original camera. Pointer events
+ * arrive one finger at a time: incremental pan followed by zoom would integrate
+ * their temporary midpoint movement at different scales, drifting after every
+ * otherwise symmetric pinch. A baseline also makes clamping reversible. */
+export function pinchOrbitCamera(
+  camera: OrbitCamera, start: PinchSample, current: PinchSample,
+  viewportHeight: number, minDistance: number, maxDistance: number,
+): OrbitCamera {
+  if (start.distance < 2 || current.distance < 2 || ![start.x, start.y, start.distance, current.x, current.y, current.distance].every(Number.isFinite)) return camera;
+  const panned = panOrbitCamera(camera, current.x - start.x, current.y - start.y, viewportHeight);
+  return { ...panned, distanceM: Math.max(minDistance, Math.min(maxDistance, camera.distanceM * start.distance / current.distance)) };
+}
+
 /** Keep world-to-screen scale fixed when an inspector/catalog changes the canvas height. */
 export function cameraForViewport(camera: OrbitCamera, viewportHeight: number, referenceHeight: number): OrbitCamera {
   if (viewportHeight <= 0 || referenceHeight <= 0 || viewportHeight === referenceHeight) return camera;
