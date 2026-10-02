@@ -113,6 +113,18 @@ body:has([data-testid="wallpaint-3d-overlay"])>vercel-live-feedback{display:none
 
 /* Shared floor/build navigation and a collapsible basket stay in reserved space. */
 .house-project-actions .house-checkout-toggle{position:relative;border:1px solid #496f81;border-radius:12px;background:#244758;min-width:40px}
+/* Keep every action reachable even on a 320px phone; labels remain on AI/Clear. */
+@media(max-width:380px){
+  .house-header{padding:0 6px;gap:4px}
+  .house-brand{flex:none}.house-brand>div{display:none}.house-mark{flex:none}
+  .house-view-switch{flex:none;margin-left:0;width:88px}.house-view-switch button{flex:1;min-width:0;padding:4px 3px;white-space:normal;line-height:12px;min-height:36px}
+  .house-project-actions{margin-left:auto;flex:none}
+  .house-project-actions button{min-width:26px}
+  .house-project-actions .ai-design-trigger{min-width:34px;padding:5px 6px;font-size:11px!important}
+  .house-project-actions [data-testid=clear-all-button]{min-width:50px;padding:5px 6px;gap:3px;font-size:11px}
+  .house-project-actions [data-testid=clear-all-button] svg{width:12px}
+  .house-project-actions .house-checkout-toggle{min-width:34px}
+}
 .house-cart-count{position:absolute;right:-3px;top:-5px;min-width:17px;height:17px;padding:1px 3px;border-radius:9px;background:#93dce0;color:#17364a;font-size:9px;line-height:15px;font-weight:700}
 .house-cost-pill{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto;padding:5px 10px;min-height:31px;border:1px solid #4a7486;border-radius:18px;background:#224555;font-size:11px;white-space:nowrap}
 .house-cost-pill>span{color:#a9c7d6;font-size:10px}.house-cost-pill strong{color:#d0f3f3;font-weight:600}
