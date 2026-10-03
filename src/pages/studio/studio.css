@@ -17,3 +17,78 @@
 @media(min-width:1550px){.studio-home{padding-top:55px}.studio-hero{min-height:520px}}
 @media(max-width:900px){.studio-header{gap:10px}.studio-header nav a{padding:9px 12px}.studio-hero{gap:20px}.studio-page h1{font-size:36px}.studio-intro{font-size:13px}.studio-mode button{padding:11px 8px;grid-template-columns:21px 1fr}.studio-mode small{font-size:9px}.studio-paths{gap:9px}.studio-paths>a{padding:15px 12px;gap:10px}.studio-path-icon{display:none}.studio-paths h2{font-size:13px}.studio-merchant-main{gap:25px}.studio-workspace-bar>div:first-child span{display:none}}
 @media(max-width:600px){.studio-header{min-height:68px;padding:12px 16px;flex-wrap:wrap;gap:10px}.studio-brand strong{font-size:15px}.studio-brand small{font-size:9px}.studio-brand>span{width:31px;height:31px;font-size:22px}.studio-header nav{margin-left:auto;margin-right:0;gap:0}.studio-header nav a{font-size:11px;padding:9px}.studio-header>.studio-meeting{display:none}.studio-home{padding:24px 20px 20px}.studio-hero{grid-template-columns:1fr;gap:20px}.studio-eyebrow{font-size:9px;margin-bottom:15px}.studio-page h1{font-size:39px}.studio-intro{font-size:13px;margin-bottom:19px}.studio-mode button{padding:12px}.studio-mode small{font-size:10px}.studio-hero-art{max-height:240px;overflow:hidden;border-radius:18px}.studio-hero-art img{aspect-ratio:1.5;max-height:240px;object-position:center}.studio-hero-art figcaption{bottom:10px;font-size:7px}.studio-paths{grid-template-columns:1fr;margin-top:20px;gap:10px}.studio-paths>a{padding:16px}.studio-path-icon{display:block}.studio-paths h2{font-size:15px}.studio-paths p{font-size:11px}.studio-home-footer{line-height:1.7}.studio-workspace .studio-header{min-height:54px;padding:8px 12px}.studio-workspace-bar{gap:8px;padding:7px 12px}.studio-workspace-bar>div:first-child{font-size:11px}.studio-view-toggle button{font-size:10px;padding:6px 10px}.studio-workspace-bar>a{font-size:10px}.studio-shop-notice{padding:10px 16px;align-items:flex-start;font-size:10px;gap:10px}.studio-shop-notice a{max-width:95px;white-space:normal}.studio-merchant-main{padding:32px 20px;grid-template-columns:1fr;gap:26px}.studio-merchant-main h1{font-size:36px}.studio-merchant-info{grid-column:auto;flex-direction:column;align-items:flex-start;gap:10px}.studio-merchant-card{padding:22px}.studio-checkout-message{padding-top:36px}.studio-checkout-message h1{font-size:35px}.studio-checkout-message>div{flex-direction:column;gap:18px}}
+
+/* Warm tactile Studio shell. These styles stop at the shell: the embedded
+   designer and product shop keep their functional component boundaries. */
+.studio-page {
+  --studio-bg: #eeeee7;
+  --studio-line: #cdd4c9;
+  --studio-mint: #3c7764;
+  --studio-text: #273c35;
+  background: radial-gradient(ellipse at 90% 0%, #dbe7dc 0, transparent 48%), var(--studio-bg);
+  color-scheme: light;
+}
+.studio-page :focus-visible { outline-color: #347960; }
+.studio-page a, .studio-page button { transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }
+.studio-header { background: #f1f2eacc; backdrop-filter: blur(18px); }
+.studio-brand > span { background: #e3ece0; border-color: #c9d4c6; color: #2c5a49; box-shadow: 3px 3px 8px #52654d19, -3px -3px 8px #ffffffc9; }
+.studio-header nav { padding: 4px; border: 1px solid #ccd4c5; border-radius: 30px; background: #e0e5da; box-shadow: inset 2px 2px 5px #3e523012; }
+.studio-header nav a { color: #54664f; }
+.studio-header nav a:hover { background: #eef3e6; color: #294b32; }
+.studio-header nav a[aria-current=page] { background: #fbfcf6; color: #294c36; box-shadow: 2px 2px 5px #45573b24, inset 0 1px 0 #fff; font-weight: 650; }
+.studio-meeting { background: #f8f8f1; color: #3f6044; border-color: #c3cfb9; box-shadow: 4px 4px 12px #45543c12, -3px -3px 10px #ffffffb8; }
+.studio-eyebrow { color: #4d7157; }
+.studio-intro, .studio-fine { color: #586960; }
+.studio-hero-copy > a:not(.studio-primary) { color: #3e694f; font-size: 12px; display: inline-block; margin-top: 9px; }
+.studio-mode { padding: 5px; border: 1px solid #ccd5c4; border-radius: 22px; background: #e1e6d9; box-shadow: inset 2px 2px 6px #4056350e; gap: 5px; }
+.studio-mode button { background: transparent; border-color: transparent; color: #52664b; border-radius: 17px; }
+.studio-mode button[aria-pressed=true] { background: #fcfcf5; border-color: #b6c9ac; color: #294e30; box-shadow: 3px 3px 7px #465c3121, inset 0 1px 0 #fff; }
+.studio-mode button > span { color: #537b4f; }
+.studio-mode small { color: #62745a; }
+.studio-primary { background: #315e4d; border-color: #315e4d; color: #fffef7 !important; box-shadow: inset 0 1px 0 #6a8e78, 3px 4px 10px #304c382b; }
+.studio-primary:hover { background: #254d3d; border-color: #254d3d; }
+.studio-hero-art img { box-shadow: 10px 14px 28px #30422c24; }
+.studio-paths > a { background: linear-gradient(145deg, #f8f9f1, #e8edde); border-color: #cbd5c0; box-shadow: 5px 5px 15px #40533712, -4px -4px 12px #ffffffb8, inset 0 1px 0 #fff; }
+.studio-paths > a:hover { background: #e0ebd6; border-color: #9cb28d; box-shadow: 2px 2px 6px #40533716; }
+.studio-paths > a > span:last-child, .studio-path-icon { color: #5a7950; }
+.studio-paths small, .studio-paths p { color: #5e7153; }
+.studio-home-footer { color: #5c6f54; }
+.studio-home-footer a { color: #3e683e; }
+.studio-home-footer i { background: #6a9863; }
+.studio-designer-toolbar { background: #ebefe3; color: #3c5840; border-color: #c4d2b9; }
+.studio-designer-brand { color: #304e32; }
+.studio-designer-brand span, .studio-designer-status { color: #5d7356; }
+.studio-designer-toolbar nav a, .studio-designer-expand { color: #426740; }
+.studio-designer-toolbar .studio-view-toggle, .studio-view-toggle { background: #dce5d3; border-color: #bccaaf; box-shadow: inset 1px 1px 4px #354e2921; }
+.studio-view-toggle button { color: #506c42; }
+.studio-view-toggle button[aria-pressed=true] { background: #fbfdf5; color: #31502a; box-shadow: 1px 2px 4px #455c3026; }
+.studio-designer-frame { background: #e8ebdf; }
+.studio-workspace-bar > div:first-child span { color: #5b7352; }
+.studio-workspace-bar > a { color: #426b3d; }
+.studio-shop-notice { color: #5c7050; background: #e4eddb; }
+.studio-shop-notice strong, .studio-shop-notice a { color: #3f6838; }
+.studio-merchant-card { background: #f7f8ef; box-shadow: 6px 6px 18px #40533712, -4px -4px 12px #ffffffb8; }
+.studio-card-kicker { color: #517a46; }
+.studio-merchant-card p, .studio-merchant-card > small, .studio-merchant-admin span { color: #617456; }
+.studio-merchant-card input { background: #fffff8; border-color: #b4c6a4; color: #344f2b; box-shadow: inset 2px 2px 4px #52653c0c; }
+.studio-merchant-admin a { color: #456b3b; }
+.studio-merchant-info { background: #e3ecd7; color: #536e43; }
+.studio-merchant-info strong, .studio-merchant-info a { color: #3d6330; }
+.studio-checkout-icon, .studio-checkout-message a { color: #47773c; }
+.studio-checkout-message p:not(.studio-eyebrow) { color: #5b734e; }
+@media(max-width:600px) {
+  .studio-header nav { gap: 0; padding: 3px; }
+  .studio-header nav a { padding: 8px 7px; }
+  .studio-mode { padding: 4px; }
+  .studio-mode button { padding: 10px 8px; }
+}
+@media(max-width:360px) {
+  .studio-header { padding: 11px 12px; gap: 6px; }
+  .studio-brand { gap: 7px; }
+  .studio-brand strong { font-size: 13px; }
+  .studio-brand small { font-size: 8px; }
+  .studio-brand > span { width: 28px; height: 28px; }
+  .studio-header nav a { padding: 8px 6px; font-size: 10px; }
+  .studio-page h1 { font-size: 33px; }
+}
+@media(prefers-reduced-motion:reduce) { .studio-page a, .studio-page button { transition: none; } }

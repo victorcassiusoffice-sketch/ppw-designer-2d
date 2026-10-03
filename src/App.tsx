@@ -94,6 +94,7 @@ import { useRoofSync } from './designer/useRoofSync';
 // swaps the merchant's real range into the catalog and loads their show home.
 import { useDemoMode } from './demo/useDemoMode';
 import { activeDemoSlug } from './demo/demoCatalog';
+import './styles/designerStudio.css';
 // Babylon 3D viewer removed 2026-06-04 (P1-1): the lazy 3D path (6.46 MB raw /
 // 1.43 MB gzip) was never flipped past its soak (DEFAULT_ENGINE='konva'),
 // carried untested-in-prod surface, and is the single biggest simplification.

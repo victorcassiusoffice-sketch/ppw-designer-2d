@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
-import { applyContentPresentation, applyRendererPresentation, presentationProfile } from '../renderPresentation';
+import { applyContentPresentation, applyRendererPresentation, architecturalBackdrop, presentationProfile } from '../renderPresentation';
 import { disposeDressingTextures, groundPlane, skyDome, updateGroundPresentation, updateSkyDome } from '../dressing';
 import { GROUND_HEX } from '../../../designer/roomView3d';
 
@@ -43,7 +43,7 @@ describe('architectural presentation without changing the saved finishes', () =>
     const floorMap = floorMaterial.map;
     const normalMap = paint.normalMap;
     applyContentPresentation(root, 'architectural');
-    expect(edge.color.getHexString()).toBe('cbd6e2');
+    expect(edge.color.getHexString()).toBe('ddd9cc');
     // Floors never cast a shadow, in either look — a cast floor moved the priced pixels beside it.
     expect(floor.castShadow).toBe(false);
     // The laid floor is a priced product: the measured 0.9 gain holds in both looks.
@@ -60,14 +60,14 @@ describe('architectural presentation without changing the saved finishes', () =>
     expect(floorMaterial.map).toBe(floorMap);
   });
 
-  it('owns its dark backdrop maps and disposes each replaced map without disposing shared finish maps', () => {
+  it('owns its neutral backdrop maps and disposes each replaced map without disposing shared finish maps', () => {
     const sky = skyDome(1, 'architectural');
     const skyMaterial = sky.material as THREE.MeshBasicMaterial;
     const original = skyMaterial.map!;
     const originalDispose = vi.spyOn(original, 'dispose');
     const pixels = (original as THREE.DataTexture).image.data!;
     expect(original.colorSpace).toBe(THREE.SRGBColorSpace);
-    expect(pixels[2]).toBeGreaterThan(pixels[0]);
+    expect(Array.from(pixels).slice(0, 3)).toEqual(architecturalBackdrop(1).top);
     expect(skyMaterial.toneMapped).toBe(false);
     updateSkyDome(sky, 0, 'architectural');
     expect(originalDispose).toHaveBeenCalledTimes(1);
@@ -77,7 +77,7 @@ describe('architectural presentation without changing the saved finishes', () =>
     const groundMaterial = ground.material as THREE.MeshStandardMaterial;
     const groundDispose = vi.spyOn(groundMaterial.map!, 'dispose');
     updateGroundPresentation(ground, 'architectural');
-    expect(groundMaterial.color.getHexString()).toBe('304566');
+    expect(groundMaterial.color.getHexString()).toBe('d8ddd5');
     updateGroundPresentation(ground, 'studio');
     expect(groundMaterial.color.equals(new THREE.Color(GROUND_HEX))).toBe(true);
     const sharedTexture = new THREE.Texture();

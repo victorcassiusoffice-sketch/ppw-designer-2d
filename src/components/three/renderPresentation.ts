@@ -2,6 +2,18 @@ import * as THREE from 'three';
 
 export type ScenePresentation = 'studio' | 'architectural';
 
+/** Backdrop tokens are deliberately separate from illumination / sold finishes. */
+export const ARCHITECTURAL_GROUND_HEX = '#d8ddd5';
+export const ARCHITECTURAL_HORIZON_HEX = '#dedbd2';
+export function architecturalBackdrop(day: number): { top: number[]; horizon: number[] } {
+  const daylight = Number.isFinite(day) ? Math.max(0, Math.min(1, day)) : 1;
+  const mix = (night: number[], noon: number[]) => night.map((value, i) => Math.round(value + (noon[i] - value) * daylight));
+  return {
+    top: mix([31, 36, 36], [216, 221, 213]),
+    horizon: mix([49, 53, 52], [222, 219, 210]),
+  };
+}
+
 /** Intensities are multiples of π, matching three's physical Lambert response. */
 const STUDIO = {
   toneMapping: THREE.NoToneMapping, exposure: 1,
@@ -25,7 +37,7 @@ const STUDIO = {
  */
 const ARCHITECTURAL = {
   ...STUDIO,
-  reveal: '#a6b1bc', cap: '#cbd6e2',
+  reveal: '#aaa99d', cap: '#ddd9cc',
 };
 
 export function presentationProfile(presentation: ScenePresentation = 'studio') {

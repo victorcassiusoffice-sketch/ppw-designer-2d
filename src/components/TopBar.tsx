@@ -498,6 +498,23 @@ export function TopBar({
   const removeLevel = usePropertyStore((s) => s.removeLevel);
   const setActiveLevel = usePropertyStore((s) => s.setActiveLevel);
   const [levelsOpen, setLevelsOpen] = useState(false);
+  const [workspaceSettingsOpen, setWorkspaceSettingsOpen] = useState(false);
+  useEffect(() => {
+    if (!workspaceSettingsOpen) return;
+    const close = () => setWorkspaceSettingsOpen(false);
+    const away = (event: PointerEvent) => {
+      if (!(event.target as HTMLElement)?.closest('.plan-topbar, [data-ppw-popover]')) close();
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !event.defaultPrevented) {
+        close();
+        document.querySelector<HTMLButtonElement>('.studio-settings-toggle')?.focus();
+      }
+    };
+    document.addEventListener('pointerdown', away);
+    document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('pointerdown', away); document.removeEventListener('keydown', escape); };
+  }, [workspaceSettingsOpen]);
   const [levelEditId, setLevelEditId] = useState<string | null>(null);
   const [levelDraft, setLevelDraft] = useState('');
 
@@ -2019,7 +2036,7 @@ export function TopBar({
           >
             <Icon name="pen" className="md:hidden" />
             <Icon name="polygon" className="hidden md:block" />
-            <span className="md:hidden">Walls</span>
+            <span className="md:hidden">Room</span>
             <span className="hidden xl:inline">Custom</span>
           </button>
         </div>
@@ -2206,6 +2223,15 @@ export function TopBar({
       </div>
 
       <div className="plan-navigation" data-testid="plan-navigation" aria-label="Plan and view controls">
+        <div className="studio-view-switch" aria-label="Design view">
+          <button type="button" aria-pressed="true">2D Plan</button>
+          <button type="button" onClick={() => { if (drawMode) setDrawMode(false); setViewMode('3d'); }}>3D House</button>
+        </div>
+        <button type="button" className="studio-settings-toggle" aria-expanded={workspaceSettingsOpen} aria-controls="studio-plan-settings" onClick={() => { setWorkspaceSettingsOpen(!workspaceSettingsOpen); setLevelsOpen(false); setLandOpen(false); setUnitOpen(false); }}>
+          <Icon name="storeys" /><span>Site &amp; tools</span><span aria-hidden="true">{workspaceSettingsOpen ? '−' : '+'}</span>
+        </button>
+      </div>
+      <div id="studio-plan-settings" className="studio-plan-settings" hidden={!workspaceSettingsOpen}>
         <div className="plan-pill-group plan-house-controls" role="group" aria-label="Building and site">{roomPlanGroup(false)}</div>
         <div className="plan-pill-group plan-precision-controls" role="group" aria-label="Drawing precision and history">{viewGroup(false)}</div>
       </div>

@@ -32,7 +32,7 @@ export default function ConstructionPitchPage() {
         <h1>Draw the wall.<br /><em>Understand the materials.</em></h1>
         <p className="pitch-lead">Start with an AI-assisted layout or draw by hand. Review the same home in 2D and Premium 3D, then open Materials for the blocks, concrete and roof quantities behind it.</p>
         <div className="pitch-chip-row"><StatusChip available>Materials · editable quantity estimates</StatusChip><StatusChip>Supplier ordering · integration required</StatusChip></div>
-        <button type="button" className="pitch-primary" onClick={() => setChapter(1)}>Try the live Materials workspace ↗</button><button type="button" className="pitch-secondary" onClick={() => setChapter(5)}>Explore AI automation ↗</button>
+        <div className="pitch-hero-actions"><button type="button" className="pitch-primary" onClick={() => setChapter(1)}>Try the live Materials workspace ↗</button><button type="button" className="pitch-secondary" onClick={() => setChapter(5)}>Explore AI automation ↗</button></div>
         <p className="pitch-fine">An independent PPW presentation using publicly documented UBP products. This is not an official UBP platform, partnership or endorsement.</p>
         <div className="pitch-hero-metrics"><span><strong>Draw</strong>Walls & openings</span><span><strong>Inspect</strong>Editable assumptions</span><span><strong>Review</strong>Supplier quantities</span></div>
       </div>

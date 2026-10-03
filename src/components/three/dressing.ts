@@ -18,9 +18,9 @@ import { getProductById } from '../../data/products';
 import { lightPreviewProfile } from '../../designer/lighting';
 export { lampsOnFactor } from '../../designer/lighting';
 import { GROUND_HEX } from '../../designer/roomView3d';
-import { cornerShadeTexture, floorSurface, groundTexture, skyTexture, softShadowTexture, type FloorKind } from './surfaces';
+import { bareMineralSurface, cornerShadeTexture, floorSurface, groundTexture, skyTexture, softShadowTexture, type FloorKind } from './surfaces';
 import { doorRuns } from './joinery';
-import type { ScenePresentation } from './renderPresentation';
+import { ARCHITECTURAL_GROUND_HEX, type ScenePresentation } from './renderPresentation';
 
 export const SKY_RADIUS_M = 220;
 /** How dark the corner shading gets right at the junction (alpha). */
@@ -75,7 +75,7 @@ export function groundPlane(): THREE.Mesh {
 /** Tint only the presentation ground. The plot, garden and floor finishes retain their materials. */
 export function updateGroundPresentation(ground: THREE.Mesh, presentation: ScenePresentation): void {
   const material = ground.material as THREE.MeshStandardMaterial;
-  material.color.set(presentation === 'architectural' ? '#304566' : GROUND_HEX);
+  material.color.set(presentation === 'architectural' ? ARCHITECTURAL_GROUND_HEX : GROUND_HEX);
   material.roughness = presentation === 'architectural' ? 0.92 : 1;
 }
 
@@ -106,7 +106,7 @@ export function floorMesh(f: FloorSolid, kind: FloorKind, tileM: number, env: TH
   for (const hole of f.holes ?? []) shape.holes.push(new THREE.Path(hole.map((v) => new THREE.Vector2(v.x, v.y))));
   const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.18, bevelEnabled: false, steps: 1 });
   geo.rotateX(Math.PI / 2); // plan (x, y) → three (x, 0, y)
-  const s = floorSurface(kind, tileM);
+  const s = kind === 'screed' ? bareMineralSurface() : floorSurface(kind, tileM);
   const mat = new THREE.MeshPhysicalMaterial({
     color: f.hex,
     map: s.map,
@@ -156,14 +156,14 @@ export function cornerShades(w: WallSolid, heightM: number, openings: readonly W
   for (const [a, b] of runs) {
     const len = b - a;
     if (len < 0.05) continue;
-    // On the floor, darkest against the wall (v = 0 edge of the texture is transparent, so flip).
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(len, CORNER_SHADE_FLOOR_M), shadeMaterial(false));
+    // Rotating onto the floor puts uv.y=1 at the wall, so flip the mask.
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(len, CORNER_SHADE_FLOOR_M), shadeMaterial(true));
     floor.rotation.x = -Math.PI / 2;
     floor.position.set(a + len / 2, 0.004, w.thicknessM + CORNER_SHADE_FLOOR_M / 2);
     floor.renderOrder = 2;
     g.add(floor);
     // Up the base of the face, darkest at the floor.
-    const base = new THREE.Mesh(new THREE.PlaneGeometry(len, CORNER_SHADE_WALL_M), shadeMaterial(true));
+    const base = new THREE.Mesh(new THREE.PlaneGeometry(len, CORNER_SHADE_WALL_M), shadeMaterial(false));
     base.position.set(a + len / 2, CORNER_SHADE_WALL_M / 2, zFace);
     base.renderOrder = 2;
     g.add(base);
@@ -174,7 +174,9 @@ export function cornerShades(w: WallSolid, heightM: number, openings: readonly W
       [0, 1],
       [w.lengthM, -1],
     ] as const) {
-      const strip = new THREE.Mesh(new THREE.PlaneGeometry(CORNER_SHADE_VERTICAL_M, heightM), shadeMaterial(false));
+      // Rotation turns the long x axis upright; starting with a tall narrow
+      // plane instead produced a horizontal stripe across the wall centre.
+      const strip = new THREE.Mesh(new THREE.PlaneGeometry(heightM, CORNER_SHADE_VERTICAL_M), shadeMaterial(true));
       // The gradient runs along v by default; turn it so it runs along u, dark at the end.
       strip.rotation.z = dir > 0 ? Math.PI / 2 : -Math.PI / 2;
       strip.position.set(u + (dir * CORNER_SHADE_VERTICAL_M) / 2, heightM / 2, zFace);

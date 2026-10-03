@@ -40,6 +40,9 @@ import {
   Image as KonvaImage,
 } from 'react-konva';
 import { useImageCache, useImageCacheStatus } from '../hooks/useImageCache';
+import { usePlanModelImage } from '../hooks/usePlanModelImage';
+import { planSurfaceTexture } from '../designer/planSurfaceTexture';
+import { floorKindOf } from '../designer/floorKind';
 import type Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
 import { usePropertyStore, selectActiveRoom, roomOpenings } from '../store/propertyStore';
@@ -4415,6 +4418,17 @@ export function RoomCanvas({
                   closed
                   fill={isRoofRoom(room) ? ROOF_SLAB_FILL : isActive ? ROOM_FILL_ACTIVE : ROOM_FILL}
                 />
+                <Line
+                  points={pts}
+                  closed
+                  name="room-surface-grain"
+                  // Konva's runtime accepts CanvasImageSource; its pattern
+                  // declaration is narrower than CanvasRenderingContext2D.
+                  fillPatternImage={planSurfaceTexture(isRoofRoom(room) ? ROOF_SLAB_FILL : isActive ? ROOM_FILL_ACTIVE : ROOM_FILL) as unknown as HTMLImageElement}
+                  fillPatternScaleX={pxPerMetre / 256}
+                  fillPatternScaleY={pxPerMetre / 256}
+                  listening={false}
+                />
                 {/* ROOF SLAB (eco / solar 2026-09-04): concrete, no walls —
                     a dashed parapet line marks the edge panels must stay
                     inside. */}
@@ -4436,10 +4450,10 @@ export function RoomCanvas({
                     planner lands on, and per-tile painting buys nothing when
                     the output is a shopping list.
 
-                    Slightly translucent so the active-room tint still reads
-                    through, and non-listening like everything else in this
-                    layer — a listening floor would swallow the placement
-                    clicks the Stage handlers depend on. */}
+                    The actual material hex carries neutral surface grain;
+                    it is not washed out by an active-room colour. This stays
+                    non-listening so floor painting and placement clicks pass
+                    through to the Stage handlers. */}
                 {(() => {
                   const mat = roomFloorMaterial(room);
                   if (!mat) return null;
@@ -4448,7 +4462,10 @@ export function RoomCanvas({
                       points={pts}
                       closed
                       fill={mat.hex}
-                      opacity={0.9}
+                      fillPatternImage={planSurfaceTexture(mat.hex, floorKindOf(mat)) as unknown as HTMLImageElement}
+                      fillPriority="pattern"
+                      fillPatternScaleX={pxPerMetre / 256}
+                      fillPatternScaleY={pxPerMetre / 256}
                       listening={false}
                       name="room-floor"
                     />
@@ -4499,12 +4516,12 @@ export function RoomCanvas({
                           key={`floor-${room.id}-${zi}`}
                           name="room-floor-tiles"
                           listening={false}
-                          opacity={0.92}
                           sceneFunc={floorZoneSceneFunc(
                             zone,
                             pxPerMetre,
                             viewport.scale,
                             zm.hex,
+                            planSurfaceTexture(zm.hex, floorKindOf(zm)),
                           )}
                         />
                       );
@@ -4512,6 +4529,16 @@ export function RoomCanvas({
                   </Group>
                 )}
 
+                {!isRoofRoom(room) && (
+                  <Group listening={false} clipFunc={polygonClipFunc(room.polygon, pxPerMetre)} name="room-contact-depth">
+                    {roomEdges(room).flatMap(edge => splitEdgeSpans(edge.lengthM, wallGapsByEdge.get(edgeKey(room.id, edge.index)) ?? []).map((span, index) => {
+                      const a = pointAlongEdge(edge, span.t0), b = pointAlongEdge(edge, span.t1);
+                      return <Line key={`${edge.index}-${index}`} points={[a.x * pxPerMetre, a.y * pxPerMetre, b.x * pxPerMetre, b.y * pxPerMetre]}
+                        stroke="rgba(38,43,35,0.10)" strokeWidth={pxPerMetre * 0.2}
+                        shadowColor="rgba(38,43,35,0.25)" shadowBlur={pxPerMetre * 0.13} shadowOffsetY={pxPerMetre * 0.035} />;
+                    }))}
+                  </Group>
+                )}
                 {/* WALLS — one stroke per EDGE rather than one closed Line, so
                     a door can remove a span from a single wall. `splitEdgeSpans`
                     returns the solid runs left once openings are cut out; with
@@ -4693,7 +4720,7 @@ export function RoomCanvas({
                     points={l.points}
                     stroke={GRID_LINE}
                     strokeWidth={l.major ? GRID_MAJOR_WIDTH_PX : GRID_MINOR_WIDTH_PX}
-                    opacity={l.major ? GRID_MAJOR_OPACITY : GRID_MINOR_OPACITY}
+                    opacity={(l.major ? GRID_MAJOR_OPACITY : GRID_MINOR_OPACITY) * 0.65}
                   />
                 ))}
               </Group>
@@ -4828,7 +4855,7 @@ export function RoomCanvas({
             const b = polygonBounds(room.polygon);
             // Centred in the room, the way the reference plans set their
             // callouts. Screen-constant size so it reads at any zoom.
-            const font = measureFontSize(viewport.scale, 11);
+            const font = measureFontSize(viewport.scale, 10);
             const boxW = Math.max(40, (b.maxX - b.minX) * pxPerMetre - 8);
             return (
               <Text
@@ -4847,14 +4874,14 @@ export function RoomCanvas({
                 fontSize={font}
                 fontStyle="bold"
                 fontFamily="Inter, sans-serif"
-                letterSpacing={2.5 / viewport.scale}
+                letterSpacing={1.8 / viewport.scale}
                 // Dark floors (EVA / gym tile) swallowed the ink label —
                 // flip to paper when the room's floor material is dark (R7).
                 fill={roomLabelFill(room)}
                 opacity={
                   room.id === activeRoomId
-                    ? ROOM_LABEL_ACTIVE_OPACITY
-                    : ROOM_LABEL_INACTIVE_OPACITY
+                    ? ROOM_LABEL_ACTIVE_OPACITY * 0.72
+                    : ROOM_LABEL_INACTIVE_OPACITY * 0.64
                 }
               />
             );
@@ -5533,6 +5560,8 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
   // returns a non-empty string; useImageCache handles load/error → null
   // internally (the grey Rect fallback below still covers a genuine 404).
   const image = useImageCache(productTopDownUrl(product));
+  const modelImage = usePlanModelImage(product);
+  const [hovered, setHovered] = useState(false);
   // Polish (2026-05-29) — distinguish "still hydrating" from "errored /
   // no image" so the fallback shows a subtle brand shimmer while the
   // asset loads, then settles to the real image (or the coloured rect on
@@ -5557,10 +5586,12 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
       y={item.y * pxPerMetre}
       draggable
       onMouseEnter={(e) => {
+        setHovered(true);
         const stage = e.target.getStage();
         if (stage) stage.container().style.cursor = 'grab';
       }}
       onMouseLeave={(e) => {
+        setHovered(false);
         const stage = e.target.getStage();
         if (stage) stage.container().style.cursor = '';
       }}
@@ -5868,7 +5899,18 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         offsetY={unrotatedHPx / 2}
         listening={false}
       >
-        {symbol ? (
+        {modelImage ? (
+          <KonvaImage
+            name="item-art item-model-plan"
+            image={modelImage}
+            width={unrotatedWPx}
+            height={unrotatedHPx}
+            shadowColor="rgba(31,37,30,0.25)"
+            shadowBlur={pxPerMetre * 0.045}
+            shadowOffsetX={pxPerMetre * 0.025}
+            shadowOffsetY={pxPerMetre * 0.04}
+          />
+        ) : symbol ? (
           // Sims world (2026-08-29): plan SYMBOLS for products that have no
           // top-down art by design — lights (the architectural circle-and-
           // cross), greenery (canopy blobs), garden furniture. Drawn in
@@ -5971,7 +6013,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
             cornerRadius={3}
           />
         )}
-        {(image || symbol || wallBar) && isSelected && (
+        {(modelImage || image || symbol || wallBar) && isSelected && (
           <Rect
             width={unrotatedWPx}
             height={unrotatedHPx}
@@ -5982,7 +6024,9 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
           />
         )}
       </Group>
-      {/* Minor 11 (Customer-UI fix 2026-05-31) — product + category labels
+      {/* Product names are revealed by selection or pointer hover, keeping
+          furnished plans legible without permanently covering every model.
+          Minor 11 (Customer-UI fix 2026-05-31) — product + category labels
           render in the NON-rotating OUTER group so they stay upright at every
           rotation. They previously lived inside the rotating art group, so a
           180°-rotated item showed its name upside-down. Anchored to the AABB
@@ -6003,7 +6047,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         listening={false}
         ellipsis
         wrap="word"
-        visible={!symbol || wPx >= 40}
+        visible={(isSelected || hovered) && (!symbol || wPx >= 40)}
       />
       <Text
         x={4}
@@ -6016,7 +6060,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         strokeWidth={2}
         fillAfterStrokeEnabled
         listening={false}
-        visible={hPx >= 40 && wPx >= 40}
+        visible={(isSelected || hovered) && hPx >= 40 && wPx >= 40}
       />
       {isSelected && (
         <>
@@ -6478,20 +6522,27 @@ function floorZoneSceneFunc(
   pxPerMetre: number,
   viewportScale: number,
   fill: string,
+  texture?: HTMLCanvasElement,
 ) {
   return (ctx: Konva.Context, shape: Konva.Shape): void => {
     const runs = zone.runs;
+    const pattern = texture ? ctx.createPattern(texture, 'repeat') : null;
+    ctx.save();
+    // One texture repeat is 1 m; origin stays fixed as a zone is extended.
+    const textureScale = pattern ? pxPerMetre / 256 : 1;
+    ctx.scale(textureScale, textureScale);
     ctx.beginPath();
     for (let i = 0; i + 2 < runs.length; i += 3) {
       const row = runs[i];
       const col = runs[i + 1];
       const len = runs[i + 2];
       const r = tileRect(zone, row, col);
-      ctx.rect(r.x * pxPerMetre, r.y * pxPerMetre, r.w * len * pxPerMetre, r.h * pxPerMetre);
+      ctx.rect(r.x * pxPerMetre / textureScale, r.y * pxPerMetre / textureScale, r.w * len * pxPerMetre / textureScale, r.h * pxPerMetre / textureScale);
     }
     ctx.closePath();
-    ctx.fillStyle = fill;
+    ctx.fillStyle = pattern ?? fill;
     ctx.fill();
+    ctx.restore();
 
     const edgePx = Math.min(zone.tileWm, zone.tileHm) * pxPerMetre * viewportScale;
     if (edgePx >= MIN_SEAM_PX) {

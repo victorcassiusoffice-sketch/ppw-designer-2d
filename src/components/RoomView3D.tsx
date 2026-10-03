@@ -1740,7 +1740,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   }
 
   return (
-    <div className={`fixed left-0 top-0 z-[34] flex flex-col ${className}`}
+    <div className={`designer-app fixed left-0 top-0 z-[34] flex flex-col ${className}`}
       style={{ right: 'var(--floor-panel-w, 0px)', bottom: onPaintWall || onPaintFloor ? 0 : 'calc(var(--sims-dock-h, 0px) + var(--sims-toolbar-h, 0px))', ...style }}
       data-testid="wallpaint-3d-overlay" role="region" aria-label={title ?? 'Room view in 3D'}>
       <HouseWorkspace mode={activeHouseMode} onMode={changeHouseMode} onPlan={onClose} onSave={onSave} onCart={onCart}

@@ -15,6 +15,7 @@
  * size: a 50 cm rubber tile repeats every 0.5 m, a 1 m EVA mat every metre.
  */
 import * as THREE from 'three';
+import { architecturalBackdrop } from './renderPresentation';
 
 // ---------------------------------------------------------------------------
 // Noise + canvas helpers (also used for the plaster / roller maps).
@@ -147,6 +148,36 @@ export interface FloorSurface {
 }
 
 const floorCache = new Map<string, FloorSurface>();
+let bareMineralCache: FloorSurface | null = null;
+
+/** Unfinished, unpriced floor only. Fine even grain with a flat normal keeps
+ * the planning view calm: broad cloud bumps read like crumpled paper. */
+export function bareMineralSurface(): FloorSurface {
+  if (bareMineralCache) return bareMineralCache;
+  const size = 128;
+  const pixels = new Uint8Array(size * size * 4);
+  const random = mulberry32(94);
+  for (let i = 0; i < size * size; i++) {
+    const value = 249 + Math.round(random() * 5);
+    pixels[i * 4] = pixels[i * 4 + 1] = pixels[i * 4 + 2] = value;
+    pixels[i * 4 + 3] = 255;
+  }
+  const map = new THREE.DataTexture(pixels, size, size);
+  map.colorSpace = THREE.SRGBColorSpace;
+  map.wrapS = map.wrapT = THREE.RepeatWrapping;
+  map.repeat.set(2, 2);
+  map.magFilter = THREE.LinearFilter;
+  map.minFilter = THREE.LinearMipmapLinearFilter;
+  map.generateMipmaps = true;
+  map.needsUpdate = true;
+  const normalMap = new THREE.DataTexture(new Uint8Array([128, 128, 255, 255]), 1, 1);
+  normalMap.needsUpdate = true;
+  bareMineralCache = {
+    kind: 'screed', map, normalMap,
+    roughness: 0.94, normalScale: 0, sheen: 0,
+  };
+  return bareMineralCache;
+}
 
 /** The surface for a floor kind and tile size (metres; joints repeat at that size). Cached per kind + size. */
 export function floorSurface(kind: FloorKind, tileM = 0.5): FloorSurface {
@@ -296,12 +327,10 @@ export function floorSurface(kind: FloorKind, tileM = 0.5): FloorSurface {
  */
 export function skyTexture(day: number, presentation: 'studio' | 'architectural' = 'studio'): THREE.Texture {
   if (presentation === 'architectural') {
-    // A blue-hour presentation backdrop, independent of room paint. A tiny
+    // A soft stone / sage presentation backdrop, independent of room paint. A tiny
     // data texture also works without canvas and has no external asset fetch.
     const pixels = new Uint8Array(256 * 4);
-    const daylight = Math.max(0, Math.min(1, day));
-    const top = [17 + 6 * daylight, 24 + 11 * daylight, 40 + 19 * daylight];
-    const horizon = [25 + 17 * daylight, 34 + 21 * daylight, 54 + 26 * daylight];
+    const { top, horizon } = architecturalBackdrop(day);
     for (let row = 0; row < 256; row++) {
       const blend = Math.sin(row / 255 * Math.PI) ** 2;
       for (let channel = 0; channel < 3; channel++) pixels[row * 4 + channel] = top[channel] + (horizon[channel] - top[channel]) * blend;
@@ -358,40 +387,39 @@ export function groundTexture(): THREE.Texture {
   return t;
 }
 
-/** A radial soft shadow (alpha) for contact shadows under bodies and the corner darkening along walls. */
+/** Three alphaMap samples GREEN, not image alpha. Use opaque grey masks:
+ * the previous black RGBA gradients made every contact shadow invisible. */
 let softShadowCache: THREE.Texture | null = null;
 export function softShadowTexture(): THREE.Texture {
   if (softShadowCache) return softShadowCache;
   const N = 128;
-  const made = makeCanvas(N, N);
-  if (!made) return new THREE.Texture();
-  const { canvas: c, ctx } = made;
-  const g = ctx.createRadialGradient(N / 2, N / 2, 0, N / 2, N / 2, N / 2);
-  g.addColorStop(0, 'rgba(0,0,0,1)');
-  g.addColorStop(0.55, 'rgba(0,0,0,0.55)');
-  g.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, N, N);
-  const t = new THREE.CanvasTexture(c);
+  const pixels = new Uint8Array(N * N * 4);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const radius = Math.min(1, Math.hypot((x + 0.5) / N * 2 - 1, (y + 0.5) / N * 2 - 1));
+    const strength = 1 - radius * radius * (3 - 2 * radius);
+    const i = (y * N + x) * 4;
+    pixels[i] = pixels[i + 1] = pixels[i + 2] = Math.round(255 * strength);
+    pixels[i + 3] = 255;
+  }
+  const t = new THREE.DataTexture(pixels, N, N);
+  t.magFilter = t.minFilter = THREE.LinearFilter;
   t.needsUpdate = true;
   softShadowCache = t;
   return t;
 }
 
-/** A one-directional gradient (alpha 1 at the top edge → 0 at the bottom) for the wall-to-floor corner darkening. */
+/** Opaque grayscale: uv.y=0 is fully occluded, uv.y=1 is clear. */
 let cornerCache: THREE.Texture | null = null;
 export function cornerShadeTexture(): THREE.Texture {
   if (cornerCache) return cornerCache;
   const N = 64;
-  const made = makeCanvas(4, N);
-  if (!made) return new THREE.Texture();
-  const { canvas: c, ctx } = made;
-  const g = ctx.createLinearGradient(0, 0, 0, N);
-  g.addColorStop(0, 'rgba(0,0,0,0.0)');
-  g.addColorStop(1, 'rgba(0,0,0,1)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 4, N);
-  const t = new THREE.CanvasTexture(c);
+  const pixels = new Uint8Array(N * 4);
+  for (let y = 0; y < N; y++) {
+    pixels[y * 4] = pixels[y * 4 + 1] = pixels[y * 4 + 2] = Math.round(255 * Math.pow(1 - y / (N - 1), 2));
+    pixels[y * 4 + 3] = 255;
+  }
+  const t = new THREE.DataTexture(pixels, 1, N);
+  t.magFilter = t.minFilter = THREE.LinearFilter;
   t.needsUpdate = true;
   cornerCache = t;
   return t;

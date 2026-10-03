@@ -115,7 +115,7 @@ function DesignWorkbench({ onClose }: { onClose: () => void }) {
   }
   const rooms = draft?.rooms.filter(room => room.levelId === level) ?? [];
   const area = draft?.rooms.reduce((sum,room) => sum + room.widthM * room.depthM, 0) ?? 0;
-  return <div className="design-workbench-backdrop" onPointerDown={event => { if (event.target === event.currentTarget) onClose(); }}>
+  return <div className="designer-app design-workbench-backdrop" onPointerDown={event => { if (event.target === event.currentTarget) onClose(); }}>
     <div className="design-workbench" ref={dialog} role="dialog" aria-modal="true" aria-labelledby="ai-design-title" data-testid="ai-design-workbench" onKeyDown={event => event.stopPropagation()}>
       <header><div><small>PPW DESIGN ASSISTANT</small><h1 id="ai-design-title">A brief. A measured beginning.</h1></div><button onClick={onClose} aria-label="Close design assistant">Done ×</button></header>
       <nav aria-label="Design assistant methods">{([['guided','Guided layout'],['ai','AI brief'],['import','Import a draft'],['connect','Connect AI']] as const).map(([id,label]) => <button key={id} aria-pressed={mode === id} onClick={() => setMode(id)}>{label}</button>)}</nav>

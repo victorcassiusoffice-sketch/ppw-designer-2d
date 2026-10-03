@@ -55,7 +55,7 @@ import { stairMesh, roofMesh, disposeBuildingTextures } from './buildingMeshes';
 import { gardenMeshes } from './gardenMeshes';
 import { disposeGardenResources } from './gardenGround';
 import { contactShadow, cornerShades, disposeDressingTextures, floorMesh, groundPlane, lampsOnFactor, nightLight, skyDome, updateGroundPresentation, updateSkyDome, type NightLight } from './dressing';
-import { applyContentPresentation, applyRendererPresentation, presentationProfile, type ScenePresentation } from './renderPresentation';
+import { applyContentPresentation, applyRendererPresentation, architecturalBackdrop, ARCHITECTURAL_HORIZON_HEX, presentationProfile, type ScenePresentation } from './renderPresentation';
 import { disposeFurnitureTextures, furniturePreview } from './furniturePreview';
 import { mountRoofItem, poseRoofItem, roofPointFromRay } from './roofItems';
 import { solarPanelPreview } from './solarPanelPreview';
@@ -63,6 +63,7 @@ import { waterTankPreview } from './waterTankPreview';
 import { carryItemPreviewPose } from './itemPreviewPose';
 import { createRoofSurface, roofItemMount } from '../../designer/roofSurface';
 import { pointInPolygon } from '../../lib/geometry';
+import { applyProductSurfaceLighting } from './productSurfaceLighting';
 
 // ---------------------------------------------------------------------------
 // Product bodies (2026-09-17): a textured glTF per product, fetched once and
@@ -314,8 +315,8 @@ const HEMI_NIGHT_GROUND = new THREE.Color(0x3b3f4a);
 
 const toThree = (p: { x: number; y: number; z: number }): THREE.Vector3 => new THREE.Vector3(p.x, p.z, p.y);
 const SELECT_HEX = '#79C7AD';
-/** The architectural look's fog: a horizon fade on the ground plane, the navy of its sky. */
-const FOG_HEX = '#1b2942';
+/** Unpriced presentation horizon; never allowed to intrude into room bounds. */
+const FOG_HEX = ARCHITECTURAL_HORIZON_HEX;
 /**
  * Clear air between the farthest point of the plan and where the fade may
  * start, metres. With the 4 m minimum plan radius the fog therefore begins
@@ -729,6 +730,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       if (rimRef.current) rimRef.current.intensity = Math.PI * dayRig.rim;
       aimSun(new THREE.Vector3(...profile.sunDirection).normalize());
       sunStateRef.current = null;
+      sceneRef.current?.fog?.color.set(FOG_HEX);
       if (skyRef.current && (skyRef.current.userData.day !== 1 || skyRef.current.userData.presentation !== presentation)) updateSkyDome(skyRef.current, 1, presentation);
       for (const l of lampsRef.current) {
         l.light.intensity = l.baseIntensity * profile.lampFactor;
@@ -739,6 +741,10 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     }
     const s = sunAt(h, doy ?? dayOfYear(new Date().getMonth() + 1, new Date().getDate()));
     const day = s.daylight;
+    // The far horizon follows the sky at dusk. Fog remains beyond all room
+    // bounds, and this never alters the calibrated light or product colour.
+    const horizon = architecturalBackdrop(day).horizon;
+    sceneRef.current?.fog?.color.setRGB(horizon[0] / 255, horizon[1] / 255, horizon[2] / 255, THREE.SRGBColorSpace);
     hemi.intensity = Math.PI * (dayRig.hemi * day + nightRig.hemi * (1 - day));
     hemi.color.copy(HEMI_NIGHT_SKY).lerp(daySky, day);
     hemi.groundColor.copy(HEMI_NIGHT_GROUND).lerp(dayBounce, day);
@@ -790,7 +796,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     renderer.toneMapping = THREE.NoToneMapping;
     renderer.toneMappingExposure = 1;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     rendererRef.current = renderer;
 
     const scene = new THREE.Scene();
@@ -974,6 +980,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       // loaded body and from a bare box (`dressing().bareBoxes`).
       if (preview) preview.userData.preview = true;
       const mesh = mountRoofItem(preview ?? artBox(it, requestRender), it);
+      applyProductSurfaceLighting(mesh, envRef.current, rendererRef.current?.capabilities.getMaxAnisotropy() ?? 1);
       content.add(mesh);
       itemsRef.current.push(mesh);
       bounds.expandByObject(mesh);
@@ -1012,29 +1019,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
               if (home) previewRef.current.set(it.instanceId, baseline.home);
               if (rotation !== undefined) previewRotationRef.current.set(it.instanceId, baseline.rotation);
             }
-            // A product's PBR textures pick up a little of the room, and
-            // stay sharp at grazing angles (anisotropy is free on a GPU).
-            const env = envRef.current;
-            const aniso = rendererRef.current?.capabilities.getMaxAnisotropy() ?? 1;
-            body.traverse((o) => {
-              const bm = o as THREE.Mesh;
-              if (!bm.isMesh) return;
-              const mats = Array.isArray(bm.material) ? bm.material : [bm.material];
-              for (const mat of mats) {
-                const std = mat as THREE.MeshStandardMaterial;
-                if (env && 'envMapIntensity' in std) {
-                  std.envMap = env;
-                  std.envMapIntensity = 0.35;
-                }
-                for (const tex of [std.map, std.normalMap, std.roughnessMap, std.metalnessMap]) {
-                  if (tex && tex.anisotropy < aniso) {
-                    tex.anisotropy = aniso;
-                    tex.needsUpdate = true;
-                  }
-                }
-                mat.needsUpdate = true;
-              }
-            });
+            applyProductSurfaceLighting(body, envRef.current, rendererRef.current?.capabilities.getMaxAnisotropy() ?? 1);
             contentRef.current.remove(mesh);
             disposeObject(mesh);
             contentRef.current.add(body);

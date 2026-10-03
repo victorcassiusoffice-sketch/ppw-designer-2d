@@ -1,0 +1,185 @@
+/* Presentation surfaces share the warm, tactile language of the designer.
+   Colour remains a secondary signal: selected controls retain borders, weight
+   and their existing aria-selected / aria-pressed semantics. */
+.pitch-app {
+  --pitch-ink: #273c35;
+  --pitch-navy: #273c35;
+  --pitch-teal: #3c7764;
+  --pitch-ivory: #f9f8f3;
+  --pitch-muted: #586960;
+  --pitch-edge: #cdd4c9;
+  --pitch-surface: #eeefe7;
+  --pitch-sage: #dce9dd;
+  --pitch-raised: 7px 7px 19px #40534612, -5px -5px 15px #ffffffb8, inset 0 1px 0 #ffffff;
+  background: radial-gradient(ellipse at 90% 0%, #dbe7dc 0, transparent 48%), #eeeee7;
+  color: var(--pitch-ink);
+  color-scheme: light;
+}
+.pitch-app button, .pitch-app a {
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+.pitch-app button:focus-visible, .pitch-app a:focus-visible,
+.pitch-app input:focus-visible, .pitch-app select:focus-visible,
+.pitch-app textarea:focus-visible, .pitch-stage:focus-visible {
+  outline: 3px solid #347960;
+  outline-offset: 3px;
+}
+.pitch-app button:active:not(:disabled) { box-shadow: inset 2px 2px 5px #253c3422; }
+.pitch-app button:disabled { opacity: .55; cursor: not-allowed; }
+.pitch-header { border-color: var(--pitch-edge); padding: 15px 28px; gap: 20px; }
+.pitch-brand strong, .pitch-audience, .pitch-header nav > a:first-child { color: var(--pitch-muted); }
+.pitch-brand-mark {
+  background: #e3ece0; color: #2c5a49; border: 1px solid #c9d4c6;
+  box-shadow: 3px 3px 8px #52654d19, -3px -3px 8px #ffffffc9;
+}
+.pitch-brand-mark > span, .pitch-meeting span { color: #367c5d; }
+.pitch-audience { border-color: var(--pitch-edge); }
+.pitch-meeting { background: #f8f8f1; border-color: var(--pitch-edge); box-shadow: var(--pitch-raised); }
+.pitch-chapters { padding: 12px 24px 0; gap: 6px; }
+.pitch-chapters button { color: #57695e; border-radius: 16px; }
+.pitch-chapters button > span { opacity: 1; color: #68786b; font-variant-numeric: tabular-nums; }
+.pitch-chapters button:hover { background: #e0e6db; }
+.pitch-chapters button[aria-selected=true] {
+  background: #d4e7d8; color: #244b37; border-color: #89aa94;
+  box-shadow: inset 0 1px 0 #f8fff9, 3px 4px 9px #53644e16;
+  font-weight: 650;
+}
+.pitch-chapters button[aria-selected=true] > span { color: #244b37; }
+.pitch-stage { padding: 22px 28px; }
+.pitch-footer { color: var(--pitch-muted); padding: 12px 28px 17px; }
+.pitch-footer button { background: #315e4d; color: #fffef7; box-shadow: 2px 3px 8px #264b3826; }
+.pitch-footer button:hover { background: #244d3d; }
+.pitch-footer .pitch-feedback-link { color: #375f4a; box-shadow: none; }
+.pitch-footer .pitch-feedback-link:hover { background: #d9e6d8; color: #254630; }
+.pitch-status-dot { background: #527d59; box-shadow: 0 0 0 4px #b6d3bc55; }
+.pitch-eyebrow, .pitch-panel-ivory .pitch-eyebrow { color: #50735e !important; }
+.pitch-hero-copy { gap: 21px; padding-right: 16px; justify-content: safe center; scrollbar-width: thin; scrollbar-color: #a6b5a1 transparent; }
+.pitch-hero-copy > * { flex-shrink: 0; }
+.pitch-hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.pitch-hero-copy .pitch-hero-actions .pitch-primary { margin-top: 0; }
+.pitch-hero-actions .pitch-primary, .pitch-hero-actions .pitch-secondary { font-size: 11px; gap: 10px; padding: 12px 16px; }
+.pitch-hero-art { border-color: #c9d3c5; box-shadow: 12px 16px 34px #25382920; }
+.pitch-art-label { color: #eff7ef; }
+.pitch-hero-metrics { border-color: var(--pitch-edge); color: var(--pitch-muted); }
+.pitch-hero-metrics strong { color: #345745; }
+.pitch-app .pitch-primary {
+  background: #315e4d; color: #fffef7; border-color: #315e4d;
+  box-shadow: inset 0 1px 0 #6a8e78, 3px 4px 10px #304c382b;
+}
+.pitch-app .pitch-primary:hover { background: #254d3d; border-color: #254d3d; }
+.pitch-secondary, .pitch-panel-ivory .pitch-secondary {
+  background: #f4f5ee; color: #345845; border-color: #bac9b9;
+  box-shadow: 3px 3px 9px #475b4012, inset 0 1px 0 #fff;
+}
+.pitch-chip, .pitch-panel-ivory .pitch-chip { color: #52675b; border-color: #bdcabb; background: #f7f8ef99; }
+.pitch-chip.is-available, .pitch-panel-ivory .pitch-chip.is-available { color: #315c43; border-color: #a9c4ac; background: #dcebdc; }
+.pitch-chip.is-build, .pitch-panel-ivory .pitch-chip.is-build { color: #725021; border-color: #cab486; background: #f2e7cf; }
+.pitch-panel { border-color: var(--pitch-edge); border-radius: 24px; scrollbar-color: #a6b5a1 transparent; }
+.pitch-panel-dark { background: linear-gradient(145deg, #e5ece1, #dce6d9); box-shadow: var(--pitch-raised); }
+.pitch-panel-ivory { border-color: #dedfd4; background: var(--pitch-ivory); box-shadow: var(--pitch-raised); }
+.pitch-panel-ivory p, .pitch-panel-ivory .pitch-fine { color: var(--pitch-muted); }
+.pitch-segment, .pitch-panel-ivory .pitch-segment {
+  background: #e0e5da; border-color: #ccd4c5;
+  box-shadow: inset 2px 2px 5px #3e523012, inset -2px -2px 5px #ffffff9c;
+}
+.pitch-segment button, .pitch-panel-ivory .pitch-segment button { color: #4c6251; }
+.pitch-segment button[aria-pressed=true], .pitch-panel-ivory .pitch-segment button[aria-pressed=true] {
+  background: #fbfcf6; color: #294c36; box-shadow: 2px 2px 5px #45573b24, inset 0 1px 0 #fff; font-weight: 650;
+}
+.pitch-swatch-list button, .pitch-category-grid button, .pitch-channel-list > button {
+  background: #edf0e5; border-color: #d5dece; color: #45604b;
+}
+.pitch-swatch-list button[aria-pressed=true], .pitch-category-grid button[aria-pressed=true], .pitch-channel-list > button[aria-pressed=true] {
+  background: #dcebdc; border-color: #819f87; color: #2d533a;
+}
+.pitch-channel-list small, .pitch-variants { color: #5a6a57; }
+.pitch-concept-note, .pitch-panel-ivory .pitch-concept-note {
+  background: #e8ecdf; border-color: #cbd6c2; border-left: 3px solid #92ab8b;
+}
+.pitch-concept-note > span, .pitch-panel-ivory .pitch-concept-note > span { color: #486442; }
+.pitch-concept-note p, .pitch-panel-ivory .pitch-concept-note p { color: #586952; }
+.pitch-designer-frame { background: #e8e9df; border-color: #bccab7; }
+.pitch-form-grid input, .pitch-select-label select,
+.pitch-enquiry input:not([type=checkbox]), .pitch-enquiry textarea {
+  background: #fffff9; border-color: #bac8b4; color: #304e38;
+  box-shadow: inset 2px 2px 5px #5564430c;
+}
+.pitch-timing-result { background: #d6e8d5; color: #355b37; border-color: #b1cba8; }
+.pitch-timing-result.is-tight { background: #f2e1cd; color: #845229; border-color: #cdb58c; }
+.pitch-timeline-number { background: #d4e6d1; color: #385637; border-color: #aac39c; }
+.pitch-timeline p, .pitch-timeline time { color: #51694d; }
+.pitch-token-row > span, .pitch-panel-ivory .pitch-token-row > span { color: #496346; border-color: #bccbb4; background: #f4f6ec; }
+.pitch-check-list, .pitch-panel-ivory .pitch-check-list { color: #53644f; }
+.pitch-check-list li:before { color: #437441; }
+.pitch-meeting-card { background: #e2ebdc; border-color: #c1d0b7; box-shadow: var(--pitch-raised); }
+.pitch-meeting-card a { background: #f7faef; border-color: #b9ccad; color: #3d6339; }
+.pitch-flow-diagram > span { background: #e8f0df; color: #40623d; border-color: #baccae; }
+.pitch-flow-diagram i { color: #648161; }
+.pitch-category-symbol { color: #7eaa754b; }
+.pitch-category-metric { color: #42713f; }
+.pitch-preview-browser { background: #d5e3cf; border-color: #c6d5bf; }
+.pitch-preview-browser strong, .pitch-preview-actions { color: #466943; }
+.pitch-partner-map > span { background: #eaf1e2; color: #42673d; border-color: #b8cfae; }
+.pitch-partner-map > div { background: #dcebd3; border-color: #b2c8a5; box-shadow: var(--pitch-raised); }
+.pitch-partner-map small { color: #526c48; }
+.pitch-finance-steps > button { background: #e7efdd; color: #49623d; border-color: #b9caaa; }
+.pitch-finance-steps > button[aria-pressed=true] { background: #c9dfbe; color: #36532b; border-color: #87a771; }
+.pitch-finance-copy strong { color: #355330; }
+.pitch-ai-capture { background: #edf0e5; border-color: #bdcdb5; }
+.pitch-ai-capture > span { background: #365e42; border-color: #365e42; color: #fffdf4; }
+.pitch-automation-cards > div { background: #edf3e4; border-color: #c0d0b6; }
+.pitch-automation-cards > div > span { color: #527345; }
+.pitch-app-capture figcaption, .pitch-app-capture figcaption > span:last-child:not(:first-child) { color: #5a6e51; }
+.pitch-app-capture figcaption > span:first-child { color: #47713b; }
+.pitch-app-capture figcaption > strong, .pitch-capture-tools dt { color: #35572d; }
+.pitch-capture-image, .pitch-capture-unavailable { border-color: #bdcbb1; background: #e5ebda; }
+.pitch-capture-tools dd { color: #576c4d; }
+.pitch-capture-actions { border-color: #c7d4bc; }
+.pitch-capture-actions button, .pitch-capture-actions a { background: #365f41; color: #fffdf4; border-color: #365f41; }
+.pitch-live-footer a { color: #3b643b; }
+.pitch-later-phase { color: #5d7051; }
+.pitch-build-list { background: #e6edda; border-color: #c4d1b6; }
+.pitch-build-list > div { color: #405736; }
+
+/* A fixed chapter rail gives the presentation a clear beginning and sequence.
+   The live designer keeps the full remaining width and its own controls. */
+@media (min-width: 1180px) {
+  .pitch-app { grid-template-columns: 174px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; }
+  .pitch-header, .pitch-footer { grid-column: 1 / -1; }
+  .pitch-chapters { flex-direction: column; align-items: stretch; justify-content: center; gap: 10px; padding: 20px 0 20px 18px; }
+  .pitch-chapters button { white-space: normal; text-align: left; padding: 12px 10px; min-height: 54px; font-size: 11px; gap: 8px; }
+  .pitch-chapters button > span { display: grid; place-items: center; border: 1px solid #c6d0bd; border-radius: 50%; width: 25px; height: 25px; flex: none; font-size: 9px; }
+  .pitch-chapters button[aria-selected=true] > span { border-color: #739571; background: #f5faf0; }
+  .pitch-stage { padding-left: 22px; }
+  .pitch-hero { gap: 24px; }
+  .pitch-app h1 { font-size: clamp(36px, 4.1vw, 65px); }
+  .pitch-hero-copy .pitch-lead { font-size: 16px; }
+}
+@media (max-width: 760px) {
+  .pitch-header { padding: 12px 15px; gap: 10px; }
+  .pitch-chapters { padding: 10px 12px 0; gap: 5px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pitch-chapters button { min-height: 39px; flex-direction: row; gap: 5px; padding: 7px 5px; font-size: 10px; border-radius: 13px; justify-content: center; }
+  .pitch-chapters button > span { font-size: 9px; }
+  .pitch-stage { padding: 15px 12px; overflow-x: hidden; }
+  .pitch-hero-copy { padding-right: 0; gap: 17px; }
+  .pitch-footer { padding: 10px 13px; }
+  .pitch-footer > div { gap: 8px; }
+  .pitch-panel { border-radius: 20px; }
+}
+@media (max-width: 520px) {
+  .pitch-enquiry-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 360px) {
+  .pitch-footer > div { width: 100%; justify-content: space-between; gap: 6px; }
+  .pitch-footer a[href="/studio"] { display: none; }
+  .pitch-footer button:not(.pitch-feedback-link) { gap: 10px; padding: 9px 12px; }
+}
+@media (min-width: 761px) and (max-height: 800px) {
+  .pitch-hero-copy { gap: 15px; padding-top: 4px; padding-bottom: 4px; }
+  .pitch-hero-copy h1 { font-size: clamp(34px, 3.5vw, 52px); }
+  .pitch-hero-copy .pitch-lead { font-size: 14px; line-height: 1.65; }
+  .pitch-hero-metrics { padding-top: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pitch-app button, .pitch-app a { transition: none; }
+}

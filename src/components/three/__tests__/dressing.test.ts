@@ -1,13 +1,59 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { contactShadow, lampsOnFactor, nightLight } from '../dressing';
+import { contactShadow, cornerShades, lampsOnFactor, nightLight, CORNER_SHADE_VERTICAL_M } from '../dressing';
 import { doorRuns } from '../joinery';
-import type { ItemSolid, WallOpeningSolid } from '../../../designer/roomSolids';
+import { bareMineralSurface, cornerShadeTexture, softShadowTexture } from '../surfaces';
+import type { ItemSolid, WallOpeningSolid, WallSolid } from '../../../designer/roomSolids';
 
 const ITEM: ItemSolid = { key: 'i', instanceId: 'i1', x0: 1, y0: 2, x1: 3, y1: 2.8, z0: 0, z1: 1.4, rotationDeg: 0, hex: '#888', lengthM: 2, widthM: 0.8, heightM: 1.4 };
 
 describe('dressing — contact shadows, lamps, door runs (3D Mode P3)', () => {
+  it('keeps unfinished screed even and flat with only fine low-contrast mineral grain', () => {
+    const surface = bareMineralSurface();
+    expect(surface.normalScale).toBe(0);
+    const pixels = (surface.map as THREE.DataTexture).image.data!;
+    for (let i = 0; i < pixels.length; i += 4) {
+      expect(pixels[i]).toBeGreaterThanOrEqual(249);
+      expect(pixels[i]).toBeLessThanOrEqual(254);
+      expect(pixels[i + 1]).toBe(pixels[i]);
+      expect(pixels[i + 2]).toBe(pixels[i]);
+    }
+    expect(surface.map.repeat.toArray()).toEqual([2, 2]);
+    expect(surface.map.colorSpace).toBe(THREE.SRGBColorSpace);
+  });
+
+  it('encodes contact opacity in green, which Three alphaMap actually reads, with a soft clear edge', () => {
+    const texture = softShadowTexture() as THREE.DataTexture;
+    const pixels = texture.image.data!;
+    const width = texture.image.width;
+    const middle = (Math.floor(width / 2) * width + Math.floor(width / 2)) * 4;
+    expect(pixels[middle + 1]).toBeGreaterThan(250);
+    expect(pixels[1]).toBe(0);
+    expect(pixels[middle + 3]).toBe(255);
+    expect(pixels[3]).toBe(255);
+    expect(texture.colorSpace).toBe(THREE.NoColorSpace);
+    const corner = cornerShadeTexture() as THREE.DataTexture;
+    expect(corner.image.data![1]).toBe(255);
+    expect(corner.image.data![corner.image.data!.length - 3]).toBe(0);
+  });
+
+  it('keeps vertical corner occlusion at the wall edges, never a horizontal stripe across its centre', () => {
+    const wall: WallSolid = { key: 'wall-r-0', hit: { kind: 'edge', roomId: 'r', edgeIndex: 0 },
+      a: { x: 0, y: 0 }, b: { x: 5, y: 0 }, inward: { x: 0, y: 1 }, lengthM: 5,
+      thicknessM: 0.15, heightM: 2.7, stubHeightM: 0.25, centred: false, hex: '#808080', openings: [], shared: false, free: false };
+    const shading = cornerShades(wall, wall.heightM, []);
+    const strips = shading.children.slice(-2);
+    for (const [index, strip] of strips.entries()) {
+      const bounds = new THREE.Box3().setFromObject(strip);
+      expect(bounds.getSize(new THREE.Vector3()).x).toBeCloseTo(CORNER_SHADE_VERTICAL_M, 5);
+      expect(bounds.min.y).toBeCloseTo(0, 5);
+      expect(bounds.max.y).toBeCloseTo(2.7, 5);
+      if (index === 0) expect(bounds.min.x).toBeCloseTo(0, 5);
+      else expect(bounds.max.x).toBeCloseTo(5, 5);
+    }
+  });
+
   it('a floor item gets a contact shadow sized to its footprint plus a margin; wall / ceiling / raised items none', () => {
     const s = contactShadow(ITEM)!;
     const p = (s.geometry as THREE.PlaneGeometry).parameters;

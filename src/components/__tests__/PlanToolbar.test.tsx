@@ -79,7 +79,12 @@ describe('direct Plan controls', () => {
   });
   it.each([360, 768, 1280])('keeps Roof, Plot and Snap directly in the reserved toolbar at %ipx', (width) => {
     viewport(width); render();
-    const row = byId('plan-navigation');
+    const toggle = host.querySelector<HTMLButtonElement>('.studio-settings-toggle')!;
+    const row = document.getElementById('studio-plan-settings')!;
+    expect(row.hidden).toBe(true);
+    click(toggle);
+    expect(row.hidden).toBe(false);
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
     for (const id of ['roof-toggle', 'land-toggle', 'snap-unit-toggle', 'levels-toggle']) {
       expect(row.contains(byId(id))).toBe(true);
       expect(byId(id).closest('[data-ppw-popover]')).toBeNull();
@@ -88,6 +93,9 @@ describe('direct Plan controls', () => {
     expect(host.querySelector('[aria-controls="ppw-pop-view"]')).toBeNull();
     expect(host.querySelector('[class*="overflow-x-auto"]')).toBeNull();
     expect(byId(width < 768 ? 'view-mode-3d-phone' : 'view-mode-3d')).not.toBeNull();
+    escape();
+    expect(row.hidden).toBe(true);
+    expect(document.activeElement).toBe(toggle);
   });
 
   // Capsule pass (2026-09-26). The first cut of planToolbar.css hid the

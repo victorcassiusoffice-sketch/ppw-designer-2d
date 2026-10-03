@@ -1,16 +1,18 @@
-.pitch-construction{background:#172027;color:#ebeff0;--pitch-cream:#f3efe8;--pitch-green:#ab2a33}
-.pitch-construction .pitch-brand-mark,.pitch-construction .pitch-primary{background:#a92b33;color:#fff}
-.pitch-construction .pitch-chapters button[aria-selected=true]{background:#792a32;border-color:#cb7479;color:#fff}
-.pitch-construction h1 em{color:#e8b5a3}
-.pitch-construction .pitch-status-dot{background:#e39b84}
-.pitch-construction .pitch-panel-dark{background:#1c2931;border-color:#465058}
+.pitch-construction{--pitch-cream:#f5f0e6;--pitch-green:#765849;background:radial-gradient(ellipse at 90% 0%,#e7dfd0 0,transparent 48%),#eeeee7}
+.pitch-construction .pitch-brand-mark{background:#eee5d8;color:#795744;border-color:#d1bdab}
+.pitch-construction .pitch-primary{background:#735442;color:#fffdf4;border-color:#735442;box-shadow:inset 0 1px 0 #a98a75,3px 4px 10px #513f292b}
+.pitch-construction .pitch-primary:hover{background:#5c4133;border-color:#5c4133}
+.pitch-construction .pitch-chapters button[aria-selected=true]{background:#e5d7c4;border-color:#b29a7c;color:#624c35}
+.pitch-construction h1 em{color:#8a6246}
+.pitch-construction .pitch-status-dot{background:#96714b;box-shadow:0 0 0 4px #ddc8a955}
+.pitch-construction .pitch-panel-dark{background:linear-gradient(145deg,#ece7dc,#e4dece);border-color:#d5cdbb}
 .construction-intro-preview{justify-content:center}
 .construction-intro-preview .pitch-app-capture{min-height:0}
 .construction-live-layout{display:grid;grid-template-columns:minmax(250px,.65fr) minmax(0,1.65fr);height:100%;gap:20px;min-height:0}
 .construction-live-layout>aside{overflow:auto}
 .construction-steps{padding-left:20px;display:grid;gap:12px;line-height:1.5}
 .construction-live-frame{padding:0!important;display:flex;flex-direction:column;overflow:hidden;min-height:400px}
-.construction-live-frame iframe{border:0;width:100%;flex:1;min-height:330px;background:#172d32}
+.construction-live-frame iframe{border:0;width:100%;flex:1;min-height:330px;background:#ece9df}
 .construction-live-caption{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 15px;font-size:11px;flex-wrap:wrap}
 .construction-source-card{justify-content:center}
 .construction-dimension{font-size:clamp(25px,3vw,44px);font-weight:650;letter-spacing:-.03em}
@@ -21,11 +23,11 @@
 .construction-block-symbol.is-u span{border-top:0}
 .construction-phase-picker{display:grid;gap:8px}
 .construction-phase-picker button{padding:12px;border:1px solid #c9d1c8;border-radius:10px;text-align:left;background:transparent;color:inherit;font:inherit;cursor:pointer}
-.construction-phase-picker button[aria-pressed=true]{background:#792a32;color:#fff;border-color:#792a32}
+.construction-phase-picker button[aria-pressed=true]{background:#e5d7c4;color:#624c35;border-color:#b29a7c;box-shadow:inset 0 1px 0 #fff7e8}
 .construction-schedule{padding:0;list-style:none;display:grid;gap:16px;align-content:start}
-.construction-schedule li{display:grid;grid-template-columns:1fr auto;gap:7px 16px;padding:16px 0;border-bottom:1px solid #ffffff25}
+.construction-schedule li{display:grid;grid-template-columns:1fr auto;gap:7px 16px;padding:16px 0;border-bottom:1px solid #ccc1aa}
 .construction-schedule li>span{font-size:14px;font-weight:650}
-.construction-schedule time{font-size:14px;color:#efc2b1;font-variant-numeric:tabular-nums}
-.construction-schedule small{grid-column:1/-1;color:#b0bfbe}
+.construction-schedule time{font-size:14px;color:#785438;font-variant-numeric:tabular-nums}
+.construction-schedule small{grid-column:1/-1;color:#6a6859}
 @media(max-width:900px){.construction-live-layout{grid-template-columns:minmax(230px,.8fr) minmax(0,1.2fr);gap:12px}.construction-live-layout .pitch-panel{padding:18px}}
 @media(max-width:760px){.construction-live-layout{height:auto;display:flex;flex-direction:column}.construction-live-frame{height:640px;min-height:560px}.construction-live-frame iframe{min-height:500px}.construction-intro-preview{min-height:380px!important}.construction-schedule li{grid-template-columns:1fr}.construction-live-caption{font-size:10px}.construction-source-card{min-height:430px!important}}

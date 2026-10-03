@@ -13,33 +13,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import type { ItemSolid } from '../../designer/roomSolids';
 import { itemPose } from '../../designer/fitToSize';
 import { furniturePreviewKind, FURNITURE_PREVIEW_NOTE } from '../../data/dimensionalPreview';
-
-type SurfaceMapKind = 'fabric' | 'wood' | 'weave';
-
-/** Small neutral height maps add fabric weave / wood pores / rug knots, never a fake photo. */
-function surfaceMap(kind: SurfaceMapKind): THREE.DataTexture {
-  const size = 64;
-  const data = new Uint8Array(size * size * 4);
-  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
-    const i = (y * size + x) * 4;
-    const weave = ((x % 4 < 2) === (y % 4 < 2) ? 14 : -14);
-    const grain = Math.sin((x + Math.sin(y * 0.17) * 0.75) * 1.6) * 18;
-    // A coarse twill: knots on an 8 px pitch, each row shifted by two, so a
-    // flat 1 cm rug pile still catches grazing light.
-    const knot = (((x + (y >> 3) * 2) % 8 < 4) === ((y % 8) < 4) ? 22 : -22) + (((x + y) % 2) ? 4 : -4);
-    const value = 128 + (kind === 'fabric' ? weave : kind === 'weave' ? knot : grain);
-    data[i] = data[i + 1] = data[i + 2] = value;
-    data[i + 3] = 255;
-  }
-  const map = new THREE.DataTexture(data, size, size);
-  map.wrapS = map.wrapT = THREE.RepeatWrapping;
-  map.repeat.set(kind === 'fabric' ? 5 : kind === 'weave' ? 9 : 2, kind === 'fabric' ? 5 : kind === 'weave' ? 6 : 1);
-  map.magFilter = THREE.LinearFilter;
-  map.minFilter = THREE.LinearMipmapLinearFilter;
-  map.generateMipmaps = true;
-  map.needsUpdate = true;
-  return map;
-}
+import { cushionGeometry, furnitureSurface } from './furnitureSurface';
 
 class Parts {
   readonly root = new THREE.Group();
@@ -65,15 +39,17 @@ class Parts {
       clearcoatRoughness: finish === 'screen' ? 0.12 : 0.25,
     });
     material.name = name;
-    if (soft || finish === 'wood') {
+    material.userData.furnitureFinish = finish;
+    if (soft || finish === 'wood' || finish === 'stone') {
       let map = this.maps.get(finish);
       if (!map) {
-        map = surfaceMap(finish);
+        map = furnitureSurface(finish);
         this.maps.set(finish, map);
         this.textures.push(map);
       }
       material.bumpMap = map;
-      material.bumpScale = finish === 'weave' ? 0.004 : finish === 'fabric' ? 0.002 : 0.001;
+      material.roughnessMap = map;
+      material.bumpScale = finish === 'weave' ? 0.003 : finish === 'fabric' ? 0.0012 : finish === 'stone' ? 0.0005 : 0.0008;
     }
     this.materials.set(name, material);
     return material;
@@ -81,10 +57,23 @@ class Parts {
 
   box(name: string, size: [number, number, number], position: [number, number, number], material: THREE.Material, radius = 0): THREE.Mesh {
     const [w, h, d] = size;
-    const geometry = radius > 0
-      ? new RoundedBoxGeometry(w, h, d, 2, Math.min(radius, w / 3, h / 3, d / 3))
+    // Real joinery and powder-coated frames have a small eased edge, which
+    // catches the reflection rig. Keep it within the existing envelope and
+    // use a single bevel segment on the numerous small cabinet/frame parts.
+    const finish = material.userData.furnitureFinish;
+    const eased = radius || (['wood', 'metal', 'stone', 'enamel', 'plastic'].includes(finish) ? Math.min(0.003, w * 0.06, h * 0.06, d * 0.06) : 0);
+    const geometry = eased > 0
+      ? new RoundedBoxGeometry(w, h, d, radius > 0 ? 2 : 1, Math.min(eased, w / 3, h / 3, d / 3))
       : new THREE.BoxGeometry(w, h, d);
     const mesh = new THREE.Mesh(geometry, material);
+    mesh.name = name;
+    mesh.position.set(...position);
+    this.root.add(mesh);
+    return mesh;
+  }
+
+  cushion(name: string, size: [number, number, number], position: [number, number, number], material: THREE.Material): THREE.Mesh {
+    const mesh = new THREE.Mesh(cushionGeometry(...size), material);
     mesh.name = name;
     mesh.position.set(...position);
     this.root.add(mesh);
@@ -160,9 +149,9 @@ function sofa(p: Parts, w: number, d: number, h: number, corner: boolean): void 
   const seatWidth = (w - armWidth * 2.1) / count;
   for (let i = 0; i < count; i++) {
     const x = (i - (count - 1) / 2) * seatWidth;
-    p.box('individual seat cushion', [seatWidth * 0.97, h * 0.16, d * 0.74], [x, h * 0.42, d * 0.065], cushion, h * 0.055);
-    p.box('back cushion', [seatWidth * 0.97, h * 0.39, d * 0.15], [x, h * 0.73, -d * 0.235], cushion, h * 0.065);
-    const pillow = p.box('scatter pillow', [Math.min(seatWidth * 0.6, h * 0.31), h * 0.29, d * 0.12], [x + seatWidth * 0.13, h * 0.62, -d * 0.085], accent, h * 0.07);
+    p.cushion('individual seat cushion', [seatWidth * 0.97, h * 0.16, d * 0.74], [x, h * 0.42, d * 0.065], cushion);
+    p.cushion('back cushion', [seatWidth * 0.97, h * 0.39, d * 0.15], [x, h * 0.73, -d * 0.235], cushion);
+    const pillow = p.cushion('scatter pillow', [Math.min(seatWidth * 0.6, h * 0.31), h * 0.29, d * 0.12], [x + seatWidth * 0.13, h * 0.62, -d * 0.085], accent);
     pillow.rotation.z = i % 2 ? 0.13 : -0.13;
   }
 }
@@ -176,11 +165,12 @@ function bed(p: Parts, w: number, d: number, h: number): void {
   p.box('bed frame', [w, h * 0.21, d], [0, h * 0.27, 0], oak, 0.015);
   p.box('headboard', [w, h * 0.87, d * 0.045], [0, h * 0.565, -d * 0.475], oak, 0.018);
   p.box('mattress', [w * 0.94, h * 0.23, d * 0.94], [0, h * 0.47, d * 0.02], linen, h * 0.055);
-  p.box('duvet', [w * 0.955, h * 0.07, d * 0.65], [0, h * 0.61, d * 0.16], duvet, 0.02);
-  p.box('folded duvet edge', [w * 0.94, h * 0.075, d * 0.11], [0, h * 0.645, -d * 0.13], fold, 0.025);
-  for (const side of [-1, 1]) p.box('pillow', [w * 0.37, h * 0.12, d * 0.21], [side * w * 0.245, h * 0.64, -d * 0.325], linen, h * 0.05);
-  // A few stitched channels catch grazing light without a large texture.
-  for (const side of [-1, 0, 1]) p.box('duvet seam', [0.003, 0.002, d * 0.5], [side * w * 0.23, h * 0.647, d * 0.18], fold);
+  p.cushion('duvet', [w * 0.955, h * 0.09, d * 0.65], [0, h * 0.61, d * 0.16], duvet);
+  p.cushion('folded duvet edge', [w * 0.94, h * 0.075, d * 0.11], [0, h * 0.645, -d * 0.13], fold);
+  for (const side of [-1, 1]) {
+    const pillow = p.cushion('pillow', [w * 0.37, h * 0.12, d * 0.21], [side * w * 0.245, h * 0.64, -d * 0.325], linen);
+    pillow.rotation.y = side * 0.035;
+  }
 }
 
 function table(p: Parts, w: number, d: number, h: number, kind: 'coffee' | 'desk' | 'dining'): void {
@@ -234,7 +224,7 @@ function officeChair(p: Parts, w: number, d: number, h: number): void {
     p.rod('caster spoke', new THREE.Vector3(0, h * 0.11, 0), new THREE.Vector3(x, h * 0.05, z), w * 0.022, frame);
     p.box('caster', [w * 0.07, h * 0.06, d * 0.09], [x, h * 0.03, z], frame, 0.01);
   }
-  p.box('chair seat cushion', [w * 0.84, h * 0.075, d * 0.77], [0, h * 0.39, d * 0.06], seat, 0.035);
+  p.cushion('chair seat cushion', [w * 0.84, h * 0.075, d * 0.77], [0, h * 0.39, d * 0.06], seat);
   p.box('chair back frame', [w * 0.76, h * 0.46, d * 0.12], [0, h * 0.67, -d * 0.34], frame, 0.035);
   p.box('chair back mesh', [w * 0.67, h * 0.41, d * 0.13], [0, h * 0.67, -d * 0.325], fabric, 0.03);
   p.box('headrest', [w * 0.48, h * 0.11, d * 0.13], [0, h * 0.945, -d * 0.32], fabric, 0.025);
@@ -582,8 +572,8 @@ function gardenSwing(p: Parts, w: number, d: number, h: number): void {
   p.rod('swing cross beam', new THREE.Vector3(-w * 0.45, h * 0.9, 0), new THREE.Vector3(w * 0.45, h * 0.9, 0), radius, steel);
   p.box('three seat bench', [w * 0.71, h * 0.035, d * 0.5], [0, h * 0.28, 0], steel, 0.008);
   for (let i = -1; i <= 1; i++) {
-    p.box('individual outdoor seat cushion', [w * 0.232, h * 0.045, d * 0.48], [i * w * 0.237, h * 0.32, 0], cushion, 0.02);
-    const back = p.box('outdoor back cushion', [w * 0.232, h * 0.29, d * 0.055], [i * w * 0.237, h * 0.475, -d * 0.21], cushion, 0.022);
+    p.cushion('individual outdoor seat cushion', [w * 0.232, h * 0.045, d * 0.48], [i * w * 0.237, h * 0.32, 0], cushion);
+    const back = p.cushion('outdoor back cushion', [w * 0.232, h * 0.29, d * 0.055], [i * w * 0.237, h * 0.475, -d * 0.21], cushion);
     back.rotation.x = -0.12;
   }
   for (const side of [-1, 1]) {
