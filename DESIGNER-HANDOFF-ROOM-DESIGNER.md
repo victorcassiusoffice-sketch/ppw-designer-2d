@@ -1,3 +1,20 @@
+<!-- oct4-studio:start -->
+## Tactile Studio redesign — 4 October 2026
+
+Application commit `51c2b64336a923dad15668ef08b3a4ed1aa58900` is pushed to `cursor/feat-3d-flooring-hud-bc95`. Vercel Preview deployment `6834504765` reports success at https://ppw-designer-2d-pyrd1d3ge-victor-ppw.vercel.app. The unique hostname timed out in both the browser and an HTTP check; it is **not yet a verified working preview**. A documentation checkpoint push will request a fresh preview of the same application. Production/main remains `71db6af8cfdd6f0128ae8ea663c69fab104b6e5e` and has not been changed by this redesign.
+
+Changes: shared ivory/sage tactile Plan/House controls; labelled perimeter tools and expandable Site & tools; canonical measured top-down furniture/solar/tank models; richer 3D upholstery and material surfaces; corrected contact/corner shadows; coordinated Studio and developer/merchant/construction pitches. Actual app screenshots replace the static Plan/House/AI pitch images. No dimension, quantity, energy or pricing algorithms were changed for appearance.
+
+Checks: client/API typechecks, changed-file lint and production build passed. Full regression: 295 files / 3,239 tests, then 21 focused navigation/surface and 5 screenshot-asset tests. Local desktop and 390/320 px layouts checked, including panel dismissal and Plan/House switching. These remain dimensional planning previews, not photographic supplier CAD. No live orders, payments, enquiries, merchant writes or paid AI calls were made.
+
+- Active repository: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`
+- Full checkpoint: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\docs\STUDIO-REDESIGN-2026-10-04.md`
+- Actual screenshots: `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-Plan-2026-10-04.jpg` and `Room-Designer-3D-2026-10-04.jpg`
+- Shared demo routes: `/designer`, `/designer?demo=tintex`, `/demo?view=2d`, `/demo?view=3d`, `/studio`, `/pitch/developers`, `/pitch/merchants`, `/pitch/construction`.
+
+Older release notes below are historical. Preserve the original checkout and recovery stash documented there. Continue this redesign on the feature branch; do not publish to main without applicable authorization.
+<!-- oct4-studio:end -->
+
 <!-- oct2-release:start -->
 ## Live phone + AI + merchant release — 2 October 2026
 

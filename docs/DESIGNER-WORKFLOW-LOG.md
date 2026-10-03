@@ -369,3 +369,5 @@ Final GitHub checks for `e6c4e82`: client/API typecheck, Vitest, secret scan and
 ## 4 October 2026 — tactile Studio and shared-model rendering
 
 Redesign checkpoint: `docs/STUDIO-REDESIGN-2026-10-04.md`. Implemented warm ivory/sage shared Plan/House chrome, labelled perimeter tools and grouped site settings, matching AI/Materials/catalogue/pitches. Added genuine top-down product model snapshots, richer measured furniture surfaces and upholstery, repaired contact/corner shadows, preserved dimensions/calculations. 295 files/3,239 tests passed; client/API typechecks and build passed; desktop and narrow-phone CUA checks performed. Actual pitch app screenshots refreshed. Feature preview publication is pending; production remains unchanged.
+
+4 October publication checkpoint: application 51c2b64 pushed; Vercel deployment 6834504765 succeeded, but pyrd1d3ge preview hostname times out. Documentation-only checkpoint requests a fresh preview. Local UI and build checks remain passed; production is unchanged.

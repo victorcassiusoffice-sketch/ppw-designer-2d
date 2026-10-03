@@ -1,6 +1,6 @@
 # Studio redesign — 4 October 2026
 
-Status: implementation and local verification in progress. Do not describe this redesign as live on production until a deployment is explicitly recorded below.
+Status: implementation, local verification and feature push complete. Vercel reports success; unique-host browser verification is pending because the host times out. Production is unchanged.
 
 Active checkout: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`, branch `cursor/feat-3d-flooring-hud-bc95`. Starting HEAD `2e71786`. Original checkout and recovery stash remain untouched. Production remains the previous October 2 release.
 
@@ -24,7 +24,7 @@ CUA browser checks: desktop 1440×900; phone 390×844 and 320×740. Verified Pla
 
 `public/showcase/designer-plan.webp`, `designer-3d.webp`, and `designer-ai.png` were replaced with actual CUA app screenshots. Originals are under `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-{Plan,3D,AI,Phone}-2026-10-04.jpg`.
 
-Feature push and unique Vercel verification are the next steps. No production push is part of this redesign release without applicable authorization.
+Application commit `51c2b64336a923dad15668ef08b3a4ed1aa58900` is pushed on the feature branch. Preview deployment `6834504765` succeeded at `https://ppw-designer-2d-pyrd1d3ge-victor-ppw.vercel.app`, but browser and HTTP requests timed out. A documentation checkpoint push requests a fresh preview. Next: verify that unique host and update these pointers. No production push is part of this redesign release without applicable authorization.
 
 ## Extension / honest limits
 
