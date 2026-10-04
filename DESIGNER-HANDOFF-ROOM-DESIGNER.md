@@ -1,18 +1,31 @@
 <!-- oct4-studio:start -->
-## Tactile Studio redesign — 4 October 2026
+## Verified tactile Studio preview — 4 October 2026
 
-Application commit `51c2b64336a923dad15668ef08b3a4ed1aa58900` is pushed to `cursor/feat-3d-flooring-hud-bc95`. Vercel Preview deployment `6834504765` reports success at https://ppw-designer-2d-pyrd1d3ge-victor-ppw.vercel.app. The unique hostname timed out in both the browser and an HTTP check; it is **not yet a verified working preview**. A documentation checkpoint push will request a fresh preview of the same application. Production/main remains `71db6af8cfdd6f0128ae8ea663c69fab104b6e5e` and has not been changed by this redesign.
+**The redesign is live on the feature preview. Production is unchanged.** Application commit `51c2b64336a923dad15668ef08b3a4ed1aa58900`; verified deployment commit `67cb97882711bfd264a0949a49d2e50afcc40d8d` (documentation only), Vercel deployment `6834611046`. Continue on `cursor/feat-3d-flooring-hud-bc95`. Later documentation commits do not change this application. Production health still reports `71db6af8cfdd6f0128ae8ea663c69fab104b6e5e`.
 
-Changes: shared ivory/sage tactile Plan/House controls; labelled perimeter tools and expandable Site & tools; canonical measured top-down furniture/solar/tank models; richer 3D upholstery and material surfaces; corrected contact/corner shadows; coordinated Studio and developer/merchant/construction pitches. Actual app screenshots replace the static Plan/House/AI pitch images. No dimension, quantity, energy or pricing algorithms were changed for appearance.
+| Experience | Verified preview URL |
+|---|---|
+| Designer | https://ppw-designer-2d-31cpgr056-victor-ppw.vercel.app/designer |
+| Legacy TintEX / Demo | https://ppw-designer-2d-31cpgr056-victor-ppw.vercel.app/designer?demo=tintex |
+| Furnished 2D demo | https://ppw-designer-2d-31cpgr056-victor-ppw.vercel.app/demo?view=2d |
+| Furnished 3D demo | https://ppw-designer-2d-31cpgr056-victor-ppw.vercel.app/demo?view=3d |
+| Standalone Studio | https://ppw-designer-2d-31cpgr056-victor-ppw.vercel.app/studio |
+| Developer pitch | https://ppw-designer-2d-31cpgr056-victor-ppw.vercel.app/pitch/developers |
+| Merchant pitch | https://ppw-designer-2d-31cpgr056-victor-ppw.vercel.app/pitch/merchants |
+| Construction pitch | https://ppw-designer-2d-31cpgr056-victor-ppw.vercel.app/pitch/construction |
 
-Checks: client/API typechecks, changed-file lint and production build passed. Full regression: 295 files / 3,239 tests, then 21 focused navigation/surface and 5 screenshot-asset tests. Local desktop and 390/320 px layouts checked, including panel dismissal and Plan/House switching. These remain dimensional planning previews, not photographic supplier CAD. No live orders, payments, enquiries, merchant writes or paid AI calls were made.
+Landed: shared ivory/sage tactile Plan/House controls; labelled perimeter tools and expandable Site & tools; canonical measured top-down furniture/solar/tank models; richer 3D upholstery and material surfaces; corrected contact/corner shadows; coordinated Studio and pitches. Actual app screenshots replace the static Plan/House/AI pitch images. No dimension, quantity, energy or pricing algorithms were changed for appearance.
 
+Validation: 295 files / 3,239 tests, followed by 21 focused navigation/surface and 5 screenshot-asset tests; client/API typechecks, changed-file lint and production build passed. Local desktop, 390 px and 320 px layouts checked. Deployed Designer and legacy TintEX loaded on desktop and 390 px phone with no body overflow; Plan/House switching and Site & tools Escape dismissal verified. Furnished Plan/House and developer pitch rendered, all eight routes above returned HTTP 200, and health confirms the recorded deployment commit. The first `pyrd1d3ge` hostname timed out; the replacement above is verified. These remain dimensional planning previews, not photographic supplier CAD. No orders, payments, enquiries, merchant writes or paid AI calls were made.
+
+Full file locations:
 - Active repository: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`
-- Full checkpoint: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\docs\STUDIO-REDESIGN-2026-10-04.md`
-- Actual screenshots: `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-Plan-2026-10-04.jpg` and `Room-Designer-3D-2026-10-04.jpg`
-- Shared demo routes: `/designer`, `/designer?demo=tintex`, `/demo?view=2d`, `/demo?view=3d`, `/studio`, `/pitch/developers`, `/pitch/merchants`, `/pitch/construction`.
+- Checkpoint: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\docs\STUDIO-REDESIGN-2026-10-04.md`
+- Saveable checkpoint: `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-Checkpoint-2026-10-04.md`
+- Full source inventory: `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-AI-File-Locations.md`
+- Actual deployed screenshots: `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-Plan-Live-2026-10-04.jpg`, `Room-Designer-3D-Live-2026-10-04.jpg`, `Room-Designer-Phone-Live-2026-10-04.jpg`.
 
-Older release notes below are historical. Preserve the original checkout and recovery stash documented there. Continue this redesign on the feature branch; do not publish to main without applicable authorization.
+Older release notes below are historical. Preserve the original checkout and recovery stash documented there. No production/main publication was performed for this redesign.
 <!-- oct4-studio:end -->
 
 <!-- oct2-release:start -->

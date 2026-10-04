@@ -1,6 +1,6 @@
 # Studio redesign — 4 October 2026
 
-Status: implementation, local verification and feature push complete. Vercel reports success; unique-host browser verification is pending because the host times out. Production is unchanged.
+Status: implementation, verification and feature deployment complete. Production is unchanged.
 
 Active checkout: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`, branch `cursor/feat-3d-flooring-hud-bc95`. Starting HEAD `2e71786`. Original checkout and recovery stash remain untouched. Production remains the previous October 2 release.
 
@@ -24,7 +24,7 @@ CUA browser checks: desktop 1440×900; phone 390×844 and 320×740. Verified Pla
 
 `public/showcase/designer-plan.webp`, `designer-3d.webp`, and `designer-ai.png` were replaced with actual CUA app screenshots. Originals are under `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-{Plan,3D,AI,Phone}-2026-10-04.jpg`.
 
-Application commit `51c2b64336a923dad15668ef08b3a4ed1aa58900` is pushed on the feature branch. Preview deployment `6834504765` succeeded at `https://ppw-designer-2d-pyrd1d3ge-victor-ppw.vercel.app`, but browser and HTTP requests timed out. A documentation checkpoint push requests a fresh preview. Next: verify that unique host and update these pointers. No production push is part of this redesign release without applicable authorization.
+Application commit `51c2b64336a923dad15668ef08b3a4ed1aa58900` is pushed on the feature branch. The first unique host timed out. Replacement deployment `6834611046` for documentation commit `67cb97882711bfd264a0949a49d2e50afcc40d8d` serves the same application and is verified at `https://ppw-designer-2d-31cpgr056-victor-ppw.vercel.app`. Its healthcheck confirms this SHA. Standard Designer and legacy TintEX loaded on desktop and 390 px phone; body width matches viewport; Plan/House and settings Escape work; furnished Plan/House and developer pitch render. All Designer/demo/Studio/three pitch routes returned HTTP200. Deployed screenshots are saved in outputs with `-Live-2026-10-04.jpg` names. Production health remains `71db6af8cfdd6f0128ae8ea663c69fab104b6e5e`. No production push is part of this redesign release.
 
 ## Extension / honest limits
 
