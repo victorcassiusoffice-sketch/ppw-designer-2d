@@ -1,23 +1,23 @@
 <!-- oct4-sculpted:start -->
 ## Verified sculpted UI and realism preview — 4 October 2026
 
-Current verified preview: **https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app**.
-Application commit `ce9d9b6f3ab170ae6a7aa2ec37781fad76364bd3`; screenshot update/deployed commit `e3de30ecd15a1030f10b19c6571777e034040c1a`; Vercel deployment `6835774028`. Work stays on `cursor/feat-3d-flooring-hud-bc95`. Production remains `71db6af8cfdd6f0128ae8ea663c69fab104b6e5e`; no main/production publication was performed.
+Current verified preview: **https://ppw-designer-2d-o0itp5zb4-victor-ppw.vercel.app**.
+Application commit `ce9d9b6f3ab170ae6a7aa2ec37781fad76364bd3`; screenshot update `e3de30e`, final pitch-copy update `38c73e9`; verified recovery deployment commit `003ba173fa14f970efdbeab913d05c686842dc3b`, Vercel deployment `6835982201`. Work stays on `cursor/feat-3d-flooring-hud-bc95`. Production remains `71db6af8cfdd6f0128ae8ea663c69fab104b6e5e`; no main/production publication was performed.
 
 | Experience | URL |
 |---|---|
-| 2D demo | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/demo?view=2d |
-| 3D demo | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/demo?view=3d |
-| Designer | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/designer |
-| Legacy TintEX / Demo | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/designer?demo=tintex |
-| Standalone Studio + Shop | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/studio |
-| Developer pitch | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/pitch/developers |
-| Merchant pitch | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/pitch/merchants |
-| Construction pitch | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/pitch/construction |
+| 2D demo | https://ppw-designer-2d-o0itp5zb4-victor-ppw.vercel.app/demo?view=2d |
+| 3D demo | https://ppw-designer-2d-o0itp5zb4-victor-ppw.vercel.app/demo?view=3d |
+| Designer | https://ppw-designer-2d-o0itp5zb4-victor-ppw.vercel.app/designer |
+| Legacy TintEX / Demo | https://ppw-designer-2d-o0itp5zb4-victor-ppw.vercel.app/designer?demo=tintex |
+| Standalone Studio + Shop | https://ppw-designer-2d-o0itp5zb4-victor-ppw.vercel.app/studio |
+| Developer pitch | https://ppw-designer-2d-o0itp5zb4-victor-ppw.vercel.app/pitch/developers |
+| Merchant pitch | https://ppw-designer-2d-o0itp5zb4-victor-ppw.vercel.app/pitch/merchants |
+| Construction pitch | https://ppw-designer-2d-o0itp5zb4-victor-ppw.vercel.app/pitch/construction |
 
 Landed: stronger ivory/mint sculpted controls and inset trays, consolidated building actions, narrow-phone Clear correction, measured furniture texture/bedding/occlusion, sharper canonical 2D product models, wall-height shadows and window daylight, collision-aware labels, fresh real-catalogue demo styling. View → Lighting offers Natural light and Colour check; choice persists and does not move the camera. Colour check pauses time-of-day shading; Natural restores it. Important phone placement feedback stays visible.
 
-Verification: 297 files / 3,259 tests passed, then 22 focused final camera/wall and 28 pitch tests; client/API typechecks, changed-file lint and final build passed. Desktop and 390/320px local layouts checked. Final unique host health confirms e3de30e, all eight routes and three screenshot assets return HTTP200; standard Designer and legacy TintEX render at desktop/390px with no body overflow. Plan/House switching, Site & tools Escape and lighting/settings dismissal verified. Previous aouziw3ca deployment rendered the furnished Plan/House and supplied actual screenshots but later browser route navigation timed out; use 9kuay0rgv above. No orders, customer saves, merchant writes, paid AI calls or enquiries were submitted.
+Verification: 297 files / 3,259 tests passed, then 22 focused final camera/wall and 28 pitch tests; client/API typechecks, changed-file lint and final build passed. Desktop and 390/320px local layouts checked. Final recovery host health confirms 003ba17; the furnished Plan and House render in its browser checks, all eight routes and three screenshot assets return HTTP200; standard Designer and legacy TintEX render at desktop/390px with no body overflow. Plan/House switching, Site & tools Escape and lighting/settings dismissal verified. Earlier aouziw3ca and 9kuay0rgv deployments passed visual checks; later both timed out, as did the pitch-copy hostname 6fj3qin0w and branch alias. A documentation-only recovery produced o0itp5zb4 above, now verified by browser and health. No application work was lost. No orders, customer saves, merchant writes, paid AI calls or enquiries were submitted.
 
 Full locations:
 - Active repository: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`
