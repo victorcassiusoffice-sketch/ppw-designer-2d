@@ -30,3 +30,13 @@ export function planModelRasterSize(lengthM: number, widthM: number): { width: n
   const largest = Math.max(lengthM, widthM);
   return { width: Math.max(8, Math.round(512 * lengthM / largest)), height: Math.max(8, Math.round(512 * widthM / largest)) };
 }
+
+/** Move a little overhead fill to the key light, preserving the irradiance of
+ * an upward-facing surface. Seams/curves gain direction without a blanket
+ * exposure/tone-map change to the catalog colour. */
+export function planPhotoLightBalance(rig: { hemi: number; sun: number; fill: number }, sunDirection: readonly [number, number, number]) {
+  const incidence = sunDirection[1] / Math.hypot(...sunDirection);
+  const transfer = Math.min(0.24, Math.max(0, rig.hemi * 0.33));
+  if (!(incidence > 0)) return rig;
+  return { hemi: rig.hemi - transfer, sun: rig.sun + transfer / incidence, fill: rig.fill };
+}

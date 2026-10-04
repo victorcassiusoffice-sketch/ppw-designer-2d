@@ -37,7 +37,7 @@ export const CONTACT_SHADOW_MARGIN_M = 0.1;
 /** An inside-out sphere carrying the sky gradient; unlit, drawn first, never writes depth. */
 export function skyDome(day: number, presentation: ScenePresentation = 'studio'): THREE.Mesh {
   const geo = new THREE.SphereGeometry(SKY_RADIUS_M, 32, 20);
-  const mat = new THREE.MeshBasicMaterial({ map: skyTexture(day, presentation), side: THREE.BackSide, depthWrite: false, fog: false, toneMapped: false });
+  const mat = new THREE.MeshBasicMaterial({ map: skyTexture(day, presentation === 'natural' ? 'architectural' : presentation), side: THREE.BackSide, depthWrite: false, fog: false, toneMapped: false });
   mat.userData.dressingTextures = [mat.map];
   const dome = new THREE.Mesh(geo, mat);
   dome.renderOrder = -10;
@@ -51,7 +51,7 @@ export function skyDome(day: number, presentation: ScenePresentation = 'studio')
 export function updateSkyDome(dome: THREE.Mesh, day: number, presentation: ScenePresentation = 'studio'): void {
   const mat = dome.material as THREE.MeshBasicMaterial;
   mat.map?.dispose();
-  mat.map = skyTexture(day, presentation);
+  mat.map = skyTexture(day, presentation === 'natural' ? 'architectural' : presentation);
   mat.userData.dressingTextures = [mat.map];
   mat.needsUpdate = true;
   dome.userData.day = day;
@@ -75,8 +75,8 @@ export function groundPlane(): THREE.Mesh {
 /** Tint only the presentation ground. The plot, garden and floor finishes retain their materials. */
 export function updateGroundPresentation(ground: THREE.Mesh, presentation: ScenePresentation): void {
   const material = ground.material as THREE.MeshStandardMaterial;
-  material.color.set(presentation === 'architectural' ? ARCHITECTURAL_GROUND_HEX : GROUND_HEX);
-  material.roughness = presentation === 'architectural' ? 0.92 : 1;
+  material.color.set(presentation !== 'studio' ? ARCHITECTURAL_GROUND_HEX : GROUND_HEX);
+  material.roughness = presentation !== 'studio' ? 0.92 : 1;
 }
 
 /** Private sky/ground and cloned occlusion maps are owned by this stage; cached surface maps are not. */

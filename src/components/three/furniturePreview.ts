@@ -13,7 +13,8 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import type { ItemSolid } from '../../designer/roomSolids';
 import { itemPose } from '../../designer/fitToSize';
 import { furniturePreviewKind, FURNITURE_PREVIEW_NOTE } from '../../data/dimensionalPreview';
-import { cushionGeometry, furnitureSurface } from './furnitureSurface';
+import { cushionGeometry, drapedClothGeometry, furnitureAlbedo, furnitureSurface, physicalFurnitureUVs } from './furnitureSurface';
+import { furnitureOcclusion } from './furnitureOcclusion';
 
 class Parts {
   readonly root = new THREE.Group();
@@ -37,6 +38,7 @@ class Parts {
       depthWrite: finish !== 'glass',
       clearcoat: finish === 'screen' ? 0.95 : finish === 'enamel' ? 0.35 : 0,
       clearcoatRoughness: finish === 'screen' ? 0.12 : 0.25,
+      vertexColors: true,
     });
     material.name = name;
     material.userData.furnitureFinish = finish;
@@ -50,6 +52,13 @@ class Parts {
       material.bumpMap = map;
       material.roughnessMap = map;
       material.bumpScale = finish === 'weave' ? 0.003 : finish === 'fabric' ? 0.0012 : finish === 'stone' ? 0.0005 : 0.0008;
+      let colour = this.maps.get(`${finish}-colour`);
+      if (!colour) {
+        colour = furnitureAlbedo(finish);
+        this.maps.set(`${finish}-colour`, colour);
+        this.textures.push(colour);
+      }
+      material.map = colour;
     }
     this.materials.set(name, material);
     return material;
@@ -65,6 +74,7 @@ class Parts {
     const geometry = eased > 0
       ? new RoundedBoxGeometry(w, h, d, radius > 0 ? 2 : 1, Math.min(eased, w / 3, h / 3, d / 3))
       : new THREE.BoxGeometry(w, h, d);
+    physicalFurnitureUVs(geometry);
     const mesh = new THREE.Mesh(geometry, material);
     mesh.name = name;
     mesh.position.set(...position);
@@ -73,7 +83,32 @@ class Parts {
   }
 
   cushion(name: string, size: [number, number, number], position: [number, number, number], material: THREE.Material): THREE.Mesh {
-    const mesh = new THREE.Mesh(cushionGeometry(...size), material);
+    const geometry = cushionGeometry(...size);
+    physicalFurnitureUVs(geometry);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.name = name;
+    mesh.position.set(...position);
+    this.root.add(mesh);
+    return mesh;
+  }
+
+  cloth(name: string, width: number, depth: number, drop: number, position: [number, number, number], material: THREE.Material): void {
+    const mesh = new THREE.Mesh(drapedClothGeometry(width, depth, drop), material);
+    mesh.name = name;
+    mesh.position.set(...position);
+    this.root.add(mesh);
+  }
+
+  /** A single continuous seam, inset within the cushion's measured envelope. */
+  piping(name: string, width: number, depth: number, position: [number, number, number], material: THREE.Material, radius = 0.0025): THREE.Mesh {
+    const points: THREE.Vector3[] = [];
+    for (let i = 0; i < 48; i++) {
+      const angle = i / 48 * Math.PI * 2;
+      const c = Math.cos(angle), s = Math.sin(angle);
+      points.push(new THREE.Vector3(Math.sign(c) * Math.pow(Math.abs(c), 0.4) * width / 2, 0, Math.sign(s) * Math.pow(Math.abs(s), 0.4) * depth / 2));
+    }
+    const curve = new THREE.CatmullRomCurve3(points, true);
+    const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 48, radius, 4, true), material);
     mesh.name = name;
     mesh.position.set(...position);
     this.root.add(mesh);
@@ -108,13 +143,15 @@ class Parts {
   /** At most one draw per material, with no shared geometry between instances. */
   merge(): THREE.Group {
     this.root.updateMatrixWorld(true);
+    const bounds = this.root.children.map((child) => new THREE.Box3().setFromObject(child));
     const groups = new Map<THREE.Material, THREE.BufferGeometry[]>();
     const names: string[] = [];
-    for (const child of this.root.children) {
+    for (const [index, child] of this.root.children.entries()) {
       const mesh = child as THREE.Mesh<THREE.BufferGeometry, THREE.Material>;
       names.push(mesh.name);
       const geometry = mesh.geometry.index ? mesh.geometry.toNonIndexed() : mesh.geometry.clone();
       geometry.applyMatrix4(mesh.matrixWorld);
+      furnitureOcclusion(geometry, bounds[index], bounds);
       const list = groups.get(mesh.material) ?? [];
       list.push(geometry);
       groups.set(mesh.material, list);
@@ -150,6 +187,7 @@ function sofa(p: Parts, w: number, d: number, h: number, corner: boolean): void 
   for (let i = 0; i < count; i++) {
     const x = (i - (count - 1) / 2) * seatWidth;
     p.cushion('individual seat cushion', [seatWidth * 0.97, h * 0.16, d * 0.74], [x, h * 0.42, d * 0.065], cushion);
+    p.piping('tailored seat seam', seatWidth * 0.973, d * 0.743, [x, h * 0.42, d * 0.065], upholstery);
     p.cushion('back cushion', [seatWidth * 0.97, h * 0.39, d * 0.15], [x, h * 0.73, -d * 0.235], cushion);
     const pillow = p.cushion('scatter pillow', [Math.min(seatWidth * 0.6, h * 0.31), h * 0.29, d * 0.12], [x + seatWidth * 0.13, h * 0.62, -d * 0.085], accent);
     pillow.rotation.z = i % 2 ? 0.13 : -0.13;
@@ -164,12 +202,15 @@ function bed(p: Parts, w: number, d: number, h: number): void {
   p.legs(w, d, h * 0.18, oak);
   p.box('bed frame', [w, h * 0.21, d], [0, h * 0.27, 0], oak, 0.015);
   p.box('headboard', [w, h * 0.87, d * 0.045], [0, h * 0.565, -d * 0.475], oak, 0.018);
-  p.box('mattress', [w * 0.94, h * 0.23, d * 0.94], [0, h * 0.47, d * 0.02], linen, h * 0.055);
-  p.cushion('duvet', [w * 0.955, h * 0.09, d * 0.65], [0, h * 0.61, d * 0.16], duvet);
-  p.cushion('folded duvet edge', [w * 0.94, h * 0.075, d * 0.11], [0, h * 0.645, -d * 0.13], fold);
+  p.box('mattress', [w * 0.90, h * 0.23, d * 0.94], [0, h * 0.47, d * 0.02], linen, h * 0.055);
+  p.piping('mattress welt', w * 0.903, d * 0.943, [0, h * 0.47, d * 0.02], fold, 0.002);
+  p.cushion('duvet', [w * 0.89, h * 0.055, d * 0.61], [0, h * 0.604, d * 0.16], duvet);
+  p.cloth('draped duvet cover', w * 0.96, d * 0.65, h * 0.12, [0, h * 0.635, d * 0.16], duvet);
+  p.cloth('folded duvet edge', w * 0.94, d * 0.11, h * 0.04, [0, h * 0.653, -d * 0.13], fold);
   for (const side of [-1, 1]) {
     const pillow = p.cushion('pillow', [w * 0.37, h * 0.12, d * 0.21], [side * w * 0.245, h * 0.64, -d * 0.325], linen);
     pillow.rotation.y = side * 0.035;
+    p.piping('pillow stitched edge', w * 0.371, d * 0.211, [side * w * 0.245, h * 0.64, -d * 0.325], fold, 0.0015).rotation.y = side * 0.035;
   }
 }
 

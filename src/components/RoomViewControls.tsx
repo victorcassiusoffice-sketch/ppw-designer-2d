@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { WallView } from '../store/designerUIStore';
+import type { RoomLighting } from '../hooks/useRoomLighting';
 import { WallHeightControl } from './WallHeightControl';
 
 export type CameraView = 'dollhouse' | 'above' | 'front';
@@ -9,11 +10,13 @@ interface Props {
   onView: (view: CameraView) => void; wallView: WallView; onWallView: (view: WallView) => void;
   hasWalls: boolean; sunAvailable: boolean; sunHour: number | null;
   onSunHour: (hour: number | null) => void; onClose?: () => void; onExpand?: () => void;
+  lighting: RoomLighting; onLighting: (lighting: RoomLighting) => void;
 }
 
 /** The workspace reserves a row for navigation. No camera control floats over the house. */
-export function RoomViewControls({ workspace, pan, onPan, onRotate, onZoom, onFit, onView, wallView, onWallView, hasWalls, sunAvailable, sunHour, onSunHour, onExpand }: Props) {
+export function RoomViewControls({ workspace, pan, onPan, onRotate, onZoom, onFit, onView, wallView, onWallView, hasWalls, sunAvailable, sunHour, onSunHour, onExpand, lighting, onLighting }: Props) {
   const [expanded, setExpanded] = useState(false);
+  const lightingNoteId = useId();
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!expanded) return;
@@ -38,11 +41,13 @@ export function RoomViewControls({ workspace, pan, onPan, onRotate, onZoom, onFi
       <div className="house-view-options-heading"><strong>View & dimensions</strong><button type="button" onClick={() => setExpanded(false)} aria-label="Close view settings">Close ×</button></div>
       <div className="house-view-options-body">
         <label>Camera<select aria-label="Camera view" data-testid="view3d-camera-view" value="" onChange={e => onView(e.target.value as CameraView)}><option value="" disabled>Choose view</option><option value="dollhouse">Dollhouse</option><option value="above">Above</option><option value="front">Front</option></select></label>
+        <label>Lighting<select aria-label="Lighting" aria-describedby={lightingNoteId} data-testid="view3d-lighting" value={lighting} onChange={event => onLighting(event.target.value === 'architectural' ? 'architectural' : 'natural')}><option value="natural">Natural light</option><option value="architectural">Colour check</option></select></label>
         <div role="group" aria-label="Wall view" data-testid="view3d-wall-view" className="house-wall-visibility">
           {([['up', 'Walls up'], ['cutaway', 'Cutaway'], ['down', 'Walls down']] as const).map(([id, label]) => <button key={id} type="button" onClick={() => onWallView(id)} aria-label={label} aria-pressed={wallView === id} data-testid={`view3d-walls-${id}`}>{label}</button>)}
         </div>
         {hasWalls && <div className="house-view-height" data-testid="view3d-wall-height"><span>Wall height</span><WallHeightControl idPrefix="view3d-wall-height" buttonClassName="!h-8 !w-8 !border-0 !shadow-none" readoutClassName="!min-w-0 !px-1 !text-xs" /></div>}
-        {sunAvailable && <div role="group" aria-label="Sun" data-testid="view3d-sun" className="house-view-daylight"><button type="button" aria-pressed={sunHour !== null} onClick={() => onSunHour(sunHour === null ? 15.5 : null)} data-testid="view3d-sun-toggle">☀ Daylight</button>{sunHour !== null && <label><input type="range" min={6} max={20} step={0.5} value={sunHour} onChange={event => onSunHour(Number(event.target.value))} aria-label="Time of day" data-testid="view3d-sun-hour" /><span data-testid="view3d-sun-label">{`${String(Math.floor(sunHour)).padStart(2, '0')}:${sunHour % 1 ? '30' : '00'}`}</span></label>}</div>}
+        {sunAvailable && lighting === 'natural' && <div role="group" aria-label="Sun" data-testid="view3d-sun" className="house-view-daylight"><button type="button" aria-pressed={sunHour !== null} onClick={() => onSunHour(sunHour === null ? 15.5 : null)} data-testid="view3d-sun-toggle">☀ Daylight</button>{sunHour !== null && <label><input type="range" min={6} max={20} step={0.5} value={sunHour} onChange={event => onSunHour(Number(event.target.value))} aria-label="Time of day" data-testid="view3d-sun-hour" /><span data-testid="view3d-sun-label">{`${String(Math.floor(sunHour)).padStart(2, '0')}:${sunHour % 1 ? '30' : '00'}`}</span></label>}</div>}
+        <small id={lightingNoteId} className="basis-full text-center text-[10px] leading-relaxed">Natural light is an appearance preview. Colour check uses neutral lighting to compare finishes.{lighting === 'architectural' ? ' Time of day is paused in Colour check.' : ''}</small>
       </div>
     </div>}
     <div className="house-camera-row" role="group" aria-label="Camera navigation">

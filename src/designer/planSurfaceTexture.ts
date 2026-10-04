@@ -34,12 +34,18 @@ export function planSurfaceTexture(hex: string, kind: FloorKind = 'screed'): HTM
     }
   }
   if (kind === 'screed' || kind === 'ceramic') {
-    for (let index = 0; index < 24; index++) {
-      const x = random() * 256, y = random() * 256, radius = 5 + random() * 26;
-      const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-      gradient.addColorStop(0, 'rgba(110,105,94,0.028)'); gradient.addColorStop(1, 'rgba(110,105,94,0)');
-      ctx.fillStyle = gradient; ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+    // Trowelled mineral variation rather than a grid of circular smudges.
+    // Periodic bands meet at the tile boundary and preserve the base hue.
+    const texture = ctx.getImageData(0, 0, 256, 256);
+    for (let y = 0; y < 256; y++) for (let x = 0; x < 256; x++) {
+      const tau = Math.PI * 2;
+      const flow = Math.sin(x / 256 * tau * 2 + Math.sin(y / 256 * tau) * 0.7);
+      const grain = Math.sin((x + y) / 256 * tau * 5) * 0.32 + Math.sin((x * 3 - y * 2) / 256 * tau) * 0.18;
+      const delta = Math.round((flow * 0.5 + grain) * (kind === 'screed' ? 4.5 : 2.8));
+      const index = (y * 256 + x) * 4;
+      for (let channel = 0; channel < 3; channel++) texture.data[index + channel] = Math.max(0, Math.min(255, texture.data[index + channel] + delta));
     }
+    ctx.putImageData(texture, 0, 0);
   }
   textures.set(key, canvas);
   if (textures.size > 32) textures.delete(textures.keys().next().value!);

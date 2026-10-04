@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { Product } from '../../data/products.schema';
-import { canRenderPlanModel, planModelKey, planModelRasterSize, planModelSolid } from '../../designer/planModel';
+import { canRenderPlanModel, planModelKey, planModelRasterSize, planModelSolid, planPhotoLightBalance } from '../../designer/planModel';
 import { furniturePreview, disposeFurnitureTextures } from '../../components/three/furniturePreview';
 import { solarPanelPreview } from '../../components/three/solarPanelPreview';
 import { waterTankPreview } from '../../components/three/waterTankPreview';
@@ -24,7 +24,7 @@ function studio(): THREE.WebGLRenderer {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.NoToneMapping;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   const generator = new THREE.PMREMGenerator(renderer);
   const room = new RoomEnvironment();
   try { environment = generator.fromScene(room, 0.04); } finally { generator.dispose(); room.dispose(); }
@@ -56,7 +56,9 @@ function photograph(product: Product): HTMLCanvasElement | null {
   try {
     const render = studio();
     const size = planModelRasterSize(item.lengthM, item.widthM);
-    render.setSize(size.width, size.height, false);
+    // Render above final resolution: thin chair frames, cloth seams and PV
+    // cells remain crisp when the final bitmap is rotated on the plan.
+    render.setSize(size.width * 2, size.height * 2, false);
     const scene = new THREE.Scene();
     scene.add(body);
     // Plan y grows south. Setting camera up to north (-z) prevents the
@@ -67,17 +69,18 @@ function photograph(product: Product): HTMLCanvasElement | null {
     camera.up.set(0, 0, -1);
     camera.lookAt(centre);
     const profile = presentationProfile('architectural');
-    scene.add(new THREE.HemisphereLight(profile.sky, profile.bounce, Math.PI * profile.day.hemi));
-    sun = new THREE.DirectionalLight(profile.sun, Math.PI * profile.day.sun);
+    const light = planPhotoLightBalance(profile.day, profile.sunDirection);
+    scene.add(new THREE.HemisphereLight(profile.sky, profile.bounce, Math.PI * light.hemi));
+    sun = new THREE.DirectionalLight(profile.sun, Math.PI * light.sun);
     const sunHeight = item.heightM + 7;
     sun.position.set(centre.x + profile.sunDirection[0] * sunHeight, sunHeight, centre.z + profile.sunDirection[2] * sunHeight);
     sun.target.position.copy(centre);
     sun.castShadow = true;
-    const extent = Math.max(item.lengthM, item.widthM, item.heightM) + 1;
+    const extent = Math.hypot(item.lengthM, item.widthM, item.heightM) * 0.5 + 0.12;
     Object.assign(sun.shadow.camera, { left: -extent, right: extent, top: extent, bottom: -extent, near: 0.1, far: 50 });
-    sun.shadow.mapSize.set(512, 512);
-    sun.shadow.bias = -0.0004;
-    sun.shadow.normalBias = 0.008;
+    sun.shadow.mapSize.set(1024, 1024);
+    sun.shadow.bias = -0.0001;
+    sun.shadow.normalBias = 0.0015;
     scene.add(sun, sun.target);
     const fill = new THREE.DirectionalLight(profile.fill, Math.PI * profile.day.fill);
     fill.position.set(centre.x + 5, item.heightM + 8, centre.z + 3);
@@ -89,7 +92,7 @@ function photograph(product: Product): HTMLCanvasElement | null {
     result.width = size.width; result.height = size.height;
     const context = result.getContext('2d');
     if (!context) return null;
-    context.drawImage(render.domElement, 0, 0);
+    context.drawImage(render.domElement, 0, 0, size.width, size.height);
     return result;
   } finally {
     sun?.shadow.map?.dispose();

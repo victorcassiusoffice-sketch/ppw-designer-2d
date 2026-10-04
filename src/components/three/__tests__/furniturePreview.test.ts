@@ -173,7 +173,7 @@ describe('existing-product dimensional furniture previews', () => {
     const rug = furniturePreview(solid('courts-elit-rug', 0, 0))!;
     const bounds = new THREE.Box3().setFromObject(rug);
     expect(bounds.max.y - bounds.min.y).toBeCloseTo(0.01, 5);
-    expect(meshes(rug).every((mesh) => mesh.material.bumpMap !== null && mesh.material.map === null)).toBe(true);
+    expect(meshes(rug).every((mesh) => mesh.material.bumpMap !== null && mesh.material.map?.name === 'furniture-weave-colour-structure')).toBe(true);
     disposeFurnitureTextures(rug);
     // The blind mounts at its wall height, the fabric on the room side (+z) of the headrail.
     const blind = furniturePreview(solid('courts-blind-white-180', 0, 0.6))!;

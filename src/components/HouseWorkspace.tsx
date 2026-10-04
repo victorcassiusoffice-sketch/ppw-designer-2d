@@ -139,20 +139,20 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
             <button aria-pressed={!drawing && !wallDrawing && buildTool === 'select'} onClick={onSelect}>Select</button>
             {onWalls && <button disabled={onRoof} aria-pressed={wallDrawing} onClick={() => { setMobileInspector(false); onWalls(); }} data-testid="house-draw-walls">Walls</button>}
             <button disabled={onRoof} aria-pressed={drawing} onClick={() => { setMobileInspector(false); onDraw(); }} data-testid="house-draw-room">▱ <span>Draw room</span></button>
+            {onBuildTool && mode === 'build' && <div className="house-opening-tools" role="group" aria-label="Doors windows and stairs" data-active-tool={buildTool}>
+              {(['door', 'window', 'stair'] as const).map(tool => <button key={tool} type="button" aria-pressed={buildTool === tool} disabled={onRoof || (tool === 'stair' && !canUseStairs)} title={tool === 'stair' && !canUseStairs ? 'Add another floor first' : undefined} onClick={() => { setCostOpen(false); setMobileInspector(false); onBuildTool(buildTool === tool ? 'select' : tool); }}>{tool === 'door' ? 'Door' : tool === 'window' ? 'Window' : 'Stairs'}</button>)}
+              <span>{onRoof ? 'Choose a floor to add openings' : buildTool === 'door' || buildTool === 'window' ? 'Slide along a wall · release to place · repeat or Done' : buildTool === 'stair' ? 'Tap clear floor space to place stairs' : !canUseStairs ? 'Add floor for stairs' : 'Build on the selected floor'}</span>
+              {buildTool !== 'select' && buildTool !== 'wall' && buildTool !== 'room' && <button type="button" onClick={() => onBuildTool('select')}>Done</button>}
+            </div>}
             {!externalPanel && <button className="house-details-button" aria-expanded={mobileInspector} onClick={() => { setCostOpen(false); setMobileInspector(!mobileInspector); window.dispatchEvent(new CustomEvent('ppw:close-catalog')); window.dispatchEvent(new CustomEvent('ppw:close-view-settings')); }}>Details</button>}
           </div>
         </div>
-        {onBuildTool && mode === 'build' && <div className="house-opening-tools" role="group" aria-label="Doors windows and stairs">
-          {(['door', 'window', 'stair'] as const).map(tool => <button key={tool} type="button" aria-pressed={buildTool === tool} disabled={onRoof || (tool === 'stair' && !canUseStairs)} title={tool === 'stair' && !canUseStairs ? 'Add another floor first' : undefined} onClick={() => { setCostOpen(false); setMobileInspector(false); onBuildTool(buildTool === tool ? 'select' : tool); }}>{tool === 'door' ? 'Door' : tool === 'window' ? 'Window' : 'Stairs'}</button>)}
-          <span>{onRoof ? 'Choose a floor to add openings' : buildTool === 'door' || buildTool === 'window' ? 'Slide along a wall · release to place · repeat or Done' : buildTool === 'stair' ? 'Tap clear floor space to place stairs' : !canUseStairs ? 'Add floor for stairs' : 'Build on the selected floor'}</span>
-          {buildTool !== 'select' && buildTool !== 'wall' && buildTool !== 'room' && <button type="button" onClick={() => onBuildTool('select')}>Done</button>}
-        </div>}
         {onBuildTool && (buildTool === 'door' || buildTool === 'window') && <div className="house-opening-options" role="group" aria-label="Opening placement options">
           <label>Width <select aria-label="Opening width" value={doorDraft.widthM} onChange={event => useDesignerUIStore.getState().setDoorDraft({ widthM: Number(event.target.value) })}>
             {[...new Set([...(buildTool === 'window' ? [0.6, 0.9, 1.2, 1.5, 1.8, 2.4] : DOOR_WIDTHS_M), doorDraft.widthM])].sort((a, b) => a - b).map(width => <option key={width} value={width}>{width} m</option>)}
           </select></label>
           {buildTool === 'door' && <><button type="button" aria-pressed={doorDraft.flipFacing} onClick={() => useDesignerUIStore.getState().toggleDoorFacing()} title="Flip swing side (F)">Flip side</button><button type="button" aria-pressed={doorDraft.flipHand} onClick={() => useDesignerUIStore.getState().toggleDoorHand()} title="Swap hinge (H)">Flip hinge</button></>}
-          <small>Esc cancels · right-drag or two fingers move the view</small>
+          <small>Slide along a wall · release to place · repeat or Done. Esc cancels · right-drag or two fingers move the view</small>
         </div>}
         {selection && <div className="house-selection-strip" data-testid="house-selection-strip">
           <span><small>SELECTED</small><strong>{selection.name}</strong></span>

@@ -43,6 +43,10 @@ import { useImageCache, useImageCacheStatus } from '../hooks/useImageCache';
 import { usePlanModelImage } from '../hooks/usePlanModelImage';
 import { planSurfaceTexture } from '../designer/planSurfaceTexture';
 import { floorKindOf } from '../designer/floorKind';
+import { planDaylight, planShadowPoints } from '../designer/planDaylight';
+import { planRoomLabelLayout } from '../designer/planRoomLabel';
+import { levelHeightM } from '../designer/building';
+import { BARE_FLOOR_HEX } from '../designer/roomView3d';
 import type Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
 import { usePropertyStore, selectActiveRoom, roomOpenings } from '../store/propertyStore';
@@ -2643,6 +2647,9 @@ export function RoomCanvas({
   // Wall paint (2026-09-02): live property-wide totals for the HUD/panel —
   // painted area, litres and the whole-tin cost, in the display currency.
   const propertyForPaint = usePropertyStore((st) => st.property);
+  const planWallHeight = levelHeightM(propertyForPaint, activeLevelId);
+  const planSun = useMemo(() => planDaylight(sunHour, planWallHeight), [sunHour, planWallHeight]);
+  const planSharedEdges = useMemo(() => sharedEdgeMap(drawnRooms), [drawnRooms]);
   const wallPaintLive = useMemo(() => {
     const orders = deriveWallPaintOrders(
       propertyForPaint,
@@ -4424,7 +4431,7 @@ export function RoomCanvas({
                   name="room-surface-grain"
                   // Konva's runtime accepts CanvasImageSource; its pattern
                   // declaration is narrower than CanvasRenderingContext2D.
-                  fillPatternImage={planSurfaceTexture(isRoofRoom(room) ? ROOF_SLAB_FILL : isActive ? ROOM_FILL_ACTIVE : ROOM_FILL) as unknown as HTMLImageElement}
+                  fillPatternImage={planSurfaceTexture(isRoofRoom(room) ? ROOF_SLAB_FILL : BARE_FLOOR_HEX) as unknown as HTMLImageElement}
                   fillPatternScaleX={pxPerMetre / 256}
                   fillPatternScaleY={pxPerMetre / 256}
                   listening={false}
@@ -4531,11 +4538,34 @@ export function RoomCanvas({
 
                 {!isRoofRoom(room) && (
                   <Group listening={false} clipFunc={polygonClipFunc(room.polygon, pxPerMetre)} name="room-contact-depth">
+                    {planSun.strength > 0 && roomEdges(room).flatMap(edge => splitEdgeSpans(edge.lengthM, wallGapsByEdge.get(edgeKey(room.id, edge.index)) ?? []).map((span, index) => {
+                      const a = pointAlongEdge(edge, span.t0), b = pointAlongEdge(edge, span.t1);
+                      return <Line key={`cast-${edge.index}-${index}`} name="plan-wall-cast-shadow"
+                        points={planShadowPoints(a, b, planSun.offset, pxPerMetre)} closed
+                        fillLinearGradientStartPoint={{ x: (a.x + b.x) / 2 * pxPerMetre, y: (a.y + b.y) / 2 * pxPerMetre }}
+                        fillLinearGradientEndPoint={{ x: ((a.x + b.x) / 2 + planSun.offset.x) * pxPerMetre, y: ((a.y + b.y) / 2 + planSun.offset.y) * pxPerMetre }}
+                        fillLinearGradientColorStops={[0, `rgba(37,43,39,${planSun.strength})`, 0.7, `rgba(37,43,39,${planSun.strength * 0.55})`, 1, 'rgba(37,43,39,0)']}
+                        listening={false} />;
+                    }))}
+                    {planSun.daylight > 0 && roomOpenings(room).filter(opening => opening.kind === 'window' && !(planSharedEdges.get(edgeKey(room.id, opening.edgeIndex))?.length)).map(opening => {
+                      const edge = roomEdges(room).find(value => value.index === opening.edgeIndex);
+                      if (!edge) return null;
+                      const span = openingSpan(opening), a = pointAlongEdge(edge, span.t0), b = pointAlongEdge(edge, span.t1);
+                      const side = interiorSide(room.polygon);
+                      const reach = Math.min(1.8, opening.widthM * 1.1);
+                      const normal = { x: -edge.dy * side * reach, y: edge.dx * side * reach };
+                      return <Line key={`daylight-${opening.id}`} name="plan-window-daylight"
+                        points={planShadowPoints(a, b, normal, pxPerMetre)} closed
+                        fillLinearGradientStartPoint={{ x: (a.x + b.x) / 2 * pxPerMetre, y: (a.y + b.y) / 2 * pxPerMetre }}
+                        fillLinearGradientEndPoint={{ x: ((a.x + b.x) / 2 + normal.x) * pxPerMetre, y: ((a.y + b.y) / 2 + normal.y) * pxPerMetre }}
+                        fillLinearGradientColorStops={[0, `rgba(255,253,237,${planSun.daylight * 0.46})`, 0.5, `rgba(255,253,237,${planSun.daylight * 0.2})`, 1, 'rgba(255,253,237,0)']}
+                        listening={false} />;
+                    })}
                     {roomEdges(room).flatMap(edge => splitEdgeSpans(edge.lengthM, wallGapsByEdge.get(edgeKey(room.id, edge.index)) ?? []).map((span, index) => {
                       const a = pointAlongEdge(edge, span.t0), b = pointAlongEdge(edge, span.t1);
                       return <Line key={`${edge.index}-${index}`} points={[a.x * pxPerMetre, a.y * pxPerMetre, b.x * pxPerMetre, b.y * pxPerMetre]}
-                        stroke="rgba(38,43,35,0.10)" strokeWidth={pxPerMetre * 0.2}
-                        shadowColor="rgba(38,43,35,0.25)" shadowBlur={pxPerMetre * 0.13} shadowOffsetY={pxPerMetre * 0.035} />;
+                        stroke="rgba(38,43,35,0.15)" strokeWidth={pxPerMetre * 0.24}
+                        shadowColor="rgba(38,43,35,0.30)" shadowBlur={pxPerMetre * 0.18} shadowOffsetY={pxPerMetre * 0.04} />;
                     }))}
                   </Group>
                 )}
@@ -4591,10 +4621,12 @@ export function RoomCanvas({
                         />
                         <Line
                           points={seg}
-                          stroke={WALL_INNER_STROKE}
-                          strokeWidth={WALL_INNER_STROKE_PX}
+                          stroke={construction ? constructionHex(construction) : '#64645b'}
+                          strokeWidth={wallPx * 0.66}
                           lineCap="square"
                         />
+                        <Line points={[seg[0] - edge.dy * wallPx * 0.3, seg[1] + edge.dx * wallPx * 0.3, seg[2] - edge.dy * wallPx * 0.3, seg[3] + edge.dx * wallPx * 0.3]}
+                          stroke="rgba(255,250,234,0.48)" strokeWidth={Math.min(1.3, wallPx * 0.16)} lineCap="butt" listening={false} />
                         {showPaint && (
                           <PlanWallPaint
                             a={{ x: seg[0], y: seg[1] }}
@@ -4649,18 +4681,27 @@ export function RoomCanvas({
                     const s = openingSpan(o);
                     const a = pointAlongEdge(edge, s.t0);
                     const b = pointAlongEdge(edge, s.t1);
+                    const paneCount = Math.max(1, Math.min(12, Math.ceil(o.widthM / 0.8)));
                     return (
                       <Fragment key={`op-${o.id}`}>
                         <Line
                           points={[...toPx(a), ...toPx(b)]}
-                          stroke={ROOM_FILL}
-                          strokeWidth={WALL_THICKNESS_M * pxPerMetre * 0.6}
+                          stroke="#526161"
+                          strokeWidth={WALL_THICKNESS_M * pxPerMetre * 0.9}
                         />
                         <Line
                           points={[...toPx(a), ...toPx(b)]}
-                          stroke={WALL_INK}
-                          strokeWidth={1.5}
+                          stroke="#c5d4d2"
+                          strokeWidth={WALL_THICKNESS_M * pxPerMetre * 0.52}
                         />
+                        <Line points={[...toPx(a), ...toPx(b)]} stroke="rgba(247,255,250,0.85)" strokeWidth={0.8} listening={false} />
+                        {Array.from({ length: paneCount - 1 }, (_, index) => {
+                          const position = pointAlongEdge(edge, s.t0 + o.widthM * (index + 1) / paneCount);
+                          return <Line key={`mullion-${index}`} points={[
+                            (position.x + edge.dy * halfWallM) * pxPerMetre, (position.y - edge.dx * halfWallM) * pxPerMetre,
+                            (position.x - edge.dy * halfWallM) * pxPerMetre, (position.y + edge.dx * halfWallM) * pxPerMetre,
+                          ]} stroke="#48544e" strokeWidth={Math.max(0.7, pxPerMetre * 0.024)} listening={false} />;
+                        })}
                         {tickNodes}
                       </Fragment>
                     );
@@ -4690,9 +4731,14 @@ export function RoomCanvas({
                       <Line
                         points={[...toPx(sym.hinge), ...toPx(sym.leafEnd)]}
                         stroke={DOOR_LEAF}
-                        strokeWidth={3}
-                        lineCap="round"
+                        strokeWidth={pxPerMetre * 0.045}
+                        lineCap="square"
+                        shadowColor="rgba(33,38,31,0.28)"
+                        shadowBlur={pxPerMetre * 0.035}
+                        shadowOffsetX={pxPerMetre * 0.025}
+                        shadowOffsetY={pxPerMetre * 0.04}
                       />
+                      <Line points={[...toPx(sym.hinge), ...toPx(sym.leafEnd)]} stroke="#aa9474" strokeWidth={pxPerMetre * 0.024} listening={false} />
                     </Fragment>
                   );
                 })}
@@ -4853,28 +4899,47 @@ export function RoomCanvas({
           {drawnRooms.map((room) => {
             if (!room.name) return null;
             const b = polygonBounds(room.polygon);
-            // Centred in the room, the way the reference plans set their
-            // callouts. Screen-constant size so it reads at any zoom.
-            const font = measureFontSize(viewport.scale, 10);
-            const boxW = Math.max(40, (b.maxX - b.minX) * pxPerMetre - 8);
+            const title = isRoofRoom(room) ? `Roof · ${room.name} · ${polygonArea(room.polygon).toFixed(0)} m²` : room.name;
+            const screenMetre = pxPerMetre * viewport.scale;
+            const label = planRoomLabelLayout((b.maxX - b.minX) * screenMetre, (b.maxY - b.minY) * screenMetre, title, room.id === activeRoomId);
+            if (!label) return null;
+            const labelW = label.widthPx / screenMetre, labelH = label.heightPx / screenMetre;
+            const padding = Math.max(0.12, 7 / screenMetre);
+            const centreX = (b.minX + b.maxX) / 2, centreY = (b.minY + b.maxY) / 2;
+            const obstacles = room.placedItems.flatMap(item => {
+              const product = getProductById(item.productId);
+              if (!product) return [];
+              const footprint = rotatedFootprint({ lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) }, item.rotation);
+              return [{ x: item.x, y: item.y, ...footprint }];
+            });
+            // Prefer the room centre, then quiet empty floor. Never lay the
+            // name over a bed or across a narrow/concave room's wall.
+            const candidates = [
+              [centreX, centreY], [centreX, b.maxY - padding - labelH / 2], [centreX, b.minY + padding + labelH / 2],
+              [b.minX + padding + labelW / 2, centreY], [b.maxX - padding - labelW / 2, centreY],
+            ];
+            const anchor = candidates.find(([x, y]) => {
+              const rect = { x: x - labelW / 2, y: y - labelH / 2, w: labelW, h: labelH };
+              return isRectInsidePolygon(rect, room.polygon) && !obstacles.some(item =>
+                rect.x < item.x + item.w + 0.04 && rect.x + rect.w > item.x - 0.04 && rect.y < item.y + item.h + 0.04 && rect.y + rect.h > item.y - 0.04);
+            });
+            if (!anchor) return null;
             return (
               <Text
                 key={`label-${room.id}`}
                 name="room-label"
                 listening={false}
-                x={b.minX * pxPerMetre + 4}
-                y={(b.minY + b.maxY) / 2 * pxPerMetre - font / 2}
-                width={boxW}
+                x={(anchor[0] - labelW / 2) * pxPerMetre}
+                y={(anchor[1] - labelH / 2) * pxPerMetre}
+                width={label.widthPx / viewport.scale}
                 align="center"
-                text={
-                  isRoofRoom(room)
-                    ? `ROOF · ${room.name} · ${polygonArea(room.polygon).toFixed(0)} m²`.toUpperCase()
-                    : room.name.toUpperCase()
-                }
-                fontSize={font}
-                fontStyle="bold"
+                text={title}
+                fontSize={label.fontPx / viewport.scale}
+                fontStyle="normal"
                 fontFamily="Inter, sans-serif"
-                letterSpacing={1.8 / viewport.scale}
+                ellipsis
+                wrap="none"
+                letterSpacing={0.15 / viewport.scale}
                 // Dark floors (EVA / gym tile) swallowed the ink label —
                 // flip to paper when the room's floor material is dark (R7).
                 fill={roomLabelFill(room)}

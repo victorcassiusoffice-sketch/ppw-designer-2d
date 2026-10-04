@@ -32,10 +32,13 @@
  * (three/renderPresentation.ts holds the numbers) — under which a painted
  * wall renders its hex (a #808080 room reads 118–127 on every wall). The
  * time-of-day rig only replaces it while the customer drags the sun. THE
- * RULE for every presentation (studio / architectural): it may change the
+ * RULE for the calibrated presentations (studio / architectural): they may change the
  * sky dome, the ground plane, the far fog and the unpriced reveal / cap
  * edges of the walls — never the rig, the tone mapping, the exposure or a
- * priced surface's material.
+ * priced surface's material. The explicitly labelled natural-light preview
+ * instead uses a directional lighting rig and neutral highlight compression.
+ * It preserves the same source materials and measurements but does not claim
+ * pixel matching with a colour card. Switching looks never moves the camera.
  */
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import * as THREE from 'three';
@@ -692,22 +695,22 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     const { centre } = boundsRef.current;
     if (groundRef.current) {
       updateGroundPresentation(groundRef.current, presentation);
-      groundRef.current.position.x = presentation === 'architectural' ? centre.x : 0;
-      groundRef.current.position.z = presentation === 'architectural' ? centre.z : 0;
+      groundRef.current.position.x = presentation !== 'studio' ? centre.x : 0;
+      groundRef.current.position.z = presentation !== 'studio' ? centre.z : 0;
     }
     if (sceneRef.current) {
       // Fog is a horizon fade on the ground plane only. Its planes are not
       // fixed: updateFog keeps the near plane beyond the plan for wherever the
       // camera is (a fixed plane tinted painted walls at 3× zoom-out).
-      sceneRef.current.fog = presentation === 'architectural' ? new THREE.Fog(FOG_HEX, 1, 2) : null;
+      sceneRef.current.fog = presentation !== 'studio' ? new THREE.Fog(FOG_HEX, 1, 2) : null;
       updateFog();
     }
   };
 
   /**
-   * The rig for an hour: the studio rig (null) that the colour truth is
-   * measured under, or the real sun for that clock hour with the sky and
-   * the lamps following it.
+   * The selected presentation rig (null hour), or the real sun for that clock
+   * hour with the sky and lamps following it. Only studio/architectural are
+   * calibrated to colour-card pixels; natural light is an appearance preview.
    */
   const applyHour = (h: number | null) => {
     const hemi = hemiRef.current;
@@ -715,6 +718,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     const fill = fillRef.current;
     if (!hemi || !sun || !fill) return;
     const profile = presentationProfile(presentation);
+    sun.shadow.radius = profile.shadowRadius;
     const dayRig = profile.day;
     const nightRig = profile.night;
     const daySky = new THREE.Color(profile.sky);
@@ -788,8 +792,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     // renders its albedo. The rig sums to ≈1.0 on a camera-facing wall:
     // hemisphere 0.72 π (flat, everywhere) + fill 0.25 π · cos (from the
     // camera) + sun 0.25 π · cos (for the shadows) — the STUDIO numbers in
-    // renderPresentation.ts, which EVERY presentation keeps; a presentation
-    // may change sky, ground, fog and the reveal / cap edges only. Measured,
+    // renderPresentation.ts, which both colour-check presentations keep.
+    // Natural light explicitly opts into a different rig after scene setup.
+    // Measured,
     // not assumed: a wall painted #4C493F reads back within a few points of
     // #4C493F on the far walls (the pixel probe in paint-sims-3d.spec.ts
     // pins it; realism-3d.spec.ts pins the architectural look to ±3 of it).

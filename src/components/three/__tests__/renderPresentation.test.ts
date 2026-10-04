@@ -60,6 +60,57 @@ describe('architectural presentation without changing the saved finishes', () =>
     expect(floorMaterial.map).toBe(floorMap);
   });
 
+  it('offers an explicitly separate natural-light rig while retaining source materials and the colour-check renderer', () => {
+    const renderer = { toneMapping: THREE.NoToneMapping as THREE.ToneMapping, toneMappingExposure: 1 };
+    const natural = presentationProfile('natural');
+    applyRendererPresentation(renderer, 'natural');
+    expect(renderer.toneMapping).toBe(THREE.NeutralToneMapping);
+    expect(renderer.toneMappingExposure).toBe(1);
+    // A stronger key and substantially quieter fill create readable volume;
+    // this cannot silently replace the colour-card calibration.
+    const checked = presentationProfile('studio');
+    expect(natural.day.hemi + natural.day.fill).toBeLessThan((checked.day.hemi + checked.day.fill) * 0.6);
+    expect(natural.day.sun).toBeGreaterThan(checked.day.sun * 2);
+    expect(natural.day.rim).toBe(0);
+    expect(natural.shadowRadius).toBeGreaterThan(checked.shadowRadius);
+    expect(natural.floorGain).toBe(checked.floorGain);
+    expect(natural.lampFactor).toBe(0);
+
+    const paint = new THREE.MeshPhysicalMaterial({ color: '#d1aa85', roughness: 0.23, normalMap: new THREE.Texture() });
+    const floor = new THREE.MeshPhysicalMaterial({ map: new THREE.Texture(), color: '#665747', roughness: 0.8 });
+    floor.userData = { stageSurface: 'floor', floorHex: '#665747' };
+    const root = new THREE.Group();
+    root.add(new THREE.Mesh(new THREE.BoxGeometry(3, 2.7, 0.2), paint), new THREE.Mesh(new THREE.BoxGeometry(3, 0.15, 4), floor));
+    root.position.set(12, 6.4, -8);
+    const beforeBounds = new THREE.Box3().setFromObject(root);
+    const map = floor.map, normalMap = paint.normalMap;
+    applyContentPresentation(root, 'natural');
+    expect(paint.color.getHexString()).toBe('d1aa85');
+    expect(paint.roughness).toBe(0.23);
+    expect(paint.normalMap).toBe(normalMap);
+    expect(floor.map).toBe(map);
+    expect(floor.color.equals(new THREE.Color('#665747').multiplyScalar(checked.floorGain))).toBe(true);
+    expect(new THREE.Box3().setFromObject(root).equals(beforeBounds)).toBe(true);
+    applyRendererPresentation(renderer, 'architectural');
+    expect(renderer).toEqual({ toneMapping: THREE.NoToneMapping, toneMappingExposure: 1 });
+    expect(presentationProfile('architectural').day).toEqual(checked.day);
+  });
+
+  it('shares the architectural backdrop with natural light without tone mapping the sky', () => {
+    const natural = skyDome(1, 'natural');
+    const architectural = skyDome(1, 'architectural');
+    const naturalMaterial = natural.material as THREE.MeshBasicMaterial;
+    const architecturalMaterial = architectural.material as THREE.MeshBasicMaterial;
+    expect((naturalMaterial.map as THREE.DataTexture).image.data).toEqual((architecturalMaterial.map as THREE.DataTexture).image.data);
+    expect(naturalMaterial.toneMapped).toBe(false);
+    const ground = groundPlane();
+    updateGroundPresentation(ground, 'natural');
+    expect((ground.material as THREE.MeshStandardMaterial).color.getHexString()).toBe('d8ddd5');
+    disposeDressingTextures(natural);
+    disposeDressingTextures(architectural);
+    disposeDressingTextures(ground);
+  });
+
   it('owns its neutral backdrop maps and disposes each replaced map without disposing shared finish maps', () => {
     const sky = skyDome(1, 'architectural');
     const skyMaterial = sky.material as THREE.MeshBasicMaterial;

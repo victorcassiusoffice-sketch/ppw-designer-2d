@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export type ScenePresentation = 'studio' | 'architectural';
+export type ScenePresentation = 'studio' | 'architectural' | 'natural';
 
 /** Backdrop tokens are deliberately separate from illumination / sold finishes. */
 export const ARCHITECTURAL_GROUND_HEX = '#d8ddd5';
@@ -23,6 +23,7 @@ const STUDIO = {
   sunDirection: [-0.45, 1, -0.55] as const,
   reveal: '#C9C3B6', cap: '#B5AFA2', exterior: '#E4E0D6',
   floorGain: 0.9, cornerAlpha: 0.16, contactAlpha: 0.3, lampFactor: 0,
+  shadowRadius: 1,
 };
 
 /**
@@ -40,8 +41,23 @@ const ARCHITECTURAL = {
   reveal: '#aaa99d', cap: '#ddd9cc',
 };
 
+/** Explicit natural-light preview, not a calibrated colour card. The neutral
+ * highlight shoulder avoids clipped white walls; a stronger directional key
+ * and quieter uniform fill let shape and recesses read at house scale. The
+ * saved paint/floor albedo, product finish and physical light calculations are
+ * unchanged. Colour check uses STUDIO/ARCHITECTURAL exactly as before. */
+const NATURAL = {
+  ...ARCHITECTURAL,
+  toneMapping: THREE.NeutralToneMapping,
+  day: { hemi: 0.40, sun: 0.55, fill: 0.10, rim: 0 },
+  cap: '#7c8076',
+  cornerAlpha: 0.23,
+  contactAlpha: 0.38,
+  shadowRadius: 2.5,
+};
+
 export function presentationProfile(presentation: ScenePresentation = 'studio') {
-  return presentation === 'architectural' ? ARCHITECTURAL : STUDIO;
+  return presentation === 'natural' ? NATURAL : presentation === 'architectural' ? ARCHITECTURAL : STUDIO;
 }
 
 /** Switching presentation is reversible and never remounts the WebGL context. */
@@ -55,9 +71,9 @@ export function applyRendererPresentation(
 }
 
 /**
- * Only renderer-owned, unpriced building edges change colour. Paint is
+ * Only renderer-owned, unpriced building edges change their albedo. Paint is
  * untouched, and so are the shadow flags: a laid floor never casts a shadow
- * in either look (a floor that cast in one presentation and not the other
+ * in any look (a floor that cast in one presentation and not the other
  * moved the priced pixels beside it).
  */
 export function applyContentPresentation(root: THREE.Object3D, presentation: ScenePresentation): void {

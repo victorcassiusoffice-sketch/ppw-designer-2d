@@ -9,12 +9,16 @@ import { usePlacementIntentStore } from '../../store/placementIntentStore';
 import { getAllProducts } from '../../data/products';
 import type { OrbitCamera } from '../../designer/roomView3d';
 import type { ThreeStageHandle, ThreeStageProps } from '../three/ThreeStage';
+import { ROOM_LIGHTING_STORAGE_KEY } from '../../hooks/useRoomLighting';
 
-const renderer = vi.hoisted(() => ({ camera: null as OrbitCamera | null }));
+const renderer = vi.hoisted(() => ({ camera: null as OrbitCamera | null, presentation: undefined as ThreeStageProps['presentation'], hour: undefined as ThreeStageProps['hour'], mounts: 0 }));
 vi.mock('../three/ThreeStage', async () => {
   const React = await import('react');
-  return { default: React.forwardRef<Pick<ThreeStageHandle, 'floorPoint' | 'hitItem' | 'hitTest' | 'projectPoint'>, ThreeStageProps>(function CameraStage({ camera }, ref) {
+  return { default: React.forwardRef<Pick<ThreeStageHandle, 'floorPoint' | 'hitItem' | 'hitTest' | 'projectPoint'>, ThreeStageProps>(function CameraStage({ camera, presentation, hour }, ref) {
     renderer.camera = camera;
+    renderer.presentation = presentation;
+    renderer.hour = hour;
+    React.useEffect(() => { renderer.mounts += 1; }, []);
     React.useImperativeHandle(ref, () => ({
       floorPoint: (x, y) => ({ x: x / 100, y: y / 100 }), hitItem: () => null, hitTest: () => null,
       projectPoint: (x, y) => ({ x: x * 100, y: y * 100 }),
@@ -29,18 +33,22 @@ let viewport = { width: 960, height: 640 };
 beforeEach(async () => {
   viewport = { width: 960, height: 640 };
   renderer.camera = null;
+  renderer.presentation = undefined;
+  renderer.hour = undefined;
+  renderer.mounts = 0;
+  localStorage.removeItem(ROOM_LIGHTING_STORAGE_KEY);
   HTMLElement.prototype.setPointerCapture = vi.fn();
   vi.stubGlobal('matchMedia', vi.fn((query: string) => ({ matches: query.includes('prefers-reduced-motion'), addEventListener: vi.fn(), removeEventListener: vi.fn() })));
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(() => ({ ...viewport, x: 0, y: 0, left: 0, top: 0, right: viewport.width, bottom: viewport.height, toJSON: () => ({}) }));
   usePropertyStore.getState().resetToDefault();
   const p = usePropertyStore.getState().property;
   usePropertyStore.setState({ property: { ...p, id: 'camera-project', activeLevelId: 'ground', activeRoomId: 'room', rooms: [{ id: 'room', name: 'Room', placedItems: [], polygon: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 8, y: 8 }, { x: 0, y: 8 }] }] } });
-  useDesignerUIStore.setState({ tool: 'hand', viewMode: '3d', energyPanelOpen: false });
+  useDesignerUIStore.setState({ tool: 'hand', viewMode: '3d', energyPanelOpen: false, sunHour: null });
   usePlacementIntentStore.setState({ intent: null, armedProductId: null });
   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
   await act(async () => { root.render(<RoomView3D variant="overlay" />); });
 });
-afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(); vi.restoreAllMocks(); localStorage.removeItem(ROOM_LIGHTING_STORAGE_KEY); });
 function click(selector: string) { act(() => host.querySelector<HTMLButtonElement>(selector)!.click()); }
 function zoomIn() { click('[aria-label="Zoom in"]'); click('[aria-label="Zoom in"]'); return structuredClone(renderer.camera!); }
 function resize(width: number, height: number) { viewport = { width, height }; act(() => window.dispatchEvent(new Event('resize'))); }
@@ -58,6 +66,80 @@ function expectSameFraming(camera: OrbitCamera, initialHeight = 640) {
 }
 
 describe('3D camera stays where the customer leaves it', () => {
+  it('defaults to Natural light and explains the explicit neutral Colour check option', () => {
+    expect(renderer.presentation).toBe('natural');
+    click('[data-testid="house-view-settings"]');
+    const select = host.querySelector<HTMLSelectElement>('[aria-label="Lighting"]')!;
+    expect(select.value).toBe('natural');
+    expect([...select.options].map(option => option.text)).toEqual(['Natural light', 'Colour check']);
+    expect(document.getElementById(select.getAttribute('aria-describedby')!)?.textContent).toContain('neutral lighting to compare finishes');
+  });
+  it('changes lighting without remounting the stage or moving the camera, and retains the choice through Paint and Furnish', async () => {
+    const camera = zoomIn();
+    const property = structuredClone(usePropertyStore.getState().property);
+    const mounts = renderer.mounts;
+    click('[data-testid="house-view-settings"]');
+    const select = host.querySelector<HTMLSelectElement>('[aria-label="Lighting"]')!;
+    act(() => { select.value = 'architectural'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(renderer.presentation).toBe('architectural');
+    expect(localStorage.getItem(ROOM_LIGHTING_STORAGE_KEY)).toBe('architectural');
+    expect(renderer.camera).toEqual(camera);
+    expect(renderer.mounts).toBe(mounts);
+    await act(async () => root.render(<RoomView3D variant="overlay" onPaintWall={vi.fn()} brushHex="#879988" />));
+    expect(renderer.presentation).toBe('architectural');
+    expect(renderer.camera).toEqual(camera);
+    expect(renderer.mounts).toBe(mounts);
+    await act(async () => root.render(<RoomView3D variant="overlay" />));
+    click('[data-testid="house-mode-furnish"]');
+    expect(renderer.presentation).toBe('architectural');
+    expect(renderer.camera).toEqual(camera);
+    expect(renderer.mounts).toBe(mounts);
+    expect(usePropertyStore.getState().property).toEqual(property);
+    await act(async () => root.render(<RoomView3D key="reopened" variant="overlay" />));
+    expect(renderer.presentation).toBe('architectural');
+  });
+  it('keeps Natural light active when opening Paint and keeps inline cards calibrated', async () => {
+    const camera = zoomIn();
+    const mounts = renderer.mounts;
+    await act(async () => root.render(<RoomView3D variant="overlay" onPaintWall={vi.fn()} brushHex="#879988" />));
+    expect(renderer.presentation).toBe('natural');
+    expect(renderer.camera).toEqual(camera);
+    expect(renderer.mounts).toBe(mounts);
+    await act(async () => root.render(<RoomView3D key="inline" variant="card" />));
+    expect(renderer.presentation).toBe('studio');
+    expect(host.querySelector('[aria-label="Lighting"]')).toBeNull();
+  });
+  it('uses neutral light for Colour check and restores the preferred evening hour in Natural light', () => {
+    const camera = zoomIn();
+    const mounts = renderer.mounts;
+    act(() => useDesignerUIStore.getState().setSunHour(19.5));
+    expect(renderer.hour).toBe(19.5);
+    click('[data-testid="house-view-settings"]');
+    const select = host.querySelector<HTMLSelectElement>('[aria-label="Lighting"]')!;
+    act(() => { select.value = 'architectural'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(renderer.hour).toBeNull();
+    expect(useDesignerUIStore.getState().sunHour).toBe(19.5);
+    expect(host.querySelector('[data-testid="view3d-sun"]')).toBeNull();
+    expect(document.getElementById(select.getAttribute('aria-describedby')!)?.textContent).toContain('Time of day is paused in Colour check');
+    act(() => { select.value = 'natural'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(renderer.hour).toBe(19.5);
+    expect(host.querySelector<HTMLInputElement>('[aria-label="Time of day"]')?.value).toBe('19.5');
+    expect(renderer.camera).toEqual(camera);
+    expect(renderer.mounts).toBe(mounts);
+  });
+  it('falls back to Natural light for invalid or unavailable storage and remains interactive when persistence fails', async () => {
+    localStorage.setItem(ROOM_LIGHTING_STORAGE_KEY, 'unknown-profile');
+    await act(async () => root.render(<RoomView3D key="invalid" variant="overlay" />));
+    expect(renderer.presentation).toBe('natural');
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('storage unavailable'); });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('storage unavailable'); });
+    await act(async () => root.render(<RoomView3D key="private" variant="overlay" />));
+    expect(renderer.presentation).toBe('natural');
+    click('[data-testid="house-view-settings"]');
+    const select = host.querySelector<HTMLSelectElement>('[aria-label="Lighting"]')!;
+    act(() => { select.value = 'architectural'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(renderer.presentation).toBe('architectural');
+  });
   it('keeps the house centred through 30 phone pinch cycles delivered one finger at a time', () => {
     resize(390,640);
     const before = structuredClone(renderer.camera!);

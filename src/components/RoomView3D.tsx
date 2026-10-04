@@ -87,6 +87,7 @@ import { productModelFor } from '../data/productModels';
 import { hasSolarPanelPreview, SOLAR_PANEL_PREVIEW_NOTE } from '../data/solarPreview';
 import { DEFAULT_WALL_HEIGHT_M, findWallPaintById, finishOfPaint, resolveWallColourHex } from '../data/wallPaints';
 import { RoomViewControls, type CameraView } from './RoomViewControls';
+import { useRoomLighting } from '../hooks/useRoomLighting';
 import { useBelowMd } from '../lib/useBelowMd';
 import {
   boundsOf,
@@ -403,6 +404,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const setWallView = useDesignerUIStore((s) => s.setWallView);
   const sunHour = useDesignerUIStore((s) => s.sunHour);
   const setSunHour = useDesignerUIStore((s) => s.setSunHour);
+  const [roomLighting, setRoomLighting] = useRoomLighting();
   const materialsOpen = useDesignerUIStore(s => s.materialsPanelOpen);
   const energyOpen = useDesignerUIStore((s) => s.energyPanelOpen);
   const belowMd = useBelowMd();
@@ -1625,15 +1627,19 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         </div>
   ) : null;
 
-  // ONE presentation for the container attribute and the stage: the house
-  // view explores under the architectural look; the Paint tool (and the
-  // card) keep the studio look the paint preview is measured under. Both
-  // share the rig — the look may change sky, ground, fog and wall edges only.
-  const presentation: ScenePresentation = variant === 'overlay' && !onPaintWall ? 'architectural' : 'studio';
+  // Lighting is an explicit, persistent viewing choice. Opening Paint or
+  // Furnish must not change it or refit the camera. Inline cards retain the
+  // calibrated studio presentation; Colour check uses the unchanged neutral
+  // architectural rig while Natural light is an appearance preview.
+  const presentation: ScenePresentation = variant === 'overlay' ? roomLighting : 'studio';
+  // Pause the sun simulation for neutral colour comparison, without changing
+  // the customer's chosen hour for their return to Natural light.
+  const stageHour = variant === 'overlay' && roomLighting === 'architectural' ? null : sunHour;
   const viewControls = <RoomViewControls workspace={variant === 'overlay'} pan={panMode} onPan={togglePan}
     onRotate={rotate} onZoom={zoomBy} onFit={refit} onView={chooseCameraView}
     wallView={wallView} onWallView={setWallView} hasWalls={solids.walls.length > 0}
     sunAvailable={backend === 'gl'} sunHour={sunHour} onSunHour={setSunHour}
+    lighting={roomLighting} onLighting={setRoomLighting}
     onClose={onClose} onExpand={onExpand} />;
   const statusCaption = moveFeedback ?? flash ?? liveFloorCaption ?? hoverText ?? caption ?? defaultCaption;
   const box = (
@@ -1664,7 +1670,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               brushConstruction={tool === 'wallpaint' && wallPaintDraft.operation === 'construction' ? wallPaintDraft.construction ?? 'plastered-brick' : undefined}
               brushFinish={onPaintWall && brushHex ? (tool === 'cladding' ? 'textured' : wallPaintDraft.erase ? null : finishOfPaint(brushPaintId(wallPaintDraft))) : null}
               wallView={wallView}
-              hour={sunHour}
+              hour={stageHour}
               onFailed={() => setBackend('painter')}
             />
           </Suspense>
@@ -1763,7 +1769,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         </div>}
         {box}
         {viewControls}
-        <p className="house-scene-caption" data-testid="wallpaint-3d-caption" aria-live="polite">{statusCaption}</p>
+        <p className="house-scene-caption" data-testid="wallpaint-3d-caption" data-active-feedback={!!(moveFeedback || flash || liveFloorCaption || hoverText || caption)} aria-live="polite">{statusCaption}</p>
       </HouseWorkspace>
       {footer && <p className="shrink-0 border-t border-[#34415b] bg-[#172139] px-3 py-1 text-xs font-semibold text-[#c9d8ef]" data-testid="wallpaint-3d-footer">{footer}</p>}
       {brushStrip}

@@ -1,12 +1,12 @@
 import type { DemoDefinition } from './demoCatalog';
-import { buildCourtsShowHome } from './courts';
+import { buildHomeInterior } from './homeInterior';
 import { TINTEX_DEMO } from './tintex';
 import { CAPTAMARIN_DEMO, CAPTAMARIN_PAGE_NAME } from './captamarin';
 
 /** Existing sourced catalogs and editable geometry, never substitute products/prices. */
 export const HOME_DEMO: DemoDefinition = {
   slug: 'demo-home', merchant: 'Demo', pageName: 'Demo · Home', propertyId: 'generic-demo-home', products: [], includeDemoSlugs: ['courts'], currency: 'MUR',
-  buildProperty: () => ({ ...buildCourtsShowHome(), id: 'generic-demo-home', name: 'Demo' }),
+  buildProperty: buildHomeInterior,
 };
 export const PAINT_DEMO: DemoDefinition = {
   slug: 'demo-paint', merchant: 'Demo', pageName: 'Demo · Paint', propertyId: 'generic-demo-paint', products: [], includeDemoSlugs: ['courts'], currency: 'MUR',

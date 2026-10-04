@@ -1,11 +1,68 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { cushionGeometry, furnitureSurface } from '../furnitureSurface';
+import { cushionGeometry, drapedClothGeometry, furnitureAlbedo, furnitureSurface, physicalFurnitureUVs } from '../furnitureSurface';
+import { furnitureOcclusion } from '../furnitureOcclusion';
 import { applyProductSurfaceLighting } from '../productSurfaceLighting';
 import { architecturalBackdrop } from '../renderPresentation';
 
 describe('product surface realism without changing dimensions or colour', () => {
+  it('drapes bedding over the mattress with bounded height and visible cloth folds', () => {
+    const geometry = drapedClothGeometry(1.6, 1.3, 0.15);
+    const positions = geometry.getAttribute('position');
+    const normals = geometry.getAttribute('normal');
+    const heights = new Set<number>();
+    for (let i = 0; i < positions.count; i++) {
+      expect(Math.abs(positions.getX(i))).toBeLessThanOrEqual(0.8 + 1e-7);
+      expect(Math.abs(positions.getZ(i))).toBeLessThanOrEqual(0.65 + 1e-7);
+      expect(positions.getY(i)).toBeGreaterThanOrEqual(-0.15 - 1e-7);
+      expect(positions.getY(i)).toBeLessThanOrEqual(0.014 + 1e-7);
+      expect(Number.isFinite(normals.getX(i) + normals.getY(i) + normals.getZ(i))).toBe(true);
+      heights.add(Number(positions.getY(i).toFixed(4)));
+    }
+    expect(heights.size).toBeGreaterThan(100);
+    expect(positions.count).toBeLessThan(800);
+    expect(geometry.boundingBox!.min.y).toBeCloseTo(-0.15);
+    geometry.dispose();
+  });
+
+  it('uses visible deterministic wood/textile/stone grain with metre-based UVs', () => {
+    for (const kind of ['fabric', 'wood', 'weave', 'stone'] as const) {
+      const first = furnitureAlbedo(kind), second = furnitureAlbedo(kind);
+      expect(first.image.width).toBe(256);
+      expect(first.image.data).toEqual(second.image.data);
+      expect(first.colorSpace).toBe(THREE.SRGBColorSpace);
+      expect(new Set(first.image.data).size).toBeGreaterThan(12);
+      expect(first.generateMipmaps).toBe(true);
+      first.dispose(); second.dispose();
+    }
+    const geometry = new THREE.BoxGeometry(2, 0.8, 1);
+    const original = geometry.getAttribute('position').array.slice();
+    physicalFurnitureUVs(geometry);
+    const uv = geometry.getAttribute('uv');
+    expect(Math.max(...Array.from({ length: uv.count }, (_, i) => uv.getX(i)))).toBe(1);
+    expect(Math.min(...Array.from({ length: uv.count }, (_, i) => uv.getX(i)))).toBe(-1);
+    expect(geometry.getAttribute('position').array).toEqual(original);
+    geometry.dispose();
+  });
+
+  it('bakes bounded furniture contact shading only near an adjacent part', () => {
+    const geometry = new THREE.BoxGeometry(1, 0.1, 1, 4, 1, 4);
+    geometry.computeBoundingBox();
+    const owner = geometry.boundingBox!;
+    const adjacent = new THREE.Box3(new THREE.Vector3(-0.5, 0.051, -0.5), new THREE.Vector3(0.5, 0.3, -0.4));
+    const original = geometry.getAttribute('position').array.slice();
+    furnitureOcclusion(geometry, owner, [owner, adjacent]);
+    const colours = geometry.getAttribute('color').array;
+    expect(Math.min(...colours)).toBeGreaterThanOrEqual(0.71);
+    expect(Math.min(...colours)).toBeLessThan(0.95);
+    expect(Math.max(...colours)).toBe(1);
+    expect(geometry.getAttribute('position').array).toEqual(original);
+    furnitureOcclusion(geometry, owner, [owner]);
+    expect(new Set(geometry.getAttribute('color').array)).toEqual(new Set([1]));
+    geometry.dispose();
+  });
+
   it('keeps soft furnishings within their centimetre envelope with bounded geometry', () => {
     for (const dimensions of [[0.5, 0.12, 0.5], [1.6, 0.06, 1.2], [0.8, 0.45, 0.15]]) {
       const [w, h, d] = dimensions;

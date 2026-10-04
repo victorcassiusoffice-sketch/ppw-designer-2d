@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Product } from '../../data/products.schema';
-import { canRenderPlanModel, planModelKey, planModelRasterSize, planModelSolid } from '../planModel';
+import { canRenderPlanModel, planModelKey, planModelRasterSize, planModelSolid, planPhotoLightBalance } from '../planModel';
 
 const product = { id: 'courts-marco-sofa-corner', sku: 'SOFA', dimensions_cm: { length: 260, width: 102, height: 110 }, front_edge: 'left' } as Product;
 
@@ -25,5 +25,15 @@ describe('orthographic product presentation preserves catalog truth', () => {
   it('preserves landscape and portrait resolution ratios without changing physical size', () => {
     expect(planModelRasterSize(2, 1)).toEqual({ width: 512, height: 256 });
     expect(planModelRasterSize(1, 2)).toEqual({ width: 256, height: 512 });
+  });
+  it('adds shape-defining direction without altering upward-facing colour exposure', () => {
+    const rig = { hemi: 0.72, sun: 0.25, fill: 0.25 };
+    const direction = [-0.45, 1, -0.55] as const;
+    const balanced = planPhotoLightBalance(rig, direction);
+    const incidence = direction[1] / Math.hypot(...direction);
+    expect(balanced.hemi + balanced.sun * incidence).toBeCloseTo(rig.hemi + rig.sun * incidence, 12);
+    expect(balanced.hemi).toBeLessThan(rig.hemi);
+    expect(balanced.fill).toBe(rig.fill);
+    expect(planPhotoLightBalance(rig, [0, 0, 0])).toEqual(rig);
   });
 });

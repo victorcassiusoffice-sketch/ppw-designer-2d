@@ -1,6 +1,98 @@
 import * as THREE from 'three';
 
 export type FurnitureSurface = 'fabric' | 'wood' | 'weave' | 'stone';
+const albedoPixels = new Map<FurnitureSurface, Uint8Array>();
+
+/** Visible structure for original dimensional previews. A neutral map modulates
+ * the model's own colour; it is never attached to purchased paint, flooring or
+ * manufacturer GLBs. Grain has both broad figure and fine pores, so it remains
+ * legible at room scale instead of disappearing with the normal-map mip level. */
+export function furnitureAlbedo(kind: FurnitureSurface): THREE.DataTexture {
+  const size = 256;
+  const pixels = albedoPixels.get(kind) ?? new Uint8Array(size * size * 4);
+  if (!albedoPixels.has(kind)) for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+    const u = x / size * Math.PI * 2, v = y / size * Math.PI * 2;
+    const noise = Math.sin(u * 71 + v * 37) * Math.sin(v * 53 - u * 29);
+    const longGrain = Math.sin(v * 8 + Math.sin(u) * 0.55 + Math.sin(u * 2) * 0.24);
+    const fineGrain = Math.sin(v * 47 + Math.sin(u * 2) * 2.4 + longGrain * 2);
+    const wood = 228 + longGrain * 14 + fineGrain * 7 + noise * 3;
+    const threads = Math.sin(u * 64) * Math.cos(v * 64);
+    const slub = Math.sin(v * 17 + Math.sin(u * 3)) * Math.sin(u * 11);
+    const fabric = 243 + threads * 7 + slub * 3 + noise * 2;
+    const basket = Math.sin(u * 32) * Math.sin(v * 32);
+    const weave = 233 + basket * 15 + threads * 4 + noise * 3;
+    const vein = Math.pow(Math.max(0, Math.sin(v * 3 + Math.sin(u * 2) * 0.9 + Math.sin(u * 7) * 0.1)), 12);
+    const stone = 245 - vein * 38 + noise * 4;
+    const value = Math.round(Math.max(0, Math.min(255, kind === 'wood' ? wood : kind === 'stone' ? stone : kind === 'weave' ? weave : fabric)));
+    const offset = (y * size + x) * 4;
+    pixels[offset] = pixels[offset + 1] = pixels[offset + 2] = value;
+    pixels[offset + 3] = 255;
+  }
+  albedoPixels.set(kind, pixels);
+  // CPU generation is cached; the disposable GPU texture and pixel buffer
+  // remain privately owned by each model, including the 2D snapshot queue.
+  const map = new THREE.DataTexture(pixels.slice(), size, size);
+  map.name = `furniture-${kind}-colour-structure`;
+  map.colorSpace = THREE.SRGBColorSpace;
+  map.wrapS = map.wrapT = THREE.RepeatWrapping;
+  map.repeat.set(kind === 'wood' ? 1 : kind === 'stone' ? 1 : 3, kind === 'wood' ? 2 : kind === 'stone' ? 1 : 3);
+  map.magFilter = THREE.LinearFilter;
+  map.minFilter = THREE.LinearMipmapLinearFilter;
+  map.generateMipmaps = true;
+  map.needsUpdate = true;
+  return map;
+}
+
+/** Map the tangible surface in metres, not one stretched image per box face.
+ * Keeps the grain and thread size consistent across a chair leg and a tabletop. */
+export function physicalFurnitureUVs(geometry: THREE.BufferGeometry): void {
+  const positions = geometry.getAttribute('position');
+  const normals = geometry.getAttribute('normal');
+  const uv = geometry.getAttribute('uv');
+  if (!uv) return;
+  for (let i = 0; i < positions.count; i++) {
+    const x = positions.getX(i), y = positions.getY(i), z = positions.getZ(i);
+    const nx = Math.abs(normals.getX(i)), ny = Math.abs(normals.getY(i)), nz = Math.abs(normals.getZ(i));
+    if (ny >= nx && ny >= nz) uv.setXY(i, x, z);
+    else if (nz >= nx) uv.setXY(i, x, y);
+    else uv.setXY(i, z, y);
+  }
+  uv.needsUpdate = true;
+}
+
+/** Soft drape over an existing mattress: the top falls over both long edges
+ * and the foot. Curves and folds are inside the explicitly supplied envelope.
+ * No room, item size or extra purchasable object is created by this detail. */
+export function drapedClothGeometry(width: number, depth: number, drop: number): THREE.BufferGeometry {
+  const segmentsX = 24, segmentsZ = 28;
+  const positions: number[] = [], uv: number[] = [], indices: number[] = [];
+  const roundDrop = (edge: number) => {
+    const t = Math.max(0, Math.min(1, (edge - 0.9) / 0.1));
+    return t * t * (3 - 2 * t);
+  };
+  for (let z = 0; z <= segmentsZ; z++) for (let x = 0; x <= segmentsX; x++) {
+    const u = x / segmentsX * 2 - 1, v = z / segmentsZ * 2 - 1;
+    const side = roundDrop(Math.abs(u)), foot = roundDrop(v);
+    const edge = Math.max(side, foot);
+    const waves = Math.sin(u * 17 + v * 2) * 0.006 + Math.sin(v * 19 + u * 4) * 0.004;
+    const creases = Math.sin(u * 31 + v * 7) * Math.sin(v * 9) * 0.004;
+    const height = -drop * edge + (waves + creases) * (0.4 + edge * 0.6);
+    positions.push(u * width / 2, Math.max(-drop, Math.min(0.014, height)), v * depth / 2);
+    uv.push(u * width / 2, v * depth / 2);
+    if (z < segmentsZ && x < segmentsX) {
+      const a = z * (segmentsX + 1) + x, b = a + segmentsX + 1;
+      indices.push(a, b, a + 1, b, b + 1, a + 1);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  geometry.computeBoundingBox();
+  geometry.computeBoundingSphere();
+  return geometry;
+}
 
 /** Deterministic microstructure, independent of scene size or frame rate.
  * Height goes in R, roughness in G: one small texture serves two PBR inputs.
@@ -10,9 +102,9 @@ export function furnitureSurface(kind: FurnitureSurface): THREE.DataTexture {
   const pixels = new Uint8Array(size * size * 4);
   for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
     const u = x / size * Math.PI * 2, v = y / size * Math.PI * 2;
-    const warp = Math.sin(u * 2 + Math.sin(v) * 0.7);
+    const warp = Math.sin(v * 2 + Math.sin(u) * 0.7);
     const fibre = Math.sin(u * 32) * Math.cos(v * 32);
-    const grain = Math.sin(u * 12 + Math.sin(v * 2) * 1.4 + warp * 0.6);
+    const grain = Math.sin(v * 12 + Math.sin(u * 2) * 1.4 + warp * 0.6);
     const pores = Math.sin(u * 29 + v * 3) * Math.cos(v * 19 - u * 2);
     const mineral = Math.sin(u * 3 + Math.sin(v * 2) * 2) * Math.cos(v * 4 + Math.sin(u));
     const noise = Math.sin(u * 43 + v * 31) * Math.sin(v * 47 - u * 37);
