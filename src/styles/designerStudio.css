@@ -230,7 +230,7 @@
   .studio-plan-settings .plan-pill-group { flex-wrap: wrap; width: 100%; justify-content: space-between; }
   .studio-plan-settings .plan-pill-group > button { padding: 0 6px; min-width: 44px; min-height: 44px; flex-direction: column; gap: 2px; font-size: 10px; }
   .studio-plan-settings .plan-control-label { font-size: 9px; }
-  .studio-plan-settings .plan-pill-group [aria-label="History"] { display: none; }
+  .designer-app .studio-plan-settings .plan-pill-group [aria-label="History"] { display: flex; gap: 4px; }
   .designer-app .plan-build-tools { left: 5px; padding: 4px; border-radius: 18px; }
   .designer-app .plan-topbar .plan-build-tools button { width: 44px; height: 47px; }
   .designer-app .plan-view-toolbar { padding: 4px !important; }
