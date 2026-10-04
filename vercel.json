@@ -38,10 +38,17 @@
       ]
     },
     {
-      "source": "/((?!embed/designer/?$).*)",
+      "source": "/((?!embed/designer/?$|access/?$).*)",
       "headers": [
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
         { "key": "Content-Security-Policy", "value": "frame-ancestors 'self'" }
+      ]
+    },
+    {
+      "source": "/access",
+      "headers": [
+        { "key": "Content-Security-Policy", "value": "frame-ancestors 'self' https:" },
+        { "key": "Cache-Control", "value": "private, no-store" }
       ]
     },
     {

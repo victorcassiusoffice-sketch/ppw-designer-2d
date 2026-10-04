@@ -42,6 +42,7 @@ jobs:
       - run: npm ci
       - run: npx tsc --noEmit
       - run: npx tsc --noEmit -p api/tsconfig.json
+      - run: npx tsc --noEmit -p tsconfig.middleware.json
 
   test:
     name: Vitest (axe-core + schema-mirror + 590+ tests)
