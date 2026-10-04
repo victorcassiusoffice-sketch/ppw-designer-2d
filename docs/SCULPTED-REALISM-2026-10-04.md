@@ -1,6 +1,6 @@
 # Sculpted UI and realism refinement — 4 October 2026
 
-Status: application deployed; real app pitch captures refreshed. Final route verification and link synchronization pending. This is the second pass after Victor rejected the first October 4 appearance.
+Status: implemented, tested and deployed on the feature preview; pitch captures and continuation links refreshed. This is the second pass after Victor rejected the first October 4 appearance. It improves the presentation but does not claim photographic parity with the references.
 
 Checkout: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`
 Branch: `cursor/feat-3d-flooring-hud-bc95`
@@ -20,12 +20,14 @@ Last verified preview before this pass: `https://ppw-designer-2d-31cpgr056-victo
 
 297 test files / 3,259 tests passed with Natural light, followed by 22 focused camera/wall tests after the final neutral-light correction. Client/API typechecks and final Vite build passed. Changed-file lint passed. Existing large bundle advisory remains. Local browser QA at 1440×900, 390×844 and 320×740; final 320px Clear clipping fix verified. Natural/Colour check switched in browser without changing framing; neutral mode hides the time-of-day controls and explains the pause. Local dev server is `http://localhost:5173`.
 
-## Resume / remaining
+## Publication and continuation
 
-Commit and push feature branch only; visually check desktop/phone and fresh generic seed on a unique deployment. Refresh actual app screenshots in `public/showcase` for pitches. Verify `/designer`, legacy TintEX, demo 2D/3D and pitch routes on the unique host, update BUILD-LINKS/CURRENT-WORK-LINKS and Desktop handoff. Include real screenshots in the final response. Do not claim photographic parity or exact manufacturer CAD: richer materials and measured dimensional previews remain approximations.
+Continue on the feature branch. Future reference-level realism needs sourced residential floor products and exact supplier geometry/PBR textures. Do not invent purchasable SKUs or resize the measured envelopes for styling. Richer materials and measured dimensional previews remain approximations.
 
 Application `ce9d9b6f3ab170ae6a7aa2ec37781fad76364bd3` deployed successfully as Vercel `6835649445` at `https://ppw-designer-2d-aouziw3ca-victor-ppw.vercel.app`. Health confirms this commit. All eight Designer/demo/Studio/pitch routes returned HTTP200. Fresh generic demo visually verified with 61 scene parts / 36 placed products, actual new paint selections and Rs535,402 estimate; Plan and House render, 390px phone has no horizontal body overflow. Guided layout created a 120m² concept preview without applying it. Separate browser navigation checks for legacy TintEX timed out; repeat on the following screenshot publication before marking fully verified. Production health still confirms `71db6af8cfdd6f0128ae8ea663c69fab104b6e5e`.
 
 Actual captures: `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-{Plan,3D,AI,Phone}-Refined-2026-10-04.jpg`. Plan/3D/AI captures replace the corresponding `public/showcase` assets. 28 pitch integration tests pass after replacement.
+
+Screenshot-update deployment `6835774028` for `e3de30ecd15a1030f10b19c6571777e034040c1a` is verified at `https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app`. Its health confirms that SHA; all eight main routes and three screenshot assets return HTTP200. Standard Designer and legacy TintEX render on desktop and 390px phone without body overflow. Plan/House and Site & tools Escape dismissal work. Developer pitch chapter 02 renders the new live embedded home and updated actual 2D capture. Desktop handoff, BUILD-LINKS, CURRENT-WORK-LINKS and saveable output logs contain this verified link. A final pitch wording correction names Natural light versus Colour check rather than promising identical colour under both lighting rigs; 16 pitch tests and scoped lint pass.
 
 Original checkout and recovery stash `649569db5766b86c5880321f6cfea782f356da1f` remain untouched. Production was `71db6af8cfdd6f0128ae8ea663c69fab104b6e5e` at the previous verification.

@@ -1,3 +1,39 @@
+<!-- oct4-sculpted:start -->
+## Verified sculpted UI and realism preview — 4 October 2026
+
+Current verified preview: **https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app**.
+Application commit `ce9d9b6f3ab170ae6a7aa2ec37781fad76364bd3`; screenshot update/deployed commit `e3de30ecd15a1030f10b19c6571777e034040c1a`; Vercel deployment `6835774028`. Work stays on `cursor/feat-3d-flooring-hud-bc95`. Production remains `71db6af8cfdd6f0128ae8ea663c69fab104b6e5e`; no main/production publication was performed.
+
+| Experience | URL |
+|---|---|
+| 2D demo | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/demo?view=2d |
+| 3D demo | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/demo?view=3d |
+| Designer | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/designer |
+| Legacy TintEX / Demo | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/designer?demo=tintex |
+| Standalone Studio + Shop | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/studio |
+| Developer pitch | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/pitch/developers |
+| Merchant pitch | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/pitch/merchants |
+| Construction pitch | https://ppw-designer-2d-9kuay0rgv-victor-ppw.vercel.app/pitch/construction |
+
+Landed: stronger ivory/mint sculpted controls and inset trays, consolidated building actions, narrow-phone Clear correction, measured furniture texture/bedding/occlusion, sharper canonical 2D product models, wall-height shadows and window daylight, collision-aware labels, fresh real-catalogue demo styling. View → Lighting offers Natural light and Colour check; choice persists and does not move the camera. Colour check pauses time-of-day shading; Natural restores it. Important phone placement feedback stays visible.
+
+Verification: 297 files / 3,259 tests passed, then 22 focused final camera/wall and 28 pitch tests; client/API typechecks, changed-file lint and final build passed. Desktop and 390/320px local layouts checked. Final unique host health confirms e3de30e, all eight routes and three screenshot assets return HTTP200; standard Designer and legacy TintEX render at desktop/390px with no body overflow. Plan/House switching, Site & tools Escape and lighting/settings dismissal verified. Previous aouziw3ca deployment rendered the furnished Plan/House and supplied actual screenshots but later browser route navigation timed out; use 9kuay0rgv above. No orders, customer saves, merchant writes, paid AI calls or enquiries were submitted.
+
+Full locations:
+- Active repository: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`
+- Detailed continuation: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\docs\SCULPTED-REALISM-2026-10-04.md`
+- Saveable checkpoint: `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-Checkpoint-2026-10-04.md`
+- Source inventory: `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-AI-File-Locations.md`
+- Actual captures: `C:\Users\Victor\Documents\Codex\2026-09-23\c\outputs\Room-Designer-Plan-Refined-2026-10-04.jpg`, `Room-Designer-3D-Refined-2026-10-04.jpg`, `Room-Designer-AI-Refined-2026-10-04.jpg`, `Room-Designer-Phone-Refined-2026-10-04.jpg`.
+- UI tokens/layout: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\src\styles\designerStudio.css`
+- Rendering profiles: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\src\components\three\renderPresentation.ts`
+- Fresh demo: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\src\demo\homeInterior.ts`
+
+Remaining visual gap: these are improved dimensional previews, not photographic manufacturer CAD. Exact supplier meshes/PBR textures and a sourced residential floor catalogue are still needed for the reference-level interior finish. Do not invent purchasable flooring SKUs, resize product envelopes for styling, or overwrite saved customer designs. Existing demo data is preserved; the styled generic home applies on a fresh demo. Shared live pitch embeds inherit app changes; static showcase assets were refreshed from actual captures.
+
+Earlier notes below are historical. Preserve the original checkout and recovery stash `649569db5766b86c5880321f6cfea782f356da1f`.
+<!-- oct4-sculpted:end -->
+
 <!-- oct4-studio:start -->
 ## Verified tactile Studio preview — 4 October 2026
 
