@@ -20,7 +20,9 @@ export interface NaturalSceneRenderer {
 export function naturalRenderResolution(width: number, height: number, pixelRatio: number) {
   const w = Math.max(1, Number.isFinite(width) ? width : 1);
   const h = Math.max(1, Number.isFinite(height) ? height : 1);
-  const density = Math.min(1.5, Math.max(1, Number.isFinite(pixelRatio) ? pixelRatio : 1));
+  // A DPR=1 desktop needs modest supersampling for thin diagonal wall caps.
+  // Phone sampling and both pixel ceilings stay unchanged.
+  const density = Math.min(1.5, Math.max(w >= 768 ? 1.25 : 1, Number.isFinite(pixelRatio) ? pixelRatio : 1));
   const scale = Math.min(density, Math.sqrt(2_000_000 / (w * h)));
   const beautyWidth = Math.max(1, Math.floor(w * scale));
   const beautyHeight = Math.max(1, Math.floor(h * scale));
@@ -74,7 +76,10 @@ export function createNaturalSceneRenderer(renderer: THREE.WebGLRenderer, scene:
   // Metres, not screen pixels: the same skirting/contact reads correctly when
   // zooming, adding a storey or returning from a detail to the whole house.
   ao.updateGtaoMaterial({ radius: 0.48, thickness: 0.22, distanceExponent: 2, distanceFallOff: 1, scale: 1, samples: 8, screenSpaceRadius: false });
-  ao.updatePdMaterial({ radius: 4, samples: 8, rings: 2, lumaPhi: 10, depthPhi: 2, normalPhi: 3 });
+  // Restore Three's normal denoise sample count. Eight leaves isolated dark
+  // flecks on smooth white walls around fine blind slats / joinery; this pass
+  // still runs only on the capped half-resolution AO buffer.
+  ao.updatePdMaterial({ radius: 4, samples: 16, rings: 2, lumaPhi: 10, depthPhi: 2, normalPhi: 3 });
   ao.blendIntensity = 0.72;
   composer.addPass(beauty);
   composer.addPass(ao);

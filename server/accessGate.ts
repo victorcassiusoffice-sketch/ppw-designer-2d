@@ -71,7 +71,7 @@ function page(destination: string, message = '', status = 200, extra: Record<str
   } });
 }
 
-/** An opaque random session, stored only as a hash in the existing private Redis.
+/** An opaque random session, stored only as a hash in the dedicated private database table.
  * No localStorage unlock flag, public signing key or client-side code verifier.
  * A new session is deliberately scoped to one hostname, not every preview.
  */
@@ -118,27 +118,4 @@ export async function handleAccess(request: Request, deps: AccessDependencies): 
       'Set-Cookie': `${ACCESS_COOKIE}=${token}; Path=/; Max-Age=${SESSION_SECONDS}; HttpOnly; Secure; SameSite=None; Partitioned`,
     } });
   } catch (error) { return unavailable(destination, error); }
-}
-
-export function redisCommand(env: Record<string, string | undefined>): Command {
-  return async (args) => {
-    const url = env.KV_REST_API_URL?.trim();
-    const token = env.KV_REST_API_TOKEN?.trim();
-    if (!url || !token || !url.startsWith('https://')) throw new AccessStorageError('configuration');
-    let response: Response;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    try { response = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, body: JSON.stringify(args), signal: controller.signal }); }
-    catch (error) {
-      const info = error as { name?: string; cause?: { code?: string }; message?: string };
-      const code = info.cause?.code ?? '';
-      const detail = /^(ENOTFOUND|ECONNREFUSED|ECONNRESET|ETIMEDOUT|CERT_HAS_EXPIRED|ERR_TLS_CERT_ALTNAME_INVALID)$/.test(code) ? code : info.name === 'AbortError' ? 'timeout' : /cache/i.test(info.message ?? '') ? 'unsupported-cache' : /invalid.*url/i.test(info.message ?? '') ? 'invalid-url' : 'fetch-failed';
-      throw new AccessStorageError('connection', undefined, detail);
-    }
-    finally { clearTimeout(timeout); }
-    if (!response.ok) throw new AccessStorageError(response.status === 401 || response.status === 403 ? 'credentials' : response.status === 400 ? 'command' : 'connection', response.status);
-    const data = await response.json() as { result?: unknown; error?: string };
-    if (data.error) throw new AccessStorageError('command');
-    return data.result;
-  };
 }

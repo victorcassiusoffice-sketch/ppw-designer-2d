@@ -13,6 +13,15 @@ describe('bounded natural-light scene shading', () => {
     expect(Math.abs(resolution.beautyWidth / resolution.beautyHeight - width / height)).toBeLessThan(0.01);
   });
 
+  it('supersamples low-density desktop wall edges without raising phone render costs', () => {
+    expect(naturalRenderResolution(1440, 700, 1)).toEqual({ beautyWidth: 1800, beautyHeight: 875, aoWidth: 900, aoHeight: 437 });
+    expect(naturalRenderResolution(320, 580, 1)).toEqual({ beautyWidth: 320, beautyHeight: 580, aoWidth: 160, aoHeight: 290 });
+    expect(naturalRenderResolution(320, 580, 3)).toEqual({ beautyWidth: 480, beautyHeight: 870, aoWidth: 240, aoHeight: 435 });
+    const large = naturalRenderResolution(3840, 2160, 1);
+    expect(large.beautyWidth * large.beautyHeight).toBeLessThanOrEqual(2_000_000);
+    expect(large.aoWidth * large.aoHeight).toBeLessThanOrEqual(500_000);
+  });
+
   it('keeps geometry, materials and original visibility intact after the occlusion pass, even if it fails', () => {
     const scene = new THREE.Scene();
     const wall = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial());

@@ -40,7 +40,7 @@ export default function ConstructionPitchPage() {
     </div>}
     {chapter === 1 && <div className="construction-live-layout">
       <aside className="pitch-panel pitch-panel-ivory"><Eyebrow>Try the working app</Eyebrow><h2>Your wall,<br />your assumptions.</h2>
-        <ol className="construction-steps"><li>Draw a room or wall in the shared plan.</li><li>Open <strong>Materials</strong> beside the canvas.</li><li>Review measured scope, block sizes, ratios, depth and waste.</li><li>Adjust the inputs and compare the estimate.</li></ol>
+        <ol className="construction-steps"><li>Draw a room or wall in the shared plan.</li><li>Choose <strong>Materials</strong> in the design tools.</li><li>Review measured scope, block sizes, ratios, depth and waste.</li><li>Adjust the inputs and compare the estimate.</li></ol>
         <div className="pitch-segment" aria-label="Construction designer view"><button type="button" aria-pressed={view === '2d'} onClick={() => setView('2d')}>2D · to scale</button><button type="button" aria-pressed={view === '3d'} onClick={() => setView('3d')}>Premium 3D</button></div>
         <p className="pitch-fine">Materials is optional. Keep the clean design workspace when you only want to arrange the home. Switching between 2D and Premium 3D keeps your design in the same session.</p>
         <p className="pitch-fine">Quantity planning does not certify structural safety. Foundations, reinforced slabs, pillars and roof fixings need site-specific engineering and supplier specifications.</p>

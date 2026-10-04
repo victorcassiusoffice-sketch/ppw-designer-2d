@@ -10,7 +10,7 @@
  */
 
 import { initSentry, withSentry, isSentryConfigured } from './_lib/sentry.js';
-import { Redis } from '@upstash/redis';
+import { neon } from '@neondatabase/serverless';
 
 interface MinimalReq {
   method?: string;
@@ -45,13 +45,12 @@ async function healthcheck(req: MinimalReq, res: MinimalRes): Promise<void> {
   // raw exception messages or database contents in this public health route.
   let studioAccessStorage: { configured: boolean; reachable: boolean } | undefined;
   if (url.includes('studioAccess=1') || req.query?.studioAccess === '1') {
-    const redisUrl = process.env.KV_REST_API_URL?.trim();
-    const redisToken = process.env.KV_REST_API_TOKEN?.trim();
-    studioAccessStorage = { configured: !!redisUrl && !!redisToken, reachable: false };
-    if (redisUrl && redisToken) {
+    const databaseUrl = [process.env.DATABASE_URL, process.env.POSTGRES_URL, process.env.POSTGRES_DATABASE_URL, process.env.POSTGRES_PRISMA_URL].map((value) => value?.trim()).find(Boolean);
+    studioAccessStorage = { configured: !!databaseUrl, reachable: false };
+    if (databaseUrl) {
       try {
-        const redis = new Redis({ url: redisUrl, token: redisToken, retry: { retries: 0 }, signal: AbortSignal.timeout(2000) });
-        studioAccessStorage.reachable = await redis.ping() === 'PONG';
+        const rows = await neon(databaseUrl)('SELECT 1 AS ready', [], { fetchOptions: { signal: AbortSignal.timeout(2000) } });
+        studioAccessStorage.reachable = rows[0]?.ready === 1;
       } catch { /* Readiness is reported, without leaking configuration. */ }
     }
   }
@@ -62,8 +61,6 @@ async function healthcheck(req: MinimalReq, res: MinimalRes): Promise<void> {
     service: 'ppw-designer-2d',
     env: process.env.VERCEL_ENV ?? 'unknown',
     commit: process.env.VERCEL_GIT_COMMIT_SHA ?? 'unknown',
-    // Boolean only — confirms SENTRY_DSN is wired without exposing the value.
-    // Vic can curl this to verify server-error capture is live in prod.
     sentryConfigured: isSentryConfigured(),
     ...(studioAccessStorage ? { studioAccessStorage } : {}),
     timestamp: new Date().toISOString(),

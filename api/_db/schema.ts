@@ -730,3 +730,13 @@ export const schemaMigrations = pgTable('schema_migrations', {
   appliedAt: timestamp('applied_at', { withTimezone: true }).notNull().defaultNow(),
   checksum: varchar('checksum', { length: 64 }).notNull(),
 });
+
+// Isolated presentation-gate storage. Keys include environment and hostname;
+// session tokens are hashed before storage. No merchant/customer foreign keys.
+export const studioAccessRecords = pgTable('studio_access_records', {
+  recordKey: varchar('record_key', { length: 512 }).primaryKey(),
+  recordValue: text('record_value').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+}, (table) => ({
+  expiryIdx: index('studio_access_records_expiry_idx').on(table.expiresAt),
+}));

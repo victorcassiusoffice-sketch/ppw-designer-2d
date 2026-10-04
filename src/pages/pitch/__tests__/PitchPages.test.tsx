@@ -210,7 +210,7 @@ describe('client overlays via ?client=', () => {
   it('turns the merchant page into the Spa Concept variant: internal tool first, Build preselected, honest in-build labels, no price', () => {
     visit('/pitch/merchants?client=spa-concept'); renderMerchant();
     expect(host.querySelector('h1')?.textContent).toBe('Design a hammam or sauna in 3D, and know the wood the moment you do.');
-    expect(host.textContent).toContain('later, locked phase');
+    expect(host.textContent).toContain('Customer accounts & permissions · later phase');
     expect(host.querySelector('.pitch-chip.is-build')?.textContent).toContain('in build');
     chapter(1);
     expect(button('Build').getAttribute('aria-pressed')).toBe('true');

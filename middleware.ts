@@ -1,5 +1,6 @@
 import { ipAddress, next } from '@vercel/functions';
-import { handleAccess, redisCommand } from './server/accessGate';
+import { handleAccess } from './server/accessGate';
+import { neonCommand } from './server/accessStorage';
 
 // This protects pages AND app assets before the CDN. Existing machine APIs keep
 // their own authentication (webhooks, scheduled jobs, merchant sessions and MCP).
@@ -7,9 +8,11 @@ export const config = { matcher: '/((?!api/|_vercel/).*)', runtime: 'edge' };
 
 export default async function middleware(request: Request): Promise<Response> {
   const response = await handleAccess(request, {
-    command: redisCommand({
-      KV_REST_API_URL: process.env.KV_REST_API_URL,
-      KV_REST_API_TOKEN: process.env.KV_REST_API_TOKEN,
+    command: neonCommand({
+      DATABASE_URL: process.env.DATABASE_URL,
+      POSTGRES_URL: process.env.POSTGRES_URL,
+      POSTGRES_DATABASE_URL: process.env.POSTGRES_DATABASE_URL,
+      POSTGRES_PRISMA_URL: process.env.POSTGRES_PRISMA_URL,
     }),
     now: Date.now,
     clientIp: ipAddress(request) ?? 'unknown',

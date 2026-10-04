@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ACCESS_COOKIE, digest, handleAccess, redisCommand, safeDestination, type AccessDependencies } from '../../server/accessGate';
+import { ACCESS_COOKIE, digest, handleAccess, safeDestination, type AccessDependencies } from '../../server/accessGate';
+import { neonCommand } from '../../server/accessStorage';
 import { config as middlewareConfig } from '../../middleware';
 
 function setup() {
@@ -99,8 +100,8 @@ describe('server-side studio access', () => {
     expect(html).toContain('inputmode="numeric"');
     expect(html).toContain('viewport-fit=cover');
   });
-  it('requires real private KV configuration', async () => {
-    await expect(redisCommand({})(['GET', 'key'])).rejects.toThrow('configuration');
+  it('requires real private database configuration', async () => {
+    await expect(neonCommand({})(['GET', 'key'])).rejects.toThrow('not configured');
   });
   it('rejects oversized bodies even when Content-Length is absent', async () => {
     const { deps, command } = setup();

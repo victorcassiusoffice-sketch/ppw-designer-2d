@@ -7,13 +7,14 @@ import { describe, expect, it } from 'vitest';
  * The pitch pages reference files under public/showcase. When one is missing
  * the developer page silently renders "App view unavailable" (that shipped once,
  * 2026-09-26, with two .png captures that never existed). Every referenced
- * asset must exist on disk, be a real WebP and stay within its byte budget.
+ * asset must exist on disk, match its image format and stay within its byte budget.
  */
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
-const SOURCES = ['src/pages/pitch/PitchShell.tsx', 'src/pages/pitch/DeveloperPitchPage.tsx', 'src/pages/pitch/MerchantPitchPage.tsx', 'src/pages/studio/StudioPage.tsx'];
+const SOURCES = ['src/pages/pitch/PitchShell.tsx', 'src/pages/pitch/PitchConnectChapter.tsx', 'src/pages/pitch/DeveloperPitchPage.tsx', 'src/pages/pitch/MerchantPitchPage.tsx', 'src/pages/studio/StudioPage.tsx'];
 const BUDGET_BYTES: Record<string, number> = {
   '/showcase/designer-plan.webp': 400 * 1024,
   '/showcase/designer-3d.webp': 400 * 1024,
+  '/showcase/designer-ai.png': 1024 * 1024,
   '/showcase/developer-vision.webp': 300 * 1024,
   '/showcase/merchant-vision.webp': 300 * 1024,
 };
@@ -30,16 +31,20 @@ function referencedShowcaseAssets(): string[] {
 describe('pitch showcase assets', () => {
   const refs = referencedShowcaseAssets();
 
-  it('references only the four WebP files and no PNG', () => {
+  it('covers all referenced app captures and concept artwork, including the AI workspace', () => {
     expect(refs).toEqual(Object.keys(BUDGET_BYTES).sort());
   });
 
-  it.each(refs)('%s exists on disk as a WebP within budget', (ref) => {
+  it.each(refs)('%s exists on disk in its declared image format within budget', (ref) => {
     const file = path.join(root, 'public', ref);
     const size = statSync(file).size;
     const head = readFileSync(file).subarray(0, 12);
-    expect(head.toString('latin1', 0, 4)).toBe('RIFF');
-    expect(head.toString('latin1', 8, 12)).toBe('WEBP');
+    if (ref.endsWith('.png')) {
+      expect(head.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+    } else {
+      expect(head.toString('latin1', 0, 4)).toBe('RIFF');
+      expect(head.toString('latin1', 8, 12)).toBe('WEBP');
+    }
     expect(size).toBeGreaterThan(20 * 1024);
     expect(size).toBeLessThanOrEqual(BUDGET_BYTES[ref]);
   });

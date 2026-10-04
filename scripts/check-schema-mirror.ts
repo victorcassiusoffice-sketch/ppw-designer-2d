@@ -55,7 +55,9 @@ export function loadSqlTables(root = resolveRepoRoot()): string[] {
   const dir = join(root, MIGRATION_DIR_REL);
   const files = readdirSync(dir).filter((f) => f.endsWith('.sql')).sort();
   const found = new Set<string>();
-  const re = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:"([^"]+)"|(\w+))/gi;
+  // SQL may pin a table to public explicitly; compare the table identifier,
+  // not the schema name, with Drizzle's pgTable first argument.
+  const re = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:(?:"[^"]+"|\w+)\s*\.\s*)?(?:"([^"]+)"|(\w+))/gi;
   for (const file of files) {
     const sql = readFileSync(join(dir, file), 'utf8');
     let m: RegExpExecArray | null;
