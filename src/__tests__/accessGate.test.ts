@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ACCESS_COOKIE, digest, handleAccess, redisCommand, safeDestination, type AccessDependencies } from '../../server/accessGate';
+import { config as middlewareConfig } from '../../middleware';
 
 function setup() {
   const data = new Map<string, unknown>();
@@ -19,6 +20,11 @@ const post = (code = '2123', next = '/demo?view=3d') => new Request(`https://des
 });
 
 describe('server-side studio access', () => {
+  it('matches all app/asset paths while leaving existing service authentication intact', () => {
+    const matcher = new RegExp(`^${middlewareConfig.matcher}$`);
+    for (const path of ['/designer', '/demo', '/studio', '/embed/designer', '/assets/main.js', '/favicon.ico', '/favicon.ico/designer']) expect(matcher.test(path)).toBe(true);
+    for (const path of ['/api/healthcheck', '/api/stripe-webhook', '/api/mcp', '/_vercel/insights/script.js']) expect(matcher.test(path)).toBe(false);
+  });
   it.each(['/designer', '/demo?view=3d', '/studio', '/pitch/developers', '/index.html', '/assets/index.js'])('locks %s without loading the app or exposing the code', async (path) => {
     const { deps, command } = setup();
     const response = await handleAccess(new Request(`https://designer.example${path}`), deps);
@@ -95,5 +101,14 @@ describe('server-side studio access', () => {
   });
   it('requires real private KV configuration', async () => {
     await expect(redisCommand({})(['GET', 'key'])).rejects.toThrow('not configured');
+  });
+  it('rejects oversized bodies even when Content-Length is absent', async () => {
+    const { deps, command } = setup();
+    const request = new Request('https://designer.example/access', {
+      method: 'POST', headers: { origin: 'https://designer.example', 'content-type': 'application/x-www-form-urlencoded' }, body: 'code=' + '1'.repeat(4096),
+    });
+    expect(request.headers.has('content-length')).toBe(false);
+    expect((await handleAccess(request, deps))!.status).toBe(400);
+    expect(command).not.toHaveBeenCalled();
   });
 });

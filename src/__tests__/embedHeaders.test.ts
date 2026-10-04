@@ -13,7 +13,7 @@ function headersFor(path: string): Record<string, string> {
   return result;
 }
 describe('demo-only embedding policy', () => {
-  it.each(['/embed/designer', '/embed/designer/'])('allows HTTPS embedding only for %s', (path) => {
+  it.each(['/embed/designer', '/embed/designer/', '/access'])('allows HTTPS embedding for the demo and its code form at %s', (path) => {
     const headers = headersFor(path);
     expect(headers['X-Frame-Options']).toBeUndefined();
     expect(headers['Content-Security-Policy']).toBe("frame-ancestors 'self' https:");

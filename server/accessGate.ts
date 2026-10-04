@@ -33,6 +33,25 @@ function fixedEqual(a: string, b: string): boolean {
   for (let i = 0; i < a.length; i++) difference |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return difference === 0;
 }
+async function smallFormBody(request: Request): Promise<string | null> {
+  const reader = request.body?.getReader();
+  if (!reader) return '';
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > 512) { await reader.cancel(); return null; }
+      chunks.push(value);
+    }
+    const bytes = new Uint8Array(size);
+    let offset = 0;
+    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+    return new TextDecoder().decode(bytes);
+  } finally { reader.releaseLock(); }
+}
 function page(destination: string, message = '', status = 200, extra: Record<string, string> = {}) {
   return new Response(accessPage(destination, message), { status, headers: {
     'Content-Type': 'text/html; charset=utf-8',
@@ -70,8 +89,8 @@ export async function handleAccess(request: Request, deps: AccessDependencies): 
   if (!request.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded')) return page(destination, 'Please enter the four-digit code below.', 400);
   if (Number(request.headers.get('content-length') ?? 0) > 512) return page(destination, 'Please enter the four-digit code below.', 400);
   try {
-    const text = await request.text();
-    if (text.length > 512) return page(destination, 'Please enter the four-digit code below.', 400);
+    const text = await smallFormBody(request);
+    if (text === null) return page(destination, 'Please enter the four-digit code below.', 400);
     const bucket = Math.floor(deps.now() / 600_000);
     const ipKey = (await digest(deps.clientIp)).slice(0, 32);
     const rateKey = `${namespace}:attempts:${ipKey}:${bucket}`;
