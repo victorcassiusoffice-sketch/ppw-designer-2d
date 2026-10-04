@@ -10,6 +10,7 @@
  */
 
 import { initSentry, withSentry, isSentryConfigured } from './_lib/sentry.js';
+import { Redis } from '@upstash/redis';
 
 interface MinimalReq {
   method?: string;
@@ -40,6 +41,21 @@ async function healthcheck(req: MinimalReq, res: MinimalRes): Promise<void> {
     throw new Error('[healthcheck] synthetic Sentry test error');
   }
 
+  // Optional read-only connectivity check. Never echo provider URLs, tokens,
+  // raw exception messages or database contents in this public health route.
+  let studioAccessStorage: { configured: boolean; reachable: boolean } | undefined;
+  if (url.includes('studioAccess=1') || req.query?.studioAccess === '1') {
+    const redisUrl = process.env.KV_REST_API_URL?.trim();
+    const redisToken = process.env.KV_REST_API_TOKEN?.trim();
+    studioAccessStorage = { configured: !!redisUrl && !!redisToken, reachable: false };
+    if (redisUrl && redisToken) {
+      try {
+        const redis = new Redis({ url: redisUrl, token: redisToken, retry: { retries: 0 }, signal: AbortSignal.timeout(2000) });
+        studioAccessStorage.reachable = await redis.ping() === 'PONG';
+      } catch { /* Readiness is reported, without leaking configuration. */ }
+    }
+  }
+
   res.status(200);
   res.json({
     ok: true,
@@ -49,6 +65,7 @@ async function healthcheck(req: MinimalReq, res: MinimalRes): Promise<void> {
     // Boolean only — confirms SENTRY_DSN is wired without exposing the value.
     // Vic can curl this to verify server-error capture is live in prod.
     sentryConfigured: isSentryConfigured(),
+    ...(studioAccessStorage ? { studioAccessStorage } : {}),
     timestamp: new Date().toISOString(),
   });
 }

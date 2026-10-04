@@ -1,7 +1,9 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { contactShadow, cornerShades, lampsOnFactor, nightLight, CORNER_SHADE_VERTICAL_M } from '../dressing';
+import { contactShadow, cornerShades, groundPlane, lampsOnFactor, nightLight, CORNER_SHADE_VERTICAL_M, disposeDressingTextures } from '../dressing';
+import { disposeGardenResources, surroundingLawn } from '../gardenGround';
+import { withOpaqueOccluders } from '../naturalSceneRenderer';
 import { doorRuns } from '../joinery';
 import { bareMineralSurface, cornerShadeTexture, softShadowTexture } from '../surfaces';
 import type { ItemSolid, WallOpeningSolid, WallSolid } from '../../../designer/roomSolids';
@@ -9,6 +11,35 @@ import type { ItemSolid, WallOpeningSolid, WallSolid } from '../../../designer/r
 const ITEM: ItemSolid = { key: 'i', instanceId: 'i1', x0: 1, y0: 2, x1: 3, y1: 2.8, z0: 0, z1: 1.4, rotationDeg: 0, hex: '#888', lengthM: 2, widthM: 0.8, heightM: 1.4 };
 
 describe('dressing — contact shadows, lamps, door runs (3D Mode P3)', () => {
+  it('draws the presentation backdrop behind turf without competing for near-coplanar depth', () => {
+    const ground = groundPlane();
+    const lawn = surroundingLawn([[{ x: 0, y: 0 }, { x: 6, y: 0 }, { x: 6, y: 4 }, { x: 0, y: 4 }]]);
+    const turf = lawn.getObjectByName('surrounding-turf') as THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
+    const backdrop = ground.material as THREE.MeshStandardMaterial;
+    expect(ground.renderOrder).toBeGreaterThan(-10); // after the sky
+    expect(ground.renderOrder).toBeLessThan(turf.renderOrder);
+    expect(backdrop.depthWrite).toBe(false);
+    expect(turf.material.depthWrite).toBe(true);
+    expect(ground.receiveShadow).toBe(true);
+    expect(ground.position.y).toBe(-0.002);
+    expect(turf.geometry.getAttribute('position').getY(0)).toBeCloseTo(-0.0005, 8);
+    const scene = new THREE.Scene();
+    scene.add(ground, lawn);
+    withOpaqueOccluders(scene, () => {
+      expect(ground.visible).toBe(false);
+      expect(turf.visible).toBe(true);
+    });
+    expect(ground.visible).toBe(true);
+    disposeDressingTextures(ground);
+    disposeGardenResources(lawn);
+    scene.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.geometry.dispose();
+      for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) material.dispose();
+    });
+  });
+
   it('keeps unfinished screed even and flat with only fine low-contrast mineral grain', () => {
     const surface = bareMineralSurface();
     expect(surface.normalScale).toBe(0);

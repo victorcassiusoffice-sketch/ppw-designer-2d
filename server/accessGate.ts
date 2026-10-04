@@ -6,11 +6,11 @@ const SESSION_SECONDS = 12 * 60 * 60;
 const encoder = new TextEncoder();
 type Command = (args: (string | number)[]) => Promise<unknown>;
 class AccessStorageError extends Error {
-  constructor(readonly reason: 'configuration' | 'connection' | 'credentials' | 'command' | 'session', readonly upstreamStatus?: number) { super(reason); }
+  constructor(readonly reason: 'configuration' | 'connection' | 'credentials' | 'command' | 'session', readonly upstreamStatus?: number, readonly detail?: string) { super(reason); }
 }
 function unavailable(destination: string, error: unknown) {
   const reason = error instanceof AccessStorageError ? error.reason : 'runtime';
-  return page(destination, 'The studio is temporarily unavailable. Please try again shortly.', 503, { 'Retry-After': '30', 'X-Studio-Access-Status': reason, ...(error instanceof AccessStorageError && error.upstreamStatus ? { 'X-Studio-Storage-Status': String(error.upstreamStatus) } : {}) });
+  return page(destination, 'The studio is temporarily unavailable. Please try again shortly.', 503, { 'Retry-After': '30', 'X-Studio-Access-Status': reason, ...(error instanceof AccessStorageError && error.upstreamStatus ? { 'X-Studio-Storage-Status': String(error.upstreamStatus) } : {}), ...(error instanceof AccessStorageError && error.detail ? { 'X-Studio-Access-Detail': error.detail } : {}) });
 }
 export type AccessDependencies = {
   command: Command;
@@ -128,8 +128,13 @@ export function redisCommand(env: Record<string, string | undefined>): Command {
     let response: Response;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
-    try { response = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(args), signal: controller.signal, cache: 'no-store' }); }
-    catch { throw new AccessStorageError('connection'); }
+    try { response = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, body: JSON.stringify(args), signal: controller.signal }); }
+    catch (error) {
+      const info = error as { name?: string; cause?: { code?: string }; message?: string };
+      const code = info.cause?.code ?? '';
+      const detail = /^(ENOTFOUND|ECONNREFUSED|ECONNRESET|ETIMEDOUT|CERT_HAS_EXPIRED|ERR_TLS_CERT_ALTNAME_INVALID)$/.test(code) ? code : info.name === 'AbortError' ? 'timeout' : /cache/i.test(info.message ?? '') ? 'unsupported-cache' : /invalid.*url/i.test(info.message ?? '') ? 'invalid-url' : 'fetch-failed';
+      throw new AccessStorageError('connection', undefined, detail);
+    }
     finally { clearTimeout(timeout); }
     if (!response.ok) throw new AccessStorageError(response.status === 401 || response.status === 403 ? 'credentials' : response.status === 400 ? 'command' : 'connection', response.status);
     const data = await response.json() as { result?: unknown; error?: string };

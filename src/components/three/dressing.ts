@@ -62,10 +62,16 @@ export function updateSkyDome(dome: THREE.Mesh, day: number, presentation: Scene
 export function groundPlane(): THREE.Mesh {
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(600, 600),
-    new THREE.MeshStandardMaterial({ color: GROUND_HEX, map: groundTexture(), roughness: 1, metalness: 0 }),
+    new THREE.MeshStandardMaterial({ color: GROUND_HEX, map: groundTexture(), roughness: 1, metalness: 0, depthWrite: false }),
   );
   ground.rotation.x = -Math.PI / 2;
   ground.position.y = -0.002;
+  // This 600m backdrop is only 1.5mm below the automatic turf. Letting it
+  // write depth causes horizontal z-fighting bands on phone projections.
+  // Draw it after the sky but before physical geometry: it still receives
+  // sun shadows, while actual terrain/floors own the depth at their true
+  // elevations. It is a presentation backdrop, not an AO occluding surface.
+  ground.renderOrder = -5;
   ground.receiveShadow = true;
   ground.name = 'ground';
   (ground.material as THREE.MeshStandardMaterial).userData.dressingTextures = [(ground.material as THREE.MeshStandardMaterial).map];
