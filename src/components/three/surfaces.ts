@@ -16,6 +16,7 @@
  */
 import * as THREE from 'three';
 import { architecturalBackdrop } from './renderPresentation';
+import { architecturalMineralVariation, ARCHITECTURAL_MINERAL_REPEAT_M } from '../../designer/architecturalSurface';
 
 // ---------------------------------------------------------------------------
 // Noise + canvas helpers (also used for the plaster / roller maps).
@@ -149,10 +150,43 @@ export interface FloorSurface {
 
 const floorCache = new Map<string, FloorSurface>();
 let bareMineralCache: FloorSurface | null = null;
+let naturalMineralCache: FloorSurface | null = null;
 
 /** Unfinished, unpriced floor only. Fine even grain with a flat normal keeps
  * the planning view calm: broad cloud bumps read like crumpled paper. */
-export function bareMineralSurface(): FloorSurface {
+export function bareMineralSurface(natural = false): FloorSurface {
+  if (natural) {
+    if (naturalMineralCache) return naturalMineralCache;
+    const size = 256;
+    const pixels = new Uint8Array(size * size * 4);
+    const normals = new Uint8Array(size * size * 4);
+    const random = mulberry32(94);
+    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+      const i = (y * size + x) * 4;
+      const variation = architecturalMineralVariation(x / size, y / size);
+      const value = Math.max(0, Math.min(255, Math.round(246 + variation * 9 + (random() - 0.5) * 4)));
+      pixels[i] = pixels[i + 1] = pixels[i + 2] = value;
+      pixels[i + 3] = 255;
+      // Very shallow aggregate only. Broad trowel marks alter colour, never
+      // wrinkle or displace the dimensionally flat structural slab.
+      normals[i] = 128 + Math.round((random() - 0.5) * 8);
+      normals[i + 1] = 128 + Math.round((random() - 0.5) * 8);
+      normals[i + 2] = normals[i + 3] = 255;
+    }
+    const map = new THREE.DataTexture(pixels, size, size);
+    const normalMap = new THREE.DataTexture(normals, size, size);
+    for (const texture of [map, normalMap]) {
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.setScalar(1 / ARCHITECTURAL_MINERAL_REPEAT_M);
+      texture.magFilter = THREE.LinearFilter;
+      texture.minFilter = THREE.LinearMipmapLinearFilter;
+      texture.generateMipmaps = true;
+      texture.needsUpdate = true;
+    }
+    map.colorSpace = THREE.SRGBColorSpace;
+    naturalMineralCache = { kind: 'screed', map, normalMap, roughness: 0.94, normalScale: 0.16, sheen: 0 };
+    return naturalMineralCache;
+  }
   if (bareMineralCache) return bareMineralCache;
   const size = 128;
   const pixels = new Uint8Array(size * size * 4);

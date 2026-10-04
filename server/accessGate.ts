@@ -5,6 +5,13 @@ export const ACCESS_COOKIE = '__Host-ppw-studio';
 const SESSION_SECONDS = 12 * 60 * 60;
 const encoder = new TextEncoder();
 type Command = (args: (string | number)[]) => Promise<unknown>;
+class AccessStorageError extends Error {
+  constructor(readonly reason: 'configuration' | 'connection' | 'credentials' | 'command' | 'session', readonly upstreamStatus?: number) { super(reason); }
+}
+function unavailable(destination: string, error: unknown) {
+  const reason = error instanceof AccessStorageError ? error.reason : 'runtime';
+  return page(destination, 'The studio is temporarily unavailable. Please try again shortly.', 503, { 'Retry-After': '30', 'X-Studio-Access-Status': reason, ...(error instanceof AccessStorageError && error.upstreamStatus ? { 'X-Studio-Storage-Status': String(error.upstreamStatus) } : {}) });
+}
 export type AccessDependencies = {
   command: Command;
   now: () => number;
@@ -39,7 +46,7 @@ async function smallFormBody(request: Request): Promise<string | null> {
   const chunks: Uint8Array[] = [];
   let size = 0;
   try {
-    while (true) {
+    for (;;) {
       const { value, done } = await reader.read();
       if (done) break;
       size += value.byteLength;
@@ -59,7 +66,7 @@ function page(destination: string, message = '', status = 200, extra: Record<str
     'CDN-Cache-Control': 'no-store',
     'Vercel-CDN-Cache-Control': 'no-store',
     'X-Robots-Tag': 'noindex, nofollow',
-    'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'",
+    'Content-Security-Policy': `default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'self'${/^\/embed\/designer\/?(?:\?|$)/.test(destination) ? ' https:' : ''}`,
     ...extra,
   } });
 }
@@ -80,7 +87,7 @@ export async function handleAccess(request: Request, deps: AccessDependencies): 
         if (isAccess) return new Response(null, { status: 303, headers: { Location: destination, 'Cache-Control': 'no-store' } });
         return null;
       }
-    } catch { return page(destination, 'The studio is temporarily unavailable. Please try again shortly.', 503, { 'Retry-After': '30' }); }
+    } catch (error) { return unavailable(destination, error); }
   }
   if (!isAccess || request.method === 'GET' || request.method === 'HEAD') return page(destination);
   if (request.method !== 'POST') return page(destination, 'Enter the code below to open the studio.', 405, { Allow: 'GET, HEAD, POST' });
@@ -103,25 +110,30 @@ export async function handleAccess(request: Request, deps: AccessDependencies): 
     if (!/^[0-9]{4}$/.test(code) || !fixedEqual(await digest(code), expected)) return page(destination, 'That code does not match. Please try again.', 401);
     const token = randomHex();
     const stored = await deps.command(['SET', `${namespace}:session:${await digest(token)}`, 'unlocked', 'EX', SESSION_SECONDS, 'NX']);
-    if (stored !== 'OK') throw new Error('Session was not saved');
+    if (stored !== 'OK') throw new AccessStorageError('session');
     return new Response(null, { status: 303, headers: {
       Location: destination,
       'Cache-Control': 'private, no-store',
       // Partitioned supports the same access form inside merchant iframes.
       'Set-Cookie': `${ACCESS_COOKIE}=${token}; Path=/; Max-Age=${SESSION_SECONDS}; HttpOnly; Secure; SameSite=None; Partitioned`,
     } });
-  } catch { return page(destination, 'The studio is temporarily unavailable. Please try again shortly.', 503, { 'Retry-After': '30' }); }
+  } catch (error) { return unavailable(destination, error); }
 }
 
 export function redisCommand(env: Record<string, string | undefined>): Command {
   return async (args) => {
-    const url = env.KV_REST_API_URL;
-    const token = env.KV_REST_API_TOKEN;
-    if (!url || !token || !url.startsWith('https://')) throw new Error('Access storage is not configured');
-    const response = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(args), signal: AbortSignal.timeout(5000), cache: 'no-store' });
-    if (!response.ok) throw new Error('Access storage unavailable');
+    const url = env.KV_REST_API_URL?.trim();
+    const token = env.KV_REST_API_TOKEN?.trim();
+    if (!url || !token || !url.startsWith('https://')) throw new AccessStorageError('configuration');
+    let response: Response;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try { response = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(args), signal: controller.signal, cache: 'no-store' }); }
+    catch { throw new AccessStorageError('connection'); }
+    finally { clearTimeout(timeout); }
+    if (!response.ok) throw new AccessStorageError(response.status === 401 || response.status === 403 ? 'credentials' : response.status === 400 ? 'command' : 'connection', response.status);
     const data = await response.json() as { result?: unknown; error?: string };
-    if (data.error) throw new Error('Access storage command failed');
+    if (data.error) throw new AccessStorageError('command');
     return data.result;
   };
 }

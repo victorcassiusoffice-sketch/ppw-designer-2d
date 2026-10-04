@@ -41,6 +41,29 @@ beforeEach(() => {
 afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 describe('shared plan model photographs', () => {
+  it('caches a separate directional shadow canvas with metre offsets and a north-up projection', async () => {
+    const { planModelShadowSnapshot } = await import('../modelSnapshot');
+    const direction = { x: -0.45, y: 0.55 };
+    const first = planModelShadowSnapshot(product, 90, direction);
+    expect(planModelShadowSnapshot(product, 90, direction)).toBe(first);
+    await vi.advanceTimersByTimeAsync(1);
+    const result = (await first)!;
+    expect(result.itemWidthM).toBeCloseTo(1.02);
+    expect(result.itemDepthM).toBeCloseTo(2.6);
+    expect(result.xM).toBeLessThan(0);
+    expect(result.widthM).toBeGreaterThan(result.itemWidthM);
+    expect(gpu.rendered).toBe(1);
+    const camera = gpu.camera as THREE.OrthographicCamera;
+    camera.updateMatrixWorld(true);
+    const nw = new THREE.Vector3(result.xM, 0, result.yM).project(camera);
+    const se = new THREE.Vector3(result.xM + result.widthM, 0, result.yM + result.depthM).project(camera);
+    expect(nw.x).toBeCloseTo(-1); expect(nw.y).toBeCloseTo(1);
+    expect(se.x).toBeCloseTo(1); expect(se.y).toBeCloseTo(-1);
+    const movedLight = planModelShadowSnapshot(product, 90, { x: 0.45, y: 0.55 });
+    await vi.advanceTimersByTimeAsync(1);
+    expect((await movedLight)!.xM).toBeCloseTo(-0.08);
+    expect(gpu.rendered).toBe(2);
+  });
   it('renders a shared bitmap once and projects north-up at exact catalog bounds', async () => {
     const { planModelSnapshot } = await import('../modelSnapshot');
     const first = planModelSnapshot(product);

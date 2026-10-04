@@ -100,7 +100,7 @@ describe('server-side studio access', () => {
     expect(html).toContain('viewport-fit=cover');
   });
   it('requires real private KV configuration', async () => {
-    await expect(redisCommand({})(['GET', 'key'])).rejects.toThrow('not configured');
+    await expect(redisCommand({})(['GET', 'key'])).rejects.toThrow('configuration');
   });
   it('rejects oversized bodies even when Content-Length is absent', async () => {
     const { deps, command } = setup();

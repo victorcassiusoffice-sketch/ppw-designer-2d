@@ -13,7 +13,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import type { ItemSolid } from '../../designer/roomSolids';
 import { itemPose } from '../../designer/fitToSize';
 import { furniturePreviewKind, FURNITURE_PREVIEW_NOTE } from '../../data/dimensionalPreview';
-import { cushionGeometry, drapedClothGeometry, furnitureAlbedo, furnitureSurface, physicalFurnitureUVs } from './furnitureSurface';
+import { cushionGeometry, curvedBackGeometry, drapedClothGeometry, furnitureAlbedo, furnitureSurface, physicalFurnitureUVs } from './furnitureSurface';
 import { furnitureOcclusion } from './furnitureOcclusion';
 
 class Parts {
@@ -99,6 +99,14 @@ class Parts {
     this.root.add(mesh);
   }
 
+  curvedBack(name: string, size: [number, number, number], position: [number, number, number], material: THREE.Material): THREE.Mesh {
+    const mesh = new THREE.Mesh(curvedBackGeometry(...size), material);
+    mesh.name = name;
+    mesh.position.set(...position);
+    this.root.add(mesh);
+    return mesh;
+  }
+
   /** A single continuous seam, inset within the cushion's measured envelope. */
   piping(name: string, width: number, depth: number, position: [number, number, number], material: THREE.Material, radius = 0.0025): THREE.Mesh {
     const points: THREE.Vector3[] = [];
@@ -136,7 +144,14 @@ class Parts {
 
   legs(w: number, d: number, height: number, material: THREE.Material, inset = 0.08): void {
     for (const x of [-1, 1]) for (const z of [-1, 1]) {
-      this.box('leg', [Math.min(w, d) * 0.075, height, Math.min(w, d) * 0.075], [x * w * (0.5 - inset), height / 2, z * d * (0.5 - inset)], material, 0.006);
+      const leg = this.box('leg', [Math.min(w, d) * 0.075, height, Math.min(w, d) * 0.075], [x * w * (0.5 - inset), height / 2, z * d * (0.5 - inset)], material, 0.006);
+      const positions = leg.geometry.getAttribute('position');
+      for (let i = 0; i < positions.count; i++) {
+        const up = positions.getY(i) / height + 0.5;
+        const taper = material.userData.furnitureFinish === 'wood' ? 0.62 + up * 0.38 : 0.85 + up * 0.15;
+        positions.setXYZ(i, positions.getX(i) * taper, positions.getY(i), positions.getZ(i) * taper);
+      }
+      leg.geometry.computeVertexNormals();
     }
   }
 
@@ -179,18 +194,23 @@ function sofa(p: Parts, w: number, d: number, h: number, corner: boolean): void 
   const legs = p.material('dark timber legs', '#302923');
   p.legs(w, d, h * 0.14, legs);
   p.box('upholstered frame', [w * 0.97, h * 0.24, d * 0.95], [0, h * 0.24, 0], upholstery, h * 0.05);
-  p.box('sofa back', [w * 0.98, h * 0.68, d * 0.18], [0, h * 0.66, -d * 0.41], upholstery, h * 0.06);
+  p.cushion('sofa back', [w * 0.98, h * 0.68, d * 0.18], [0, h * 0.66, -d * 0.41], upholstery);
   const armWidth = Math.min(w * 0.12, d * 0.18);
-  for (const side of [-1, 1]) p.box('rounded arm', [armWidth, h * 0.51, d], [side * (w - armWidth) / 2, h * 0.415, 0], upholstery, armWidth * 0.3);
+  for (const side of [-1, 1]) {
+    p.cushion('rounded arm', [armWidth, h * 0.51, d], [side * (w - armWidth) / 2, h * 0.415, 0], upholstery);
+    p.piping('arm tailored welt', armWidth * 0.98, d * 0.99, [side * (w - armWidth) / 2, h * 0.415, 0], cushion, 0.0018);
+  }
   const count = corner ? 1 : 3;
   const seatWidth = (w - armWidth * 2.1) / count;
   for (let i = 0; i < count; i++) {
     const x = (i - (count - 1) / 2) * seatWidth;
     p.cushion('individual seat cushion', [seatWidth * 0.97, h * 0.16, d * 0.74], [x, h * 0.42, d * 0.065], cushion);
     p.piping('tailored seat seam', seatWidth * 0.973, d * 0.743, [x, h * 0.42, d * 0.065], upholstery);
-    p.cushion('back cushion', [seatWidth * 0.97, h * 0.39, d * 0.15], [x, h * 0.73, -d * 0.235], cushion);
+    const back = p.cushion('back cushion', [seatWidth * 0.97, h * 0.39, d * 0.15], [x, h * 0.73, -d * 0.235], cushion);
+    back.rotation.x = -0.12;
     const pillow = p.cushion('scatter pillow', [Math.min(seatWidth * 0.6, h * 0.31), h * 0.29, d * 0.12], [x + seatWidth * 0.13, h * 0.62, -d * 0.085], accent);
     pillow.rotation.z = i % 2 ? 0.13 : -0.13;
+    pillow.rotation.x = -0.18;
   }
 }
 
@@ -202,6 +222,9 @@ function bed(p: Parts, w: number, d: number, h: number): void {
   p.legs(w, d, h * 0.18, oak);
   p.box('bed frame', [w, h * 0.21, d], [0, h * 0.27, 0], oak, 0.015);
   p.box('headboard', [w, h * 0.87, d * 0.045], [0, h * 0.565, -d * 0.475], oak, 0.018);
+  // The construction joints catch grazing light without changing the bed
+  // model or inventing extra purchasable bedside accessories.
+  for (const side of [-1, 1]) p.box('headboard edge rail', [w * 0.035, h * 0.84, d * 0.012], [side * w * 0.46, h * 0.565, -d * 0.446], oak, 0.006);
   p.box('mattress', [w * 0.90, h * 0.23, d * 0.94], [0, h * 0.47, d * 0.02], linen, h * 0.055);
   p.piping('mattress welt', w * 0.903, d * 0.943, [0, h * 0.47, d * 0.02], fold, 0.002);
   p.cushion('duvet', [w * 0.89, h * 0.055, d * 0.61], [0, h * 0.604, d * 0.16], duvet);
@@ -237,9 +260,9 @@ function dining(p: Parts, w: number, d: number, h: number): void {
   const chair = (x: number, z: number, angle: number) => {
     const before = p.root.children.length;
     p.legs(cw, cd, h * 0.43, wood, 0.12);
-    p.box('dining chair seat', [cw, h * 0.075, cd], [0, h * 0.45, 0], seat, 0.016);
+    p.cushion('dining chair seat', [cw, h * 0.075, cd], [0, h * 0.45, 0], seat);
     for (const side of [-1, 1]) p.box('dining chair back post', [0.025, h * 0.61, 0.025], [side * cw * 0.43, h * 0.695, -cd * 0.43], wood);
-    p.box('dining chair back', [cw, h * 0.23, 0.035], [0, h * 0.88, -cd * 0.44], wood, 0.008);
+    p.curvedBack('dining chair back', [cw, h * 0.26, cd * 0.14], [0, h * 0.865, -cd * 0.40], wood);
     for (const child of p.root.children.slice(before)) {
       child.position.applyAxisAngle(new THREE.Vector3(0, 1, 0), angle).add(new THREE.Vector3(x, 0, z));
       child.rotation.y += angle;
@@ -266,8 +289,8 @@ function officeChair(p: Parts, w: number, d: number, h: number): void {
     p.box('caster', [w * 0.07, h * 0.06, d * 0.09], [x, h * 0.03, z], frame, 0.01);
   }
   p.cushion('chair seat cushion', [w * 0.84, h * 0.075, d * 0.77], [0, h * 0.39, d * 0.06], seat);
-  p.box('chair back frame', [w * 0.76, h * 0.46, d * 0.12], [0, h * 0.67, -d * 0.34], frame, 0.035);
-  p.box('chair back mesh', [w * 0.67, h * 0.41, d * 0.13], [0, h * 0.67, -d * 0.325], fabric, 0.03);
+  p.curvedBack('chair back frame', [w * 0.76, h * 0.46, d * 0.18], [0, h * 0.67, -d * 0.32], frame);
+  p.curvedBack('chair back mesh', [w * 0.67, h * 0.41, d * 0.17], [0, h * 0.67, -d * 0.298], fabric);
   p.box('headrest', [w * 0.48, h * 0.11, d * 0.13], [0, h * 0.945, -d * 0.32], fabric, 0.025);
   for (const side of [-1, 1]) {
     p.box('arm support', [w * 0.045, h * 0.18, d * 0.05], [side * w * 0.47, h * 0.47, 0], frame);
@@ -289,7 +312,11 @@ function storage(p: Parts, w: number, d: number, h: number, kind: 'cabinet' | 'w
   p.box('cabinet back', [w - t, h - base, t], [0, (h + base) / 2, -d / 2 + t / 2], inside);
   if (kind === 'shelf') {
     const tiers = id.includes('malden') ? 5 : 3;
-    for (let i = 1; i < tiers; i++) p.box('open shelf', [w - t * 2, t, d], [0, base + (h - base) * i / tiers, 0], timber);
+    for (let i = 1; i < tiers; i++) {
+      const y = base + (h - base) * i / tiers;
+      p.box('open shelf', [w - t * 2, t, d], [0, y, 0], timber);
+      p.box('shelf eased front edge', [w - t * 2, t * 1.12, t * 0.24], [0, y, d / 2 - t * 0.12], timber, 0.004);
+    }
     return;
   }
   const columns = kind === 'wardrobe' ? 4 : w > 1.7 ? 3 : w > 0.6 ? 2 : 1;
@@ -301,7 +328,12 @@ function storage(p: Parts, w: number, d: number, h: number, kind: 'cabinet' | 'w
     for (let r = 0; r < rows; r++) {
       const y = base + t + rowHeight * (r + 0.5);
       p.box(rows > 1 ? 'drawer front' : 'door panel', [panelWidth - 0.009, rowHeight - 0.008, t], [x, y, d / 2 - t * 0.65], front, 0.003);
-      p.box('handle', [Math.min(0.14, panelWidth * 0.5), 0.012, 0.018], [x, rows > 1 ? y + rowHeight * 0.3 : y, d / 2 - 0.004], handle, 0.003);
+      const gripWidth = Math.min(0.14, panelWidth * 0.5);
+      const gripY = rows > 1 ? y + rowHeight * 0.3 : y;
+      // Two short returns and an open grip produce the real shadow gap of
+      // a cabinet pull. Keep the outside edge on the existing front envelope.
+      for (const side of [-1, 1]) p.rod('handle return', new THREE.Vector3(x + side * gripWidth * 0.4, gripY, d / 2 - t * 0.15), new THREE.Vector3(x + side * gripWidth * 0.4, gripY, d / 2 + 0.002), 0.004, handle);
+      p.rod('handle', new THREE.Vector3(x - gripWidth / 2, gripY, d / 2 + 0.002), new THREE.Vector3(x + gripWidth / 2, gripY, d / 2 + 0.002), 0.003, handle);
     }
   }
 }

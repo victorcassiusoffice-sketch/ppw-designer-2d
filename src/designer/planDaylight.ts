@@ -22,3 +22,18 @@ export function planShadowPoints(a: Vertex, b: Vertex, offset: Vertex, pxPerMetr
   return [a, b, { x: b.x + offset.x, y: b.y + offset.y }, { x: a.x + offset.x, y: a.y + offset.y }]
     .flatMap(point => [point.x * pxPerMetre, point.y * pxPerMetre]);
 }
+
+/** Project a real opening onto the floor using the current sun vector. A
+ * window facing away from the sun receives diffuse light, but no sun patch.
+ * Sill/head height affect the patch location instead of a generic glow box. */
+export function planWindowLight(a: Vertex, b: Vertex, inward: Vertex, sillM: number, topM: number, light: PlanDaylight, wallHeightM: number): Vertex[] | null {
+  if (light.strength <= 0 || !(wallHeightM > 0) || topM <= sillM) return null;
+  const direction = { x: light.offset.x / wallHeightM, y: light.offset.y / wallHeightM };
+  if (direction.x * inward.x + direction.y * inward.y <= 0.035) return null;
+  return [
+    { x: a.x + direction.x * sillM, y: a.y + direction.y * sillM },
+    { x: b.x + direction.x * sillM, y: b.y + direction.y * sillM },
+    { x: b.x + direction.x * topM, y: b.y + direction.y * topM },
+    { x: a.x + direction.x * topM, y: a.y + direction.y * topM },
+  ];
+}

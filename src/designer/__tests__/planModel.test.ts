@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Product } from '../../data/products.schema';
-import { canRenderPlanModel, planModelKey, planModelRasterSize, planModelSolid, planPhotoLightBalance } from '../planModel';
+import { canRenderPlanModel, planModelKey, planModelRasterSize, planModelSolid, planPhotoLightBalance, planModelShadowFrame, planModelShadowKey } from '../planModel';
 
 const product = { id: 'courts-marco-sofa-corner', sku: 'SOFA', dimensions_cm: { length: 260, width: 102, height: 110 }, front_edge: 'left' } as Product;
 
@@ -35,5 +35,23 @@ describe('orthographic product presentation preserves catalog truth', () => {
     expect(balanced.hemi).toBeLessThan(rig.hemi);
     expect(balanced.fill).toBe(rig.fill);
     expect(planPhotoLightBalance(rig, [0, 0, 0])).toEqual(rig);
+  });
+  it('frames a rotated product shadow independently of the measured item envelope', () => {
+    const before = JSON.stringify(product);
+    const direction = { x: -0.45, y: 0.55 };
+    const frame = planModelShadowFrame(product, 90, direction);
+    expect(frame.itemWidthM).toBeCloseTo(1.02);
+    expect(frame.itemDepthM).toBeCloseTo(2.6);
+    expect(frame.xM).toBeCloseTo(-1.1 * 0.45 - 0.08);
+    expect(frame.yM).toBeCloseTo(-0.08);
+    expect(frame.xM + frame.widthM).toBeCloseTo(frame.itemWidthM + 0.08);
+    expect(frame.yM + frame.depthM).toBeCloseTo(frame.itemDepthM + 1.1 * 0.55 + 0.08);
+    expect(JSON.stringify(product)).toBe(before);
+  });
+  it('shares equivalent orientation shadows but invalidates when direction or orientation changes', () => {
+    const direction = { x: 0.45, y: 0.55 };
+    expect(planModelShadowKey(product, -90, direction)).toBe(planModelShadowKey(product, 270, direction));
+    expect(planModelShadowKey(product, 0, direction)).not.toBe(planModelShadowKey(product, 90, direction));
+    expect(planModelShadowKey(product, 0, direction)).not.toBe(planModelShadowKey(product, 0, { x: -0.45, y: 0.55 }));
   });
 });

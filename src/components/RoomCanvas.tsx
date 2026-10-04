@@ -40,13 +40,13 @@ import {
   Image as KonvaImage,
 } from 'react-konva';
 import { useImageCache, useImageCacheStatus } from '../hooks/useImageCache';
-import { usePlanModelImage } from '../hooks/usePlanModelImage';
-import { planSurfaceTexture } from '../designer/planSurfaceTexture';
+import { usePlanModelImage, usePlanModelShadow } from '../hooks/usePlanModelImage';
+import { planSurfaceTexture, planSurfacePatternScale } from '../designer/planSurfaceTexture';
 import { floorKindOf } from '../designer/floorKind';
-import { planDaylight, planShadowPoints } from '../designer/planDaylight';
+import { planDaylight, planShadowPoints, planWindowLight, type PlanDaylight } from '../designer/planDaylight';
 import { planRoomLabelLayout } from '../designer/planRoomLabel';
 import { levelHeightM } from '../designer/building';
-import { BARE_FLOOR_HEX } from '../designer/roomView3d';
+import { NATURAL_BARE_FLOOR_HEX } from '../designer/architecturalSurface';
 import type Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
 import { usePropertyStore, selectActiveRoom, roomOpenings } from '../store/propertyStore';
@@ -253,7 +253,7 @@ import {
 } from '../designer/floorTiles';
 import { findFloorMaterialById } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
-import { BARE_PLASTER_HEX, DEFAULT_WALL_HEIGHT_M, findWallPaintById, finishOfPaint, resolveWallColourHex, sheenOfFinish } from '../data/wallPaints';
+import { BARE_PLASTER_HEX, DEFAULT_WALL_HEIGHT_M, OPENING_WINDOW_HEIGHT_M, findWallPaintById, finishOfPaint, resolveWallColourHex, sheenOfFinish } from '../data/wallPaints';
 import { interiorSide, wallFinishHighlight } from '../designer/wallFinishPlan';
 import { PlanWallPaint } from './PlanWallPaint';
 // Phone pass (2026-09-16): the paint HUD's own colour row — the plan stays
@@ -4035,7 +4035,7 @@ export function RoomCanvas({
           Desktop uses the keyboard (Ctrl+Z / Ctrl+Y / Ctrl+F) + has no
           finger, so this is lg:hidden. ≥44px targets, inside the top safe
           area, never over the canvas centre. */}
-      {!drawMode && !wallDrawEnabled && (
+      {canvasToolsOpen && !drawMode && !wallDrawEnabled && (
         <div
           className="lg:hidden pointer-events-none absolute left-3 z-10 flex items-center gap-2"
           style={{ top: 'max(0.5rem, env(safe-area-inset-top))' }}
@@ -4431,9 +4431,9 @@ export function RoomCanvas({
                   name="room-surface-grain"
                   // Konva's runtime accepts CanvasImageSource; its pattern
                   // declaration is narrower than CanvasRenderingContext2D.
-                  fillPatternImage={planSurfaceTexture(isRoofRoom(room) ? ROOF_SLAB_FILL : BARE_FLOOR_HEX) as unknown as HTMLImageElement}
-                  fillPatternScaleX={pxPerMetre / 256}
-                  fillPatternScaleY={pxPerMetre / 256}
+                  fillPatternImage={planSurfaceTexture(isRoofRoom(room) ? ROOF_SLAB_FILL : NATURAL_BARE_FLOOR_HEX) as unknown as HTMLImageElement}
+                  fillPatternScaleX={planSurfacePatternScale(pxPerMetre)}
+                  fillPatternScaleY={planSurfacePatternScale(pxPerMetre)}
                   listening={false}
                 />
                 {/* ROOF SLAB (eco / solar 2026-09-04): concrete, no walls —
@@ -4471,8 +4471,8 @@ export function RoomCanvas({
                       fill={mat.hex}
                       fillPatternImage={planSurfaceTexture(mat.hex, floorKindOf(mat)) as unknown as HTMLImageElement}
                       fillPriority="pattern"
-                      fillPatternScaleX={pxPerMetre / 256}
-                      fillPatternScaleY={pxPerMetre / 256}
+                      fillPatternScaleX={planSurfacePatternScale(pxPerMetre, floorKindOf(mat))}
+                      fillPatternScaleY={planSurfacePatternScale(pxPerMetre, floorKindOf(mat))}
                       listening={false}
                       name="room-floor"
                     />
@@ -4554,12 +4554,22 @@ export function RoomCanvas({
                       const side = interiorSide(room.polygon);
                       const reach = Math.min(1.8, opening.widthM * 1.1);
                       const normal = { x: -edge.dy * side * reach, y: edge.dx * side * reach };
-                      return <Line key={`daylight-${opening.id}`} name="plan-window-daylight"
-                        points={planShadowPoints(a, b, normal, pxPerMetre)} closed
-                        fillLinearGradientStartPoint={{ x: (a.x + b.x) / 2 * pxPerMetre, y: (a.y + b.y) / 2 * pxPerMetre }}
-                        fillLinearGradientEndPoint={{ x: ((a.x + b.x) / 2 + normal.x) * pxPerMetre, y: ((a.y + b.y) / 2 + normal.y) * pxPerMetre }}
-                        fillLinearGradientColorStops={[0, `rgba(255,253,237,${planSun.daylight * 0.46})`, 0.5, `rgba(255,253,237,${planSun.daylight * 0.2})`, 1, 'rgba(255,253,237,0)']}
-                        listening={false} />;
+                      const panes = Math.max(1, Math.min(12, Math.ceil(opening.widthM / 0.8)));
+                      const sill = Math.min(opening.sillM ?? 0.9, planWallHeight), top = Math.min(sill + OPENING_WINDOW_HEIGHT_M, planWallHeight);
+                      return <Group key={`daylight-${opening.id}`} listening={false}>
+                        <Line name="plan-window-daylight" points={planShadowPoints(a, b, normal, pxPerMetre)} closed
+                          fillLinearGradientStartPoint={{ x: (a.x + b.x) / 2 * pxPerMetre, y: (a.y + b.y) / 2 * pxPerMetre }}
+                          fillLinearGradientEndPoint={{ x: ((a.x + b.x) / 2 + normal.x) * pxPerMetre, y: ((a.y + b.y) / 2 + normal.y) * pxPerMetre }}
+                          fillLinearGradientColorStops={[0, `rgba(255,253,237,${planSun.daylight * 0.30})`, 0.5, `rgba(255,253,237,${planSun.daylight * 0.1})`, 1, 'rgba(255,253,237,0)']} />
+                        {Array.from({ length: panes }, (_, pane) => {
+                          const start = pointAlongEdge(edge, span.t0 + opening.widthM * pane / panes + 0.025);
+                          const end = pointAlongEdge(edge, span.t0 + opening.widthM * (pane + 1) / panes - 0.025);
+                          const patch = planWindowLight(start, end, { x: -edge.dy * side, y: edge.dx * side }, sill, top, planSun, planWallHeight);
+                          return patch && <Line key={pane} name="plan-window-sun-patch" points={patch.flatMap(point => [point.x * pxPerMetre, point.y * pxPerMetre])} closed
+                            fill={`rgba(255,249,224,${planSun.daylight * 0.30})`} shadowColor="#fff9dc" shadowOpacity={0.18 * planSun.daylight}
+                            shadowBlur={pxPerMetre * 0.025} />;
+                        })}
+                      </Group>;
                     })}
                     {roomEdges(room).flatMap(edge => splitEdgeSpans(edge.lengthM, wallGapsByEdge.get(edgeKey(room.id, edge.index)) ?? []).map((span, index) => {
                       const a = pointAlongEdge(edge, span.t0), b = pointAlongEdge(edge, span.t1);
@@ -5098,6 +5108,8 @@ export function RoomCanvas({
                     isSelected={isSelected}
                     justPlaced={item.instanceId === justPlacedId}
                     pxPerMetre={pxPerMetre}
+                    planSun={planSun}
+                    wallHeightM={planWallHeight}
                     // THAT room's polygon and items — the drag/validate math
                     // inside PlacedItemGroup is unchanged, it just finally
                     // sees the room the item actually lives in.
@@ -5530,6 +5542,8 @@ interface PlacedItemGroupProps {
    *  triggers a one-shot visual settle tween. Defaults false. */
   justPlaced?: boolean;
   pxPerMetre: number;
+  planSun: PlanDaylight;
+  wallHeightM: number;
   polygon: Polygon;
   placedItems: PlacedItem[];
   /** Sims world (2026-08-29): true when the owning container is the level's outdoors. */
@@ -5569,6 +5583,8 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
     isSelected,
     justPlaced,
     pxPerMetre,
+    planSun,
+    wallHeightM,
     polygon,
     placedItems,
     outdoor,
@@ -5626,6 +5642,11 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
   // internally (the grey Rect fallback below still covers a genuine 404).
   const image = useImageCache(productTopDownUrl(product));
   const modelImage = usePlanModelImage(product);
+  const shadowDirection = { x: planSun.offset.x / wallHeightM, y: planSun.offset.y / wallHeightM };
+  // Surface/wall/ceiling products are carried by a parent or wall, so their
+  // floor-level shadow would imply a false mounting height. Keep only their
+  // contact shadow; the full 3D stage handles elevated inter-object shadows.
+  const shadowImage = usePlanModelShadow(product, item.rotation, shadowDirection, planSun.strength > 0 && placementKind(product) === 'floor');
   const [hovered, setHovered] = useState(false);
   // Polish (2026-05-29) — distinguish "still hydrating" from "errored /
   // no image" so the fallback shows a subtle brand shimmer while the
@@ -5952,6 +5973,23 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         perfectDrawEnabled={false}
         data-testid="placed-hit"
       />
+      {shadowImage && <Group listening={false} clipFunc={context => {
+        if (polygon.length < 3) return;
+        context.beginPath();
+        polygon.forEach((point, index) => {
+          // Konva moves the outer group during a drag before saved coordinates
+          // update. Keep the receiving room stationary throughout that move.
+          const x = point.x * pxPerMetre - (groupRef.current?.x() ?? item.x * pxPerMetre);
+          const y = point.y * pxPerMetre - (groupRef.current?.y() ?? item.y * pxPerMetre);
+          if (index === 0) context.moveTo(x, y); else context.lineTo(x, y);
+        });
+        context.closePath();
+      }}>
+        <KonvaImage name="item-cast-shadow" image={shadowImage.image}
+          x={shadowImage.xM * pxPerMetre} y={shadowImage.yM * pxPerMetre}
+          width={shadowImage.widthM * pxPerMetre} height={shadowImage.depthM * pxPerMetre}
+          opacity={planSun.daylight} listening={false} />
+      </Group>}
       {/* Inner Group rotates the art around the AABB centre. Konva
           applies rotation around offsetX/offsetY relative to the inner
           group origin, so we centre offsets to the unrotated size and

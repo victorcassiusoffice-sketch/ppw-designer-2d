@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import type { WallView } from '../store/designerUIStore';
 import type { RoomLighting } from '../hooks/useRoomLighting';
 import { WallHeightControl } from './WallHeightControl';
+import { StudioIcon } from './StudioIcon';
 
 export type CameraView = 'dollhouse' | 'above' | 'front';
 interface Props {
@@ -31,10 +32,10 @@ export function RoomViewControls({ workspace, pan, onPan, onRotate, onZoom, onFi
     return () => { document.removeEventListener('pointerdown', away, true); window.removeEventListener('ppw:close-view-settings', close); window.removeEventListener('ppw:house-scene-pointer', scene); };
   }, [expanded]);
   if (!workspace) return <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1 rounded-lg border border-white bg-[#fafaf7]/95 p-1 text-xs text-[#37362f] shadow">
-    <button className="h-9 min-w-9" onClick={() => onRotate(Math.PI / 4)} aria-label="Rotate left" data-testid="wallpaint-3d-rotate-left">↺</button>
-    <button className="h-9 min-w-9" onClick={() => onRotate(-Math.PI / 4)} aria-label="Rotate right" data-testid="wallpaint-3d-rotate-right">↻</button>
+    <button className="h-9 min-w-9" onClick={() => onRotate(Math.PI / 4)} aria-label="Rotate left" data-testid="wallpaint-3d-rotate-left"><StudioIcon name="rotateLeft" size={18} /></button>
+    <button className="h-9 min-w-9" onClick={() => onRotate(-Math.PI / 4)} aria-label="Rotate right" data-testid="wallpaint-3d-rotate-right"><StudioIcon name="rotateRight" size={18} /></button>
     <button className="h-9 min-w-9" onClick={onFit} aria-label="Fit" data-testid="wallpaint-3d-fit">Fit</button>
-    {onExpand && <button className="h-9 min-w-9" onClick={onExpand} aria-label="Expand the room view" data-testid="wallpaint-3d-expand">⤢</button>}
+    {onExpand && <button className="h-9 min-w-9" onClick={onExpand} aria-label="Expand the room view" data-testid="wallpaint-3d-expand"><StudioIcon name="fit" size={18} /></button>}
   </div>;
   return <div className="house-view-dock" ref={root} data-testid="house-view-dock" data-expanded={expanded}>
     {expanded && <div className="house-view-options" data-testid="house-view-options">
@@ -51,14 +52,14 @@ export function RoomViewControls({ workspace, pan, onPan, onRotate, onZoom, onFi
       </div>
     </div>}
     <div className="house-camera-row" role="group" aria-label="Camera navigation">
-      <button type="button" aria-pressed={pan} onClick={onPan} data-testid="view3d-pan" title="Move the view without picking up furniture"><span aria-hidden="true">✥</span><span>Move view</span></button>
-      <button type="button" onClick={() => onRotate(Math.PI / 4)} aria-label="Rotate left" title="Rotate left" data-testid="wallpaint-3d-rotate-left">↺</button>
-      <button type="button" onClick={() => onRotate(-Math.PI / 4)} aria-label="Rotate right" title="Rotate right" data-testid="wallpaint-3d-rotate-right">↻</button>
+      <button type="button" aria-label="Move view" aria-pressed={pan} onClick={onPan} data-testid="view3d-pan" title="Move the view without picking up furniture"><StudioIcon name="move" size={18} /><span>Move view</span></button>
+      <button type="button" onClick={() => onRotate(Math.PI / 4)} aria-label="Rotate left" title="Rotate left" data-testid="wallpaint-3d-rotate-left"><StudioIcon name="rotateLeft" size={18} /></button>
+      <button type="button" onClick={() => onRotate(-Math.PI / 4)} aria-label="Rotate right" title="Rotate right" data-testid="wallpaint-3d-rotate-right"><StudioIcon name="rotateRight" size={18} /></button>
       <span className="house-control-divider" />
-      <button type="button" onClick={() => onZoom(0.82)} aria-label="Zoom in" title="Zoom in">+</button>
-      <button type="button" onClick={() => onZoom(1 / 0.82)} aria-label="Zoom out" title="Zoom out">−</button>
-      <button type="button" onClick={onFit} aria-label="Fit" title="Fit the whole plan" data-testid="wallpaint-3d-fit">Fit</button>
-      <button type="button" className="house-view-options-trigger" aria-expanded={expanded} onClick={() => { setExpanded(!expanded); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); window.dispatchEvent(new CustomEvent('ppw:close-catalog')); }} data-testid="house-view-settings">View <span aria-hidden="true">{expanded ? '⌄' : '⌃'}</span></button>
+      <button type="button" onClick={() => onZoom(0.82)} aria-label="Zoom in" title="Zoom in"><StudioIcon name="plus" size={18} /></button>
+      <button type="button" onClick={() => onZoom(1 / 0.82)} aria-label="Zoom out" title="Zoom out"><StudioIcon name="minus" size={18} /></button>
+      <button type="button" onClick={onFit} aria-label="Fit" title="Fit the whole plan" data-testid="wallpaint-3d-fit"><StudioIcon name="fit" size={18} /></button>
+      <button type="button" className="house-view-options-trigger" aria-expanded={expanded} onClick={() => { setExpanded(!expanded); window.dispatchEvent(new CustomEvent('ppw:close-house-details')); window.dispatchEvent(new CustomEvent('ppw:close-catalog')); }} data-testid="house-view-settings"><StudioIcon name="settings" size={18} /><span>View</span></button>
     </div>
   </div>;
 }

@@ -43,6 +43,36 @@ function button(label: string) {
 }
 
 describe('HouseWorkspace controls', () => {
+  it('keeps the phone build palette collapsed until requested and has an explicit Select escape', () => {
+    render();
+    const workspace = host.querySelector<HTMLElement>('.house-workspace')!;
+    const build = button('Build tools');
+    const scene = host.querySelector('[data-testid="scene"]');
+    expect(workspace.dataset.buildOpen).toBe('false');
+    click(build);
+    expect(build.getAttribute('aria-expanded')).toBe('true');
+    expect(workspace.dataset.buildOpen).toBe('true');
+    expect(props.onMode).toHaveBeenLastCalledWith('build');
+    expect(host.querySelector('.house-inspector.is-open')).toBeNull();
+    click(button('Select and move objects'));
+    expect(props.onSelect).toHaveBeenCalledOnce();
+    expect(workspace.dataset.buildOpen).toBe('false');
+    expect(host.querySelector('[data-testid="scene"]')).toBe(scene);
+  });
+
+  it('reveals armed building tools and dismisses the palette with Escape without replacing the scene', () => {
+    props.onBuildTool = vi.fn();
+    render();
+    const scene = host.querySelector('[data-testid="scene"]');
+    props.buildTool = 'door'; render();
+    expect(button('Build tools').getAttribute('aria-expanded')).toBe('true');
+    act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })));
+    expect(button('Build tools').getAttribute('aria-expanded')).toBe('false');
+    expect(host.querySelector('[data-testid="scene"]')).toBe(scene);
+    expect(host.querySelector('[aria-label="View floor"]')).not.toBeNull();
+    expect(host.querySelector('.house-cost-pill')).not.toBeNull();
+  });
+
   it('opens the Materials inspector on an initial deep-link render after selection state is initialized', () => {
     props.mode = 'materials';
     props.inspector = <section aria-label="Materials quantity estimate">Blocks, mortar and concrete quantities</section>;

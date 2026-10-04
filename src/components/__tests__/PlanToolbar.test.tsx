@@ -47,6 +47,55 @@ const click = (node: HTMLElement) => act(() => node.click());
 const escape = () => act(() => (document.activeElement ?? document).dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
 
 describe('direct Plan controls', () => {
+  it('changes task shelves without mutating the design and stops the previously armed tool', () => {
+    useDesignerUIStore.setState({ tool: 'floor' });
+    const property = usePropertyStore.getState().property;
+    render();
+    const shelf = host.querySelector<HTMLElement>('[aria-label="Construction tools"]')!;
+    const categories = host.querySelector('[aria-label="Plan tool categories"]')!;
+    const build = [...categories.querySelectorAll('button')].find(button => button.textContent === 'Build')!;
+    const arrange = [...categories.querySelectorAll('button')].find(button => button.textContent === 'Arrange')!;
+    expect(shelf.dataset.task).toBe('finish');
+    click(build);
+    expect(shelf.dataset.task).toBe('build');
+    expect(useDesignerUIStore.getState().tool).toBe('hand');
+    click(arrange);
+    expect(shelf.dataset.task).toBe('arrange');
+    expect(arrange.getAttribute('aria-pressed')).toBe('true');
+    expect(usePropertyStore.getState().property).toBe(property);
+    expect(byId('select-tool-toggle').closest('[aria-label="Construction tools"]')).toBe(shelf);
+    expect(byId('plan-garden-toggle').closest('[aria-label="Construction tools"]')).toBe(shelf);
+  });
+
+  it('reveals the appropriate task shelf when another control or shortcut arms a tool', () => {
+    render();
+    const shelf = host.querySelector<HTMLElement>('[aria-label="Construction tools"]')!;
+    act(() => useDesignerUIStore.getState().setTool('sledgehammer'));
+    expect(shelf.dataset.task).toBe('arrange');
+    act(() => useDesignerUIStore.getState().setTool('wallpaint'));
+    expect(shelf.dataset.task).toBe('finish');
+    click(byId('door-tool-toggle'));
+    expect(shelf.dataset.task).toBe('build');
+  });
+
+  it('collapses phone tools after a choice and keeps a labelled stop control available', () => {
+    viewport(390); render();
+    const shelf = host.querySelector<HTMLElement>('[aria-label="Construction tools"]')!;
+    const categories = host.querySelector('[aria-label="Plan tool categories"]')!;
+    const finish = [...categories.querySelectorAll('button')].find(button => button.textContent === 'Finish')!;
+    expect(shelf.dataset.expanded).toBe('false');
+    click(finish);
+    expect(shelf.dataset.expanded).toBe('true');
+    click(byId('wallpaint-tool-toggle'));
+    expect(shelf.dataset.expanded).toBe('false');
+    expect(byId('plan-active-tool').getAttribute('aria-label')).toBe('Stop paint tool');
+    click(byId('plan-active-tool'));
+    expect(useDesignerUIStore.getState().tool).toBe('hand');
+    expect(byId('plan-active-tool').textContent).toBe('Select');
+    click(finish); escape();
+    expect(shelf.dataset.expanded).toBe('false');
+  });
+
   it.each([390, 1280])('keeps editable wall height inside the reserved construction rail at %ipx', (width) => {
     viewport(width); attachPlanToolbarCss();
     host.className = 'designer-app'; host.dataset.view = 'plan';

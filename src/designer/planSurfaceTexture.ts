@@ -1,7 +1,12 @@
 import type { FloorKind } from './floorKind';
+import { architecturalMineralVariation, ARCHITECTURAL_MINERAL_REPEAT_M } from './architecturalSurface';
 
-/** Display-only texture. One repeat represents one metre in both views;
- * commercial tile sizes and quantities continue to come from the catalog. */
+export function planSurfacePatternScale(pxPerMetre: number, kind: FloorKind = 'screed'): number {
+  return pxPerMetre * (kind === 'screed' ? ARCHITECTURAL_MINERAL_REPEAT_M / 512 : 1 / 256);
+}
+
+/** Display-only texture. Unfinished mineral repeats at four metres; catalog
+ * finishes keep their one-metre detail. Tile quantities come from the catalog. */
 const textures = new Map<string, HTMLCanvasElement>();
 export function planSurfaceTexture(hex: string, kind: FloorKind = 'screed'): HTMLCanvasElement | undefined {
   if (typeof document === 'undefined') return undefined;
@@ -9,10 +14,24 @@ export function planSurfaceTexture(hex: string, kind: FloorKind = 'screed'): HTM
   const cached = textures.get(key);
   if (cached) return cached;
   const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = 256;
+  const size = kind === 'screed' ? 512 : 256;
+  canvas.width = canvas.height = size;
   const ctx = canvas.getContext('2d');
   if (!ctx) return undefined;
-  ctx.fillStyle = hex; ctx.fillRect(0, 0, 256, 256);
+  ctx.fillStyle = hex; ctx.fillRect(0, 0, size, size);
+  if (kind === 'screed') {
+    const texture = ctx.getImageData(0, 0, size, size);
+    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+      const aggregate = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+      const delta = architecturalMineralVariation(x / size, y / size) * 8 + (aggregate - Math.floor(aggregate) - 0.5) * 4;
+      const index = (y * size + x) * 4;
+      for (let channel = 0; channel < 3; channel++) texture.data[index + channel] = Math.max(0, Math.min(255, texture.data[index + channel] + delta));
+    }
+    ctx.putImageData(texture, 0, 0);
+    textures.set(key, canvas);
+    if (textures.size > 32) textures.delete(textures.keys().next().value!);
+    return canvas;
+  }
   let seed = 7391;
   const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
   // Neutral grain enriches the actual swatch without replacing a paid
@@ -33,7 +52,7 @@ export function planSurfaceTexture(hex: string, kind: FloorKind = 'screed'): HTM
       ctx.strokeStyle = 'rgba(50,34,22,0.07)'; ctx.lineWidth = 0.5 + random(); ctx.stroke();
     }
   }
-  if (kind === 'screed' || kind === 'ceramic') {
+  if (kind === 'ceramic') {
     // Trowelled mineral variation rather than a grid of circular smudges.
     // Periodic bands meet at the tile boundary and preserve the base hue.
     const texture = ctx.getImageData(0, 0, 256, 256);
@@ -41,7 +60,7 @@ export function planSurfaceTexture(hex: string, kind: FloorKind = 'screed'): HTM
       const tau = Math.PI * 2;
       const flow = Math.sin(x / 256 * tau * 2 + Math.sin(y / 256 * tau) * 0.7);
       const grain = Math.sin((x + y) / 256 * tau * 5) * 0.32 + Math.sin((x * 3 - y * 2) / 256 * tau) * 0.18;
-      const delta = Math.round((flow * 0.5 + grain) * (kind === 'screed' ? 4.5 : 2.8));
+      const delta = Math.round((flow * 0.5 + grain) * 2.8);
       const index = (y * 256 + x) * 4;
       for (let channel = 0; channel < 3; channel++) texture.data[index + channel] = Math.max(0, Math.min(255, texture.data[index + channel] + delta));
     }

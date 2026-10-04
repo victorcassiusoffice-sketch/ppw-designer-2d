@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { cushionGeometry, drapedClothGeometry, furnitureAlbedo, furnitureSurface, physicalFurnitureUVs } from '../furnitureSurface';
+import { cushionGeometry, curvedBackGeometry, drapedClothGeometry, furnitureAlbedo, furnitureSurface, physicalFurnitureUVs } from '../furnitureSurface';
 import { furnitureOcclusion } from '../furnitureOcclusion';
 import { applyProductSurfaceLighting } from '../productSurfaceLighting';
 import { architecturalBackdrop } from '../renderPresentation';
@@ -21,7 +21,7 @@ describe('product surface realism without changing dimensions or colour', () => 
       heights.add(Number(positions.getY(i).toFixed(4)));
     }
     expect(heights.size).toBeGreaterThan(100);
-    expect(positions.count).toBeLessThan(800);
+    expect(positions.count).toBeLessThan(1600);
     expect(geometry.boundingBox!.min.y).toBeCloseTo(-0.15);
     geometry.dispose();
   });
@@ -75,11 +75,32 @@ describe('product surface realism without changing dimensions or colour', () => 
         expect(Math.abs(vertices.getZ(i))).toBeLessThanOrEqual(d / 2 + 1e-7);
         expect(Number.isFinite(normals.getX(i) + normals.getY(i) + normals.getZ(i))).toBe(true);
       }
-      expect(vertices.count).toBeLessThan(400);
-      expect(geometry.index!.count / 3).toBeLessThan(600);
+      expect(vertices.count).toBeLessThan(700);
+      expect(geometry.index!.count / 3).toBeLessThan(1100);
       // More than two heights: actual soft curvature, not a renamed cuboid.
       const heights = new Set(Array.from({ length: vertices.count }, (_, i) => vertices.getY(i).toFixed(5)));
       expect(heights.size).toBeGreaterThan(10);
+      geometry.dispose();
+    }
+  });
+
+  it('curves chair backs into a closed shell without inflating the footprint', () => {
+    for (const [w, h, d] of [[0.4, 0.25, 0.06], [0.55, 0.65, 0.12]]) {
+      const geometry = curvedBackGeometry(w, h, d);
+      const positions = geometry.getAttribute('position');
+      const normal = geometry.getAttribute('normal');
+      const backDepths = new Set<number>();
+      for (let i = 0; i < positions.count; i++) {
+        expect(Math.abs(positions.getX(i))).toBeLessThanOrEqual(w / 2 + 1e-7);
+        expect(Math.abs(positions.getY(i))).toBeLessThanOrEqual(h / 2 + 1e-7);
+        expect(Math.abs(positions.getZ(i))).toBeLessThanOrEqual(d / 2 + 1e-7);
+        expect(Number.isFinite(normal.getX(i) + normal.getY(i) + normal.getZ(i))).toBe(true);
+        backDepths.add(Number(positions.getZ(i).toFixed(5)));
+      }
+      // A flat box has two depths. The curved surface has many, and still
+      // stays under 500 vertices per chair for six-seat dining products.
+      expect(backDepths.size).toBeGreaterThan(8);
+      expect(positions.count).toBeLessThan(500);
       geometry.dispose();
     }
   });

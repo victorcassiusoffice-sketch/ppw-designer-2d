@@ -15,7 +15,11 @@ export function furnitureAlbedo(kind: FurnitureSurface): THREE.DataTexture {
     const noise = Math.sin(u * 71 + v * 37) * Math.sin(v * 53 - u * 29);
     const longGrain = Math.sin(v * 8 + Math.sin(u) * 0.55 + Math.sin(u * 2) * 0.24);
     const fineGrain = Math.sin(v * 47 + Math.sin(u * 2) * 2.4 + longGrain * 2);
-    const wood = 228 + longGrain * 14 + fineGrain * 7 + noise * 3;
+    // Broad cathedral figure and pores survive at furniture viewing distance;
+    // a finer grain alone disappears into mipmaps and looks like flat plastic.
+    const figure = Math.sin(v * 2 + Math.sin(u) * 1.8 + Math.sin(u * 2) * 0.35);
+    const darkPore = Math.pow(Math.max(0, fineGrain), 12);
+    const wood = 229 + longGrain * 11 + figure * 9 + fineGrain * 5 - darkPore * 9 + noise * 3;
     const threads = Math.sin(u * 64) * Math.cos(v * 64);
     const slub = Math.sin(v * 17 + Math.sin(u * 3)) * Math.sin(u * 11);
     const fabric = 243 + threads * 7 + slub * 3 + noise * 2;
@@ -64,7 +68,7 @@ export function physicalFurnitureUVs(geometry: THREE.BufferGeometry): void {
  * and the foot. Curves and folds are inside the explicitly supplied envelope.
  * No room, item size or extra purchasable object is created by this detail. */
 export function drapedClothGeometry(width: number, depth: number, drop: number): THREE.BufferGeometry {
-  const segmentsX = 24, segmentsZ = 28;
+  const segmentsX = 36, segmentsZ = 40;
   const positions: number[] = [], uv: number[] = [], indices: number[] = [];
   const roundDrop = (edge: number) => {
     const t = Math.max(0, Math.min(1, (edge - 0.9) / 0.1));
@@ -74,9 +78,14 @@ export function drapedClothGeometry(width: number, depth: number, drop: number):
     const u = x / segmentsX * 2 - 1, v = z / segmentsZ * 2 - 1;
     const side = roundDrop(Math.abs(u)), foot = roundDrop(v);
     const edge = Math.max(side, foot);
-    const waves = Math.sin(u * 17 + v * 2) * 0.006 + Math.sin(v * 19 + u * 4) * 0.004;
-    const creases = Math.sin(u * 31 + v * 7) * Math.sin(v * 9) * 0.004;
-    const height = -drop * edge + (waves + creases) * (0.4 + edge * 0.6);
+    // Long biased folds, not a regular crumpled-paper noise field. Gentle
+    // depressions break up the duvet at room scale; small puckers gather at
+    // its unsupported edges. Everything stays under the same top envelope.
+    const waves = Math.sin(u * 11 + Math.sin(v * 2) * 1.4) * 0.013 + Math.sin(v * 8 + u * 2) * 0.008;
+    const creaseA = Math.exp(-Math.pow((u - v * 0.12 + 0.24) / 0.075, 2)) * 0.022;
+    const creaseB = Math.exp(-Math.pow((v + u * 0.3 - 0.36) / 0.055, 2)) * 0.011;
+    const creases = Math.sin(u * 29 + v * 7) * Math.sin(v * 9) * 0.004 * edge;
+    const height = -drop * edge + waves * (0.6 + edge * 0.4) + creases - (creaseA + creaseB) * (1 - edge);
     positions.push(u * width / 2, Math.max(-drop, Math.min(0.014, height)), v * depth / 2);
     uv.push(u * width / 2, v * depth / 2);
     if (z < segmentsZ && x < segmentsX) {
@@ -135,7 +144,7 @@ export function furnitureSurface(kind: FurnitureSurface): THREE.DataTexture {
  * upholstery rather than bevelled blocks. Coordinates stay inside the given
  * envelope; the catalogue fit remains the final authority. */
 export function cushionGeometry(width: number, height: number, depth: number): THREE.BufferGeometry {
-  const geometry = new THREE.BoxGeometry(width, height, depth, 8, 4, 8);
+  const geometry = new THREE.BoxGeometry(width, height, depth, 12, 4, 12);
   const positions = geometry.getAttribute('position');
   for (let i = 0; i < positions.count; i++) {
     let x = positions.getX(i) / (width / 2);
@@ -146,8 +155,10 @@ export function cushionGeometry(width: number, height: number, depth: number): T
     const rounded = Math.pow(Math.pow(Math.abs(x), 4) + Math.pow(Math.abs(y), 4) + Math.pow(Math.abs(z), 4), -0.25);
     x *= rounded; y *= rounded; z *= rounded;
     const centre = (1 - x * x) * (1 - z * z);
-    const cloth = Math.sin(x * 16 + z * 4) * Math.sin(z * 13 - x * 3) * 0.017;
-    y *= 0.78 + 0.22 * centre + cloth * centre;
+    const edgeGather = Math.exp(-Math.pow((Math.abs(x) - 0.79) / 0.18, 2)) + Math.exp(-Math.pow((Math.abs(z) - 0.79) / 0.18, 2));
+    const cloth = Math.sin(x * 14 + z * 3) * Math.sin(z * 11 - x * 2) * 0.035;
+    const pleats = Math.sin(x * 26 + z * 7) * edgeGather * 0.022;
+    y *= Math.min(1, 0.74 + 0.26 * centre + cloth * centre + pleats);
     positions.setXYZ(i, x * width / 2, y * height / 2, z * depth / 2);
   }
   geometry.computeVertexNormals();
@@ -166,6 +177,27 @@ export function cushionGeometry(width: number, height: number, depth: number): T
     seam.normal.normalize();
     for (const i of seam.indices) normals.setXYZ(i, seam.normal.x, seam.normal.y, seam.normal.z);
   }
+  geometry.computeBoundingBox();
+  geometry.computeBoundingSphere();
+  return geometry;
+}
+
+/** Curved, closed chair shell with a full-width back and shaped shoulders.
+ * It remains inside the declared width/height/depth and is fitted with the
+ * complete SKU, so curvature cannot enlarge its collision footprint. */
+export function curvedBackGeometry(width: number, height: number, depth: number): THREE.BufferGeometry {
+  const thickness = Math.min(depth * 0.3, 0.028);
+  const geometry = new THREE.BoxGeometry(width, height, thickness, 16, 6, 1);
+  const positions = geometry.getAttribute('position');
+  for (let i = 0; i < positions.count; i++) {
+    const x = positions.getX(i), y = positions.getY(i), z = positions.getZ(i);
+    const u = x / (width / 2), v = y / (height / 2);
+    const shoulder = 1 - 0.08 * Math.pow(Math.max(0, v), 2);
+    const bow = (depth - thickness) * (u * u - 0.5);
+    positions.setXYZ(i, x * shoulder, y - height * 0.035 * u * u * Math.max(0, v), z + bow);
+  }
+  geometry.computeVertexNormals();
+  physicalFurnitureUVs(geometry);
   geometry.computeBoundingBox();
   geometry.computeBoundingSphere();
   return geometry;

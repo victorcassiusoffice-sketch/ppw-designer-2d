@@ -60,6 +60,7 @@ import { disposeGardenResources } from './gardenGround';
 import { contactShadow, cornerShades, disposeDressingTextures, floorMesh, groundPlane, lampsOnFactor, nightLight, skyDome, updateGroundPresentation, updateSkyDome, type NightLight } from './dressing';
 import { applyContentPresentation, applyRendererPresentation, architecturalBackdrop, ARCHITECTURAL_HORIZON_HEX, presentationProfile, type ScenePresentation } from './renderPresentation';
 import { disposeFurnitureTextures, furniturePreview } from './furniturePreview';
+import { createNaturalSceneRenderer, type NaturalSceneRenderer } from './naturalSceneRenderer';
 import { mountRoofItem, poseRoofItem, roofPointFromRay } from './roofItems';
 import { solarPanelPreview } from './solarPanelPreview';
 import { waterTankPreview } from './waterTankPreview';
@@ -596,6 +597,10 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
 ): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const naturalRendererRef = useRef<NaturalSceneRenderer | null>(null);
+  const naturalEnabledRef = useRef(presentation === 'natural');
+  const naturalUnavailableRef = useRef(false);
+  const drawingSizeRef = useRef(new THREE.Vector2());
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const hemiRef = useRef<THREE.HemisphereLight | null>(null);
@@ -658,7 +663,33 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       const c = cameraRef.current;
       if (r && s && c) {
         updateFog();
-        r.render(s, c);
+        let rendered = false;
+        if (naturalEnabledRef.current && !naturalUnavailableRef.current) {
+          try {
+            if (!naturalRendererRef.current) {
+              naturalRendererRef.current = createNaturalSceneRenderer(r, s, c);
+              if (!naturalRendererRef.current) naturalUnavailableRef.current = true;
+            }
+            const natural = naturalRendererRef.current;
+            if (natural) {
+              const size = r.getSize(drawingSizeRef.current);
+              natural.setSize(size.x, size.y, r.getPixelRatio());
+              natural.render();
+              rendered = true;
+            }
+          } catch {
+            // Optional shading must never strand the designer on a black
+            // canvas. The normal renderer retains the same camera and scene.
+            naturalRendererRef.current?.dispose();
+            naturalRendererRef.current = null;
+            naturalUnavailableRef.current = true;
+            r.setRenderTarget(null);
+          }
+        }
+        if (!rendered) r.render(s, c);
+        // Read-only diagnostic for browser QA; no scene/store access is needed
+        // to confirm an optional GPU effect really ran on this device.
+        r.domElement.dataset.shading = rendered ? 'natural-depth' : naturalEnabledRef.current ? 'natural-basic' : 'colour-check';
         framesRef.current += 1;
       }
     });
@@ -690,6 +721,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
 
   /** Presentation switches update the existing scene, never rebuild its room geometry. */
   const applyPresentation = () => {
+    naturalEnabledRef.current = presentation === 'natural';
     if (rendererRef.current) applyRendererPresentation(rendererRef.current, presentation);
     if (contentRef.current) applyContentPresentation(contentRef.current, presentation);
     const { centre } = boundsRef.current;
@@ -873,6 +905,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
       failedRef.current = false;
+      naturalRendererRef.current?.dispose();
+      naturalRendererRef.current = null;
+      naturalUnavailableRef.current = false;
       if (contentRef.current) disposeObject(contentRef.current);
       disposeObject(ground);
       disposeObject(sky);

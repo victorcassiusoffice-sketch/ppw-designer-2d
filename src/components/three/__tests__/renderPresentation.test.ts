@@ -3,8 +3,28 @@ import * as THREE from 'three';
 import { applyContentPresentation, applyRendererPresentation, architecturalBackdrop, presentationProfile } from '../renderPresentation';
 import { disposeDressingTextures, groundPlane, skyDome, updateGroundPresentation, updateSkyDome } from '../dressing';
 import { GROUND_HEX } from '../../../designer/roomView3d';
+import { floorMesh } from '../dressing';
+import { NATURAL_BARE_FLOOR_HEX } from '../../../designer/architecturalSurface';
 
 describe('architectural presentation without changing the saved finishes', () => {
+  it('visualises only unfinished slabs as mineral concrete, then restores the exact colour-check finish', () => {
+    const data = { key: 'bare', roomId: 'r', polygon: [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 4, y: 3 }, { x: 0, y: 3 }], hex: '#F1EBDD' };
+    const unfinished = floorMesh(data, 'screed', 0.5, null);
+    const bought = floorMesh({ ...data, key: 'laid', hex: '#736453' }, 'wood', 0.5, null);
+    const root = new THREE.Group(); root.add(unfinished, bought);
+    const bare = unfinished.material as THREE.MeshPhysicalMaterial, wood = bought.material as THREE.MeshPhysicalMaterial;
+    const originalMap = bare.map, boughtMap = wood.map, geometry = unfinished.geometry;
+    applyContentPresentation(root, 'natural');
+    expect(bare.color.equals(new THREE.Color(NATURAL_BARE_FLOOR_HEX).multiplyScalar(0.9))).toBe(true);
+    expect(bare.map).not.toBe(originalMap);
+    expect(wood.map).toBe(boughtMap);
+    expect(wood.color.equals(new THREE.Color('#736453').multiplyScalar(0.9))).toBe(true);
+    expect(unfinished.geometry).toBe(geometry);
+    applyContentPresentation(root, 'architectural');
+    expect(bare.color.equals(new THREE.Color(data.hex).multiplyScalar(0.9))).toBe(true);
+    expect(bare.map).toBe(originalMap);
+    expect(bare.normalScale.x).toBe(0);
+  });
   it('keeps the measured studio renderer and light rig in BOTH presentations (colour truth outside the Paint tool)', () => {
     // Colour-truth law: no tone mapping, exposure 1, the studio rig, white sky,
     // no rim, no day-lit lamps, the measured floor gain — in every presentation.

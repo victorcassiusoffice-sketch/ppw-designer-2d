@@ -2,6 +2,14 @@
 
 Status: implementation in progress; production has NOT yet been updated for this release.
 
+Checkpoint: gate commits `bdf8cf5` and `2c817a3` were pushed to feature only. Preview `https://ppw-designer-2d-n1u320rmh-victor-ppw.vercel.app` serves the locked screen, but the first deployed login returned 503. Do NOT publish this version to production. API readiness reports configured KV variables but does not verify working Redis. The pending fix explicitly selects Node middleware, binds KV environment names and emits safe failure-category/HTTP-status headers (never credentials). Verify wrong-code rejection and successful entry on the next preview before live publication.
+
+The visual implementation is complete locally. Plan now uses Build / Finish / Arrange with a collapsible phone shelf and a visible stop/Select control; 3D uses a compact phone header and expandable build palette. Original shared SVG icons replace mixed glyphs. Plan tabs scroll independently of the fixed Delete icon. Duplicate phone history controls are hidden at rest and available in Site tools / expanded plan controls.
+
+Natural 3D now has bounded GTAO depth shading, richer curved upholstery/chairs and folded bedding, cabinet details, broad wood grain and shared mineral floors. Initial camera framing fits the house rather than the surrounding lawn; explicit Garden Fit still fits the plot. Camera changes are only initial or user-requested. Plan shadows come from the actual dimensional 3D meshes; window light is projected using aperture heights. No dimensions, pricing, quantities, catalog SKUs or saved customer designs were changed for styling.
+
+Validation so far: 301 files / 3,301 tests passed; API/client/middleware typechecks and production build passed. Existing large-bundle advisory remains. Focused final gate/header/phone tests follow minor last edits. Browser checked desktop, 390px and 320px; no body overflow at320, paint shelf collapses and Stop paint exits, 3D Walls returns to Select. `data-shading=natural-depth` confirms actual WebGL AO ran, with no JS render errors. Reference-level photographic supplier geometry remains a separate asset-quality gap; do not call these photoreal CAD models.
+
 Victor explicitly requested production publication on 5 October with access code `2123`, deeper reference-led UI and 2D/3D realism changes, and mobile validation. Continue in `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer` on `cursor/feat-3d-flooring-hud-bc95`. Remote main was inspected at `71db6af8cfdd6f0128ae8ea663c69fab104b6e5e` before work. Original checkout/stash remain preserved.
 
 ## Access architecture

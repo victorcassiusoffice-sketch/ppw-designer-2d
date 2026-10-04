@@ -1,3 +1,4 @@
+import { StudioIcon as Icon } from './StudioIcon';
 import { WallSurfaceOptions } from './WallSurfaceOptions';
 import { constructionHex } from '../designer/wallConstruction';
 /** Compact Plan header, construction rail and in-flow options.
@@ -188,96 +189,6 @@ const INPUT =
 // ---------------------------------------------------------------------------
 // Icons — inline 16 px SVGs, stroke currentColor 1.6, round caps.
 // ---------------------------------------------------------------------------
-
-type IconName =
-  | 'list'
-  | 'cursor'
-  | 'hammer'
-  | 'pen'
-  | 'door'
-  | 'roller'
-  | 'tiles'
-  | 'ruler'
-  | 'box'
-  | 'polygon'
-  | 'swatch'
-  | 'storeys'
-  | 'plot'
-  | 'snap'
-  | 'grid'
-  | 'cube'
-  | 'undo'
-  | 'redo'
-  | 'cart'
-  | 'more'
-  | 'menu'
-  | 'close'
-  | 'view'
-  | 'room'
-  | 'send'
-  | 'roof'
-  | 'sun'
-  | 'bolt';
-
-const ICON_PATHS: Record<IconName, string> = {
-  list: 'M3 4h10M3 8h10M3 12h10',
-  // Select/Move (P2 2026-08-31): the classic arrow pointer, so the user
-  // always has a visible way back to grabbing / rotating / deleting an object.
-  cursor: 'M3 2L3 12L5.6 9.4L7.2 13L8.7 12.3L7.1 8.9L10.5 8.9Z',
-  pen: 'M3 13l1-3.5L11 2.5l2.5 2.5-7 7L3 13zM9.5 4l2.5 2.5',
-  door: 'M4 14V2h8v12M4 14h8M10 8.5v.5',
-  roller: 'M2.5 3.5h9a1 1 0 011 1v1.5a1 1 0 01-1 1h-9a1 1 0 01-1-1V4.5a1 1 0 011-1zM12.5 5h1.5v3H8v2M8 10v3.5',
-  // Floor tool (2026-08-30): a 2 × 2 tile lattice, not the paint roller —
-  // the customer lays tiles they buy, they do not paint.
-  tiles: 'M2.5 2.5h4.5v4.5H2.5zM9 2.5h4.5v4.5H9zM2.5 9h4.5v4.5H2.5zM9 9h4.5v4.5H9z',
-  ruler: 'M2 11l9-9 3 3-9 9-3-3zM5 8l1.5 1.5M7 6l1.5 1.5M9 4l1.5 1.5',
-  box: 'M2.5 3.5h11v9h-11z',
-  polygon: 'M3 3h6l4 4v6H3zM9 3v4h4',
-  swatch: 'M2.5 2.5h11v11h-11zM2.5 8h11M8 2.5v11',
-  storeys: 'M2 5l6-3 6 3-6 3-6-3zM2 8l6 3 6-3M2 11l6 3 6-3',
-  plot: 'M2.5 2.5h3M10.5 2.5h3M2.5 13.5h3M10.5 13.5h3M2.5 2.5v3M2.5 10.5v3M13.5 2.5v3M13.5 10.5v3',
-  snap: 'M4 2v6a4 4 0 008 0V2M4 2h2M10 2h2M4 6h2M10 6h2',
-  grid: 'M2 6h12M2 10h12M6 2v12M10 2v12',
-  cube: 'M8 2l5.5 3v6L8 14l-5.5-3V5L8 2zM8 8l5.5-3M8 8v6M8 8L2.5 5',
-  undo: 'M3 7h7a3 3 0 010 6H7M3 7l3-3M3 7l3 3',
-  redo: 'M13 7H6a3 3 0 000 6h3M13 7l-3-3M13 7l-3 3',
-  cart: 'M2 3h2l1.5 7h6.5l1.5-5H5M6.5 13a.5.5 0 100 .01M11.5 13a.5.5 0 100 .01',
-  more: 'M8 3.5v.01M8 8v.01M8 12.5v.01',
-  menu: 'M2 4h12M2 8h12M2 12h12',
-  close: 'M4 4l8 8M12 4l-8 8',
-  view: 'M2 8s2.5-4 6-4 6 4 6 4-2.5 4-6 4-6-4-6-4zM8 9.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z',
-  room: 'M2.5 13.5v-8l5.5-3 5.5 3v8h-11zM6.5 13.5v-4h3v4',
-  send: 'M2.5 8l11-5.5-3 11-2.5-4.5L2.5 8z',
-  // Remove tool (2026-08-31): a sledgehammer — head top-right, handle down-left.
-  hammer: 'M8.5 2.5l5 5-2 2-5-5zM6.5 7l-4 4.5 1.5 1.5 4.5-4z',
-  // Eco / solar (2026-09-04): a flat slab with a panel on it (roof), a sun,
-  // and a bolt for the energy readout.
-  roof: 'M2 9.5l6-5 6 5M3.5 8.5v5h9v-5M6 10.5h4v2H6z',
-  sun: 'M8 5.25a2.75 2.75 0 100 5.5 2.75 2.75 0 000-5.5zM8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M12.6 3.4l-1 1M4.4 11.6l-1 1',
-  bolt: 'M9 1.5L3.5 9h4l-.5 5.5L12 7H8z',
-};
-
-function Icon({ name, size = 16, className = '' }: { name: IconName; size?: number; className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 16 16"
-      width={size}
-      height={size}
-      className={`shrink-0 ${className}`}
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d={ICON_PATHS[name]}
-      />
-    </svg>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Tiny helpers — media query + portal popover. Kept in this file (P1 owns
@@ -1203,6 +1114,22 @@ export function TopBar({
   // must not mount at all (the sheet's material rows arm the brush instead).
   const isMd = useMedia('(min-width: 768px)');
   const [sizeOpen, setSizeOpen] = useState(false);
+  const [planToolShelf, setPlanToolShelf] = useState<'build' | 'finish' | 'arrange'>('build');
+  const [planToolShelfOpen, setPlanToolShelfOpen] = useState(false);
+  const gardenActive = useGardenEditorStore(s => s.panelOpen || s.placement !== null);
+  const currentToolLabel = floorPaintActive ? 'Floor' : wallPaintActive ? 'Paint' : claddingActive ? 'Cladding' : measureActive ? 'Measure' : removeActive ? 'Remove' : doorActive ? 'Openings' : drawMode || wallActive ? 'Walls' : gardenActive ? 'Garden' : 'Select';
+  useEffect(() => {
+    if (!planToolShelfOpen) return;
+    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') setPlanToolShelfOpen(false); };
+    window.addEventListener('keydown', escape);
+    return () => window.removeEventListener('keydown', escape);
+  }, [planToolShelfOpen]);
+  // Keyboard shortcuts and context menus reveal the same task shelf as clicks.
+  useEffect(() => {
+    if (floorPaintActive || wallPaintActive || claddingActive) setPlanToolShelf('finish');
+    else if (measureActive || removeActive) setPlanToolShelf('arrange');
+    else if (drawMode || wallActive || doorActive || sizeOpen) setPlanToolShelf('build');
+  }, [floorPaintActive, wallPaintActive, claddingActive, measureActive, removeActive, drawMode, wallActive, doorActive, sizeOpen]);
   const [moreOpen, setMoreOpen] = useState(false);
 
   const boxRef = useRef<HTMLButtonElement>(null);
@@ -1748,11 +1675,10 @@ export function TopBar({
           </button>
         )}
 
-        {/* Tweak 07 (Phase A.0) — UNDO / REDO. Desktop only: the canvas
-            carries mobile-undo / mobile-redo. The undo button arms-then-fires
-            on coarse-pointer devices per §7 (long-press confirm). */}
+        {/* History shares the expandable Site shelf on phone, keeping the
+            resting canvas clear. Coarse pointers still confirm undo. */}
         <div
-          className={stacked ? 'mt-1 flex gap-2 border-t border-ppw-rim pt-2' : `${SEG_GROUP} hidden md:inline-flex`}
+          className={stacked ? 'mt-1 flex gap-2 border-t border-ppw-rim pt-2' : `${SEG_GROUP} inline-flex`}
           role="group"
           aria-label="History"
         >
@@ -1875,7 +1801,14 @@ export function TopBar({
         {/* ---- md+: rail A — BUILD. shrink-0; the Box|Custom segment follows
             OUTSIDE the rails because its Custom half is the phone strip's
             "Walls" button too (one node, one testid, every width). ---- */}
-        <div className="plan-build-tools" aria-label="Construction tools" onClickCapture={() => useGardenEditorStore.getState().close()}>
+        <div className="plan-build-tools" data-task={planToolShelf} data-expanded={planToolShelfOpen} aria-label="Construction tools" onClickCapture={event => {
+          useGardenEditorStore.getState().close();
+          if (event.target instanceof Element && event.target.closest('[data-tool-category], [data-testid="select-tool-toggle"], .plan-garden-tool')) setPlanToolShelfOpen(false);
+        }}>
+          <div className="studio-tool-categories" role="group" aria-label="Plan tool categories">
+            {([['build', 'Build', 'room'], ['finish', 'Finish', 'swatch'], ['arrange', 'Arrange', 'move']] as const).map(([task, label, icon]) => <button key={task} type="button" aria-pressed={planToolShelf === task} aria-expanded={isMd ? undefined : planToolShelfOpen && planToolShelf === task} onClick={() => { handleSelect(); setSizeOpen(false); setPlanToolShelf(task); setPlanToolShelfOpen(!planToolShelfOpen || planToolShelf !== task); }}><Icon name={icon} /><span>{label}</span></button>)}
+          </div>
+          <button type="button" className="studio-active-tool" data-testid="plan-active-tool" data-active={currentToolLabel !== 'Select'} aria-label={currentToolLabel === 'Select' ? 'Select and move objects' : `Stop ${currentToolLabel.toLowerCase()} tool`} title="Return to Select (Esc)" onClick={() => { handleSelect(); setPlanToolShelfOpen(false); }}><Icon name={currentToolLabel === 'Select' ? 'cursor' : 'close'} size={16} /><span>{currentToolLabel}</span></button>
           <span className={DIVIDER} aria-hidden="true" />
 
           {/* 2 BUILD — segmented: Walls · Door · Paint · Measure. Walls keeps
@@ -1899,6 +1832,7 @@ export function TopBar({
               type="button"
               onClick={handleToggleWall}
               data-testid="wall-tool-toggle"
+              data-tool-category="build"
               className={segOn(drawMode || wallActive)}
               title="Walls — click to drop points. Close the shape for a room, or press Finish walls to leave them open. +/- change the unit mid-draw."
               aria-pressed={drawMode || wallActive}
@@ -1911,6 +1845,7 @@ export function TopBar({
               type="button"
               onClick={handleToggleDoor}
               data-testid="door-tool-toggle"
+              data-tool-category="build"
               className={segOn(doorActive)}
               title="Door — hover a wall to place a door, doorway or window; click an existing one to remove it. F flips which way it opens, H swaps the hinge."
               aria-pressed={doorActive}
@@ -1923,6 +1858,7 @@ export function TopBar({
               type="button"
               onClick={handleToggleFloorPaint}
               data-testid="floor-paint-toggle"
+              data-tool-category="finish"
               className={segOn(floorPaintActive)}
               title="Floor — click a tile, drag an area, or Room to lay the whole room. Shift fills the room, Ctrl erases."
               aria-pressed={floorPaintActive}
@@ -1937,6 +1873,7 @@ export function TopBar({
               type="button"
               onClick={handleToggleWallPaint}
               data-testid="wallpaint-tool-toggle"
+              data-tool-category="finish"
               className={segOn(wallPaintActive)}
               title="Wall paint — click a wall to paint it with a Sofap colour; the plan lifts to show the walls. Room paints every wall of the room."
               aria-pressed={wallPaintActive}
@@ -1950,6 +1887,7 @@ export function TopBar({
               type="button"
               onClick={handleToggleCladding}
               data-testid="cladding-tool-toggle"
+              data-tool-category="finish"
               className={segOn(claddingActive)}
               title="Cladding — sample demo boards. Click a wall to clad it. Not a real Spa Concept product."
               aria-pressed={claddingActive}
@@ -1963,6 +1901,7 @@ export function TopBar({
               type="button"
               onClick={handleToggleMeasure}
               data-testid="measure-tool-toggle"
+              data-tool-category="arrange"
               className={segOn(measureActive)}
               title="Measure (M) — click any wall to retype its exact length"
               aria-pressed={measureActive}
@@ -1977,6 +1916,7 @@ export function TopBar({
               type="button"
               onClick={handleToggleRemove}
               data-testid="remove-tool-toggle"
+              data-tool-category="arrange"
               className={segOn(removeActive)}
               title="Remove — click a wall or an object to delete it (Esc to stop)"
               aria-pressed={removeActive}
@@ -1987,8 +1927,8 @@ export function TopBar({
             </button>
           </div>
 
-          <button type="button" className="plan-garden-tool" aria-label="Garden" title="Garden — draw, move and resize outdoor surfaces" data-testid="plan-garden-toggle" onClick={() => { handleSelect(); window.dispatchEvent(new CustomEvent('ppw:open-garden')); }}>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21v-6m0 0C3 17 3 7 3 7s9-1 9 8Zm0 0C21 17 21 4 21 4s-9 0-9 11Z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg><span>Garden</span>
+          <button type="button" className="plan-garden-tool" aria-label="Garden" aria-pressed={gardenActive} title="Garden — draw, move and resize outdoor surfaces" data-testid="plan-garden-toggle" onClick={() => { handleSelect(); window.dispatchEvent(new CustomEvent('ppw:open-garden')); }}>
+            <Icon name="garden" /><span>Garden</span>
           </button>
         {/* 3 ROOM & PLAN — Box | Custom. Always inline, every width. On the
             phone only the Custom half shows and reads "Walls" (the strip's
@@ -2000,6 +1940,7 @@ export function TopBar({
             indicator. The checked-at-rest half reads as a rail wash. */}
         <div
           className="plan-room-shape inline-flex shrink-0 overflow-hidden rounded-lg border border-ppw-rim"
+          data-tool-category="build"
           role="radiogroup"
           aria-label="Room shape"
         >
@@ -2043,7 +1984,7 @@ export function TopBar({
 
           <span className={`${DIVIDER} mr-0`} aria-hidden="true" />
           {viewMode === 'plan' && hasDrawnWalls && !drawMode && !wallActive && !onRoof && (
-            <div className="plan-wall-height" data-testid="wall-height-hud" data-placement="left" data-dock="construction-rail" role="group" aria-label="Wall height">
+            <div className="plan-wall-height" data-tool-category="arrange" data-testid="wall-height-hud" data-placement="left" data-dock="construction-rail" role="group" aria-label="Wall height">
               <span className="sr-only" data-testid="wall-height-hud-label">Wall height</span>
               <span className="sr-only" data-testid="wall-height-hud-note">{activeLevel.name} · steps of 0.1 m</span>
               <WallHeightControl idPrefix="wall-height" />
@@ -2224,11 +2165,11 @@ export function TopBar({
 
       <div className="plan-navigation" data-testid="plan-navigation" aria-label="Plan and view controls">
         <div className="studio-view-switch" aria-label="Design view">
-          <button type="button" aria-pressed="true">2D Plan</button>
-          <button type="button" onClick={() => { if (drawMode) setDrawMode(false); setViewMode('3d'); }}>3D House</button>
+          <button type="button" aria-label="2D Plan" aria-pressed="true"><Icon name="box" size={18} /><span>2D <span className="studio-view-word">Plan</span></span></button>
+          <button type="button" aria-label="3D House" onClick={() => { if (drawMode) setDrawMode(false); setViewMode('3d'); }}><Icon name="cube" size={18} /><span>3D <span className="studio-view-word">House</span></span></button>
         </div>
-        <button type="button" className="studio-settings-toggle" aria-expanded={workspaceSettingsOpen} aria-controls="studio-plan-settings" onClick={() => { setWorkspaceSettingsOpen(!workspaceSettingsOpen); setLevelsOpen(false); setLandOpen(false); setUnitOpen(false); }}>
-          <Icon name="storeys" /><span>Site &amp; tools</span><span aria-hidden="true">{workspaceSettingsOpen ? '−' : '+'}</span>
+        <button type="button" className="studio-settings-toggle" aria-label="Site & tools" title="Floors, roof, plot and precision" aria-expanded={workspaceSettingsOpen} aria-controls="studio-plan-settings" onClick={() => { setWorkspaceSettingsOpen(!workspaceSettingsOpen); setLevelsOpen(false); setLandOpen(false); setUnitOpen(false); }}>
+          <Icon name="settings" /><span>Site &amp; tools</span>
         </button>
       </div>
       <div id="studio-plan-settings" className="studio-plan-settings" hidden={!workspaceSettingsOpen}>

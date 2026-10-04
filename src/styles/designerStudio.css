@@ -511,3 +511,178 @@
   .designer-app[data-view="plan"] .plan-view-toolbar [data-testid="clear-all-button"] { min-width: 44px; width: 44px; padding: 2px; gap: 2px; font-size: 10px; }
 }
 @media(prefers-reduced-motion:reduce) { .designer-app button { transition: none; transform: none !important; } }
+
+/* Task shelves: one tactile navigation language in Plan and House. The editing
+   tools are in flow, never over the model. Secondary tools use progressive
+   disclosure; changing shelves has no relationship to the camera or geometry. */
+.designer-app, .house-tool-panel, .house-tool-panel-host {
+  --studio-paper: #e9e8e1;
+  --studio-surface: #f1f0e9;
+  --studio-field: #e1e2d9;
+  --studio-cap: linear-gradient(145deg,#f8f7f0 2%,#eeede5 47%,#dedfd5);
+  --studio-mint-cap: linear-gradient(145deg,#e0f9eb 1%,#bfe7d2 48%,#a3d6ba);
+  --studio-lift: 7px 8px 17px #a1a69770,-6px -6px 15px #ffffffed,inset 1px 1px 1px #fff,inset -1px -1px 1px #aab09c55;
+  --studio-small-lift: 3px 4px 6px #a0a69373,-3px -3px 6px #fff,inset 0 1px 1px #fff;
+  --studio-inset: inset 3px 3px 6px #aab19c70,inset -3px -3px 6px #ffffffde;
+}
+.designer-app .studio-icon { overflow: visible; flex-shrink: 0; }
+.designer-app :is(.studio-view-switch,.house-view-switch) button {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+.designer-app[data-view="plan"] { --plan-rail-w: 0px; }
+.designer-app[data-view="plan"] > main { padding-left: 0; }
+.designer-app[data-view="plan"] [data-testid="page-tabs"] { padding-left: 16px; height: 38px; min-height: 38px; padding-block: 4px; }
+.designer-app .plan-topbar { padding: 9px 18px 7px; row-gap: 10px; }
+.designer-app .plan-navigation { grid-row: 1; grid-column: 2; padding: 0; }
+.designer-app .plan-topbar .plan-build-tools {
+  position: relative; inset: auto; grid-column: 1 / -1; grid-row: 2;
+  display: flex; flex-direction: row; justify-content: center; align-items: center;
+  width: max-content; max-width: 100%; height: auto; max-height: none;
+  justify-self: center; overflow: visible; gap: 9px; padding: 7px 10px;
+  background: var(--studio-field); border: 0; border-radius: 24px;
+  box-shadow: var(--studio-inset); backdrop-filter: none;
+}
+.designer-app .plan-topbar .plan-build-tools button {
+  display: inline-flex; flex-direction: column; justify-content: center; align-items: center;
+  width: 58px; min-width: 0; height: 45px; min-height: 45px; padding: 4px;
+  border: 0; border-radius: 15px; gap: 4px; font-size: 9px;
+  background: transparent; box-shadow: none; color: #536256; text-shadow: none;
+}
+.designer-app .plan-topbar .plan-build-tools button:is(:hover,[aria-pressed="true"],[aria-expanded="true"]) {
+  background: var(--studio-cap); box-shadow: var(--studio-small-lift); color: #254a37;
+}
+.designer-app .plan-topbar .plan-build-tools .studio-tool-categories {
+  display: flex; flex-direction: row; align-items: center; gap: 7px; padding: 0 12px 0 0;
+  margin-right: 2px; border: 0; border-right: 1px solid #aeb7a56b; order: -10;
+}
+.designer-app .plan-topbar .studio-tool-categories button {
+  width: auto; min-width: 78px; flex-direction: row; gap: 7px; padding: 0 10px;
+  font-size: 11px; font-weight: 600; border-radius: 16px;
+}
+.designer-app .plan-topbar .studio-tool-categories button[aria-pressed="true"] {
+  background: var(--studio-mint-cap); box-shadow: var(--studio-small-lift); color: #254f3b;
+}
+.designer-app .plan-topbar .plan-build-tools[data-task="build"] [data-tool-category]:not([data-tool-category="build"]),
+.designer-app .plan-topbar .plan-build-tools[data-task="finish"] [data-tool-category]:not([data-tool-category="finish"]),
+.designer-app .plan-topbar .plan-build-tools[data-task="arrange"] [data-tool-category]:not([data-tool-category="arrange"]) { display: none; }
+.designer-app .plan-topbar .plan-build-tools .plan-garden-tool { order: 10; }
+.designer-app .plan-topbar .plan-build-tools .studio-active-tool { display: none; }
+.designer-app [data-testid="page-tabs"] { overflow: hidden; }
+.designer-app .page-tabs-scroll { display: flex; flex: 1; align-items: center; min-width: 0; gap: 8px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; padding: 3px; }
+.designer-app .page-tabs-scroll::-webkit-scrollbar { display: none; }
+.designer-app [data-testid="page-tab-delete"] { flex-shrink: 0; }
+.designer-app .plan-topbar .plan-build-tools [data-testid="room-draw-toggle"] .md\:hidden { display: none; }
+.designer-app .plan-topbar .plan-build-tools [data-testid="room-draw-toggle"] .hidden { display: block; }
+.designer-app .plan-topbar .plan-build-tools [data-testid="room-draw-toggle"][aria-checked="true"] {
+  background: var(--studio-mint-cap); box-shadow: var(--studio-small-lift); color: #254f3b;
+}
+.designer-app .plan-topbar .plan-build-tools .plan-wall-height {
+  position: relative; inset: auto; width: auto; padding: 0 3px; border: 0;
+}
+.designer-app[data-view="plan"] [data-testid="wall-height-control"] { display: flex; align-items: center; width: auto; gap: 5px; }
+.designer-app[data-view="plan"] [data-testid="wall-height-control"] button { width: 32px; min-height: 40px; height: 40px; border-radius: 12px; font-size: 15px; }
+.designer-app[data-view="plan"] [data-testid="wall-height-readout"] { min-width: 40px; padding: 0 2px; font-size: 11px; }
+.designer-app .studio-plan-settings { grid-row: 3; }
+.designer-app .plan-options-host { grid-row: 4; }
+.designer-app[data-view="plan"] .plan-view-toolbar { min-height: 46px; padding: 3px 12px 5px; }
+.designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools > div:first-child { box-shadow: none; background: transparent; border: 0; }
+.designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools > div:first-child > button { box-shadow: none; background: transparent; }
+.designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools > div:first-child > button:hover { background: var(--studio-cap); box-shadow: var(--studio-small-lift); }
+.designer-app .house-header { min-height: 67px; height: 67px; padding-block: 9px; }
+.designer-app .house-project-actions > button { display: inline-flex; align-items: center; justify-content: center; }
+.designer-app .house-rail { width: 75px; padding: 8px; gap: 6px; box-shadow: var(--studio-inset); background: var(--studio-field); border: 0; }
+.designer-app .house-rail button { width: 59px; min-height: 57px; height: 57px; border: 0; background: transparent; box-shadow: none; text-shadow: none; font-size: 9px; }
+.designer-app .house-rail button:hover { background: var(--studio-cap); box-shadow: var(--studio-small-lift); }
+.designer-app .house-rail button[aria-pressed="true"] { background: var(--studio-mint-cap); box-shadow: var(--studio-small-lift); }
+.designer-app .house-rail button svg { width: 24px; height: 24px; filter: none; }
+.designer-app .house-main { padding-left: 99px; }
+.designer-app .house-scene-bar { padding: 5px 8px 8px; gap: 10px; }
+.designer-app .house-scene-actions { box-shadow: none; background: transparent; gap: 5px; padding: 0; }
+.designer-app .house-scene-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; background: transparent; box-shadow: none; border: 0; }
+.designer-app .house-scene-actions button:is(:hover,[aria-pressed="true"]) { background: var(--studio-cap); box-shadow: var(--studio-small-lift); }
+.designer-app .house-scene-actions button[aria-pressed="true"] { background: var(--studio-mint-cap); }
+.designer-app .house-opening-tools button > span { margin: 0; color: inherit; font-size: inherit; }
+.designer-app .house-scene-bar > .house-quick-tools { display: none; }
+.designer-app .house-camera-row { background: var(--studio-field); box-shadow: var(--studio-inset); border: 0; padding: 6px; gap: 6px; }
+.designer-app .house-camera-row > button { box-shadow: none; background: transparent; border: 0; }
+.designer-app .house-camera-row > button:is(:hover,[aria-pressed="true"],[aria-expanded="true"]) { background: var(--studio-cap); box-shadow: var(--studio-small-lift); }
+.designer-app .house-camera-row > button[aria-pressed="true"] { background: var(--studio-mint-cap); }
+.designer-app .house-camera-row .house-view-options-trigger { margin-left: 4px; background: var(--studio-cap); box-shadow: var(--studio-small-lift); }
+@media(min-width:768px) and (max-width:1199px) {
+  .designer-app .plan-topbar { grid-template-columns: minmax(130px,1fr) auto auto; column-gap: 10px; }
+  .designer-app .plan-commerce { grid-column: 3; }
+  .designer-app .plan-navigation { grid-column: 2; }
+  .designer-app .plan-identity > button { max-width: 145px; }
+  .designer-app .plan-identity [data-testid="demo-pill"] { display: none; }
+  .designer-app .studio-settings-toggle > span { display: none; }
+  .designer-app .studio-settings-toggle { width: 40px; padding: 0; }
+  .designer-app .plan-topbar .plan-build-tools { gap: 5px; }
+  .designer-app .plan-topbar .studio-tool-categories button { min-width: 70px; padding: 0 8px; }
+  .designer-app .house-scene-actions button { flex-direction: column; gap: 3px; padding: 4px 8px; font-size: 10px; }
+  .designer-app .house-scene-bar { gap: 6px; }
+  .designer-app .house-brand { min-width: 120px; }
+}
+@media(max-width:767px) {
+  .designer-app .plan-topbar { grid-template-columns: minmax(0,1fr) 44px 44px; padding: 7px 9px 5px; gap: 7px; min-height: 0; }
+  .designer-app .plan-identity { display: contents; }
+  .designer-app .plan-identity > :not([data-testid="rooms-trigger"]) { display: none; }
+  .designer-app .plan-topbar .plan-identity > [data-testid="rooms-trigger"] { grid-column: 2; grid-row: 1; display: flex; align-items: center; justify-content: center !important; min-width: 44px; max-width: 44px; width: 44px; height: 44px; padding: 0; background: var(--studio-cap); box-shadow: var(--studio-small-lift); border-radius: 15px; }
+  .designer-app .plan-identity > [data-testid="rooms-trigger"] > span { display: none; }
+  .designer-app .plan-navigation { grid-column: 1; grid-row: 1; justify-content: space-between; gap: 8px; padding: 0; }
+  .designer-app .studio-view-word { display: none; }
+  .designer-app :is(.studio-view-switch,.house-view-switch) { border-radius: 19px; padding: 4px; gap: 3px; }
+  .designer-app :is(.studio-view-switch,.house-view-switch) button { min-height: 36px; padding: 5px 12px; font-size: 11px; gap: 6px; }
+  .designer-app .studio-settings-toggle { min-height: 44px; width: 44px; padding: 0; }
+  .designer-app .studio-settings-toggle > span { display: none; }
+  .designer-app .plan-topbar .plan-primary-row > button[aria-label="Open menu"] { grid-area: 1 / 3 / 2 / 4; width: 44px; height: 44px; background: var(--studio-cap); box-shadow: var(--studio-small-lift); border-radius: 15px; }
+  .designer-app .plan-topbar .plan-build-tools { width: 100%; flex-wrap: wrap; gap: 4px; border-radius: 20px; padding: 5px; justify-content: center; }
+  .designer-app .plan-topbar .plan-build-tools .studio-tool-categories { width: auto; flex: 1; margin: 0; padding: 0; border: 0; gap: 4px; }
+  .designer-app .plan-topbar .studio-tool-categories button { flex: 1; height: 38px; min-height: 38px; flex-direction: row; gap: 7px; width: auto; font-size: 11px; }
+  .designer-app .plan-topbar .plan-build-tools button { flex-shrink: 1; width: 44px; height: 43px; min-height: 43px; font-size: 8px; border-radius: 13px; gap: 3px; }
+  .designer-app .plan-topbar .plan-build-tools button svg { width: 20px; height: 20px; }
+  .designer-app .plan-topbar .plan-build-tools .studio-tool-categories button { width: auto; min-width: 0; min-height: 38px; height: 38px; padding: 0 5px; gap: 5px; font-size: 10px; flex-direction: row; }
+  .designer-app .plan-topbar .plan-build-tools .studio-tool-categories svg { width: 18px; height: 18px; }
+  .designer-app .plan-topbar .plan-build-tools .studio-active-tool { display: inline-flex; flex-direction: row; width: auto; min-width: 55px; height: 38px; min-height: 38px; padding: 3px 6px; gap: 3px; order: -9; font-size: 9px; background: var(--studio-cap); box-shadow: var(--studio-small-lift); }
+  .designer-app .plan-topbar .plan-build-tools .studio-active-tool[data-active="true"] { background: var(--studio-mint-cap); }
+  .designer-app .plan-topbar .plan-build-tools .studio-active-tool svg { width: 16px; height: 16px; }
+  .designer-app .plan-topbar .plan-build-tools[data-expanded="false"] > :not(.studio-tool-categories):not(.studio-active-tool),
+  .designer-app .plan-topbar .plan-build-tools[data-expanded="false"] > [aria-label="Build tools"] > button { display: none; }
+  .designer-app .plan-topbar .plan-build-tools[data-expanded="true"]::after { content: ''; order: -8; width: 100%; height: 1px; margin: 1px 4px; background: #aeb7a54d; }
+  .designer-app[data-view="plan"] [data-testid="page-tabs"] { padding-left: 10px; height: 34px; min-height: 34px; padding-block: 3px; gap: 6px; }
+  .designer-app .page-tabs-scroll { gap: 6px; }
+  .designer-app [data-testid="page-tab-delete"] { width: 32px; min-width: 32px; justify-content: center; padding: 0 !important; color: #81594d; }
+  .designer-app .page-delete-label { display: none; }
+  .designer-app[data-view="plan"] [data-testid="wall-height-control"] button { min-height: 40px; width: 27px; }
+  .designer-app .house-header { display: flex; height: 61px; min-height: 61px; padding: 7px 8px; gap: 7px; }
+  .designer-app .house-brand { display: none; }
+  .designer-app .house-view-switch { margin: 0; flex-shrink: 0; }
+  .designer-app .house-view-switch button { padding-inline: 8px; }
+  .designer-app .house-project-actions { flex: 1; width: auto; justify-content: flex-end; gap: 6px; }
+  .designer-app .house-project-actions > button { min-width: 36px; width: 36px; height: 40px; min-height: 40px; padding: 0; border-radius: 13px; }
+  .designer-app .house-project-actions > :is([aria-label="Undo"],[aria-label="Redo"],.house-save) { display: none; }
+  .designer-app .house-project-actions .ai-design-trigger { margin: 0; min-width: 36px; width: 36px; padding: 0; }
+  .designer-app .house-project-actions [data-testid="clear-all-button"] { min-width: 42px; width: 42px; font-size: 10px; padding: 0; }
+  .designer-app .house-main { padding-left: 0; padding-bottom: 67px; }
+  .designer-app .house-rail { inset: auto 6px 6px; width: auto; height: 56px; padding: 4px; gap: 3px; border-radius: 20px; }
+  .designer-app .house-rail button { width: auto; height: 48px; min-height: 48px; gap: 4px; font-size: 8px; border-radius: 14px; }
+  .designer-app .house-rail button svg { width: 21px; height: 21px; }
+  .designer-app .house-scene-bar { min-height: 48px; height: auto; flex-wrap: wrap; padding: 3px 8px 6px; gap: 6px; justify-content: flex-start; }
+  .designer-app .house-floor-picker select { max-width: 93px; min-height: 38px; padding: 4px 7px; }
+  .designer-app .house-status-dot { display: none; }
+  .designer-app .house-cost-pill { flex-direction: column; min-height: 38px; padding: 4px 8px; gap: 1px; border-radius: 13px; }
+  .designer-app .house-cost-pill > span { font-size: 8px; }
+  .designer-app .house-cost-pill strong { font-size: 10px; }
+  .designer-app .house-scene-bar > .house-quick-tools { display: flex; margin-left: auto; gap: 5px; }
+  .designer-app .house-quick-tools button { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; min-width: 36px; gap: 4px; padding: 4px 7px; border-radius: 13px; font-size: 10px; background: var(--studio-cap); box-shadow: var(--studio-small-lift); }
+  .designer-app .house-quick-tools button:is([aria-pressed="true"],[aria-expanded="true"]) { background: var(--studio-mint-cap); }
+  .designer-app .house-workspace[data-build-open="false"] .house-scene-actions { display: none; }
+  .designer-app .house-workspace[data-build-open="true"] .house-scene-actions { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); width: 100%; padding: 5px; gap: 5px !important; background: var(--studio-field); border-radius: 17px; box-shadow: var(--studio-inset); }
+  .designer-app .house-scene-actions button { flex-direction: column; gap: 4px; min-height: 44px !important; padding: 4px !important; font-size: 9px; }
+  .designer-app .house-scene-actions:has(.house-opening-tools) .house-details-button { grid-column: auto; }
+  .designer-app .house-view-dock { padding: 5px 0 3px; }
+  .designer-app .house-camera-row { max-width: calc(100% - 16px); min-height: 44px; padding: 4px; gap: 4px; border-radius: 18px; overflow: visible; }
+  .designer-app .house-camera-row > button { min-width: 34px; min-height: 36px; height: 36px; padding: 4px; }
+  .designer-app .house-camera-row [data-testid="view3d-pan"] > span { display: none; }
+  .designer-app .house-camera-row .house-view-options-trigger { margin-left: 0; padding: 4px 8px; gap: 4px; }
+  .designer-app .house-camera-row .house-view-options-trigger svg { width: 16px; }
+}

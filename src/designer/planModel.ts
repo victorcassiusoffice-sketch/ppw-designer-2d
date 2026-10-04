@@ -40,3 +40,28 @@ export function planPhotoLightBalance(rig: { hemi: number; sun: number; fill: nu
   if (!(incidence > 0)) return rig;
   return { hemi: rig.hemi - transfer, sun: rig.sun + transfer / incidence, fill: rig.fill };
 }
+
+export interface PlanShadowDirection { x: number; y: number }
+export interface PlanShadowFrame {
+  xM: number; yM: number; widthM: number; depthM: number;
+  itemWidthM: number; itemDepthM: number;
+}
+
+/** The shadow photograph has a larger canvas than the sold product. Its
+ * world-metre bounds are separate, so the body and hit target never grow. */
+export function planModelShadowFrame(product: Product, rotationDeg: number, direction: PlanShadowDirection): PlanShadowFrame {
+  const { lengthM, widthM, heightM } = planModelSolid(product);
+  const angle = rotationDeg * Math.PI / 180;
+  const itemWidthM = lengthM * Math.abs(Math.cos(angle)) + widthM * Math.abs(Math.sin(angle));
+  const itemDepthM = lengthM * Math.abs(Math.sin(angle)) + widthM * Math.abs(Math.cos(angle));
+  const dx = heightM * direction.x, dy = heightM * direction.y;
+  const padding = 0.08;
+  const xM = Math.min(0, dx) - padding, yM = Math.min(0, dy) - padding;
+  return { xM, yM, widthM: itemWidthM + Math.abs(dx) + padding * 2,
+    depthM: itemDepthM + Math.abs(dy) + padding * 2, itemWidthM, itemDepthM };
+}
+
+export function planModelShadowKey(product: Product, rotationDeg: number, direction: PlanShadowDirection): string {
+  const rotation = ((rotationDeg % 360) + 360) % 360;
+  return `${planModelKey(product)}:shadow:${rotation.toFixed(2)}:${direction.x.toFixed(3)}:${direction.y.toFixed(3)}`;
+}

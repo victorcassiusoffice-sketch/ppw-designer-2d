@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { NATURAL_BARE_FLOOR_HEX } from '../../designer/architecturalSurface';
+import type { FloorSurface } from './surfaces';
 
 export type ScenePresentation = 'studio' | 'architectural' | 'natural';
 
@@ -90,7 +92,17 @@ export function applyContentPresentation(root: THREE.Object3D, presentation: Sce
       const physical = material as THREE.MeshPhysicalMaterial;
       if (surface === 'reveal' || surface === 'cap' || surface === 'exterior') physical.color.set(profile[surface]);
       if (surface === 'floor' && typeof material.userData.floorHex === 'string') {
-        physical.color.set(material.userData.floorHex).multiplyScalar(profile.floorGain);
+        const unfinished = material.userData.unfinishedSurfaces as { colourCheck: FloorSurface; natural: FloorSurface } | undefined;
+        physical.color.set(unfinished && presentation === 'natural' ? NATURAL_BARE_FLOOR_HEX : material.userData.floorHex).multiplyScalar(profile.floorGain);
+        if (unfinished) {
+          const texture = presentation === 'natural' ? unfinished.natural : unfinished.colourCheck;
+          if (physical.map !== texture.map) {
+            physical.map = texture.map;
+            physical.normalMap = texture.normalMap;
+            physical.normalScale.setScalar(texture.normalScale);
+            physical.needsUpdate = true;
+          }
+        }
       }
       if (surface === 'corner') material.opacity = profile.cornerAlpha;
       if (surface === 'contact') material.opacity = profile.contactAlpha;

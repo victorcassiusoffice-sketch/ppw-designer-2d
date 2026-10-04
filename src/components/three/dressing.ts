@@ -120,7 +120,9 @@ export function floorMesh(f: FloorSolid, kind: FloorKind, tileM: number, env: TH
     envMapIntensity: s.sheen * 0.4,
   });
   const mesh = new THREE.Mesh(geo, mat);
-  mat.userData = { stageSurface: 'floor', floorHex: f.hex };
+  mat.userData = { stageSurface: 'floor', floorHex: f.hex,
+    ...(kind === 'screed' ? { unfinishedSurfaces: { colourCheck: s, natural: bareMineralSurface(true) } } : {}),
+  };
   mesh.position.y = (f.elevationM ?? 0) + 0.001;
   mesh.receiveShadow = true;
   mesh.userData = { key: f.key, floor: true, kind };

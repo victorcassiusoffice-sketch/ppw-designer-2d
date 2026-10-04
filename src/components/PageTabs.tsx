@@ -19,6 +19,7 @@ import { usePropertyStore } from '../store/propertyStore';
 import { useToastStore } from '../store/toastStore';
 import { isDrawnPolygon } from '../designer/roomLayout';
 import { switchToPage, createPage } from '../lib/pages';
+import { StudioIcon } from './StudioIcon';
 
 const TAB_BASE =
   'inline-flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border px-3 text-[12px] font-medium leading-none ' +
@@ -77,11 +78,10 @@ export function PageTabs(): JSX.Element | null {
 
   return (
     <div
-      className="flex items-center gap-2 overflow-x-auto border-b border-ppw-rim bg-ppw-rail px-3 py-1.5"
+      className="flex shrink-0 items-center gap-2 overflow-hidden border-b border-ppw-rim bg-ppw-rail px-3 py-1.5"
       data-testid="page-tabs"
-      role="tablist"
-      aria-label="Plans"
     >
+      <div className="page-tabs-scroll" role="tablist" aria-label="Plans">
       <span className="mr-1 shrink-0 text-[11px] font-semibold uppercase tracking-[0.06em] text-ppw-charcoal">
         Plans
       </span>
@@ -139,10 +139,10 @@ export function PageTabs(): JSX.Element | null {
         className={`${TAB_REST} w-10 justify-center px-0`}
         title="Start a separate plan — a different space or client"
       >
-        <svg viewBox="0 0 16 16" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" aria-hidden="true">
-          <path d="M8 3v10M3 8h10" />
-        </svg>
+        <StudioIcon name="plus" size={16} />
       </button>
+
+      </div>
 
       {pages.length > 1 && activeId !== DRAFT_ID && (
         <button
@@ -155,13 +155,12 @@ export function PageTabs(): JSX.Element | null {
             pushToast(`Deleted "${name}"`, 'info');
           }}
           data-testid="page-tab-delete"
+          aria-label="Delete plan"
           className={`${TAB_DANGER} ml-auto`}
           title="Delete this plan"
         >
-          <svg viewBox="0 0 16 16" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M3 4.5h10M6.5 4.5V3h3v1.5M5 4.5l.6 8.5h4.8l.6-8.5" />
-          </svg>
-          Delete plan
+          <StudioIcon name="trash" size={16} />
+          <span className="page-delete-label">Delete plan</span>
         </button>
       )}
     </div>

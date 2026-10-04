@@ -95,7 +95,6 @@ import {
   cameraPosition,
   clampCamera,
   DEFAULT_AZIMUTH_RAD,
-  DEFAULT_ELEVATION_RAD,
   drawScene,
   fitCamera,
   hitTestWall,
@@ -111,6 +110,7 @@ import {
 import type { SceneSolids } from '../designer/roomSolids';
 import type { ThreeStageHandle } from './three/ThreeStage';
 import type { ScenePresentation } from './three/renderPresentation';
+import { fitArchitecturalCamera } from '../designer/architecturalCamera';
 
 // The GL renderer and three itself arrive in their own chunk, on first use.
 const ThreeStage = lazy(() => import('./three/ThreeStage'));
@@ -571,6 +571,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   }, [onPaintFloor]);
 
   // Current bounds are used by the explicit Fit action, not by editing.
+  const buildingBounds = useMemo(() => {
+    const rooms = (buildingView === 'building' ? property.rooms : roomsOnLevel(property.rooms, level)).filter((r) => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon));
+    const walls = buildingView === 'building' ? property.walls ?? [] : wallsOnLevel(property.walls ?? [], level);
+    return boundsOf(rooms, walls);
+  }, [property, level, buildingView]);
   const sceneBounds = useMemo(() => {
     const rooms = (buildingView === 'building' ? property.rooms : roomsOnLevel(property.rooms, level)).filter((r) => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon));
     const walls = buildingView === 'building' ? property.walls ?? [] : wallsOnLevel(property.walls ?? [], level);
@@ -598,7 +603,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     if (size.width < 8 || size.height < 8) return;
     if (cameraPropertyId.current === property.id) return;
     const aspect = size.height > 0 ? size.width / size.height : 1.4;
-    const fitted = fitCamera(bounds, H, aspect);
+    // Start with the building as the subject. A lawn/large plot should remain
+    // surrounding context, not shrink the furnished rooms into a thumbnail.
+    const fitted = variant === 'overlay' ? fitArchitecturalCamera(buildingBounds ?? bounds, H, aspect) : fitCamera(bounds, H, aspect);
     fitted.target.z += baseElevation;
     cameraPropertyId.current = property.id;
     cameraViewportHeightRef.current = size.height;
@@ -1340,11 +1347,13 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const rotate = (deltaRad: number) => setCamera((c) => (c ? { ...c, azimuthRad: c.azimuthRad + deltaRad } : c));
   const refit = () => {
     if (!bounds) return;
-    const fitted = fitCamera(bounds, H, size.height > 0 ? size.width / size.height : 1.4);
+    const aspect = size.height > 0 ? size.width / size.height : 1.4;
+    const focusBounds = gardenOpen ? bounds : buildingBounds ?? bounds;
+    const fitted = variant === 'overlay' ? fitArchitecturalCamera(focusBounds, H, aspect) : fitCamera(bounds, H, aspect);
     fitted.target.z += baseElevation;
     baseDistanceRef.current = fitted.distanceM;
     cameraViewportHeightRef.current = size.height;
-    setCamera({ ...fitted, azimuthRad: DEFAULT_AZIMUTH_RAD, elevationRad: DEFAULT_ELEVATION_RAD });
+    setCamera(fitted);
   };
 
   function clearLocalTools() {
