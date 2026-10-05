@@ -1,5 +1,5 @@
 /** Measured coordination geometry. This is not hydraulic or electrical certification. */
-import { SERVICE_MATERIALS } from '../data/buildingServicesCatalog';
+import { SERVICE_MATERIALS } from '../data/buildingServicesCatalog.js';
 
 export type ServiceSystem = 'cold-water' | 'hot-water' | 'waste' | 'electrical';
 export type ServiceFixtureKind = 'toilet' | 'sink' | 'mains-tap' | 'electrical-board';
