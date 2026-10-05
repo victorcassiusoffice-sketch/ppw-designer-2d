@@ -1,3 +1,5 @@
+import { ServicesLaunchButton } from './ServicesWorkspace';
+import { PlanImportButton } from './PlanImportWorkspace';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useCart } from '../store/cartStore';
 import { useCurrencyStore } from '../store/currencyStore';
@@ -119,6 +121,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
       <div className="house-view-switch" aria-label="Design view"><button onClick={onPlan} aria-label="2D Plan"><StudioIcon name="box" size={18} /><span>2D <span className="studio-view-word">Plan</span></span></button><button aria-label="3D House" aria-pressed="true"><StudioIcon name="cube" size={18} /><span>3D <span className="studio-view-word">House</span></span></button></div>
       <div className="house-project-actions">
         <AiDesignButton onBeforeOpen={onSelect} />
+        <PlanImportButton onBeforeOpen={onSelect} />
         <ClearControls inline />
         <button title="Undo (Ctrl+Z)" aria-label="Undo" disabled={!canUndo} onClick={() => useHistoryStore.getState().undo()}><StudioIcon name="undo" size={18} /></button>
         <button title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled={!canRedo} onClick={() => useHistoryStore.getState().redo()}><StudioIcon name="redo" size={18} /></button>
@@ -139,7 +142,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
             {levelsOf(property).map(level => <option key={level.id} value={level.id}>{level.name}</option>)}
             {!levels.some(isRoofLevel) && <option value="__roof">Roof</option>}
             <option value="__add-floor">＋ Add floor</option>
-          </select><span className="house-scene-label">{drawing || wallDrawing ? `Snap ${PRECISION_STEP_M[precision]} m` : `${totalArea.toFixed(1)} m²`}</span></div>
+          </select><ServicesLaunchButton compact onBeforeOpen={onSelect} /><span className="house-scene-label">{drawing || wallDrawing ? `Snap ${PRECISION_STEP_M[precision]} m` : `${totalArea.toFixed(1)} m²`}</span></div>
           <button type="button" className="house-cost-pill house-checkout-toggle" onClick={toggleCost} aria-label={`Product estimate ${formatCurrency(cart.subtotal, currency)}. Open products and cost`} aria-expanded={costOpen}><span>Estimate</span><strong>{formatCurrency(cart.subtotal, currency)}</strong></button>
           <div className="house-quick-tools"><button type="button" aria-label="Select and move objects" aria-pressed={!drawing && !wallDrawing && buildTool === 'select'} onClick={() => { onSelect(); setBuildPaletteOpen(false); }}><StudioIcon name="cursor" size={18} /></button><button type="button" aria-label="Build tools" aria-controls="house-build-palette" aria-expanded={buildPaletteOpen} onClick={() => { onMode('build'); setBuildPaletteOpen(!buildPaletteOpen); setMobileInspector(false); }}><StudioIcon name="room" size={18} /><span>Build</span></button></div>
           <div id="house-build-palette" className="house-scene-actions">

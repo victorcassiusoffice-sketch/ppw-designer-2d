@@ -125,7 +125,7 @@ describe('architectural presentation without changing the saved finishes', () =>
     expect(naturalMaterial.toneMapped).toBe(false);
     const ground = groundPlane();
     updateGroundPresentation(ground, 'natural');
-    expect((ground.material as THREE.MeshStandardMaterial).color.getHexString()).toBe('d8ddd5');
+    expect((ground.material as THREE.MeshStandardMaterial).color.getHexString()).toBe('a9bbb4');
     disposeDressingTextures(natural);
     disposeDressingTextures(architectural);
     disposeDressingTextures(ground);
@@ -148,7 +148,7 @@ describe('architectural presentation without changing the saved finishes', () =>
     const groundMaterial = ground.material as THREE.MeshStandardMaterial;
     const groundDispose = vi.spyOn(groundMaterial.map!, 'dispose');
     updateGroundPresentation(ground, 'architectural');
-    expect(groundMaterial.color.getHexString()).toBe('d8ddd5');
+    expect(groundMaterial.color.getHexString()).toBe('a9bbb4');
     updateGroundPresentation(ground, 'studio');
     expect(groundMaterial.color.equals(new THREE.Color(GROUND_HEX))).toBe(true);
     const sharedTexture = new THREE.Texture();

@@ -1,19 +1,24 @@
 /* Studio presentation. Visual tokens are separate from world units, materials
    estimates and interaction stores. Tools occupy measured layout space. */
-.designer-app, .house-tool-panel, .house-tool-panel-host {
-  --studio-paper: #e7e6df;
-  --studio-surface: #efeee8;
-  --studio-field: #dcded6;
-  --studio-line: #ffffff68;
-  --studio-ink: #303d37;
-  --studio-muted: #5e6961;
-  --studio-accent: #b5e3cd;
-  --studio-active: #235443;
-  --studio-lift: 5px 6px 11px #a3a49880, -5px -5px 11px #ffffffed, inset 1px 1px 1px #ffffffd9, inset -1px -1px 1px #a3aa9673;
-  --studio-inset: inset 3px 3px 6px #a1a59791, inset -3px -3px 6px #ffffffed;
-  --studio-cap: linear-gradient(145deg, #f4f3ed 0%, #e8e7df 52%, #ddded4 100%);
-  --studio-mint-cap: linear-gradient(145deg, #dcf6e8 0%, #b5e1c9 55%, #9bd0b6 100%);
-  --studio-small-lift: 3px 3px 6px #a3a4988c, -3px -3px 7px #ffffffeb, inset 1px 1px 1px #ffffffe0, inset -1px -1px 1px #a8ab9a52;
+.designer-app, .house-tool-panel, .house-tool-panel-host, .services-workspace, .plan-import-page {
+  /* Mineral sage, ivory clay and muted amber from the supplied material UI.
+     These presentation tokens never change a purchased finish or world unit. */
+  --studio-stage: #aebfb7;
+  --studio-paper: #dce2d8;
+  --studio-surface: #e9e8dc;
+  --studio-field: #c3d0c6;
+  --studio-line: #718e7f40;
+  --studio-ink: #293f38;
+  --studio-muted: #4e665b;
+  --studio-accent: #91b4a4;
+  --studio-active: #284e43;
+  --studio-ochre: #d0a36e;
+  --studio-lift: 5px 7px 13px #38574a29, -2px -2px 6px #f5f5e961, inset 1px 1px 1px #fffef4a6, inset -1px -1px 1px #627f7040;
+  --studio-inset: inset 2px 3px 5px #44665833, inset -1px -1px 3px #f0f3e785;
+  --studio-cap: linear-gradient(145deg, #efeee2 0%, #e1e3d7 56%, #cdd8cc 100%);
+  --studio-selected-cap: linear-gradient(145deg, #bfd6c8 0%, #abc8b7 54%, #91b4a4 100%);
+  --studio-ochre-cap: linear-gradient(145deg, #efd0a1 0%, #d6ae7b 54%, #c4925c 100%);
+  --studio-small-lift: 2px 3px 5px #36544730, -1px -1px 3px #f8f7eb80, inset 0 1px 1px #fffef2a6;
   background: var(--studio-paper);
   color: var(--studio-ink);
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
@@ -267,7 +272,7 @@
 }
 .designer-app .plan-identity > span:first-child img { width: 22px; height: 22px; }
 .designer-app .plan-identity img { filter: saturate(.45) brightness(.65); }
-.designer-app .house-mark { background: var(--studio-mint-cap); }
+.designer-app .house-mark { background: var(--studio-selected-cap); }
 .designer-app .plan-topbar .plan-identity > button {
   background: transparent; border: 0; box-shadow: none;
   padding-left: 10px; color: var(--studio-ink); font-size: 12px;
@@ -286,7 +291,7 @@
   font-size: 12px; letter-spacing: .01em; box-shadow: none;
 }
 .designer-app :is(.studio-view-switch,.house-view-switch) button[aria-pressed="true"] {
-  background: var(--studio-mint-cap); color: #204d3b;
+  background: var(--studio-selected-cap); color: #204d3b;
   border-color: #e7fff2b8; box-shadow: 3px 4px 6px #8ba995a3, -2px -2px 5px #ffffffcf, inset 0 1px 2px #fff;
 }
 .designer-app .studio-settings-toggle,
@@ -303,7 +308,7 @@
 .designer-app .house-project-actions > button:disabled { background: transparent; box-shadow: none; border-color: transparent; opacity: .3; }
 .designer-app .ai-design-trigger,
 .designer-app .house-project-actions :is(.ai-design-trigger,.house-cart) {
-  background: var(--studio-mint-cap); border-color: #ecfff278; color: #284f3d;
+  background: var(--studio-selected-cap); border-color: #ecfff278; color: #284f3d;
 }
 .designer-app .house-project-actions .house-save {
   background: linear-gradient(145deg,#648876,#416b55); color: #fff; box-shadow: var(--studio-small-lift);
@@ -319,7 +324,7 @@
   border-radius: 12px; background: var(--studio-cap); box-shadow: var(--studio-small-lift); color: var(--studio-ink);
 }
 .designer-app .studio-plan-settings .plan-pill-group > button:is([aria-pressed="true"],[aria-expanded="true"],[aria-checked="true"]) {
-  background: var(--studio-mint-cap); box-shadow: var(--studio-small-lift); color: #244c3a;
+  background: var(--studio-selected-cap); box-shadow: var(--studio-small-lift); color: #244c3a;
 }
 .designer-app .plan-build-tools,
 .designer-app .house-rail {
@@ -338,13 +343,13 @@
 .designer-app .house-rail button svg { width: 20px; height: 20px; filter: drop-shadow(0 1px 0 #fff); }
 .designer-app .plan-topbar .plan-build-tools button:is([aria-pressed="true"],[aria-checked="true"]),
 .designer-app .house-rail button[aria-pressed="true"] {
-  background: var(--studio-mint-cap); color: #244d3b; border-color: #ebfff399;
+  background: var(--studio-selected-cap); color: #244d3b; border-color: #ebfff399;
   box-shadow: 3px 4px 6px #8b9f85a6, -2px -2px 5px #fbfff4, inset 0 1px 2px #ffffffed;
 }
 .designer-app .plan-topbar .plan-build-tools button:hover:not(:disabled),
 .designer-app .house-rail button:hover:not(:disabled) { background: linear-gradient(145deg,#f8fbf1,#d8e1ce); color: #234633; }
 .designer-app .plan-topbar .plan-build-tools button:is([aria-pressed="true"],[aria-checked="true"]):hover,
-.designer-app .house-rail button[aria-pressed="true"]:hover { background: var(--studio-mint-cap); }
+.designer-app .house-rail button[aria-pressed="true"]:hover { background: var(--studio-selected-cap); }
 .designer-app[data-view="plan"] [data-testid="page-tabs"] {
   background: transparent; border: 0; padding-top: 8px; padding-bottom: 8px; gap: 10px;
   height: 46px; min-height: 46px; overflow-y: hidden; scrollbar-width: none;
@@ -356,7 +361,7 @@
   border-radius: 12px; font-size: 11px;
 }
 .designer-app [data-testid="page-tabs"] :is([aria-selected="true"],[data-testid="page-tab-draft"]) {
-  background: var(--studio-mint-cap); color: #234b37;
+  background: var(--studio-selected-cap); color: #234b37;
 }
 .designer-app[data-view="plan"] .plan-view-toolbar {
   background: transparent; border: 0; padding: 6px 16px 10px;
@@ -391,7 +396,7 @@
 .designer-app .house-cost-pill { border-radius: 15px; padding: 7px 12px; }
 .designer-app .house-cost-pill strong { color: #2d523c; }
 .designer-app :is(.house-scene-actions,.house-opening-tools,.house-opening-options) button[aria-pressed="true"] {
-  background: var(--studio-mint-cap); color: #244d3b; border-color: #ffffff70;
+  background: var(--studio-selected-cap); color: #244d3b; border-color: #ffffff70;
 }
 .designer-app .house-opening-tools { padding: 5px 17px 10px; gap: 9px; }
 .designer-app .house-opening-tools button { min-width: 64px; }
@@ -411,7 +416,7 @@
   background: var(--studio-cap); color: #425749; box-shadow: var(--studio-small-lift);
   border: 1px solid #ffffff60; border-radius: 14px; height: 36px; min-width: 36px;
 }
-.designer-app .house-camera-row > button[aria-pressed="true"] { background: var(--studio-mint-cap); }
+.designer-app .house-camera-row > button[aria-pressed="true"] { background: var(--studio-selected-cap); }
 .designer-app .house-control-divider { display: none; }
 .designer-app .house-scene-caption { background: var(--studio-paper); padding-top: 5px; text-align: center; color: #687263 !important; }
 .designer-app .house-view-options {
@@ -430,8 +435,8 @@
 .designer-app .sims-catalog [data-product-id] { background: var(--studio-cap); border: 1px solid #ffffff90; box-shadow: var(--studio-lift); padding: 8px; }
 .designer-app .sims-catalog [data-product-id] img { box-shadow: var(--studio-inset); border: 1px solid #c8cbb864; }
 .designer-app .sims-catalog :is(input,select) { background: #e2e5d8; border-color: #edf3e488; border-radius: 16px; box-shadow: var(--studio-inset); }
-.designer-app .sims-catalog [aria-pressed="true"] { background: var(--studio-mint-cap); box-shadow: var(--studio-small-lift); border-color: #e8fff080; }
-.designer-app [data-testid="cart-pill"] { background: var(--studio-mint-cap); color: #274f3b; box-shadow: var(--studio-lift); border: 1px solid #e9fff099; border-radius: 19px; }
+.designer-app .sims-catalog [aria-pressed="true"] { background: var(--studio-selected-cap); box-shadow: var(--studio-small-lift); border-color: #e8fff080; }
+.designer-app [data-testid="cart-pill"] { background: var(--studio-selected-cap); color: #274f3b; box-shadow: var(--studio-lift); border: 1px solid #e9fff099; border-radius: 19px; }
 .designer-app [data-testid="cart-pill"] :is(svg,span) { color: #274f3b; }
 .designer-app :is(.house-inspector,.house-inspector-content,.house-summary,.house-inspector-foot,.house-product-detail,.house-cost-panel,.materials-panel,.plan-analysis-workspace) {
   background: var(--studio-paper); border-color: #bbc5b570;
@@ -445,7 +450,7 @@
 .designer-app .materials-panel :is(input,select),.designer-app .design-workbench :is(input,select,textarea) { background: #e0e5d7; box-shadow: var(--studio-inset); border: 1px solid #edf4e376; }
 .designer-app .design-workbench { background: var(--studio-paper); border-radius: 26px; border: 1px solid #ffffffe0; }
 .designer-app .design-workbench :is(button,.design-primary) { border-radius: 14px; border: 1px solid #ffffff98; background: var(--studio-cap); box-shadow: var(--studio-small-lift); }
-.designer-app .design-workbench :is(.design-primary,nav button[aria-pressed="true"]) { background: var(--studio-mint-cap); }
+.designer-app .design-workbench :is(.design-primary,nav button[aria-pressed="true"]) { background: var(--studio-selected-cap); }
 .designer-app :is(button,select,input,summary):focus-visible {
   outline: 2px solid #346b54 !important; outline-offset: 3px;
 }
@@ -515,16 +520,6 @@
 /* Task shelves: one tactile navigation language in Plan and House. The editing
    tools are in flow, never over the model. Secondary tools use progressive
    disclosure; changing shelves has no relationship to the camera or geometry. */
-.designer-app, .house-tool-panel, .house-tool-panel-host {
-  --studio-paper: #e9e8e1;
-  --studio-surface: #f1f0e9;
-  --studio-field: #e1e2d9;
-  --studio-cap: linear-gradient(145deg,#f8f7f0 2%,#eeede5 47%,#dedfd5);
-  --studio-mint-cap: linear-gradient(145deg,#e0f9eb 1%,#bfe7d2 48%,#a3d6ba);
-  --studio-lift: 7px 8px 17px #a1a69770,-6px -6px 15px #ffffffed,inset 1px 1px 1px #fff,inset -1px -1px 1px #aab09c55;
-  --studio-small-lift: 3px 4px 6px #a0a69373,-3px -3px 6px #fff,inset 0 1px 1px #fff;
-  --studio-inset: inset 3px 3px 6px #aab19c70,inset -3px -3px 6px #ffffffde;
-}
 .designer-app .studio-icon { overflow: visible; flex-shrink: 0; }
 .designer-app :is(.studio-view-switch,.house-view-switch) button {
   display: flex; align-items: center; justify-content: center; gap: 7px;
@@ -560,7 +555,7 @@
   font-size: 11px; font-weight: 600; border-radius: 16px;
 }
 .designer-app .plan-topbar .studio-tool-categories button[aria-pressed="true"] {
-  background: var(--studio-mint-cap); box-shadow: var(--studio-small-lift); color: #254f3b;
+  background: var(--studio-selected-cap); box-shadow: var(--studio-small-lift); color: #254f3b;
 }
 .designer-app .plan-topbar .plan-build-tools[data-task="build"] [data-tool-category]:not([data-tool-category="build"]),
 .designer-app .plan-topbar .plan-build-tools[data-task="finish"] [data-tool-category]:not([data-tool-category="finish"]),
@@ -574,7 +569,7 @@
 .designer-app .plan-topbar .plan-build-tools [data-testid="room-draw-toggle"] .md\:hidden { display: none; }
 .designer-app .plan-topbar .plan-build-tools [data-testid="room-draw-toggle"] .hidden { display: block; }
 .designer-app .plan-topbar .plan-build-tools [data-testid="room-draw-toggle"][aria-checked="true"] {
-  background: var(--studio-mint-cap); box-shadow: var(--studio-small-lift); color: #254f3b;
+  background: var(--studio-selected-cap); box-shadow: var(--studio-small-lift); color: #254f3b;
 }
 .designer-app .plan-topbar .plan-build-tools .plan-wall-height {
   position: relative; inset: auto; width: auto; padding: 0 3px; border: 0;
@@ -593,20 +588,20 @@
 .designer-app .house-rail { width: 75px; padding: 8px; gap: 6px; box-shadow: var(--studio-inset); background: var(--studio-field); border: 0; }
 .designer-app .house-rail button { width: 59px; min-height: 57px; height: 57px; border: 0; background: transparent; box-shadow: none; text-shadow: none; font-size: 9px; }
 .designer-app .house-rail button:hover { background: var(--studio-cap); box-shadow: var(--studio-small-lift); }
-.designer-app .house-rail button[aria-pressed="true"] { background: var(--studio-mint-cap); box-shadow: var(--studio-small-lift); }
+.designer-app .house-rail button[aria-pressed="true"] { background: var(--studio-selected-cap); box-shadow: var(--studio-small-lift); }
 .designer-app .house-rail button svg { width: 24px; height: 24px; filter: none; }
 .designer-app .house-main { padding-left: 99px; }
 .designer-app .house-scene-bar { padding: 5px 8px 8px; gap: 10px; }
 .designer-app .house-scene-actions { box-shadow: none; background: transparent; gap: 5px; padding: 0; }
 .designer-app .house-scene-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; background: transparent; box-shadow: none; border: 0; }
 .designer-app .house-scene-actions button:is(:hover,[aria-pressed="true"]) { background: var(--studio-cap); box-shadow: var(--studio-small-lift); }
-.designer-app .house-scene-actions button[aria-pressed="true"] { background: var(--studio-mint-cap); }
+.designer-app .house-scene-actions button[aria-pressed="true"] { background: var(--studio-selected-cap); }
 .designer-app .house-opening-tools button > span { margin: 0; color: inherit; font-size: inherit; }
 .designer-app .house-scene-bar > .house-quick-tools { display: none; }
 .designer-app .house-camera-row { background: var(--studio-field); box-shadow: var(--studio-inset); border: 0; padding: 6px; gap: 6px; }
 .designer-app .house-camera-row > button { box-shadow: none; background: transparent; border: 0; }
 .designer-app .house-camera-row > button:is(:hover,[aria-pressed="true"],[aria-expanded="true"]) { background: var(--studio-cap); box-shadow: var(--studio-small-lift); }
-.designer-app .house-camera-row > button[aria-pressed="true"] { background: var(--studio-mint-cap); }
+.designer-app .house-camera-row > button[aria-pressed="true"] { background: var(--studio-selected-cap); }
 .designer-app .house-camera-row .house-view-options-trigger { margin-left: 4px; background: var(--studio-cap); box-shadow: var(--studio-small-lift); }
 @media(min-width:768px) and (max-width:1199px) {
   .designer-app .plan-topbar { grid-template-columns: minmax(130px,1fr) auto auto; column-gap: 10px; }
@@ -643,7 +638,7 @@
   .designer-app .plan-topbar .plan-build-tools .studio-tool-categories button { width: auto; min-width: 0; min-height: 38px; height: 38px; padding: 0 5px; gap: 5px; font-size: 10px; flex-direction: row; }
   .designer-app .plan-topbar .plan-build-tools .studio-tool-categories svg { width: 18px; height: 18px; }
   .designer-app .plan-topbar .plan-build-tools .studio-active-tool { display: inline-flex; flex-direction: row; width: auto; min-width: 55px; height: 38px; min-height: 38px; padding: 3px 6px; gap: 3px; order: -9; font-size: 9px; background: var(--studio-cap); box-shadow: var(--studio-small-lift); }
-  .designer-app .plan-topbar .plan-build-tools .studio-active-tool[data-active="true"] { background: var(--studio-mint-cap); }
+  .designer-app .plan-topbar .plan-build-tools .studio-active-tool[data-active="true"] { background: var(--studio-selected-cap); }
   .designer-app .plan-topbar .plan-build-tools .studio-active-tool svg { width: 16px; height: 16px; }
   .designer-app .plan-topbar .plan-build-tools[data-expanded="false"] > :not(.studio-tool-categories):not(.studio-active-tool),
   .designer-app .plan-topbar .plan-build-tools[data-expanded="false"] > [aria-label="Build tools"] > button { display: none; }
@@ -674,7 +669,7 @@
   .designer-app .house-cost-pill strong { font-size: 10px; }
   .designer-app .house-scene-bar > .house-quick-tools { display: flex; margin-left: auto; gap: 5px; }
   .designer-app .house-quick-tools button { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; min-width: 36px; gap: 4px; padding: 4px 7px; border-radius: 13px; font-size: 10px; background: var(--studio-cap); box-shadow: var(--studio-small-lift); }
-  .designer-app .house-quick-tools button:is([aria-pressed="true"],[aria-expanded="true"]) { background: var(--studio-mint-cap); }
+  .designer-app .house-quick-tools button:is([aria-pressed="true"],[aria-expanded="true"]) { background: var(--studio-selected-cap); }
   .designer-app .house-workspace[data-build-open="false"] .house-scene-actions { display: none; }
   .designer-app .house-workspace[data-build-open="true"] .house-scene-actions { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); width: 100%; padding: 5px; gap: 5px !important; background: var(--studio-field); border-radius: 17px; box-shadow: var(--studio-inset); }
   .designer-app .house-scene-actions button { flex-direction: column; gap: 4px; min-height: 44px !important; padding: 4px !important; font-size: 9px; }
@@ -685,4 +680,212 @@
   .designer-app .house-camera-row [data-testid="view3d-pan"] > span { display: none; }
   .designer-app .house-camera-row .house-view-options-trigger { margin-left: 0; padding: 4px 8px; gap: 4px; }
   .designer-app .house-camera-row .house-view-options-trigger svg { width: 16px; }
+}
+
+/* Material studio: a calm sage work surface carries warm clay controls. The
+   relief belongs to a whole shelf and its active control, not every label.
+   These rules only style existing, measured layout regions; they never add an
+   overlay, resize a model, filter the rendered scene, or tint finish swatches. */
+.designer-app {
+  background: var(--studio-stage);
+  accent-color: var(--studio-active);
+}
+.designer-app[data-view="plan"] {
+  --capsule-bg: #dce2d8;
+  --capsule-bg-solid: #dce2d8;
+  --capsule-rim: #eef0e58c;
+  --capsule-ink: var(--studio-ink);
+  --capsule-ink-dim: var(--studio-muted);
+  --capsule-hover: #d3e0d4;
+  --capsule-on: #a4c3b3;
+  --capsule-on-ink: #234338;
+}
+.designer-app :is(.plan-topbar,.house-header) {
+  background: linear-gradient(112deg,#d6e0d5,#e8e8db 72%,#dce2d8) !important;
+  box-shadow: inset 0 -1px 0 #78908036, 0 2px 5px #36584a0d;
+}
+.designer-app .house-workspace {
+  --house-panel: var(--studio-paper);
+  --house-raised: var(--studio-surface);
+  --house-line: var(--studio-line);
+  --house-muted: var(--studio-muted);
+  --house-accent: var(--studio-active);
+}
+.designer-app[data-view="plan"] [data-testid="plan-drawing-viewport"] {
+  background: radial-gradient(ellipse at 42% 38%,#d4ded4 0%,#bbcbbf 69%,#aebfb5 100%) !important;
+}
+.designer-app :is(.plan-build-tools,.house-rail,.house-camera-row,.studio-view-switch,.house-view-switch) {
+  background: var(--studio-field);
+  box-shadow: var(--studio-inset);
+  border-color: #eef3e978;
+}
+.designer-app :is(.studio-view-switch,.house-view-switch) button[aria-pressed="true"] {
+  background: var(--studio-selected-cap);
+  border-color: #d8e8d98a;
+  color: #243f36;
+  box-shadow: var(--studio-small-lift);
+}
+.designer-app :is(.house-rail,.plan-build-tools) button svg {
+  stroke-width: 1.55;
+  filter: none;
+}
+.designer-app .plan-topbar .plan-build-tools button:hover:not(:disabled),
+.designer-app .house-rail button:hover:not(:disabled) {
+  background: var(--studio-cap);
+  color: var(--studio-ink);
+  box-shadow: var(--studio-small-lift);
+}
+.designer-app .plan-topbar .plan-build-tools button:is([aria-pressed="true"],[aria-checked="true"]),
+.designer-app .house-rail button[aria-pressed="true"] {
+  background: var(--studio-selected-cap);
+  border-color: transparent;
+  color: #243f36;
+  box-shadow: var(--studio-small-lift);
+}
+.designer-app :is(.studio-settings-toggle,.house-project-actions > button,.house-floor-picker select,.house-cost-pill),
+.designer-app .plan-topbar .plan-commerce :is(button,a,select) {
+  border-color: #f2f1e58c;
+  color: var(--studio-ink);
+}
+.designer-app .ai-design-trigger,
+.designer-app .house-project-actions .ai-design-trigger {
+  background: var(--studio-ochre-cap);
+  border-color: #f7dcad8c;
+  color: #3b2d1b;
+  box-shadow: var(--studio-small-lift);
+}
+.designer-app .house-project-actions .house-save {
+  background: linear-gradient(145deg,#547c6b,#385c4d);
+  color: #f3f0e4;
+  border-color: #719583;
+}
+.designer-app .house-cart-count { background: #d7b07b; color: #483822; }
+.designer-app [data-testid="cart-pill"] {
+  background: var(--studio-cap);
+  color: var(--studio-ink);
+  border-color: #f0f1e291;
+  box-shadow: var(--studio-small-lift);
+}
+.designer-app [data-testid="cart-pill"] :is(svg,span) { color: var(--studio-ink); }
+.designer-app .plan-topbar [data-testid="demo-pill"] {
+  background: #bfcec1;
+  color: #3a5145;
+  box-shadow: inset 1px 1px 2px #54726230;
+}
+.designer-app[data-view="plan"] [data-testid="page-tabs"] {
+  background: var(--studio-paper);
+  box-shadow: inset 0 -1px 0 #879b8b29;
+}
+.designer-app [data-testid="page-tabs"] button {
+  box-shadow: none;
+  background: transparent;
+  color: var(--studio-muted);
+}
+.designer-app [data-testid="page-tabs"] [aria-selected="true"] {
+  background: var(--studio-cap);
+  color: var(--studio-ink);
+  box-shadow: var(--studio-small-lift);
+}
+.designer-app[data-view="plan"] .plan-view-toolbar,
+.designer-app :is(.house-view-dock,.house-scene-caption) { background: var(--studio-paper); }
+.designer-app .house-view-options,
+.designer-app :is(.house-inspector,.house-summary,.house-cost-panel,.plan-analysis-workspace,.materials-panel) {
+  background: linear-gradient(130deg,#e5e7dc,#d8e0d3);
+  border-color: var(--studio-line);
+  box-shadow: inset 1px 1px 0 #f6f4e987;
+}
+.designer-app .house-summary { border-bottom: 1px solid var(--studio-line); }
+.designer-app .house-inspector-content,
+.designer-app .house-inspector-foot,
+.designer-app .house-product-detail { background: transparent; }
+.designer-app :is(.house-cost-lines strong,.house-product-heading strong,.house-cost-total strong,.house-cost-panel h3,.house-summary h2) { color: var(--studio-ink); }
+.designer-app :is(.house-cost-panel p,.house-product-heading span,.house-cost-lines small,.house-eyebrow) { color: var(--studio-muted); }
+.designer-app .house-cost-lines li { color: var(--studio-muted); border-color: var(--studio-line); }
+.designer-app :is(.house-view-options,.materials-panel,.design-workbench) :is(input,select,textarea) {
+  background: var(--studio-field);
+  color: var(--studio-ink);
+  border-color: #eef0e38c;
+  box-shadow: var(--studio-inset);
+}
+.designer-app .materials-metrics > div { background: #c6d4c8; border-color: #e9ecdf80; }
+.designer-app .materials-tabs,
+.designer-app .design-workbench nav { background: #cbd7cb; border-color: var(--studio-line); }
+.designer-app .materials-tabs button[aria-pressed="true"] { background: var(--studio-selected-cap); color: #243f36; }
+.designer-app .sims-catalog {
+  --catalog-bg: #dce2d8;
+  --catalog-raised: #e9e8dc;
+  --catalog-field: #c9d5ca;
+  --catalog-border: #91a89455;
+  --catalog-text: #293f38;
+  --catalog-muted: #4e665b;
+  --catalog-caption: #4e665b;
+  --catalog-accent: #345f4e;
+  --catalog-selected: #a4c3b3;
+  --catalog-selected-text: #213e31;
+  --catalog-hover: #d0ddd0;
+  --catalog-focus: #416f59;
+  --catalog-armed-glow: #68887624;
+  --catalog-card-shadow: #294b3b1c;
+  border-color: var(--studio-line) !important;
+}
+.designer-app .sims-catalog [data-product-id] {
+  border-radius: 14px;
+  background: linear-gradient(145deg,#eaeade,#d9e0d2);
+  border-color: #edf0e482;
+  box-shadow: 2px 3px 5px #38554324, inset 0 1px 1px #f7f5e9a8;
+}
+.designer-app .sims-catalog [data-product-id] img {
+  border-color: #b0bfa954;
+  box-shadow: inset 1px 2px 4px #4b66452b;
+}
+.designer-app .sims-catalog :is(input,select) { background: var(--catalog-field); }
+.designer-app .sims-catalog [aria-pressed="true"] { border-color: #c5dcca; color: #243f36; }
+/* Portals inherit the same material language, including electrical/paint docks.
+   Colour-swatch buttons and colour inputs retain the actual selected product. */
+.house-tool-panel[data-presentation][class],
+.house-tool-panel-host[data-presentation][class],
+.house-tool-panel-host[data-presentation][class] #ppw-energy-panel {
+  background: var(--studio-paper) !important;
+  color: var(--studio-ink) !important;
+  border-color: var(--studio-line) !important;
+  --energy-text: #293f38;
+  --energy-text-muted: #4e665b;
+}
+:is(.house-tool-panel,.house-tool-panel-host)[data-presentation][class] :is(button:not([style*="background"]),select,input:not([type="color"]):not([type="checkbox"])) {
+  background: var(--studio-cap) !important;
+  color: var(--studio-ink) !important;
+  border-color: #eef0e485 !important;
+}
+:is(.house-tool-panel,.house-tool-panel-host)[data-presentation][class] :is(button[aria-pressed="true"],button[aria-checked="true"]):not([style*="background"]) {
+  background: var(--studio-selected-cap) !important;
+  color: #243f36 !important;
+}
+.designer-app :is(button,select,input,summary):focus-visible {
+  outline: 2px solid #385f50 !important;
+  outline-offset: 3px;
+}
+@media(max-width:767px) {
+  .designer-app :is(.plan-topbar,.house-header) { box-shadow: inset 0 -1px 0 #80948540; }
+  .designer-app .house-rail { box-shadow: var(--studio-inset), 0 2px 3px #355a4724; }
+  .designer-app .house-view-options { box-shadow: var(--studio-small-lift); }
+  .designer-app .sims-catalog [data-product-id] { box-shadow: 1px 2px 3px #38554320; }
+  /* Keep Import reachable as a labelled icon; its text remains available to
+     assistive technology and cannot grow the fixed phone action row. */
+  .designer-app .house-project-actions .plan-import-trigger > span {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+  .designer-app .house-project-actions .plan-import-trigger { flex-shrink: 0; }
+}
+@media(max-width:380px) {
+  .designer-app .house-header { padding-inline: 6px; gap: 6px; }
+  .designer-app .house-view-switch { width: 96px; gap: 2px; }
+  .designer-app .house-view-switch button { flex: 1; min-width: 0; padding-inline: 3px; gap: 4px; }
+  .designer-app .house-view-switch button svg { width: 15px; height: 15px; }
+  .designer-app .house-project-actions { gap: 4px; }
+  .designer-app .house-project-actions > button { min-width: 36px; width: 36px; min-height: 44px; }
+  .designer-app .house-scene-bar .house-floor-picker { flex: none; gap: 5px; }
+  .designer-app .house-floor-picker select { max-width: 85px; }
+  .designer-app .house-floor-picker .services-launch { padding: 0; min-width: 36px; width: 36px; }
+  .designer-app .house-quick-tools button[aria-label="Build tools"] > span { display: none; }
 }

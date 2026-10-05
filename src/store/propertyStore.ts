@@ -1,3 +1,4 @@
+import { normaliseBuildingServices, type BuildingServices } from '../designer/buildingServices';
 import { normaliseMaterialsSettings, type MaterialsSettings } from '../designer/materials';
 /**
  * propertyStore — Week 2.5 multi-room model (Model A — separate
@@ -303,6 +304,7 @@ export interface Room {
 }
 
 export interface Property {
+  services?: BuildingServices;
   /** Versioned estimating assumptions; persisted with every save and history snapshot. */
   materials?: MaterialsSettings;
   id: string;
@@ -646,6 +648,7 @@ export interface PropertyState {
   /** Rebuild the roof slabs (no-op without a roof). Returns true iff anything changed. */
   syncRoof: () => boolean;
   /** Roof shape and finish. Adds/synchronises the roof without changing floor focus. */
+  setServices: (services: BuildingServices) => boolean;
   setMaterialsSettings: (settings: MaterialsSettings) => void;
   setRoofConfig: (config: RoofConfig | null) => void;
   /** Switch an electrical item on/off for the energy estimate (absent = on). */
@@ -1557,7 +1560,9 @@ export const usePropertyStore = create<PropertyState>()(
           rooms.some((r) =>
             isRoofRoom(r) ? roofRoomHasWork(r) : r.polygon.length >= 3 || r.placedItems.length > 0,
           )
-          || wallsOnLevel(s.property.walls ?? [], id).length > 0;
+          || wallsOnLevel(s.property.walls ?? [], id).length > 0
+          || (s.property.services?.runs.some(r => r.levelId === id) ?? false)
+          || (s.property.services?.fixtures.some(f => f.levelId === id) ?? false);
         if (hasWork) return false;
 
         set((st) => {
@@ -1617,6 +1622,13 @@ export const usePropertyStore = create<PropertyState>()(
         return true;
       },
 
+      setServices: (services) => {
+        const property = get().property;
+        const normalised = normaliseBuildingServices(services, new Set(levelsOf(property).map(l => l.id)));
+        if (!normalised || normalised.runs.length !== services.runs.length || normalised.fixtures.length !== services.fixtures.length) return false;
+        set({ property: { ...property, services: normalised } });
+        return true;
+      },
       setMaterialsSettings: (settings) => set(s => ({ property: { ...s.property, materials: normaliseMaterialsSettings(settings) } })),
 
       setRoofConfig: (config) =>
@@ -1930,6 +1942,7 @@ export const usePropertyStore = create<PropertyState>()(
         const merged = { ...current, ...((persisted ?? {}) as Partial<PropertyState>) };
         if (merged.property) merged.property = normaliseGardenMetadata(normaliseBuildingMetadata(canonicalisePropertyWinding(merged.property)));
         if (merged.property?.materials !== undefined) merged.property = { ...merged.property, materials: normaliseMaterialsSettings(merged.property.materials) };
+        if (merged.property?.services !== undefined) merged.property = { ...merged.property, services: normaliseBuildingServices(merged.property.services, new Set(levelsOf(merged.property).map(l => l.id))) };
         return merged;
       },
     },
@@ -1970,6 +1983,7 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   };
   // Every field below is OPTIONAL and only written when it carries something,
   // so a property saved before the Sims world round-trips byte-identical.
+  if (property.services !== undefined) out.services = normaliseBuildingServices(property.services, levelIds);
   if (property.materials !== undefined) out.materials = normaliseMaterialsSettings(property.materials);
   if (levels) out.levels = levels;
   const activeRoom = rooms.find((r) => r.id === activeRoomId)!;
@@ -2123,6 +2137,7 @@ interface RawRoom {
 }
 
 interface RawProperty {
+  services?: unknown;
   wallHeightM?: unknown;
   id?: string;
   name?: string;

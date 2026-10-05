@@ -1,3 +1,5 @@
+import { ServicesLaunchButton } from './ServicesWorkspace';
+import { PlanImportButton } from './PlanImportWorkspace';
 import { StudioIcon as Icon } from './StudioIcon';
 import { WallSurfaceOptions } from './WallSurfaceOptions';
 import { constructionHex } from '../designer/wallConstruction';
@@ -1469,6 +1471,7 @@ export function TopBar({
           >
             + Add floor above
           </button>
+          <ServicesLaunchButton onBeforeOpen={() => setLevelsOpen(false)} />
         </div>
         </PlanControlPanel>
 
@@ -2096,6 +2099,7 @@ export function TopBar({
               <Icon name="more" />
             </button>
             <Popover anchor={moreRef} open={moreOpen} onClose={closeMore} width={208} align="right" id="ppw-pop-more" role="menu" label="More">
+              <PlanImportButton onBeforeOpen={() => setMoreOpen(false)} />
               <button
                 type="button"
                 role="menuitem"
@@ -3763,6 +3767,7 @@ export function TopBar({
                     >
                       + Add floor above
                     </button>
+                    <ServicesLaunchButton onBeforeOpen={() => setShowMobileMenu(false)} />
                   </div>
                 </div>
 
@@ -3885,6 +3890,7 @@ export function TopBar({
 
                 {/* 4 PLAN FILES */}
                 <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>Plan files</p>
+                <PlanImportButton onBeforeOpen={() => setShowMobileMenu(false)} />
                 <button
                   type="button"
                   onClick={() => {

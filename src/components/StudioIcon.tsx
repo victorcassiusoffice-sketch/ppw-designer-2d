@@ -42,6 +42,7 @@ const PATHS = {
   minus: 'M5 12h14',
   settings: 'M4 6h16M4 12h16M4 18h16M8 3v6m8 0v6m-8 0v6',
   check: 'm5 12 4 4L19 6',
+  services: 'M3 4h8v6h7v10h-5v-5H6V9H3V4Zm12-1v4m-2-2h4M4 19h4',
   save: 'M5 3h12l4 4v14H3V3h2Zm2 0v6h9V3M7 21v-8h10v8',
 } as const;
 

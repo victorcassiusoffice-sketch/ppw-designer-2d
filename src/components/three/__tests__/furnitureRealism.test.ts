@@ -154,8 +154,8 @@ describe('product surface realism without changing dimensions or colour', () => 
 
   it('keeps the unpriced ivory / sage backdrop dark at night and bounded for invalid inputs', () => {
     const day = architecturalBackdrop(1), night = architecturalBackdrop(0);
-    expect(day.horizon).toEqual([222, 219, 210]);
-    expect(day.top).toEqual([216, 221, 213]);
+    expect(day.horizon).toEqual([192, 206, 200]);
+    expect(day.top).toEqual([169, 187, 180]);
     expect(night.top.every((channel, i) => channel < day.top[i])).toBe(true);
     expect(architecturalBackdrop(NaN)).toEqual(day);
     expect(architecturalBackdrop(2)).toEqual(day);

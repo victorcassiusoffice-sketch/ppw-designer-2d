@@ -47,6 +47,8 @@ import { planDaylight, planShadowPoints, planWindowLight, type PlanDaylight } fr
 import { planRoomLabelLayout } from '../designer/planRoomLabel';
 import { levelHeightM } from '../designer/building';
 import { NATURAL_BARE_FLOOR_HEX } from '../designer/architecturalSurface';
+import { visibleServiceFixtures } from '../designer/serviceFixtures';
+import { ServiceFixturesPlanLayer } from './ServiceFixturesPlanLayer';
 import type Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
 import { usePropertyStore, selectActiveRoom, roomOpenings } from '../store/propertyStore';
@@ -2647,6 +2649,7 @@ export function RoomCanvas({
   // Wall paint (2026-09-02): live property-wide totals for the HUD/panel —
   // painted area, litres and the whole-tin cost, in the display currency.
   const propertyForPaint = usePropertyStore((st) => st.property);
+  const serviceFixtures = useMemo(() => visibleServiceFixtures(propertyForPaint, activeLevelId), [propertyForPaint, activeLevelId]);
   const planWallHeight = levelHeightM(propertyForPaint, activeLevelId);
   const planSun = useMemo(() => planDaylight(sunHour, planWallHeight), [sunHour, planWallHeight]);
   const planSharedEdges = useMemo(() => sharedEdgeMap(drawnRooms), [drawnRooms]);
@@ -4783,6 +4786,8 @@ export function RoomCanvas({
             ))}
 
           <BuildingPlanLayer property={propertyForPaint} activeLevelId={activeLevelId} pxPerMetre={pxPerMetre} scale={viewport.scale} />
+          <ServiceFixturesPlanLayer fixtures={serviceFixtures} pxPerMetre={pxPerMetre}
+            onSelect={wallSelectArmed && !gardenPlacement ? fixtureId => window.dispatchEvent(new CustomEvent('ppw:open-services', { detail: { fixtureId } })) : undefined} />
 
           {/* FREE-STANDING WALLS (Sims world 2026-08-29) — open runs the
               customer drew without closing a room. Same poche as room walls,
