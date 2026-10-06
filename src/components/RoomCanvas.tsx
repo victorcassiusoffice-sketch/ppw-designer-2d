@@ -987,7 +987,11 @@ export function RoomCanvas({
     const ro = new ResizeObserver((entries) => {
       const e = entries[0];
       if (!e) return;
-      setStageSize({ width: e.contentRect.width, height: e.contentRect.height });
+      const width = e.contentRect.width;
+      const height = e.contentRect.height;
+      // A 0×0 observation (iframe first paint, hidden plan) makes Konva throw.
+      if (width < 2 || height < 2) return;
+      setStageSize({ width, height });
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -1099,6 +1103,7 @@ export function RoomCanvas({
     const el = containerRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) return;
     setStageSize((s) =>
       Math.abs(s.width - r.width) < 0.5 && Math.abs(s.height - r.height) < 0.5
         ? s

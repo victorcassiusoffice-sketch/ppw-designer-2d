@@ -41,7 +41,7 @@
 .c-steps a { text-decoration: none; }
 .c-chapter {
   display: grid;
-  grid-template-columns: 148px minmax(200px, 0.85fr) minmax(220px, 1fr) minmax(320px, 1.05fr);
+  grid-template-columns: 140px minmax(150px, 0.7fr) minmax(180px, 0.85fr) minmax(400px, 1.2fr);
   gap: 16px;
   align-items: start;
   padding: 16px;
