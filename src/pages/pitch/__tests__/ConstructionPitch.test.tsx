@@ -3,7 +3,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ConstructionPitchPage from '../ConstructionPitchPage';
-import { constructionDeliveryStudy } from '../constructionWorkflow';
+import { CONSTRUCTION_MEETING_URL, MATERIALS_NOTE, PENDING_CONSTRUCTION_SHOTS, STARTING_POINT } from '../constructionWorkflow';
 import { MEETING_URL } from '../workflowModel';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -12,55 +12,68 @@ let root: Root;
 beforeEach(() => { host = document.createElement('div'); document.body.append(host); root = createRoot(host); act(() => root.render(<ConstructionPitchPage />)); });
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.restoreAllMocks(); });
 const click = (element: HTMLElement) => act(() => element.click());
-const chapter = (index: number) => click(host.querySelectorAll<HTMLButtonElement>('[role="tab"]')[index]);
-function button(text: string) {
-  const item = [...host.querySelectorAll<HTMLButtonElement>('button')].find((node) => node.textContent?.includes(text));
-  if (!item) throw new Error(`Button missing: ${text}`);
-  return item;
-}
 
 describe('construction pitch', () => {
-  it('clearly identifies an independent pitch with actual app capture and a meeting link', () => {
-    expect(host.textContent).toContain('not an official UBP platform');
-    expect(host.querySelector('.pitch-app-capture img')?.getAttribute('src')).toBe('/showcase/designer-3d.webp');
-    expect(host.querySelector(`a[href="${MEETING_URL}"]`)).not.toBeNull();
-    expect(host.querySelector('form')).toBeNull();
+  it('uses the live story, the face-to-face meeting, and no prices', () => {
+    const text = host.textContent ?? '';
+    expect(text).toContain(MATERIALS_NOTE);
+    expect(text).toContain('Blocks, cement and sand, with cement in kilograms and 25 kg bags.');
+    expect(text).toContain('The same house, in 2D and in 3D.');
+    expect(text).toContain('A plumbing layout for each floor.');
+    expect(text).toContain('The electric floor follows the same plan.');
+    expect(text).toContain('Connects your suppliers, designer, customer and workers in one live build.');
+    expect(text).toContain('Catalogue products stay in the plan at real sizes through the merchant connection.');
+    expect(text).toContain('Use the shared plan, the 3D view, the Materials list, and the plumbing and electric floors.');
+    expect(text).toContain(STARTING_POINT);
+    expect(text).toContain('Peak Performance Wellness Ltd · based in Tamarin, Mauritius');
+    expect(text).toContain('Book a meeting with a Live Demo');
+    expect(host.querySelector(`a[href="${CONSTRUCTION_MEETING_URL}"]`)).not.toBeNull();
+    expect(CONSTRUCTION_MEETING_URL).not.toBe(MEETING_URL);
+    expect(text).not.toMatch(/\bRs\b/);
+    expect(text).not.toMatch(/535,?402|1,623|805\.9|1\.68/);
+    expect(text).not.toMatch(/rebar|concrete|aggregate|roof sheet|automation|automatic ordering|delivery slot|job sheet/i);
+    expect(host.querySelector('a[href="/demo"]')).toBeNull();
+    expect(host.querySelector('a[href^="/studio"]')).toBeNull();
+    expect(host.querySelector('[role="tab"]')).toBeNull();
+    expect(PENDING_CONSTRUCTION_SHOTS).toHaveLength(8);
   });
-  it('opens Materials inside the real protected demo and preserves the iframe when switching views', () => {
-    chapter(1);
-    const frame = host.querySelector('iframe')!;
-    expect(frame.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d&panel=materials');
-    const post = vi.spyOn(frame.contentWindow!, 'postMessage');
-    click(button('2D · to scale'));
-    expect(host.querySelector('iframe')).toBe(frame);
-    expect(post).toHaveBeenLastCalledWith(expect.objectContaining({ view: '2d' }), window.location.origin);
-    expect(host.textContent).toContain('no orders or payments');
-  });
-  it('shows traceable block dimensions and distinguishes reinforced detailing from a structural frame', () => {
-    chapter(2);
-    expect(host.querySelector('.construction-dimension')?.textContent).toContain('450 × 200 × 150');
-    expect(host.textContent).toContain('Switch to nominal');
-    click(button('U Block & Corner Block'));
-    expect(host.textContent).toContain('not interchangeable with a designed reinforced concrete frame');
-    expect(host.querySelector('a[href="https://ubp.mu/sites/default/files/dta_vf_6.pdf"]')).not.toBeNull();
-  });
-  it('keeps release a workflow study rather than an order action', () => {
-    chapter(3); click(button('Authorized release'));
-    expect(host.textContent).toContain('does not create an order');
-    expect(host.textContent).toContain('2026-11-16');
-    expect(host.textContent).toContain('Unconfirmed · not a booking');
-    expect(host.querySelector('form')).toBeNull();
-  });
-});
 
-describe('construction calendar study', () => {
-  it('counts calendar days across month and year boundaries and rounds partial lead days up', () => {
-    expect(constructionDeliveryStudy('2027-01-05', 7.5)).toEqual({ delivery: '2027-01-05', release: '2026-12-28', review: '2026-12-26' });
-    expect(constructionDeliveryStudy('2026-11-30', 30)?.release).toBe('2026-10-31');
+  it('shows the four people and only the screenshots that exist', () => {
+    expect(host.querySelectorAll('img[alt="Ravi, contractor"]')).toHaveLength(2);
+    expect(host.querySelector('img[alt="Leena, quantity surveyor"]')).not.toBeNull();
+    expect(host.querySelector('img[alt="Marc, plumber"]')).not.toBeNull();
+    expect(host.querySelector('img[alt="Sophie, site manager"]')).not.toBeNull();
+    expect(host.querySelector('.c-portrait.is-toned img[alt="Ravi, contractor"]')).not.toBeNull();
+    expect(host.querySelector('.c-portrait.is-toned img[alt="Sophie, site manager"]')).not.toBeNull();
+    expect(host.querySelector('.c-portrait.is-toned img[alt="Leena, quantity surveyor"]')).toBeNull();
+    expect(host.querySelector('source[media="(max-width: 768px)"][srcset="/pitch/construction/shots/house-2d-phone.webp"]')).not.toBeNull();
+    expect(host.querySelector('source[srcset="/pitch/construction/shots/house-3d-phone.webp"]')).not.toBeNull();
+    expect(host.querySelector('source[srcset="/pitch/construction/shots/materials-phone.webp"]')).not.toBeNull();
+    expect(host.querySelector('img[src="/pitch/construction/shots/materials-warning.webp"]')).not.toBeNull();
+    expect(host.querySelector('img[src="/pitch/construction/shots/materials-report.webp"]')).not.toBeNull();
+    for (const slot of ['plan-import', 'plumbing', 'electric']) {
+      const coming = host.querySelector(`[data-slot="${slot}"]`);
+      expect(coming?.textContent).toContain('screenshot coming');
+      expect(coming?.querySelector('img')).toBeNull();
+    }
+    const requested = [...host.querySelectorAll('img')].map((img) => img.getAttribute('src'));
+    for (const missing of PENDING_CONSTRUCTION_SHOTS) expect(requested).not.toContain(missing);
   });
-  it('rejects impossible dates and invalid lead times instead of inventing a schedule', () => {
-    expect(constructionDeliveryStudy('2026-02-30', 14)).toBeNull();
-    for (const days of [-1, Number.NaN, Infinity, 366]) expect(constructionDeliveryStudy('2026-11-30', days)).toBeNull();
-    expect(constructionDeliveryStudy('', 14)).toBeNull();
+
+  it('embeds the live steps with pitch=1 and opens the preview steps in place', () => {
+    const frames = [...host.querySelectorAll('iframe')].map((frame) => frame.getAttribute('src'));
+    expect(frames).toEqual([
+      '/embed/designer?scene=home&view=3d&pitch=1',
+      '/embed/designer?scene=home&view=2d&panel=materials&pitch=1',
+    ]);
+    const house = host.querySelector('#house')!;
+    const frame = house.querySelector('iframe')!;
+    const post = vi.spyOn(frame.contentWindow!, 'postMessage');
+    click(house.querySelector<HTMLButtonElement>('button[aria-pressed="false"]')!);
+    expect(house.querySelector('iframe')).toBe(frame);
+    expect(frame.getAttribute('src')).toContain('pitch=1');
+    expect(post).toHaveBeenLastCalledWith(expect.objectContaining({ view: '2d' }), window.location.origin);
+    click([...host.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === 'Try this step')!);
+    expect(host.querySelector('iframe[src="/demo?pitch=1"]')).not.toBeNull();
   });
 });

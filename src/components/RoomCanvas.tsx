@@ -79,6 +79,7 @@ import { performRedo, performUndo } from '../lib/undoIntent';
 // Cost badge formats with the cart pill's formatter, so "2,932 GBP" can never
 // sit beside "£2,931.78" again (toolbar audit 2026-08-29).
 import { formatCurrency } from '../lib/currency';
+import { isPitchEmbed } from '../demo/pitchEmbed';
 // Batch 3 Fix 3.2 — vertices live in a tiny shared store so the
 // RoomList sidebar can render the live counters next to the room.
 import { useDrawProgressStore } from '../store/drawProgressStore';
@@ -3439,14 +3440,14 @@ export function RoomCanvas({
             closed), so the chip then HIDES rather than print the price twice.
             The element stays in the DOM — specs read its textContent — and
             shows again when the cart is empty. */}
-        <div
+        {!isPitchEmbed() && <div
           className={`${OVL_CHIP} ${costChipHidden ? 'hidden' : ''}`}
           style={{ background: CHROME_ACTIVE_BG, color: CHROME_ACTIVE_TEXT }}
           data-testid="cost-readout"
           hidden={costChipHidden}
         >
           {formatCurrency(costReadout.total, costReadout.currency)}
-        </div>
+        </div>}
         {/* ENERGY (eco / solar 2026-09-04) — sun vs use, per day. Hidden
             until the plan has a consumer or a panel, so an empty plan stays
             uncluttered; the dot is the verdict, the numbers the reason. */}
@@ -3559,7 +3560,7 @@ export function RoomCanvas({
                       : floorHudLive.units === 1
                         ? 'tile'
                         : 'tiles'
-                  } · ${formatCurrency(floorHudLive.cost, displayCurrency)}`
+                  }${isPitchEmbed() ? '' : ` · ${formatCurrency(floorHudLive.cost, displayCurrency)}`}`
                 : 'No floor yet'}
             </span>
             <button
@@ -3812,7 +3813,7 @@ export function RoomCanvas({
           >
             <span className="tabular-nums" data-testid="wallpaint-hud-live">
               {wallPaintLive.any
-                ? `${wallPaintLive.areaM2.toFixed(1)} m² · ${wallPaintLive.litres.toFixed(1)} L · ${formatCurrency(wallPaintLive.cost, displayCurrency)}`
+                ? `${wallPaintLive.areaM2.toFixed(1)} m² · ${wallPaintLive.litres.toFixed(1)} L${isPitchEmbed() ? '' : ` · ${formatCurrency(wallPaintLive.cost, displayCurrency)}`}`
                 : 'No walls painted yet'}
             </span>
             {' · '}
