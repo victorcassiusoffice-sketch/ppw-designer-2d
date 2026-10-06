@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ACCESS_COOKIE, digest, handleAccess, safeDestination, type AccessDependencies } from '../../server/accessGate';
+import { ACCESS_COOKIE, digest, handleAccess, opensWithoutStudioCode, safeDestination, type AccessDependencies } from '../../server/accessGate';
 import { neonCommand } from '../../server/accessStorage';
 import { config as middlewareConfig } from '../../middleware';
 
@@ -26,7 +26,7 @@ describe('server-side studio access', () => {
     for (const path of ['/designer', '/demo', '/studio', '/embed/designer', '/assets/main.js', '/favicon.ico', '/favicon.ico/designer']) expect(matcher.test(path)).toBe(true);
     for (const path of ['/api/healthcheck', '/api/stripe-webhook', '/api/mcp', '/_vercel/insights/script.js']) expect(matcher.test(path)).toBe(false);
   });
-  it.each(['/designer', '/demo?view=3d', '/studio', '/pitch/developers', '/index.html', '/assets/index.js'])('locks %s without loading the app or exposing the code', async (path) => {
+  it.each(['/designer', '/studio', '/studio/merchants', '/index.html', '/', '/checkout'])('locks %s without loading the app or exposing the code', async (path) => {
     const { deps, command } = setup();
     const response = await handleAccess(new Request(`https://designer.example${path}`), deps);
     const html = await response!.text();
@@ -34,6 +34,12 @@ describe('server-side studio access', () => {
     expect(html).not.toContain('2123');
     expect(html).not.toContain('<script');
     expect(response!.headers.get('cache-control')).toContain('no-store');
+    expect(command).not.toHaveBeenCalled();
+  });
+  it.each(['/demo', '/demo?view=3d', '/embed', '/embed/designer', '/pitch/construction', '/pitch/developers', '/pitch/merchants', '/assets/index.js', '/models/house.glb', '/products/catalogue.json', '/draco/decoder.js', '/showcase/designer-plan.webp', '/favicon.ico', '/ppw-favicon.svg'])('opens %s without the studio code', async (path) => {
+    const { deps, command } = setup();
+    expect(opensWithoutStudioCode(new URL(`https://designer.example${path}`).pathname)).toBe(true);
+    expect(await handleAccess(new Request(`https://designer.example${path}`), deps)).toBeNull();
     expect(command).not.toHaveBeenCalled();
   });
   it('issues an opaque secure cookie only after the correct code and durable session storage', async () => {
@@ -48,14 +54,14 @@ describe('server-side studio access', () => {
     expect(token).toMatch(/^[a-f0-9]{64}$/);
     expect([...data.keys()].join(' ')).not.toContain(token);
     expect(command).toHaveBeenCalledWith(['SET', `ppw:studio-access:v1:test:designer.example:session:${await digest(token)}`, 'unlocked', 'EX', 43200, 'NX']);
-    expect(await handleAccess(new Request('https://designer.example/demo', { headers: { cookie } }), deps)).toBeNull();
-    // Copying a preview cookie to another host cannot unlock production.
-    expect(await handleAccess(new Request('https://other.example/demo', { headers: { cookie } }), deps)).not.toBeNull();
+    expect(await handleAccess(new Request('https://designer.example/studio', { headers: { cookie } }), deps)).toBeNull();
+    // Copying a preview cookie to another host cannot unlock production. /demo is public on every host.
+    expect(await handleAccess(new Request('https://other.example/studio', { headers: { cookie } }), deps)).not.toBeNull();
   });
   it('rejects wrong codes, forged cookies and expired/missing sessions', async () => {
     const { deps } = setup();
     expect((await handleAccess(post('1234'), deps))!.status).toBe(401);
-    const response = await handleAccess(new Request('https://designer.example/demo', { headers: { cookie: `${ACCESS_COOKIE}=${'f'.repeat(64)}` } }), deps);
+    const response = await handleAccess(new Request('https://designer.example/studio', { headers: { cookie: `${ACCESS_COOKIE}=${'f'.repeat(64)}` } }), deps);
     expect(await response!.text()).toContain('Studio access code');
     expect(response!.headers.has('set-cookie')).toBe(false);
   });
@@ -94,7 +100,7 @@ describe('server-side studio access', () => {
   });
   it('escapes destination and error markup and supports narrow-screen numeric entry', async () => {
     const { deps } = setup();
-    const response = await handleAccess(new Request('https://designer.example/demo?q=%22%3E%3Cscript%3E'), deps);
+    const response = await handleAccess(new Request('https://designer.example/studio?q=%22%3E%3Cscript%3E'), deps);
     const html = await response!.text();
     expect(html).not.toContain('<script>');
     expect(html).toContain('inputmode="numeric"');
