@@ -1,6 +1,7 @@
 import { getProductById, productImageUrl } from '../data/products';
 import { hasSolarPanelPreview, SOLAR_PANEL_PREVIEW_NOTE } from '../data/solarPreview';
 import { formatCurrency } from '../lib/currency';
+import { isPitchEmbed } from '../demo/pitchEmbed';
 import { useCart } from '../store/cartStore';
 import { isShowcaseReadOnly, DEMO_NOTICE } from '../lib/showcaseSafety';
 
@@ -11,10 +12,11 @@ export function HouseCostPanel({ productId, onEdit, onCart }: {
   const cart = useCart();
   const readOnly = isShowcaseReadOnly();
   const product = productId ? getProductById(productId) : undefined;
-  const money = (amount: number) => formatCurrency(amount, cart.currency);
+  const pitch = isPitchEmbed();
+  const money = (amount: number) => pitch ? '' : formatCurrency(amount, cart.currency);
   return <div className="house-cost-panel">
     {product && <section className="house-product-detail" aria-label="Selected product description">
-      <div className="house-product-heading"><img src={productImageUrl(product)} alt="" /><div><h3>{product.name}</h3><span>{product.supplier}</span><strong>{product.price_on_request ? 'Price on request' : formatCurrency(product.price.value, product.price.currency)}</strong></div></div>
+      <div className="house-product-heading"><img src={productImageUrl(product)} alt="" /><div><h3>{product.name}</h3><span>{product.supplier}</span>{!pitch && <strong>{product.price_on_request ? 'Price on request' : formatCurrency(product.price.value, product.price.currency)}</strong>}</div></div>
       <p className="house-product-dimensions">{product.dimensions_cm.length} × {product.dimensions_cm.width} × {product.dimensions_cm.height} cm · L × W × H</p>
       {product.notes && <p>{product.notes}</p>}
       {hasSolarPanelPreview(product) && <p>{SOLAR_PANEL_PREVIEW_NOTE}</p>}
@@ -31,7 +33,7 @@ export function HouseCostPanel({ productId, onEdit, onCart }: {
           {cart.claddingLines.map(line => <li key={line.lineId}><span>{line.name}<small>Sample cladding estimate</small></span><strong>{money(line.totalDisplay)}</strong></li>)}
         </ul>}
     </section>
-    <div className="house-cost-total"><span>Product estimate</span><strong data-testid="house-cost-total">{money(cart.subtotal)}</strong></div>
+    {!pitch && <div className="house-cost-total"><span>Product estimate</span><strong data-testid="house-cost-total">{money(cart.subtotal)}</strong></div>}
     <p className="house-cost-note">Products and finishes only. Supplier-quoted products, building structure, labour and delivery are not included.</p>
     {readOnly && <p className="house-cost-note" data-testid="demo-order-notice">{DEMO_NOTICE}</p>}
     {!readOnly && onCart && <button type="button" className="house-review-cart" onClick={onCart}>Review cart & checkout ↗</button>}

@@ -75,9 +75,24 @@ function page(destination: string, message = '', status = 200, extra: Record<str
  * No localStorage unlock flag, public signing key or client-side code verifier.
  * A new session is deliberately scoped to one hostname, not every preview.
  */
+/** Public pitches, the demo and the embed. /studio and the designer shell stay gated. */
+export function opensWithoutStudioCode(pathname: string): boolean {
+  if (pathname === '/favicon.ico' || pathname === '/ppw-favicon.svg') return true;
+  if (pathname === '/demo' || pathname.startsWith('/demo/')) return true;
+  if (pathname === '/embed' || pathname.startsWith('/embed/')) return true;
+  if (pathname.startsWith('/pitch/')) return true;
+  if (pathname.startsWith('/assets/')) return true;
+  if (pathname.startsWith('/models/')) return true;
+  if (pathname.startsWith('/products/')) return true;
+  if (pathname.startsWith('/draco/')) return true;
+  if (pathname.startsWith('/showcase/')) return true;
+  return false;
+}
+
 export async function handleAccess(request: Request, deps: AccessDependencies): Promise<Response | null> {
   const url = new URL(request.url);
   const isAccess = url.pathname === '/access';
+  if (!isAccess && opensWithoutStudioCode(url.pathname)) return null;
   const destination = safeDestination(isAccess ? url.searchParams.get('next') : url.pathname + url.search);
   const namespace = `ppw:studio-access:v1:${deps.namespace}:${url.host}`;
   const cookie = (request.headers.get('cookie') ?? '').split(';').map((v) => v.trim()).find((v) => v.startsWith(`${ACCESS_COOKIE}=`))?.slice(ACCESS_COOKIE.length + 1);

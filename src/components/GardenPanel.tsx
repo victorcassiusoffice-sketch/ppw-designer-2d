@@ -7,6 +7,7 @@ import {
 } from '../designer/garden';
 import { OUTDOOR_PAVING_PRODUCTS, findOutdoorPavingProduct, pavingSizeLabel, type OutdoorPavingProduct } from '../data/outdoorPaving';
 import { estimateGardenPaving } from '../designer/gardenPaving';
+import { isPitchEmbed } from '../demo/pitchEmbed';
 import './GardenPanel.css';
 
 const BUTTON = 'garden-button inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-ppw-rim bg-white px-3 text-[12px] font-medium text-[#37362f] hover:bg-[#f3f1ec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-inkDeep';
@@ -15,7 +16,7 @@ const mur = (value: number) => `Rs ${value.toLocaleString('en-MU', { minimumFrac
 
 function PavingSource({ product }: { product: OutdoorPavingProduct }) {
   return <p className="garden-muted text-[11px] leading-relaxed">
-    {product.brand} · {pavingSizeLabel(product)} · {mur(product.unitPriceMur)}/piece, VAT included.<br />
+    {product.brand} · {pavingSizeLabel(product)}{isPitchEmbed() ? '' : ` · ${mur(product.unitPriceMur)}/piece, VAT included.`}<br />
     <a className="garden-source-link underline underline-offset-2" href={product.sourceUrl} target="_blank" rel="noreferrer">Espace Maison · {product.sku} ↗</a><br />
     Price checked {product.checkedAt}. Confirm price and availability with the shop.
   </p>;
@@ -164,7 +165,7 @@ export function GardenPanel({ onRequestPlacement, onClose, architectural = false
           </select>
         </label>}
         {pavingEstimate && <div className="garden-product-card col-span-2 rounded-lg border border-ppw-rim p-2.5" data-testid="garden-paving-estimate" aria-live="polite">
-          <p className="text-[12px] font-semibold tabular-nums">{pavingEstimate.areaM2.toFixed(2)} m² · {pavingEstimate.pieces} pieces · {mur(pavingEstimate.totalMur)}</p>
+          <p className="text-[12px] font-semibold tabular-nums">{pavingEstimate.areaM2.toFixed(2)} m² · {pavingEstimate.pieces} pieces{isPitchEmbed() ? '' : ` · ${mur(pavingEstimate.totalMur)}`}</p>
           <PavingSource product={pavingEstimate.product} />
           <p className="garden-muted mt-2 text-[11px] leading-relaxed">{pavingEstimate.columns} × {pavingEstimate.rows} straight rows. Edge cuts use whole pieces; offcuts are not reused. No joint gap, breakage allowance, delivery or laying cost included. Colour preview is illustrative.</p>
         </div>}
@@ -181,7 +182,7 @@ export function GardenPanel({ onRequestPlacement, onClose, architectural = false
       </div>}
     </>}
     <p className="garden-quantities border-t border-ppw-rim pt-2 text-[11px] tabular-nums" data-testid="garden-quantities">Surfaces {totalArea.toFixed(1)} m² · boundaries {totalFence.toFixed(1)} m<br />
-      {pavingEstimates.length > 0 && <span data-testid="garden-paving-total">Paving material estimate {mur(pavingTotal)} · VAT included<br /></span>}
+      {pavingEstimates.length > 0 && !isPitchEmbed() && <span data-testid="garden-paving-total">Paving material estimate {mur(pavingTotal)} · VAT included<br /></span>}
       <span className="garden-muted text-[#5b5852]">Generic surfaces and boundaries have no product price. Overlapping patches are counted separately. Paving estimates are separate from the product cart.</span>
     </p>
   </section>;

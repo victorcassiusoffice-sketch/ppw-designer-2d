@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useCart } from '../store/cartStore';
 import { useCurrencyStore } from '../store/currencyStore';
 import { formatCurrency } from '../lib/currency';
+import { isPitchEmbed } from '../demo/pitchEmbed';
 import { PRECISION_STEP_M, useDesignerUIStore } from '../store/designerUIStore';
 import { useHistoryStore } from '../store/historyStore';
 import { usePropertyStore } from '../store/propertyStore';
@@ -143,7 +144,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
             {!levels.some(isRoofLevel) && <option value="__roof">Roof</option>}
             <option value="__add-floor">＋ Add floor</option>
           </select><ServicesLaunchButton compact onBeforeOpen={onSelect} /><span className="house-scene-label">{drawing || wallDrawing ? `Snap ${PRECISION_STEP_M[precision]} m` : `${totalArea.toFixed(1)} m²`}</span></div>
-          <button type="button" className="house-cost-pill house-checkout-toggle" onClick={toggleCost} aria-label={`Product estimate ${formatCurrency(cart.subtotal, currency)}. Open products and cost`} aria-expanded={costOpen}><span>Estimate</span><strong>{formatCurrency(cart.subtotal, currency)}</strong></button>
+          {!isPitchEmbed() && <button type="button" className="house-cost-pill house-checkout-toggle" onClick={toggleCost} aria-label={`Product estimate ${formatCurrency(cart.subtotal, currency)}. Open products and cost`} aria-expanded={costOpen}><span>Estimate</span><strong>{formatCurrency(cart.subtotal, currency)}</strong></button>}
           <div className="house-quick-tools"><button type="button" aria-label="Select and move objects" aria-pressed={!drawing && !wallDrawing && buildTool === 'select'} onClick={() => { onSelect(); setBuildPaletteOpen(false); }}><StudioIcon name="cursor" size={18} /></button><button type="button" aria-label="Build tools" aria-controls="house-build-palette" aria-expanded={buildPaletteOpen} onClick={() => { onMode('build'); setBuildPaletteOpen(!buildPaletteOpen); setMobileInspector(false); }}><StudioIcon name="room" size={18} /><span>Build</span></button></div>
           <div id="house-build-palette" className="house-scene-actions">
             <button aria-pressed={!drawing && !wallDrawing && buildTool === 'select'} onClick={onSelect}><StudioIcon name="cursor" size={18} /><span>Select</span></button>
@@ -179,7 +180,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
           {!selection && <div className="house-metrics"><div><strong>{totalArea.toFixed(1)}</strong><span>m² floor area</span></div><div><strong>{rooms.length}</strong><span>rooms</span></div><div><strong>{levelsOf(property).filter((l) => !isRoofLevel(l)).length}</strong><span>floors</span></div></div>}
         </div>
         <div className="house-inspector-content">{costOpen ? <HouseCostPanel productId={selection?.productId} onCart={onCart} onEdit={selection ? () => { setCostOpen(false); setMobileInspector(true); } : undefined} /> : inspector}</div>
-        {!costOpen && <div className="house-inspector-foot"><div className="house-estimate"><span>Product estimate</span><strong>{formatCurrency(cart.subtotal, currency)}</strong></div><p>From the products and finishes in your plan.</p>{onCart && <button className="house-estimate-button" onClick={onCart}>View products & quantities ↗</button>}</div>}
+        {!costOpen && <div className="house-inspector-foot">{!isPitchEmbed() && <div className="house-estimate"><span>Product estimate</span><strong>{formatCurrency(cart.subtotal, currency)}</strong></div>}<p>From the products and finishes in your plan.</p>{onCart && <button className="house-estimate-button" onClick={onCart}>View products & quantities ↗</button>}</div>}
       </aside>}
     </div>
   </div>;
