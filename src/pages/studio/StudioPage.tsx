@@ -38,6 +38,7 @@ export default function StudioPage() {
           <Link className="studio-primary" to={`/studio/designer?view=${mode}`}>Open {mode === '3d' ? 'Premium 3D' : '2D designer'} <span aria-hidden="true">→</span></Link>
           <p className="studio-fine">Both views are included in this read-only demo. Your changes stay on this device. No orders, purchases or payments. AI generation needs sign-in and a configured provider.</p>
           <Link to="/demo?view=3d&panel=ai">Open guided design & AI workspace ↗</Link>
+          <Link to="/studio/sales">Employee starter pack & sector demos ↗</Link>
         </div>
         <figure className="studio-hero-art"><img src="/showcase/developer-vision.webp" alt="Architectural concept of an apartment with a plan, furnishings and material samples" /><figcaption>THE CONNECTED HOME · CONCEPT ART</figcaption></figure>
       </section>
