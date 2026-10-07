@@ -1,3 +1,20 @@
+<!-- sales-pack-oct7:start -->
+## Verified plumbing pitch and employee starter pack - 7 October 2026
+
+Application commit `24dc3b8`; verified deployment commit `6b9b406eb7f7fd220bbd08a2f0eaf43eeefd0b4f` (documentation-only follow-up). Branch `gpt/designer-2026-10-07`; PR https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/43. Main and production are unchanged by this work.
+
+- https://ppw-designer-2d-e3srouuje-victor-ppw.vercel.app/pitch/plumbing - Room Designer: plumbing suppliers, installers and bathroom showrooms.
+- https://ppw-designer-2d-e3srouuje-victor-ppw.vercel.app/studio/sales - Room Designer: employee training and sales across 17 company categories; existing Studio access gate applies.
+- https://ppw-designer-2d-e3srouuje-victor-ppw.vercel.app/demo?view=2d&panel=services&pitch=1 - Room Designer: live plumbing and electrical demonstration.
+
+Six-chapter customer pitch and an employee hub with six practice exercises, market/buyer map, 2D/3D/category and installation choices, product onboarding, outreach drafts, local discovery worksheet and deployment-aware link directory. Includes a downloadable handbook. No prospect messages, merchant publications, purchases or enquiry submissions were made.
+
+Verification: all 18 listed app routes returned HTTP 200 (Studio routes showed the intended access gate), MCP tools/list returned 200 with services tools, Calendly returned 200. Deployed pitch and employee hub render at desktop and 390px. Local relevant tests 47 pass; CI full suite 313 test files pass; client/middleware/API typechecks, lint and build pass. Lighthouse remains red against the existing production /designer, for PWA/SEO/payload assertions, not these preview pages. First preview 9nglriobi timed out; use e3srouuje above.
+
+Full source folder: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\src\pages\sales`.
+Single handover folder: `C:\Users\Victor\Documents\PPW-Second-Brain\06-Roadmap\agentix-os\inbox\designer-2026-10-07-sales-starter-pack` (START-HERE.md, employee handbook, plumbing brief, links, outreach, onboarding, discovery, HANDOFF.md and shots).
+
+<!-- sales-pack-oct7:end -->
 <!-- oct4-sculpted:start -->
 ## Verified sculpted UI and realism preview — 4 October 2026
 
