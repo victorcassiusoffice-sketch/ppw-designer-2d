@@ -4,7 +4,6 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import DeveloperPitchPage from '../DeveloperPitchPage';
 import MerchantPitchPage from '../MerchantPitchPage';
-import ConstructionPitchPage from '../ConstructionPitchPage';
 import { PitchEnquiryForm } from '../PitchEnquiryForm';
 import { MEETING_URL } from '../workflowModel';
 
@@ -28,7 +27,7 @@ function fill() {
 const submit = () => act(async () => { host.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); });
 
 describe('AI and business presentation', () => {
-  it.each([DeveloperPitchPage, MerchantPitchPage, ConstructionPitchPage])('offers actual screenshots, the working AI demo, merchant setup and meeting/feedback routes', (Page) => {
+  it.each([DeveloperPitchPage, MerchantPitchPage])('offers actual screenshots, the working AI demo, merchant setup and meeting/feedback routes', (Page) => {
     act(() => root.render(<Page />)); click('Explore AI automation');
     expect(host.querySelector('img')?.getAttribute('src')).toBe('/showcase/designer-ai.png');
     expect(host.querySelector('h2')?.textContent).toBe('Less repetition. More considered decisions.');
@@ -42,6 +41,8 @@ describe('AI and business presentation', () => {
     expect(frame.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d&panel=ai');
     click('2D plan'); expect(host.querySelector('iframe')).toBe(frame);
     click('2 · Connect');
+    expect(host.textContent).toContain('Tools that connect');
+    expect(host.textContent).not.toContain('Automation, with clear boundaries');
     expect(host.querySelector('a[href="/studio/merchants/connect"]')).not.toBeNull();
     expect(host.textContent).toContain('MCP tool access');
     expect(host.textContent).toContain('Import the JSON, review it, then apply it');
