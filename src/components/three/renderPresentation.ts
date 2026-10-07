@@ -5,14 +5,14 @@ import type { FloorSurface } from './surfaces';
 export type ScenePresentation = 'studio' | 'architectural' | 'natural';
 
 /** Backdrop tokens are deliberately separate from illumination / sold finishes. */
-export const ARCHITECTURAL_GROUND_HEX = '#d8ddd5';
-export const ARCHITECTURAL_HORIZON_HEX = '#dedbd2';
+export const ARCHITECTURAL_GROUND_HEX = '#a9bbb4';
+export const ARCHITECTURAL_HORIZON_HEX = '#c0cec8';
 export function architecturalBackdrop(day: number): { top: number[]; horizon: number[] } {
   const daylight = Number.isFinite(day) ? Math.max(0, Math.min(1, day)) : 1;
   const mix = (night: number[], noon: number[]) => night.map((value, i) => Math.round(value + (noon[i] - value) * daylight));
   return {
-    top: mix([31, 36, 36], [216, 221, 213]),
-    horizon: mix([49, 53, 52], [222, 219, 210]),
+    top: mix([31, 36, 36], [169, 187, 180]),
+    horizon: mix([49, 53, 52], [192, 206, 200]),
   };
 }
 

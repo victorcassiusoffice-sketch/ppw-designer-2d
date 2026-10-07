@@ -68,6 +68,8 @@ import { carryItemPreviewPose } from './itemPreviewPose';
 import { createRoofSurface, roofItemMount } from '../../designer/roofSurface';
 import { pointInPolygon } from '../../lib/geometry';
 import { applyProductSurfaceLighting } from './productSurfaceLighting';
+import { serviceFixtureMesh } from './serviceFixtureMeshes';
+import type { ServiceFixturePlacement } from '../../designer/serviceFixtures';
 
 // ---------------------------------------------------------------------------
 // Product bodies (2026-09-17): a textured glTF per product, fetched once and
@@ -233,6 +235,8 @@ export interface ThreeStageHandle {
   };
   /** The placed item under a canvas-local point (its body or its box), or null. */
   hitItem(x: number, y: number): { instanceId: string } | null;
+  /** Generic plumbing/electric fixture on the active storey, in canvas pixels. */
+  hitServiceFixture?(x: number, y: number): string | null;
   /** DEV bridge: what a wall's material shows right now (the preview or its own paint). */
   wallMaterial(hit: WallHit): { hex: string; baseHex: string; finish: string | null; roughness: number; sheen: number; hasMap: boolean; show: WallShow } | null;
   /** DEV bridge: the rendered colour at a canvas-local point (renders, then reads the pixel back). */
@@ -255,6 +259,8 @@ export interface ThreeStageProps {
   /** Architectural lighting/backdrop for exploring; studio preserves the measured paint preview. */
   presentation?: ScenePresentation;
   solids: SceneSolids;
+  /** Generic service fixtures on visible storeys, independent of catalog stock. */
+  serviceFixtures?: ServiceFixturePlacement[];
   camera: OrbitCamera;
   width: number;
   height: number;
@@ -592,7 +598,7 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
 
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, camera, width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed },
+  { solids, serviceFixtures, camera, width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed },
   ref,
 ): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -614,6 +620,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const skyRef = useRef<THREE.Mesh | null>(null);
   const groundRef = useRef<THREE.Mesh | null>(null);
   const contentRef = useRef<THREE.Group | null>(null);
+  const servicesRef = useRef<THREE.Group | null>(null);
   const signatureRef = useRef<string>('');
   const wallsRef = useRef<WallEntry[]>([]);
   const floorsRef = useRef<THREE.Mesh[]>([]);
@@ -889,6 +896,10 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     const content = new THREE.Group();
     scene.add(content);
     contentRef.current = content;
+    const services = new THREE.Group();
+    services.name = 'building-service-fixtures';
+    scene.add(services);
+    servicesRef.current = services;
 
     const onLost = (e: Event) => {
       e.preventDefault();
@@ -909,6 +920,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       naturalRendererRef.current = null;
       naturalUnavailableRef.current = false;
       if (contentRef.current) disposeObject(contentRef.current);
+      if (servicesRef.current) disposeObject(servicesRef.current);
       disposeObject(ground);
       disposeObject(sky);
       envTargetRef.current?.dispose();
@@ -924,6 +936,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       sceneRef.current = null;
       cameraRef.current = null;
       contentRef.current = null;
+      servicesRef.current = null;
       skyRef.current = null;
       groundRef.current = null;
       hemiRef.current = null;
@@ -1127,6 +1140,19 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [solids]);
+
+  // Services are presentation geometry only. Rebuilding their small dedicated
+  // group never moves the camera, changes a room footprint or enters the cart.
+  useEffect(() => {
+    const group = servicesRef.current;
+    if (!group) return;
+    disposeObject(group);
+    group.clear();
+    for (const fixture of serviceFixtures ?? []) group.add(serviceFixtureMesh(fixture));
+    group.updateMatrixWorld(true);
+    requestRender();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serviceFixtures]);
 
   // ---- the hour: sun, sky, lamps -----------------------------------------
   useEffect(() => {
@@ -1400,6 +1426,17 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         for (const f of floorsRef.current) out.push({ key: f.userData.key as string, holes: 0 });
         for (const it of itemsRef.current) out.push({ key: it.userData.key as string, holes: 0 });
         return out;
+      },
+      hitServiceFixture(x, y) {
+        const c = cameraRef.current;
+        if (!c || width < 8 || height < 8) return null;
+        const ray = new THREE.Raycaster();
+        ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
+        const visible = (servicesRef.current?.children ?? []).filter(fixture => !solids.activeLevelId || fixture.userData.levelId === solids.activeLevelId);
+        const first = ray.intersectObjects(visible, true)[0];
+        let node: THREE.Object3D | null = first?.object ?? null;
+        while (node && !node.userData.serviceFixtureId) node = node.parent;
+        return (node?.userData.serviceFixtureId as string | undefined) ?? null;
       },
       hitItem(x, y) {
         const c = cameraRef.current;

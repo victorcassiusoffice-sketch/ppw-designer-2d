@@ -111,6 +111,7 @@ import type { SceneSolids } from '../designer/roomSolids';
 import type { ThreeStageHandle } from './three/ThreeStage';
 import type { ScenePresentation } from './three/renderPresentation';
 import { fitArchitecturalCamera } from '../designer/architecturalCamera';
+import { visibleServiceFixtures } from '../designer/serviceFixtures';
 
 // The GL renderer and three itself arrive in their own chunk, on first use.
 const ThreeStage = lazy(() => import('./three/ThreeStage'));
@@ -635,6 +636,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   // The solids follow the plan only; the camera just decides the cutaway.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const solids: SceneSolids = useMemo(() => buildingSolids(property, (p) => sceneFromProperty(p, null, SOLIDS_CAMERA), buildingView, showRoof), [property, catalogVersion, buildingView, showRoof]);
+  const serviceFixtures = useMemo(() => visibleServiceFixtures(property, level, buildingView), [property, level, buildingView]);
 
   // Painter fallback: only computed while it is the one drawing.
   const projected: ProjectedFace[] = useMemo(() => {
@@ -957,7 +959,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       // A press on an item picks it up; anywhere else orbits.
       if (itemsInteractive && stageRef.current) {
         const p = localPoint(e);
-        const hit = stageRef.current.hitItem(p.x, p.y);
+        const serviceHit = !armedProductId && stageRef.current.hitServiceFixture?.(p.x, p.y);
+        const hit = serviceHit ? null : stageRef.current.hitItem(p.x, p.y);
         const floor = hit ? stageRef.current.floorPoint(p.x, p.y) : null;
         if (hit && floor) {
           itemDrag.current = { instanceId: hit.instanceId, start: floor, dx: 0, dy: 0, moved: false };
@@ -1322,6 +1325,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       return;
     }
     if (!itemsInteractive || !stageRef.current) return;
+    const fixtureId = !armedProductId && stageRef.current.hitServiceFixture?.(p.x, p.y);
+    if (fixtureId) {
+      window.dispatchEvent(new CustomEvent('ppw:open-services', { detail: { fixtureId } }));
+      return;
+    }
     // A tap on the floor: place the armed product there, else clear the selection.
     const floor = stageRef.current.floorPoint(p.x, p.y);
     if (armedProductId && floor) placeAtPoint(armedProductId, floor.x, floor.y);
@@ -1668,6 +1676,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
             <ThreeStage
               ref={stageRef}
               solids={solids}
+              serviceFixtures={serviceFixtures}
               presentation={presentation}
               camera={renderedCamera ?? camera}
               width={size.width}

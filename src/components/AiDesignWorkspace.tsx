@@ -10,6 +10,7 @@ import { useHistoryStore } from '../store/historyStore';
 import { usePlacementIntentStore } from '../store/placementIntentStore';
 import { applyPage, createPage, flushCurrentPage } from '../lib/pages';
 import { downloadJson } from '../lib/downloadJson';
+import { useWorkspaceFocus } from '../hooks/useWorkspaceFocus';
 import './aiDesign.css';
 
 const ProviderDraft = lazy(() => import('./AiProviderDraft'));
@@ -32,9 +33,16 @@ export function AiDesignWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }
       window.dispatchEvent(new CustomEvent('ppw:close-catalog'));
       setOpen(true);
     };
+    const close = () => setOpen(false);
     window.addEventListener('ppw:open-ai-design', show);
+    window.addEventListener('ppw:open-plan-import', close);
+    window.addEventListener('ppw:open-services', close);
     if (new URLSearchParams(window.location.search).get('panel') === 'ai') show();
-    return () => window.removeEventListener('ppw:open-ai-design', show);
+    return () => {
+      window.removeEventListener('ppw:open-ai-design', show);
+      window.removeEventListener('ppw:open-plan-import', close);
+      window.removeEventListener('ppw:open-services', close);
+    };
   }, []);
   return open ? createPortal(<DesignWorkbench onClose={() => setOpen(false)} />, document.body) : null;
 }
@@ -57,21 +65,7 @@ function DesignWorkbench({ onClose }: { onClose: () => void }) {
   useEffect(() => { importRevision.current++; setReadingFile(false); }, [mode]);
   const products = useCatalogStore(state => state.products);
   const catalog = useMemo<DesignCatalogProduct[]>(() => [...getAllProducts(), ...products].map(p => ({ id:p.id,name:p.name,supplier:p.supplier,category:p.category,widthM:p.dimensions_cm.length/100,depthM:p.dimensions_cm.width/100,heightM:p.dimensions_cm.height/100,placement:p.placement??'floor' })), [products]);
-  useEffect(() => {
-    const prior = document.activeElement as HTMLElement | null;
-    dialog.current?.querySelector<HTMLElement>('button')?.focus();
-    const keys = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); onClose(); }
-      if (event.key === 'Tab') {
-        const focusable = [...(dialog.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), select, textarea, summary, [tabindex="0"]') ?? [])].filter(node => node.getClientRects().length > 0);
-        const first = focusable[0], last = focusable[focusable.length - 1];
-        if (event.shiftKey && (document.activeElement === first || !dialog.current?.contains(document.activeElement))) { event.preventDefault(); last?.focus(); }
-        else if (!event.shiftKey && (document.activeElement === last || !dialog.current?.contains(document.activeElement))) { event.preventDefault(); first?.focus(); }
-      }
-    };
-    document.addEventListener('keydown', keys, true);
-    return () => { document.removeEventListener('keydown', keys, true); prior?.focus(); };
-  }, [onClose]);
+  useWorkspaceFocus(dialog, onClose);
   function receive(input: unknown, label: string) {
     const result = validateDesignDraft(input, catalog);
     setAcknowledged(false);

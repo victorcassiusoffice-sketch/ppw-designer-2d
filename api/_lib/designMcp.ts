@@ -8,6 +8,12 @@ import {
   DESIGN_SCHEMA_DESCRIPTION,
 } from '../../src/designer/aiDesignContract.js';
 import { allowedDesignOrigin, designCatalog, readDesignBody } from './designAssistant.js';
+import {
+  estimateServices, normaliseBuildingServices, serviceRunLengthM, SERVICE_FIXTURES, SERVICE_SYSTEMS,
+} from '../../src/designer/buildingServices.js';
+import {
+  BUILDING_SERVICES_CHECKED_AT, SERVICE_FITTINGS, SERVICE_MATERIALS,
+} from '../../src/data/buildingServicesCatalog.js';
 import { buildLimiter, getClientIp } from './rateLimit.js';
 import type { MinReq, MinRes } from './sentry.js';
 
@@ -31,6 +37,59 @@ const annotations = {
   destructiveHint: false,
   idempotentHint: true,
   openWorldHint: false,
+};
+const serviceSystemSchema = z.enum(['cold-water', 'hot-water', 'waste', 'electrical']);
+const serviceKeySchema = z.string().min(1).max(128);
+const servicePositionSchema = z.number().finite().min(-10000).max(10000);
+const serviceDimensionSchema = z.number().finite().min(.05).max(5);
+const servicesSchema = z.object({
+  version: z.literal(1),
+  runs: z.array(z.object({
+    id: serviceKeySchema, levelId: serviceKeySchema, system: serviceSystemSchema, materialId: serviceKeySchema,
+    diameterMm: z.number().finite().min(5).max(1000),
+    points: z.array(z.object({ x: servicePositionSchema, y: servicePositionSchema }).strict()).min(2).max(500),
+    startElevationM: z.number().finite().min(-20).max(20),
+    endElevationM: z.number().finite().min(-20).max(20),
+  }).strict()).max(2000),
+  fixtures: z.array(z.object({
+    id: serviceKeySchema, levelId: serviceKeySchema,
+    kind: z.enum(['toilet', 'sink', 'mains-tap', 'electrical-board']),
+    x: servicePositionSchema, y: servicePositionSchema,
+    widthM: serviceDimensionSchema, depthM: serviceDimensionSchema, heightM: serviceDimensionSchema,
+    rotation: z.number().finite().min(-36000).max(36000),
+  }).strict()).max(2000),
+}).strict().superRefine((services, ctx) => {
+  const seen = new Set<string>();
+  for (const group of ['runs', 'fixtures'] as const) {
+    services[group].forEach((entity, index) => {
+      if (seen.has(entity.id)) ctx.addIssue({ code: 'custom', path: [group, index, 'id'], message: 'IDs must be unique across all runs and fixtures.' });
+      seen.add(entity.id);
+    });
+  }
+  services.runs.forEach((run, index) => {
+    if (serviceRunLengthM(run) < .01) ctx.addIssue({ code: 'custom', path: ['runs', index, 'points'], message: 'A route must measure at least 0.01 m including its elevation change.' });
+  });
+});
+
+const SERVICE_SCHEMA_DESCRIPTION = {
+  version: 1,
+  units: { positions: 'metres in the building plan', dimensions: 'metres', diameter: 'supplier nominal millimetres, not automatically bore or OD', rotation: 'degrees' },
+  fields: {
+    runs: '{id, levelId, system, materialId, diameterMm, points:[{x,y},...], startElevationM, endElevationM}',
+    fixtures: '{id, levelId, kind, x, y, widthM, depthM, heightM, rotation}',
+  },
+  limits: { runs: 2000, fixtures: 2000, pointsPerRun: [2, 500], coordinatesM: [-10000, 10000], elevationsM: [-20, 20], diameterMm: [5, 1000], fixtureDimensionsM: [.05, 5], rotationDegrees: [-36000, 36000], minimumRunLengthM: .01, bodyBytes: 131072 },
+  systems: SERVICE_SYSTEMS,
+  fixtureDefaults: SERVICE_FIXTURES,
+  example: { version: 1, runs: [{ id: 'cold-1', levelId: 'ground', system: 'cold-water', materialId: 'hpl-aquasafe-upvc-20', diameterMm: 20, points: [{ x: 1, y: 1 }, { x: 4, y: 1 }], startElevationM: .3, endElevationM: .3 }], fixtures: [] },
+  rules: [
+    'Both arrays are required. IDs must be unique across them. Supply levelIds to check floor references against your building.',
+    'Elevations are relative to the selected floor. Every run belongs to one level; a vertical-only riser can repeat an XY point with different elevations.',
+    'Measured length assumes a constant gradient along the complete polyline. Split routes when the gradient changes.',
+    'Fixture defaults are editable generic planning envelopes, not verified supplier product dimensions.',
+    'Unknown material IDs or sizes remain measurable but are explicitly unverified; no supply-length quantity is inferred.',
+  ],
+  limitations: 'Coordination and measured quantities only. No hydraulic sizing, electrical circuit design, automatic fitting count, live inventory, price, order or saved-design mutation. Mains connection and installation require project approval.',
 };
 export const DESIGN_MCP_TOOLS = [
   {
@@ -76,6 +135,31 @@ export const DESIGN_MCP_TOOLS = [
       required: ['draft'],
       additionalProperties: false,
     },
+    annotations,
+  },
+  {
+    name: 'get_services_schema',
+    description: 'Read the versioned metre-based service-route contract, editable generic fixture defaults and a valid example. No customer designs are read or changed.',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    annotations,
+  },
+  {
+    name: 'search_service_materials',
+    description: 'Search dated Mauritian supplier pipe, conduit and fitting references. Nominal size is distinct from verified outside diameter. No stock, prices or suitability approval.',
+    inputSchema: { type: 'object', properties: {
+      query: { type: 'string', maxLength: 160 },
+      system: { type: 'string', enum: ['cold-water', 'hot-water', 'waste', 'electrical'] },
+      limit: { type: 'integer', minimum: 1, maximum: 50, default: 20 },
+    }, additionalProperties: false },
+    annotations,
+  },
+  {
+    name: 'estimate_services',
+    description: 'Validate all supplied service routes and fixtures, then measure route lengths and known supply-length quantities. Any invalid entity rejects the estimate; no partial result is silently returned. Not hydraulic or electrical design.',
+    inputSchema: { type: 'object', properties: {
+      services: { type: 'object', description: 'Complete version 1 BuildingServices object from get_services_schema; runs and fixtures arrays are required.' },
+      levelIds: { type: 'array', items: { type: 'string', minLength: 1, maxLength: 128 }, maxItems: 2000, description: 'Optional known building floor IDs. Unknown references reject the whole estimate when supplied.' },
+    }, required: ['services'], additionalProperties: false },
     annotations,
   },
 ];
@@ -199,6 +283,44 @@ export function dispatchDesignMcp(input: unknown): { status: number; body?: unkn
       const input = z.object({ draft: z.unknown() }).strict().parse(args),
         checked = validateDesignDraft(input.draft, designCatalog());
       return result(toolContent(checked, !checked.ok));
+    }
+    if (params.name === 'get_services_schema') {
+      z.object({}).strict().parse(args);
+      return result(toolContent(SERVICE_SCHEMA_DESCRIPTION));
+    }
+    if (params.name === 'search_service_materials') {
+      const input = z.object({ query: z.string().max(160).default(''), system: serviceSystemSchema.optional(), limit: z.number().int().min(1).max(50).default(20) }).strict().parse(args);
+      const query = input.query.trim().toLowerCase();
+      const match = (item: { system: string; id: string; label: string; supplier: string }) =>
+        (!input.system || item.system === input.system) && `${item.id} ${item.label} ${item.supplier} ${item.system}`.toLowerCase().includes(query);
+      const materials = SERVICE_MATERIALS.filter(match), fittings = SERVICE_FITTINGS.filter(match);
+      return result(toolContent({
+        source: 'Published supplier reference snapshot; not live stock or prices',
+        checkedAt: BUILDING_SERVICES_CHECKED_AT,
+        materials: materials.slice(0, input.limit), fittings: fittings.slice(0, Math.max(0, input.limit - materials.length)),
+        total: materials.length + fittings.length,
+      }));
+    }
+    if (params.name === 'estimate_services') {
+      const body = readDesignBody(args);
+      if (!body.ok) throw new Error(body.error);
+      const input = z.object({ services: servicesSchema, levelIds: z.array(serviceKeySchema).max(2000).optional() }).strict().parse(body.value);
+      if (input.levelIds) {
+        const floors = new Set(input.levelIds);
+        const invalid = [...input.services.runs, ...input.services.fixtures].filter(entity => !floors.has(entity.levelId));
+        if (invalid.length) return result(toolContent({ error: 'Unknown floor references. No quantities were calculated.', invalidEntities: invalid.map(entity => ({ id: entity.id, levelId: entity.levelId })) }, true));
+      }
+      const services = normaliseBuildingServices(input.services, input.levelIds ? new Set(input.levelIds) : undefined);
+      if (!services || services.runs.length !== input.services.runs.length || services.fixtures.length !== input.services.fixtures.length)
+        return result(toolContent({ error: 'One or more entities failed the service contract. No partial quantities were calculated.' }, true));
+      const runs = estimateServices(services);
+      return result(toolContent({
+        runs, totalLengthM: runs.reduce((sum, run) => sum + run.lengthM, 0), fixtureCount: services.fixtures.length,
+        warnings: runs.filter(run => !run.verifiedMaterial).map(run => `${run.id}: material/system/nominal-size match is unverified; supply-length quantity is unavailable.`),
+        floorReferencesChecked: input.levelIds !== undefined,
+        assumptions: 'Constant gradient per route. Whole supply lengths per route without offcut reuse. Fittings, insertion depths, waste allowances and fixtures are not added to pipe lengths.',
+        limitations: SERVICE_SCHEMA_DESCRIPTION.limitations,
+      }));
     }
     return { status: 200, body: rpcError(id, -32602, 'Unknown tool.') };
   } catch (error) {

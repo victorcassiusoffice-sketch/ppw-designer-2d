@@ -25,6 +25,10 @@ beforeEach(()=>{
 });
 afterEach(()=>{act(()=>root.unmount());host.remove();vi.clearAllMocks();});
 describe('Design assistant draft review',()=>{
+  it.each(['ppw:open-services','ppw:open-plan-import'])('releases the background and closes when %s opens',event=>{
+    const previous=usePropertyStore.getState().property;open();expect(host.hasAttribute('inert')).toBe(true);
+    act(()=>window.dispatchEvent(new Event(event)));expect(document.querySelector('[role=dialog]')).toBeNull();expect(host.hasAttribute('inert')).toBe(false);expect(usePropertyStore.getState().property).toBe(previous);
+  });
   it('does not overwrite typed JSON with an older asynchronous file read',async()=>{
     open();click('Import a draft');
     let resolve!:(text:string)=>void;
