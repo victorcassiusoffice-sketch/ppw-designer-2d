@@ -10,7 +10,7 @@ export interface EmbeddedDesignerProps {
   loading?: 'eager' | 'lazy';
   onViewChange?: (view: EmbeddedDesignerView) => void;
   /** Optional entry panel; switching the view still preserves the same editing session. */
-  panel?: 'materials' | 'ai';
+  panel?: 'materials' | 'ai' | 'services' | 'import';
   /** Appends pitch=1 so the embedded app hides estimate badges. Off by default. */
   pitch?: boolean;
 }

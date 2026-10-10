@@ -207,6 +207,8 @@ interface DesignerUIState {
   setEnergyPanelOpen: (open: boolean) => void;
   /** 3D Mode (2026-09-17) — see `ViewMode`. */
   viewMode: ViewMode;
+  foundationView: boolean;
+  setFoundationView: (show: boolean) => void;
   setViewMode: (mode: ViewMode) => void;
   /** Walls Up / Cutaway / Down in 3D Mode — see `WallView`. Session chrome, never persisted. */
   wallView: WallView;
@@ -286,6 +288,8 @@ export const useDesignerUIStore = create<DesignerUIState>()(
       // furnished routes (/demo, /embed, /studio/designer?view=3d and the
       // supplier show flats on /designer?demo=<slug>) ask for 3D themselves.
       viewMode: 'plan',
+      foundationView: false,
+      setFoundationView: (show) => set({ foundationView: show }),
       setViewMode: (mode) => set((s) => (s.viewMode === mode ? s : { viewMode: mode })),
       wallView: 'cutaway',
       setWallView: (view) => set((s) => (s.wallView === view ? s : { wallView: view })),

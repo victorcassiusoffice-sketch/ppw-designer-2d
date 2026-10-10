@@ -1,9 +1,14 @@
 import { useMemo, useState } from 'react';
+import { isPitchEmbed } from '../demo/pitchEmbed';
 import { usePropertyStore } from '../store/propertyStore';
 import { applyBlockPreset, applySheetPreset, estimateMaterials, normaliseMaterialsSettings } from '../designer/materials';
 import { propertyMaterialsGeometry } from '../designer/propertyMaterials';
 import { CONSTRUCTION_BLOCK_PRESETS, CONSTRUCTION_SHEET_PRESETS, CONSTRUCTION_SOURCES } from '../data/constructionMaterials';
 import './materialsPanel.css';
+import { FoundationLaunchButton } from './FoundationWorkspace';
+import { MaterialsCostPanel } from './MaterialsCostPanel';
+import { applyMixScenario, MIX_SCENARIOS, mixScenarioKey } from '../designer/materials/mixPresets';
+import { estimateMaterialCosts, foundationProcurement } from '../designer/materials/costs';
 
 const fmt = (n: number) => n > 0 && n < 0.001 ? '< 0.001' : n.toLocaleString('en-GB', { maximumFractionDigits: 3 });
 function QuantityInput({ label, value, onChange, step = 0.01, min = 0 }: { label: string; value: number; onChange: (n: number) => number; step?: number; min?: number }) {
@@ -25,12 +30,15 @@ function QuantityInput({ label, value, onChange, step = 0.01, min = 0 }: { label
 
 /** A view onto the pure estimator; saved inputs belong to Property, not this panel. */
 export function MaterialsPanel() {
+  const pitch = isPitchEmbed();
   const property = usePropertyStore(s => s.property);
   const save = usePropertyStore(s => s.setMaterialsSettings);
   const settings = useMemo(() => normaliseMaterialsSettings(property.materials), [property.materials]);
   const geometry = useMemo(() => propertyMaterialsGeometry(property, settings.scope), [property, settings.scope]);
   const report = useMemo(() => estimateMaterials(geometry, settings), [geometry, settings]);
-  const [tab, setTab] = useState<'walls' | 'concrete' | 'roof' | 'report'>('walls');
+  const [tab, setTab] = useState<'walls' | 'concrete' | 'roof' | 'costs' | 'report'>('walls');
+  const foundationPurchases = useMemo(() => foundationProcurement(property.foundation, settings.concrete), [property.foundation, settings.concrete]);
+  const { foundation, lines: steelPurchases, incompleteReasons } = foundationPurchases;
   function change(path: string, value: unknown) {
     const next = structuredClone(settings);
     const keys = path.split('.');
@@ -49,10 +57,13 @@ export function MaterialsPanel() {
   function toggle(label: string, path: string, value: boolean) { return <label className="materials-check"><input type="checkbox" checked={value} onChange={e => change(path, e.target.checked)} />{label}</label>; }
   function mixFields(path: 'mortar' | 'plaster.mix' | 'concrete') {
     const mix = path === 'plaster.mix' ? settings.plaster.mix : settings[path];
-    return <div className="materials-grid">{field('Cement parts', `${path}.cement`, mix.cement, 0.1)}{field('Sand parts', `${path}.sand`, mix.sand, 0.1)}{path === 'concrete' && field('Aggregate parts', `${path}.aggregate`, mix.aggregate, 0.1)}{field('Dry volume factor', `${path}.dryVolumeFactor`, mix.dryVolumeFactor)}{field('Cement bulk kg/m³', `${path}.cementBulkDensityKgM3`, mix.cementBulkDensityKgM3, 10)}{field('Bag weight kg', `${path}.bagKg`, mix.bagKg, 1)}{field('Mix allowance %', `${path}.wastePct`, mix.wastePct, 1)}</div>;
+    const kind = path === 'concrete' ? 'concrete' : 'mortar';
+    const scenario = mixScenarioKey(mix);
+    return <><label className="materials-field"><span>Estimating ratio · {kind === 'concrete' ? 'cement : sand : aggregate' : 'cement : sand'}</span><select aria-label={`${path} estimating ratio`} value={MIX_SCENARIOS[kind].some(parts => parts.join(':') === scenario) ? scenario : 'custom'} onChange={event => change(path, applyMixScenario(mix, event.target.value, kind))}><option value="custom">Custom / supplier batch</option>{MIX_SCENARIOS[kind].map(parts => <option key={parts.join(':')} value={parts.join(':')}>{(kind === 'concrete' ? parts : parts.slice(0, 2)).join(' : ')} · loose volume</option>)}</select></label><div className="materials-grid">{field('Cement parts', `${path}.cement`, mix.cement, 0.1)}{field('Sand parts', `${path}.sand`, mix.sand, 0.1)}{path === 'concrete' && field('Aggregate parts', `${path}.aggregate`, mix.aggregate, 0.1)}{field('Dry volume factor', `${path}.dryVolumeFactor`, mix.dryVolumeFactor)}{field('Cement bulk kg/m³', `${path}.cementBulkDensityKgM3`, mix.cementBulkDensityKgM3, 10)}{field('Bag weight kg', `${path}.bagKg`, mix.bagKg, 1)}{field('Mix allowance %', `${path}.wastePct`, mix.wastePct, 1)}</div><p className="materials-note">An estimating scenario, not a strength grade. Use the supplier’s approved batch and measured yield for the project.</p></>;
   }
   function exportReport() {
-    const file = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), propertyId: property.id, propertyName: property.name, geometry, report, sources: CONSTRUCTION_SOURCES }, null, 2)], { type: 'application/json' });
+    if (pitch) return;
+    const file = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), propertyId: property.id, propertyName: property.name, geometry, report, foundation, costs: estimateMaterialCosts(report, steelPurchases, incompleteReasons), sources: CONSTRUCTION_SOURCES }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(file), link = document.createElement('a');
     link.href = url; link.download = 'materials-estimate.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
@@ -60,7 +71,8 @@ export function MaterialsPanel() {
     <div className="materials-intro"><strong>From your drawing</strong><p>Quantities for planning and supplier quotes. Open the details only when you need them.</p></div>
     <label className="materials-field"><span>Walls measured</span><select aria-label="Materials scope" value={settings.scope} onChange={e => change('scope', e.target.value)}><option value="all">Whole building</option><option value="active">Selected floor</option></select></label>
     <div className="materials-metrics"><div><strong>{fmt(report.totals.wallNetAreaM2)}</strong><span>m² net wall</span></div><div><strong>{fmt(report.totals.blocks)}</strong><span>blocks incl. waste</span></div><div><strong>{fmt(report.totals.concreteOrderM3)}</strong><span>m³ concrete</span></div><div><strong>{fmt(report.totals.cementBags)}</strong><span>cement bags · all site mixes</span></div></div>
-    <nav className="materials-tabs" aria-label="Materials sections">{(['walls', 'concrete', 'roof', 'report'] as const).map(id => <button key={id} aria-pressed={tab === id} onClick={() => setTab(id)}>{id === 'report' ? 'Report' : id[0].toUpperCase() + id.slice(1)}</button>)}</nav>
+    <nav className="materials-tabs" aria-label="Materials sections">{(['walls', 'concrete', 'roof', 'costs', 'report'] as const).filter(id => !pitch || id !== 'costs').map(id => <button key={id} aria-pressed={tab === id} onClick={() => setTab(id)}>{id[0].toUpperCase() + id.slice(1)}</button>)}</nav>
+    {!pitch && tab === 'costs' && <MaterialsCostPanel report={report} additions={steelPurchases} incompleteReasons={incompleteReasons} save={save} />}
     {tab === 'walls' && <div className="materials-fields">
       <label className="materials-field"><span>Wall construction</span><select value={settings.wall.kind} onChange={e => change('wall.kind', e.target.value)}><option value="block">Concrete block masonry</option><option value="concrete">Poured concrete wall</option></select></label>
       {settings.wall.kind === 'block' && <><label className="materials-field"><span>Supplier size preset</span><select aria-label="Block size preset" value={settings.wall.presetId} onChange={e => save(applyBlockPreset(settings, e.target.value))}><option value="custom">Custom dimensions</option>{CONSTRUCTION_BLOCK_PRESETS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}</select></label><p className="materials-note">Published size, adjustable below. Confirm whether your supplier’s dimensions include the joint.</p>
@@ -72,9 +84,11 @@ export function MaterialsPanel() {
       <p className="materials-note">Shared walls count once. Door and window openings are deducted at their drawn heights. This estimates one selected construction throughout the measured scope; visual paint/brick finishes are independent.</p>
     </div>}
     {tab === 'concrete' && <div className="materials-fields">
+      <FoundationLaunchButton />
+      {property.foundation?.enabled && <p className="materials-note">Foundation supplies {fmt(geometry.foundationVolumeM3 ?? 0)} m³ of concrete added to the design. {foundation && !foundation.concreteComplete && <>Excavation still awaits fill: {fmt(foundation.pendingConcreteM3)} m³ additional planned concrete. The foundation quote remains incomplete. </>}The legacy ground base below is excluded. Edit exact position, thickness and reinforcement in Foundation.</p>}
       <label className="materials-field"><span>Concrete supply</span><select value={settings.concrete.supply} onChange={e => change('concrete.supply', e.target.value)}><option value="ready-mix">Ready-mix · order volume</option><option value="site-mix">Site mix · editable ingredients</option></select></label>
-      {toggle('Include ground concrete base', 'base.enabled', settings.base.enabled)}
-      {settings.base.enabled && <><p className="materials-note">Ground footprint: {fmt(geometry.baseAreaM2)} m². Depth is an estimating input, not a foundation design.</p><div className="materials-grid">{field('Base depth m', 'base.depthM', settings.base.depthM)}{field('Base area m²', 'base.areaOverrideM2', settings.base.areaOverrideM2 ?? geometry.baseAreaM2)}</div><button className="materials-link" onClick={() => change('base.areaOverrideM2', null)}>Use live drawn base area</button></>}
+      {!property.foundation?.enabled && toggle('Include ground concrete base', 'base.enabled', settings.base.enabled)}
+      {!property.foundation?.enabled && settings.base.enabled && <><p className="materials-note">Ground footprint: {fmt(geometry.baseAreaM2)} m². Depth is an estimating input, not a foundation design.</p><div className="materials-grid">{field('Base depth m', 'base.depthM', settings.base.depthM)}{field('Base area m²', 'base.areaOverrideM2', settings.base.areaOverrideM2 ?? geometry.baseAreaM2)}</div><button className="materials-link" onClick={() => change('base.areaOverrideM2', null)}>Use live drawn base area</button></>}
       <details><summary>Pillars · enter your schedule</summary><div className="materials-grid">{field('Pillar count', 'pillars.count', settings.pillars.count, 1)}{field('Pillar width m', 'pillars.widthM', settings.pillars.widthM)}{field('Pillar depth m', 'pillars.depthM', settings.pillars.depthM)}{field('Pillar clear height m', 'pillars.heightM', settings.pillars.heightM)}</div><p className="materials-note">Pillars are added separately. If embedded in masonry, subtract their displaced wall area in the drawing. Reinforcement, footings and beams need a separate design/schedule.</p></details>
       {settings.concrete.supply === 'ready-mix' && field('Concrete volume allowance %', 'concrete.wastePct', settings.concrete.wastePct, 1)}
       {settings.concrete.supply === 'site-mix' && <details open><summary>Concrete · editable dry volume ratio</summary>{mixFields('concrete')}<p className="materials-note">A volume ratio does not certify strength. Confirm the cement, rocksand, aggregate, water and trial-mix yield with your supplier or engineer.</p></details>}
@@ -88,7 +102,7 @@ export function MaterialsPanel() {
       {settings.roof.kind === 'reinforced-concrete' && <>{field('Roof slab depth m', 'roof.depthM', settings.roof.depthM)}{toggle('Estimate an entered rebar grid', 'roof.rebar.enabled', settings.roof.rebar.enabled)}{settings.roof.rebar.enabled && <><p className="materials-note">Enter an engineer’s grid specification. This is a stock allowance, not a bending schedule or a design for cyclone loads.</p><div className="materials-grid">{field('Bar diameter mm', 'roof.rebar.diameterMm', settings.roof.rebar.diameterMm, 1)}{field('Bar spacing mm', 'roof.rebar.spacingMm', settings.roof.rebar.spacingMm, 10)}{field('Grid layers', 'roof.rebar.layers', settings.roof.rebar.layers, 1)}{field('Edge cover mm', 'roof.rebar.coverMm', settings.roof.rebar.coverMm, 1)}{field('Stock bar length m', 'roof.rebar.stockLengthM', settings.roof.rebar.stockLengthM, 0.5)}{field('Lap length m', 'roof.rebar.lapLengthM', settings.roof.rebar.lapLengthM, 0.05)}{field('Steel allowance %', 'roof.rebar.wastePct', settings.roof.rebar.wastePct, 1)}</div></>}</>}
       {settings.roof.kind === 'sheet' && <><label className="materials-field"><span>Sheet profile</span><select value={settings.roof.sheet.presetId} onChange={e => save(applySheetPreset(settings, e.target.value))}><option value="custom">Custom profile</option>{CONSTRUCTION_SHEET_PRESETS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}</select></label><label className="materials-field"><span>Roof slopes</span><select value={settings.roof.sheet.slopes} onChange={e => change('roof.sheet.slopes', Number(e.target.value))}><option value="1">One slope</option><option value="2">Two slopes</option></select></label><div className="materials-grid">{field('Pitch degrees', 'roof.sheet.pitchDeg', settings.roof.sheet.pitchDeg, 1)}{field('Effective cover m', 'roof.sheet.effectiveCoverM', settings.roof.sheet.effectiveCoverM)}{field('Sheet length m', 'roof.sheet.sheetLengthM', settings.roof.sheet.sheetLengthM, 0.1)}{field('End lap m', 'roof.sheet.endLapM', settings.roof.sheet.endLapM)}{field('Overhang m', 'roof.sheet.overhangM', settings.roof.sheet.overhangM)}{field('Sheet waste %', 'roof.sheet.wastePct', settings.roof.sheet.wastePct, 1)}</div><details><summary>Fixings, purlins and trims</summary><div className="materials-grid">{field('Fixings per m²', 'roof.sheet.fastenersPerM2', settings.roof.sheet.fastenersPerM2, 1)}{field('Purlin spacing m (0 = omit)', 'roof.sheet.purlinSpacingM', settings.roof.sheet.purlinSpacingM, 0.1)}{field('Ridge length m', 'roof.sheet.ridgeLengthM', settings.roof.sheet.ridgeLengthM, 0.1)}{field('Flashing length m', 'roof.sheet.flashingLengthM', settings.roof.sheet.flashingLengthM, 0.1)}{field('Gutter length m', 'roof.sheet.gutterLengthM', settings.roof.sheet.gutterLengthM, 0.1)}{field('Trim stock length m', 'roof.sheet.trimStockLengthM', settings.roof.sheet.trimStockLengthM, 0.1)}{field('Trim lap m', 'roof.sheet.trimLapM', settings.roof.sheet.trimLapM)}</div></details></>}
     </div>}
-    {tab === 'report' && <div className="materials-fields"><button className="materials-export" onClick={exportReport}>Download quantities & assumptions</button>
+    {tab === 'report' && <div className="materials-fields">{!pitch && <button className="materials-export" onClick={exportReport}>Download quantities & assumptions</button>}
       {(['component', 'summary'] as const).map(role => <div key={role}>
         <strong>{role === 'component' ? 'Measured components' : 'Totals and purchasing conversions'}</strong>
         {role === 'summary' && <p className="materials-note">These summarize or convert the component quantities above. Do not add them again.</p>}

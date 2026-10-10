@@ -1,6 +1,10 @@
 /** Persisted, versioned inputs. Distances are metres unless the field ends in Mm. */
 export interface MaterialsSettings {
   version: 1;
+  /** Quoted rates bind to specification and unit; an altered pack must be priced again. */
+  unitRates?: Record<string, { mur: number; unit: MaterialUnit; specification: string; taxBasis?: 'inclusive' | 'exclusive' }>;
+  /** All manual quotation rates must use one explicitly selected tax basis. */
+  quotationTaxBasis?: 'inclusive' | 'exclusive';
   scope: 'all' | 'active';
   wall: {
     kind: 'block' | 'concrete';
@@ -61,6 +65,8 @@ export interface MaterialWallInput {
 }
 
 export interface MaterialsGeometry {
+  /** An enabled drawn foundation replaces the legacy ground base, including an empty foundation. */
+  foundationVolumeM3?: number;
   /** Physical walls once per storey, shared walls/openings deduplicated by the geometry adapter. */
   walls: MaterialWallInput[];
   /** Ground footprint only, not a sum of every storey's rooms. */
@@ -88,6 +94,9 @@ export interface MaterialsReport {
   settings: MaterialsSettings;
   lines: MaterialQuantityLine[];
   warnings: string[];
+  /** Invalid or omitted requested quantities prevent a complete quotation;
+   * general estimating cautions and deliberately disabled schedules do not. */
+  quantityIncompleteReasons: string[];
   assumptions: string[];
   totals: {
     wallGrossAreaM2: number; wallOpeningAreaM2: number; wallNetAreaM2: number;

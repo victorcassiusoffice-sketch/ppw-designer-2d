@@ -1,0 +1,208 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "at": "2026-10-10T11:40:55.037Z",
+  "screens": [
+    {
+      "name": "desktop",
+      "label": "plan-controls",
+      "overflow": {
+        "viewport": 1280,
+        "width": 1280,
+        "height": 900
+      },
+      "url": "http://127.0.0.1:5173/demo?view=2d&pitch=1"
+    },
+    {
+      "name": "desktop",
+      "label": "materials-walls",
+      "overflow": {
+        "viewport": 1280,
+        "width": 1280,
+        "height": 900
+      },
+      "url": "http://127.0.0.1:5173/demo?view=2d&pitch=1"
+    },
+    {
+      "name": "desktop",
+      "label": "materials-concrete",
+      "overflow": {
+        "viewport": 1280,
+        "width": 1280,
+        "height": 900
+      },
+      "url": "http://127.0.0.1:5173/demo?view=2d&pitch=1"
+    },
+    {
+      "name": "desktop",
+      "label": "materials-roof",
+      "overflow": {
+        "viewport": 1280,
+        "width": 1280,
+        "height": 900
+      },
+      "url": "http://127.0.0.1:5173/demo?view=2d&pitch=1"
+    },
+    {
+      "name": "desktop",
+      "label": "materials-report",
+      "overflow": {
+        "viewport": 1280,
+        "width": 1280,
+        "height": 900
+      },
+      "url": "http://127.0.0.1:5173/demo?view=2d&pitch=1"
+    },
+    {
+      "name": "desktop",
+      "label": "paint-coats",
+      "overflow": {
+        "viewport": 1280,
+        "width": 1280,
+        "height": 900
+      },
+      "url": "http://127.0.0.1:5173/demo?view=2d&pitch=1"
+    },
+    {
+      "name": "desktop",
+      "label": "3d-loading",
+      "overflow": {
+        "viewport": 1280,
+        "width": 1280,
+        "height": 900
+      },
+      "url": "http://127.0.0.1:5173/demo?view=3d&pitch=1"
+    },
+    {
+      "name": "desktop",
+      "label": "3d-house",
+      "overflow": {
+        "viewport": 1280,
+        "width": 1280,
+        "height": 900
+      },
+      "url": "http://127.0.0.1:5173/demo?view=3d&pitch=1"
+    },
+    {
+      "name": "desktop",
+      "label": "3d-view-settings",
+      "overflow": {
+        "viewport": 1280,
+        "width": 1280,
+        "height": 900
+      },
+      "url": "http://127.0.0.1:5173/demo?view=3d&pitch=1"
+    },
+    {
+      "name": "desktop",
+      "label": "3d-selection",
+      "overflow": {
+        "viewport": 1280,
+        "width": 1280,
+        "height": 900
+      },
+      "url": "http://127.0.0.1:5173/demo?view=3d&pitch=1"
+    },
+    {
+      "name": "phone",
+      "label": "plan-controls",
+      "overflow": {
+        "viewport": 390,
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://127.0.0.1:5173/demo?view=2d&pitch=1"
+    },
+    {
+      "name": "phone",
+      "label": "materials-walls",
+      "overflow": {
+        "viewport": 390,
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://127.0.0.1:5173/demo?view=2d&pitch=1"
+    },
+    {
+      "name": "phone",
+      "label": "materials-concrete",
+      "overflow": {
+        "viewport": 390,
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://127.0.0.1:5173/demo?view=2d&pitch=1"
+    },
+    {
+      "name": "phone",
+      "label": "materials-roof",
+      "overflow": {
+        "viewport": 390,
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://127.0.0.1:5173/demo?view=2d&pitch=1"
+    },
+    {
+      "name": "phone",
+      "label": "materials-report",
+      "overflow": {
+        "viewport": 390,
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://127.0.0.1:5173/demo?view=2d&pitch=1"
+    },
+    {
+      "name": "phone",
+      "label": "paint-coats",
+      "overflow": {
+        "viewport": 390,
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://127.0.0.1:5173/demo?view=2d&pitch=1"
+    },
+    {
+      "name": "phone",
+      "label": "3d-loading",
+      "overflow": {
+        "viewport": 390,
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://127.0.0.1:5173/demo?view=3d&pitch=1"
+    },
+    {
+      "name": "phone",
+      "label": "3d-house",
+      "overflow": {
+        "viewport": 390,
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://127.0.0.1:5173/demo?view=3d&pitch=1"
+    },
+    {
+      "name": "phone",
+      "label": "3d-view-settings",
+      "overflow": {
+        "viewport": 390,
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://127.0.0.1:5173/demo?view=3d&pitch=1"
+    },
+    {
+      "name": "phone",
+      "label": "3d-selection",
+      "overflow": {
+        "viewport": 390,
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://127.0.0.1:5173/demo?view=3d&pitch=1"
+    }
+  ],
+  "errors": [],
+  "failures": []
+}

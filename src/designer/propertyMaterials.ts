@@ -1,4 +1,5 @@
 import type { Property } from '../store/propertyStore';
+import { foundationVolumeM3 } from './foundation';
 import type { Vertex } from '../lib/geometry';
 import type { MaterialsGeometry, MaterialsSettings, MaterialWallInput } from './materials';
 import { activeLevelIdOf, isOutdoorRoom, isRoofRoom, roomLevelId } from './levels';
@@ -115,5 +116,5 @@ export function propertyMaterialsGeometry(property: Property, scope: MaterialsSe
   const roofLengthM = points.length ? Math.max(...points.map(p => p.x)) - Math.min(...points.map(p => p.x)) : 0;
   const roofWidthM = points.length ? Math.max(...points.map(p => p.y)) - Math.min(...points.map(p => p.y)) : 0;
   const roofAreaM2 = footprintUnionArea(roofPolygons);
-  return { walls: measured, baseAreaM2: footprintUnionArea(rooms.filter(r => roomLevelId(r) === 'ground').map(r => r.polygon)), roofAreaM2, roofLengthM, roofWidthM, roofRectangular: Math.abs(roofAreaM2 - roofLengthM * roofWidthM) < 1e-5 };
+  return { ...(property.foundation?.enabled ? { foundationVolumeM3: foundationVolumeM3(property.foundation) } : {}), walls: measured, baseAreaM2: footprintUnionArea(rooms.filter(r => roomLevelId(r) === 'ground').map(r => r.polygon)), roofAreaM2, roofLengthM, roofWidthM, roofRectangular: Math.abs(roofAreaM2 - roofLengthM * roofWidthM) < 1e-5 };
 }

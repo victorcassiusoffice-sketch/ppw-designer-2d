@@ -24,10 +24,10 @@
  * Never invent a price, a coverage or a colour — cite the source.
  */
 
-import { SOFAP_A_LA_CARTE, sofapColourMatchToPaintColours, type SofapColourMatchRow } from './sofapColours';
-import { TINTEX_BRAND, TINTEX_BRAND_ID, TINTEX_PAINTS } from './tintexPaints';
-import { ralToPaintColour, tintexCardFrom, type RalRow } from './tintexColours';
-import ralClassicJson from './ralClassic.json';
+import { SOFAP_A_LA_CARTE, sofapColourMatchToPaintColours, type SofapColourMatchRow } from './sofapColours.js';
+import { TINTEX_BRAND, TINTEX_BRAND_ID, TINTEX_PAINTS } from './tintexPaints.js';
+import { ralToPaintColour, tintexCardFrom, type RalRow } from './tintexColours.js';
+import ralClassicJson from './ralClassic.json' with { type: 'json' };
 
 export interface WallPaintTin {
   sizeL: number;
@@ -725,7 +725,7 @@ export function loadPaintColourChart(brandId: string): Promise<PaintColour[]> {
   if (cached) return cached;
   let p: Promise<PaintColour[]>;
   if (brandId === SOFAP_BRAND_ID) {
-    p = import('./sofapColourMatch.json').then((m) =>
+    p = import('./sofapColourMatch.json', { with: { type: 'json' } }).then((m) =>
       sofapColourMatchToPaintColours((m.default ?? m) as unknown as SofapColourMatchRow[]),
     );
   } else if (brandId === TINTEX_BRAND_ID) {

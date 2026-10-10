@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MaterialsPanel } from '../MaterialsPanel';
+import { resetPitchEmbedCache } from '../../demo/pitchEmbed';
 import { usePropertyStore } from '../../store/propertyStore';
 import { applyPage, captureCurrentPage } from '../../lib/pages';
 import { defaultMaterialsSettings, type MaterialsReport } from '../../designer/materials';
@@ -12,6 +13,8 @@ let host: HTMLDivElement;
 let root: Root;
 
 beforeEach(() => {
+  window.history.replaceState({}, '', '/designer');
+  resetPitchEmbedCache();
   localStorage.clear();
   const state = usePropertyStore.getState();
   state.resetToDefault();
@@ -46,6 +49,46 @@ function check(label: string) {
 function result(id: string) { return host.querySelector(`[data-quantity-id="${id}"]`)?.textContent ?? ''; }
 
 describe('MaterialsPanel real property integration', () => {
+  it('keeps presentation demos price-free and prevents exporting saved quotation rates', () => {
+    window.history.replaceState({}, '', '/demo?pitch=1');
+    render();
+    expect(host.textContent).not.toContain('Costs');
+    click('Report');
+    expect(host.textContent).not.toContain('Download quantities & assumptions');
+    expect(host.textContent).toContain('Measured components');
+  });
+  it('saves selected mix parts without changing the drawn scale or custom yield', () => {
+    render();
+    const polygon = structuredClone(usePropertyStore.getState().property.rooms[0].polygon);
+    select('mortar estimating ratio', '1:5:0');
+    expect(usePropertyStore.getState().property.materials?.mortar.sand).toBe(5);
+    expect(usePropertyStore.getState().property.materials?.mortar.dryVolumeFactor).toBe(1.33);
+    expect(usePropertyStore.getState().property.rooms[0].polygon).toEqual(polygon);
+  });
+
+  it('requires a tax basis, saves a price against its unit/specification and invalidates changed tax treatment', () => {
+    render(); click('Costs');
+    expect(host.querySelector<HTMLInputElement>('input[type="number"]')?.disabled).toBe(true);
+    select('Quotation tax basis', 'exclusive');
+    const input = host.querySelector<HTMLInputElement>('input[type="number"]')!;
+    expect(input.disabled).toBe(false);
+    act(() => { input.focus(); input.value = '12.5'; input.blur(); });
+    expect(usePropertyStore.getState().property.materials?.unitRates?.blocks).toMatchObject({ mur: 12.5, unit: 'blocks', taxBasis: 'exclusive' });
+    expect(host.textContent).toContain('Known material subtotal');
+    select('Quotation tax basis', 'inclusive');
+    expect(host.textContent).toContain('Specification or tax basis changed');
+    expect(host.querySelector<HTMLInputElement>('input[type="number"]')?.value).toBe('');
+  });
+
+  it('hides the legacy base inputs while an empty drawn foundation owns the base estimate', () => {
+    const value = defaultMaterialsSettings(); value.base.enabled = true;
+    usePropertyStore.getState().setMaterialsSettings(value);
+    usePropertyStore.getState().setFoundation({ version: 1, enabled: true, elements: [] });
+    render(); click('Concrete');
+    expect(host.textContent).toContain('Foundation supplies 0 m³');
+    expect(host.textContent).not.toContain('Include ground concrete base');
+    expect(host.querySelector('input[aria-label="Base depth m"]')).toBeNull();
+  });
   it('does not add settings or alter the drawing when an unchanged field is visited', () => {
     const before = usePropertyStore.getState().property;
     render(); enter('Joint mm', '10'); click('Roof'); click('Walls');

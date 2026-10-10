@@ -3,7 +3,7 @@ import { deriveCart } from '../../store/cartStore';
 import { FALLBACK_RATES_USD } from '../fx';
 import { buildCheckoutPayload } from '../stripe';
 import { buildPaypalCheckoutPayload } from '../paypal';
-import { hasQuotedProducts } from '../quotedProducts';
+import { hasQuotedProducts, quoteAwareAmount } from '../quotedProducts';
 
 const customer = { name: 'Test', email: 'test@example.com', phone: '', addressLine1: '', addressLine2: '', city: '', postcode: '', country: 'MU', notes: '' };
 function cartWith(productIds: string[]) {
@@ -13,6 +13,19 @@ function cartWith(productIds: string[]) {
 }
 
 describe('supplier quoted products', () => {
+  it.each(['espace-duravit-dcode-bidet-224110', 'espace-seville-garden-sofa'])('keeps %s unknown rather than free in the estimate', productId => {
+    const unpriced = cartWith([productId]);
+    expect(unpriced.lines).toHaveLength(1);
+    expect(unpriced.subtotal).toBe(0);
+    expect(quoteAwareAmount(unpriced, unpriced.subtotal, 'MUR 0')).toBe('Quote required');
+    const mixed = cartWith([productId, 'espace-durastyle-washbasin-800']);
+    expect(mixed.subtotal).toBe(10262);
+    expect(quoteAwareAmount(mixed, mixed.subtotal, 'MUR 10,262')).toBe('MUR 10,262 + quote');
+    for (const build of [buildCheckoutPayload, buildPaypalCheckoutPayload]) {
+      expect(() => build({ cart: unpriced, customer, origin: 'https://example.com', orderId: 'test' })).toThrow(/Confirm their price/);
+      expect(() => build({ cart: mixed, customer, origin: 'https://example.com', orderId: 'test' })).toThrow(/Confirm their price/);
+    }
+  });
   for (const build of [buildCheckoutPayload, buildPaypalCheckoutPayload]) {
     it(`${build.name} rejects a quote-only product even alongside a priced solar panel`, () => {
       const cart = cartWith(['emcar-jinko-475', 'duraco-water-tank-1000']);

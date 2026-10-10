@@ -1,9 +1,11 @@
 import { getProductById, productImageUrl } from '../data/products';
+import { ProductSourceNote } from './ProductSourceNote';
 import { hasSolarPanelPreview, SOLAR_PANEL_PREVIEW_NOTE } from '../data/solarPreview';
 import { formatCurrency } from '../lib/currency';
 import { isPitchEmbed } from '../demo/pitchEmbed';
 import { useCart } from '../store/cartStore';
 import { isShowcaseReadOnly, DEMO_NOTICE } from '../lib/showcaseSafety';
+import { hasQuotedProducts, quoteAwareAmount } from '../lib/quotedProducts';
 
 /** A read-only view of the same product and finish lines used by the cart page. */
 export function HouseCostPanel({ productId, onEdit, onCart }: {
@@ -19,6 +21,7 @@ export function HouseCostPanel({ productId, onEdit, onCart }: {
       <div className="house-product-heading"><img src={productImageUrl(product)} alt="" /><div><h3>{product.name}</h3><span>{product.supplier}</span>{!pitch && <strong>{product.price_on_request ? 'Price on request' : formatCurrency(product.price.value, product.price.currency)}</strong>}</div></div>
       <p className="house-product-dimensions">{product.dimensions_cm.length} × {product.dimensions_cm.width} × {product.dimensions_cm.height} cm · L × W × H</p>
       {product.notes && <p>{product.notes}</p>}
+      <ProductSourceNote product={product} />
       {hasSolarPanelPreview(product) && <p>{SOLAR_PANEL_PREVIEW_NOTE}</p>}
       {onEdit && <button type="button" onClick={onEdit}>Move / rotate / duplicate</button>}
     </section>}
@@ -33,7 +36,7 @@ export function HouseCostPanel({ productId, onEdit, onCart }: {
           {cart.claddingLines.map(line => <li key={line.lineId}><span>{line.name}<small>Sample cladding estimate</small></span><strong>{money(line.totalDisplay)}</strong></li>)}
         </ul>}
     </section>
-    {!pitch && <div className="house-cost-total"><span>Product estimate</span><strong data-testid="house-cost-total">{money(cart.subtotal)}</strong></div>}
+    {!pitch && <div className="house-cost-total"><span>{hasQuotedProducts(cart) ? 'Estimate incomplete' : 'Product estimate'}</span><strong data-testid="house-cost-total">{quoteAwareAmount(cart, cart.subtotal, money(cart.subtotal))}</strong></div>}
     <p className="house-cost-note">Products and finishes only. Supplier-quoted products, building structure, labour and delivery are not included.</p>
     {readOnly && <p className="house-cost-note" data-testid="demo-order-notice">{DEMO_NOTICE}</p>}
     {!readOnly && onCart && <button type="button" className="house-review-cart" onClick={onCart}>Review cart & checkout ↗</button>}

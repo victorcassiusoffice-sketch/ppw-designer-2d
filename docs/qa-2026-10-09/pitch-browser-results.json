@@ -1,0 +1,455 @@
+{
+  "date": "2026-10-10",
+  "capturedAt": "2026-10-10T11:53:01.512Z",
+  "origin": "http://127.0.0.1:5173",
+  "results": [
+    {
+      "route": "/pitch/plumbing",
+      "viewport": {
+        "key": "desktop",
+        "width": 1280,
+        "height": 900
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "requestFailures": [],
+      "httpFailures": [],
+      "screenshotRetries": [],
+      "shots": [
+        "pitch-plumbing-desktop-overview.png",
+        "pitch-plumbing-desktop-your-catalogue.png",
+        "pitch-plumbing-desktop-work-together.png"
+      ],
+      "checks": [
+        {
+          "state": "overview",
+          "horizontalOverflowPx": 0,
+          "title": "Plumbing companies · PPW Room Designer",
+          "headings": [
+            "A clearer picture.Before the quote."
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        },
+        {
+          "state": "your-catalogue",
+          "horizontalOverflowPx": 0,
+          "title": "Plumbing companies · PPW Room Designer",
+          "headings": [
+            "Your products, in context",
+            "Published references",
+            "Your catalogue",
+            "A maintained connection"
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        },
+        {
+          "state": "work-together",
+          "horizontalOverflowPx": 0,
+          "title": "Plumbing companies · PPW Room Designer",
+          "headings": [
+            "A shared project brief"
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        }
+      ],
+      "authGate": false
+    },
+    {
+      "route": "/pitch/construction",
+      "viewport": {
+        "key": "desktop",
+        "width": 1280,
+        "height": 900
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "requestFailures": [],
+      "httpFailures": [],
+      "screenshotRetries": [],
+      "shots": [
+        "pitch-construction-desktop-overview.png",
+        "pitch-construction-desktop-foundation.png",
+        "pitch-construction-desktop-plumbing.png"
+      ],
+      "checks": [
+        {
+          "state": "overview",
+          "horizontalOverflowPx": 0,
+          "title": "Construction | PPW Studio",
+          "headings": [
+            "A floor plan becomes cement, sand and a layout for each floor.",
+            "How it works",
+            "Measure the excavation. Add the concrete.",
+            "One reviewable brief for your team."
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        },
+        {
+          "state": "foundation",
+          "horizontalOverflowPx": 0,
+          "title": "Construction | PPW Studio",
+          "headings": [
+            "A floor plan becomes cement, sand and a layout for each floor.",
+            "How it works",
+            "Measure the excavation. Add the concrete.",
+            "One reviewable brief for your team."
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        },
+        {
+          "state": "plumbing",
+          "horizontalOverflowPx": 0,
+          "title": "Construction | PPW Studio",
+          "headings": [
+            "A floor plan becomes cement, sand and a layout for each floor.",
+            "How it works",
+            "Measure the excavation. Add the concrete.",
+            "One reviewable brief for your team."
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        }
+      ],
+      "authGate": false
+    },
+    {
+      "route": "/pitch/merchants",
+      "viewport": {
+        "key": "desktop",
+        "width": 1280,
+        "height": 900
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "requestFailures": [],
+      "httpFailures": [],
+      "screenshotRetries": [],
+      "shots": [
+        "pitch-merchants-desktop-overview.png"
+      ],
+      "checks": [
+        {
+          "state": "overview",
+          "horizontalOverflowPx": 0,
+          "title": "Merchant Experience | PPW Studio",
+          "headings": [
+            "From browsingto “that’s my home.”"
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        }
+      ],
+      "authGate": false
+    },
+    {
+      "route": "/pitch/developers",
+      "viewport": {
+        "key": "desktop",
+        "width": 1280,
+        "height": 900
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "requestFailures": [],
+      "httpFailures": [],
+      "screenshotRetries": [],
+      "shots": [
+        "pitch-developers-desktop-overview.png"
+      ],
+      "checks": [
+        {
+          "state": "overview",
+          "horizontalOverflowPx": 0,
+          "title": "Property Developer Experience | PPW Studio",
+          "headings": [
+            "A home they can make their own."
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        }
+      ],
+      "authGate": false
+    },
+    {
+      "route": "/studio/sales",
+      "viewport": {
+        "key": "desktop",
+        "width": 1280,
+        "height": 900
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "requestFailures": [],
+      "httpFailures": [],
+      "screenshotRetries": [],
+      "shots": [
+        "pitch-employees-desktop-overview.png",
+        "pitch-employees-desktop-demo-lab.png",
+        "pitch-employees-desktop-all-links.png"
+      ],
+      "checks": [
+        {
+          "state": "overview",
+          "horizontalOverflowPx": 0,
+          "title": "Employee starter pack · PPW Room Designer",
+          "headings": [
+            "A useful demo.A clear next step."
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        },
+        {
+          "state": "demo-lab",
+          "horizontalOverflowPx": 0,
+          "title": "Employee starter pack · PPW Room Designer",
+          "headings": [
+            "The demo lab",
+            "A room that fits"
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        },
+        {
+          "state": "all-links",
+          "horizontalOverflowPx": 0,
+          "title": "Employee starter pack · PPW Room Designer",
+          "headings": [
+            "Every link in one place"
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        }
+      ],
+      "authGate": false
+    },
+    {
+      "route": "/pitch/plumbing",
+      "viewport": {
+        "key": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "requestFailures": [],
+      "httpFailures": [],
+      "screenshotRetries": [],
+      "shots": [
+        "pitch-plumbing-phone-overview.png",
+        "pitch-plumbing-phone-your-catalogue.png",
+        "pitch-plumbing-phone-work-together.png"
+      ],
+      "checks": [
+        {
+          "state": "overview",
+          "horizontalOverflowPx": 0,
+          "title": "Plumbing companies · PPW Room Designer",
+          "headings": [
+            "A clearer picture.Before the quote."
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        },
+        {
+          "state": "your-catalogue",
+          "horizontalOverflowPx": 0,
+          "title": "Plumbing companies · PPW Room Designer",
+          "headings": [
+            "Your products, in context",
+            "Published references",
+            "Your catalogue",
+            "A maintained connection"
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        },
+        {
+          "state": "work-together",
+          "horizontalOverflowPx": 0,
+          "title": "Plumbing companies · PPW Room Designer",
+          "headings": [
+            "A shared project brief"
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        }
+      ],
+      "authGate": false
+    },
+    {
+      "route": "/pitch/construction",
+      "viewport": {
+        "key": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "requestFailures": [],
+      "httpFailures": [],
+      "screenshotRetries": [],
+      "shots": [
+        "pitch-construction-phone-overview.png",
+        "pitch-construction-phone-foundation.png",
+        "pitch-construction-phone-plumbing.png"
+      ],
+      "checks": [
+        {
+          "state": "overview",
+          "horizontalOverflowPx": 0,
+          "title": "Construction | PPW Studio",
+          "headings": [
+            "A floor plan becomes cement, sand and a layout for each floor.",
+            "How it works",
+            "Measure the excavation. Add the concrete.",
+            "One reviewable brief for your team."
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        },
+        {
+          "state": "foundation",
+          "horizontalOverflowPx": 0,
+          "title": "Construction | PPW Studio",
+          "headings": [
+            "A floor plan becomes cement, sand and a layout for each floor.",
+            "How it works",
+            "Measure the excavation. Add the concrete.",
+            "One reviewable brief for your team."
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        },
+        {
+          "state": "plumbing",
+          "horizontalOverflowPx": 0,
+          "title": "Construction | PPW Studio",
+          "headings": [
+            "A floor plan becomes cement, sand and a layout for each floor.",
+            "How it works",
+            "Measure the excavation. Add the concrete.",
+            "One reviewable brief for your team."
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        }
+      ],
+      "authGate": false
+    },
+    {
+      "route": "/pitch/merchants",
+      "viewport": {
+        "key": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "requestFailures": [],
+      "httpFailures": [],
+      "screenshotRetries": [],
+      "shots": [
+        "pitch-merchants-phone-overview.png"
+      ],
+      "checks": [
+        {
+          "state": "overview",
+          "horizontalOverflowPx": 0,
+          "title": "Merchant Experience | PPW Studio",
+          "headings": [
+            "From browsingto “that’s my home.”"
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        }
+      ],
+      "authGate": false
+    },
+    {
+      "route": "/pitch/developers",
+      "viewport": {
+        "key": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "requestFailures": [],
+      "httpFailures": [],
+      "screenshotRetries": [],
+      "shots": [
+        "pitch-developers-phone-overview.png"
+      ],
+      "checks": [
+        {
+          "state": "overview",
+          "horizontalOverflowPx": 0,
+          "title": "Property Developer Experience | PPW Studio",
+          "headings": [
+            "A home they can make their own."
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        }
+      ],
+      "authGate": false
+    },
+    {
+      "route": "/studio/sales",
+      "viewport": {
+        "key": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "requestFailures": [],
+      "httpFailures": [],
+      "screenshotRetries": [],
+      "shots": [
+        "pitch-employees-phone-overview.png",
+        "pitch-employees-phone-demo-lab.png",
+        "pitch-employees-phone-all-links.png"
+      ],
+      "checks": [
+        {
+          "state": "overview",
+          "horizontalOverflowPx": 0,
+          "title": "Employee starter pack · PPW Room Designer",
+          "headings": [
+            "A useful demo.A clear next step."
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        },
+        {
+          "state": "demo-lab",
+          "horizontalOverflowPx": 0,
+          "title": "Employee starter pack · PPW Room Designer",
+          "headings": [
+            "The demo lab",
+            "A room that fits"
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        },
+        {
+          "state": "all-links",
+          "horizontalOverflowPx": 0,
+          "title": "Employee starter pack · PPW Room Designer",
+          "headings": [
+            "Every link in one place"
+          ],
+          "brokenImages": [],
+          "visibleDialogs": []
+        }
+      ],
+      "authGate": false
+    }
+  ]
+}

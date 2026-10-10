@@ -181,6 +181,17 @@ describe('the whole seed, row by row (2026-09-20)', () => {
     'emcar-victron-mppt-100-30': [null, 0],
     // A water tank stores water, not power: explicit energy_role 'none', no row, 0 W.
     'duraco-water-tank-1000': [null, 0],
+    // Passive plumbing/electrical housings have no pump, heater or connected load.
+    'resiglas-water-tank-1000-a': [null, 0],
+    'resiglas-water-tank-1000-c': [null, 0],
+    'espace-emilia-toilet-bowl': [null, 0],
+    'electrical-legrand-surface-box-613351': [null, 0],
+    'electrical-hex-polymer-earth-pit': [null, 0],
+    'espace-durastyle-washbasin-800': ['furniture', 0],
+    'espace-duravit-dcode-bidet-224110': [null, 0],
+    'espace-seville-garden-sofa': ['furniture', 0],
+    'espace-era-pvc-pn16-110-6m': [null, 0],
+    'espace-pvc-electrical-conduit-20-6m': [null, 0],
     // Sourced outdoor furniture is passive: no invented electrical demand.
     'mrbricolage-mistral-70': ['accessory', 0],
     'mrbricolage-aurore-135': ['accessory', 0],

@@ -1,5 +1,5 @@
-import { CONSTRUCTION_BLOCK_PRESETS, CONSTRUCTION_SHEET_PRESETS } from '../../data/constructionMaterials';
-import { normaliseMaterialsSettings } from './settings';
+import { CONSTRUCTION_BLOCK_PRESETS, CONSTRUCTION_SHEET_PRESETS } from '../../data/constructionMaterials.js';
+import { normaliseMaterialsSettings } from './settings.js';
 import type { MaterialGroup, MaterialQuantityLine, MaterialsGeometry, MaterialsReport, MaterialUnit, VolumeMix } from './types';
 
 const ceil = (value: number) => Math.ceil(Math.max(0, value) - 1e-9);
@@ -72,7 +72,9 @@ export function estimateRebar(lengthM: number, widthM: number, config: Materials
 export function estimateMaterials(geometry: MaterialsGeometry, rawSettings?: unknown): MaterialsReport {
   const settings = normaliseMaterialsSettings(rawSettings);
   const warnings: string[] = [];
-  if (inputsWereAdjusted(rawSettings, settings)) warnings.push('Some material inputs were invalid or outside the supported range and were adjusted. Review the displayed settings before using this estimate.');
+  const quantityIncompleteReasons: string[] = [];
+  const incomplete = (message: string) => { warnings.push(message); quantityIncompleteReasons.push(message); };
+  if (inputsWereAdjusted(rawSettings, settings)) incomplete('Some material inputs were invalid or outside the supported range and were adjusted. Review the displayed settings before using this estimate.');
   const lines: MaterialQuantityLine[] = [];
   const assumptions = [
     'Quantities are estimates, not a structural specification. Confirm dimensions, mixes, reinforcement and roof fixings with the supplier and project engineer.',
@@ -85,22 +87,29 @@ export function estimateMaterials(geometry: MaterialsGeometry, rawSettings?: unk
     concreteNetM3: 0, concreteOrderM3: 0, cementKg: 0, cementBags: 0, sandM3: 0, aggregateM3: 0, rebarKg: 0, sheets: 0 };
   const line = (id: string, group: MaterialGroup, label: string, unit: MaterialUnit, net: number, quantity: number, wastePct: number, formula: string,
     sourceId?: string, role: MaterialQuantityLine['role'] = 'component') => {
-    if (![net, quantity].every((v) => Number.isFinite(v) && v >= 0)) { warnings.push(`${label}: invalid quantity omitted.`); return; }
+    if (![net, quantity].every((v) => Number.isFinite(v) && v >= 0)) { incomplete(`${label}: invalid quantity omitted.`); return; }
     lines.push({ id, group, label, unit, net, quantity, wastePct, formula, sourceId, role });
   };
   const safe = (value: unknown, name: string, max = 1e6): number => {
-    if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > max) { warnings.push(`${name}: invalid measurement omitted.`); return 0; }
+    if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > max) { incomplete(`${name}: invalid measurement omitted.`); return 0; }
     return value;
   };
-  const seen = new Set<string>();
+  const seen = new Map<string, MaterialsGeometry['walls'][number]>();
+  if (!Array.isArray(geometry?.walls)) incomplete('Invalid wall list omitted.');
   for (const wall of Array.isArray(geometry?.walls) ? geometry.walls : []) {
-    if (!wall || typeof wall.id !== 'string') { warnings.push('An invalid wall was omitted.'); continue; }
+    if (!wall || typeof wall.id !== 'string') { incomplete('An invalid wall was omitted.'); continue; }
     const wallKey = `${wall.levelId ?? ''}:${wall.id}`;
-    if (seen.has(wallKey)) { warnings.push(`Duplicate wall ${wall.id} was counted once.`); continue; }
-    seen.add(wallKey);
+    const previous = seen.get(wallKey);
+    if (previous) {
+      if (previous.lengthM !== wall.lengthM || previous.heightM !== wall.heightM || previous.openingAreaM2 !== wall.openingAreaM2) incomplete(`Conflicting measurements for duplicate wall ${wall.id}; review the omitted duplicate.`);
+      else warnings.push(`Duplicate wall ${wall.id} was counted once.`);
+      continue;
+    }
+    seen.set(wallKey, wall);
     const length = safe(wall.lengthM, `Wall ${wall.id} length`, 10000), height = safe(wall.heightM, `Wall ${wall.id} height`, 1000);
+    if (length <= 0 || height <= 0) incomplete(`Wall ${wall.id}: positive length and height are required.`);
     const gross = length * height, opening = safe(wall.openingAreaM2, `Wall ${wall.id} openings`);
-    if (opening > gross) warnings.push(`Wall ${wall.id}: opening area exceeded wall area and was capped.`);
+    if (opening > gross) incomplete(`Wall ${wall.id}: opening area exceeded wall area and was capped.`);
     totals.wallGrossAreaM2 += gross;
     totals.wallOpeningAreaM2 += Math.min(opening, gross);
     totals.wallNetAreaM2 += Math.max(0, gross - opening);
@@ -160,10 +169,15 @@ export function estimateMaterials(geometry: MaterialsGeometry, rawSettings?: unk
     addConcrete('walls', 'Poured wall concrete', area * wall.thicknessM, 'Net physical wall area × entered concrete thickness × allowance');
     if (area > 0) warnings.push('Poured wall formwork, reinforcement, joints, foundations and temporary support are not designed or fully scheduled.');
   }
-  if (settings.base.enabled) {
+  if (geometry.foundationVolumeM3 !== undefined) {
+    const volume = safe(geometry.foundationVolumeM3, 'Foundation union volume');
+    addConcrete('base', 'Drawn foundation concrete', volume, 'Union of drawn concrete prisms, overlaps counted once × allowance');
+    assumptions.push('Enabled drawn foundations replace the legacy ground-base estimate. Foundation reinforcement is scheduled separately in Foundation mode.');
+    if (settings.base.enabled) warnings.push('The legacy ground base is excluded because drawn foundation mode is enabled.');
+  } else if (settings.base.enabled) {
     const baseArea = settings.base.areaOverrideM2 ?? safe(geometry?.baseAreaM2, 'Ground footprint area');
     addConcrete('base', 'Ground slab / base concrete', baseArea * settings.base.depthM, `${display(baseArea)} m² × ${settings.base.depthM} m depth × allowance`);
-    if (baseArea <= 0) warnings.push('No ground footprint measured. Enter a verified base area.');
+    if (baseArea <= 0) incomplete('No ground footprint measured. Enter a verified base area.');
     warnings.push('Base depth is an estimating input, not a foundation design. Excavation, sub-base, blinding, membranes and reinforcement are excluded unless scheduled separately.');
   }
   const pillar = settings.pillars;
@@ -173,19 +187,26 @@ export function estimateMaterials(geometry: MaterialsGeometry, rawSettings?: unk
     warnings.push('Pillars are additional net volumes: use clear heights and do not include portions already in slabs/walls. Locations, wall displacement, reinforcement and footings are not inferred.');
   }
   const roof = settings.roof;
-  const roofArea = roof.areaOverrideM2 ?? safe(geometry?.roofAreaM2, 'Roof area');
-  const roofLength = roof.lengthOverrideM ?? safe(geometry?.roofLengthM, 'Roof length', 10000);
-  const roofWidth = roof.widthOverrideM ?? safe(geometry?.roofWidthM, 'Roof width', 10000);
+  const needsRoofRectangle = roof.kind === 'sheet' || (roof.kind === 'reinforced-concrete' && roof.rebar.enabled);
+  const roofArea = roof.kind === 'reinforced-concrete' ? roof.areaOverrideM2 ?? safe(geometry?.roofAreaM2, 'Roof area') : 0;
+  const roofLength = needsRoofRectangle ? roof.lengthOverrideM ?? safe(geometry?.roofLengthM, 'Roof length', 10000) : 0;
+  const roofWidth = needsRoofRectangle ? roof.widthOverrideM ?? safe(geometry?.roofWidthM, 'Roof width', 10000) : 0;
   const manualRectangle = roof.lengthOverrideM !== null && roof.widthOverrideM !== null;
   if (roof.kind !== 'none' && !geometry?.roofRectangular && !manualRectangle) {
     warnings.push('Irregular roof: concrete uses the measured net area; rebar and sheets use the bounding rectangle as an allowance, not an exact cutting list. Enter checked rectangle dimensions or calculate each roof face separately.');
   }
   if (roof.kind === 'reinforced-concrete') {
     addConcrete('roof', 'Roof slab concrete', roofArea * roof.depthM, `${display(roofArea)} m² net plan area × ${roof.depthM} m depth × allowance`);
-    if (roofArea <= 0) warnings.push('No roof slab area measured. Enter a verified roof area.');
+    if (roofArea <= 0) incomplete('No roof slab area measured. Enter a verified roof area.');
     warnings.push('Concrete roof depth, cover, steel and supporting structure require project engineering. Waterproofing, screed falls, drainage, beams, chairs, ties and formwork are not included.');
     if (roof.rebar.enabled && roofLength > 0 && roofWidth > 0) {
       try {
+        // Each mesh layer has two crossing bar directions. This necessary
+        // physical fit matches foundations; it does not establish adequate
+        // spacing, anchorage, strength or an approved reinforcement design.
+        if (2 * roof.rebar.coverMm + 2 * roof.rebar.layers * roof.rebar.diameterMm > roof.depthM * 1000 + 1e-7) {
+          throw new RangeError('Roof reinforcement cannot fit within the slab depth at the entered cover, diameter and layers; steel quantity withheld.');
+        }
         const steel = estimateRebar(roofLength, roofWidth, roof.rebar);
         totals.rebarKg = steel.orderedMassKg;
         line('rebar-length', 'rebar', 'Straight roof mesh · fitted steel length', 'm', steel.lengthM, steel.lengthM, 0,
@@ -197,16 +218,16 @@ export function estimateMaterials(geometry: MaterialsGeometry, rawSettings?: unk
           steel.orderedMassKg, roof.rebar.wastePct, 'Whole stock bars × stock length × π/4 × diameter² × 7,850 kg/m³', 'joonas-steel', 'summary');
         warnings.push('Rebar quantities cover only an orthogonal rectangular mesh. Each run is allocated whole stock bars without reusing offcuts: a conservative purchase allowance, not an optimized bending schedule. Confirm cut/bend, laps, anchorage, openings, supports and grade. No structural adequacy is calculated.');
         if (roof.rebar.lapLengthM === 0 && Math.max(roofLength, roofWidth) - 2 * roof.rebar.coverMm / 1000 > roof.rebar.stockLengthM) {
-          warnings.push('Steel runs exceed stock length but lap allowance is zero. Enter the engineer-specified lap or cut-to-length supply before ordering.');
+          incomplete('Steel runs exceed stock length but lap allowance is zero. Enter the engineer-specified lap or cut-to-length supply before ordering.');
         }
-      } catch (error) { warnings.push(error instanceof Error ? error.message : 'Rebar calculation omitted: invalid inputs.'); }
-    } else if (roof.rebar.enabled) warnings.push('Rebar needs a positive, verified roof length and width.');
+      } catch (error) { incomplete(error instanceof Error ? error.message : 'Rebar calculation omitted: invalid inputs.'); }
+    } else if (roof.rebar.enabled) incomplete('Rebar needs a positive, verified roof length and width.');
     else warnings.push('Roof reinforcement is not counted until the optional steel schedule is enabled with project dimensions.');
   }
   if (roof.kind === 'sheet') {
     const sheet = roof.sheet, source = CONSTRUCTION_SHEET_PRESETS.find((p) => p.id === sheet.presetId)?.sourceId;
-    if (roofLength <= 0 || roofWidth <= 0) warnings.push('Sheet roof needs positive length and width.');
-    else if (sheet.endLapM >= sheet.sheetLengthM) warnings.push('Sheet end lap must be shorter than sheet length. No sheet quantity calculated.');
+    if (roofLength <= 0 || roofWidth <= 0) incomplete('Sheet roof needs positive length and width.');
+    else if (sheet.endLapM >= sheet.sheetLengthM) incomplete('Sheet end lap must be shorter than sheet length. No sheet quantity calculated.');
     else {
       const eaveLength = roofLength + 2 * sheet.overhangM;
       const slopingRun = (roofWidth + 2 * sheet.overhangM) / sheet.slopes / Math.cos(sheet.pitchDeg * Math.PI / 180);
@@ -226,7 +247,7 @@ export function estimateMaterials(geometry: MaterialsGeometry, rawSettings?: unk
       for (const [id, label, length] of [['ridge', 'Ridge caps', sheet.ridgeLengthM], ['flashing', 'Edge / wall flashings', sheet.flashingLengthM], ['gutter', 'Gutters', sheet.gutterLengthM]] as const) {
         if (length <= 0) continue;
         line(`${id}-length`, 'sheet', label, 'm', length, allowance(length, sheet.wastePct), sheet.wastePct, 'Measured length × allowance', source);
-        if (sheet.trimLapM >= sheet.trimStockLengthM) warnings.push(`${label}: trim lap must be shorter than stock length; piece count omitted.`);
+        if (sheet.trimLapM >= sheet.trimStockLengthM) incomplete(`${label}: trim lap must be shorter than stock length; piece count omitted.`);
         else line(`${id}-pieces`, 'sheet', `${label} · stock pieces`, 'pieces', Math.max(1, ceil((length - sheet.trimLapM) / (sheet.trimStockLengthM - sheet.trimLapM))),
           Math.max(1, ceil((allowance(length, sheet.wastePct) - sheet.trimLapM) / (sheet.trimStockLengthM - sheet.trimLapM))), sheet.wastePct,
           'ceil((required length − one lap) ÷ (stock length − lap))', source, 'summary');
@@ -250,5 +271,5 @@ export function estimateMaterials(geometry: MaterialsGeometry, rawSettings?: unk
     line('cement-total', 'totals', 'Cement · all mixes', 'kg', totals.cementKg, totals.cementKg, 0, 'Sum of mix cement quantities already including allowances; keep cement types separate', undefined, 'summary');
     line('sand-total', 'totals', 'Rocksand · all mixes', 'm³', totals.sandM3, totals.sandM3, 0, 'Sum of mortar + plaster + site-mix sand; no extra waste applied', 'gamma-materials', 'summary');
   }
-  return { version: 1, settings, lines, warnings: [...new Set(warnings)], assumptions, totals };
+  return { version: 1, settings, lines, warnings: [...new Set(warnings)], quantityIncompleteReasons: [...new Set(quantityIncompleteReasons)], assumptions, totals };
 }

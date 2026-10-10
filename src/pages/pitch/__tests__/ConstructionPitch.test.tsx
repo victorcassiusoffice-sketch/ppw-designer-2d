@@ -17,13 +17,24 @@ describe('construction pitch', () => {
   it('uses the live story, the face-to-face meeting, and no prices', () => {
     const text = host.textContent ?? '';
     expect(text).toContain(MATERIALS_NOTE);
-    expect(text).toContain('Blocks, cement and sand, with cement in kilograms and 25 kg bags.');
+    expect(text).toContain('selectable mix ratios, pack sizes and waste');
+    expect(text).toContain('alternatives are not counted twice');
+    expect(text).toContain('Paint coats change coverage demand');
     expect(text).toContain('The same house, in 2D and in 3D.');
     expect(text).toContain('A plumbing layout for each floor.');
     expect(text).toContain('The electric floor follows the same plan.');
-    expect(text).toContain('Connects your suppliers, designer, customer and workers in one live build.');
-    expect(text).toContain('Catalogue products stay in the plan at real sizes through the merchant connection.');
-    expect(text).toContain('Use the shared plan, the 3D view, the Materials list, and the plumbing and electric floors.');
+    expect(text).toContain('One reviewable brief for your team.');
+    expect(text).toContain('Overlapping concrete is counted once');
+    expect(text).toContain('Measure the excavation. Add the concrete.');
+    expect(text).toContain('UBP / Premix');
+    expect(text).toContain('Shared edges need no redraw');
+    expect(text).toContain('returns to your original 2D or 3D view');
+    expect(text).toContain('No live inventory is implied');
+    expect(text).toContain('it does not design or approve foundations');
+    expect(text).toContain('Unresolved overlapping steel is withheld for review');
+    expect(text).toContain('Linked routes follow fixture moves and rotation');
+    expect(text).toContain('share published outer dimensions in 2D and 3D');
+    expect(text).toContain('live co-editing, orders and delivery scheduling require agreed integrations');
     expect(text).toContain(STARTING_POINT);
     expect(text).toContain('Peak Performance Wellness Ltd · based in Tamarin, Mauritius');
     expect(text).toContain('Book a meeting with a Live Demo');
@@ -31,7 +42,7 @@ describe('construction pitch', () => {
     expect(CONSTRUCTION_MEETING_URL).not.toBe(MEETING_URL);
     expect(text).not.toMatch(/\bRs\b/);
     expect(text).not.toMatch(/535,?402|1,623|805\.9|1\.68/);
-    expect(text).not.toMatch(/rebar|concrete|aggregate|roof sheet|automation|automatic ordering|delivery slot|job sheet/i);
+    expect(text).not.toMatch(/(?:MUR|USD|\$|€|£)\s?\d/);
     expect(host.querySelector('a[href="/demo"]')).toBeNull();
     expect(host.querySelector('a[href^="/studio"]')).toBeNull();
     expect(host.querySelector('[role="tab"]')).toBeNull();
@@ -52,10 +63,10 @@ describe('construction pitch', () => {
     expect(host.querySelector('img[src="/pitch/construction/shots/materials-warning.webp"]')).not.toBeNull();
     expect(host.querySelector('img[src="/pitch/construction/shots/materials-report.webp"]')).not.toBeNull();
     for (const slot of ['plan-import', 'plumbing', 'electric']) {
-      const coming = host.querySelector(`[data-slot="${slot}"]`);
-      expect(coming?.textContent).toContain('screenshot coming');
-      expect(coming?.querySelector('img')).toBeNull();
+      const step = host.querySelector(`#${slot} .c-try`);
+      expect(step?.querySelector('button')?.textContent).toBe('Try this step');
     }
+    expect(host.textContent).not.toContain('screenshot coming');
     const requested = [...host.querySelectorAll('img')].map((img) => img.getAttribute('src'));
     for (const missing of PENDING_CONSTRUCTION_SHOTS) expect(requested).not.toContain(missing);
   });
@@ -73,7 +84,10 @@ describe('construction pitch', () => {
     expect(house.querySelector('iframe')).toBe(frame);
     expect(frame.getAttribute('src')).toContain('pitch=1');
     expect(post).toHaveBeenLastCalledWith(expect.objectContaining({ view: '2d' }), window.location.origin);
-    click([...host.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === 'Try this step')!);
-    expect(host.querySelector('iframe[src="/demo?pitch=1"]')).not.toBeNull();
+    for (const [id, panel] of [['plan-import', 'import'], ['foundation', 'foundation'], ['plumbing', 'services'], ['electric', 'services']]) {
+      const section = host.querySelector(`#${id}`)!;
+      click(section.querySelector<HTMLButtonElement>('button')!);
+      expect(section.querySelector('iframe')?.getAttribute('src')).toBe(`/demo?view=2d&panel=${panel}&pitch=1`);
+    }
   });
 });

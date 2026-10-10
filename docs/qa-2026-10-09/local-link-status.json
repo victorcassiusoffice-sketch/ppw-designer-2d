@@ -1,0 +1,110 @@
+{
+  "checkedAt": "2026-10-10T11:58:29.425Z",
+  "scope": "Local static route availability only; not deployed API/authentication verification",
+  "results": [
+    {
+      "url": "http://127.0.0.1:5173",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/pitch/plumbing",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/pitch/construction",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/pitch/merchants",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/pitch/developers",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/pitch/developers?client=cap-tamarin",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/pitch/merchants?client=spa-concept",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/studio/sales",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/designer",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/designer?demo=tintex",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/demo?view=2d&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/demo?view=3d&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/demo?view=2d&panel=foundation&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/demo?view=3d&panel=foundation&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/demo?view=2d&panel=services&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/demo?view=3d&panel=services&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/demo?view=3d&panel=materials&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/demo?scene=paint&view=3d&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/demo?view=2d&panel=import&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/demo?view=3d&panel=ai&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/embed/designer?view=2d&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/embed/designer?view=3d&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/studio",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/studio/designer",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/studio/shop",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5173/studio/merchants/connect",
+      "status": 200
+    }
+  ]
+}

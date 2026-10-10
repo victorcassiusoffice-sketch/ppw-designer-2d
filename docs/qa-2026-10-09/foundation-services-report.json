@@ -1,0 +1,344 @@
+{
+  "date": "2026-10-09",
+  "completedDate": "2026-10-10",
+  "base": "http://127.0.0.1:5173",
+  "build": "npm run build completed before capture",
+  "appBundle": "App-DMQdCeGK.js",
+  "visualReview": {
+    "completedDate": "2026-10-10",
+    "status": "Passed at desktop and phone sizes",
+    "verified": [
+      "Full-width phone floor exit remains readable and accessible",
+      "Foundation hole and concrete are distinct; depth label is legible with no projected AO rectangle",
+      "Rebar dimensions, concrete product reference and editable ratio are accessible in the scrolling inspector",
+      "Services route and measured product shelf remain usable on both viewports",
+      "All 23 captured screens use pitch mode and contain no visible monetary amounts"
+    ],
+    "remainingDefects": [],
+    "limits": [
+      "Headless Chromium with software WebGL; physical phone GPU performance was not measured",
+      "A measured house was seeded; excavation, fill, ratio changes and service routing were performed through actual UI",
+      "No remote order or supplier backend write was attempted"
+    ],
+    "handoffCopy": {
+      "count": 23,
+      "sha256Verified": true,
+      "folder": "C:/Users/Victor/Documents/PPW-Second-Brain/06-Roadmap/agentix-os/inbox/designer-2026-10-09-foundations-services/shots"
+    }
+  },
+  "seed": "10 × 8 m ground room; all foundation/service changes made through UI",
+  "cases": [
+    {
+      "viewport": "desktop",
+      "dimensions": {
+        "width": 1280,
+        "height": 900
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "httpErrors": [],
+      "captures": [
+        "docs/qa-2026-10-09/desktop-foundation-hole.png",
+        "docs/qa-2026-10-09/desktop-foundation-hole-3d.png",
+        "docs/qa-2026-10-09/desktop-foundation-filled.png",
+        "docs/qa-2026-10-09/desktop-foundation-rebar.png",
+        "docs/qa-2026-10-09/desktop-foundation-concrete-reference.png",
+        "docs/qa-2026-10-09/desktop-foundation-concrete-ratio.png",
+        "docs/qa-2026-10-09/desktop-foundation-filled-3d.png",
+        "docs/qa-2026-10-09/desktop-foundation-floor-exit.png",
+        "docs/qa-2026-10-09/desktop-services-route.png",
+        "docs/qa-2026-10-09/desktop-services-products.png",
+        "docs/qa-2026-10-09/desktop-services-floor-exit.png"
+      ],
+      "checks": [
+        {
+          "action": "Draw hole and set measured dimensions",
+          "excavationM3": 120,
+          "plannedConcreteM3": 24
+        },
+        {
+          "screen": "foundation-hole",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "screen": "foundation-hole-3d",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "action": "3D renderer",
+          "canvases": [
+            {
+              "shading": "natural-depth",
+              "width": 1167,
+              "height": 692
+            }
+          ]
+        },
+        {
+          "screen": "foundation-filled",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "screen": "foundation-rebar",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "screen": "foundation-concrete-reference",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "screen": "foundation-concrete-ratio",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "action": "Concrete ratio input persisted without changing measured foundation thickness",
+          "sandParts": 2.5,
+          "depthM": 0.3
+        },
+        {
+          "screen": "foundation-filled-3d",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "screen": "foundation-floor-exit",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "action": "Same-floor exit from Foundation restores 3D",
+          "passed": true
+        },
+        {
+          "action": "Draw mains-to-sink route via actual port clicks",
+          "start": {
+            "fixtureId": "bi9SAKNfVE",
+            "portId": "cold-water"
+          },
+          "end": {
+            "fixtureId": "9l19aTyjsE",
+            "portId": "cold-water"
+          },
+          "points": [
+            {
+              "x": 1,
+              "y": 1
+            },
+            {
+              "x": 4,
+              "y": 1
+            },
+            {
+              "x": 7.85,
+              "y": 5.808
+            }
+          ]
+        },
+        {
+          "screen": "services-route",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "screen": "services-products",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "action": "Measured product cards available",
+          "count": 10
+        },
+        {
+          "screen": "services-floor-exit",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "action": "Same-floor exit from Services restores 3D",
+          "passed": true
+        }
+      ],
+      "defects": [],
+      "consoleErrorCount": 0,
+      "pageErrorCount": 0
+    },
+    {
+      "viewport": "phone",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "httpErrors": [],
+      "captures": [
+        "docs/qa-2026-10-09/phone-foundation-hole.png",
+        "docs/qa-2026-10-09/phone-foundation-hole-3d.png",
+        "docs/qa-2026-10-09/phone-foundation-filled.png",
+        "docs/qa-2026-10-09/phone-foundation-rebar.png",
+        "docs/qa-2026-10-09/phone-foundation-rebar-dimensions.png",
+        "docs/qa-2026-10-09/phone-foundation-concrete-reference.png",
+        "docs/qa-2026-10-09/phone-foundation-concrete-ratio.png",
+        "docs/qa-2026-10-09/phone-foundation-filled-3d.png",
+        "docs/qa-2026-10-09/phone-foundation-floor-exit.png",
+        "docs/qa-2026-10-09/phone-services-route.png",
+        "docs/qa-2026-10-09/phone-services-products.png",
+        "docs/qa-2026-10-09/phone-services-floor-exit.png"
+      ],
+      "checks": [
+        {
+          "action": "Draw hole and set measured dimensions",
+          "excavationM3": 120,
+          "plannedConcreteM3": 24
+        },
+        {
+          "screen": "foundation-hole",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "screen": "foundation-hole-3d",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "action": "3D renderer",
+          "canvases": [
+            {
+              "shading": "natural-depth",
+              "width": 390,
+              "height": 615
+            }
+          ]
+        },
+        {
+          "screen": "foundation-filled",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "screen": "foundation-rebar",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "screen": "foundation-rebar-dimensions",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "screen": "foundation-concrete-reference",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "screen": "foundation-concrete-ratio",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "action": "Concrete ratio input persisted without changing measured foundation thickness",
+          "sandParts": 2.5,
+          "depthM": 0.3
+        },
+        {
+          "screen": "foundation-filled-3d",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "screen": "foundation-floor-exit",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "action": "Same-floor exit from Foundation restores 3D",
+          "passed": true
+        },
+        {
+          "action": "Draw mains-to-sink route via actual port clicks",
+          "start": {
+            "fixtureId": "a8kywelm4R",
+            "portId": "cold-water"
+          },
+          "end": {
+            "fixtureId": "YkCs7UdAwd",
+            "portId": "cold-water"
+          },
+          "points": [
+            {
+              "x": 1,
+              "y": 1
+            },
+            {
+              "x": 4,
+              "y": 1
+            },
+            {
+              "x": 7.85,
+              "y": 5.808
+            }
+          ]
+        },
+        {
+          "screen": "services-route",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "screen": "services-products",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "action": "Measured product cards available",
+          "count": 10
+        },
+        {
+          "screen": "services-floor-exit",
+          "horizontalOverflow": false,
+          "clippedHeaderControls": [],
+          "priceFree": true
+        },
+        {
+          "action": "Same-floor exit from Services restores 3D",
+          "passed": true
+        }
+      ],
+      "defects": [],
+      "consoleErrorCount": 0,
+      "pageErrorCount": 0
+    }
+  ],
+  "pass": true
+}

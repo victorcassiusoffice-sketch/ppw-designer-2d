@@ -1,0 +1,381 @@
+{
+  "verifiedAt": "2026-10-10T11:59:26.070Z",
+  "count": 75,
+  "checks": [
+    {
+      "file": "desktop-3d-house.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-3d-loading.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-3d-selection.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-3d-view-settings.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-cart-quote-required.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-foundation-concrete-ratio.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-foundation-concrete-reference.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-foundation-filled-3d.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-foundation-filled.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-foundation-floor-exit.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-foundation-hole-3d.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-foundation-hole.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-foundation-rebar.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-materials-concrete.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-materials-costs.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-materials-report.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-materials-roof.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-materials-walls.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-paint-coats.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-plan-controls.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-plan-site-tools.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-product-3d-selected.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-product-details-cost.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-services-floor-exit.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-services-products.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "desktop-services-route.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "phone-3d-house.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-3d-loading.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-3d-selection.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-3d-view-settings.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-cart-quote-required.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-foundation-concrete-ratio.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-foundation-concrete-reference.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-foundation-filled-3d.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-foundation-filled.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-foundation-floor-exit.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-foundation-hole-3d.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-foundation-hole.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-foundation-rebar-dimensions.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-foundation-rebar.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-materials-concrete.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-materials-costs.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-materials-report.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-materials-roof.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-materials-walls.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-paint-coats.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-plan-controls.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-plan-site-tools.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-product-3d-selected.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-product-details-cost.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-services-floor-exit.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-services-products.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "phone-services-route.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "pitch-construction-desktop-foundation.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "pitch-construction-desktop-overview.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "pitch-construction-desktop-plumbing.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "pitch-construction-phone-foundation.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "pitch-construction-phone-overview.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "pitch-construction-phone-plumbing.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "pitch-developers-desktop-overview.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "pitch-developers-phone-overview.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "pitch-employees-desktop-all-links.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "pitch-employees-desktop-demo-lab.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "pitch-employees-desktop-overview.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "pitch-employees-phone-all-links.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "pitch-employees-phone-demo-lab.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "pitch-employees-phone-overview.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "pitch-merchants-desktop-overview.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "pitch-merchants-phone-overview.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "pitch-plumbing-desktop-overview.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "pitch-plumbing-desktop-work-together.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "pitch-plumbing-desktop-your-catalogue.png",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "file": "pitch-plumbing-phone-overview.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "pitch-plumbing-phone-work-together.png",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "pitch-plumbing-phone-your-catalogue.png",
+      "width": 390,
+      "height": 844
+    }
+  ]
+}

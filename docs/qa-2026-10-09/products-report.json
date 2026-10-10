@@ -1,0 +1,36 @@
+[
+  {
+    "name": "desktop",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "checks": [
+      "Expanded site tools sit below persistent Floors / Materials / Undo without overlap",
+      "Selected product has object-adjacent rotate controls"
+    ],
+    "screens": [
+      "desktop-materials-costs.png",
+      "desktop-plan-site-tools.png",
+      "desktop-product-3d-selected.png",
+      "desktop-product-details-cost.png",
+      "desktop-cart-quote-required.png"
+    ],
+    "failure": null
+  },
+  {
+    "name": "phone",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "checks": [
+      "Expanded site tools sit below persistent Floors / Materials / Undo without overlap",
+      "Selected product has object-adjacent rotate controls"
+    ],
+    "screens": [
+      "phone-materials-costs.png",
+      "phone-plan-site-tools.png",
+      "phone-product-3d-selected.png",
+      "phone-product-details-cost.png",
+      "phone-cart-quote-required.png"
+    ],
+    "failure": null
+  }
+]

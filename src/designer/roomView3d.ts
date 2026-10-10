@@ -284,7 +284,7 @@ interface CameraBasis {
   forward: Vec3;
 }
 
-function cameraBasis(cam: OrbitCamera): CameraBasis {
+export function cameraBasis(cam: OrbitCamera): CameraBasis {
   const pos = cameraPosition(cam);
   const forward = norm(sub(cam.target, pos));
   const worldUp: Vec3 = { x: 0, y: 0, z: 1 };

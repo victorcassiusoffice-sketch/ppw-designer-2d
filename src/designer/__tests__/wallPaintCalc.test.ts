@@ -54,8 +54,42 @@ describe('wall paint measurement', () => {
   });
 
   it('a wall of doors never quotes negative', () => {
-    const room = { polygon: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }], openings: [door(0, 0.9), door(0, 0.9)] };
-    expect(paintableEdgeAreaM2(room, 0, 2.0)).toBe(0);
+    const room = { polygon: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }], openings: [{ ...door(0, 0.9), offsetM: 0.5 }, { ...door(0, 0.9), offsetM: 0.5 }] };
+    // Duplicate imports describe one 0.9 m opening, not two physical holes.
+    expect(paintableEdgeAreaM2(room, 0, 2.0)).toBeCloseTo(0.2);
+  });
+
+  it('clips windows at their sill and retains the small-opening paint convention', () => {
+    const highWindow = { ...window_(0), sillM: 2.5 };
+    expect(openingFaceAreaM2(highWindow, 2.7)).toBeCloseTo(0.24);
+    expect(paintableEdgeAreaM2({ polygon: ROOM_POLY, openings: [highWindow] }, 0, 2.7)).toBeCloseTo(13.5);
+    expect(openingFaceAreaM2({ ...highWindow, sillM: 3 }, 2.7)).toBe(0);
+  });
+
+  it('unions overlapping holes, clips edge overflow and ignores holes beyond the wall', () => {
+    const a = { ...door(0, 1.2), offsetM: 1 }, b = { ...door(0, 1.2), id: 'b', offsetM: 1.5 };
+    const room = { polygon: ROOM_POLY, openings: [a, b, { ...door(0, 2), offsetM: 0 }, { ...door(0, 1.2), offsetM: 20 }] };
+    expect(paintableEdgeAreaM2(room, 0, 2.7)).toBeCloseTo(13.5 - 2.1 * 2.04);
+    const p = { wallHeightM: 2.7, rooms: [{ ...room, id: 'r', name: 'Room', wallPaint: [{ edgeIndex: 0, paintId: WALL_PAINTS[0].id }] }] };
+    expect(wallPaintBreakdown(p)[0].areaM2).toBeCloseTo(deriveWallPaintOrders(p)[0].areaM2);
+    expect(wallPaintBreakdown(p)[0].openingsM2).toBeCloseTo(2.1 * 2.04);
+  });
+
+  it('doubles unrounded demand for two coats and keeps primer a separate coat', () => {
+    const paint = WALL_PAINTS[0];
+    const p = { wallHeightM: 2, wallPaintWastePct: 0, rooms: [{ id: 'r', name: 'Room', polygon: [{ x: 0, y: 0 }, { x: paint.coverage_m2_per_l, y: 0 }, { x: paint.coverage_m2_per_l, y: 2 }], wallPaint: [{ edgeIndex: 0, paintId: paint.id }] }] };
+    const one = deriveWallPaintOrders({ ...p, wallPaintCoats: 1 })[0];
+    const two = deriveWallPaintOrders({ ...p, wallPaintCoats: 2, wallPaintPrimer: true });
+    expect(one.netLitres).toBe(2);
+    expect(two.find(order => !order.isPrimer)?.netLitres).toBe(4);
+    expect(two.find(order => order.isPrimer)?.coats).toBe(1);
+    expect(two.find(order => !order.isPrimer)?.fill.boughtLitres).toBeGreaterThanOrEqual(4);
+  });
+
+  it('does not propagate non-finite paint demands', () => {
+    expect(litresForArea(NaN, 2, 10)).toBe(0);
+    expect(litresForArea(10, Infinity, 10)).toBe(0);
+    expect(litresForArea(10, 2, NaN)).toBe(0);
   });
 
   it('tin fill buys the cheapest whole-tin combination', () => {
@@ -237,8 +271,11 @@ describe('wall paint tints (2026-09-14) — one tin serves one colour', () => {
     expect(w1.heightM).toBe(2.7);
     expect(w1.grossM2).toBeCloseTo(13.5, 6);
     expect(w1.openingCount).toBe(2);
-    expect(w1.openingsM2).toBeCloseTo(0.838 * 2.04 + 1.2 * 1.2, 6);
-    expect(w1.areaM2).toBeCloseTo(13.5 - (0.838 * 2.04 + 1.2 * 1.2), 6);
+    // The imported door ends at 1.419 m, window starts at 1.4 m.
+    // Their common 0.019 × 1.14 m rectangle is one hole, not two.
+    const union = 0.838 * 2.04 + 1.2 * 1.2 - 0.019 * 1.14;
+    expect(w1.openingsM2).toBeCloseTo(union, 6);
+    expect(w1.areaM2).toBeCloseTo(13.5 - union, 6);
     expect(w1.colourName).toBe('Coral');
     expect(w1.key).toBe(`${paint.id}|#C9553F`);
     expect(rows[2]).toMatchObject({ kind: 'free', wallId: 'fw', areaM2: 2 * 2.7, openingsM2: 0 });

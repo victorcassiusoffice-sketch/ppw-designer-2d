@@ -104,6 +104,11 @@ describe('calculatePaint — with paintId resolves SKU + price', () => {
 });
 
 describe('calculatePaint — edge cases', () => {
+  it('rejects invalid dimensions and coat counts at the pure-math boundary', () => {
+    for (const coats of [-1, 0, 1.5, 4, NaN, Infinity]) expect(() => calculatePaint({ walls: [makeWall(5000)], coats })).toThrow(RangeError);
+    for (const value of [-1, 0, NaN, Infinity]) expect(() => calculatePaint({ walls: [makeWall(5000, value)] })).toThrow(RangeError);
+    expect(() => wallAreaM2(makeWall(Infinity))).toThrow(RangeError);
+  });
   it('zero walls = zero area, zero litres', () => {
     const result = calculatePaint({ walls: [] });
     expect(result.total_area_m2).toBe(0);

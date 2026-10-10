@@ -1,3 +1,74 @@
+<!-- local-review-oct10:start -->
+## 2026-10-10 — current local build: BUILT-NOT-LIVE
+
+**Publication hold: await Victor's explicit Y.** The current work is on branch `gpt/designer-2026-10-09` in `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`. No new push, pull request or deployment has been made for this work. Main and production have not been updated.
+
+Local preview: **http://127.0.0.1:5173**. Current compiled application: `App-DMQdCeGK.js`. Validation: **324 test files / 3,655 tests passed**. These local URLs work on this computer while its preview server is running; they are not public sharing links. A static preview does not validate deployed authentication, merchant integrations or API availability.
+
+### Pitches and employee pack
+
+- [http://127.0.0.1:5173/pitch/plumbing](http://127.0.0.1:5173/pitch/plumbing) - Room Designer: plumbing suppliers, installers and bathroom showrooms.
+- [http://127.0.0.1:5173/pitch/construction](http://127.0.0.1:5173/pitch/construction) - Room Designer: builders, estimators and building-material suppliers.
+- [http://127.0.0.1:5173/pitch/merchants](http://127.0.0.1:5173/pitch/merchants) - Room Designer: retailers, manufacturers and distributors.
+- [http://127.0.0.1:5173/pitch/developers](http://127.0.0.1:5173/pitch/developers) - Room Designer: property developers and off-plan apartment companies.
+- [http://127.0.0.1:5173/pitch/developers?client=cap-tamarin](http://127.0.0.1:5173/pitch/developers?client=cap-tamarin) - Room Designer: Cap Tamarin residential-development pitch example.
+- [http://127.0.0.1:5173/pitch/merchants?client=spa-concept](http://127.0.0.1:5173/pitch/merchants?client=spa-concept) - Room Designer: Spa Concept wellness-facility and supplier pitch example.
+- [http://127.0.0.1:5173/studio/sales](http://127.0.0.1:5173/studio/sales) - Room Designer: employee training, sales teams and design consultants.
+
+### Designer, demos and specialist workspaces
+
+- [http://127.0.0.1:5173/designer](http://127.0.0.1:5173/designer) - Room Designer: general interior and building-design review.
+- [http://127.0.0.1:5173/designer?demo=tintex](http://127.0.0.1:5173/designer?demo=tintex) - Room Designer: legacy paint-demo entry for paint suppliers and decorators; presented as Demo.
+- [http://127.0.0.1:5173/demo?view=2d&pitch=1](http://127.0.0.1:5173/demo?view=2d&pitch=1) - Room Designer: 2D demonstration for furniture, interiors and space planning.
+- [http://127.0.0.1:5173/demo?view=3d&pitch=1](http://127.0.0.1:5173/demo?view=3d&pitch=1) - Room Designer: Premium 3D demonstration for showrooms, interiors and property developers.
+- [http://127.0.0.1:5173/demo?view=2d&panel=foundation&pitch=1](http://127.0.0.1:5173/demo?view=2d&panel=foundation&pitch=1) - Room Designer: excavation, depth and concrete-quantity review for builders, estimators and concrete suppliers.
+- [http://127.0.0.1:5173/demo?view=3d&panel=foundation&pitch=1](http://127.0.0.1:5173/demo?view=3d&panel=foundation&pitch=1) - Room Designer: foundation workspace entered from 3D, for building and estimating teams.
+- [http://127.0.0.1:5173/demo?view=2d&panel=services&pitch=1](http://127.0.0.1:5173/demo?view=2d&panel=services&pitch=1) - Room Designer: Plumbing & Electric planning for installers, suppliers and building-services teams.
+- [http://127.0.0.1:5173/demo?view=3d&panel=services&pitch=1](http://127.0.0.1:5173/demo?view=3d&panel=services&pitch=1) - Room Designer: service-route workspace entered from 3D, for plumbing and electrical teams.
+- [http://127.0.0.1:5173/demo?view=3d&panel=materials&pitch=1](http://127.0.0.1:5173/demo?view=3d&panel=materials&pitch=1) - Room Designer: material-quantity estimates for construction companies and building-material suppliers.
+- [http://127.0.0.1:5173/demo?scene=paint&view=3d&pitch=1](http://127.0.0.1:5173/demo?scene=paint&view=3d&pitch=1) - Room Designer: paint, coats and finish review for paint suppliers and decorators.
+- [http://127.0.0.1:5173/demo?view=2d&panel=import&pitch=1](http://127.0.0.1:5173/demo?view=2d&panel=import&pitch=1) - Room Designer: measured-plan import for designers, architects and contractors.
+- [http://127.0.0.1:5173/demo?view=3d&panel=ai&pitch=1](http://127.0.0.1:5173/demo?view=3d&panel=ai&pitch=1) - Room Designer: AI/guided-design interface for design consultants and project teams; hosted inference requires its configured backend.
+- [http://127.0.0.1:5173/embed/designer?view=2d&pitch=1](http://127.0.0.1:5173/embed/designer?view=2d&pitch=1) - Room Designer: 2D embedding example for company websites and product pages.
+- [http://127.0.0.1:5173/embed/designer?view=3d&pitch=1](http://127.0.0.1:5173/embed/designer?view=3d&pitch=1) - Room Designer: 3D embedding example for company websites and showrooms.
+- [http://127.0.0.1:5173/studio](http://127.0.0.1:5173/studio) - Room Designer Studio: standalone workspace for clients, designers and merchant teams.
+- [http://127.0.0.1:5173/studio/designer](http://127.0.0.1:5173/studio/designer) - Room Designer Studio: internal design workspace for design consultants and merchant teams.
+- [http://127.0.0.1:5173/studio/shop](http://127.0.0.1:5173/studio/shop) - Room Designer Studio: shop showcase for multi-merchant retail; no orders were made during QA.
+- [http://127.0.0.1:5173/studio/merchants/connect](http://127.0.0.1:5173/studio/merchants/connect) - Room Designer Studio: catalogue-preparation interface for merchants and onboarding teams; publishing requires the configured authenticated backend.
+
+Foundation and service workspaces use plan-based editing; their floor controls return to the originating 2D or 3D view. Quantities are planning estimates, not structural approval. Supplier product models remain illustrative dimensional previews; exact manufacturer imagery and live inventory are not implied.
+
+### Full local file locations and evidence
+
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer) - Room Designer: source repository for all markets.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/dist](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/dist) - Room Designer: compiled local application, shared by the designer and pitch routes.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/src/pages/pitch](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/src/pages/pitch) - Room Designer: developer, merchant and construction pitch source.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/src/pages/sales](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/src/pages/sales) - Room Designer: plumbing pitch and employee starter-pack source.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/BUILD-WORKFLOW-2026-10-09.md](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/BUILD-WORKFLOW-2026-10-09.md) - Room Designer: implementation checkpoint and continuation workflow for all markets.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-2026-10-09/PITCH-QA.md](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-2026-10-09/PITCH-QA.md) - Room Designer: desktop/phone pitch and employee-page visual QA, completed 10 October.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-2026-10-09](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-2026-10-09) - Room Designer: local PNG captures and browser diagnostics for app and pitch review.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/tools/_scratch/full-tests-oct10-final.log](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/tools/_scratch/full-tests-oct10-final.log) - Room Designer: final 324-file / 3,655-test validation record.
+
+**Older remote builds below:** all remote preview and production URLs in the history below belong to earlier deployed versions. They do **not** contain this unpublished 8–10 October work. Historical “live”, “current” and “verified” wording describes the date of each entry, not the current local build. Existing PR links are historical; no new PR exists for this work. Remote availability has not been reverified in this documentation update.
+<!-- local-review-oct10:end -->
+
+<!-- sales-pack-oct7:start -->
+## Verified plumbing pitch and employee starter pack - 7 October 2026
+
+Application commit `24dc3b8`; verified deployment commit `6b9b406eb7f7fd220bbd08a2f0eaf43eeefd0b4f` (documentation-only follow-up). Branch `gpt/designer-2026-10-07`; PR https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/43. Main and production are unchanged by this work.
+
+- https://ppw-designer-2d-git-gpt-designer-2026-10-07-victor-ppw.vercel.app/pitch/plumbing - Room Designer: plumbing suppliers, installers and bathroom showrooms.
+- https://ppw-designer-2d-git-gpt-designer-2026-10-07-victor-ppw.vercel.app/studio/sales - Room Designer: employee training and sales across 17 company categories; existing Studio access gate applies.
+- https://ppw-designer-2d-git-gpt-designer-2026-10-07-victor-ppw.vercel.app/demo?view=2d&panel=services&pitch=1 - Room Designer: live plumbing and electrical demonstration.
+
+Six-chapter customer pitch and an employee hub with six practice exercises, market/buyer map, 2D/3D/category and installation choices, product onboarding, outreach drafts, local discovery worksheet and deployment-aware link directory. Includes a downloadable handbook. No prospect messages, merchant publications, purchases or enquiry submissions were made.
+
+Verification: all 18 listed app routes returned HTTP 200 (Studio routes showed the intended access gate), MCP tools/list returned 200 with services tools, Calendly returned 200. Deployed pitch and employee hub render at desktop and 390px. Local relevant tests 47 pass; CI full suite 313 test files pass; client/middleware/API typechecks, lint and build pass. Lighthouse remains red against the existing production /designer, for PWA/SEO/payload assertions, not these preview pages. Unique preview hosts showed intermittent timeouts; use the verified branch alias above. All 18 app routes passed on this alias and the plumbing pitch rendered in the browser.
+
+Full source folder: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\src\pages\sales`.
+Single handover folder: `C:\Users\Victor\Documents\PPW-Second-Brain\06-Roadmap\agentix-os\inbox\designer-2026-10-07-sales-starter-pack` (START-HERE.md, employee handbook, plumbing brief, links, outreach, onboarding, discovery, HANDOFF.md and shots).
+
+<!-- sales-pack-oct7:end -->
 <!-- oct4-sculpted:start -->
 ## Verified sculpted UI and realism preview — 4 October 2026
 

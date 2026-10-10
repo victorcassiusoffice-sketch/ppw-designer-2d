@@ -1,4 +1,4 @@
-import { exteriorWallSpans } from './wallConstruction';
+import { exteriorWallSpans } from './wallConstruction.js';
 /**
  * Wall-paint measurement algorithm (Vic 2026-09-02).
  *
@@ -18,8 +18,8 @@ import { exteriorWallSpans } from './wallConstruction';
 
 import type { Polygon } from '../lib/geometry';
 import type { Opening } from './openings';
-import { levelHeightM, normaliseLevelHeight } from './building';
-import { isRoofLevel, roomLevelId, type Level } from './levels';
+import { levelHeightM, normaliseLevelHeight } from './building.js';
+import { isRoofLevel, roomLevelId, type Level } from './levels.js';
 import {
   DEFAULT_PAINT_WASTE_PCT,
   MAX_PAINT_COATS,
@@ -40,7 +40,7 @@ import {
   tinsForPaintColour,
   type WallPaint,
   type WallPaintTin,
-} from '../data/wallPaints';
+} from '../data/wallPaints.js';
 
 export interface WallPaintedEdge {
   side?: 'interior' | 'exterior';
@@ -86,10 +86,7 @@ function freePaintFaces(walls: PaintableFreeWall[]): PaintableFreeWall[] {
 export function exteriorPaintAreaM2(room: PaintableRoomShape & { id: string }, edgeIndex: number, heightM: number, rooms: Array<PaintableRoomShape & { id: string }>): number {
   const spans = exteriorWallSpans(room, edgeIndex, rooms);
   const gross = spans.reduce((total, span) => total + (span.t1 - span.t0) * heightM, 0);
-  const cut = (room.openings ?? []).filter((opening) => opening.edgeIndex === edgeIndex).reduce((total, opening) => {
-    const width = spans.reduce((sum, span) => sum + Math.max(0, Math.min(span.t1, opening.offsetM + opening.widthM / 2) - Math.max(span.t0, opening.offsetM - opening.widthM / 2)), 0);
-    return total + (opening.widthM > 0 ? openingDeductionM2(opening, heightM) * width / opening.widthM : 0);
-  }, 0);
+  const cut = paintOpeningUnionAreaM2(room, edgeIndex, heightM, spans);
   return Math.max(0, gross - cut);
 }
 
@@ -151,11 +148,42 @@ export function edgeLengthM(polygon: Polygon, edgeIndex: number): number {
 
 /** Area an opening removes from a wall face at the given wall height. */
 export function openingFaceAreaM2(opening: Opening, wallHeightM: number): number {
-  const h =
-    opening.kind === 'window'
-      ? Math.min(OPENING_WINDOW_HEIGHT_M, wallHeightM)
-      : Math.min(OPENING_DOOR_HEIGHT_M, wallHeightM);
+  if (![opening.widthM, wallHeightM].every(Number.isFinite) || opening.widthM <= 0 || wallHeightM <= 0) return 0;
+  const sill = opening.kind === 'window' ? Math.max(0, Number.isFinite(opening.sillM) ? opening.sillM! : 0.9) : 0;
+  const h = Math.max(0, Math.min(opening.kind === 'window' ? OPENING_WINDOW_HEIGHT_M : OPENING_DOOR_HEIGHT_M, wallHeightM - sill));
   return Math.max(0, opening.widthM * h);
+}
+
+/** Union of deductible opening rectangles clipped to the painted face. Small
+ * openings retain the existing 1 m² paint measurement convention; masonry
+ * deducts all physical holes. Neither counts an overlapping hole twice. */
+export function paintOpeningUnionAreaM2(
+  room: PaintableRoomShape, edgeIndex: number, wallHeightM: number,
+  spans = [{ t0: 0, t1: edgeLengthM(room.polygon, edgeIndex) }],
+): number {
+  const length = edgeLengthM(room.polygon, edgeIndex);
+  if (!Number.isFinite(length) || !Number.isFinite(wallHeightM) || length <= 0 || wallHeightM <= 0) return 0;
+  const rectangles = (room.openings ?? []).filter(o => o.edgeIndex === edgeIndex).flatMap(o => {
+    if (![o.offsetM, o.widthM].every(Number.isFinite) || o.widthM <= 0) return [];
+    const lo = Math.max(0, o.offsetM - o.widthM / 2), hi = Math.min(length, o.offsetM + o.widthM / 2);
+    const sill = o.kind === 'window' ? Math.max(0, Number.isFinite(o.sillM) ? o.sillM! : 0.9) : 0;
+    const top = Math.min(wallHeightM, sill + (o.kind === 'window' ? OPENING_WINDOW_HEIGHT_M : OPENING_DOOR_HEIGHT_M));
+    if (hi <= lo || top <= sill || (hi - lo) * (top - sill) < MIN_DEDUCTIBLE_OPENING_M2 - 1e-9) return [];
+    return spans.flatMap(span => {
+      const a = Math.max(lo, span.t0), b = Math.min(hi, span.t1);
+      return b > a ? [{ lo: a, hi: b, sill, top }] : [];
+    });
+  });
+  const xs = [...new Set(rectangles.flatMap(r => [r.lo, r.hi]))].sort((a, b) => a - b);
+  let area = 0;
+  for (let i = 1; i < xs.length; i++) {
+    const mid = (xs[i - 1] + xs[i]) / 2;
+    const vertical = rectangles.filter(r => r.lo < mid && r.hi > mid).sort((a, b) => a.sill - b.sill);
+    let end = -Infinity, height = 0;
+    for (const r of vertical) { height += Math.max(0, r.top - Math.max(end, r.sill)); end = Math.max(end, r.top); }
+    area += (xs[i] - xs[i - 1]) * height;
+  }
+  return area;
 }
 
 /**
@@ -179,9 +207,7 @@ export function paintableEdgeAreaM2(
 ): number {
   const gross = edgeLengthM(room.polygon, edgeIndex) * wallHeightM;
   if (gross <= 0) return 0;
-  const cut = (room.openings ?? [])
-    .filter((o) => o.edgeIndex === edgeIndex)
-    .reduce((acc, o) => acc + openingDeductionM2(o, wallHeightM), 0);
+  const cut = paintOpeningUnionAreaM2(room, edgeIndex, wallHeightM);
   return Math.max(0, gross - cut);
 }
 
@@ -301,7 +327,7 @@ export interface WallPaintOrder {
  * panel, the cart and the checkout all show the same figure.
  */
 export function litresForArea(areaM2: number, coats: number, coverageM2PerL: number): number {
-  if (areaM2 <= 0 || coats <= 0 || coverageM2PerL <= 0) return 0;
+  if (![areaM2, coats, coverageM2PerL].every(Number.isFinite) || areaM2 <= 0 || coats <= 0 || coverageM2PerL <= 0) return 0;
   return Math.ceil(((areaM2 * coats) / coverageM2PerL) * 10 - 1e-9) / 10;
 }
 
@@ -492,7 +518,7 @@ export function wallPaintBreakdown(
       const lengthM = e.side === 'exterior' ? exteriorWallSpans(room, e.edgeIndex, property.rooms).reduce((sum, span) => sum + span.t1 - span.t0, 0) : edgeLengthM(room.polygon, e.edgeIndex);
       if (lengthM <= 0) continue;
       const openings = (room.openings ?? []).filter((o) => o.edgeIndex === e.edgeIndex);
-      const openingsM2 = e.side === 'exterior' ? Math.max(0, lengthM * h - exteriorPaintAreaM2(room, e.edgeIndex, h, property.rooms)) : openings.reduce((acc, o) => acc + openingDeductionM2(o, h), 0);
+      const openingsM2 = e.side === 'exterior' ? Math.max(0, lengthM * h - exteriorPaintAreaM2(room, e.edgeIndex, h, property.rooms)) : paintOpeningUnionAreaM2(room, e.edgeIndex, h);
       const gross = lengthM * h;
       const hex = isPaintTintable(paint) ? normalisePaintColourHex(e.colourHex) : undefined;
       const name = hex ? normalisePaintColourName(e.colourName) : undefined;

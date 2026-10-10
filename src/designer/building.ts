@@ -1,8 +1,8 @@
 /** Whole-building geometry shared by the editor, 3D view and saved designs. */
 import type { Polygon } from '../lib/geometry';
 import type { Property } from '../store/propertyStore';
-import { DEFAULT_WALL_HEIGHT_M } from '../data/wallPaints';
-import { isRoofLevel, levelsOf, roofSourceLevelId, type Level } from './levels';
+import { DEFAULT_WALL_HEIGHT_M } from '../data/wallPaints.js';
+import { isRoofLevel, levelsOf, roofSourceLevelId, type Level } from './levels.js';
 
 export const FLOOR_SLAB_THICKNESS_M = 0.18;
 export const MIN_LEVEL_HEIGHT_M = 2;

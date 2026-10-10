@@ -1,4 +1,6 @@
 import { ServicesLaunchButton } from './ServicesWorkspace';
+import { FoundationLaunchButton } from './FoundationWorkspace';
+import { WorkspaceFloorNav } from './WorkspaceFloorNav';
 import { PlanImportButton } from './PlanImportWorkspace';
 import { StudioIcon as Icon } from './StudioIcon';
 import { WallSurfaceOptions } from './WallSurfaceOptions';
@@ -1067,6 +1069,8 @@ export function TopBar({
           totalItemCount: cart.totalItemCount,
           subtotal: cart.subtotal,
           subtotalByCurrency: cart.subtotalByCurrency,
+          requiresSupplierQuote: cart.lines.some(line => line.product.price_on_request),
+          quoteRequiredProductIds: cart.lines.filter(line => line.product.price_on_request).map(line => line.productId),
         },
         message: message.trim() || undefined,
         source: 'designer',
@@ -1472,6 +1476,7 @@ export function TopBar({
             + Add floor above
           </button>
           <ServicesLaunchButton onBeforeOpen={() => setLevelsOpen(false)} />
+          <FoundationLaunchButton onBeforeOpen={() => setLevelsOpen(false)} />
         </div>
         </PlanControlPanel>
 
@@ -2176,6 +2181,11 @@ export function TopBar({
           <Icon name="settings" /><span>Site &amp; tools</span>
         </button>
       </div>
+      <div className="plan-project-bar" role="group" aria-label="Floors and materials">
+        <WorkspaceFloorNav mode="plan" onExit={() => { setDrawMode(false); setWorkspaceSettingsOpen(false); }} />
+        <button type="button" aria-label="Open Materials" aria-pressed={materialsPanelOpen} onClick={() => { setDrawMode(false); setTool('hand'); useDesignerUIStore.getState().setMaterialsPanelOpen(!materialsPanelOpen); }}><Icon name="materials" size={17} /><span>Materials</span></button>
+        <button type="button" aria-label="Undo last action" disabled={!pastLength && !drawInFlight} onClick={handleUndoClick}><Icon name="undo" size={17} /><span>Undo</span></button>
+      </div>
       <div id="studio-plan-settings" className="studio-plan-settings" hidden={!workspaceSettingsOpen}>
         <div className="plan-pill-group plan-house-controls" role="group" aria-label="Building and site">{roomPlanGroup(false)}</div>
         <div className="plan-pill-group plan-precision-controls" role="group" aria-label="Drawing precision and history">{viewGroup(false)}</div>
@@ -2626,7 +2636,7 @@ export function TopBar({
               detail={<span data-testid="wallpaint-room">{floorRoom ? floorRoom.name : `${paintBrand?.name ?? 'Sofap'} · Mauritius`}</span>} />
             <div className="house-tool-panel-body flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-3">
 
-              <WallSurfaceOptions />
+              <WallSurfaceOptions showCoats={false} />
               {/* View — Plan (the drawing) or 3D (the room). The 3D workspace
                   takes the plan's place; this panel stays. */}
               <div className={`${SEG_GROUP} mb-2 flex w-full`} role="radiogroup" aria-label="View" data-testid="wallpaint-view">
@@ -3768,6 +3778,7 @@ export function TopBar({
                       + Add floor above
                     </button>
                     <ServicesLaunchButton onBeforeOpen={() => setShowMobileMenu(false)} />
+                    <FoundationLaunchButton onBeforeOpen={() => setShowMobileMenu(false)} />
                   </div>
                 </div>
 

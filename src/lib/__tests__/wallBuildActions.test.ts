@@ -105,6 +105,34 @@ describe('direct 3D wall commits', () => {
     expect(JSON.stringify(usePropertyStore.getState().property)).toBe(before);
   });
 
+  it('creates an adjoining room on joining the existing edge, with no fourth-wall redraw and one closure undo', () => {
+    const p = blank(); p.rooms[0].polygon = [v(0, 0), v(4, 0), v(4, 4), v(0, 4)];
+    usePropertyStore.setState({ property: p }); useHistoryStore.getState().reset();
+    const firstDraft = previewWallBuild(p, v(4, 0), v(7, 2), { freeAngle: true });
+    const first = commitWallBuild(firstDraft, null); expect(first.ok).toBe(true); if (!first.ok) return;
+    const before = structuredClone(usePropertyStore.getState().property);
+    const lastDraft = previewWallBuild(before, v(7, 2), v(4, 4), { chain: first.chain, freeAngle: true });
+    const last = commitWallBuild(lastDraft, first.chain);
+    expect(last).toMatchObject({ ok: true, chain: null, preview: { closesRoom: true } });
+    expect(usePropertyStore.getState().property.rooms).toHaveLength(2);
+    expect(usePropertyStore.getState().property.walls).toHaveLength(0);
+    expect(useHistoryStore.getState().past).toHaveLength(2);
+    useHistoryStore.getState().undo(); expect(usePropertyStore.getState().property).toEqual(before);
+    useHistoryStore.getState().redo(); expect(usePropertyStore.getState().property.rooms).toHaveLength(2);
+  });
+
+  it('creates both partition faces in a single undo and never changes furniture coordinates', () => {
+    const p = blank(); p.rooms[0].polygon = [v(0, 0), v(4, 0), v(4, 4), v(0, 4)];
+    p.rooms[0].placedItems = [{ instanceId: 'chair', productId: 'test', x: 3, y: 1, rotation: 90 }];
+    usePropertyStore.setState({ property: p }); useHistoryStore.getState().reset();
+    const draft = previewWallBuild(p, v(0, 0), v(4, 4));
+    expect(commitWallBuild(draft, null)).toMatchObject({ ok: true, chain: null });
+    expect(usePropertyStore.getState().property.rooms).toHaveLength(2);
+    expect(usePropertyStore.getState().property.rooms.flatMap(room => room.placedItems)).toEqual(p.rooms[0].placedItems);
+    expect(useHistoryStore.getState().past).toHaveLength(1);
+    useHistoryStore.getState().undo(); expect(usePropertyStore.getState().property).toEqual(p);
+  });
+
   it('rejects unsafe room closure without losing the real walls already drawn', () => {
     const p = blank(); p.rooms[0].polygon = [v(-1, -1), v(6, -1), v(6, 6), v(-1, 6)];
     usePropertyStore.setState({ property: p }); useHistoryStore.getState().reset();

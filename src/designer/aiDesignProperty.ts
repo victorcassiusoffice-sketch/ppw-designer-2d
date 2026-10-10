@@ -1,6 +1,7 @@
 import type { Property, Room } from '../store/propertyStore';
 import type { DesignDraft, DesignCatalogProduct } from './aiDesignContract';
 import { syncRoofRooms } from './roof';
+import { FoundationSchema } from './foundationContract';
 
 /** Convert a VALIDATED proposal to ordinary editor data. Caller preserves old page first. */
 export function designDraftToProperty(draft: DesignDraft, catalog: readonly DesignCatalogProduct[] = []): Property {
@@ -78,5 +79,6 @@ export function designDraftToProperty(draft: DesignDraft, catalog: readonly Desi
     })),
     roof: { ...draft.roof },
     garden: { surfaces, fences: [] },
+    ...(draft.foundation ? { foundation: FoundationSchema.parse(draft.foundation) } : {}),
   });
 }

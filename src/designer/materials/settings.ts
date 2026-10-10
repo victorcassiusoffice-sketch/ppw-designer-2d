@@ -1,4 +1,4 @@
-import { CONSTRUCTION_BLOCK_PRESETS, CONSTRUCTION_SHEET_PRESETS } from '../../data/constructionMaterials';
+import { CONSTRUCTION_BLOCK_PRESETS, CONSTRUCTION_SHEET_PRESETS } from '../../data/constructionMaterials.js';
 import type { MaterialsSettings, VolumeMix } from './types';
 
 /** Illustrative estimating allowances; they never encode a structural specification. */
@@ -45,6 +45,14 @@ export function normaliseMaterialsSettings(value?: unknown): MaterialsSettings {
   const rebar = record(roof.rebar), sheet = record(roof.sheet);
   return {
     version: 1, scope: v.scope === 'active' ? 'active' : 'all',
+    ...(v.quotationTaxBasis === 'inclusive' || v.quotationTaxBasis === 'exclusive' ? { quotationTaxBasis: v.quotationTaxBasis } : {}),
+    ...(v.unitRates !== undefined ? { unitRates: Object.fromEntries(Object.entries(record(v.unitRates)).slice(0, 200).flatMap(([id, raw]) => {
+      const rate = record(raw);
+      return /^[a-z0-9-]{1,1200}$/.test(id) && typeof rate.mur === 'number' && Number.isFinite(rate.mur) && rate.mur >= 0 && rate.mur <= 1e9 &&
+        ['blocks','m²','m³','kg','bags','m','bars','sheets','pieces'].includes(String(rate.unit)) && typeof rate.specification === 'string' && rate.specification.length <= 500
+        ? [[id, { mur: rate.mur, unit: rate.unit as import('./types').MaterialUnit, specification: rate.specification,
+          ...(rate.taxBasis === 'inclusive' || rate.taxBasis === 'exclusive' ? { taxBasis: rate.taxBasis } : {}) }]] : [];
+    })) } : {}),
     wall: { kind: wall.kind === 'concrete' ? 'concrete' : 'block',
       presetId: wall.presetId === undefined ? d.wall.presetId : typeof wall.presetId === 'string' && CONSTRUCTION_BLOCK_PRESETS.some((p) => p.id === wall.presetId) ? wall.presetId : 'custom',
       thicknessM: n(wall.thicknessM, d.wall.thicknessM, 0.025, 2), blockLengthM: n(wall.blockLengthM, d.wall.blockLengthM, 0.05, 2),

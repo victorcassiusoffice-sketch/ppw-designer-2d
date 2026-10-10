@@ -20,6 +20,7 @@ import { useCart } from '../../store/cartStore';
 import { useCurrencyStore } from '../../store/currencyStore';
 import { useCartUIStore } from '../../store/cartUIStore';
 import { formatCurrency } from '../../lib/currency';
+import { quoteAwareAmount } from '../../lib/quotedProducts';
 
 export function MiniCartPill() {
   const cart = useCart();
@@ -52,7 +53,7 @@ export function MiniCartPill() {
           {cart.uniqueProductCount}
         </span>
         <span className="tabular-nums">
-          {formatCurrency(cart.subtotal, currency)}
+          {quoteAwareAmount(cart, cart.subtotal, formatCurrency(cart.subtotal, currency))}
         </span>
       </button>
     </div>

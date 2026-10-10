@@ -38,14 +38,16 @@ describe('AI and business presentation', () => {
     expect(host.textContent).toContain('AI drafting needs sign-in and a configured provider');
     click('Try the AI workspace');
     const frame = host.querySelector('iframe')!;
-    expect(frame.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d&panel=ai');
+    expect(frame.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d&panel=ai&pitch=1');
     click('2D plan'); expect(host.querySelector('iframe')).toBe(frame);
     click('2 · Connect');
     expect(host.textContent).toContain('Tools that connect');
     expect(host.textContent).not.toContain('Automation, with clear boundaries');
     expect(host.querySelector('a[href="/studio/merchants/connect"]')).not.toBeNull();
     expect(host.textContent).toContain('MCP tool access');
-    expect(host.textContent).toContain('Import the JSON, review it, then apply it');
+    expect(host.textContent).toContain('estimate materials and foundations');
+    expect(host.textContent).toContain('Review dimensions and assumptions before applying');
+    expect(host.textContent).toContain('these tools cannot place orders');
     expect(host.textContent).toContain('require agreed supplier integrations');
     click('Feedback & meetings');
     expect(host.querySelector('form')).not.toBeNull();

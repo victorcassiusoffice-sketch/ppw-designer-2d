@@ -107,11 +107,15 @@ describe('macroOf', () => {
       'demo-outdoor-bench',
       // The Duraco 1,000 L tank (priced at Mauritian retailers 2026-09-26) stands outdoors.
       'duraco-water-tank-1000',
+      'electrical-hex-polymer-earth-pit',
+      'espace-seville-garden-sofa',
       'jkalachand-1798-e',
       'jkalachand-1799-w',
       'jkalachand-gs1004-swing',
       'mrbricolage-aurore-135',
       'mrbricolage-mistral-70',
+      'resiglas-water-tank-1000-a',
+      'resiglas-water-tank-1000-c',
     ]);
   });
 });

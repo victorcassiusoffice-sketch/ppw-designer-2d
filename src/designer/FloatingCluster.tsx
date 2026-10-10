@@ -1,3 +1,4 @@
+import { placementKind } from './attachmentPlacement';
 /**
  * FloatingCluster — the on-canvas contextual control cluster for the
  * selected object (PARITY-MATRIX M6 + flagship F1/F3).
@@ -158,7 +159,7 @@ export function FloatingCluster({
   const lightOn = selected.lightOn ?? true;
 
   const buttons: ClusterBtn[] = [
-    {
+    ...(placementKind(product) === 'wall' || placedItems.some(item => item.parentInstanceId === selected.instanceId) ? [] : [{
       key: 'rotate',
       label: 'Rotate 90°',
       glyph: '⟳',
@@ -166,7 +167,7 @@ export function FloatingCluster({
       // rotateSelected / duplicateSelected / deleteSelected fire their own
       // haptics (placementActions), so cluster handlers don't double-fire.
       onClick: () => rotateSelected(ROTATION_STEP_COARSE_DEG),
-    },
+    }]),
     {
       key: 'duplicate',
       label: 'Duplicate',

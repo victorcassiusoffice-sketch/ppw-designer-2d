@@ -1,3 +1,15 @@
+## Current checkpoint — 10 October 2026 — BUILT-NOT-LIVE
+
+Continue in `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer` on **`gpt/designer-2026-10-09`**. The instructions and deployed URLs below this section are historical. The current foundation, service, connected-room, calculation and pitch work has not been published. Victor explicitly requested terminal headless screenshots and a report, then to **wait for his Y before publication**. Do not push or update main yet.
+
+- Local review: http://127.0.0.1:5173 — local computer only, while the preview server is running.
+- Source/state: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\docs\BUILD-WORKFLOW-2026-10-09.md`.
+- Full current links: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\CURRENT-WORK-LINKS.md`.
+- Report and screenshot gallery: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\docs\qa-2026-10-09\QA-REPORT.md` and `index.html`.
+- One team handoff: `C:\Users\Victor\Documents\PPW-Second-Brain\06-Roadmap\agentix-os\inbox\designer-2026-10-09-foundations-services\HANDOFF.md`.
+
+Build passes; 324 test files / 3,655 tests pass, with final scoped regressions and local desktop/phone captures. Current bundle: `App-DMQdCeGK.js`. No new supplier OpenArt images were generated; exact supplier realism remains unfinished. Foundation quantities do not certify structural safety. Local static preview does not validate deployed APIs or merchant ordering. Preserve all existing work and recovery stashes.
+
 <!-- oct4-sculpted:start -->
 ## Verified sculpted UI and realism preview — 4 October 2026
 

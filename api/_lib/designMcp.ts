@@ -15,6 +15,12 @@ import {
   BUILDING_SERVICES_CHECKED_AT, SERVICE_FITTINGS, SERVICE_MATERIALS,
 } from '../../src/data/buildingServicesCatalog.js';
 import { buildLimiter, getClientIp } from './rateLimit.js';
+import { FoundationSchema, FOUNDATION_SCHEMA_DESCRIPTION } from '../../src/designer/foundationContract.js';
+import { estimateFoundation, normaliseFoundation } from '../../src/designer/foundation.js';
+import { estimateMaterials, normaliseMaterialsSettings } from '../../src/designer/materials/index.js';
+import { estimateMaterialCosts, foundationProcurement } from '../../src/designer/materials/costs.js';
+import { resolveServiceConnections, serviceConnectionWarnings } from '../../src/designer/serviceConnections.js';
+import { ConcreteInputSchema, MaterialsGeometrySchema, MaterialsInputSchema } from './materialEstimateContract.js';
 import type { MinReq, MinRes } from './sentry.js';
 
 export const MCP_VERSIONS = ['2025-11-25', '2025-06-18', '2025-03-26'] as const;
@@ -42,6 +48,7 @@ const serviceSystemSchema = z.enum(['cold-water', 'hot-water', 'waste', 'electri
 const serviceKeySchema = z.string().min(1).max(128);
 const servicePositionSchema = z.number().finite().min(-10000).max(10000);
 const serviceDimensionSchema = z.number().finite().min(.05).max(5);
+const serviceConnectionSchema = z.object({ fixtureId: serviceKeySchema, portId: serviceSystemSchema }).strict();
 const servicesSchema = z.object({
   version: z.literal(1),
   runs: z.array(z.object({
@@ -50,13 +57,21 @@ const servicesSchema = z.object({
     points: z.array(z.object({ x: servicePositionSchema, y: servicePositionSchema }).strict()).min(2).max(500),
     startElevationM: z.number().finite().min(-20).max(20),
     endElevationM: z.number().finite().min(-20).max(20),
+    startConnection: serviceConnectionSchema.optional(), endConnection: serviceConnectionSchema.optional(),
   }).strict()).max(2000),
   fixtures: z.array(z.object({
     id: serviceKeySchema, levelId: serviceKeySchema,
-    kind: z.enum(['toilet', 'sink', 'mains-tap', 'electrical-board']),
+    kind: z.enum(['toilet', 'sink', 'mains-tap', 'electrical-board', 'sewer-connection']),
     x: servicePositionSchema, y: servicePositionSchema,
     widthM: serviceDimensionSchema, depthM: serviceDimensionSchema, heightM: serviceDimensionSchema,
     rotation: z.number().finite().min(-36000).max(36000),
+    portElevationsM: z.object({
+      'cold-water': z.number().finite().min(-20).max(20).optional(),
+      'hot-water': z.number().finite().min(-20).max(20).optional(),
+      waste: z.number().finite().min(-20).max(20).optional(),
+      electrical: z.number().finite().min(-20).max(20).optional(),
+    }).strict().optional(),
+    connectionLabel: serviceKeySchema.optional(),
   }).strict()).max(2000),
 }).strict().superRefine((services, ctx) => {
   const seen = new Set<string>();
@@ -75,8 +90,8 @@ const SERVICE_SCHEMA_DESCRIPTION = {
   version: 1,
   units: { positions: 'metres in the building plan', dimensions: 'metres', diameter: 'supplier nominal millimetres, not automatically bore or OD', rotation: 'degrees' },
   fields: {
-    runs: '{id, levelId, system, materialId, diameterMm, points:[{x,y},...], startElevationM, endElevationM}',
-    fixtures: '{id, levelId, kind, x, y, widthM, depthM, heightM, rotation}',
+    runs: '{id, levelId, system, materialId, diameterMm, points:[{x,y},...], startElevationM, endElevationM, startConnection?:{fixtureId,portId}, endConnection?:{fixtureId,portId}}',
+    fixtures: '{id, levelId, kind, x, y, widthM, depthM, heightM, rotation, portElevationsM?:{[system]:metres}, connectionLabel?:string}',
   },
   limits: { runs: 2000, fixtures: 2000, pointsPerRun: [2, 500], coordinatesM: [-10000, 10000], elevationsM: [-20, 20], diameterMm: [5, 1000], fixtureDimensionsM: [.05, 5], rotationDegrees: [-36000, 36000], minimumRunLengthM: .01, bodyBytes: 131072 },
   systems: SERVICE_SYSTEMS,
@@ -88,10 +103,34 @@ const SERVICE_SCHEMA_DESCRIPTION = {
     'Measured length assumes a constant gradient along the complete polyline. Split routes when the gradient changes.',
     'Fixture defaults are editable generic planning envelopes, not verified supplier product dimensions.',
     'Unknown material IDs or sizes remain measurable but are explicitly unverified; no supply-length quantity is inferred.',
+    'Explicit endpoint references connect only matching systems on the same floor; crossings are not connections. Valid endpoints follow the fixture before measurement.',
+    'Generic fixture ports are schematic. Enter surveyed elevations in portElevationsM; sewer-connection requires a waste elevation. Missing or mismatched links remain unresolved and are reported.',
   ],
   limitations: 'Coordination and measured quantities only. No hydraulic sizing, electrical circuit design, automatic fitting count, live inventory, price, order or saved-design mutation. Mains connection and installation require project approval.',
 };
 export const DESIGN_MCP_TOOLS = [
+  {
+    name: 'get_foundation_schema',
+    description: 'Read the measured foundation contract, bounded fields and complete example. No structural sizing or saved design access.',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false }, annotations,
+  },
+  {
+    name: 'estimate_foundation',
+    description: 'Validate supplied slab, strip and pad rectangles and calculate their 3D volume union with optional entered mix and rebar schedule. Read-only takeoff, not structural approval.',
+    inputSchema: { type: 'object', properties: {
+      foundation: { type: 'object', description: 'Complete FoundationModel from get_foundation_schema.' },
+      concrete: { type: 'object', description: 'Optional supply ready-mix/site-mix, dry volume cement/sand/aggregate parts, dryVolumeFactor, cementBulkDensityKgM3, bagKg and wastePct. Unspecified fields use the displayed app defaults.' },
+    }, required: ['foundation'], additionalProperties: false }, annotations,
+  },
+  {
+    name: 'estimate_materials',
+    description: 'Estimate measured wall, mortar, plaster, concrete, roof and optional foundation quantities through the shared editor engine. Returns costs only for explicitly supplied matching rates; missing prices stay unknown. No orders or saved-design changes.',
+    inputSchema: { type: 'object', properties: {
+      geometry: { type: 'object', description: 'walls:[{id,levelId?,lengthM,heightM,thicknessM?,openingAreaM2}], baseAreaM2, roofAreaM2, roofLengthM, roofWidthM, roofRectangular. Each physical wall once; max 2000. No foundationVolumeM3 override: supply a measured foundation instead.' },
+      settings: { type: 'object', description: 'Optional partial version 1 MaterialsSettings from the editor. Ratios, plaster sides, waste, stock lengths and rates remain explicit; unknown fields reject.' },
+      foundation: { type: 'object', description: 'Optional complete FoundationModel. Enabled models replace the legacy base, including empty models.' },
+    }, required: ['geometry'], additionalProperties: false }, annotations,
+  },
   {
     name: 'get_design_schema',
     description:
@@ -243,6 +282,30 @@ export function dispatchDesignMcp(input: unknown): { status: number; body?: unkn
     return { status: 200, body: rpcError(id, -32601, 'Method not found.') };
   const args = params.arguments ?? {};
   try {
+    if (params.name === 'get_foundation_schema') {
+      z.object({}).strict().parse(args);
+      return result(toolContent({ ...FOUNDATION_SCHEMA_DESCRIPTION, concreteDefaults: normaliseMaterialsSettings().concrete }));
+    }
+    if (params.name === 'estimate_foundation') {
+      const body = readDesignBody(args);
+      if (!body.ok) throw new Error(body.error);
+      const input = z.object({ foundation: FoundationSchema, concrete: ConcreteInputSchema.optional() }).strict().parse(body.value);
+      const foundation = normaliseFoundation(input.foundation)!;
+      const concrete = normaliseMaterialsSettings({ concrete: input.concrete }).concrete;
+      return result(toolContent({ foundation, concrete, estimate: estimateFoundation(foundation, concrete), limitations: FOUNDATION_SCHEMA_DESCRIPTION.limitations }));
+    }
+    if (params.name === 'estimate_materials') {
+      const body = readDesignBody(args);
+      if (!body.ok) throw new Error(body.error);
+      const input = z.object({ geometry: MaterialsGeometrySchema, settings: MaterialsInputSchema.optional(), foundation: FoundationSchema.optional() }).strict().parse(body.value);
+      const settings = normaliseMaterialsSettings(input.settings);
+      const model = input.foundation ? normaliseFoundation(input.foundation) : undefined;
+      const foundation = foundationProcurement(model, settings.concrete);
+      const geometry = { ...input.geometry, ...(model?.enabled ? { foundationVolumeM3: foundation.foundation!.volumeM3 } : {}) };
+      const report = estimateMaterials(geometry, settings);
+      return result(toolContent({ report, foundation: foundation.foundation, costs: estimateMaterialCosts(report, foundation.lines, foundation.incompleteReasons),
+        limitations: 'Caller supplies measured physical walls once, with deduplicated openings. Quantities and user-entered quotation rates are estimates; no strength grade, structural adequacy, live stock, tax advice or order is implied. ' + FOUNDATION_SCHEMA_DESCRIPTION.limitations }));
+    }
     if (params.name === 'get_design_schema') {
       z.object({}).strict().parse(args);
       return result(toolContent(DESIGN_SCHEMA_DESCRIPTION));
@@ -313,10 +376,16 @@ export function dispatchDesignMcp(input: unknown): { status: number; body?: unkn
       const services = normaliseBuildingServices(input.services, input.levelIds ? new Set(input.levelIds) : undefined);
       if (!services || services.runs.length !== input.services.runs.length || services.fixtures.length !== input.services.fixtures.length)
         return result(toolContent({ error: 'One or more entities failed the service contract. No partial quantities were calculated.' }, true));
-      const runs = estimateServices(services);
+      const resolved = resolveServiceConnections(services);
+      servicesSchema.parse(resolved);
+      const connectionIssues = serviceConnectionWarnings(resolved);
+      if (resolved.runs.some(run => serviceRunLengthM(run) < .01))
+        return result(toolContent({ error: 'A linked route resolves to less than 0.01 m. No partial quantities were calculated.' }, true));
+      const runs = estimateServices(resolved);
       return result(toolContent({
         runs, totalLengthM: runs.reduce((sum, run) => sum + run.lengthM, 0), fixtureCount: services.fixtures.length,
-        warnings: runs.filter(run => !run.verifiedMaterial).map(run => `${run.id}: material/system/nominal-size match is unverified; supply-length quantity is unavailable.`),
+        warnings: [...runs.filter(run => !run.verifiedMaterial).map(run => `${run.id}: material/system/nominal-size match is unverified; supply-length quantity is unavailable.`), ...connectionIssues.map(issue => `${issue.runId}: ${issue.message}`)],
+        connectionIssues, connectionsComplete: connectionIssues.length === 0,
         floorReferencesChecked: input.levelIds !== undefined,
         assumptions: 'Constant gradient per route. Whole supply lengths per route without offcut reuse. Fittings, insertion depths, waste allowances and fixtures are not added to pipe lengths.',
         limitations: SERVICE_SCHEMA_DESCRIPTION.limitations,

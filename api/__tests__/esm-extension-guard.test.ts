@@ -17,32 +17,57 @@
  * fails locally instead of 500-ing in prod.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, existsSync } from 'node:fs';
-import { resolve, dirname, join } from 'node:path';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { resolve, dirname, join, relative } from 'node:path';
+import ts from 'typescript';
 
 const REPO_ROOT = resolve(__dirname, '..', '..');
 
-// Entry points: src/* modules imported as VALUES (not `import type`) by api/*.
-// Keep in sync with `grep -rln "from '.*src/.*\.js'" api/`.
-const API_REACHABLE_SRC_ENTRIES = [
-  'src/lib/paintCalculator.ts',
-  'src/lib/floorCalculator.ts',
-  'src/lib/capture/types.ts',
-  // Phase 0 money-path: server re-pricing imports the fallback FX rates.
-  'src/lib/fx.ts',
-  'src/designer/aiDesignContract.ts',
-  'src/data/mauritiusOutdoor.ts',
-];
+/** Parse multiline declarations as well as mixed value/type imports. */
+function valueSpecifiers(source: string) {
+  const file = ts.createSourceFile('module.ts', source, ts.ScriptTarget.Latest, true);
+  const specs: { spec: string; jsonAttribute: boolean }[] = [];
+  function property(object: ts.Expression | undefined, key: string): ts.Expression | undefined {
+    if (!object || !ts.isObjectLiteralExpression(object)) return undefined;
+    const found = object.properties.find((item): item is ts.PropertyAssignment => ts.isPropertyAssignment(item)
+      && (ts.isIdentifier(item.name) || ts.isStringLiteral(item.name)) && item.name.text === key);
+    return found?.initializer;
+  }
+  function visit(node: ts.Node) {
+    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+      const module = node.moduleSpecifier;
+      const imports = ts.isImportDeclaration(node) ? node.importClause : undefined;
+      const bindings = imports?.namedBindings;
+      const exports = ts.isExportDeclaration(node) ? node.exportClause : undefined;
+      const typeOnly = imports?.isTypeOnly || (ts.isExportDeclaration(node) && node.isTypeOnly)
+        || (imports && !imports.name && bindings && ts.isNamedImports(bindings) && bindings.elements.length > 0 && bindings.elements.every(e => e.isTypeOnly))
+        || (exports && ts.isNamedExports(exports) && exports.elements.length > 0 && exports.elements.every(e => e.isTypeOnly));
+      if (!typeOnly && module && ts.isStringLiteral(module)) specs.push({
+        spec: module.text,
+        jsonAttribute: !!node.attributes?.elements.some(attribute => attribute.name.text === 'type' && ts.isStringLiteral(attribute.value) && attribute.value.text === 'json'),
+      });
+    }
+    if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword && node.arguments.length && ts.isStringLiteral(node.arguments[0])) {
+      const type = property(property(node.arguments[1], 'with'), 'type');
+      specs.push({ spec: node.arguments[0].text, jsonAttribute: !!type && ts.isStringLiteral(type) && type.text === 'json' });
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(file);
+  return specs;
+}
 
-/** Match relative import/export specifiers, skipping `import type ...`. */
-const SPECIFIER_RE =
-  /(?<!import\s+type\s)(?:import|export)\b[^'"]*?\bfrom\s*['"](\.[^'"]+)['"]/g;
-/** Inline `import type { X } from '...'` — type-only, erased at compile. */
-const TYPE_ONLY_RE = /\bimport\s+type\b/;
+/** Discover API→src edges so newly shared engines cannot evade the guard. */
+function apiSourceFiles(directory = join(REPO_ROOT, 'api')): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
+    if (entry.isDirectory()) return entry.name === '__tests__' ? [] : apiSourceFiles(join(directory, entry.name));
+    return entry.name.endsWith('.ts') ? [relative(REPO_ROOT, join(directory, entry.name))] : [];
+  });
+}
 
 function resolveTsPath(fromFile: string, spec: string): string | null {
   const base = join(dirname(fromFile), spec.replace(/\.js$/, ''));
-  for (const cand of [`${base}.ts`, `${base}.tsx`, join(base, 'index.ts')]) {
+  for (const cand of [`${base}.ts`, `${base}.tsx`]) {
     if (existsSync(resolve(REPO_ROOT, cand))) return cand;
   }
   return null;
@@ -54,18 +79,19 @@ function collectGraph(entry: string, seen: Set<string>, violations: string[]): v
   const abs = resolve(REPO_ROOT, entry);
   if (!existsSync(abs)) return;
   const src = readFileSync(abs, 'utf8');
-  for (const line of src.split('\n')) {
-    SPECIFIER_RE.lastIndex = 0;
-    const m = SPECIFIER_RE.exec(line);
-    if (!m) continue;
-    if (TYPE_ONLY_RE.test(line)) continue; // type-only import — erased
-    const spec = m[1];
+  for (const { spec, jsonAttribute } of valueSpecifiers(src)) {
+    if (!spec.startsWith('.')) continue;
+    if (spec.endsWith('.json')) {
+      if (!jsonAttribute) violations.push(`${entry} → '${spec}' (missing JSON import attribute)`);
+      continue;
+    }
     if (!spec.endsWith('.js')) {
       violations.push(`${entry} → '${spec}' (missing .js extension)`);
       continue;
     }
     const next = resolveTsPath(entry, spec);
     if (next) collectGraph(next, seen, violations);
+    else violations.push(`${entry} → '${spec}' (target file not found; directory imports are unsupported)`);
   }
 }
 
@@ -73,9 +99,15 @@ describe('ESM extension guard (api-reachable src modules)', () => {
   it('every relative value-import in the api→src graph has an explicit .js extension', () => {
     const violations: string[] = [];
     const seen = new Set<string>();
-    for (const entry of API_REACHABLE_SRC_ENTRIES) {
-      collectGraph(entry, seen, violations);
+    for (const entry of apiSourceFiles()) {
+      for (const { spec } of valueSpecifiers(readFileSync(resolve(REPO_ROOT, entry), 'utf8'))) {
+        const next = resolveTsPath(entry, spec);
+        if (next?.replaceAll('\\', '/').startsWith('src/')) collectGraph(next, seen, violations);
+      }
     }
     expect(violations, `Node-ESM resolution would 500 on Vercel:\n${violations.join('\n')}`).toEqual([]);
+  });
+  it('includes multiline and mixed imports while ignoring erased types', () => {
+    expect(valueSpecifiers("import { value,\n type Shape\n} from './engine.js';\nimport type { Only } from './type';\nimport { type Also } from './type';\nexport { value } from './value.js';\nconst load = () => import('./lazy.js');").map(entry => entry.spec)).toEqual(['./engine.js', './value.js', './lazy.js']);
   });
 });

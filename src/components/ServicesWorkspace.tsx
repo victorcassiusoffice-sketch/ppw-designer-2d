@@ -1,5 +1,8 @@
 import { useWorkspaceFocus } from '../hooks/useWorkspaceFocus';
 import { ServicesContextProducts } from './ServicesContextProducts';
+import { ServicesProductShelf } from './ServicesProductShelf';
+import { WorkspaceFloorNav } from './WorkspaceFloorNav';
+import { beginWorkspaceNavigation, cancelWorkspaceNavigation, finishWorkspaceNavigation } from '../designer/workspaceNavigation';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { nanoid } from 'nanoid';
@@ -7,7 +10,7 @@ import { usePropertyStore } from '../store/propertyStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
 import { usePlacementIntentStore } from '../store/placementIntentStore';
 import { useHistoryStore } from '../store/historyStore';
-import { activeLevelIdOf, levelsOf, roomLevelId } from '../designer/levels';
+import { activeLevelIdOf, roomLevelId } from '../designer/levels';
 import {
   EMPTY_SERVICES,
   estimateServices,
@@ -18,7 +21,18 @@ import {
   type ServicePoint,
   type ServiceRun,
   type ServiceSystem,
+  type ServiceConnection,
 } from '../designer/buildingServices';
+import {
+  compatibleServicePorts,
+  connectServiceEndpoint,
+  resolveServiceConnections,
+  serviceConnectionWarnings,
+  servicePortLabel,
+  servicePorts,
+  type ServiceEndpoint,
+} from '../designer/serviceConnections';
+import { foundationElementBounds } from '../designer/foundation';
 import { SERVICE_MATERIALS, SERVICE_FITTINGS } from '../data/buildingServicesCatalog';
 import { StudioIcon } from './StudioIcon';
 import './servicesWorkspace.css';
@@ -53,6 +67,7 @@ export function ServicesWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }
   before.current = onBeforeOpen;
   useEffect(() => {
     const show = (event?: Event) => {
+      beginWorkspaceNavigation('services');
       setInitialSelection(
         (event as CustomEvent<{ fixtureId?: string }> | undefined)?.detail?.fixtureId ?? null,
       );
@@ -67,20 +82,32 @@ export function ServicesWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }
       window.dispatchEvent(new CustomEvent('ppw:close-catalog'));
       setOpen(true);
     };
-    const close = () => setOpen(false);
+    const close = (event: Event) => {
+      if (event.type !== 'ppw:open-foundation') cancelWorkspaceNavigation('services');
+      setOpen(false);
+    };
+    const unsubscribe = usePropertyStore.subscribe((state, previous) => {
+      if (state.property.id === previous.property.id) return;
+      cancelWorkspaceNavigation('services');
+      setOpen(false);
+    });
     window.addEventListener('ppw:open-services', show);
     window.addEventListener('ppw:open-plan-import', close);
     window.addEventListener('ppw:open-ai-design', close);
+    window.addEventListener('ppw:open-foundation', close);
     if (new URLSearchParams(location.search).get('panel') === 'services') show();
     return () => {
+      unsubscribe();
+      finishWorkspaceNavigation('services');
       window.removeEventListener('ppw:open-services', show);
       window.removeEventListener('ppw:open-plan-import', close);
       window.removeEventListener('ppw:open-ai-design', close);
+      window.removeEventListener('ppw:open-foundation', close);
     };
   }, []);
   return open
     ? createPortal(
-        <ServicesWorkbench initialSelection={initialSelection} onClose={() => setOpen(false)} />,
+        <ServicesWorkbench initialSelection={initialSelection} onClose={() => { finishWorkspaceNavigation('services'); setOpen(false); }} />,
         document.body,
       )
     : null;
@@ -97,8 +124,7 @@ function ServicesWorkbench({
 }) {
   const property = usePropertyStore((s) => s.property),
     services = property.services ?? EMPTY_SERVICES;
-  const levelId = activeLevelIdOf(property),
-    levels = levelsOf(property);
+  const levelId = activeLevelIdOf(property);
   const [error, setError] = useState('');
   const [tool, setTool] = useState<Tool>('select'),
     [system, setSystem] = useState<ServiceSystem>('cold-water');
@@ -107,6 +133,8 @@ function ServicesWorkbench({
     [endElevation, setEndElevation] = useState(-0.3);
   const [draft, setDraft] = useState<ServicePoint[]>([]),
     [selected, setSelected] = useState<string | null>(null);
+  const [draftStartConnection, setDraftStartConnection] = useState<ServiceConnection | undefined>();
+  const [draftEndConnection, setDraftEndConnection] = useState<ServiceConnection | undefined>();
   const [details, setDetails] = useState(true),
     [snap, setSnap] = useState(true),
     [orthogonal, setOrthogonal] = useState(true);
@@ -119,6 +147,7 @@ function ServicesWorkbench({
     last: ServicePoint;
     view: ViewBox;
     target: string | null;
+    port?: ServiceConnection;
     moved: boolean;
     pinch?: { d: number; mid: ServicePoint };
   } | null>(null);
@@ -132,10 +161,17 @@ function ServicesWorkbench({
   const summaries = estimateServices(services),
     estimate = summaries.find((e) => e.id === selected);
   const activeSystem = SERVICE_SYSTEMS.find((s) => s.id === system)!;
+  const connectionWarnings = serviceConnectionWarnings(services).filter((issue) =>
+    runs.some((r) => r.id === issue.runId),
+  );
+  const floorPorts = fixtures.flatMap(servicePorts);
+  const availablePorts = compatibleServicePorts(services, levelId, selectedRun?.system ?? system);
+  const foundationElements =
+    levelId === 'ground' && property.foundation?.enabled ? property.foundation.elements : [];
   const canUndo = useHistoryStore((s) => s.past.length > 0),
     canRedo = useHistoryStore((s) => s.future.length > 0);
   function save(next: typeof services) {
-    const ok = usePropertyStore.getState().setServices(next);
+    const ok = usePropertyStore.getState().setServices(resolveServiceConnections(next));
     setError(
       ok
         ? ''
@@ -162,6 +198,13 @@ function ServicesWorkbench({
           y: f.y + ((x * f.widthM) / 2) * t + ((y * f.depthM) / 2) * c,
         }));
       }),
+      ...foundationElements.flatMap((e) => {
+        const b = foundationElementBounds(e);
+        return [
+          { x: b.minX, y: b.minY },
+          { x: b.maxX, y: b.maxY },
+        ];
+      }),
     ];
     if (!points.length) {
       setView({ x: -2, y: -2, w: 14, h: 10 });
@@ -177,16 +220,21 @@ function ServicesWorkbench({
     });
   }
   // Fit only on workspace/floor entry; editing content must never change the camera.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const entryState = useRef({ fit, initialSelection });
+  entryState.current = { fit, initialSelection };
   useEffect(() => {
     setDraft([]);
-    setSelected(initialSelection);
+    setDraftStartConnection(undefined);
+    setDraftEndConnection(undefined);
+    setSelected(entryState.current.initialSelection);
     setTool('select');
-    fit();
+    entryState.current.fit();
   }, [property.id, levelId]);
   useWorkspaceFocus(host, () => {
     if (draft.length) {
       setDraft([]);
+      setDraftStartConnection(undefined);
+      setDraftEndConnection(undefined);
       setTool('select');
     } else onClose();
   });
@@ -196,6 +244,8 @@ function ServicesWorkbench({
   function chooseTool(next: Tool) {
     setError('');
     setDraft([]);
+    setDraftStartConnection(undefined);
+    setDraftEndConnection(undefined);
     setTool(next);
     if (next !== 'move') setSelected(null);
   }
@@ -203,6 +253,8 @@ function ServicesWorkbench({
     setSystem(value);
     setMaterialId(SERVICE_MATERIALS.find((m) => m.system === value)!.id);
     setDraft([]);
+    setDraftStartConnection(undefined);
+    setDraftEndConnection(undefined);
     setSelected(null);
     setTool('pipe');
   }
@@ -212,7 +264,7 @@ function ServicesWorkbench({
     const point = new DOMPoint(clientX, clientY).matrixTransform(matrix.inverse());
     return { x: point.x, y: point.y };
   }
-  function tap(point: ServicePoint, target: string | null) {
+  function tap(point: ServicePoint, target: string | null, portTarget?: ServiceConnection) {
     if (tool === 'select') {
       setSelected(target);
       if (target) setDetails(true);
@@ -228,8 +280,20 @@ function ServicesWorkbench({
       return;
     }
     if (tool === 'pipe') {
+      const attached =
+        portTarget &&
+        floorPorts.find((p) => p.fixtureId === portTarget.fixtureId && p.id === portTarget.portId);
+      if (portTarget && (!attached || attached.id !== system || attached.elevationM === null)) {
+        setError(
+          attached?.elevationM === null
+            ? 'Enter the surveyed drainage connection elevation before attaching a route.'
+            : 'Choose a port matching this service system on this floor.',
+        );
+        return;
+      }
+      if (attached) p = { x: attached.x, y: attached.y };
       const last = draft[draft.length - 1];
-      if (last && orthogonal)
+      if (last && orthogonal && !attached)
         p =
           Math.abs(p.x - last.x) >= Math.abs(p.y - last.y)
             ? { x: p.x, y: last.y }
@@ -242,8 +306,12 @@ function ServicesWorkbench({
         !last ||
         Math.hypot(p.x - last.x, p.y - last.y) >= 0.01 ||
         (draft.length === 1 && startElevation !== endElevation)
-      )
+      ) {
         setDraft([...draft, p]);
+        if (!draft.length) setDraftStartConnection(portTarget);
+        else setDraftEndConnection(portTarget);
+        setError('');
+      }
       return;
     }
     if (tool === 'move') return;
@@ -275,10 +343,14 @@ function ServicesWorkbench({
       points: draft,
       startElevationM: startElevation,
       endElevationM: endElevation,
+      ...(draftStartConnection ? { startConnection: draftStartConnection } : {}),
+      ...(draftEndConnection ? { endConnection: draftEndConnection } : {}),
     };
     if (!save({ ...services, runs: [...services.runs, run] })) return;
     setSelected(run.id);
     setDraft([]);
+    setDraftStartConnection(undefined);
+    setDraftEndConnection(undefined);
     setTool('select');
     setDetails(true);
   }
@@ -293,6 +365,16 @@ function ServicesWorkbench({
       ...services,
       runs: services.runs.map((r) => (r.id === selected ? { ...r, ...patch } : r)),
     });
+  }
+  function connect(endpoint: ServiceEndpoint, encoded: string) {
+    if (!selectedRun) return;
+    const reference = encoded ? (JSON.parse(encoded) as ServiceConnection) : null;
+    const next = connectServiceEndpoint(services, selectedRun.id, endpoint, reference);
+    if (!next) {
+      setError('This port is not connectable. Check the system, floor and surveyed elevation.');
+      return;
+    }
+    save(next);
   }
   function remove() {
     save({
@@ -334,17 +416,7 @@ function ServicesWorkbench({
           <h1 id="services-title">Plumbing & Electric</h1>
           <p>Measured floor services</p>
         </div>
-        <select
-          aria-label="Services floor"
-          value={levelId}
-          onChange={(e) => usePropertyStore.getState().setActiveLevel(e.target.value)}
-        >
-          {levels.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.name}
-            </option>
-          ))}
-        </select>
+        <WorkspaceFloorNav mode="services" onExit={onClose} />
         <button
           aria-label="Show 3D house"
           onClick={() => {
@@ -436,7 +508,21 @@ function ServicesWorkbench({
                   target:
                     (e.target as Element)
                       .closest('[data-service-id]')
-                      ?.getAttribute('data-service-id') ?? null,
+                      ?.getAttribute('data-service-id') ??
+                    (e.target as Element)
+                      .closest('[data-fixture-id]')
+                      ?.getAttribute('data-fixture-id') ??
+                    null,
+                  port: (e.target as Element).closest('[data-service-port]')
+                    ? {
+                        fixtureId: (e.target as Element)
+                          .closest('[data-service-port]')!
+                          .getAttribute('data-fixture-id')!,
+                        portId: (e.target as Element)
+                          .closest('[data-service-port]')!
+                          .getAttribute('data-service-port') as ServiceSystem,
+                      }
+                    : undefined,
                 };
               else if (pointers.current.size === 2 && gesture.current) {
                 const [a, b] = [...pointers.current.values()];
@@ -494,7 +580,7 @@ function ServicesWorkbench({
               const g = gesture.current;
               pointers.current.delete(e.pointerId);
               if (g && !g.moved && !pointers.current.size)
-                tap(world(e.clientX, e.clientY), g.target);
+                tap(world(e.clientX, e.clientY), g.target, g.port);
               if (!pointers.current.size) gesture.current = null;
             }}
             onPointerCancel={() => {
@@ -514,6 +600,24 @@ function ServicesWorkbench({
               height={view.h * 3}
               fill="url(#services-grid)"
             />
+            {foundationElements.map((element) => {
+              const b = foundationElementBounds(element);
+              return (
+                <rect
+                  key={element.id}
+                  x={b.minX}
+                  y={b.minY}
+                  width={element.lengthM}
+                  height={element.widthM}
+                  fill="#8e9d7b"
+                  fillOpacity=".22"
+                  stroke="#607558"
+                  strokeWidth=".035"
+                  strokeDasharray=".16 .1"
+                  pointerEvents="none"
+                />
+              );
+            })}
             {rooms.map((r) => (
               <g key={r.id}>
                 <polygon
@@ -621,6 +725,36 @@ function ServicesWorkbench({
                 />
               </g>
             ))}
+            {floorPorts.map((port) => {
+              const colour = SERVICE_SYSTEMS.find((s) => s.id === port.id)!.colour;
+              const fixture = fixtures.find((f) => f.id === port.fixtureId)!;
+              const compatible = tool !== 'pipe' || port.id === system;
+              return (
+                <g
+                  key={`${port.fixtureId}:${port.id}`}
+                  data-fixture-id={port.fixtureId}
+                  data-service-port={port.id}
+                  opacity={compatible ? 1 : 0.25}
+                >
+                  <title>
+                    {servicePortLabel(fixture, port)} ·{' '}
+                    {port.elevationM === null
+                      ? 'Enter surveyed invert first'
+                      : `${port.elevationM.toFixed(2)} m above this floor datum`}{' '}
+                    · schematic connection point
+                  </title>
+                  <circle
+                    cx={port.x}
+                    cy={port.y}
+                    r=".06"
+                    fill={port.elevationM === null ? '#f4e6c5' : colour}
+                    stroke="#fffdf3"
+                    strokeWidth=".02"
+                  />
+                  <circle cx={port.x} cy={port.y} r=".13" fill="transparent" />
+                </g>
+              );
+            })}
             {draft.length > 0 && (
               <g pointerEvents="none">
                 <polyline
@@ -641,7 +775,15 @@ function ServicesWorkbench({
             <span>{error || instruction}</span>
             {draft.length > 0 && (
               <>
-                <button onClick={() => setDraft(draft.slice(0, -1))}>Back point</button>
+                <button
+                  onClick={() => {
+                    setDraft(draft.slice(0, -1));
+                    setDraftEndConnection(undefined);
+                    if (draft.length <= 1) setDraftStartConnection(undefined);
+                  }}
+                >
+                  Back point
+                </button>
                 <button disabled={draft.length < 2} onClick={finish}>
                   Finish run
                 </button>
@@ -667,6 +809,17 @@ function ServicesWorkbench({
             {selectedFixture ? (
               <>
                 <p>Generic planning fixture. Edit to your chosen product’s measured dimensions.</p>
+                <label>
+                  Project reference
+                  <input
+                    aria-label="Service fixture reference"
+                    type="text"
+                    maxLength={128}
+                    value={selectedFixture.connectionLabel ?? ''}
+                    placeholder="e.g. surveyed boundary connection"
+                    onChange={(e) => updateFixture({ connectionLabel: e.target.value })}
+                  />
+                </label>
                 <div className="services-fields">
                   {(['x', 'y', 'widthM', 'depthM', 'heightM'] as const).map((key) => (
                     <label key={key}>
@@ -687,6 +840,48 @@ function ServicesWorkbench({
                     </label>
                   ))}
                 </div>
+                <div className="services-ports-inspector">
+                  <strong>Connection points</strong>
+                  <p>
+                    Coloured dots are schematic ports. Enter measured elevations; they are not
+                    verified product connection locations.
+                  </p>
+                  {servicePorts(selectedFixture).map((port) => (
+                    <label key={port.id}>
+                      {port.label} elevation (m)
+                      <input
+                        aria-label={`${port.label} elevation`}
+                        type="number"
+                        step=".01"
+                        min="-20"
+                        max="20"
+                        value={port.elevationM ?? ''}
+                        placeholder="Surveyed invert required"
+                        onChange={(e) => {
+                          if (e.target.value && e.target.validity.valid)
+                            updateFixture({
+                              portElevationsM: {
+                                ...selectedFixture.portElevationsM,
+                                [port.id]: Number(e.target.value),
+                              },
+                            });
+                        }}
+                      />
+                    </label>
+                  ))}
+                  {selectedFixture.kind === 'sewer-connection' && (
+                    <p className="services-warning">
+                      Enter the surveyed invert and confirm the connection point with WMA. This
+                      marker is a planning reference, not permission to connect.
+                    </p>
+                  )}
+                  {selectedFixture.kind === 'electrical-board' && (
+                    <p>
+                      Conduit coordination only. CEB inspection, protection and a qualified
+                      electrician’s design remain required.
+                    </p>
+                  )}
+                </div>
                 <div className="services-actions">
                   <button onClick={() => setTool('move')}>Move</button>
                   <button
@@ -699,6 +894,55 @@ function ServicesWorkbench({
               </>
             ) : (
               <>
+                {selectedRun && (
+                  <div className="services-connections">
+                    <strong>Connect this route</strong>
+                    {(['start', 'end'] as const).map((endpoint) => {
+                      const reference = selectedRun[`${endpoint}Connection`];
+                      const value = reference ? JSON.stringify(reference) : '';
+                      const available =
+                        !reference ||
+                        availablePorts.some(
+                          (p) => p.fixtureId === reference.fixtureId && p.id === reference.portId,
+                        );
+                      return (
+                        <label key={endpoint}>
+                          {endpoint === 'start' ? 'Start' : 'End'} connection
+                          <select
+                            aria-label={`${endpoint === 'start' ? 'Start' : 'End'} connection`}
+                            value={value}
+                            onChange={(e) => connect(endpoint, e.target.value)}
+                          >
+                            <option value="">Free endpoint</option>
+                            {!available && (
+                              <option value={value}>Disconnected · choose another port</option>
+                            )}
+                            {availablePorts.map((port) => (
+                              <option
+                                key={`${port.fixtureId}:${port.id}`}
+                                disabled={port.elevationM === null}
+                                value={JSON.stringify({
+                                  fixtureId: port.fixtureId,
+                                  portId: port.id,
+                                })}
+                              >
+                                {servicePortLabel(
+                                  fixtures.find((f) => f.id === port.fixtureId)!,
+                                  port,
+                                )}
+                                {port.elevationM === null ? ' · enter invert' : ''}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      );
+                    })}
+                    <p>
+                      Same-floor links follow fixtures when moved or rotated. Other floors require a
+                      separately measured riser; crossing lines are not connected.
+                    </p>
+                  </div>
+                )}
                 <label>
                   Pipe / conduit material
                   <select
@@ -734,6 +978,7 @@ function ServicesWorkbench({
                       min="-20"
                       max="20"
                       value={selectedRun?.startElevationM ?? startElevation}
+                      disabled={Boolean(selectedRun?.startConnection)}
                       onChange={(e) => {
                         if (e.target.value && e.target.validity.valid) {
                           if (selectedRun) updateRun({ startElevationM: Number(e.target.value) });
@@ -750,6 +995,7 @@ function ServicesWorkbench({
                       min="-20"
                       max="20"
                       value={selectedRun?.endElevationM ?? endElevation}
+                      disabled={Boolean(selectedRun?.endConnection)}
                       onChange={(e) => {
                         if (e.target.value && e.target.validity.valid) {
                           if (selectedRun) updateRun({ endElevationM: Number(e.target.value) });
@@ -762,7 +1008,8 @@ function ServicesWorkbench({
                 <p>
                   0 = this floor’s finished level. Negative = below floor; ground-floor routes can
                   be underground. Elevation changes are a constant gradient along the route. For a
-                  vertical riser, set different elevations and tap the same point twice.
+                  vertical riser, set different elevations and tap the same point twice. Linked
+                  elevations follow the fixture port; choose Free endpoint to edit them here.
                 </p>
                 {estimate && (
                   <>
@@ -823,6 +1070,33 @@ function ServicesWorkbench({
                 Square pipe bends
               </label>
             </div>
+            {connectionWarnings.length > 0 && (
+              <details className="services-warning" open>
+                <summary>
+                  {connectionWarnings.length} connection{' '}
+                  {connectionWarnings.length === 1 ? 'needs' : 'need'} attention
+                </summary>
+                {connectionWarnings.map((issue) => (
+                  <p key={`${issue.runId}:${issue.endpoint}`}>
+                    <button
+                      onClick={() => {
+                        setSelected(issue.runId);
+                        setTool('select');
+                      }}
+                    >
+                      {issue.runId.slice(-4)} · select route
+                    </button>{' '}
+                    {issue.message}
+                  </p>
+                ))}
+              </details>
+            )}
+            {foundationElements.length > 0 && (
+              <p>
+                Dashed foundation footprints show the saved ground structure. Pipe elevations remain
+                relative to this floor; clashes and sleeves need project review.
+              </p>
+            )}
             <dl>
               <div>
                 <dt>This floor</dt>
@@ -855,10 +1129,12 @@ function ServicesWorkbench({
                 ),
               )}
             </details>
+            <ServicesProductShelf onPlace={onClose} />
             <p className="services-note">
               Routing and quantity coordination only. Not pressure, drainage capacity or cable
               sizing. Supplier references are not live stock. The fine line marks the route; the
-              body uses published OD where available.
+              body uses published OD where available. Tap a compatible coloured port while drawing,
+              or select a route and choose its start/end connections.
             </p>
           </aside>
         )}

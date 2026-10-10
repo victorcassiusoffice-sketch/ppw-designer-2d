@@ -60,6 +60,10 @@ import { disposeGardenResources } from './gardenGround';
 import { contactShadow, cornerShades, disposeDressingTextures, floorMesh, groundPlane, lampsOnFactor, nightLight, skyDome, updateGroundPresentation, updateSkyDome, type NightLight } from './dressing';
 import { applyContentPresentation, applyRendererPresentation, architecturalBackdrop, ARCHITECTURAL_HORIZON_HEX, presentationProfile, type ScenePresentation } from './renderPresentation';
 import { disposeFurnitureTextures, furniturePreview } from './furniturePreview';
+import { serviceProductPreview } from './serviceProductPreview';
+import { foundationMeshes } from './foundationMeshes';
+import { setFoundationInspection } from './foundationInspection';
+import type { FoundationModel } from '../../designer/foundation';
 import { createNaturalSceneRenderer, type NaturalSceneRenderer } from './naturalSceneRenderer';
 import { mountRoofItem, poseRoofItem, roofPointFromRay } from './roofItems';
 import { solarPanelPreview } from './solarPanelPreview';
@@ -261,6 +265,9 @@ export interface ThreeStageProps {
   solids: SceneSolids;
   /** Generic service fixtures on visible storeys, independent of catalog stock. */
   serviceFixtures?: ServiceFixturePlacement[];
+  foundation?: FoundationModel;
+  foundationView?: boolean;
+  foundationBaseElevationM?: number;
   camera: OrbitCamera;
   width: number;
   height: number;
@@ -288,6 +295,8 @@ export interface ThreeStageProps {
   dayOfYear?: number;
   /** WebGL could not start (headless without GL, an old device) — the parent falls back to the painter. */
   onFailed?: () => void;
+  /** Fires after a real frame, so the loading state cannot disappear too early. */
+  onReady?: () => void;
 }
 
 /** Wall tops, ends and the reveals of openings — a shade under plaster so edges read. */
@@ -598,7 +607,7 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
 
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, serviceFixtures, camera, width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed },
+  { solids, serviceFixtures, foundation, foundationView = false, foundationBaseElevationM = 0, camera, width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed, onReady },
   ref,
 ): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -621,6 +630,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const groundRef = useRef<THREE.Mesh | null>(null);
   const contentRef = useRef<THREE.Group | null>(null);
   const servicesRef = useRef<THREE.Group | null>(null);
+  const foundationRef = useRef<THREE.Group | null>(null);
+  const gardenRef = useRef<THREE.Group | null>(null);
   const signatureRef = useRef<string>('');
   const wallsRef = useRef<WallEntry[]>([]);
   const floorsRef = useRef<THREE.Mesh[]>([]);
@@ -630,12 +641,15 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const shadowsRef = useRef<THREE.Mesh[]>([]);
   /** Where the plan is and how big, for the sun's shadow frustum. */
   const boundsRef = useRef<{ centre: THREE.Vector3; radius: number }>({ centre: new THREE.Vector3(), radius: 6 });
+  const structureBoundsRef = useRef(new THREE.Box3());
   const sunStateRef = useRef<{ elevationDeg: number; azimuthDeg: number } | null>(null);
   const buildRef = useRef(0);
   const rafRef = useRef<number | null>(null);
   const failedRef = useRef(false);
   const hoveredRef = useRef<WallEntry | null>(null);
   const framesRef = useRef(0);
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
   const targetRef = useRef<number[]>([0, 0, 0]);
   /** Bodies slid by a drag preview, with where the plan has them. */
   const previewRef = useRef(new Map<string, THREE.Vector3>());
@@ -669,6 +683,10 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       const s = sceneRef.current;
       const c = cameraRef.current;
       if (r && s && c) {
+        // Deep or large foundations can extend beyond the room-only clip plane.
+        const extent = boundsRef.current;
+        const far = Math.max(1000, c.position.distanceTo(extent.centre) + extent.radius * 2 + 20);
+        if (c.far !== far) { c.far = far; c.updateProjectionMatrix(); }
         updateFog();
         let rendered = false;
         if (naturalEnabledRef.current && !naturalUnavailableRef.current) {
@@ -698,6 +716,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         // to confirm an optional GPU effect really ran on this device.
         r.domElement.dataset.shading = rendered ? 'natural-depth' : naturalEnabledRef.current ? 'natural-basic' : 'colour-check';
         framesRef.current += 1;
+        if (framesRef.current === 1) onReadyRef.current?.();
       }
     });
   };
@@ -900,6 +919,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     services.name = 'building-service-fixtures';
     scene.add(services);
     servicesRef.current = services;
+    const foundationGroup = new THREE.Group();
+    scene.add(foundationGroup);
+    foundationRef.current = foundationGroup;
 
     const onLost = (e: Event) => {
       e.preventDefault();
@@ -921,6 +943,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       naturalUnavailableRef.current = false;
       if (contentRef.current) disposeObject(contentRef.current);
       if (servicesRef.current) disposeObject(servicesRef.current);
+      if (foundationRef.current) disposeObject(foundationRef.current);
       disposeObject(ground);
       disposeObject(sky);
       envTargetRef.current?.dispose();
@@ -937,6 +960,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       cameraRef.current = null;
       contentRef.current = null;
       servicesRef.current = null;
+      foundationRef.current = null;
+      gardenRef.current = null;
       skyRef.current = null;
       groundRef.current = null;
       hemiRef.current = null;
@@ -982,6 +1007,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     previewRef.current.clear();
     previewRotationRef.current.clear();
     selectedRootRef.current = null;
+    gardenRef.current = null;
     padRef.current = null;
     hullRef.current = null;
 
@@ -1028,7 +1054,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       // Other products retain their own art; an exact GLTF always replaces it.
       const solarPreview = solarPanelPreview(it);
       const tankPreview = waterTankPreview(it);
-      const preview = solarPreview ?? tankPreview ?? furniturePreview(it);
+      const preview = serviceProductPreview(it) ?? solarPreview ?? tankPreview ?? furniturePreview(it);
       // A dimensional preview is flagged so the DEV bridge can tell it from a
       // loaded body and from a bare box (`dressing().bareBoxes`).
       if (preview) preview.userData.preview = true;
@@ -1101,6 +1127,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     if (solids.gardenVisible !== false) {
       const groundRooms = solids.gardenObstacles ?? solids.floors.filter((floor) => (floor.elevationM ?? 0) < 0.01).map((floor) => floor.polygon);
       const garden = gardenMeshes(solids.garden, groundRooms, solids.gardenSite);
+      gardenRef.current = garden;
       content.add(garden);
       // A large plot must not spread the house's finite shadow map over its
       // entire lawn. User-built terrain/fences still participate in lighting.
@@ -1120,6 +1147,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       bounds.expandByObject(mesh);
     }
     // The sun's shadow camera hugs whatever is drawn; the rig for the hour follows.
+    structureBoundsRef.current.copy(bounds);
     boundsRef.current = {
       centre: bounds.isEmpty() ? new THREE.Vector3() : bounds.getCenter(new THREE.Vector3()),
       radius: bounds.isEmpty() ? 6 : Math.max(4, bounds.getSize(new THREE.Vector3()).length() / 2),
@@ -1153,6 +1181,25 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     requestRender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serviceFixtures]);
+
+  // Explicit below-ground inspection never moves the camera or changes geometry.
+  useEffect(() => {
+    const group = foundationRef.current;
+    if (!group) return;
+    disposeObject(group); group.clear();
+    if (foundation?.enabled) group.add(foundationMeshes(foundation, foundationBaseElevationM, false, foundationView));
+    const inspect = foundationView && Boolean(foundation?.enabled && foundation.elements.length);
+    setFoundationInspection([groundRef.current, ...floorsRef.current, gardenRef.current, ...shadowsRef.current], inspect);
+    group.updateMatrixWorld(true);
+    const bounds = structureBoundsRef.current.clone();
+    if (foundation?.enabled) bounds.expandByObject(group);
+    boundsRef.current = { centre: bounds.isEmpty() ? new THREE.Vector3() : bounds.getCenter(new THREE.Vector3()),
+      radius: bounds.isEmpty() ? 6 : Math.max(4, bounds.getSize(new THREE.Vector3()).length() / 2) };
+    applyPresentation();
+    applyHour(hour);
+    requestRender();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [foundation, foundationView, foundationBaseElevationM, solids]);
 
   // ---- the hour: sun, sky, lamps -----------------------------------------
   useEffect(() => {

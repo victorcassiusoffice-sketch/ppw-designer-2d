@@ -42,10 +42,11 @@ import { anchorWallStroke, completeWallStroke } from '../lib/touchWallStroke';
 import { useToastStore, type ToastKind } from '../store/toastStore';
 import { usePropertyStore } from '../store/propertyStore';
 import { useDrawProgressStore } from '../store/drawProgressStore';
+import { snapVertexToFloorWalls, wallRunFormsRoom } from '../designer/connectedWallRooms';
+import { activeLevelIdOf } from '../designer/levels';
 // Attached multi-room (2026-08-26) — new vertices snap onto the walls of
 // rooms that already exist, so adjacent rooms share exact geometry.
 import {
-  snapVertexToRooms,
   wallSnapTolM,
   closeThresholdM,
   type SnapHit,
@@ -262,11 +263,22 @@ export function RoomDrawLayer({
      * every Stage handler on every room mutation.
      */
     function snapHitFor(evt: { clientX: number; clientY: number }): SnapHit | null {
-      return snapVertexToRooms(
-        rawRoomPoint(evt),
-        usePropertyStore.getState().property.rooms,
+      const property = usePropertyStore.getState().property;
+      return snapVertexToFloorWalls(
+        property, rawRoomPoint(evt), activeLevelIdOf(property),
         wallSnapTolM(currentSnapStepM()),
       );
+    }
+
+    function commitConnectedRoom(vertices: Polygon): boolean {
+      if (!onCommitWallsRef.current || vertices.length < 2) return false;
+      const property = usePropertyStore.getState().property;
+      if (!wallRunFormsRoom(property, vertices, activeLevelIdOf(property))) return false;
+      onCommitWallsRef.current(vertices);
+      verticesRef.current = [];
+      setVerticesRef.current([]);
+      setHoverRef.current(null);
+      return true;
     }
 
     function readClient(evt: MouseEvent | TouchEvent): { x: number; y: number } | null {
@@ -379,6 +391,7 @@ export function RoomDrawLayer({
         const next = planted ? [...current] : [...current, resolveDrawPoint({ clientX: down.x, clientY: down.y }, shiftFrom(e)).point];
         next.push(to);
         console.log(DBG, 'drag: wall drawn', { dist: Math.round(Math.hypot(c.x - down.x, c.y - down.y)), verticesAfter: next.length });
+        if (commitConnectedRoom(next)) return;
         setVerticesRef.current(next);
         setHoverRef.current(to);
         return;
@@ -386,6 +399,7 @@ export function RoomDrawLayer({
       // A plain click already planted its vertex on the press.
       if (planted) {
         console.log(DBG, 'click: vertex already planted on press');
+        commitConnectedRoom(verticesRef.current);
         return;
       }
       const p = resolveDrawPoint({ clientX: c.x, clientY: c.y }, shiftFrom(e)).point;
@@ -417,6 +431,7 @@ export function RoomDrawLayer({
       }
       const next = [...current, p];
       console.log(DBG, 'push vertex', { vertex: p, verticesAfter: next.length });
+      if (commitConnectedRoom(next)) return;
       setVerticesRef.current(next);
     }
 
@@ -506,8 +521,10 @@ export function RoomDrawLayer({
         publishTouchVertices([]);
         setHoverRef.current(null);
       } else {
-        publishTouchVertices(result.vertices);
-        setHoverRef.current(end);
+        if (!commitConnectedRoom(result.vertices)) {
+          publishTouchVertices(result.vertices);
+          setHoverRef.current(end);
+        }
       }
       e.evt.preventDefault();
     }
