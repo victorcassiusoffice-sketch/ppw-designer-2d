@@ -49,16 +49,32 @@ export function designCatalog(): DesignCatalogProduct[] {
     }));
 }
 
+/** Production hosts serving the same build. DESIGN_ALLOWED_ORIGINS (comma list) replaces them. */
+export const DEFAULT_DESIGN_ORIGINS = [
+  'https://designer.ppwellness.co',
+  'https://onelivebuild.com',
+] as const;
+
+/** Exact browser origins for the design assistant, MCP and Clerk authorized parties.
+ * Entries that are not a bare origin are ignored; none valid falls back to the defaults. */
+export function designOrigins(env: NodeJS.ProcessEnv = process.env): string[] {
+  const configured = (env.DESIGN_ALLOWED_ORIGINS ?? '')
+    .split(',')
+    .map((o) => o.trim().replace(/\/+$/, '').toLowerCase())
+    .filter((o) => /^https?:\/\/[a-z0-9.-]+(:\d+)?$/.test(o));
+  const origins = new Set<string>(configured.length ? configured : DEFAULT_DESIGN_ORIGINS);
+  if (env.VERCEL_URL) origins.add(`https://${env.VERCEL_URL}`);
+  if (env.VERCEL_BRANCH_URL) origins.add(`https://${env.VERCEL_BRANCH_URL}`);
+  if (env.NODE_ENV !== 'production') {
+    origins.add('http://127.0.0.1:5173');
+    origins.add('http://localhost:5173');
+  }
+  return [...origins];
+}
+
 export function allowedDesignOrigin(origin: string | undefined): boolean {
   if (!origin) return true; // Native MCP clients do not send browser Origin.
-  const allowed = new Set(['https://designer.ppwellness.co']);
-  if (process.env.VERCEL_URL) allowed.add(`https://${process.env.VERCEL_URL}`);
-  if (process.env.VERCEL_BRANCH_URL) allowed.add(`https://${process.env.VERCEL_BRANCH_URL}`);
-  if (process.env.NODE_ENV !== 'production') {
-    allowed.add('http://127.0.0.1:5173');
-    allowed.add('http://localhost:5173');
-  }
-  return allowed.has(origin);
+  return designOrigins().includes(origin);
 }
 export function readDesignBody(
   body: unknown,
@@ -132,13 +148,7 @@ const liveDeps: DesignAssistantDependencies = {
   async verify(token) {
     const secretKey = process.env.CLERK_SECRET_KEY;
     if (!secretKey) return null;
-    const authorizedParties = ['https://designer.ppwellness.co'];
-    if (process.env.VERCEL_URL) authorizedParties.push(`https://${process.env.VERCEL_URL}`);
-    if (process.env.VERCEL_BRANCH_URL)
-      authorizedParties.push(`https://${process.env.VERCEL_BRANCH_URL}`);
-    if (process.env.NODE_ENV !== 'production')
-      authorizedParties.push('http://127.0.0.1:5173', 'http://localhost:5173');
-    return verifyToken(token, { secretKey, authorizedParties });
+    return verifyToken(token, { secretKey, authorizedParties: designOrigins() });
   },
   async reserve(userId, ip, brief) {
     const verdict = await applyAgentChatLockdown({
