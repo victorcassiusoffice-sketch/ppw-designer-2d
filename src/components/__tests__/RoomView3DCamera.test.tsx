@@ -10,11 +10,13 @@ import { getAllProducts } from '../../data/products';
 import type { OrbitCamera } from '../../designer/roomView3d';
 import type { ThreeStageHandle, ThreeStageProps } from '../three/ThreeStage';
 import { ROOM_LIGHTING_STORAGE_KEY } from '../../hooks/useRoomLighting';
+import { defaultFoundationRebar } from '../../designer/foundation';
 
-const renderer = vi.hoisted(() => ({ camera: null as OrbitCamera | null, presentation: undefined as ThreeStageProps['presentation'], hour: undefined as ThreeStageProps['hour'], mounts: 0 }));
+const renderer = vi.hoisted(() => ({ camera: null as OrbitCamera | null, presentation: undefined as ThreeStageProps['presentation'], hour: undefined as ThreeStageProps['hour'], mounts: 0, ready: undefined as ThreeStageProps['onReady'] }));
 vi.mock('../three/ThreeStage', async () => {
   const React = await import('react');
-  return { default: React.forwardRef<Pick<ThreeStageHandle, 'floorPoint' | 'hitItem' | 'hitTest' | 'projectPoint'>, ThreeStageProps>(function CameraStage({ camera, presentation, hour }, ref) {
+  return { default: React.forwardRef<Pick<ThreeStageHandle, 'floorPoint' | 'hitItem' | 'hitTest' | 'projectPoint'>, ThreeStageProps>(function CameraStage({ camera, presentation, hour, onReady }, ref) {
+    renderer.ready = onReady;
     renderer.camera = camera;
     renderer.presentation = presentation;
     renderer.hour = hour;
@@ -43,7 +45,7 @@ beforeEach(async () => {
   usePropertyStore.getState().resetToDefault();
   const p = usePropertyStore.getState().property;
   usePropertyStore.setState({ property: { ...p, id: 'camera-project', activeLevelId: 'ground', activeRoomId: 'room', rooms: [{ id: 'room', name: 'Room', placedItems: [], polygon: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 8, y: 8 }, { x: 0, y: 8 }] }] } });
-  useDesignerUIStore.setState({ tool: 'hand', viewMode: '3d', energyPanelOpen: false, sunHour: null });
+  useDesignerUIStore.setState({ tool: 'hand', viewMode: '3d', energyPanelOpen: false, sunHour: null, foundationView: false });
   usePlacementIntentStore.setState({ intent: null, armedProductId: null });
   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
   await act(async () => { root.render(<RoomView3D variant="overlay" />); });
@@ -66,6 +68,52 @@ function expectSameFraming(camera: OrbitCamera, initialHeight = 640) {
 }
 
 describe('3D camera stays where the customer leaves it', () => {
+  it('keeps the loading animation until the renderer has drawn a frame and does not restore it on tool changes', () => {
+    expect(host.querySelector('[data-testid="loading-3d"]')?.textContent).toContain('Loading 3D');
+    act(() => renderer.ready?.());
+    expect(host.querySelector('[data-testid="loading-3d"]')).toBeNull();
+    click('[data-testid="house-mode-furnish"]');
+    expect(host.querySelector('[data-testid="loading-3d"]')).toBeNull();
+  });
+  it('keeps camera orbit inside View settings instead of beside Undo', () => {
+    expect(host.querySelector('[aria-label="Orbit camera left"]')).toBeNull();
+    click('[data-testid="house-view-settings"]');
+    expect(host.querySelector('[aria-label="Orbit camera left"]')).not.toBeNull();
+    expect(host.querySelector('.house-camera-row [data-testid="wallpaint-3d-rotate-left"]')).toBeNull();
+  });
+  it('shows object rotation beside a selected floor product and hides it during wall drawing or deselection', () => {
+    let id = '';
+    act(() => { id = usePropertyStore.getState().addItem({ productId: 'espace-emilia-toilet-bowl', x: 3.5, y: 3.5, rotation: 0 }, 'room'); usePropertyStore.getState().selectItem(id); });
+    expect(host.querySelector('[data-testid="view3d-object-turn"]')).not.toBeNull();
+    expect(host.querySelector('.house-selection [data-testid="view3d-rotate"]')).toBeNull();
+    click('[data-testid="house-draw-walls"]');
+    expect(host.querySelector('[data-testid="view3d-object-turn"]')).toBeNull();
+    act(() => usePropertyStore.getState().selectItem(null));
+    expect(host.querySelector('[data-testid="view3d-object-turn"]')).toBeNull();
+  });
+  it('fits a foundation-only project at its real below-ground datum and preserves the camera during edits', () => {
+    act(() => {
+      useDesignerUIStore.getState().setFoundationView(true);
+      const p = usePropertyStore.getState().property;
+      usePropertyStore.setState({ property: { ...p, id: 'foundation-only', rooms: [{ ...p.rooms[0], polygon: [] }], foundation: { version: 1, enabled: true, elements: [{ id: 'pad', kind: 'pad', name: 'Pad', x: 60, y: 45, lengthM: 3, widthM: 2, depthM: 1, topElevationM: -2, rebar: defaultFoundationRebar() }] } } });
+    });
+    expect(renderer.camera!.target.x).toBe(60); expect(renderer.camera!.target.y).toBe(45);
+    expect(renderer.camera!.target.z).toBeLessThan(-2);
+    expect(host.querySelector('.house-empty')).toBeNull();
+    const before = zoomIn();
+    act(() => { const p = usePropertyStore.getState().property; usePropertyStore.getState().setFoundation({ ...p.foundation!, elements: p.foundation!.elements.map(e => ({ ...e, lengthM: 20, depthM: 3 })) }); });
+    expect(renderer.camera).toEqual(before);
+    click('[data-testid="wallpaint-3d-fit"]');
+    expect(renderer.camera!.distanceM).toBeGreaterThan(before.distanceM);
+    expect(renderer.camera!.target.z).toBeLessThan(-2);
+  });
+  it('enters foundation inspection from an upper floor without zooming out', () => {
+    act(() => usePropertyStore.getState().addLevel('Upper'));
+    const before = zoomIn();
+    act(() => useDesignerUIStore.getState().setFoundationView(true));
+    expect(usePropertyStore.getState().property.activeLevelId).toBe('ground');
+    expect(renderer.camera).toEqual(before);
+  });
   it('defaults to Natural light and explains the explicit neutral Colour check option', () => {
     expect(renderer.presentation).toBe('natural');
     click('[data-testid="house-view-settings"]');

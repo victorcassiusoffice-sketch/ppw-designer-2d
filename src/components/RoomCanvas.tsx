@@ -1,3 +1,4 @@
+import { quoteAwareAmount } from '../lib/quotedProducts';
 import { constructionHex, paintSide } from '../designer/wallConstruction';
 /**
  * RoomCanvas - react-konva Stage. Week 2.5 build:
@@ -48,6 +49,7 @@ import { planRoomLabelLayout } from '../designer/planRoomLabel';
 import { levelHeightM } from '../designer/building';
 import { NATURAL_BARE_FLOOR_HEX } from '../designer/architecturalSurface';
 import { visibleServiceFixtures } from '../designer/serviceFixtures';
+import { FoundationPlanLayer } from './FoundationPlanLayer';
 import { ServiceFixturesPlanLayer } from './ServiceFixturesPlanLayer';
 import type Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
@@ -2256,10 +2258,12 @@ export function RoomCanvas({
         setDrawHover(null);
         return;
       }
+      const beforeRooms = ps.property.rooms.filter(room => room.polygon.length >= 3).length;
       ps.addFreeWalls(walls);
+      const createdRooms = usePropertyStore.getState().property.rooms.filter(room => room.polygon.length >= 3).length - beforeRooms;
       console.log('[draw-close]', { reason: 'open-walls-commit', walls: walls.length, success: true });
       pushToast(
-        `${walls.length} wall${walls.length === 1 ? '' : 's'} added — close a shape next time for a room`,
+        createdRooms > 0 ? `${createdRooms} room${createdRooms === 1 ? '' : 's'} formed with shared walls` : `${walls.length} wall${walls.length === 1 ? '' : 's'} added — connect to existing walls to enclose a room`,
         'success',
       );
       endDrawTransaction();
@@ -3454,7 +3458,7 @@ export function RoomCanvas({
           data-testid="cost-readout"
           hidden={costChipHidden}
         >
-          {formatCurrency(costReadout.total, costReadout.currency)}
+          {quoteAwareAmount(cartTotals, costReadout.total, formatCurrency(costReadout.total, costReadout.currency))}
         </div>}
         {/* ENERGY (eco / solar 2026-09-04) — sun vs use, per day. Hidden
             until the plan has a consumer or a panel, so an empty plan stays
@@ -4792,6 +4796,7 @@ export function RoomCanvas({
             ))}
 
           <BuildingPlanLayer property={propertyForPaint} activeLevelId={activeLevelId} pxPerMetre={pxPerMetre} scale={viewport.scale} />
+          {activeLevelId === 'ground' && propertyForPaint.foundation?.enabled && <FoundationPlanLayer model={propertyForPaint.foundation} pxPerMetre={pxPerMetre} />}
           <ServiceFixturesPlanLayer fixtures={serviceFixtures} pxPerMetre={pxPerMetre}
             onSelect={wallSelectArmed && !gardenPlacement ? fixtureId => window.dispatchEvent(new CustomEvent('ppw:open-services', { detail: { fixtureId } })) : undefined} />
 

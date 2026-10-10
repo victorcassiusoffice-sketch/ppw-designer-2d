@@ -21,6 +21,7 @@ import {
 } from '../products';
 import type { PlanSymbol, ProductCategory, ProductPlacement } from '../products.schema';
 import { MAURITIUS_OUTDOOR_PRODUCTS } from '../mauritiusOutdoor';
+import { SERVICE_PRODUCTS } from '../serviceProducts';
 
 const ALL = getAllProducts();
 const CATEGORIES = Object.keys(CATEGORY_LABELS) as ProductCategory[];
@@ -53,7 +54,7 @@ describe('catalog metadata', () => {
   });
 
   it('keeps the 27 pre-existing products first, then the 6 new seeds', () => {
-    expect(ALL).toHaveLength(42 + MAURITIUS_OUTDOOR_PRODUCTS.length); // Original seed retained; sourced outdoor products appended.
+    expect(ALL).toHaveLength(42 + MAURITIUS_OUTDOOR_PRODUCTS.length + SERVICE_PRODUCTS.length);
     expect(ALL[0].id).toBe('k1-nordictrack-2450');
     expect(ALL[26].id).toBe('demo-potted-plant');
     expect(ALL.slice(27, 33).map((p) => p.id)).toEqual(NEW_IDS);

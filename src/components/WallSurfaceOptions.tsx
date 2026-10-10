@@ -3,9 +3,10 @@ import { usePropertyStore } from '../store/propertyStore';
 import { WALL_CONSTRUCTIONS } from '../designer/wallConstruction';
 import { brandIdOfPaint, findWallPaintById, WALL_PAINTS } from '../data/wallPaints';
 import './wallSurfaceOptions.css';
+import { PaintCoatsControl } from './PaintCoatsControl';
 
 /** Shared by the desktop palette and the phone sheet: no floating controls. */
-export function WallSurfaceOptions({ compact = false, materialsOnly = false }: { compact?: boolean; materialsOnly?: boolean }): JSX.Element {
+export function WallSurfaceOptions({ compact = false, materialsOnly = false, showCoats = true }: { compact?: boolean; materialsOnly?: boolean; showCoats?: boolean }): JSX.Element {
   const draft = useDesignerUIStore((state) => state.wallPaintDraft);
   const setDraft = useDesignerUIStore((state) => state.setWallPaintDraft);
   const surfaceMode = materialsOnly || draft.operation === 'construction';
@@ -21,6 +22,7 @@ export function WallSurfaceOptions({ compact = false, materialsOnly = false }: {
       {draft.side === 'exterior' ? 'Outside' : 'Inside'} ↔
     </button>
     <button type="button" onClick={() => { setDraft({ operation: 'construction', erase: false }); window.dispatchEvent(new CustomEvent('ppw:open-wall-materials')); }}>Wall type</button>
+    {showCoats && !surfaceMode && <PaintCoatsControl compact />}
   </div>;
   return <section className="wall-surface-options" aria-label="Wall surface and paint side">
     {!materialsOnly && <div className="wall-surface-tabs" role="group" aria-label="Wall tool">
@@ -46,6 +48,7 @@ export function WallSurfaceOptions({ compact = false, materialsOnly = false }: {
         <button type="button" aria-pressed={draft.side === 'exterior'} onClick={() => chooseSide('exterior')}>Outside</button>
       </div>
       <p>{draft.side === 'exterior' ? 'Outside face only. Rotate the house to see exterior paint.' : 'Inside face only. Outside paint stays independent.'}</p>
+      {showCoats && <PaintCoatsControl />}
     </>}
   </section>;
 }

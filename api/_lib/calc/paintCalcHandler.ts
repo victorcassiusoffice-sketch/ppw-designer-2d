@@ -18,6 +18,7 @@
 import { calculatePaint, type PaintCalcResult } from '../../../src/lib/paintCalculator.js';
 import { calculateFloor, type FloorCalcResult } from '../../../src/lib/floorCalculator.js';
 import type { WallSegment } from '../../../src/store/wallStore.js';
+import { propertyPaintQuote, propertyPaintQuoteSchema } from './propertyPaintQuote.js';
 
 interface MinimalReq {
   method?: string;
@@ -42,19 +43,18 @@ interface PaintCalcRequest {
 function isPaintCalcRequest(x: unknown): x is PaintCalcRequest {
   if (!x || typeof x !== 'object') return false;
   const r = x as Record<string, unknown>;
-  if (!Array.isArray(r.walls)) return false;
+  if (!Array.isArray(r.walls) || r.walls.length > 500) return false;
   for (const w of r.walls) {
     if (!w || typeof w !== 'object') return false;
     const wo = w as Record<string, unknown>;
-    if (typeof wo.height_mm !== 'number') return false;
+    if (typeof wo.height_mm !== 'number' || !Number.isFinite(wo.height_mm) || wo.height_mm <= 0 || wo.height_mm > 100000) return false;
     if (!wo.start || !wo.end) return false;
     const s = wo.start as Record<string, unknown>;
     const e = wo.end as Record<string, unknown>;
-    if (typeof s.x_mm !== 'number' || typeof s.y_mm !== 'number') return false;
-    if (typeof e.x_mm !== 'number' || typeof e.y_mm !== 'number') return false;
+    if (![s.x_mm, s.y_mm, e.x_mm, e.y_mm].every(v => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= 10000000)) return false;
   }
   if (r.paintId !== undefined && typeof r.paintId !== 'string') return false;
-  if (r.coats !== undefined && typeof r.coats !== 'number') return false;
+  if (r.coats !== undefined && (typeof r.coats !== 'number' || !Number.isInteger(r.coats) || r.coats < 1 || r.coats > 3)) return false;
   return true;
 }
 
@@ -65,6 +65,19 @@ export async function paintCalcHandler(req: MinimalReq, res: MinimalRes): Promis
     return;
   }
   const body = req.body;
+  if (body && typeof body === 'object' && ('mode' in body || 'property' in body)) {
+    const parsed = propertyPaintQuoteSchema.safeParse(body);
+    if (!parsed.success) {
+      res.status(422).json({ error: 'invalid_property_paint_quote', detail: parsed.error.issues.map(issue => issue.message).slice(0, 5) });
+      return;
+    }
+    try { res.status(200).json(propertyPaintQuote(parsed.data)); }
+    catch (error) {
+      if (error instanceof RangeError) res.status(422).json({ error: 'quote_limit', detail: error.message });
+      else res.status(500).json({ error: 'calc_failed' });
+    }
+    return;
+  }
   if (!isPaintCalcRequest(body)) {
     res.status(422).json({ error: 'invalid_body', expected: '{ walls: WallSegment[], paintId?: string, coats?: number }' });
     return;
@@ -76,6 +89,9 @@ export async function paintCalcHandler(req: MinimalReq, res: MinimalRes): Promis
       coats: body.coats,
     });
     res.status(200).json({
+      mode: 'legacy-wall-area',
+      quote_basis: 'illustrative_per_litre',
+      notice: 'Legacy millimetre-wall calculator with sample palette prices. Use mode property for the Designer/cart whole-tin quote.',
       total_area_m2: result.total_area_m2,
       litres_per_coat: result.litres_per_coat,
       coats: result.coats,

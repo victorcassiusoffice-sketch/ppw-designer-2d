@@ -90,4 +90,24 @@ describe('read-only building services MCP', () => {
     const oversized = { version: 1, runs: Array.from({ length: 1000 }, (_, i) => ({ ...run, id: `run-${i}` })), fixtures: [] };
     expect(call('estimate_services', { services: oversized })).toMatchObject({ result: { isError: true, structuredContent: { error: 'Proposal exceeds the 128 KB limit.' } } });
   });
+
+  it('resolves fixture-linked endpoints before measurement and reports missing links', () => {
+    const linked = { ...run, system: 'cold-water', materialId: 'hpl-aquasafe-upvc-20', startElevationM: 0, endElevationM: 0,
+      endConnection: { fixtureId: 'supply', portId: 'cold-water' } };
+    const supply = { ...fixture, id: 'supply', kind: 'mains-tap', x: 3, y: 0, portElevationsM: { 'cold-water': 4 }, connectionLabel: 'Surveyed private supply' };
+    expect(call('estimate_services', { services: { version: 1, runs: [linked], fixtures: [supply] } })).toMatchObject({ result: { isError: false, structuredContent: {
+      totalLengthM: 5, connectionsComplete: true, connectionIssues: [],
+    } } });
+    expect(call('estimate_services', { services: { version: 1, runs: [linked], fixtures: [] } })).toMatchObject({ result: { isError: false, structuredContent: {
+      totalLengthM: 3, connectionsComplete: false, connectionIssues: [{ runId: 'hot-1', message: expect.stringContaining('removed') }],
+    } } });
+  });
+
+  it('requires the drainage invert and refuses malformed optional link fields', () => {
+    const waste = { ...run, system: 'waste', materialId: 'custom', endConnection: { fixtureId: 'drain', portId: 'waste' } };
+    const drain = { ...fixture, id: 'drain', kind: 'sewer-connection' };
+    expect(call('estimate_services', { services: { version: 1, runs: [waste], fixtures: [drain] } })).toMatchObject({ result: { isError: false, structuredContent: { connectionsComplete: false, connectionIssues: [{ message: expect.stringContaining('surveyed') }] } } });
+    expect(call('estimate_services', { services: { version: 1, runs: [{ ...run, endConnection: { fixtureId: 'drain', portId: 'gas' } }], fixtures: [] } })).toMatchObject({ result: { isError: true } });
+    expect(call('estimate_services', { services: { version: 1, runs: [run], fixtures: [{ ...fixture, portElevationsM: { waste: -21 } }] } })).toMatchObject({ result: { isError: true } });
+  });
 });

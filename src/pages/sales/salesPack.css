@@ -380,6 +380,7 @@
   padding: 4px;
 }
 .sales-menu button {
+  flex-shrink: 0;
   text-align: left;
   font-size: 13px;
   box-shadow: none;

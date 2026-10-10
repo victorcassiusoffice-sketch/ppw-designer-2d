@@ -2,7 +2,16 @@
 import { SERVICE_MATERIALS } from '../data/buildingServicesCatalog.js';
 
 export type ServiceSystem = 'cold-water' | 'hot-water' | 'waste' | 'electrical';
-export type ServiceFixtureKind = 'toilet' | 'sink' | 'mains-tap' | 'electrical-board';
+export type ServiceFixtureKind =
+  | 'toilet'
+  | 'sink'
+  | 'mains-tap'
+  | 'electrical-board'
+  | 'sewer-connection';
+export interface ServiceConnection {
+  fixtureId: string;
+  portId: ServiceSystem;
+}
 export interface ServicePoint {
   x: number;
   y: number;
@@ -17,6 +26,9 @@ export interface ServiceRun {
   /** Centre-line elevations relative to the finished floor; negative is below floor. */
   startElevationM: number;
   endElevationM: number;
+  /** Explicit fixture links; visual crossings do not create a connection. */
+  startConnection?: ServiceConnection;
+  endConnection?: ServiceConnection;
 }
 export interface ServiceFixture {
   id: string;
@@ -28,6 +40,10 @@ export interface ServiceFixture {
   depthM: number;
   heightM: number;
   rotation: number;
+  /** User-entered port centre-line/invert elevations, relative to this floor. */
+  portElevationsM?: Partial<Record<ServiceSystem, number>>;
+  /** Project reference only; never evidence of utility approval. */
+  connectionLabel?: string;
 }
 export interface BuildingServices {
   version: 1;
@@ -49,12 +65,19 @@ export const SERVICE_FIXTURES: Record<
   sink: { label: 'Sink', widthM: 0.6, depthM: 0.48, heightM: 0.85 },
   'mains-tap': { label: 'Mains tap', widthM: 0.12, depthM: 0.16, heightM: 0.6 },
   'electrical-board': { label: 'Electrical board', widthM: 0.4, depthM: 0.12, heightM: 0.6 },
+  'sewer-connection': { label: 'Drainage connection', widthM: 0.6, depthM: 0.6, heightM: 0.6 },
 };
 const finite = (v: unknown, min: number, max: number): v is number =>
   typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max;
 const key = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length <= 128;
 const record = (v: unknown): Record<string, unknown> | null =>
   v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
+function connection(value: unknown): ServiceConnection | undefined {
+  const r = record(value);
+  return r && key(r.fixtureId) && SERVICE_SYSTEMS.some((s) => s.id === r.portId)
+    ? { fixtureId: r.fixtureId, portId: r.portId as ServiceSystem }
+    : undefined;
+}
 
 /** Reject malformed entities individually; never silently turn unknown floors into ground routes. */
 export function normaliseBuildingServices(
@@ -95,6 +118,8 @@ export function normaliseBuildingServices(
       endElevationM: r.endElevationM,
       points: points.map((p) => ({ x: p!.x as number, y: p!.y as number })),
     };
+    if (connection(r.startConnection)) run.startConnection = connection(r.startConnection);
+    if (connection(r.endConnection)) run.endConnection = connection(r.endConnection);
     if (serviceRunLengthM(run) < 0.01) continue;
     seen.add(run.id);
     runs.push(run);
@@ -125,6 +150,15 @@ export function normaliseBuildingServices(
       heightM: r.heightM,
       rotation: ((r.rotation % 360) + 360) % 360,
     };
+    const elevations = record(r.portElevationsM);
+    if (elevations) {
+      const entries = SERVICE_SYSTEMS.filter((s) => finite(elevations[s.id], -20, 20)).map((s) => [
+        s.id,
+        elevations[s.id],
+      ]);
+      if (entries.length) fixture.portElevationsM = Object.fromEntries(entries);
+    }
+    if (key(r.connectionLabel)) fixture.connectionLabel = r.connectionLabel.trim();
     seen.add(fixture.id);
     fixtures.push(fixture);
   }

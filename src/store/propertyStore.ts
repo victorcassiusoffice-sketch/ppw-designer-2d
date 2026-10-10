@@ -1,4 +1,7 @@
 import { normaliseBuildingServices, type BuildingServices } from '../designer/buildingServices';
+import { resolveServiceConnections } from '../designer/serviceConnections';
+import { inferConnectedRooms } from '../designer/connectedWallRooms';
+import { normaliseFoundation, type FoundationModel } from '../designer/foundation';
 import { normaliseMaterialsSettings, type MaterialsSettings } from '../designer/materials';
 /**
  * propertyStore — Week 2.5 multi-room model (Model A — separate
@@ -304,6 +307,7 @@ export interface Room {
 }
 
 export interface Property {
+  foundation?: FoundationModel;
   services?: BuildingServices;
   /** Versioned estimating assumptions; persisted with every save and history snapshot. */
   materials?: MaterialsSettings;
@@ -649,6 +653,7 @@ export interface PropertyState {
   syncRoof: () => boolean;
   /** Roof shape and finish. Adds/synchronises the roof without changing floor focus. */
   setServices: (services: BuildingServices) => boolean;
+  setFoundation: (foundation: FoundationModel) => boolean;
   setMaterialsSettings: (settings: MaterialsSettings) => void;
   setRoofConfig: (config: RoofConfig | null) => void;
   /** Switch an electrical item on/off for the energy estimate (absent = on). */
@@ -670,7 +675,9 @@ export interface PropertyState {
   // ---- free-standing walls ----
   /**
    * Append walls (ids minted here). A wall with no `levelId` lands on the
-   * active level; zero-length walls are dropped. Returns the ids added, in order.
+   * active level; non-finite/zero-length walls are dropped. Closed graph faces
+   * become rooms atomically, reusing existing edges. Returns minted wall ids in
+   * order; ids consumed into room boundaries will no longer be in `walls`.
    */
   addFreeWalls: (walls: Omit<FreeWall, 'id'>[]) => string[];
   removeFreeWall: (id: string) => void;
@@ -1622,11 +1629,17 @@ export const usePropertyStore = create<PropertyState>()(
         return true;
       },
 
+      setFoundation: (foundation) => {
+        const normalised = normaliseFoundation(foundation);
+        if (!normalised) return false;
+        set(s => ({ property: { ...s.property, foundation: normalised } }));
+        return true;
+      },
       setServices: (services) => {
         const property = get().property;
         const normalised = normaliseBuildingServices(services, new Set(levelsOf(property).map(l => l.id)));
         if (!normalised || normalised.runs.length !== services.runs.length || normalised.fixtures.length !== services.fixtures.length) return false;
-        set({ property: { ...property, services: normalised } });
+        set({ property: { ...property, services: resolveServiceConnections(normalised) } });
         return true;
       },
       setMaterialsSettings: (settings) => set(s => ({ property: { ...s.property, materials: normaliseMaterialsSettings(settings) } })),
@@ -1810,10 +1823,12 @@ export const usePropertyStore = create<PropertyState>()(
           const level = activeLevelIdOf(s.property);
           const added: FreeWall[] = [];
           for (const w of walls) {
-            if (!(w.thicknessM > 0) || freeWallLengthM(w) < MIN_FREE_WALL_LENGTH_M) continue;
+            if (![w.a.x, w.a.y, w.b.x, w.b.y, w.thicknessM].every(Number.isFinite)
+              || !(w.thicknessM > 0) || !Number.isFinite(freeWallLengthM(w)) || freeWallLengthM(w) < MIN_FREE_WALL_LENGTH_M) continue;
             const id = nanoid(10);
             ids.push(id);
             added.push({
+              ...w,
               id,
               a: { x: w.a.x, y: w.a.y },
               b: { x: w.b.x, y: w.b.y },
@@ -1822,7 +1837,9 @@ export const usePropertyStore = create<PropertyState>()(
             });
           }
           if (added.length === 0) return s;
-          return { property: { ...s.property, walls: [...(s.property.walls ?? []), ...added] } };
+          let property: Property = { ...s.property, walls: [...(s.property.walls ?? []), ...added] };
+          for (const levelId of new Set(added.map(roomLevelId))) property = inferConnectedRooms(property, levelId, () => nanoid(10));
+          return { property: property.rooms === s.property.rooms ? property : syncRoofRooms(property) };
         });
         return ids;
       },
@@ -1942,7 +1959,11 @@ export const usePropertyStore = create<PropertyState>()(
         const merged = { ...current, ...((persisted ?? {}) as Partial<PropertyState>) };
         if (merged.property) merged.property = normaliseGardenMetadata(normaliseBuildingMetadata(canonicalisePropertyWinding(merged.property)));
         if (merged.property?.materials !== undefined) merged.property = { ...merged.property, materials: normaliseMaterialsSettings(merged.property.materials) };
-        if (merged.property?.services !== undefined) merged.property = { ...merged.property, services: normaliseBuildingServices(merged.property.services, new Set(levelsOf(merged.property).map(l => l.id))) };
+        if (merged.property?.foundation !== undefined) merged.property = { ...merged.property, foundation: normaliseFoundation(merged.property.foundation) };
+        if (merged.property?.services !== undefined) {
+          const services = normaliseBuildingServices(merged.property.services, new Set(levelsOf(merged.property).map(l => l.id)));
+          merged.property = { ...merged.property, services: services ? resolveServiceConnections(services) : undefined };
+        }
         return merged;
       },
     },
@@ -1983,7 +2004,11 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   };
   // Every field below is OPTIONAL and only written when it carries something,
   // so a property saved before the Sims world round-trips byte-identical.
-  if (property.services !== undefined) out.services = normaliseBuildingServices(property.services, levelIds);
+  if (property.services !== undefined) {
+    const services = normaliseBuildingServices(property.services, levelIds);
+    out.services = services ? resolveServiceConnections(services) : undefined;
+  }
+  if (property.foundation !== undefined) out.foundation = normaliseFoundation(property.foundation);
   if (property.materials !== undefined) out.materials = normaliseMaterialsSettings(property.materials);
   if (levels) out.levels = levels;
   const activeRoom = rooms.find((r) => r.id === activeRoomId)!;
@@ -2138,6 +2163,7 @@ interface RawRoom {
 
 interface RawProperty {
   services?: unknown;
+  foundation?: unknown;
   wallHeightM?: unknown;
   id?: string;
   name?: string;

@@ -53,6 +53,11 @@ export interface PaintCalcResult {
  * Endpoints are stored in millimetres (wallStore), as is the height.
  */
 export function wallAreaM2(wall: WallSegment): number {
+  if (![wall.start.x_mm, wall.start.y_mm, wall.end.x_mm, wall.end.y_mm, wall.height_mm].every(Number.isFinite)
+    || wall.height_mm <= 0 || wall.height_mm > 100000
+    || [wall.start.x_mm, wall.start.y_mm, wall.end.x_mm, wall.end.y_mm].some(value => Math.abs(value) > 10000000)) {
+    throw new RangeError('Wall geometry requires finite millimetre coordinates and a positive height.');
+  }
   const dx_mm = wall.end.x_mm - wall.start.x_mm;
   const dy_mm = wall.end.y_mm - wall.start.y_mm;
   const lengthMm = Math.hypot(dx_mm, dy_mm);
@@ -94,6 +99,8 @@ export const PAINT_CALC_DEFAULT_COVERAGE_M2_PER_LITRE = 10;
  * left undefined.
  */
 export function calculatePaint(input: PaintCalcInput): PaintCalcResult {
+  if (!Array.isArray(input.walls) || input.walls.length > 500) throw new RangeError('Paint calculator supports up to 500 walls per request.');
+  if (input.coats !== undefined && (!Number.isInteger(input.coats) || input.coats < 1 || input.coats > 3)) throw new RangeError('Paint coats must be a whole number from 1 to 3.');
   const area = totalWallAreaM2(input.walls);
   const paint = input.paintId ? findPaintById(input.paintId) : undefined;
   const coverage = paint?.coverage_m2_per_litre ?? PAINT_CALC_DEFAULT_COVERAGE_M2_PER_LITRE;

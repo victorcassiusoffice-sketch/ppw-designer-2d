@@ -1,3 +1,5 @@
+import { placementKind } from '../designer/attachmentPlacement';
+import { ProductSourceNote } from './ProductSourceNote';
 /**
  * DetailsPanel — right-side OVERLAY (desktop) / bottom sheet (mobile).
  *
@@ -269,6 +271,7 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
             />
             <Stat label="Commission" value={`${(selectedProduct.commission_pct * 100).toFixed(1)} %`} />
             <Stat label="Supplier" value={selectedProduct.supplier} />
+            <ProductSourceNote product={selectedProduct} />
             <Stat
               label="Ships to"
               value={selectedProduct.delivery_regions.join(', ')}
@@ -303,6 +306,7 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
             <div className="rounded-lg border border-ppw-rim bg-ppw-rail px-3 py-3">
               <p className={`${CAPTION} mb-2`}>Controls</p>
               <div className="grid grid-cols-2 gap-2">
+                {placementKind(selectedProduct) !== 'wall' && <>
                 <button
                   type="button"
                   onClick={() => rotateSelected(-90)}
@@ -319,6 +323,7 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
                 >
                   ↻ 90° CW
                 </button>
+                </>}
                 <button
                   type="button"
                   onClick={duplicateSelected}
@@ -559,6 +564,7 @@ function ArmedProductDetails({ product }: { product: Product }) {
   return (
     <div className="space-y-4">
       <ProductHero product={product} />
+      <ProductSourceNote product={product} />
       <div>
         <p className={CAPTION}>Placing</p>
         <h3 className="mt-1 text-base font-semibold text-ppw-inkDeep">{product.name}</h3>

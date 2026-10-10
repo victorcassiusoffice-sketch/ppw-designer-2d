@@ -33,13 +33,13 @@ export function naturalRenderResolution(width: number, height: number, pixelRati
   };
 }
 
-/** Decals, glass, sky, selection rings and cutaway ghosts must not turn into
+/** Decals, annotations, glass, sky, selection rings and cutaway ghosts must not turn into
  * opaque occluders in the normal/depth pass. The already-rendered beauty
  * image keeps them. This is also essential for floor contact-shadow planes. */
 export function withOpaqueOccluders<T>(scene: THREE.Scene, draw: () => T): T {
   const hidden: THREE.Object3D[] = [];
   scene.traverseVisible((object) => {
-    if ((object as THREE.Line).isLine || (object as THREE.Points).isPoints || object.type === 'Line2') {
+    if ((object as THREE.Line).isLine || (object as THREE.Points).isPoints || (object as THREE.Sprite).isSprite || object.type === 'Line2') {
       hidden.push(object);
       return;
     }

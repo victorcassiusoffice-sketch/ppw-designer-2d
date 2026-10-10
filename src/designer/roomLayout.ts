@@ -207,6 +207,25 @@ function centroid(poly: Polygon): Vertex {
   return { x: x / poly.length, y: y / poly.length };
 }
 
+/** A vertex-average may be outside a concave polygon. Only verified interior
+ * probes may establish containment; otherwise a valid U-shaped neighbour is
+ * mistaken for overlap and the legacy loader moves the rooms apart. */
+function interiorProbes(poly: Polygon): Vertex[] {
+  const centre = centroid(poly);
+  const points = strictlyInside(centre, poly) ? [centre] : [];
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length];
+    const length = Math.hypot(b.x - a.x, b.y - a.y);
+    if (length <= STRICT_EPS_M) continue;
+    const offset = Math.min(1e-4, length * 1e-4);
+    for (const sign of [-1, 1]) {
+      const point = { x: (a.x + b.x) / 2 - (b.y - a.y) / length * offset * sign, y: (a.y + b.y) / 2 + (b.x - a.x) / length * offset * sign };
+      if (strictlyInside(point, poly)) points.push(point);
+    }
+  }
+  return points;
+}
+
 function edgeMidpoints(poly: Polygon): Vertex[] {
   const out: Vertex[] = [];
   for (let i = 0; i < poly.length; i++) {
@@ -225,13 +244,13 @@ function edgeMidpoints(poly: Polygon): Vertex[] {
  * Four probes, both directions:
  *   a) any PROPER edge-pair crossing;
  *   b) any VERTEX of one strictly inside the other;
- *   c) the CENTROID of one strictly inside the other;
+ *   c) a verified INTERIOR point of one strictly inside the other;
  *   d) any edge MIDPOINT of one strictly inside the other.
  *
  * (c) and (d) are NOT optional. The two canonical real payloads defeat
  * (a) + (b) on their own:
  *   • IDENTICAL stacked rectangles — every vertex lies ON the other's
- *     boundary and no edges properly cross. Caught by the centroid.
+ *     boundary and no edges properly cross. Caught by an interior point.
  *   • A snap-traced SUB-rectangle whose vertices all landed on the host's
  *     boundary (e.g. the user traced half of an existing wall) — again no
  *     strictly-interior vertex and no proper crossing. Caught by an edge
@@ -252,11 +271,11 @@ export function strictPolygonsOverlap(a: Polygon, b: Polygon): boolean {
   }
 
   // (b) + (c) + (d), both directions
-  const probesA: Vertex[] = [...a, centroid(a), ...edgeMidpoints(a)];
+  const probesA: Vertex[] = [...a, ...interiorProbes(a), ...edgeMidpoints(a)];
   for (const p of probesA) {
     if (strictlyInside(p, b)) return true;
   }
-  const probesB: Vertex[] = [...b, centroid(b), ...edgeMidpoints(b)];
+  const probesB: Vertex[] = [...b, ...interiorProbes(b), ...edgeMidpoints(b)];
   for (const p of probesB) {
     if (strictlyInside(p, a)) return true;
   }

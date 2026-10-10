@@ -1,4 +1,4 @@
-export const PACK_DATE = '7 October 2026';
+export const PACK_DATE = '9 October 2026';
 export const MEETING = 'https://calendly.com/victorcassius-office/ppw-client-meeting-1-hour';
 export const PACK_LINKS = [
   {
@@ -40,6 +40,11 @@ export const PACK_LINKS = [
     path: '/demo?view=3d&panel=materials&pitch=1',
     name: 'Materials estimates',
     market: 'Construction and building materials',
+  },
+  {
+    path: '/demo?view=2d&panel=foundation&pitch=1',
+    name: 'Measured foundations lab',
+    market: 'Builders, estimators and concrete suppliers',
   },
   {
     path: '/demo?view=3d&panel=ai&pitch=1',
@@ -99,17 +104,27 @@ export const CAPABILITIES = [
   [
     'Demonstrate now',
     'Measured 2D and 3D',
-    'Arrange products, edit walls and openings, inspect floors and roof. Product envelopes follow supplied dimensions. Exact visual detail depends on the model.',
+    'Close polygonal rooms against existing walls: shared edges need no redraw. Floors and Materials are directly accessible in the plan. Sourced products share one published dimensional envelope in 2D and 3D; illustrations show fit, not exact manufacturer detail.',
   ],
   [
     'Demonstrate now',
     'Plumbing & Electric',
-    'Draw per-floor water, drainage and conduit routes. Set elevations and inspect centre-line lengths. Place generic toilets, sinks, mains taps and boards. Routing opens in 2D, including when entered from 3D.',
+    'Draw per-floor water, drainage and conduit routes. Attach compatible same-floor ports: links follow fixture moves and rotation. Set surveyed elevations and review missing connections. Routing opens in 2D; choose a building floor to return to the view you entered from. Ports are schematic.',
   ],
   [
     'Demonstrate now',
-    'Materials and energy',
-    'Review quantity and energy estimates with editable assumptions. Estimates need source specifications and site review.',
+    'Paint and material quantities',
+    'Choose paint coats, coverage assumptions and allowance before whole-tin estimation. Select editable masonry/concrete ratios; ready-mix and site-mix ingredients are alternatives. Private quotation rates require a stated unit, specification and tax basis. Public pitch demos show quantities without prices.',
+  ],
+  [
+    'Demonstrate now',
+    'Measured foundations',
+    'Choose Foundation in Floors. Measure an excavation and inspect its depth, then use Add concrete for the filled design. Excavation and concrete volumes are separate; overlapping concrete counts once. Review a UBP / Premix reference or a site-mix ratio and an engineer’s rebar schedule. This is quantity planning, not foundation approval.',
+  ],
+  [
+    'Demonstrate now',
+    'Sourced catalogue examples',
+    'Try Espace Maison toilet, sink, bidet, garden sofa, PVC pipe and conduit examples alongside Resiglas tanks. Each has paired 2D/3D dimensions and a source note. Images and models are illustrative; quote-required items are not free. Confirm availability and specifications with the supplier; there is no live inventory feed.',
   ],
   [
     'Demonstrate now',
@@ -119,7 +134,7 @@ export const CAPABILITIES = [
   [
     'Demonstrate now',
     'Guided design and MCP',
-    'Create measured guided drafts and review them before applying. MCP supports reference data and draft tools. It cannot order, publish products or operate a customer project autonomously.',
+    'Create measured guided drafts and review them before applying. MCP supports bounded reference, quantity-estimate and draft tools, including materials and foundations. It cannot order, publish products or operate a customer project autonomously.',
   ],
   [
     'Configured access',
@@ -339,9 +354,9 @@ export const EXERCISES = [
     time: '15 minutes',
     path: '/demo?view=2d&pitch=1',
     steps: [
-      'Open a practice demo and use Clear only on your practice design. Draw a simple room and check its dimensions.',
+      'Open a practice demo and use Clear only on your practice design. Draw a room, then two sides of an adjoining triangle against an existing wall. Check the new room and shared edge.',
       'Place an item from the catalogue. Inspect dimensions, move it, rotate it and undo once.',
-      'Switch to 3D, then back to 2D. Confirm the same arrangement. Use Fit when the view gets lost.',
+      'Use the visible Floors and Materials controls. Switch to 3D, then back to 2D: confirm the same arrangement. Use Fit when the view gets lost.',
     ],
     pass: 'Explain the physical footprint, undo a mistake and recover the view without losing the plan.',
   },
@@ -350,9 +365,11 @@ export const EXERCISES = [
     time: '20 minutes',
     path: '/demo?view=2d&panel=services&pitch=1',
     steps: [
-      'Choose a floor. Place a toilet, sink and mains tap. Use Select to inspect a fixture.',
-      'Choose Cold water. Tap route points and finish the run using the workspace controls. Inspect the material and elevations.',
-      'Select another floor and confirm the separation. Use Back or 3D to view fixtures, then reopen Plumbing & Electric.',
+      'Choose a floor. Place a toilet, sink and mains tap. Inspect fixture dimensions and schematic connection ports.',
+      'Draw a Cold water route. Select it and attach Start and End to compatible ports. Move a linked fixture and verify that the endpoint follows.',
+      'Set the surveyed drainage connection elevation before linking a drain. Check unresolved warnings and explain why crossing lines are not junctions.',
+      'Enter services from 3D, then choose a building floor: the original view returns. Confirm floor separation; cross-floor risers need their own measured route.',
+      'Place a sourced sink or pipe stock item in the main plan and inspect it in 3D. Explain that stock objects and measured route quantities are separate, not automatically connected parts.',
     ],
     pass: 'Explain centre-line length and supplier size designations, and identify what a plumber must still specify.',
   },
@@ -383,11 +400,35 @@ export const EXERCISES = [
     time: '15 minutes',
     path: '/demo?view=3d&panel=materials&pitch=1',
     steps: [
-      'Open Materials and inspect which walls or roof are included.',
-      'Change one permitted assumption and explain the change in quantity.',
-      'Return to the design and explain the required site, structural and supplier checks.',
+      'Open Materials and inspect the scope. A shared wall counts once for masonry; finish paint is measured by face.',
+      'Switch a loose-volume ratio and explain why ingredient quantities change while the drawn wall size stays the same.',
+      'Compare ready-mix volume with site-mix ingredients. Never add both supply methods, or add a summary to its component quantities.',
+      'Explain that a private quotation needs matching units, pack sizes and tax basis. Unknown or withheld amounts cannot form a complete estimate; public pitch mode hides prices.',
     ],
     pass: 'Distinguish an estimate from a supplier quotation or approved structural design.',
+  },
+  {
+    name: 'Foundation quantities',
+    time: '15 minutes',
+    path: '/demo?view=2d&panel=foundation&pitch=1',
+    steps: [
+      'Use Floors → Foundation. Draw a practice excavation; enter its footprint, depth and datum, then inspect the cutaway in 3D.',
+      'Choose Add concrete and set the fill thickness. Compare excavation, concrete and remaining void; this changes a design stage, not a record of site completion.',
+      'Compare a UBP / Premix ready-mix reference with a site-mix ratio. The supplier confirms grade and quote. Overlapping concrete counts once; Foundation mode replaces the old ground-base estimate.',
+      'Use a fictional engineer-provided reinforcement schedule for rehearsal. Explain whole stock lengths and why overlapping steel schedules are withheld. Choose a building floor to return to the original view.',
+    ],
+    pass: 'Explain what is measured and what requires soil investigation, load design and professional approval.',
+  },
+  {
+    name: 'Paint coats and whole tins',
+    time: '10 minutes',
+    path: '/demo?scene=paint&view=3d&pitch=1',
+    steps: [
+      'Apply a finish to a wall and choose one coat, then two. The phone brush and paint sheet use the same saved setting.',
+      'Explain area × coats ÷ coverage, followed by allowance and whole tins. Two coats double raw demand, not necessarily the number of tins.',
+      'Keep primer separate. Check openings, inside/outside faces and the product datasheet before presenting an estimate.',
+    ],
+    pass: 'Distinguish physical area, raw litres and purchasable packs without claiming a supplier-confirmed order.',
   },
   {
     name: 'A five-minute pitch',
@@ -421,7 +462,7 @@ export const ONBOARDING = [
   ],
   [
     'Validate and inspect',
-    'Fix duplicate SKUs and missing or invalid fields. Review the scaled footprint and image. A format-valid product is not automatically a verified specification or an exact 3D replica.',
+    'Fix duplicate SKUs and missing or invalid fields. Check length, width and height against the source in both 2D and 3D; zoom must not change physical size. Tank capacity, pipe bore, connector positions and installation clearance are separate specifications. A format-valid product is not an exact 3D replica.',
   ],
   [
     'Publish with authorization',
@@ -479,5 +520,5 @@ export function handbook(origin: string) {
     (l) =>
       `- ${absolutePackLink(l.path, origin)} - Room Designer: ${l.market}. ${l.name}${'api' in l ? ' (MCP client endpoint, not a webpage)' : ''}.`,
   ).join('\n');
-  return `# Room Designer employee starter pack\nUpdated ${PACK_DATE}\n\n## Start here\nRole: employee design consultant and software sales representative. Demonstrate useful workflows, gather product data with permission, and bring qualified scopes to Victor. Do not present yourself as a licensed architect, engineer or plumber unless qualified.\n\n1. Open the Demo lab and complete the six exercises below.\n2. Pick one sector and one customer problem.\n3. Check the feature status and run the same demo before the meeting.\n4. Ask discovery questions, demonstrate one task, and agree a pilot.\n5. Send an approved recap and hand over the scope.\n\nPublic pitches and /demo are for exploration. Studio and onboarding may ask for access. Obtain approved employee access from Victor, never put access codes in a prospect email. Practice in /demo. Use only fictional rehearsal details. This pack contains templates, not a live CRM or permission to contact anyone.\n\n## Clickable link directory\n${links}\n- ${MEETING} - Room Designer: all prospect markets, book a one-hour meeting.\n\n## What may be promised\n${CAPABILITIES.map(([s, t, b]) => `### ${t} (${s})\n${b}`).join('\n\n')}\n\n## Demo lab\n${EXERCISES.map((e) => `### ${e.name} (${e.time})\n${absolutePackLink(e.path, origin)}\n${e.steps.map((s, i) => `${i + 1}. ${s}`).join('\n')}\nPass check: ${e.pass}`).join('\n\n')}\n\n## Sector map\n${MARKETS.map((m) => `### ${m.name}\nBuyer: ${m.buyer}.\nProblem: ${m.problem}\nStarting offer: ${m.offer}.\nAsk: ${m.ask}\nDemo: ${absolutePackLink(m.demo, origin)}`).join('\n\n')}\n\n## Commercial options\n${OFFERS.map((o) => `### ${o.name}\nScope: ${o.scope}\nInstallation work: ${o.work}\nAcceptance: ${o.acceptance}`).join('\n\n')}\n\nDiscuss budget openly and phase the scope. A budget discussion is not a promise to deliver any requested system at any budget. Separate setup/installation, catalogue and model work, integrations, website work, hosting and maintenance, support/training, third-party services and later upgrades in a written proposal. Victor approves commercial terms. Do not invent prices, commissions, savings or delivery dates.\n\n## Several companies, one customer project\nExample: a customer chooses furniture, paint and bathroom fixtures while a designer maintains the brief and installers review the work. Treat this as a proposed coordinated service. Agree a project owner and revision ID, supplier ownership, customer consent, permitted viewers/editors, a choice-freeze policy and who releases each order. Confirm stock, substitutions and accepted delivery dates with each supplier. Test failures and duplicate prevention. Do not claim live co-editing or universal ERP integration.\n\n## Product onboarding\n${ONBOARDING.map(([t, b], i) => `${i + 1}. ${t}: ${b}`).join('\n\n')}\n\n## Outreach templates\nReview with Victor, replace every placeholder and follow the company’s contact policy before sending. No outreach is sent by this pack.\n\n${SCRIPTS.map((s) => `### ${s.name}\n${s.text.split('[meeting link]').join(MEETING).replace('[plumbing pitch link]', absolutePackLink('/pitch/plumbing', origin))}`).join('\n\n')}\n\n## Discovery and handover\n${DISCOVERY.map((x) => `- ${x}: [complete in your approved CRM]`).join('\n')}\n- Record contact permission and agreed next action in the approved company system.\n- Keep identity documents, customer plans, payment data and credentials out of public demonstrations.\n- Hand over: agreed need, observed demo, data sample location, product rights, assumptions, exclusions, success check, owner and next date.\n- Pipeline: researched, contact authorized, contacted, discovery, demo, scoped, proposal, approved pilot, implementation, review. Keep next owner/date at every step.\n\n## Objections\n- Already have a website: propose one embedded task; check the platform and brand requirements.\n- Only need furniture: scope that catalogue and 2D first, with optional 3D.\n- Small budget: choose one measurable pilot; defer integrations and bespoke models.\n- Want exact product appearance: verify manufacturer models, dimensions and usage rights; generic envelopes are not exact replicas.\n- Want automatic ordering: map the existing system, authorization, retries, substitutions and test environment before committing.\n- Want clients and staff on one project: agree identity, permissions and revisions; collaboration is a separate acceptance scope.\n\n## Readiness check\nAn employee is ready for supervised pitches after a colleague observes: a five-minute sector demo, accurate explanation of feature status, recovery from a tool/view mistake, a catalogue validation rehearsal, a useful discovery summary and a clear meeting request.\n`;
+  return `# Room Designer employee starter pack\nUpdated ${PACK_DATE}\n\n## Start here\nRole: employee design consultant and software sales representative. Demonstrate useful workflows, gather product data with permission, and bring qualified scopes to Victor. Do not present yourself as a licensed architect, engineer or plumber unless qualified.\n\n1. Open the Demo lab and complete the ${EXERCISES.length} exercises below.\n2. Pick one sector and one customer problem.\n3. Check the feature status and run the same demo before the meeting.\n4. Ask discovery questions, demonstrate one task, and agree a pilot.\n5. Send an approved recap and hand over the scope.\n\nPublic pitches and /demo are for exploration. Studio and onboarding may ask for access. Obtain approved employee access from Victor, never put access codes in a prospect email. Practice in /demo. Use only fictional rehearsal details. This pack contains templates, not a live CRM or permission to contact anyone.\n\n## Clickable link directory\n${links}\n- ${MEETING} - Room Designer: all prospect markets, book a one-hour meeting.\n\n## What may be promised\n${CAPABILITIES.map(([s, t, b]) => `### ${t} (${s})\n${b}`).join('\n\n')}\n\n## Demo lab\n${EXERCISES.map((e) => `### ${e.name} (${e.time})\n${absolutePackLink(e.path, origin)}\n${e.steps.map((s, i) => `${i + 1}. ${s}`).join('\n')}\nPass check: ${e.pass}`).join('\n\n')}\n\n## Sector map\n${MARKETS.map((m) => `### ${m.name}\nBuyer: ${m.buyer}.\nProblem: ${m.problem}\nStarting offer: ${m.offer}.\nAsk: ${m.ask}\nDemo: ${absolutePackLink(m.demo, origin)}`).join('\n\n')}\n\n## Commercial options\n${OFFERS.map((o) => `### ${o.name}\nScope: ${o.scope}\nInstallation work: ${o.work}\nAcceptance: ${o.acceptance}`).join('\n\n')}\n\nDiscuss budget openly and phase the scope. A budget discussion is not a promise to deliver any requested system at any budget. Separate setup/installation, catalogue and model work, integrations, website work, hosting and maintenance, support/training, third-party services and later upgrades in a written proposal. Victor approves commercial terms. Do not invent prices, commissions, savings or delivery dates.\n\n## Several companies, one customer project\nExample: a customer chooses furniture, paint and bathroom fixtures while a designer maintains the brief and installers review the work. Treat this as a proposed coordinated service. Agree a project owner and revision ID, supplier ownership, customer consent, permitted viewers/editors, a choice-freeze policy and who releases each order. Confirm stock, substitutions and accepted delivery dates with each supplier. Test failures and duplicate prevention. Do not claim live co-editing or universal ERP integration.\n\n## Product onboarding\n${ONBOARDING.map(([t, b], i) => `${i + 1}. ${t}: ${b}`).join('\n\n')}\n\n## Outreach templates\nReview with Victor, replace every placeholder and follow the company’s contact policy before sending. No outreach is sent by this pack.\n\n${SCRIPTS.map((s) => `### ${s.name}\n${s.text.split('[meeting link]').join(MEETING).replace('[plumbing pitch link]', absolutePackLink('/pitch/plumbing', origin))}`).join('\n\n')}\n\n## Discovery and handover\n${DISCOVERY.map((x) => `- ${x}: [complete in your approved CRM]`).join('\n')}\n- Record contact permission and agreed next action in the approved company system.\n- Keep identity documents, customer plans, payment data and credentials out of public demonstrations.\n- Hand over: agreed need, observed demo, data sample location, product rights, assumptions, exclusions, success check, owner and next date.\n- Pipeline: researched, contact authorized, contacted, discovery, demo, scoped, proposal, approved pilot, implementation, review. Keep next owner/date at every step.\n\n## Objections\n- Already have a website: propose one embedded task; check the platform and brand requirements.\n- Only need furniture: scope that catalogue and 2D first, with optional 3D.\n- Small budget: choose one measurable pilot; defer integrations and bespoke models.\n- Want exact product appearance: verify manufacturer models, dimensions and usage rights; generic envelopes are not exact replicas.\n- Want automatic ordering: map the existing system, authorization, retries, substitutions and test environment before committing.\n- Want clients and staff on one project: agree identity, permissions and revisions; collaboration is a separate acceptance scope.\n\n## Readiness check\nAn employee is ready for supervised pitches after a colleague observes: a five-minute sector demo, accurate explanation of feature status, recovery from a tool/view mistake, a catalogue validation rehearsal, a useful discovery summary and a clear meeting request.\n`;
 }

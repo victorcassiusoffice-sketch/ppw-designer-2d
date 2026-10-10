@@ -1,8 +1,6 @@
-/** Commit one wall segment, or replace only this run with a newly closed room. */
+/** Commit a wall segment and any rooms it closes against the floor's wall graph. */
 import { previewWallBuild, type WallBuildChain, type WallBuildFailure, type WallBuildPreview } from '../designer/wallBuildGesture';
 import { isOutdoorRoom, isRoofRoom, roomLevelId } from '../designer/levels';
-import { isDrawnPolygon } from '../designer/roomLayout';
-import { nextRoomName } from '../designer/roomNaming';
 import { runToFreeWalls } from '../designer/freeWalls';
 import { beginDrawTransaction, endDrawTransaction, isDrawTransactionActive } from '../store/historyStore';
 import { usePropertyStore } from '../store/propertyStore';
@@ -20,20 +18,12 @@ export function commitWallBuild(draft: WallBuildPreview, chain: WallBuildChain |
   if (isDrawTransactionActive()) return { ok: false, reason: 'drawing-in-progress', message: 'Finish the plan wall pen before drawing in 3D.' };
   beginDrawTransaction(preview.closesRoom ? 'close walls into room' : 'build wall');
   try {
-    if (preview.closesRoom && preview.roomPolygon && chain) {
-      const active = store.property.rooms.find((room) => room.id === store.property.activeRoomId
-        && roomLevelId(room) === preview.levelId && !isOutdoorRoom(room) && !isRoofRoom(room) && !isDrawnPolygon(room.polygon));
-      for (const id of chain.wallIds) store.removeFreeWall(id);
-      const roomId = active ? active.id : store.addRoom({
-        name: nextRoomName(store.property.rooms.filter((room) => isDrawnPolygon(room.polygon))), polygon: preview.roomPolygon,
-      });
-      if (active) store.setRoomPolygon(active.id, preview.roomPolygon);
-      store.selectItem(null);
-      store.syncRoof();
-      return { ok: true, roomId, preview, chain: null };
-    }
     const ids = store.addFreeWalls(runToFreeWalls([preview.a, preview.b], preview.levelId));
     store.selectItem(null);
+    const next = usePropertyStore.getState().property;
+    const formed = next.rooms.find(room => roomLevelId(room) === preview.levelId && !isOutdoorRoom(room) && !isRoofRoom(room)
+      && room.polygon.length >= 3 && store.property.rooms.find(old => old.id === room.id)?.polygon !== room.polygon);
+    if (formed) return { ok: true, roomId: formed.id, preview: { ...preview, closesRoom: true, roomPolygon: formed.polygon }, chain: null };
     return { ok: true, preview, chain: {
       propertyId: store.property.id, levelId: preview.levelId,
       vertices: [...(chain?.vertices ?? [preview.a]), preview.b], wallIds: [...(chain?.wallIds ?? []), ...ids],

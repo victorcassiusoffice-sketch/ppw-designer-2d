@@ -20,7 +20,7 @@ import { CATEGORY_LABELS, thumbnailFor } from '../data/products';
 import { findFloorMaterialById } from '../data/floorMaterials';
 import { formatCurrency } from '../lib/currency';
 import { useState } from 'react';
-import { hasQuotedProducts, QUOTED_PRODUCTS_NOTICE } from '../lib/quotedProducts';
+import { hasQuotedProducts, quoteAwareAmount, QUOTED_PRODUCTS_NOTICE } from '../lib/quotedProducts';
 
 export default function CartPage() {
   const cart = useCart();
@@ -306,7 +306,7 @@ export default function CartPage() {
             <dl className="mt-3 space-y-1.5 text-xs">
               {(cart.floorLines.length > 0 || cart.wallPaintLines.length > 0 || cart.claddingLines.length > 0) && (
                 <div className="flex justify-between text-ppw-slate">
-                  <dt>Products</dt>
+                  <dt>{needsSupplierPrice ? 'Priced products' : 'Products'}</dt>
                   <dd className="text-ppw-ink">
                     {formatCurrency(cart.subtotal - cart.floorSubtotal - cart.wallPaintSubtotal - cart.claddingSubtotal, currency)}
                   </dd>
@@ -335,9 +335,9 @@ export default function CartPage() {
                 </div>
               )}
               <div className="flex justify-between text-ppw-slate">
-                <dt>Subtotal</dt>
+                <dt>{needsSupplierPrice ? 'Priced subtotal' : 'Subtotal'}</dt>
                 <dd className="text-ppw-ink">
-                  {formatCurrency(cart.subtotal, currency)}
+                  {quoteAwareAmount(cart, cart.subtotal, formatCurrency(cart.subtotal, currency))}
                 </dd>
               </div>
               <div className="flex justify-between text-ppw-slate">
@@ -350,16 +350,16 @@ export default function CartPage() {
               </div>
             </dl>
             <div className="mt-4 flex items-baseline justify-between border-t border-ppw-stone pt-3">
-              <span className="text-sm font-bold text-ppw-ink">Total (est.)</span>
+              <span className="text-sm font-bold text-ppw-ink">{needsSupplierPrice ? 'Estimate incomplete' : 'Total (est.)'}</span>
               <span className="text-lg font-bold text-ppw-ink">
-                {formatCurrency(cart.subtotal, currency)}
+                {quoteAwareAmount(cart, cart.subtotal, formatCurrency(cart.subtotal, currency))}
               </span>
             </div>
             <p className="mt-1 text-[10px] text-ppw-slate">
               ≈{' '}
               {(['USD', 'MUR', 'EUR', 'GBP'] as const)
                 .filter((c) => c !== currency)
-                .map((c) => formatCurrency(cart.subtotalByCurrency[c], c))
+                .map((c) => quoteAwareAmount(cart, cart.subtotalByCurrency[c], formatCurrency(cart.subtotalByCurrency[c], c)))
                 .join(' · ')}
             </p>
 

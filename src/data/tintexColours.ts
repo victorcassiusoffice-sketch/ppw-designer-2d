@@ -10,7 +10,7 @@
  * table) — `hexOrigin: 'representative'`, and the panel says so.
  */
 import type { PaintColour } from './wallPaints';
-import { TINTEX_BRAND_ID } from './tintexPaints';
+import { TINTEX_BRAND_ID } from './tintexPaints.js';
 
 export const RAL_SOURCE_URL = 'https://en.wikipedia.org/wiki/List_of_RAL_colours';
 export const TINTEX_COLOUR_DISCLAIMER =

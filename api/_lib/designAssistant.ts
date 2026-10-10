@@ -2,6 +2,7 @@ import { verifyToken } from '@clerk/backend';
 import { z } from 'zod';
 import seed from '../../src/data/products.json' with { type: 'json' };
 import { MAURITIUS_OUTDOOR_PRODUCTS } from '../../src/data/mauritiusOutdoor.js';
+import { SERVICE_PRODUCTS } from '../../src/data/serviceProducts.js';
 import {
   createGuidedDesign,
   DesignBriefSchema,
@@ -32,7 +33,7 @@ const header = (req: MinReq, key: string) => {
 
 /** Public reference catalogue, not inventory, customer records or an order feed. */
 export function designCatalog(): DesignCatalogProduct[] {
-  return [...seed.products, ...MAURITIUS_OUTDOOR_PRODUCTS]
+  return [...seed.products, ...MAURITIUS_OUTDOOR_PRODUCTS, ...SERVICE_PRODUCTS]
     .filter(
       (p) => p.dimensions_cm.length > 0 && p.dimensions_cm.width > 0 && p.dimensions_cm.height > 0,
     )

@@ -50,7 +50,7 @@ describe('interactive pitch chapters', () => {
   it('opens the working designer by default and preserves it while browsing actual app captures', () => {
     renderDeveloper(); chapter(1);
     const frame = host.querySelector('iframe')!;
-    expect(frame.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d');
+    expect(frame.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d&pitch=1');
     expect(button('Live designer').getAttribute('aria-pressed')).toBe('true');
     click(button('App screenshots'));
     expect(host.querySelector('iframe')).toBe(frame);
@@ -81,7 +81,7 @@ describe('interactive pitch chapters', () => {
     expect(host.querySelector('svg')).toBeNull();
     expect(host.textContent).toContain('not data extracted from this screenshot');
     click(button('Try these tools'));
-    expect(host.querySelector('iframe')?.getAttribute('src')).toBe('/embed/designer?scene=home&view=2d');
+    expect(host.querySelector('iframe')?.getAttribute('src')).toBe('/embed/designer?scene=home&view=2d&pitch=1');
     expect(button('2D · to scale').getAttribute('aria-pressed')).toBe('true');
   });
   it('offers the live designer when a capture fails instead of showing a fabricated image', () => {
@@ -110,10 +110,10 @@ describe('interactive pitch chapters', () => {
     renderDeveloper(); chapter(1); click(button('Live designer'));
     const frame = host.querySelector('iframe')!;
     const post = vi.spyOn(frame.contentWindow!, 'postMessage');
-    expect(frame.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d');
+    expect(frame.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d&pitch=1');
     click(button('2D · to scale'));
     expect(host.querySelector('iframe')).toBe(frame);
-    expect(frame.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d');
+    expect(frame.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d&pitch=1');
     expect(post).toHaveBeenLastCalledWith({ type: 'ppw:designer-view', view: '2d' }, window.location.origin);
     click(button('Premium 3D'));
     expect(host.querySelector('iframe')).toBe(frame);
@@ -123,10 +123,18 @@ describe('interactive pitch chapters', () => {
     renderMerchant(); chapter(1); click(button('Furniture'));
     expect(host.textContent).toContain('Give every product a sense of scale');
     click(button('Try a storefront'));
-    expect(host.querySelector('iframe')?.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d');
+    expect(host.querySelector('iframe')?.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d&pitch=1');
     expect(host.querySelector<HTMLSelectElement>('select')?.value).toBe('furniture');
     click(button('Connected shop'));
     expect(host.querySelector('a[href="/products"]')?.textContent).toContain('Browse the product shop');
+  });
+  it('opens linked services from the merchant category with quantities-only pitch mode', () => {
+    renderMerchant(); chapter(1); click(button('Plumbing & Electric'));
+    expect(host.textContent).toContain('endpoints that follow connected fixtures');
+    expect(host.textContent).toContain('published envelope in 2D and 3D');
+    click(button('Try a storefront'));
+    expect(host.querySelector('iframe')?.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d&panel=services&pitch=1');
+    expect(host.querySelector<HTMLSelectElement>('select')?.value).toBe('services');
   });
   it('keeps both pitches outer view pills in sync with controls inside the embedded designer', () => {
     for (const [render, index] of [[renderDeveloper, 1], [renderMerchant, 2]] as const) {
@@ -155,7 +163,7 @@ describe('interactive pitch chapters', () => {
       render();
       expect(host.querySelector(`a[href="${MEETING_URL}"]`)?.textContent).toContain('Meet Victor');
       expect(host.querySelector('a[href="/studio"]')).not.toBeNull();
-      expect(host.querySelector('a[href="/demo"]')).not.toBeNull();
+      expect(host.querySelector('a[href="/demo?pitch=1"]')).not.toBeNull();
       expect(document.title).toContain('Experience | PPW Studio');
       expect(host.textContent).not.toMatch(/\bVic\b/);
       expect(host.textContent).not.toMatch(PRICE);
@@ -166,12 +174,12 @@ describe('interactive pitch chapters', () => {
     expect(host.textContent).toContain('2D plan + Premium 3D · live');
     expect(host.textContent).toContain('integration required');
     chapter(4);
-    for (const line of ['2D plan and Premium 3D on the same plan', 'Colour-true paint', 'TintEX and Sofap ranges with real tin prices', 'plain-English energy meter', 'Duraco water tank', 'Courts range and the Cap Tamarin two-bedroom scene', 'Read-only demo: nothing is ordered from the demo']) expect(host.textContent).toContain(line);
+    for (const line of ['2D plan and Premium 3D on the same plan', 'TintEX and Sofap paint in both views', 'choose coats', 'not structural design', 'endpoints follow connected fixtures', 'plain-English energy meter', 'Duraco water tank', 'Courts range and the Cap Tamarin two-bedroom scene', 'Read-only demo: nothing is ordered from the demo']) expect(host.textContent).toContain(line);
     expect(host.textContent).toContain('Workflow preview / integration required');
     expect(host.textContent).toContain('E-signature, secure identity and finance providers');
     expect(host.textContent).not.toMatch(PRICE);
     renderMerchant(); chapter(1);
-    click(button('Paint')); expect(host.textContent).toContain('TintEX and Sofap ranges');
+    click(button('Paint')); expect(host.textContent).toContain('Pick from TintEX and Sofap');
     click(button('Garden')); expect(host.textContent).toContain('Duraco water tank');
     click(button('Solar')); expect(host.textContent).toContain('plain-English energy meter');
     expect(host.textContent).not.toMatch(PRICE);
@@ -186,10 +194,10 @@ describe('client overlays via ?client=', () => {
     expect(host.querySelector('.pitch-hero-art figcaption')?.textContent).toContain('concept imagery');
     expect(host.textContent).not.toMatch(PRICE);
     chapter(1);
-    expect(host.querySelector('iframe')?.getAttribute('src')).toBe('/embed/designer?scene=captamarin&view=3d');
-    expect(host.querySelector('.pitch-live-footer a')?.getAttribute('href')).toBe('/demo?scene=captamarin&view=3d');
+    expect(host.querySelector('iframe')?.getAttribute('src')).toBe('/embed/designer?scene=captamarin&view=3d&pitch=1');
+    expect(host.querySelector('.pitch-live-footer a')?.getAttribute('href')).toBe('/demo?scene=captamarin&view=3d&pitch=1');
     click(button('2D · to scale'));
-    expect(host.querySelector('.pitch-live-footer a')?.getAttribute('href')).toBe('/demo?scene=captamarin&view=2d');
+    expect(host.querySelector('.pitch-live-footer a')?.getAttribute('href')).toBe('/demo?scene=captamarin&view=2d&pitch=1');
     chapter(4);
     const models = host.querySelector('[data-testid="operating-models"]')!;
     expect(models.textContent).toContain('Managed by PPW');
@@ -203,7 +211,7 @@ describe('client overlays via ?client=', () => {
     visit('/pitch/developers?client=someone-else'); renderDeveloper();
     expect(host.querySelector('h1')?.textContent).toContain('make their own');
     chapter(1);
-    expect(host.querySelector('iframe')?.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d');
+    expect(host.querySelector('iframe')?.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d&pitch=1');
     chapter(4);
     expect(host.querySelector('[data-testid="operating-models"]')).toBeNull();
   });
@@ -221,7 +229,7 @@ describe('client overlays via ?client=', () => {
     chapter(2);
     expect(button('Standalone studio').getAttribute('aria-pressed')).toBe('true');
     expect(host.textContent).toContain('Later, locked phase');
-    expect(host.querySelector('iframe')?.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d');
+    expect(host.querySelector('iframe')?.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d&pitch=1');
   });
   it('keeps the default merchant page for an unknown client', () => {
     visit('/pitch/merchants?client=nobody'); renderMerchant();

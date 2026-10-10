@@ -2,20 +2,22 @@
  * P3-2 — room estimate panel (beta, flag-gated via ?paint=1).
  *
  * Two zones in one panel:
- *   • Paint    — wall area (wallStore) → litres + paint SKU + MUR price.
+ *   • Paint    — actual property painted faces → litres → purchasable tins.
  *   • Flooring — floor area (active room polygon) → tiles/rolls + MUR price.
  *
- * Both use the live calculator engines (the same maths behind /api/calc/paint
- * and /api/calc/floor). Self-contained fixed-position card so it can't disturb
+ * Paint shares the cart and /api/calc/paint mode=property engine. Flooring
+ * shows placed material plus an explicitly hypothetical whole-room calculator.
+ * Self-contained fixed-position card so it can't disturb
  * the locked Konva render core. OFF by default — see `paintEstimateFlag.ts`.
  * Visual sign-off + the product decision to make it default-on are [VIC-VERIFY].
  */
 import { useMemo, useState } from 'react';
-import { useWallStore } from '../store/wallStore';
 import { useDesignStore } from '../store/designStore';
 import { polygonArea } from '../lib/geometry';
-import { calculatePaint } from '../lib/paintCalculator';
-import { ECO_PAINT_PALETTE } from '../data/paintPalette';
+import { deriveWallPaintOrders } from '../designer/wallPaintCalc';
+import { DEFAULT_WALL_HEIGHT_M } from '../data/wallPaints';
+import { PaintCoatsControl } from './PaintCoatsControl';
+import './wallSurfaceOptions.css';
 import { calculateFloor } from '../lib/floorCalculator';
 import { FLOOR_MATERIALS, findFloorMaterialById } from '../data/floorMaterials';
 // Per-tile floors laid with the Floor tool price by TILES TO ORDER, not by area (Vic 2026-08-28).
@@ -25,55 +27,20 @@ import { usePropertyStore } from '../store/propertyStore';
 const fmtMur = (n: number) => `MUR ${Math.round(n).toLocaleString('en-MU')}`;
 
 function PaintSection() {
-  const walls = useWallStore((s) => s.walls);
-  const [paintId, setPaintId] = useState<string>(ECO_PAINT_PALETTE[0]?.id ?? '');
-  const [coats, setCoats] = useState<number>(2);
-  const result = useMemo(
-    () => calculatePaint({ walls, paintId: paintId || undefined, coats }),
-    [walls, paintId, coats],
-  );
+  const property = usePropertyStore(s => s.property);
+  const orders = useMemo(() => deriveWallPaintOrders(property, property.wallHeightM ?? DEFAULT_WALL_HEIGHT_M), [property]);
 
   return (
     <section data-testid="paint-section">
-      <h3 className="text-[10px] font-bold uppercase tracking-wide text-ppw-slate">Wall colour</h3>
-      {walls.length === 0 ? (
-        <p className="text-[11px] text-ppw-slate">Draw walls to estimate coverage.</p>
-      ) : (
-        <>
-          <p className="text-[11px] text-ppw-slate">
-            Wall area: <span className="font-semibold text-ppw-ink">{result.total_area_m2.toFixed(1)} m²</span>
-          </p>
-          <div className="mt-1 flex flex-wrap gap-1">
-            {ECO_PAINT_PALETTE.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                title={p.name}
-                aria-label={p.name}
-                aria-pressed={paintId === p.id}
-                onClick={() => setPaintId(p.id)}
-                className={`h-6 w-6 rounded-full border-2 ${paintId === p.id ? 'border-ppw-teal' : 'border-ppw-stone'}`}
-                style={{ background: p.hex }}
-              />
-            ))}
-          </div>
-          <label className="mt-2 block text-[10px] font-semibold uppercase text-ppw-slate">Coats: {coats}</label>
-          <input
-            type="range" min={1} max={3} value={coats}
-            onChange={(e) => setCoats(Number(e.target.value))}
-            className="w-full" data-testid="paint-coats"
-          />
-          <p className="mt-1 text-[11px]">
-            Litres needed: <span className="font-semibold" data-testid="paint-litres">{result.litres_total} L</span>
-          </p>
-          {result.paint && result.total_price_mur !== undefined && (
-            <p className="text-[11px]">
-              {result.paint.name} ·{' '}
-              <span className="font-bold text-ppw-teal" data-testid="paint-price">{fmtMur(result.total_price_mur)}</span>
-            </p>
-          )}
-        </>
-      )}
+      <h3 className="text-[10px] font-bold uppercase tracking-wide text-ppw-slate">Painted walls · whole building</h3>
+      <PaintCoatsControl />
+      {orders.length === 0 ? <p className="text-[11px] text-ppw-slate">Apply a paint to a wall to see the same whole-tin estimate as your cart.</p>
+        : orders.map(order => <div className="mt-2 text-[11px]" key={order.key}>
+          <strong>{order.paint.name}{order.isPrimer ? ' · primer' : ''}</strong>
+          <p>{order.areaM2.toFixed(1)} m² · {order.coats} coat{order.coats === 1 ? '' : 's'} · {order.wastePct}% extra</p>
+          <p><span data-testid="paint-litres">{order.litres.toFixed(1)} L</span> needed → {order.fill.tins.map(tin => `${tin.count} × ${tin.sizeL} L`).join(' + ')}</p>
+          <strong data-testid="paint-price">{fmtMur(order.fill.totalMur)}</strong>
+        </div>)}
     </section>
   );
 }

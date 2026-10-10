@@ -32,7 +32,7 @@ import { useCurrencyStore } from '../store/currencyStore';
 import { CATEGORY_LABELS } from '../data/products';
 import { formatCurrency as formatMoney } from '../lib/currency';
 import { isPitchEmbed } from '../demo/pitchEmbed';
-import { hasQuotedProducts } from '../lib/quotedProducts';
+import { hasQuotedProducts, quoteAwareAmount } from '../lib/quotedProducts';
 
 // Chrome recipe (toolbar contract 2026-08-29) — same strings as the
 // DetailsPanel so the two surfaces are one control set.
@@ -100,6 +100,7 @@ export function CartStrip() {
 
   const altCurrency = currency === 'MUR' ? 'USD' : 'MUR';
   const money = (amount: number, cur = currency) => isPitchEmbed() ? '' : formatMoney(amount, cur);
+  const summaryMoney = (amount: number, cur = currency) => isPitchEmbed() ? '' : quoteAwareAmount(cart, amount, formatMoney(amount, cur));
 
   const body = (
     <div className="flex w-full flex-col">
@@ -134,10 +135,10 @@ export function CartStrip() {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm font-semibold tabular-nums text-ppw-inkDeep">
-            {money(cart.subtotal, currency)}
+            {summaryMoney(cart.subtotal, currency)}
           </span>
           <span className="hidden sm:inline text-[11px] font-medium tabular-nums text-ppw-charcoal">
-            ~ {money(cart.subtotalByCurrency[altCurrency], altCurrency)}
+            ~ {summaryMoney(cart.subtotalByCurrency[altCurrency], altCurrency)}
           </span>
           <Chevron open={expanded} />
         </div>
@@ -256,15 +257,15 @@ export function CartStrip() {
           {/* Subtotal footer — outside the scroller, always on screen. */}
           <div className="border-t-2 border-ppw-inkDeep">
             <div className="flex items-baseline justify-end gap-4 py-1.5">
-              <span className={CAPTION}>Subtotal</span>
+              <span className={CAPTION}>{hasQuotedProducts(cart) ? 'Estimate incomplete' : 'Subtotal'}</span>
               <span className="text-[13px] font-bold tabular-nums text-ppw-inkDeep">
-                {money(cart.subtotal, currency)}
+                {summaryMoney(cart.subtotal, currency)}
               </span>
             </div>
             <div className="flex items-baseline justify-end gap-4 py-0.5">
               <span className={CAPTION}>~ {altCurrency}</span>
               <span className="text-[12px] font-medium tabular-nums text-ppw-charcoal">
-                {money(cart.subtotalByCurrency[altCurrency], altCurrency)}
+                {summaryMoney(cart.subtotalByCurrency[altCurrency], altCurrency)}
               </span>
             </div>
           </div>
@@ -307,7 +308,7 @@ export function CartStrip() {
         type="button"
         data-testid="cart-pill"
         onClick={() => setMobileOpen(true)}
-        aria-label={isPitchEmbed() ? `Open cart — ${orderUnits} units` : `Open cart — ${orderUnits} units, ${formatMoney(cart.subtotal, currency)}`}
+        aria-label={isPitchEmbed() ? `Open cart — ${orderUnits} units` : `Open cart — ${orderUnits} units, ${summaryMoney(cart.subtotal, currency)}`}
         aria-expanded={mobileOpen}
         className={`fixed z-30 flex items-center bg-ppw-inkDeep text-[12px] font-semibold text-ppw-paper transition duration-[120ms] ease-out motion-reduce:transition-none hover:brightness-110 focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] max-md:right-0 max-md:min-h-11 max-md:min-w-11 max-md:gap-1.5 max-md:rounded-l-2xl max-md:rounded-r-none max-md:px-2.5 max-md:py-1.5 max-md:shadow-[0_2px_10px_rgba(42,41,38,0.12)] md:right-4 md:min-h-[40px] md:gap-2 md:rounded-full md:px-4 md:py-2 md:shadow-[0_12px_32px_rgba(42,41,38,0.18)] ${
           mobileOpen ? 'hidden' : ''
@@ -326,7 +327,7 @@ export function CartStrip() {
         <span className="rounded-full bg-ppw-paper px-1.5 py-[1px] text-[11px] font-bold tabular-nums text-ppw-inkDeep">
           {orderUnits}
         </span>
-        <span className="tabular-nums">{money(cart.subtotal, currency)}</span>
+        <span className="tabular-nums">{summaryMoney(cart.subtotal, currency)}</span>
       </button>
 
       {/* Expanded state: the SAME cart body, as a bottom sheet. */}

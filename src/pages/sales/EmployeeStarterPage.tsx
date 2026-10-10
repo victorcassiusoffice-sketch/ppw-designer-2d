@@ -88,7 +88,7 @@ export default function EmployeeStarterPage() {
             <ol className="sales-steps">
               <li>
                 <strong>Practise</strong>
-                <span>Complete six short exercises and recover from a mistake.</span>
+                <span>Complete {EXERCISES.length} short exercises and recover from a mistake.</span>
               </li>
               <li>
                 <strong>Choose a market</strong>

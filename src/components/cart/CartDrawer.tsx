@@ -27,7 +27,7 @@ import { useCartUIStore } from '../../store/cartUIStore';
 import { formatCurrency } from '../../lib/currency';
 import { PPW_COMMISSION_RATE, PPW_COMMISSION_PCT_LABEL } from '../../lib/commission';
 import { isShowcaseReadOnly, DEMO_NOTICE } from '../../lib/showcaseSafety';
-import { hasQuotedProducts, QUOTED_PRODUCTS_NOTICE } from '../../lib/quotedProducts';
+import { hasQuotedProducts, quoteAwareAmount, QUOTED_PRODUCTS_NOTICE } from '../../lib/quotedProducts';
 
 const MARKETPLACE_FEE_PCT = PPW_COMMISSION_RATE;
 const PPW_MARKETPLACE = 'Peak Performance Wellness Marketplace';
@@ -144,7 +144,7 @@ export function CartDrawer() {
                       {g.merchant}
                     </p>
                     <p className="text-[11px] font-medium text-[#0E0E10]">
-                      {g.lines.every(line => line.product.price_on_request) ? 'Price on request' : formatCurrency(g.subtotal, currency)}
+                      {quoteAwareAmount(g, g.subtotal, formatCurrency(g.subtotal, currency))}
                     </p>
                   </div>
                   <ul className="mt-1.5 space-y-1.5">
@@ -263,9 +263,9 @@ export function CartDrawer() {
         {!isEmpty && (
           <div className="border-t border-[#C0A67E]/30 bg-white px-4 py-3 text-xs">
             <div className="flex justify-between">
-              <span className="text-[#0E0E10]/70">Subtotal</span>
+              <span className="text-[#0E0E10]/70">{needsSupplierPrice ? 'Priced subtotal' : 'Subtotal'}</span>
               <span className="tabular-nums font-medium text-[#0E0E10]">
-                {formatCurrency(cart.subtotal, currency)}
+                {quoteAwareAmount(cart, cart.subtotal, formatCurrency(cart.subtotal, currency))}
               </span>
             </div>
             <div className="mt-1 flex justify-between">
@@ -274,16 +274,16 @@ export function CartDrawer() {
                 className="tabular-nums text-[#0E0E10]/80"
                 data-testid="marketplace-fee"
               >
-                {formatCurrency(marketplaceFee, currency)}
+                {needsSupplierPrice ? 'Pending supplier quote' : formatCurrency(marketplaceFee, currency)}
               </span>
             </div>
             <div className="mt-2 flex justify-between border-t border-[#C0A67E]/20 pt-2 text-sm">
-              <span className="font-semibold text-[#0E0E10]">Total</span>
+              <span className="font-semibold text-[#0E0E10]">{needsSupplierPrice ? 'Estimate incomplete' : 'Total'}</span>
               <span
                 className="tabular-nums font-bold text-[#0E0E10]"
                 data-testid="cart-drawer-total"
               >
-                {formatCurrency(total, currency)}
+                {quoteAwareAmount(cart, total, formatCurrency(total, currency))}
               </span>
             </div>
             <p className="mt-2 text-[10px] leading-snug text-[#0E0E10]/60">

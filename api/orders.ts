@@ -29,6 +29,7 @@
 import { eq, desc, inArray } from 'drizzle-orm';
 import { rejectShowcaseTransaction } from './_lib/showcaseSafety.js';
 import { handlePitchEnquiry } from './_lib/pitchEnquiry.js';
+import { validateSnapshotFoundation } from './_lib/designSnapshotValidation.js';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { withSentry, type MinReq, type MinRes } from './_lib/sentry.js';
 import { getDb, schema } from './_db/client.js';
@@ -768,6 +769,8 @@ function validateDesignPayload(
   if (!p.property || typeof p.property !== 'object') {
     return { ok: false, error: 'property required (room layout snapshot).' };
   }
+  const foundationError = validateSnapshotFoundation(p.property);
+  if (foundationError) return { ok: false, error: foundationError };
   if (p.userId !== undefined && typeof p.userId !== 'string') {
     return { ok: false, error: 'userId must be a string.' };
   }

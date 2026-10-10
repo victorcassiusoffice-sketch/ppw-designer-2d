@@ -110,6 +110,15 @@ export interface Price {
   currency: Currency;
 }
 
+/** A dated public listing, not a live quotation or a reserved stock position. */
+export interface ProductPriceSnapshot extends Price {
+  unit: 'piece' | 'metre' | 'pack';
+  tax: 'included' | 'excluded' | 'unspecified';
+  observedAt: string;
+  sourceUrl: string;
+  availability: 'listed-in-stock' | 'listed-out-of-stock' | 'unverified';
+}
+
 export interface Product {
   /** Stable identifier, kebab-or-numeric. Matches xlsx SKU. */
   id: string;
@@ -121,6 +130,8 @@ export interface Product {
   dimensions_cm: Dimensions;
   weight_kg: number;
   price: Price;
+  /** Public source, date and sale unit for a reference catalogue price. */
+  price_snapshot?: ProductPriceSnapshot;
   /** Supplier has not published a price. Numeric price is excluded from estimates. */
   price_on_request?: boolean;
   /** 0–1 (i.e. 0.15 = 15%) — commission paid to PPW on sale. */

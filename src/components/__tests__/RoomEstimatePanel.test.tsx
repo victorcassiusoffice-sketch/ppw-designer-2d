@@ -16,6 +16,9 @@ import { RoomEstimatePanel } from '../RoomEstimatePanel';
 import { useWallStore } from '../../store/wallStore';
 import type { WallSegment } from '../../store/wallStore';
 import { useDesignStore } from '../../store/designStore';
+import { usePropertyStore } from '../../store/propertyStore';
+import { WALL_PAINTS } from '../../data/wallPaints';
+import { deriveWallPaintOrders } from '../../designer/wallPaintCalc';
 
 const WALL: WallSegment = {
   id: 'w1', start: { x_mm: 0, y_mm: 0 }, end: { x_mm: 5000, y_mm: 0 },
@@ -37,6 +40,8 @@ beforeEach(() => {
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
+  usePropertyStore.setState({ property: { id: 'p', name: 'Paint quote', activeRoomId: 'r', wallHeightM: 2.5,
+    rooms: [{ id: 'r', name: 'Room', polygon: POLY_20M2, placedItems: [], wallPaint: [{ edgeIndex: 0, paintId: WALL_PAINTS[0].id }] }] } });
 });
 afterEach(() => {
   act(() => { root.unmount(); });
@@ -60,6 +65,19 @@ describe('RoomEstimatePanel', () => {
     expect(html).toContain('12.5 m²');
     expect(html).toContain('data-testid="paint-litres"');
     expect(html).toContain('data-testid="paint-price"');
+    const quote = deriveWallPaintOrders(usePropertyStore.getState().property)[0];
+    expect(container.querySelector('[data-testid="paint-litres"]')?.textContent).toBe(`${quote.litres.toFixed(1)} L`);
+    expect(html).toContain(WALL_PAINTS[0].name);
+    expect(html).not.toContain('Cream Shell');
+  });
+
+  it('coats control updates the persisted property and the same cart demand', () => {
+    render();
+    const select = container.querySelector<HTMLSelectElement>('select[aria-label="Paint coats"]')!;
+    act(() => { select.value = '1'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(usePropertyStore.getState().property.wallPaintCoats).toBe(1);
+    const quote = deriveWallPaintOrders(usePropertyStore.getState().property)[0];
+    expect(container.querySelector('[data-testid="paint-litres"]')?.textContent).toBe(`${quote.litres.toFixed(1)} L`);
   });
 
   it('flooring section shows floor area + units + price from the room polygon', () => {

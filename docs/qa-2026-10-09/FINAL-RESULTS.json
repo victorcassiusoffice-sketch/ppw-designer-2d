@@ -1,0 +1,17 @@
+{
+  "completedAt": "2026-10-10T11:59:26.073Z",
+  "status": "BUILT-NOT-LIVE",
+  "bundle": "App-DMQdCeGK.js",
+  "screenshots": 75,
+  "desktopWidth": 1280,
+  "phoneWidth": 390,
+  "consoleErrors": 0,
+  "pageErrors": 0,
+  "assertionFailures": 0,
+  "fullSuite": {
+    "files": 324,
+    "tests": 3655
+  },
+  "finalRegressionTests": 94,
+  "publication": "Held pending explicit Y"
+}

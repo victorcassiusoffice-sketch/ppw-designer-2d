@@ -1,0 +1,298 @@
+.foundation-launch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid #b5c4b4;
+  border-radius: 14px;
+  background: #dce5da;
+  color: #294d43;
+  font: inherit;
+  cursor: pointer;
+}
+.foundation-workspace {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #c7d2c5;
+  color: #283c31;
+  font-family: inherit;
+  color-scheme: light;
+}
+.foundation-workspace * {
+  box-sizing: border-box;
+}
+.foundation-workspace button,
+.foundation-workspace input,
+.foundation-workspace select {
+  font: inherit;
+  color: inherit;
+}
+.foundation-workspace button {
+  min-height: 40px;
+  padding: 9px 13px;
+  border: 1px solid #bdc9b8;
+  border-radius: 13px;
+  background: #e7eadf;
+  box-shadow:
+    inset 1px 1px 2px #fffdf5,
+    2px 3px 5px #52684e20;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.foundation-workspace button[aria-pressed='true'] {
+  background: #a3baa4;
+  border-color: #6d927d;
+  box-shadow: inset 2px 2px 4px #617e6730;
+}
+.foundation-workspace button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.foundation-workspace :focus-visible {
+  outline: 2px solid #2f7159;
+  outline-offset: 3px;
+}
+.foundation-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 18px;
+  background: #e4e8dc;
+  border-bottom: 1px solid #adbda9;
+}
+.foundation-header > div {
+  flex: 1;
+}
+.foundation-header {
+  flex-wrap: wrap;
+}
+.foundation-header .workspace-floor-nav {
+  flex: 0 1 auto;
+}
+.foundation-stage {
+  border: 1px solid #b7c2ab;
+  border-radius: 14px;
+  padding: 12px;
+  background: #dde3d0;
+}
+.foundation-stage h2 {
+  margin: 0;
+  font-size: 14px;
+}
+.foundation-workspace .foundation-stage-action {
+  background: #bdd0b5;
+  border-color: #769077;
+  width: 100%;
+}
+.foundation-supplier {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #dce4d7;
+  font-size: 11px;
+}
+.foundation-pending {
+  margin: 0;
+  padding: 7px 12px;
+  font-size: 11px;
+  background: #eee2c2;
+  color: #605033;
+}
+.foundation-header h1 {
+  font-size: 19px;
+  margin: 0;
+}
+.foundation-header p {
+  font-size: 12px;
+  margin: 3px 0 0;
+  color: #526856;
+}
+.foundation-tools {
+  display: flex;
+  gap: 6px;
+  padding: 9px 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #adbfab;
+  background: #dbe3d5;
+}
+.foundation-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.foundation-drawing {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+.foundation-drawing > svg {
+  width: 100%;
+  min-height: 100px;
+  flex: 1;
+  touch-action: none;
+}
+.foundation-instruction {
+  font-size: 12px;
+  padding: 8px 16px;
+  color: #466049;
+  background: #d4decd;
+}
+.foundation-details {
+  width: 330px;
+  max-width: 45%;
+  overflow: auto;
+  padding: 16px;
+  background: #e8ebdf;
+  border-left: 1px solid #abbca6;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.foundation-details p {
+  margin: 9px 0;
+  color: #50634f;
+}
+.foundation-details a {
+  color: #2a6653;
+  text-decoration: underline;
+}
+.foundation-details details {
+  padding: 12px 0;
+  border-top: 1px solid #bfceba;
+  margin-top: 12px;
+}
+.foundation-details summary {
+  font-weight: 700;
+  cursor: pointer;
+}
+.foundation-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  margin: 8px 0;
+}
+.foundation-field input,
+.foundation-field select {
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid #b6c8b4;
+  border-radius: 10px;
+  padding: 7px 9px;
+  background: #f4f4e9;
+  box-shadow: inset 2px 2px 3px #7e937e24;
+}
+.foundation-field small {
+  color: #963b32;
+}
+.foundation-grid-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 10px;
+}
+.foundation-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 650;
+}
+.foundation-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: #587e65;
+}
+.foundation-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.foundation-note,
+.foundation-error {
+  font-size: 12px;
+  padding: 8px 12px;
+  background: #f1e8cc;
+  color: #685427;
+  border-radius: 8px;
+}
+.foundation-error {
+  margin: 8px 12px;
+}
+.foundation-totals {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: #e1e7d8;
+  border-top: 1px solid #b4c2ad;
+}
+.foundation-totals > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.foundation-totals small {
+  font-size: 10px;
+  color: #596f53;
+}
+.foundation-totals strong {
+  font-size: 18px;
+  font-weight: 650;
+}
+@media (max-width: 700px) {
+  .foundation-header {
+    padding: 9px 10px;
+    gap: 8px;
+  }
+  .foundation-header h1 {
+    font-size: 17px;
+  }
+  .foundation-header p {
+    font-size: 10px;
+  }
+  .foundation-tools {
+    padding: 7px 10px;
+    gap: 5px;
+  }
+  .foundation-workspace button {
+    padding: 8px 10px;
+    min-height: 40px;
+  }
+  .foundation-body {
+    flex-direction: column;
+  }
+  .foundation-drawing {
+    min-height: 190px;
+    flex: 1;
+  }
+  .foundation-details {
+    width: 100%;
+    max-width: none;
+    max-height: 40dvh;
+    border-left: 0;
+    border-top: 1px solid #aaba9f;
+    padding: 12px 15px;
+  }
+  .foundation-totals {
+    padding: 7px 10px;
+    gap: 15px;
+  }
+  .foundation-totals strong {
+    font-size: 15px;
+  }
+  .foundation-instruction {
+    font-size: 10px;
+    padding: 6px 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .foundation-workspace * {
+    scroll-behavior: auto;
+  }
+}

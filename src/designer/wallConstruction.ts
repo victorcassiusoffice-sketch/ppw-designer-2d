@@ -1,8 +1,8 @@
 import type { PaintedEdge, Room } from '../store/propertyStore';
-import { finishOfPaint, resolveWallColourHex, BARE_PLASTER_HEX } from '../data/wallPaints';
-import { findCladdingProduct } from '../data/claddingCatalog';
-import { roomEdges, collinearOverlap, splitEdgeSpans, type Span } from './wallEdges';
-import { roomLevelId } from './levels';
+import { finishOfPaint, resolveWallColourHex, BARE_PLASTER_HEX } from '../data/wallPaints.js';
+import { findCladdingProduct } from '../data/claddingCatalog.js';
+import { roomEdges, collinearOverlap, splitEdgeSpans, type Span } from './wallEdges.js';
+import { roomLevelId } from './levels.js';
 
 export type WallSide = 'interior' | 'exterior';
 export type WallConstruction = 'plastered-brick' | 'brick' | 'concrete';

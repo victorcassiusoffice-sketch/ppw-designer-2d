@@ -44,6 +44,8 @@ import { usePlacementIntentStore, isScreenTarget } from '../store/placementInten
 import { useToastStore } from '../store/toastStore';
 import { useCatalogStore } from '../store/catalogStore';
 import { rotateSelected, deleteSelected, duplicateSelected } from '../lib/placementActions';
+import { placementKind } from '../designer/attachmentPlacement';
+import { StudioIcon } from './StudioIcon';
 import { haptic } from '../lib/haptics';
 import { brushPaintId, type BrushModifiers } from '../designer/wallPaintBrush';
 import { isPaintableFloorPoint, previewFloorDrag } from '../designer/floorPaintBrush';
@@ -56,6 +58,7 @@ import { pointInPolygon } from '../lib/geometry';
 import { buildingSolids, type BuildingView } from '../designer/buildingScene';
 import { validateStairPlacement } from '../designer/stairPlacement';
 import { MaterialsPanel } from './MaterialsPanel';
+import { Loading3D } from './Loading3D';
 import { EnergySummary } from './EnergyPanel';
 import { HouseWorkspace, type HouseMode } from './HouseWorkspace';
 import { previewRectRoomBuild, type RoomBuildPreview } from '../designer/roomBuildGesture';
@@ -93,6 +96,8 @@ import {
   boundsOf,
   buildScene,
   cameraPosition,
+  cameraBasis,
+  projectPoint,
   clampCamera,
   DEFAULT_AZIMUTH_RAD,
   drawScene,
@@ -112,6 +117,8 @@ import type { ThreeStageHandle } from './three/ThreeStage';
 import type { ScenePresentation } from './three/renderPresentation';
 import { fitArchitecturalCamera } from '../designer/architecturalCamera';
 import { visibleServiceFixtures } from '../designer/serviceFixtures';
+import { foundationBounds } from '../designer/foundation';
+import { foundationSceneFaces } from '../designer/foundationScene';
 
 // The GL renderer and three itself arrive in their own chunk, on first use.
 const ThreeStage = lazy(() => import('./three/ThreeStage'));
@@ -429,6 +436,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const containerRef = useRef<HTMLDivElement | null>(null);
   const painterRef = useRef<HTMLCanvasElement | null>(null);
   const stageRef = useRef<ThreeStageHandle | null>(null);
+  const [stageReady, setStageReady] = useState(false);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const cameraViewportHeightRef = useRef(0);
   const [camera, setCamera] = useState<OrbitCamera | null>(null);
@@ -439,6 +447,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const renderedCamera = displayedCamera ? cameraForViewport(displayedCamera, size.height, cameraViewportHeight) : viewportCamera;
   const [moveFeedback, setMoveFeedback] = useState<string | null>(null);
   const [buildingView, setBuildingView] = useState<BuildingView>('building');
+  const foundationView = useDesignerUIStore(s => s.foundationView);
   const [showRoof, setShowRoof] = useState(false);
   const [constructionTool, setConstructionTool] = useState<'select' | 'room' | 'wall' | 'stair' | 'window' | 'door'>('select');
   const doorDraft = useDesignerUIStore((s) => s.doorDraft);
@@ -480,10 +489,21 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const [backend, setBackend] = useState<'gl' | 'painter'>('gl');
   const baseDistanceRef = useRef(10);
   const level = activeLevelIdOf(property);
+  const foundationVisible = Boolean(property.foundation?.enabled && (foundationView || buildingView === 'building' || level === 'ground'));
+  const visibleFoundation = foundationVisible ? property.foundation : undefined;
+  const inspectingFoundation = foundationView && Boolean(visibleFoundation?.elements.length);
+  const foundationBox = foundationBounds(visibleFoundation);
+  const foundationBaseElevationM = levelElevationM(property, 'ground');
   const levelEntries = buildingLevels(property);
   const onRoofLevel = isRoofLevel(levelEntries.find((entry) => entry.level.id === level)?.level);
   const openingTool = constructionTool === 'door' || constructionTool === 'window';
   const openingPreview = openingTool && openingPoint ? previewOpeningPlacement(property, level, openingPoint, doorDraft) : null;
+  useEffect(() => {
+    if (!foundationView || variant !== 'overlay') return;
+    usePropertyStore.getState().setActiveLevel('ground');
+    setBuildingView('building');
+    setShowRoof(false);
+  }, [foundationView, variant]);
   useEffect(() => { openingDrag.current = null; setOpeningPoint(null); }, [level, property.id, constructionTool]);
   useEffect(() => {
     gardenDrag.current = null;
@@ -575,14 +595,23 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const buildingBounds = useMemo(() => {
     const rooms = (buildingView === 'building' ? property.rooms : roomsOnLevel(property.rooms, level)).filter((r) => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon));
     const walls = buildingView === 'building' ? property.walls ?? [] : wallsOnLevel(property.walls ?? [], level);
-    return boundsOf(rooms, walls);
-  }, [property, level, buildingView]);
+    const box = foundationBounds(visibleFoundation);
+    const foundations = box ? [{ polygon: [{ x: box.minX, y: box.minY }, { x: box.maxX, y: box.maxY }] }] : [];
+    return boundsOf([...rooms, ...foundations], walls);
+  }, [property, level, buildingView, visibleFoundation]);
   const sceneBounds = useMemo(() => {
     const rooms = (buildingView === 'building' ? property.rooms : roomsOnLevel(property.rooms, level)).filter((r) => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon));
     const walls = buildingView === 'building' ? property.walls ?? [] : wallsOnLevel(property.walls ?? [], level);
     const landscape = (buildingView === 'building' || level === 'ground') && property.garden ? gardenPoints(property.garden) : [];
-    return boundsOf(landscape.length ? [...rooms, { polygon: landscape }] : rooms, walls);
-  }, [property, level, buildingView]);
+    const box = foundationBounds(visibleFoundation);
+    const foundations = box ? [{ polygon: [{ x: box.minX, y: box.minY }, { x: box.maxX, y: box.maxY }] }] : [];
+    return boundsOf([...rooms, ...foundations, ...(landscape.length ? [{ polygon: landscape }] : [])], walls);
+  }, [property, level, buildingView, visibleFoundation]);
+  const hasArchitecture = property.rooms.some(r => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon) && (buildingView === 'building' || (r.levelId ?? 'ground') === level))
+    || (buildingView === 'building' ? property.walls ?? [] : wallsOnLevel(property.walls ?? [], level)).length > 0;
+  const fitBottomM = foundationBox ? Math.min(hasArchitecture ? baseElevation : Infinity, foundationBaseElevationM + foundationBox.minElevationM) : baseElevation;
+  const fitTopM = foundationBox ? Math.max(hasArchitecture ? baseElevation + H : -Infinity, foundationBaseElevationM + foundationBox.maxElevationM) : baseElevation + H;
+  const fitHeightM = Math.max(0.5, fitTopM - fitBottomM);
   // A blank project still has a buildable 3D ground plane.
   const bounds = sceneBounds ?? (variant === 'overlay'
     ? property.site ? { minX: property.site.originM.x, minY: property.site.originM.y, maxX: property.site.originM.x + property.site.widthM, maxY: property.site.originM.y + property.site.depthM }
@@ -606,14 +635,14 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     const aspect = size.height > 0 ? size.width / size.height : 1.4;
     // Start with the building as the subject. A lawn/large plot should remain
     // surrounding context, not shrink the furnished rooms into a thumbnail.
-    const fitted = variant === 'overlay' ? fitArchitecturalCamera(buildingBounds ?? bounds, H, aspect) : fitCamera(bounds, H, aspect);
-    fitted.target.z += baseElevation;
+    const fitted = variant === 'overlay' ? fitArchitecturalCamera(buildingBounds ?? bounds, fitHeightM, aspect) : fitCamera(bounds, fitHeightM, aspect);
+    fitted.target.z += fitBottomM;
     cameraPropertyId.current = property.id;
     cameraViewportHeightRef.current = size.height;
     baseDistanceRef.current = fitted.distanceM;
     setCamera(fitted);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [property.id, boundsKey, H, baseElevation, size.width, size.height]);
+  }, [property.id, boundsKey, fitHeightM, fitBottomM, size.width, size.height]);
 
   // Size the view to its box.
   useLayoutEffect(() => {
@@ -645,8 +674,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       .filter((entry) => !isRoofLevel(entry.level) && (buildingView === 'building' || entry.level.id === level))
       .flatMap((entry) => buildScene(sceneFromProperty({ ...property, activeLevelId: entry.level.id, wallHeightM: entry.heightM }, hover, viewportCamera))
         .map((face) => ({ ...face, pts: face.pts.map((p) => ({ ...p, z: p.z + entry.elevationM })), holes: face.holes?.map((hole) => hole.map((p) => ({ ...p, z: p.z + entry.elevationM }))) })));
-    return projectScene(faces, viewportCamera, size);
-  }, [backend, property, hover, viewportCamera, size, buildingView, level]);
+    return projectScene([...faces.filter(face => !inspectingFoundation || face.kind !== 'floor'), ...foundationSceneFaces(visibleFoundation, foundationBaseElevationM, inspectingFoundation)], viewportCamera, size);
+  }, [backend, property, hover, viewportCamera, size, buildingView, level, inspectingFoundation, visibleFoundation, foundationBaseElevationM]);
 
   useEffect(() => {
     if (backend !== 'painter') return;
@@ -1357,8 +1386,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     if (!bounds) return;
     const aspect = size.height > 0 ? size.width / size.height : 1.4;
     const focusBounds = gardenOpen ? bounds : buildingBounds ?? bounds;
-    const fitted = variant === 'overlay' ? fitArchitecturalCamera(focusBounds, H, aspect) : fitCamera(bounds, H, aspect);
-    fitted.target.z += baseElevation;
+    const fitted = variant === 'overlay' ? fitArchitecturalCamera(focusBounds, fitHeightM, aspect) : fitCamera(bounds, fitHeightM, aspect);
+    fitted.target.z += fitBottomM;
     baseDistanceRef.current = fitted.distanceM;
     cameraViewportHeightRef.current = size.height;
     setCamera(fitted);
@@ -1511,7 +1540,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
 
   const hoverText = describeHit(property, hover, onPaintWall && hoverTag && hover ? hoverTag(hover) : null);
   const empty = !sceneBounds;
-  const drawn = solids.walls.length + solids.floors.length + solids.items.length;
+  const drawn = solids.walls.length + solids.floors.length + solids.items.length + (visibleFoundation?.elements.length ?? 0);
   const viewLabel = empty
     ? 'Room view — draw a room to see it in 3D'
     : `Room view in 3D — ${drawn} parts. Drag to orbit${onPaintWall ? '; click a wall to paint it' : onPaintFloor ? '; click the floor to lay it' : itemsInteractive ? '; tap an item to select it, drag it to move it' : ''}.`;
@@ -1593,6 +1622,13 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   }
   const activeHouseMode: HouseMode = materialsOpen ? 'materials' : onPaintWall ? 'paint' : onPaintFloor ? 'floor' : energyOpen ? 'energy' : gardenOpen ? 'garden' : houseMode === 'materials' ? 'build' : houseMode;
 
+  const selectedSolid = selectedInstanceId ? solids.items.find(item => item.instanceId === selectedInstanceId) : undefined;
+  const canRotateSelection = itemsInteractive && !armedProductId && selectedItem && selectedProduct && selectedSolid
+    && placementKind(selectedProduct) !== 'wall'
+    && !property.rooms.some(room => room.placedItems.some(item => item.parentInstanceId === selectedInstanceId));
+  const rotationPoint = canRotateSelection && selectedSolid && renderedCamera
+    ? projectPoint({ x: (selectedSolid.x0 + selectedSolid.x1) / 2, y: (selectedSolid.y0 + selectedSolid.y1) / 2, z: selectedSolid.z1 }, cameraBasis(renderedCamera), renderedCamera, size)
+    : undefined;
   const selectionPanel = variant === 'overlay' && itemsInteractive && selectedItem && selectedProduct ? (
         <div
           className="house-selection"
@@ -1607,24 +1643,6 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           >
             Rotation: {Math.round(((selectedItem.rotation % 360) + 360) % 360)}°
           </span>
-          <button
-            type="button"
-            className={`${SEL_BTN} border-ppw-rim bg-ppw-chrome text-ppw-charcoal hover:bg-[#f3f1ec]`}
-            onClick={() => rotateSelected(-90)}
-            title="Turn 90° counter-clockwise (,)"
-            data-testid="view3d-rotate-ccw"
-          >
-            ↺
-          </button>
-          <button
-            type="button"
-            className={`${SEL_BTN} border-ppw-inkDeep bg-ppw-inkDeep text-ppw-paper hover:brightness-110`}
-            onClick={() => rotateSelected(90)}
-            title="Turn 90° clockwise (R)"
-            data-testid="view3d-rotate"
-          >
-            Turn ↻
-          </button>
           <button type="button" className={`${SEL_BTN} border-[#49607d] bg-[#243a55] text-[#d8e8fa]`} onClick={() => duplicateSelected()} title="Duplicate selected product">Duplicate</button>
           <button type="button" className={`${SEL_BTN} border-[#49607d] bg-[#243a55] text-[#d8e8fa]`} onClick={() => { useDesignerUIStore.getState().setInfoOpen(true); onClose?.(); }}>Details in plan</button>
           <button
@@ -1663,7 +1681,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     <div
       ref={containerRef}
       className="relative w-full overflow-hidden"
-      style={{ background: variant === 'overlay' ? '#263853' : '#E7E2D8', touchAction: 'none', ...(variant === 'card' ? { aspectRatio: '16 / 10' } : { flex: 1, minHeight: 0 }) }}
+      style={{ background: '#c6d6ca', touchAction: 'none', ...(variant === 'card' ? { aspectRatio: '16 / 10' } : { flex: 1, minHeight: 0 }) }}
       data-testid="wallpaint-3d"
       data-variant={variant}
       data-backend={backend}
@@ -1677,6 +1695,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               ref={stageRef}
               solids={solids}
               serviceFixtures={serviceFixtures}
+              foundation={visibleFoundation}
+              foundationView={inspectingFoundation}
+              foundationBaseElevationM={foundationBaseElevationM}
               presentation={presentation}
               camera={renderedCamera ?? camera}
               width={size.width}
@@ -1690,12 +1711,14 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               wallView={wallView}
               hour={stageHour}
               onFailed={() => setBackend('painter')}
+              onReady={() => setStageReady(true)}
             />
           </Suspense>
         ) : backend === 'painter' ? (
           <canvas ref={painterRef} style={{ display: 'block', width: '100%', height: '100%' }} aria-hidden="true" />
         ) : null}
       </div>
+      {backend === 'gl' && !stageReady && <Loading3D />}
       {/* The gesture surface. */}
       <div
         data-testid="wallpaint-3d-canvas"
@@ -1715,6 +1738,13 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         }}
         onContextMenu={(e) => e.preventDefault()}
       />
+      {rotationPoint && rotationPoint.x >= 0 && rotationPoint.x <= size.width && rotationPoint.y >= 0 && rotationPoint.y <= size.height && <div
+        className="house-object-turn" role="group" aria-label="Rotate selected object" data-testid="view3d-object-turn"
+        style={{ left: Math.max(75, Math.min(size.width - 75, rotationPoint.x)), top: Math.max(30, Math.min(size.height - 32, rotationPoint.y - 35)) }}>
+        <button type="button" aria-label="Turn object counter-clockwise" title="Turn object 90° counter-clockwise" data-testid="view3d-rotate-ccw" onClick={() => rotateSelected(-90)}><StudioIcon name="rotateLeft" size={18}/></button>
+        <span>{Math.round(((selectedItem!.rotation % 360) + 360) % 360)}°</span>
+        <button type="button" aria-label="Turn object clockwise" title="Turn object 90° clockwise" data-testid="view3d-rotate" onClick={() => rotateSelected(90)}><StudioIcon name="rotateRight" size={18}/></button>
+      </div>}
       {openingPreview && <OpeningPlacementPreview preview={openingPreview} baseElevation={baseElevation} projectPoint={(x, y, z) => stageRef.current?.projectPoint(x, y, z) ?? null} />}
       {selectedGardenSurface && !gardenPlacement && !gardenPreview && <svg className="house-room-preview house-garden-selection" data-testid="garden-corner-handles" aria-hidden="true">
         <polygon points={gardenSurfacePolygon(selectedGardenSurface).map(point => stageRef.current?.projectPoint(point.x, point.y, 0.04)).filter(point => !!point).map(point => `${point.x},${point.y}`).join(' ')} />

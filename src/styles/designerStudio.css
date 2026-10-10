@@ -577,8 +577,9 @@
 .designer-app[data-view="plan"] [data-testid="wall-height-control"] { display: flex; align-items: center; width: auto; gap: 5px; }
 .designer-app[data-view="plan"] [data-testid="wall-height-control"] button { width: 32px; min-height: 40px; height: 40px; border-radius: 12px; font-size: 15px; }
 .designer-app[data-view="plan"] [data-testid="wall-height-readout"] { min-width: 40px; padding: 0 2px; font-size: 11px; }
-.designer-app .studio-plan-settings { grid-row: 3; }
-.designer-app .plan-options-host { grid-row: 4; }
+/* Row 3 is the persistent Floors / Materials / Undo bar. */
+.designer-app .studio-plan-settings { grid-row: 4; }
+.designer-app .plan-options-host { grid-row: auto; }
 .designer-app[data-view="plan"] .plan-view-toolbar { min-height: 46px; padding: 3px 12px 5px; }
 .designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools > div:first-child { box-shadow: none; background: transparent; border: 0; }
 .designer-app[data-view="plan"] .plan-view-toolbar #canvas-plan-tools > div:first-child > button { box-shadow: none; background: transparent; }

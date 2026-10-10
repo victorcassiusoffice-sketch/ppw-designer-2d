@@ -1,0 +1,29 @@
+.workspace-floor-nav { display:inline-flex; align-items:center; gap:6px; min-width:0; color:#304a40; font-size:12px; }
+.workspace-floor-nav select { min-width:0; width:165px; max-width:100%; min-height:40px; border:1px solid #a5b8a6; border-radius:14px; padding:7px 8px; background:#e6ecdf; color:#304a40; box-shadow:inset 1px 1px 3px #fff9,2px 3px 6px #71847124; font:inherit; }
+.plan-project-bar { grid-column:1 / -1; grid-row:3; display:flex; justify-content:center; align-items:center; gap:7px; padding:3px 10px; border-top:1px solid #8faaa22b; }
+/* The persistent project controls own row 3. Keep expanded site tools below
+   them regardless of stylesheet order; optional panels auto-flow after the
+   visible rows so collapsing Site & tools never reserves an empty row. */
+.designer-app .plan-topbar > .studio-plan-settings { grid-row:4; }
+.designer-app .plan-topbar > .plan-options-host { grid-row:auto; }
+.house-object-turn { position:absolute; z-index:3; transform:translate(-50%,-50%); display:flex; align-items:center; gap:6px; border:1px solid #f4f8ed; border-radius:22px; padding:3px; background:#e4eaddf5; color:#304d42; box-shadow:3px 5px 14px #25443840,inset 1px 1px 2px #fff; }
+.house-object-turn button { width:40px; height:40px; display:grid; place-items:center; border-radius:50%; background:#cedfd0; }
+.house-object-turn span { min-width:30px; font-size:11px; text-align:center; }
+.house-object-turn button:focus-visible { outline:2px solid #477761; outline-offset:2px; }
+.house-camera-orbit { display:flex; align-items:center; gap:5px; font-size:11px; }
+.house-camera-orbit button { min-width:40px; min-height:40px; display:grid; place-items:center; }
+.plan-project-bar > button { min-height:40px; display:inline-flex; align-items:center; gap:6px; border-radius:13px; padding:7px 10px; background:var(--studio-cap,#e6ecdf); box-shadow:var(--studio-small-lift); font-size:12px; color:#304a40; }
+.plan-project-bar > button[aria-pressed="true"] { background:var(--studio-selected-cap,#bdd6c8); }
+.workspace-floor-nav :focus-visible { outline:2px solid #477761; outline-offset:2px; }
+@media(max-width:700px) {
+  .foundation-header { flex-wrap:wrap; }
+  .foundation-header .workspace-floor-nav { flex-basis:100%; }
+  .foundation-header .workspace-floor-nav select { flex:1; }
+  .services-header .workspace-floor-nav { flex:1 1 150px; }
+  .workspace-floor-caption { display:none; }
+  .plan-project-bar { grid-column:1 / -1; grid-row:3; padding:2px 0 4px; gap:5px; }
+  .plan-project-bar .workspace-floor-nav { flex:1; }
+  .plan-project-bar .workspace-floor-nav > svg { display:none; }
+  .plan-project-bar .workspace-floor-nav select { width:100%; font-size:11px; }
+  .plan-project-bar > button { padding:6px 8px; font-size:10px; }
+}

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode, type KeyboardEvent } from 'react';
 import { MEETING_URL } from './workflowModel';
-import { EmbeddedDesigner } from '../../demo/EmbeddedDesigner';
+import { EmbeddedDesigner, type EmbeddedDesignerProps } from '../../demo/EmbeddedDesigner';
 import type { DemoScene } from '../../demo/demoRoute';
 import { PitchConnectChapter } from './PitchConnectChapter';
 import './pitch.css';
@@ -33,7 +33,7 @@ export function PitchShell({ audience, chapters, chapter, onChapter, children }:
       {allChapters.map((label, index) => <button key={label} ref={(node) => { buttons.current[index] = node; }} type="button" role="tab" id={`pitch-tab-${index}`} aria-selected={chapter === index} aria-controls="pitch-stage" tabIndex={chapter === index ? 0 : -1} onClick={() => selectChapter(index)} onKeyDown={(event) => navigate(event, index)}><span>{String(index + 1).padStart(2, '0')}</span>{label}</button>)}
     </div>
     <section id="pitch-stage" role="tabpanel" aria-labelledby={`pitch-tab-${chapter}`} tabIndex={0} className="pitch-stage" key={chapter}>{chapter === allChapters.length - 1 ? <PitchConnectChapter key={connectEntry} audience={audience.toLowerCase() as 'developers' | 'merchants' | 'construction'} initialSection={connectEntry} /> : children}</section>
-    <footer className="pitch-footer"><span><span className="pitch-status-dot" /> Real design tools. A workflow built around you.</span><div><button type="button" className="pitch-feedback-link" onClick={() => { setConnectEntry('contact'); onChapter(allChapters.length - 1); }}>Feedback & meetings</button><a href="/pitch/construction">Materials</a><a href="/studio">Studio</a><a href="/demo">Demo ↗</a><button type="button" onClick={() => selectChapter((chapter + 1) % allChapters.length)} aria-label={chapter === allChapters.length - 1 ? 'Return to first chapter' : 'Next chapter'}>{chapter === allChapters.length - 1 ? 'Start again' : 'Next chapter'} <span aria-hidden="true">→</span></button></div></footer>
+    <footer className="pitch-footer"><span><span className="pitch-status-dot" /> Real design tools. A workflow built around you.</span><div><button type="button" className="pitch-feedback-link" onClick={() => { setConnectEntry('contact'); onChapter(allChapters.length - 1); }}>Feedback & meetings</button><a href="/pitch/construction">Materials</a><a href="/studio">Studio</a><a href="/demo?pitch=1">Demo ↗</a><button type="button" onClick={() => selectChapter((chapter + 1) % allChapters.length)} aria-label={chapter === allChapters.length - 1 ? 'Return to first chapter' : 'Next chapter'}>{chapter === allChapters.length - 1 ? 'Start again' : 'Next chapter'} <span aria-hidden="true">→</span></button></div></footer>
   </main>;
 }
 
@@ -72,6 +72,6 @@ export function DesignerCaptureGallery({ onOpenLive }: { onOpenLive: () => void 
 
 const SCENE_TITLES: Record<DemoScene, string> = { home: 'Interactive house designer', paint: 'Interactive paint designer', captamarin: 'Interactive Cap Tamarin two-bedroom designer' };
 
-export function LiveDesigner({ scene = 'home', view = '3d', onViewChange }: { scene?: DemoScene; view?: '2d' | '3d'; onViewChange?: (view: '2d' | '3d') => void }) {
-  return <EmbeddedDesigner scene={scene} view={view} onViewChange={onViewChange} className="pitch-designer-frame" title={SCENE_TITLES[scene]} loading="lazy" />;
+export function LiveDesigner({ scene = 'home', view = '3d', onViewChange, panel }: { scene?: DemoScene; view?: '2d' | '3d'; onViewChange?: (view: '2d' | '3d') => void; panel?: EmbeddedDesignerProps['panel'] }) {
+  return <EmbeddedDesigner scene={scene} view={view} onViewChange={onViewChange} panel={panel} pitch className="pitch-designer-frame" title={SCENE_TITLES[scene]} loading="lazy" />;
 }

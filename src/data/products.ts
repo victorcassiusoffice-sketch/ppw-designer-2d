@@ -9,6 +9,7 @@
 
 import catalogJson from './products.json';
 import { MAURITIUS_OUTDOOR_PRODUCTS } from './mauritiusOutdoor';
+import { SERVICE_PRODUCTS } from './serviceProducts';
 import { getApiProductFromCache } from './apiCatalogAdapter';
 import { demoProductById, demoProducts } from '../demo/demoCatalog';
 import type {
@@ -19,7 +20,7 @@ import type {
 } from './products.schema';
 
 const seed = catalogJson as unknown as ProductCatalog;
-const catalog: ProductCatalog = { ...seed, products: [...seed.products, ...MAURITIUS_OUTDOOR_PRODUCTS] };
+const catalog: ProductCatalog = { ...seed, products: [...seed.products, ...MAURITIUS_OUTDOOR_PRODUCTS, ...SERVICE_PRODUCTS] };
 
 export function getCatalog(): ProductCatalog {
   return catalog;

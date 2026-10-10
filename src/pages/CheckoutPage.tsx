@@ -46,7 +46,7 @@ import { COUNTRY_OPTIONS } from '../lib/region';
 import { CATEGORY_LABELS, getProductById } from '../data/products';
 import { roomFloorOrders } from '../designer/floorTiles';
 import { findFloorMaterialById } from '../data/floorMaterials';
-import { hasQuotedProducts, QUOTED_PRODUCTS_NOTICE } from '../lib/quotedProducts';
+import { hasQuotedProducts, quoteAwareAmount, QUOTED_PRODUCTS_NOTICE } from '../lib/quotedProducts';
 import {
   saveLastOrderSnapshot,
   type LastOrderSnapshot,
@@ -505,7 +505,7 @@ export default function CheckoutPage() {
               disabled={submitting || needsSupplierPrice}
               className="rounded-md bg-ppw-teal px-5 py-2.5 text-sm font-semibold text-white hover:bg-ppw-teal/90 disabled:opacity-60"
             >
-              {submitting ? 'Placing order...' : `Place order - ${formatCurrency(cart.subtotal, currency)}`}
+              {submitting ? 'Placing order...' : needsSupplierPrice ? 'Supplier quote required' : `Place order - ${formatCurrency(cart.subtotal, currency)}`}
             </button>
           </div>
         </form>
@@ -566,8 +566,8 @@ export default function CheckoutPage() {
               ))}
             </ul>
             <div className="mt-3 flex justify-between border-t border-ppw-stone pt-3 text-xs">
-              <span className="text-ppw-slate">Subtotal</span>
-              <span className="text-ppw-ink">{formatCurrency(cart.subtotal, currency)}</span>
+              <span className="text-ppw-slate">{needsSupplierPrice ? 'Priced subtotal' : 'Subtotal'}</span>
+              <span className="text-ppw-ink">{quoteAwareAmount(cart, cart.subtotal, formatCurrency(cart.subtotal, currency))}</span>
             </div>
             <div className="mt-1 flex justify-between text-xs text-ppw-slate">
               <span>Shipping</span>
@@ -578,9 +578,9 @@ export default function CheckoutPage() {
               <span className="italic">May apply</span>
             </div>
             <div className="mt-3 flex items-baseline justify-between border-t border-ppw-stone pt-3">
-              <span className="text-sm font-bold">Total (est.)</span>
+              <span className="text-sm font-bold">{needsSupplierPrice ? 'Estimate incomplete' : 'Total (est.)'}</span>
               <span className="text-lg font-bold">
-                {formatCurrency(cart.subtotal, currency)}
+                {quoteAwareAmount(cart, cart.subtotal, formatCurrency(cart.subtotal, currency))}
               </span>
             </div>
             {isStripeTestMode() && (

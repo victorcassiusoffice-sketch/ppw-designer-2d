@@ -81,6 +81,16 @@ describe('CartDrawer — visibility', () => {
 });
 
 describe('CartDrawer — totals + 5% marketplace fee', () => {
+  it.each(['espace-duravit-dcode-bidet-224110', 'espace-seville-garden-sofa'])('does not display a zero total or fee for %s', productId => {
+    usePropertyStore.getState().addItem({ productId, x: 0, y: 0, rotation: 0 });
+    useCartUIStore.getState().open();
+    render();
+    expect(container.querySelector('[data-testid="cart-drawer-total"]')?.textContent).toBe('Quote required');
+    expect(container.querySelector('[data-testid="marketplace-fee"]')?.textContent).toBe('Pending supplier quote');
+    expect(container.textContent).toContain('Estimate incomplete');
+    expect(container.textContent).not.toMatch(/MUR\s*0/);
+    expect((container.querySelector('[data-testid="cart-drawer-checkout"]') as HTMLButtonElement).disabled).toBe(true);
+  });
   it('labels supplier-quoted catalog products clearly and prevents zero-price checkout', () => {
     const lookup = productCatalog.getProductById;
     vi.spyOn(productCatalog, 'getProductById').mockImplementation(id => {

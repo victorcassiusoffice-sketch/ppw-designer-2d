@@ -12,17 +12,13 @@ function Shot({ desktop, phone, alt }: { desktop: string; phone?: string; alt: s
     : image}</figure>;
 }
 
-function ComingShot({ slot }: { slot: string }) {
-  return <div className="c-coming" data-slot={slot}>screenshot coming</div>;
-}
-
 function Person({ src, alt, tone = false }: { src: string; alt: string; tone?: boolean }) {
   return <figure className={`c-portrait${tone ? ' is-toned' : ''}`}><img src={src} alt={alt} /></figure>;
 }
 
-function TryStep({ title }: { title: string }) {
+function TryStep({ title, path }: { title: string; path: string }) {
   const [open, setOpen] = useState(false);
-  if (open) return <iframe className="c-frame" title={title} src="/demo?pitch=1" />;
+  if (open) return <iframe className="c-frame" title={title} src={path} />;
   return <div className="c-try"><p>Open the designer and try this step there.</p><button type="button" onClick={() => setOpen(true)}>Try this step</button></div>;
 }
 
@@ -64,26 +60,26 @@ export default function ConstructionPitchPage() {
         </div>
         <p className="c-kicker">Mauritius · contractors, quantity surveyors, plumbers and developers</p>
         <h1>A floor plan becomes cement, sand and a layout for each floor.</h1>
-        <p className="c-lead">The same drawing feeds the quantities and the services layout, so quotes are faster and the site has fewer mistakes. Built around what the client needs and their budget.</p>
+        <p className="c-lead">One measured design connects the house, material quantities and service routes. Review the assumptions with your team before a supplier quote or site decision.</p>
         <h2>How it works</h2>
         <ol className="c-steps">
           <li><a href="#plan-import">The plan comes in.</a></li>
           <li><a href="#house">The house, in 2D and in 3D.</a></li>
           <li><a href="#materials">Blocks, cement and sand.</a></li>
+          <li><a href="#foundation">Foundation dimensions and depth.</a></li>
           <li><a href="#plumbing">Plumbing and electric floors.</a></li>
         </ol>
       </div>
     </section>
 
     <section className="c-section" id="plan-import">
-      <div className="c-wrap c-chapter">
+      <div className="c-wrap c-chapter c-chapter-step">
         <Person src="/pitch/construction/people/ravi.webp" alt="Ravi, contractor" tone />
         <div className="c-copy">
           <p className="c-kicker"><span className="c-status">new, in preview</span> Plan import</p>
           <p className="c-line">The plan comes in, and the build starts from that drawing.</p>
         </div>
-        <ComingShot slot="plan-import" />
-        <div className="c-demo"><TryStep title="Try plan import" /><p className="c-note">{STARTING_POINT}</p></div>
+        <div className="c-demo"><TryStep title="Try plan import" path="/demo?view=2d&panel=import&pitch=1" /><p className="c-note">{STARTING_POINT}</p></div>
       </div>
     </section>
 
@@ -93,6 +89,7 @@ export default function ConstructionPitchPage() {
         <div className="c-copy">
           <p className="c-kicker"><span className="c-status is-live">Live</span> House</p>
           <p className="c-line">The same house, in 2D and in 3D.</p>
+          <p>Close a polygon against existing walls to form an adjoining room or partition. Shared edges need no redraw. Floors and Materials stay directly accessible in the plan.</p>
         </div>
         <div className="c-shots">
           <Shot desktop={CONSTRUCTION_SHOTS.house2d} phone={CONSTRUCTION_SHOTS.house2dPhone} alt="Room Designer 2D plan of the sample house" />
@@ -107,7 +104,8 @@ export default function ConstructionPitchPage() {
         <Person src="/pitch/construction/people/leena.webp" alt="Leena, quantity surveyor" />
         <div className="c-copy">
           <p className="c-kicker"><span className="c-status is-live">Live</span> Materials</p>
-          <p className="c-line">Blocks, cement and sand, with cement in kilograms and 25 kg bags.</p>
+          <p className="c-line">Blocks, cement and sand, with selectable mix ratios, pack sizes and waste.</p>
+          <p>Physical wall quantities and painted faces use their own measurements. Paint coats change coverage demand; whole tins may round differently. Choose site-mixed ingredients or ready-mix for concrete, so alternatives are not counted twice.</p>
           <p className="c-warning">{MATERIALS_NOTE}</p>
         </div>
         <div className="c-shots">
@@ -122,43 +120,56 @@ export default function ConstructionPitchPage() {
       </div>
     </section>
 
+    <section className="c-section" id="foundation">
+      <div className="c-wrap c-foundation">
+        <p className="c-kicker"><span className="c-status is-live">Live</span> Foundations</p>
+        <h2>Measure the excavation. Add the concrete.</h2>
+        <p className="c-lead">Choose Floors → Foundation. Draw the excavation, set its depth and inspect the cutaway. Add concrete when ready to review the filled design: excavation, fill and remaining void have separate volumes. Overlapping concrete is counted once.</p>
+        <p>Compare a UBP / Premix ready-mix reference with editable site-mix ratios; the supplier confirms grade, suitability and quotation. Enter an engineer’s rebar schedule for the steel allowance. Choosing a building floor returns to your original 2D or 3D view.</p>
+        <p className="c-warning">This estimates entered geometry; it does not design or approve foundations. Ground conditions, loading, reinforcement and service penetrations need professional specification. Unresolved overlapping steel is withheld for review.</p>
+        <div className="c-demo"><TryStep title="Try measured foundations" path="/demo?view=2d&panel=foundation&pitch=1" /></div>
+      </div>
+    </section>
+
     <section className="c-section" id="plumbing">
-      <div className="c-wrap c-chapter">
+      <div className="c-wrap c-chapter c-chapter-step">
         <Person src="/pitch/construction/people/marc.webp" alt="Marc, plumber" />
         <div className="c-copy">
           <p className="c-kicker"><span className="c-status">new, in preview</span> Plumbing</p>
           <p className="c-line">A plumbing layout for each floor.</p>
+          <p>Attach route endpoints to compatible fixture ports. Linked routes follow fixture moves and rotation; incomplete connections stay visible. Surveyed drainage levels and separately measured risers need installer review. Floors remains available while editing services and returns you to the view you entered from.</p>
         </div>
-        <ComingShot slot="plumbing" />
-        <div className="c-demo"><TryStep title="Try the plumbing floor" /><p className="c-note">{STARTING_POINT}</p></div>
+        <div className="c-demo"><TryStep title="Try the plumbing floor" path="/demo?view=2d&panel=services&pitch=1" /><p className="c-note">{STARTING_POINT}</p></div>
       </div>
     </section>
 
     <section className="c-section" id="electric">
-      <div className="c-wrap c-chapter">
+      <div className="c-wrap c-chapter c-chapter-step">
         <Person src="/pitch/construction/people/sophie.webp" alt="Sophie, site manager" tone />
         <div className="c-copy">
           <p className="c-kicker"><span className="c-status">new, in preview</span> Electric</p>
           <p className="c-line">The electric floor follows the same plan.</p>
+          <p>Plan conduit routes beside the same fixtures and walls. Sourced tanks, sanitaryware, pipe stock and electrical enclosures share published outer dimensions in 2D and 3D. Espace Maison sink, bidet and garden-sofa examples join the catalogue; their illustrations are not exact manufacturer models.</p>
+          <p className="c-note">Quote-required items need supplier confirmation. No live inventory is implied. Schematic ports and stock objects do not establish installation clearances, automatic route connections or electrical compliance.</p>
         </div>
-        <ComingShot slot="electric" />
-        <div className="c-demo"><TryStep title="Try the electric floor" /><p className="c-note">{STARTING_POINT}</p></div>
+        <div className="c-demo"><TryStep title="Try the electric floor" path="/demo?view=2d&panel=services&pitch=1" /><p className="c-note">{STARTING_POINT}</p></div>
       </div>
     </section>
 
     <section className="c-section" id="connect">
       <div className="c-wrap">
-        <h2>Connects your suppliers, designer, customer and workers in one live build.</h2>
+        <h2>One reviewable brief for your team.</h2>
         <div className="c-map">
           <p className="c-node"><strong>Client</strong> Moves a wall. The 2D plan and the 3D house update. <em>Live</em></p>
-          <p className="c-plan">Shared plan</p>
-          <p className="c-node"><strong>Designer</strong> Works in that same plan.</p>
-          <p className="c-node"><strong>Merchant / supplier</strong> Catalogue products stay in the plan at real sizes through the merchant connection. <em>Live</em></p>
+          <p className="c-plan">Design brief</p>
+          <p className="c-node"><strong>Designer</strong> Reviews the layout, dimensions and agreed revision.</p>
+          <p className="c-node"><strong>Merchant / supplier</strong> Confirms product specification, availability and a quotation.</p>
           <p className="c-node"><strong>Materials</strong> Recalculates blocks, cement and sand. <em>Live</em></p>
-          <p className="c-node"><strong>Contractor</strong> Reads the shared plan with the team.</p>
+          <p className="c-node"><strong>Contractor</strong> Checks quantities and site conditions with the team.</p>
           <p className="c-node"><strong>Plumber / electrician</strong> Plumbing and electric floors follow the plan. <em>new, in preview</em></p>
-          <p className="c-node c-workers"><strong>Workers</strong> Use the shared plan, the 3D view, the Materials list, and the plumbing and electric floors.</p>
+          <p className="c-node c-workers"><strong>Workers</strong> Work from professionally approved drawings and installation instructions.</p>
         </div>
+        <p className="c-note">Design edits and quantity updates work within the current session. Shared company access, approval roles, live co-editing, orders and delivery scheduling require agreed integrations; this demo activates none of them.</p>
       </div>
     </section>
 

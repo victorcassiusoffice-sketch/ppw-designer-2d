@@ -96,30 +96,31 @@ export default function PlumbingPitchPage() {
               <ol className="sales-steps">
                 <li>
                   <strong>Choose the floor</strong>
-                  <span>Keep each level’s service layout separate.</span>
+                  <span>Use Floors to keep each level separate and return to your original 2D or 3D view.</span>
                 </li>
                 <li>
                   <strong>Place the fixtures</strong>
                   <span>Add a sink, toilet and mains tap. Inspect the editable sizes.</span>
                 </li>
                 <li>
-                  <strong>Draw a route</strong>
+                  <strong>Connect a route</strong>
                   <span>
-                    Select cold water, hot water, drainage or conduit. Review the chosen material
-                    and elevations.
+                    Draw water, drainage or conduit. Choose compatible Start connection and End
+                    connection ports on this floor.
                   </span>
                 </li>
                 <li>
-                  <strong>Review the brief</strong>
+                  <strong>Move, measure, review</strong>
                   <span>
-                    Inspect centre-line length and whole supply lengths where a reference length
-                    exists.
+                    Move or rotate a connected fixture: linked endpoints follow it. Review route
+                    lengths, whole supply lengths and incomplete-connection warnings.
                   </span>
                 </li>
               </ol>
               <p className="sales-note">
-                Fittings, joint allowances, waste, pressure, flow and code compliance need separate
-                review. Pipework editing opens in 2D even when you enter from 3D.
+                Ports are schematic. Drainage needs surveyed elevations; another floor needs a
+                separately measured riser. Fittings, flow and compliance require installer review.
+                Pipework editing opens in 2D even when you enter from 3D.
               </p>
             </aside>
             <div className="sales-demo">
@@ -159,9 +160,14 @@ export default function PlumbingPitchPage() {
                 Water, drainage and conduit presets include HPL Pipes and Espace Maison references.
                 Open the source and confirm size, application and supply length.
               </p>
+              <p>
+                Try Resiglas tanks and Espace Maison toilet, sink, bidet, garden sofa, PVC pipe and
+                conduit examples. Published outer dimensions drive paired 2D and 3D objects.
+              </p>
               <p className="sales-note">
-                A nominal connection size is not necessarily the outside diameter or the body size
-                of a fitting.
+                Tank capacity, pipe bore, connector position and installation clearances are
+                separate specifications. Images and models are illustrative. Quote-required items
+                need supplier confirmation; they are not free or confirmed in stock.
               </p>
             </article>
             <article className="sales-surface">
@@ -278,7 +284,12 @@ export default function PlumbingPitchPage() {
           <div className="sales-three sales-choice">
             <article>
               <h3>Available to explore</h3>
-              <p>Design tools, floor services, material references and catalogue preparation.</p>
+              <p>
+                Use Floors → Foundation to measure an excavation, inspect its depth, then Add
+                concrete. Review separate volumes, a UBP / Premix reference and an engineer’s rebar
+                schedule alongside service routes. Choose a building floor to return to your view.
+              </p>
+              <OpenLink href="/demo?view=2d&panel=foundation&pitch=1">Try foundation planning</OpenLink>
             </article>
             <article>
               <h3>Configure for your company</h3>

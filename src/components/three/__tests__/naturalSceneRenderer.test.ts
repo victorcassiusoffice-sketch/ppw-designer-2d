@@ -46,4 +46,24 @@ describe('bounded natural-light scene shading', () => {
     expect(glass.material).toBe(material);
     expect(new THREE.Box3().setFromObject(scene).equals(originalBounds)).toBe(true);
   });
+  it('excludes depth annotation sprites from occlusion without changing beauty visibility or pose', () => {
+    const scene = new THREE.Scene();
+    const annotation = new THREE.Sprite(new THREE.SpriteMaterial({ depthTest: false }));
+    annotation.position.set(2, 0.45, -1);
+    annotation.scale.set(3.2, 0.8, 1);
+    const hiddenAnnotation = annotation.clone();
+    hiddenAnnotation.visible = false;
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial());
+    scene.add(annotation, hiddenAnnotation, wall);
+    const position = annotation.position.clone(), scale = annotation.scale.clone();
+    withOpaqueOccluders(scene, () => {
+      expect(annotation.visible).toBe(false);
+      expect(hiddenAnnotation.visible).toBe(false);
+      expect(wall.visible).toBe(true);
+    });
+    expect(annotation.visible).toBe(true);
+    expect(hiddenAnnotation.visible).toBe(false);
+    expect(annotation.position.equals(position)).toBe(true);
+    expect(annotation.scale.equals(scale)).toBe(true);
+  });
 });

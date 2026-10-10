@@ -90,6 +90,7 @@ export function currentPageId(): string {
 /** Drawn indoor or outdoor work earns a save even before it contains a room. */
 export function propertyHasContent(property: Property): boolean {
   return property.rooms.some((room) => (room.polygon?.length ?? 0) >= 3 || (room.placedItems?.length ?? 0) > 0)
+    || (property.foundation?.elements.length ?? 0) > 0
     || (property.services?.runs.length ?? 0) > 0
     || (property.services?.fixtures.length ?? 0) > 0
     || (property.walls?.length ?? 0) > 0

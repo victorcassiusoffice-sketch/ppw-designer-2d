@@ -4,7 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PlumbingPitchPage from './PlumbingPitchPage';
 import EmployeeStarterPage from './EmployeeStarterPage';
-import { handbook, PACK_LINKS } from './salesPack';
+import { EXERCISES, handbook, PACK_LINKS } from './salesPack';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let host: HTMLDivElement, root: Root;
@@ -37,6 +37,8 @@ describe('sales enablement journeys', () => {
       '/embed/designer?scene=home&view=2d&panel=services&pitch=1',
     );
     expect(host.textContent).toContain('No orders or payments');
+    expect(host.textContent).toContain('linked endpoints follow it');
+    expect(host.textContent).toContain('surveyed elevations');
   });
   it('supports keyboard chapter navigation and restores a chapter with spaces after reload', () => {
     window.history.replaceState(null, '', '/pitch/plumbing#Work%20together');
@@ -52,9 +54,9 @@ describe('sales enablement journeys', () => {
     act(() => root.render(<EmployeeStarterPage />));
     click(button('Demo lab'));
     click(host.querySelector<HTMLInputElement>('input[type=checkbox]')!);
-    expect(host.textContent).toContain('1 / 6 self-checked');
+    expect(host.textContent).toContain(`1 / ${EXERCISES.length} self-checked`);
     click(host.querySelector<HTMLInputElement>('input[type=checkbox]')!);
-    expect(host.textContent).toContain('0 / 6 self-checked');
+    expect(host.textContent).toContain(`0 / ${EXERCISES.length} self-checked`);
     expect(fetch).not.toHaveBeenCalled();
   });
   it('uses the deployment origin in the handbook and labels automation limitations', () => {
@@ -64,6 +66,18 @@ describe('sales enablement journeys', () => {
     expect(text).toContain('Do not claim live co-editing');
     expect(text).not.toContain('localhost');
     expect(text).not.toContain('[meeting link]');
+    expect(text).toContain('quantity planning, not foundation approval');
+    expect(text).toContain('Two coats double raw demand, not necessarily the number of tins');
+    expect(text).toContain('one published dimensional envelope in 2D and 3D');
+    expect(text).toContain('links follow fixture moves and rotation');
+    expect(text).toContain('9 October 2026');
+    expect(text).toContain('Add concrete');
+    expect(text).toContain('UBP / Premix');
+    expect(text).toContain('shared edges need no redraw');
+    expect(text).toContain('quote-required items are not free');
+    for (const exercise of EXERCISES.filter(({ path }) => path.startsWith('/demo'))) {
+      expect(new URL(exercise.path, 'https://preview.example').searchParams.get('pitch')).toBe('1');
+    }
   });
   it('keeps all employee practice links on demonstration routes', () => {
     act(() => root.render(<EmployeeStarterPage />));

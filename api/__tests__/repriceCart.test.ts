@@ -19,6 +19,14 @@ const SEED_ID = 'k1-nordictrack-2450';
 const SEED_SKU = 'K1-CDIO-NT2450';
 const SEED_MINOR_MUR = 15_000_000; // Rs 150,000 × 100
 
+describe('supplier reference products stay off the payment rail', () => {
+  it.each(['espace-duravit-dcode-bidet-224110', 'DURAVIT-22411000002',
+    'espace-seville-garden-sofa', 'ESPACE-3700103115997-SOFA-COMPONENT'])('rejects %s even with a forged positive payment amount', async productId => {
+    const result = await repriceCart([line({ productId, unitAmount: 100 })], 'MUR', marketplaceLookup({}));
+    expect(result).toMatchObject({ ok: false, status: 400 });
+  });
+});
+
 function marketplaceLookup(
   rows: Record<number, MarketplacePriceRow>,
 ): (ids: number[]) => Promise<Map<number, MarketplacePriceRow>> {

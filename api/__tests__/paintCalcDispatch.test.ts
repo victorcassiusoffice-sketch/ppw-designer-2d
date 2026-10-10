@@ -8,6 +8,8 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { calcDispatch, paintCalcHandler, floorCalcHandler } from '../_lib/calc/paintCalcHandler';
+import { deriveWallPaintOrders } from '../../src/designer/wallPaintCalc';
+import { WALL_PAINTS } from '../../src/data/wallPaints';
 
 function fakeRes() {
   const res = {
@@ -39,6 +41,13 @@ describe('paintCalcHandler — method gate', () => {
 });
 
 describe('paintCalcHandler — body validation', () => {
+  it('rejects non-finite coordinates/heights and non-integer coat quantities', async () => {
+    for (const extra of [{ coats: -1 }, { coats: 1.5 }, { coats: Infinity }, { walls: [{ height_mm: -20, start: { x_mm: 0, y_mm: 0 }, end: { x_mm: 5000, y_mm: 0 } }] }, { walls: [{ height_mm: 2700, start: { x_mm: NaN, y_mm: 0 }, end: { x_mm: 5000, y_mm: 0 } }] }]) {
+      const res = fakeRes();
+      await paintCalcHandler({ method: 'POST', headers: {}, body: { walls: [{ height_mm: 2700, start: { x_mm: 0, y_mm: 0 }, end: { x_mm: 5000, y_mm: 0 } }], ...extra } }, res);
+      expect(res.statusCode).toBe(422);
+    }
+  });
   it('rejects missing walls array (422)', async () => {
     const res = fakeRes();
     await paintCalcHandler(
@@ -63,6 +72,38 @@ describe('paintCalcHandler — body validation', () => {
       res,
     );
     expect(res.statusCode).toBe(422);
+  });
+});
+
+describe('canonical property paint quote', () => {
+  const property = () => ({ wallHeightM: 2.7, wallPaintCoats: 2, wallPaintWastePct: 0, rooms: [{ id: 'r', name: 'Room',
+    polygon: [{ x: 0, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 4 }, { x: 0, y: 4 }],
+    wallPaint: [{ edgeIndex: 0, paintId: WALL_PAINTS[0].id }],
+    openings: [{ id: 'window', edgeIndex: 0, offsetM: 2, widthM: 1.2, sillM: 2.5, kind: 'window' as const, flipFacing: false, flipHand: false }],
+  }] });
+  it('uses the same metres, coats, openings and whole tins as the Designer cart', async () => {
+    const p = property(), res = fakeRes();
+    await paintCalcHandler({ method: 'POST', headers: {}, body: { mode: 'property', property: p } }, res);
+    expect(res.statusCode).toBe(200);
+    const expected = deriveWallPaintOrders(p);
+    expect(res.body).toMatchObject({ mode: 'property', measurement_unit: 'm', quote_basis: 'whole_tins', lines: expected,
+      total_price_mur: expected.reduce((total, line) => total + line.fill.totalMur, 0) });
+  });
+  it('rejects duplicate painted faces, unknown products and invalid property quantities', async () => {
+    const duplicate = property(); duplicate.rooms[0].wallPaint.push(duplicate.rooms[0].wallPaint[0]);
+    const unknown = property(); unknown.rooms[0].wallPaint[0].paintId = 'made-up-paint';
+    for (const p of [duplicate, unknown, { ...property(), wallPaintCoats: 2.5 }, { ...property(), wallHeightM: Infinity }]) {
+      const res = fakeRes();
+      await paintCalcHandler({ method: 'POST', headers: {}, body: { mode: 'property', property: p } }, res);
+      expect(res.statusCode).toBe(422);
+    }
+  });
+  it('bounds expensive tin optimisation before allocating its purchase table', async () => {
+    const p = property(); p.rooms[0].polygon[1].x = 10000; p.wallHeightM = 8;
+    const res = fakeRes();
+    await paintCalcHandler({ method: 'POST', headers: {}, body: { mode: 'property', property: p } }, res);
+    expect(res.statusCode).toBe(422);
+    expect(res.body).toMatchObject({ error: 'quote_limit' });
   });
 });
 
