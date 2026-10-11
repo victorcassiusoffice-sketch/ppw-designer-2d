@@ -1,0 +1,31 @@
+/* One Live Build on the Studio pages (onelivebuild.com only).
+   studio.olb.generated.css maps the sage greens; this file sets variables, type and labels. */
+:root[data-brand='olb'] .studio-page {
+  --studio-bg: #f3efe6;
+  --studio-line: #ddd6c8;
+  --studio-mint: #1e3d32;
+  --studio-text: #1a1814;
+  background: #f3efe6;
+  font-family: var(--olb-text);
+}
+:root[data-brand='olb'] .studio-page :is(button, input, select, textarea) {
+  font-family: inherit;
+}
+:root[data-brand='olb'] .studio-page :is(h1, h2) {
+  font-family: var(--olb-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+:root[data-brand='olb'] .studio-eyebrow,
+:root[data-brand='olb'] .studio-paths small,
+:root[data-brand='olb'] .studio-card-kicker {
+  color: #8f4e2a;
+}
+:root[data-brand='olb'] .studio-brand .olb-lockup {
+  height: 30px;
+}
+@media (max-width: 760px) {
+  :root[data-brand='olb'] .studio-brand .olb-lockup {
+    height: 24px;
+  }
+}

@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { isShowcaseReadOnly } from '../../lib/showcaseSafety';
 import { EmbeddedDesigner } from '../../demo/EmbeddedDesigner';
 import './studio.css';
+import './studio.olb.generated.css';
+import './studio.olb.css';
 import { currentBrand } from '../../brand/brand';
 import { OlbLockup } from '../../brand/OlbLockup';
 
@@ -10,7 +12,7 @@ import { MEETING_URL } from '../pitch/workflowModel';
 
 function StudioHeader({ active }: { active?: 'design' | 'shop' | 'merchants' }) {
   return <header className="studio-header">
-    {currentBrand() === 'olb' ? <a href="/" className="studio-brand" aria-label="One Live Build home"><OlbLockup reverse height={30} /></a> : <a href="/studio" className="studio-brand"><span aria-hidden="true">P<span>·</span></span><strong>PPW <small>STUDIO</small></strong></a>}
+    {currentBrand() === 'olb' ? <a href="/" className="studio-brand" aria-label="One Live Build home"><OlbLockup height={30} /></a> : <a href="/studio" className="studio-brand"><span aria-hidden="true">P<span>·</span></span><strong>PPW <small>STUDIO</small></strong></a>}
     <nav aria-label="Studio navigation">
       <a href="/studio/designer" aria-current={active === 'design' ? 'page' : undefined}>Designer</a>
       <a href="/studio/shop" aria-current={active === 'shop' ? 'page' : undefined}>Shop</a>
