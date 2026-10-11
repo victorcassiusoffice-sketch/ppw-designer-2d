@@ -1,0 +1,34 @@
+/* One Live Build (onelivebuild.com). olb.html sets data-brand="olb" on <html>;
+   designer.ppwellness.co never does, so nothing here touches its look.
+   Fraunces and Outfit are self-hosted (SIL Open Font Licence, public/fonts/OFL-*.txt). */
+@font-face {
+  font-family: 'Fraunces';
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/fraunces-600-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Outfit';
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/outfit-latin.woff2') format('woff2');
+}
+:root[data-brand='olb'] {
+  --olb-paper: #f3efe6;
+  --olb-tint: #eee7d9;
+  --olb-sand: #e7dcc8;
+  --olb-line: #ddd6c8;
+  --olb-muted: #5c574e;
+  --olb-ink: #1a1814;
+  --olb-palm: #1e3d32;
+  --olb-palm-hover: #264c3f;
+  --olb-copper: #8f4e2a;
+  --olb-display: 'Fraunces', Georgia, serif;
+  --olb-text: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+}
+.olb-lockup {
+  display: block;
+  height: 28px;
+  width: auto;
+  max-width: 100%;
+}

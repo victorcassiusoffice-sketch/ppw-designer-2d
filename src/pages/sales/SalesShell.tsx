@@ -1,6 +1,10 @@
 import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { MEETING } from './salesPack';
+import { currentBrand } from '../../brand/brand';
+import { OlbLockup } from '../../brand/OlbLockup';
 import './salesPack.css';
+import './salesPack.olb.generated.css';
+import './salesPack.olb.css';
 
 export function SalesShell({
   kind,
@@ -16,16 +20,18 @@ export function SalesShell({
   children: ReactNode;
 }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
+  const olb = currentBrand() === 'olb';
+  const product = olb ? 'One Live Build' : 'PPW Room Designer';
   useEffect(() => {
     const old = document.title;
     document.title =
       kind === 'team'
-        ? 'Employee starter pack · PPW Room Designer'
-        : 'Plumbing companies · PPW Room Designer';
+        ? `Employee starter pack · ${product}`
+        : `Plumbing companies · ${product}`;
     return () => {
       document.title = old;
     };
-  }, [kind]);
+  }, [kind, product]);
   const keys = (e: KeyboardEvent, i: number) => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
     e.preventDefault();
@@ -44,12 +50,18 @@ export function SalesShell({
         Skip to presentation
       </a>
       <header className="sales-header">
-        <a href="/studio" className="sales-brand">
-          <span aria-hidden="true">P.</span>
-          <strong>
-            Room Designer<small>by PPW Studio</small>
-          </strong>
-        </a>
+        {olb ? (
+          <a href="/" className="sales-brand" aria-label="One Live Build home">
+            <OlbLockup height={30} />
+          </a>
+        ) : (
+          <a href="/studio" className="sales-brand">
+            <span aria-hidden="true">P.</span>
+            <strong>
+              Room Designer<small>by PPW Studio</small>
+            </strong>
+          </a>
+        )}
         <span className="sales-edition">
           {kind === 'team' ? 'Employee field guide' : 'For plumbing companies'}
         </span>
@@ -93,7 +105,7 @@ export function SalesShell({
       </section>
       <footer className="sales-footer">
         <span>
-          PPW Room Designer <span aria-hidden="true">/</span> {String(chapter + 1).padStart(2, '0')}{' '}
+          {product} <span aria-hidden="true">/</span> {String(chapter + 1).padStart(2, '0')}{' '}
           of {names.length}
         </span>
         <div>

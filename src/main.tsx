@@ -3,7 +3,9 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { bootstrapFx } from './store/currencyStore';
 import RouteFallback from './components/RouteFallback';
+import { currentBrand, isShopHost } from './brand/brand';
 import './index.css';
+import './brand/olb.css';
 
 // Pitch and Studio visitors load the designer only when they open it.
 // Keep Clerk (admin-only) and jsPDF (order-success only) route-scoped too.
@@ -52,6 +54,11 @@ const MerchantConnectPage = lazy(() => import('./pages/studio/MerchantConnectPag
 const StudioShopFrame = lazy(() => import('./pages/studio/StudioPage').then((m) => ({ default: m.StudioShopFrame })));
 const PreviewShopRoute = lazy(() => import('./pages/studio/StudioPage').then((m) => ({ default: m.PreviewShopRoute })));
 const ShowcaseCheckoutGuard = lazy(() => import('./pages/studio/StudioPage').then((m) => ({ default: m.ShowcaseCheckoutGuard })));
+const OlbHomePage = lazy(() => import('./pages/olb/OlbHomePage'));
+
+// onelivebuild.com opens on its own front page; designer.ppwellness.co (and the
+// shop's own address, row D6-ONELIVEBUILD-1010-19) keep the shop as the front door.
+const oneLiveBuildHome = currentBrand() === 'olb' && !isShopHost();
 
 // Fire-and-forget FX bootstrap - refreshes the live rate snapshot if
 // the cached one is stale.
@@ -120,7 +127,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         {/* WD rework 2026-07-26 (Vic directive 5): the SHOP is the front door.
             "Browse and buy" is the primary journey; the Sims-style room
             designer is an optional extra mode at /designer. */}
-        <Route path="/" element={<PreviewShopRoute><PublicProductsPage /></PreviewShopRoute>} />
+        <Route path="/" element={oneLiveBuildHome ? <OlbHomePage /> : <PreviewShopRoute><PublicProductsPage /></PreviewShopRoute>} />
         <Route path="/designer" element={<App />} />
         <Route path="/demo" element={<DemoDesignerPage />} />
         <Route path="/embed/designer" element={<DemoDesignerPage />} />
