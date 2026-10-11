@@ -1,0 +1,27 @@
+/* One Live Build on the plumbing pitch and the employee starter pack (onelivebuild.com only).
+   salesPack.olb.generated.css maps the sage greens; this file sets variables, type and labels. */
+:root[data-brand='olb'] .sales-pack {
+  --sales-ink: #1a1814;
+  --sales-muted: #5c574e;
+  --sales-accent: #1e3d32;
+  --sales-edge: #ddd6c8;
+  background: #f3efe6;
+  font-family: var(--olb-text);
+}
+:root[data-brand='olb'] .sales-pack :is(h1, h2, h3) {
+  font-family: var(--olb-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+:root[data-brand='olb'] .sales-kicker,
+:root[data-brand='olb'] .sales-shot figcaption span {
+  color: #8f4e2a;
+}
+:root[data-brand='olb'] .sales-brand .olb-lockup {
+  height: 30px;
+}
+@media (max-width: 760px) {
+  :root[data-brand='olb'] .sales-brand .olb-lockup {
+    height: 24px;
+  }
+}

@@ -1,4 +1,5 @@
 import { accessPage } from './accessPage';
+import { brandFor, type Brand } from './brand';
 
 const CODE_HASH = '35a99a53ff1b46f86a14a375742dfd7fefff96a8a2e9c4bcf0fe3546c36c9520';
 export const ACCESS_COOKIE = '__Host-ppw-studio';
@@ -8,9 +9,9 @@ type Command = (args: (string | number)[]) => Promise<unknown>;
 class AccessStorageError extends Error {
   constructor(readonly reason: 'configuration' | 'connection' | 'credentials' | 'command' | 'session', readonly upstreamStatus?: number, readonly detail?: string) { super(reason); }
 }
-function unavailable(destination: string, error: unknown) {
+function unavailable(destination: string, error: unknown, brand: Brand) {
   const reason = error instanceof AccessStorageError ? error.reason : 'runtime';
-  return page(destination, 'The studio is temporarily unavailable. Please try again shortly.', 503, { 'Retry-After': '30', 'X-Studio-Access-Status': reason, ...(error instanceof AccessStorageError && error.upstreamStatus ? { 'X-Studio-Storage-Status': String(error.upstreamStatus) } : {}), ...(error instanceof AccessStorageError && error.detail ? { 'X-Studio-Access-Detail': error.detail } : {}) });
+  return page(destination, 'The studio is temporarily unavailable. Please try again shortly.', 503, { 'Retry-After': '30', 'X-Studio-Access-Status': reason, ...(error instanceof AccessStorageError && error.upstreamStatus ? { 'X-Studio-Storage-Status': String(error.upstreamStatus) } : {}), ...(error instanceof AccessStorageError && error.detail ? { 'X-Studio-Access-Detail': error.detail } : {}) }, brand);
 }
 export type AccessDependencies = {
   command: Command;
@@ -59,14 +60,15 @@ async function smallFormBody(request: Request): Promise<string | null> {
     return new TextDecoder().decode(bytes);
   } finally { reader.releaseLock(); }
 }
-function page(destination: string, message = '', status = 200, extra: Record<string, string> = {}) {
-  return new Response(accessPage(destination, message), { status, headers: {
+function page(destination: string, message = '', status = 200, extra: Record<string, string> = {}, brand: Brand = 'ppw') {
+  return new Response(accessPage(destination, message, brand), { status, headers: {
     'Content-Type': 'text/html; charset=utf-8',
     'Cache-Control': 'private, no-store, max-age=0',
     'CDN-Cache-Control': 'no-store',
     'Vercel-CDN-Cache-Control': 'no-store',
     'X-Robots-Tag': 'noindex, nofollow',
-    'Content-Security-Policy': `default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'self'${/^\/embed\/designer\/?(?:\?|$)/.test(destination) ? ' https:' : ''}`,
+    // img/font 'self': the One Live Build page shows its logo, picture and fonts (still no scripts).
+    'Content-Security-Policy': `default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; font-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'self'${/^\/embed\/designer\/?(?:\?|$)/.test(destination) ? ' https:' : ''}`,
     ...extra,
   } });
 }
@@ -78,6 +80,10 @@ function page(destination: string, message = '', status = 200, extra: Record<str
 /** Public pitches, the demo and the embed. /studio and the designer shell stay gated. */
 export function opensWithoutStudioCode(pathname: string): boolean {
   if (pathname === '/favicon.ico' || pathname === '/ppw-favicon.svg') return true;
+  // Logos, icons, the social card and the self-hosted fonts: the passcode page and
+  // the open pages (/demo, /embed) draw them before anyone has entered the code.
+  if (pathname.startsWith('/brand/')) return true;
+  if (pathname.startsWith('/fonts/')) return true;
   if (pathname === '/demo' || pathname.startsWith('/demo/')) return true;
   if (pathname === '/embed' || pathname.startsWith('/embed/')) return true;
   if (pathname.startsWith('/pitch/')) return true;
@@ -94,6 +100,8 @@ export async function handleAccess(request: Request, deps: AccessDependencies): 
   const isAccess = url.pathname === '/access';
   if (!isAccess && opensWithoutStudioCode(url.pathname)) return null;
   const destination = safeDestination(isAccess ? url.searchParams.get('next') : url.pathname + url.search);
+  const brand = brandFor(url, deps.namespace);
+  const show = (message = '', status = 200, extra: Record<string, string> = {}) => page(destination, message, status, extra, brand);
   const namespace = `ppw:studio-access:v1:${deps.namespace}:${url.host}`;
   const cookie = (request.headers.get('cookie') ?? '').split(';').map((v) => v.trim()).find((v) => v.startsWith(`${ACCESS_COOKIE}=`))?.slice(ACCESS_COOKIE.length + 1);
   if (cookie && /^[a-f0-9]{64}$/.test(cookie)) {
@@ -102,27 +110,27 @@ export async function handleAccess(request: Request, deps: AccessDependencies): 
         if (isAccess) return new Response(null, { status: 303, headers: { Location: destination, 'Cache-Control': 'no-store' } });
         return null;
       }
-    } catch (error) { return unavailable(destination, error); }
+    } catch (error) { return unavailable(destination, error, brand); }
   }
-  if (!isAccess || request.method === 'GET' || request.method === 'HEAD') return page(destination);
-  if (request.method !== 'POST') return page(destination, 'Enter the code below to open the studio.', 405, { Allow: 'GET, HEAD, POST' });
+  if (!isAccess || request.method === 'GET' || request.method === 'HEAD') return show();
+  if (request.method !== 'POST') return show('Enter the code below to open the studio.', 405, { Allow: 'GET, HEAD, POST' });
   // Prevent a third-party site silently submitting a shared code on a visitor's behalf.
-  if (request.headers.get('origin') !== url.origin) return page(destination, 'Please enter your code from this page.', 403);
-  if (!request.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded')) return page(destination, 'Please enter the four-digit code below.', 400);
-  if (Number(request.headers.get('content-length') ?? 0) > 512) return page(destination, 'Please enter the four-digit code below.', 400);
+  if (request.headers.get('origin') !== url.origin) return show('Please enter your code from this page.', 403);
+  if (!request.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded')) return show('Please enter the four-digit code below.', 400);
+  if (Number(request.headers.get('content-length') ?? 0) > 512) return show('Please enter the four-digit code below.', 400);
   try {
     const text = await smallFormBody(request);
-    if (text === null) return page(destination, 'Please enter the four-digit code below.', 400);
+    if (text === null) return show('Please enter the four-digit code below.', 400);
     const bucket = Math.floor(deps.now() / 600_000);
     const ipKey = (await digest(deps.clientIp)).slice(0, 32);
     const rateKey = `${namespace}:attempts:${ipKey}:${bucket}`;
     const count = Number(await deps.command(['INCR', rateKey]));
     if (!Number.isFinite(count) || count < 1) throw new Error('Unavailable rate limit');
     if (count === 1) await deps.command(['EXPIRE', rateKey, 660]);
-    if (count > 10) return page(destination, 'Too many attempts. Please try again in a few minutes.', 429, { 'Retry-After': String(600 - Math.floor(deps.now() / 1000) % 600) });
+    if (count > 10) return show('Too many attempts. Please try again in a few minutes.', 429, { 'Retry-After': String(600 - Math.floor(deps.now() / 1000) % 600) });
     const code = new URLSearchParams(text).get('code') ?? '';
     const expected = deps.codeHash ?? CODE_HASH;
-    if (!/^[0-9]{4}$/.test(code) || !fixedEqual(await digest(code), expected)) return page(destination, 'That code does not match. Please try again.', 401);
+    if (!/^[0-9]{4}$/.test(code) || !fixedEqual(await digest(code), expected)) return show('That code does not match. Please try again.', 401);
     const token = randomHex();
     const stored = await deps.command(['SET', `${namespace}:session:${await digest(token)}`, 'unlocked', 'EX', SESSION_SECONDS, 'NX']);
     if (stored !== 'OK') throw new AccessStorageError('session');
@@ -132,5 +140,5 @@ export async function handleAccess(request: Request, deps: AccessDependencies): 
       // Partitioned supports the same access form inside merchant iframes.
       'Set-Cookie': `${ACCESS_COOKIE}=${token}; Path=/; Max-Age=${SESSION_SECONDS}; HttpOnly; Secure; SameSite=None; Partitioned`,
     } });
-  } catch (error) { return unavailable(destination, error); }
+  } catch (error) { return unavailable(destination, error, brand); }
 }

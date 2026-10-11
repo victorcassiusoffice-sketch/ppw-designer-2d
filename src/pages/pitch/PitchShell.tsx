@@ -3,8 +3,12 @@ import { MEETING_URL } from './workflowModel';
 import { EmbeddedDesigner, type EmbeddedDesignerProps } from '../../demo/EmbeddedDesigner';
 import type { DemoScene } from '../../demo/demoRoute';
 import { PitchConnectChapter } from './PitchConnectChapter';
+import { currentBrand } from '../../brand/brand';
+import { OlbLockup } from '../../brand/OlbLockup';
 import './pitch.css';
 import './pitch-tactile.css';
+import './pitch.olb.generated.css';
+import './pitch.olb.css';
 
 export function PitchShell({ audience, chapters, chapter, onChapter, children }: {
   audience: 'Developers' | 'Merchants' | 'Construction'; chapters: readonly string[]; chapter: number; onChapter: (chapter: number) => void; children: ReactNode;
@@ -13,11 +17,12 @@ export function PitchShell({ audience, chapters, chapter, onChapter, children }:
   const [connectEntry, setConnectEntry] = useState<'ai' | 'contact'>('ai');
   const selectChapter = (index: number) => { setConnectEntry('ai'); onChapter(index); };
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
+  const olb = currentBrand() === 'olb';
   useEffect(() => {
     const previous = document.title;
-    document.title = `${audience === 'Developers' ? 'Property Developer' : audience === 'Construction' ? 'Construction & Materials' : 'Merchant'} Experience | PPW Studio`;
+    document.title = `${audience === 'Developers' ? 'Property Developer' : audience === 'Construction' ? 'Construction & Materials' : 'Merchant'} Experience | ${olb ? 'One Live Build' : 'PPW Studio'}`;
     return () => { document.title = previous; };
-  }, [audience]);
+  }, [audience, olb]);
   const navigate = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
@@ -25,7 +30,7 @@ export function PitchShell({ audience, chapters, chapter, onChapter, children }:
     selectChapter(next); buttons.current[next]?.focus();
   };
   return <main className={`pitch-app${audience === 'Construction' ? ' pitch-construction' : ''}`}>
-    <header className="pitch-header"><a className="pitch-brand" href="/studio" aria-label="PPW Studio home"><span className="pitch-brand-mark">P<span>·</span></span><span>PPW <strong>STUDIO</strong></span></a>
+    <header className="pitch-header">{olb ? <a className="pitch-brand" href="/" aria-label="One Live Build home"><OlbLockup /></a> : <a className="pitch-brand" href="/studio" aria-label="PPW Studio home"><span className="pitch-brand-mark">P<span>·</span></span><span>PPW <strong>STUDIO</strong></span></a>}
       <span className="pitch-audience">For {audience.toLowerCase()}</span>
       <nav aria-label="Pitch links"><a href={audience === 'Developers' ? '/pitch/merchants' : '/pitch/developers'}>{audience === 'Developers' ? 'For merchants' : 'For developers'}</a><a className="pitch-meeting" href={MEETING_URL} target="_blank" rel="noreferrer">Meet Victor <span aria-hidden="true">↗</span></a></nav>
     </header>

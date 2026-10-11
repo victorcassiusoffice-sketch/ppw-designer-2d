@@ -1,0 +1,50 @@
+/* One Live Build on the developer and merchant pitches (onelivebuild.com only).
+   pitch.olb.generated.css maps the sage greens; this file sets the palette variables,
+   the type and the few roles a colour map cannot know (eyebrows, heading accents, logo). */
+:root[data-brand='olb'] .pitch-app {
+  --pitch-ink: #1a1814;
+  --pitch-navy: #1e3d32;
+  --pitch-teal: #1e3d32;
+  --pitch-ivory: #f3efe6;
+  --pitch-muted: #5c574e;
+  --pitch-edge: #ddd6c8;
+  --pitch-surface: #eee7d9;
+  --pitch-sage: #e7dcc8;
+  --pitch-raised: none;
+  background: #f3efe6;
+  font-family: var(--olb-text);
+}
+:root[data-brand='olb'] .pitch-app :is(button, input, select, textarea) {
+  font-family: inherit;
+}
+:root[data-brand='olb'] .pitch-app :is(h1, h2, h3) {
+  font-family: var(--olb-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+:root[data-brand='olb'] .pitch-app :is(h1, h2) em {
+  font-family: var(--olb-display);
+  color: #8f4e2a;
+}
+:root[data-brand='olb'] .pitch-app .pitch-category-metric {
+  font-family: var(--olb-display);
+}
+:root[data-brand='olb'] .pitch-eyebrow,
+:root[data-brand='olb'] .pitch-panel-ivory .pitch-eyebrow {
+  color: #8f4e2a !important;
+}
+:root[data-brand='olb'] .pitch-concept-note > span {
+  color: #8f4e2a;
+}
+:root[data-brand='olb'] .pitch-brand {
+  display: flex;
+  align-items: center;
+}
+:root[data-brand='olb'] .pitch-brand .olb-lockup {
+  height: 28px;
+}
+@media (max-width: 760px) {
+  :root[data-brand='olb'] .pitch-brand .olb-lockup {
+    height: 22px;
+  }
+}

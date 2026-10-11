@@ -3,7 +3,10 @@ import { EmbeddedDesigner } from '../../demo/EmbeddedDesigner';
 import {
   CONSTRUCTION_FOOTER, CONSTRUCTION_MEETING_URL, CONSTRUCTION_SHOTS, MATERIALS_NOTE, STARTING_POINT,
 } from './constructionWorkflow';
+import { currentBrand } from '../../brand/brand';
+import { OlbLockup } from '../../brand/OlbLockup';
 import './constructionPitch.css';
+import './constructionPitch.olb.css';
 
 function Shot({ desktop, phone, alt }: { desktop: string; phone?: string; alt: string }) {
   const image = <img src={desktop} alt={alt} />;
@@ -38,13 +41,13 @@ function HouseDemo() {
 export default function ConstructionPitchPage() {
   useEffect(() => {
     const previous = document.title;
-    document.title = 'Construction | PPW Studio';
+    document.title = currentBrand() === 'olb' ? 'Construction | One Live Build' : 'Construction | PPW Studio';
     return () => { document.title = previous; };
   }, []);
   return <main className="c-pitch">
     <header className="c-top">
       <div className="c-wrap c-top-row">
-        <a className="c-brand" href="/pitch/construction">PPW Studio</a>
+        {currentBrand() === 'olb' ? <a className="c-brand" href="/" aria-label="One Live Build home"><OlbLockup height={26} /></a> : <a className="c-brand" href="/pitch/construction">PPW Studio</a>}
         <nav aria-label="Other pitches">
           <a href="/pitch/developers">For developers</a>
           <a href="/pitch/merchants">For merchants</a>

@@ -1,0 +1,51 @@
+/* One Live Build on the construction pitch (onelivebuild.com only): the dark page on paper,
+   palm buttons with paper text, copper kickers. designer.ppwellness.co keeps the dark page. */
+:root[data-brand='olb'] .c-pitch {
+  --c-bg: #f3efe6;
+  --c-bg-2: #eee7d9;
+  --c-ink: #1a1814;
+  --c-muted: #5c574e;
+  --c-line: #ddd6c8;
+  --c-accent: #1e3d32;
+  --c-accent-ink: #f3efe6;
+  --c-card: #f8f5ee;
+  background: #f3efe6;
+  color-scheme: light;
+  font-family: var(--olb-text);
+}
+:root[data-brand='olb'] .c-pitch :is(button, input, select, textarea) {
+  font-family: inherit;
+}
+:root[data-brand='olb'] .c-pitch :is(h1, h2, h3) {
+  font-family: var(--olb-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+:root[data-brand='olb'] .c-top {
+  background: rgba(243, 239, 230, 0.94);
+}
+:root[data-brand='olb'] .c-kicker {
+  color: #8f4e2a;
+}
+:root[data-brand='olb'] .c-portrait {
+  background: #e7dcc8;
+}
+:root[data-brand='olb'] .c-shot img,
+:root[data-brand='olb'] .c-frame,
+:root[data-brand='olb'] .c-demo iframe,
+:root[data-brand='olb'] .c-segment,
+:root[data-brand='olb'] .c-try {
+  background: #eee7d9;
+}
+:root[data-brand='olb'] .c-plan {
+  background: #1e3d32;
+  color: #f3efe6;
+  border-color: #1e3d32;
+}
+:root[data-brand='olb'] .c-brand {
+  display: flex;
+  align-items: center;
+}
+:root[data-brand='olb'] .c-brand .olb-lockup {
+  height: 26px;
+}

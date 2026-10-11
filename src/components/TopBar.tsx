@@ -120,6 +120,10 @@ import {
   CHROME_TEXT,
   CHROME_TEXT_2,
 } from '../designer/blueprintTheme';
+import { currentBrand } from '../brand/brand';
+
+/** onelivebuild.com serves olb.html (data-brand="olb"); read once, the shell never changes during a visit. */
+const olbBrand = currentBrand() === 'olb';
 
 export interface TopBarProps {
   drawMode: boolean;
@@ -1739,14 +1743,15 @@ export function TopBar({
             labels and the in-control cart count need those pixels. */}
         <div className="plan-identity flex min-w-0 shrink items-center gap-2">
           {/* Embedded and standalone Demo stay inside the designer. */}
-          {designerOnly ? <span className="flex h-10 w-7 shrink-0 items-center justify-center" title="PPWellness Demo">
-            <img src="/brand/ppw-mark-512.png" alt="PPWellness" width={24} height={24} className="block" />
+          {/* onelivebuild.com shows the One Live Build tile; designer.ppwellness.co keeps the PPW mark. */}
+          {designerOnly ? <span className="flex h-10 w-7 shrink-0 items-center justify-center" title={olbBrand ? 'One Live Build demo' : 'PPWellness Demo'}>
+            <img src={olbBrand ? '/brand/olb/olb-mark.svg' : '/brand/ppw-mark-512.png'} alt={olbBrand ? 'One Live Build' : 'PPWellness'} width={24} height={24} className="block" />
           </span> : <Link
-            to={readOnly ? '/studio' : '/products'}
-            title={readOnly ? 'Demo studio' : 'Back to PPWellness Shop'}
+            to={readOnly ? '/studio' : olbBrand ? '/' : '/products'}
+            title={readOnly ? 'Demo studio' : olbBrand ? 'One Live Build home' : 'Back to PPWellness Shop'}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-ppw-rim bg-ppw-chrome shadow-[3px_3px_7px_rgba(167,160,144,0.42),-3px_-3px_7px_rgba(255,255,255,0.95)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] md:h-10 md:w-10"
           >
-            <img src="/brand/ppw-mark-512.png" alt="PPWellness" width={24} height={24} className="block" />
+            <img src={olbBrand ? '/brand/olb/olb-mark.svg' : '/brand/ppw-mark-512.png'} alt={olbBrand ? 'One Live Build' : 'PPWellness'} width={24} height={24} className="block" />
           </Link>}
 
           {/* Rooms trigger — the ONLY way into the rooms list at every width

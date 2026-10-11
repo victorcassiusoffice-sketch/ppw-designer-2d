@@ -1,0 +1,203 @@
+/* onelivebuild.com front page: the One Live Build deck's paper, ink, palm, copper and sand. */
+.olb-home {
+  box-sizing: border-box;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 clamp(16px, 5vw, 72px);
+  background: #f3efe6;
+  color: #1a1814;
+  font-family: var(--olb-text, 'Outfit', ui-sans-serif, system-ui, sans-serif);
+  line-height: 1.5;
+}
+.olb-home *,
+.olb-home *::before,
+.olb-home *::after {
+  box-sizing: border-box;
+}
+.olb-home a:focus-visible {
+  outline: 3px solid #8f4e2a;
+  outline-offset: 3px;
+}
+.olb-home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 0;
+  border-bottom: 1px solid #ddd6c8;
+}
+.olb-home-header .olb-lockup {
+  height: 32px;
+}
+.olb-home-header nav {
+  display: flex;
+  gap: 4px;
+}
+.olb-home-header nav a {
+  padding: 9px 14px;
+  border-radius: 999px;
+  color: #1e3d32;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.olb-home-header nav a:hover {
+  background: #e7dcc8;
+}
+.olb-home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: center;
+  padding: clamp(28px, 6vw, 72px) 0;
+}
+.olb-home-eyebrow {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8f4e2a;
+}
+.olb-home h1 {
+  margin: 0;
+  font-family: var(--olb-display, 'Fraunces', Georgia, serif);
+  font-weight: 600;
+  font-size: clamp(40px, 6vw, 76px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+.olb-home-lead {
+  margin: 18px 0 28px;
+  max-width: 34ch;
+  font-size: clamp(16px, 1.6vw, 19px);
+  color: #5c574e;
+}
+.olb-home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.olb-home-primary,
+.olb-home-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 50px;
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.olb-home-primary {
+  background: #1e3d32;
+  color: #f3efe6;
+}
+.olb-home-primary:hover {
+  background: #264c3f;
+}
+.olb-home-secondary {
+  border: 1px solid #1e3d32;
+  color: #1e3d32;
+}
+.olb-home-secondary:hover {
+  background: #e7dcc8;
+}
+.olb-home-art {
+  margin: 0;
+}
+.olb-home-art img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #ddd6c8;
+  border-radius: 20px;
+}
+.olb-home-decks {
+  padding: 8px 0 40px;
+}
+.olb-home-decks h2 {
+  margin: 0 0 16px;
+  font-family: var(--olb-display, 'Fraunces', Georgia, serif);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.olb-home-decks ul {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.olb-home-decks a {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  padding: 20px;
+  border: 1px solid #ddd6c8;
+  border-radius: 18px;
+  background: #f8f5ee;
+  color: #1a1814;
+  text-decoration: none;
+}
+.olb-home-decks a:hover {
+  border-color: #1e3d32;
+}
+.olb-home-decks small {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8f4e2a;
+}
+.olb-home-decks strong {
+  font-family: var(--olb-display, 'Fraunces', Georgia, serif);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.olb-home-decks a > span {
+  margin-top: auto;
+  color: #1e3d32;
+}
+.olb-home-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding: 18px 0 24px;
+  border-top: 1px solid #ddd6c8;
+  font-size: 13px;
+  color: #5c574e;
+}
+.olb-home-footer a {
+  color: #1e3d32;
+}
+@media (max-width: 900px) {
+  .olb-home-hero {
+    grid-template-columns: 1fr;
+  }
+  .olb-home-art {
+    order: -1;
+  }
+  .olb-home-decks ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .olb-home-header .olb-lockup {
+    height: 24px;
+  }
+  .olb-home-header nav a {
+    padding: 8px 9px;
+    font-size: 14px;
+  }
+  .olb-home-decks ul {
+    grid-template-columns: 1fr;
+  }
+}

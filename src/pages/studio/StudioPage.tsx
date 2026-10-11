@@ -3,12 +3,14 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { isShowcaseReadOnly } from '../../lib/showcaseSafety';
 import { EmbeddedDesigner } from '../../demo/EmbeddedDesigner';
 import './studio.css';
+import { currentBrand } from '../../brand/brand';
+import { OlbLockup } from '../../brand/OlbLockup';
 
 import { MEETING_URL } from '../pitch/workflowModel';
 
 function StudioHeader({ active }: { active?: 'design' | 'shop' | 'merchants' }) {
   return <header className="studio-header">
-    <a href="/studio" className="studio-brand"><span aria-hidden="true">P<span>·</span></span><strong>PPW <small>STUDIO</small></strong></a>
+    {currentBrand() === 'olb' ? <a href="/" className="studio-brand" aria-label="One Live Build home"><OlbLockup reverse height={30} /></a> : <a href="/studio" className="studio-brand"><span aria-hidden="true">P<span>·</span></span><strong>PPW <small>STUDIO</small></strong></a>}
     <nav aria-label="Studio navigation">
       <a href="/studio/designer" aria-current={active === 'design' ? 'page' : undefined}>Designer</a>
       <a href="/studio/shop" aria-current={active === 'shop' ? 'page' : undefined}>Shop</a>
@@ -22,7 +24,7 @@ export default function StudioPage() {
   const [mode, setMode] = useState<'2d' | '3d'>('3d');
   // Preserve the read-only session when someone follows a Shop link.
   isShowcaseReadOnly();
-  useEffect(() => { document.title = 'PPW Studio · Design, discover, connect'; }, []);
+  useEffect(() => { document.title = `${currentBrand() === 'olb' ? 'One Live Build' : 'PPW Studio'} · Design, discover, connect`; }, []);
   return <main className="studio-page">
     <StudioHeader />
     <div className="studio-home">
@@ -58,7 +60,7 @@ export function StudioDesignerPage() {
   isShowcaseReadOnly();
   return <main className="studio-page studio-workspace">
     <header className="studio-designer-toolbar" data-testid="studio-designer-toolbar">
-      <a href="/studio" className="studio-designer-brand" title="Back to Studio"><strong>PPW</strong><span>Studio</span></a>
+      <a href="/studio" className="studio-designer-brand" title="Back to Studio">{currentBrand() === 'olb' ? <strong>One Live Build</strong> : <><strong>PPW</strong><span>Studio</span></>}</a>
       <nav aria-label="Studio navigation"><a href="/studio/shop">Shop</a><a href="/studio/merchants">Merchants</a></nav>
       <div className="studio-view-toggle" role="group" aria-label="Designer view"><button type="button" aria-pressed={mode === '2d'} onClick={() => setParams({ view: '2d' })}>2D</button><button type="button" aria-pressed={mode === '3d'} onClick={() => setParams({ view: '3d' })}>Premium 3D</button></div>
       <span className="studio-designer-status">Demo · saved locally</span>

@@ -85,6 +85,13 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: sentryEnabled ? 'hidden' : false,
     rollupOptions: {
+      // Two HTML shells, one app: index.html (designer.ppwellness.co) and
+      // olb.html (onelivebuild.com: One Live Build icons, card and
+      // data-brand="olb"). middleware.ts picks the shell by host.
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        olb: path.resolve(__dirname, 'olb.html'),
+      },
       // jsPDF references canvg + dompurify as OPTIONAL deps for its
       // SVG-to-PDF rendering. We never use those code paths (we render
       // SVG -> PNG ourselves before calling addImage), so mark them
