@@ -13,6 +13,8 @@ import { useCartUIStore } from '../../store/cartUIStore';
 import { HOME_DEMO } from '../generic';
 import { activateDemoFromUrl, useDemoMode } from '../useDemoMode';
 import { getProductById } from '../../data/products';
+import { resetPitchEmbedCache } from '../pitchEmbed';
+import { startDemoScrub } from '../demoScrub';
 
 vi.mock('../../components/RoomView3D', () => ({ RoomView3D: ({ onCart }: { onCart: () => void }) => <button onClick={onCart}>3D product estimate</button> }));
 vi.mock('../../lib/showcaseSafety', () => ({ isShowcaseReadOnly: () => true, DEMO_NOTICE: 'Preview only — no orders.' }));
@@ -23,6 +25,7 @@ let host: HTMLDivElement;
 let root: Root;
 beforeEach(() => {
   window.history.replaceState({}, '', '/demo');
+  resetPitchEmbedCache();
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
   vi.stubGlobal('innerWidth', 390);
   vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('min-width') ? 390 >= Number(query.match(/\d+/)?.[0] ?? 0) : false, media: query, onchange: null, addEventListener() {}, removeEventListener() {} }));
@@ -34,7 +37,7 @@ beforeEach(() => {
   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
   cloud.save.mockClear(); cloud.lead.mockClear();
 });
-afterEach(() => { act(() => root.unmount()); host.remove(); window.history.replaceState({}, '', '/'); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+afterEach(() => { act(() => root.unmount()); host.remove(); window.history.replaceState({}, '', '/'); resetPitchEmbedCache(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 function renderBar() { act(() => root.render(<MemoryRouter><TopBar drawMode={false} setDrawMode={vi.fn()} roomsMenuOpen={false} setRoomsMenuOpen={vi.fn()} /></MemoryRouter>)); }
 const click = (node: HTMLElement) => act(() => node.click());
 const button = (text: string) => [...document.querySelectorAll<HTMLButtonElement>('button')].find(node => node.textContent?.trim() === text)!;
@@ -76,24 +79,39 @@ describe('designer-only Demo controls', () => {
     expect(cloud.save).not.toHaveBeenCalled(); expect(cloud.lead).not.toHaveBeenCalled();
   });
 
-  it('opens a local estimate from the phone menu, retains prices, and dismisses with Escape', () => {
+  // /embed/designer keeps the estimate; the public /demo shows no price
+  // (row D6-DESIGNER-DEMO-CLEAN-1013, 2026-10-13).
+  it.each([
+    ['/embed/designer', 'Product estimate', true],
+    ['/demo', 'Products in this design', false],
+  ] as const)('opens a local product list from the phone menu on %s (prices %s) and dismisses with Escape', (path, label, priced) => {
+    window.history.replaceState({}, '', path); resetPitchEmbedCache();
     renderBar(); openProjects();
-    const estimate = [...document.querySelectorAll<HTMLAnchorElement>('a')].find(node => node.textContent?.includes('Product estimate'))!;
+    const estimate = [...document.querySelectorAll<HTMLAnchorElement>('a')].find(node => node.textContent?.includes(label))!;
     click(estimate);
     const dialog = document.querySelector('[aria-label="Demo product estimate"]')!;
     expect(dialog).not.toBeNull();
-    expect(dialog.querySelector('[data-testid="house-cost-total"]')?.textContent).toMatch(/\d/);
+    if (priced) expect(dialog.querySelector('[data-testid="house-cost-total"]')?.textContent).toMatch(/\d/);
+    else expect(dialog.querySelector('[data-testid="house-cost-total"]')).toBeNull();
     expect(dialog.querySelector('a')).toBeNull();
     act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', cancelable: true })));
     expect(document.querySelector('[aria-label="Demo product estimate"]')).toBeNull();
   });
 
-  it('preserves the genuine product description and estimate while hiding 3D checkout', () => {
+  it.each([['/embed/designer', true], ['/demo', false]] as const)('keeps the product description on %s (estimate %s) while hiding 3D checkout', async (path, priced) => {
+    window.history.replaceState({}, '', path); resetPitchEmbedCache();
+    // /demo runs the page-level scrubber (DemoDesignerPage); product notes rely on it.
+    const stop = priced ? null : startDemoScrub(document.body);
     const id = HOME_DEMO.buildProperty().rooms.flatMap(room => room.placedItems)[0].productId;
     const checkout = vi.fn();
     act(() => root.render(<HouseCostPanel productId={id} onCart={checkout} />));
     expect(host.textContent).toContain(getProductById(id)!.name);
-    expect(host.querySelector('[data-testid="house-cost-total"]')?.textContent).toMatch(/\d/);
+    if (priced) expect(host.querySelector('[data-testid="house-cost-total"]')?.textContent).toMatch(/\d/);
+    else {
+      await act(async () => { await Promise.resolve(); });
+      expect(host.textContent).not.toMatch(/\bRs\b|\bMUR\b|\bVAT\b/);
+    }
+    stop?.();
     expect(host.querySelector('.house-review-cart')).toBeNull();
     expect(checkout).not.toHaveBeenCalled();
   });

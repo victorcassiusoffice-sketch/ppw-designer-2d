@@ -36,6 +36,7 @@ import type { PlacedItem } from '../store/propertyStore';
 // Batch 3 Fix 3.2 — live draw-mode counters (vertex / perim / area)
 // piggy-back the active-room row instead of the deleted floating HUD.
 import { useDrawProgressStore } from '../store/drawProgressStore';
+import { isPitchEmbed } from '../demo/pitchEmbed';
 
 /**
  * Sum the MUR value of items + (active-room only) floor zones.
@@ -241,9 +242,9 @@ export function RoomList({
                       <p className="mt-0.5 text-[10px] text-ppw-slate">
                         {area.toFixed(2)} m² · {items} item{items === 1 ? '' : 's'}
                       </p>
-                      <p className="mt-0.5 text-[10px] font-medium text-ppw-teal">
+                      {!isPitchEmbed() && <p className="mt-0.5 text-[10px] font-medium text-ppw-teal">
                         Room value Rs {computeRoomValueMur(room.placedItems, floorZones, isActive).toLocaleString('en-MU')}
-                      </p>
+                      </p>}
                       {isActive && drawEnabled && (
                         <p
                           className="mt-1 rounded-sm border border-ppw-teal/40 bg-ppw-teal/10 px-1.5 py-0.5 text-[10px] font-medium leading-tight text-ppw-teal"
