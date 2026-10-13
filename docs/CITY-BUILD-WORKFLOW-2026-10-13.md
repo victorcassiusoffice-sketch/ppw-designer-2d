@@ -1,6 +1,6 @@
 # City Build — workflow before implementation
 
-Status: local implementation on `gpt/designer-2026-10-13`, based on the preserved demo-cleanup checkout `9c82630`. Do not publish until Victor's Y. This expands planning and procurement coordination; it does not certify an entire city's engineering.
+Status: published feature preview on `gpt/designer-2026-10-13`, application release `3f046cc`, [PR #47](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/47); https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app. Victor authorized publication; main and production are unchanged. This expands planning and procurement coordination; it does not certify an entire city's engineering.
 
 ## Dependency order
 
@@ -28,4 +28,4 @@ Implemented: measured 2D/3D envelopes, editable road and utility routes, overlap
 
 Next operational phase: approved supplier SKU/quote mapping, role-based project approvals, immutable approved design/quantity revision, invoice provider integration, transactional dispatch outbox and delivery acknowledgements. Do not turn planning dates into automatic releases without those controls. Broader engineering work needs surveyed terrain, connected multi-building detail models, pipe/duct fittings and hydraulic/electrical studies. Current equipment geometry is a measured planning envelope, not manufacturer CAD.
 
-Publication is held by Victor's explicit instruction to review terminal/headless desktop and phone evidence first, then wait for Y. Code remains in the product repository on `gpt/designer-2026-10-13`; the required Obsidian handoff contains documentation and screenshots only.
+Publication checkpoint: Victor subsequently authorized publishing. The branch preview is live and PR #47 is open as a draft; no main push, production deployment or database migration was performed. Code remains in the product repository on `gpt/designer-2026-10-13`; the single Obsidian handoff contains documentation and screenshots only. Continue from CURRENT-WORK-LINKS.md and the live QA report.

@@ -1,6 +1,6 @@
 # City Build procurement backend — 13 October 2026
 
-Status: implemented locally; migration not applied; no orders, invoices or messages sent.
+Status: code published on the feature preview; City planning and local drafts work. Migration not applied; private cloud persistence is not commissioned. No orders, invoices or messages sent. Preview API writes are disabled.
 
 ## Available integration
 
@@ -30,3 +30,7 @@ Bind each equipment line to an approved merchant/supplier product and an accepte
 The Mauritius Revenue Authority describes phased e-invoicing and fiscalisation requirements at https://www.mra.mu/index.php/e-invoicing. Before issuing a covered invoice, the deployed invoice connector must implement the current applicable fiscalisation workflow and preserve its acknowledgement. A saved invoice target date is not a fiscal invoice or fiscalisation approval.
 
 No automatic supplier ordering, legal invoicing, stock reservation, live synchronization or structural approval is claimed by this implementation.
+
+## Deployment follow-up discovered during publication
+
+The legacy `scripts/migrate.ts` targets nonexistent `api/db/migrations`; tracked SQL is in `api/_db/migrations`. `npm run db:migrate` expects a Drizzle configuration absent from this checkout. Reconcile and review the migration runner before any commissioning. Do not run either blindly or treat publishing the preview as a database migration.

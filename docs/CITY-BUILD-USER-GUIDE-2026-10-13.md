@@ -1,9 +1,9 @@
-# City Build — local review guide
+# City Build — live preview guide
 
-This build is saved locally on `gpt/designer-2026-10-13`. It has not been published. The following links run on Victor's computer while the preview server is running.
+Published on branch `gpt/designer-2026-10-13`, [PR #47](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/47). The public City link opens the 2D plan; choose City 3D to view the same geometry. The full Designer link requires existing Studio access. Preview ordering and enquiry submissions are disabled.
 
-- [http://127.0.0.1:5173/designer?panel=city](http://127.0.0.1:5173/designer?panel=city) - Room Designer City Build: developers, civil contractors, utility planners and infrastructure suppliers; source-backed supplier references.
-- [http://127.0.0.1:5173/demo?view=2d&panel=city&pitch=1](http://127.0.0.1:5173/demo?view=2d&panel=city&pitch=1) - Room Designer City Build: neutral, non-ordering demonstration for sales teams and prospective partners.
+- [https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/designer?panel=city](https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/designer?panel=city) - Room Designer City Build: developers, civil contractors, utility planners and infrastructure suppliers; source-backed supplier references.
+- [https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/demo?view=2d&panel=city&pitch=1](https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/demo?view=2d&panel=city&pitch=1) - Room Designer City Build: neutral, non-ordering demonstration for sales teams and prospective partners.
 
 ## A five-minute demonstration
 
@@ -25,4 +25,4 @@ Do not promise live stock, confirmed prices, automatic purchasing, issued invoic
 
 ## Safe continuation
 
-The source and tests are in `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`. The implementation workflow, research sources and procurement integration boundaries are saved beside this guide. Victor requested headless desktop/phone verification and an explicit Y before publication. Do not publish or apply the migration based on this guide alone.
+The source and tests are in `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`. The implementation workflow, research sources and procurement integration boundaries are saved beside this guide. Victor subsequently authorized publication: the branch preview is live and PR #47 is open. Main and production are unchanged. The database migration and operational ordering integrations remain separate commissioning work.

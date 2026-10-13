@@ -1,0 +1,287 @@
+{
+  "origin": "https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app",
+  "checkedAt": "2026-10-13T17:17:11.687Z",
+  "checks": [
+    {
+      "path": "/demo?view=3d&pitch=1",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/demo?view=3d&panel=city&pitch=1",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/demo?view=2d&panel=city&pitch=1",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/demo?view=2d&pitch=1",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/demo?view=2d&panel=foundation&pitch=1",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/demo?view=3d&panel=materials&pitch=1",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/demo?view=2d&panel=import&pitch=1",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/demo?view=2d&panel=services&pitch=1",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/demo?view=3d&panel=ai&pitch=1",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/demo?scene=paint&view=3d&pitch=1",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/demo?scene=captamarin&view=3d&pitch=1",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/pitch/developers",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/pitch/merchants",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/pitch/merchants?client=spa-concept",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/pitch/developers?client=cap-tamarin",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/pitch/construction",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/pitch/plumbing",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/embed/designer?view=3d&pitch=1",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/studio/sales",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    },
+    {
+      "path": "/embed/designer?view=2d&pitch=1",
+      "status": 200,
+      "gate": false,
+      "expectedGate": false,
+      "pass": true,
+      "title": "One Live Build"
+    },
+    {
+      "path": "/studio/shop",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    },
+    {
+      "path": "/studio/designer?view=2d",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    },
+    {
+      "path": "/studio",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    },
+    {
+      "path": "/studio/designer?view=3d",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    },
+    {
+      "path": "/studio/merchants",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    },
+    {
+      "path": "/designer?panel=city",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    },
+    {
+      "path": "/studio/merchants/connect",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    },
+    {
+      "path": "/designer",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    },
+    {
+      "path": "/designer?demo=tintex",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    },
+    {
+      "path": "/designer?demo=courts",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    },
+    {
+      "path": "/designer?demo=captamarin",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    },
+    {
+      "path": "/designer?demo=sofap",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    },
+    {
+      "path": "/products",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    },
+    {
+      "path": "/merchants/onboard",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    },
+    {
+      "path": "/suppliers",
+      "status": 200,
+      "gate": true,
+      "expectedGate": true,
+      "pass": true,
+      "title": "Enter your passcode · One Live Build"
+    }
+  ],
+  "note": "GET only. Gate pages are explicitly identified; a 200 gate is not proof of authenticated workspace operation."
+}
