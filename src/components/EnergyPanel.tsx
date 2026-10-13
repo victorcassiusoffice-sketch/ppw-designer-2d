@@ -35,6 +35,7 @@ import { CHROME_BG, CHROME_RIM, CHROME_TEXT, CHROME_TEXT_2 } from '../designer/b
 import { getProductById } from '../data/products';
 import type { Product } from '../data/products.schema';
 import { SOLAR_PANEL_PRODUCT_ID } from '../data/solarPreview';
+import { isPitchEmbed } from '../demo/pitchEmbed';
 
 /** The tank the Energy panel arms on the ground (Duraco 1,000 L, priced at Mauritian retailers). */
 const WATER_TANK_PRODUCT_ID = 'duraco-water-tank-1000';
@@ -49,11 +50,13 @@ const rs = (value: number) => `Rs ${value.toLocaleString('en-GB', { maximumFract
 function panelButtonLabel(product: Product | undefined): string {
   if (!product) return 'Add solar panel';
   const name = product.pv_wp ? `${product.name.split(' ')[0]} ${product.pv_wp} W panel` : product.name;
+  if (isPitchEmbed()) return `Add ${name}`;
   return product.price_on_request ? `Add ${name} · price on request` : `Add ${name} · ${rs(product.price.value)}`;
 }
 
 /** What the tank toast says about money — the catalogue's price, or that there is none yet. */
 function tankPriceLine(product: Product | undefined): string {
+  if (isPitchEmbed()) return '';
   if (!product || product.price_on_request) return 'Supplier price is on request.';
   return `${rs(product.price.value)} list price at Mauritian retailers; delivery and installation not included.`;
 }

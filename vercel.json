@@ -110,6 +110,7 @@
     { "source": "/api/merchants/:slug/order-update", "destination": "/api/orders" },
     { "source": "/api/merchants/:slug/agent-session", "destination": "/api/orders" },
     { "source": "/api/merchants/:slug/magic-link", "destination": "/api/orders" },
+    { "source": "/api/merchants/:slug/city-procurement/:id", "destination": "/api/orders" },
     { "source": "/api/k1/redirect", "destination": "/api/orders" },
     { "source": "/api/commission/reconcile", "destination": "/api/orders" },
     { "source": "/api/cowork-os/(.*)", "destination": "/api/orders" },

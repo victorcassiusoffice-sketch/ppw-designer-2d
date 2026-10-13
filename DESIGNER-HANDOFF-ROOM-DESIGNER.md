@@ -1,3 +1,26 @@
+## 2026-10-13 — City Build published on the feature preview
+
+**LIVE-ON-PREVIEW — 13 October 2026.** The public demo and pitch routes return HTTP 200; live City and pitch desktop/390px phone checks are recorded in the release report. Protected Studio/Designer routes return the intended access screen. No orders, invoices or emails were sent. Main and production remain unchanged.
+
+Current branch: `gpt/designer-2026-10-13`. Application release: `3f046cc655ab6e79803444038c8567dbe88dd445`. [PR #47](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/47) is open as a draft. Victor authorized publication in this chat; publication was performed on the branch, not main. Later documentation commits do not change this pinned application release.
+
+- [https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/demo?view=2d&panel=city&pitch=1](https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/demo?view=2d&panel=city&pitch=1) - City Build: developers, civil contractors, utilities, infrastructure suppliers and data-centre project teams; choose the City 3D button after opening.
+- [https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/demo?view=2d&pitch=1](https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/demo?view=2d&pitch=1) - Room Designer 2D: furniture, interiors and space planning.
+- [https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/demo?view=3d&pitch=1](https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/demo?view=3d&pitch=1) - Room Designer Premium 3D: furniture showrooms, interior designers and developers.
+- [https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/pitch/plumbing](https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/pitch/plumbing) - Room Designer plumbing pitch: plumbing suppliers, installers and bathroom showrooms.
+- [https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/studio/sales](https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/studio/sales) - Room Designer employee starter pack: sales employees and design consultants; existing Studio access required.
+- [https://ppw-designer-2d-git-gpt-designer-2026-10-13-victor-ppw.vercel.app/demo?view=2d&panel=city&pitch=1](https://ppw-designer-2d-git-gpt-designer-2026-10-13-victor-ppw.vercel.app/demo?view=2d&panel=city&pitch=1) - City Build: moving branch preview for continued development; the unique release above is pinned.
+- [https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/47](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/47) - Room Designer City Build: code review and integration for the product team.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/RELEASE-LINKS-2026-10-13.md](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/RELEASE-LINKS-2026-10-13.md) - Room Designer / One Live Build: full live demo, pitch, embed and protected workspace directory.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/SOURCE-LOCATIONS-2026-10-13.md](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/SOURCE-LOCATIONS-2026-10-13.md) - Room Designer / One Live Build: full source and preserved-worktree inventory.
+- [C:/Users/Victor/Documents/PPW-Second-Brain/06-Roadmap/agentix-os/inbox/designer-2026-10-13-city-build/HANDOFF.md](C:/Users/Victor/Documents/PPW-Second-Brain/06-Roadmap/agentix-os/inbox/designer-2026-10-13-city-build/HANDOFF.md) - Room Designer / City Build: single team handoff and continuation checkpoint.
+
+The current code, Designer, shop, pitches and embeds share one repository: `C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer`. Public preview commerce and enquiry submissions are disabled. City quantities, energy scenarios, dates and recipient choices are planning drafts. Automatic orders, invoices and email dispatch are not implemented. Private City cloud storage still needs migration 0031 and deployment validation. Main/production stay at their existing release.
+
+Validation: application build and client/API typechecks pass; GitHub Vitest and secret scan pass. The separate Lighthouse job fails against existing production URLs for PWA/SEO/payload assertions, not this preview. See `C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-city-live-2026-10-13` for live checks and the earlier 50-image local QA gallery.
+
+Earlier checkpoints below are historical; their publication holds and former “current” URLs are superseded by this entry.
+
 ## Current checkpoint — 10 October 2026 — BUILT-NOT-LIVE
 
 Continue in `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer` on **`gpt/designer-2026-10-09`**. The instructions and deployed URLs below this section are historical. The current foundation, service, connected-room, calculation and pitch work has not been published. Victor explicitly requested terminal headless screenshots and a report, then to **wait for his Y before publication**. Do not push or update main yet.

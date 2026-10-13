@@ -1,5 +1,6 @@
 import { ServicesWorkspace } from './components/ServicesWorkspace';
 import { FoundationWorkspace } from './components/FoundationWorkspace';
+import { CityWorkspace } from './components/CityWorkspace';
 import { PlanImportWorkspace } from './components/PlanImportWorkspace';
 /**
  * App shell — Sims build-mode layout (Vic 2026-08-25, complaint 2).
@@ -399,6 +400,7 @@ export default function App() {
       <PlanImportWorkspace onBeforeOpen={() => setDrawMode(false)} />
       <ServicesWorkspace onBeforeOpen={() => setDrawMode(false)} />
       <FoundationWorkspace onBeforeOpen={() => setDrawMode(false)} />
+      <CityWorkspace onBeforeOpen={() => setDrawMode(false)} />
       {/* Mobile/tablet Sims catalog — sticky bottom toolbar (< 1024 px). */}
       <SimsBottomToolbar />
       <AddRoomChooser

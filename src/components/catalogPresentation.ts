@@ -1,6 +1,7 @@
 import type { Product } from '../data/products.schema';
 import type { KeyboardEvent } from 'react';
 import { MACRO_CATEGORY_LABEL, macroOf, type MacroCategory } from './mobile/catalogMacros';
+import { isPitchEmbed } from '../demo/pitchEmbed';
 
 export type CatalogSort = 'catalog' | 'name' | 'footprint';
 
@@ -42,6 +43,7 @@ export function filterCatalog(products: readonly Product[], category: MacroCateg
 }
 
 export function catalogPrice(product: Product): string {
+  if (isPitchEmbed()) return '';
   if (product.price_on_request) return 'Price on request';
   return `${product.price.value.toLocaleString('en-MU', { maximumFractionDigits: 0 })} ${product.price.currency}`;
 }

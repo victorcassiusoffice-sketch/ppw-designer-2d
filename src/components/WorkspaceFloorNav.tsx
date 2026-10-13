@@ -13,9 +13,9 @@ export function WorkspaceFloorNav({ onExit, mode = 'foundation' }: { onExit?: ()
   function choose(value: string) {
     const state = usePropertyStore.getState();
     const ui = useDesignerUIStore.getState();
-    if (value === '__foundation' || value === '__services') {
+    if (value === '__city' || value === '__foundation' || value === '__services') {
       onExit?.();
-      window.dispatchEvent(new Event(value === '__foundation' ? 'ppw:open-foundation' : 'ppw:open-services'));
+      window.dispatchEvent(new Event(value === '__city' ? 'ppw:open-city' : value === '__foundation' ? 'ppw:open-foundation' : 'ppw:open-services'));
       return;
     }
     if (value === '__add') value = state.addLevel(`Floor ${levels.filter(level => level.kind !== 'roof').length}`);
@@ -31,6 +31,7 @@ export function WorkspaceFloorNav({ onExit, mode = 'foundation' }: { onExit?: ()
       {levels.map(level => <option key={level.id} value={level.id}>{level.name}</option>)}
       {!levels.some(level => level.kind === 'roof') && <option value="__roof">Roof</option>}
       <option value="__add">＋ Add floor</option>
+      <option value="__city">City Build · site infrastructure</option>
       {mode !== 'foundation' && <option value="__foundation">Foundation · excavate & concrete</option>}
       {mode !== 'services' && <option value="__services">Plumbing & Electric</option>}
     </select>

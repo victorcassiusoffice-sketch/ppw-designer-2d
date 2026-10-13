@@ -1,0 +1,1233 @@
+{
+  "date": "2026-10-13",
+  "base": "http://127.0.0.1:5173",
+  "appBundle": "App-BpEkIZbf.js",
+  "scope": "Local City Build screens, dimensions, routes, scenario, reference links and building return. Supplier orders covered separately.",
+  "cases": [
+    {
+      "viewport": "desktop",
+      "dimensions": {
+        "width": 1280,
+        "height": 900
+      },
+      "captures": [
+        "docs/qa-city-2026-10-13/city-desktop-entry.png",
+        "docs/qa-city-2026-10-13/city-desktop-sample-message.png",
+        "docs/qa-city-2026-10-13/city-desktop-plan-2d.png",
+        "docs/qa-city-2026-10-13/city-desktop-plan-3d.png",
+        "docs/qa-city-2026-10-13/city-desktop-3d-selected.png",
+        "docs/qa-city-2026-10-13/city-desktop-3d-return-from-sections.png",
+        "docs/qa-city-2026-10-13/city-desktop-road-section.png",
+        "docs/qa-city-2026-10-13/city-desktop-utility-route.png",
+        "docs/qa-city-2026-10-13/city-desktop-utility-elevations.png",
+        "docs/qa-city-2026-10-13/city-desktop-data-centre-inputs.png",
+        "docs/qa-city-2026-10-13/city-desktop-data-centre-results.png",
+        "docs/qa-city-2026-10-13/city-desktop-infrastructure-solar.png",
+        "docs/qa-city-2026-10-13/city-desktop-supplier-message-3d.png",
+        "docs/qa-city-2026-10-13/city-desktop-supplier-linked.png",
+        "docs/qa-city-2026-10-13/city-desktop-overview.png",
+        "docs/qa-city-2026-10-13/city-desktop-overview-review.png",
+        "docs/qa-city-2026-10-13/city-desktop-back-to-building.png",
+        "docs/qa-city-2026-10-13/city-desktop-reopened.png"
+      ],
+      "checks": [
+        {
+          "screen": "entry",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924,
+                "height": 672,
+                "scrollHeight": 672
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310,
+                "height": 674,
+                "scrollHeight": 674
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "sample-message",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924,
+                "height": 628,
+                "scrollHeight": 628
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310,
+                "height": 630,
+                "scrollHeight": 630
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "plan-2d",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924,
+                "height": 672,
+                "scrollHeight": 672
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310,
+                "height": 674,
+                "scrollHeight": 674
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "plan-3d",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924,
+                "height": 672,
+                "scrollHeight": 672
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310,
+                "height": 674,
+                "scrollHeight": 674
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "action": "Select / pan stays in 3D",
+          "passed": true
+        },
+        {
+          "action": "Zoom/pan visibly changes the scene",
+          "changedPixelFraction": 0.20660527468563183
+        },
+        {
+          "action": "Zoomed/panned 3D view survives element selection",
+          "changedPixelFraction": 0.003401360544217687,
+          "method": "Wheel zoom and right-drag pan"
+        },
+        {
+          "screen": "3d-selected",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924,
+                "height": 672,
+                "scrollHeight": 672
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310,
+                "height": 674,
+                "scrollHeight": 1102
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "action": "3D camera survives non-geometric model update",
+          "changedPixelFraction": 0.0000016104926819212533
+        },
+        {
+          "action": "Empty-space click dismisses selection",
+          "passed": true
+        },
+        {
+          "action": "Infrastructure and Overview navigation preserve the existing 3D canvas and camera",
+          "changedPixelFraction": 0
+        },
+        {
+          "screen": "3d-return-from-sections",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924,
+                "height": 672,
+                "scrollHeight": 672
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310,
+                "height": 674,
+                "scrollHeight": 712
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "road-section",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924,
+                "height": 672,
+                "scrollHeight": 672
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310,
+                "height": 674,
+                "scrollHeight": 1000
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "action": "Two-point road drawn and measured section persisted",
+          "road": {
+            "id": "4SDLiGwmPx",
+            "name": "Road corridor",
+            "presetId": "local-access",
+            "points": [
+              {
+                "x": -10,
+                "y": 155
+              },
+              {
+                "x": 55,
+                "y": 155
+              }
+            ],
+            "widthM": 4,
+            "surfaceDepthM": 0.08,
+            "baseDepthM": 0.25
+          }
+        },
+        {
+          "screen": "utility-route",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924,
+                "height": 672,
+                "scrollHeight": 672
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310,
+                "height": 674,
+                "scrollHeight": 1260
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "utility-elevations",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924,
+                "height": 672,
+                "scrollHeight": 672
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310,
+                "height": 674,
+                "scrollHeight": 1260
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "action": "Utility route retains physical diameter and surveyed elevations",
+          "network": {
+            "id": "_3qLGe4EE1",
+            "name": "Water main",
+            "system": "water",
+            "points": [
+              {
+                "x": -10,
+                "y": 100,
+                "z": -0.6
+              },
+              {
+                "x": 60,
+                "y": 100,
+                "z": -1.1
+              }
+            ],
+            "diameterMm": 110,
+            "trenchWidthM": 0.6,
+            "trenchDepthM": 1.6
+          },
+          "routeLengthM": 70.00178569150931
+        },
+        {
+          "screen": "data-centre-inputs",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-inspector",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-page",
+                "width": 1280,
+                "scrollWidth": 1280,
+                "height": 750,
+                "scrollHeight": 858
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "data-centre-results",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-inspector",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-page",
+                "width": 1280,
+                "scrollWidth": 1280,
+                "height": 750,
+                "scrollHeight": 858
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "action": "Scenario values agree with independent arithmetic",
+          "averageItKW": 50,
+          "averageFacilityKW": 70,
+          "annualFacilityMWh": 613.2,
+          "annualPVMWh": 84,
+          "annualWaterM3": 219,
+          "autonomyHours": 1.1428571428571428
+        },
+        {
+          "screen": "infrastructure-solar",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-inspector",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-page",
+                "width": 1280,
+                "scrollWidth": 1280,
+                "height": 750,
+                "scrollHeight": 1041
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "supplier-message-3d",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924,
+                "height": 628,
+                "scrollHeight": 628
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310,
+                "height": 630,
+                "scrollHeight": 1173
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "supplier-linked",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924,
+                "height": 672,
+                "scrollHeight": 672
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310,
+                "height": 674,
+                "scrollHeight": 1173
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "action": "Verified reference attaches without changing measured envelope",
+          "supplierRef": "reneworld-hybrid-pv",
+          "widthM": 40,
+          "lengthM": 25,
+          "heightM": 2
+        },
+        {
+          "screen": "overview",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-inspector",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-page",
+                "width": 1280,
+                "scrollWidth": 1280,
+                "height": 750,
+                "scrollHeight": 1116
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "overview-review",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-inspector",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-page",
+                "width": 1280,
+                "scrollWidth": 1280,
+                "height": 750,
+                "scrollHeight": 1116
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "back-to-building",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "panes": [],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "reopened",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924,
+                "height": 672,
+                "scrollHeight": 672
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310,
+                "height": 674,
+                "scrollHeight": 674
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "action": "Building return/re-entry preserves room and city; no API writes",
+          "passed": true
+        }
+      ],
+      "defects": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writeRequests": []
+    },
+    {
+      "viewport": "phone",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "captures": [
+        "docs/qa-city-2026-10-13/city-phone-entry.png",
+        "docs/qa-city-2026-10-13/city-phone-sample-message.png",
+        "docs/qa-city-2026-10-13/city-phone-plan-2d.png",
+        "docs/qa-city-2026-10-13/city-phone-plan-3d.png",
+        "docs/qa-city-2026-10-13/city-phone-3d-selected.png",
+        "docs/qa-city-2026-10-13/city-phone-3d-return-from-sections.png",
+        "docs/qa-city-2026-10-13/city-phone-road-section.png",
+        "docs/qa-city-2026-10-13/city-phone-utility-route.png",
+        "docs/qa-city-2026-10-13/city-phone-utility-elevations.png",
+        "docs/qa-city-2026-10-13/city-phone-data-centre-inputs.png",
+        "docs/qa-city-2026-10-13/city-phone-data-centre-results.png",
+        "docs/qa-city-2026-10-13/city-phone-infrastructure-solar.png",
+        "docs/qa-city-2026-10-13/city-phone-supplier-message-3d.png",
+        "docs/qa-city-2026-10-13/city-phone-supplier-linked.png",
+        "docs/qa-city-2026-10-13/city-phone-overview.png",
+        "docs/qa-city-2026-10-13/city-phone-overview-review.png",
+        "docs/qa-city-2026-10-13/city-phone-back-to-building.png",
+        "docs/qa-city-2026-10-13/city-phone-reopened.png"
+      ],
+      "checks": [
+        {
+          "screen": "entry",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368,
+                "height": 319,
+                "scrollHeight": 319
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370,
+                "height": 262,
+                "scrollHeight": 467
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "sample-message",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368,
+                "height": 256,
+                "scrollHeight": 256
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370,
+                "height": 262,
+                "scrollHeight": 427
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "plan-2d",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368,
+                "height": 319,
+                "scrollHeight": 319
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370,
+                "height": 262,
+                "scrollHeight": 427
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "plan-3d",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368,
+                "height": 319,
+                "scrollHeight": 319
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370,
+                "height": 262,
+                "scrollHeight": 427
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "action": "Select / pan stays in 3D",
+          "passed": true
+        },
+        {
+          "action": "Zoom/pan visibly changes the scene",
+          "changedPixelFraction": 0.6345957880434783
+        },
+        {
+          "action": "Zoomed/panned 3D view survives element selection",
+          "changedPixelFraction": 0.001927649456521739,
+          "method": "Two-finger pinch/pan through Chromium touch events"
+        },
+        {
+          "screen": "3d-selected",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368,
+                "height": 319,
+                "scrollHeight": 319
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370,
+                "height": 262,
+                "scrollHeight": 1080
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "action": "3D camera survives non-geometric model update",
+          "changedPixelFraction": 0
+        },
+        {
+          "action": "Empty-space click dismisses selection",
+          "passed": true
+        },
+        {
+          "action": "Infrastructure and Overview navigation preserve the existing 3D canvas and camera",
+          "changedPixelFraction": 0
+        },
+        {
+          "screen": "3d-return-from-sections",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368,
+                "height": 319,
+                "scrollHeight": 319
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370,
+                "height": 262,
+                "scrollHeight": 687
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "road-section",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368,
+                "height": 319,
+                "scrollHeight": 319
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370,
+                "height": 262,
+                "scrollHeight": 972
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "action": "Two-point road drawn and measured section persisted",
+          "road": {
+            "id": "UT4G9UoGki",
+            "name": "Road corridor",
+            "presetId": "local-access",
+            "points": [
+              {
+                "x": -10,
+                "y": 155
+              },
+              {
+                "x": 55,
+                "y": 155
+              }
+            ],
+            "widthM": 4,
+            "surfaceDepthM": 0.08,
+            "baseDepthM": 0.25
+          }
+        },
+        {
+          "screen": "utility-route",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368,
+                "height": 319,
+                "scrollHeight": 319
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370,
+                "height": 262,
+                "scrollHeight": 1256
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "utility-elevations",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368,
+                "height": 319,
+                "scrollHeight": 319
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370,
+                "height": 262,
+                "scrollHeight": 1256
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "action": "Utility route retains physical diameter and surveyed elevations",
+          "network": {
+            "id": "iXsLfdtMqP",
+            "name": "Water main",
+            "system": "water",
+            "points": [
+              {
+                "x": -10,
+                "y": 100,
+                "z": -0.6
+              },
+              {
+                "x": 60,
+                "y": 100,
+                "z": -1.1
+              }
+            ],
+            "diameterMm": 110,
+            "trenchWidthM": 0.6,
+            "trenchDepthM": 1.6
+          },
+          "routeLengthM": 70.00178569150931
+        },
+        {
+          "screen": "data-centre-inputs",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-inspector",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-page",
+                "width": 390,
+                "scrollWidth": 390,
+                "height": 716,
+                "scrollHeight": 1678
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "data-centre-results",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-inspector",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-page",
+                "width": 390,
+                "scrollWidth": 390,
+                "height": 716,
+                "scrollHeight": 1678
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "action": "Scenario values agree with independent arithmetic",
+          "averageItKW": 50,
+          "averageFacilityKW": 70,
+          "annualFacilityMWh": 613.2,
+          "annualPVMWh": 84,
+          "annualWaterM3": 219,
+          "autonomyHours": 1.1428571428571428
+        },
+        {
+          "screen": "infrastructure-solar",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-inspector",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-page",
+                "width": 390,
+                "scrollWidth": 390,
+                "height": 716,
+                "scrollHeight": 1959
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "supplier-message-3d",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368,
+                "height": 272,
+                "scrollHeight": 272
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370,
+                "height": 262,
+                "scrollHeight": 1132
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "supplier-linked",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368,
+                "height": 319,
+                "scrollHeight": 319
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370,
+                "height": 262,
+                "scrollHeight": 1132
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "action": "Verified reference attaches without changing measured envelope",
+          "supplierRef": "reneworld-hybrid-pv",
+          "widthM": 40,
+          "lengthM": 25,
+          "heightM": 2
+        },
+        {
+          "screen": "overview",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-inspector",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-page",
+                "width": 390,
+                "scrollWidth": 390,
+                "height": 716,
+                "scrollHeight": 2005
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "overview-review",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-inspector",
+                "width": 0,
+                "scrollWidth": 0,
+                "height": 0,
+                "scrollHeight": 0
+              },
+              {
+                "name": "city-page",
+                "width": 390,
+                "scrollWidth": 390,
+                "height": 716,
+                "scrollHeight": 2005
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "back-to-building",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "panes": [],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "screen": "reopened",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368,
+                "height": 319,
+                "scrollHeight": 319
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370,
+                "height": 262,
+                "scrollHeight": 427
+              }
+            ],
+            "headerClips": [],
+            "sceneCaptionClips": []
+          }
+        },
+        {
+          "action": "Building return/re-entry preserves room and city; no API writes",
+          "passed": true
+        }
+      ],
+      "defects": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writeRequests": []
+    }
+  ],
+  "pass": true
+}

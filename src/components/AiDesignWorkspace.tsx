@@ -37,11 +37,13 @@ export function AiDesignWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }
     window.addEventListener('ppw:open-ai-design', show);
     window.addEventListener('ppw:open-plan-import', close);
     window.addEventListener('ppw:open-services', close);
+    window.addEventListener('ppw:open-city', close);
     if (new URLSearchParams(window.location.search).get('panel') === 'ai') show();
     return () => {
       window.removeEventListener('ppw:open-ai-design', show);
       window.removeEventListener('ppw:open-plan-import', close);
       window.removeEventListener('ppw:open-services', close);
+      window.removeEventListener('ppw:open-city', close);
     };
   }, []);
   return open ? createPortal(<DesignWorkbench onClose={() => setOpen(false)} />, document.body) : null;

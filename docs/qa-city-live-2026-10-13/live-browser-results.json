@@ -1,0 +1,350 @@
+{
+  "origin": "https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app",
+  "expectedCommit": "3f046cc655ab6e79803444038c8567dbe88dd445",
+  "checkedAt": "2026-10-13T17:17:12.981Z",
+  "health": {
+    "status": 200,
+    "ok": true,
+    "env": "preview",
+    "commit": "3f046cc655ab6e79803444038c8567dbe88dd445",
+    "timestamp": "2026-10-13T17:32:58.083Z",
+    "transport": "Chromium temporary process-only host resolver to76.76.21.61, normal TLS and originalhostname, cache-busted GET"
+  },
+  "cases": [
+    {
+      "device": "desktop",
+      "entryView": "2d",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "url": "https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/demo?view=2d&panel=city&pitch=1",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "externalRequests": [
+        "https://rsms.me/inter/inter.css",
+        "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+        "https://rsms.me/inter/font-files/Inter-Regular.woff2?v=4.1",
+        "https://rsms.me/inter/font-files/Inter-SemiBold.woff2?v=4.1",
+        "https://rsms.me/inter/font-files/Inter-Medium.woff2?v=4.1",
+        "https://rsms.me/inter/font-files/Inter-Bold.woff2?v=4.1"
+      ],
+      "screenshots": [
+        "docs/qa-city-live-2026-10-13/city-live-desktop-2d-entry.png",
+        "docs/qa-city-live-2026-10-13/city-live-desktop-2d-district.png"
+      ],
+      "checks": [
+        {
+          "screen": "entry",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310
+              }
+            ]
+          }
+        },
+        {
+          "action": "City direct link and road/utility/Orders controls visible",
+          "passed": true,
+          "initialCityView": "2d"
+        },
+        {
+          "screen": "district",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310
+              }
+            ]
+          }
+        },
+        {
+          "action": "All five City sections remain reachable",
+          "passed": true
+        },
+        {
+          "action": "Return to building and reopen City",
+          "passed": true
+        }
+      ],
+      "defects": []
+    },
+    {
+      "device": "desktop",
+      "entryView": "3d",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "url": "https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/demo?view=3d&panel=city&pitch=1",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "externalRequests": [
+        "https://rsms.me/inter/inter.css",
+        "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+        "https://rsms.me/inter/font-files/Inter-Regular.woff2?v=4.1",
+        "https://rsms.me/inter/font-files/Inter-SemiBold.woff2?v=4.1",
+        "https://rsms.me/inter/font-files/Inter-Medium.woff2?v=4.1",
+        "https://rsms.me/inter/font-files/Inter-Bold.woff2?v=4.1",
+        "https://rsms.me/inter/font-files/Inter-Italic.woff2?v=4.1"
+      ],
+      "screenshots": [
+        "docs/qa-city-live-2026-10-13/city-live-desktop-3d-entry.png",
+        "docs/qa-city-live-2026-10-13/city-live-desktop-3d-district.png"
+      ],
+      "checks": [
+        {
+          "screen": "entry",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310
+              }
+            ]
+          }
+        },
+        {
+          "action": "City direct link and road/utility/Orders controls visible",
+          "passed": true,
+          "initialCityView": "2d"
+        },
+        {
+          "screen": "district",
+          "layout": {
+            "width": 1280,
+            "pageWidth": 1280,
+            "workspaceWidth": 1280,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 924,
+                "scrollWidth": 924
+              },
+              {
+                "name": "city-inspector",
+                "width": 310,
+                "scrollWidth": 310
+              }
+            ]
+          }
+        },
+        {
+          "action": "All five City sections remain reachable",
+          "passed": true
+        },
+        {
+          "action": "Return to building and reopen City",
+          "passed": true
+        }
+      ],
+      "defects": []
+    },
+    {
+      "device": "phone",
+      "entryView": "2d",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "url": "https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/demo?view=2d&panel=city&pitch=1",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "externalRequests": [
+        "https://rsms.me/inter/inter.css",
+        "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+        "https://rsms.me/inter/font-files/Inter-Regular.woff2?v=4.1",
+        "https://rsms.me/inter/font-files/Inter-SemiBold.woff2?v=4.1",
+        "https://rsms.me/inter/font-files/Inter-Medium.woff2?v=4.1",
+        "https://rsms.me/inter/font-files/Inter-Bold.woff2?v=4.1"
+      ],
+      "screenshots": [
+        "docs/qa-city-live-2026-10-13/city-live-phone-2d-entry.png",
+        "docs/qa-city-live-2026-10-13/city-live-phone-2d-district.png"
+      ],
+      "checks": [
+        {
+          "screen": "entry",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370
+              }
+            ]
+          }
+        },
+        {
+          "action": "City direct link and road/utility/Orders controls visible",
+          "passed": true,
+          "initialCityView": "2d"
+        },
+        {
+          "screen": "district",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370
+              }
+            ]
+          }
+        },
+        {
+          "action": "All five City sections remain reachable",
+          "passed": true
+        },
+        {
+          "action": "Return to building and reopen City",
+          "passed": true
+        }
+      ],
+      "defects": []
+    },
+    {
+      "device": "phone",
+      "entryView": "3d",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "url": "https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/demo?view=3d&panel=city&pitch=1",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "externalRequests": [
+        "https://rsms.me/inter/inter.css",
+        "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+        "https://rsms.me/inter/font-files/Inter-Regular.woff2?v=4.1",
+        "https://rsms.me/inter/font-files/Inter-SemiBold.woff2?v=4.1",
+        "https://rsms.me/inter/font-files/Inter-Bold.woff2?v=4.1",
+        "https://rsms.me/inter/font-files/Inter-Medium.woff2?v=4.1",
+        "https://rsms.me/inter/font-files/Inter-Italic.woff2?v=4.1"
+      ],
+      "screenshots": [
+        "docs/qa-city-live-2026-10-13/city-live-phone-3d-entry.png",
+        "docs/qa-city-live-2026-10-13/city-live-phone-3d-district.png"
+      ],
+      "checks": [
+        {
+          "screen": "entry",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370
+              }
+            ]
+          }
+        },
+        {
+          "action": "City direct link and road/utility/Orders controls visible",
+          "passed": true,
+          "initialCityView": "2d"
+        },
+        {
+          "screen": "district",
+          "layout": {
+            "width": 390,
+            "pageWidth": 390,
+            "workspaceWidth": 390,
+            "panes": [
+              {
+                "name": "city-viewport",
+                "width": 368,
+                "scrollWidth": 368
+              },
+              {
+                "name": "city-inspector",
+                "width": 370,
+                "scrollWidth": 370
+              }
+            ]
+          }
+        },
+        {
+          "action": "All five City sections remain reachable",
+          "passed": true
+        },
+        {
+          "action": "Return to building and reopen City",
+          "passed": true
+        }
+      ],
+      "defects": []
+    }
+  ],
+  "initialNodeHealth": {
+    "error": "fetch failed",
+    "cause": "UND_ERR_CONNECT_TIMEOUT"
+  },
+  "finalHealthVerifiedAt": "2026-10-13T17:32:46.981Z"
+}

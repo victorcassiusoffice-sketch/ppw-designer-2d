@@ -91,6 +91,10 @@ export function currentPageId(): string {
 export function propertyHasContent(property: Property): boolean {
   return property.rooms.some((room) => (room.polygon?.length ?? 0) >= 3 || (room.placedItems?.length ?? 0) > 0)
     || (property.foundation?.elements.length ?? 0) > 0
+    || (property.city?.roads.length ?? 0) > 0
+    || (property.city?.networks.length ?? 0) > 0
+    || (property.city?.assets.length ?? 0) > 0
+    || !!property.city?.dataCentre
     || (property.services?.runs.length ?? 0) > 0
     || (property.services?.fixtures.length ?? 0) > 0
     || (property.walls?.length ?? 0) > 0
