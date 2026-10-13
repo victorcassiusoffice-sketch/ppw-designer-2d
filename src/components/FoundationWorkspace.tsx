@@ -76,7 +76,7 @@ export function FoundationWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void
       setOpen(false);
     });
     window.addEventListener('ppw:open-foundation', show);
-    const switches = ['ppw:open-services', 'ppw:open-plan-import', 'ppw:open-ai-design'];
+    const switches = ['ppw:open-services', 'ppw:open-plan-import', 'ppw:open-ai-design', 'ppw:open-city'];
     switches.forEach((name) => window.addEventListener(name, close));
     if (new URLSearchParams(location.search).get('panel') === 'foundation') show();
     return () => {

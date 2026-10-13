@@ -1,3 +1,21 @@
+## 2026-10-13 — City Build: BUILT-NOT-LIVE
+
+**Current branch: `gpt/designer-2026-10-13`. Publication remains on hold until Victor's Y.** This branch preserves the newer demo-cleanup checkout `9c82630` and adds the City Build planning workspace. No push, PR, migration, supplier message or deployment has been made for City Build. Older deployed URLs below do not include this work.
+
+- [http://127.0.0.1:5173/designer?panel=city](http://127.0.0.1:5173/designer?panel=city) - Room Designer City Build: civil contractors, property developers, utility planners and infrastructure suppliers.
+- [http://127.0.0.1:5173/demo?view=2d&panel=city&pitch=1](http://127.0.0.1:5173/demo?view=2d&panel=city&pitch=1) - Room Designer City Build: neutral demonstration for employees and prospective company partners.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-city-2026-10-13/index.html](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-city-2026-10-13/index.html) - Room Designer City Build: actual desktop and phone screenshot gallery for product review.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-city-2026-10-13/QA-REPORT.md](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-city-2026-10-13/QA-REPORT.md) - Room Designer City Build: verification results and limits for implementation teams.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/CITY-BUILD-USER-GUIDE-2026-10-13.md](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/CITY-BUILD-USER-GUIDE-2026-10-13.md) - Room Designer City Build: demonstration workflow for sales and infrastructure-planning teams.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/CITY-BUILD-WORKFLOW-2026-10-13.md](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/CITY-BUILD-WORKFLOW-2026-10-13.md) - Room Designer City Build: implementation plan, continuation checkpoint and remaining integrations.
+- [C:/Users/Victor/Documents/PPW-Second-Brain/06-Roadmap/agentix-os/inbox/designer-2026-10-13-city-build/HANDOFF.md](C:/Users/Victor/Documents/PPW-Second-Brain/06-Roadmap/agentix-os/inbox/designer-2026-10-13-city-build/HANDOFF.md) - Room Designer City Build: one team handoff for the Builder and Pitch-Maker.
+
+Local links work only on this computer while `npm run preview -- --host 127.0.0.1 --strictPort` serves port 5173. The same compiled application serves existing building tools and pitch embeds. Supplier references are quote-only; equipment is measured planning geometry. Private procurement storage requires migration 0031 and deployed authentication checks. Dates and recipients prepare drafts; automatic orders and issued invoices are not implemented. The workspace does not certify city engineering.
+
+Source: `C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/src/components/CityWorkspace.tsx`; shared measurements: `C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/src/designer/city.ts`; supplier references: `C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/src/data/citySuppliers.ts`; procurement API: `C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/api/_lib/cityProcurement.ts`. The full source remains in `C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer`.
+
+Earlier checkpoints below are historical.
+
 ## Current checkpoint — 10 October 2026 — BUILT-NOT-LIVE
 
 Continue in `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer` on **`gpt/designer-2026-10-09`**. The instructions and deployed URLs below this section are historical. The current foundation, service, connected-room, calculation and pitch work has not been published. Victor explicitly requested terminal headless screenshots and a report, then to **wait for his Y before publication**. Do not push or update main yet.

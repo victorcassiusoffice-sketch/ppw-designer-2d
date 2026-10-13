@@ -687,6 +687,24 @@ export type NewDesign = typeof designs.$inferInsert;
 export type Lead = typeof leads.$inferSelect;
 export type NewLead = typeof leads.$inferInsert;
 
+// City procurement recipients are private merchant data, separate from designs.
+export const cityProcurementPlans = pgTable('city_procurement_plans', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  merchantId: bigint('merchant_id', { mode: 'number' }).notNull().references(() => merchants.id, { onDelete: 'cascade' }),
+  publicId: uuid('public_id').notNull(),
+  projectId: varchar('project_id', { length: 100 }).notNull(),
+  revision: integer('revision').notNull().default(1),
+  document: jsonb('document').notNull(),
+  lastRequestId: uuid('last_request_id').notNull(),
+  lastRequestHash: varchar('last_request_hash', { length: 64 }).notNull(),
+  updatedBy: varchar('updated_by', { length: 320 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, table => ({
+  ownerId: uniqueIndex('city_procurement_owner_id_idx').on(table.merchantId, table.publicId),
+  ownerProject: index('city_procurement_owner_project_idx').on(table.merchantId, table.projectId),
+}));
+
 // M7 (RELENTLESS_GOAL 2026-05-19) — Pattern C attribution layer.
 // One row per outbound click from the designer to a merchant's
 // external storefront. The product_* + price_* columns are

@@ -1,6 +1,7 @@
 import { quoteAwareAmount } from '../lib/quotedProducts';
 import { ServicesLaunchButton } from './ServicesWorkspace';
 import { FoundationLaunchButton } from './FoundationWorkspace';
+import { CityLaunchButton } from './CityWorkspace';
 import { PlanImportButton } from './PlanImportWorkspace';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useCart } from '../store/cartStore';
@@ -139,6 +140,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
     <div className="house-main">
       <nav className="house-rail" aria-label="House design tools">
         <FoundationLaunchButton onBeforeOpen={onSelect} />
+        <CityLaunchButton compact onBeforeOpen={onSelect} />
         {property.foundation?.enabled && <button type="button" aria-label="Foundation cutaway" aria-pressed={foundationView} onClick={() => useDesignerUIStore.getState().setFoundationView(!foundationView)}><StudioIcon name="storeys" /><span>{foundationView ? 'Restore ground' : 'Below ground'}</span></button>}
         {MODES.map(([id, label, icon]) => <button key={id} type="button" aria-pressed={mode === id} title={label} onClick={() => { setCostOpen(false); const nextOpen = id === 'garden' || id === 'energy' || id === 'materials'; onMode(id); setBuildPaletteOpen(id === 'build' && !(buildPaletteOpen && mode === 'build')); setMobileInspector(nextOpen && !(mobileInspector && mode === id)); window.dispatchEvent(new CustomEvent('ppw:close-view-settings')); }} data-testid={`house-mode-${id}`}>
           <StudioIcon name={icon} /><span>{label}</span>

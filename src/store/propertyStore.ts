@@ -1,3 +1,4 @@
+import { normaliseCity, type CityModel } from '../designer/city';
 import { normaliseBuildingServices, type BuildingServices } from '../designer/buildingServices';
 import { resolveServiceConnections } from '../designer/serviceConnections';
 import { inferConnectedRooms } from '../designer/connectedWallRooms';
@@ -307,6 +308,7 @@ export interface Room {
 }
 
 export interface Property {
+  city?: CityModel;
   foundation?: FoundationModel;
   services?: BuildingServices;
   /** Versioned estimating assumptions; persisted with every save and history snapshot. */
@@ -654,6 +656,7 @@ export interface PropertyState {
   /** Roof shape and finish. Adds/synchronises the roof without changing floor focus. */
   setServices: (services: BuildingServices) => boolean;
   setFoundation: (foundation: FoundationModel) => boolean;
+  setCity: (city: CityModel) => boolean;
   setMaterialsSettings: (settings: MaterialsSettings) => void;
   setRoofConfig: (config: RoofConfig | null) => void;
   /** Switch an electrical item on/off for the energy estimate (absent = on). */
@@ -1635,6 +1638,12 @@ export const usePropertyStore = create<PropertyState>()(
         set(s => ({ property: { ...s.property, foundation: normalised } }));
         return true;
       },
+      setCity: (city) => {
+        const clean = normaliseCity(city);
+        if (!clean) return false;
+        set(s => ({ property: { ...s.property, city: clean } }));
+        return true;
+      },
       setServices: (services) => {
         const property = get().property;
         const normalised = normaliseBuildingServices(services, new Set(levelsOf(property).map(l => l.id)));
@@ -1959,6 +1968,7 @@ export const usePropertyStore = create<PropertyState>()(
         const merged = { ...current, ...((persisted ?? {}) as Partial<PropertyState>) };
         if (merged.property) merged.property = normaliseGardenMetadata(normaliseBuildingMetadata(canonicalisePropertyWinding(merged.property)));
         if (merged.property?.materials !== undefined) merged.property = { ...merged.property, materials: normaliseMaterialsSettings(merged.property.materials) };
+        if (merged.property?.city !== undefined) merged.property = { ...merged.property, city: normaliseCity(merged.property.city) };
         if (merged.property?.foundation !== undefined) merged.property = { ...merged.property, foundation: normaliseFoundation(merged.property.foundation) };
         if (merged.property?.services !== undefined) {
           const services = normaliseBuildingServices(merged.property.services, new Set(levelsOf(merged.property).map(l => l.id)));
@@ -2009,6 +2019,7 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
     out.services = services ? resolveServiceConnections(services) : undefined;
   }
   if (property.foundation !== undefined) out.foundation = normaliseFoundation(property.foundation);
+  if (property.city !== undefined) out.city = normaliseCity(property.city);
   if (property.materials !== undefined) out.materials = normaliseMaterialsSettings(property.materials);
   if (levels) out.levels = levels;
   const activeRoom = rooms.find((r) => r.id === activeRoomId)!;
@@ -2164,6 +2175,7 @@ interface RawRoom {
 interface RawProperty {
   services?: unknown;
   foundation?: unknown;
+  city?: unknown;
   wallHeightM?: unknown;
   id?: string;
   name?: string;

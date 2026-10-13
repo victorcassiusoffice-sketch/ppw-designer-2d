@@ -1,0 +1,38 @@
+[
+  {
+    "route": "/designer",
+    "status": 200
+  },
+  {
+    "route": "/designer?panel=city",
+    "status": 200
+  },
+  {
+    "route": "/demo?view=2d&panel=city&pitch=1",
+    "status": 200
+  },
+  {
+    "route": "/demo?view=3d",
+    "status": 200
+  },
+  {
+    "route": "/pitch/construction",
+    "status": 200
+  },
+  {
+    "route": "/pitch/merchants",
+    "status": 200
+  },
+  {
+    "route": "/pitch/developers",
+    "status": 200
+  },
+  {
+    "route": "/pitch/plumbing",
+    "status": 200
+  },
+  {
+    "route": "/studio/sales",
+    "status": 200
+  }
+]

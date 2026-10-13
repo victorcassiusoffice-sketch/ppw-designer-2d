@@ -1,6 +1,7 @@
 import { ServicesLaunchButton } from './ServicesWorkspace';
 import { isPitchEmbed } from '../demo/pitchEmbed';
 import { FoundationLaunchButton } from './FoundationWorkspace';
+import { CityLaunchButton } from './CityWorkspace';
 import { WorkspaceFloorNav } from './WorkspaceFloorNav';
 import { PlanImportButton } from './PlanImportWorkspace';
 import { StudioIcon as Icon } from './StudioIcon';
@@ -2193,6 +2194,7 @@ export function TopBar({
       </div>
       <div className="plan-project-bar" role="group" aria-label="Floors and materials">
         <WorkspaceFloorNav mode="plan" onExit={() => { setDrawMode(false); setWorkspaceSettingsOpen(false); }} />
+        <CityLaunchButton compact />
         <button type="button" aria-label="Open Materials" aria-pressed={materialsPanelOpen} onClick={() => { setDrawMode(false); setTool('hand'); useDesignerUIStore.getState().setMaterialsPanelOpen(!materialsPanelOpen); }}><Icon name="materials" size={17} /><span>Materials</span></button>
         <button type="button" aria-label="Undo last action" disabled={!pastLength && !drawInFlight} onClick={handleUndoClick}><Icon name="undo" size={17} /><span>Undo</span></button>
       </div>

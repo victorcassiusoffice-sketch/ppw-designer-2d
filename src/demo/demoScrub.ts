@@ -25,9 +25,12 @@ const CLIENTS = ['Spa Concept', 'Cap Tamarin', 'Trimetys', 'Kalachand Fitness', 
  * files and fails when a new supplier name is not covered here.
  */
 const SUPPLIERS = [
-  'Courts Mammouth', 'Courts', 'K1[- ]?Sport', 'K1', 'Emcar', 'Duraco(?: Lt[ée]e)?', 'Grewals', 'Gamma Materials',
-  'Resiglas', 'Mr\\.? Bricolage(?: Mauritius)?', 'Kolos Cement', 'HPL Pipes', 'Electrical\\.mu', 'Profilage Oc[ée]an Indien',
-  'Joonas Steel', 'STR', 'Victron Energy distributor',
+  'Courts Mammouth', 'Courts', 'K1[- ]?Sport', 'K1', 'Emcar', 'Duraco(?: Lt[ée]e| Mauritius)?', 'Grewals', 'Gamma Materials',
+  'Resiglas', 'Mr\\.? Bricolage(?: Mauritius)?', 'Kolos Cement', 'HPL(?: Pipes| Mauritius)?', 'Electrical\\.mu', 'Profilage Oc[ée]an Indien',
+  'Joonas Steel', 'STR(?: Marketing(?: Mauritius)?)?', 'Victron Energy distributor',
+  'Premix(?: Mauritius)?', 'Paving Mauritius', 'Metalite(?: Mauritius)?', 'Reneworld(?: Mauritius)?',
+  'Solarex(?: Mauritius)?', 'Sofo Soler Moris', 'QBM(?: Mauritius)?', 'CMH(?: Mauritius)?',
+  'Legrand(?: Mauritius)?', 'Medine Garden Cent(?:er|re)', 'Endemika(?: Mauritius)?',
 ];
 
 const anyOf = (names: readonly string[]) => new RegExp(`(?<![\\w-])(?:${names.join('|')})(?![\\w-])`, 'gi');
