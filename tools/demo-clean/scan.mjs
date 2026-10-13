@@ -22,7 +22,7 @@ mkdirSync(OUT, { recursive: true });
 /** Prices, currencies and the retailer/client names a demo visitor must not see. */
 export const FORBIDDEN = /\bRs\.?\s?\d|\bRs\b|\bMUR\b|\bUSD\b|\bEUR\b|\bGBP\b|€|£|\$\s?\d|\bSofap\b|sofaponlinestore|\bTintEX\b|\bPermoglaze\b|\bMauvilac\b|\bPolytol\b|Spa Concept|\bCourts\b|Cap Tamarin|Trimetys|\bK1\b|K1[- ]Sport|\bEmcar\b|\bDuraco\b|Kalachand|\bVAT\b/i;
 
-const STARTS = ['/demo', '/demo?view=2d'];
+const STARTS = process.env.DEMO_CLEAN_STARTS?.split(',') ?? ['/demo', '/demo?view=2d'];
 const VIEWPORTS = [
   { name: '1280', viewport: { width: 1280, height: 800 }, mobile: false },
   { name: '390', viewport: { width: 390, height: 844 }, mobile: true },
@@ -96,7 +96,10 @@ async function open(page, url) {
   for (let attempt = 1; ; attempt += 1) {
     try { await page.goto(BASE + url, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; } catch (e) { if (attempt >= 3) throw e; }
   }
-  await page.waitForTimeout(6000);
+  // The designer is lazy-loaded behind a spinner: wait until it has mounted
+  // (a scan of the spinner would report 0 hits and prove nothing).
+  await page.waitForFunction(() => document.querySelectorAll('button').length >= 8, null, { timeout: 60000 });
+  await page.waitForTimeout(2500);
 }
 
 const report = { base: BASE, at: new Date().toISOString(), runs: [] };
@@ -146,6 +149,7 @@ for (const vp of VIEWPORTS.filter((v) => !ONLY || ONLY.includes(v.name))) {
       await page.keyboard.press('Escape');
       await page.keyboard.press('Escape');
     }
+    if (run.tapped < 20) { run.taps.push({ path: '(scan)', hits: [`only ${run.tapped} taps landed — not a valid pass`] }); }
     const n = run.onLoad.length + run.taps.reduce((s, t) => s + t.hits.length, 0);
     total += n;
     run.hitCount = n;
