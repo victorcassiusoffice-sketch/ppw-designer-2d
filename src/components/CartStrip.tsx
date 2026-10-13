@@ -99,6 +99,9 @@ export function CartStrip() {
   }
 
   const altCurrency = currency === 'MUR' ? 'USD' : 'MUR';
+  // /demo + ?pitch=1: the list keeps names and quantities; no price column,
+  // no subtotal, no second currency (D6-DESIGNER-DEMO-CLEAN-1013).
+  const pitch = isPitchEmbed();
   const money = (amount: number, cur = currency) => isPitchEmbed() ? '' : formatMoney(amount, cur);
   const summaryMoney = (amount: number, cur = currency) => isPitchEmbed() ? '' : quoteAwareAmount(cart, amount, formatMoney(amount, cur));
 
@@ -112,7 +115,7 @@ export function CartStrip() {
       >
         <div className="flex items-center gap-3">
           <span className="rounded-lg bg-ppw-inkDeep px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-ppw-paper">
-            Cart
+            {pitch ? 'Products' : 'Cart'}
           </span>
           <span>
             <b className="text-ppw-inkDeep">{cart.uniqueProductCount}</b> unique - <b className="text-ppw-inkDeep">{cart.totalItemCount}</b> placed
@@ -134,12 +137,12 @@ export function CartStrip() {
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold tabular-nums text-ppw-inkDeep">
+          {!pitch && <><span className="text-sm font-semibold tabular-nums text-ppw-inkDeep">
             {summaryMoney(cart.subtotal, currency)}
           </span>
           <span className="hidden sm:inline text-[11px] font-medium tabular-nums text-ppw-charcoal">
             ~ {summaryMoney(cart.subtotalByCurrency[altCurrency], altCurrency)}
-          </span>
+          </span></>}
           <Chevron open={expanded} />
         </div>
       </button>
@@ -163,8 +166,8 @@ export function CartStrip() {
                 <th className="py-1 font-semibold">Product</th>
                 <th className="hidden py-1 font-semibold sm:table-cell">Cat.</th>
                 <th className="py-1 text-right font-semibold">Qty</th>
-                <th className="hidden py-1 text-right font-semibold sm:table-cell">Unit</th>
-                <th className="py-1 text-right font-semibold">Line</th>
+                {!pitch && <th className="hidden py-1 text-right font-semibold sm:table-cell">Unit</th>}
+                {!pitch && <th className="py-1 text-right font-semibold">Line</th>}
               </tr>
             </thead>
             <tbody>
@@ -173,19 +176,19 @@ export function CartStrip() {
                   <td className="py-1.5 pr-2 font-medium text-ppw-inkDeep max-w-[180px] sm:max-w-[200px]">
                     <span className="block truncate">{l.product.name}</span>
                     <span className="block text-[11px] font-medium tabular-nums text-ppw-charcoal sm:hidden">
-                      {l.product.price_on_request ? 'Price on request' : money(l.unitPriceDisplay, currency)} each · {CATEGORY_LABELS[l.product.category]}
+                      {pitch ? CATEGORY_LABELS[l.product.category] : <>{l.product.price_on_request ? 'Price on request' : money(l.unitPriceDisplay, currency)} each · {CATEGORY_LABELS[l.product.category]}</>}
                     </span>
                   </td>
                   <td className="hidden py-1.5 pr-2 text-ppw-charcoal sm:table-cell">
                     {CATEGORY_LABELS[l.product.category]}
                   </td>
                   <td className="py-1.5 text-right tabular-nums text-ppw-inkDeep">{l.quantity}</td>
-                  <td className="hidden py-1.5 text-right tabular-nums text-ppw-charcoal sm:table-cell">
+                  {!pitch && <td className="hidden py-1.5 text-right tabular-nums text-ppw-charcoal sm:table-cell">
                     {l.product.price_on_request ? 'Price on request' : money(l.unitPriceDisplay, currency)}
-                  </td>
-                  <td className="py-1.5 pl-2 text-right font-semibold tabular-nums text-ppw-inkDeep whitespace-nowrap">
+                  </td>}
+                  {!pitch && <td className="py-1.5 pl-2 text-right font-semibold tabular-nums text-ppw-inkDeep whitespace-nowrap">
                     {l.product.price_on_request ? 'Price on request' : money(l.lineTotalDisplay, currency)}
-                  </td>
+                  </td>}
                 </tr>
               ))}
               {/* Floor lines: sold by the unit (tile / roll / pack), so the
@@ -202,7 +205,7 @@ export function CartStrip() {
                       )}
                     </span>
                     <span className="block text-[11px] font-medium tabular-nums text-ppw-charcoal sm:hidden">
-                      {money(f.unitPriceDisplay, currency)} each · Floor
+                      {pitch ? 'Floor' : <>{money(f.unitPriceDisplay, currency)} each · Floor</>}
                     </span>
                   </td>
                   <td className="hidden py-1.5 pr-2 text-ppw-charcoal sm:table-cell">Floor</td>
@@ -210,12 +213,12 @@ export function CartStrip() {
                     {f.unitsToOrder} {f.unit}
                     {f.unitsToOrder === 1 ? '' : 's'}
                   </td>
-                  <td className="hidden py-1.5 text-right tabular-nums text-ppw-charcoal sm:table-cell">
+                  {!pitch && <td className="hidden py-1.5 text-right tabular-nums text-ppw-charcoal sm:table-cell">
                     {money(f.unitPriceDisplay, currency)}
-                  </td>
-                  <td className="py-1.5 pl-2 text-right font-semibold tabular-nums text-ppw-inkDeep whitespace-nowrap">
+                  </td>}
+                  {!pitch && <td className="py-1.5 pl-2 text-right font-semibold tabular-nums text-ppw-inkDeep whitespace-nowrap">
                     {money(f.lineTotalDisplay, currency)}
-                  </td>
+                  </td>}
                 </tr>
               ))}
               {/* Wall-paint lines: whole Sofap tins from painted wall
@@ -243,19 +246,19 @@ export function CartStrip() {
                     {l.tins.reduce((a, t) => a + t.count, 0)} tin
                     {l.tins.reduce((a, t) => a + t.count, 0) === 1 ? '' : 's'}
                   </td>
-                  <td className="hidden py-1.5 text-right tabular-nums text-ppw-charcoal sm:table-cell">
+                  {!pitch && <td className="hidden py-1.5 text-right tabular-nums text-ppw-charcoal sm:table-cell">
                     {l.tins.map((t) => `${t.count}× ${t.sizeL} L`).join(' + ')}
-                  </td>
-                  <td className="py-1.5 pl-2 text-right font-semibold tabular-nums text-ppw-inkDeep whitespace-nowrap">
+                  </td>}
+                  {!pitch && <td className="py-1.5 pl-2 text-right font-semibold tabular-nums text-ppw-inkDeep whitespace-nowrap">
                     {money(l.totalDisplay, currency)}
-                  </td>
+                  </td>}
                 </tr>
               ))}
             </tbody>
           </table>
           </div>
           {/* Subtotal footer — outside the scroller, always on screen. */}
-          <div className="border-t-2 border-ppw-inkDeep">
+          {!pitch && <div className="border-t-2 border-ppw-inkDeep">
             <div className="flex items-baseline justify-end gap-4 py-1.5">
               <span className={CAPTION}>{hasQuotedProducts(cart) ? 'Estimate incomplete' : 'Subtotal'}</span>
               <span className="text-[13px] font-bold tabular-nums text-ppw-inkDeep">
@@ -268,7 +271,7 @@ export function CartStrip() {
                 {summaryMoney(cart.subtotalByCurrency[altCurrency], altCurrency)}
               </span>
             </div>
-          </div>
+          </div>}
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
             <p className="text-[11px] font-medium text-ppw-charcoal">
               {readOnly ? DEMO_NOTICE : 'Shipping + tax calculated at checkout. FX live-fetched daily.'}
@@ -308,7 +311,7 @@ export function CartStrip() {
         type="button"
         data-testid="cart-pill"
         onClick={() => setMobileOpen(true)}
-        aria-label={isPitchEmbed() ? `Open cart — ${orderUnits} units` : `Open cart — ${orderUnits} units, ${summaryMoney(cart.subtotal, currency)}`}
+        aria-label={isPitchEmbed() ? 'Open products in this design' : `Open cart — ${orderUnits} units, ${summaryMoney(cart.subtotal, currency)}`}
         aria-expanded={mobileOpen}
         className={`fixed z-30 flex items-center bg-ppw-inkDeep text-[12px] font-semibold text-ppw-paper transition duration-[120ms] ease-out motion-reduce:transition-none hover:brightness-110 focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] max-md:right-0 max-md:min-h-11 max-md:min-w-11 max-md:gap-1.5 max-md:rounded-l-2xl max-md:rounded-r-none max-md:px-2.5 max-md:py-1.5 max-md:shadow-[0_2px_10px_rgba(42,41,38,0.12)] md:right-4 md:min-h-[40px] md:gap-2 md:rounded-full md:px-4 md:py-2 md:shadow-[0_12px_32px_rgba(42,41,38,0.18)] ${
           mobileOpen ? 'hidden' : ''
@@ -324,10 +327,13 @@ export function CartStrip() {
             d="M3 4h2l1.5 9.5A2 2 0 0 0 8.5 15h6.5a2 2 0 0 0 2-1.5L18 7H6.2l-.4-2.4A1 1 0 0 0 4.8 4H3v0Zm6 13a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"
           />
         </svg>
-        <span className="rounded-full bg-ppw-paper px-1.5 py-[1px] text-[11px] font-bold tabular-nums text-ppw-inkDeep">
-          {orderUnits}
-        </span>
-        <span className="tabular-nums">{summaryMoney(cart.subtotal, currency)}</span>
+        {/* /demo + ?pitch=1: no count, no price — just the way into the list. */}
+        {isPitchEmbed()
+          ? <span>Products</span>
+          : <><span className="rounded-full bg-ppw-paper px-1.5 py-[1px] text-[11px] font-bold tabular-nums text-ppw-inkDeep">
+              {orderUnits}
+            </span>
+            <span className="tabular-nums">{summaryMoney(cart.subtotal, currency)}</span></>}
       </button>
 
       {/* Expanded state: the SAME cart body, as a bottom sheet. */}

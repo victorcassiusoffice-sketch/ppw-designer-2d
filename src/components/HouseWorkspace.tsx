@@ -131,7 +131,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
         <ClearControls inline />
         <button title="Undo (Ctrl+Z)" aria-label="Undo" disabled={!canUndo} onClick={() => useHistoryStore.getState().undo()}><StudioIcon name="undo" size={18} /></button>
         <button title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled={!canRedo} onClick={() => useHistoryStore.getState().redo()}><StudioIcon name="redo" size={18} /></button>
-        {onCart && <button className="house-cart house-checkout-toggle" title={readOnly ? 'Products and estimate' : 'Products, cost and checkout'} aria-label="Products and cost" aria-expanded={costOpen} onClick={toggleCost}><StudioIcon name="cart" size={20} /><span className="house-cart-count">{cart.totalItemCount}</span></button>}
+        {onCart && <button className="house-cart house-checkout-toggle" title={isPitchEmbed() ? 'Products in this design' : readOnly ? 'Products and estimate' : 'Products, cost and checkout'} aria-label={isPitchEmbed() ? 'Products in this design' : 'Products and cost'} aria-expanded={costOpen} onClick={toggleCost}><StudioIcon name="cart" size={20} />{!isPitchEmbed() && <span className="house-cart-count">{cart.totalItemCount}</span>}</button>}
         {onSave && <button className="house-save" onClick={onSave}>Save</button>}
         <button title={readOnly ? 'Save locally, load and project tools' : 'Save, load, quote and project tools'} aria-label="Project tools" onClick={() => window.dispatchEvent(new CustomEvent('ppw:open-menu'))}><StudioIcon name="more" /></button>
       </div>

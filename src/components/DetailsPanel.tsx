@@ -53,6 +53,7 @@ import { isFlooringProduct } from '../designer/flooringLattice';
 // Floor tool (2026-08-30): tile SKUs that ARE a Floor-tool material are laid
 // by the tool, so "Fill floor" only shows for loose mats placed as items.
 import { floorMaterialForProduct } from '../data/floorMaterials';
+import { isPitchEmbed } from '../demo/pitchEmbed';
 
 /**
  * P0-ε — Pattern C attribution: stable per-browser sessionId so the
@@ -265,12 +266,14 @@ export function DetailsPanel({ armedProductId }: DetailsPanelProps = {}) {
               label="Position"
               value={`${selected.x.toFixed(2)} m, ${selected.y.toFixed(2)} m · ${selected.rotation}°`}
             />
+            {!isPitchEmbed() && <>
             <Stat
               label="Price"
               value={selectedProduct.price_on_request ? 'Price on request' : `${selectedProduct.price.value.toLocaleString('en-MU')} ${selectedProduct.price.currency}`}
             />
             <Stat label="Commission" value={`${(selectedProduct.commission_pct * 100).toFixed(1)} %`} />
             <Stat label="Supplier" value={selectedProduct.supplier} />
+            </>}
             <ProductSourceNote product={selectedProduct} />
             <Stat
               label="Ships to"
@@ -576,11 +579,13 @@ function ArmedProductDetails({ product }: { product: Product }) {
         label="Footprint"
         value={`${product.dimensions_cm.length} × ${product.dimensions_cm.width} cm`}
       />
+      {!isPitchEmbed() && <>
       <Stat
         label="Price"
         value={product.price_on_request ? 'Price on request' : `${product.price.value.toLocaleString('en-MU')} ${product.price.currency}`}
       />
       <Stat label="Supplier" value={product.supplier} />
+      </>}
       {product.notes?.trim() && <Stat label="About" value={product.notes.trim()} multiline />}
       <div className="rounded-lg border border-dashed border-ppw-rim bg-ppw-rail px-3 py-2.5 text-[12px] font-medium leading-snug text-ppw-charcoal">
         Click an empty spot on the floor to place this product. Press <kbd>Esc</kbd> to cancel.

@@ -1,4 +1,5 @@
 import { ServicesLaunchButton } from './ServicesWorkspace';
+import { isPitchEmbed } from '../demo/pitchEmbed';
 import { FoundationLaunchButton } from './FoundationWorkspace';
 import { WorkspaceFloorNav } from './WorkspaceFloorNav';
 import { PlanImportButton } from './PlanImportWorkspace';
@@ -725,14 +726,15 @@ export function TopBar({
   const floorLiveText =
     floorLive.units === 0
       ? 'No floor yet'
-      : `${floorLive.units} ${floorLive.unit === 'roll' ? (floorLive.units === 1 ? 'roll' : 'rolls') : floorLive.units === 1 ? 'tile' : 'tiles'} · ${formatCurrency(floorLive.cost, displayCurrency)}`;
+      : `${floorLive.units} ${floorLive.unit === 'roll' ? (floorLive.units === 1 ? 'roll' : 'rolls') : floorLive.units === 1 ? 'tile' : 'tiles'}${isPitchEmbed() ? '' : ` · ${formatCurrency(floorLive.cost, displayCurrency)}`}`;
   /** "0.92 × 0.92 m" for a tile, "12.5 m² roll" for sheet goods. */
   const floorSizeText = (m: FloorMaterial) =>
     m.tile_w_m !== null && m.tile_h_m !== null
       ? `${m.tile_w_m} × ${m.tile_h_m} m`
       : `${m.coverage_m2_per_unit} m² roll`;
-  const floorPriceText = (m: FloorMaterial) =>
-    `${formatCurrency(convert(m.price_per_unit_mur, 'MUR', displayCurrency, fx), displayCurrency)} / ${m.unit}`;
+  /** /demo + ?pitch=1 carry no price; the size line stands alone there. */
+  const floorPriceText = (m: FloorMaterial) => isPitchEmbed() ? '' :
+    ` · ${formatCurrency(convert(m.price_per_unit_mur, 'MUR', displayCurrency, fx), displayCurrency)} / ${m.unit}`;
 
   /** Choose a material: erase off; a roll forces Room scope. */
   function chooseFloorMaterial(m: FloorMaterial) {
@@ -864,13 +866,13 @@ export function TopBar({
   })();
   const wallPaintLiveText = !wallPaintLive.any
     ? 'No walls painted yet'
-    : `${wallPaintLive.areaM2.toFixed(1)} m² · ${wallPaintLive.litres.toFixed(1)} L · ${formatCurrency(wallPaintLive.cost, displayCurrency)}`;
+    : `${wallPaintLive.areaM2.toFixed(1)} m² · ${wallPaintLive.litres.toFixed(1)} L${isPitchEmbed() ? '' : ` · ${formatCurrency(wallPaintLive.cost, displayCurrency)}`}`;
   /** "matt · 9 m²/L · from Rs 201.25" — one line under the name; "(est.)" when the brand publishes no spread rate. */
   const wallPaintMetaText = (p: WallPaint) =>
-    `${p.finish} · ${p.coverage_m2_per_l} m²/L${p.coverage_estimated ? ' (est.)' : ''} · from ${formatCurrency(
+    `${p.finish} · ${p.coverage_m2_per_l} m²/L${p.coverage_estimated ? ' (est.)' : ''}${isPitchEmbed() ? '' : ` · from ${formatCurrency(
       convert(Math.min(...p.tins.map((t) => t.priceMur)), 'MUR', displayCurrency, fx),
       displayCurrency,
-    )}`;
+    )}`}`;
 
   /**
    * Choose a paint: erase off, like choosing a floor material. A white-only
@@ -1888,7 +1890,7 @@ export function TopBar({
               data-testid="wallpaint-tool-toggle"
               data-tool-category="finish"
               className={segOn(wallPaintActive)}
-              title="Wall paint — click a wall to paint it with a Sofap colour; the plan lifts to show the walls. Room paints every wall of the room."
+              title={isPitchEmbed() ? 'Wall paint — click a wall to paint it; the plan lifts to show the walls. Room paints every wall of the room.' : 'Wall paint — click a wall to paint it with a Sofap colour; the plan lifts to show the walls. Room paints every wall of the room.'}
               aria-pressed={wallPaintActive}
               aria-controls="ppw-wallpaint-panel"
               aria-label="Wall paint"
@@ -1902,7 +1904,7 @@ export function TopBar({
               data-testid="cladding-tool-toggle"
               data-tool-category="finish"
               className={segOn(claddingActive)}
-              title="Cladding — sample demo boards. Click a wall to clad it. Not a real Spa Concept product."
+              title={isPitchEmbed() ? 'Cladding — sample demo boards. Click a wall to clad it.' : 'Cladding — sample demo boards. Click a wall to clad it. Not a real Spa Concept product.'}
               aria-pressed={claddingActive}
               aria-controls="ppw-cladding-panel"
               aria-label="Cladding"
@@ -2061,7 +2063,8 @@ export function TopBar({
         <div className="plan-commerce hidden shrink-0 items-center md:flex">
           <span className={DIVIDER} aria-hidden="true" />
           <div className="flex items-center gap-1 lg:gap-2">
-            <CurrencySwitcher compact />
+            {/* /demo and ?pitch=1 show no currency, count or price (D6-DESIGNER-DEMO-CLEAN-1013). */}
+            {!isPitchEmbed() && <CurrencySwitcher compact />}
 
             {/* Polish (2026-08-29): the count sits INSIDE the control — "Cart · 3"
                 where the label fits, icon + "3" at narrower tiers. No badge
@@ -2070,12 +2073,14 @@ export function TopBar({
               to={readOnly ? '#' : '/cart'}
               onClick={event => { if (readOnly) { event.preventDefault(); setDemoEstimateOpen(true); } }}
               className={`${BTN} ${BTN_REST} min-[1700px]:px-3`}
-              title={`Cart: ${cart.uniqueProductCount} unique products`}
-              aria-label={`Cart, ${cart.uniqueProductCount} products`}
+              title={isPitchEmbed() ? 'Products in this design' : `Cart: ${cart.uniqueProductCount} unique products`}
+              aria-label={isPitchEmbed() ? 'Products in this design' : `Cart, ${cart.uniqueProductCount} products`}
             >
               <Icon name="cart" />
-              <span className="hidden min-[1700px]:inline">Cart ·</span>
-              <span className="font-semibold tabular-nums">{cart.uniqueProductCount}</span>
+              {isPitchEmbed()
+                ? <span className="hidden min-[1700px]:inline">Products</span>
+                : <><span className="hidden min-[1700px]:inline">Cart ·</span>
+                  <span className="font-semibold tabular-nums">{cart.uniqueProductCount}</span></>}
             </Link>
 
             {/* M1.C.7 — Request Quote. THE call-to-action on the Designer —
@@ -2404,7 +2409,7 @@ export function TopBar({
                         className="truncate text-[11px] font-medium tabular-nums"
                         style={{ color: on ? undefined : CHROME_TEXT_2, opacity: on ? 0.85 : 1 }}
                       >
-                        {floorSizeText(m)} · {floorPriceText(m)}
+                        {floorSizeText(m)}{floorPriceText(m)}
                       </span>
                     </span>
                   </button>
@@ -2693,17 +2698,17 @@ export function TopBar({
               {/* Brand card — always: who the prices come from and when. */}
               {paintBrand && (
                 <div className="mb-1 flex items-center gap-2 px-1" data-testid="wallpaint-brand-card">
-                  <span
+                  {!isPitchEmbed() && <span
                     aria-hidden="true"
                     className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-ppw-rim bg-white text-[11px] font-bold text-[#37362f]"
                   >
                     {paintBrand.name.slice(0, 1)}
-                  </span>
+                  </span>}
                   <span className="flex min-w-0 flex-1 flex-col leading-tight">
                     <span className="truncate text-[12px] font-semibold text-[#37362f]">{paintBrand.name}</span>
                     <span className="truncate text-[10px]" style={{ color: CHROME_TEXT_2 }}>
                       {paintBrand.colourSystem ?? 'Tinted in store'}
-                      {wallPaintSel.priced_at ? ` · prices ${wallPaintSel.priced_at}` : ''}
+                      {wallPaintSel.priced_at && !isPitchEmbed() ? ` · prices ${wallPaintSel.priced_at}` : ''}
                     </span>
                   </span>
                 </div>
@@ -3081,7 +3086,7 @@ export function TopBar({
                   )}
                   <p className="mt-1 px-1 text-[10px] leading-snug" style={{ color: CHROME_TEXT_2 }}>
                     {wallPaintColours.length > 0
-                      ? `${paintBrand?.name ?? 'Brand'} shades${paintBrand?.colourSystem ? ` · ${paintBrand.colourSystem}` : ''}. A tinted tin is priced on its base (${(wallPaintSel.tintBases ?? []).map((b) => b.name).join(' / ') || 'Pastel / Medium / Basic'}).`
+                      ? `${paintBrand?.name ?? 'Brand'} shades${paintBrand?.colourSystem ? ` · ${paintBrand.colourSystem}` : ''}.${isPitchEmbed() ? '' : ` A tinted tin is priced on its base (${(wallPaintSel.tintBases ?? []).map((b) => b.name).join(' / ') || 'Pastel / Medium / Basic'}).`}`
                       : 'Pick any colour — the store tints the base tin to match.'}
                     {paintChartBrandId === 'sofap' ? ` ${SOFAP_COLOUR_DISCLAIMER}` : ''}
                     {paintChartBrandId === 'tintex' ? ` ${TINTEX_COLOUR_DISCLAIMER}` : ''}
@@ -3115,9 +3120,10 @@ export function TopBar({
               </p>
               </div>
               <p className="px-1 text-[10px] leading-snug" style={{ color: CHROME_TEXT_2 }} data-testid="wallpaint-assumptions">
+                {isPitchEmbed() ? 'Quantities only' : <>
                 {vatText}
                 {wallPaintSel.priced_at ? ` (${paintBrand?.name ?? 'store'}, ${wallPaintSel.priced_at})` : ''}
-                {wallPaintSel.price_note ? ` · ${wallPaintSel.price_note}` : ''}
+                {wallPaintSel.price_note ? ` · ${wallPaintSel.price_note}` : ''}</>}
                 {wallPaintSel.coverage_estimated ? ` · ${wallPaintSel.coverage_m2_per_l} m²/L is an estimate (no spread rate published)` : ''} · ceilings not included · skirting not deducted · openings under 1 m² not deducted
               </p>
 
@@ -3539,7 +3545,7 @@ export function TopBar({
                             className="truncate text-[11px] font-medium tabular-nums"
                             style={{ color: on ? undefined : CHROME_TEXT_2, opacity: on ? 0.85 : 1 }}
                           >
-                            {floorSizeText(m)} · {floorPriceText(m)}
+                            {floorSizeText(m)}{floorPriceText(m)}
                           </span>
                         </span>
                       </button>
@@ -3948,20 +3954,20 @@ export function TopBar({
                 </Link>}
 
                 {/* 5 SHOP */}
-                <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>{readOnly ? 'Estimate' : 'Shop'}</p>
-                <div className="flex min-h-[48px] items-center justify-between px-3">
+                <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>{isPitchEmbed() ? 'Products' : readOnly ? 'Estimate' : 'Shop'}</p>
+                {!isPitchEmbed() && <div className="flex min-h-[48px] items-center justify-between px-3">
                   <span className="text-[14px] font-medium text-[#37362f]">Currency</span>
                   <CurrencySwitcher compact />
-                </div>
+                </div>}
                 <Link
                   to={readOnly ? '#' : '/cart'}
                   onClick={event => { setShowMobileMenu(false); if (readOnly) { event.preventDefault(); setDemoEstimateOpen(true); } }}
                   className={`${SHEET_ROW} justify-between`}
                 >
-                  <span className="flex items-center gap-3"><Icon name="cart" size={20} />{readOnly ? 'Product estimate' : 'Cart'}</span>
-                  <span className="inline-flex h-6 min-w-[24px] items-center justify-center rounded-full bg-ppw-inkDeep px-1.5 text-[11px] font-semibold tabular-nums text-ppw-paper">
+                  <span className="flex items-center gap-3"><Icon name="cart" size={20} />{isPitchEmbed() ? 'Products in this design' : readOnly ? 'Product estimate' : 'Cart'}</span>
+                  {!isPitchEmbed() && <span className="inline-flex h-6 min-w-[24px] items-center justify-center rounded-full bg-ppw-inkDeep px-1.5 text-[11px] font-semibold tabular-nums text-ppw-paper">
                     {cart.uniqueProductCount}
-                  </span>
+                  </span>}
                 </Link>
                 {/* 3b (2026-07-26): mobile route back to the storefront. */}
                 {!designerOnly && <Link

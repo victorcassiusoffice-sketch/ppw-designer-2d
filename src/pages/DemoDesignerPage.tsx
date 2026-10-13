@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import App from '../App';
 import { demoRoute } from '../demo/demoRoute';
+import { startDemoScrub } from '../demo/demoScrub';
+import { isPriceFreeDemoPath } from '../demo/pitchEmbed';
 import { DESIGNER_VIEW_STATE_MESSAGE, listenForEmbeddedDesignerView } from '../demo/embedMessages';
 import { useDesignerUIStore } from '../store/designerUIStore';
 
@@ -16,6 +18,9 @@ export default function DemoDesignerPage(): JSX.Element {
     document.title = 'Demo · Room Designer';
     return () => { document.title = previous; };
   }, []);
+  // /demo only: no retailer/client name or price anywhere a visitor can reach.
+  const priceFree = isPriceFreeDemoPath(location.pathname);
+  useEffect(() => (priceFree ? startDemoScrub(document.body) : undefined), [priceFree]);
   useEffect(() => {
     if (requestedView) useDesignerUIStore.getState().setViewMode(requestedView === '2d' ? 'plan' : '3d');
   }, [requestedView]);

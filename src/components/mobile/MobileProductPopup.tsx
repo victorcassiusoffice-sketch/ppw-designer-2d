@@ -27,6 +27,7 @@ import { useDragToPlace } from './useDragToPlace';
 // the tool — the popup offers "Lay this floor" and no placement/drag.
 import { floorMaterialForProduct } from '../../data/floorMaterials';
 import { useDesignerUIStore } from '../../store/designerUIStore';
+import { isPitchEmbed } from '../../demo/pitchEmbed';
 
 // ---------------------------------------------------------------------------
 // Chrome recipe (toolbar contract 2026-08-29) — same strings as CartStrip /
@@ -50,6 +51,7 @@ const CAPTION = 'text-[11px] font-semibold uppercase tracking-[0.06em] text-ppw-
 const POPOVER_SHADOW = '0 12px 32px rgba(42,41,38,0.18)';
 
 function formatPrice(p: Product): string {
+  if (isPitchEmbed()) return '';
   if (p.price_on_request) return 'Price on request';
   const { value, currency } = p.price;
   return `${value.toLocaleString('en-MU', { maximumFractionDigits: 0 })} ${currency}`;
@@ -120,7 +122,7 @@ export function MobileProductPopup({
           onPointerDown={floorMat ? undefined : (event) => start(event, product.id, imgUrl)} onContextMenu={(event) => event.preventDefault()}>
           <img src={imgUrl} alt={product.name} draggable={false} />
         </div>
-        <div><h3>{product.name}</h3><strong>{formatPrice(product)}</strong><p>{formatDims(product)} · {product.supplier}</p>
+        <div><h3>{product.name}</h3><strong>{formatPrice(product)}</strong><p>{formatDims(product)}{isPitchEmbed() ? '' : ` · ${product.supplier}`}</p>
           {desc && <p>{shownDesc}{truncated && <button type="button" className="catalog-detail-more" onClick={() => setExpanded((value) => !value)}>{expanded ? 'less' : 'more'}</button>}</p>}
           <button type="button" data-testid={floorMat ? 'popup-lay-floor' : 'popup-add-to-room'} className="catalog-detail-place"
             onClick={floorMat ? layFloor : () => onAdd(product.id)}>{floorMat ? 'Lay this floor' : '+ Add to room'}</button>

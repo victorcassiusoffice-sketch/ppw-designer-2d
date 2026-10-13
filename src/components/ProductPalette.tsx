@@ -33,6 +33,7 @@ import { CatalogConnectionNotice } from './CatalogConnectionNotice';
 import { DetailCard } from '../designer/DetailCard';
 import type { RegionGroup } from '../data/products';
 import type { Product, ProductCategory } from '../data/products.schema';
+import { isPitchEmbed } from '../demo/pitchEmbed';
 
 // P0-ζ — Sims-style floating hover card state for catalog cards.
 interface HoverState {
@@ -116,6 +117,7 @@ function macroOf(p: Product): MacroCategory {
 }
 
 function formatPrice(p: Product): string {
+  if (isPitchEmbed()) return '';
   if (p.price_on_request) return 'Price on request';
   const { value, currency } = p.price;
   const formatted = value.toLocaleString('en-MU', { maximumFractionDigits: 0 });
