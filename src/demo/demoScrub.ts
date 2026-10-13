@@ -52,6 +52,11 @@ const PRICE_RULES: ReadonlyArray<readonly [RegExp, string]> = [
   [/\s*[·—–-]?\s*\d(?:[,.]?\d)*\s?(?:MUR|USD|EUR|GBP)\b(?:\s?(?:\/|per)\s?[a-z²]+)?/g, ''],
   [/\s*[·—–-]?\s*\(?(?:prices? )?(?:incl\.?|including|VAT included|excl\.?)\s*(?:15\s?%\s*)?VAT\)?\.?/gi, ''],
   [/\s*[·—–-]?\s*VAT included\.?/gi, ''],
+  // An aside about tax or stock on a price note: "(VAT not stated; out of stock that day)".
+  [/\s*\([^()]*\bVAT\b[^()]*\)/gi, ''],
+  [/[^.;()]*\bVAT\b[^.;()]*[.;]?/gi, ''],
+  // What a removed "Rs 12,075 on emcar.mu 2026-09-04" leaves behind.
+  [/(^|[.;]\s*)on\s+\d{4}-\d{2}-\d{2}\s*[.;]?\s*/g, '$1'],
   [/\bRs\b|\bMUR\b/g, ''],
 ];
 

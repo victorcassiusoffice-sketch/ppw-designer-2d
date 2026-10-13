@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { scrubDemoText, startDemoScrub } from '../demoScrub';
 import { isPriceFreeDemoPath } from '../pitchEmbed';
 
-const FORBIDDEN = /\bRs\b|\bMUR\b|\bUSD\b|\bEUR\b|\bGBP\b|€|£|\$\s?\d|Sofap|sofaponlinestore|TintEX|Permoglaze|Spa Concept|\bCourts\b|Cap Tamarin|\bK1\b|\bVAT\b/i;
+const FORBIDDEN = /\bRs\b|\bMUR\b|\bUSD\b|\bEUR\b|\bGBP\b|€|£|\$\s?\d|\bSofap\b|sofaponlinestore|\bTintEX\b|\bPermoglaze\b|Spa Concept|\bCourts\b|Cap Tamarin|\bK1\b|\bVAT\b/i;
 
 describe('price-free /demo path', () => {
   it('is /demo only', () => {
@@ -32,6 +32,8 @@ describe('scrubDemoText', () => {
     ['Sample boards. Not a real Spa Concept product.', 'Sample boards. Not a real product.'],
     ['Supplied by K1 Sport', 'Supplied by a local supplier'],
     ['sofaponlinestore.mu/shop', ''],
+    ['IP68 junction box (Emcar listing). Rs 12,075 on emcar.mu 2026-09-04 (VAT not stated; out of stock that day). Lays on the roof.', 'IP68 junction box (a local supplier listing). Lays on the roof.'],
+    ['Prices excl. VAT', ''],
   ])('%s', (input, expected) => {
     const out = scrubDemoText(input);
     expect(out).toBe(expected);
@@ -95,5 +97,34 @@ describe('every supplier and brand name in the bundled data is scrubbed', () => 
       if (out.includes(raw) || /[A-Z][a-z]+ [A-Z][a-z]+/.test(out.replace(/a local supplier|a client|Paint range [A-D]/g, ''))) leaks.push(`${raw} -> ${out}`);
     }
     expect(leaks).toEqual([]);
+  });
+});
+
+describe('every bundled string a demo visitor could read comes out clean', () => {
+  it('scrubs every quoted string in src/data, src/demo and public/data', async () => {
+    const { readFileSync, readdirSync, statSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const walk = (dir: string): string[] => readdirSync(dir).flatMap((f) => {
+      const p = join(dir, f);
+      if (statSync(p).isDirectory()) return f === '__tests__' ? [] : walk(p);
+      return /\.(ts|json)$/.test(f) ? [p] : [];
+    });
+    const files = ['src/data', 'src/demo', 'public/data'].flatMap((d) => { try { return walk(d); } catch { return []; } })
+      .filter((f) => !/demoScrub\.ts$/.test(f));
+    // Identifiers, URLs and ids are not shown as text; prose is.
+    const quoted = /(["'`])((?:(?!\1)[^\\\r\n]){6,400})\1/g;
+    const leaks: string[] = [];
+    let checked = 0;
+    for (const f of files) {
+      for (const m of readFileSync(f, 'utf8').matchAll(quoted)) {
+        const s = m[2];
+        if (!FORBIDDEN.test(s) || /^https?:\/\//.test(s) || !/\s/.test(s) || /\$\{/.test(s)) continue;
+        checked += 1;
+        const out = scrubDemoText(s);
+        if (FORBIDDEN.test(out)) leaks.push(`${f}: ${out.slice(0, 120)}`);
+      }
+    }
+    expect(checked).toBeGreaterThan(50);
+    expect(leaks.join('\n')).toBe('');
   });
 });

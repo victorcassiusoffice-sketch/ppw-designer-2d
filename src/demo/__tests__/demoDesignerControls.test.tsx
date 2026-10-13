@@ -14,6 +14,7 @@ import { HOME_DEMO } from '../generic';
 import { activateDemoFromUrl, useDemoMode } from '../useDemoMode';
 import { getProductById } from '../../data/products';
 import { resetPitchEmbedCache } from '../pitchEmbed';
+import { startDemoScrub } from '../demoScrub';
 
 vi.mock('../../components/RoomView3D', () => ({ RoomView3D: ({ onCart }: { onCart: () => void }) => <button onClick={onCart}>3D product estimate</button> }));
 vi.mock('../../lib/showcaseSafety', () => ({ isShowcaseReadOnly: () => true, DEMO_NOTICE: 'Preview only — no orders.' }));
@@ -97,14 +98,20 @@ describe('designer-only Demo controls', () => {
     expect(document.querySelector('[aria-label="Demo product estimate"]')).toBeNull();
   });
 
-  it.each([['/embed/designer', true], ['/demo', false]] as const)('keeps the product description on %s (estimate %s) while hiding 3D checkout', (path, priced) => {
+  it.each([['/embed/designer', true], ['/demo', false]] as const)('keeps the product description on %s (estimate %s) while hiding 3D checkout', async (path, priced) => {
     window.history.replaceState({}, '', path); resetPitchEmbedCache();
+    // /demo runs the page-level scrubber (DemoDesignerPage); product notes rely on it.
+    const stop = priced ? null : startDemoScrub(document.body);
     const id = HOME_DEMO.buildProperty().rooms.flatMap(room => room.placedItems)[0].productId;
     const checkout = vi.fn();
     act(() => root.render(<HouseCostPanel productId={id} onCart={checkout} />));
     expect(host.textContent).toContain(getProductById(id)!.name);
     if (priced) expect(host.querySelector('[data-testid="house-cost-total"]')?.textContent).toMatch(/\d/);
-    else expect(host.textContent).not.toMatch(/Rs|MUR/);
+    else {
+      await act(async () => { await Promise.resolve(); });
+      expect(host.textContent).not.toMatch(/\bRs\b|\bMUR\b|\bVAT\b/);
+    }
+    stop?.();
     expect(host.querySelector('.house-review-cart')).toBeNull();
     expect(checkout).not.toHaveBeenCalled();
   });

@@ -92,14 +92,21 @@ async function clickKey(page, key) {
 }
 
 async function open(page, url) {
-  await page.goto(BASE + url, { waitUntil: 'domcontentloaded' });
+  // Vercel preview hosts sometimes stall from this network: retry.
+  for (let attempt = 1; ; attempt += 1) {
+    try { await page.goto(BASE + url, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; } catch (e) { if (attempt >= 3) throw e; }
+  }
   await page.waitForTimeout(6000);
 }
 
 const report = { base: BASE, at: new Date().toISOString(), runs: [] };
 let total = 0;
-const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-for (const vp of VIEWPORTS) {
+// DEMO_CLEAN_RESOLVE=216.198.79.3 pins the host to one Vercel edge (some
+// edges time out from some networks).
+const RESOLVE = process.env.DEMO_CLEAN_RESOLVE ? [`--host-resolver-rules=MAP ${new URL(BASE).hostname} ${process.env.DEMO_CLEAN_RESOLVE}`] : [];
+const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', ...RESOLVE] });
+const ONLY = process.env.DEMO_CLEAN_VIEWPORTS?.split(',');
+for (const vp of VIEWPORTS.filter((v) => !ONLY || ONLY.includes(v.name))) {
   for (const start of STARTS) {
     const ctx = await browser.newContext({ viewport: vp.viewport, isMobile: vp.mobile, hasTouch: vp.mobile });
     const page = await ctx.newPage();
