@@ -1,6 +1,6 @@
 # One Live Build — coordinated design upgrade, 15 October 2026
 
-Status: implemented and locally verified; preview publication in progress on `gpt/designer-2026-10-15`. Current workspace: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`. Preserve PR #47's City work. The branch includes current production history through `480c56e` without discarding the City's extended neutral-demo filters. Main and the other checkout remain untouched.
+Status: LIVE-ON-PREVIEW on `gpt/designer-2026-10-15`, PR #48. Current workspace: `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer`. Preserve PR #47's City work. The branch includes current production history through `480c56e` without discarding the City's extended neutral-demo filters. Main and the other checkout remain untouched. Full URLs and source paths are in `docs/RELEASE-LINKS-2026-10-15.md`.
 
 ## Dependency order
 
@@ -33,4 +33,10 @@ Saved full-suite evidence confirms 350 test files / 3,875 passing tests, with ze
 
 The final source review also confirmed the shared calculation preflight returns unavailable/null quantities for rejected workloads. A final parent patch conditionally skips the mini-plan for unavailable models, preventing oversized legacy geometry from bypassing the calculation guard through SVG serialization. The replacement build and all 30 Project hub captures passed on `App-3EzNlsx8.js`.
 
-Detailed evidence, remaining limits and exact artifact locations are in `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\docs\qa-project-hub-2026-10-15\QA-SUMMARY.md`. Department cloud collaboration remains unconnected, engineering results remain unverified, and some detailed legacy copy remains English. No production publication, migration or external action is implied by this checkpoint. Root will record feature-preview/PR and live-domain status separately.
+Detailed evidence, remaining limits and exact artifact locations are in `C:\Users\Victor\Documents\Codex\2026-09-23\c\work\ppw-designer\docs\qa-project-hub-2026-10-15\QA-SUMMARY.md`. Department cloud collaboration remains unconnected, engineering results remain unverified, and some detailed legacy copy remains English. No production publication, migration or external action is implied by this checkpoint.
+
+## Published preview checkpoint
+
+Application commit `491605e28ac4947508a09303b129c9ad187eac9a` is deployed at https://ppw-designer-2d-8b09vgrgo-victor-ppw.vercel.app. PR: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/48. Cache-busted health verified `env:preview` and this exact commit. All 30 linked preview routes returned HTTP200: 23 app shells and seven intended access gates. The 28 live desktop/phone cases passed, with zero final console/page errors, failed requests, write attempts or horizontal overflow. Cold-load retries and remaining bundle latency are recorded rather than concealed.
+
+Typecheck, Vitest, secrets and Vercel checks pass. The separate Lighthouse workflow fails against production access gates, with exact artifact evidence in `docs/qa-project-live-2026-10-15/CI-STATUS.md`. No production action is authorized by this preview. Next extensions: secure design ownership/membership/revisions; remaining legacy translations; cancellable background geometry for larger projects; verified product meshes and deeper professional calculation models. Do not represent any of those as already implemented.

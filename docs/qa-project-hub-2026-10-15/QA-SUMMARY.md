@@ -15,7 +15,7 @@ This record covers local implementation verification. It does not establish that
 | Same browser report | **30 final screenshots**: 15 desktop and 15 phone. Zero recorded console errors, uncaught page errors, assertion/overflow failures or attempted API writes. |
 | `tools/project-hub-shot-2026-10-15.mjs` | Desktop **1280 × 900**, phone **390 × 844**, touch/mobile enabled for phone, disposable browser storage and API write interception. The script rejects non-local target hosts. |
 
-The full test count is taken directly from the saved JSON, not inferred from a terminal excerpt. The screenshot count is taken from each case's `shots` array. Two old `desktop-failure.png` / `phone-failure.png` captures in this directory are not listed by the passing report and are not current acceptance evidence.
+The full test count is taken directly from the saved JSON, not inferred from a terminal excerpt. The screenshot count is taken from each case's `shots` array. Two old failure captures from an earlier harness attempt were removed before committing; the passing report identifies the final acceptance screenshots.
 
 ## Exercised workflow
 

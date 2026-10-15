@@ -1,11 +1,22 @@
 /** Read-only deployment smoke checks. No credentials, customer records or server writes. */
-import { chromium, expect } from '@playwright/test';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { chromium, expect as baseExpect } from '@playwright/test';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+const expect = baseExpect.configure({ timeout: 45000 });
 const base = process.argv[2], commit = process.argv[3];
 if (!base || !/^https:\/\/ppw-designer-2d-[a-z0-9-]+\.vercel\.app$/.test(base) || !/^[a-f0-9]{40}$/.test(commit ?? '')) throw new Error('Pass unique Vercel preview origin and expected full commit.');
 const mapped = process.argv.includes('--map-edge');
 const out = 'docs/qa-project-live-2026-10-15'; mkdirSync(out, { recursive: true });
 const report = { base, commit, at: new Date().toISOString(), transport: mapped ? 'Process-only resolver, original host and TLS' : 'Normal DNS/TLS', cases: [] };
+const failed = r => r.consoleErrors.length || r.pageErrors.length || r.failedRequests.length || r.httpErrors.length || r.writes.length || r.defects.length;
+let retryCases;
+if (process.argv.includes('--retry-failures')) {
+  const previous = JSON.parse(readFileSync(`${out}/report.json`, 'utf8'));
+  if (previous.base !== base || previous.commit !== commit) throw new Error('Retry must target same release.');
+  writeFileSync(`${out}/report-first-attempt.json`, JSON.stringify(previous, null, 2));
+  retryCases = new Set(previous.cases.filter(failed).map(r => `${r.device}/${r.name}`));
+  report.cases = previous.cases.filter(r => !failed(r));
+  report.retryScope = [...retryCases];
+}
 const args = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
 if (mapped) args.push(`--host-resolver-rules=MAP ${new URL(base).hostname} 216.198.79.3`);
 const browser = await chromium.launch({ headless: true, args });
@@ -23,6 +34,7 @@ try {
   ];
   for (const [device, viewport] of [['desktop', { width: 1280, height: 900 }], ['phone', { width: 390, height: 844 }]]) {
     for (const [name, path] of routes) {
+      if (retryCases && !retryCases.has(`${device}/${name}`)) continue;
       const context = await browser.newContext({ viewport, isMobile: device === 'phone', hasTouch: device === 'phone', deviceScaleFactor: 1 });
       await context.addInitScript(() => localStorage.setItem('ppw_designer_coach_v1', '1'));
       const page = await context.newPage(); page.setDefaultTimeout(45000);
@@ -35,6 +47,7 @@ try {
         if (!['GET', 'HEAD', 'OPTIONS'].includes(route.request().method())) { row.writes.push(route.request().url()); await route.abort(); } else await route.continue();
       });
       try {
+        const began = Date.now();
         const response = await page.goto(`${base}${path}${path.includes('?') ? '&' : '?'}cb=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
         row.status = response.status(); expect(row.status).toBe(200);
         if (name.startsWith('project-')) {
@@ -46,6 +59,7 @@ try {
           await page.getByTestId('wallpaint-3d-gl').waitFor(); await page.getByTestId('loading-3d').waitFor({ state: 'hidden', timeout: 60000 });
         } else if (name.startsWith('pitch-')) await expect(page.locator('h1').first()).toBeVisible();
         else { await expect(page.locator('input[type=password]').first()).toBeVisible(); row.accessGate = true; }
+        row.readyMs = Date.now() - began;
         await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(800);
         row.overflow = await page.evaluate(() => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - innerWidth);
         if (row.overflow > 1) row.defects.push('Horizontal overflow');
@@ -57,4 +71,4 @@ try {
     }
   }
 } finally { await browser.close(); writeFileSync(`${out}/report.json`, JSON.stringify(report, null, 2)); }
-if (report.cases.some(r => r.consoleErrors.length || r.pageErrors.length || r.failedRequests.length || r.httpErrors.length || r.writes.length || r.defects.length)) process.exitCode = 1;
+if (report.cases.some(failed)) process.exitCode = 1;
