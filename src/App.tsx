@@ -3,6 +3,10 @@ import { FoundationWorkspace } from './components/FoundationWorkspace';
 import { CityWorkspace } from './components/CityWorkspace';
 import { ProjectWorkspace } from './components/ProjectWorkspace';
 import { PlanImportWorkspace } from './components/PlanImportWorkspace';
+import { HouseBuildTutorial } from './components/HouseBuildTutorial';
+import type { HouseTutorialAction } from './designer/houseBuildTutorial';
+import { useDisciplineVisibilityStore } from './store/disciplineVisibilityStore';
+import { useGardenEditorStore } from './store/gardenEditorStore';
 /**
  * App shell — Sims build-mode layout (Vic 2026-08-25, complaint 2).
  *
@@ -289,6 +293,53 @@ export default function App() {
 
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [roomsMenuOpen, setRoomsMenuOpen] = useState(false);
+  useEffect(() => {
+    const neutral = () => {
+      setDrawMode(false);
+      useDesignerUIStore.getState().resetTransient();
+      usePlacementIntentStore.getState().setArmed(null);
+      usePropertyStore.getState().selectItem(null);
+      useGardenEditorStore.getState().close();
+      window.dispatchEvent(new Event('ppw:close-house-details'));
+    };
+    const unsubscribe = useDisciplineVisibilityStore.subscribe((state, previous) => {
+      if (state.visible !== previous.visible) neutral();
+    });
+    const launch = (event: Event) => {
+      const action = (event as CustomEvent<{ action: HouseTutorialAction }>).detail?.action;
+      if (!action) return;
+      if (!window.dispatchEvent(new Event('olb:before-workspace-switch', { cancelable: true }))) return;
+      window.dispatchEvent(new Event('olb:close-workspaces'));
+      window.dispatchEvent(new Event('ppw:close-catalog'));
+      useDisciplineVisibilityStore.getState().showAll();
+      neutral();
+      setRoomsMenuOpen(false);
+      const ui = useDesignerUIStore.getState();
+      ui.setEnergyPanelOpen(false);
+      ui.setMaterialsPanelOpen(false);
+      if (action === 'project' || action === 'review') window.dispatchEvent(new CustomEvent('olb:open-project', { detail: { section: action === 'review' ? 'engineeringReview' : 'overview' } }));
+      else if (action === 'orders') window.dispatchEvent(new CustomEvent('ppw:open-city', { detail: { tab: 'orders' } }));
+      else if (action === 'import') window.dispatchEvent(new Event('ppw:open-plan-import'));
+      else if (action === 'foundation') window.dispatchEvent(new Event('ppw:open-foundation'));
+      else if (action.startsWith('services')) {
+        const system = action === 'services-plumbing' ? 'cold-water' : action === 'services-hvac' ? 'ventilation' : action === 'services-fire' ? 'fire-water' : action === 'services-security' ? 'data' : 'electrical';
+        window.dispatchEvent(new CustomEvent('ppw:open-services', { detail: { system } }));
+      } else if (action === 'roof') {
+        usePropertyStore.getState().ensureRoofLevel(); ui.setViewMode('3d');
+      } else if (action === 'furnish') window.dispatchEvent(new Event('ppw:open-catalog'));
+      else if (action === 'materials') ui.setMaterialsPanelOpen(true);
+      else {
+        ui.setViewMode('plan');
+        if (action === 'walls') setDrawMode(true);
+        if (action === 'openings') ui.setTool('door');
+        if (action === 'floors') window.dispatchEvent(new Event('olb:open-storeys'));
+        if (action === 'finishes') ui.setTool('wallpaint');
+        if (action === 'garden') window.dispatchEvent(new Event('ppw:open-garden'));
+      }
+    };
+    window.addEventListener('olb:tutorial-action', launch);
+    return () => { unsubscribe(); window.removeEventListener('olb:tutorial-action', launch); };
+  }, [setDrawMode]);
   // One armed product for the catalog, plan and 3D. A view/tool change must
   // disarm all three, not leave an old product in the plan's local state.
   const pendingProductId = usePlacementIntentStore((s) => s.armedProductId);
@@ -400,6 +451,7 @@ export default function App() {
       <AiDesignWorkspace onBeforeOpen={() => setDrawMode(false)} />
       <PlanImportWorkspace onBeforeOpen={() => setDrawMode(false)} />
       <ServicesWorkspace onBeforeOpen={() => setDrawMode(false)} />
+      <HouseBuildTutorial />
       <FoundationWorkspace onBeforeOpen={() => setDrawMode(false)} />
       <CityWorkspace onBeforeOpen={() => setDrawMode(false)} />
       <ProjectWorkspace onBeforeOpen={() => setDrawMode(false)} />

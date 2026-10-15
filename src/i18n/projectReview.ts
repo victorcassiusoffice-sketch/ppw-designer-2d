@@ -6,6 +6,30 @@ import type { AppLocale } from './messages';
 type Languages = readonly [fr: string, zh: string, es: string];
 type ReviewCopy = { title: Languages; recommendation?: Languages; criticalTitle?: Languages };
 export const PROJECT_REVIEW_COPY = {
+  'excavation-union-incomplete': {
+    title: [
+      'La quantité totale d’excavation est suspendue',
+      '暂不提供合并后的开挖总量',
+      'La cantidad total de excavación está pendiente',
+    ],
+    recommendation: [
+      'Examinez les trous circulaires qui intersectent les autres excavations ou le béton. N’additionnez pas les volumes individuels qui se chevauchent.',
+      '请结合完整开挖与混凝土布置复核相交圆孔。不要将重叠的单孔体积直接相加。',
+      'Revise los huecos circulares que intersectan otras excavaciones u hormigón. No sume volúmenes individuales superpuestos.',
+    ],
+  },
+  'tree-bore-conflict': {
+    title: [
+      'L’excavation circulaire entre dans la zone de protection de l’arbre',
+      '圆形开挖进入树木保护区域',
+      'La excavación circular invade la zona de protección del árbol',
+    ],
+    recommendation: [
+      'Déplacez ou redéfinissez l’excavation mesurée avec l’ingénieur géotechnicien ou structure et l’arboriculteur avant les travaux.',
+      '施工前请与岩土或结构工程师及树木专业人员共同调整开挖位置或方案。',
+      'Reubique o rediseñe la excavación medida con el ingeniero geotécnico o estructural y el arborista antes de ejecutar.',
+    ],
+  },
   'calculation-budget': {
     title: [
       'Les quantités et le contrôle du projet sont indisponibles',
@@ -44,14 +68,14 @@ export const PROJECT_REVIEW_COPY = {
   },
   'foundation-design-inputs': {
     title: [
-      'Les quantités de fondations ne prouvent pas leur capacité',
-      '基础工程量不能证明承载能力',
-      'Las cantidades de cimentación no demuestran su capacidad',
+      'Les mesures de fondations ou d’excavation ne prouvent pas leur stabilité',
+      '基础或开挖尺寸不能证明其稳定性',
+      'Las medidas de cimentación o excavación no demuestran estabilidad',
     ],
     recommendation: [
-      'Joignez les spécifications de sol, charges, béton et armatures de l’ingénieur. Les références saisies ne sont pas vérifiées indépendamment.',
-      '请附上工程师的土壤、荷载、混凝土及钢筋规格。输入的参考资料未经独立核实。',
-      'Adjunte las especificaciones del ingeniero sobre suelo, cargas, hormigón y armaduras. Las referencias introducidas no se verifican de forma independiente.',
+      'Joignez l’étude de sol, la conception applicable des fondations ou ouvrages provisoires et les spécifications de matériaux nécessaires. Les références saisies ne sont pas vérifiées indépendamment.',
+      '请附上岩土勘察、适用的基础或临时工程设计及所需材料规格。输入的参考资料未经独立核实。',
+      'Adjunte el estudio del terreno, el diseño aplicable de cimentación u obras temporales y las especificaciones necesarias. Las referencias introducidas no se verifican de forma independiente.',
     ],
   },
   'foundation-steel-omitted': {

@@ -31,6 +31,8 @@ const SUPPLIERS = [
   'Premix(?: Mauritius)?', 'Paving Mauritius', 'Metalite(?: Mauritius)?', 'Reneworld(?: Mauritius)?',
   'Solarex(?: Mauritius)?', 'Sofo Soler Moris', 'QBM(?: Mauritius)?', 'CMH(?: Mauritius)?',
   'Legrand(?: Mauritius)?', 'Medine Garden Cent(?:er|re)', 'Endemika(?: Mauritius)?',
+  'Ignitech', 'Shield Fire Protection', 'Seculogix', 'TP[- ]?Link',
+  'Vortice', 'Daikin', 'Wheatland(?: Tube)?', 'Belden',
 ];
 
 const anyOf = (names: readonly string[]) => new RegExp(`(?<![\\w-])(?:${names.join('|')})(?![\\w-])`, 'gi');

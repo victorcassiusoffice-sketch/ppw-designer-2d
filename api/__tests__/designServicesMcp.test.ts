@@ -15,6 +15,15 @@ const fixture = {
 const services = { version: 1, runs: [run], fixtures: [fixture] };
 
 describe('read-only building services MCP', () => {
+  it('measures multi-height segments through resolved junctions and accepts new disciplines', () => {
+    const data = { version: 1, fixtures: [], junctions: [{ id: 'j', levelId: 'first', system: 'fire-water', x: 3, y: 0, elevationM: 4 }],
+      runs: [{ ...run, system: 'fire-water', materialId: 'unverified', startElevationM: 0, endElevationM: 4,
+        points: [{ x: 0, y: 0, elevationM: 0 }, { x: 3, y: 0, elevationM: 0 }, { x: 3, y: 0, elevationM: 3, junctionId: 'j' }] }] };
+    expect(call('estimate_services', { services: data, levelIds: ['first'] })).toMatchObject({ result: { isError: false, structuredContent: {
+      totalLengthM: 7, connectionsComplete: true,
+    } } });
+    expect(call('estimate_services', { services: { ...data, junctions: [{ ...data.junctions[0], levelId: 'missing' }] }, levelIds: ['first'] })).toMatchObject({ result: { isError: true } });
+  });
   it('exposes a usable measured contract and only read-only tools', () => {
     expect(call('get_services_schema')).toMatchObject({ result: { isError: false, structuredContent: {
       version: 1, fixtureDefaults: { sink: { widthM: .6 } }, example: { runs: [{ materialId: 'hpl-aquasafe-upvc-20' }] },

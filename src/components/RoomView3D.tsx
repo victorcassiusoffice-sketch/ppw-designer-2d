@@ -1,3 +1,4 @@
+import { serviceRunPoints3D } from '../designer/buildingServices';
 /**
  * RoomView3D — the Sims-style view of the storey (Vic 2026-09-14), now the
  * designer's 3D MODE (Vic 2026-09-17: "make it a super realistic 3D version
@@ -115,6 +116,10 @@ import type { ThreeStageHandle } from './three/ThreeStage';
 import type { ScenePresentation } from './three/renderPresentation';
 import { fitArchitecturalCamera } from '../designer/architecturalCamera';
 import { visibleServiceFixtures } from '../designer/serviceFixtures';
+import { visibleServiceRuns } from '../designer/serviceScene';
+import { useDisciplineVisibilityStore } from '../store/disciplineVisibilityStore';
+import { productDiscipline, serviceFixtureDiscipline } from '../designer/disciplineVisibility';
+import { hasFoundationGeometry } from '../designer/foundation';
 import { foundationBounds } from '../designer/foundation';
 import { foundationSceneFaces } from '../designer/foundationScene';
 
@@ -267,6 +272,7 @@ function openingsIncludingNeighbours(rooms: Room[]): Map<string, NonNullable<Sce
 
 function sceneFromProperty(property: Property, hover: WallHit | null, cam: OrbitCamera): SceneInput {
   const level = activeLevelIdOf(property);
+
   const rooms = roomsOnLevel(property.rooms, level);
   const walls = wallsOnLevel(property.walls ?? [], level);
   const H = property.wallHeightM ?? DEFAULT_WALL_HEIGHT_M;
@@ -402,6 +408,7 @@ function hitKey(h: WallHit): string {
 export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hoverTag, onClose, onSave, onCart, onExpand, footer, caption, brushStrip, title, className = '', style }: RoomView3DProps): JSX.Element {
   const property = usePropertyStore((s) => s.property);
   const selectedInstanceId = usePropertyStore((s) => s.selectedInstanceId);
+  const visible = useDisciplineVisibilityStore(s => s.visible);
   const selectItem = usePropertyStore((s) => s.selectItem);
   const tool = useDesignerUIStore((s) => s.tool);
   const wallPaintDraft = useDesignerUIStore((s) => s.wallPaintDraft);
@@ -489,9 +496,12 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const [backend, setBackend] = useState<'gl' | 'painter'>('gl');
   const baseDistanceRef = useRef(10);
   const level = activeLevelIdOf(property);
-  const foundationVisible = Boolean(property.foundation?.enabled && (foundationView || buildingView === 'building' || level === 'ground'));
+  const serviceFixtures = useMemo(() => visibleServiceFixtures(property, level, buildingView).filter(fixture => visible[serviceFixtureDiscipline(fixture.kind)]), [property, level, buildingView, visible]);
+  const serviceRuns = useMemo(() => visibleServiceRuns(property, level, buildingView, visible), [property, level, buildingView, visible]);
+
+  const foundationVisible = Boolean(visible.foundation && property.foundation?.enabled && (foundationView || buildingView === 'building' || level === 'ground'));
   const visibleFoundation = foundationVisible ? property.foundation : undefined;
-  const inspectingFoundation = foundationView && Boolean(visibleFoundation?.elements.length);
+  const inspectingFoundation = foundationView && hasFoundationGeometry(visibleFoundation);
   const foundationBox = foundationBounds(visibleFoundation);
   const foundationBaseElevationM = levelElevationM(property, 'ground');
   const levelEntries = buildingLevels(property);
@@ -591,6 +601,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     }
   }, [onPaintFloor]);
 
+  useEffect(() => {
+    setConstructionTool('select'); setGardenPlacement(null); setGardenOpen(false);
+    finishWallRun();
+  }, [visible, finishWallRun]);
+
   // Current bounds are used by the explicit Fit action, not by editing.
   const buildingBounds = useMemo(() => {
     const rooms = (buildingView === 'building' ? property.rooms : roomsOnLevel(property.rooms, level)).filter((r) => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon));
@@ -608,12 +623,18 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       { x: tree.x + tree.canopyRadiusM, y: tree.y + tree.canopyRadiusM });
     const box = foundationBounds(visibleFoundation);
     const foundations = box ? [{ polygon: [{ x: box.minX, y: box.minY }, { x: box.maxX, y: box.maxY }] }] : [];
-    return boundsOf([...rooms, ...foundations, ...(landscape.length ? [{ polygon: landscape }] : [])], walls);
-  }, [property, level, buildingView, visibleFoundation]);
+    return boundsOf([...rooms, ...foundations, ...(landscape.length ? [{ polygon: landscape }] : []), ...serviceRuns.map(run => ({ polygon: run.points })), ...serviceFixtures.map(fixture => ({ polygon: [{ x: fixture.x - fixture.widthM / 2, y: fixture.y - fixture.depthM / 2 }, { x: fixture.x + fixture.widthM / 2, y: fixture.y + fixture.depthM / 2 }] }))], walls);
+  }, [property, level, buildingView, visibleFoundation, serviceRuns, serviceFixtures]);
   const hasArchitecture = property.rooms.some(r => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon) && (buildingView === 'building' || (r.levelId ?? 'ground') === level))
     || (buildingView === 'building' ? property.walls ?? [] : wallsOnLevel(property.walls ?? [], level)).length > 0;
-  const fitBottomM = foundationBox ? Math.min(hasArchitecture ? baseElevation : Infinity, foundationBaseElevationM + foundationBox.minElevationM) : baseElevation;
-  const fitTopM = foundationBox ? Math.max(hasArchitecture ? baseElevation + H : -Infinity, foundationBaseElevationM + foundationBox.maxElevationM) : baseElevation + H;
+  const architectureBottomM = foundationBox ? Math.min(hasArchitecture ? baseElevation : Infinity, foundationBaseElevationM + foundationBox.minElevationM) : baseElevation;
+  const architectureTopM = foundationBox ? Math.max(hasArchitecture ? baseElevation + H : -Infinity, foundationBaseElevationM + foundationBox.maxElevationM) : baseElevation + H;
+  const serviceRange = serviceRuns.reduce((range, run) => {
+    for (const point of serviceRunPoints3D(run)) { const z = run.baseElevationM + point.elevationM; range.min = Math.min(range.min, z); range.max = Math.max(range.max, z); }
+    return range;
+  }, { min: architectureBottomM, max: architectureTopM });
+  for (const fixture of serviceFixtures) { serviceRange.min = Math.min(serviceRange.min, fixture.elevationM); serviceRange.max = Math.max(serviceRange.max, fixture.elevationM + fixture.heightM); }
+  const fitBottomM = serviceRange.min, fitTopM = serviceRange.max;
   const fitHeightM = Math.max(0.5, fitTopM - fitBottomM);
   // A blank project still has a buildable 3D ground plane.
   const bounds = sceneBounds ?? (variant === 'overlay'
@@ -666,9 +687,15 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   }, []);
 
   // The solids follow the plan only; the camera just decides the cutaway.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const solids: SceneSolids = useMemo(() => buildingSolids(property, (p) => sceneFromProperty(p, null, SOLIDS_CAMERA), buildingView, showRoof), [property, catalogVersion, buildingView, showRoof]);
-  const serviceFixtures = useMemo(() => visibleServiceFixtures(property, level, buildingView), [property, level, buildingView]);
+  const solids: SceneSolids = useMemo(() => {
+    // Catalogue hydration changes dimensioned meshes without changing project geometry.
+    void catalogVersion;
+    const all = buildingSolids(property, (p) => sceneFromProperty(p, null, SOLIDS_CAMERA), buildingView, showRoof);
+    return { ...all, floors: visible.structure ? all.floors : [], walls: visible.structure ? all.walls : [],
+      stairs: visible.structure ? all.stairs : [], roofs: visible.structure ? all.roofs : [],
+      items: all.items.filter(item => visible[productDiscipline(getProductById(item.productId ?? ''))]),
+      gardenVisible: visible.landscape && all.gardenVisible !== false };
+  }, [property, catalogVersion, buildingView, showRoof, visible]);
 
   // Painter fallback: only computed while it is the one drawing.
   const projected: ProjectedFace[] = useMemo(() => {
@@ -677,8 +704,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       .filter((entry) => !isRoofLevel(entry.level) && (buildingView === 'building' || entry.level.id === level))
       .flatMap((entry) => buildScene(sceneFromProperty({ ...property, activeLevelId: entry.level.id, wallHeightM: entry.heightM }, hover, viewportCamera))
         .map((face) => ({ ...face, pts: face.pts.map((p) => ({ ...p, z: p.z + entry.elevationM })), holes: face.holes?.map((hole) => hole.map((p) => ({ ...p, z: p.z + entry.elevationM }))) })));
-    return projectScene([...faces.filter(face => !inspectingFoundation || face.kind !== 'floor'), ...foundationSceneFaces(visibleFoundation, foundationBaseElevationM, inspectingFoundation)], viewportCamera, size);
-  }, [backend, property, hover, viewportCamera, size, buildingView, level, inspectingFoundation, visibleFoundation, foundationBaseElevationM]);
+    return projectScene([...faces.filter(face => {
+      if (face.kind === 'item' || face.kind === 'item-top') return solids.items.some(item => face.key.startsWith(`item-${item.instanceId}-`));
+      return visible.structure && (!inspectingFoundation || face.kind !== 'floor');
+    }), ...foundationSceneFaces(visibleFoundation, foundationBaseElevationM, inspectingFoundation)], viewportCamera, size);
+  }, [backend, property, hover, viewportCamera, size, buildingView, level, inspectingFoundation, visibleFoundation, foundationBaseElevationM, solids.items, visible.structure]);
 
   useEffect(() => {
     if (backend !== 'painter') return;
@@ -1456,7 +1486,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       if (e.defaultPrevented || [...document.querySelectorAll('.sims-catalog[data-catalog-mode="3d"][data-catalog-open="true"]')].some(element => element.getBoundingClientRect().height > 0)) return;
       // Foreground dialogs and finish/energy panels own their keyboard events.
       // Let their own Close/Escape handlers run without changing the scene behind them.
-      if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+      if (document.querySelector('[role="dialog"][aria-modal="true"], .discipline-popover, .house-tutorial')) return;
       if (e.key === 'Escape' && document.querySelector('[data-testid="house-view-options"]')) {
         e.preventDefault(); e.stopImmediatePropagation();
         window.dispatchEvent(new CustomEvent('ppw:close-view-settings'));
@@ -1546,15 +1576,16 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
 
   const hoverText = describeHit(property, hover, onPaintWall && hoverTag && hover ? hoverTag(hover) : null);
   const empty = !sceneBounds;
-  const drawn = solids.walls.length + solids.floors.length + solids.items.length + (visibleFoundation?.elements.length ?? 0);
+  const drawn = solids.walls.length + solids.floors.length + solids.items.length + (visibleFoundation?.elements.length ?? 0) + (visibleFoundation?.bores?.length ?? 0) + serviceRuns.length + serviceFixtures.length;
   const viewLabel = empty
     ? 'Room view — draw a room to see it in 3D'
     : `Room view in 3D — ${drawn} parts. Drag to orbit${onPaintWall ? '; click a wall to paint it' : onPaintFloor ? '; click the floor to lay it' : itemsInteractive ? '; tap an item to select it, drag it to move it' : ''}.`;
-  const selectedItem = selectedInstanceId ? findPlacedItem(property, selectedInstanceId) : null;
+  const selectedItem = selectedInstanceId && solids.items.some(item => item.instanceId === selectedInstanceId) ? findPlacedItem(property, selectedInstanceId) : null;
   const selectedProduct = selectedItem ? getProductById(selectedItem.productId) : undefined;
   const selectedRoofMount = selectedInstanceId ? solids.items.find((item) => item.instanceId === selectedInstanceId)?.roofMount : undefined;
   const armedProduct = armedProductId ? getProductById(armedProductId) : undefined;
-  const defaultCaption = backend === 'painter' && onRoofLevel ? 'Roof and solar editing needs WebGL on this device · use 2D Plan to edit the solar layout'
+  const defaultCaption = backend === 'painter' && (serviceRuns.length || serviceFixtures.length) ? 'Basic 3D view · pipes and service equipment need WebGL; use 2D Plan on this device'
+    : backend === 'painter' && onRoofLevel ? 'Roof and solar editing needs WebGL on this device · use 2D Plan to edit the solar layout'
     : panMode ? 'Drag anywhere to move the view · tap Move view again to select furniture'
     : constructionTool === 'wall' ? 'Drag or tap corners · close the loop to make a room · Enter finishes · Shift frees angles'
     : constructionTool === 'room' ? 'Drag corner to corner · release to build · two fingers to pan · Esc to cancel'
@@ -1702,7 +1733,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               ref={stageRef}
               solids={solids}
               serviceFixtures={serviceFixtures}
-              ecoTrees={property.eco?.trees}
+              serviceRuns={serviceRuns}
+              groundVisible={visible.structure || visible.landscape}
+              ecoTrees={visible.landscape ? property.eco?.trees : undefined}
               foundation={visibleFoundation}
               foundationView={inspectingFoundation}
               foundationBaseElevationM={foundationBaseElevationM}

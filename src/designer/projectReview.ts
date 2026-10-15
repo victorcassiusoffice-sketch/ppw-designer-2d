@@ -12,12 +12,13 @@ import {
   foundationElementBounds,
   foundationExcavationBounds,
   estimateFoundation,
+  hasFoundationGeometry,
 } from './foundation.js';
 import { levelElevationM } from './building.js';
 import { isOutdoorRoom, isRoofRoom, roomLevelId } from './levels.js';
 import { estimateMaterials, normaliseMaterialsSettings } from './materials/index.js';
 import { propertyMaterialsGeometry } from './propertyMaterials.js';
-import { estimateServices } from './buildingServices.js';
+import { estimateServices, serviceRunPoints3D } from './buildingServices.js';
 import { serviceConnectionWarnings } from './serviceConnections.js';
 import { assessProjectCalculationBudget } from './projectCalculationBudget.js';
 
@@ -229,22 +230,33 @@ export function reviewProject(property: Property): ProjectReviewReport {
   }
 
   const settings = normaliseMaterialsSettings(property.materials);
-  if (property.foundation?.enabled && property.foundation.elements.length) {
+  if (property.foundation && hasFoundationGeometry(property.foundation)) {
     const missing = [
       !inputs?.geotechnicalReportRef && 'Geotechnical report / groundwater and bearing parameters',
       !inputs?.structuralDesignRef && 'Engineered load path and foundation design',
-      !inputs?.concreteGrade && 'Specified concrete grade',
-      !inputs?.reinforcementGrade && 'Specified reinforcement grade',
+      property.foundation.elements.length > 0 &&
+        !inputs?.concreteGrade &&
+        'Specified concrete grade',
+      property.foundation.elements.length > 0 &&
+        !inputs?.reinforcementGrade &&
+        'Specified reinforcement grade',
     ].filter((s): s is string => Boolean(s));
     add(
       'foundation-design-inputs',
       { kind: 'foundation', id: 'foundation' },
       missing.length ? 'warning' : 'info',
-      'Foundation quantities do not establish capacity',
-      'Attach the engineer’s soil, load, concrete and reinforcement specification. Supplied reference text is not independently verified.',
+      property.foundation.elements.length
+        ? 'Foundation quantities do not establish capacity'
+        : 'Excavation geometry does not establish ground stability',
+      property.foundation.elements.length
+        ? 'Attach the engineer’s soil, load, concrete and reinforcement specification. Supplied reference text is not independently verified.'
+        : 'Attach ground investigation and the project excavation/temporary works design. Supplied reference text is not independently verified.',
       {
         missingData: missing,
-        evidence: [{ label: 'Foundation elements', value: property.foundation.elements.length }],
+        evidence: [
+          { label: 'Foundation elements', value: property.foundation.elements.length },
+          { label: 'Measured circular holes', value: property.foundation.bores?.length ?? 0 },
+        ],
         sourceIds: ['mauritius-blup'],
       },
     );
@@ -294,8 +306,42 @@ export function reviewProject(property: Property): ProjectReviewReport {
           },
         );
     }
+    for (const bore of property.foundation.bores ?? [])
+      add(
+        'excavation-support',
+        { kind: 'foundation-bore', id: bore.id },
+        'warning',
+        'Circular hole is a measured excavation envelope',
+        'Obtain ground investigation, groundwater and temporary support review. This is not a pile design or a safe drilling method.',
+        {
+          evidence: [
+            { label: 'Hole diameter', value: bore.diameterM, unit: 'm' },
+            { label: 'Hole depth', value: bore.depthM, unit: 'm' },
+          ],
+          missingData: ['Temporary works and soil stability assessment'],
+        },
+      );
     try {
       const report = estimateFoundation(property.foundation, settings.concrete);
+      if (!report.boreExcavation.complete)
+        add(
+          'excavation-union-incomplete',
+          { kind: 'foundation', id: 'foundation' },
+          'warning',
+          'Combined excavation quantity is withheld',
+          'Review intersecting circular holes against the complete excavation and concrete layout. Do not sum overlapping individual volumes.',
+          {
+            evidence: [
+              {
+                label: 'Intersecting circular holes',
+                value: report.boreExcavation.conflictingIds.join(', '),
+              },
+            ],
+            assumptions: [
+              'Exact cylinder unions are not calculated. Individual cylinder quantities are gross measured envelopes.',
+            ],
+          },
+        );
       if (!report.rebarComplete)
         add(
           'foundation-steel-incomplete',
@@ -501,9 +547,35 @@ export function reviewProject(property: Property): ProjectReviewReport {
             e.id,
           );
       }
+      for (const bore of property.foundation?.enabled ? (property.foundation.bores ?? []) : []) {
+        if (!canCompare(1)) break;
+        const distance = Math.max(
+          0,
+          Math.hypot(tree.x - bore.x, tree.y - bore.y) - bore.diameterM / 2,
+        );
+        if (distance <= radius + 1e-8)
+          add(
+            'tree-bore-conflict',
+            entity,
+            'critical',
+            'Circular excavation enters tree protection area',
+            'Move or redesign the measured excavation with the geotechnical/structural engineer and arboriculturist before work.',
+            {
+              evidence: [
+                { label: 'Circular hole id', value: bore.id },
+                { label: 'Trunk to circular excavation edge', value: distance, unit: 'm' },
+                { label: 'Protection radius', value: radius, unit: 'm' },
+              ],
+              assumptions: treeAssumptions,
+              sourceIds: ['bs5837'],
+            },
+            bore.id,
+          );
+      }
       for (const run of property.services?.runs ?? []) {
         const lowest =
-          levelElevationM(property, run.levelId) + Math.min(run.startElevationM, run.endElevationM);
+          levelElevationM(property, run.levelId) +
+          serviceRunPoints3D(run).reduce((min, p) => Math.min(min, p.elevationM), Infinity);
         if (lowest > 0) continue;
         if (!canCompare(run.points.length - 1)) break;
         const distance = distanceToRoute(tree, run.points) - run.diameterMm / 2000;
@@ -521,7 +593,7 @@ export function reviewProject(property: Property): ProjectReviewReport {
               ],
               assumptions: [
                 ...treeAssumptions,
-                'Any below-ground endpoint triggers whole-route plan screening; depth distribution is not a root map.',
+                'Any below-ground route node triggers whole-route plan screening; depth distribution is not a root map.',
               ],
               missingData: ['Installation trench envelope'],
               sourceIds: ['bs5837'],

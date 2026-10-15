@@ -187,6 +187,142 @@ export function ServiceFixturesPlanLayer({
                 ))}
               </>
             )}
+            {[
+              'air-conditioner',
+              'outdoor-ac',
+              'air-grille',
+              'extractor-fan',
+              'network-switch',
+            ].includes(fixture.kind) && (
+              <>
+                <Rect
+                  x={-w / 2}
+                  y={-d / 2}
+                  width={w}
+                  height={d}
+                  cornerRadius={Math.min(w, d) * 0.08}
+                  fill={fixture.kind === 'network-switch' ? '#657d75' : ceramic}
+                  stroke={edge}
+                  strokeWidth={stroke}
+                />
+                {fixture.kind === 'air-conditioner' &&
+                  [0.22, 0.32, 0.42].map((y) => (
+                    <Line
+                      key={y}
+                      points={[-w * 0.42, d * y, w * 0.42, d * y]}
+                      stroke={edge}
+                      strokeWidth={stroke}
+                    />
+                  ))}
+                {fixture.kind === 'air-grille' &&
+                  [-0.36, -0.24, -0.12, 0, 0.12, 0.24, 0.36].map((y) => (
+                    <Line
+                      key={y}
+                      points={[-w * 0.4, d * y, w * 0.4, d * y]}
+                      stroke={edge}
+                      strokeWidth={stroke}
+                    />
+                  ))}
+                {['outdoor-ac', 'extractor-fan'].includes(fixture.kind) && (
+                  <>
+                    <Ellipse
+                      radiusX={w * 0.35}
+                      radiusY={d * 0.35}
+                      fill="#c3d1c8"
+                      stroke={edge}
+                      strokeWidth={stroke}
+                    />
+                    {[-1, 1].map((sign) => (
+                      <Line
+                        key={sign}
+                        points={[-w * 0.22, sign * -d * 0.22, w * 0.22, sign * d * 0.22]}
+                        stroke={edge}
+                        strokeWidth={stroke * 2}
+                      />
+                    ))}
+                    <Circle radius={Math.min(w, d) * 0.06} fill={edge} />
+                  </>
+                )}
+                {fixture.kind === 'network-switch' &&
+                  Array.from({ length: 8 }, (_, i) => (
+                    <Rect
+                      key={i}
+                      x={-w * 0.44 + i * w * 0.113}
+                      y={d * 0.25}
+                      width={w * 0.075}
+                      height={d * 0.18}
+                      fill="#183e39"
+                      stroke="#c3d1c8"
+                      strokeWidth={stroke * 0.4}
+                    />
+                  ))}
+              </>
+            )}
+            {fixture.kind === 'sprinkler' && (
+              <>
+                <Ellipse
+                  radiusX={w * 0.47}
+                  radiusY={d * 0.47}
+                  fill="#c7ad72"
+                  stroke="#806c42"
+                  strokeWidth={stroke}
+                />
+                <Line
+                  points={[-w * 0.37, 0, w * 0.37, 0]}
+                  stroke="#806c42"
+                  strokeWidth={stroke * 2}
+                />
+                <Line
+                  points={[0, -d * 0.37, 0, d * 0.37]}
+                  stroke="#806c42"
+                  strokeWidth={stroke * 2}
+                />
+                <Circle radius={Math.min(w, d) * 0.09} fill="#a72f2a" />
+              </>
+            )}
+            {fixture.kind === 'fire-extinguisher' && (
+              <>
+                <Ellipse
+                  x={w * 0.06}
+                  radiusX={w * 0.35}
+                  radiusY={d * 0.46}
+                  fill="#a72f2a"
+                  stroke="#6f2727"
+                  strokeWidth={stroke}
+                />
+                <Line
+                  points={[-w * 0.1, -d * 0.2, -w * 0.42, -d * 0.12, -w * 0.42, d * 0.35]}
+                  stroke="#253d36"
+                  strokeWidth={w * 0.05}
+                  lineJoin="round"
+                />
+                <Rect x={-w * 0.1} y={-d * 0.1} width={w * 0.4} height={d * 0.14} fill="#253d36" />
+              </>
+            )}
+            {fixture.kind === 'security-camera' && (
+              <>
+                <Rect
+                  x={-w * 0.45}
+                  y={-d * 0.47}
+                  width={w * 0.9}
+                  height={d * 0.18}
+                  fill="#b5c8bb"
+                  stroke={edge}
+                  strokeWidth={stroke}
+                />
+                <Rect
+                  x={-w * 0.32}
+                  y={-d * 0.3}
+                  width={w * 0.64}
+                  height={d * 0.75}
+                  cornerRadius={w * 0.08}
+                  fill={ceramic}
+                  stroke={edge}
+                  strokeWidth={stroke}
+                />
+                <Rect x={-w * 0.3} y={d * 0.35} width={w * 0.6} height={d * 0.1} fill="#203b39" />
+              </>
+            )}
           </Group>
         );
       })}

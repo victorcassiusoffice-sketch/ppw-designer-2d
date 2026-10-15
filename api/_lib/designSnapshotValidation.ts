@@ -1,3 +1,4 @@
+import { BuildingServicesSchema } from '../../src/designer/buildingServicesContract.js';
 import { FoundationSchema } from '../../src/designer/foundationContract.js';
 import { CitySchema } from '../../src/designer/cityContract.js';
 import { EcoSchema, EngineeringInputsSchema } from '../../src/designer/ecoContract.js';
@@ -33,6 +34,7 @@ export function validateSnapshotCity(property: object): string | null {
 
 export function validateSnapshotMeasurements(property: object): string | null {
   return (
+    validateSnapshotServices(property) ??
     validateSnapshotFoundation(property) ??
     validateSnapshotCity(property) ??
     validateSnapshotEco(property)
@@ -56,4 +58,16 @@ export function validateSnapshotEco(property: object): string | null {
       );
   }
   return null;
+}
+
+export function validateSnapshotServices(property: object): string | null {
+  if (!Object.prototype.hasOwnProperty.call(property, 'services')) return null;
+  const result = BuildingServicesSchema.safeParse((property as Record<string, unknown>).services);
+  return result.success
+    ? null
+    : 'Invalid services: ' +
+        result.error.issues
+          .slice(0, 5)
+          .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+          .join('; ');
 }

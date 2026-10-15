@@ -89,12 +89,14 @@ export function CityLaunchButton({
   );
 }
 export function CityWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }) {
+  const [initialTab, setInitialTab] = useState<'plan' | 'orders'>('plan');
   const [open, setOpen] = useState(false),
     before = useRef(onBeforeOpen);
   before.current = onBeforeOpen;
   useEffect(() => {
     let routeEntryPending = new URLSearchParams(location.search).get('panel') === 'city';
-    const show = () => {
+    const show = (event?: Event) => {
+      setInitialTab((event as CustomEvent<{tab?: string}> | undefined)?.detail?.tab === 'orders' ? 'orders' : 'plan');
       routeEntryPending = false;
       beginWorkspaceNavigation('city');
       before.current();
@@ -118,6 +120,8 @@ export function CityWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }) {
     const enterRoute = () => {
       if (routeEntryPending && !isDemoPagePending()) show();
     };
+    const closeTutorial = () => { finishWorkspaceNavigation('city'); setOpen(false); };
+    window.addEventListener('olb:close-workspaces', closeTutorial);
     const others = [
       'olb:open-project',
       'ppw:open-foundation',
@@ -141,13 +145,14 @@ export function CityWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }) {
       unsub();
       window.removeEventListener('ppw:open-city', show);
       window.removeEventListener(DEMO_PAGE_READY_EVENT, enterRoute);
+      window.removeEventListener('olb:close-workspaces', closeTutorial);
       others.forEach((e) => window.removeEventListener(e, close));
       finishWorkspaceNavigation('city');
     };
   }, []);
   return open
     ? createPortal(
-        <CityWorkbench
+        <CityWorkbench initialTab={initialTab}
           onClose={() => {
             finishWorkspaceNavigation('city');
             setOpen(false);
@@ -214,14 +219,14 @@ function Metric({ label, value, note }: { label: string; value: string; note?: s
   );
 }
 
-function CityWorkbench({ onClose }: { onClose: () => void }) {
+function CityWorkbench({ onClose, initialTab = 'plan' }: { onClose: () => void; initialTab?: 'plan' | 'orders' }) {
   const { t, tx, formatNumber } = useAppPreferences();
   const fmt = (n: number | null | undefined, digits = 2) => n == null ? t('Review needed') : formatNumber(n, { maximumFractionDigits: digits });
   const property = usePropertyStore((s) => s.property),
     model = useMemo(() => property.city ?? emptyCity(), [property.city]);
   const estimate = useMemo(() => estimateCity(model), [model]);
   const host = useRef<HTMLDivElement>(null);
-  const [tab, setTab] = useState<'plan' | 'suppliers' | 'data' | 'orders' | 'overview'>('plan');
+  const [tab, setTab] = useState<'plan' | 'suppliers' | 'data' | 'orders' | 'overview'>(initialTab);
   const [view, setView] = useState<'2d' | '3d'>('2d'),
     [tool, setTool] = useState('select'),
     [draft, setDraft] = useState<CityPoint[]>([]);
@@ -236,6 +241,11 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
   const [ordersDirty, setOrdersDirty] = useState(false);
   useEffect(() => {
     if (!ordersDirty) setMessage((current) => (current === UNSAVED_ORDER_MESSAGE ? '' : current));
+  }, [ordersDirty]);
+  useEffect(() => {
+    const guard = (event: Event) => { if (ordersDirty) { event.preventDefault(); setMessage(UNSAVED_ORDER_MESSAGE); } };
+    window.addEventListener('olb:before-workspace-switch', guard);
+    return () => window.removeEventListener('olb:before-workspace-switch', guard);
   }, [ordersDirty]);
   const demo = isPriceFreeDemoPath(location.pathname);
   const road = model.roads.find((x) => x.id === selectedId),

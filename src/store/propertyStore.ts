@@ -1,6 +1,6 @@
 import { normaliseCity, type CityModel } from '../designer/city';
 import { normaliseEco, normaliseEngineeringInputs, type EcoModel, type EngineeringInputs } from '../designer/eco';
-import { normaliseBuildingServices, type BuildingServices } from '../designer/buildingServices';
+import { normaliseBuildingServices, serviceRunLengthM, type BuildingServices } from '../designer/buildingServices';
 import { resolveServiceConnections } from '../designer/serviceConnections';
 import { inferConnectedRooms } from '../designer/connectedWallRooms';
 import { normaliseFoundation, type FoundationModel } from '../designer/foundation';
@@ -1666,8 +1666,10 @@ export const usePropertyStore = create<PropertyState>()(
       setServices: (services) => {
         const property = get().property;
         const normalised = normaliseBuildingServices(services, new Set(levelsOf(property).map(l => l.id)));
-        if (!normalised || normalised.runs.length !== services.runs.length || normalised.fixtures.length !== services.fixtures.length) return false;
-        set({ property: { ...property, services: resolveServiceConnections(normalised) } });
+        if (!normalised || normalised.runs.length !== services.runs.length || normalised.fixtures.length !== services.fixtures.length || (normalised.junctions?.length ?? 0) !== (services.junctions?.length ?? 0)) return false;
+        const resolved = resolveServiceConnections(normalised);
+        if (resolved.runs.some(run => !Number.isFinite(serviceRunLengthM(run)) || serviceRunLengthM(run) < .01)) return false;
+        set({ property: { ...property, services: resolved } });
         return true;
       },
       setMaterialsSettings: (settings) => set(s => ({ property: { ...s.property, materials: normaliseMaterialsSettings(settings) } })),

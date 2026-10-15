@@ -10,7 +10,8 @@ import {
   foundationExcavationBounds,
 } from './foundation.js';
 import { normaliseCity } from './city.js';
-import { normaliseBuildingServices } from './buildingServices.js';
+import { normaliseBuildingServices, serviceRunLengthM } from './buildingServices.js';
+import { resolveServiceConnections } from './serviceConnections.js';
 
 export const PROJECT_CALCULATION_LIMITS = {
   rooms: 300,
@@ -126,6 +127,7 @@ export function assessProjectCalculationBudget(property: Property): ProjectCalcu
       !record(s) ||
       !Array.isArray(s.runs) ||
       !Array.isArray(s.fixtures) ||
+      (s.junctions !== undefined && (!Array.isArray(s.junctions) || s.junctions.length > 2000)) ||
       s.runs.length > PROJECT_CALCULATION_LIMITS.serviceRuns ||
       s.fixtures.length > PROJECT_CALCULATION_LIMITS.serviceFixtures
     )
@@ -138,15 +140,29 @@ export function assessProjectCalculationBudget(property: Property): ProjectCalcu
           'Service routes exceed the browser summary point limit. Review smaller coordinated sections.',
         );
     }
-    const clean = normaliseBuildingServices(s);
+    const clean = normaliseBuildingServices(
+      s,
+      new Set(levelsOf(property).map((level) => level.id)),
+    );
     if (
       !clean ||
       clean.runs.length !== s.runs.length ||
-      clean.fixtures.length !== s.fixtures.length
+      clean.fixtures.length !== s.fixtures.length ||
+      (clean.junctions?.length ?? 0) !== (s.junctions?.length ?? 0)
     )
       return fail('A service route or fixture has invalid measured inputs.');
-    if (!spend(s.runs.length * s.fixtures.length + counts.servicePoints))
+    if (
+      !spend(s.runs.length * s.fixtures.length + counts.servicePoints + (s.junctions?.length ?? 0))
+    )
       return fail('Service connection review exceeds the browser work budget.');
+    if (
+      resolveServiceConnections(clean).runs.some(
+        (run) => !Number.isFinite(serviceRunLengthM(run)) || serviceRunLengthM(run) < 0.01,
+      )
+    )
+      return fail(
+        'A linked service route collapses below the measurable minimum. Reposition or detach its connections.',
+      );
   }
   if (property.city !== undefined && !normaliseCity(property.city))
     return fail('The City model has invalid or excessive measured inputs.');
@@ -171,7 +187,8 @@ export function assessProjectCalculationBudget(property: Property): ProjectCalcu
         Math.max(0, zs.size - 1) *
         boxes.length *
         (2 + Math.ceil(Math.log2(boxes.length + 1)));
-      if (!spend(work))
+      const boreCount = model.bores?.length ?? 0;
+      if (!spend(work + boreCount * (boreCount + boxes.length)))
         return fail(
           'Foundation union calculation exceeds the browser work budget. Review smaller coordinated sections.',
         );

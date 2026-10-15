@@ -38,12 +38,14 @@ import './projectWorkspace.css';
 type Section = 'overview' | 'departments' | 'engineeringReview' | 'ecology' | 'handover';
 const SECTIONS: Section[] = ['overview', 'departments', 'engineeringReview', 'ecology', 'handover'];
 export function ProjectWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }) {
+  const [initialSection, setInitialSection] = useState<Section>('overview');
   const [open, setOpen] = useState(false),
     before = useRef(onBeforeOpen);
   before.current = onBeforeOpen;
   useEffect(() => {
     let pending = new URLSearchParams(location.search).get('panel') === 'project';
-    const show = () => {
+    const show = (event?: Event) => {
+      setInitialSection((event as CustomEvent<{section?: string}> | undefined)?.detail?.section === 'engineeringReview' ? 'engineeringReview' : 'overview');
       pending = false;
       beginWorkspaceNavigation('project');
       before.current();
@@ -64,6 +66,8 @@ export function ProjectWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void })
     const ready = () => {
       if (pending && !isDemoPagePending()) show();
     };
+    const closeTutorial = () => { finishWorkspaceNavigation('project'); setOpen(false); };
+    window.addEventListener('olb:close-workspaces', closeTutorial);
     const others = [
       'ppw:open-city',
       'ppw:open-foundation',
@@ -86,13 +90,14 @@ export function ProjectWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void })
       off();
       window.removeEventListener('olb:open-project', show);
       window.removeEventListener(DEMO_PAGE_READY_EVENT, ready);
+      window.removeEventListener('olb:close-workspaces', closeTutorial);
       others.forEach((event) => window.removeEventListener(event, close));
       cancelWorkspaceNavigation('project');
     };
   }, []);
   return open
     ? createPortal(
-        <ProjectWorkbench
+        <ProjectWorkbench initialSection={initialSection}
           onClose={() => {
             finishWorkspaceNavigation('project');
             setOpen(false);
@@ -103,11 +108,11 @@ export function ProjectWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void })
     : null;
 }
 
-function ProjectWorkbench({ onClose }: { onClose: () => void }) {
+function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: () => void; initialSection?: Section }) {
   const property = usePropertyStore((s) => s.property);
   const { locale, formatNumber } = useAppPreferences();
   const c = (key: ProjectCopyKey) => projectCopy(locale, key);
-  const [section, setSection] = useState<Section>('overview');
+  const [section, setSection] = useState<Section>(initialSection);
   const [company, setCompany] = useState<CompanyType>(() => {
     const value = new URLSearchParams(location.search).get('company');
     return COMPANY_TYPES.find((v) => v === value) ?? 'developers';

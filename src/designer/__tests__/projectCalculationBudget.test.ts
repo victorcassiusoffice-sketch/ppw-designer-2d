@@ -24,6 +24,15 @@ const property = (rooms: Room[] = [room()]): Property => ({
 });
 
 describe('bounded whole-project calculation preflight', () => {
+  it('rejects unknown service junction floors and resolved zero-length links before quantities', () => {
+    const p = property();
+    p.services = { version: 1, fixtures: [], runs: [{ id: 'r', levelId: 'ground', system: 'cold-water', materialId: 'custom', diameterMm: 20,
+      points: [{ x: 0, y: 0, elevationM: 0, junctionId: 'j' }, { x: 1, y: 0, elevationM: 0, junctionId: 'j' }], startElevationM: 0, endElevationM: 0 }],
+      junctions: [{ id: 'j', levelId: 'ground', system: 'cold-water', x: 0, y: 0, elevationM: 0 }] };
+    expect(assessProjectCalculationBudget(p).reason).toContain('collapses');
+    p.services.junctions![0].levelId = 'missing';
+    expect(assessProjectCalculationBudget(p).ok).toBe(false);
+  });
   it('preserves normal measured rooms and overlapping shared walls without changing the model', () => {
     const p = property([room(), room('adjacent', 4), { ...room('upper'), levelId: 'first' }]);
     p.levels = [

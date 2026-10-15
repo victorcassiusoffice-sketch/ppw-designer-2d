@@ -99,6 +99,7 @@ import { CLADDING_DEMO_DISCLAIMER, CLADDING_PRODUCTS, findCladdingProduct } from
 import { RoomView3D } from './RoomView3D';
 import './houseToolPanels.css';
 import { PlanControlPanel } from './PlanControlPanel';
+import { DisciplineVisibilityControls } from './DisciplineVisibilityControls';
 import './planToolbar.css';
 import { FLOOR_MATERIALS, findFloorMaterialById, type FloorMaterial } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
@@ -1402,6 +1403,12 @@ export function TopBar({
   // -------------------------------------------------------------------------
   // Direct building/site controls at every width. Options use reserved header space.
   // -------------------------------------------------------------------------
+  useEffect(() => {
+    const show = () => { setWorkspaceSettingsOpen(true); setLevelsOpen(true); setLandOpen(false); setUnitOpen(false); setSizeOpen(false); };
+    window.addEventListener('olb:open-storeys', show);
+    return () => window.removeEventListener('olb:open-storeys', show);
+  }, []);
+
   const roomPlanGroup = (stacked: boolean) => {
     const btn = (on: boolean) =>
       stacked ? `${ROW} ${on ? ROW_ON : ''}` : `${BTN} ${on ? BTN_ON : BTN_REST}`;
@@ -1410,6 +1417,7 @@ export function TopBar({
         {/* The whole-room "Finish" picker that used to lead this group is
             retired (2026-08-30): the Floor tool's Room scope lays a whole
             room, so one tool covers what two controls used to. */}
+        <button type="button" className={btn(false)} aria-label="House build guide" title="House build guide" onClick={() => window.dispatchEvent(new Event('olb:open-house-tutorial'))}><Icon name="list" size={18} /><span className="plan-control-label">Guide</span></button>
         {/* Storeys — which storey of the building the canvas shows. */}
         <button
           ref={levelsRef}
@@ -2186,6 +2194,7 @@ export function TopBar({
           <button type="button" aria-label={t("2D Plan")} aria-pressed="true"><Icon name="box" size={18} /><span>2D <span className="studio-view-word">{t("Plan")}</span></span></button>
           <button type="button" aria-label={t("3D House")} onClick={() => { if (drawMode) setDrawMode(false); setViewMode('3d'); }}><Icon name="cube" size={18} /><span>3D <span className="studio-view-word">{t("House")}</span></span></button>
         </div>
+        <DisciplineVisibilityControls />
         <button type="button" className="studio-settings-toggle" aria-label={t("Site & tools")} title="Floors, roof, plot and precision" aria-expanded={workspaceSettingsOpen} aria-controls="studio-plan-settings" onClick={() => { setWorkspaceSettingsOpen(!workspaceSettingsOpen); setLevelsOpen(false); setLandOpen(false); setUnitOpen(false); }}>
           <Icon name="settings" /><span>{t("Site & tools")}</span>
         </button>

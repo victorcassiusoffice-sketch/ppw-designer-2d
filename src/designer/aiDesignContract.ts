@@ -2,7 +2,7 @@
  * Proposals are data only: validation never orders products or changes a saved plan. */
 import { z } from 'zod';
 import { FoundationSchema, FOUNDATION_SCHEMA_DESCRIPTION } from './foundationContract.js';
-import { foundationElementBounds } from './foundation.js';
+import { foundationElementBounds, foundationExcavationBounds, foundationBoreBounds } from './foundation.js';
 
 const metre = z.number().finite();
 const identifier = z
@@ -178,9 +178,14 @@ export function validateDesignDraft(
   if (d.rooms.some((r) => r.id.startsWith('roof-')))
     errors.push('Room IDs starting roof- are reserved for generated roof slabs.');
   for (const element of d.foundation?.elements ?? []) {
-    const bounds = foundationElementBounds(element);
+    const bounds = foundationExcavationBounds(element) ?? foundationElementBounds(element);
     if (bounds.minX < 0 || bounds.minY < 0 || bounds.maxX > d.plot.widthM || bounds.maxY > d.plot.depthM)
       errors.push(`${element.name}: foundation extends beyond the plot.`);
+  }
+  for (const bore of d.foundation?.bores ?? []) {
+    const bounds = foundationBoreBounds(bore);
+    if (bounds.minX < 0 || bounds.minY < 0 || bounds.maxX > d.plot.widthM || bounds.maxY > d.plot.depthM)
+      errors.push(`${bore.name}: circular excavation extends beyond the plot.`);
   }
   if (d.foundation?.enabled) warnings.push(FOUNDATION_SCHEMA_DESCRIPTION.limitations);
   for (let i = 1; i < d.levels.length; i++) {

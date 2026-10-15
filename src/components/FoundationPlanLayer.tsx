@@ -1,4 +1,4 @@
-import { Group, Rect } from 'react-konva';
+import { Circle, Group, Rect } from 'react-konva';
 import {
   foundationElementBounds,
   foundationExcavationBounds,
@@ -18,6 +18,20 @@ export function FoundationPlanLayer({
   if (!model?.enabled) return null;
   return (
     <Group name="foundations" listening={false}>
+      {(model.bores ?? []).map((bore) => (
+        <Circle
+          key={bore.id}
+          name={`bore-${bore.id}`}
+          x={bore.x * pxPerMetre}
+          y={bore.y * pxPerMetre}
+          radius={(bore.diameterM * pxPerMetre) / 2}
+          fill="#927a5c"
+          opacity={0.4}
+          stroke="#765b40"
+          strokeWidth={0.025 * pxPerMetre}
+          dash={[0.15 * pxPerMetre, 0.08 * pxPerMetre]}
+        />
+      ))}
       {model.elements.map((element) => {
         const b = foundationElementBounds(element);
         const hole = foundationExcavationBounds(element);

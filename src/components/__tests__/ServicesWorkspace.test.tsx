@@ -8,6 +8,7 @@ import { useDesignerUIStore } from '../../store/designerUIStore';
 import { useHistoryStore } from '../../store/historyStore';
 
 vi.mock('../ServicesContextProducts', () => ({ ServicesContextProducts: () => null }));
+vi.mock('../ServicesThreeEditor', () => ({ default: () => null }));
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let root: Root, host: HTMLDivElement;
 const beforeOpen = vi.fn();
@@ -18,8 +19,19 @@ const button = (label: string) =>
     (b) => b.getAttribute('aria-label') === label || b.textContent?.trim() === label,
   )!;
 const click = (label: string) => {
-  expect(button(label), label).toBeDefined();
-  act(() => button(label).click());
+  if (button(label)) {
+    act(() => button(label).click());
+    return;
+  }
+  const option = [...document.querySelectorAll<HTMLOptionElement>('.services-tools option')].find(
+    (o) => o.textContent === label,
+  );
+  expect(option, label).toBeDefined();
+  const select = option!.parentElement as HTMLSelectElement;
+  act(() => {
+    select.value = option!.value;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
 };
 function point(x: number, y: number, target: Element = plan()) {
   for (const type of ['pointerdown', 'pointerup']) {
@@ -38,7 +50,7 @@ function input(label: string, value: string) {
     control!.dispatchEvent(new Event('input', { bubbles: true }));
   });
 }
-beforeEach(() => {
+beforeEach(async () => {
   localStorage.clear();
   usePropertyStore.getState().resetToDefault();
   useHistoryStore.getState().reset();
@@ -64,11 +76,13 @@ beforeEach(() => {
       }
     },
   );
+  Object.defineProperty(document, 'elementFromPoint', { configurable: true, value: () => plan() });
   host = document.createElement('div');
   document.body.append(host);
   root = createRoot(host);
   act(() => root.render(<ServicesWorkspace onBeforeOpen={beforeOpen} />));
-  act(() => window.dispatchEvent(new Event('ppw:open-services')));
+  await act(async () => window.dispatchEvent(new Event('ppw:open-services')));
+  click('2D plan');
 });
 afterEach(() => {
   act(() => root.unmount());
@@ -78,6 +92,68 @@ afterEach(() => {
 });
 
 describe('service workspace editing and escape paths', () => {
+  it('draws a snapped route by dragging once and only saves on Finish', () => {
+    click('Cold water');
+    input('Start elevation', '0');
+    input('End elevation', '3');
+    const viewBox = plan().getAttribute('viewBox');
+    for (const [type, x, y] of [
+      ['pointerdown', 1, 1],
+      ['pointermove', 30, 7],
+      ['pointerup', 30, 7],
+    ] as const) {
+      const event = new MouseEvent(type, { bubbles: true, clientX: x, clientY: y });
+      Object.defineProperty(event, 'pointerId', { value: 1 });
+      act(() => plan().dispatchEvent(event));
+    }
+    expect(usePropertyStore.getState().property.services).toBeUndefined();
+    expect(plan().getAttribute('viewBox')).toBe(viewBox);
+    click('Finish run');
+    expect(usePropertyStore.getState().property.services!.runs[0].points).toEqual([
+      { x: 1, y: 1, elevationM: 0 },
+      { x: 30, y: 1, elevationM: 3 },
+    ]);
+  });
+  it('launches the requested tutorial system and closes synchronously for workspace navigation', () => {
+    act(() =>
+      window.dispatchEvent(
+        new CustomEvent('ppw:open-services', { detail: { system: 'fire-water' } }),
+      ),
+    );
+    expect(document.querySelector<HTMLSelectElement>('[aria-label="Route system"]')?.value).toBe(
+      'fire-water',
+    );
+    act(() => window.dispatchEvent(new Event('olb:close-workspaces')));
+    expect(document.querySelector('[role=dialog]')).toBeNull();
+  });
+  it('creates independent bend heights, continues from the end through a junction and preserves zoom', () => {
+    click('Cold water');
+    input('Start elevation', '0');
+    input('End elevation', '0');
+    point(0, 0);
+    point(3, 0);
+    input('End elevation', '4');
+    point(3, 0);
+    point(3, 2);
+    click('Finish run');
+    const run = usePropertyStore.getState().property.services!.runs[0];
+    expect(run.points.map((p) => p.elevationM)).toEqual([0, 0, 4, 4]);
+    expect(document.querySelector('[aria-label="Services details"]')?.textContent).toContain(
+      '9.00 m',
+    );
+    click('Zoom services in');
+    const viewBox = plan().getAttribute('viewBox');
+    click('Continue from end');
+    point(6, 2);
+    click('Finish run');
+    const saved = usePropertyStore.getState().property.services!;
+    expect(saved.runs).toHaveLength(2);
+    expect(saved.junctions).toHaveLength(1);
+    expect(saved.runs[0].points[saved.runs[0].points.length - 1]?.junctionId).toBe(
+      saved.runs[1].points[0].junctionId,
+    );
+    expect(plan().getAttribute('viewBox')).toBe(viewBox);
+  });
   it('cancels an unfinished route on Escape before closing the workbench', () => {
     expect(beforeOpen).toHaveBeenCalled();
     expect(useDesignerUIStore.getState().viewMode).toBe('plan');

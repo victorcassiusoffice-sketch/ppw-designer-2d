@@ -16,6 +16,13 @@ const foundation = { version: 1 as const, enabled: true, elements: [element] };
 const geometry = { walls: [], baseAreaM2: 80, roofAreaM2: 80, roofLengthM: 10, roofWidthM: 8, roofRectangular: true };
 
 describe('read-only foundation and materials MCP', () => {
+  it('accepts measured circular excavation through the shared schema without creating concrete', () => {
+    const measured = { version: 1, enabled: true, elements: [], bores: [{ id: 'bore', name: 'Bore', x: 1, y: 2, diameterM: 2, depthM: 3, topElevationM: 0 }] };
+    expect(call('estimate_foundation', { foundation: measured })).toMatchObject({ result: { isError: false,
+      structuredContent: { estimate: { volumeM3: 0, totalExcavationVolumeM3: expect.closeTo(3 * Math.PI, 10) } } } });
+    expect(validateSnapshotFoundation({ foundation: measured })).toBeNull();
+    expect(call('estimate_foundation', { foundation: { ...measured, bores: [{ ...measured.bores[0], diameterM: 0 }] } })).toMatchObject({ result: { isError: true } });
+  });
   it('publishes complete bounded foundation input and only read-only annotations', () => {
     expect(call('get_foundation_schema')).toMatchObject({ result: { isError: false, structuredContent: { version: 1, example: foundation, concreteDefaults: { supply: 'ready-mix' } } } });
     for (const name of ['get_foundation_schema', 'estimate_foundation', 'estimate_materials'])
@@ -127,6 +134,13 @@ describe('read-only foundation and materials MCP', () => {
 });
 
 describe('measured foundation AI proposal roundtrip', () => {
+  it('retains circular holes through AI conversion and rejects holes outside the plot', () => {
+    const measured = { version: 1 as const, enabled: true, elements: [], bores: [{ id: 'bore', name: 'Bore', x: 3, y: 3, diameterM: 2, depthM: 3, topElevationM: 0 }] };
+    const draft = { ...createGuidedDesign({}), foundation: measured };
+    expect(validateDesignDraft(draft).ok).toBe(true);
+    expect(designDraftToProperty(draft).foundation).toEqual(measured);
+    expect(validateDesignDraft({ ...draft, foundation: { ...measured, bores: [{ ...measured.bores[0], x: .5 }] } }).ok).toBe(false);
+  });
   it('rejects malformed saved foundations while preserving legacy and service-linked snapshots', () => {
     expect(validateSnapshotFoundation({ rooms: [] })).toBeNull();
     const snapshot = { foundation, services: { version: 1, runs: [{ startConnection: { fixtureId: 'sink-1', portId: 'cold-water' } }] } };

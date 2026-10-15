@@ -111,6 +111,40 @@ describe('measured eco models', () => {
 });
 
 describe('versioned project engineering review', () => {
+  it('screens bore-only designs for missing ground/design inputs and actual circular tree protection conflicts', () => {
+    const p = property();
+    p.foundation = {
+      version: 1,
+      enabled: true,
+      elements: [],
+      bores: [
+        {
+          id: 'bore',
+          name: 'Bore',
+          x: 0,
+          y: 0,
+          diameterM: 2,
+          depthM: 3,
+          topElevationM: 0,
+        },
+      ],
+    };
+    p.eco = { version: 1, greenRoofs: [], trees: [tree({ x: 2, y: 0 })] };
+    expect(rules(p)).toEqual(
+      expect.arrayContaining([
+        'foundation-design-inputs',
+        'excavation-support',
+        'tree-bore-conflict',
+      ]),
+    );
+    const inputs = reviewProject(p).findings.find((f) => f.ruleId === 'foundation-design-inputs')!;
+    expect(inputs.missingData.join(' ')).toContain('Geotechnical');
+    expect(inputs.missingData).not.toContain('Specified concrete grade');
+    p.eco.trees[0].x = 3;
+    expect(rules(p)).not.toContain('tree-bore-conflict');
+    p.foundation.bores!.push({ ...p.foundation.bores![0], id: 'overlap', x: 0.5 });
+    expect(rules(p)).toContain('excavation-union-incomplete');
+  });
   it('declares incomplete screening when a dense model exceeds its geometric work bound', () => {
     const p = property();
     p.eco = {

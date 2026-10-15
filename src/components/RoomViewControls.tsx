@@ -4,6 +4,7 @@ import type { WallView } from '../store/designerUIStore';
 import type { RoomLighting } from '../hooks/useRoomLighting';
 import { WallHeightControl } from './WallHeightControl';
 import { StudioIcon } from './StudioIcon';
+import { DisciplineVisibilityControls } from './DisciplineVisibilityControls';
 import { PROFESSIONAL_VIEWS, type ProfessionalView } from '../designer/professionalViews';
 
 export type CameraView = ProfessionalView;
@@ -275,6 +276,8 @@ export function RoomViewControls({
         </div>
       )}
       <div className="house-camera-row" role="group" aria-label={t('Camera navigation')}>
+        <DisciplineVisibilityControls direction="up" />
+        <button type="button" title="House build guide" aria-label="House build guide" onClick={() => window.dispatchEvent(new Event('olb:open-house-tutorial'))}><StudioIcon name="list" size={18} /></button>
         <button
           type="button"
           aria-label={t('Move view')}

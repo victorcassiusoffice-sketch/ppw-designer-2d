@@ -75,6 +75,9 @@ import { createRoofSurface, roofItemMount } from '../../designer/roofSurface';
 import { pointInPolygon } from '../../lib/geometry';
 import { applyProductSurfaceLighting } from './productSurfaceLighting';
 import { serviceFixtureMesh } from './serviceFixtureMeshes';
+import { serviceRouteMesh } from './serviceRouteMeshes';
+import type { ServiceRunPlacement } from '../../designer/serviceScene';
+import { hasFoundationGeometry } from '../../designer/foundation';
 import type { ServiceFixturePlacement } from '../../designer/serviceFixtures';
 
 // ---------------------------------------------------------------------------
@@ -267,6 +270,8 @@ export interface ThreeStageProps {
   solids: SceneSolids;
   /** Generic service fixtures on visible storeys, independent of catalog stock. */
   serviceFixtures?: ServiceFixturePlacement[];
+  serviceRuns?: ServiceRunPlacement[];
+  groundVisible?: boolean;
   ecoTrees?: readonly EcoTree[];
   foundation?: FoundationModel;
   foundationView?: boolean;
@@ -611,7 +616,7 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
 
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, serviceFixtures, ecoTrees, foundation, foundationView = false, foundationBaseElevationM = 0, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed, onReady },
+  { solids, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, foundation, foundationView = false, foundationBaseElevationM = 0, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed, onReady },
   ref,
 ): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -1190,10 +1195,11 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     disposeObject(group);
     group.clear();
     for (const fixture of serviceFixtures ?? []) group.add(serviceFixtureMesh(fixture));
+    for (const run of serviceRuns ?? []) group.add(serviceRouteMesh(run));
     group.updateMatrixWorld(true);
     requestRender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serviceFixtures]);
+  }, [serviceFixtures, serviceRuns]);
 
   // Vegetation has its own bounded instanced group: changing a tree does not
   // rebuild furniture or reset the camera. It is ground context, never a storey asset.
@@ -1213,8 +1219,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     if (!group) return;
     disposeObject(group); group.clear();
     if (foundation?.enabled) group.add(foundationMeshes(foundation, foundationBaseElevationM, false, foundationView));
-    const inspect = foundationView && Boolean(foundation?.enabled && foundation.elements.length);
+    const inspect = foundationView && hasFoundationGeometry(foundation);
     setFoundationInspection([groundRef.current, ...floorsRef.current, gardenRef.current, ...shadowsRef.current], inspect);
+    if (groundRef.current) groundRef.current.visible = groundVisible && !inspect;
     group.updateMatrixWorld(true);
     const bounds = structureBoundsRef.current.clone();
     if (foundation?.enabled) bounds.expandByObject(group);
@@ -1225,7 +1232,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     applyHour(hour);
     requestRender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [foundation, foundationView, foundationBaseElevationM, solids, ecoTrees]);
+  }, [foundation, foundationView, foundationBaseElevationM, solids, ecoTrees, groundVisible]);
 
   // ---- the hour: sun, sky, lamps -----------------------------------------
   useEffect(() => {

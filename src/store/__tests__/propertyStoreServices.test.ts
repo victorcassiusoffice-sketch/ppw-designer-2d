@@ -19,6 +19,27 @@ beforeEach(() => {
 afterEach(() => { unsubscribe?.(); unsubscribe = undefined; __test.resetSubscriptions(); });
 
 describe('service persistence and floor ownership', () => {
+  it('persists explicit multi-height nodes and shared junctions through save/load and undo', () => {
+    unsubscribe = installHistorySubscriptions({ coalesceMs: 0 });
+    const data = services();
+    data.runs[0].points = [{ x: 1, y: 1, elevationM: -.3 }, { x: 1, y: 1, elevationM: 2 }, { x: 4, y: 1, elevationM: 2, junctionId: 'j' }];
+    data.runs[0].endElevationM = 2;
+    data.junctions = [{ id: 'j', levelId: 'ground', system: 'cold-water', x: 4, y: 1, elevationM: 2 }];
+    expect(usePropertyStore.getState().setServices(data)).toBe(true);
+    const saved = JSON.parse(JSON.stringify(usePropertyStore.getState().property));
+    expect(normaliseLoadedProperty(saved).services).toEqual(data);
+    useHistoryStore.getState().undo(); expect(usePropertyStore.getState().property.services).toBeUndefined();
+    useHistoryStore.getState().redo(); expect(usePropertyStore.getState().property.services).toEqual(data);
+  });
+  it('rejects unknown junction floors and edits whose linked geometry collapses', () => {
+    const data = services();
+    usePropertyStore.getState().setServices(data); const before = usePropertyStore.getState().property;
+    expect(usePropertyStore.getState().setServices({ ...data, junctions: [{ id: 'j', levelId: 'ghost', system: 'cold-water', x: 0, y: 0, elevationM: 0 }] })).toBe(false);
+    data.runs[0].points = [{ x: 0, y: 0, elevationM: 0, junctionId: 'j' }, { x: 1, y: 0, elevationM: 0, junctionId: 'j' }];
+    data.junctions = [{ id: 'j', levelId: 'ground', system: 'cold-water', x: 0, y: 0, elevationM: 0 }];
+    expect(usePropertyStore.getState().setServices(data)).toBe(false);
+    expect(usePropertyStore.getState().property).toBe(before);
+  });
   it('retains distinct ground and upper-floor routes through JSON and page bundle loading', () => {
     const store = usePropertyStore.getState(), upper = store.addLevel('First floor');
     const data: BuildingServices = { version: 1, runs: [route('ground-pipe'), route('upper-pipe', upper)], fixtures: [fixture(upper)] };

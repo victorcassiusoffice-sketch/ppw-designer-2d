@@ -34,6 +34,7 @@ export function AiDesignWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }
       setOpen(true);
     };
     const close = () => setOpen(false);
+    window.addEventListener('olb:close-workspaces', close);
     window.addEventListener('ppw:open-ai-design', show);
     window.addEventListener('ppw:open-plan-import', close);
     window.addEventListener('ppw:open-services', close);
@@ -41,6 +42,7 @@ export function AiDesignWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }
     window.addEventListener('olb:open-project', close);
     if (new URLSearchParams(window.location.search).get('panel') === 'ai') show();
     return () => {
+      window.removeEventListener('olb:close-workspaces', close);
       window.removeEventListener('ppw:open-ai-design', show);
       window.removeEventListener('ppw:open-plan-import', close);
       window.removeEventListener('ppw:open-services', close);

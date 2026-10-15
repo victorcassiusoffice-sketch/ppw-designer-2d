@@ -51,6 +51,10 @@ import { NATURAL_BARE_FLOOR_HEX } from '../designer/architecturalSurface';
 import { visibleServiceFixtures } from '../designer/serviceFixtures';
 import { FoundationPlanLayer } from './FoundationPlanLayer';
 import { ServiceFixturesPlanLayer } from './ServiceFixturesPlanLayer';
+import { ServiceRoutesPlanLayer } from './ServiceRoutesPlanLayer';
+import { visibleServiceRuns } from '../designer/serviceScene';
+import { useDisciplineVisibilityStore } from '../store/disciplineVisibilityStore';
+import { productDiscipline, serviceFixtureDiscipline } from '../designer/disciplineVisibility';
 import type Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
 import { usePropertyStore, selectActiveRoom, roomOpenings } from '../store/propertyStore';
@@ -2665,7 +2669,9 @@ export function RoomCanvas({
   // Wall paint (2026-09-02): live property-wide totals for the HUD/panel —
   // painted area, litres and the whole-tin cost, in the display currency.
   const propertyForPaint = usePropertyStore((st) => st.property);
-  const serviceFixtures = useMemo(() => visibleServiceFixtures(propertyForPaint, activeLevelId), [propertyForPaint, activeLevelId]);
+  const visible = useDisciplineVisibilityStore(s => s.visible);
+  const serviceFixtures = useMemo(() => visibleServiceFixtures(propertyForPaint, activeLevelId).filter(fixture => visible[serviceFixtureDiscipline(fixture.kind)]), [propertyForPaint, activeLevelId, visible]);
+  const serviceRuns = useMemo(() => visibleServiceRuns(propertyForPaint, activeLevelId, 'floor', visible), [propertyForPaint, activeLevelId, visible]);
   const planWallHeight = levelHeightM(propertyForPaint, activeLevelId);
   const planSun = useMemo(() => planDaylight(sunHour, planWallHeight), [sunHour, planWallHeight]);
   const planSharedEdges = useMemo(() => sharedEdgeMap(drawnRooms), [drawnRooms]);
@@ -4379,7 +4385,7 @@ export function RoomCanvas({
               so everything else sits on it. A dashed boundary with the plot
               dimensions in the corner: this is the maximum the customer can
               build inside. */}
-          {sitePolygon && site && (
+          {visible.landscape && sitePolygon && site && (
             <Group name="site" listening={false}>
               <Line
                 points={sitePolygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre])}
@@ -4402,8 +4408,9 @@ export function RoomCanvas({
             </Group>
           )}
 
-          <GardenLayer garden={garden} pxPerMetre={pxPerMetre} scale={viewport.scale} interactive={tool === 'hand' && !drawMode && !wallDrawEnabled && !pendingProductId && !gardenPlacement} />
-          {activeLevelId === GROUND_LEVEL_ID && <EcoTreesLayer trees={ecoTrees} pxPerMetre={pxPerMetre} scale={viewport.scale} />}
+          {visible.landscape && <GardenLayer garden={garden} pxPerMetre={pxPerMetre} scale={viewport.scale} interactive={tool === 'hand' && !drawMode && !wallDrawEnabled && !pendingProductId && !gardenPlacement} />}
+          {visible.landscape && activeLevelId === GROUND_LEVEL_ID && <EcoTreesLayer trees={ecoTrees} pxPerMetre={pxPerMetre} scale={viewport.scale} />}
+          <Group visible={visible.structure} listening={visible.structure}>
 
           {/* STOREY BELOW (Sims world) — the floor underneath as a faint
               outline, so an upper floor can be drawn to line up with the
@@ -4803,9 +4810,12 @@ export function RoomCanvas({
             ))}
 
           <BuildingPlanLayer property={propertyForPaint} activeLevelId={activeLevelId} pxPerMetre={pxPerMetre} scale={viewport.scale} />
-          {activeLevelId === 'ground' && propertyForPaint.foundation?.enabled && <FoundationPlanLayer model={propertyForPaint.foundation} pxPerMetre={pxPerMetre} />}
+          </Group>
+          {visible.foundation && activeLevelId === 'ground' && propertyForPaint.foundation?.enabled && <FoundationPlanLayer model={propertyForPaint.foundation} pxPerMetre={pxPerMetre} />}
+          <ServiceRoutesPlanLayer runs={serviceRuns} pxPerMetre={pxPerMetre} scale={viewport.scale} onSelect={wallSelectArmed && !gardenPlacement ? fixtureId => window.dispatchEvent(new CustomEvent('ppw:open-services', { detail: { fixtureId } })) : undefined} />
           <ServiceFixturesPlanLayer fixtures={serviceFixtures} pxPerMetre={pxPerMetre}
             onSelect={wallSelectArmed && !gardenPlacement ? fixtureId => window.dispatchEvent(new CustomEvent('ppw:open-services', { detail: { fixtureId } })) : undefined} />
+          <Group visible={visible.structure} listening={visible.structure}>
 
           {/* FREE-STANDING WALLS (Sims world 2026-08-29) — open runs the
               customer drew without closing a room. Same poche as room walls,
@@ -5037,6 +5047,7 @@ export function RoomCanvas({
             );
           })()}
 
+          </Group>
           {/* M4 (Customer-UI fix 2026-05-31) — the on-canvas "0,0 - W x H m
               bbox" debug Text was removed; it was developer instrumentation
               that should never have shipped to the customer surface. */}
@@ -5068,7 +5079,7 @@ export function RoomCanvas({
           <Group name="light-pools" listening={false}>
             {levelItems.map((item) => {
               const product = getProductById(item.productId);
-              if (!product || !emitsLight(product) || item.lightOn === false) return null;
+              if (!product || !visible[productDiscipline(product)] || !emitsLight(product) || item.lightOn === false) return null;
               const fp = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
               const { w, h } = rotatedFootprint(fp, item.rotation);
               const r = lightRadiusM(product) * pxPerMetre;
@@ -5110,7 +5121,7 @@ export function RoomCanvas({
               // (a diffuser on top of its table) everywhere, not just active.
               return sortItemsForRender(room.placedItems).map((item) => {
                 const product = getProductById(item.productId);
-                if (!product) return null;
+                if (!product || !visible[productDiscipline(product)]) return null;
                 const fp = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
                 const { w, h } = rotatedFootprint(fp, item.rotation);
                 const wPx = w * pxPerMetre;
@@ -5199,7 +5210,7 @@ export function RoomCanvas({
             permanently-listening layer would swallow every armed
             placement click. */}
         {measureTool && (
-          <Layer name="measure-edges">
+          <Layer name="measure-edges" visible={visible.structure} listening={visible.structure}>
             {drawnRooms.map((room) =>
               roomEdges({ id: room.id, polygon: room.polygon }).map((e, i) => {
                 const sel =
@@ -5339,19 +5350,19 @@ export function RoomCanvas({
         {/* Legacy interior walls (wallStore). Normally EMPTY — App migrates
             them onto the property on mount — but rendered if any remain so
             nothing a customer drew ever silently disappears. */}
-        <CommittedWallsLayer walls={committedWalls} pxPerMetre={pxPerMetre} />
+        <CommittedWallsLayer walls={visible.structure ? committedWalls : []} pxPerMetre={pxPerMetre} />
 
         {/* M2 — Sims-style wall tool. Visible whenever wallStore phase
             is not 'idle' (driven by the ModeStrip's Wall button). Mounts
             as a Stage child so it shares viewport + pxPerMetre. */}
         <WallDrawLayer
-          enabled={wallDrawEnabled && !drawMode}
+          enabled={visible.structure && wallDrawEnabled && !drawMode}
           stageRef={stageRef}
           containerRef={containerRef}
           viewport={viewport}
           pxPerMetre={pxPerMetre}
         />
-        {activeLevelId === GROUND_LEVEL_ID && gardenPlacement && <GardenDrawLayer pxPerMetre={pxPerMetre} scale={viewport.scale} />}
+        {visible.landscape && activeLevelId === GROUND_LEVEL_ID && gardenPlacement && <GardenDrawLayer pxPerMetre={pxPerMetre} scale={viewport.scale} />}
       </Stage>
 
       {/* Measure popover (units brief D10). Says out loud what it does:
@@ -5417,7 +5428,7 @@ export function RoomCanvas({
         </div>
       )}
 
-      <WallDrawHUD enabled={wallDrawEnabled && !drawMode} />
+      <WallDrawHUD enabled={visible.structure && wallDrawEnabled && !drawMode} />
 
       {/* Sims feature-finish (flagship F1/M6) — on-canvas floating cluster
           for the selected object. Replaces the old mobile slide-up
@@ -5494,7 +5505,7 @@ export function RoomCanvas({
           used to sit centred over the very tile the customer had just laid. */}
       {/* …and hidden once ANY floor is laid: a floored room is not empty
           (check R3 — the card re-centred over freshly laid tiles). */}
-      {!drawMode && !wallDrawEnabled && !pendingProductId && !floorTool && !doorTool && hasRoom && allItems.length === 0 && !garden &&
+      {!drawMode && !wallDrawEnabled && !pendingProductId && !floorTool && !doorTool && hasRoom && allItems.length === 0 && !garden && !propertyForPaint.services?.runs.length && !propertyForPaint.services?.fixtures.length && !propertyForPaint.foundation?.enabled &&
         !drawnRooms.some((r) => (r.floorTiles && r.floorTiles.length > 0) || r.floorFinish || r.wallPaint?.length || r.wallCladding?.length) && (
         <div
           className="pointer-events-none absolute inset-0 flex items-center justify-center"
