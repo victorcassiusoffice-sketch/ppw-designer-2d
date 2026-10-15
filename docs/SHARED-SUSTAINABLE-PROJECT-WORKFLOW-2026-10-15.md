@@ -18,8 +18,12 @@ Existing preview and production share one Neon database. Writing migration files
 
 ## Continuation
 
-Implementation completed locally on16October2026. The model, authenticated API, role stations, local pilot, environmental engines and working views are integrated. Full suite:366 files /4,116 tests passed. Client/middleware/API typechecks, build and changed-file lint pass. The actual SQL migration and concurrent write behavior were tested in isolated in-memory PostgreSQL, never the live Neon database.
+Implementation completed locally on16 October 2026. The model, authenticated API, role stations, local pilot, environmental engines and working views are integrated. Full suite: 366 files / 4,116 tests passed. Client/middleware/API typechecks, build and changed-file lint pass. The actual SQL migration and concurrent write behavior were tested in isolated in-memory PostgreSQL, never the live Neon database.
 
 Headless local verification includes26 working-view captures and30 shared-project captures at1280px/390px. Working-view filtering restores identical camera pixels and preserves canonical geometry. Shared workflows cover all six role stations, component save, moisture screening, sourcing, surface scenarios, pilot acknowledgements, history and connection choice. Zero console/page errors, attempted API writes and horizontal overflow were observed. Visual fixes: selected-hover contrast, scroll reset between sections, phone discipline shortcut, and full material labels. Further feature-preview verification and pinned links are recorded in SHARED-PROJECT-LINKS-2026-10-16.md once deployed.
 
 Remaining integration: isolated Neon deployment and real two-account acceptance, then approved production activation. Live migration and production/main changes are held. Polling is three-second active-browser refresh; geometry collaboration, private supplier pricing segregation, automatic orders/emails and transient assembly physics are not implemented. Detailed technical prose remains English. Read SHARED-PROJECT-GUIDE-2026-10-16.md and SHARED-SPECS-BACKEND-2026-10-16.md before extending.
+
+## Release checkpoint
+
+Application `be9203ab030c34f4cab9b61cf94240a508fe9025` is live on https://ppw-designer-2d-r6tbj4111-victor-ppw.vercel.app. See SHARED-PROJECT-LINKS-2026-10-16.md and qa-shared-live-2026-10-16/REVIEW.md for exact proof. GitHub typecheck/tests/secrets/Vercel pass. Lighthouse remaining assertions are documented; no thresholds were weakened. Current main remains480c56e1ba940ebef6546928d89f232a5ea2b207. Migration0032 and real two-account cloud activation remain pending; no production data was touched.

@@ -1,3 +1,18 @@
+## 2026-10-16 — Shared sustainable project and working views
+
+**LIVE-ON-PREVIEW.** Application `be9203ab030c34f4cab9b61cf94240a508fe9025`, branch `gpt/designer-2026-10-15`, [PR48](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/48). Main and production remain unchanged. Newer documentation-only deployments do not replace this pinned application origin.
+
+- [https://ppw-designer-2d-r6tbj4111-victor-ppw.vercel.app/demo?view=2d&panel=shared&pitch=1](https://ppw-designer-2d-r6tbj4111-victor-ppw.vercel.app/demo?view=2d&panel=shared&pitch=1) - One Live Build Shared project: architects, engineers, suppliers, contractors and clients coordinating sustainable construction; interactive local pilot.
+- [https://ppw-designer-2d-r6tbj4111-victor-ppw.vercel.app/demo?view=3d&panel=services&pitch=1](https://ppw-designer-2d-r6tbj4111-victor-ppw.vercel.app/demo?view=3d&panel=services&pitch=1) - One Live Build working views: plumbing, electrical, HVAC, fire and security teams; choose Layers for isolated/combined views.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/SHARED-PROJECT-LINKS-2026-10-16.md](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/SHARED-PROJECT-LINKS-2026-10-16.md) - One Live Build: full app, demo, pitch, embed and absolute source directory.
+- [C:/Users/Victor/Documents/PPW-Second-Brain/06-Roadmap/agentix-os/inbox/designer-2026-10-16-shared-sustainable-project/HANDOFF.md](C:/Users/Victor/Documents/PPW-Second-Brain/06-Roadmap/agentix-os/inbox/designer-2026-10-16-shared-sustainable-project/HANDOFF.md) - One Live Build: single team handoff, guides and actual screenshots.
+
+Added: independent structure parts/routes/equipment filters; stable cameras and quantities; measured specs, role stations, pilot gates and versioned Neon/Clerk API; evidence-qualified moisture, carbon, sourcing and surface technology tools. **Cloud storage is prepared, not activated: migration 0032 was not applied; feature-preview database writes remain blocked.** Real account acceptance and live activation remain pending. No orders, invoices, emails or production updates.
+
+Validation: 366 files / 4,116 tests, build/types/lint pass. 56 local captures; final 8 deployed desktop/phone cases and 34 URL checks pass (8 expected gates). Prior 18-case service/foundation checks are archived with their commit. GitHub application typecheck, tests, secrets scan and Vercel pass. Lighthouse now audits the PR instead of production; its remaining performance/PWA/image/header assertions are documented and still red. Technical prose remains partly English; screens are not engineering certification.
+
+Older entries below are history.
+
 ## 2026-10-15 — Connected services and guided house build
 
 **LIVE-ON-PREVIEW.** Application commit `97146b738e3a649edac8597aecc7d9caec38231d`, branch `gpt/designer-2026-10-15`, [PR #48](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/48). This is the newest pinned application preview. Main and production remain unchanged.

@@ -37,6 +37,7 @@ try {
   ];
   for (const [device, viewport] of [['desktop', { width: 1280, height: 900 }], ['phone', { width: 390, height: 844 }]]) {
     for (const [name, path] of routes) {
+      if(process.argv.includes('--final-smoke')&&!['shared-project','plan','house','pitch-plumbing'].includes(name))continue;
       if (retryCases && !retryCases.has(`${device}/${name}`)) continue;
       const context = await browser.newContext({ viewport, isMobile: device === 'phone', hasTouch: device === 'phone', deviceScaleFactor: 1 });
       await context.addInitScript(() => localStorage.setItem('ppw_designer_coach_v1', '1'));
