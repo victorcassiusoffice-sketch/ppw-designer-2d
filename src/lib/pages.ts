@@ -95,6 +95,9 @@ export function propertyHasContent(property: Property): boolean {
     || (property.city?.networks.length ?? 0) > 0
     || (property.city?.assets.length ?? 0) > 0
     || !!property.city?.dataCentre
+    || (property.eco?.trees.length ?? 0) > 0
+    || (property.eco?.greenRoofs.length ?? 0) > 0
+    || Object.keys(property.engineering ?? {}).some(key => key !== 'version')
     || (property.services?.runs.length ?? 0) > 0
     || (property.services?.fixtures.length ?? 0) > 0
     || (property.walls?.length ?? 0) > 0

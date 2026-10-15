@@ -1,0 +1,79 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "date": "2026-10-15",
+  "bundle": "App-3EzNlsx8.js",
+  "cases": [
+    {
+      "viewport": "desktop",
+      "shots": [
+        "docs/qa-project-hub-2026-10-15/desktop-overview.png",
+        "docs/qa-project-hub-2026-10-15/desktop-department-tasks.png",
+        "docs/qa-project-hub-2026-10-15/desktop-procurement-quantities.png",
+        "docs/qa-project-hub-2026-10-15/desktop-delivery-dates.png",
+        "docs/qa-project-hub-2026-10-15/desktop-sales-objects.png",
+        "docs/qa-project-hub-2026-10-15/desktop-ecology.png",
+        "docs/qa-project-hub-2026-10-15/desktop-engineering-findings.png",
+        "docs/qa-project-hub-2026-10-15/desktop-evidence.png",
+        "docs/qa-project-hub-2026-10-15/desktop-handover.png",
+        "docs/qa-project-hub-2026-10-15/desktop-en-ivory.png",
+        "docs/qa-project-hub-2026-10-15/desktop-en-ocean.png",
+        "docs/qa-project-hub-2026-10-15/desktop-en-slate.png",
+        "docs/qa-project-hub-2026-10-15/desktop-fr-ivory.png",
+        "docs/qa-project-hub-2026-10-15/desktop-zh-CN-ivory.png",
+        "docs/qa-project-hub-2026-10-15/desktop-es-ivory.png"
+      ],
+      "checks": [
+        "Company station developers opens against same project",
+        "Company station merchants opens against same project",
+        "Company station construction opens against same project",
+        "Company station plumbing opens against same project",
+        "Company station landscape opens against same project",
+        "Company station city opens against same project",
+        "Procurement quantities, delivery dates and placed-product sales station read the same build",
+        "Tree, roof, evidence, task and same-build JSON round-trip persist through real UI",
+        "All 12 language/theme combinations preserve exact measured project",
+        "Escape returns to designer; reload preserves model/preferences"
+      ],
+      "failures": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "writeRequests": []
+    },
+    {
+      "viewport": "phone",
+      "shots": [
+        "docs/qa-project-hub-2026-10-15/phone-overview.png",
+        "docs/qa-project-hub-2026-10-15/phone-department-tasks.png",
+        "docs/qa-project-hub-2026-10-15/phone-procurement-quantities.png",
+        "docs/qa-project-hub-2026-10-15/phone-delivery-dates.png",
+        "docs/qa-project-hub-2026-10-15/phone-sales-objects.png",
+        "docs/qa-project-hub-2026-10-15/phone-ecology.png",
+        "docs/qa-project-hub-2026-10-15/phone-engineering-findings.png",
+        "docs/qa-project-hub-2026-10-15/phone-evidence.png",
+        "docs/qa-project-hub-2026-10-15/phone-handover.png",
+        "docs/qa-project-hub-2026-10-15/phone-en-ivory.png",
+        "docs/qa-project-hub-2026-10-15/phone-en-ocean.png",
+        "docs/qa-project-hub-2026-10-15/phone-en-slate.png",
+        "docs/qa-project-hub-2026-10-15/phone-fr-ivory.png",
+        "docs/qa-project-hub-2026-10-15/phone-zh-CN-ivory.png",
+        "docs/qa-project-hub-2026-10-15/phone-es-ivory.png"
+      ],
+      "checks": [
+        "Company station developers opens against same project",
+        "Company station merchants opens against same project",
+        "Company station construction opens against same project",
+        "Company station plumbing opens against same project",
+        "Company station landscape opens against same project",
+        "Company station city opens against same project",
+        "Procurement quantities, delivery dates and placed-product sales station read the same build",
+        "Tree, roof, evidence, task and same-build JSON round-trip persist through real UI",
+        "All 12 language/theme combinations preserve exact measured project",
+        "Escape returns to designer; reload preserves model/preferences"
+      ],
+      "failures": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "writeRequests": []
+    }
+  ]
+}

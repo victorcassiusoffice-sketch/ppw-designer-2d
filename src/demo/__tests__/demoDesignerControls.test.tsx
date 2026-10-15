@@ -61,7 +61,9 @@ describe('designer-only Demo controls', () => {
     expect(document.querySelector('[aria-label="Request quote"]')).toBeNull();
     expect(button('Save as…')).toBeDefined();
     for (const route of ['/studio', '/cart', '/checkout', '/products', '/my-designs']) expect(document.querySelector(`a[href="${route}"]`)).toBeNull();
-    expect(host.querySelector('img[alt="PPWellness"]')?.closest('a')).toBeNull();
+    const identity = host.querySelector('img[alt="One Live Build"]');
+    expect(identity).not.toBeNull();
+    expect(identity!.closest('a')).toBeNull();
     expect(document.body.textContent).toContain('no orders');
   });
 

@@ -1,4 +1,5 @@
 import { normaliseCity, type CityModel } from '../designer/city';
+import { normaliseEco, normaliseEngineeringInputs, type EcoModel, type EngineeringInputs } from '../designer/eco';
 import { normaliseBuildingServices, type BuildingServices } from '../designer/buildingServices';
 import { resolveServiceConnections } from '../designer/serviceConnections';
 import { inferConnectedRooms } from '../designer/connectedWallRooms';
@@ -308,6 +309,10 @@ export interface Room {
 }
 
 export interface Property {
+  /** Measured planting and green-roof inputs; shares the house's world metres. */
+  eco?: EcoModel;
+  /** Project evidence references only; never proof of engineering approval. */
+  engineering?: EngineeringInputs;
   city?: CityModel;
   foundation?: FoundationModel;
   services?: BuildingServices;
@@ -657,6 +662,8 @@ export interface PropertyState {
   setServices: (services: BuildingServices) => boolean;
   setFoundation: (foundation: FoundationModel) => boolean;
   setCity: (city: CityModel) => boolean;
+  setEco: (eco: EcoModel) => boolean;
+  setEngineering: (engineering: EngineeringInputs) => boolean;
   setMaterialsSettings: (settings: MaterialsSettings) => void;
   setRoofConfig: (config: RoofConfig | null) => void;
   /** Switch an electrical item on/off for the energy estimate (absent = on). */
@@ -1644,6 +1651,18 @@ export const usePropertyStore = create<PropertyState>()(
         set(s => ({ property: { ...s.property, city: clean } }));
         return true;
       },
+      setEco: (eco) => {
+        const clean = normaliseEco(eco);
+        if (!clean) return false;
+        set(s => ({ property: { ...s.property, eco: clean } }));
+        return true;
+      },
+      setEngineering: (engineering) => {
+        const clean = normaliseEngineeringInputs(engineering);
+        if (!clean) return false;
+        set(s => ({ property: { ...s.property, engineering: clean } }));
+        return true;
+      },
       setServices: (services) => {
         const property = get().property;
         const normalised = normaliseBuildingServices(services, new Set(levelsOf(property).map(l => l.id)));
@@ -1969,6 +1988,8 @@ export const usePropertyStore = create<PropertyState>()(
         if (merged.property) merged.property = normaliseGardenMetadata(normaliseBuildingMetadata(canonicalisePropertyWinding(merged.property)));
         if (merged.property?.materials !== undefined) merged.property = { ...merged.property, materials: normaliseMaterialsSettings(merged.property.materials) };
         if (merged.property?.city !== undefined) merged.property = { ...merged.property, city: normaliseCity(merged.property.city) };
+        if (merged.property?.eco !== undefined) merged.property = { ...merged.property, eco: normaliseEco(merged.property.eco) };
+        if (merged.property?.engineering !== undefined) merged.property = { ...merged.property, engineering: normaliseEngineeringInputs(merged.property.engineering) };
         if (merged.property?.foundation !== undefined) merged.property = { ...merged.property, foundation: normaliseFoundation(merged.property.foundation) };
         if (merged.property?.services !== undefined) {
           const services = normaliseBuildingServices(merged.property.services, new Set(levelsOf(merged.property).map(l => l.id)));
@@ -2020,6 +2041,8 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
   }
   if (property.foundation !== undefined) out.foundation = normaliseFoundation(property.foundation);
   if (property.city !== undefined) out.city = normaliseCity(property.city);
+  if (property.eco !== undefined) out.eco = normaliseEco(property.eco);
+  if (property.engineering !== undefined) out.engineering = normaliseEngineeringInputs(property.engineering);
   if (property.materials !== undefined) out.materials = normaliseMaterialsSettings(property.materials);
   if (levels) out.levels = levels;
   const activeRoom = rooms.find((r) => r.id === activeRoomId)!;
@@ -2173,6 +2196,8 @@ interface RawRoom {
 }
 
 interface RawProperty {
+  eco?: unknown;
+  engineering?: unknown;
   services?: unknown;
   foundation?: unknown;
   city?: unknown;

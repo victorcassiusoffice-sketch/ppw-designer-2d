@@ -64,7 +64,7 @@ class OpaqueGTAOPass extends GTAOPass {
   }
 }
 
-export function createNaturalSceneRenderer(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera): NaturalSceneRenderer | null {
+export function createNaturalSceneRenderer(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera | THREE.OrthographicCamera): NaturalSceneRenderer | null {
   // A fully working direct renderer is preferable to a broken optional effect.
   if (!renderer.extensions.has('EXT_color_buffer_float')) return null;
   const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: Math.min(2, renderer.capabilities.maxSamples) });

@@ -1,3 +1,5 @@
+import { useAppPreferences } from '../i18n/AppPreferences';
+import { LocaleThemeControls } from './LocaleThemeControls';
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { nanoid } from 'nanoid';
@@ -39,8 +41,6 @@ import './cityWorkspace.css';
 const CityThreeView = lazy(() => import('./CityThreeView'));
 const UNSAVED_ORDER_MESSAGE =
   'Save the supplier package or discard its edits before leaving Orders. Your entries are still here.';
-const fmt = (n: number | null | undefined, digits = 2) =>
-  n == null ? 'Review needed' : n.toLocaleString('en-GB', { maximumFractionDigits: digits });
 const DATA_CENTRE: CityDataCentre = {
   racks: 12,
   kWPerRack: 6,
@@ -71,11 +71,12 @@ export function CityLaunchButton({
   compact?: boolean;
   onBeforeOpen?: () => void;
 }) {
+  const { t } = useAppPreferences();
   return (
     <button
       type="button"
       className="city-launch"
-      aria-label="City Build"
+      aria-label={t("City Build")}
       title="City Build · roads, utilities and infrastructure"
       onClick={() => {
         onBeforeOpen?.();
@@ -83,7 +84,7 @@ export function CityLaunchButton({
       }}
     >
       <StudioIcon name="city" size={19} />
-      <span>{compact ? 'City' : 'City Build'}</span>
+      <span>{compact ? t("City") : t("City Build")}</span>
     </button>
   );
 }
@@ -118,6 +119,7 @@ export function CityWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }) {
       if (routeEntryPending && !isDemoPagePending()) show();
     };
     const others = [
+      'olb:open-project',
       'ppw:open-foundation',
       'ppw:open-services',
       'ppw:open-plan-import',
@@ -171,20 +173,21 @@ export function CityNumber({
   max?: number;
   step?: number;
 }) {
+  const { t, tx } = useAppPreferences();
   const [draft, setDraft] = useState(value == null ? '' : String(value));
   useEffect(() => {
     setDraft(value == null ? '' : String(value));
   }, [value]);
   return (
     <label className="city-field">
-      <span>{label}</span>
+      <span>{tx(label)}</span>
       <input
-        aria-label={label}
+        aria-label={tx(label)}
         type="number"
         min={min}
         max={max}
         step={step}
-        placeholder={value == null ? 'Unconfirmed' : undefined}
+        placeholder={value == null ? t("Unconfirmed") : undefined}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={() => {
@@ -201,16 +204,19 @@ export function CityNumber({
   );
 }
 function Metric({ label, value, note }: { label: string; value: string; note?: string }) {
+  const { tx } = useAppPreferences();
   return (
     <div className="city-metric">
-      <span>{label}</span>
+      <span>{tx(label)}</span>
       <strong>{value}</strong>
-      {note && <small>{note}</small>}
+      {note && <small>{tx(note)}</small>}
     </div>
   );
 }
 
 function CityWorkbench({ onClose }: { onClose: () => void }) {
+  const { t, tx, formatNumber } = useAppPreferences();
+  const fmt = (n: number | null | undefined, digits = 2) => n == null ? t('Review needed') : formatNumber(n, { maximumFractionDigits: digits });
   const property = usePropertyStore((s) => s.property),
     model = useMemo(() => property.city ?? emptyCity(), [property.city]);
   const estimate = useMemo(() => estimateCity(model), [model]);
@@ -480,23 +486,23 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
       className="city-workspace"
       role="dialog"
       aria-modal="true"
-      aria-label="City Build workspace"
+      aria-label={t("City Build workspace")}
       data-testid="city-workspace"
     >
       <header className="city-header">
         <div className="city-brand">
           <StudioIcon name="city" size={30} />
           <div>
-            <strong>City Build</strong>
-            <span>Measured planning · Mauritius</span>
+            <strong>{t("City Build")}</strong>
+            <span>{t("Measured planning · Mauritius")}</span>
           </div>
         </div>
+        <LocaleThemeControls />
         <button type="button" onClick={requestClose} className="city-action">
           <StudioIcon name="room" size={18} />
-          Back to building
-        </button>
+          {t("Back to building")}</button>
       </header>
-      <nav className="city-tabs" aria-label="City sections">
+      <nav className="city-tabs" aria-label={t("City sections")}>
         {(
           [
             ['plan', 'Plan', 'plot'],
@@ -518,14 +524,14 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
             }}
           >
             <StudioIcon name={icon} size={18} />
-            <span>{label}</span>
+            <span>{tx(label)}</span>
           </button>
         ))}
       </nav>
       {message && (
         <div className="city-message" role="status">
-          {message}
-          <button type="button" aria-label="Dismiss city message" onClick={() => setMessage('')}>
+          {tx(message)}
+          <button type="button" aria-label={t("Dismiss city message")} onClick={() => setMessage('')}>
             ×
           </button>
         </div>
@@ -553,37 +559,32 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
             onClick={() => changeTool('select')}
           >
             <StudioIcon name="cursor" size={17} />
-            Select / pan
-          </button>
+            {t("Select / pan")}</button>
           <button
             className="city-tool-road"
             aria-pressed={tool === 'road'}
             onClick={() => changeTool('road')}
           >
-            Draw road
-          </button>
+            {t("Draw road")}</button>
           <button
             className="city-tool-network"
             aria-pressed={tool === 'network'}
             onClick={() => changeTool('network')}
           >
-            Draw utility
-          </button>
+            {t("Draw utility")}</button>
           <button
             className="city-tool-asset"
             aria-pressed={tool === 'asset'}
             onClick={() => changeTool('asset')}
           >
-            Place equipment
-          </button>
+            {t("Place equipment")}</button>
           <button
             className="city-tool-fit"
-            aria-label="Fit city"
+            aria-label={t("Fit city")}
             onClick={() => setFitNonce((n) => n + 1)}
           >
             <StudioIcon name="fit" size={18} />
-            Fit
-          </button>
+            {t("Fit")}</button>
           <button
             className="city-tool-undo"
             disabled={!canUndo}
@@ -592,8 +593,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
               setSelectedId(null);
             }}
           >
-            Undo
-          </button>
+            {t("Undo")}</button>
         </div>
         <div className="city-design">
           <div className="city-viewport">
@@ -609,7 +609,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                 showUtilities={utilities}
               />
             ) : (
-              <Suspense fallback={<div className="city-loading">Building your city in 3D…</div>}>
+              <Suspense fallback={<div className="city-loading">{t("Building your city in 3D…")}</div>}>
                 <CityThreeView
                   model={model}
                   selectedId={selectedId}
@@ -629,42 +629,39 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
               </div>
             )}
           </div>
-          <aside className="city-inspector" aria-label="City design details">
+          <aside className="city-inspector" aria-label={t("City design details")}>
             {tool === 'road' && (
               <section className="city-card">
-                <h2>Road section</h2>
+                <h2>{t("Road section")}</h2>
                 <label>
-                  Planning template
-                  <select
-                    aria-label="Road planning template"
+                  {t("Planning template")}<select
+                    aria-label={t("Road planning template")}
                     value={roadPreset}
                     onChange={(ev) => setRoadPreset(ev.target.value)}
                   >
                     {CITY_ROAD_PRESETS.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.label}
+                        {tx(p.label)}
                       </option>
                     ))}
                   </select>
                 </label>
                 <p className="city-note">
-                  Editable dimensions, not an approved road design. Set layers after drawing.
-                </p>
+                  {t("Editable dimensions, not an approved road design. Set layers after drawing.")}</p>
               </section>
             )}
             {tool === 'network' && (
               <section className="city-card">
-                <h2>Utility corridor</h2>
+                <h2>{t("Utility corridor")}</h2>
                 <label>
-                  System
-                  <select
-                    aria-label="Utility system"
+                  {t("System")}<select
+                    aria-label={t("Utility system")}
                     value={system}
                     onChange={(ev) => setSystem(ev.target.value as CityNetworkSystem)}
                   >
                     {CITY_NETWORK_SYSTEMS.map((s) => (
                       <option key={s.id} value={s.id}>
-                        {s.label}
+                        {tx(s.label)}
                       </option>
                     ))}
                   </select>
@@ -678,38 +675,35 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
             {(tool === 'road' || tool === 'network') && (
               <div className="city-inline">
                 <button className="city-primary" disabled={draft.length < 2} onClick={finishRoute}>
-                  Finish route
-                </button>
-                <button onClick={() => changeTool('select')}>Cancel drawing</button>
+                  {t("Finish route")}</button>
+                <button onClick={() => changeTool('select')}>{t("Cancel drawing")}</button>
               </div>
             )}
             {tool === 'asset' && (
               <section className="city-card">
-                <h2>Equipment</h2>
+                <h2>{t("Equipment")}</h2>
                 <label>
-                  Asset type
-                  <select
-                    aria-label="City asset type"
+                  {t("Asset type")}<select
+                    aria-label={t("City asset type")}
                     value={assetKind}
                     onChange={(ev) => setAssetKind(ev.target.value as CityAssetKind)}
                   >
                     {CITY_ASSET_KINDS.map((a) => (
                       <option key={a.id} value={a.id}>
-                        {a.label}
+                        {tx(a.label)}
                       </option>
                     ))}
                   </select>
                 </label>
                 <p className="city-note">
-                  Start with a planning envelope; enter supplier dimensions and ratings in Details.
-                </p>
+                  {t("Start with a planning envelope; enter supplier dimensions and ratings in Details.")}</p>
               </section>
             )}
             {selected && (
               <section className="city-card">
                 <div className="city-section-title">
-                  <h2>Details</h2>
-                  <button aria-label="Deselect city item" onClick={() => setSelectedId(null)}>
+                  <h2>{t("Details")}</h2>
+                  <button aria-label={t("Deselect city item")} onClick={() => setSelectedId(null)}>
                     ×
                   </button>
                 </div>
@@ -722,7 +716,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                 <label>
                   Name
                   <input
-                    aria-label="City item name"
+                    aria-label={t("City item name")}
                     key={selected.id + selected.name}
                     defaultValue={selected.name}
                     maxLength={128}
@@ -745,25 +739,25 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                         onChange={(y) => updateSelected({ y })}
                       />
                       <CityNumber
-                        label="Width (m)"
+                        label={t("Width (m)")}
                         value={asset.widthM}
                         min={0.05}
                         onChange={(widthM) => updateSelected({ widthM })}
                       />
                       <CityNumber
-                        label="Length (m)"
+                        label={t("Length (m)")}
                         value={asset.lengthM}
                         min={0.05}
                         onChange={(lengthM) => updateSelected({ lengthM })}
                       />
                       <CityNumber
-                        label="Height (m)"
+                        label={t("Height (m)")}
                         value={asset.heightM}
                         min={0.01}
                         onChange={(heightM) => updateSelected({ heightM })}
                       />
                       <CityNumber
-                        label="Rotation (°)"
+                        label={t("Rotation (°)")}
                         value={asset.rotation}
                         max={360}
                         step={15}
@@ -774,13 +768,13 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                       ) && (
                         <>
                           <CityNumber
-                            label="Rated load (W)"
+                            label={t("Rated load (W)")}
                             value={asset.powerW}
                             max={100000000}
                             onChange={(powerW) => updateSelected({ powerW })}
                           />
                           <CityNumber
-                            label="Operating hours / day"
+                            label={t("Operating hours / day")}
                             value={asset.hoursPerDay}
                             max={24}
                             onChange={(hoursPerDay) => updateSelected({ hoursPerDay })}
@@ -789,7 +783,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                       )}
                       {asset.kind === 'pv-array' && (
                         <CityNumber
-                          label="Array capacity (kWp)"
+                          label={t("Array capacity (kWp)")}
                           value={asset.solarKWp}
                           max={1000000}
                           onChange={(solarKWp) => updateSelected({ solarKWp })}
@@ -797,7 +791,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                       )}
                       {asset.kind === 'battery' && (
                         <CityNumber
-                          label="Storage capacity (kWh)"
+                          label={t("Storage capacity (kWh)")}
                           value={asset.batteryKWh}
                           max={100000000}
                           onChange={(batteryKWh) => updateSelected({ batteryKWh })}
@@ -805,7 +799,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                       )}
                       {asset.kind === 'water-tank' && (
                         <CityNumber
-                          label="Tank capacity (L)"
+                          label={t("Tank capacity (L)")}
                           value={asset.tankCapacityL}
                           max={100000000}
                           onChange={(tankCapacityL) => updateSelected({ tankCapacityL })}
@@ -816,14 +810,14 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                   {road && (
                     <>
                       <CityNumber
-                        label="Road width (m)"
+                        label={t("Road width (m)")}
                         value={road.widthM}
                         min={0.5}
                         max={100}
                         onChange={(widthM) => updateSelected({ widthM })}
                       />
                       <CityNumber
-                        label="Surface depth (m)"
+                        label={t("Surface depth (m)")}
                         value={road.surfaceDepthM}
                         min={0.001}
                         max={2}
@@ -831,7 +825,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                         onChange={(surfaceDepthM) => updateSelected({ surfaceDepthM })}
                       />
                       <CityNumber
-                        label="Base depth (m)"
+                        label={t("Base depth (m)")}
                         value={road.baseDepthM}
                         max={5}
                         step={0.01}
@@ -842,7 +836,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                   {network && (
                     <>
                       <CityNumber
-                        label="Outside diameter (mm)"
+                        label={t("Outside diameter (mm)")}
                         value={network.diameterMm}
                         min={1}
                         max={5000}
@@ -850,14 +844,14 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                         onChange={(diameterMm) => updateSelected({ diameterMm })}
                       />
                       <CityNumber
-                        label="Trench width (m)"
+                        label={t("Trench width (m)")}
                         value={network.trenchWidthM}
                         min={0.05}
                         max={20}
                         onChange={(trenchWidthM) => updateSelected({ trenchWidthM })}
                       />
                       <CityNumber
-                        label="Trench depth (m)"
+                        label={t("Trench depth (m)")}
                         value={network.trenchDepthM}
                         min={0.05}
                         max={30}
@@ -868,12 +862,12 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                 </div>
                 {(road || network) && (
                   <details>
-                    <summary>Route coordinates & elevations</summary>
+                    <summary>{t("Route coordinates & elevations")}</summary>
                     <div className="city-route-points">
                       {(road?.points ?? network!.points).map((p, i) => (
                         <div key={i} className="city-fields">
                           <CityNumber
-                            label={`Point ${i + 1} X`}
+                            label={t('pointAxis', { number: i + 1, axis: 'X' })}
                             value={p.x}
                             min={-10000}
                             onChange={(x) =>
@@ -885,7 +879,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                             }
                           />
                           <CityNumber
-                            label={`Point ${i + 1} Y`}
+                            label={t('pointAxis', { number: i + 1, axis: 'Y' })}
                             value={p.y}
                             min={-10000}
                             onChange={(y) =>
@@ -898,7 +892,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                           />
                           {network && (
                             <CityNumber
-                              label={`Point ${i + 1} elevation`}
+                              label={t('pointElevation', { number: i + 1 })}
                               value={network.points[i].z}
                               min={-30}
                               max={100}
@@ -925,24 +919,24 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                   source must not be treated as zero load.
                 </p>
                 <div className="city-inline">
-                  <button onClick={() => setTab('suppliers')}>Supplier reference</button>
+                  <button onClick={() => setTab('suppliers')}>{t("Supplier reference")}</button>
                   <button onClick={() => addPackage(selected.supplierRef)}>Prepare order</button>
-                  <button onClick={remove}>Remove item</button>
+                  <button onClick={remove}>{t("Remove item")}</button>
                 </div>
               </section>
             )}
             {!selected && tool === 'select' && (
               <section className="city-card">
-                <h2>Your site</h2>
+                <h2>{t("Your site")}</h2>
                 <div className="city-fields">
                   <CityNumber
-                    label="Site width (m)"
+                    label={t("Site width (m)")}
                     value={model.site.widthM}
                     min={1}
                     onChange={(widthM) => save({ ...model, site: { ...model.site, widthM } })}
                   />
                   <CityNumber
-                    label="Site length (m)"
+                    label={t("Site length (m)")}
                     value={model.site.lengthM}
                     min={1}
                     onChange={(lengthM) => save({ ...model, site: { ...model.site, lengthM } })}
@@ -957,13 +951,12 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                   !model.networks.length &&
                   !model.dataCentre && (
                     <button className="city-primary" onClick={trySample}>
-                      Try an eco district
-                    </button>
+                      {t("Try an eco district")}</button>
                   )}
               </section>
             )}
             <div className="city-inline">
-              <button onClick={linkBuilding}>Refresh building envelope</button>
+              <button onClick={linkBuilding}>{t("Refresh building envelope")}</button>
             </div>
             <label className="city-check">
               <input
@@ -971,8 +964,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                 checked={model.enabled}
                 onChange={(ev) => save({ ...model, enabled: ev.target.checked })}
               />
-              Include city in estimates
-            </label>
+              {t("Include city in estimates")}</label>
             <label className="city-check">
               <input
                 type="checkbox"
@@ -982,7 +974,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
               Reveal utility routes
             </label>
             <details className="city-card">
-              <summary>Site elements</summary>
+              <summary>{t("Site elements")}</summary>
               <div className="city-element-list">
                 {[...model.roads, ...model.networks, ...model.assets].map((item) => (
                   <button
@@ -1005,23 +997,22 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
         <div className="city-page">
           <div className="city-page-heading">
             <div>
-              <h1>Infrastructure, with a source.</h1>
+              <h1>{t("Infrastructure, with a source.")}</h1>
               <p>
                 Explore Mauritius supplier references. Link a specification to your design, then
                 prepare a supplier package.
               </p>
             </div>
             <label>
-              Category
-              <select
-                aria-label="Infrastructure category"
+              {t("Category")}<select
+                aria-label={t("Infrastructure category")}
                 value={filter}
                 onChange={(ev) => setFilter(ev.target.value)}
               >
-                <option value="all">All infrastructure</option>
+                <option value="all">{t("All infrastructure")}</option>
                 {['roads', 'solar', 'water', 'electrical', 'digital', 'landscape'].map((c) => (
                   <option key={c} value={c}>
-                    {c}
+                    {tx(c[0].toUpperCase() + c.slice(1))}
                   </option>
                 ))}
               </select>
@@ -1036,7 +1027,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
               (r, i) => (
                 <article className="city-card" key={r.id}>
                   <span className="city-eyebrow">
-                    {r.category} · {r.kind === 'family' ? 'Supplier family' : 'Product reference'}
+                    {tx(r.category[0].toUpperCase() + r.category.slice(1))} · {r.kind === 'family' ? t("Supplier family") : t("Product reference")}
                   </span>
                   <h2>
                     {demo
@@ -1053,8 +1044,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                   <div className="city-inline">
                     {!demo && (
                       <a href={r.sourceUrl} target="_blank" rel="noreferrer">
-                        Supplier source ↗
-                      </a>
+                        {t("Supplier source ↗")}</a>
                     )}
                     <button
                       disabled={!selected}
@@ -1066,9 +1056,8 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                         setTab('plan');
                       }}
                     >
-                      Link selected item
-                    </button>
-                    <button onClick={() => addPackage(r.id)}>Prepare package</button>
+                      {t("Link selected item")}</button>
+                    <button onClick={() => addPackage(r.id)}>{t("Prepare package")}</button>
                   </div>
                 </article>
               ),
@@ -1080,7 +1069,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
         <div className="city-page">
           <div className="city-page-heading">
             <div>
-              <h1>Design the demand. Then the supply.</h1>
+              <h1>{t("Design the demand. Then the supply.")}</h1>
               <p>
                 Data-centre energy scenario. Inputs remain editable and separate from measured
                 operation.
@@ -1094,15 +1083,14 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                 changeTool('asset');
               }}
             >
-              Place data centre
-            </button>
+              {t("Place data centre")}</button>
           </div>
           <div className="city-data-layout">
             <section className="city-card">
-              <h2>IT & facility</h2>
+              <h2>{t("IT & facility")}</h2>
               <div className="city-fields">
                 <CityNumber
-                  label="Racks"
+                  label={t("Racks")}
                   value={data.racks}
                   min={1}
                   max={100000}
@@ -1110,20 +1098,20 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                   onChange={(n) => dataChange('racks', n)}
                 />
                 <CityNumber
-                  label="kW per rack"
+                  label={t("kW per rack")}
                   value={data.kWPerRack}
                   min={0.1}
                   max={1000}
                   onChange={(n) => dataChange('kWPerRack', n)}
                 />
                 <CityNumber
-                  label="IT utilisation (%)"
+                  label={t("IT utilisation (%)")}
                   value={data.utilisation * 100}
                   max={100}
                   onChange={(n) => dataChange('utilisation', n / 100)}
                 />
                 <CityNumber
-                  label="PUE target"
+                  label={t("PUE target")}
                   value={data.pue}
                   min={1}
                   max={5}
@@ -1131,35 +1119,35 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                   onChange={(n) => dataChange('pue', n)}
                 />
                 <CityNumber
-                  label="Operating hours / year"
+                  label={t("Operating hours / year")}
                   value={data.annualHours}
                   max={8784}
                   step={1}
                   onChange={(n) => dataChange('annualHours', n)}
                 />
               </div>
-              <h2>Renewables & storage</h2>
+              <h2>{t("Renewables & storage")}</h2>
               <div className="city-fields">
                 <CityNumber
-                  label="Dedicated PV (kWp)"
+                  label={t("Dedicated PV (kWp)")}
                   value={data.pvKWp}
                   max={10000000}
                   onChange={(n) => dataChange('pvKWp', n)}
                 />
                 <CityNumber
-                  label="PV yield (kWh/kWp/year)"
+                  label={t("PV yield (kWh/kWp/year)")}
                   value={data.yieldKWhPerKWp}
                   max={4000}
                   onChange={(n) => dataChange('yieldKWhPerKWp', n)}
                 />
                 <CityNumber
-                  label="Dedicated battery (kWh)"
+                  label={t("Dedicated battery (kWh)")}
                   value={data.batteryKWh}
                   max={100000000}
                   onChange={(n) => dataChange('batteryKWh', n)}
                 />
                 <CityNumber
-                  label="Usable battery (%)"
+                  label={t("Usable battery (%)")}
                   value={data.batteryUsableFraction * 100}
                   max={100}
                   onChange={(n) => dataChange('batteryUsableFraction', n / 100)}
@@ -1176,17 +1164,16 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                     save({ ...model, dataCentre: next });
                   }}
                 />
-                Include specified water-use intensity
-              </label>
+                {t("Include specified water-use intensity")}</label>
               {data.wueLPerKWh !== undefined && (
                 <CityNumber
-                  label="WUE (L per IT kWh)"
+                  label={t("WUE (L per IT kWh)")}
                   value={data.wueLPerKWh}
                   max={100}
                   onChange={(n) => dataChange('wueLPerKWh', n)}
                 />
               )}
-              <button onClick={() => save({ ...model, dataCentre: data })}>Save scenario</button>
+              <button onClick={() => save({ ...model, dataCentre: data })}>{t("Save scenario")}</button>
               <p className="city-note">
                 PV and batteries here are allocated to this scenario, not added again to the city's
                 installed asset totals. Zero yield means unconfirmed generation.
@@ -1195,15 +1182,15 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
             <section>
               <div className="city-metrics">
                 <Metric
-                  label="Modelled facility load"
+                  label={t("Modelled facility load")}
                   value={e ? `${fmt(e.averageFacilityKW)} kW` : 'Save scenario'}
                 />
                 <Metric
-                  label="Annual facility energy"
+                  label={t("Annual facility energy")}
                   value={e ? `${fmt(e.annualFacilityKWh / 1000)} MWh` : '—'}
                 />
                 <Metric
-                  label="Annual PV generation"
+                  label={t("Annual PV generation")}
                   value={e ? `${fmt(e.annualSolarKWh / 1000)} MWh` : '—'}
                 />
                 <Metric
@@ -1212,12 +1199,12 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                   note="Total facility / IT energy"
                 />
                 <Metric
-                  label="Battery autonomy estimate"
+                  label={t("Battery autonomy estimate")}
                   value={e ? `${fmt(e.batteryAutonomyHours)} hours` : '—'}
                   note="Before losses and reserve requirements"
                 />
                 <Metric
-                  label="Water-use scenario"
+                  label={t("Water-use scenario")}
                   value={
                     e?.annualWaterL != null
                       ? `${fmt(e.annualWaterL / 1000)} m³/year`
@@ -1226,7 +1213,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                 />
               </div>
               <section className="city-card">
-                <h2>Coordinate the full facility</h2>
+                <h2>{t("Coordinate the full facility")}</h2>
                 <p>
                   Use building tools for structure, foundations, openings and finishes. Use utility
                   corridors for water, drainage, power and fibre. Link racks, cooling, UPS, PDUs and
@@ -1239,9 +1226,8 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
                       setTab('suppliers');
                     }}
                   >
-                    Data-centre equipment
-                  </button>
-                  <button onClick={requestClose}>Detailed building tools</button>
+                    {t("Data-centre equipment")}</button>
+                  <button onClick={requestClose}>{t("Detailed building tools")}</button>
                 </div>
                 <p className="city-note">
                   PUE does not subtract solar production. Annual renewable balance does not prove
@@ -1266,25 +1252,24 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
         <div className="city-page">
           <div className="city-page-heading">
             <div>
-              <h1>A clear view of the whole build.</h1>
+              <h1>{t("A clear view of the whole build.")}</h1>
               <p>
                 Quantity overview from your current site geometry. Engineering review remains
                 separate.
               </p>
             </div>
             <button onClick={() => setTab('orders')} className="city-action">
-              Manage supplier schedules
-            </button>
+              {t("Manage supplier schedules")}</button>
           </div>
           <div className="city-metrics">
-            <Metric label="Site area" value={`${fmt(estimate.siteAreaM2 / 10000)} ha`} />
+            <Metric label={t("Site area")} value={`${fmt(estimate.siteAreaM2 / 10000)} ha`} />
             <Metric
-              label="Road corridor area"
+              label={t("Road corridor area")}
               value={`${fmt(estimate.roadAreaM2)} m²`}
               note="Intersections counted once"
             />
             <Metric
-              label="Road surface"
+              label={t("Road surface")}
               value={
                 estimate.roadSurfaceM3 == null
                   ? 'Review layers'
@@ -1292,13 +1277,13 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
               }
             />
             <Metric
-              label="Road base"
+              label={t("Road base")}
               value={
                 estimate.roadBaseM3 == null ? 'Review layers' : `${fmt(estimate.roadBaseM3)} m³`
               }
             />
             <Metric
-              label="Trench excavation"
+              label={t("Trench excavation")}
               value={
                 estimate.trenchUniqueVolumeM3 == null
                   ? 'Review trenches'
@@ -1306,22 +1291,22 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
               }
             />
             <Metric
-              label="Building footprints"
+              label={t("Building footprints")}
               value={`${fmt(estimate.footprintM2)} m²`}
               note="Envelope union, not floor area"
             />
-            <Metric label="Known PV capacity" value={`${fmt(estimate.solarKWp)} kWp`} />
-            <Metric label="Known storage" value={`${fmt(estimate.batteryKWh)} kWh`} />
-            <Metric label="Known water storage" value={`${fmt(estimate.tankCapacityL)} L`} />
+            <Metric label={t("Known PV capacity")} value={`${fmt(estimate.solarKWp)} kWp`} />
+            <Metric label={t("Known storage")} value={`${fmt(estimate.batteryKWh)} kWh`} />
+            <Metric label={t("Known water storage")} value={`${fmt(estimate.tankCapacityL)} L`} />
           </div>
           <div className="city-data-layout">
             <section className="city-card">
-              <h2>Utility takeoff</h2>
+              <h2>{t("Utility takeoff")}</h2>
               {CITY_NETWORK_SYSTEMS.map((s) => (
                 <div className="city-summary-row" key={s.id}>
                   <span>
                     <i style={{ background: s.colour }} />
-                    {s.label}
+                    {tx(s.label)}
                   </span>
                   <strong>{fmt(estimate.networkLengthsM[s.id])} m</strong>
                 </div>
@@ -1332,7 +1317,7 @@ function CityWorkbench({ onClose }: { onClose: () => void }) {
               </p>
             </section>
             <section className="city-card">
-              <h2>Design review</h2>
+              <h2>{t("Design review")}</h2>
               {estimate.quantityIncompleteReasons.length > 0 && (
                 <ul className="city-error">
                   {estimate.quantityIncompleteReasons.map((w, i) => (

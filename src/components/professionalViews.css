@@ -1,0 +1,19 @@
+/* Keep project/preferences reachable without covering the 2D/3D switch. */
+.designer-app .house-header .house-project-actions .house-project-hub,
+.designer-app .house-header .house-project-actions .plan-import-trigger {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px; font-size: 12px; white-space: nowrap;
+}
+@media (max-width: 767px) {
+  .designer-app .house-header .house-project-actions { flex: 0 0 auto; gap: 4px; }
+  .designer-app .house-header .house-view-switch { width: auto; gap: 3px; flex: 0 0 auto; }
+  .designer-app .house-header .house-view-switch button { min-width: 32px; padding-inline: 8px; gap: 0; }
+  .designer-app .house-header .house-view-switch button > svg { display: none; }
+  .designer-app .house-header .locale-theme-controls > summary { width: 36px; min-width: 36px; padding: 7px; justify-content: center; }
+  .designer-app .house-header .locale-theme-controls > summary > span { display: none; }
+}
+@media (max-width: 359px) {
+  .designer-app .house-header { height: auto; min-height: 88px; flex-wrap: wrap; gap: 3px; padding-block: 4px; }
+  .designer-app .house-header .house-view-switch { margin-inline: auto; }
+  .designer-app .house-header .house-project-actions { flex-basis: 100%; justify-content: center; margin: 0; }
+}

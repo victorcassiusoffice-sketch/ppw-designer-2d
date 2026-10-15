@@ -29,10 +29,10 @@ const submit = () => act(async () => { host.querySelector('form')!.dispatchEvent
 describe('AI and business presentation', () => {
   it.each([DeveloperPitchPage, MerchantPitchPage])('offers actual screenshots, the working AI demo, merchant setup and meeting/feedback routes', (Page) => {
     act(() => root.render(<Page />)); click('Explore AI automation');
-    expect(host.querySelector('img')?.getAttribute('src')).toBe('/showcase/designer-ai.png');
+    expect(host.querySelector('.pitch-ai-capture img')?.getAttribute('src')).toBe('/showcase/designer-ai.png');
     expect(host.querySelector('h2')?.textContent).toBe('Less repetition. More considered decisions.');
     click('2D plan');
-    expect(host.querySelector('img')?.getAttribute('src')).toBe('/showcase/designer-plan.webp');
+    expect(host.querySelector('.pitch-ai-capture img')?.getAttribute('src')).toBe('/showcase/designer-plan.webp');
     click('Premium 3D');
     expect(host.textContent).toContain('Guided drafts work locally');
     expect(host.textContent).toContain('AI drafting needs sign-in and a configured provider');

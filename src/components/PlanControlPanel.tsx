@@ -1,8 +1,18 @@
 import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
+import { useAppPreferences } from '../i18n/AppPreferences';
 
 /** A small option panel occupies header space, never a floating part of the drawing. */
-export function PlanControlPanel({ open, title, id, anchor, target, onClose, children, keepMounted = false }: {
+export function PlanControlPanel({
+  open,
+  title,
+  id,
+  anchor,
+  target,
+  onClose,
+  children,
+  keepMounted = false,
+}: {
   open: boolean;
   title: string;
   id: string;
@@ -12,16 +22,22 @@ export function PlanControlPanel({ open, title, id, anchor, target, onClose, chi
   children: ReactNode;
   keepMounted?: boolean;
 }) {
+  const { t, tx } = useAppPreferences();
   const panel = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
     const openedPanel = panel.current;
     const opener = anchor.current;
     openedPanel?.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true });
-    const close = () => { onClose(); anchor.current?.focus({ preventScroll: true }); };
+    const close = () => {
+      onClose();
+      anchor.current?.focus({ preventScroll: true });
+    };
     const key = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
-      event.preventDefault(); event.stopPropagation(); close();
+      event.preventDefault();
+      event.stopPropagation();
+      close();
     };
     const away = (event: PointerEvent) => {
       const element = event.target instanceof Element ? event.target : null;
@@ -29,20 +45,47 @@ export function PlanControlPanel({ open, title, id, anchor, target, onClose, chi
       if (element.closest('[data-ppw-popover], [data-ppw-sheet], [aria-modal="true"]')) return;
       onClose();
       // The first tap dismisses options; it cannot also draw or place an item.
-      if (element.closest('[data-testid="plan-workspace"], [data-testid="plan-drawing-viewport"]')) {
-        event.preventDefault(); event.stopPropagation();
+      if (
+        element.closest('[data-testid="plan-workspace"], [data-testid="plan-drawing-viewport"]')
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
       }
     };
     document.addEventListener('keydown', key, true);
     document.addEventListener('pointerdown', away, true);
     return () => {
-      document.removeEventListener('keydown', key, true); document.removeEventListener('pointerdown', away, true);
+      document.removeEventListener('keydown', key, true);
+      document.removeEventListener('pointerdown', away, true);
       if (openedPanel?.contains(document.activeElement)) opener?.focus({ preventScroll: true });
     };
   }, [anchor, onClose, open]);
   if (!target || (!open && !keepMounted)) return null;
-  return createPortal(<div ref={panel} id={id} role="region" aria-label={title} hidden={!open} className="plan-control-panel" data-plan-control-panel="">
-    <div className="plan-control-panel-heading"><strong>{title}</strong><button type="button" aria-label={`Close ${title.toLowerCase()}`} onClick={() => { onClose(); anchor.current?.focus({ preventScroll: true }); }}>Close <span aria-hidden="true">×</span></button></div>
-    <div className="plan-control-panel-content">{children}</div>
-  </div>, target);
+  return createPortal(
+    <div
+      ref={panel}
+      id={id}
+      role="region"
+      aria-label={tx(title)}
+      hidden={!open}
+      className="plan-control-panel"
+      data-plan-control-panel=""
+    >
+      <div className="plan-control-panel-heading">
+        <strong>{tx(title)}</strong>
+        <button
+          type="button"
+          aria-label={t('closeTitle', { title: tx(title).toLowerCase() })}
+          onClick={() => {
+            onClose();
+            anchor.current?.focus({ preventScroll: true });
+          }}
+        >
+          {t('Close')} <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div className="plan-control-panel-content">{children}</div>
+    </div>,
+    target,
+  );
 }

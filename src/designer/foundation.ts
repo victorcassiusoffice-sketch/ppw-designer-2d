@@ -287,6 +287,9 @@ export function estimateFoundation(
   const warnings: string[] = [];
   const rebar: { elementId: string; takeoff: RebarTakeoff }[] = [];
   const reinforced = filled.filter((e) => e.rebar.enabled);
+  const missingLaps = reinforced.filter(e => e.rebar.lapLengthM === 0 &&
+    Math.max(e.lengthM, e.widthM) - 2 * e.rebar.coverMm / 1000 > e.rebar.stockLengthM + 1e-8);
+  if (missingLaps.length) warnings.push('Steel runs exceed stock length but lap allowance is zero. Affected reinforcement quantities are withheld until an engineer-specified lap or cut-to-length supply is entered.');
   if (!concreteComplete)
     warnings.push(
       'Excavation preview: planned concrete and its reinforcement are not yet included in the filled-design takeoff. Use Add concrete when the design is ready. This is not a record of site completion.',
@@ -303,7 +306,7 @@ export function estimateFoundation(
       'Reinforced elements overlap. Reinforcement totals are withheld until the engineer separates the schedules; concrete overlap is still counted once.',
     );
   else
-    for (const element of reinforced)
+    for (const element of reinforced.filter(e => !missingLaps.includes(e)))
       rebar.push({
         elementId: element.id,
         takeoff: estimateRebar(element.lengthM, element.widthM, element.rebar),
@@ -328,7 +331,7 @@ export function estimateFoundation(
     concreteOrderM3: mixed.wetM3,
     mix: concrete.supply === 'site-mix' ? mixed : null,
     rebar,
-    rebarComplete: !overlappingSteel,
+    rebarComplete: !overlappingSteel && missingLaps.length === 0,
     rebarMassKg: rebar.reduce((sum, r) => sum + r.takeoff.massKg, 0),
     rebarStockBars: rebar.reduce((sum, r) => sum + r.takeoff.bars, 0),
     warnings,

@@ -137,6 +137,7 @@ import {
 } from '../designer/levels';
 import { floorTargetRoom } from '../designer/floorTarget';
 import { gardenPoints } from '../designer/garden';
+import { EcoTreesLayer } from './EcoTreesLayer';
 import { GardenLayer } from './GardenLayer';
 import { GardenDrawLayer } from './GardenDrawLayer';
 import { useGardenEditorStore } from '../store/gardenEditorStore';
@@ -529,6 +530,7 @@ export function RoomCanvas({
   const propertyActiveLevelId = usePropertyStore((s) => s.property.activeLevelId);
   const propertyWalls = usePropertyStore((s) => s.property.walls);
   const propertyGarden = usePropertyStore((s) => s.property.garden);
+  const ecoTrees = usePropertyStore((s) => s.property.eco?.trees);
   const gardenPlacement = useGardenEditorStore((s) => s.placement);
   const site = usePropertyStore((s) => s.property.site ?? null);
   const levels = useMemo(() => levelsOf({ levels: propertyLevels }), [propertyLevels]);
@@ -968,7 +970,11 @@ export function RoomCanvas({
           }
         : b;
     }
-    for (const point of gardenPoints(garden)) {
+    const crownPoints = activeLevelId === GROUND_LEVEL_ID ? (ecoTrees ?? []).flatMap(tree => [
+      { x: tree.x - tree.canopyRadiusM, y: tree.y - tree.canopyRadiusM },
+      { x: tree.x + tree.canopyRadiusM, y: tree.y + tree.canopyRadiusM },
+    ]) : [];
+    for (const point of [...gardenPoints(garden), ...crownPoints]) {
       u = u ? {
         minX: Math.min(u.minX, point.x), minY: Math.min(u.minY, point.y),
         maxX: Math.max(u.maxX, point.x), maxY: Math.max(u.maxY, point.y),
@@ -978,7 +984,7 @@ export function RoomCanvas({
     if (u && u.maxX - u.minX < 1) u = { ...u, maxX: u.minX + 1 };
     if (u && u.maxY - u.minY < 1) u = { ...u, maxY: u.minY + 1 };
     return u;
-  }, [sitePolygon, drawnRooms, freeWalls, garden]);
+  }, [sitePolygon, drawnRooms, freeWalls, garden, ecoTrees, activeLevelId]);
   const unionWpx = union ? (union.maxX - union.minX) * pxPerMetre : 0;
   const unionHpx = union ? (union.maxY - union.minY) * pxPerMetre : 0;
   // Area readout stays the ACTIVE room's — it pairs with the TopBar L/W
@@ -4397,6 +4403,7 @@ export function RoomCanvas({
           )}
 
           <GardenLayer garden={garden} pxPerMetre={pxPerMetre} scale={viewport.scale} interactive={tool === 'hand' && !drawMode && !wallDrawEnabled && !pendingProductId && !gardenPlacement} />
+          {activeLevelId === GROUND_LEVEL_ID && <EcoTreesLayer trees={ecoTrees} pxPerMetre={pxPerMetre} scale={viewport.scale} />}
 
           {/* STOREY BELOW (Sims world) — the floor underneath as a faint
               outline, so an upper floor can be drawn to line up with the

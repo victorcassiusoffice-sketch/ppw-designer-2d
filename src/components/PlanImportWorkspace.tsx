@@ -71,12 +71,14 @@ export function PlanImportWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void
     window.addEventListener('ppw:open-plan-import', show);
     window.addEventListener('ppw:open-services', close);
     window.addEventListener('ppw:open-city', close);
+    window.addEventListener('olb:open-project', close);
     window.addEventListener('ppw:open-ai-design', close);
     if (new URLSearchParams(window.location.search).get('panel') === 'import') show();
     return () => {
       window.removeEventListener('ppw:open-plan-import', show);
       window.removeEventListener('ppw:open-services', close);
       window.removeEventListener('ppw:open-city', close);
+      window.removeEventListener('olb:open-project', close);
       window.removeEventListener('ppw:open-ai-design', close);
     };
   }, []);

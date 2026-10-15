@@ -1,3 +1,5 @@
+import { useAppPreferences } from '../../i18n/AppPreferences';
+import { LocaleThemeControls } from '../../components/LocaleThemeControls';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { isShowcaseReadOnly } from '../../lib/showcaseSafety';
@@ -5,77 +7,209 @@ import { EmbeddedDesigner } from '../../demo/EmbeddedDesigner';
 import './studio.css';
 import './studio.olb.generated.css';
 import './studio.olb.css';
-import { currentBrand } from '../../brand/brand';
 import { OlbLockup } from '../../brand/OlbLockup';
 
 import { MEETING_URL } from '../pitch/workflowModel';
 
 function StudioHeader({ active }: { active?: 'design' | 'shop' | 'merchants' }) {
-  return <header className="studio-header">
-    {currentBrand() === 'olb' ? <a href="/" className="studio-brand" aria-label="One Live Build home"><OlbLockup height={30} /></a> : <a href="/studio" className="studio-brand"><span aria-hidden="true">P<span>·</span></span><strong>PPW <small>STUDIO</small></strong></a>}
-    <nav aria-label="Studio navigation">
-      <a href="/studio/designer" aria-current={active === 'design' ? 'page' : undefined}>Designer</a>
-      <a href="/studio/shop" aria-current={active === 'shop' ? 'page' : undefined}>Shop</a>
-      <a href="/studio/merchants" aria-current={active === 'merchants' ? 'page' : undefined}>Merchants</a>
-    </nav>
-    <a className="studio-meeting" href={MEETING_URL} target="_blank" rel="noreferrer">Meet Victor ↗</a>
-  </header>;
+  const { t } = useAppPreferences();
+  return (
+    <header className="studio-header">
+      <a href="/studio" className="studio-brand" aria-label="One Live Build home">
+        <OlbLockup height={30} />
+      </a>
+      <nav aria-label={t('Studio navigation')}>
+        <a href="/studio/designer" aria-current={active === 'design' ? 'page' : undefined}>
+          {t('Designer')}
+        </a>
+        <a href="/studio/shop" aria-current={active === 'shop' ? 'page' : undefined}>
+          {t('Shop')}
+        </a>
+        <a href="/studio/merchants" aria-current={active === 'merchants' ? 'page' : undefined}>
+          {t('Merchants')}
+        </a>
+      </nav>
+      <LocaleThemeControls />
+      <a className="studio-meeting" href={MEETING_URL} target="_blank" rel="noreferrer">
+        {t('Meet Victor')} ↗
+      </a>
+    </header>
+  );
 }
 
 export default function StudioPage() {
+  const { t } = useAppPreferences();
   const [mode, setMode] = useState<'2d' | '3d'>('3d');
   // Preserve the read-only session when someone follows a Shop link.
   isShowcaseReadOnly();
-  useEffect(() => { document.title = `${currentBrand() === 'olb' ? 'One Live Build' : 'PPW Studio'} · Design, discover, connect`; }, []);
-  return <main className="studio-page">
-    <StudioHeader />
-    <div className="studio-home">
-      <section className="studio-hero">
-        <div className="studio-hero-copy">
-          <p className="studio-eyebrow">YOUR SPACE. EVERY POSSIBILITY.</p>
-          <h1>From a floor plan<br />to a place to live.</h1>
-          <p className="studio-intro">Start from a measured guided draft or the AI workspace, refine the same home in 2D and Premium 3D, then review real products, materials and energy estimates.</p>
-          <div className="studio-mode" role="group" aria-label="Choose designer view">
-            <button type="button" aria-pressed={mode === '2d'} onClick={() => setMode('2d')}><span aria-hidden="true">▦</span><strong>2D</strong><small>Plan with precision</small></button>
-            <button type="button" aria-pressed={mode === '3d'} onClick={() => setMode('3d')}><span aria-hidden="true">◇</span><strong>Premium 3D</strong><small>Explore every angle</small></button>
+  useEffect(() => {
+    document.title = `One Live Build · Design, discover, connect`;
+  }, []);
+  return (
+    <main className="studio-page">
+      <StudioHeader />
+      <div className="studio-home">
+        <section className="studio-hero">
+          <div className="studio-hero-copy">
+            <p className="studio-eyebrow">YOUR SPACE. EVERY POSSIBILITY.</p>
+            <h1>
+              From a floor plan
+              <br />
+              to a place to live.
+            </h1>
+            <p className="studio-intro">
+              Start from a measured guided draft or the AI workspace, refine the same home in 2D and
+              Premium 3D, then review real products, materials and energy estimates.
+            </p>
+            <div className="studio-mode" role="group" aria-label={t('Choose designer view')}>
+              <button type="button" aria-pressed={mode === '2d'} onClick={() => setMode('2d')}>
+                <span aria-hidden="true">▦</span>
+                <strong>2D</strong>
+                <small>{t('Plan with precision')}</small>
+              </button>
+              <button type="button" aria-pressed={mode === '3d'} onClick={() => setMode('3d')}>
+                <span aria-hidden="true">◇</span>
+                <strong>{t('Premium 3D')}</strong>
+                <small>{t('Explore every angle')}</small>
+              </button>
+            </div>
+            <Link className="studio-primary" to={`/studio/designer?view=${mode}`}>
+              Open {mode === '3d' ? t('Premium 3D') : '2D designer'}{' '}
+              <span aria-hidden="true">→</span>
+            </Link>
+            <p className="studio-fine">
+              Both views are included in this read-only demo. Your changes stay on this device. No
+              orders, purchases or payments. AI generation needs sign-in and a configured provider.
+            </p>
+            <Link to="/demo?view=3d&panel=ai">{t('Open guided design & AI workspace ↗')}</Link>
+            <Link to="/studio/sales">{t('Employee starter pack & sector demos ↗')}</Link>
           </div>
-          <Link className="studio-primary" to={`/studio/designer?view=${mode}`}>Open {mode === '3d' ? 'Premium 3D' : '2D designer'} <span aria-hidden="true">→</span></Link>
-          <p className="studio-fine">Both views are included in this read-only demo. Your changes stay on this device. No orders, purchases or payments. AI generation needs sign-in and a configured provider.</p>
-          <Link to="/demo?view=3d&panel=ai">Open guided design & AI workspace ↗</Link>
-          <Link to="/studio/sales">Employee starter pack & sector demos ↗</Link>
-        </div>
-        <figure className="studio-hero-art"><img src="/showcase/developer-vision.webp" alt="Architectural concept of an apartment with a plan, furnishings and material samples" /><figcaption>THE CONNECTED HOME · CONCEPT ART</figcaption></figure>
-      </section>
-      <section className="studio-paths" aria-label="Explore Studio">
-        <Link to="/studio/shop"><span className="studio-path-icon" aria-hidden="true">▤</span><div><small>DISCOVER</small><h2>The Shop</h2><p>Browse the connected merchant catalogue.</p></div><span aria-hidden="true">↗</span></Link>
-        <Link to="/pitch/developers"><span className="studio-path-icon" aria-hidden="true">⌂</span><div><small>FOR DEVELOPERS</small><h2>Every apartment. One plan.</h2><p>Explore the client-to-delivery workflow.</p></div><span aria-hidden="true">↗</span></Link>
-        <Link to="/pitch/merchants"><span className="studio-path-icon" aria-hidden="true">◇</span><div><small>FOR MERCHANTS</small><h2>Your products. In their home.</h2><p>See the website and partner experience.</p></div><span aria-hidden="true">↗</span></Link>
-      </section>
-      <footer className="studio-home-footer"><span><i /> Interactive design & catalogue preview</span><Link to="/demo">Designer-only Demo ↗</Link><span>Built with Victor Cassius Bhatoolaul · Mauritius</span></footer>
-    </div>
-  </main>;
+          <figure className="studio-hero-art">
+            <img
+              src="/showcase/developer-vision.webp"
+              alt="Architectural concept of an apartment with a plan, furnishings and material samples"
+            />
+            <figcaption>THE CONNECTED HOME · CONCEPT ART</figcaption>
+          </figure>
+        </section>
+        <section className="studio-paths" aria-label="Explore Studio">
+          <Link to="/studio/shop">
+            <span className="studio-path-icon" aria-hidden="true">
+              ▤
+            </span>
+            <div>
+              <small>DISCOVER</small>
+              <h2>The Shop</h2>
+              <p>Browse the connected merchant catalogue.</p>
+            </div>
+            <span aria-hidden="true">↗</span>
+          </Link>
+          <Link to="/pitch/developers">
+            <span className="studio-path-icon" aria-hidden="true">
+              ⌂
+            </span>
+            <div>
+              <small>FOR DEVELOPERS</small>
+              <h2>Every apartment. One plan.</h2>
+              <p>Explore the client-to-delivery workflow.</p>
+            </div>
+            <span aria-hidden="true">↗</span>
+          </Link>
+          <Link to="/pitch/merchants">
+            <span className="studio-path-icon" aria-hidden="true">
+              ◇
+            </span>
+            <div>
+              <small>FOR MERCHANTS</small>
+              <h2>Your products. In their home.</h2>
+              <p>See the website and partner experience.</p>
+            </div>
+            <span aria-hidden="true">↗</span>
+          </Link>
+        </section>
+        <footer className="studio-home-footer">
+          <span>
+            <i /> Interactive design & catalogue preview
+          </span>
+          <Link to="/demo">{t('Designer-only Demo ↗')}</Link>
+          <span>Built with Victor Cassius Bhatoolaul · Mauritius</span>
+        </footer>
+      </div>
+    </main>
+  );
 }
 
 export function StudioDesignerPage() {
+  const { t } = useAppPreferences();
   const [params, setParams] = useSearchParams();
   const mode = params.get('view') === '2d' ? '2d' : '3d';
   isShowcaseReadOnly();
-  return <main className="studio-page studio-workspace">
-    <header className="studio-designer-toolbar" data-testid="studio-designer-toolbar">
-      <a href="/studio" className="studio-designer-brand" title="Back to Studio">{currentBrand() === 'olb' ? <strong>One Live Build</strong> : <><strong>PPW</strong><span>Studio</span></>}</a>
-      <nav aria-label="Studio navigation"><a href="/studio/shop">Shop</a><a href="/studio/merchants">Merchants</a></nav>
-      <div className="studio-view-toggle" role="group" aria-label="Designer view"><button type="button" aria-pressed={mode === '2d'} onClick={() => setParams({ view: '2d' })}>2D</button><button type="button" aria-pressed={mode === '3d'} onClick={() => setParams({ view: '3d' })}>Premium 3D</button></div>
-      <span className="studio-designer-status">Demo · saved locally</span>
-      <Link className="studio-designer-expand" to={`/demo?view=${mode}`} target="_blank" rel="noreferrer" aria-label="Open designer alone in a new tab">Expand ↗</Link>
-    </header>
-    <EmbeddedDesigner scene="home" view={mode} onViewChange={view => setParams({ view })} className="studio-designer-frame" title="Demo — interactive home designer" />
-  </main>;
+  return (
+    <main className="studio-page studio-workspace">
+      <header className="studio-designer-toolbar" data-testid="studio-designer-toolbar">
+        <a href="/studio" className="studio-designer-brand" title={t('Back to Studio')}>
+          <strong>One Live Build</strong>
+        </a>
+        <nav aria-label={t('Studio navigation')}>
+          <a href="/studio/shop">{t('Shop')}</a>
+          <a href="/studio/merchants">{t('Merchants')}</a>
+        </nav>
+        <div className="studio-view-toggle" role="group" aria-label={t('Designer view')}>
+          <button
+            type="button"
+            aria-pressed={mode === '2d'}
+            onClick={() => setParams({ view: '2d' })}
+          >
+            2D
+          </button>
+          <button
+            type="button"
+            aria-pressed={mode === '3d'}
+            onClick={() => setParams({ view: '3d' })}
+          >
+            {t('Premium 3D')}
+          </button>
+        </div>
+        <span className="studio-designer-status">{t('Demo · saved locally')}</span>
+        <LocaleThemeControls />
+        <Link
+          className="studio-designer-expand"
+          to={`/demo?view=${mode}`}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={t('Open designer alone in a new tab')}
+        >
+          {t('Expand ↗')}
+        </Link>
+      </header>
+      <EmbeddedDesigner
+        scene="home"
+        view={mode}
+        onViewChange={(view) => setParams({ view })}
+        className="studio-designer-frame"
+        title="Demo — interactive home designer"
+      />
+    </main>
+  );
 }
 
 /** Real catalogue and cart routes stay connected to their existing backend. */
 export function StudioShopFrame({ children }: { children: ReactNode }) {
+  const { t } = useAppPreferences();
   isShowcaseReadOnly();
-  return <div className="studio-page studio-shop"><StudioHeader active="shop" /><div className="studio-shop-notice"><span><strong>Shop preview</strong> Browse products and build an estimate. Ordering and payments are disabled.</span><Link to="/studio/designer">Back to your design →</Link></div>{children}</div>;
+  return (
+    <div className="studio-page studio-shop">
+      <StudioHeader active="shop" />
+      <div className="studio-shop-notice">
+        <span>
+          <strong>{t('Shop preview')}</strong> Browse products and build an estimate. Ordering and
+          payments are disabled.
+        </span>
+        <Link to="/studio/designer">{t('Back to your design →')}</Link>
+      </div>
+      {children}
+    </div>
+  );
 }
 
 export function PreviewShopRoute({ children }: { children: ReactNode }) {
@@ -83,21 +217,111 @@ export function PreviewShopRoute({ children }: { children: ReactNode }) {
 }
 
 export function StudioMerchantsPage() {
+  const { t } = useAppPreferences();
   const [slug, setSlug] = useState('');
   const validSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
   isShowcaseReadOnly();
-  return <main className="studio-page"><StudioHeader active="merchants" /><section className="studio-merchant-main">
-    <div><p className="studio-eyebrow">THE PEOPLE BEHIND THE PRODUCTS</p><h1>Keep your catalogue<br />connected.</h1><p className="studio-intro">Prepare JSON or CSV products, check dimensions and prices, then publish through your merchant account. Get embed code and an MCP connection address for your AI client.</p><Link className="studio-primary" to="/studio/merchants/connect">Prepare a catalogue connection →</Link><p className="studio-fine">New merchant? <Link to="/suppliers">Apply to join ↗</Link> · <a href={MEETING_URL} target="_blank" rel="noreferrer">Plan your integration with Victor ↗</a></p></div>
-    <div className="studio-merchant-card"><span className="studio-card-kicker">EXISTING MERCHANTS</span><h2>Open your workspace</h2><p>Enter your assigned merchant identifier. Your normal merchant sign-in and permissions still apply.</p><label htmlFor="studio-merchant-slug">Merchant identifier</label><input id="studio-merchant-slug" value={slug} onChange={(event) => setSlug(event.target.value.toLowerCase().trim())} autoComplete="off" placeholder="your-company" aria-describedby="studio-merchant-hint" /><small id="studio-merchant-hint">Lowercase letters, numbers and single hyphens.</small>
-      {validSlug ? <Link className="studio-primary" to={`/merchant/${slug}`}>Continue to secure workspace →</Link> : <button className="studio-primary" disabled>Continue to secure workspace →</button>}
-      <div className="studio-merchant-admin"><Link to="/admin/products">Platform administration ↗</Link><span>Authorized staff only</span></div>
-    </div>
-    <aside className="studio-merchant-info"><strong>Make it yours.</strong><span>Custom products, supplier-approved models, embedded design and collaboration can be configured for your business. Scheduling, automatic order release and finance need an agreed integration.</span><Link to="/pitch/merchants">See the merchant presentation →</Link></aside>
-  </section></main>;
+  return (
+    <main className="studio-page">
+      <StudioHeader active="merchants" />
+      <section className="studio-merchant-main">
+        <div>
+          <p className="studio-eyebrow">THE PEOPLE BEHIND THE PRODUCTS</p>
+          <h1>
+            Keep your catalogue
+            <br />
+            connected.
+          </h1>
+          <p className="studio-intro">
+            Prepare JSON or CSV products, check dimensions and prices, then publish through your
+            merchant account. Get embed code and an MCP connection address for your AI client.
+          </p>
+          <Link className="studio-primary" to="/studio/merchants/connect">
+            {t('Prepare a catalogue connection →')}
+          </Link>
+          <p className="studio-fine">
+            New merchant? <Link to="/suppliers">Apply to join ↗</Link> ·{' '}
+            <a href={MEETING_URL} target="_blank" rel="noreferrer">
+              Plan your integration with Victor ↗
+            </a>
+          </p>
+        </div>
+        <div className="studio-merchant-card">
+          <span className="studio-card-kicker">EXISTING MERCHANTS</span>
+          <h2>{t('Open your workspace')}</h2>
+          <p>
+            Enter your assigned merchant identifier. Your normal merchant sign-in and permissions
+            still apply.
+          </p>
+          <label htmlFor="studio-merchant-slug">{t('Merchant identifier')}</label>
+          <input
+            id="studio-merchant-slug"
+            value={slug}
+            onChange={(event) => setSlug(event.target.value.toLowerCase().trim())}
+            autoComplete="off"
+            placeholder="your-company"
+            aria-describedby="studio-merchant-hint"
+          />
+          <small id="studio-merchant-hint">Lowercase letters, numbers and single hyphens.</small>
+          {validSlug ? (
+            <Link className="studio-primary" to={`/merchant/${slug}`}>
+              {t('Continue to secure workspace →')}
+            </Link>
+          ) : (
+            <button className="studio-primary" disabled>
+              {t('Continue to secure workspace →')}
+            </button>
+          )}
+          <div className="studio-merchant-admin">
+            <Link to="/admin/products">{t('Platform administration ↗')}</Link>
+            <span>{t('Authorized staff only')}</span>
+          </div>
+        </div>
+        <aside className="studio-merchant-info">
+          <strong>Make it yours.</strong>
+          <span>
+            Custom products, supplier-approved models, embedded design and collaboration can be
+            configured for your business. Scheduling, automatic order release and finance need an
+            agreed integration.
+          </span>
+          <Link to="/pitch/merchants">See the merchant presentation →</Link>
+        </aside>
+      </section>
+    </main>
+  );
 }
 
 /** Never mount a payment page during a demo, even after direct navigation. */
 export function ShowcaseCheckoutGuard({ children }: { children: ReactNode }) {
+  const { t } = useAppPreferences();
   if (!isShowcaseReadOnly()) return <>{children}</>;
-  return <main className="studio-page"><StudioHeader /><section className="studio-checkout-message"><span className="studio-checkout-icon" aria-hidden="true">▤</span><p className="studio-eyebrow">YOU ARE IN THE DEMO</p><h1>Explore freely.<br />No orders are placed.</h1><p>Your design and product selections are available to review. Payments, order submission and quote emails are disabled in this preview.</p><div><Link className="studio-primary" to="/studio/designer">Back to Designer →</Link><Link to="/studio/shop">Browse the Shop</Link></div><a href={MEETING_URL} target="_blank" rel="noreferrer">Discuss a live merchant connection with Victor ↗</a></section></main>;
+  return (
+    <main className="studio-page">
+      <StudioHeader />
+      <section className="studio-checkout-message">
+        <span className="studio-checkout-icon" aria-hidden="true">
+          ▤
+        </span>
+        <p className="studio-eyebrow">YOU ARE IN THE DEMO</p>
+        <h1>
+          Explore freely.
+          <br />
+          No orders are placed.
+        </h1>
+        <p>
+          Your design and product selections are available to review. Payments, order submission and
+          quote emails are disabled in this preview.
+        </p>
+        <div>
+          <Link className="studio-primary" to="/studio/designer">
+            {t('Back to Designer →')}
+          </Link>
+          <Link to="/studio/shop">{t('Browse the Shop')}</Link>
+        </div>
+        <a href={MEETING_URL} target="_blank" rel="noreferrer">
+          Discuss a live merchant connection with Victor ↗
+        </a>
+      </section>
+    </main>
+  );
 }

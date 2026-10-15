@@ -21,6 +21,9 @@ import { isShowcaseReadOnly, DEMO_NOTICE } from '../lib/showcaseSafety';
 import { DOOR_WIDTHS_M } from '../designer/openings';
 import { StudioIcon, type StudioIconName } from './StudioIcon';
 import './houseWorkspace.css';
+import { useAppPreferences } from '../i18n/AppPreferences';
+import { LocaleThemeControls } from './LocaleThemeControls';
+import './professionalViews.css';
 
 export type HouseMode = 'build' | 'furnish' | 'paint' | 'floor' | 'garden' | 'energy' | 'materials';
 const MODES: Array<[HouseMode, string, StudioIconName]> = [
@@ -44,6 +47,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
   buildTool?: BuildingControlsProps['tool']; onBuildTool?: BuildingControlsProps['onToolChange']; onFloorAdded?: () => void;
 }) {
   const cart = useCart();
+  const { t, tx } = useAppPreferences();
   const readOnly = isShowcaseReadOnly();
   const currency = useCurrencyStore((s) => s.currency);
   const precision = useDesignerUIStore((s) => s.precision);
@@ -124,9 +128,11 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
   }
   return <div className="house-workspace" data-build-open={buildPaletteOpen}>
     <header className="house-header">
-      <div className="house-brand" aria-label="PPW House Studio"><span className="house-mark"><StudioIcon name="room" /></span><div><strong>{readOnly ? 'DEMO' : 'HOUSE STUDIO'}</strong><span title={readOnly ? DEMO_NOTICE : name}>{readOnly ? 'Preview · no orders' : name}</span></div></div>
+      <div className="house-brand" aria-label="One Live Build"><span className="house-mark"><StudioIcon name="room" /></span><div><strong>{readOnly ? tx('Demo') : 'One Live Build'}</strong><span title={readOnly ? DEMO_NOTICE : name}>{readOnly ? tx('Preview · no orders') : name}</span></div></div>
       <div className="house-view-switch" aria-label="Design view"><button onClick={onPlan} aria-label="2D Plan"><StudioIcon name="box" size={18} /><span>2D <span className="studio-view-word">Plan</span></span></button><button aria-label="3D House" aria-pressed="true"><StudioIcon name="cube" size={18} /><span>3D <span className="studio-view-word">House</span></span></button></div>
       <div className="house-project-actions">
+        <button type="button" className="house-project-hub" aria-label={t('projectHub')} title={t('projectHub')} onClick={() => window.dispatchEvent(new Event('olb:open-project'))}><StudioIcon name="room" size={18} /><span className="studio-view-word">{t('projectHub')}</span></button>
+        <LocaleThemeControls compact />
         <AiDesignButton onBeforeOpen={onSelect} />
         <PlanImportButton onBeforeOpen={onSelect} />
         <ClearControls inline />
@@ -142,8 +148,8 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
         <FoundationLaunchButton onBeforeOpen={onSelect} />
         <CityLaunchButton compact onBeforeOpen={onSelect} />
         {property.foundation?.enabled && <button type="button" aria-label="Foundation cutaway" aria-pressed={foundationView} onClick={() => useDesignerUIStore.getState().setFoundationView(!foundationView)}><StudioIcon name="storeys" /><span>{foundationView ? 'Restore ground' : 'Below ground'}</span></button>}
-        {MODES.map(([id, label, icon]) => <button key={id} type="button" aria-pressed={mode === id} title={label} onClick={() => { setCostOpen(false); const nextOpen = id === 'garden' || id === 'energy' || id === 'materials'; onMode(id); setBuildPaletteOpen(id === 'build' && !(buildPaletteOpen && mode === 'build')); setMobileInspector(nextOpen && !(mobileInspector && mode === id)); window.dispatchEvent(new CustomEvent('ppw:close-view-settings')); }} data-testid={`house-mode-${id}`}>
-          <StudioIcon name={icon} /><span>{label}</span>
+        {MODES.map(([id, label, icon]) => <button key={id} type="button" aria-pressed={mode === id} title={tx(label)} onClick={() => { setCostOpen(false); const nextOpen = id === 'garden' || id === 'energy' || id === 'materials'; onMode(id); setBuildPaletteOpen(id === 'build' && !(buildPaletteOpen && mode === 'build')); setMobileInspector(nextOpen && !(mobileInspector && mode === id)); window.dispatchEvent(new CustomEvent('ppw:close-view-settings')); }} data-testid={`house-mode-${id}`}>
+          <StudioIcon name={icon} /><span>{tx(label)}</span>
         </button>)}
       </nav>
       <div className="house-scene-column">

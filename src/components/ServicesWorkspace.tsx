@@ -96,6 +96,7 @@ export function ServicesWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }
     window.addEventListener('ppw:open-ai-design', close);
     window.addEventListener('ppw:open-foundation', close);
     window.addEventListener('ppw:open-city', close);
+    window.addEventListener('olb:open-project', close);
     if (new URLSearchParams(location.search).get('panel') === 'services') show();
     return () => {
       unsubscribe();
@@ -105,6 +106,7 @@ export function ServicesWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }
       window.removeEventListener('ppw:open-ai-design', close);
       window.removeEventListener('ppw:open-foundation', close);
       window.removeEventListener('ppw:open-city', close);
+      window.removeEventListener('olb:open-project', close);
     };
   }, []);
   return open

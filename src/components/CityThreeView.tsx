@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useAppPreferences } from '../i18n/AppPreferences';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import {
@@ -313,6 +314,7 @@ function fitScene(runtime: CityScene, model: CityModel) {
 }
 
 export default function CityThreeView({ model, selectedId = null, onSelect, fitNonce, showUtilities }: CityThreeViewProps) {
+  const { t } = useAppPreferences();
   const hostRef = useRef<HTMLDivElement>(null);
   const runtimeRef = useRef<CityScene | null>(null);
   const modelRef = useRef(model);
@@ -485,11 +487,11 @@ export default function CityThreeView({ model, selectedId = null, onSelect, fitN
   return <div className="city-three-view" data-testid="city-three-view">
     <div className="city-three-view__stage" ref={hostRef} />
     {unavailable ? <div className="city-three-view__fallback" role="status">
-      <strong>3D is unavailable on this device</strong>
-      <span>Switch to 2D to continue editing the same city plan and measurements.</span>
+      <strong>{t('3D is unavailable on this device')}</strong>
+      <span>{t('Switch to 2D to continue editing the same city plan and measurements.')}</span>
     </div> : <>
-      <div className="city-three-view__label">Measured 3D planning envelopes{showUtilities && <span>Underground routes revealed</span>}</div>
-      <div className="city-three-view__help">Drag to orbit · Two fingers to pan · Pinch to zoom</div>
+      <div className="city-three-view__label">{t('Measured 3D planning envelopes')}{showUtilities && <span>{t('Underground routes revealed')}</span>}</div>
+      <div className="city-three-view__help">{t('Drag to orbit · Two fingers to pan · Pinch to zoom')}</div>
     </>}
   </div>;
 }

@@ -67,7 +67,8 @@ import { previewWallBuild, reconcileWallBuildChain, type WallBuildChain, type Wa
 import { commitWallBuild } from '../lib/wallBuildActions';
 import { BuildingControls } from './BuildingControls';
 import { useSmoothedCamera } from './useSmoothedCamera';
-import { cameraForViewport, panOrbitCamera, pinchOrbitCamera, type PinchSample } from '../designer/cameraMotion';
+import { cameraForViewport, type PinchSample } from '../designer/cameraMotion';
+import { cameraForProfessionalView, panProfessionalCamera, pinchProfessionalCamera, projectProfessionalPoint, PROFESSIONAL_VIEWS, type CameraProjection } from '../designer/professionalViews';
 import { GardenPanel } from './GardenPanel';
 import { gardenElementAt, gardenPoints, gardenRectFromPoints, gardenSurfacePolygon, isGardenAreaGesture, moveGardenFence, type GardenPlacement } from '../designer/garden';
 import { useGardenEditorStore } from '../store/gardenEditorStore';
@@ -96,10 +97,7 @@ import {
   boundsOf,
   buildScene,
   cameraPosition,
-  cameraBasis,
-  projectPoint,
   clampCamera,
-  DEFAULT_AZIMUTH_RAD,
   drawScene,
   fitCamera,
   hitTestWall,
@@ -440,6 +438,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const [size, setSize] = useState({ width: 0, height: 0 });
   const cameraViewportHeightRef = useRef(0);
   const [camera, setCamera] = useState<OrbitCamera | null>(null);
+  const [projection, setProjection] = useState<CameraProjection>('perspective');
+  const [cameraView, setCameraView] = useState<CameraView | ''>('dollhouse');
   const cameraPropertyId = useRef<string | null>(null);
   const displayedCamera = useSmoothedCamera(camera);
   const cameraViewportHeight = cameraViewportHeightRef.current;
@@ -603,6 +603,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     const rooms = (buildingView === 'building' ? property.rooms : roomsOnLevel(property.rooms, level)).filter((r) => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon));
     const walls = buildingView === 'building' ? property.walls ?? [] : wallsOnLevel(property.walls ?? [], level);
     const landscape = (buildingView === 'building' || level === 'ground') && property.garden ? gardenPoints(property.garden) : [];
+    if (buildingView === 'building' || level === 'ground') for (const tree of property.eco?.trees ?? []) landscape.push(
+      { x: tree.x - tree.canopyRadiusM, y: tree.y - tree.canopyRadiusM },
+      { x: tree.x + tree.canopyRadiusM, y: tree.y + tree.canopyRadiusM });
     const box = foundationBounds(visibleFoundation);
     const foundations = box ? [{ polygon: [{ x: box.minX, y: box.minY }, { x: box.maxX, y: box.maxY }] }] : [];
     return boundsOf([...rooms, ...foundations, ...(landscape.length ? [{ polygon: landscape }] : [])], walls);
@@ -640,7 +643,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     cameraPropertyId.current = property.id;
     cameraViewportHeightRef.current = size.height;
     baseDistanceRef.current = fitted.distanceM;
-    setCamera(fitted);
+    setCamera(cameraView ? cameraForProfessionalView(fitted, cameraView) : fitted);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [property.id, boundsKey, fitHeightM, fitBottomM, size.width, size.height]);
 
@@ -865,7 +868,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   }
 
   const zoomBy = useCallback((factor: number) => {
-    setCamera((c) => (c ? clampCamera({ ...c, distanceM: c.distanceM * factor }, baseDistanceRef.current * 0.18, baseDistanceRef.current * 3) : c));
+    // Zoom must not clamp a deliberate top/elevation angle back into orbit mode.
+    setCamera((c) => (c ? { ...c, distanceM: Math.min(baseDistanceRef.current * 3, Math.max(baseDistanceRef.current * 0.18, c.distanceM * factor)) } : c));
   }, []);
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -1128,7 +1132,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       const dist = Math.hypot(a.x - b.x, a.y - b.y);
       const midX = (a.x + b.x) / 2, midY = (a.y + b.y) / 2;
       const pinch = pinchGesture.current;
-      if (pinch) setCamera(pinchOrbitCamera(pinch.camera, pinch.start, { x: midX, y: midY, distance: dist }, cameraViewportHeightRef.current, baseDistanceRef.current * 0.18, baseDistanceRef.current * 3));
+      if (pinch) setCamera(pinchProfessionalCamera(pinch.camera, pinch.start, { x: midX, y: midY, distance: dist }, cameraViewportHeightRef.current, baseDistanceRef.current * 0.18, baseDistanceRef.current * 3, projection));
       d.x = midX;
       d.y = midY;
       d.pinchDist = dist;
@@ -1142,9 +1146,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     d.x = e.clientX;
     d.y = e.clientY;
     if ((panMode && e.buttons !== 2) || e.shiftKey) {
-      setCamera((c) => c ? panOrbitCamera(c, dx, dy, cameraViewportHeightRef.current) : c);
+      setCamera((c) => c ? panProfessionalCamera(c, dx, dy, cameraViewportHeightRef.current, projection) : c);
       return;
     }
+    setCameraView('');
     setCamera((c) =>
       c
         ? clampCamera(
@@ -1381,7 +1386,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     return () => el.removeEventListener('wheel', h);
   }, [zoomBy]);
 
-  const rotate = (deltaRad: number) => setCamera((c) => (c ? { ...c, azimuthRad: c.azimuthRad + deltaRad } : c));
+  const rotate = (deltaRad: number) => { setCameraView(''); setCamera((c) => (c ? { ...c, azimuthRad: c.azimuthRad + deltaRad } : c)); };
   const refit = () => {
     if (!bounds) return;
     const aspect = size.height > 0 ? size.width / size.height : 1.4;
@@ -1390,7 +1395,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     fitted.target.z += fitBottomM;
     baseDistanceRef.current = fitted.distanceM;
     cameraViewportHeightRef.current = size.height;
-    setCamera(fitted);
+    setCamera(cameraView ? cameraForProfessionalView(fitted, cameraView) : fitted);
   };
 
   function clearLocalTools() {
@@ -1407,9 +1412,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
 
   function chooseCameraView(view: CameraView) {
     // A named angle changes orientation only. Fit is the deliberate zoom reset.
-    setCamera((current) => current ? { ...current,
-      elevationRad: view === 'above' ? 78 * Math.PI / 180 : view === 'front' ? 12 * Math.PI / 180 : 35 * Math.PI / 180,
-      azimuthRad: view === 'dollhouse' ? DEFAULT_AZIMUTH_RAD : 0 } : current);
+    setProjection(PROFESSIONAL_VIEWS.find(preset => preset.id === view)?.projection ?? 'perspective');
+    setCameraView(view);
+    if (['north', 'east', 'south', 'west'].includes(view)) setWallView('up');
+    setCamera((current) => current ? cameraForProfessionalView(current, view) : current);
   }
 
   useEffect(() => {
@@ -1627,7 +1633,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     && placementKind(selectedProduct) !== 'wall'
     && !property.rooms.some(room => room.placedItems.some(item => item.parentInstanceId === selectedInstanceId));
   const rotationPoint = canRotateSelection && selectedSolid && renderedCamera
-    ? projectPoint({ x: (selectedSolid.x0 + selectedSolid.x1) / 2, y: (selectedSolid.y0 + selectedSolid.y1) / 2, z: selectedSolid.z1 }, cameraBasis(renderedCamera), renderedCamera, size)
+    ? projectProfessionalPoint({ x: (selectedSolid.x0 + selectedSolid.x1) / 2, y: (selectedSolid.y0 + selectedSolid.y1) / 2, z: selectedSolid.z1 }, renderedCamera, size, projection)
     : undefined;
   const selectionPanel = variant === 'overlay' && itemsInteractive && selectedItem && selectedProduct ? (
         <div
@@ -1671,6 +1677,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   // the customer's chosen hour for their return to Natural light.
   const stageHour = variant === 'overlay' && roomLighting === 'architectural' ? null : sunHour;
   const viewControls = <RoomViewControls workspace={variant === 'overlay'} pan={panMode} onPan={togglePan}
+    cameraView={cameraView} professionalViews={backend === 'gl'}
     onRotate={rotate} onZoom={zoomBy} onFit={refit} onView={chooseCameraView}
     wallView={wallView} onWallView={setWallView} hasWalls={solids.walls.length > 0}
     sunAvailable={backend === 'gl'} sunHour={sunHour} onSunHour={setSunHour}
@@ -1695,11 +1702,13 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               ref={stageRef}
               solids={solids}
               serviceFixtures={serviceFixtures}
+              ecoTrees={property.eco?.trees}
               foundation={visibleFoundation}
               foundationView={inspectingFoundation}
               foundationBaseElevationM={foundationBaseElevationM}
               presentation={presentation}
               camera={renderedCamera ?? camera}
+              projection={projection}
               width={size.width}
               height={size.height}
               hover={hover}
@@ -1710,7 +1719,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               brushFinish={onPaintWall && brushHex ? (tool === 'cladding' ? 'textured' : wallPaintDraft.erase ? null : finishOfPaint(brushPaintId(wallPaintDraft))) : null}
               wallView={wallView}
               hour={stageHour}
-              onFailed={() => setBackend('painter')}
+              onFailed={() => { setBackend('painter'); setProjection('perspective'); setCameraView(''); }}
               onReady={() => setStageReady(true)}
             />
           </Suspense>

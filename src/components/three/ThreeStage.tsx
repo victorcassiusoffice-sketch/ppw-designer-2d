@@ -45,6 +45,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { ecoTreeMeshes } from './ecoTrees';
+import type { EcoTree } from '../../designer/eco';
 import { cameraPosition, GLASS_HEX, type OrbitCamera, type WallHit } from '../../designer/roomView3d';
 import { cutawayState, wallAnchor, type ItemSolid, type SceneSolids, type WallShow, type WallSolid } from '../../designer/roomSolids';
 import { bodyObject, bodyTemplate, productEnvelope, type BodyTemplate } from './productBody';
@@ -265,10 +267,12 @@ export interface ThreeStageProps {
   solids: SceneSolids;
   /** Generic service fixtures on visible storeys, independent of catalog stock. */
   serviceFixtures?: ServiceFixturePlacement[];
+  ecoTrees?: readonly EcoTree[];
   foundation?: FoundationModel;
   foundationView?: boolean;
   foundationBaseElevationM?: number;
   camera: OrbitCamera;
+  projection?: import('../../designer/professionalViews').CameraProjection;
   width: number;
   height: number;
   hover: WallHit | null;
@@ -607,7 +611,7 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
 
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, serviceFixtures, foundation, foundationView = false, foundationBaseElevationM = 0, camera, width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed, onReady },
+  { solids, serviceFixtures, ecoTrees, foundation, foundationView = false, foundationBaseElevationM = 0, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed, onReady },
   ref,
 ): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -617,7 +621,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const naturalUnavailableRef = useRef(false);
   const drawingSizeRef = useRef(new THREE.Vector2());
   const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | THREE.OrthographicCamera | null>(null);
   const hemiRef = useRef<THREE.HemisphereLight | null>(null);
   const sunRef = useRef<THREE.DirectionalLight | null>(null);
   /** A soft light that rides with the camera so no wall face is ever unlit. */
@@ -630,6 +634,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const groundRef = useRef<THREE.Mesh | null>(null);
   const contentRef = useRef<THREE.Group | null>(null);
   const servicesRef = useRef<THREE.Group | null>(null);
+  const ecoRef = useRef<THREE.Group | null>(null);
   const foundationRef = useRef<THREE.Group | null>(null);
   const gardenRef = useRef<THREE.Group | null>(null);
   const signatureRef = useRef<string>('');
@@ -675,7 +680,10 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     fog.far = fog.near + Math.max(60, radius * 8);
   };
 
-  const requestRender = () => {
+  const requestRender = (shadowsDirty = true) => {
+    // Static sunlight does not require a new shadow-map pass for every orbit
+    // frame. Geometry, previews and lighting still invalidate it explicitly.
+    if (shadowsDirty && rendererRef.current) rendererRef.current.shadowMap.needsUpdate = true;
     if (rafRef.current !== null || failedRef.current) return;
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null;
@@ -881,6 +889,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     const sun = new THREE.DirectionalLight(0xfff6ea, Math.PI * STUDIO.sun);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
+    renderer.shadowMap.autoUpdate = false;
+    renderer.shadowMap.needsUpdate = true;
     sun.shadow.bias = -0.0004;
     sun.shadow.normalBias = 0.02;
     scene.add(sun);
@@ -919,6 +929,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     services.name = 'building-service-fixtures';
     scene.add(services);
     servicesRef.current = services;
+    const eco = new THREE.Group(); scene.add(eco); ecoRef.current = eco;
     const foundationGroup = new THREE.Group();
     scene.add(foundationGroup);
     foundationRef.current = foundationGroup;
@@ -943,6 +954,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       naturalUnavailableRef.current = false;
       if (contentRef.current) disposeObject(contentRef.current);
       if (servicesRef.current) disposeObject(servicesRef.current);
+      if (ecoRef.current) disposeObject(ecoRef.current);
       if (foundationRef.current) disposeObject(foundationRef.current);
       disposeObject(ground);
       disposeObject(sky);
@@ -962,6 +974,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       servicesRef.current = null;
       foundationRef.current = null;
       gardenRef.current = null;
+      ecoRef.current = null;
       skyRef.current = null;
       groundRef.current = null;
       hemiRef.current = null;
@@ -1182,6 +1195,18 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serviceFixtures]);
 
+  // Vegetation has its own bounded instanced group: changing a tree does not
+  // rebuild furniture or reset the camera. It is ground context, never a storey asset.
+  useEffect(() => {
+    const group = ecoRef.current;
+    if (!group) return;
+    disposeObject(group); group.clear();
+    if (solids.gardenVisible !== false && ecoTrees?.length) group.add(ecoTreeMeshes(ecoTrees, solids.garden));
+    group.updateMatrixWorld(true);
+    requestRender();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ecoTrees, solids.garden, solids.gardenVisible]);
+
   // Explicit below-ground inspection never moves the camera or changes geometry.
   useEffect(() => {
     const group = foundationRef.current;
@@ -1193,13 +1218,14 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     group.updateMatrixWorld(true);
     const bounds = structureBoundsRef.current.clone();
     if (foundation?.enabled) bounds.expandByObject(group);
+    if (ecoRef.current?.children.length) bounds.expandByObject(ecoRef.current);
     boundsRef.current = { centre: bounds.isEmpty() ? new THREE.Vector3() : bounds.getCenter(new THREE.Vector3()),
       radius: bounds.isEmpty() ? 6 : Math.max(4, bounds.getSize(new THREE.Vector3()).length() / 2) };
     applyPresentation();
     applyHour(hour);
     requestRender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [foundation, foundationView, foundationBaseElevationM, solids]);
+  }, [foundation, foundationView, foundationBaseElevationM, solids, ecoTrees]);
 
   // ---- the hour: sun, sky, lamps -----------------------------------------
   useEffect(() => {
@@ -1217,11 +1243,25 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   // ---- camera + cutaway, on orbit / resize -------------------------------------
   useEffect(() => {
     const r = rendererRef.current;
-    const c = cameraRef.current;
+    let c = cameraRef.current;
     if (!r || !c || width < 8 || height < 8) return;
+    if ((projection === 'orthographic') !== (c instanceof THREE.OrthographicCamera)) {
+      // Only the camera changes; product geometry, textures and the renderer stay mounted.
+      naturalRendererRef.current?.dispose();
+      naturalRendererRef.current = null;
+      c = projection === 'orthographic' ? new THREE.OrthographicCamera(-1, 1, 1, -1, 0.05, c.far) : new THREE.PerspectiveCamera(50, 1, 0.05, c.far);
+      cameraRef.current = c;
+    }
     r.setSize(width, height, false);
-    c.aspect = width / height;
-    c.fov = (camera.fovRad * 180) / Math.PI;
+    if (c instanceof THREE.PerspectiveCamera) {
+      c.aspect = width / height;
+      c.fov = (camera.fovRad * 180) / Math.PI;
+    } else {
+      const halfHeight = camera.distanceM * Math.tan(camera.fovRad / 2);
+      c.left = -halfHeight * width / height; c.right = -c.left;
+      c.top = halfHeight; c.bottom = -halfHeight;
+    }
+    if (canvasRef.current) canvasRef.current.dataset.projection = projection;
     const pos = cameraPosition(camera);
     c.position.copy(toThree(pos));
     targetRef.current = toThree(camera.target).toArray();
@@ -1249,8 +1289,10 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
 
     // Walls Up / Cutaway / Down: the same slabs, only visibility flips.
     const state = wallView === 'cutaway' ? cutawayState(solids, pos, camera.target) : null;
+    let shadowsChanged = false;
     for (const e of wallsRef.current) {
       const show: WallShow = wallView === 'up' ? 'full' : wallView === 'down' ? 'stub' : (state?.get(e.solid.key) ?? 'full');
+      shadowsChanged ||= e.show !== show || Boolean(e.ghost && show !== 'stub');
       e.show = show;
       if (e.ghost && show !== 'stub') setGhost(e, false);
       e.full.visible = show === 'full' || e.ghost;
@@ -1259,9 +1301,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       e.outlineFull.visible = target && (show === 'full' || e.ghost);
       e.outlineStub.visible = target && show === 'stub' && !e.ghost;
     }
-    requestRender();
+    requestRender(shadowsChanged);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [camera, width, height, solids, wallView]);
+  }, [camera, projection, width, height, solids, wallView]);
 
   // ---- selection (the plan's selection, mirrored) -----------------------------------
   // A mint pad on the floor under the picked body — the Sims' footprint

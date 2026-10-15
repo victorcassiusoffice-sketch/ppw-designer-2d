@@ -12,12 +12,13 @@ import type { ThreeStageHandle, ThreeStageProps } from '../three/ThreeStage';
 import { ROOM_LIGHTING_STORAGE_KEY } from '../../hooks/useRoomLighting';
 import { defaultFoundationRebar } from '../../designer/foundation';
 
-const renderer = vi.hoisted(() => ({ camera: null as OrbitCamera | null, presentation: undefined as ThreeStageProps['presentation'], hour: undefined as ThreeStageProps['hour'], mounts: 0, ready: undefined as ThreeStageProps['onReady'] }));
+const renderer = vi.hoisted(() => ({ camera: null as OrbitCamera | null, projection: undefined as ThreeStageProps['projection'], presentation: undefined as ThreeStageProps['presentation'], hour: undefined as ThreeStageProps['hour'], mounts: 0, ready: undefined as ThreeStageProps['onReady'] }));
 vi.mock('../three/ThreeStage', async () => {
   const React = await import('react');
-  return { default: React.forwardRef<Pick<ThreeStageHandle, 'floorPoint' | 'hitItem' | 'hitTest' | 'projectPoint'>, ThreeStageProps>(function CameraStage({ camera, presentation, hour, onReady }, ref) {
+  return { default: React.forwardRef<Pick<ThreeStageHandle, 'floorPoint' | 'hitItem' | 'hitTest' | 'projectPoint'>, ThreeStageProps>(function CameraStage({ camera, projection, presentation, hour, onReady }, ref) {
     renderer.ready = onReady;
     renderer.camera = camera;
+    renderer.projection = projection;
     renderer.presentation = presentation;
     renderer.hour = hour;
     React.useEffect(() => { renderer.mounts += 1; }, []);
@@ -68,6 +69,29 @@ function expectSameFraming(camera: OrbitCamera, initialHeight = 640) {
 }
 
 describe('3D camera stays where the customer leaves it', () => {
+  it('uses a true orthographic elevation without refitting or remounting, and keeps its angle when zooming', () => {
+    const before = zoomIn(), mounts = renderer.mounts;
+    click('[data-testid="house-view-settings"]');
+    const select = host.querySelector<HTMLSelectElement>('[aria-label="Camera view"]')!;
+    act(() => { select.value = 'north'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(renderer.projection).toBe('orthographic');
+    expect(renderer.camera).toMatchObject({ target: before.target, distanceM: before.distanceM, elevationRad: 0, azimuthRad: Math.PI });
+    expect(useDesignerUIStore.getState().wallView).toBe('up');
+    click('[aria-label="Zoom in"]');
+    expect(renderer.camera!.elevationRad).toBe(0); expect(renderer.camera!.azimuthRad).toBe(Math.PI);
+    const elevation = structuredClone(renderer.camera!);
+    click('[data-testid="house-mode-furnish"]');
+    expect(renderer.camera).toEqual(elevation); expect(renderer.projection).toBe('orthographic');
+    expect(renderer.mounts).toBe(mounts);
+  });
+  it('adding measured vegetation preserves a zoomed plan and its selected projection', () => {
+    click('[data-testid="house-view-settings"]');
+    const select = host.querySelector<HTMLSelectElement>('[aria-label="Camera view"]')!;
+    act(() => { select.value = 'plan'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    const before = zoomIn();
+    act(() => usePropertyStore.getState().setEco({ version: 1, greenRoofs: [], trees: [{ id: 'tree', name: 'Existing tree', x: 30, y: 40, heightM: 8, canopyRadiusM: 3, status: 'existing', protectionMethod: 'unconfirmed' }] }));
+    expect(renderer.camera).toEqual(before); expect(renderer.projection).toBe('orthographic');
+  });
   it('keeps the loading animation until the renderer has drawn a frame and does not restore it on tool changes', () => {
     expect(host.querySelector('[data-testid="loading-3d"]')?.textContent).toContain('Loading 3D');
     act(() => renderer.ready?.());

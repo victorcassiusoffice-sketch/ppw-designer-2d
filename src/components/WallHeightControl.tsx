@@ -3,7 +3,8 @@
  * for single-storey properties without overrides.
  */
 import { usePropertyStore } from '../store/propertyStore';
-import { formatWallHeightM, wallHeightControlTarget } from '../designer/wallHeight';
+import { wallHeightControlTarget } from '../designer/wallHeight';
+import { useAppPreferences } from '../i18n/AppPreferences';
 
 const STEP_M = 0.1;
 
@@ -21,6 +22,7 @@ export function WallHeightControl({
   buttonClassName?: string;
   readoutClassName?: string;
 }) {
+  const { t, tx, formatNumber } = useAppPreferences();
   const levels = usePropertyStore((s) => s.property.levels);
   const activeLevelId = usePropertyStore((s) => s.property.activeLevelId);
   const wallHeightM = usePropertyStore((s) => s.property.wallHeightM);
@@ -44,8 +46,13 @@ export function WallHeightControl({
         className={`${BTN} ${buttonClassName}`}
         disabled={atMin}
         onClick={() => adjust(-STEP_M)}
-        aria-label="Lower wall height"
-        title={`Lower ${target.label} by ${STEP_M} m (${minM}–${maxM} m)`}
+        aria-label={t('Lower wall height')}
+        title={t('lowerWallBy', {
+          target: tx(target.label),
+          step: formatNumber(STEP_M),
+          min: formatNumber(minM),
+          max: formatNumber(maxM),
+        })}
         data-testid={`${idPrefix}-down`}
       >
         −
@@ -54,17 +61,22 @@ export function WallHeightControl({
         className={`min-w-[4.5rem] flex-1 text-center text-[14px] font-semibold tabular-nums text-[#37362f] ${readoutClassName}`}
         data-testid={`${idPrefix}-readout`}
         aria-live="polite"
-        title={target.levelId ? target.label : 'Wall height'}
+        title={target.levelId ? target.label : t('Wall height')}
       >
-        {formatWallHeightM(heightM)} m
+        {formatNumber(heightM, { maximumFractionDigits: 2 })} m
       </span>
       <button
         type="button"
         className={`${BTN} ${buttonClassName}`}
         disabled={atMax}
         onClick={() => adjust(STEP_M)}
-        aria-label="Raise wall height"
-        title={`Raise ${target.label} by ${STEP_M} m (${minM}–${maxM} m)`}
+        aria-label={t('Raise wall height')}
+        title={t('raiseWallBy', {
+          target: tx(target.label),
+          step: formatNumber(STEP_M),
+          min: formatNumber(minM),
+          max: formatNumber(maxM),
+        })}
         data-testid={`${idPrefix}-up`}
       >
         +
