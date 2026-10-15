@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { visibleServiceRuns } from '../serviceScene';
-import { ALL_DISCIPLINES } from '../disciplineVisibility';
+import { filterServicePresentation, visibleServiceRuns } from '../serviceScene';
+import { ALL_DISCIPLINES, ALL_VISIBILITY_PARTS, visibilityPreset } from '../disciplineVisibility';
 import {
   estimateServices,
   serviceRunPoints3D,
@@ -79,6 +79,17 @@ describe('services scene derives visibility after connection resolution', () => 
     expect(result.endElevationM).toBe(port.elevationM);
     expect(result.points[1]).toEqual(before.runs[0].points[1]);
     expect(services).toEqual(before);
+  });
+  it('route-only view resolves hidden fixture endpoints first and never changes canonical dimensions or quantity', () => {
+    const sink = { id: 'sink', levelId: 'upper', kind: 'sink' as const, x: 3, y: 4, widthM: .6, depthM: .5, heightM: .9, rotation: 0 };
+    const services: BuildingServices = { version: 1, fixtures: [sink], runs: [{ ...run('water'), endConnection: { fixtureId: 'sink', portId: 'cold-water' } }, { ...run('electric'), system: 'electrical' }] };
+    const before = structuredClone(services), quantities = estimateServices(services), pipes = visibilityPreset('pipes');
+    const display = filterServicePresentation(services, pipes.visible, pipes.parts);
+    expect(display.fixtures).toEqual([]); expect(display.runs.map(r => r.id)).toEqual(['water']);
+    const port = servicePorts(sink).find(p => p.id === 'cold-water')!;
+    expect(display.runs[0].points[display.runs[0].points.length - 1]).toMatchObject({ x: port.x, y: port.y, elevationM: port.elevationM });
+    expect(services).toEqual(before); expect(estimateServices(services)).toEqual(quantities);
+    expect(visibleServiceRuns(property(services), 'upper', 'building', ALL_DISCIPLINES, { ...ALL_VISIBILITY_PARTS, routes: false })).toEqual([]);
   });
   it('hides discipline geometry without changing canonical quantities or other storeys', () => {
     const services: BuildingServices = {

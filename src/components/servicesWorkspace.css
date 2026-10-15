@@ -656,3 +656,7 @@
     max-height: 32dvh;
   }
 }
+
+.services-selected-reference { overflow-wrap: anywhere; color: var(--ui-ink, #203d35); line-height: 1.5; }
+.services-tools:has(.discipline-popover) { overflow: visible; }
+.services-tools .discipline-popover { z-index: 200; }

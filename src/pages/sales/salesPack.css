@@ -786,3 +786,7 @@
     transition: none !important;
   }
 }
+
+/* Selected step numbers inherit the active tab's contrast in every colour theme. */
+:root .sales-pack .sales-tabs button[aria-selected='true'] span { color: inherit; }
+.sales-pack h2.sales-card-heading { font-size: 18px; line-height: 1.25; font-weight: 650; letter-spacing: normal; margin: 10px 0; }

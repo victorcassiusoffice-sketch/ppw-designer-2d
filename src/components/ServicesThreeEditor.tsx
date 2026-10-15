@@ -23,6 +23,8 @@ export interface ServiceEditorHit {
 }
 export interface ServicesThreeEditorProps {
   property: Property;
+  showWalls?: boolean;
+  showFloors?: boolean;
   services: BuildingServices;
   levelId: string;
   selectedId: string | null;
@@ -391,19 +393,24 @@ export default function ServicesThreeEditor(props: ServicesThreeEditorProps) {
     const rooms = props.property.rooms.filter((r) => roomLevelId(r) === props.levelId);
     for (const room of rooms) {
       if (!room.polygon.length) continue;
-      line(
+      if (props.showFloors !== false) {
+        const shape = new THREE.Shape(room.polygon.map(point => new THREE.Vector2(point.x, -point.y)));
+        const floor = new THREE.Mesh(new THREE.ShapeGeometry(shape), new THREE.MeshBasicMaterial({ color: '#d8dfcd', transparent: true, opacity: 0.24, side: THREE.DoubleSide, depthWrite: false }));
+        floor.rotation.x = -Math.PI / 2; floor.position.y = -0.01; content.add(floor);
+      }
+      if (props.showWalls !== false) line(
         [...room.polygon, room.polygon[0]].map((p) => new THREE.Vector3(p.x, 0, p.y)),
-        '#81988b',
+        '#496b58',
         undefined,
-        0.6,
+        0.9,
       );
     }
-    for (const wall of (props.property.walls ?? []).filter((w) => roomLevelId(w) === props.levelId))
+    if (props.showWalls !== false) for (const wall of (props.property.walls ?? []).filter((w) => roomLevelId(w) === props.levelId))
       line(
         [wall.a, wall.b].map((p) => new THREE.Vector3(p.x, 0, p.y)),
-        '#81988b',
+        '#496b58',
         undefined,
-        0.6,
+        0.9,
       );
     const marker = (
       point: { x: number; y: number; elevationM: number },
@@ -514,6 +521,8 @@ export default function ServicesThreeEditor(props: ServicesThreeEditorProps) {
     ready,
     overBudget,
     props.property,
+    props.showWalls,
+    props.showFloors,
     props.services,
     props.levelId,
     props.selectedId,

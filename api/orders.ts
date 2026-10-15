@@ -30,6 +30,7 @@ import { eq, desc, inArray } from 'drizzle-orm';
 import { rejectShowcaseTransaction } from './_lib/showcaseSafety.js';
 import { handlePitchEnquiry } from './_lib/pitchEnquiry.js';
 import { handleCityProcurement } from './_lib/cityProcurement.js';
+import { handleSharedSpecs } from './_lib/sharedSpecs.js';
 import { validateSnapshotMeasurements } from './_lib/designSnapshotValidation.js';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { withSentry, type MinReq, type MinRes } from './_lib/sentry.js';
@@ -1509,6 +1510,11 @@ async function rawHandler(req: RouterReq, res: MinRes): Promise<void> {
   }
 
   const { resource, segments } = parseSegments(req);
+
+  if (resource === 'shared-projects') {
+    await handleSharedSpecs(segments, req, res, () => readJsonBody(req));
+    return;
+  }
 
   // Explicit pitch feedback is separate from protected demo checkout/quote flows.
   if (resource === 'pitch-enquiry') {

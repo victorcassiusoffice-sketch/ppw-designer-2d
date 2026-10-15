@@ -50,6 +50,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.10",
     "@gltf-transform/cli": "^4.5.0",
     "@imgly/background-removal-node": "^1.4.5",
     "@playwright/test": "^1.60.0",

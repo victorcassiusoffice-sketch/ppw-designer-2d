@@ -1776,7 +1776,7 @@ export function TopBar({
             onClick={() => setRoomsMenuOpen && setRoomsMenuOpen(!roomsMenuOpen)}
             className={`${BTN} ${roomsMenuOpen ? BTN_ON : BTN_REST} h-11 min-w-0 flex-1 justify-start md:h-10 md:min-w-[80px] md:max-w-[190px] md:flex-none lg:min-w-[104px] xl:min-w-[128px] xl:max-w-[190px] 2xl:max-w-[190px] min-[1700px]:max-w-[260px]`}
             style={{ justifyContent: 'flex-start' }}
-            aria-label={t("Open rooms list")}
+            aria-label={`${property.name}${activeRoom ? ` · ${activeRoom.name}` : ""} · ${drawnRoomCount} — ${t("Open rooms list")}`}
             aria-expanded={roomsMenuOpen}
           >
             <Icon name="list" />
@@ -1967,30 +1967,28 @@ export function TopBar({
         <div
           className="plan-room-shape inline-flex shrink-0 overflow-hidden rounded-lg border border-ppw-rim"
           data-tool-category="build"
-          role="radiogroup"
+          role="group"
           aria-label={t("Room shape")}
         >
           <button
             ref={boxRef}
             type="button"
-            role="radio"
             onClick={() => {
               setDrawMode(false);
               setSizeOpen((v) => !v); setLevelsOpen(false); setLandOpen(false); setUnitOpen(false);
             }}
             className={`${SEG} ${sizeOpen ? SEG_ON : !drawMode ? SEG_CHECKED : SEG_REST} hidden md:inline-flex`}
             title="Box — a rectangular room; set its size"
-            aria-checked={!drawMode}
+            aria-pressed={!drawMode}
             aria-expanded={sizeOpen}
             aria-controls="ppw-pop-size"
-            aria-label={t("Box")}
+            aria-label={`${t("Room")} — ${t("Box")}`}
           >
             <Icon name="box" />
             <span>{t("Room")}</span>
           </button>
           <button
             type="button"
-            role="radio"
             onClick={() => {
               if (drawMode) return;
               setViewMode('plan');
@@ -1999,7 +1997,7 @@ export function TopBar({
             data-testid="room-draw-toggle"
             className={`${SEG} ${drawMode ? SEG_ON : SEG_REST} h-11 max-md:w-full md:h-10 md:border-l md:border-ppw-rim`}
             title="Custom — draw walls: close the shape for a room, or Finish walls to leave them open"
-            aria-checked={drawMode}
+            aria-pressed={drawMode}
           >
             <Icon name="pen" className="md:hidden" />
             <Icon name="polygon" className="hidden md:block" />

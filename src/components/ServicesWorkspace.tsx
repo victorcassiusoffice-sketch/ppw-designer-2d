@@ -9,8 +9,11 @@ import {
 } from '../designer/workspaceNavigation';
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { snapServicePoint, type ServiceAngleSnap } from '../designer/serviceRouteEditing';
+import { filterServicePresentation } from '../designer/serviceScene';
+import { DisciplineVisibilityControls } from './DisciplineVisibilityControls';
 import { useDisciplineVisibilityStore } from '../store/disciplineVisibilityStore';
 import {
+  productVisible,
   serviceFixtureDiscipline,
   serviceSystemDiscipline,
 } from '../designer/disciplineVisibility';
@@ -24,6 +27,7 @@ import { useDesignerUIStore } from '../store/designerUIStore';
 import { isDemoPagePending, DEMO_PAGE_READY_EVENT } from '../demo/useDemoMode';
 import { usePlacementIntentStore } from '../store/placementIntentStore';
 import { useHistoryStore } from '../store/historyStore';
+import { getProductById } from '../data/products';
 import { activeLevelIdOf, roomLevelId } from '../designer/levels';
 import {
   EMPTY_SERVICES,
@@ -209,6 +213,7 @@ function ServicesWorkbench({
   const [routePreview, setRoutePreview] = useState<ServicePoint[] | null>(null);
   const draftLinks = useRef(new Map<number, { runId: string; nodeIndex: number }>());
   const visible = useDisciplineVisibilityStore((state) => state.visible);
+  const parts = useDisciplineVisibilityStore((state) => state.parts);
   const [view, setView] = useState<ViewBox>({ x: -2, y: -2, w: 14, h: 10 });
   const host = useRef<HTMLDivElement>(null),
     svg = useRef<SVGSVGElement>(null);
@@ -231,16 +236,9 @@ function ServicesWorkbench({
     fixtures = services.fixtures.filter((f) => f.levelId === levelId);
   const selectedFixture = fixtures.find((f) => f.id === selected),
     selectedRun = runs.find((r) => r.id === selected);
-  const displayServices = useMemo(
-    () => ({
-      ...services,
-      runs: services.runs.filter((r) => visible[serviceSystemDiscipline(r.system)]),
-      fixtures: services.fixtures.filter((f) => visible[serviceFixtureDiscipline(f.kind)]),
-    }),
-    [services, visible],
-  );
-  const displayRuns = runs.filter((r) => visible[serviceSystemDiscipline(r.system)]);
-  const displayFixtures = fixtures.filter((f) => visible[serviceFixtureDiscipline(f.kind)]);
+  const displayServices = useMemo(() => filterServicePresentation(services, visible, parts), [services, visible, parts]);
+  const displayRuns = displayServices.runs.filter(run => run.levelId === levelId);
+  const displayFixtures = displayServices.fixtures.filter(fixture => fixture.levelId === levelId);
   const material = SERVICE_MATERIALS.find((m) => m.id === (selectedRun?.materialId ?? materialId));
   const summaries = estimateServices(services),
     estimate = summaries.find((e) => e.id === selected);
@@ -249,9 +247,9 @@ function ServicesWorkbench({
     runs.some((r) => r.id === issue.runId),
   );
   const floorPorts = displayFixtures.flatMap(servicePorts);
-  const availablePorts = compatibleServicePorts(services, levelId, selectedRun?.system ?? system);
+  const availablePorts = compatibleServicePorts(displayServices, levelId, selectedRun?.system ?? system);
   const foundationElements =
-    levelId === 'ground' && property.foundation?.enabled ? property.foundation.elements : [];
+    visible.foundation && levelId === 'ground' && property.foundation?.enabled ? property.foundation.elements : [];
   const canUndo = useHistoryStore((s) => s.past.length > 0),
     canRedo = useHistoryStore((s) => s.future.length > 0);
   function save(next: typeof services) {
@@ -313,7 +311,6 @@ function ServicesWorkbench({
     setSelectedNode(null);
     setHover(null);
     setRoutePreview(null);
-    setRoutePreview(null);
     setDraftStartConnection(undefined);
     setDraftEndConnection(undefined);
     setSelected(entryState.current.initialSelection);
@@ -321,6 +318,11 @@ function ServicesWorkbench({
     entryState.current.fit();
   }, [property.id, levelId]);
   useWorkspaceFocus(host, () => {
+    if (host.current?.querySelector('.discipline-popover')) {
+      const toggle = host.current.querySelector<HTMLButtonElement>('[data-testid="discipline-toggle"]');
+      toggle?.click(); toggle?.focus();
+      return;
+    }
     if (draft.length) {
       setDraft([]);
       setDraftStartConnection(undefined);
@@ -346,7 +348,14 @@ function ServicesWorkbench({
     setMaterialId(SERVICE_MATERIALS.find((m) => m.system === value)?.id ?? `unverified-${value}`);
     setDiameterMm(SERVICE_MATERIALS.find((m) => m.system === value)?.nominalDiameterMm ?? 20);
     useDisciplineVisibilityStore.getState().setVisible(serviceSystemDiscipline(value), true);
+    useDisciplineVisibilityStore.getState().setPartVisible('routes', true);
+    setTool('pipe');
   }, [initialSystem]);
+  useEffect(() => useDisciplineVisibilityStore.subscribe((state, previous) => {
+    if (state.visible === previous.visible && state.parts === previous.parts) return;
+    setSelected(null); setSelectedNode(null); setHover(null); setRoutePreview(null);
+    setDraft([]); draftLinks.current.clear(); setDraftStartConnection(undefined); setDraftEndConnection(undefined); setTool('select');
+  }), []);
   function chooseTool(next: Tool) {
     setError('');
     setDraft([]);
@@ -354,19 +363,23 @@ function ServicesWorkbench({
     setSelectedNode(null);
     setHover(null);
     setRoutePreview(null);
-    setRoutePreview(null);
     setDraftStartConnection(undefined);
     setDraftEndConnection(undefined);
     setTool(next);
     if (next !== 'move') setSelected(null);
-    if (next in SERVICE_FIXTURES)
-      useDisciplineVisibilityStore.getState().setVisible(serviceFixtureDiscipline(next), true);
+    if (next in SERVICE_FIXTURES) {
+      const filters = useDisciplineVisibilityStore.getState();
+      filters.setVisible(serviceFixtureDiscipline(next), true); filters.setPartVisible('equipment', true);
+      setTool(next);
+    }
   }
   function changeSystem(value: ServiceSystem) {
     setSystem(value);
     setMaterialId(SERVICE_MATERIALS.find((m) => m.system === value)?.id ?? `unverified-${value}`);
     setDiameterMm(SERVICE_MATERIALS.find((m) => m.system === value)?.nominalDiameterMm ?? 20);
     useDisciplineVisibilityStore.getState().setVisible(serviceSystemDiscipline(value), true);
+    useDisciplineVisibilityStore.getState().setPartVisible('routes', true);
+    setTool('pipe');
     draftLinks.current.clear();
     setSelectedNode(null);
     setHover(null);
@@ -780,7 +793,8 @@ function ServicesWorkbench({
             ))}
           </select>
         </label>
-        {Object.values(visible).some((v) => !v) && (
+        <DisciplineVisibilityControls />
+        {(Object.values(visible).some((v) => !v) || Object.values(parts).some((v) => !v)) && (
           <button onClick={() => useDisciplineVisibilityStore.getState().showAll()}>
             Show all layers
           </button>
@@ -841,6 +855,8 @@ function ServicesWorkbench({
               <Suspense fallback={<p role="status">Loading 3D services…</p>}>
                 <ServicesThreeEditor
                   property={property}
+                  showWalls={visible.structure && parts.walls}
+                  showFloors={visible.structure && parts.floors}
                   services={displayServices}
                   levelId={levelId}
                   selectedId={selected}
@@ -1083,13 +1099,13 @@ function ServicesWorkbench({
                 />
               );
             })}
-            {rooms.map((r) => (
+            {visible.structure && (parts.walls || parts.floors) && rooms.map((r) => (
               <g key={r.id}>
                 <polygon
                   points={r.polygon.map((p) => `${p.x},${p.y}`).join(' ')}
-                  fill="#eeeae0"
+                  fill={parts.floors ? "#eeeae0" : "none"}
                   fillOpacity=".88"
-                  stroke="#586b62"
+                  stroke={parts.walls ? "#586b62" : "none"}
                   strokeWidth=".14"
                   strokeLinejoin="round"
                 />
@@ -1104,7 +1120,7 @@ function ServicesWorkbench({
                 </text>
               </g>
             ))}
-            {walls.map((w) => (
+            {visible.structure && parts.walls && walls.map((w) => (
               <line
                 key={w.id}
                 x1={w.a.x}
@@ -1115,7 +1131,7 @@ function ServicesWorkbench({
                 strokeWidth={w.thicknessM}
               />
             ))}
-            <ServicesContextProducts rooms={rooms} />
+            <ServicesContextProducts rooms={rooms.map(room => ({ ...room, placedItems: room.placedItems.filter(item => productVisible(getProductById(item.productId), visible, parts)) }))} />
             {displayRuns.map((run) => {
               const colour = SERVICE_SYSTEMS.find((s) => s.id === run.system)!.colour;
               const od = SERVICE_MATERIALS.find(
@@ -1412,6 +1428,7 @@ function ServicesWorkbench({
                   const reference = buildingEquipmentById(selectedFixture.productReferenceId ?? '');
                   return reference ? (
                     <div className="services-equipment-source">
+                      <p className="services-selected-reference"><strong>{reference.supplier} · {reference.label}</strong></p>
                       <p>{reference.notes}</p>
                       <a href={reference.sourceUrl} target="_blank" rel="noreferrer">
                         Supplier source
@@ -1661,6 +1678,7 @@ function ServicesWorkbench({
                     ))}
                   </select>
                 </label>
+                {material && <p className="services-selected-reference"><strong>{material.supplier} · {material.label}</strong></p>}
                 <label>
                   Route diameter (mm)
                   <input

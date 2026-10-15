@@ -37,7 +37,7 @@ export function LocaleThemeControls({
   };
   return (
     <details ref={host} className={'locale-theme-controls ' + className}>
-      <summary aria-label={t('Preferences')} title={t('Preferences')}>
+      <summary aria-label={compact ? `${locale === 'zh-CN' ? '中文' : locale.toUpperCase()} — ${t('Preferences')}` : t('Preferences')} title={t('Preferences')}>
         <svg
           aria-hidden="true"
           viewBox="0 0 24 24"

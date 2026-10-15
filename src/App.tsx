@@ -1,6 +1,7 @@
 import { ServicesWorkspace } from './components/ServicesWorkspace';
 import { FoundationWorkspace } from './components/FoundationWorkspace';
 import { CityWorkspace } from './components/CityWorkspace';
+import { SharedProjectWorkspace } from './components/SharedProjectWorkspace';
 import { ProjectWorkspace } from './components/ProjectWorkspace';
 import { PlanImportWorkspace } from './components/PlanImportWorkspace';
 import { HouseBuildTutorial } from './components/HouseBuildTutorial';
@@ -303,7 +304,7 @@ export default function App() {
       window.dispatchEvent(new Event('ppw:close-house-details'));
     };
     const unsubscribe = useDisciplineVisibilityStore.subscribe((state, previous) => {
-      if (state.visible !== previous.visible) neutral();
+      if (state.visible !== previous.visible || state.parts !== previous.parts) neutral();
     });
     const launch = (event: Event) => {
       const action = (event as CustomEvent<{ action: HouseTutorialAction }>).detail?.action;
@@ -455,6 +456,7 @@ export default function App() {
       <FoundationWorkspace onBeforeOpen={() => setDrawMode(false)} />
       <CityWorkspace onBeforeOpen={() => setDrawMode(false)} />
       <ProjectWorkspace onBeforeOpen={() => setDrawMode(false)} />
+      <SharedProjectWorkspace onBeforeOpen={() => setDrawMode(false)} />
       {/* Mobile/tablet Sims catalog — sticky bottom toolbar (< 1024 px). */}
       <SimsBottomToolbar />
       <AddRoomChooser

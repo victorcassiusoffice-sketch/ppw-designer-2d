@@ -58,14 +58,14 @@ export default function PlumbingPitchPage() {
           <div className="sales-wide sales-three">
             <article>
               <span className="sales-number">01</span>
-              <h3>Showroom consultation</h3>
+              <h2 className="sales-card-heading">Showroom consultation</h2>
               <p>
                 Place the fixtures with the customer and discuss space before producing a quotation.
               </p>
             </article>
             <article>
               <span className="sales-number">02</span>
-              <h3>Installer handover</h3>
+              <h2 className="sales-card-heading">Installer handover</h2>
               <p>
                 Review the proposed routes, level and assumptions with the person who will specify
                 the work.
@@ -73,7 +73,7 @@ export default function PlumbingPitchPage() {
             </article>
             <article>
               <span className="sales-number">03</span>
-              <h3>Product conversation</h3>
+              <h2 className="sales-card-heading">Product conversation</h2>
               <p>
                 Bring published material references into the discussion and confirm the required
                 specification.
@@ -260,7 +260,7 @@ export default function PlumbingPitchPage() {
             </article>
           </div>
           <div className="sales-surface sales-choice">
-            <h3>Installation options</h3>
+            <h2 className="sales-card-heading">Installation options</h2>
             <p>
               Embed a focused experience in your existing website. Run a standalone studio with an
               optional shop. Use it internally with advisers. Or commission a full website around
@@ -291,14 +291,14 @@ export default function PlumbingPitchPage() {
             ].map(([t, b], i) => (
               <article className="sales-surface" key={t}>
                 <span className="sales-number">0{i + 1}</span>
-                <h3>{t}</h3>
+                <h2 className="sales-card-heading">{t}</h2>
                 <p>{b}</p>
               </article>
             ))}
           </div>
           <div className="sales-three sales-choice">
             <article>
-              <h3>Coordinate below ground</h3>
+              <h2 className="sales-card-heading">Coordinate below ground</h2>
               <p>
                 Use Floors → Foundation for rectangular excavations or circular holes with explicit
                 diameter and depth. Review separate excavation and concrete volumes alongside
@@ -312,7 +312,7 @@ export default function PlumbingPitchPage() {
               </OpenLink>
             </article>
             <article>
-              <h3>Follow the house guide</h3>
+              <h2 className="sales-card-heading">Follow the house guide</h2>
               <p>
                 Open Guide in the plan toolbar for a saved checklist from the brief and foundations
                 through services, finishes and review. Each step opens its existing tool, then gets
@@ -324,7 +324,7 @@ export default function PlumbingPitchPage() {
               </p>
             </article>
             <article>
-              <h3>Configure and test connections</h3>
+              <h2 className="sales-card-heading">Configure and test connections</h2>
               <p>
                 Scope your catalogue, staff permissions, commerce backend and supplier feeds. Agree
                 approval deadlines and delivery responsibilities before enabling purchasing.

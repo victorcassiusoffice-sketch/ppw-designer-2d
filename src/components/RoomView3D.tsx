@@ -118,7 +118,7 @@ import { fitArchitecturalCamera } from '../designer/architecturalCamera';
 import { visibleServiceFixtures } from '../designer/serviceFixtures';
 import { visibleServiceRuns } from '../designer/serviceScene';
 import { useDisciplineVisibilityStore } from '../store/disciplineVisibilityStore';
-import { productDiscipline, serviceFixtureDiscipline } from '../designer/disciplineVisibility';
+import { ALL_DISCIPLINES, productVisible, serviceFixtureDiscipline } from '../designer/disciplineVisibility';
 import { hasFoundationGeometry } from '../designer/foundation';
 import { foundationBounds } from '../designer/foundation';
 import { foundationSceneFaces } from '../designer/foundationScene';
@@ -409,6 +409,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const property = usePropertyStore((s) => s.property);
   const selectedInstanceId = usePropertyStore((s) => s.selectedInstanceId);
   const visible = useDisciplineVisibilityStore(s => s.visible);
+  const parts = useDisciplineVisibilityStore(s => s.parts);
   const selectItem = usePropertyStore((s) => s.selectItem);
   const tool = useDesignerUIStore((s) => s.tool);
   const wallPaintDraft = useDesignerUIStore((s) => s.wallPaintDraft);
@@ -496,8 +497,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const [backend, setBackend] = useState<'gl' | 'painter'>('gl');
   const baseDistanceRef = useRef(10);
   const level = activeLevelIdOf(property);
-  const serviceFixtures = useMemo(() => visibleServiceFixtures(property, level, buildingView).filter(fixture => visible[serviceFixtureDiscipline(fixture.kind)]), [property, level, buildingView, visible]);
-  const serviceRuns = useMemo(() => visibleServiceRuns(property, level, buildingView, visible), [property, level, buildingView, visible]);
+  const allServiceFixtures = useMemo(() => visibleServiceFixtures(property, level, buildingView), [property, level, buildingView]);
+  const allServiceRuns = useMemo(() => visibleServiceRuns(property, level, buildingView, ALL_DISCIPLINES), [property, level, buildingView]);
+  const serviceFixtures = useMemo(() => allServiceFixtures.filter(fixture => parts.equipment && visible[serviceFixtureDiscipline(fixture.kind)]), [allServiceFixtures, visible, parts]);
+  const serviceRuns = useMemo(() => visibleServiceRuns(property, level, buildingView, visible, parts), [property, level, buildingView, visible, parts]);
 
   const foundationVisible = Boolean(visible.foundation && property.foundation?.enabled && (foundationView || buildingView === 'building' || level === 'ground'));
   const visibleFoundation = foundationVisible ? property.foundation : undefined;
@@ -604,7 +607,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   useEffect(() => {
     setConstructionTool('select'); setGardenPlacement(null); setGardenOpen(false);
     finishWallRun();
-  }, [visible, finishWallRun]);
+  }, [visible, parts, finishWallRun]);
 
   // Current bounds are used by the explicit Fit action, not by editing.
   const buildingBounds = useMemo(() => {
@@ -623,17 +626,17 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       { x: tree.x + tree.canopyRadiusM, y: tree.y + tree.canopyRadiusM });
     const box = foundationBounds(visibleFoundation);
     const foundations = box ? [{ polygon: [{ x: box.minX, y: box.minY }, { x: box.maxX, y: box.maxY }] }] : [];
-    return boundsOf([...rooms, ...foundations, ...(landscape.length ? [{ polygon: landscape }] : []), ...serviceRuns.map(run => ({ polygon: run.points })), ...serviceFixtures.map(fixture => ({ polygon: [{ x: fixture.x - fixture.widthM / 2, y: fixture.y - fixture.depthM / 2 }, { x: fixture.x + fixture.widthM / 2, y: fixture.y + fixture.depthM / 2 }] }))], walls);
-  }, [property, level, buildingView, visibleFoundation, serviceRuns, serviceFixtures]);
+    return boundsOf([...rooms, ...foundations, ...(landscape.length ? [{ polygon: landscape }] : []), ...allServiceRuns.map(run => ({ polygon: run.points })), ...allServiceFixtures.map(fixture => ({ polygon: [{ x: fixture.x - fixture.widthM / 2, y: fixture.y - fixture.depthM / 2 }, { x: fixture.x + fixture.widthM / 2, y: fixture.y + fixture.depthM / 2 }] }))], walls);
+  }, [property, level, buildingView, visibleFoundation, allServiceRuns, allServiceFixtures]);
   const hasArchitecture = property.rooms.some(r => !isOutdoorRoom(r) && isDrawnPolygon(r.polygon) && (buildingView === 'building' || (r.levelId ?? 'ground') === level))
     || (buildingView === 'building' ? property.walls ?? [] : wallsOnLevel(property.walls ?? [], level)).length > 0;
   const architectureBottomM = foundationBox ? Math.min(hasArchitecture ? baseElevation : Infinity, foundationBaseElevationM + foundationBox.minElevationM) : baseElevation;
   const architectureTopM = foundationBox ? Math.max(hasArchitecture ? baseElevation + H : -Infinity, foundationBaseElevationM + foundationBox.maxElevationM) : baseElevation + H;
-  const serviceRange = serviceRuns.reduce((range, run) => {
+  const serviceRange = allServiceRuns.reduce((range, run) => {
     for (const point of serviceRunPoints3D(run)) { const z = run.baseElevationM + point.elevationM; range.min = Math.min(range.min, z); range.max = Math.max(range.max, z); }
     return range;
   }, { min: architectureBottomM, max: architectureTopM });
-  for (const fixture of serviceFixtures) { serviceRange.min = Math.min(serviceRange.min, fixture.elevationM); serviceRange.max = Math.max(serviceRange.max, fixture.elevationM + fixture.heightM); }
+  for (const fixture of allServiceFixtures) { serviceRange.min = Math.min(serviceRange.min, fixture.elevationM); serviceRange.max = Math.max(serviceRange.max, fixture.elevationM + fixture.heightM); }
   const fitBottomM = serviceRange.min, fitTopM = serviceRange.max;
   const fitHeightM = Math.max(0.5, fitTopM - fitBottomM);
   // A blank project still has a buildable 3D ground plane.
@@ -691,11 +694,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     // Catalogue hydration changes dimensioned meshes without changing project geometry.
     void catalogVersion;
     const all = buildingSolids(property, (p) => sceneFromProperty(p, null, SOLIDS_CAMERA), buildingView, showRoof);
-    return { ...all, floors: visible.structure ? all.floors : [], walls: visible.structure ? all.walls : [],
-      stairs: visible.structure ? all.stairs : [], roofs: visible.structure ? all.roofs : [],
-      items: all.items.filter(item => visible[productDiscipline(getProductById(item.productId ?? ''))]),
+    return { ...all, floors: visible.structure && parts.floors ? all.floors : [], walls: visible.structure && parts.walls ? all.walls : [],
+      stairs: visible.structure && parts.stairs ? all.stairs : [], roofs: visible.structure && parts.roofs ? all.roofs : [],
+      items: all.items.filter(item => productVisible(getProductById(item.productId ?? ''), visible, parts)),
       gardenVisible: visible.landscape && all.gardenVisible !== false };
-  }, [property, catalogVersion, buildingView, showRoof, visible]);
+  }, [property, catalogVersion, buildingView, showRoof, visible, parts]);
 
   // Painter fallback: only computed while it is the one drawing.
   const projected: ProjectedFace[] = useMemo(() => {
@@ -706,9 +709,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         .map((face) => ({ ...face, pts: face.pts.map((p) => ({ ...p, z: p.z + entry.elevationM })), holes: face.holes?.map((hole) => hole.map((p) => ({ ...p, z: p.z + entry.elevationM }))) })));
     return projectScene([...faces.filter(face => {
       if (face.kind === 'item' || face.kind === 'item-top') return solids.items.some(item => face.key.startsWith(`item-${item.instanceId}-`));
-      return visible.structure && (!inspectingFoundation || face.kind !== 'floor');
+      return visible.structure && (face.kind === 'floor' ? parts.floors && !inspectingFoundation : parts.walls);
     }), ...foundationSceneFaces(visibleFoundation, foundationBaseElevationM, inspectingFoundation)], viewportCamera, size);
-  }, [backend, property, hover, viewportCamera, size, buildingView, level, inspectingFoundation, visibleFoundation, foundationBaseElevationM, solids.items, visible.structure]);
+  }, [backend, property, hover, viewportCamera, size, buildingView, level, inspectingFoundation, visibleFoundation, foundationBaseElevationM, solids.items, visible.structure, parts]);
 
   useEffect(() => {
     if (backend !== 'painter') return;
@@ -1734,7 +1737,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
               solids={solids}
               serviceFixtures={serviceFixtures}
               serviceRuns={serviceRuns}
-              groundVisible={visible.structure || visible.landscape}
+              groundVisible={visible.landscape}
               ecoTrees={visible.landscape ? property.eco?.trees : undefined}
               foundation={visibleFoundation}
               foundationView={inspectingFoundation}

@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ServicesWorkspace } from '../ServicesWorkspace';
 import { usePropertyStore } from '../../store/propertyStore';
 import { useDesignerUIStore } from '../../store/designerUIStore';
+import { useDisciplineVisibilityStore } from '../../store/disciplineVisibilityStore';
 import { useHistoryStore } from '../../store/historyStore';
 
 vi.mock('../ServicesContextProducts', () => ({ ServicesContextProducts: () => null }));
@@ -52,6 +53,7 @@ function input(label: string, value: string) {
 }
 beforeEach(async () => {
   localStorage.clear();
+  useDisciplineVisibilityStore.getState().showAll();
   usePropertyStore.getState().resetToDefault();
   useHistoryStore.getState().reset();
   useDesignerUIStore.getState().setViewMode('3d');
@@ -92,6 +94,29 @@ afterEach(() => {
 });
 
 describe('service workspace editing and escape paths', () => {
+  it('isolates pipes, hides ports and clears the hidden selection without changing quantities or camera', () => {
+    click('Sink'); point(2, 3); click('Cold water'); point(1, 1); point(4, 1); click('Finish run');
+    const before = structuredClone(usePropertyStore.getState().property), view = plan().getAttribute('viewBox');
+    act(() => useDisciplineVisibilityStore.getState().applyPreset('pipes'));
+    expect(plan().querySelectorAll('[data-service-id]')).not.toHaveLength(0);
+    expect(plan().querySelector('[data-service-port]')).toBeNull();
+    expect(plan().querySelector('polygon')).toBeNull();
+    expect(button('Remove')).toBeUndefined();
+    expect(plan().getAttribute('viewBox')).toBe(view);
+    expect(usePropertyStore.getState().property).toEqual(before);
+    act(() => useDisciplineVisibilityStore.getState().setPartVisible('routes', false));
+    expect(plan().querySelector('[data-service-id]')).toBeNull();
+    expect(usePropertyStore.getState().property).toEqual(before);
+    act(() => useDisciplineVisibilityStore.getState().showAll());
+    expect(plan().querySelector('[data-service-port]')).not.toBeNull();
+    expect(plan().getAttribute('viewBox')).toBe(view);
+  });
+  it('Escape closes Layers before leaving the services workbench', () => {
+    click('Layers'); expect(document.querySelector('.discipline-popover')).not.toBeNull();
+    act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    expect(document.querySelector('.discipline-popover')).toBeNull();
+    expect(document.querySelector('[role=dialog]')).not.toBeNull();
+  });
   it('draws a snapped route by dragging once and only saves on Finish', () => {
     click('Cold water');
     input('Start elevation', '0');

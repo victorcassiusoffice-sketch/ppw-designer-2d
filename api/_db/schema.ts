@@ -40,6 +40,7 @@ import {
   boolean,
   numeric,
   uuid,
+  primaryKey,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
@@ -757,4 +758,30 @@ export const studioAccessRecords = pgTable('studio_access_records', {
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
 }, (table) => ({
   expiryIdx: index('studio_access_records_expiry_idx').on(table.expiresAt),
+}));
+
+// Shared specifications: use migration 0032 and its atomic save function.
+// Do not replace it with db:push; triggers/function enforce history and CAS.
+export const olbSharedProjects = pgTable('olb_shared_projects', {
+  id: uuid('id').primaryKey(),
+  ownerUserId: varchar('owner_user_id', { length: 128 }).notNull(),
+  revision: integer('revision').notNull(),
+  document: jsonb('document').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({ owner: index('olb_shared_projects_owner_idx').on(table.ownerUserId) }));
+
+export const olbSharedSpecRevisions = pgTable('olb_shared_spec_revisions', {
+  projectId: uuid('project_id').notNull().references(() => olbSharedProjects.id),
+  revision: integer('revision').notNull(),
+  actorUserId: varchar('actor_user_id', { length: 128 }).notNull(),
+  requestId: uuid('request_id').notNull(),
+  requestHash: varchar('request_hash', { length: 64 }).notNull(),
+  operation: varchar('operation', { length: 32 }).notNull(),
+  componentId: varchar('component_id', { length: 180 }),
+  document: jsonb('document').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({
+  version: primaryKey({ columns: [table.projectId, table.revision] }),
+  retry: uniqueIndex('olb_shared_spec_revisions_project_id_request_id_key').on(table.projectId, table.requestId),
 }));

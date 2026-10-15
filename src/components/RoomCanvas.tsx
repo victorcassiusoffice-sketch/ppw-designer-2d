@@ -54,7 +54,7 @@ import { ServiceFixturesPlanLayer } from './ServiceFixturesPlanLayer';
 import { ServiceRoutesPlanLayer } from './ServiceRoutesPlanLayer';
 import { visibleServiceRuns } from '../designer/serviceScene';
 import { useDisciplineVisibilityStore } from '../store/disciplineVisibilityStore';
-import { productDiscipline, serviceFixtureDiscipline } from '../designer/disciplineVisibility';
+import { productVisible, serviceFixtureDiscipline } from '../designer/disciplineVisibility';
 import type Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
 import { usePropertyStore, selectActiveRoom, roomOpenings } from '../store/propertyStore';
@@ -2670,8 +2670,9 @@ export function RoomCanvas({
   // painted area, litres and the whole-tin cost, in the display currency.
   const propertyForPaint = usePropertyStore((st) => st.property);
   const visible = useDisciplineVisibilityStore(s => s.visible);
-  const serviceFixtures = useMemo(() => visibleServiceFixtures(propertyForPaint, activeLevelId).filter(fixture => visible[serviceFixtureDiscipline(fixture.kind)]), [propertyForPaint, activeLevelId, visible]);
-  const serviceRuns = useMemo(() => visibleServiceRuns(propertyForPaint, activeLevelId, 'floor', visible), [propertyForPaint, activeLevelId, visible]);
+  const parts = useDisciplineVisibilityStore(s => s.parts);
+  const serviceFixtures = useMemo(() => visibleServiceFixtures(propertyForPaint, activeLevelId).filter(fixture => parts.equipment && visible[serviceFixtureDiscipline(fixture.kind)]), [propertyForPaint, activeLevelId, visible, parts]);
+  const serviceRuns = useMemo(() => parts.routes ? visibleServiceRuns(propertyForPaint, activeLevelId, 'floor', visible) : [], [propertyForPaint, activeLevelId, visible, parts]);
   const planWallHeight = levelHeightM(propertyForPaint, activeLevelId);
   const planSun = useMemo(() => planDaylight(sunHour, planWallHeight), [sunHour, planWallHeight]);
   const planSharedEdges = useMemo(() => sharedEdgeMap(drawnRooms), [drawnRooms]);
@@ -3300,7 +3301,7 @@ export function RoomCanvas({
           type="button"
           data-testid="canvas-chrome-toggle"
           aria-expanded={canvasToolsOpen}
-          aria-label={`${area.toFixed(0)} square metres. ${canvasToolsOpen ? 'Hide plan tools' : 'Show plan tools'}`}
+          aria-label={`${area.toFixed(0)} m². ${canvasToolsOpen ? 'Hide plan tools' : 'Show plan tools'}`}
           aria-controls="canvas-plan-tools"
           onClick={() => setCanvasToolsOpen((v) => !v)}
           className="pointer-events-auto inline-flex h-11 min-w-11 items-center justify-center gap-1 rounded-l-2xl bg-white px-2.5 text-[12px] font-semibold tabular-nums text-[#37362f] shadow-[0_2px_10px_rgba(42,41,38,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-inkDeep"
@@ -4415,7 +4416,7 @@ export function RoomCanvas({
           {/* STOREY BELOW (Sims world) — the floor underneath as a faint
               outline, so an upper floor can be drawn to line up with the
               walls that carry it. Outline only, never fill, never listening. */}
-          {belowRooms.map((room) => (
+          {parts.walls && belowRooms.map((room) => (
             <Line
               key={`below-${room.id}`}
               name="room-below"
@@ -4439,7 +4440,7 @@ export function RoomCanvas({
             const pts = room.polygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre]);
             const isActive = room.id === activeRoomId;
             return (
-              <Group key={room.id} name="room-poly" listening={false}>
+              <Group key={room.id} name="room-poly" listening={false} visible={!isRoofRoom(room) || parts.roofs}>
                 {/* Architectural paper (2026-08-29): the walls ARE the drawing.
                     Paper-white floor, charcoal poche walls with a soft cast
                     shadow so the plan reads as a model on a desk.
@@ -4447,6 +4448,7 @@ export function RoomCanvas({
                     FLOOR — fill only, no stroke. Split from the wall so an
                     opening can cut the wall without cutting the floor away
                     underneath it. */}
+                <Group visible={isRoofRoom(room) ? parts.roofs : parts.floors} listening={false}>
                 <Line
                   points={pts}
                   closed
@@ -4563,7 +4565,8 @@ export function RoomCanvas({
                   </Group>
                 )}
 
-                {!isRoofRoom(room) && (
+                </Group>
+                {parts.walls && parts.floors && !isRoofRoom(room) && (
                   <Group listening={false} clipFunc={polygonClipFunc(room.polygon, pxPerMetre)} name="room-contact-depth">
                     {planSun.strength > 0 && roomEdges(room).flatMap(edge => splitEdgeSpans(edge.lengthM, wallGapsByEdge.get(edgeKey(room.id, edge.index)) ?? []).map((span, index) => {
                       const a = pointAlongEdge(edge, span.t0), b = pointAlongEdge(edge, span.t1);
@@ -4618,7 +4621,7 @@ export function RoomCanvas({
                     into the gap, so an opening-side end is pulled back by the
                     same half-stroke and the cap puts it back exactly on the
                     jamb — the gap ends up the true width of the door. */}
-                {!isRoofRoom(room) && roomEdges(room).map((edge) => {
+                {parts.walls && !isRoofRoom(room) && roomEdges(room).map((edge) => {
                   // The wall is a REAL thickness in world metres (0.1 m), so
                   // it scales with pxPerMetre like everything else; at the
                   // default 100 px/m that is the historic 10 px stroke.
@@ -4687,7 +4690,7 @@ export function RoomCanvas({
 
                     Drawn per HOST room only: a door in a shared wall cuts both
                     rooms' strokes (see wallGapsByEdge) but draws ONE symbol. */}
-                {roomOpenings(room).map((o) => {
+                {parts.walls && roomOpenings(room).map((o) => {
                   // By the edge's OWN index, not array position (latent
                   // defect 9): roomEdges drops degenerate edges, and a
                   // positional lookup would then draw every later door one
@@ -4787,7 +4790,7 @@ export function RoomCanvas({
               line set across rooms leaves every room but the active one
               blank, because the generator only spans the bounds it was
               given. */}
-          {showGrid
+          {showGrid && parts.floors
             && drawnRooms.map((room) => (
               <Group
                 key={`grid-${room.id}`}
@@ -4809,13 +4812,13 @@ export function RoomCanvas({
               </Group>
             ))}
 
-          <BuildingPlanLayer property={propertyForPaint} activeLevelId={activeLevelId} pxPerMetre={pxPerMetre} scale={viewport.scale} />
+          {parts.stairs && <BuildingPlanLayer property={propertyForPaint} activeLevelId={activeLevelId} pxPerMetre={pxPerMetre} scale={viewport.scale} />}
           </Group>
           {visible.foundation && activeLevelId === 'ground' && propertyForPaint.foundation?.enabled && <FoundationPlanLayer model={propertyForPaint.foundation} pxPerMetre={pxPerMetre} />}
           <ServiceRoutesPlanLayer runs={serviceRuns} pxPerMetre={pxPerMetre} scale={viewport.scale} onSelect={wallSelectArmed && !gardenPlacement ? fixtureId => window.dispatchEvent(new CustomEvent('ppw:open-services', { detail: { fixtureId } })) : undefined} />
           <ServiceFixturesPlanLayer fixtures={serviceFixtures} pxPerMetre={pxPerMetre}
             onSelect={wallSelectArmed && !gardenPlacement ? fixtureId => window.dispatchEvent(new CustomEvent('ppw:open-services', { detail: { fixtureId } })) : undefined} />
-          <Group visible={visible.structure} listening={visible.structure}>
+          <Group visible={visible.structure && parts.walls} listening={visible.structure && parts.walls}>
 
           {/* FREE-STANDING WALLS (Sims world 2026-08-29) — open runs the
               customer drew without closing a room. Same poche as room walls,
@@ -5079,7 +5082,7 @@ export function RoomCanvas({
           <Group name="light-pools" listening={false}>
             {levelItems.map((item) => {
               const product = getProductById(item.productId);
-              if (!product || !visible[productDiscipline(product)] || !emitsLight(product) || item.lightOn === false) return null;
+              if (!product || !productVisible(product, visible, parts) || !emitsLight(product) || item.lightOn === false) return null;
               const fp = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
               const { w, h } = rotatedFootprint(fp, item.rotation);
               const r = lightRadiusM(product) * pxPerMetre;
@@ -5121,7 +5124,7 @@ export function RoomCanvas({
               // (a diffuser on top of its table) everywhere, not just active.
               return sortItemsForRender(room.placedItems).map((item) => {
                 const product = getProductById(item.productId);
-                if (!product || !visible[productDiscipline(product)]) return null;
+                if (!product || !productVisible(product, visible, parts)) return null;
                 const fp = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
                 const { w, h } = rotatedFootprint(fp, item.rotation);
                 const wPx = w * pxPerMetre;
@@ -5210,7 +5213,7 @@ export function RoomCanvas({
             permanently-listening layer would swallow every armed
             placement click. */}
         {measureTool && (
-          <Layer name="measure-edges" visible={visible.structure} listening={visible.structure}>
+          <Layer name="measure-edges" visible={visible.structure && parts.walls} listening={visible.structure && parts.walls}>
             {drawnRooms.map((room) =>
               roomEdges({ id: room.id, polygon: room.polygon }).map((e, i) => {
                 const sel =
@@ -5350,13 +5353,13 @@ export function RoomCanvas({
         {/* Legacy interior walls (wallStore). Normally EMPTY — App migrates
             them onto the property on mount — but rendered if any remain so
             nothing a customer drew ever silently disappears. */}
-        <CommittedWallsLayer walls={visible.structure ? committedWalls : []} pxPerMetre={pxPerMetre} />
+        <CommittedWallsLayer walls={visible.structure && parts.walls ? committedWalls : []} pxPerMetre={pxPerMetre} />
 
         {/* M2 — Sims-style wall tool. Visible whenever wallStore phase
             is not 'idle' (driven by the ModeStrip's Wall button). Mounts
             as a Stage child so it shares viewport + pxPerMetre. */}
         <WallDrawLayer
-          enabled={visible.structure && wallDrawEnabled && !drawMode}
+          enabled={visible.structure && parts.walls && wallDrawEnabled && !drawMode}
           stageRef={stageRef}
           containerRef={containerRef}
           viewport={viewport}
@@ -5428,7 +5431,7 @@ export function RoomCanvas({
         </div>
       )}
 
-      <WallDrawHUD enabled={visible.structure && wallDrawEnabled && !drawMode} />
+      <WallDrawHUD enabled={visible.structure && parts.walls && wallDrawEnabled && !drawMode} />
 
       {/* Sims feature-finish (flagship F1/M6) — on-canvas floating cluster
           for the selected object. Replaces the old mobile slide-up
