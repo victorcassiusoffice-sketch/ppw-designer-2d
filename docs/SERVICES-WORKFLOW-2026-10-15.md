@@ -25,6 +25,6 @@ Implementation complete and locally verified on production bundle `App-CDZDraaG.
 
 Defects found and corrected during QA: clipped Layers popover, Escape unintentionally leaving 3D, empty-room text obscuring service-only scenes, phone Foundation totals clipping, and demo initialization closing Services/Foundation deep links. Remaining scope: schematic equipment envelopes; no hydraulic/HVAC/fire sizing or structural approval, automatic cross-floor riser links, live inventory or supplier orders. Large initial bundles and some legacy English copy remain.
 
-Release: awaiting feature push and exact-commit live verification. Main and production remain untouched. The final release directory and handoff will pin the verified preview.
+Release: feature commit `97146b738e3a649edac8597aecc7d9caec38231d` is live at https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app. Cache-busted curl confirms exact commit and preview environment; all16 live desktop/phone cases pass with zero errors/writes/overflow. All30 existing links answer200 with gates distinguished. Main and production remain untouched. See `docs/CONNECTED-SERVICES-LINKS-2026-10-15.md`. GitHub Lighthouse is still a hardcoded-production audit failure; other quality checks pass.
 
 Handoff destination: `C:\Users\Victor\Documents\PPW-Second-Brain\06-Roadmap\agentix-os\inbox\designer-2026-10-15-connected-services\HANDOFF.md`.

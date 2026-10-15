@@ -1,3 +1,18 @@
+## 2026-10-15 — Connected services and guided house build
+
+**LIVE-ON-PREVIEW.** Application commit `97146b738e3a649edac8597aecc7d9caec38231d`, branch `gpt/designer-2026-10-15`, [PR #48](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/48). This is the newest pinned application preview. Main and production remain unchanged.
+
+- [https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/demo?view=3d&panel=services&pitch=1](https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/demo?view=3d&panel=services&pitch=1) - One Live Build: measured routing for plumbing, electrical, HVAC, fire and security teams.
+- [https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/pitch/plumbing](https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/pitch/plumbing) - One Live Build: interactive pitch for plumbing suppliers, installers and bathroom showrooms.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/CONNECTED-SERVICES-LINKS-2026-10-15.md](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/CONNECTED-SERVICES-LINKS-2026-10-15.md) - One Live Build: full demo, pitch, embed, protected workspace and absolute source-path directory.
+- [C:/Users/Victor/Documents/PPW-Second-Brain/06-Roadmap/agentix-os/inbox/designer-2026-10-15-connected-services/HANDOFF.md](C:/Users/Victor/Documents/PPW-Second-Brain/06-Roadmap/agentix-os/inbox/designer-2026-10-15-connected-services/HANDOFF.md) - One Live Build: team handoff, guide and desktop/phone screenshots.
+
+Added: connected 2D/3D service routes, bends and node elevations; HVAC/fire/security equipment references; shared discipline layers; circular-hole diameter/depth and exact individual excavation volume; 19-step house guide; updated plumbing pitch. Use Foundation → Circular hole for diameter/depth, Layers → Only / Show all for visibility, and Site & tools → Guide in plan. The service editor is schematic, with no hydraulic/HVAC/fire sizing or automatic cross-floor network solution. Standalone powder equipment is not a water sprinkler. Circular bores do not auto-design piles. Supplier references do not confirm stock or orders.
+
+Validation: 360 files / 3,984 tests; build and scoped lint pass; 70 local desktop/phone screenshots inspected. Live:16 desktop/phone cases pass with zero console/page errors, failed requests, attempted writes or horizontal overflow. All30 existing URLs answer200 (23 app shells,7 intended gates). Cache-busted curl verifies exact commit and preview environment. GitHub typecheck, tests, secret scan and Vercel pass; Lighthouse still audits hardcoded production and fails there. No orders, invoices, emails, migrations or production change. Full evidence is in `docs/qa-services-live-2026-10-15`.
+
+Older entries below are history. Later documentation commits may create identical app deployments; this application URL remains pinned.
+
 ## 2026-10-15 — One Live Build project-engine preview
 
 **LIVE-ON-PREVIEW.** Application commit `491605e28ac4947508a09303b129c9ad187eac9a`, branch `gpt/designer-2026-10-15`, [PR #48](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/48). This successor includes PR #47 City work and current main history through `480c56e`. Main/production and the preserved September checkout remain untouched.

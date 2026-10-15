@@ -4,14 +4,14 @@ One Live Build helps a customer, designer and specialist coordinate the same mea
 
 ## Open the working tools
 
-The release owner replaces `<PREVIEW>` with the verified deployment origin before handover.
+These links use the pinned feature preview; main and production are unchanged.
 
-- `<PREVIEW>/demo?view=2d&pitch=1` - One Live Build Designer: customers, interior designers and house-building teams; open **Guide** (accessible name **House build guide**) in the plan toolbar.
-- `<PREVIEW>/demo?view=3d&pitch=1` - One Live Build Designer: spatial building and product review.
-- `<PREVIEW>/demo?view=2d&panel=foundation&pitch=1` - One Live Build Foundation: designers and engineers coordinating measured excavation, concrete and entered reinforcement quantities.
-- `<PREVIEW>/demo?view=2d&panel=services&pitch=1` - One Live Build Building services: plumbing, electrical, HVAC, fire and security teams; choose **3D edit** inside the workspace to edit routes spatially.
-- `<PREVIEW>/demo?panel=project&pitch=1` - One Live Build Project hub: project assumptions, discipline review and handover.
-- `<PREVIEW>/pitch/plumbing` - One Live Build plumbing pitch: suppliers, installers and bathroom showrooms.
+- [https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/demo?view=2d&pitch=1](https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/demo?view=2d&pitch=1) - One Live Build Designer: customers, interior designers and house-building teams; open **Guide** (accessible name **House build guide**) in the plan toolbar.
+- [https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/demo?view=3d&pitch=1](https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/demo?view=3d&pitch=1) - One Live Build Designer: spatial building and product review.
+- [https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/demo?view=2d&panel=foundation&pitch=1](https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/demo?view=2d&panel=foundation&pitch=1) - One Live Build Foundation: designers and engineers coordinating measured excavation, concrete and entered reinforcement quantities.
+- [https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/demo?view=2d&panel=services&pitch=1](https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/demo?view=2d&panel=services&pitch=1) - One Live Build Building services: plumbing, electrical, HVAC, fire and security teams; choose **3D edit** inside the workspace to edit routes spatially.
+- [https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/demo?panel=project&pitch=1](https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/demo?panel=project&pitch=1) - One Live Build Project hub: project assumptions, discipline review and handover.
+- [https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/pitch/plumbing](https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/pitch/plumbing) - One Live Build plumbing pitch: suppliers, installers and bathroom showrooms.
 
 Choose a guide step, read its review note and select **Open this tool**. The guide collapses so the drawing stays usable. Use its resume control to return. **Minimise**, **Close**, Escape or clicking outside dismisses the guide without trapping the canvas. A tick records your own review, not a completed installation or approval. Progress is saved locally per project in this browser; it is not a shared cloud approval record. English, French, Spanish and Simplified Chinese guide copy is available through the app language preference.
 

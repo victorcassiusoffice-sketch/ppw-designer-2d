@@ -1,3 +1,5 @@
+> Newer connected-services release: [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/CONNECTED-SERVICES-LINKS-2026-10-15.md](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/CONNECTED-SERVICES-LINKS-2026-10-15.md) - One Live Build: current demo/pitch/source directory. The project-engine URLs below are retained as historical release evidence.
+
 # One Live Build — release links and full file locations, 15 October 2026
 
 Feature preview release: `491605e28ac4947508a09303b129c9ad187eac9a`. Branch: `gpt/designer-2026-10-15`. This is the pinned, immutable application deployment; later documentation commits do not change this link. Main and the production domains were not updated. PR #47's City work is included in this successor branch.
