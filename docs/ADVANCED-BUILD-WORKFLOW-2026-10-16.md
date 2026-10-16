@@ -48,3 +48,7 @@ These are measured planning tools. Thickness selection and quantities do not cer
 ## Scope limits to preserve in pitches
 
 Curves persist as measured short segments, not post-save spline handles. Openings need one straight wall edge and cannot yet span a curved chain. Roofs support a custom single footprint and existing pitch modes, not engineered intersections/valleys. Pools are rectangular planning basins; a supplier reference is not its exact mould. No new supplier stock API or automatic purchase connection is claimed. Existing shared Neon activation still requires its separate migration/review; this task performs no database writes.
+
+## Final preview proof
+
+Pinned application: https://ppw-designer-2d-3pnq6uesz-victor-ppw.vercel.app; commit a07178f260ea7eb767ea4042ef743f323a70c590. Cache-busted /api/healthcheck returned 200, env preview and the exact SHA. Eight terminal Playwright desktop/phone live cases pass with zero console/page/network errors, writes or horizontal overflow; screenshots inspected. All 34 directory URLs return 200. GitHub application/API typechecks, Vitest, secret scan and Vercel pass. Existing Lighthouse performance/PWA assertions remain failing. See docs/qa-advanced-live-2026-10-16/report.json and links.json. Verification used a process-only Vercel edge resolver with the original host and TLS; no machine DNS changes.

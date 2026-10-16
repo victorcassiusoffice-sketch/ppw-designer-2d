@@ -1,3 +1,15 @@
+## 2026-10-16 — Measured authoring, glass, outdoor layers and tactile skins
+
+**LIVE-ON-PREVIEW.** Application commit a07178f260ea7eb767ea4042ef743f323a70c590. Branch gpt/designer-2026-10-15; PR48. Main, production and live database untouched. Later documentation commits may produce identical application deployments; this is the pinned verified origin.
+
+- [https://ppw-designer-2d-3pnq6uesz-victor-ppw.vercel.app/demo?view=3d&pitch=1](https://ppw-designer-2d-3pnq6uesz-victor-ppw.vercel.app/demo?view=3d&pitch=1) - One Live Build: all-in-one interactive demo for architects, developers, merchants, installers, landscape and city teams.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/ADVANCED-BUILD-LINKS-2026-10-16.md](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/ADVANCED-BUILD-LINKS-2026-10-16.md) - One Live Build: all 34 app/pitch/embed routes and full source locations.
+- [C:/Users/Victor/Documents/PPW-Second-Brain/06-Roadmap/agentix-os/inbox/designer-2026-10-16-curves-glass-outdoors/HANDOFF.md](C:/Users/Victor/Documents/PPW-Second-Brain/06-Roadmap/agentix-os/inbox/designer-2026-10-16-curves-glass-outdoors/HANDOFF.md) - One Live Build: handoff, NEXT-AI.md, workflow, QA, full links and actual screenshots.
+
+Landed: door editing and direct catalogue drop, measured curves and shaped holes, roof outlines/overhang, sourced glass thickness, outdoor/pool quantities, three tool skins and backdrops. Local suite 373 files / 4,167 tests passes. Build/API types/lint pass; 52 compiled captures plus eight live desktop/phone cases pass with zero console/page errors or attempted writes. All 34 directory URLs answer 200 (protected workspace routes retain their existing gate). Cache-busted health proves preview and application SHA. GitHub tests/types/secrets and Vercel pass; existing Lighthouse performance/PWA issues remain. See QA for phone opening-inspector clearance and fine curved-wall seam limits. Shared cloud migration 0032 remains unapplied; no live supplier orders/emails.
+
+Older entries below are history.
+
 ## 2026-10-16 — Shared sustainable project and working views
 
 **LIVE-ON-PREVIEW.** Application `be9203ab030c34f4cab9b61cf94240a508fe9025`, branch `gpt/designer-2026-10-15`, [PR48](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/48). Main and production remain unchanged. Newer documentation-only deployments do not replace this pinned application origin.
@@ -343,3 +355,4 @@ These exist on the machine or as older worktrees; they are **not** the phone-tes
 - Older flooring / doors / paint branches under `feat/designer-*`
 
 If you need a preview for one of those, deploy or open its PR first — don't invent a Vercel URL.
+
