@@ -1,9 +1,22 @@
 /** One roof profile for rendering, picking and catalog-item mounting. Plan metres, z up. */
 import type { Polygon, Vertex } from '../lib/geometry';
+import { polygonArea } from '../lib/geometry';
+import { isSimpleMeasuredPolygon } from './measuredPath';
 import { normaliseRoofConfig, type RoofConfig } from './building';
 
 export const ROOF_COVERING_THICKNESS_M = 0.08;
 export const ROOF_MOUNT_CLEARANCE_M = 0.06;
+
+/** Covering quantities use precisely the overhang outline and pitch shown by
+ * the renderer. Separate roof slabs may overlap; no hidden union assumption. */
+export function roofMeasuredAreas(polygon: Polygon, config: RoofConfig): { footprintM2: number; projectedM2: number; coveringM2: number } | null {
+  const clean = normaliseRoofConfig(config);
+  if (!clean || !isSimpleMeasuredPolygon(polygon)) return null;
+  const outline = roofOutline(polygon, clean.overhangM);
+  if (!isSimpleMeasuredPolygon(outline)) return null;
+  const projectedM2 = polygonArea(outline);
+  return { footprintM2: polygonArea(polygon), projectedM2, coveringM2: projectedM2 / (clean.style === 'flat' ? 1 : Math.cos(clean.pitchDeg * Math.PI / 180)) };
+}
 export interface RoofSurface {
   polygon: Polygon;
   elevationM: number;

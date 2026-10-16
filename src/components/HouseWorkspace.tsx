@@ -1,4 +1,5 @@
 import { quoteAwareAmount } from '../lib/quotedProducts';
+import { OpeningDimensions } from './OpeningDimensions';
 import { ServicesLaunchButton } from './ServicesWorkspace';
 import { FoundationLaunchButton } from './FoundationWorkspace';
 import { CityLaunchButton } from './CityWorkspace';
@@ -11,6 +12,7 @@ import { isPitchEmbed } from '../demo/pitchEmbed';
 import { PRECISION_STEP_M, useDesignerUIStore } from '../store/designerUIStore';
 import { useHistoryStore } from '../store/historyStore';
 import { usePropertyStore } from '../store/propertyStore';
+import { useMeasuredPathToolStore } from '../store/measuredPathToolStore';
 import { activeLevelIdOf, isOutdoorRoom, isRoofRoom, levelsOf, isRoofLevel } from '../designer/levels';
 import { isDrawnPolygon } from '../designer/roomLayout';
 import type { BuildingControlsProps } from './BuildingControls';
@@ -57,6 +59,8 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
   const [mobileInspector, setMobileInspector] = useState(false);
   const [costOpen, setCostOpen] = useState(false);
   const [buildPaletteOpen, setBuildPaletteOpen] = useState(false);
+  const measuredTarget = useMeasuredPathToolStore(s => s.target);
+  useEffect(() => { if (measuredTarget) setBuildPaletteOpen(false); }, [measuredTarget]);
   const panelOpen = mobileInspector || costOpen;
   const inspectorRef = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -178,8 +182,9 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
           <label>Width <select aria-label="Opening width" value={doorDraft.widthM} onChange={event => useDesignerUIStore.getState().setDoorDraft({ widthM: Number(event.target.value) })}>
             {[...new Set([...(buildTool === 'window' ? [0.6, 0.9, 1.2, 1.5, 1.8, 2.4] : DOOR_WIDTHS_M), doorDraft.widthM])].sort((a, b) => a - b).map(width => <option key={width} value={width}>{width} m</option>)}
           </select></label>
-          {buildTool === 'door' && <><button type="button" aria-pressed={doorDraft.flipFacing} onClick={() => useDesignerUIStore.getState().toggleDoorFacing()} title="Flip swing side (F)">Flip side</button><button type="button" aria-pressed={doorDraft.flipHand} onClick={() => useDesignerUIStore.getState().toggleDoorHand()} title="Swap hinge (H)">Flip hinge</button></>}
+          {doorDraft.kind === 'door' && <><button type="button" aria-pressed={doorDraft.flipFacing} onClick={() => useDesignerUIStore.getState().toggleDoorFacing()} title="Flip swing side (F)">Flip side</button><button type="button" aria-pressed={doorDraft.flipHand} onClick={() => useDesignerUIStore.getState().toggleDoorHand()} title="Swap hinge (H)">Flip hinge</button></>}
           <small>Slide along a wall · release to place · repeat or Done. Esc cancels · right-drag or two fingers move the view</small>
+          <OpeningDimensions />
         </div>}
         {selection && <div className="house-selection-strip" data-testid="house-selection-strip">
           <span><small>SELECTED</small><strong>{selection.name}</strong></span>

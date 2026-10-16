@@ -33,6 +33,7 @@ const SUPPLIERS = [
   'Legrand(?: Mauritius)?', 'Medine Garden Cent(?:er|re)', 'Endemika(?: Mauritius)?',
   'Ignitech', 'Shield Fire Protection', 'Seculogix', 'TP[- ]?Link',
   'Vortice', 'Daikin', 'Wheatland(?: Tube)?', 'Belden',
+  'Birmingham(?: Mauritius)?', 'Nabridas',
 ];
 
 const anyOf = (names: readonly string[]) => new RegExp(`(?<![\\w-])(?:${names.join('|')})(?![\\w-])`, 'gi');

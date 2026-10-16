@@ -7,6 +7,7 @@ import { pruneZone } from './floorTiles';
 import { roomEdges, pointAlongEdge, projectOntoEdge, perpDistanceToEdgeLine } from './wallEdges';
 import { nextRoomName } from './roomNaming';
 import { runToFreeWalls, type FreeWall } from './freeWalls';
+import { sanitizeWallMaterialSpec } from './wallConstruction';
 
 const EPS = 1e-7;
 /** Join tolerance is 1 mm, matching physical shared-wall detection. */
@@ -213,7 +214,7 @@ function applyFreeWallFinishes(room: Room, walls: FreeWall[], allRooms: Room[]):
       if (wall.paintFaces === 2 && owners.length === 1) result.wallPaint.push({ ...finish, side: 'exterior' });
     }
     if (wall.exteriorPaint && owners.length === 1 && !result.wallPaint.some(p => p.edgeIndex === edge.index && p.side === 'exterior')) result.wallPaint.push({ ...wall.exteriorPaint, edgeIndex: edge.index, side: 'exterior' });
-    if (wall.construction && !result.wallConstruction.some(p => p.edgeIndex === edge.index)) result.wallConstruction.push({ edgeIndex: edge.index, kind: wall.construction });
+    if (wall.construction && !result.wallConstruction.some(p => p.edgeIndex === edge.index)) result.wallConstruction.push({ edgeIndex: edge.index, kind: wall.construction, ...sanitizeWallMaterialSpec(wall.construction, { thicknessMm: wall.thicknessM * 1000, materialProductId: wall.materialProductId }) });
     if (wall.claddingId && faceIndex < (wall.claddingFaces ?? 1) && !result.wallCladding.some(p => p.edgeIndex === edge.index)) result.wallCladding.push({ edgeIndex: edge.index, productId: wall.claddingId });
   }
   return result;

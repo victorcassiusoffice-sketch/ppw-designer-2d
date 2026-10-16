@@ -52,15 +52,20 @@ export const MaterialsInputSchema = z.object({
 export const MaterialsGeometrySchema = z.object({
   walls: z.array(z.object({
     id: key, levelId: key.optional(), lengthM: n(.001, 10000), heightM: n(.001, 100),
-    thicknessM: n(.025, 2).optional(), openingAreaM2: n(0, 1e6),
+    thicknessM: n(.002, 2).optional(), openingAreaM2: n(0, 1e6),
+    construction: z.enum(['plastered-brick', 'brick', 'concrete', 'glass']).optional(),
+    materialProductId: key.optional(),
     grossAreaM2: n(0, 1e6).optional(), netAreaM2: n(0, 1e6).optional(),
   }).strict()).max(2000),
+  roofProfile: z.object({ pitchDeg: n(0, 60), slopes: z.union([z.literal(1), z.literal(2)]), overhangIncluded: z.literal(true) }).strict().optional(),
   baseAreaM2: n(0, 1e6), roofAreaM2: n(0, 1e6), roofLengthM: n(0, 10000), roofWidthM: n(0, 10000), roofRectangular: z.boolean(),
 }).strict().superRefine((geometry, ctx) => {
   const ids = new Set<string>();
   geometry.walls.forEach((wall, index) => {
     if (ids.has(wall.id)) ctx.addIssue({ code: 'custom', path: ['walls', index, 'id'], message: 'Each physical wall must appear once with a unique ID.' });
     ids.add(wall.id);
+    if (wall.thicknessM !== undefined && (wall.construction === 'glass' ? wall.thicknessM > .04 : wall.thicknessM < .025))
+      ctx.addIssue({ code: 'custom', path: ['walls', index, 'thicknessM'], message: 'Use 2–40 mm for glass; masonry thickness must be at least 25 mm.' });
     if (wall.openingAreaM2 > wall.lengthM * wall.heightM + 1e-8)
       ctx.addIssue({ code: 'custom', path: ['walls', index, 'openingAreaM2'], message: 'Opening area exceeds gross wall area.' });
   });

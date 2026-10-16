@@ -43,6 +43,9 @@ export interface PlacementIntent {
   target: PlacementTarget;
   /** Monotonic id so repeated identical placements still trigger the effect. */
   nonce: number;
+  /** Exact drops reject blocked spots instead of relocating to another part of the room. */
+  strict?: boolean;
+  keepArmed?: boolean;
 }
 
 export interface MoveIntent {
@@ -62,7 +65,7 @@ interface PlacementIntentState {
   /** Place at an exact screen coordinate (drag-release path). */
   placeAt: (productId: string, clientX: number, clientY: number) => void;
   /** Place at a point on the plan, metres (3D Mode's floor ray). */
-  placeAtPoint: (productId: string, roomX: number, roomY: number) => void;
+  placeAtPoint: (productId: string, roomX: number, roomY: number, options?: { strict?: boolean; keepArmed?: boolean }) => void;
   /** RoomCanvas calls this once it has handled the current intent. */
   consume: () => void;
   /**
@@ -88,8 +91,8 @@ let movePreviewResolver: MovePreviewResolver | null = null;
 export const usePlacementIntentStore = create<PlacementIntentState>((set) => ({
   intent: null,
   placeAtCenter: (productId) => set({ intent: { productId, target: 'center', nonce: ++nonceSeq } }),
-  placeAt: (productId, clientX, clientY) => set({ intent: { productId, target: { clientX, clientY }, nonce: ++nonceSeq } }),
-  placeAtPoint: (productId, roomX, roomY) => set({ intent: { productId, target: { roomX, roomY }, nonce: ++nonceSeq } }),
+  placeAt: (productId, clientX, clientY) => set({ intent: { productId, target: { clientX, clientY }, strict: true, nonce: ++nonceSeq } }),
+  placeAtPoint: (productId, roomX, roomY, options) => set({ intent: { productId, target: { roomX, roomY }, ...options, nonce: ++nonceSeq } }),
   consume: () => set({ intent: null }),
   armedProductId: null,
   setArmed: (productId) => set((s) => (s.armedProductId === productId ? s : { armedProductId: productId })),

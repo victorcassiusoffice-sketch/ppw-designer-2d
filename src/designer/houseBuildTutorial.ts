@@ -419,22 +419,22 @@ export const HOUSE_TUTORIAL_STEPS: Step[] = [
     copy: {
       en: [
         'Landscape and ecology',
-        'Coordinate outdoor surfaces, paths and planting. Review levels, drainage and retained-tree protection before assigning materials.',
+        'Open Garden: drag a surface or use Custom outdoor outline for polygons and curves, then Finish. Select it to set material/sub-base depth. Add a Swimming pool to set basin/water depth and inspect excavation, empty or filled views. Review drainage, barriers and tree protection with the responsible designers.',
         'I have reviewed outdoor access, levels and ecological assumptions.',
       ],
       fr: [
         'Paysage et écologie',
-        'Coordonnez sols extérieurs, chemins et plantations. Vérifiez niveaux, drainage et protection des arbres avant les matériaux.',
+        'Ouvrez Jardin : dessinez une surface ou un contour personnalisé avec segments et courbes, puis Terminer. Sélectionnez-la pour régler épaisseur et sous-couche. Ajoutez une piscine pour régler profondeur du bassin et de l’eau, puis voir excavation, bassin vide ou rempli. Faites vérifier drainage, barrières et arbres par les concepteurs responsables.',
         'J’ai revu accès extérieurs, niveaux et hypothèses écologiques.',
       ],
       es: [
         'Paisaje y ecología',
-        'Coordine pavimentos, caminos y plantación. Revise cotas, drenaje y protección del arbolado antes de asignar materiales.',
+        'Abra Jardín: dibuje una superficie o un contorno personalizado con segmentos y curvas, y pulse Finalizar. Selecciónela para definir espesor y subbase. Añada una piscina para definir profundidad del vaso y del agua y ver excavación, vaso vacío o lleno. Revise drenaje, barreras y árboles con los responsables del diseño.',
         'He revisado acceso exterior, cotas e hipótesis ecológicas.',
       ],
       'zh-CN': [
         '景观与生态',
-        '协调室外铺装、路径和种植，分配材料前核对标高、排水及保留树木保护。',
+        '打开花园：拖动画出铺装，或用自定义轮廓绘制多边形和曲线，然后完成。选中后设置材料厚度和基层深度。添加泳池，设置池深及水深，并切换开挖、空池或蓄水视图。请负责设计的专业人员核查排水、防护栏及树木保护。',
         '我已检查室外通行、标高和生态假设。',
       ],
     },

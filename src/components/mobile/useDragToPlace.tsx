@@ -156,7 +156,9 @@ export function useDragToPlace(opts: UseDragToPlaceOptions) {
       const p = ptr.current;
       if (!p || e.pointerId !== p.pointerId) return;
       if (p.timer) clearTimeout(p.timer);
-      if (p.dragging) {
+      if (e.type === 'pointercancel') {
+        cbs.current.onCancel?.();
+      } else if (p.dragging) {
         // Drop at the LIFTED point (matches the rendered ghost centre).
         cbs.current.onDrop(p.productId, e.clientX, e.clientY - liftPx, e.shiftKey);
       } else if (!p.armed && mode === 'longpress') {
@@ -169,6 +171,7 @@ export function useDragToPlace(opts: UseDragToPlaceOptions) {
       }
       ptr.current = null;
       setDrag(null);
+      try { p.el.releasePointerCapture(p.pointerId); } catch { /* Not captured. */ }
     }
 
     window.addEventListener('pointermove', onMove, { passive: false });

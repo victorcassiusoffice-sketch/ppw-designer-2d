@@ -3,14 +3,24 @@ import { finishOfPaint, resolveWallColourHex, BARE_PLASTER_HEX } from '../data/w
 import { findCladdingProduct } from '../data/claddingCatalog.js';
 import { roomEdges, collinearOverlap, splitEdgeSpans, type Span } from './wallEdges.js';
 import { roomLevelId } from './levels.js';
+import { findGlassMaterial } from '../data/mauritiusGlass.js';
 
 export type WallSide = 'interior' | 'exterior';
-export type WallConstruction = 'plastered-brick' | 'brick' | 'concrete';
-export interface ConstructedEdge { edgeIndex: number; kind: WallConstruction }
+export type WallConstruction = 'plastered-brick' | 'brick' | 'concrete' | 'glass';
+export interface WallMaterialSpec { thicknessMm?: number; materialProductId?: string }
+export interface ConstructedEdge extends WallMaterialSpec { edgeIndex: number; kind: WallConstruction }
+export function sanitizeWallMaterialSpec(kind: WallConstruction, options?: WallMaterialSpec): WallMaterialSpec {
+  if (kind !== 'glass') return {};
+  const thicknessMm = typeof options?.thicknessMm === 'number' && Number.isFinite(options.thicknessMm)
+    && options.thicknessMm >= 2 && options.thicknessMm <= 40 ? options.thicknessMm : 10;
+  const reference = findGlassMaterial(options?.materialProductId);
+  return { thicknessMm, ...(reference && Math.abs(reference.thicknessMm - thicknessMm) < 1e-6 ? { materialProductId: reference.id } : {}) };
+}
 export const WALL_CONSTRUCTIONS: Array<{ id: WallConstruction; name: string; hex: string; detail: string }> = [
   { id: 'plastered-brick', name: 'Plastered brick', hex: BARE_PLASTER_HEX, detail: 'Smooth rendered face · fine trowel grain' },
   { id: 'brick', name: 'Exposed brick', hex: '#A36B50', detail: '220 × 65 mm brick · recessed mortar joints' },
   { id: 'concrete', name: 'Concrete', hex: '#A7A49C', detail: 'Bare concrete · subtle pores and tonal variation' },
+  { id: 'glass', name: 'Glass', hex: '#9EC8C4', detail: 'Measured glass panels · thickness and supplier reference' },
 ];
 export function isWallConstruction(value: unknown): value is WallConstruction {
   return WALL_CONSTRUCTIONS.some((entry) => entry.id === value);
@@ -27,7 +37,7 @@ export function remapConstruction(edges: ConstructedEdge[] | undefined, edgeMap:
     const index = edgeMap[edge.edgeIndex];
     if (!isWallConstruction(edge.kind) || !Number.isInteger(index) || index < 0 || index >= polygon.length || seen.has(index)) return [];
     seen.add(index);
-    return [{ edgeIndex: index, kind: edge.kind }];
+    return [{ edgeIndex: index, kind: edge.kind, ...sanitizeWallMaterialSpec(edge.kind, edge) }];
   });
   return result.length ? result : undefined;
 }
@@ -46,24 +56,28 @@ export function resolvedWallSurfaces(room: Pick<Room, 'polygon' | 'wallPaint' | 
   const exteriorColourByEdge = new Map<number, string>();
   const exteriorFinishByEdge = new Map<number, string>();
   const wallConstructionByEdge = new Map<number, WallConstruction>();
+  const wallThicknessByEdge = new Map<number, number>();
   for (const edge of room.wallConstruction ?? []) {
     wallConstructionByEdge.set(edge.edgeIndex, edge.kind);
+    if (edge.kind === 'glass') wallThicknessByEdge.set(edge.edgeIndex, (sanitizeWallMaterialSpec(edge.kind, edge).thicknessMm ?? 10) / 1000);
     wallColourByEdge.set(edge.edgeIndex, constructionHex(edge.kind));
     exteriorColourByEdge.set(edge.edgeIndex, constructionHex(edge.kind));
   }
   for (const edge of room.wallPaint ?? []) {
+    if (wallConstructionByEdge.get(edge.edgeIndex) === 'glass') continue;
     const outside = paintSide(edge) === 'exterior';
     (outside ? exteriorColourByEdge : wallColourByEdge).set(edge.edgeIndex, resolveWallColourHex(edge.paintId, edge.colourHex));
     const finish = finishOfPaint(edge.paintId);
     if (finish) (outside ? exteriorFinishByEdge : wallFinishByEdge).set(edge.edgeIndex, finish);
   }
   for (const edge of room.wallCladding ?? []) {
+    if (wallConstructionByEdge.get(edge.edgeIndex) === 'glass') continue;
     const clad = findCladdingProduct(edge.productId);
     if (!clad) continue;
     wallColourByEdge.set(edge.edgeIndex, clad.hex);
     wallFinishByEdge.set(edge.edgeIndex, 'textured');
   }
-  return { wallColourByEdge, wallFinishByEdge, exteriorColourByEdge, exteriorFinishByEdge, wallConstructionByEdge };
+  return { wallColourByEdge, wallFinishByEdge, exteriorColourByEdge, exteriorFinishByEdge, wallConstructionByEdge, wallThicknessByEdge };
 }
 export function sidePaint(paint: PaintedEdge, side: WallSide): PaintedEdge {
   return side === 'exterior' ? { ...paint, side } : paint;

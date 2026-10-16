@@ -1,0 +1,16 @@
+{
+  "base": "http://127.0.0.1:5174",
+  "errors": [],
+  "reports": [
+    {
+      "width": 1280,
+      "overflow": false,
+      "canvasCount": 4
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "canvasCount": 4
+    }
+  ]
+}

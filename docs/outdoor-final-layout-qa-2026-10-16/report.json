@@ -1,0 +1,41 @@
+{
+  "base": "http://127.0.0.1:5174",
+  "width": 390,
+  "bounds": {
+    "main": {
+      "x": 0,
+      "y": 176,
+      "width": 390,
+      "height": 668,
+      "top": 176,
+      "right": 390,
+      "bottom": 844,
+      "left": 0,
+      "paddingBottom": "76px"
+    },
+    ".plan-garden-workspace": {
+      "x": 0,
+      "y": 481.046875,
+      "width": 390,
+      "height": 286.953125,
+      "top": 481.046875,
+      "right": 390,
+      "bottom": 768,
+      "left": 0,
+      "paddingBottom": "0px"
+    },
+    "[data-testid=\"sims-bottom-toolbar\"]": {
+      "x": 86.84375,
+      "y": 772,
+      "width": 216.3125,
+      "height": 56,
+      "top": 772,
+      "right": 303.15625,
+      "bottom": 828,
+      "left": 86.84375,
+      "paddingBottom": "4px"
+    }
+  },
+  "doneClosesInspector": true,
+  "errors": []
+}

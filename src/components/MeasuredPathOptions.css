@@ -1,0 +1,9 @@
+.measured-path-options { display: grid; gap: .5rem; padding: .65rem; border-radius: 16px; border: 1px solid var(--designer-border, #afc1b8); background: var(--designer-panel, #e6ede7); color: var(--designer-text, #253d36); max-width: 100%; }
+.measured-path-options__heading, .measured-path-options__row { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+.measured-path-options__heading { justify-content: space-between; }
+.measured-path-options button { min-height: 36px; padding: .35rem .65rem; border: 1px solid currentColor; border-radius: 12px; color: inherit; background: transparent; cursor: pointer; }
+.measured-path-options button[aria-pressed=true] { background: #c3dfd0; color: #173c2e; box-shadow: inset 2px 2px 5px #adc8b9, inset -2px -2px 5px #e4f4eb; }
+.measured-path-options button:disabled { opacity: .45; cursor: default; }
+.measured-path-options p, .measured-path-options small { margin: 0; font-size: .76rem; line-height: 1.4; }
+.measured-path-options label { display: flex; gap: .5rem; align-items: center; font-size: .8rem; }
+.measured-path-options input { width: 5rem; min-height: 36px; border: 1px solid #93a99b; border-radius: 10px; padding: .3rem; }

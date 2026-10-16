@@ -1,7 +1,8 @@
 /** Read-only lawn geometry: a real plot, or a modest border around the house. */
 import { ShapeUtils, Vector2 } from 'three';
 import type { Polygon, Vertex } from '../../lib/geometry';
-import { gardenPoints, gardenSurfacePolygon, type Garden } from '../../designer/garden';
+import { gardenPoints, type Garden } from '../../designer/garden';
+import { gardenGroundCutout } from '../../designer/outdoorTakeoff';
 
 export interface GardenSite { widthM: number; depthM: number; originM: Vertex }
 export interface LawnFootprint { boundary: Polygon; pieces: Polygon[]; areaM2: number }
@@ -43,7 +44,7 @@ function halfPlane(polygon: Polygon, a: Vertex, b: Vertex, direction: number): P
 }
 
 /** Convex subtraction yields disjoint convex pieces, including touching cuts. */
-function subtractConvex(polygon: Polygon, cut: Polygon): Polygon[] {
+export function subtractConvex(polygon: Polygon, cut: Polygon): Polygon[] {
   const a = bounds(polygon);
   const b = bounds(cut);
   if (a.x1 <= b.x0 + EPS || b.x1 <= a.x0 + EPS || a.y1 <= b.y0 + EPS || b.y1 <= a.y0 + EPS) return [polygon];
@@ -78,7 +79,7 @@ export function lawnFootprint(occupied: readonly Polygon[], garden?: Garden, sit
   let pieces = [boundary];
   // Every explicit patch owns its surface, including lawn. Nothing is saved,
   // replaced or priced by this automatic surround.
-  for (const polygon of [...buildings, ...(garden?.surfaces.map(gardenSurfacePolygon) ?? [])]) {
+  for (const polygon of [...buildings, ...(garden?.surfaces.map(gardenGroundCutout) ?? [])]) {
     if (!valid(polygon)) continue;
     const vertices = polygon.map((p) => new Vector2(p.x, p.y));
     for (const triangle of ShapeUtils.triangulateShape(vertices, [])) {

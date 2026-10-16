@@ -59,6 +59,8 @@ import { wallJoinery } from './joinery';
 import { stairMesh, roofMesh, disposeBuildingTextures } from './buildingMeshes';
 import { gardenMeshes } from './gardenMeshes';
 import { disposeGardenResources } from './gardenGround';
+import { visibleOpeningProfile } from './openingMeshProfile';
+import { useBuildSkinStore, BUILD_SKIN_PALETTES } from '../../store/buildSkinStore';
 import { contactShadow, cornerShades, disposeDressingTextures, floorMesh, groundPlane, lampsOnFactor, nightLight, skyDome, updateGroundPresentation, updateSkyDome, type NightLight } from './dressing';
 import { applyContentPresentation, applyRendererPresentation, architecturalBackdrop, ARCHITECTURAL_HORIZON_HEX, presentationProfile, type ScenePresentation } from './renderPresentation';
 import { disposeFurnitureTextures, furniturePreview } from './furniturePreview';
@@ -246,6 +248,8 @@ export interface ThreeStageHandle {
   hitItem(x: number, y: number): { instanceId: string } | null;
   /** Generic plumbing/electric fixture on the active storey, in canvas pixels. */
   hitServiceFixture?(x: number, y: number): string | null;
+  /** Existing wall-hosted opening, respecting cutaway and visible storeys. */
+  hitOpening?(x: number, y: number): string | null;
   /** DEV bridge: what a wall's material shows right now (the preview or its own paint). */
   wallMaterial(hit: WallHit): { hex: string; baseHex: string; finish: string | null; roughness: number; sheen: number; hasMap: boolean; show: WallShow } | null;
   /** DEV bridge: the rendered colour at a canvas-local point (renders, then reads the pixel back). */
@@ -254,6 +258,8 @@ export interface ThreeStageHandle {
   tune(opts: { hemi?: number; sun?: number; fill?: number; env?: boolean; normals?: number; maps?: boolean }): void;
   /** Where a canvas-local point meets the floor plane, in PLAN metres, or null when it looks at the sky. */
   floorPoint(x: number, y: number): { x: number; y: number } | null;
+  /** Unbounded active-level plane for drawing a roof beyond its current outline. */
+  constructionPoint?(x: number, y: number): { x: number; y: number } | null;
   /** A PLAN point (x, y on the plan, z up) on the canvas, or null when it is behind the camera. */
   projectPoint(x: number, y: number, z: number): { x: number; y: number } | null;
   /** Slide an item's body by a plan-metre delta while a drag is in progress (no store write). */
@@ -426,7 +432,7 @@ function structureSignature(s: SceneSolids): string {
   return JSON.stringify({
     h: s.wallHeightM,
     f: s.floors.map((f) => [f.key, f.hex, f.kind, f.tileM, f.polygon, f.elevationM, f.holes]),
-    w: s.walls.map((w) => [w.key, w.a, w.b, w.thicknessM, w.heightM, w.stubHeightM, w.centred, w.openings, w.shared, w.free, w.elevationM]),
+    w: s.walls.map((w) => [w.key, w.a, w.b, w.thicknessM, w.heightM, w.stubHeightM, w.centred, w.openings, w.shared, w.free, w.elevationM, w.renderDuplicateOf, w.smoothStart, w.smoothEnd]),
     stairs: s.stairs, roofs: s.roofs, garden: s.garden, gardenObstacles: s.gardenObstacles, gardenSite: s.gardenSite, gardenVisible: s.gardenVisible,
     i: s.items.map((it) => [it.key, it.instanceId, it.x0, it.y0, it.z0, it.x1, it.y1, it.z1, it.rotationDeg, it.hex, it.meshUrl, it.preferMesh, it.modelFront, it.lengthAxis, it.modelUp, it.emitsLight, it.lightMountM, it.artTopUrl, it.artSideUrl, it.roofMount]),
   });
@@ -516,19 +522,19 @@ function slabObject(w: WallSolid, heightM: number, paint: THREE.Material, reveal
   shape.closePath();
   const openings = w.openings.filter((o) => o.bottomM < heightM);
   for (const o of openings) {
-    const top = Math.min(o.topM, heightM);
+    const profile = visibleOpeningProfile(o, heightM);
+    if (profile.length < 3) continue;
     const hole = new THREE.Path();
-    hole.moveTo(o.t0M, o.bottomM);
-    hole.lineTo(o.t1M, o.bottomM);
-    hole.lineTo(o.t1M, top);
-    hole.lineTo(o.t0M, top);
+    hole.moveTo(profile[0].x, profile[0].y);
+    for (const point of profile.slice(1)) hole.lineTo(point.x, point.y);
     hole.closePath();
     shape.holes.push(hole);
   }
   const geo = new THREE.ExtrudeGeometry(shape, { depth: w.thicknessM, bevelEnabled: false });
   splitCaps(geo, w.thicknessM, w.centred);
-  const slab = new THREE.Mesh(geo, [paint, reveal, exterior]);
-  slab.castShadow = true;
+  const glassWall = w.construction === 'glass';
+  const slab = new THREE.Mesh(geo, [paint, glassWall ? paint : reveal, exterior]);
+  slab.castShadow = !glassWall;
   slab.receiveShadow = true;
   slab.userData = { hit: w.hit, key: w.key, holes: openings.length, wall: true };
   node.add(slab);
@@ -537,21 +543,26 @@ function slabObject(w: WallSolid, heightM: number, paint: THREE.Material, reveal
   capStrip.position.set(w.lengthM / 2, heightM + 0.006, w.thicknessM / 2);
   capStrip.receiveShadow = true;
   capStrip.userData = { cap: true };
-  node.add(capStrip);
+  if (!glassWall) node.add(capStrip);
+  else { capStrip.geometry.dispose(); }
   // Window glass: a pane in the middle of the slab's thickness.
   for (const o of openings) {
     if (o.kind !== 'window') continue;
-    const top = Math.min(o.topM, heightM);
+    const profile = visibleOpeningProfile(o, heightM);
+    if (profile.length < 3) continue;
+    const paneShape = new THREE.Shape(profile.map(p => new THREE.Vector2(p.x, p.y)));
     const pane = new THREE.Mesh(
-      new THREE.PlaneGeometry(o.t1M - o.t0M, top - o.bottomM),
+      new THREE.ShapeGeometry(paneShape),
       new THREE.MeshPhysicalMaterial({ color: GLASS_HEX, transparent: true, opacity: 0.28, roughness: 0.06, metalness: 0, side: THREE.DoubleSide, depthWrite: false }),
     );
-    pane.position.set((o.t0M + o.t1M) / 2, (o.bottomM + top) / 2, w.thicknessM / 2);
+    pane.position.z = w.thicknessM / 2;
     node.add(pane);
   }
   // Dressing (P3): joinery on every wall, corner shading on the room side.
-  node.add(wallJoinery(w.lengthM, w.thicknessM, heightM, openings));
-  node.add(cornerShades(w, heightM, openings));
+  if (!glassWall) {
+    node.add(wallJoinery(w.lengthM, w.thicknessM, heightM, openings));
+    node.add(cornerShades(w, heightM, openings));
+  }
   return node;
 }
 
@@ -619,6 +630,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   { solids, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, foundation, foundationView = false, foundationBaseElevationM = 0, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed, onReady },
   ref,
 ): JSX.Element {
+  const buildSkin = useBuildSkinStore(s => s.skin);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const naturalRendererRef = useRef<NaturalSceneRenderer | null>(null);
@@ -765,7 +777,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     if (contentRef.current) applyContentPresentation(contentRef.current, presentation);
     const { centre } = boundsRef.current;
     if (groundRef.current) {
-      updateGroundPresentation(groundRef.current, presentation);
+      updateGroundPresentation(groundRef.current, presentation, buildSkin);
       groundRef.current.position.x = presentation !== 'studio' ? centre.x : 0;
       groundRef.current.position.z = presentation !== 'studio' ? centre.z : 0;
     }
@@ -773,7 +785,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       // Fog is a horizon fade on the ground plane only. Its planes are not
       // fixed: updateFog keeps the near plane beyond the plan for wherever the
       // camera is (a fixed plane tinted painted walls at 3× zoom-out).
-      sceneRef.current.fog = presentation !== 'studio' ? new THREE.Fog(FOG_HEX, 1, 2) : null;
+      sceneRef.current.fog = presentation !== 'studio' ? new THREE.Fog(buildSkin === 'natural' ? FOG_HEX : BUILD_SKIN_PALETTES[buildSkin].sky, 1, 2) : null;
       updateFog();
     }
   };
@@ -806,7 +818,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       aimSun(new THREE.Vector3(...profile.sunDirection).normalize());
       sunStateRef.current = null;
       sceneRef.current?.fog?.color.set(FOG_HEX);
-      if (skyRef.current && (skyRef.current.userData.day !== 1 || skyRef.current.userData.presentation !== presentation)) updateSkyDome(skyRef.current, 1, presentation);
+      if (skyRef.current && (skyRef.current.userData.day !== 1 || skyRef.current.userData.presentation !== presentation || skyRef.current.userData.buildSkin !== buildSkin)) updateSkyDome(skyRef.current, 1, presentation, buildSkin);
       for (const l of lampsRef.current) {
         l.light.intensity = l.baseIntensity * profile.lampFactor;
         l.glow.visible = profile.lampFactor > 0;
@@ -833,7 +845,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     sunStateRef.current = { elevationDeg: s.elevationDeg, azimuthDeg: s.azimuthDeg };
     if (skyRef.current) {
       const quant = Math.round(day * 20) / 20;
-      if (skyRef.current.userData.day !== quant || skyRef.current.userData.presentation !== presentation) updateSkyDome(skyRef.current, quant, presentation);
+      if (skyRef.current.userData.day !== quant || skyRef.current.userData.presentation !== presentation || skyRef.current.userData.buildSkin !== buildSkin) updateSkyDome(skyRef.current, quant, presentation, buildSkin);
     }
     const lamps = lampsOnFactor(s.elevationDeg);
     for (const l of lampsRef.current) {
@@ -1051,6 +1063,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       const paint = new THREE.MeshPhysicalMaterial();
       applyWallLook(paint, w, envRef.current);
       const group = new THREE.Group();
+      group.visible = !w.renderDuplicateOf;
       const full = slabObject(w, w.heightM, paint, reveal, exterior, cap);
       const stub = slabObject(w, w.stubHeightM, paint, reveal, exterior, cap);
       stub.traverse((o) => {
@@ -1239,13 +1252,13 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     applyHour(hour);
     requestRender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hour, doy, presentation]);
+  }, [hour, doy, presentation, buildSkin]);
 
   useEffect(() => {
     applyPresentation();
     requestRender();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [presentation]);
+  }, [presentation, buildSkin]);
 
   // ---- camera + cutaway, on orbit / resize -------------------------------------
   useEffect(() => {
@@ -1298,7 +1311,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     const state = wallView === 'cutaway' ? cutawayState(solids, pos, camera.target) : null;
     let shadowsChanged = false;
     for (const e of wallsRef.current) {
-      const show: WallShow = wallView === 'up' ? 'full' : wallView === 'down' ? 'stub' : (state?.get(e.solid.key) ?? 'full');
+      const show: WallShow = e.solid.renderDuplicateOf ? 'hidden' : wallView === 'up' ? 'full' : wallView === 'down' ? 'stub' : (state?.get(e.solid.key) ?? 'full');
       shadowsChanged ||= e.show !== show || Boolean(e.ghost && show !== 'stub');
       e.show = show;
       if (e.ghost && show !== 'stub') setGhost(e, false);
@@ -1375,7 +1388,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       prev.outlineStub.visible = false;
       setGhost(prev, false);
     }
-    const next = hover ? wallsRef.current.find((e) => sameHit(hover, e.solid.hit)) ?? null : null;
+    const matched = hover ? wallsRef.current.find((e) => sameHit(hover, e.solid.hit)) ?? null : null;
+    const next = matched?.solid.renderDuplicateOf
+      ? wallsRef.current.find(e => e.solid.key === matched.solid.renderDuplicateOf) ?? null : matched;
     if (next) {
       if (brushHex !== undefined) {
         applyWallLook(brushSide === 'exterior' ? next.exterior : next.paint, { hex: brushHex ?? BARE_PLASTER_HEX, finish: brushConstruction ? null : brushHex ? brushFinish : null, construction: brushConstruction ?? next.solid.construction }, envRef.current);
@@ -1396,6 +1411,53 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   useImperativeHandle(
     ref,
     () => ({
+      hitOpening(x, y) {
+        const c = cameraRef.current;
+        if (!c || width < 8 || height < 8) return null;
+        const ray = new THREE.Raycaster();
+        ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
+        let closest: { id: string; distance: number } | null = null;
+        const blockers: THREE.Object3D[] = [...floorsRef.current];
+        for (const entry of wallsRef.current) {
+          const node = entry.show === 'full' ? entry.full : entry.show === 'stub' ? entry.stub : null;
+          if (!node) continue;
+          node.traverse(object => { if (object.userData.wall) blockers.push(object); });
+          if (solids.activeLevelId && entry.solid.levelId && entry.solid.levelId !== solids.activeLevelId) continue;
+          node.updateWorldMatrix(true, false);
+          const localRay = ray.ray.clone().applyMatrix4(node.matrixWorld.clone().invert());
+          // A cutaway door is represented by a low threshold. Its vertical
+          // midpoint can be below the finished floor, so also pick the visible
+          // cap plane instead of asking users to click through the floor.
+          if (entry.show === 'stub') {
+            const capPoint = localRay.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -entry.solid.stubHeightM - .015), new THREE.Vector3());
+            if (capPoint && capPoint.z >= -.08 && capPoint.z <= entry.solid.thicknessM + .08) {
+              for (const opening of entry.solid.openings) {
+                if (!opening.id || opening.bottomM >= entry.solid.stubHeightM || capPoint.x < opening.t0M || capPoint.x > opening.t1M) continue;
+                const distance = node.localToWorld(capPoint.clone()).distanceTo(ray.ray.origin);
+                if (!closest || distance < closest.distance) closest = { id: opening.id, distance };
+              }
+            }
+          }
+          const point = localRay.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 0, 1), -entry.solid.thicknessM / 2), new THREE.Vector3());
+          const shownHeight = entry.show === 'full' ? entry.solid.heightM : entry.solid.stubHeightM;
+          if (!point || point.y < 0 || point.y > shownHeight) continue;
+          for (const opening of entry.solid.openings) {
+            if (!opening.id || point.x < opening.t0M || point.x > opening.t1M || point.y < opening.bottomM || point.y > opening.topM) continue;
+            if (opening.profile && !pointInPolygon({ x: point.x, y: point.y }, opening.profile)) continue;
+            const distance = node.localToWorld(point.clone()).distanceTo(ray.ray.origin);
+            if (!closest || distance < closest.distance) closest = { id: opening.id, distance };
+          }
+        }
+        if (!closest) return null;
+        const blocker = ray.intersectObjects(blockers, false)[0];
+        if (blocker && blocker.distance < closest.distance - 0.02) return null;
+        const box = new THREE.Box3(), point = new THREE.Vector3();
+        for (const item of itemsRef.current) {
+          box.setFromObject(item);
+          if (!box.isEmpty() && ray.ray.intersectBox(box, point) && point.distanceTo(ray.ray.origin) < closest.distance - 0.02) return null;
+        }
+        return closest.id;
+      },
       hitTest(x, y) {
         const c = cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
@@ -1569,6 +1631,14 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         const obstruction = ray.intersectObjects(blockers, true)[0];
         if (obstruction && obstruction.distance < best.d - 0.001) return null;
         return { instanceId: best.instanceId };
+      },
+      constructionPoint(x, y) {
+        const c = cameraRef.current;
+        if (!c || width < 8 || height < 8) return null;
+        const ray = new THREE.Raycaster();
+        ray.setFromCamera(new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1), c);
+        const p = new THREE.Vector3();
+        return ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -(solids.activeElevationM ?? 0)), p) ? { x: p.x, y: p.z } : null;
       },
       floorPoint(x, y) {
         const c = cameraRef.current;

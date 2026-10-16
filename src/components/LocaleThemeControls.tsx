@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef } from 'react';
 import { useAppPreferences, UI_THEMES, type UiTheme } from '../i18n/AppPreferences';
 import { LOCALES, LOCALE_NAMES, type AppLocale } from '../i18n/messages';
+import { BUILD_SKINS, useBuildSkinStore, type BuildSkin } from '../store/buildSkinStore';
 
 export function LocaleThemeControls({
   compact = true,
@@ -10,6 +11,8 @@ export function LocaleThemeControls({
   className?: string;
 }) {
   const { locale, setLocale, theme, setTheme, t } = useAppPreferences();
+  const buildSkin = useBuildSkinStore(s => s.skin);
+  const setBuildSkin = useBuildSkinStore(s => s.setSkin);
   const host = useRef<HTMLDetailsElement>(null),
     id = useId();
   useEffect(() => {
@@ -86,6 +89,7 @@ export function LocaleThemeControls({
         <label htmlFor={id + '-theme'}>{t('Colour theme')}</label>
         <select
           id={id + '-theme'}
+          className="skin-select-accessible"
           value={theme}
           onChange={(event) => setTheme(event.target.value as UiTheme)}
         >
@@ -95,6 +99,17 @@ export function LocaleThemeControls({
             </option>
           ))}
         </select>
+        <div className="theme-skin-grid" role="group" aria-label={t('Tool skin')}>
+          {UI_THEMES.map(value => <button type="button" key={value} className={`theme-skin-card theme-skin-card--${value}`} aria-pressed={theme === value} onClick={() => setTheme(value)}>
+            <span className="theme-skin-card__sample" aria-hidden="true"><i /><i /><i /></span>
+            <span>{themeNames[value]}</span>
+          </button>)}
+        </div>
+        <label htmlFor={id + '-build-skin'}>{t('Build backdrop')}</label>
+        <select id={id + '-build-skin'} value={buildSkin} onChange={event => setBuildSkin(event.target.value as BuildSkin)}>
+          {BUILD_SKINS.map(value => <option key={value} value={value}>{t(value === 'natural' ? 'Warm studio' : value === 'gallery' ? 'Sculpted gallery' : 'Midnight blueprint')}</option>)}
+        </select>
+        <small>{t('Changes the workspace only. Product finishes and measurements stay true.')}</small>
         <small>{t('Saved on this device')}</small>
       </div>
     </details>

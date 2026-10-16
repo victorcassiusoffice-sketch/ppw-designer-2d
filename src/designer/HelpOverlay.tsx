@@ -10,6 +10,7 @@ import { useDrawProgressStore } from '../store/drawProgressStore';
 import { useDesignStore } from '../store/designStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
 import { useBelowMd } from '../lib/useBelowMd';
+import { useGardenEditorStore } from '../store/gardenEditorStore';
 import {
   CHROME_BG,
   CHROME_RIM,
@@ -71,8 +72,8 @@ const DEFAULT_SHORTCUTS: Array<{ category: string; rows: ShortcutRow[] }> = [
       { keys: 'Plot', label: 'Lock the plot size (scale + capacity)' },
       { keys: 'Door', label: 'Pick Door · Doorway · Window, hover a wall, click to place' },
       { keys: 'F / H (Door)', label: 'Flip side (which way it opens) · Flip hinge' },
-      { keys: 'Click a placed opening', label: 'Remove it (Door tool on)' },
-      { keys: 'Menu → Door (phone)', label: 'Arm the door tool, tap a wall; the card flips + Done' },
+      { keys: 'Click a placed opening', label: 'Select its dimensions, hinge and removal controls; click away to close' },
+      { keys: 'Menu → Door (phone)', label: 'Choose an opening and tap a wall; Cancel returns to Select' },
       { keys: 'Floor', label: 'Click a tile · drag an area · Room lays the whole room' },
       { keys: 'Shift / Ctrl (Floor)', label: 'Shift fills the room · Ctrl erases · Esc or Done puts the tool away' },
       { keys: 'M', label: 'Measure — retype a wall length' },
@@ -215,10 +216,11 @@ export function HelpLauncherIcon({ onOpen }: { onOpen: () => void }): JSX.Elemen
   // over the 3D view (z 35 sits above the overlay's 34).
   const toolHudOpen = useDesignerUIStore((s) => s.tool === 'floor' || s.tool === 'door' || s.tool === 'wallpaint');
   const view3d = useDesignerUIStore((s) => s.viewMode === '3d');
+  const gardenOpen = useGardenEditorStore(s => s.panelOpen);
   const belowMd = useBelowMd();
   // House Studio exposes Help in Project tools; a floating launcher would
   // cover the scene now that the old permanent left rail is gone.
-  if (view3d || (belowMd && (penOpen || itemSelected || toolHudOpen))) return null;
+  if (view3d || gardenOpen || (belowMd && (penOpen || itemSelected || toolHudOpen))) return null;
   const besidePanel = itemSelected && !belowMd;
   return (
     <button

@@ -213,7 +213,7 @@ export function SimsDock({ pendingProductId, setPendingProductId }: SimsDockProp
       dragPointer.begin(productId, x, y);
     },
     onDragMove: (productId, x, y) => dragPointer.move(productId, x, y),
-    onDrop: (_productId, _x, _y, shiftKey) => dragPointer.release(shiftKey),
+    onDrop: (productId, x, y, shiftKey) => { dragPointer.move(productId, x, y); dragPointer.release(shiftKey); },
     onCancel: () => dragPointer.cancel(),
   });
 

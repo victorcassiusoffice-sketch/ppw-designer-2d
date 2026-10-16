@@ -13,6 +13,10 @@ import { SERVICE_MATERIALS } from '../data/buildingServicesCatalog';
 import { BUILDING_EQUIPMENT } from '../data/buildingEquipmentCatalog';
 import { getProductById } from '../data/products';
 import { SharedSpecComponentSchema, type SharedSpecComponent } from './sharedSpecsContract';
+import { GARDEN_SURFACES } from './garden';
+import { outdoorSurfaceTakeoff, poolTakeoff } from './outdoorTakeoff';
+import { findOutdoorPavingProduct } from '../data/outdoorPaving';
+import { findPoolReference } from '../data/mauritiusPools';
 
 /** Change detector only; never an authentication or cryptographic integrity token. */
 export function specFingerprint(value: unknown): string {
@@ -111,6 +115,27 @@ export function measuredBuildSpecs(property: Property): SharedSpecComponent[] {
       [],
       property.foundation,
     );
+  for (const surface of property.garden?.surfaces ?? []) {
+    const pool = poolTakeoff(surface), layers = outdoorSurfaceTakeoff(surface);
+    if (!pool && !layers) throw new Error(`Outdoor quantities unavailable for ${surface.id}: repair the saved dimensions first.`);
+    // Display-only construction stage does not invalidate approvals/quantities.
+    const measured = { ...surface, ...(surface.pool ? { pool: { ...surface.pool, stage: undefined } } : {}) };
+    if (pool) {
+      const reference = findPoolReference(surface.pool?.productReferenceId);
+      const sources = reference ? [reference.sourceUrl] : [];
+      add(`outdoor:${surface.id}:excavation`, 'Pool · rectangular excavation', 'landscape', pool.excavationVolumeM3, 'm3', '', sources, measured);
+      add(`outdoor:${surface.id}:shell`, 'Pool · planning shell material volume', 'landscape', pool.shellVolumeM3, 'm3', '', sources, measured);
+      add(`outdoor:${surface.id}:lining`, 'Pool · inside lining area', 'landscape', pool.liningAreaM2, 'm2', '', sources, measured);
+      add(`outdoor:${surface.id}:water`, 'Pool · designed water volume', 'plumbing', pool.waterVolumeM3, 'm3', '', [], measured);
+    } else if (layers) {
+      const paving = surface.kind === 'path' ? findOutdoorPavingProduct(surface.pavingProductId) : undefined;
+      const sources = paving ? [paving.sourceUrl] : [], label = GARDEN_SURFACES[surface.kind].label;
+      // One physical material package: emitting area AND volume as separate
+      // purchasable components would double count its cost/embodied carbon.
+      add(`outdoor:${surface.id}:surface`, `${label} · ${layers.materialVolumeM3 === null ? 'surface area' : 'finished material volume'}`, 'landscape', layers.materialVolumeM3 ?? layers.areaM2, layers.materialVolumeM3 === null ? 'm2' : 'm3', paving?.name ?? '', sources, measured);
+      if (layers.subBaseVolumeM3 !== null) add(`outdoor:${surface.id}:sub-base`, `${label} · sub-base volume`, 'landscape', layers.subBaseVolumeM3, 'm3', '', [], measured);
+    }
+  }
   const services = resolveServiceConnections(
     property.services ?? { version: 1, runs: [], fixtures: [] },
   );

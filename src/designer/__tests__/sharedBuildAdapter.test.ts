@@ -6,6 +6,7 @@ import { defaultFoundationRebar } from '../foundation';
 import { useDisciplineVisibilityStore } from '../../store/disciplineVisibilityStore';
 import type { Property, Room } from '../../store/propertyStore';
 import type { ServiceRun } from '../buildingServices';
+import { DEFAULT_GARDEN_POOL, type GardenSurface } from '../garden';
 
 const rectangle = (x = 0, y = 0, w = 4, h = 3) => [
   { x, y },
@@ -27,6 +28,27 @@ const property = (rooms: Room[] = [], extra: Partial<Property> = {}): Property =
   activeRoomId: rooms[0]?.id ?? '',
   wallHeightM: 3,
   ...extra,
+});
+describe('outdoor shared quantities', () => {
+  const gardenSurface: GardenSurface = { id: 'patio', kind: 'concrete', x: 0, y: 0, widthM: 8, depthM: 4, elevationM: 0, thicknessM: .1, subBaseDepthM: .15 };
+  it('emits one surface material package rather than charging area and volume twice', () => {
+    const specs = measuredBuildSpecs(property([], { garden: { surfaces: [gardenSurface], fences: [] } }));
+    expect(specs).toHaveLength(2);
+    expect(specs.find(s => s.id === 'outdoor:patio:surface')).toMatchObject({ quantity: 3.2, unit: 'm3' });
+    expect(specs.find(s => s.id === 'outdoor:patio:sub-base')).toMatchObject({ quantity: 4.8, unit: 'm3' });
+    const noThickness = measuredBuildSpecs(property([], { garden: { surfaces: [{ ...gardenSurface, thicknessM: undefined }], fences: [] } }));
+    expect(noThickness.find(s => s.id === 'outdoor:patio:surface')).toMatchObject({ quantity: 32, unit: 'm2' });
+  });
+  it('tracks pool source IDs and physical quantities without treating view changes as revisions', () => {
+    const pool: GardenSurface = { ...gardenSurface, kind: 'pool', pool: { ...DEFAULT_GARDEN_POOL } };
+    const first = measuredBuildSpecs(property([], { garden: { surfaces: [pool], fences: [] } }));
+    const hiddenWater = measuredBuildSpecs(property([], { garden: { surfaces: [{ ...pool, pool: { ...pool.pool!, stage: 'shell' } }], fences: [] } }));
+    expect(hiddenWater).toEqual(first);
+    expect(first.map(s => s.id)).toEqual(['outdoor:patio:excavation', 'outdoor:patio:shell', 'outdoor:patio:lining', 'outdoor:patio:water']);
+    expect(first.find(s => s.id.endsWith(':water'))?.quantity).toBeCloseTo(43.2);
+    const removed = measuredSyncPayload(first, []);
+    expect(removed.every(s => s.sourceRemoved)).toBe(true);
+  });
 });
 const run = (extra: Partial<ServiceRun> = {}): ServiceRun => ({
   id: 'riser',

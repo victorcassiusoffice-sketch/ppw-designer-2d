@@ -1,0 +1,20 @@
+.opening-selection-editor { position: absolute; z-index: 35; right: 12px; top: 12px; width: min(310px, calc(100% - 24px)); max-height: calc(100% - 24px); overflow: auto; padding: 12px; border: 1px solid var(--chrome-rim, #aebcb3); border-radius: 16px; color: var(--chrome-text, #263c35); background: var(--chrome-bg, #f1f3eb); box-shadow: 0 8px 24px #24392b22; font-size: 12px; touch-action: auto; }
+.opening-selection-editor header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.opening-selection-editor header strong { flex: 1; }
+.opening-selection-editor button { min-height: 40px; border-radius: 10px; border: 1px solid #61726755; padding: 7px 10px; background: #ffffff66; color: inherit; }
+.opening-selection-editor header button { min-width: 40px; font-size: 20px; }
+.opening-selection-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.opening-selection-editor label { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.opening-selection-editor label span { display: flex; align-items: center; gap: 4px; }
+.opening-selection-editor input { width: 100%; min-width: 0; min-height: 40px; border-radius: 8px; border: 1px solid #61726755; background: #ffffff88; padding: 6px; color: inherit; }
+.opening-selection-actions { display: flex; gap: 6px; margin: 8px 0; }
+.opening-selection-remove { margin-top: 8px; }
+.opening-selection-editor p { margin: 8px 0 0; color: #8b3026; }
+.opening-dimensions { padding: 6px 10px; font-size: 12px; }
+.opening-dimensions summary { cursor: pointer; min-height: 32px; display: flex; align-items: center; font-weight: 650; }
+.opening-dimensions-fields { display: flex; flex-wrap: wrap; gap: 8px; }
+.opening-dimensions label { display: grid; gap: 4px; }
+.opening-dimensions input, .opening-dimensions select { width: 110px; min-height: 36px; border: 1px solid #61726755; border-radius: 8px; padding: 5px; background: #ffffff77; color: inherit; }
+.measured-drawing-launchers { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 10px; flex-shrink: 0; font-size: 12px; }
+.measured-drawing-launchers button { min-height: 36px; padding: 6px 10px; border-radius: 10px; border: 1px solid #61726755; background: #ffffff55; color: inherit; }
+@media (max-width: 767px) { .opening-selection-editor { top: auto; bottom: 8px; right: 8px; width: min(310px, calc(100% - 16px)); max-height: 48%; } }

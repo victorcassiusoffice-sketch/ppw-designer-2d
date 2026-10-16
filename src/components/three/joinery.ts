@@ -17,6 +17,7 @@
  */
 import * as THREE from 'three';
 import type { WallOpeningSolid } from '../../designer/roomSolids';
+import { visibleOpeningProfile } from './openingMeshProfile';
 
 export const SKIRTING_HEIGHT_M = 0.1;
 export const SKIRTING_PROUD_M = 0.014;
@@ -177,7 +178,28 @@ export function wallJoinery(lengthM: number, thicknessM: number, heightM: number
   const sk = skirtingObject(lengthM, thicknessM, openings, heightM);
   if (sk) g.add(sk);
   for (const o of openings) {
-    if (o.bottomM >= heightM) continue;
+    if (o.bottomM >= heightM || o.kind === 'hole') continue;
+    if (o.profile?.length && o.shape && o.shape !== 'rectangle') {
+      if (o.kind === 'door') {
+        const profile = visibleOpeningProfile(o, heightM);
+        if (profile.length >= 3) {
+          const shape = new THREE.Shape(profile.map(p => new THREE.Vector2(p.x, p.y)));
+          const leaf = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: DOOR_LEAF_THICKNESS_M, bevelEnabled: false }), joineryMaterials().leaf);
+          leaf.position.z = (thicknessM - DOOR_LEAF_THICKNESS_M) / 2;
+          leaf.castShadow = true;
+          leaf.receiveShadow = true;
+          g.add(leaf);
+        }
+      }
+      const path = new THREE.CurvePath<THREE.Vector3>();
+      o.profile.forEach((a, i) => {
+        const b = o.profile![(i + 1) % o.profile!.length];
+        if (a.y > heightM && b.y > heightM) return;
+        path.add(new THREE.LineCurve3(new THREE.Vector3(a.x, Math.min(a.y, heightM), thicknessM / 2), new THREE.Vector3(b.x, Math.min(b.y, heightM), thicknessM / 2)));
+      });
+      if (path.curves.length) g.add(new THREE.Mesh(new THREE.TubeGeometry(path, o.profile.length * 2, .022, 4, true), new THREE.MeshStandardMaterial({ color: '#7c827e', roughness: .4 })));
+      continue;
+    }
     g.add(o.kind === 'window' ? windowObject(o, thicknessM, heightM) : doorObject(o, thicknessM, heightM));
   }
   g.userData = { joinery: 'wall' };

@@ -76,7 +76,6 @@ export function SimsBottomToolbar() {
   const [selected, setSelected] = useState<Product | null>(null);
   const apiProducts = useMerchantCatalog();
 
-  const placeAtCenter = usePlacementIntentStore((s) => s.placeAtCenter);
   const placeAt = usePlacementIntentStore((s) => s.placeAt);
   const sectionRef = useRef<HTMLElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -190,21 +189,24 @@ export function SimsBottomToolbar() {
     setTool('floor');
   }
 
-  // Long-press a thumbnail → drag; tap → open the popup.
+  function choosePosition(productId: string) {
+    useDesignerUIStore.getState().setTool('hand');
+    usePlacementIntentStore.getState().setArmed(productId);
+    setSelected(null);
+    setMinimized(true);
+  }
+  // A tap arms an exact position; a held drag commits directly on release.
   const { start, ghost, dragging } = useDragToPlace({
     mode: 'longpress',
     onDrop: (productId, x, y) => placeAt(productId, x, y),
-    onTap: (productId) => {
-      const p = allProducts.find((x) => x.id === productId);
-      if (p) setSelected(p);
-    },
+    onTap: choosePosition,
   });
 
   const closeCatalog = useCallback(() => { setMinimized(true); setSelected(null); }, []);
   useCatalogDismissal({ viewMode, open: !minimized, desktop: false, close: closeCatalog, placing: dragging });
 
   const productDetails = selected && <MobileProductPopup product={selected} embedded={viewMode === '3d'}
-    onAdd={(productId) => { placeAtCenter(productId); setSelected(null); if (viewMode === '3d') setMinimized(true); }}
+    onAdd={choosePosition}
     onDragPlace={(productId, x, y) => placeAt(productId, x, y)} onClose={() => setSelected(null)} />;
 
   return (
@@ -394,17 +396,17 @@ export function SimsBottomToolbar() {
                     );
                   }
                   return (
+                  <div key={p.id} className="catalog-product-tile">
                   <button
-                    key={p.id}
                     type="button"
                     data-testid="sims-thumb"
                     data-product-id={p.id}
                     data-category={p.category}
                     data-macro={macroOf(p)}
                     title={p.name}
-                    aria-label={`${p.name} — tap for details, hold to drag onto the floor`}
+                    aria-label={`${p.name} — choose position, or hold and drag onto the floor`}
                     onPointerDown={(e) => start(e, p.id, productImageUrl(p))}
-                    onClick={(event) => { if (event.detail === 0) setSelected(p); }}
+                    onClick={(event) => { if (event.detail === 0) choosePosition(p.id); }}
                     // Bug 1 (2026-05-28) — long-press should drag, not pop the
                     // browser "Save image" menu over the catalog thumbnail.
                     onContextMenu={(e) => e.preventDefault()}
@@ -418,6 +420,8 @@ export function SimsBottomToolbar() {
                     <span aria-hidden="true" className="mt-1 block w-full truncate text-[11px] font-medium" style={{ color: DOCK_TEXT }}>{p.name}</span>
                     <span aria-hidden="true" className="catalog-muted block w-full truncate text-[11px] tabular-nums">{catalogPrice(p)}</span>
                   </button>
+                  <button type="button" className="catalog-tile-details" title={`Details for ${p.name}`} aria-label={`Details for ${p.name}`} onClick={() => setSelected(p)}><span aria-hidden="true">ⓘ</span></button>
+                  </div>
                   );
                 })}
               </div>
@@ -426,7 +430,7 @@ export function SimsBottomToolbar() {
         )}
         {!minimized && (viewMode !== '3d' || (!categoryHome && !selected)) && <div className="catalog-muted flex shrink-0 items-center justify-between gap-2 px-3 pb-1 text-[11px]">
           <span role="status" aria-live="polite">{filtered.length} {filtered.length === 1 ? 'product' : 'products'}</span>
-          <span>Tap for details · hold to place</span>
+          <span>Tap then place · hold to drag</span>
         </div>}
         {viewMode === '3d' && !minimized && productDetails}
       </section>

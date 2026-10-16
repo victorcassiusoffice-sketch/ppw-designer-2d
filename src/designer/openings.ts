@@ -34,9 +34,11 @@
  */
 
 import type { Polygon, Vertex } from '../lib/geometry';
+import { openingHeightM, openingSillM } from './openingGeometry';
 import { pointAlongEdge, type RoomEdge, type Span } from './wallEdges';
 
-export type OpeningKind = 'door' | 'doorway' | 'window';
+export type OpeningKind = 'door' | 'doorway' | 'window' | 'hole';
+export type OpeningShape = 'rectangle' | 'arch' | 'circle';
 
 export interface Opening {
   id: string;
@@ -53,6 +55,10 @@ export interface Opening {
   flipHand: boolean;
   /** Sill height, metres. 0 (or absent) = a door; > 0 = a window. */
   sillM?: number;
+  /** Measured clear height; absent preserves legacy door/window dimensions. */
+  heightM?: number;
+  /** Wall-face profile; circles use width as their diameter. */
+  shape?: OpeningShape;
 }
 
 /**
@@ -100,6 +106,7 @@ export function clampOpeningOffset(
 }
 
 export type OpeningRejection =
+  | 'invalid-dimensions'
   | 'wall-too-short'
   | 'past-jamb-margin'
   | 'overlaps-another-opening';
@@ -112,6 +119,7 @@ export interface OpeningValidation {
 }
 
 const MESSAGES: Record<OpeningRejection, string> = {
+  'invalid-dimensions': 'Opening dimensions must fit the wall height.',
   'wall-too-short': 'That wall is too short for this opening.',
   'past-jamb-margin': 'An opening needs a little wall left at each end.',
   'overlaps-another-opening': 'Openings on the same wall can’t overlap.',
@@ -124,8 +132,8 @@ const MESSAGES: Record<OpeningRejection, string> = {
  */
 export function validateOpening(
   edgeLengthM: number,
-  candidate: Pick<Opening, 'offsetM' | 'widthM'>,
-  others: readonly Pick<Opening, 'offsetM' | 'widthM'>[] = [],
+  candidate: Pick<Opening, 'offsetM' | 'widthM'> & Partial<Pick<Opening, 'kind' | 'heightM' | 'sillM' | 'shape'>>,
+  others: readonly (Pick<Opening, 'offsetM' | 'widthM'> & Partial<Pick<Opening, 'kind' | 'heightM' | 'sillM' | 'shape'>>)[] = [],
 ): OpeningValidation {
   if (!edgeCanHost(edgeLengthM, candidate.widthM)) {
     return { ok: false, reason: 'wall-too-short', message: MESSAGES['wall-too-short'] };
@@ -136,6 +144,11 @@ export function validateOpening(
   }
   for (const o of others) {
     const s = openingSpan(o);
+    if (candidate.kind && o.kind) {
+      const a = { ...candidate, kind: candidate.kind }, b = { ...o, kind: o.kind };
+      const bottomA = openingSillM(a), bottomB = openingSillM(b);
+      if (bottomA + openingHeightM(a) <= bottomB + 1e-9 || bottomB + openingHeightM(b) <= bottomA + 1e-9) continue;
+    }
     // Touching end-to-end is legal; genuinely sharing length is not.
     if (t0 < s.t1 - 1e-9 && s.t0 < t1 - 1e-9) {
       return {

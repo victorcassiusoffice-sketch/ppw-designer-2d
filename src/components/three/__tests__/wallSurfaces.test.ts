@@ -13,6 +13,20 @@ const textures: WallTextures = {
 };
 
 describe('paint material transitions', () => {
+  it('returns a reused glass material to opaque masonry without transparent or two-sided state', () => {
+    const material = new THREE.MeshPhysicalMaterial();
+    applyWallLook(material, { hex: '#9EC8C4', construction: 'glass' }, new THREE.Texture(), textures);
+    expect(material.transparent).toBe(true);
+    expect(material.opacity).toBe(.25);
+    expect(material.depthWrite).toBe(false);
+    expect(material.side).toBe(THREE.DoubleSide);
+    applyWallLook(material, { hex: BARE_PLASTER_HEX, construction: 'plastered-brick' }, null, textures);
+    expect(material.transparent).toBe(false);
+    expect(material.opacity).toBe(1);
+    expect(material.depthWrite).toBe(true);
+    expect(material.side).toBe(THREE.FrontSide);
+    expect(material.map).toBe(textures.plasterMap);
+  });
   it('keeps brick mortar relief under paint and removes its brick colour map', () => {
     const material = new THREE.MeshPhysicalMaterial();
     applyWallLook(material, { hex: '#A36B50', construction: 'brick' }, null, textures);

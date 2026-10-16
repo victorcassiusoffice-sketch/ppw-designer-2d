@@ -1,10 +1,13 @@
 import { useEffect, useRef } from 'react';
 import type Konva from 'konva';
 import { Group, Line, Rect, Text, Transformer } from 'react-konva';
-import { FENCE_MATERIALS, GARDEN_SURFACES, fenceLengthM, type Garden, type GardenSurface } from '../designer/garden';
+import { FENCE_MATERIALS, GARDEN_SURFACES, fenceLengthM, gardenSurfacePolygon, type Garden, type GardenSurface } from '../designer/garden';
+import { polygonArea } from '../lib/geometry';
+import { gardenGroundCutout } from '../designer/outdoorTakeoff';
 import { findOutdoorPavingProduct } from '../data/outdoorPaving';
 import { useGardenEditorStore } from '../store/gardenEditorStore';
 import { usePropertyStore } from '../store/propertyStore';
+import { BUILD_SKIN_PALETTES, useBuildSkinStore } from '../store/buildSkinStore';
 
 function SurfaceShape({ surface, pxPerMetre, scale, interactive, selected }: {
   surface: GardenSurface; pxPerMetre: number; scale: number; interactive: boolean; selected: boolean;
@@ -29,8 +32,8 @@ function SurfaceShape({ surface, pxPerMetre, scale, interactive, selected }: {
   };
   return <Group name={`garden-surface-${surface.id}`}>
     <Rect ref={rectRef} x={surface.x * pxPerMetre} y={surface.y * pxPerMetre} width={surface.widthM * pxPerMetre} height={surface.depthM * pxPerMetre}
-      fill={paving?.renderHex ?? GARDEN_SURFACES[surface.kind].hex} stroke={selected ? '#28786e' : '#536344'} strokeWidth={(selected ? 2 : 1) / scale} opacity={0.85}
-      draggable={interactive} listening={interactive}
+      fill={surface.outline ? undefined : surface.kind === 'pool' && surface.pool?.stage === 'excavation' ? '#775f48' : paving?.renderHex ?? GARDEN_SURFACES[surface.kind].hex} stroke={surface.outline ? undefined : selected ? '#28786e' : '#536344'} strokeWidth={(selected ? 2 : 1) / scale} opacity={0.85}
+      draggable={interactive && !surface.outline} listening={interactive && !surface.outline}
       onClick={(e) => { e.cancelBubble = true; edit(); }} onTap={(e) => { e.cancelBubble = true; edit(); }}
       onDragStart={(e) => { e.cancelBubble = true; select(); }} onDragMove={(e) => { e.cancelBubble = true; }}
       onDragEnd={(e) => {
@@ -49,11 +52,18 @@ function SurfaceShape({ surface, pxPerMetre, scale, interactive, selected }: {
         usePropertyStore.getState().updateGardenSurface(surface.id, patch);
         syncShape();
       }} />
+    {surface.outline && <Line points={gardenSurfacePolygon(surface).flatMap(p => [p.x * pxPerMetre, p.y * pxPerMetre])} closed
+      fill={paving?.renderHex ?? GARDEN_SURFACES[surface.kind].hex} opacity={0.85} listening={interactive} stroke={selected ? '#28786e' : '#536344'} strokeWidth={(selected ? 2 : 1) / scale}
+      draggable={interactive} onDragStart={e => { e.cancelBubble = true; select(); }} onDragMove={e => { e.cancelBubble = true; }}
+      onDragEnd={e => { e.cancelBubble = true; const dx = e.target.x() / pxPerMetre, dy = e.target.y() / pxPerMetre; e.target.position({ x: 0, y: 0 });
+        usePropertyStore.getState().updateGardenSurface(surface.id, { x: surface.x + dx, y: surface.y + dy }); }}
+      onClick={e => { e.cancelBubble = true; edit(); }} onTap={e => { e.cancelBubble = true; edit(); }} />}
+    {surface.kind === 'pool' && <Line listening={false} points={gardenGroundCutout(surface).flatMap(p => [p.x * pxPerMetre, p.y * pxPerMetre])} closed stroke="#d5e6e4" strokeWidth={2 / scale} dash={surface.pool?.stage === 'excavation' ? [5 / scale, 4 / scale] : undefined} />}
     {surface.widthM * pxPerMetre * scale > 85 && <Text listening={false}
       x={surface.x * pxPerMetre + 5 / scale} y={surface.y * pxPerMetre + 5 / scale}
       width={Math.max(0, surface.widthM * pxPerMetre - 10 / scale)}
-      text={`${paving?.name ?? GARDEN_SURFACES[surface.kind].label} · ${(surface.widthM * surface.depthM).toFixed(1)} m²${surface.elevationM ? ` · +${surface.elevationM} m` : ''}`}
-      fontFamily="Inter, sans-serif" fontSize={11 / scale} fill="#263523" />}
+      text={`${paving?.name ?? GARDEN_SURFACES[surface.kind].label} · ${polygonArea(gardenSurfacePolygon(surface)).toFixed(1)} m²${surface.kind === 'pool' ? ` · ${surface.pool?.shellDepthM ?? 1.5} m deep` : surface.elevationM ? ` · +${surface.elevationM} m` : ''}`}
+      fontFamily="Inter, sans-serif" fontSize={11 / scale} fill={surface.kind === 'tarmac' || surface.kind === 'soil' || (surface.kind === 'pool' && surface.pool?.stage === 'excavation') ? '#f5f5ec' : '#203124'} />}
     {selected && interactive && <Transformer ref={transformerRef} rotateEnabled={false} flipEnabled={false} keepRatio={false}
       anchorSize={18} anchorCornerRadius={9} anchorFill="#eafff9" anchorStroke="#28786e" borderStroke="#28786e" borderDash={[4, 3]}
       boundBoxFunc={(oldBox, newBox) => newBox.width < 0.2 * pxPerMetre * scale || newBox.height < 0.2 * pxPerMetre * scale || newBox.width > 500 * pxPerMetre * scale || newBox.height > 500 * pxPerMetre * scale ? oldBox : newBox}
@@ -64,6 +74,7 @@ function SurfaceShape({ surface, pxPerMetre, scale, interactive, selected }: {
 /** Select-mode editing leaves the existing wall, floor and product hit paths alone. */
 export function GardenLayer({ garden, pxPerMetre, scale, interactive = false }: { garden?: Garden; pxPerMetre: number; scale: number; interactive?: boolean }) {
   const selectedId = useGardenEditorStore((s) => s.selectedId);
+  const skin = useBuildSkinStore(s => s.skin);
   if (!garden) return null;
   return <Group name="garden" listening={interactive}>
     {garden.surfaces.map((surface) => <SurfaceShape key={surface.id} surface={surface} pxPerMetre={pxPerMetre} scale={scale} interactive={interactive} selected={surface.id === selectedId} />)}
@@ -83,7 +94,7 @@ export function GardenLayer({ garden, pxPerMetre, scale, interactive = false }: 
         hitStrokeWidth={20 / scale} dash={fence.material === 'hedge' ? undefined : [7 / scale, 3 / scale]} lineCap="square" />
       {fenceLengthM(fence) * pxPerMetre * scale > 100 && <Text listening={false}
         x={(fence.a.x + fence.b.x) / 2 * pxPerMetre} y={(fence.a.y + fence.b.y) / 2 * pxPerMetre - 15 / scale}
-        text={`${fenceLengthM(fence).toFixed(1)} m`} fontFamily="Inter, sans-serif" fontSize={11 / scale} fill="#37362f" />}
+        text={`${fenceLengthM(fence).toFixed(1)} m`} fontFamily="Inter, sans-serif" fontSize={11 / scale} fill={BUILD_SKIN_PALETTES[skin].ink} />}
     </Group>)}
   </Group>;
 }

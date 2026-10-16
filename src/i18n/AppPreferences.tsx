@@ -18,6 +18,7 @@ import {
   type TranslationValues,
 } from './messages';
 import './preferences.css';
+import '../styles/tactileSkins.css';
 
 export const UI_THEMES = ['ivory', 'ocean', 'slate'] as const;
 export type UiTheme = (typeof UI_THEMES)[number];

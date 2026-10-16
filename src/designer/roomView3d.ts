@@ -36,8 +36,10 @@
 
 import type { Polygon, Vertex } from '../lib/geometry';
 import { cmToM, rotatedFootprint } from '../lib/geometry';
-import { roomEdges } from './wallEdges';
-import { BARE_PLASTER_HEX, OPENING_DOOR_HEIGHT_M, OPENING_WINDOW_HEIGHT_M, sheenOfFinish } from '../data/wallPaints';
+import { edgeKey, roomEdges } from './wallEdges';
+import { sharedGlassEdges, sharedGlassOpenings } from './sharedGlass';
+import { BARE_PLASTER_HEX, sheenOfFinish } from '../data/wallPaints';
+import { openingProfile, openingProfileWorldPoint } from './openingGeometry';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -122,7 +124,7 @@ export interface SceneRoomInput {
   id: string;
   name: string;
   polygon: Polygon;
-  openings?: Array<{ edgeIndex: number; offsetM: number; widthM: number; kind: 'door' | 'doorway' | 'window'; sillM?: number }>;
+  openings?: Array<Omit<import('./openings').Opening, 'id' | 'flipFacing' | 'flipHand'> & { id?: string; flipFacing?: boolean; flipHand?: boolean }>;
   /** Resolved colour per painted edge (paint product hex or the chosen tint). */
   wallColourByEdge?: Map<number, string>;
   /** The paint's finish per painted edge (3D Mode: roughness / sheen); absent = bare plaster. */
@@ -130,6 +132,7 @@ export interface SceneRoomInput {
   exteriorColourByEdge?: Map<number, string>;
   exteriorFinishByEdge?: Map<number, string>;
   wallConstructionByEdge?: Map<number, import('./wallConstruction').WallConstruction>;
+  wallThicknessByEdge?: Map<number, number>;
   floorHex?: string;
   /** What the laid floor reads as (designer/floorKind.ts) and its tile size, for the 3D surface (P3). */
   floorKind?: string;
@@ -450,6 +453,7 @@ export function buildScene(input: SceneInput): SceneFace[] {
   const faces: SceneFace[] = [];
   const H = Math.max(0.5, input.wallHeightM);
   const cam = input.cameraPos;
+  const glassPairs = sharedGlassEdges(input.rooms);
 
   for (const room of input.rooms) {
     const indoor = room.kind !== 'outdoor' && room.polygon.length >= 3;
@@ -465,8 +469,14 @@ export function buildScene(input: SceneInput): SceneFace[] {
       });
 
       for (const e of roomEdges(room)) {
+        const glassPair = glassPairs.get(edgeKey(room.id, e.index));
+        if (glassPair && glassPair.ownerKey !== edgeKey(room.id, e.index)) continue;
         const inward = inwardNormal(e.a, e.b);
         const outward: Vec2 = { x: -inward.x, y: -inward.y };
+        const glassWall = room.wallConstructionByEdge?.get(e.index) === 'glass';
+        const thicknessM = room.wallThicknessByEdge?.get(e.index) ?? (glassWall ? .01 : CAP_THICKNESS_M);
+        const capA = glassPair ? { x: e.a.x + inward.x * thicknessM / 2, y: e.a.y + inward.y * thicknessM / 2 } : e.a;
+        const capB = glassPair ? { x: e.b.x + inward.x * thicknessM / 2, y: e.b.y + inward.y * thicknessM / 2 } : e.b;
         const hit: WallHit = { kind: 'edge', roomId: room.id, edgeIndex: e.index };
         const painted = room.wallColourByEdge?.get(e.index);
         const baseHex = painted ?? PLASTER_HEX;
@@ -475,33 +485,33 @@ export function buildScene(input: SceneInput): SceneFace[] {
         const fill = hovered ? mixHex(baseHex, HOVER_HEX, 0.45) : baseHex;
         const side = cameraSide(e.a, e.b, inward, cam);
 
-        if (side > 0) {
+        if (side > 0 || glassPair) {
           // Far wall: the inner face at full height, openings as holes.
-          const holes: Vec3[][] = [];
-          for (const o of room.openings ?? []) {
+            const holes: Vec3[][] = [];
+          for (const o of sharedGlassOpenings(room, e.index, glassPair)) {
             if (o.edgeIndex !== e.index) continue;
             const t0 = Math.max(0, (o.offsetM - o.widthM / 2) / e.lengthM);
             const t1 = Math.min(1, (o.offsetM + o.widthM / 2) / e.lengthM);
             if (t1 <= t0) continue;
-            const isWin = o.kind === 'window';
-            const sill = isWin ? Math.min(o.sillM ?? 0.9, H) : 0;
-            const top = Math.min(isWin ? sill + OPENING_WINDOW_HEIGHT_M : OPENING_DOOR_HEIGHT_M, H);
-            if (top <= sill) continue;
-            holes.push(quadOnEdge(e.a, e.b, sill, top, t0, t1));
+              const isWin = o.kind === 'window';
+              const profile = openingProfile({ ...o, id: o.id ?? '', flipFacing: o.flipFacing ?? false, flipHand: o.flipHand ?? false }, H)
+                .map(p => openingProfileWorldPoint(p, e.a, e.b));
+              if (profile.length < 3) continue;
+              holes.push(profile);
             // Window glass sits in the hole, slightly behind the face plane
             // so it never fights the wall for depth.
             if (isWin) {
-              const glass = quadOnEdge(e.a, e.b, sill, top, t0, t1).map((p) => ({
+                const glass = profile.map((p) => ({
                 x: p.x - inward.x * 0.02,
                 y: p.y - inward.y * 0.02,
                 z: p.z,
               }));
               faces.push({ key: `glass-${room.id}-${e.index}-${o.offsetM}`, kind: 'glass', pts: glass, fill: GLASS_HEX, alpha: 0.72, flat: true, order: 5 });
             }
-            faces.push({
+              if (o.kind !== 'hole') faces.push({
               key: `frame-${room.id}-${e.index}-${o.offsetM}`,
               kind: 'frame',
-              pts: quadOnEdge(e.a, e.b, sill, top, t0, t1),
+                pts: profile,
               fill: 'transparent',
               stroke: FRAME_HEX,
               flat: true,
@@ -514,6 +524,7 @@ export function buildScene(input: SceneInput): SceneFace[] {
             pts: quadOnEdge(e.a, e.b, 0, H),
             holes: holes.length ? holes : undefined,
             fill,
+              ...(room.wallConstructionByEdge?.get(e.index) === 'glass' ? { alpha: .25, flat: true } : {}),
             stroke: WALL_CAP_HEX,
             hit,
             sheen,
@@ -521,7 +532,7 @@ export function buildScene(input: SceneInput): SceneFace[] {
           faces.push({
             key: `cap-${room.id}-${e.index}`,
             kind: 'wall-cap',
-            pts: capOnEdge(e.a, e.b, outward, H, CAP_THICKNESS_M),
+              pts: capOnEdge(capA, capB, outward, H, thicknessM),
             fill: WALL_CAP_HEX,
             flat: true,
             order: 10,
@@ -531,8 +542,8 @@ export function buildScene(input: SceneInput): SceneFace[] {
           // stub shows its OUTER face and top; a click on it still paints
           // this edge (its inner face is what the paint goes on).
           const stubZ = Math.min(STUB_HEIGHT_M, H);
-          const outerA: Vertex = { x: e.a.x + outward.x * CAP_THICKNESS_M, y: e.a.y + outward.y * CAP_THICKNESS_M };
-          const outerB: Vertex = { x: e.b.x + outward.x * CAP_THICKNESS_M, y: e.b.y + outward.y * CAP_THICKNESS_M };
+          const outerA: Vertex = { x: e.a.x + outward.x * thicknessM, y: e.a.y + outward.y * thicknessM };
+          const outerB: Vertex = { x: e.b.x + outward.x * thicknessM, y: e.b.y + outward.y * thicknessM };
           faces.push({
             key: `stub-${room.id}-${e.index}`,
             kind: 'wall-stub',
@@ -556,7 +567,7 @@ export function buildScene(input: SceneInput): SceneFace[] {
           faces.push({
             key: `stubcap-${room.id}-${e.index}`,
             kind: 'wall-cap',
-            pts: capOnEdge(e.a, e.b, outward, stubZ, CAP_THICKNESS_M),
+            pts: capOnEdge(e.a, e.b, outward, stubZ, thicknessM),
             fill: WALL_CAP_HEX,
             flat: true,
             hit,
@@ -618,7 +629,8 @@ export function buildScene(input: SceneInput): SceneFace[] {
     const ny = -(w.b.x - w.a.x) / len;
     const hit: WallHit = { kind: 'free', wallId: w.id };
     const hovered = sameHit(input.hover, hit);
-    const baseHex = w.colourHex ?? PLASTER_HEX;
+    const glassWall = w.construction === 'glass';
+    const baseHex = w.colourHex ?? (glassWall ? GLASS_HEX : PLASTER_HEX);
     const sheen = sheenOfFinish(w.finish);
     const fill = hovered ? mixHex(baseHex, HOVER_HEX, 0.45) : baseHex;
     // Nearer the camera than the target → stub, like a front wall.
@@ -638,7 +650,7 @@ export function buildScene(input: SceneInput): SceneFace[] {
     ];
     for (const f of facesOfSlab) {
       if (dot(f.n, sub(cam, mid)) <= 0) continue;
-      faces.push({ key: `fw-${w.id}-${f.s}`, kind: hFace < H ? 'wall-stub' : 'wall', pts: f.pts, fill, stroke: WALL_CAP_HEX, hit, sheen, order: 15 });
+      faces.push({ key: `fw-${w.id}-${f.s}`, kind: hFace < H ? 'wall-stub' : 'wall', pts: f.pts, fill, ...(glassWall ? { alpha: .25, flat: true } : {}), stroke: WALL_CAP_HEX, hit, sheen, order: 15 });
     }
     faces.push({
       key: `fw-${w.id}-cap`,
@@ -649,7 +661,8 @@ export function buildScene(input: SceneInput): SceneFace[] {
         { x: otherB.x, y: otherB.y, z: hFace },
         { x: otherA.x, y: otherA.y, z: hFace },
       ],
-      fill: WALL_CAP_HEX,
+      fill: glassWall ? baseHex : WALL_CAP_HEX,
+      ...(glassWall ? { alpha: .25 } : {}),
       flat: true,
       hit,
       order: 16,

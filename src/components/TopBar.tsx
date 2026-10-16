@@ -2272,9 +2272,9 @@ export function TopBar({
           data-testid="door-options"
         >
           <span className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>
-            {t("Door")}</span>
-          <div className={SEG_GROUP} role="group" aria-label="Door kind">
-            {(['door', 'doorway', 'window'] as const).map((k) => (
+            {t(doorDraft.kind === 'door' ? 'Door' : doorDraft.kind === 'window' ? 'Window' : 'Opening')}</span>
+          <div className={SEG_GROUP} role="group" aria-label="Opening kind">
+            {(['door', 'doorway', 'window', 'hole'] as const).map((k) => (
               <button
                 key={k}
                 type="button"
@@ -2297,7 +2297,7 @@ export function TopBar({
           >
             {doorDraft.widthM} m
           </span>
-          <span className="h-5 w-px bg-ppw-rim" aria-hidden="true" />
+          {doorDraft.kind === 'door' && <><span className="h-5 w-px bg-ppw-rim" aria-hidden="true" />
           <button
             type="button"
             onClick={toggleDoorFacing}
@@ -2315,8 +2315,8 @@ export function TopBar({
             title="Swap the hinge to the other end (H)"
           >
             Flip hinge
-          </button>
-          <button type="button" onClick={handleSelect} className={`${BTN} ${BTN_REST}`} aria-label="Done adding doors and windows">
+          </button></>}
+          <button type="button" onClick={handleSelect} className={`${BTN} ${BTN_REST}`} aria-label="Done adding openings">
             {t("Done")}</button>
         </div>
       )}
