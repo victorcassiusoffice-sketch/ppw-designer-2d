@@ -35,7 +35,7 @@ export function foundationProcurement(model: FoundationModel | undefined, concre
       specification: `${element.rebar.diameterMm} mm | ${element.rebar.stockLengthM} m bar` };
   });
   const incompleteReasons: string[] = [];
-  if (foundation && !foundation.rebarComplete) incompleteReasons.push('Foundation reinforcement is withheld because reinforced elements overlap; separate the schedules before quoting steel.');
+  if (foundation && !foundation.rebarComplete) incompleteReasons.push('Foundation reinforcement is incomplete: resolve overlapping schedules or missing splice allowances before quoting steel.');
   if (foundation && !foundation.concreteComplete) incompleteReasons.push('Foundation excavation still awaits concrete; complete the fill stages before treating this as a complete foundation quote.');
   return { foundation, lines, incompleteReasons };
 }

@@ -39,6 +39,41 @@ describe('sales enablement journeys', () => {
     expect(host.textContent).toContain('No orders or payments');
     expect(host.textContent).toContain('linked endpoints follow it');
     expect(host.textContent).toContain('surveyed elevations');
+    expect(host.textContent).toContain('2D plan or 3D edit');
+    expect(host.textContent).toContain('Crossing lines alone do not create a junction');
+    expect(host.textContent).toContain('not a hydraulic simulation');
+  });
+  it('links the supported services, foundation and guide entry points with their review limits', () => {
+    act(() => root.render(<PlumbingPitchPage />));
+    click(button('Your website'));
+    expect(host.textContent).toContain('3D route editing');
+    expect(host.textContent).toContain('without deleting objects');
+    expect([...host.querySelectorAll('a')].map((a) => a.getAttribute('href'))).toContain(
+      '/demo?view=3d&panel=services&pitch=1',
+    );
+    expect(host.textContent).not.toContain('dedicated 2D workspace');
+    click(button('Work together'));
+    expect(host.textContent).toContain('diameter and depth');
+    expect(host.textContent).toContain('totals are withheld for review');
+    expect(host.textContent).toContain('not a pile design or excavation method');
+    expect([...host.querySelectorAll('a')].map((a) => a.getAttribute('href'))).toContain(
+      '/demo?view=2d&panel=foundation&pitch=1',
+    );
+    expect(
+      [...host.querySelectorAll('a')].find(
+        (a) => a.getAttribute('href') === '/demo?view=2d&pitch=1',
+      )?.textContent,
+    ).toContain('House guide');
+    expect(host.textContent).toContain('does not automatically share edits');
+    expect(host.querySelector('a[href="/checkout"]')).toBeNull();
+  });
+  it('distinguishes supplier references and dimensional illustrations from available stock and CAD', () => {
+    act(() => root.render(<PlumbingPitchPage />));
+    click(button('Your catalogue'));
+    expect(host.textContent).toContain('not manufacturer CAD');
+    expect(host.textContent).toContain('do not confirm Mauritius availability');
+    expect(host.textContent).toContain('not automatically build a plumbing');
+    expect(host.textContent).toContain('do not indicate a supplier partnership');
   });
   it('supports keyboard chapter navigation and restores a chapter with spaces after reload', () => {
     window.history.replaceState(null, '', '/pitch/plumbing#Work%20together');

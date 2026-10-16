@@ -1,0 +1,178 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "bundle": "App-CQre-53N.js",
+  "cases": [
+    {
+      "name": "desktop",
+      "shots": [
+        "docs/qa-shared-project-2026-10-16/desktop-owner-station.png",
+        "docs/qa-shared-project-2026-10-16/desktop-architect-station.png",
+        "docs/qa-shared-project-2026-10-16/desktop-engineer-station.png",
+        "docs/qa-shared-project-2026-10-16/desktop-supplier-station.png",
+        "docs/qa-shared-project-2026-10-16/desktop-contractor-station.png",
+        "docs/qa-shared-project-2026-10-16/desktop-client-station.png",
+        "docs/qa-shared-project-2026-10-16/desktop-components.png",
+        "docs/qa-shared-project-2026-10-16/desktop-component-edit.png",
+        "docs/qa-shared-project-2026-10-16/desktop-environment-moisture.png",
+        "docs/qa-shared-project-2026-10-16/desktop-moisture-calculated.png",
+        "docs/qa-shared-project-2026-10-16/desktop-local-sources.png",
+        "docs/qa-shared-project-2026-10-16/desktop-surface-review.png",
+        "docs/qa-shared-project-2026-10-16/desktop-pilot-gates.png",
+        "docs/qa-shared-project-2026-10-16/desktop-history.png",
+        "docs/qa-shared-project-2026-10-16/desktop-connection.png"
+      ],
+      "errors": [],
+      "writes": [],
+      "checks": [
+        {
+          "label": "owner-station",
+          "overflow": 0
+        },
+        {
+          "label": "architect-station",
+          "overflow": 0
+        },
+        {
+          "label": "engineer-station",
+          "overflow": 0
+        },
+        {
+          "label": "supplier-station",
+          "overflow": 0
+        },
+        {
+          "label": "contractor-station",
+          "overflow": 0
+        },
+        {
+          "label": "client-station",
+          "overflow": 0
+        },
+        {
+          "label": "components",
+          "overflow": 0
+        },
+        {
+          "label": "component-edit",
+          "overflow": 0
+        },
+        {
+          "label": "environment-moisture",
+          "overflow": 0
+        },
+        {
+          "label": "moisture-calculated",
+          "overflow": 0
+        },
+        {
+          "label": "local-sources",
+          "overflow": 0
+        },
+        {
+          "label": "surface-review",
+          "overflow": 0
+        },
+        {
+          "label": "pilot-gates",
+          "overflow": 0
+        },
+        {
+          "label": "history",
+          "overflow": 0
+        },
+        {
+          "label": "connection",
+          "overflow": 0
+        },
+        "Close returns to build"
+      ],
+      "failures": []
+    },
+    {
+      "name": "phone",
+      "shots": [
+        "docs/qa-shared-project-2026-10-16/phone-owner-station.png",
+        "docs/qa-shared-project-2026-10-16/phone-architect-station.png",
+        "docs/qa-shared-project-2026-10-16/phone-engineer-station.png",
+        "docs/qa-shared-project-2026-10-16/phone-supplier-station.png",
+        "docs/qa-shared-project-2026-10-16/phone-contractor-station.png",
+        "docs/qa-shared-project-2026-10-16/phone-client-station.png",
+        "docs/qa-shared-project-2026-10-16/phone-components.png",
+        "docs/qa-shared-project-2026-10-16/phone-component-edit.png",
+        "docs/qa-shared-project-2026-10-16/phone-environment-moisture.png",
+        "docs/qa-shared-project-2026-10-16/phone-moisture-calculated.png",
+        "docs/qa-shared-project-2026-10-16/phone-local-sources.png",
+        "docs/qa-shared-project-2026-10-16/phone-surface-review.png",
+        "docs/qa-shared-project-2026-10-16/phone-pilot-gates.png",
+        "docs/qa-shared-project-2026-10-16/phone-history.png",
+        "docs/qa-shared-project-2026-10-16/phone-connection.png"
+      ],
+      "errors": [],
+      "writes": [],
+      "checks": [
+        {
+          "label": "owner-station",
+          "overflow": 0
+        },
+        {
+          "label": "architect-station",
+          "overflow": 0
+        },
+        {
+          "label": "engineer-station",
+          "overflow": 0
+        },
+        {
+          "label": "supplier-station",
+          "overflow": 0
+        },
+        {
+          "label": "contractor-station",
+          "overflow": 0
+        },
+        {
+          "label": "client-station",
+          "overflow": 0
+        },
+        {
+          "label": "components",
+          "overflow": 0
+        },
+        {
+          "label": "component-edit",
+          "overflow": 0
+        },
+        {
+          "label": "environment-moisture",
+          "overflow": 0
+        },
+        {
+          "label": "moisture-calculated",
+          "overflow": 0
+        },
+        {
+          "label": "local-sources",
+          "overflow": 0
+        },
+        {
+          "label": "surface-review",
+          "overflow": 0
+        },
+        {
+          "label": "pilot-gates",
+          "overflow": 0
+        },
+        {
+          "label": "history",
+          "overflow": 0
+        },
+        {
+          "label": "connection",
+          "overflow": 0
+        },
+        "Close returns to build"
+      ],
+      "failures": []
+    }
+  ]
+}

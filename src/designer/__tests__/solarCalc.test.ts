@@ -16,6 +16,8 @@ import {
   inverterCoversPeak,
   monthlyGenerationWh,
   panelsToCover,
+  panelFootprintM2,
+  panelsThatStillFit,
 } from '../solarCalc';
 
 describe('dailyGenerationWh', () => {
@@ -46,10 +48,19 @@ describe('monthly + annual', () => {
     expect(m[0]).toBe(4800);
     expect(m[5]).toBe(3200);
   });
-  it('annual kWh = mean daily x 365.25', () => {
-    // mean PSH = 5.1667 -> 4133.3 Wh/day -> 1509.7 kWh/yr
-    expect(annualGenerationKwh(1000, psh, 0.8)).toBeCloseTo(1509.7, 0);
+  it('weights each monthly daily figure by its actual typical-year duration', () => {
+    const days = [31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    expect(annualGenerationKwh(1000, psh, 0.8)).toBeCloseTo(psh.reduce((sum, h, i) => sum + h * days[i] * 0.8, 0), 1);
     expect(annualGenerationKwh(1000, [], 0.8)).toBe(0);
+    expect(annualGenerationKwh(1000, [1, ...Array(11).fill(0)], 1)).toBe(31);
+    expect(annualGenerationKwh(1000, [0, 1, ...Array(10).fill(0)], 1)).toBe(28.3);
+    expect(() => annualGenerationKwh(1000, [5, 6], 0.8)).toThrow('twelve');
+  });
+  it('does not round physical panel footprint before counting capacity', () => {
+    const area = panelFootprintM2({ length: 100.4, width: 100 });
+    expect(area).toBeCloseTo(1.004);
+    // Two actual panels require 2.008 m², more than this 2 m² allowance.
+    expect(panelsThatStillFit(2 / 0.85, area, 0)).toBe(1);
   });
 });
 

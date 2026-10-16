@@ -17,9 +17,11 @@
 import type { Vertex } from '../lib/geometry';
 import { WALL_THICKNESS_M } from './wallAwarePlacement';
 import { GROUND_LEVEL_ID, roomLevelId } from './levels';
+import { isWallConstruction, sanitizeWallMaterialSpec, type WallConstruction, type WallMaterialSpec } from './wallConstruction';
 
 export interface FreeWall {
   construction?: import('./wallConstruction').WallConstruction;
+  materialProductId?: string;
   exteriorPaint?: import('../store/propertyStore').PaintedEdge;
   id: string;
   /** Endpoints in world metres. */
@@ -143,4 +145,13 @@ export function isFreeWallLike(x: unknown): x is FreeWall {
     && w.thicknessM > 0
     && (w.levelId === undefined || typeof w.levelId === 'string')
   );
+}
+
+/** Apply the active substrate before graph room inference consumes free walls. */
+export function wallsWithMaterial(walls: Omit<FreeWall, 'id'>[], options?: WallMaterialSpec & { construction?: WallConstruction }): Omit<FreeWall, 'id'>[] {
+  const construction = options?.construction;
+  if (!isWallConstruction(construction)) return walls;
+  const spec = sanitizeWallMaterialSpec(construction, options);
+  return walls.map(wall => ({ ...wall, construction, thicknessM: spec.thicknessMm !== undefined ? spec.thicknessMm / 1000 : wall.thicknessM,
+    ...(spec.materialProductId ? { materialProductId: spec.materialProductId } : {}) }));
 }

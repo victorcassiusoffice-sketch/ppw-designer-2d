@@ -10,14 +10,17 @@ import { getAllProducts } from '../../data/products';
 import type { OrbitCamera } from '../../designer/roomView3d';
 import type { ThreeStageHandle, ThreeStageProps } from '../three/ThreeStage';
 import { ROOM_LIGHTING_STORAGE_KEY } from '../../hooks/useRoomLighting';
+import { useDisciplineVisibilityStore } from '../../store/disciplineVisibilityStore';
 import { defaultFoundationRebar } from '../../designer/foundation';
 
-const renderer = vi.hoisted(() => ({ camera: null as OrbitCamera | null, presentation: undefined as ThreeStageProps['presentation'], hour: undefined as ThreeStageProps['hour'], mounts: 0, ready: undefined as ThreeStageProps['onReady'] }));
+const renderer = vi.hoisted(() => ({ camera: null as OrbitCamera | null, solids: undefined as ThreeStageProps['solids'] | undefined, projection: undefined as ThreeStageProps['projection'], presentation: undefined as ThreeStageProps['presentation'], hour: undefined as ThreeStageProps['hour'], mounts: 0, ready: undefined as ThreeStageProps['onReady'] }));
 vi.mock('../three/ThreeStage', async () => {
   const React = await import('react');
-  return { default: React.forwardRef<Pick<ThreeStageHandle, 'floorPoint' | 'hitItem' | 'hitTest' | 'projectPoint'>, ThreeStageProps>(function CameraStage({ camera, presentation, hour, onReady }, ref) {
+  return { default: React.forwardRef<Pick<ThreeStageHandle, 'floorPoint' | 'hitItem' | 'hitTest' | 'projectPoint'>, ThreeStageProps>(function CameraStage({ camera, solids, projection, presentation, hour, onReady }, ref) {
     renderer.ready = onReady;
     renderer.camera = camera;
+    renderer.solids = solids;
+    renderer.projection = projection;
     renderer.presentation = presentation;
     renderer.hour = hour;
     React.useEffect(() => { renderer.mounts += 1; }, []);
@@ -34,6 +37,7 @@ let host: HTMLDivElement;
 let viewport = { width: 960, height: 640 };
 beforeEach(async () => {
   viewport = { width: 960, height: 640 };
+  useDisciplineVisibilityStore.getState().showAll();
   renderer.camera = null;
   renderer.presentation = undefined;
   renderer.hour = undefined;
@@ -68,6 +72,50 @@ function expectSameFraming(camera: OrbitCamera, initialHeight = 640) {
 }
 
 describe('3D camera stays where the customer leaves it', () => {
+  it('all role and part filters preserve the camera without remounting or editing the project', () => {
+    const before = zoomIn(), mounts = renderer.mounts, property = structuredClone(usePropertyStore.getState().property);
+    for (const preset of ['pipes', 'plumbing-electrical-walls', 'architect', 'engineer', 'client'] as const) {
+      act(() => useDisciplineVisibilityStore.getState().applyPreset(preset));
+      expect(renderer.camera).toEqual(before); expect(renderer.mounts).toBe(mounts);
+    }
+    act(() => useDisciplineVisibilityStore.getState().setPartVisible('walls', false));
+    act(() => useDisciplineVisibilityStore.getState().showNone());
+    act(() => useDisciplineVisibilityStore.getState().showAll());
+    expect(renderer.camera).toEqual(before); expect(usePropertyStore.getState().property).toEqual(property);
+  });
+  it('keeps walls when hiding floors and removes hidden structure from hit-test geometry', () => {
+    expect(renderer.solids!.walls.length).toBeGreaterThan(0); expect(renderer.solids!.floors.length).toBeGreaterThan(0);
+    act(() => useDisciplineVisibilityStore.getState().applyPreset('plumbing-electrical-walls'));
+    expect(renderer.solids!.walls.length).toBeGreaterThan(0); expect(renderer.solids!.floors).toEqual([]);
+    expect(renderer.solids!.roofs).toEqual([]); expect(renderer.solids!.stairs).toEqual([]);
+    act(() => useDisciplineVisibilityStore.getState().setPartVisible('walls', false));
+    expect(renderer.solids!.walls).toEqual([]);
+    act(() => useDisciplineVisibilityStore.getState().showAll());
+    expect(renderer.solids!.walls.length).toBeGreaterThan(0); expect(renderer.solids!.floors.length).toBeGreaterThan(0);
+  });
+  it('uses a true orthographic elevation without refitting or remounting, and keeps its angle when zooming', () => {
+    const before = zoomIn(), mounts = renderer.mounts;
+    click('[data-testid="house-view-settings"]');
+    const select = host.querySelector<HTMLSelectElement>('[aria-label="Camera view"]')!;
+    act(() => { select.value = 'north'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(renderer.projection).toBe('orthographic');
+    expect(renderer.camera).toMatchObject({ target: before.target, distanceM: before.distanceM, elevationRad: 0, azimuthRad: Math.PI });
+    expect(useDesignerUIStore.getState().wallView).toBe('up');
+    click('[aria-label="Zoom in"]');
+    expect(renderer.camera!.elevationRad).toBe(0); expect(renderer.camera!.azimuthRad).toBe(Math.PI);
+    const elevation = structuredClone(renderer.camera!);
+    click('[data-testid="house-mode-furnish"]');
+    expect(renderer.camera).toEqual(elevation); expect(renderer.projection).toBe('orthographic');
+    expect(renderer.mounts).toBe(mounts);
+  });
+  it('adding measured vegetation preserves a zoomed plan and its selected projection', () => {
+    click('[data-testid="house-view-settings"]');
+    const select = host.querySelector<HTMLSelectElement>('[aria-label="Camera view"]')!;
+    act(() => { select.value = 'plan'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    const before = zoomIn();
+    act(() => usePropertyStore.getState().setEco({ version: 1, greenRoofs: [], trees: [{ id: 'tree', name: 'Existing tree', x: 30, y: 40, heightM: 8, canopyRadiusM: 3, status: 'existing', protectionMethod: 'unconfirmed' }] }));
+    expect(renderer.camera).toEqual(before); expect(renderer.projection).toBe('orthographic');
+  });
   it('keeps the loading animation until the renderer has drawn a frame and does not restore it on tool changes', () => {
     expect(host.querySelector('[data-testid="loading-3d"]')?.textContent).toContain('Loading 3D');
     act(() => renderer.ready?.());

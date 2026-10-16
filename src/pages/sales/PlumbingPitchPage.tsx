@@ -32,8 +32,8 @@ export default function PlumbingPitchPage() {
               <em>Before the quote.</em>
             </h1>
             <p className="sales-lead">
-              Help a customer explain where fixtures should go. Sketch water and drainage routes,
-              inspect measured lengths and give your technical team a useful starting brief.
+              Place fixtures, connect measured routes and review the same layout in 2D and 3D. Give
+              customers a clearer picture and your technical team a useful starting brief.
             </p>
             <div className="sales-actions">
               <button className="sales-primary" onClick={() => select(1)}>
@@ -42,8 +42,8 @@ export default function PlumbingPitchPage() {
               <OpenLink href={MEETING}>Discuss your business</OpenLink>
             </div>
             <p className="sales-note">
-              2D services planning is available in this build. 3D shows the building and fixtures. A
-              plumber still specifies and approves the installation.
+              Connected pipework, ventilation, fire-water and data routes are available to explore.
+              Your qualified team still sizes, specifies and approves each system.
             </p>
           </div>
           <figure className="sales-shot">
@@ -52,20 +52,20 @@ export default function PlumbingPitchPage() {
               alt="Actual Room Designer Plumbing and Electric workspace, with a measured floor, sink, toilet and coloured service routes"
             />
             <figcaption>
-              <span>Actual app capture</span> Floor-specific fixtures and measured service routes
+              <span>Actual 2D app capture</span> Floor-specific fixtures and measured service routes
             </figcaption>
           </figure>
           <div className="sales-wide sales-three">
             <article>
               <span className="sales-number">01</span>
-              <h3>Showroom consultation</h3>
+              <h2 className="sales-card-heading">Showroom consultation</h2>
               <p>
                 Place the fixtures with the customer and discuss space before producing a quotation.
               </p>
             </article>
             <article>
               <span className="sales-number">02</span>
-              <h3>Installer handover</h3>
+              <h2 className="sales-card-heading">Installer handover</h2>
               <p>
                 Review the proposed routes, level and assumptions with the person who will specify
                 the work.
@@ -73,7 +73,7 @@ export default function PlumbingPitchPage() {
             </article>
             <article>
               <span className="sales-number">03</span>
-              <h3>Product conversation</h3>
+              <h2 className="sales-card-heading">Product conversation</h2>
               <p>
                 Bring published material references into the discussion and confirm the required
                 specification.
@@ -96,31 +96,34 @@ export default function PlumbingPitchPage() {
               <ol className="sales-steps">
                 <li>
                   <strong>Choose the floor</strong>
-                  <span>Use Floors to keep each level separate and return to your original 2D or 3D view.</span>
+                  <span>
+                    Use Floors to keep each level separate and return to your original 2D or 3D
+                    view.
+                  </span>
                 </li>
                 <li>
                   <strong>Place the fixtures</strong>
                   <span>Add a sink, toilet and mains tap. Inspect the editable sizes.</span>
                 </li>
                 <li>
-                  <strong>Connect a route</strong>
+                  <strong>Connect in 2D or 3D</strong>
                   <span>
-                    Draw water, drainage or conduit. Choose compatible Start connection and End
-                    connection ports on this floor.
+                    Choose 2D plan or 3D edit. Draw a route, connect compatible fixture ports or an
+                    existing route node, then Finish. Crossing lines alone do not create a junction.
                   </span>
                 </li>
                 <li>
                   <strong>Move, measure, review</strong>
                   <span>
-                    Move or rotate a connected fixture: linked endpoints follow it. Review route
-                    lengths, whole supply lengths and incomplete-connection warnings.
+                    Move or rotate a connected fixture: linked endpoints follow it. Drag route
+                    nodes, set their elevations and review measured lengths and connection warnings.
                   </span>
                 </li>
               </ol>
               <p className="sales-note">
                 Ports are schematic. Drainage needs surveyed elevations; another floor needs a
-                separately measured riser. Fittings, flow and compliance require installer review.
-                Pipework editing opens in 2D even when you enter from 3D.
+                separately measured riser. This is not a hydraulic simulation. Pipe sizing, falls,
+                fittings and compliance require installer review.
               </p>
             </aside>
             <div className="sales-demo">
@@ -131,19 +134,22 @@ export default function PlumbingPitchPage() {
                   onViewChange={setMode}
                   panel="services"
                   pitch
-                  title="Working plumbing and electrical floor planner"
+                  title="Working 2D and 3D building services planner"
                   loading="eager"
                 />
               ) : (
                 <button className="sales-start-demo" onClick={() => setLive(true)}>
                   <img
-                    src="/showcase/plumbing-workspace.jpg"
-                    alt="Preview of the real plumbing workspace"
+                    src="/showcase/building-services-3d.jpg"
+                    alt="Actual Building services 3D editor with measured pipe routes, raised equipment and editable dimensions"
                   />
                   <span>Launch interactive workspace →</span>
                 </button>
               )}
-              <p>Practice demo. No orders or payments.</p>
+              <p>
+                Actual 3D editor capture. Practice demo opens in 2D; choose 3D edit. No orders or
+                payments.
+              </p>
             </div>
           </div>
         </>
@@ -158,16 +164,18 @@ export default function PlumbingPitchPage() {
               <h2>Published references</h2>
               <p>
                 Water, drainage and conduit presets include HPL Pipes and Espace Maison references.
-                Open the source and confirm size, application and supply length.
+                Explore ventilation, refrigerant, fire-water and data materials too. Open each
+                source to confirm size, application and supply length.
               </p>
               <p>
                 Try Resiglas tanks and Espace Maison toilet, sink, bidet, garden sofa, PVC pipe and
                 conduit examples. Published outer dimensions drive paired 2D and 3D objects.
               </p>
               <p className="sales-note">
-                Tank capacity, pipe bore, connector position and installation clearances are
-                separate specifications. Images and models are illustrative. Quote-required items
-                need supplier confirmation; they are not free or confirmed in stock.
+                Models are dimensional illustrations, not manufacturer CAD. Tank capacity, pipe
+                bore, ports and installation clearances need separate checks. Manufacturer
+                references do not confirm Mauritius availability; verify local supply and
+                quotations.
               </p>
             </article>
             <article className="sales-surface">
@@ -229,23 +237,30 @@ export default function PlumbingPitchPage() {
               <OpenLink href="/demo?view=2d&panel=services&pitch=1">Try 2D services</OpenLink>
             </article>
             <article className="sales-surface">
-              <h2>Premium 3D presentation</h2>
+              <h2>3D route editing</h2>
               <p>
-                Help customers understand the room and fixture arrangement. Exact product appearance
-                depends on approved models.
+                Inspect routes in space, move their nodes and compare the fixtures with the
+                building. Open Building services and choose 3D edit.
               </p>
-              <OpenLink href="/demo?view=3d&pitch=1">Try 3D</OpenLink>
+              <OpenLink href="/demo?view=3d&panel=services&pitch=1">
+                Open services → 3D edit
+              </OpenLink>
             </article>
             <article className="sales-surface">
               <h2>Both views, one design</h2>
-              <p>Keep measured planning and visual discussion in the same design session.</p>
+              <p>
+                One measured model feeds both views. Layers can isolate plumbing, electrical,
+                ventilation &amp; AC, fire protection or cameras &amp; data without deleting
+                objects.
+              </p>
               <p className="sales-note">
-                Pipe routes edit in the dedicated 2D workspace. This is not a hydraulic simulation.
+                Coordinate layouts and quantities. Capacity, coverage and regulatory approval remain
+                specialist work.
               </p>
             </article>
           </div>
           <div className="sales-surface sales-choice">
-            <h3>Installation options</h3>
+            <h2 className="sales-card-heading">Installation options</h2>
             <p>
               Embed a focused experience in your existing website. Run a standalone studio with an
               optional shop. Use it internally with advisers. Or commission a full website around
@@ -276,31 +291,45 @@ export default function PlumbingPitchPage() {
             ].map(([t, b], i) => (
               <article className="sales-surface" key={t}>
                 <span className="sales-number">0{i + 1}</span>
-                <h3>{t}</h3>
+                <h2 className="sales-card-heading">{t}</h2>
                 <p>{b}</p>
               </article>
             ))}
           </div>
           <div className="sales-three sales-choice">
             <article>
-              <h3>Available to explore</h3>
+              <h2 className="sales-card-heading">Coordinate below ground</h2>
               <p>
-                Use Floors → Foundation to measure an excavation, inspect its depth, then Add
-                concrete. Review separate volumes, a UBP / Premix reference and an engineer’s rebar
-                schedule alongside service routes. Choose a building floor to return to your view.
+                Use Floors → Foundation for rectangular excavations or circular holes with explicit
+                diameter and depth. Review separate excavation and concrete volumes alongside
+                routes. Overlapping circular excavation totals are withheld for review.
               </p>
-              <OpenLink href="/demo?view=2d&panel=foundation&pitch=1">Try foundation planning</OpenLink>
+              <p className="sales-note">
+                Measured coordination; not a pile design or excavation method.
+              </p>
+              <OpenLink href="/demo?view=2d&panel=foundation&pitch=1">
+                Try foundation planning
+              </OpenLink>
             </article>
             <article>
-              <h3>Configure for your company</h3>
-              <p>Approved catalogue, staff access, website and existing commerce backend.</p>
+              <h2 className="sales-card-heading">Follow the house guide</h2>
+              <p>
+                Open Guide in the plan toolbar for a saved checklist from the brief and foundations
+                through services, finishes and review. Each step opens its existing tool, then gets
+                out of the way.
+              </p>
+              <OpenLink href="/demo?view=2d&pitch=1">Open demo → House guide</OpenLink>
+              <p className="sales-note">
+                A project review guide, not construction instructions or approval.
+              </p>
             </article>
             <article>
-              <h3>Integrate and test</h3>
+              <h2 className="sales-card-heading">Configure and test connections</h2>
               <p>
-                Multi-company permissions, approval deadlines, supplier purchase orders, feeds and
-                delivery scheduling.
+                Scope your catalogue, staff permissions, commerce backend and supplier feeds. Agree
+                approval deadlines and delivery responsibilities before enabling purchasing.
               </p>
+              <OpenLink href="/demo?panel=project&pitch=1">Explore the project hub</OpenLink>
             </article>
           </div>
           <p className="sales-callout">

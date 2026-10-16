@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-15",
+  "base": "http://127.0.0.1:5173",
+  "bundle": "App-CDZDraaG.js",
+  "cases": [
+    {
+      "viewport": "desktop",
+      "view": "2d",
+      "route": "/demo?panel=services&view=2d",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "writes": [],
+      "failures": [],
+      "property": "generic-demo-home",
+      "overflow": 0,
+      "screenshot": "docs/qa-services-spatial-2026-10-15/desktop-public-demo-2d.png"
+    },
+    {
+      "viewport": "desktop",
+      "view": "3d",
+      "route": "/demo?panel=services&view=3d",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "writes": [],
+      "failures": [],
+      "property": "generic-demo-home",
+      "overflow": 0,
+      "screenshot": "docs/qa-services-spatial-2026-10-15/desktop-public-demo-3d.png"
+    },
+    {
+      "viewport": "phone",
+      "view": "2d",
+      "route": "/demo?panel=services&view=2d",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "writes": [],
+      "failures": [],
+      "property": "generic-demo-home",
+      "overflow": 0,
+      "screenshot": "docs/qa-services-spatial-2026-10-15/phone-public-demo-2d.png"
+    },
+    {
+      "viewport": "phone",
+      "view": "3d",
+      "route": "/demo?panel=services&view=3d",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "writes": [],
+      "failures": [],
+      "property": "generic-demo-home",
+      "overflow": 0,
+      "screenshot": "docs/qa-services-spatial-2026-10-15/phone-public-demo-3d.png"
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+
+> ppw-designer-2d@0.2.0 build
+> tsc --noEmit && tsc --noEmit -p tsconfig.middleware.json && vite build
+
+vite v5.4.21 building for production...
+transforming...
+✓ 992 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                        1.09 kB │ gzip:   0.53 kB
+dist/olb.html                                          2.24 kB │ gzip:   0.86 kB
+dist/assets/draco_wasm_wrapper-fZCQGLGb.js            58.46 kB
+dist/assets/draco_wasm_wrapper-DxJM36Ib.js            58.76 kB
+dist/assets/draco_decoder-Z1_iN-Ht.wasm              192.42 kB
+dist/assets/draco_decoder-C32yEggz.wasm              285.75 kB
+dist/assets/draco_decoder-fzg4nYZr.js                719.41 kB
+dist/assets/CityThreeView-Bak-owCN.css                 1.40 kB │ gzip:   0.60 kB
+dist/assets/OlbHomePage--qco7qC7.css                   3.23 kB │ gzip:   1.05 kB
+dist/assets/soft-shop-DOYnmUy9.css                     6.02 kB │ gzip:   1.90 kB
+dist/assets/MerchantConnectPage-CD4N4Hu1.css           6.12 kB │ gzip:   1.76 kB
+dist/assets/ConstructionPitchPage-CtrCWjM1.css         6.61 kB │ gzip:   2.03 kB
+dist/assets/SharedProjectWorkbench-D70Ul2Wj.css        9.10 kB │ gzip:   2.33 kB
+dist/assets/salesNavigation-DGrOBR_j.css              16.49 kB │ gzip:   3.75 kB
+dist/assets/PitchShell-DnpWFdvd.css                   23.13 kB │ gzip:   3.24 kB
+dist/assets/StudioPage-CSPjoFHJ.css                   25.11 kB │ gzip:   4.93 kB
+dist/assets/pitch-tactile-BWjplNBo.css                48.78 kB │ gzip:  10.65 kB
+dist/assets/main-w2vTE0F5.css                         66.02 kB │ gzip:  13.18 kB
+dist/assets/App-fRQnQuaZ.css                         192.58 kB │ gzip:  35.15 kB
+dist/assets/vendor-sentry-EPSolKsr.js                  0.04 kB │ gzip:   0.06 kB
+dist/assets/commission-BSjTNLTx.js                     0.05 kB │ gzip:   0.07 kB
+dist/assets/priceAdjust-CQuYKOWT.js                    0.25 kB │ gzip:   0.19 kB
+dist/assets/downloadJson-DhXa1J4E.js                   0.28 kB │ gzip:   0.23 kB
+dist/assets/currency-B6ULcQA_.js                       0.32 kB │ gzip:   0.25 kB
+dist/assets/OlbLockup-CdBXdLTt.js                      0.37 kB │ gzip:   0.28 kB
+dist/assets/quotedProducts-2NCXztC6.js                 0.39 kB │ gzip:   0.27 kB
+dist/assets/orderSnapshot-Cx7fzqkU.js                  0.42 kB │ gzip:   0.26 kB
+dist/assets/ordersStore-BHJPs9j2.js                    0.48 kB │ gzip:   0.32 kB
+dist/assets/AdminLayout-WIQS6_ML.js                    0.67 kB │ gzip:   0.43 kB
+dist/assets/paypalReturn-Uqqkhoi0.js                   0.69 kB │ gzip:   0.42 kB
+dist/assets/embedMessages-BIa44F5a.js                  0.72 kB │ gzip:   0.32 kB
+dist/assets/showcaseSafety-vfpeCbFJ.js                 0.72 kB │ gzip:   0.46 kB
+dist/assets/marketplaceCartStore-yNbEXy5J.js           0.81 kB │ gzip:   0.43 kB
+dist/assets/AiProviderDraft-BdlzqNHo.js                0.82 kB │ gzip:   0.49 kB
+dist/assets/SharedProjectConnection-DDNAdhZg.js        0.97 kB │ gzip:   0.56 kB
+dist/assets/GumroadReturnPage-CPG_Gav3.js              1.03 kB │ gzip:   0.63 kB
+dist/assets/gumroadCheckout-BESHYU5I.js                1.06 kB │ gzip:   0.56 kB
+dist/assets/EmbeddedDesigner-CbI-XtPz.js               1.07 kB │ gzip:   0.62 kB
+dist/assets/OrderCancelledPage-Cs4R_40v.js             1.15 kB │ gzip:   0.55 kB
+dist/assets/CartPageHeader-CTvXrpXF.js                 1.30 kB │ gzip:   0.65 kB
+dist/assets/uxKit-EVMlNDHM.js                          1.62 kB │ gzip:   0.78 kB
+dist/assets/workflowModel-B0IbPjWB.js                  1.97 kB │ gzip:   1.03 kB
+dist/assets/SuppliersSignupCompletePage-CGibStLu.js    2.14 kB │ gzip:   1.00 kB
+dist/assets/RequireAdmin-BIWrtmhG.js                   2.23 kB │ gzip:   0.95 kB
+dist/assets/LocaleThemeControls-sx3OEG_a.js            2.25 kB │ gzip:   1.02 kB
+dist/assets/OlbHomePage-U0fO5mov.js                    2.42 kB │ gzip:   0.97 kB
+dist/assets/AuthenticatedAiDraft-De_ddccy.js           2.44 kB │ gzip:   1.17 kB
+dist/assets/paypal-CdDYQbpq.js                         2.63 kB │ gzip:   1.10 kB
+dist/assets/CurrencySwitcher-DlTAychB.js               2.69 kB │ gzip:   1.48 kB
+dist/assets/OrdersPage-CGJQMCTS.js                     2.79 kB │ gzip:   1.18 kB
+dist/assets/AuditLogPage-DJ-PESHX.js                   3.39 kB │ gzip:   1.52 kB
+dist/assets/OrderPendingPage-CseyUdpF.js               3.51 kB │ gzip:   1.46 kB
+dist/assets/middleware-BoNmX9tp.js                     3.76 kB │ gzip:   1.36 kB
+dist/assets/ProductDetailPage-DBgwE04-.js              4.30 kB │ gzip:   1.86 kB
+dist/assets/serviceFixtureMeshes-hc2p2rIK.js           4.35 kB │ gzip:   1.88 kB
+dist/assets/DemoDesignerPage-CEYCgBvD.js               4.56 kB │ gzip:   2.28 kB
+dist/assets/modelSnapshot-8JYHPPHJ.js                  5.14 kB │ gzip:   2.31 kB
+dist/assets/RequireMerchant-BvJGo3r3.js                5.15 kB │ gzip:   2.29 kB
+dist/assets/pitch-tactile-NySal6D0.js                  5.17 kB │ gzip:   2.32 kB
+dist/assets/DashboardPage-DSl6Cfmn.js                  5.22 kB │ gzip:   1.88 kB
+dist/assets/MerchantAgentPage-kHCVhgZW.js              5.47 kB │ gzip:   2.39 kB
+dist/assets/PayoutsListPage-D66x28Lg.js                5.51 kB │ gzip:   1.97 kB
+dist/assets/OrdersListPage-1vDtWLWA.js                 5.71 kB │ gzip:   2.03 kB
+dist/assets/MerchantsListPage-CPPUxc15.js              5.96 kB │ gzip:   2.09 kB
+dist/assets/SuppliersListPage-Clnt8xEI.js              5.98 kB │ gzip:   2.14 kB
+dist/assets/buildingServicesCatalog-gFhvLWEg.js        6.09 kB │ gzip:   2.57 kB
+dist/assets/ProductsListPage-f7hzmv2N.js               6.70 kB │ gzip:   2.35 kB
+dist/assets/MarketplaceCartPage-CvQHsXmD.js            6.86 kB │ gzip:   2.37 kB
+dist/assets/OrderTrackPage-KQAk__iA.js                 6.87 kB │ gzip:   2.56 kB
+dist/assets/AdminMerchantsPage-RulPMGpZ.js             6.97 kB │ gzip:   2.21 kB
+dist/assets/MerchantOnboardingPage-Dpwg32D0.js         6.98 kB │ gzip:   2.75 kB
+dist/assets/MarketplaceCheckoutPage-CUHOSyFM.js        8.15 kB │ gzip:   3.01 kB
+dist/assets/MyDesignsPage-CzqIFuWi.js                  8.29 kB │ gzip:   3.09 kB
+dist/assets/PublicProductsPage-BI5q0q_V.js             8.43 kB │ gzip:   3.16 kB
+dist/assets/SuppliersPage-CDp_z_ZX.js                  8.56 kB │ gzip:   3.06 kB
+dist/assets/MerchantDetailPage-brHKSCwP.js             8.81 kB │ gzip:   2.57 kB
+dist/assets/StudioPage-Dnm5F3lT.js                    10.00 kB │ gzip:   3.16 kB
+dist/assets/ServicesThreeEditor-CV1yIdUd.js           10.03 kB │ gzip:   4.30 kB
+dist/assets/CityThreeView-A5Z5-fqY.js                 11.66 kB │ gzip:   4.91 kB
+dist/assets/MerchantAddProductPage-CMt09diz.js        11.68 kB │ gzip:   4.36 kB
+dist/assets/MerchantDashboardPage-CBvKV02n.js         11.76 kB │ gzip:   3.90 kB
+dist/assets/CartPage-nQUtRpkg.js                      12.12 kB │ gzip:   3.13 kB
+dist/assets/ConstructionPitchPage-fuaDuhYu.js         12.70 kB │ gzip:   3.68 kB
+dist/assets/EmployeeStarterPage-Xm1_h2FM.js           13.25 kB │ gzip:   4.42 kB
+dist/assets/PlumbingPitchPage-BSwiaiR7.js             13.46 kB │ gzip:   4.39 kB
+dist/assets/PitchShell-bPnd79Fq.js                    15.43 kB │ gzip:   4.95 kB
+dist/assets/designsApi-BMVtsmRB.js                    16.03 kB │ gzip:   5.33 kB
+dist/assets/MerchantConnectPage-BcQwUuHl.js           16.87 kB │ gzip:   6.46 kB
+dist/assets/DeveloperPitchPage-DpL1t84y.js            17.65 kB │ gzip:   6.02 kB
+dist/assets/MerchantPitchPage-aRTsx_Xk.js             17.99 kB │ gzip:   6.14 kB
+dist/assets/CheckoutPage-ShNxI3KW.js                  21.29 kB │ gzip:   7.10 kB
+dist/assets/vendor-router-YSxUxVSZ.js                 21.57 kB │ gzip:   8.04 kB
+dist/assets/salesNavigation-i1VxQk4D.js               30.83 kB │ gzip:  11.61 kB
+dist/assets/productSurfaceLighting-Co1ik9Zi.js        34.57 kB │ gzip:  13.12 kB
+dist/assets/types-BR-OoGj9.js                         54.91 kB │ gzip:  12.62 kB
+dist/assets/sofapColourMatch-DvLtg7hz.js              55.86 kB │ gzip:  16.28 kB
+dist/assets/index-uGpvyV1z.js                         62.17 kB │ gzip:  17.87 kB
+dist/assets/ThreeStage-DZnCyOnq.js                    72.22 kB │ gzip:  26.34 kB
+dist/assets/SharedProjectWorkbench-BUit_xyS.js        76.42 kB │ gzip:  24.62 kB
+dist/assets/cartStore-DarsIzvf.js                     77.08 kB │ gzip:  20.52 kB
+dist/assets/main-6i-eiABM.js                          77.37 kB │ gzip:  30.25 kB
+dist/assets/vendor-react-CS4MHxMm.js                 142.36 kB │ gzip:  45.62 kB
+dist/assets/propertyStore-HdRcPS_o.js                181.65 kB │ gzip:  58.17 kB
+dist/assets/html2canvas.esm-CBrSDip1.js              201.42 kB │ gzip:  48.03 kB
+dist/assets/vendor-konva-CbK8OvmD.js                 292.56 kB │ gzip:  89.26 kB
+dist/assets/OrderSuccessPage-X56xaLqm.js             442.25 kB │ gzip: 145.30 kB
+dist/assets/vendor-three-iho37tNp.js                 744.93 kB │ gzip: 191.29 kB
+dist/assets/App-BBKYhSiF.js                          982.75 kB │ gzip: 309.01 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 9.21s

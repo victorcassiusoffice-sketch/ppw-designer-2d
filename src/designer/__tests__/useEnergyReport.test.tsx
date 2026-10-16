@@ -128,8 +128,8 @@ describe('useEnergyReport re-derives when the merchant catalog lands (E-01)', ()
 
 describe('the "add N panels" hint names a panel in the catalog (E-06)', () => {
   it('picks the largest roof product in the seed: the Jinko 475 W, 1.903 × 1.134 m', () => {
-    expect(coverPanelFromCatalog(getAllProducts())).toEqual({ wp: 475, areaM2: 2.16 });
-    expect(defaultCoverPanel()).toEqual({ wp: 475, areaM2: 2.16 });
+    expect(coverPanelFromCatalog(getAllProducts())).toEqual({ wp: 475, areaM2: 2.158002 });
+    expect(defaultCoverPanel()).toEqual({ wp: 475, areaM2: 2.158002 });
   });
 
   it('falls back to the Mauritius reference panel when the catalog has no roof product', () => {

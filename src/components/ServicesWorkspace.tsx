@@ -2,18 +2,37 @@ import { useWorkspaceFocus } from '../hooks/useWorkspaceFocus';
 import { ServicesContextProducts } from './ServicesContextProducts';
 import { ServicesProductShelf } from './ServicesProductShelf';
 import { WorkspaceFloorNav } from './WorkspaceFloorNav';
-import { beginWorkspaceNavigation, cancelWorkspaceNavigation, finishWorkspaceNavigation } from '../designer/workspaceNavigation';
-import { useEffect, useRef, useState } from 'react';
+import {
+  beginWorkspaceNavigation,
+  cancelWorkspaceNavigation,
+  finishWorkspaceNavigation,
+} from '../designer/workspaceNavigation';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { snapServicePoint, type ServiceAngleSnap } from '../designer/serviceRouteEditing';
+import { filterServicePresentation } from '../designer/serviceScene';
+import { DisciplineVisibilityControls } from './DisciplineVisibilityControls';
+import { useDisciplineVisibilityStore } from '../store/disciplineVisibilityStore';
+import {
+  productVisible,
+  serviceFixtureDiscipline,
+  serviceSystemDiscipline,
+} from '../designer/disciplineVisibility';
+import { BUILDING_EQUIPMENT, buildingEquipmentById } from '../data/buildingEquipmentCatalog';
+import type { ServiceEditorHit } from './ServicesThreeEditor';
+const ServicesThreeEditor = lazy(() => import('./ServicesThreeEditor'));
 import { createPortal } from 'react-dom';
 import { nanoid } from 'nanoid';
 import { usePropertyStore } from '../store/propertyStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
+import { isDemoPagePending, DEMO_PAGE_READY_EVENT } from '../demo/useDemoMode';
 import { usePlacementIntentStore } from '../store/placementIntentStore';
 import { useHistoryStore } from '../store/historyStore';
+import { getProductById } from '../data/products';
 import { activeLevelIdOf, roomLevelId } from '../designer/levels';
 import {
   EMPTY_SERVICES,
   estimateServices,
+  serviceRunPoints3D,
   SERVICE_FIXTURES,
   SERVICE_SYSTEMS,
   type ServiceFixture,
@@ -26,6 +45,8 @@ import {
 import {
   compatibleServicePorts,
   connectServiceEndpoint,
+  connectServiceNodes,
+  moveServiceNode,
   resolveServiceConnections,
   serviceConnectionWarnings,
   servicePortLabel,
@@ -63,16 +84,28 @@ export function ServicesLaunchButton({
 export function ServicesWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }) {
   const [open, setOpen] = useState(false),
     [initialSelection, setInitialSelection] = useState<string | null>(null);
+  const [initialSystem, setInitialSystem] = useState<ServiceSystem | undefined>();
+  const [initialView, setInitialView] = useState<'plan' | '3d'>('plan');
   const before = useRef(onBeforeOpen);
   before.current = onBeforeOpen;
   useEffect(() => {
+    const query = new URLSearchParams(location.search);
+    let pendingRoute = query.get('panel') === 'services';
     const show = (event?: Event) => {
+      const ui = useDesignerUIStore.getState();
+      // Read the origin before the underlying building view is suspended for this workspace.
+      // A URL view override applies only to the initial route, never to later toolbar launches.
+      if (!event && pendingRoute && ['2d', '3d'].includes(query.get('view') ?? ''))
+        ui.setViewMode(query.get('view') === '3d' ? '3d' : 'plan');
+      setInitialView(useDesignerUIStore.getState().viewMode);
+      pendingRoute = false;
       beginWorkspaceNavigation('services');
       setInitialSelection(
         (event as CustomEvent<{ fixtureId?: string }> | undefined)?.detail?.fixtureId ?? null,
       );
+      const system = (event as CustomEvent<{ system?: ServiceSystem }> | undefined)?.detail?.system;
+      setInitialSystem(SERVICE_SYSTEMS.some((entry) => entry.id === system) ? system : undefined);
       before.current();
-      const ui = useDesignerUIStore.getState();
       ui.setViewMode('plan');
       ui.setTool('hand');
       ui.setMaterialsPanelOpen(false);
@@ -83,31 +116,57 @@ export function ServicesWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void }
       setOpen(true);
     };
     const close = (event: Event) => {
+      pendingRoute = false;
+      if (event.type === 'olb:close-workspaces') {
+        finishWorkspaceNavigation('services');
+        setOpen(false);
+        return;
+      }
       if (event.type !== 'ppw:open-foundation') cancelWorkspaceNavigation('services');
       setOpen(false);
     };
     const unsubscribe = usePropertyStore.subscribe((state, previous) => {
       if (state.property.id === previous.property.id) return;
+      if (!isDemoPagePending()) pendingRoute = false;
       cancelWorkspaceNavigation('services');
       setOpen(false);
     });
+    const ready = () => {
+      if (pendingRoute && !isDemoPagePending()) show();
+    };
     window.addEventListener('ppw:open-services', show);
+    window.addEventListener(DEMO_PAGE_READY_EVENT, ready);
     window.addEventListener('ppw:open-plan-import', close);
     window.addEventListener('ppw:open-ai-design', close);
     window.addEventListener('ppw:open-foundation', close);
-    if (new URLSearchParams(location.search).get('panel') === 'services') show();
+    window.addEventListener('ppw:open-city', close);
+    window.addEventListener('olb:open-project', close);
+    window.addEventListener('olb:close-workspaces', close);
+    ready();
     return () => {
       unsubscribe();
       finishWorkspaceNavigation('services');
       window.removeEventListener('ppw:open-services', show);
+      window.removeEventListener(DEMO_PAGE_READY_EVENT, ready);
       window.removeEventListener('ppw:open-plan-import', close);
       window.removeEventListener('ppw:open-ai-design', close);
       window.removeEventListener('ppw:open-foundation', close);
+      window.removeEventListener('ppw:open-city', close);
+      window.removeEventListener('olb:open-project', close);
+      window.removeEventListener('olb:close-workspaces', close);
     };
   }, []);
   return open
     ? createPortal(
-        <ServicesWorkbench initialSelection={initialSelection} onClose={() => { finishWorkspaceNavigation('services'); setOpen(false); }} />,
+        <ServicesWorkbench
+          initialSelection={initialSelection}
+          initialSystem={initialSystem}
+          initialView={initialView}
+          onClose={() => {
+            finishWorkspaceNavigation('services');
+            setOpen(false);
+          }}
+        />,
         document.body,
       )
     : null;
@@ -118,9 +177,13 @@ type Tool = 'select' | 'pipe' | 'move' | ServiceFixtureKind;
 function ServicesWorkbench({
   onClose,
   initialSelection,
+  initialSystem,
+  initialView,
 }: {
   onClose: () => void;
   initialSelection: string | null;
+  initialSystem?: ServiceSystem;
+  initialView: 'plan' | '3d';
 }) {
   const property = usePropertyStore((s) => s.property),
     services = property.services ?? EMPTY_SERVICES;
@@ -129,6 +192,7 @@ function ServicesWorkbench({
   const [tool, setTool] = useState<Tool>('select'),
     [system, setSystem] = useState<ServiceSystem>('cold-water');
   const [materialId, setMaterialId] = useState(SERVICE_MATERIALS[0].id);
+  const [diameterMm, setDiameterMm] = useState(SERVICE_MATERIALS[0].nominalDiameterMm);
   const [startElevation, setStartElevation] = useState(-0.3),
     [endElevation, setEndElevation] = useState(-0.3);
   const [draft, setDraft] = useState<ServicePoint[]>([]),
@@ -137,7 +201,19 @@ function ServicesWorkbench({
   const [draftEndConnection, setDraftEndConnection] = useState<ServiceConnection | undefined>();
   const [details, setDetails] = useState(true),
     [snap, setSnap] = useState(true),
-    [orthogonal, setOrthogonal] = useState(true);
+    [angleSnap, setAngleSnap] = useState<ServiceAngleSnap>('90');
+  const [editorView, setEditorView] = useState<'plan' | '3d'>(initialView);
+  const [threeStarted, setThreeStarted] = useState(initialView === '3d'),
+    [fitNonce, setFitNonce] = useState(0);
+  const [zoomCommand, setZoomCommand] = useState({ sequence: 0, factor: 1 });
+  const [selectedNode, setSelectedNode] = useState<number | null>(null);
+  const [hover, setHover] = useState<{ point: ServicePoint; hit: ServiceEditorHit | null } | null>(
+    null,
+  );
+  const [routePreview, setRoutePreview] = useState<ServicePoint[] | null>(null);
+  const draftLinks = useRef(new Map<number, { runId: string; nodeIndex: number }>());
+  const visible = useDisciplineVisibilityStore((state) => state.visible);
+  const parts = useDisciplineVisibilityStore((state) => state.parts);
   const [view, setView] = useState<ViewBox>({ x: -2, y: -2, w: 14, h: 10 });
   const host = useRef<HTMLDivElement>(null),
     svg = useRef<SVGSVGElement>(null);
@@ -148,7 +224,10 @@ function ServicesWorkbench({
     view: ViewBox;
     target: string | null;
     port?: ServiceConnection;
+    nodeIndex?: number;
+    nodePoint?: { x: number; y: number; elevationM: number };
     moved: boolean;
+    pan?: boolean;
     pinch?: { d: number; mid: ServicePoint };
   } | null>(null);
   const rooms = property.rooms.filter((r) => roomLevelId(r) === levelId);
@@ -157,6 +236,9 @@ function ServicesWorkbench({
     fixtures = services.fixtures.filter((f) => f.levelId === levelId);
   const selectedFixture = fixtures.find((f) => f.id === selected),
     selectedRun = runs.find((r) => r.id === selected);
+  const displayServices = useMemo(() => filterServicePresentation(services, visible, parts), [services, visible, parts]);
+  const displayRuns = displayServices.runs.filter(run => run.levelId === levelId);
+  const displayFixtures = displayServices.fixtures.filter(fixture => fixture.levelId === levelId);
   const material = SERVICE_MATERIALS.find((m) => m.id === (selectedRun?.materialId ?? materialId));
   const summaries = estimateServices(services),
     estimate = summaries.find((e) => e.id === selected);
@@ -164,10 +246,10 @@ function ServicesWorkbench({
   const connectionWarnings = serviceConnectionWarnings(services).filter((issue) =>
     runs.some((r) => r.id === issue.runId),
   );
-  const floorPorts = fixtures.flatMap(servicePorts);
-  const availablePorts = compatibleServicePorts(services, levelId, selectedRun?.system ?? system);
+  const floorPorts = displayFixtures.flatMap(servicePorts);
+  const availablePorts = compatibleServicePorts(displayServices, levelId, selectedRun?.system ?? system);
   const foundationElements =
-    levelId === 'ground' && property.foundation?.enabled ? property.foundation.elements : [];
+    visible.foundation && levelId === 'ground' && property.foundation?.enabled ? property.foundation.elements : [];
   const canUndo = useHistoryStore((s) => s.past.length > 0),
     canRedo = useHistoryStore((s) => s.future.length > 0);
   function save(next: typeof services) {
@@ -180,6 +262,7 @@ function ServicesWorkbench({
     return ok;
   }
   function fit() {
+    setFitNonce((n) => n + 1);
     const points = [
       ...rooms.flatMap((r) => r.polygon),
       ...walls.flatMap((w) => [w.a, w.b]),
@@ -224,6 +307,10 @@ function ServicesWorkbench({
   entryState.current = { fit, initialSelection };
   useEffect(() => {
     setDraft([]);
+    draftLinks.current.clear();
+    setSelectedNode(null);
+    setHover(null);
+    setRoutePreview(null);
     setDraftStartConnection(undefined);
     setDraftEndConnection(undefined);
     setSelected(entryState.current.initialSelection);
@@ -231,27 +318,72 @@ function ServicesWorkbench({
     entryState.current.fit();
   }, [property.id, levelId]);
   useWorkspaceFocus(host, () => {
+    if (host.current?.querySelector('.discipline-popover')) {
+      const toggle = host.current.querySelector<HTMLButtonElement>('[data-testid="discipline-toggle"]');
+      toggle?.click(); toggle?.focus();
+      return;
+    }
     if (draft.length) {
       setDraft([]);
       setDraftStartConnection(undefined);
       setDraftEndConnection(undefined);
       setTool('select');
+      draftLinks.current.clear();
+    } else if (tool !== 'select' || selected) {
+      chooseTool('select');
+      setSelected(null);
     } else onClose();
   });
   useEffect(() => {
     setSelected(initialSelection);
   }, [initialSelection]);
+  const launchSystem = useRef(initialSystem);
+  launchSystem.current = initialSystem;
+  useEffect(() => {
+    const value = launchSystem.current;
+    if (!value) return;
+    setSystem(value);
+    setTool('pipe');
+    setSelected(null);
+    setMaterialId(SERVICE_MATERIALS.find((m) => m.system === value)?.id ?? `unverified-${value}`);
+    setDiameterMm(SERVICE_MATERIALS.find((m) => m.system === value)?.nominalDiameterMm ?? 20);
+    useDisciplineVisibilityStore.getState().setVisible(serviceSystemDiscipline(value), true);
+    useDisciplineVisibilityStore.getState().setPartVisible('routes', true);
+    setTool('pipe');
+  }, [initialSystem]);
+  useEffect(() => useDisciplineVisibilityStore.subscribe((state, previous) => {
+    if (state.visible === previous.visible && state.parts === previous.parts) return;
+    setSelected(null); setSelectedNode(null); setHover(null); setRoutePreview(null);
+    setDraft([]); draftLinks.current.clear(); setDraftStartConnection(undefined); setDraftEndConnection(undefined); setTool('select');
+  }), []);
   function chooseTool(next: Tool) {
     setError('');
     setDraft([]);
+    draftLinks.current.clear();
+    setSelectedNode(null);
+    setHover(null);
+    setRoutePreview(null);
     setDraftStartConnection(undefined);
     setDraftEndConnection(undefined);
     setTool(next);
     if (next !== 'move') setSelected(null);
+    if (next in SERVICE_FIXTURES) {
+      const filters = useDisciplineVisibilityStore.getState();
+      filters.setVisible(serviceFixtureDiscipline(next), true); filters.setPartVisible('equipment', true);
+      setTool(next);
+    }
   }
   function changeSystem(value: ServiceSystem) {
     setSystem(value);
-    setMaterialId(SERVICE_MATERIALS.find((m) => m.system === value)!.id);
+    setMaterialId(SERVICE_MATERIALS.find((m) => m.system === value)?.id ?? `unverified-${value}`);
+    setDiameterMm(SERVICE_MATERIALS.find((m) => m.system === value)?.nominalDiameterMm ?? 20);
+    useDisciplineVisibilityStore.getState().setVisible(serviceSystemDiscipline(value), true);
+    useDisciplineVisibilityStore.getState().setPartVisible('routes', true);
+    setTool('pipe');
+    draftLinks.current.clear();
+    setSelectedNode(null);
+    setHover(null);
+    setRoutePreview(null);
     setDraft([]);
     setDraftStartConnection(undefined);
     setDraftEndConnection(undefined);
@@ -264,26 +396,18 @@ function ServicesWorkbench({
     const point = new DOMPoint(clientX, clientY).matrixTransform(matrix.inverse());
     return { x: point.x, y: point.y };
   }
-  function tap(point: ServicePoint, target: string | null, portTarget?: ServiceConnection) {
-    if (tool === 'select') {
-      setSelected(target);
-      if (target) setDetails(true);
-      return;
-    }
-    let p = snap ? { x: Math.round(point.x * 20) / 20, y: Math.round(point.y * 20) / 20 } : point;
-    if (tool === 'move' && selectedFixture) {
-      save({
-        ...services,
-        fixtures: services.fixtures.map((f) => (f.id === selected ? { ...f, ...p } : f)),
-      });
-      setTool('select');
-      return;
-    }
-    if (tool === 'pipe') {
+  function appendRoute(entries: { point: ServicePoint; hit: ServiceEditorHit }[]) {
+    const points = [...draft],
+      links = new Map(draftLinks.current);
+    let firstConnection = draftStartConnection,
+      lastConnection = draftEndConnection;
+    let nextElevation = endElevation,
+      firstElevation = startElevation;
+    for (const { point, hit } of entries) {
       const attached =
-        portTarget &&
-        floorPorts.find((p) => p.fixtureId === portTarget.fixtureId && p.id === portTarget.portId);
-      if (portTarget && (!attached || attached.id !== system || attached.elevationM === null)) {
+        hit.port &&
+        floorPorts.find((p) => p.fixtureId === hit.port!.fixtureId && p.id === hit.port!.portId);
+      if (hit.port && (!attached || attached.id !== system || attached.elevationM === null)) {
         setError(
           attached?.elevationM === null
             ? 'Enter the surveyed drainage connection elevation before attaching a route.'
@@ -291,27 +415,120 @@ function ServicesWorkbench({
         );
         return;
       }
-      if (attached) p = { x: attached.x, y: attached.y };
-      const last = draft[draft.length - 1];
-      if (last && orthogonal && !attached)
-        p =
-          Math.abs(p.x - last.x) >= Math.abs(p.y - last.y)
-            ? { x: p.x, y: last.y }
-            : { x: last.x, y: p.y };
-      if (draft.length >= 500) {
+      const targetRun =
+        hit.id && hit.nodeIndex !== undefined ? runs.find((r) => r.id === hit.id) : undefined;
+      if (targetRun && targetRun.system !== system) {
+        setError('A junction must use the same service system.');
+        return;
+      }
+      let point3D = snapServicePoint(
+        { ...point, elevationM: points.length ? nextElevation : firstElevation },
+        undefined,
+        snap,
+        'free',
+      );
+      if (attached) point3D = { x: attached.x, y: attached.y, elevationM: attached.elevationM! };
+      else if (targetRun) point3D = serviceRunPoints3D(targetRun)[hit.nodeIndex!];
+      if (!points.length && (attached || targetRun)) {
+        firstElevation = point3D.elevationM!;
+        nextElevation = point3D.elevationM!;
+      }
+      const last = points[points.length - 1];
+      if (last && !attached && !targetRun)
+        point3D = snapServicePoint(point3D, last, false, angleSnap);
+      if (lastConnection && points.length > 1) {
+        setError('Finish this connected run before starting another.');
+        return;
+      }
+      if (points.length >= 500) {
         setError('Finish this run before adding more points (500 per run).');
         return;
       }
       if (
         !last ||
-        Math.hypot(p.x - last.x, p.y - last.y) >= 0.01 ||
-        (draft.length === 1 && startElevation !== endElevation)
+        Math.hypot(
+          point3D.x - last.x,
+          point3D.y - last.y,
+          (point3D.elevationM ?? 0) - (last.elevationM ?? 0),
+        ) >= 0.01
       ) {
-        setDraft([...draft, p]);
-        if (!draft.length) setDraftStartConnection(portTarget);
-        else setDraftEndConnection(portTarget);
-        setError('');
+        if (targetRun) links.set(points.length, { runId: targetRun.id, nodeIndex: hit.nodeIndex! });
+        if (!points.length) firstConnection = hit.port;
+        else lastConnection = hit.port;
+        points.push(point3D);
       }
+    }
+    setStartElevation(firstElevation);
+    setEndElevation(nextElevation);
+    draftLinks.current = links;
+    setDraft(points);
+    setDraftStartConnection(firstConnection);
+    setDraftEndConnection(lastConnection);
+    setError('');
+    setRoutePreview(null);
+  }
+  function dragRoute(
+    start: ServicePoint,
+    end: ServicePoint,
+    startHit: ServiceEditorHit,
+    endHit: ServiceEditorHit,
+  ) {
+    appendRoute(
+      draft.length
+        ? [{ point: end, hit: endHit }]
+        : [
+            { point: start, hit: startHit },
+            { point: end, hit: endHit },
+          ],
+    );
+  }
+  function hitElement(element: Element | null): ServiceEditorHit {
+    const node = element?.closest('[data-service-node]'),
+      port = element?.closest('[data-service-port]');
+    return {
+      id:
+        element?.closest('[data-service-id]')?.getAttribute('data-service-id') ??
+        port?.getAttribute('data-fixture-id') ??
+        null,
+      ...(node ? { nodeIndex: Number(node.getAttribute('data-service-node')) } : {}),
+      ...(port
+        ? {
+            port: {
+              fixtureId: port.getAttribute('data-fixture-id')!,
+              portId: port.getAttribute('data-service-port') as ServiceSystem,
+            },
+          }
+        : {}),
+    };
+  }
+  function tap(
+    point: ServicePoint,
+    target: string | null,
+    portTarget?: ServiceConnection,
+    nodeIndex?: number,
+  ) {
+    if (tool === 'select') {
+      setSelected(target);
+      setSelectedNode(nodeIndex ?? null);
+      if (target) setDetails(true);
+      return;
+    }
+    const p = snapServicePoint(
+      { ...point, elevationM: draft.length ? endElevation : startElevation },
+      undefined,
+      snap,
+      'free',
+    );
+    if (tool === 'move' && selectedFixture) {
+      save({
+        ...services,
+        fixtures: services.fixtures.map((f) => (f.id === selected ? { ...f, x: p.x, y: p.y } : f)),
+      });
+      setTool('select');
+      return;
+    }
+    if (tool === 'pipe') {
+      appendRoute([{ point, hit: { id: target, port: portTarget, nodeIndex } }]);
       return;
     }
     if (tool === 'move') return;
@@ -320,7 +537,8 @@ function ServicesWorkbench({
       id: nanoid(10),
       levelId,
       kind: tool,
-      ...p,
+      x: p.x,
+      y: p.y,
       widthM,
       depthM,
       heightM,
@@ -333,22 +551,33 @@ function ServicesWorkbench({
   }
   function finish() {
     if (draft.length < 2) return;
-    const m = SERVICE_MATERIALS.find((m) => m.id === materialId)!;
     const run: ServiceRun = {
       id: nanoid(10),
       levelId,
       system,
       materialId,
-      diameterMm: m.nominalDiameterMm,
+      diameterMm,
       points: draft,
-      startElevationM: startElevation,
-      endElevationM: endElevation,
+      startElevationM: draft[0].elevationM ?? startElevation,
+      endElevationM: draft[draft.length - 1]?.elevationM ?? endElevation,
       ...(draftStartConnection ? { startConnection: draftStartConnection } : {}),
       ...(draftEndConnection ? { endConnection: draftEndConnection } : {}),
     };
-    if (!save({ ...services, runs: [...services.runs, run] })) return;
+    let next = { ...services, runs: [...services.runs, run] };
+    for (const [nodeIndex, target] of draftLinks.current) {
+      const linked = connectServiceNodes(next, { runId: run.id, nodeIndex }, target, nanoid(10));
+      if (!linked) {
+        setError('A selected junction changed. Cancel this draft and reconnect.');
+        return;
+      }
+      next = linked;
+    }
+    if (!save(next)) return;
     setSelected(run.id);
     setDraft([]);
+    draftLinks.current.clear();
+    setHover(null);
+    setSelectedNode(null);
     setDraftStartConnection(undefined);
     setDraftEndConnection(undefined);
     setTool('select');
@@ -361,10 +590,93 @@ function ServicesWorkbench({
     });
   }
   function updateRun(patch: Partial<ServiceRun>) {
+    if (selectedRun && (patch.startElevationM !== undefined || patch.endElevationM !== undefined)) {
+      const index = patch.startElevationM !== undefined ? 0 : selectedRun.points.length - 1;
+      moveNode(selectedRun.id, index, {
+        ...serviceRunPoints3D(selectedRun)[index],
+        elevationM: patch.startElevationM ?? patch.endElevationM!,
+      });
+      return;
+    }
     save({
       ...services,
       runs: services.runs.map((r) => (r.id === selected ? { ...r, ...patch } : r)),
     });
+  }
+  function moveNode(
+    runId: string,
+    nodeIndex: number,
+    point: { x: number; y: number; elevationM: number },
+  ) {
+    const next = moveServiceNode(services, runId, nodeIndex, point);
+    if (next) save(next);
+    else setError('Detach the unresolved junction before moving this node.');
+    setSelected(runId);
+    setSelectedNode(nodeIndex);
+    setHover(null);
+  }
+  function dropNode(
+    runId: string,
+    nodeIndex: number,
+    point: { x: number; y: number; elevationM: number },
+  ) {
+    const run = services.runs.find((r) => r.id === runId);
+    if (!run) return;
+    if (nodeIndex === 0 || nodeIndex === run.points.length - 1) {
+      const port = compatibleServicePorts(displayServices, run.levelId, run.system).find(
+        (p) =>
+          p.elevationM !== null &&
+          Math.hypot(p.x - point.x, p.y - point.y, p.elevationM - point.elevationM) <= 0.15,
+      );
+      if (port) {
+        const next = connectServiceEndpoint(services, runId, nodeIndex === 0 ? 'start' : 'end', {
+          fixtureId: port.fixtureId,
+          portId: port.id,
+        });
+        if (next) {
+          save(next);
+          setHover(null);
+          return;
+        }
+      }
+    }
+    for (const target of runs.filter((r) => r.system === run.system)) {
+      const index = serviceRunPoints3D(target).findIndex(
+        (p, i) =>
+          !(target.id === runId && i === nodeIndex) &&
+          Math.hypot(p.x - point.x, p.y - point.y, p.elevationM - point.elevationM) <= 0.15,
+      );
+      if (index >= 0) {
+        const next = connectServiceNodes(
+          services,
+          { runId, nodeIndex },
+          { runId: target.id, nodeIndex: index },
+          nanoid(10),
+        );
+        if (next) {
+          save(next);
+          setHover(null);
+          return;
+        }
+      }
+    }
+    moveNode(runId, nodeIndex, {
+      ...snapServicePoint(point, undefined, snap, 'free'),
+      elevationM: point.elevationM,
+    });
+  }
+  function continueRoute() {
+    if (!selectedRun) return;
+    const point = serviceRunPoints3D(selectedRun)[selectedRun.points.length - 1]!;
+    chooseTool('pipe');
+    setSystem(selectedRun.system);
+    setMaterialId(selectedRun.materialId);
+    setDiameterMm(selectedRun.diameterMm);
+    setStartElevation(point.elevationM);
+    setEndElevation(point.elevationM);
+    setDraft([point]);
+    draftLinks.current.set(0, { runId: selectedRun.id, nodeIndex: selectedRun.points.length - 1 });
+    setDetails(true);
   }
   function connect(endpoint: ServiceEndpoint, encoded: string) {
     if (!selectedRun) return;
@@ -377,15 +689,26 @@ function ServicesWorkbench({
     save(next);
   }
   function remove() {
+    const remainingRuns = services.runs.filter((r) => r.id !== selected);
+    const usedJunctions = new Set(
+      remainingRuns.flatMap((r) => r.points.map((p) => p.junctionId).filter(Boolean)),
+    );
     save({
       ...services,
       fixtures: services.fixtures.filter((f) => f.id !== selected),
-      runs: services.runs.filter((r) => r.id !== selected),
+      runs: remainingRuns,
+      ...(services.junctions
+        ? { junctions: services.junctions.filter((j) => usedJunctions.has(j.id)) }
+        : {}),
     });
     setSelected(null);
     setTool('select');
   }
   function zoom(factor: number, anchor?: ServicePoint) {
+    if (editorView === '3d') {
+      setZoomCommand((v) => ({ sequence: v.sequence + 1, factor }));
+      return;
+    }
     setView((v) => {
       const f = Math.min(200 / Math.max(v.w, v.h), Math.max(0.3 / Math.min(v.w, v.h), factor));
       const p = anchor ?? { x: v.x + v.w / 2, y: v.y + v.h / 2 };
@@ -393,13 +716,17 @@ function ServicesWorkbench({
     });
   }
   const instruction =
-    tool === 'pipe'
-      ? `${draft.length ? 'Add the next bend' : 'Tap the pipe start'} · Finish saves this run`
-      : tool === 'move'
-        ? 'Tap the new fixture position'
-        : tool === 'select'
-          ? 'Select a route or fixture · drag to pan · pinch to zoom'
-          : `Tap to place ${SERVICE_FIXTURES[tool].label.toLowerCase()}`;
+    hover?.hit?.port && tool === 'pipe'
+      ? `Connect to ${hover.hit.port.portId} port · click to attach`
+      : hover?.hit?.nodeIndex !== undefined && tool === 'pipe'
+        ? 'Connect to this route node · explicit junction'
+        : tool === 'pipe'
+          ? `${draft.length ? 'Add the next bend' : 'Drag a route or tap its start'} · Finish saves this run`
+          : tool === 'move'
+            ? 'Tap the new fixture position'
+            : tool === 'select'
+              ? 'Select a route · drag its nodes · drag empty space to orbit/pan · pinch to zoom'
+              : `Tap to place ${SERVICE_FIXTURES[tool].label.toLowerCase()}`;
   return (
     <div
       ref={host}
@@ -413,7 +740,7 @@ function ServicesWorkbench({
           <StudioIcon name="close" size={18} /> Back
         </button>
         <div>
-          <h1 id="services-title">Plumbing & Electric</h1>
+          <h1 id="services-title">Building services</h1>
           <p>Measured floor services</p>
         </div>
         <WorkspaceFloorNav mode="services" onExit={onClose} />
@@ -432,25 +759,64 @@ function ServicesWorkbench({
           <StudioIcon name="cursor" size={18} />
           Select
         </button>
-        {SERVICE_SYSTEMS.map((s) => (
-          <button
-            key={s.id}
-            aria-pressed={tool === 'pipe' && system === s.id}
-            onClick={() => changeSystem(s.id)}
+        <label className="services-tool-select">
+          Route system
+          <select
+            aria-label="Route system"
+            value={tool === 'pipe' ? system : ''}
+            onChange={(e) => changeSystem(e.target.value as ServiceSystem)}
           >
-            <span className="services-dot" style={{ background: s.colour }} />
-            {s.label}
+            <option value="" disabled>
+              Draw a route…
+            </option>
+            {SERVICE_SYSTEMS.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="services-tool-select">
+          Place equipment
+          <select
+            aria-label="Place equipment"
+            value={tool in SERVICE_FIXTURES ? tool : ''}
+            onChange={(e) => chooseTool(e.target.value as ServiceFixtureKind)}
+          >
+            <option value="" disabled>
+              Choose equipment…
+            </option>
+            {(Object.keys(SERVICE_FIXTURES) as ServiceFixtureKind[]).map((kind) => (
+              <option key={kind} value={kind}>
+                {SERVICE_FIXTURES[kind].label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <DisciplineVisibilityControls />
+        {(Object.values(visible).some((v) => !v) || Object.values(parts).some((v) => !v)) && (
+          <button onClick={() => useDisciplineVisibilityStore.getState().showAll()}>
+            Show all layers
           </button>
-        ))}
-        {(Object.keys(SERVICE_FIXTURES) as ServiceFixtureKind[]).map((kind) => (
-          <button key={kind} aria-pressed={tool === kind} onClick={() => chooseTool(kind)}>
-            {SERVICE_FIXTURES[kind].label}
-          </button>
-        ))}
+        )}
       </nav>
       <div className="services-body" data-details={details}>
         <section className="services-drawing" aria-label="Services drawing">
           <div className="services-view-tools">
+            <div className="services-view-switch" role="group" aria-label="Services view">
+              <button aria-pressed={editorView === 'plan'} onClick={() => setEditorView('plan')}>
+                2D plan
+              </button>
+              <button
+                aria-pressed={editorView === '3d'}
+                onClick={() => {
+                  setThreeStarted(true);
+                  setEditorView('3d');
+                }}
+              >
+                3D edit
+              </button>
+            </div>
             <button title="Zoom in" aria-label="Zoom services in" onClick={() => zoom(0.8)}>
               <StudioIcon name="plus" size={18} />
             </button>
@@ -484,9 +850,38 @@ function ServicesWorkbench({
               {details ? 'Hide details' : 'Details'}
             </button>
           </div>
+          {threeStarted && (
+            <div className="services-three-host" hidden={editorView !== '3d'}>
+              <Suspense fallback={<p role="status">Loading 3D services…</p>}>
+                <ServicesThreeEditor
+                  property={property}
+                  showWalls={visible.structure && parts.walls}
+                  showFloors={visible.structure && parts.floors}
+                  services={displayServices}
+                  levelId={levelId}
+                  selectedId={selected}
+                  selectedNode={selectedNode}
+                  drawing={tool !== 'select'}
+                  routing={tool === 'pipe'}
+                  onRouteDrag={dragRoute}
+                  endElevationM={endElevation}
+                  snapGrid={snap}
+                  angleSnap={angleSnap}
+                  draft={draft}
+                  elevationM={draft.length ? endElevation : startElevation}
+                  fitNonce={fitNonce}
+                  zoomCommand={zoomCommand}
+                  onPoint={(point, hit) => tap(point, hit.id, hit.port, hit.nodeIndex)}
+                  onNodeMove={dropNode}
+                  onHover={(point, hit) => setHover(point ? { point, hit } : null)}
+                />
+              </Suspense>
+            </div>
+          )}
           <svg
             ref={svg}
             className="services-plan"
+            style={{ display: editorView === 'plan' ? undefined : 'none' }}
             aria-label="Scaled services floor plan"
             viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
             onWheel={(e) => {
@@ -505,6 +900,14 @@ function ServicesWorkbench({
                   last: p,
                   view,
                   moved: false,
+                  pan: e.button !== 0 || e.shiftKey,
+                  nodeIndex: (e.target as Element).closest('[data-service-node]')
+                    ? Number(
+                        (e.target as Element)
+                          .closest('[data-service-node]')!
+                          .getAttribute('data-service-node'),
+                      )
+                    : undefined,
                   target:
                     (e.target as Element)
                       .closest('[data-service-id]')
@@ -525,6 +928,7 @@ function ServicesWorkbench({
                     : undefined,
                 };
               else if (pointers.current.size === 2 && gesture.current) {
+                setRoutePreview(null);
                 const [a, b] = [...pointers.current.values()];
                 gesture.current = {
                   ...gesture.current,
@@ -538,7 +942,35 @@ function ServicesWorkbench({
               }
             }}
             onPointerMove={(e) => {
-              if (!pointers.current.has(e.pointerId)) return;
+              if (!pointers.current.has(e.pointerId)) {
+                const node = (e.target as Element).closest('[data-service-node]'),
+                  port = (e.target as Element).closest('[data-service-port]');
+                setHover(
+                  tool === 'pipe'
+                    ? {
+                        point: world(e.clientX, e.clientY),
+                        hit: {
+                          id:
+                            (e.target as Element)
+                              .closest('[data-service-id]')
+                              ?.getAttribute('data-service-id') ?? null,
+                          ...(node
+                            ? { nodeIndex: Number(node.getAttribute('data-service-node')) }
+                            : {}),
+                          ...(port
+                            ? {
+                                port: {
+                                  fixtureId: port.getAttribute('data-fixture-id')!,
+                                  portId: port.getAttribute('data-service-port') as ServiceSystem,
+                                },
+                              }
+                            : {}),
+                        },
+                      }
+                    : null,
+                );
+                return;
+              }
               const p = { x: e.clientX, y: e.clientY };
               pointers.current.set(e.pointerId, p);
               const g = gesture.current;
@@ -564,7 +996,32 @@ function ServicesWorkbench({
                 });
               } else if (!g.pinch) {
                 if (Math.hypot(p.x - g.start.x, p.y - g.start.y) > 5) g.moved = true;
-                if (g.moved) {
+                if (g.moved && tool === 'pipe' && !g.pan) {
+                  const start =
+                    draft[draft.length - 1] ??
+                    snapServicePoint(world(g.start.x, g.start.y), undefined, snap, 'free');
+                  setRoutePreview([
+                    start,
+                    snapServicePoint(world(e.clientX, e.clientY), start, snap, angleSnap),
+                  ]);
+                } else if (
+                  g.moved &&
+                  tool === 'select' &&
+                  g.target === selectedRun?.id &&
+                  g.nodeIndex !== undefined
+                ) {
+                  const point = snapServicePoint(
+                    world(e.clientX, e.clientY),
+                    undefined,
+                    snap,
+                    'free',
+                  );
+                  g.nodePoint = {
+                    ...point,
+                    elevationM: serviceRunPoints3D(selectedRun!)[g.nodeIndex].elevationM,
+                  };
+                  setHover({ point: g.nodePoint, hit: { id: g.target, nodeIndex: g.nodeIndex } });
+                } else if (g.moved) {
                   const matrix = svg.current?.getScreenCTM();
                   if (matrix)
                     setView((v) => ({
@@ -579,13 +1036,37 @@ function ServicesWorkbench({
             onPointerUp={(e) => {
               const g = gesture.current;
               pointers.current.delete(e.pointerId);
-              if (g && !g.moved && !pointers.current.size)
-                tap(world(e.clientX, e.clientY), g.target, g.port);
-              if (!pointers.current.size) gesture.current = null;
+              if (g && !g.moved && !g.pan && !pointers.current.size)
+                tap(world(e.clientX, e.clientY), g.target, g.port, g.nodeIndex);
+              else if (
+                g?.moved &&
+                !g.pinch &&
+                !g.pan &&
+                tool === 'pipe' &&
+                !pointers.current.size
+              ) {
+                dragRoute(
+                  world(g.start.x, g.start.y),
+                  world(e.clientX, e.clientY),
+                  { id: g.target, port: g.port, nodeIndex: g.nodeIndex },
+                  hitElement(document.elementFromPoint(e.clientX, e.clientY)),
+                );
+              } else if (
+                g?.nodePoint &&
+                g.target &&
+                g.nodeIndex !== undefined &&
+                !pointers.current.size
+              )
+                dropNode(g.target, g.nodeIndex, g.nodePoint);
+              if (!pointers.current.size) {
+                gesture.current = null;
+                setRoutePreview(null);
+              }
             }}
             onPointerCancel={() => {
               pointers.current.clear();
               gesture.current = null;
+              setRoutePreview(null);
             }}
           >
             <defs>
@@ -618,13 +1099,13 @@ function ServicesWorkbench({
                 />
               );
             })}
-            {rooms.map((r) => (
+            {visible.structure && (parts.walls || parts.floors) && rooms.map((r) => (
               <g key={r.id}>
                 <polygon
                   points={r.polygon.map((p) => `${p.x},${p.y}`).join(' ')}
-                  fill="#eeeae0"
+                  fill={parts.floors ? "#eeeae0" : "none"}
                   fillOpacity=".88"
-                  stroke="#586b62"
+                  stroke={parts.walls ? "#586b62" : "none"}
                   strokeWidth=".14"
                   strokeLinejoin="round"
                 />
@@ -639,7 +1120,7 @@ function ServicesWorkbench({
                 </text>
               </g>
             ))}
-            {walls.map((w) => (
+            {visible.structure && parts.walls && walls.map((w) => (
               <line
                 key={w.id}
                 x1={w.a.x}
@@ -650,10 +1131,15 @@ function ServicesWorkbench({
                 strokeWidth={w.thicknessM}
               />
             ))}
-            <ServicesContextProducts rooms={rooms} />
-            {runs.map((run) => {
+            <ServicesContextProducts rooms={rooms.map(room => ({ ...room, placedItems: room.placedItems.filter(item => productVisible(getProductById(item.productId), visible, parts)) }))} />
+            {displayRuns.map((run) => {
               const colour = SERVICE_SYSTEMS.find((s) => s.id === run.system)!.colour;
-              const od = SERVICE_MATERIALS.find((m) => m.id === run.materialId)?.outerDiameterMm;
+              const od = SERVICE_MATERIALS.find(
+                (m) =>
+                  m.id === run.materialId &&
+                  m.system === run.system &&
+                  m.nominalDiameterMm === run.diameterMm,
+              )?.outerDiameterMm;
               return (
                 <g key={run.id} data-service-id={run.id}>
                   <polyline
@@ -680,12 +1166,21 @@ function ServicesWorkbench({
                     vectorEffect="non-scaling-stroke"
                   />
                   {run.points.map((p, i) => (
-                    <circle key={i} cx={p.x} cy={p.y} r=".035" fill={colour} />
+                    <circle
+                      key={i}
+                      cx={p.x}
+                      cy={p.y}
+                      r={selected === run.id || tool === 'pipe' ? '.09' : '.035'}
+                      data-service-node={i}
+                      fill={selected === run.id && selectedNode === i ? '#d79543' : colour}
+                      stroke={p.junctionId ? '#fff' : undefined}
+                      strokeWidth=".025"
+                    />
                   ))}
                 </g>
               );
             })}
-            {fixtures.map((f) => (
+            {displayFixtures.map((f) => (
               <g
                 key={f.id}
                 data-service-id={f.id}
@@ -755,6 +1250,49 @@ function ServicesWorkbench({
                 </g>
               );
             })}
+            {hover && (
+              <circle
+                cx={hover.point.x}
+                cy={hover.point.y}
+                r=".12"
+                fill="none"
+                stroke="#b77733"
+                strokeWidth=".025"
+                pointerEvents="none"
+              />
+            )}
+            {hover &&
+              tool === 'select' &&
+              selectedRun &&
+              hover.hit?.id === selectedRun.id &&
+              hover.hit.nodeIndex !== undefined && (
+                <polyline
+                  points={selectedRun.points
+                    .map((p, index) =>
+                      index === hover.hit!.nodeIndex
+                        ? `${hover.point.x},${hover.point.y}`
+                        : `${p.x},${p.y}`,
+                    )
+                    .join(' ')}
+                  fill="none"
+                  stroke="#b77733"
+                  strokeWidth="2"
+                  strokeDasharray="5 3"
+                  vectorEffect="non-scaling-stroke"
+                  pointerEvents="none"
+                />
+              )}
+            {routePreview && (
+              <polyline
+                points={routePreview.map((p) => `${p.x},${p.y}`).join(' ')}
+                fill="none"
+                stroke={activeSystem.colour}
+                strokeWidth="3"
+                strokeDasharray="5 3"
+                vectorEffect="non-scaling-stroke"
+                pointerEvents="none"
+              />
+            )}
             {draft.length > 0 && (
               <g pointerEvents="none">
                 <polyline
@@ -773,10 +1311,23 @@ function ServicesWorkbench({
           </svg>
           <div className="services-instruction" role="status">
             <span>{error || instruction}</span>
+            {hover && (
+              <circle
+                cx={hover.point.x}
+                cy={hover.point.y}
+                r=".12"
+                fill="none"
+                stroke="#b77733"
+                strokeWidth=".025"
+                pointerEvents="none"
+              />
+            )}
+
             {draft.length > 0 && (
               <>
                 <button
                   onClick={() => {
+                    draftLinks.current.delete(draft.length - 1);
                     setDraft(draft.slice(0, -1));
                     setDraftEndConnection(undefined);
                     if (draft.length <= 1) setDraftStartConnection(undefined);
@@ -827,8 +1378,8 @@ function ServicesWorkbench({
                       (m)
                       <input
                         type="number"
-                        step=".01"
-                        min={key === 'x' || key === 'y' ? -10000 : 0.05}
+                        step=".001"
+                        min={key === 'x' || key === 'y' ? -10000 : 0.005}
                         max={key === 'x' || key === 'y' ? 10000 : 5}
                         value={selectedFixture[key]}
                         onChange={(e) => {
@@ -840,6 +1391,56 @@ function ServicesWorkbench({
                     </label>
                   ))}
                 </div>
+                <label>
+                  Base elevation (m)
+                  <input
+                    type="number"
+                    min="-20"
+                    max="20"
+                    step=".01"
+                    value={selectedFixture.elevationM ?? 0}
+                    onChange={(e) => {
+                      if (e.target.value && e.target.validity.valid)
+                        updateFixture({ elevationM: Number(e.target.value) });
+                    }}
+                  />
+                </label>
+                <label>
+                  Supplier equipment reference
+                  <select
+                    aria-label="Supplier equipment reference"
+                    value={selectedFixture.productReferenceId ?? ''}
+                    onChange={(e) =>
+                      updateFixture({ productReferenceId: e.target.value || undefined })
+                    }
+                  >
+                    <option value="">Generic measured envelope</option>
+                    {BUILDING_EQUIPMENT.filter((item) => item.kind === selectedFixture.kind).map(
+                      (item) => (
+                        <option value={item.id} key={item.id}>
+                          {item.supplier} · {item.label}
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </label>
+                {(() => {
+                  const reference = buildingEquipmentById(selectedFixture.productReferenceId ?? '');
+                  return reference ? (
+                    <div className="services-equipment-source">
+                      <p className="services-selected-reference"><strong>{reference.supplier} · {reference.label}</strong></p>
+                      <p>{reference.notes}</p>
+                      <a href={reference.sourceUrl} target="_blank" rel="noreferrer">
+                        Supplier source
+                      </a>
+                      {reference.dimensions && (
+                        <button onClick={() => updateFixture({ ...reference.dimensions })}>
+                          Use verified body dimensions
+                        </button>
+                      )}
+                    </div>
+                  ) : null;
+                })()}
                 <div className="services-ports-inspector">
                   <strong>Connection points</strong>
                   <p>
@@ -896,6 +1497,109 @@ function ServicesWorkbench({
               <>
                 {selectedRun && (
                   <div className="services-connections">
+                    <strong>Measured route nodes</strong>
+                    <label>
+                      Selected node
+                      <select
+                        aria-label="Selected route node"
+                        value={selectedNode ?? 0}
+                        onChange={(e) => setSelectedNode(Number(e.target.value))}
+                      >
+                        {selectedRun.points.map((p, i) => (
+                          <option value={i} key={i}>
+                            Node {i + 1}
+                            {p.junctionId ? ' · junction' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    {(() => {
+                      const index = Math.min(selectedNode ?? 0, selectedRun.points.length - 1);
+                      const point = serviceRunPoints3D(selectedRun)[index];
+                      return (
+                        <>
+                          <div className="services-node-fields">
+                            {(['x', 'y', 'elevationM'] as const).map((key) => (
+                              <label key={key}>
+                                {key === 'elevationM' ? 'Node height' : `Node ${key.toUpperCase()}`}{' '}
+                                (m)
+                                <input
+                                  type="number"
+                                  min={key === 'elevationM' ? -20 : -10000}
+                                  max={key === 'elevationM' ? 20 : 10000}
+                                  step=".01"
+                                  aria-label={`Node ${key}`}
+                                  value={point[key]}
+                                  onChange={(e) => {
+                                    if (e.target.value && e.target.validity.valid)
+                                      moveNode(selectedRun.id, index, {
+                                        ...point,
+                                        [key]: Number(e.target.value),
+                                      });
+                                  }}
+                                />
+                              </label>
+                            ))}
+                          </div>
+                          {selectedRun.points[index].junctionId && (
+                            <button
+                              onClick={() =>
+                                updateRun({
+                                  points: selectedRun.points.map((p, i) => {
+                                    const next = { ...p };
+                                    if (i === index) delete next.junctionId;
+                                    return next;
+                                  }),
+                                })
+                              }
+                            >
+                              Detach node from junction
+                            </button>
+                          )}
+                          <div className="services-actions">
+                            <button
+                              disabled={
+                                selectedRun.points.length >= 500 ||
+                                index === selectedRun.points.length - 1
+                              }
+                              onClick={() => {
+                                const next = serviceRunPoints3D(selectedRun)[index + 1];
+                                const points = selectedRun.points.map((p, i) => ({
+                                  ...p,
+                                  ...serviceRunPoints3D(selectedRun)[i],
+                                }));
+                                points.splice(index + 1, 0, {
+                                  x: (point.x + next.x) / 2,
+                                  y: (point.y + next.y) / 2,
+                                  elevationM: (point.elevationM + next.elevationM) / 2,
+                                });
+                                updateRun({ points });
+                                setSelectedNode(index + 1);
+                              }}
+                            >
+                              Insert bend after
+                            </button>
+                            <button
+                              disabled={index === 0 || index === selectedRun.points.length - 1}
+                              onClick={() => {
+                                updateRun({
+                                  points: selectedRun.points.filter((_, i) => i !== index),
+                                });
+                                setSelectedNode(null);
+                              }}
+                            >
+                              Remove bend
+                            </button>
+                            <button onClick={continueRoute}>Continue from end</button>
+                          </div>
+                        </>
+                      );
+                    })()}
+                    <p>
+                      Drag selected nodes in either view. Drop within 15 cm of a same-system node or
+                      port to connect. Editing a fixture-linked endpoint detaches it; a junction
+                      moves all its linked nodes. Heights are relative to this floor.
+                    </p>
                     <strong>Connect this route</strong>
                     {(['start', 'end'] as const).map((endpoint) => {
                       const reference = selectedRun[`${endpoint}Connection`];
@@ -948,18 +1652,23 @@ function ServicesWorkbench({
                   <select
                     value={selectedRun?.materialId ?? materialId}
                     onChange={(e) => {
-                      const m = SERVICE_MATERIALS.find((m) => m.id === e.target.value)!;
+                      const m = SERVICE_MATERIALS.find((m) => m.id === e.target.value);
+                      if (!m) return;
                       if (selectedRun)
                         updateRun({ materialId: m.id, diameterMm: m.nominalDiameterMm });
-                      else setMaterialId(m.id);
+                      else {
+                        setMaterialId(m.id);
+                        setDiameterMm(m.nominalDiameterMm);
+                      }
                     }}
                   >
-                    {selectedRun &&
-                      !SERVICE_MATERIALS.some((m) => m.id === selectedRun.materialId) && (
-                        <option value={selectedRun.materialId}>
-                          Unverified material · {selectedRun.materialId}
-                        </option>
-                      )}
+                    {!SERVICE_MATERIALS.some(
+                      (m) => m.id === (selectedRun?.materialId ?? materialId),
+                    ) && (
+                      <option value={selectedRun?.materialId ?? materialId}>
+                        Unverified material · {selectedRun?.materialId ?? materialId}
+                      </option>
+                    )}
                     {SERVICE_MATERIALS.filter(
                       (m) => m.system === (selectedRun?.system ?? system),
                     ).map((m) => (
@@ -969,6 +1678,22 @@ function ServicesWorkbench({
                     ))}
                   </select>
                 </label>
+                {material && <p className="services-selected-reference"><strong>{material.supplier} · {material.label}</strong></p>}
+                <label>
+                  Route diameter (mm)
+                  <input
+                    type="number"
+                    min="5"
+                    max="1000"
+                    step=".1"
+                    value={selectedRun?.diameterMm ?? diameterMm}
+                    onChange={(e) => {
+                      if (!e.target.value || !e.target.validity.valid) return;
+                      if (selectedRun) updateRun({ diameterMm: Number(e.target.value) });
+                      else setDiameterMm(Number(e.target.value));
+                    }}
+                  />
+                </label>
                 <div className="services-fields">
                   <label>
                     Start elevation (m)
@@ -977,7 +1702,9 @@ function ServicesWorkbench({
                       step=".01"
                       min="-20"
                       max="20"
-                      value={selectedRun?.startElevationM ?? startElevation}
+                      value={
+                        selectedRun ? serviceRunPoints3D(selectedRun)[0].elevationM : startElevation
+                      }
                       disabled={Boolean(selectedRun?.startConnection)}
                       onChange={(e) => {
                         if (e.target.value && e.target.validity.valid) {
@@ -994,7 +1721,12 @@ function ServicesWorkbench({
                       step=".01"
                       min="-20"
                       max="20"
-                      value={selectedRun?.endElevationM ?? endElevation}
+                      value={
+                        selectedRun
+                          ? serviceRunPoints3D(selectedRun)[selectedRun.points.length - 1]!
+                              .elevationM
+                          : endElevation
+                      }
                       disabled={Boolean(selectedRun?.endConnection)}
                       onChange={(e) => {
                         if (e.target.value && e.target.validity.valid) {
@@ -1007,9 +1739,10 @@ function ServicesWorkbench({
                 </div>
                 <p>
                   0 = this floor’s finished level. Negative = below floor; ground-floor routes can
-                  be underground. Elevation changes are a constant gradient along the route. For a
-                  vertical riser, set different elevations and tap the same point twice. Linked
-                  elevations follow the fixture port; choose Free endpoint to edit them here.
+                  be underground. Every new node has its own height. Set End elevation before the
+                  next bend; tap the same plan position at a new height for a vertical riser. Linked
+                  endpoints follow their fixture. All systems remain coordination geometry, not
+                  engineered sizing.
                 </p>
                 {estimate && (
                   <>
@@ -1046,7 +1779,7 @@ function ServicesWorkbench({
                     <p>{material.notes}</p>
                     <p>
                       {material.outerDiameterMm
-                        ? `Verified outside diameter: ${material.outerDiameterMm} mm.`
+                        ? `Reference product outside diameter: ${material.outerDiameterMm} mm. Used only when the system and nominal size match your route.`
                         : 'Nominal size only; confirm outside diameter.'}
                     </p>
                     <a href={material.sourceUrl} target="_blank" rel="noreferrer">
@@ -1062,12 +1795,16 @@ function ServicesWorkbench({
                 5 cm grid snap
               </label>
               <label>
-                <input
-                  type="checkbox"
-                  checked={orthogonal}
-                  onChange={(e) => setOrthogonal(e.target.checked)}
-                />
-                Square pipe bends
+                Plan angle snap
+                <select
+                  aria-label="Plan angle snap"
+                  value={angleSnap}
+                  onChange={(e) => setAngleSnap(e.target.value as ServiceAngleSnap)}
+                >
+                  <option value="90">90°</option>
+                  <option value="45">45°</option>
+                  <option value="free">Free</option>
+                </select>
               </label>
             </div>
             {connectionWarnings.length > 0 && (
@@ -1077,7 +1814,7 @@ function ServicesWorkbench({
                   {connectionWarnings.length === 1 ? 'needs' : 'need'} attention
                 </summary>
                 {connectionWarnings.map((issue) => (
-                  <p key={`${issue.runId}:${issue.endpoint}`}>
+                  <p key={`${issue.runId}:${issue.nodeIndex ?? issue.endpoint}`}>
                     <button
                       onClick={() => {
                         setSelected(issue.runId);
@@ -1131,10 +1868,11 @@ function ServicesWorkbench({
             </details>
             <ServicesProductShelf onPlace={onClose} />
             <p className="services-note">
-              Routing and quantity coordination only. Not pressure, drainage capacity or cable
-              sizing. Supplier references are not live stock. The fine line marks the route; the
-              body uses published OD where available. Tap a compatible coloured port while drawing,
-              or select a route and choose its start/end connections.
+              Routing and quantity coordination only. Not pressure, drainage capacity, cable sizing,
+              HVAC duty, fire coverage or security coverage. Supplier references are not live stock.
+              The fine line marks the route; the body uses published OD where available. Tap a
+              compatible coloured port while drawing, or select a route and choose its start/end
+              connections.
             </p>
           </aside>
         )}

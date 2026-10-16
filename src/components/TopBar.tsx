@@ -1,6 +1,9 @@
+import { useAppPreferences } from '../i18n/AppPreferences';
+import { LocaleThemeControls } from './LocaleThemeControls';
 import { ServicesLaunchButton } from './ServicesWorkspace';
 import { isPitchEmbed } from '../demo/pitchEmbed';
 import { FoundationLaunchButton } from './FoundationWorkspace';
+import { CityLaunchButton } from './CityWorkspace';
 import { WorkspaceFloorNav } from './WorkspaceFloorNav';
 import { PlanImportButton } from './PlanImportWorkspace';
 import { StudioIcon as Icon } from './StudioIcon';
@@ -96,6 +99,7 @@ import { CLADDING_DEMO_DISCLAIMER, CLADDING_PRODUCTS, findCladdingProduct } from
 import { RoomView3D } from './RoomView3D';
 import './houseToolPanels.css';
 import { PlanControlPanel } from './PlanControlPanel';
+import { DisciplineVisibilityControls } from './DisciplineVisibilityControls';
 import './planToolbar.css';
 import { FLOOR_MATERIALS, findFloorMaterialById, type FloorMaterial } from '../data/floorMaterials';
 import { productImageForSku } from '../data/products';
@@ -357,6 +361,7 @@ export function TopBar({
   threeDPreview = false,
   setThreeDPreview,
 }: TopBarProps) {
+  const { t, tx } = useAppPreferences();
   const navigate = useNavigate();
   const room = useDesignStore((s) => s.roomDimensions);
   const setRoom = useDesignStore((s) => s.setRoomDimensions);
@@ -1061,7 +1066,7 @@ export function TopBar({
     if (!email) return;
     const message =
       window.prompt(
-        'Any notes for the PPW team? (optional — press Enter to skip)',
+        'Any notes for the One Live Build team? (optional — press Enter to skip)',
         '',
       ) ?? '';
 
@@ -1081,7 +1086,7 @@ export function TopBar({
         message: message.trim() || undefined,
         source: 'designer',
       });
-      pushToast('Quote request sent — PPW will email you soon.', 'success');
+      pushToast('Quote request sent — One Live Build will email you soon.', 'success');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Quote submit failed.';
       pushToast(msg, 'error');
@@ -1398,6 +1403,12 @@ export function TopBar({
   // -------------------------------------------------------------------------
   // Direct building/site controls at every width. Options use reserved header space.
   // -------------------------------------------------------------------------
+  useEffect(() => {
+    const show = () => { setWorkspaceSettingsOpen(true); setLevelsOpen(true); setLandOpen(false); setUnitOpen(false); setSizeOpen(false); };
+    window.addEventListener('olb:open-storeys', show);
+    return () => window.removeEventListener('olb:open-storeys', show);
+  }, []);
+
   const roomPlanGroup = (stacked: boolean) => {
     const btn = (on: boolean) =>
       stacked ? `${ROW} ${on ? ROW_ON : ''}` : `${BTN} ${on ? BTN_ON : BTN_REST}`;
@@ -1406,6 +1417,7 @@ export function TopBar({
         {/* The whole-room "Finish" picker that used to lead this group is
             retired (2026-08-30): the Floor tool's Room scope lays a whole
             room, so one tool covers what two controls used to. */}
+        <button type="button" className={btn(false)} aria-label="House build guide" title="House build guide" onClick={() => window.dispatchEvent(new Event('olb:open-house-tutorial'))}><Icon name="list" size={18} /><span className="plan-control-label">Guide</span></button>
         {/* Storeys — which storey of the building the canvas shows. */}
         <button
           ref={levelsRef}
@@ -1419,7 +1431,7 @@ export function TopBar({
           aria-label="Storeys"
         >
           <Icon name="storeys" />
-          <span className="plan-control-label" title={storeysLabel}>Floors</span>
+          <span className="plan-control-label" title={storeysLabel}>{t("Floors")}</span>
           {!stacked && levels.length > 1 && (
             <span className="font-semibold tabular-nums min-[1366px]:hidden">{levels.length}</span>
           )}
@@ -1496,10 +1508,10 @@ export function TopBar({
           className={btn(onRoof)}
           title={onRoof ? 'Roof — back to the top storey' : 'Roof — lay solar panels, air-con and planters on the slab'}
           aria-pressed={onRoof}
-          aria-label="Roof"
+          aria-label={t("Roof")}
         >
           <Icon name="roof" />
-          <span className="plan-control-label">Roof</span>
+          <span className="plan-control-label">{t("Roof")}</span>
         </button>
 
         {/* Energy (electrics fix 2026-09-20): sun vs use per day, reachable
@@ -1516,10 +1528,10 @@ export function TopBar({
           aria-controls="ppw-energy-panel"
         >
           <Icon name="bolt" />
-          <span className="plan-control-label">Solar</span>
+          <span className="plan-control-label">{t("Solar")}</span>
         </button>
 
-        <button type="button" onClick={() => { setDrawMode(false); useDesignerUIStore.getState().setMaterialsPanelOpen(!materialsPanelOpen); }} className={btn(materialsPanelOpen)} title="Materials — wall, concrete and roof quantities" aria-label="Materials" aria-pressed={materialsPanelOpen} data-testid="materials-toggle"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M3 4h18v16H3zM3 9h18M3 15h18M9 4v5m6 0v6M9 15v5" /></svg><span className="plan-control-label">Materials</span></button>
+        <button type="button" onClick={() => { setDrawMode(false); useDesignerUIStore.getState().setMaterialsPanelOpen(!materialsPanelOpen); }} className={btn(materialsPanelOpen)} title="Materials — wall, concrete and roof quantities" aria-label={t("Materials")} aria-pressed={materialsPanelOpen} data-testid="materials-toggle"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M3 4h18v16H3zM3 9h18M3 15h18M9 4v5m6 0v6M9 15v5" /></svg><span className="plan-control-label">{t("Materials")}</span></button>
 
         {/* 3D Mode (2026-09-17): the whole plan as a Sims-style room view;
             every tool keeps working inside it. Esc / Plan returns. */}
@@ -1598,8 +1610,7 @@ export function TopBar({
                 data-testid="land-clear"
                 className={`${BTN} h-9 border-ppw-clay bg-ppw-chrome text-ppw-clay hover:bg-ppw-clay hover:text-white`}
               >
-                Clear
-              </button>
+                {t("Clear")}</button>
             )}
             <button
               type="button"
@@ -1637,7 +1648,7 @@ export function TopBar({
           aria-controls="ppw-pop-snap"
         >
           <Icon name="snap" />
-          <span className="plan-control-label">Snap </span>
+          <span className="plan-control-label">{t("Snap")}</span>{' '}
           <span className="font-semibold tabular-nums">{snapUnit}</span>
         </button>
         <PlanControlPanel anchor={snapRef} open={unitOpen} onClose={closeUnit} target={planOptionsHost} id="ppw-pop-snap" title="Snap unit">
@@ -1665,12 +1676,12 @@ export function TopBar({
           type="button"
           onClick={toggleGrid}
           aria-pressed={showGrid}
-          aria-label="Grid"
+          aria-label={t("Grid")}
           className={`${btn(showGrid)} ${stacked ? '' : BTN_ICON}`}
           title={`Grid · ${snapUnit}`}
         >
           <Icon name="grid" />
-          <span className="plan-control-label">Grid</span>
+          <span className="plan-control-label">{t("Grid")}</span>
         </button>
 
         {/* Polish B / V4-AU-1: 3D preview toggle relocated from canvas
@@ -1709,7 +1720,7 @@ export function TopBar({
             }
           >
             <Icon name="undo" />
-            {stacked && <span>Undo</span>}
+            {stacked && <span>{t("Undo")}</span>}
           </button>
           <button
             type="button"
@@ -1720,7 +1731,7 @@ export function TopBar({
             className={stacked ? `${BTN} ${BTN_REST} flex-1` : `${SEG} ${SEG_REST} w-10 px-0`}
           >
             <Icon name="redo" />
-            {stacked && <span>Redo</span>}
+            {stacked && <span>{t("Redo")}</span>}
           </button>
         </div>
       </>
@@ -1745,15 +1756,15 @@ export function TopBar({
             labels and the in-control cart count need those pixels. */}
         <div className="plan-identity flex min-w-0 shrink items-center gap-2">
           {/* Embedded and standalone Demo stay inside the designer. */}
-          {/* onelivebuild.com shows the One Live Build tile; designer.ppwellness.co keeps the PPW mark. */}
-          {designerOnly ? <span className="flex h-10 w-7 shrink-0 items-center justify-center" title={olbBrand ? 'One Live Build demo' : 'PPWellness Demo'}>
-            <img src={olbBrand ? '/brand/olb/olb-mark.svg' : '/brand/ppw-mark-512.png'} alt={olbBrand ? 'One Live Build' : 'PPWellness'} width={24} height={24} className="block" />
+          {/* The shared design experience carries the One Live Build identity. */}
+          {designerOnly ? <span className="flex h-10 w-7 shrink-0 items-center justify-center" title="One Live Build demo">
+            <img src="/brand/olb/olb-mark.svg" alt="One Live Build" width={24} height={24} className="block" />
           </span> : <Link
             to={readOnly ? '/studio' : olbBrand ? '/' : '/products'}
-            title={readOnly ? 'Demo studio' : olbBrand ? 'One Live Build home' : 'Back to PPWellness Shop'}
+            title={readOnly ? t("Demo studio") : olbBrand ? 'One Live Build home' : t('Shop')}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-ppw-rim bg-ppw-chrome shadow-[3px_3px_7px_rgba(167,160,144,0.42),-3px_-3px_7px_rgba(255,255,255,0.95)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[rgba(121,199,173,0.45)] md:h-10 md:w-10"
           >
-            <img src={olbBrand ? '/brand/olb/olb-mark.svg' : '/brand/ppw-mark-512.png'} alt={olbBrand ? 'One Live Build' : 'PPWellness'} width={24} height={24} className="block" />
+            <img src="/brand/olb/olb-mark.svg" alt="One Live Build" width={24} height={24} className="block" />
           </Link>}
 
           {/* Rooms trigger — the ONLY way into the rooms list at every width
@@ -1765,7 +1776,7 @@ export function TopBar({
             onClick={() => setRoomsMenuOpen && setRoomsMenuOpen(!roomsMenuOpen)}
             className={`${BTN} ${roomsMenuOpen ? BTN_ON : BTN_REST} h-11 min-w-0 flex-1 justify-start md:h-10 md:min-w-[80px] md:max-w-[190px] md:flex-none lg:min-w-[104px] xl:min-w-[128px] xl:max-w-[190px] 2xl:max-w-[190px] min-[1700px]:max-w-[260px]`}
             style={{ justifyContent: 'flex-start' }}
-            aria-label="Open rooms list"
+            aria-label={`${property.name}${activeRoom ? ` · ${activeRoom.name}` : ""} · ${drawnRoomCount} — ${t("Open rooms list")}`}
             aria-expanded={roomsMenuOpen}
           >
             <Icon name="list" />
@@ -1795,7 +1806,7 @@ export function TopBar({
               className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-ppw-inkDeep bg-ppw-inkDeep px-2 text-[10px] font-semibold text-ppw-paper md:text-[12px]"
               title={readOnly ? DEMO_NOTICE : `${demoPill?.merchant}: their catalog is loaded in this tab. Close the tab or press × for the standard catalog.`}
             >
-              <span>{readOnly ? 'Demo · no orders' : 'Demo'}</span>
+              <span>{readOnly ? t("Demo · no orders") : t("Demo")}</span>
               {!readOnly && <button
                 type="button"
                 data-testid="demo-pill-exit"
@@ -1804,8 +1815,8 @@ export function TopBar({
                   window.location.assign('/designer?demo=off');
                 }}
                 className="ml-1 inline-flex h-7 w-7 items-center justify-center rounded-lg hover:bg-white/15"
-                aria-label="Leave demo mode"
-                title="Leave demo mode"
+                aria-label={t("Leave demo mode")}
+                title={t("Leave demo mode")}
               >
                 ×
               </button>}
@@ -1816,19 +1827,19 @@ export function TopBar({
         {/* ---- md+: rail A — BUILD. shrink-0; the Box|Custom segment follows
             OUTSIDE the rails because its Custom half is the phone strip's
             "Walls" button too (one node, one testid, every width). ---- */}
-        <div className="plan-build-tools" data-task={planToolShelf} data-expanded={planToolShelfOpen} aria-label="Construction tools" onClickCapture={event => {
+        <div className="plan-build-tools" data-task={planToolShelf} data-expanded={planToolShelfOpen} aria-label={t("Construction tools")} onClickCapture={event => {
           useGardenEditorStore.getState().close();
           if (event.target instanceof Element && event.target.closest('[data-tool-category], [data-testid="select-tool-toggle"], .plan-garden-tool')) setPlanToolShelfOpen(false);
         }}>
-          <div className="studio-tool-categories" role="group" aria-label="Plan tool categories">
-            {([['build', 'Build', 'room'], ['finish', 'Finish', 'swatch'], ['arrange', 'Arrange', 'move']] as const).map(([task, label, icon]) => <button key={task} type="button" aria-pressed={planToolShelf === task} aria-expanded={isMd ? undefined : planToolShelfOpen && planToolShelf === task} onClick={() => { handleSelect(); setSizeOpen(false); setPlanToolShelf(task); setPlanToolShelfOpen(!planToolShelfOpen || planToolShelf !== task); }}><Icon name={icon} /><span>{label}</span></button>)}
+          <div className="studio-tool-categories" role="group" aria-label={t("Plan tool categories")}>
+            {([['build', 'Build', 'room'], ['finish', 'Finish', 'swatch'], ['arrange', 'Arrange', 'move']] as const).map(([task, label, icon]) => <button key={task} type="button" aria-pressed={planToolShelf === task} aria-expanded={isMd ? undefined : planToolShelfOpen && planToolShelf === task} onClick={() => { handleSelect(); setSizeOpen(false); setPlanToolShelf(task); setPlanToolShelfOpen(!planToolShelfOpen || planToolShelf !== task); }}><Icon name={icon} /><span>{tx(label)}</span></button>)}
           </div>
-          <button type="button" className="studio-active-tool" data-testid="plan-active-tool" data-active={currentToolLabel !== 'Select'} aria-label={currentToolLabel === 'Select' ? 'Select and move objects' : `Stop ${currentToolLabel.toLowerCase()} tool`} title="Return to Select (Esc)" onClick={() => { handleSelect(); setPlanToolShelfOpen(false); }}><Icon name={currentToolLabel === 'Select' ? 'cursor' : 'close'} size={16} /><span>{currentToolLabel}</span></button>
+          <button type="button" className="studio-active-tool" data-testid="plan-active-tool" data-active={currentToolLabel !== 'Select'} aria-label={currentToolLabel === 'Select' ? t("Select and move objects") : t('stopTool', { tool: tx(currentToolLabel).toLowerCase() })} title={t("Return to Select (Esc)")} onClick={() => { handleSelect(); setPlanToolShelfOpen(false); }}><Icon name={currentToolLabel === 'Select' ? 'cursor' : 'close'} size={16} /><span>{tx(currentToolLabel)}</span></button>
           <span className={DIVIDER} aria-hidden="true" />
 
           {/* 2 BUILD — segmented: Walls · Door · Paint · Measure. Walls keeps
               its label at every width; Measure drops first, then Door. */}
-          <div className={SEG_GROUP} role="group" aria-label="Build tools">
+          <div className={SEG_GROUP} role="group" aria-label={t("Build tools")}>
             {/* Select — the always-visible way back to move / rotate / delete
                 an object (complaint B). Ink when no build tool is armed. */}
             <button
@@ -1838,10 +1849,10 @@ export function TopBar({
               className={segOn(selectActive)}
               title="Select — move, rotate or delete an object (Esc)"
               aria-pressed={selectActive}
-              aria-label="Select"
+              aria-label={t("Select")}
             >
               <Icon name="cursor" />
-              <span>Select</span>
+              <span>{t("Select")}</span>
             </button>
             <button
               type="button"
@@ -1851,10 +1862,10 @@ export function TopBar({
               className={segOn(drawMode || wallActive)}
               title="Walls — click to drop points. Close the shape for a room, or press Finish walls to leave them open. +/- change the unit mid-draw."
               aria-pressed={drawMode || wallActive}
-              aria-label="Walls"
+              aria-label={t("Walls")}
             >
               <Icon name="pen" />
-              <span>Walls</span>
+              <span>{t("Walls")}</span>
             </button>
             <button
               type="button"
@@ -1864,10 +1875,10 @@ export function TopBar({
               className={segOn(doorActive)}
               title="Door — hover a wall to place a door, doorway or window; click an existing one to remove it. F flips which way it opens, H swaps the hinge."
               aria-pressed={doorActive}
-              aria-label="Door"
+              aria-label={t("Door")}
             >
               <Icon name="door" />
-              <span>Openings</span>
+              <span>{t("Openings")}</span>
             </button>
             <button
               type="button"
@@ -1878,11 +1889,11 @@ export function TopBar({
               title="Floor — click a tile, drag an area, or Room to lay the whole room. Shift fills the room, Ctrl erases."
               aria-pressed={floorPaintActive}
               aria-controls="ppw-floor-panel"
-              aria-label="Floor"
+              aria-label={t("Floor")}
             >
               <Icon name="tiles" />
               {/* Vic could not find the floor — its label shows from 1366. */}
-              <span>Floor</span>
+              <span>{t("Floor")}</span>
             </button>
             <button
               type="button"
@@ -1893,10 +1904,10 @@ export function TopBar({
               title={isPitchEmbed() ? 'Wall paint — click a wall to paint it; the plan lifts to show the walls. Room paints every wall of the room.' : 'Wall paint — click a wall to paint it with a Sofap colour; the plan lifts to show the walls. Room paints every wall of the room.'}
               aria-pressed={wallPaintActive}
               aria-controls="ppw-wallpaint-panel"
-              aria-label="Wall paint"
+              aria-label={t("Wall paint")}
             >
               <Icon name="roller" />
-              <span>Paint</span>
+              <span>{t("Paint")}</span>
             </button>
             <button
               type="button"
@@ -1907,10 +1918,10 @@ export function TopBar({
               title={isPitchEmbed() ? 'Cladding — sample demo boards. Click a wall to clad it.' : 'Cladding — sample demo boards. Click a wall to clad it. Not a real Spa Concept product.'}
               aria-pressed={claddingActive}
               aria-controls="ppw-cladding-panel"
-              aria-label="Cladding"
+              aria-label={t("Cladding")}
             >
               <Icon name="tiles" />
-              <span>Cladding</span>
+              <span>{t("Cladding")}</span>
             </button>
             <button
               type="button"
@@ -1920,10 +1931,10 @@ export function TopBar({
               className={segOn(measureActive)}
               title="Measure (M) — click any wall to retype its exact length"
               aria-pressed={measureActive}
-              aria-label="Measure"
+              aria-label={t("Measure")}
             >
               <Icon name="ruler" />
-              <span>Measure</span>
+              <span>{t("Measure")}</span>
             </button>
             {/* Remove — the sledgehammer. Click a wall or object to delete it
                 (complaint "I can't remove walls"). Terracotta-tinted when on. */}
@@ -1935,15 +1946,15 @@ export function TopBar({
               className={segOn(removeActive)}
               title="Remove — click a wall or an object to delete it (Esc to stop)"
               aria-pressed={removeActive}
-              aria-label="Remove"
+              aria-label={t("Remove")}
             >
               <Icon name="hammer" />
-              <span>Remove</span>
+              <span>{t("Remove")}</span>
             </button>
           </div>
 
-          <button type="button" className="plan-garden-tool" aria-label="Garden" aria-pressed={gardenActive} title="Garden — draw, move and resize outdoor surfaces" data-testid="plan-garden-toggle" onClick={() => { handleSelect(); window.dispatchEvent(new CustomEvent('ppw:open-garden')); }}>
-            <Icon name="garden" /><span>Garden</span>
+          <button type="button" className="plan-garden-tool" aria-label={t("Garden")} aria-pressed={gardenActive} title="Garden — draw, move and resize outdoor surfaces" data-testid="plan-garden-toggle" onClick={() => { handleSelect(); window.dispatchEvent(new CustomEvent('ppw:open-garden')); }}>
+            <Icon name="garden" /><span>{t("Garden")}</span>
           </button>
         {/* 3 ROOM & PLAN — Box | Custom. Always inline, every width. On the
             phone only the Custom half shows and reads "Walls" (the strip's
@@ -1956,30 +1967,28 @@ export function TopBar({
         <div
           className="plan-room-shape inline-flex shrink-0 overflow-hidden rounded-lg border border-ppw-rim"
           data-tool-category="build"
-          role="radiogroup"
-          aria-label="Room shape"
+          role="group"
+          aria-label={t("Room shape")}
         >
           <button
             ref={boxRef}
             type="button"
-            role="radio"
             onClick={() => {
               setDrawMode(false);
               setSizeOpen((v) => !v); setLevelsOpen(false); setLandOpen(false); setUnitOpen(false);
             }}
             className={`${SEG} ${sizeOpen ? SEG_ON : !drawMode ? SEG_CHECKED : SEG_REST} hidden md:inline-flex`}
             title="Box — a rectangular room; set its size"
-            aria-checked={!drawMode}
+            aria-pressed={!drawMode}
             aria-expanded={sizeOpen}
             aria-controls="ppw-pop-size"
-            aria-label="Box"
+            aria-label={`${t("Room")} — ${t("Box")}`}
           >
             <Icon name="box" />
-            <span>Room</span>
+            <span>{t("Room")}</span>
           </button>
           <button
             type="button"
-            role="radio"
             onClick={() => {
               if (drawMode) return;
               setViewMode('plan');
@@ -1988,19 +1997,19 @@ export function TopBar({
             data-testid="room-draw-toggle"
             className={`${SEG} ${drawMode ? SEG_ON : SEG_REST} h-11 max-md:w-full md:h-10 md:border-l md:border-ppw-rim`}
             title="Custom — draw walls: close the shape for a room, or Finish walls to leave them open"
-            aria-checked={drawMode}
+            aria-pressed={drawMode}
           >
             <Icon name="pen" className="md:hidden" />
             <Icon name="polygon" className="hidden md:block" />
-            <span className="md:hidden">Room</span>
-            <span className="hidden xl:inline">Custom</span>
+            <span className="md:hidden">{t("Room")}</span>
+            <span className="hidden xl:inline">{t("Custom")}</span>
           </button>
         </div>
 
           <span className={`${DIVIDER} mr-0`} aria-hidden="true" />
           {viewMode === 'plan' && hasDrawnWalls && !drawMode && !wallActive && !onRoof && (
-            <div className="plan-wall-height" data-tool-category="arrange" data-testid="wall-height-hud" data-placement="left" data-dock="construction-rail" role="group" aria-label="Wall height">
-              <span className="sr-only" data-testid="wall-height-hud-label">Wall height</span>
+            <div className="plan-wall-height" data-tool-category="arrange" data-testid="wall-height-hud" data-placement="left" data-dock="construction-rail" role="group" aria-label={t("Wall height")}>
+              <span className="sr-only" data-testid="wall-height-hud-label">{t("Wall height")}</span>
               <span className="sr-only" data-testid="wall-height-hud-note">{activeLevel.name} · steps of 0.1 m</span>
               <WallHeightControl idPrefix="wall-height" />
             </div>
@@ -2017,11 +2026,11 @@ export function TopBar({
           data-testid="select-tool-toggle-phone"
           className={`${BTN} ${selectActive ? BTN_ON : BTN_REST} order-3 h-11 w-full shrink-0 px-2 md:hidden`}
           aria-pressed={selectActive}
-          aria-label="Select"
+          aria-label={t("Select")}
           title="Select — pick an object or a wall to move or delete it"
         >
           <Icon name="cursor" />
-          <span>Select</span>
+          <span>{t("Select")}</span>
         </button>
 
         {/* 3D on the PHONE STRIP. The desktop rail's view-mode-3d is md+
@@ -2038,7 +2047,7 @@ export function TopBar({
           data-testid="view-mode-3d-phone"
           className={`${BTN} ${viewMode === '3d' ? BTN_ON : BTN_REST} order-5 h-11 w-full shrink-0 gap-1.5 px-2 md:hidden`}
           aria-pressed={viewMode === '3d'}
-          aria-label={viewMode === '3d' ? 'Back to plan' : '3D'}
+          aria-label={viewMode === '3d' ? t("Back to plan") : '3D'}
           title={viewMode === '3d' ? '3D Mode — back to the plan' : '3D Mode — see the room'}
         >
           <Icon name="cube" />
@@ -2051,12 +2060,12 @@ export function TopBar({
           type="button"
           onClick={() => setShowMobileMenu((v) => !v)}
           className={`${BTN} ${BTN_REST} order-2 h-11 justify-self-end px-3 md:hidden`}
-          aria-label="Open menu"
+          aria-label={t("Open menu")}
           aria-expanded={showMobileMenu}
           aria-controls="ppw-sheet"
         >
           <Icon name="menu" />
-          <span>Menu</span>
+          <span>{t("Menu")}</span>
         </button>
 
         {/* 5 COMMERCE — Currency · Cart · Request quote · More. Never shrinks. */}
@@ -2073,12 +2082,12 @@ export function TopBar({
               to={readOnly ? '#' : '/cart'}
               onClick={event => { if (readOnly) { event.preventDefault(); setDemoEstimateOpen(true); } }}
               className={`${BTN} ${BTN_REST} min-[1700px]:px-3`}
-              title={isPitchEmbed() ? 'Products in this design' : `Cart: ${cart.uniqueProductCount} unique products`}
-              aria-label={isPitchEmbed() ? 'Products in this design' : `Cart, ${cart.uniqueProductCount} products`}
+              title={isPitchEmbed() ? t("Products in this design") : `Cart: ${cart.uniqueProductCount} unique products`}
+              aria-label={isPitchEmbed() ? t("Products in this design") : `Cart, ${cart.uniqueProductCount} products`}
             >
               <Icon name="cart" />
               {isPitchEmbed()
-                ? <span className="hidden min-[1700px]:inline">Products</span>
+                ? <span className="hidden min-[1700px]:inline">{t("Products")}</span>
                 : <><span className="hidden min-[1700px]:inline">Cart ·</span>
                   <span className="font-semibold tabular-nums">{cart.uniqueProductCount}</span></>}
             </Link>
@@ -2090,12 +2099,12 @@ export function TopBar({
               onClick={handleRequestQuote}
               disabled={submittingQuote}
               className={`${BTN} ${BTN_CTA} 2xl:px-3`}
-              title="Send the current property + cart to the PPW team for a quote"
-              aria-label={submittingQuote ? 'Sending…' : 'Request quote'}
+              title="Send the current property + cart to the One Live Build team for a quote"
+              aria-label={submittingQuote ? t("Sending…") : t("Request quote")}
             >
               <Icon name="send" className="hidden 2xl:block" />
-              <span className="2xl:hidden">{submittingQuote ? 'Sending…' : 'Quote'}</span>
-              <span className="hidden 2xl:inline">{submittingQuote ? 'Sending…' : 'Request quote'}</span>
+              <span className="2xl:hidden">{submittingQuote ? t("Sending…") : t("Quote")}</span>
+              <span className="hidden 2xl:inline">{submittingQuote ? t("Sending…") : t("Request quote")}</span>
             </button>}
 
             {/* More — New · Save as… · Load (n) · Shop · Help. */}
@@ -2105,15 +2114,15 @@ export function TopBar({
               onClick={() => setMoreOpen((v) => !v)}
               data-testid="more-menu-toggle"
               className={`${BTN} ${moreOpen ? BTN_ON : BTN_REST} ${BTN_ICON}`}
-              aria-label="More"
-              title="More"
+              aria-label={t("More")}
+              title={t("More")}
               aria-expanded={moreOpen}
               aria-haspopup="menu"
               aria-controls="ppw-pop-more"
             >
               <Icon name="more" />
             </button>
-            <Popover anchor={moreRef} open={moreOpen} onClose={closeMore} width={208} align="right" id="ppw-pop-more" role="menu" label="More">
+            <Popover anchor={moreRef} open={moreOpen} onClose={closeMore} width={208} align="right" id="ppw-pop-more" role="menu" label={t("More")}>
               <PlanImportButton onBeforeOpen={() => setMoreOpen(false)} />
               <button
                 type="button"
@@ -2122,8 +2131,7 @@ export function TopBar({
                 className={ROW}
                 title="New property"
               >
-                New
-              </button>
+                {t("New")}</button>
               <button
                 type="button"
                 role="menuitem"
@@ -2132,8 +2140,7 @@ export function TopBar({
                 className={ROW}
                 title="Start a second plan (a different space or client) — the current one is kept as a tab"
               >
-                New plan
-              </button>
+                {t("New plan")}</button>
               <button
                 type="button"
                 role="menuitem"
@@ -2141,8 +2148,7 @@ export function TopBar({
                 className={ROW}
                 title={readOnly ? 'Save the current property locally in this browser' : "Save the current property under a name (syncs to cloud once you've entered an email)"}
               >
-                Save as…
-              </button>
+                {t("Save as…")}</button>
               <button
                 type="button"
                 role="menuitem"
@@ -2152,7 +2158,7 @@ export function TopBar({
                 aria-expanded={showLoad}
                 aria-controls="ppw-pop-load"
               >
-                <span>Load</span>
+                <span>{t("Load")}</span>
                 <span className="tabular-nums opacity-80">{savedList.length}</span>
               </button>
               <div className="my-1 h-px bg-ppw-rim" aria-hidden="true" />
@@ -2163,49 +2169,51 @@ export function TopBar({
                 className={ROW}
                 title={readOnly ? 'Open Demo studio' : 'Browse the full product shop'}
               >
-                {readOnly ? 'Demo studio' : 'Shop'}
+                {readOnly ? t("Demo studio") : t("Shop")}
               </Link>}
               <button
                 type="button"
                 role="menuitem"
                 onClick={() => { setMoreOpen(false); setShowHelp((v) => !v); }}
                 className={ROW}
-                title="Help"
-                aria-label="Help"
+                title={t("Help")}
+                aria-label={t("Help")}
                 aria-expanded={showHelp}
                 aria-controls="ppw-pop-help"
               >
-                Help
-              </button>
+                {t("Help")}</button>
             </Popover>
           </div>
         </div>
       </div>
 
-      <div className="plan-navigation" data-testid="plan-navigation" aria-label="Plan and view controls">
-        <div className="studio-view-switch" aria-label="Design view">
-          <button type="button" aria-label="2D Plan" aria-pressed="true"><Icon name="box" size={18} /><span>2D <span className="studio-view-word">Plan</span></span></button>
-          <button type="button" aria-label="3D House" onClick={() => { if (drawMode) setDrawMode(false); setViewMode('3d'); }}><Icon name="cube" size={18} /><span>3D <span className="studio-view-word">House</span></span></button>
+      <div className="plan-navigation" data-testid="plan-navigation" aria-label={t("Plan and view controls")}>
+        <div className="studio-view-switch" aria-label={t("Design view")}>
+          <button type="button" aria-label={t("2D Plan")} aria-pressed="true"><Icon name="box" size={18} /><span>2D <span className="studio-view-word">{t("Plan")}</span></span></button>
+          <button type="button" aria-label={t("3D House")} onClick={() => { if (drawMode) setDrawMode(false); setViewMode('3d'); }}><Icon name="cube" size={18} /><span>3D <span className="studio-view-word">{t("House")}</span></span></button>
         </div>
-        <button type="button" className="studio-settings-toggle" aria-label="Site & tools" title="Floors, roof, plot and precision" aria-expanded={workspaceSettingsOpen} aria-controls="studio-plan-settings" onClick={() => { setWorkspaceSettingsOpen(!workspaceSettingsOpen); setLevelsOpen(false); setLandOpen(false); setUnitOpen(false); }}>
-          <Icon name="settings" /><span>Site &amp; tools</span>
+        <DisciplineVisibilityControls />
+        <button type="button" className="studio-settings-toggle" aria-label={t("Site & tools")} title="Floors, roof, plot and precision" aria-expanded={workspaceSettingsOpen} aria-controls="studio-plan-settings" onClick={() => { setWorkspaceSettingsOpen(!workspaceSettingsOpen); setLevelsOpen(false); setLandOpen(false); setUnitOpen(false); }}>
+          <Icon name="settings" /><span>{t("Site & tools")}</span>
         </button>
       </div>
-      <div className="plan-project-bar" role="group" aria-label="Floors and materials">
+      <div className="plan-project-bar" role="group" aria-label={t("Floors and materials")}>
         <WorkspaceFloorNav mode="plan" onExit={() => { setDrawMode(false); setWorkspaceSettingsOpen(false); }} />
-        <button type="button" aria-label="Open Materials" aria-pressed={materialsPanelOpen} onClick={() => { setDrawMode(false); setTool('hand'); useDesignerUIStore.getState().setMaterialsPanelOpen(!materialsPanelOpen); }}><Icon name="materials" size={17} /><span>Materials</span></button>
-        <button type="button" aria-label="Undo last action" disabled={!pastLength && !drawInFlight} onClick={handleUndoClick}><Icon name="undo" size={17} /><span>Undo</span></button>
+        <CityLaunchButton compact />
+        <button type="button" className="project-hub-launch" title={t('projectHub')} aria-label={t('projectHub')} onClick={() => { setDrawMode(false); setTool('hand'); window.dispatchEvent(new Event('olb:open-project')); }}><Icon name="list" size={17} /><span>{t('projectHub')}</span></button>
+        <LocaleThemeControls />
+        <button type="button" aria-label={t("Open Materials")} aria-pressed={materialsPanelOpen} onClick={() => { setDrawMode(false); setTool('hand'); useDesignerUIStore.getState().setMaterialsPanelOpen(!materialsPanelOpen); }}><Icon name="materials" size={17} /><span>{t("Materials")}</span></button>
+        <button type="button" aria-label={t("Undo last action")} disabled={!pastLength && !drawInFlight} onClick={handleUndoClick}><Icon name="undo" size={17} /><span>{t("Undo")}</span></button>
       </div>
       <div id="studio-plan-settings" className="studio-plan-settings" hidden={!workspaceSettingsOpen}>
-        <div className="plan-pill-group plan-house-controls" role="group" aria-label="Building and site">{roomPlanGroup(false)}</div>
-        <div className="plan-pill-group plan-precision-controls" role="group" aria-label="Drawing precision and history">{viewGroup(false)}</div>
+        <div className="plan-pill-group plan-house-controls" role="group" aria-label={t("Building and site")}>{roomPlanGroup(false)}</div>
+        <div className="plan-pill-group plan-precision-controls" role="group" aria-label={t("Drawing precision and history")}>{viewGroup(false)}</div>
       </div>
       <div ref={setPlanOptionsHost} className="plan-options-host" data-testid="plan-options-host" />
-          <PlanControlPanel anchor={boxRef} open={sizeOpen} onClose={closeSize} target={planOptionsHost} id="ppw-pop-size" title="Room size" keepMounted>
+          <PlanControlPanel anchor={boxRef} open={sizeOpen} onClose={closeSize} target={planOptionsHost} id="ppw-pop-size" title={t("Room size")} keepMounted>
           <div data-testid="room-size-popover" className="flex flex-col gap-0.5">
             <p className="px-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>
-              Room size
-            </p>
+              {t("Room size")}</p>
             {activeRoomIsRect ? (
               <div className="flex items-center gap-2 px-1">
                 <label className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>L</label>
@@ -2264,10 +2272,9 @@ export function TopBar({
           data-testid="door-options"
         >
           <span className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: CHROME_TEXT_2 }}>
-            Door
-          </span>
-          <div className={SEG_GROUP} role="group" aria-label="Door kind">
-            {(['door', 'doorway', 'window'] as const).map((k) => (
+            {t(doorDraft.kind === 'door' ? 'Door' : doorDraft.kind === 'window' ? 'Window' : 'Opening')}</span>
+          <div className={SEG_GROUP} role="group" aria-label="Opening kind">
+            {(['door', 'doorway', 'window', 'hole'] as const).map((k) => (
               <button
                 key={k}
                 type="button"
@@ -2290,7 +2297,7 @@ export function TopBar({
           >
             {doorDraft.widthM} m
           </span>
-          <span className="h-5 w-px bg-ppw-rim" aria-hidden="true" />
+          {doorDraft.kind === 'door' && <><span className="h-5 w-px bg-ppw-rim" aria-hidden="true" />
           <button
             type="button"
             onClick={toggleDoorFacing}
@@ -2308,10 +2315,9 @@ export function TopBar({
             title="Swap the hinge to the other end (H)"
           >
             Flip hinge
-          </button>
-          <button type="button" onClick={handleSelect} className={`${BTN} ${BTN_REST}`} aria-label="Done adding doors and windows">
-            Done
-          </button>
+          </button></>}
+          <button type="button" onClick={handleSelect} className={`${BTN} ${BTN_REST}`} aria-label="Done adding openings">
+            {t("Done")}</button>
         </div>
       )}
 
@@ -2329,7 +2335,7 @@ export function TopBar({
             id="ppw-floor-panel"
             data-presentation={viewMode}
             role="complementary"
-            aria-label="Floor"
+            aria-label={t("Floor")}
             data-testid="floor-paint-palette"
             data-ppw-popover=""
             className="house-tool-panel hidden flex-col overflow-hidden border-l md:flex"
@@ -2346,7 +2352,7 @@ export function TopBar({
               boxShadow: '-4px 0 16px rgba(42,41,38,0.08)',
             }}
           >
-            <ToolPanelHeader title="Floor" onClose={() => setTool('hand')} testId="floor-paint-close"
+            <ToolPanelHeader title={t("Floor")} onClose={() => setTool('hand')} testId="floor-paint-close"
               detail={<span data-testid="floor-paint-room">{floorRoom ? floorRoom.name : 'Draw a room first'}</span>} />
             <div className="house-tool-panel-body flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-3">
 
@@ -2362,8 +2368,7 @@ export function TopBar({
                   className={`${SEG} ${viewMode !== '3d' ? SEG_CHECKED : SEG_REST} h-9 flex-1`}
                   title="The plan — click the floor on the drawing to lay it"
                 >
-                  Plan
-                </button>
+                  {t("Plan")}</button>
                 <button
                   type="button"
                   role="radio"
@@ -2452,8 +2457,7 @@ export function TopBar({
                       : 'Room — lays the whole active room now (or Shift+click on the canvas)'
                   }
                 >
-                  Room
-                </button>
+                  {t("Room")}</button>
               </div>
 
               {/* Erase toggle + Clear floor. */}
@@ -2516,8 +2520,7 @@ export function TopBar({
                 className={`${CHIP} ${CHIP_ON} mt-3 w-full`}
                 title="Done — put the Floor tool away (Esc)"
               >
-                Done
-              </button>
+                {t("Done")}</button>
             </div>
           </aside>,
           document.body,
@@ -2530,7 +2533,7 @@ export function TopBar({
             id="ppw-cladding-panel"
             data-presentation={viewMode}
             role="complementary"
-            aria-label="Cladding"
+            aria-label={t("Cladding")}
             data-testid="cladding-palette"
             data-ppw-popover=""
             className="house-tool-panel hidden flex-col overflow-hidden border-l md:flex"
@@ -2547,7 +2550,7 @@ export function TopBar({
               boxShadow: '-4px 0 16px rgba(42,41,38,0.08)',
             }}
           >
-            <ToolPanelHeader title="Cladding" onClose={() => setTool('hand')} testId="cladding-close"
+            <ToolPanelHeader title={t("Cladding")} onClose={() => setTool('hand')} testId="cladding-close"
               detail={<span data-testid="cladding-sample-badge">Sample</span>} />
             <div className="house-tool-panel-body flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-3">
               <p className="mb-2 px-1 text-[11px] leading-snug" style={{ color: CHROME_TEXT_2 }} data-testid="cladding-disclaimer">
@@ -2555,8 +2558,7 @@ export function TopBar({
               </p>
               <div className={`${SEG_GROUP} mb-2 flex w-full`} role="radiogroup" aria-label="View" data-testid="cladding-view">
                 <button type="button" role="radio" aria-checked={viewMode !== '3d'} onClick={() => setViewMode('plan')} data-testid="cladding-view-plan" className={`${SEG} ${viewMode !== '3d' ? SEG_CHECKED : SEG_REST} h-9 flex-1`}>
-                  Plan
-                </button>
+                  {t("Plan")}</button>
                 <button type="button" role="radio" aria-checked={viewMode === '3d'} onClick={() => setViewMode('3d')} data-testid="cladding-view-3d" className={`${SEG} ${viewMode === '3d' ? SEG_CHECKED : SEG_REST} h-9 flex-1`}>
                   3D room
                 </button>
@@ -2589,11 +2591,9 @@ export function TopBar({
               })}
               <div className="mt-2 flex gap-2 border-t border-ppw-rim pt-3" role="radiogroup" aria-label="Cladding scope" data-testid="cladding-scope">
                 <button type="button" role="radio" onClick={() => setCladdingDraft({ scope: 'wall', erase: false })} data-testid="cladding-scope-wall" aria-checked={claddingDraft.scope === 'wall'} className={`${CHIP} flex-1 ${claddingDraft.scope === 'wall' && !claddingDraft.erase ? CHIP_ON : CHIP_REST}`}>
-                  Wall
-                </button>
+                  {t("Wall")}</button>
                 <button type="button" role="radio" onClick={() => setCladdingDraft({ scope: 'room', erase: false })} data-testid="cladding-scope-room" aria-checked={claddingDraft.scope === 'room'} className={`${CHIP} flex-1 ${claddingDraft.scope === 'room' && !claddingDraft.erase ? CHIP_ON : CHIP_REST}`}>
-                  Room
-                </button>
+                  {t("Room")}</button>
               </div>
               <div className="mt-2 flex gap-2">
                 <button type="button" aria-pressed={claddingDraft.erase} onClick={() => setCladdingDraft({ erase: !claddingDraft.erase })} data-testid="cladding-erase" className={`${CHIP} flex-1 ${claddingDraft.erase ? CHIP_DANGER_ON : CHIP_REST}`}>
@@ -2608,8 +2608,7 @@ export function TopBar({
                 {claddingBrushLabel(claddingDraft)} · click a wall. Objects still place with Select.
               </p>
               <button type="button" onClick={() => setTool('hand')} data-testid="cladding-done" className={`${CHIP} ${CHIP_ON} mt-3 w-full`}>
-                Done
-              </button>
+                {t("Done")}</button>
             </div>
           </aside>,
           document.body,
@@ -2625,7 +2624,7 @@ export function TopBar({
             id="ppw-wallpaint-panel"
             data-presentation={viewMode}
             role="complementary"
-            aria-label="Wall paint"
+            aria-label={t("Wall paint")}
             data-testid="wallpaint-palette"
             data-ppw-popover=""
             className="house-tool-panel hidden flex-col overflow-hidden border-l md:flex"
@@ -2642,7 +2641,7 @@ export function TopBar({
               boxShadow: '-4px 0 16px rgba(42,41,38,0.08)',
             }}
           >
-            <ToolPanelHeader title="Wall paint" onClose={() => setTool('hand')} testId="wallpaint-close"
+            <ToolPanelHeader title={t("Wall paint")} onClose={() => setTool('hand')} testId="wallpaint-close"
               detail={<span data-testid="wallpaint-room">{floorRoom ? floorRoom.name : `${paintBrand?.name ?? 'Sofap'} · Mauritius`}</span>} />
             <div className="house-tool-panel-body flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-3">
 
@@ -2659,8 +2658,7 @@ export function TopBar({
                   className={`${SEG} ${viewMode !== '3d' ? SEG_CHECKED : SEG_REST} h-9 flex-1`}
                   title="The plan — click a wall on the drawing to paint it"
                 >
-                  Plan
-                </button>
+                  {t("Plan")}</button>
                 <button
                   type="button"
                   role="radio"
@@ -2720,8 +2718,7 @@ export function TopBar({
                 htmlFor="ppw-wall-height"
               >
                 <span className="text-[12px] font-medium" style={{ color: CHROME_TEXT_2 }}>
-                  Wall height
-                </span>
+                  {t("Wall height")}</span>
                 <span className="flex items-center gap-1.5">
                   <input
                     id="ppw-wall-height"
@@ -2902,8 +2899,7 @@ export function TopBar({
                   className={`${CHIP} flex-1 ${wallPaintDraft.scope === 'wall' ? CHIP_ON : CHIP_REST}`}
                   title="Wall — click one wall to paint it"
                 >
-                  Wall
-                </button>
+                  {t("Wall")}</button>
                 <button
                   type="button"
                   role="radio"
@@ -2917,8 +2913,7 @@ export function TopBar({
                       : 'Room — paints every wall of the active room now'
                   }
                 >
-                  Room
-                </button>
+                  {t("Room")}</button>
               </div>
 
               {/* Erase toggle + Clear paint. */}
@@ -3203,8 +3198,7 @@ export function TopBar({
                 className={`${CHIP} ${CHIP_ON} mt-3 w-full`}
                 title="Done — put the Wall paint tool away (Esc)"
               >
-                Done
-              </button>
+                {t("Done")}</button>
             </div>
           </aside>,
           document.body,
@@ -3321,7 +3315,7 @@ export function TopBar({
                       className="mr-1 inline-block h-3.5 w-3.5 rounded-sm border border-ppw-rim"
                       style={{ background: floorMaterial?.hex ?? '#8a8a84' }}
                     />
-                    {floorMaterial?.name ?? 'Floor'}
+                    {floorMaterial?.name ?? t("Floor")}
                   </button>
                   <button
                     type="button"
@@ -3342,8 +3336,7 @@ export function TopBar({
                     className={`${CHIP} h-10 shrink-0 px-2 text-[11px] ${floorScope === 'room' && !floorDraft.erase ? CHIP_ON : CHIP_REST}`}
                     data-testid="floor-paint-3d-scope-room"
                   >
-                    Room
-                  </button>
+                    {t("Room")}</button>
                   <button
                     type="button"
                     aria-pressed={floorDraft.erase}
@@ -3379,7 +3372,7 @@ export function TopBar({
           <div className="wall-material-sheet" ref={wallMaterialsRef} role="dialog" aria-modal="true" aria-labelledby="wall-material-sheet-title">
             <header className="wall-material-sheet-header">
               <h2 id="wall-material-sheet-title">Wall materials</h2>
-              <button ref={wallMaterialsCloseRef} type="button" aria-label="Close wall materials" onClick={() => setShowWallMaterials(false)}>Close <span aria-hidden="true">×</span></button>
+              <button ref={wallMaterialsCloseRef} type="button" aria-label="Close wall materials" onClick={() => setShowWallMaterials(false)}>{t("Close")}<span aria-hidden="true">×</span></button>
             </header>
             <div className="wall-material-sheet-body"><WallSurfaceOptions materialsOnly /></div>
             <footer><button type="button" onClick={() => setShowWallMaterials(false)}>Use on walls</button></footer>
@@ -3400,7 +3393,7 @@ export function TopBar({
               data-ppw-sheet=""
               role="dialog"
               aria-modal="true"
-              aria-label="Menu"
+              aria-label={t("Menu")}
               className="fixed inset-y-0 right-0 z-50 flex w-[min(88vw,360px)] flex-col overflow-y-auto border-l"
               style={{
                 background: CHROME_BG,
@@ -3416,7 +3409,7 @@ export function TopBar({
                 className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b px-3"
                 style={{ background: CHROME_BG, borderColor: CHROME_RIM }}
               >
-                <span className="text-[14px] font-semibold text-[#37362f]">Menu</span>
+                <span className="text-[14px] font-semibold text-[#37362f]">{t("Menu")}</span>
                 <button
                   ref={sheetCloseRef}
                   type="button"
@@ -3430,7 +3423,7 @@ export function TopBar({
 
               <div className="flex flex-1 flex-col px-2 pb-4">
                 {/* 1 BUILD */}
-                <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>Build</p>
+                <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>{t("Build")}</p>
                 {/* Select — the always-visible way back to grabbing an object
                     (complaint B). Same handler as the desktop toggle. */}
                 <button
@@ -3443,7 +3436,7 @@ export function TopBar({
                   aria-pressed={selectActive}
                   className={`${SHEET_ROW} justify-between ${selectActive ? SHEET_ROW_ON : ''}`}
                 >
-                  <span className="flex items-center gap-3"><Icon name="cursor" size={20} />Select</span>
+                  <span className="flex items-center gap-3"><Icon name="cursor" size={20} />{t("Select")}</span>
                   <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{selectActive ? 'on' : 'off'}</span>
                 </button>
                 {/* Remove — sledgehammer; tap a wall or object to delete it. */}
@@ -3457,7 +3450,7 @@ export function TopBar({
                   aria-pressed={removeActive}
                   className={`${SHEET_ROW} justify-between ${removeActive ? SHEET_ROW_ON : ''}`}
                 >
-                  <span className="flex items-center gap-3"><Icon name="hammer" size={20} />Remove</span>
+                  <span className="flex items-center gap-3"><Icon name="hammer" size={20} />{t("Remove")}</span>
                   <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{removeActive ? 'on · tap to delete' : 'off'}</span>
                 </button>
                 {/* Interior walls — the same pen as Custom; identical handler. */}
@@ -3471,7 +3464,7 @@ export function TopBar({
                   aria-pressed={drawMode || wallActive}
                   className={`${SHEET_ROW} justify-between ${drawMode || wallActive ? SHEET_ROW_ON : ''}`}
                 >
-                  <span className="flex items-center gap-3"><Icon name="pen" size={20} />Walls</span>
+                  <span className="flex items-center gap-3"><Icon name="pen" size={20} />{t("Walls")}</span>
                   <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{drawMode || wallActive ? 'on' : 'off'}</span>
                 </button>
 
@@ -3493,7 +3486,7 @@ export function TopBar({
                   className={`${SHEET_ROW} justify-between ${doorActive ? SHEET_ROW_ON : ''}`}
                   style={{ scrollMarginTop: 56 }}
                 >
-                  <span className="flex items-center gap-3"><Icon name="door" size={20} />Door</span>
+                  <span className="flex items-center gap-3"><Icon name="door" size={20} />{t("Door")}</span>
                   <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{doorActive ? 'on' : 'off'}</span>
                 </button>
 
@@ -3514,7 +3507,7 @@ export function TopBar({
                     className={`${SHEET_ROW} justify-between ${floorPaintActive ? SHEET_ROW_ON : ''}`}
                     style={{ scrollMarginTop: 56 }}
                   >
-                    <span className="flex items-center gap-3"><Icon name="tiles" size={20} />Floor</span>
+                    <span className="flex items-center gap-3"><Icon name="tiles" size={20} />{t("Floor")}</span>
                     <span className="min-w-0 max-w-[55%] truncate text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">
                       {floorPaintActive ? `on · ${floorMaterial?.name ?? floorDraft.materialId}` : 'off'}
                     </span>
@@ -3568,7 +3561,7 @@ export function TopBar({
                     aria-pressed={claddingActive}
                     className={`${SHEET_ROW} justify-between ${claddingActive ? SHEET_ROW_ON : ''}`}
                   >
-                    <span className="flex items-center gap-3"><Icon name="tiles" size={20} />Cladding</span>
+                    <span className="flex items-center gap-3"><Icon name="tiles" size={20} />{t("Cladding")}</span>
                     <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{claddingActive ? 'on · sample' : 'sample demo'}</span>
                   </button>
                   {CLADDING_PRODUCTS.map((p) => (
@@ -3601,7 +3594,7 @@ export function TopBar({
                     className={`${SHEET_ROW} justify-between ${wallPaintActive ? SHEET_ROW_ON : ''}`}
                     style={{ scrollMarginTop: 56 }}
                   >
-                    <span className="flex items-center gap-3"><Icon name="roller" size={20} />Wall paint</span>
+                    <span className="flex items-center gap-3"><Icon name="roller" size={20} />{t("Wall paint")}</span>
                     <span className="min-w-0 max-w-[55%] truncate text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">
                       {wallPaintActive ? `on · ${wallPaintSel.name}` : 'off'}
                     </span>
@@ -3728,7 +3721,7 @@ export function TopBar({
                 {/* Polish (2026-08-29): plain radios — the Walls row above is the
                     pen indicator, so neither half here goes ink. Below md the
                     pen half reads "Walls", same word as the strip. */}
-                <div className={`${SEG_GROUP} mx-3 mb-1`} role="radiogroup" aria-label="Room shape">
+                <div className={`${SEG_GROUP} mx-3 mb-1`} role="radiogroup" aria-label={t("Room shape")}>
                   <button
                     type="button"
                     role="radio"
@@ -3737,8 +3730,7 @@ export function TopBar({
                     aria-checked={!drawMode}
                   >
                     <Icon name="box" />
-                    Box
-                  </button>
+                    {t("Box")}</button>
                   <button
                     type="button"
                     role="radio"
@@ -3747,8 +3739,7 @@ export function TopBar({
                     aria-checked={drawMode}
                   >
                     <Icon name="polygon" />
-                    Custom
-                  </button>
+                    {t("Custom")}</button>
                 </div>
 
                 {/* Storeys on the phone: one row per floor + add. */}
@@ -3775,7 +3766,7 @@ export function TopBar({
                       aria-pressed={false}
                       className={`${SHEET_ROW} justify-between`}
                     >
-                      <span>Roof</span>
+                      <span>{t("Roof")}</span>
                       <span className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">solar</span>
                     </button>
                   )}
@@ -3854,8 +3845,7 @@ export function TopBar({
                         onClick={() => { clearLand(); setShowMobileMenu(false); }}
                         className={`${BTN} h-11 border-ppw-clay bg-ppw-chrome text-ppw-clay hover:bg-ppw-clay hover:text-white`}
                       >
-                        Clear
-                      </button>
+                        {t("Clear")}</button>
                     )}
                   </div>
                 </div>
@@ -3932,8 +3922,7 @@ export function TopBar({
                   }}
                   className={SHEET_ROW}
                 >
-                  Save as…
-                </button>
+                  {t("Save as…")}</button>
                 <button
                   type="button"
                   onClick={() => {
@@ -3942,7 +3931,7 @@ export function TopBar({
                   }}
                   className={`${SHEET_ROW} justify-between`}
                 >
-                  <span>Load</span>
+                  <span>{t("Load")}</span>
                   <span className="tabular-nums" style={{ color: CHROME_TEXT_2 }}>{savedList.length}</span>
                 </button>
                 {!readOnly && <Link
@@ -3954,7 +3943,7 @@ export function TopBar({
                 </Link>}
 
                 {/* 5 SHOP */}
-                <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>{isPitchEmbed() ? 'Products' : readOnly ? 'Estimate' : 'Shop'}</p>
+                <p className={CAPTION} style={{ color: CHROME_TEXT_2 }}>{isPitchEmbed() ? t("Products") : readOnly ? 'Estimate' : t("Shop")}</p>
                 {!isPitchEmbed() && <div className="flex min-h-[48px] items-center justify-between px-3">
                   <span className="text-[14px] font-medium text-[#37362f]">Currency</span>
                   <CurrencySwitcher compact />
@@ -3964,7 +3953,7 @@ export function TopBar({
                   onClick={event => { setShowMobileMenu(false); if (readOnly) { event.preventDefault(); setDemoEstimateOpen(true); } }}
                   className={`${SHEET_ROW} justify-between`}
                 >
-                  <span className="flex items-center gap-3"><Icon name="cart" size={20} />{isPitchEmbed() ? 'Products in this design' : readOnly ? 'Product estimate' : 'Cart'}</span>
+                  <span className="flex items-center gap-3"><Icon name="cart" size={20} />{isPitchEmbed() ? t("Products in this design") : readOnly ? 'Product estimate' : t("Cart")}</span>
                   {!isPitchEmbed() && <span className="inline-flex h-6 min-w-[24px] items-center justify-center rounded-full bg-ppw-inkDeep px-1.5 text-[11px] font-semibold tabular-nums text-ppw-paper">
                     {cart.uniqueProductCount}
                   </span>}
@@ -3985,8 +3974,7 @@ export function TopBar({
                   }}
                   className={SHEET_ROW}
                 >
-                  Help
-                </button>
+                  {t("Help")}</button>
               </div>
 
               {/* Sticky footer — THE call-to-action. */}
@@ -4004,7 +3992,7 @@ export function TopBar({
                   className={`${BTN} ${BTN_CTA} h-12 w-full text-[14px]`}
                 >
                   <Icon name="send" />
-                  {submittingQuote ? 'Sending…' : 'Request quote'}
+                  {submittingQuote ? t("Sending…") : t("Request quote")}
                 </button>}
               </div>
             </div>
@@ -4038,14 +4026,14 @@ export function TopBar({
             </button>
           </div>
           <ol className="ml-4 list-decimal space-y-1">
-            <li><em>Walls</em> or <em>Custom</em>: click to drop wall points. Close the shape for a room, or <em>Finish walls</em> to leave them open.</li>
+            <li><em>{t("Walls")}</em> or <em>{t("Custom")}</em>: click to drop wall points. Close the shape for a room, or <em>Finish walls</em> to leave them open.</li>
             <li>Change the unit mid-draw with the − / + chips (keys + and −, or 1–6).</li>
             <li>Drag a product from the dock onto the floor — inside a room or outside in the garden. Items sit flush to walls and tuck into corners.</li>
-            <li><em>Floor</em>: pick a material, then click a tile, drag an area, or press <em>Room</em> to lay the whole room. Shift fills the room, Ctrl erases.</li>
-            <li><em>Door</em>: pick Door, Doorway or Window, hover a wall and click. <em>Flip side</em> / <em>Flip hinge</em> set the swing; click a placed opening to remove it. On the phone: Menu → Door, then tap a wall.</li>
+            <li><em>{t("Floor")}</em>: pick a material, then click a tile, drag an area, or press <em>{t("Room")}</em> to lay the whole room. Shift fills the room, Ctrl erases.</li>
+            <li><em>{t("Door")}</em>: pick Door, Doorway or Window, hover a wall and click. <em>Flip side</em> / <em>Flip hinge</em> set the swing; click a placed opening to remove it. On the phone: Menu → Door, then tap a wall.</li>
             <li><em>Plot</em> locks the plot size; <em>Storeys</em> adds storeys (PageUp / PageDown).</li>
             <li>Click a placed item to rotate, duplicate, delete, or switch a light on/off.</li>
-            <li><em>Save as…</em> (under More) stores the whole property (all storeys, rooms, walls + items).</li>
+            <li><em>{t("Save as…")}</em> (under More) stores the whole property (all storeys, rooms, walls + items).</li>
           </ol>
           <p className="mt-2 text-[11px]" style={{ color: CHROME_TEXT_2 }}>
             Keys: R rotate; D duplicate; Del delete; Esc deselect; Ctrl+Z undo; M measure;
@@ -4076,7 +4064,7 @@ export function TopBar({
             </Link>}
           </div>
           {savedList.length === 0 ? (
-            <p className="py-2" style={{ color: CHROME_TEXT_2 }}>No saved properties yet. Use <em>Save as…</em></p>
+            <p className="py-2" style={{ color: CHROME_TEXT_2 }}>No saved properties yet. Use <em>{t("Save as…")}</em></p>
           ) : (
             <ul className="space-y-1.5">
               {savedList.map((d) => {
@@ -4151,8 +4139,7 @@ export function TopBar({
                 onClick={() => setConfirmingNew(false)}
                 className={`${BTN} ${BTN_REST} flex-1`}
               >
-                Cancel
-              </button>
+                {t("Cancel")}</button>
             </div>
           </div>
         </div>,

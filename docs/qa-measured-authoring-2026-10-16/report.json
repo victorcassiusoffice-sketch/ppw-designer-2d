@@ -1,0 +1,49 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "cases": [
+    {
+      "name": "desktop",
+      "checks": [
+        "Three-tap 2D curve creates measured canonical wall segments and cancels cleanly",
+        "Measured circular wall opening with 0.8m diameter and 1.1m sill persists",
+        "Three-tap 3D curve creates canonical wall segments without moving camera",
+        "3D custom roof outline commits four canonical vertices and 0.5m overhang",
+        "Roof outline survives return to 2D with identical saved geometry"
+      ],
+      "shots": [
+        "docs/qa-measured-authoring-2026-10-16/desktop-plan-curved-wall.png",
+        "docs/qa-measured-authoring-2026-10-16/desktop-plan-circular-opening.png",
+        "docs/qa-measured-authoring-2026-10-16/desktop-house-circular-opening.png",
+        "docs/qa-measured-authoring-2026-10-16/desktop-house-curved-wall.png",
+        "docs/qa-measured-authoring-2026-10-16/desktop-house-roof-outline-draft.png",
+        "docs/qa-measured-authoring-2026-10-16/desktop-house-custom-roof.png",
+        "docs/qa-measured-authoring-2026-10-16/desktop-plan-custom-roof.png"
+      ],
+      "errors": [],
+      "externalErrors": [],
+      "failures": []
+    },
+    {
+      "name": "phone",
+      "checks": [
+        "Three-tap 2D curve creates measured canonical wall segments and cancels cleanly",
+        "Measured circular wall opening with 0.8m diameter and 1.1m sill persists",
+        "Three-tap 3D curve creates canonical wall segments without moving camera",
+        "3D custom roof outline commits four canonical vertices and 0.5m overhang",
+        "Roof outline survives return to 2D with identical saved geometry"
+      ],
+      "shots": [
+        "docs/qa-measured-authoring-2026-10-16/phone-plan-curved-wall.png",
+        "docs/qa-measured-authoring-2026-10-16/phone-plan-circular-opening.png",
+        "docs/qa-measured-authoring-2026-10-16/phone-house-circular-opening.png",
+        "docs/qa-measured-authoring-2026-10-16/phone-house-curved-wall.png",
+        "docs/qa-measured-authoring-2026-10-16/phone-house-roof-outline-draft.png",
+        "docs/qa-measured-authoring-2026-10-16/phone-house-custom-roof.png",
+        "docs/qa-measured-authoring-2026-10-16/phone-plan-custom-roof.png"
+      ],
+      "errors": [],
+      "externalErrors": [],
+      "failures": []
+    }
+  ]
+}

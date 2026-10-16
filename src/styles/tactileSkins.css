@@ -1,0 +1,83 @@
+/* The three reference families share physical cues, not only a colour swap.
+ * Narrow perimeter controls leave the build unobstructed. */
+:root[data-ui-theme='ivory'] {
+  --skin-highlight: #ffffffd9; --skin-shadow: #8e9a8960;
+  --skin-gradient: linear-gradient(145deg,#fbfcf4,#e0e7d9);
+  --skin-active: linear-gradient(145deg,#d7e9dc,#b8d1c1);
+  --skin-inner: #9cafa144;
+}
+:root[data-ui-theme='ocean'] {
+  --skin-highlight: #88bacb36; --skin-shadow: #020b17c9;
+  --skin-gradient: linear-gradient(145deg,#284653,#152d3c);
+  --skin-active: linear-gradient(145deg,#8acbd0,#5dabb4);
+  --skin-inner: #000a1166;
+}
+:root[data-ui-theme='slate'] {
+  --skin-highlight: #d3d7d63b; --skin-shadow: #070b10a1;
+  --skin-gradient: linear-gradient(145deg,#4a545b,#2d363e);
+  --skin-active: linear-gradient(145deg,#e7bc8b,#cb8b55);
+  --skin-inner: #02050977;
+}
+:root[data-ui-theme] body .designer-app :is(.house-header,.house-rail,.house-camera-row,.house-view-dock,.plan-catalog-launcher,.workspace-mode-dock,.house-project-actions,.house-level-control) {
+  background: var(--skin-gradient) !important;
+  border: 1px solid var(--ui-line) !important;
+  border-top-color: var(--skin-highlight) !important;
+  box-shadow: 5px 7px 16px var(--skin-shadow),-3px -3px 9px var(--skin-highlight),inset 0 1px 0 var(--skin-highlight) !important;
+}
+:root[data-ui-theme] body .designer-app :is(.house-rail,.house-camera-row,.house-view-dock,.workspace-mode-dock) { border-radius: 24px; padding: 5px; gap: 5px; }
+:root[data-ui-theme] body :is(.designer-app,.locale-theme-controls__panel) :is(.house-rail button,.house-camera-row button,.house-view-dock button,.workspace-mode-dock button,.house-project-actions button,.theme-skin-card) {
+  background: var(--skin-gradient) !important;
+  border-radius: 17px;
+  box-shadow: 3px 3px 7px var(--skin-shadow),-2px -2px 6px var(--skin-highlight) !important;
+  transition: background 140ms,box-shadow 140ms,transform 140ms;
+}
+:root[data-ui-theme] body :is(.designer-app,.locale-theme-controls__panel) :is(.house-rail button,.house-camera-row button,.house-view-dock button,.workspace-mode-dock button,.theme-skin-card):is([aria-pressed='true'],[aria-selected='true'],.is-active) {
+  background: var(--skin-active) !important;
+  color: #153c36 !important;
+  box-shadow: inset 3px 3px 6px var(--skin-inner),inset -2px -2px 5px #ffffff55 !important;
+  border-color: var(--ui-accent) !important;
+}
+:root[data-ui-theme='slate'] body :is(.designer-app,.locale-theme-controls__panel) :is(.house-rail button,.house-camera-row button,.house-view-dock button,.workspace-mode-dock button,.theme-skin-card):is([aria-pressed='true'],[aria-selected='true'],.is-active) { color: #33271c !important; }
+:root[data-ui-theme] body .designer-app :is(.house-tool-panel,.house-view-options,.wall-material-sheet,.opening-selection-editor,.measured-path-options) {
+  border-radius: 20px;
+  box-shadow: 7px 10px 24px var(--skin-shadow),inset 0 1px 0 var(--skin-highlight) !important;
+}
+:root[data-ui-theme] body .designer-app :is(input:not([type='range']):not([type='checkbox']):not([type='color']),select,textarea) {
+  box-shadow: inset 2px 3px 5px var(--skin-inner),inset -1px -1px 3px var(--skin-highlight);
+}
+:root[data-ui-theme] body .designer-app :is(.house-rail,.house-camera-row,.house-view-dock,.workspace-mode-dock) button:active { transform: translateY(1px); }
+.skin-select-accessible { position: absolute !important; width: 1px !important; height: 1px !important; clip-path: inset(50%); overflow: hidden; }
+.theme-skin-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.locale-theme-controls__panel .theme-skin-card { display: grid; gap: 8px; padding: 8px 5px; text-align: center; min-height: 90px; min-width: 0; font-size: 10px; line-height: 1.3; }
+.theme-skin-card__sample { display: flex; align-items: center; justify-content: center; gap: 4px; height: 32px; border-radius: 11px; box-shadow: inset 2px 2px 5px #0003,inset -2px -2px 4px #fff5; }
+.theme-skin-card--ivory .theme-skin-card__sample { background: #d8e0d3; }
+.theme-skin-card--ocean .theme-skin-card__sample { background: #264958; }
+.theme-skin-card--slate .theme-skin-card__sample { background: #43494e; }
+.theme-skin-card__sample i { width: 13px; height: 13px; border-radius: 5px; background: #c9ddcb; box-shadow: 2px 2px 3px #0005,-1px -1px 3px #fff8; }
+.theme-skin-card--ocean .theme-skin-card__sample i { background: #7bbcc8; }
+.theme-skin-card--slate .theme-skin-card__sample i { background: #d6a16e; }
+:root[data-ui-theme] .locale-theme-controls__panel { width: min(310px,calc(100vw - 24px)); max-height: calc(100dvh - 90px); overflow-y: auto; overscroll-behavior: contain; }
+@media (prefers-reduced-motion: reduce) { :root[data-ui-theme] body .designer-app button { transition: none !important; } }
+
+:root[data-ui-theme] body .designer-app .plan-topbar :is(.plan-build-tools,.studio-view-switch) {
+  background: var(--skin-gradient) !important; border: 1px solid var(--ui-line) !important;
+  box-shadow: 4px 5px 12px var(--skin-shadow),-2px -2px 7px var(--skin-highlight),inset 0 1px 0 var(--skin-highlight) !important;
+}
+:root[data-ui-theme] body .designer-app .plan-topbar :is(.plan-build-tools button,.plan-project-bar button,.plan-navigation>button,.studio-view-switch button) {
+  background: var(--skin-gradient) !important; color: var(--ui-ink) !important;
+  border: 1px solid color-mix(in srgb,var(--ui-line),transparent 55%) !important;
+  box-shadow: 2px 3px 6px var(--skin-shadow),-1px -1px 4px var(--skin-highlight) !important;
+}
+:root[data-ui-theme] body .designer-app .plan-topbar :is(.plan-build-tools button,.plan-project-bar button,.plan-navigation>button,.studio-view-switch button):is([aria-pressed='true'],[aria-expanded='true']) {
+  background: var(--skin-active) !important; color: #153c36 !important;
+  box-shadow: inset 2px 2px 5px var(--skin-inner),inset -2px -2px 4px #ffffff55 !important;
+}
+:root[data-ui-theme] body .designer-app .plan-project-bar select { background: var(--ui-raised) !important; color: var(--ui-ink) !important; border-color: var(--ui-line) !important; }
+:root[data-ui-theme] body :is(.plan-garden-workspace,.garden-panel.garden-panel--architectural,.garden-draw-instruction,.plan-garden-instruction) { background: var(--ui-surface) !important; color: var(--ui-ink) !important; border-color: var(--ui-line) !important; color-scheme: inherit; }
+:root[data-ui-theme] body .garden-panel--architectural :is(.garden-field,.garden-field option,.garden-button,.garden-product-card) { color: var(--ui-ink) !important; background-color: var(--ui-raised) !important; border-color: var(--ui-line) !important; }
+:root[data-ui-theme] body .garden-panel--architectural :is(.garden-muted,.garden-quantities,.garden-source-link) { color: var(--ui-muted) !important; }
+:root[data-ui-theme] body .garden-panel--architectural .garden-button--remove { color: var(--ui-danger) !important; }
+:root[data-ui-theme] body :is(.wall-material-sheet,.opening-selection-editor,.measured-path-options) { background: var(--ui-surface) !important; color: var(--ui-ink) !important; border-color: var(--ui-line) !important; }
+:root[data-ui-theme] body :is(.wall-material-sheet,.opening-selection-editor,.measured-path-options) :is(button,input,select) { background: var(--ui-raised); color: var(--ui-ink); border-color: var(--ui-line); }
+:root[data-ui-theme] body .measured-path-options button[aria-pressed='true'] { background: var(--skin-active); color: #153c36; }
+@media (max-width: 767px) { .measured-path-options button,.opening-dimensions input,.opening-dimensions select,.measured-drawing-launchers button { min-height: 44px; } }

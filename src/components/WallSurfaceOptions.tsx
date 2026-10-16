@@ -4,6 +4,7 @@ import { WALL_CONSTRUCTIONS } from '../designer/wallConstruction';
 import { brandIdOfPaint, findWallPaintById, WALL_PAINTS } from '../data/wallPaints';
 import './wallSurfaceOptions.css';
 import { PaintCoatsControl } from './PaintCoatsControl';
+import { GlassMaterialOptions } from './GlassMaterialOptions';
 
 /** Shared by the desktop palette and the phone sheet: no floating controls. */
 export function WallSurfaceOptions({ compact = false, materialsOnly = false, showCoats = true }: { compact?: boolean; materialsOnly?: boolean; showCoats?: boolean }): JSX.Element {
@@ -36,12 +37,13 @@ export function WallSurfaceOptions({ compact = false, materialsOnly = false, sho
           <span className={`wall-surface-sample wall-surface-sample--${surface.id}`} aria-hidden="true" />{surface.name}
         </button>)}
       </div>
-      <p>Tap a wall to change its material. Existing paint stays on top.</p>
+      {draft.construction === 'glass' && <GlassMaterialOptions />}
+      <p>{draft.construction === 'glass' ? 'Tap a wall to replace its material with glass. Paint and cladding are removed from that wall.' : 'Tap a wall to change its material. Existing paint stays on top.'}</p>
       <button type="button" className="wall-surface-apply-room" onClick={() => {
         const state = usePropertyStore.getState();
-        state.setWallConstruction(state.property.activeRoomId, null, draft.construction ?? 'plastered-brick');
+        state.setWallConstruction(state.property.activeRoomId, null, draft.construction ?? 'plastered-brick', draft);
       }}>Apply material to active room</button>
-      <p>Visual construction choice; no material price added.</p>
+      <p>{draft.construction === 'glass' ? 'Measured glass appears in Materials. Supplier confirmation is needed for panel sizes, supports and exposure.' : 'Masonry quantities use the specification in Materials. No material price is added here.'}</p>
     </> : <>
       <div className="wall-surface-tabs" role="group" aria-label="Paint side">
         <button type="button" aria-pressed={draft.side !== 'exterior'} onClick={() => chooseSide('interior')}>Inside</button>

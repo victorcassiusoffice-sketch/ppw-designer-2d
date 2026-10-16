@@ -110,7 +110,7 @@ describe('foundation geometry and quantity invariants', () => {
           widthM: 8,
           depthM: 0.3,
           topElevationM: -1.2,
-          rebar: { ...defaultFoundationRebar(), enabled: true },
+          rebar: { ...defaultFoundationRebar(), enabled: true, lapLengthM: 0.5 },
           excavation: { depthM: 1.5, topElevationM: 0, marginM: 0.25, stage: 'excavated' },
         }),
       ),
@@ -183,5 +183,18 @@ describe('foundation geometry and quantity invariants', () => {
         .success,
     ).toBe(false);
     expect(FoundationSchema.parse(model(element()))).toEqual(model(element()));
+  });
+  it('withholds long steel runs without a specified lap and accepts explicit stock or splice inputs', () => {
+    const rebar = { ...defaultFoundationRebar(), enabled: true, wastePct: 0 };
+    const missing = estimateFoundation(model(element({ rebar })), defaultMaterialsSettings().concrete);
+    expect(missing.rebarComplete).toBe(false);
+    expect(missing.rebarStockBars).toBe(0);
+    expect(missing.warnings.join(' ')).toContain('lap allowance is zero');
+    const spliced = estimateFoundation(model(element({ rebar: { ...rebar, lapLengthM: 0.5 } })), defaultMaterialsSettings().concrete);
+    expect(spliced.rebarComplete).toBe(true);
+    expect(spliced.rebarStockBars).toBeGreaterThan(0);
+    const longStock = estimateFoundation(model(element({ rebar: { ...rebar, stockLengthM: 12 } })), defaultMaterialsSettings().concrete);
+    expect(longStock.rebarComplete).toBe(true);
+    expect(longStock.rebar[0].takeoff.lengthM).toBeLessThan(spliced.rebar[0].takeoff.lengthM);
   });
 });

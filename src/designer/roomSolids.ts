@@ -22,7 +22,8 @@
 import type { Vertex } from '../lib/geometry';
 import { cmToM, rotatedFootprint } from '../lib/geometry';
 import { edgeKey, roomEdges, sharedEdgeMap } from './wallEdges';
-import { OPENING_DOOR_HEIGHT_M, OPENING_WINDOW_HEIGHT_M } from '../data/wallPaints';
+import { openingProfile, openingVerticalBounds } from './openingGeometry';
+import { sharedGlassEdges, sharedGlassOpenings } from './sharedGlass';
 import {
   BARE_FLOOR_HEX,
   CAP_THICKNESS_M,
@@ -35,13 +36,16 @@ import {
 } from './roomView3d';
 
 export interface WallOpeningSolid {
+  id?: string;
+  shape?: import('./openings').Opening['shape'];
+  profile?: Vertex[];
   /** Metres along the wall from `a`. */
   t0M: number;
   t1M: number;
   /** Metres above the floor. */
   bottomM: number;
   topM: number;
-  kind: 'door' | 'doorway' | 'window';
+  kind: 'door' | 'doorway' | 'window' | 'hole';
 }
 
 export interface WallSolid {
@@ -54,7 +58,7 @@ export interface WallSolid {
   /** `wall-<roomId>-<edge>` for a room edge, `fw-<id>` for a free wall — the painter's keys. */
   key: string;
   hit: WallHit;
-  /** The wall line. Room edges: the INNER face lies on this line and the slab grows outward. Free walls: the centreline. */
+  /** The wall line. Ordinary room edges grow outward. Shared glass and free walls use it as the centreline. */
   a: Vec2;
   b: Vec2;
   lengthM: number;
@@ -63,8 +67,13 @@ export interface WallSolid {
   thicknessM: number;
   heightM: number;
   stubHeightM: number;
-  /** Free walls straddle their line; room-edge slabs sit outside it. */
+  /** Free walls and paired shared-glass panes straddle their line; other room-edge slabs sit outside it. */
   centred: boolean;
+  /** Retain both addressable room edges while rendering their physical pane once. */
+  renderDuplicateOf?: string;
+  /** A shallow connected turn is a continuous wall, not an occluded corner. */
+  smoothStart?: boolean;
+  smoothEnd?: boolean;
   /** Paint on the face that looks into the room (free walls: both faces). */
   hex: string;
   /** The paint's finish ('matt' | 'silk' | …); undefined = bare plaster, unpainted. */
@@ -168,6 +177,7 @@ export function buildSolids(input: SceneInput): SceneSolids {
 
   const indoorRooms = input.rooms.filter((r) => r.kind !== 'outdoor' && r.polygon.length >= 3);
   const shared = sharedEdgeMap(indoorRooms.map((r) => ({ id: r.id, polygon: r.polygon })));
+  const glassPairs = sharedGlassEdges(indoorRooms);
 
   for (const room of input.rooms) {
     const indoor = room.kind !== 'outdoor' && room.polygon.length >= 3;
@@ -182,18 +192,18 @@ export function buildSolids(input: SceneInput): SceneSolids {
       });
 
       for (const e of roomEdges(room)) {
+        const glassPair = glassPairs.get(edgeKey(room.id, e.index));
         const inward = inwardNormal(e.a, e.b);
         const openings: WallOpeningSolid[] = [];
-        for (const o of room.openings ?? []) {
+        for (const o of sharedGlassOpenings(room, e.index, glassPair)) {
           if (o.edgeIndex !== e.index) continue;
           const t0 = Math.max(0, o.offsetM - o.widthM / 2);
           const t1 = Math.min(e.lengthM, o.offsetM + o.widthM / 2);
           if (t1 <= t0) continue;
-          const isWin = o.kind === 'window';
-          const sill = isWin ? Math.min(o.sillM ?? 0.9, H) : 0;
-          const top = Math.min(isWin ? sill + OPENING_WINDOW_HEIGHT_M : OPENING_DOOR_HEIGHT_M, H);
-          if (top <= sill) continue;
-          openings.push({ t0M: t0, t1M: t1, bottomM: sill, topM: top, kind: o.kind });
+          const canonical = { ...o, id: o.id ?? '', flipFacing: o.flipFacing ?? false, flipHand: o.flipHand ?? false };
+          const { bottomM, topM } = openingVerticalBounds(canonical, H);
+          if (topM <= bottomM) continue;
+          openings.push({ id: o.id, t0M: t0, t1M: t1, bottomM, topM, kind: o.kind, shape: o.shape, profile: openingProfile(canonical, H) });
         }
         walls.push({
           key: `wall-${room.id}-${e.index}`,
@@ -202,10 +212,11 @@ export function buildSolids(input: SceneInput): SceneSolids {
           b: { x: e.b.x, y: e.b.y },
           lengthM: e.lengthM,
           inward,
-          thicknessM: CAP_THICKNESS_M,
+          thicknessM: room.wallThicknessByEdge?.get(e.index) ?? (room.wallConstructionByEdge?.get(e.index) === 'glass' ? .01 : CAP_THICKNESS_M),
           heightM: H,
           stubHeightM: Math.min(STUB_HEIGHT_M, H),
-          centred: false,
+          centred: Boolean(glassPair),
+          ...(glassPair && glassPair.ownerKey !== edgeKey(room.id, e.index) ? { renderDuplicateOf: `wall-${glassPair.peer.id}-${glassPair.peerEdgeIndex}` } : {}),
           hex: room.wallColourByEdge?.get(e.index) ?? PLASTER_HEX,
           finish: room.wallFinishByEdge?.get(e.index),
           construction: room.wallConstructionByEdge?.get(e.index),
@@ -282,7 +293,35 @@ export function buildSolids(input: SceneInput): SceneSolids {
     });
   }
 
+  markSmoothWallJunctions(walls);
   return { wallHeightM: H, floors, walls, items };
+}
+
+/** Remove artificial corner shading between curve chords (or collinear
+ * continuations), preserving free ends, T junctions and actual room corners. */
+function markSmoothWallJunctions(walls: WallSolid[]): void {
+  const joins = new Map<string, Array<{ wall: WallSolid; start: boolean }>>();
+  for (const wall of walls) {
+    if (wall.renderDuplicateOf) continue;
+    for (const start of [true, false]) {
+      const point = start ? wall.a : wall.b;
+      const key = `${Math.round(point.x * 1e6)},${Math.round(point.y * 1e6)}`;
+      const entries = joins.get(key) ?? [];
+      entries.push({ wall, start }); joins.set(key, entries);
+    }
+  }
+  const threshold = -Math.cos(20 * Math.PI / 180);
+  for (const entries of joins.values()) {
+    if (entries.length !== 2) continue;
+    const [a, b] = entries;
+    if (a.wall === b.wall || a.wall.centred !== b.wall.centred || a.wall.construction !== b.wall.construction ||
+      Math.abs(a.wall.thicknessM - b.wall.thicknessM) > 1e-6 || Math.abs(a.wall.heightM - b.wall.heightM) > 1e-6) continue;
+    const direction = ({wall,start}: typeof a) => ({x:(wall.b.x-wall.a.x)/wall.lengthM*(start?1:-1),y:(wall.b.y-wall.a.y)/wall.lengthM*(start?1:-1)});
+    const da=direction(a), db=direction(b);
+    if (da.x*db.x+da.y*db.y > threshold) continue;
+    a.wall[a.start ? 'smoothStart' : 'smoothEnd'] = true;
+    b.wall[b.start ? 'smoothStart' : 'smoothEnd'] = true;
+  }
 }
 
 export type WallShow = 'full' | 'stub' | 'hidden';
@@ -297,6 +336,9 @@ export function cutawayState(solids: SceneSolids, cameraPos: Vec3, cameraTarget:
   const out = new Map<string, WallShow>();
   const dTarget = Math.hypot(cameraTarget.x - cameraPos.x, cameraTarget.y - cameraPos.y);
   for (const w of solids.walls) {
+    if (w.renderDuplicateOf) { out.set(w.key, 'hidden'); continue; }
+    // Transparent shared partitions are visible from either adjoining room.
+    if (w.construction === 'glass' && w.shared && w.centred) { out.set(w.key, 'full'); continue; }
     if (w.free) {
       const mx = (w.a.x + w.b.x) / 2;
       const my = (w.a.y + w.b.y) / 2;

@@ -1,0 +1,381 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "at": "2026-10-15T15:02:59.486Z",
+  "bundle": "App-CDZDraaG.js",
+  "seed": "13 distinct schematic fixture kinds, eight measured systems, vertical risers, two floors, measured rectangular and circular excavation. No real project or customer data.",
+  "cases": [
+    {
+      "name": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "screenshots": [
+        "docs/services-qa-2026-10-15/desktop-plan-all-services.png",
+        "docs/services-qa-2026-10-15/desktop-plan-layers.png",
+        "docs/services-qa-2026-10-15/desktop-plan-only-plumbing.png",
+        "docs/services-qa-2026-10-15/desktop-plan-only-hvac.png",
+        "docs/services-qa-2026-10-15/desktop-plan-only-fire.png",
+        "docs/services-qa-2026-10-15/desktop-plan-only-security.png",
+        "docs/services-qa-2026-10-15/desktop-house-all-services.png",
+        "docs/services-qa-2026-10-15/desktop-house-layers.png",
+        "docs/services-qa-2026-10-15/desktop-house-only-plumbing.png",
+        "docs/services-qa-2026-10-15/desktop-house-only-hvac.png",
+        "docs/services-qa-2026-10-15/desktop-house-only-fire.png",
+        "docs/services-qa-2026-10-15/desktop-house-only-security.png",
+        "docs/services-qa-2026-10-15/desktop-house-camera-before.png",
+        "docs/services-qa-2026-10-15/desktop-house-camera-restored.png",
+        "docs/services-qa-2026-10-15/desktop-house-upper-floor.png",
+        "docs/services-qa-2026-10-15/desktop-house-ground-return.png",
+        "docs/services-qa-2026-10-15/desktop-guide-start.png",
+        "docs/services-qa-2026-10-15/desktop-guide-excavation.png",
+        "docs/services-qa-2026-10-15/desktop-foundation-plan.png",
+        "docs/services-qa-2026-10-15/desktop-foundation-bore-dimensions.png",
+        "docs/services-qa-2026-10-15/desktop-foundation-3d.png"
+      ],
+      "checks": [
+        {
+          "screen": "plan-all-services",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "plan-layers",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "plan-only-plumbing",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "plan-only-hvac",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "plan-only-fire",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "plan-only-security",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        "All 13 fixture kinds and eight systems retained; only/show-all filters do not mutate canonical service inputs.",
+        {
+          "screen": "house-all-services",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "action": "House layer menu clipping",
+          "overflow": "visible",
+          "designerAncestor": true
+        },
+        {
+          "screen": "house-layers",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "house-only-plumbing",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "house-only-hvac",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "house-only-fire",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "house-only-security",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "house-camera-before",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "action": "Zoom/pan then isolate HVAC and restore all",
+          "changedPixelFraction": 0,
+          "tolerance": 0.003
+        },
+        {
+          "screen": "house-camera-restored",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "house-upper-floor",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "house-ground-return",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "guide-start",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "guide-excavation",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "foundation-plan",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "foundation-bore-dimensions",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "action": "Foundation drawing remains usable with dimensions open",
+          "height": 632
+        },
+        {
+          "action": "Foundation summary rows fit within their drawing pane",
+          "bottom": 869.5,
+          "drawingBottom": 900,
+          "fits": true
+        },
+        {
+          "screen": "foundation-3d",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        "Guide launch minimises the checklist so foundation tool remains interactive; Close guide dismisses it."
+      ],
+      "defects": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "httpErrors": [],
+      "writes": []
+    },
+    {
+      "name": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "screenshots": [
+        "docs/services-qa-2026-10-15/phone-plan-all-services.png",
+        "docs/services-qa-2026-10-15/phone-plan-layers.png",
+        "docs/services-qa-2026-10-15/phone-plan-only-plumbing.png",
+        "docs/services-qa-2026-10-15/phone-plan-only-hvac.png",
+        "docs/services-qa-2026-10-15/phone-plan-only-fire.png",
+        "docs/services-qa-2026-10-15/phone-plan-only-security.png",
+        "docs/services-qa-2026-10-15/phone-house-all-services.png",
+        "docs/services-qa-2026-10-15/phone-house-layers.png",
+        "docs/services-qa-2026-10-15/phone-house-only-plumbing.png",
+        "docs/services-qa-2026-10-15/phone-house-only-hvac.png",
+        "docs/services-qa-2026-10-15/phone-house-only-fire.png",
+        "docs/services-qa-2026-10-15/phone-house-only-security.png",
+        "docs/services-qa-2026-10-15/phone-house-camera-before.png",
+        "docs/services-qa-2026-10-15/phone-house-camera-restored.png",
+        "docs/services-qa-2026-10-15/phone-house-upper-floor.png",
+        "docs/services-qa-2026-10-15/phone-house-ground-return.png",
+        "docs/services-qa-2026-10-15/phone-guide-start.png",
+        "docs/services-qa-2026-10-15/phone-guide-excavation.png",
+        "docs/services-qa-2026-10-15/phone-foundation-plan.png",
+        "docs/services-qa-2026-10-15/phone-foundation-bore-dimensions.png",
+        "docs/services-qa-2026-10-15/phone-foundation-3d.png"
+      ],
+      "checks": [
+        {
+          "screen": "plan-all-services",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "plan-layers",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "plan-only-plumbing",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "plan-only-hvac",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "plan-only-fire",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "plan-only-security",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        "All 13 fixture kinds and eight systems retained; only/show-all filters do not mutate canonical service inputs.",
+        {
+          "screen": "house-all-services",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "action": "House layer menu clipping",
+          "overflow": "visible",
+          "designerAncestor": true
+        },
+        {
+          "screen": "house-layers",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "house-only-plumbing",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "house-only-hvac",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "house-only-fire",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "house-only-security",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "house-camera-before",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "action": "Zoom/pan then isolate HVAC and restore all",
+          "changedPixelFraction": 0,
+          "tolerance": 0.003
+        },
+        {
+          "screen": "house-camera-restored",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "house-upper-floor",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "house-ground-return",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "guide-start",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "guide-excavation",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "foundation-plan",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "screen": "foundation-bore-dimensions",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        {
+          "action": "Foundation drawing remains usable with dimensions open",
+          "height": 240
+        },
+        {
+          "action": "Foundation summary rows fit within their drawing pane",
+          "bottom": 639.5,
+          "drawingBottom": 686.5,
+          "fits": true
+        },
+        {
+          "screen": "foundation-3d",
+          "overflow": false,
+          "clipped": [],
+          "priceFree": true
+        },
+        "Guide launch minimises the checklist so foundation tool remains interactive; Close guide dismisses it."
+      ],
+      "defects": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "httpErrors": [],
+      "writes": []
+    }
+  ],
+  "pass": true
+}

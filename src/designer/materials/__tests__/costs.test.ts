@@ -86,6 +86,17 @@ describe('material purchasing and exact-cost boundaries', () => {
 });
 
 describe('foundation purchases join one material schedule', () => {
+  it('does not call a fully priced concrete quote complete when long steel runs have no splice allowance', () => {
+    const model = foundation(element({ lengthM: 10 })), value = settings();
+    const purchase = foundationProcurement(model, value.concrete);
+    expect(purchase.foundation?.rebarComplete).toBe(false);
+    expect(purchase.lines).toEqual([]);
+    const report = priceAll({ ...empty(), foundationVolumeM3: purchase.foundation!.volumeM3 }, value);
+    const cost = estimateMaterialCosts(report, purchase.lines, purchase.incompleteReasons);
+    expect(cost.unpricedLines).toBe(0);
+    expect(cost.complete).toBe(false);
+    expect(cost.incompleteReasons.join(' ')).toContain('splice');
+  });
   it.each([false, true])('keeps an entirely priced foundation incomplete while a fill stage is pending (overlap: %s)', overlapping => {
     const model = foundation(element(), element({ id: 'pending', x: overlapping ? 0 : 10,
       excavation: { depthM: 1, topElevationM: 0, marginM: .25, stage: 'excavated' } }));

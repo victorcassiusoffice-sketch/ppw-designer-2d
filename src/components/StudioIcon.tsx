@@ -1,5 +1,6 @@
 /** Original, optically aligned 24px glyphs shared by the Plan and House studio. */
 const PATHS = {
+  city: 'M3 21V9h6v12M9 21V3h7v18M16 21V12h5v9M6 12v1m0 3v1m6-10h1m-1 4h1m-1 4h1m5 1h1M2 21h20',
   list: 'M9 6h11M9 12h11M9 18h7M4 6h.01M4 12h.01M4 18h.01',
   cursor: 'M5 3.5 19 12l-6 1.5-3 6.5L5 3.5Z',
   hammer: 'm14 4 6 6-3 3-6-6 3-3ZM12 10 4 18l2 2 8-8',

@@ -713,7 +713,7 @@
   --house-accent: var(--studio-active);
 }
 .designer-app[data-view="plan"] [data-testid="plan-drawing-viewport"] {
-  background: radial-gradient(ellipse at 42% 38%,#d4ded4 0%,#bbcbbf 69%,#aebfb5 100%) !important;
+  background: var(--build-ground, radial-gradient(ellipse at 42% 38%,#d4ded4 0%,#bbcbbf 69%,#aebfb5 100%)) !important;
 }
 .designer-app :is(.plan-build-tools,.house-rail,.house-camera-row,.studio-view-switch,.house-view-switch) {
   background: var(--studio-field);

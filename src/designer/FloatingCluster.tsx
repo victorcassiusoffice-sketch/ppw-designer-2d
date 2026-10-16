@@ -220,8 +220,8 @@ export function FloatingCluster({
     },
     {
       key: 'confirm',
-      label: 'Done',
-      glyph: '✓',
+      label: 'Deselect object',
+      glyph: '↙',
       testid: 'cluster-confirm',
       tone: 'confirm',
       onClick: () => {

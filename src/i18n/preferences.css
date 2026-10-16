@@ -1,0 +1,620 @@
+/* Interface-only colours. World materials, product images and measured geometry are untouched. */
+:root[data-ui-theme]
+  body
+  .designer-app
+  :is(
+    .house-scene-actions button,
+    [data-testid='zoom-in'],
+    [data-testid='zoom-out'],
+    [data-testid='share-render'],
+    [data-testid='capture-screen'],
+    [aria-label='Fit to view']
+  ) {
+  color: var(--ui-ink) !important;
+  background: var(--ui-surface) !important;
+  border-color: var(--ui-line) !important;
+}
+:root[data-ui-theme]
+  body
+  .designer-app
+  :is(.house-scene-actions button[aria-pressed='true'], .house-scene-actions button.is-active) {
+  color: var(--ui-ink) !important;
+  background: var(--ui-soft) !important;
+}
+:root[data-ui-theme]
+  body
+  .designer-app
+  :is(
+    .house-brand strong,
+    .house-mark,
+    .house-scene-label,
+    .workspace-floor-caption,
+    [data-testid='wallpaint-3d-caption']
+  ) {
+  color: var(--ui-ink) !important;
+}
+:root[data-ui-theme]
+  body
+  .designer-app
+  .sims-catalog[data-catalog-mode='plan'][data-catalog-open='false'] {
+  background: var(--ui-surface) !important;
+  border-color: var(--ui-line) !important;
+}
+:root[data-ui-theme] body .designer-app .plan-catalog-launcher {
+  background: transparent !important;
+  border-radius: inherit;
+  box-shadow: none !important;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .studio-eyebrow,
+    .studio-mode button > span,
+    .pitch-feedback-link,
+    .pitch-hero-metrics strong
+  ) {
+  color: var(--ui-accent) !important;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .house-header,
+    .house-rail,
+    .house-camera-row,
+    .house-view-dock,
+    .house-view-options,
+    .house-view-options-heading,
+    .plan-catalog-launcher,
+    .studio-header nav,
+    .studio-mode
+  ) {
+  background: var(--ui-surface) !important;
+  color: var(--ui-ink) !important;
+  border-color: var(--ui-line) !important;
+  box-shadow: 0 2px 10px #0000001a !important;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .house-project-actions button,
+    .house-rail button,
+    .house-camera-row button,
+    .house-view-options button,
+    .plan-catalog-launcher button,
+    .pitch-meeting,
+    .sales-meeting,
+    .studio-meeting,
+    .studio-header nav a
+  ) {
+  background: var(--ui-surface) !important;
+  color: var(--ui-ink) !important;
+  border-color: var(--ui-line) !important;
+  box-shadow: none !important;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .house-project-actions button,
+    .house-rail button,
+    .house-camera-row button,
+    .house-view-options button,
+    .plan-catalog-launcher button,
+    .pitch-meeting,
+    .sales-meeting,
+    .studio-meeting,
+    .studio-header nav a
+  )
+  :is(svg, span, strong) {
+  color: inherit !important;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .house-project-actions button[aria-pressed='true'],
+    .house-rail button[aria-pressed='true'],
+    .house-camera-row button[aria-pressed='true'],
+    .house-view-options button[aria-pressed='true'],
+    .studio-header nav a[aria-current='page']
+  ) {
+  background: var(--ui-soft) !important;
+  color: var(--ui-ink) !important;
+  border-color: var(--ui-accent) !important;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .house-view-options label,
+    .house-view-options strong,
+    .house-view-options small,
+    .house-view-options span,
+    .plan-catalog-launcher span
+  ) {
+  color: var(--ui-ink) !important;
+}
+:root[data-ui-theme] body .house-view-options select {
+  background: var(--ui-raised) !important;
+  color: var(--ui-ink) !important;
+  border-color: var(--ui-line) !important;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .studio-home a:not(.studio-primary),
+    .pitch-app .pitch-mini-steps strong,
+    .pitch-app .pitch-mini-steps span,
+    .sales-pack h1 em,
+    .sales-pack h2 em
+  ) {
+  color: var(--ui-accent) !important;
+}
+:root[data-ui-theme] body .sales-pack .sales-primary {
+  background: var(--ui-accent) !important;
+  color: var(--ui-on-accent) !important;
+  border-color: var(--ui-accent) !important;
+}
+:root[data-ui-theme='ivory'] {
+  --ui-bg: #f4f0e7;
+  --ui-surface: #fffdf7;
+  --ui-raised: #ede6d9;
+  --ui-ink: #192c26;
+  --ui-muted: #53635a;
+  --ui-line: #b8b9ab;
+  --ui-accent: #245c48;
+  --ui-on-accent: #ffffff;
+  --ui-soft: #dceadd;
+  --ui-focus: #0c6b58;
+  --ui-danger: #9b322a;
+  color-scheme: light;
+}
+:root[data-ui-theme='ocean'] {
+  --ui-bg: #0f1e2b;
+  --ui-surface: #172d3d;
+  --ui-raised: #213e50;
+  --ui-ink: #ecf6f8;
+  --ui-muted: #b3cbd5;
+  --ui-line: #536f80;
+  --ui-accent: #89d8dd;
+  --ui-on-accent: #0c2930;
+  --ui-soft: #234c5a;
+  --ui-focus: #ffcf70;
+  --ui-danger: #ffb4a5;
+  color-scheme: dark;
+}
+:root[data-ui-theme='slate'] {
+  --ui-bg: #26303a;
+  --ui-surface: #303d49;
+  --ui-raised: #3e4b55;
+  --ui-ink: #f7f1e6;
+  --ui-muted: #d2c6b5;
+  --ui-line: #73808b;
+  --ui-accent: #edc58f;
+  --ui-on-accent: #282c31;
+  --ui-soft: #4c4b46;
+  --ui-focus: #9fe5dd;
+  --ui-danger: #ffb3a8;
+  color-scheme: dark;
+}
+:root[data-ui-theme] body {
+  background: var(--ui-bg);
+  color: var(--ui-ink);
+}
+:root[data-ui-theme] body .pitch-app {
+  --pitch-ink: var(--ui-ink);
+  --pitch-navy: var(--ui-accent);
+  --pitch-teal: var(--ui-accent);
+  --pitch-ivory: var(--ui-surface);
+  --pitch-muted: var(--ui-muted);
+  --pitch-edge: var(--ui-line);
+  --pitch-surface: var(--ui-surface);
+  --pitch-sage: var(--ui-soft);
+}
+:root[data-ui-theme] body .sales-pack {
+  --sales-ink: var(--ui-ink);
+  --sales-muted: var(--ui-muted);
+  --sales-accent: var(--ui-accent);
+  --sales-edge: var(--ui-line);
+}
+:root[data-ui-theme] body .studio-page {
+  --studio-bg: var(--ui-bg);
+  --studio-text: var(--ui-ink);
+  --studio-mint: var(--ui-accent);
+  --studio-line: var(--ui-line);
+}
+:root[data-ui-theme] body .c-pitch {
+  --c-bg: var(--ui-bg);
+  --c-bg-2: var(--ui-raised);
+  --c-ink: var(--ui-ink);
+  --c-muted: var(--ui-muted);
+  --c-line: var(--ui-line);
+  --c-accent: var(--ui-accent);
+  --c-accent-ink: var(--ui-on-accent);
+  --c-card: var(--ui-surface);
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .designer-app,
+    .house-tool-panel,
+    .house-tool-panel-host,
+    .services-workspace,
+    .plan-import-page
+  ) {
+  --studio-stage: var(--ui-bg);
+  --studio-paper: var(--ui-bg);
+  --studio-surface: var(--ui-surface);
+  --studio-field: var(--ui-raised);
+  --studio-line: var(--ui-line);
+  --studio-ink: var(--ui-ink);
+  --studio-muted: var(--ui-muted);
+  --studio-active: var(--ui-accent);
+  --studio-accent: var(--ui-soft);
+  --studio-cap: linear-gradient(145deg, var(--ui-surface), var(--ui-raised));
+  --studio-selected-cap: var(--ui-soft);
+  --studio-lift: 0 3px 12px #00000014;
+  --studio-small-lift: 0 2px 5px #00000012;
+  --studio-inset: inset 0 1px 3px #00000020;
+  --capsule-bg: var(--ui-surface);
+  --capsule-bg-solid: var(--ui-surface);
+  --capsule-rim: var(--ui-line);
+  --capsule-ink: var(--ui-ink);
+  --capsule-ink-dim: var(--ui-muted);
+  --capsule-hover: var(--ui-raised);
+  --capsule-on: var(--ui-accent);
+  --capsule-on-ink: var(--ui-on-accent);
+  color: var(--ui-ink);
+  color-scheme: inherit;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .city-workspace,
+    .city-page,
+    .city-inspector,
+    .pitch-app,
+    .sales-pack,
+    .studio-page,
+    .studio-designer,
+    .c-pitch
+  ) {
+  background: var(--ui-bg) !important;
+  color: var(--ui-ink) !important;
+  color-scheme: inherit;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .city-header,
+    .city-tools,
+    .city-tabs,
+    .plan-topbar,
+    .plan-project-bar,
+    .plan-navigation,
+    .pitch-header,
+    .pitch-chapters,
+    .pitch-footer,
+    .sales-header,
+    .sales-tabs,
+    .sales-footer,
+    .studio-header,
+    .studio-designer-header,
+    .c-top
+  ) {
+  background: var(--ui-bg) !important;
+  color: var(--ui-ink) !important;
+  border-color: var(--ui-line) !important;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .city-card,
+    .city-inspector,
+    .city-metric,
+    .city-orders-line,
+    .city-orders-packages,
+    .pitch-panel,
+    .sales-card,
+    .sales-hero-capture,
+    .studio-merchant-card,
+    .c-try
+  ) {
+  background: var(--ui-surface) !important;
+  color: var(--ui-ink) !important;
+  border-color: var(--ui-line) !important;
+  box-shadow: 0 4px 18px #00000012 !important;
+}
+:root[data-ui-theme]
+  body
+  :is(.city-workspace, .pitch-app, .sales-pack, .studio-page, .c-pitch)
+  :is(h1, h2, h3, h4, legend, label) {
+  color: var(--ui-ink) !important;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .city-note,
+    .city-field > span,
+    .city-metric > span,
+    .pitch-lead,
+    .pitch-fine,
+    .pitch-eyebrow,
+    .sales-kicker,
+    .studio-intro,
+    .studio-fine,
+    .c-lead,
+    .c-note,
+    .c-kicker
+  ) {
+  color: var(--ui-muted) !important;
+}
+:root[data-ui-theme]
+  body
+  :is(.city-workspace, .pitch-app, .sales-pack, .studio-page, .c-pitch)
+  :is(input, select, textarea) {
+  color: var(--ui-ink) !important;
+  background: var(--ui-surface) !important;
+  border-color: var(--ui-line) !important;
+  color-scheme: inherit;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .city-workspace button,
+    .city-action,
+    .pitch-chapters button,
+    .sales-tabs button,
+    .plan-topbar button,
+    .plan-project-bar button,
+    .studio-view-switch button,
+    .house-view-switch button,
+    .pitch-secondary,
+    .sales-button,
+    .studio-secondary
+  ) {
+  color: var(--ui-ink) !important;
+  background: var(--ui-surface) !important;
+  border-color: var(--ui-line) !important;
+  box-shadow: 0 2px 5px #00000014 !important;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .city-workspace button,
+    .pitch-chapters button,
+    .sales-tabs button,
+    .plan-topbar button,
+    .plan-project-bar button
+  ):hover:not(:disabled) {
+  background: var(--ui-raised) !important;
+  color: var(--ui-ink) !important;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .city-workspace button[aria-pressed='true'],
+    .city-workspace .city-primary,
+    .city-action.is-primary,
+    .pitch-primary,
+    .studio-primary,
+    .sales-button.is-primary,
+    .pitch-chapters button[aria-selected='true'],
+    .sales-tabs button[aria-selected='true'],
+    .studio-view-switch button[aria-pressed='true'],
+    .house-view-switch button[aria-pressed='true']
+  ) {
+  background: var(--ui-accent) !important;
+  color: var(--ui-on-accent) !important;
+  border-color: var(--ui-accent) !important;
+}
+:root[data-ui-theme]
+  body
+  :is(.pitch-header, .pitch-footer, .sales-header, .sales-footer, .studio-header, .c-top)
+  a {
+  color: var(--ui-ink) !important;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .city-message,
+    .city-orders-message,
+    .city-orders-status,
+    .pitch-chip,
+    .pitch-concept-note,
+    .studio-shop-notice
+  ) {
+  background: var(--ui-soft) !important;
+  color: var(--ui-ink) !important;
+  border-color: var(--ui-line) !important;
+}
+:root[data-ui-theme] body :is(.city-error, .city-orders-remove, .city-orders-remove-package) {
+  color: var(--ui-danger) !important;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .plan-control-panel,
+    .house-tool-panel-header,
+    .studio-designer-toolbar,
+    .studio-mode button,
+    .studio-view-toggle button,
+    .studio-paths > a,
+    .studio-merchant-info,
+    .pitch-segment button,
+    .pitch-ai-prompt,
+    .pitch-automation-cards > div
+  ) {
+  background: var(--ui-surface) !important;
+  color: var(--ui-ink) !important;
+  border-color: var(--ui-line) !important;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .house-tool-panel-header h2,
+    .house-tool-panel-header button,
+    .studio-designer-toolbar a,
+    .studio-designer-toolbar strong,
+    .studio-mode button small,
+    .studio-paths p,
+    .studio-paths small,
+    .studio-home-footer,
+    .studio-merchant-card p,
+    .studio-merchant-card > small,
+    .studio-merchant-admin a,
+    .studio-merchant-admin span,
+    .studio-merchant-info strong,
+    .studio-merchant-info a,
+    .pitch-app p,
+    .sales-pack p,
+    .pitch-audience,
+    .pitch-app h1 em,
+    .pitch-app h2 em,
+    .sales-edition
+  ) {
+  color: var(--ui-muted) !important;
+}
+:root[data-ui-theme]
+  body
+  :is(
+    .studio-mode button[aria-pressed='true'],
+    .studio-view-toggle button[aria-pressed='true'],
+    .pitch-segment button[aria-pressed='true']
+  ) {
+  background: var(--ui-soft) !important;
+  color: var(--ui-ink) !important;
+  border-color: var(--ui-accent) !important;
+}
+:root[data-ui-theme] body :is(button, a, input, select, textarea, summary):focus-visible {
+  outline: 3px solid var(--ui-focus) !important;
+  outline-offset: 3px;
+}
+
+.locale-theme-controls {
+  position: relative;
+  flex: none;
+  z-index: 40;
+  color: var(--ui-ink, #192c26);
+  font:
+    500 12px/1.4 Inter,
+    system-ui,
+    sans-serif;
+}
+.locale-theme-controls > summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid var(--ui-line, #b8b9ab);
+  background: var(--ui-surface, #fffdf7);
+  color: var(--ui-ink, #192c26);
+}
+.locale-theme-controls > summary::-webkit-details-marker {
+  display: none;
+}
+.locale-theme-controls[open] > summary {
+  background: var(--ui-soft, #dceadd);
+}
+.locale-theme-controls__panel {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + 8px);
+  width: min(270px, calc(100vw - 24px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--ui-line, #b8b9ab);
+  border-radius: 18px;
+  background: var(--ui-surface, #fffdf7);
+  color: var(--ui-ink, #192c26);
+  box-shadow: 0 12px 40px #00000033;
+  z-index: 5000;
+}
+.locale-theme-controls__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.locale-theme-controls__heading button {
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--ui-line, #b8b9ab);
+  color: var(--ui-ink, #192c26);
+  background: var(--ui-raised, #ede6d9);
+  font-size: 20px;
+}
+.locale-theme-controls__panel select {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  background: var(--ui-bg, #f4f0e7);
+  color: var(--ui-ink, #192c26);
+  border: 1px solid var(--ui-line, #b8b9ab);
+  border-radius: 10px;
+  font: inherit;
+}
+.locale-theme-controls__panel small {
+  color: var(--ui-muted, #53635a);
+  font-size: 11px;
+}
+:root[data-ui-theme] .locale-theme-controls__panel label {
+  color: var(--ui-ink) !important;
+  font-weight: 600;
+}
+.pitch-header,
+.sales-header,
+.studio-header,
+.c-top-row {
+  flex-wrap: wrap;
+}
+.pitch-header .locale-theme-controls,
+.sales-header .locale-theme-controls {
+  margin-inline-start: auto;
+}
+.pitch-header nav,
+.studio-header nav,
+.c-top-row nav {
+  flex-wrap: wrap;
+}
+.city-header .locale-theme-controls {
+  margin-inline-start: auto;
+}
+@media (max-width: 760px) {
+  .pitch-header .locale-theme-controls,
+  .sales-header .locale-theme-controls {
+    margin-inline-start: 0;
+  }
+  .locale-theme-controls > summary {
+    min-height: 40px;
+    padding: 7px;
+  }
+  .city-header {
+    flex-wrap: wrap;
+  }
+  .locale-theme-controls__panel {
+    position: fixed;
+    top: 74px;
+    inset-inline-end: 12px;
+  }
+  .plan-project-bar {
+    flex-wrap: wrap;
+  }
+  .plan-project-bar .project-hub-launch > span {
+    display: none;
+  }
+  .studio-designer-toolbar {
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .locale-theme-controls * {
+    transition: none !important;
+  }
+}

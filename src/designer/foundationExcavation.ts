@@ -130,5 +130,50 @@ export function foundationSoilFaces(
       });
     });
   });
+  // Faceted display only: analytical cylinder quantities never use this mesh.
+  // Overlapping cylinders remain separate coordination envelopes; their union
+  // takeoff is explicitly withheld by foundationBoreTakeoff.
+  for (const bore of model.bores ?? []) {
+    const radius = bore.diameterM / 2,
+      segments = 64;
+    const top = bore.topElevationM + groundElevationM,
+      bottom = top - bore.depthM;
+    const ring = (r: number, i: number, z: number) => ({
+      x: bore.x + r * Math.cos((i * 2 * Math.PI) / segments),
+      y: bore.y + r * Math.sin((i * 2 * Math.PI) / segments),
+      z,
+    });
+    for (let i = 0; i < segments; i++) {
+      faces.push({
+        key: `bore-${bore.id}-soil-${i}`,
+        kind: 'soil',
+        points: [
+          ring(radius, i, top),
+          ring(radius, i + 1, top),
+          ring(radius, i + 1, bottom),
+          ring(radius, i, bottom),
+        ],
+      });
+      faces.push({
+        key: `bore-${bore.id}-base-${i}`,
+        kind: 'base',
+        points: [
+          { x: bore.x, y: bore.y, z: bottom },
+          ring(radius, i, bottom),
+          ring(radius, i + 1, bottom),
+        ],
+      });
+      faces.push({
+        key: `bore-${bore.id}-rim-${i}`,
+        kind: 'rim',
+        points: [
+          ring(radius, i, top),
+          ring(radius + 0.25, i, top),
+          ring(radius + 0.25, i + 1, top),
+          ring(radius, i + 1, top),
+        ],
+      });
+    }
+  }
   return faces;
 }

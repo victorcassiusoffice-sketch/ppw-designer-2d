@@ -14,7 +14,9 @@ export interface GardenPavingEstimate {
 /** Straight rows with each edge cut using a whole piece; offcuts are not reused.
  * No joint spacing, extra breakage allowance, installation or delivery is priced.
  */
-export function estimateGardenPaving(surface: Pick<GardenSurface, 'kind' | 'pavingProductId' | 'widthM' | 'depthM'>): GardenPavingEstimate | null {
+export function estimateGardenPaving(surface: Pick<GardenSurface, 'kind' | 'pavingProductId' | 'widthM' | 'depthM' | 'outline'>): GardenPavingEstimate | null {
+  // A bounding-box tile count would invent a layout for curved/concave areas.
+  if (surface.outline) return null;
   if (surface.kind !== 'path' || !Number.isFinite(surface.widthM) || !Number.isFinite(surface.depthM)
     || surface.widthM <= 0 || surface.depthM <= 0) return null;
   const product = findOutdoorPavingProduct(surface.pavingProductId);

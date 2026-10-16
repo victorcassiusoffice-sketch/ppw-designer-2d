@@ -1,0 +1,42 @@
+{
+  "base": "http://localhost:5173",
+  "cases": [
+    {
+      "name": "desktop",
+      "checks": [
+        "2D door selection, measured edit, click-away dismissal and unchanged viewport",
+        "Direct 2D catalogue drop commits exactly one item without confirm/add",
+        "3D stub door selection, hinge edit and click-away dismissal preserve camera",
+        "3D direct catalogue drop commits exactly one item and preserves camera"
+      ],
+      "shots": [
+        "docs/qa-authoring-2026-10-16/desktop-plan-door-edit.png",
+        "docs/qa-authoring-2026-10-16/desktop-plan-direct-drop.png",
+        "docs/qa-authoring-2026-10-16/desktop-house-door-cutaway.png",
+        "docs/qa-authoring-2026-10-16/desktop-house-direct-drop.png"
+      ],
+      "errors": [],
+      "externalErrors": [],
+      "failures": []
+    },
+    {
+      "name": "phone",
+      "checks": [
+        "2D door selection, measured edit, click-away dismissal and unchanged viewport",
+        "Phone product info action is visible, usable and dismissible without adding",
+        "Direct 2D catalogue drop commits exactly one item without confirm/add",
+        "3D stub door selection, hinge edit and click-away dismissal preserve camera",
+        "3D direct catalogue drop commits exactly one item and preserves camera"
+      ],
+      "shots": [
+        "docs/qa-authoring-2026-10-16/phone-plan-door-edit.png",
+        "docs/qa-authoring-2026-10-16/phone-plan-direct-drop.png",
+        "docs/qa-authoring-2026-10-16/phone-house-door-cutaway.png",
+        "docs/qa-authoring-2026-10-16/phone-house-direct-drop.png"
+      ],
+      "errors": [],
+      "externalErrors": [],
+      "failures": []
+    }
+  ]
+}

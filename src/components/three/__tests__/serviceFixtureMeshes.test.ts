@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { serviceFixtureMesh } from '../serviceFixtureMeshes';
 import type { ServiceFixturePlacement } from '../../../designer/serviceFixtures';
+import { BUILDING_EQUIPMENT } from '../../../data/buildingEquipmentCatalog';
+import { SERVICE_FIXTURES } from '../../../designer/buildingServices';
 
-const kinds = ['toilet', 'sink', 'mains-tap', 'electrical-board', 'sewer-connection'] as const;
+const kinds = Object.keys(SERVICE_FIXTURES) as ServiceFixturePlacement['kind'][];
 function dispose(root: THREE.Object3D) {
   root.traverse((node) => {
     if (node instanceof THREE.Mesh) {
@@ -14,6 +16,28 @@ function dispose(root: THREE.Object3D) {
 }
 
 describe('generic service fixture geometry preserves the installation envelope', () => {
+  it.each(BUILDING_EQUIPMENT.filter((item) => item.dimensions))(
+    'fits verified $label dimensions including small mounted equipment',
+    (item) => {
+      const mesh = serviceFixtureMesh({
+        id: item.id,
+        levelId: 'floor',
+        kind: item.kind,
+        x: 0,
+        y: 0,
+        ...item.dimensions!,
+        rotation: 0,
+        elevationM: 2.2,
+        productReferenceId: item.id,
+      });
+      const size = new THREE.Box3().setFromObject(mesh).getSize(new THREE.Vector3());
+      expect(size.x).toBeCloseTo(item.dimensions!.widthM, 6);
+      expect(size.y).toBeCloseTo(item.dimensions!.heightM, 6);
+      expect(size.z).toBeCloseTo(item.dimensions!.depthM, 6);
+      expect(mesh.userData.genericServiceFixture).toBe(true);
+      dispose(mesh);
+    },
+  );
   for (const kind of kinds)
     for (const rotation of [0, 90, 180, 270]) {
       it(`${kind} keeps dimensions and floor elevation at ${rotation} degrees`, () => {

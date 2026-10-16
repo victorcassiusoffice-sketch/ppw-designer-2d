@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SimsDock } from '../desktop/SimsDock';
 import { SimsBottomToolbar } from '../mobile/SimsBottomToolbar';
 import { useDesignerUIStore } from '../../store/designerUIStore';
+import { usePlacementIntentStore } from '../../store/placementIntentStore';
 
 vi.mock('../../lib/useMerchantCatalog', () => ({ useMerchantCatalog: () => [] }));
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -21,6 +22,7 @@ beforeEach(() => {
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => { frames.push(callback); return frames.length; });
   vi.stubGlobal('cancelAnimationFrame', vi.fn());
   useDesignerUIStore.setState({ viewMode: 'plan', tool: 'hand' });
+  usePlacementIntentStore.setState({ armedProductId: null, intent: null });
 });
 
 afterEach(() => {
@@ -152,7 +154,7 @@ describe('workspace catalog navigation', () => {
     useDesignerUIStore.setState({ viewMode: '3d' });
     act(() => root.render(<SimsBottomToolbar />));
     openCatalog('eco');
-    act(() => (host.querySelector('[data-testid="sims-thumb"]') as HTMLButtonElement).click());
+    act(() => (host.querySelector('.catalog-tile-details') as HTMLButtonElement).click());
     expect(host.querySelector('[data-testid="sims-bottom-toolbar"] [data-testid="mobile-product-popup"]')).not.toBeNull();
     expect(host.querySelector('[role="dialog"]')).toBeNull();
     expect(host.querySelector('[data-testid="sims-thumb-strip"]')).toBeNull();
@@ -176,5 +178,19 @@ describe('workspace catalog navigation', () => {
     const pointer = new CustomEvent('ppw:house-scene-pointer', { cancelable: true });
     act(() => window.dispatchEvent(pointer));
     expect(pointer.defaultPrevented).toBe(false);
+  });
+
+  it('arms exact phone placement directly and leaves details optional, without adding an item at the centre', () => {
+    vi.stubGlobal('innerWidth', 390);
+    useDesignerUIStore.setState({ viewMode: '3d' });
+    act(() => root.render(<SimsBottomToolbar />));
+    openCatalog('eco');
+    const card = host.querySelector<HTMLButtonElement>('[data-testid="sims-thumb"]')!;
+    const id = card.dataset.productId;
+    act(() => card.click());
+    expect(usePlacementIntentStore.getState().armedProductId).toBe(id);
+    expect(usePlacementIntentStore.getState().intent).toBeNull();
+    expect(host.querySelector('[data-testid="mobile-product-popup"]')).toBeNull();
+    expect(host.querySelector('[data-testid="sims-bottom-toolbar"]')?.getAttribute('data-catalog-open')).toBe('false');
   });
 });

@@ -1,0 +1,203 @@
+{
+  "date": "2026-10-15",
+  "base": "http://127.0.0.1:5173",
+  "bundle": "App-CDZDraaG.js",
+  "cases": [
+    {
+      "viewport": "desktop",
+      "shots": [
+        "docs/qa-services-spatial-2026-10-15/desktop-plan-route.png",
+        "docs/qa-services-spatial-2026-10-15/desktop-raised-equipment.png",
+        "docs/qa-services-spatial-2026-10-15/desktop-3d-services.png",
+        "docs/qa-services-spatial-2026-10-15/desktop-3d-node-height.png",
+        "docs/qa-services-spatial-2026-10-15/desktop-3d-node-drag.png",
+        "docs/qa-services-spatial-2026-10-15/desktop-paired-plan.png"
+      ],
+      "checks": [
+        {
+          "label": "plan-route",
+          "layout": {
+            "overflow": 0,
+            "clipped": [],
+            "canvasHeight": 638
+          }
+        },
+        {
+          "label": "raised-equipment",
+          "layout": {
+            "overflow": 0,
+            "clipped": [],
+            "canvasHeight": 638
+          }
+        },
+        {
+          "label": "3d-services",
+          "layout": {
+            "overflow": 0,
+            "clipped": [],
+            "canvasHeight": 638
+          }
+        },
+        {
+          "name": "Inspector resize preserves centred drawing pixel scale",
+          "changedFraction": 0.0000032068549731906923,
+          "from": {
+            "width": 976,
+            "height": 639
+          },
+          "to": {
+            "width": 1280,
+            "height": 639
+          }
+        },
+        {
+          "name": "Camera unchanged by tool select",
+          "changedFraction": 0
+        },
+        "Press-drag creates an unsaved2point3D draft; Finish explicitly saves",
+        {
+          "label": "3d-node-height",
+          "layout": {
+            "overflow": 0,
+            "clipped": [],
+            "canvasHeight": 638
+          }
+        },
+        {
+          "name": "3D endpoint drag preserves precise height",
+          "before": {
+            "x": 8.05,
+            "y": 7.9,
+            "elevationM": 2.5
+          },
+          "after": {
+            "x": 8.15,
+            "y": 7.4,
+            "elevationM": 2.5
+          }
+        },
+        {
+          "label": "3d-node-drag",
+          "layout": {
+            "overflow": 0,
+            "clipped": [],
+            "canvasHeight": 638
+          }
+        },
+        {
+          "label": "paired-plan",
+          "layout": {
+            "overflow": 0,
+            "clipped": [],
+            "canvasHeight": 638
+          }
+        },
+        "Plan↔3D canonical parity, precise node height, chain junction and Escape verified"
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "writes": [],
+      "failures": []
+    },
+    {
+      "viewport": "phone",
+      "shots": [
+        "docs/qa-services-spatial-2026-10-15/phone-plan-route.png",
+        "docs/qa-services-spatial-2026-10-15/phone-raised-equipment.png",
+        "docs/qa-services-spatial-2026-10-15/phone-3d-services.png",
+        "docs/qa-services-spatial-2026-10-15/phone-3d-node-height.png",
+        "docs/qa-services-spatial-2026-10-15/phone-3d-node-drag.png",
+        "docs/qa-services-spatial-2026-10-15/phone-paired-plan.png"
+      ],
+      "checks": [
+        {
+          "label": "plan-route",
+          "layout": {
+            "overflow": 0,
+            "clipped": [],
+            "canvasHeight": 243
+          }
+        },
+        {
+          "label": "raised-equipment",
+          "layout": {
+            "overflow": 0,
+            "clipped": [],
+            "canvasHeight": 243
+          }
+        },
+        {
+          "label": "3d-services",
+          "layout": {
+            "overflow": 0,
+            "clipped": [],
+            "canvasHeight": 243
+          }
+        },
+        {
+          "name": "Inspector resize preserves centred drawing pixel scale",
+          "changedFraction": 0,
+          "from": {
+            "width": 390,
+            "height": 243
+          },
+          "to": {
+            "width": 390,
+            "height": 513
+          }
+        },
+        {
+          "name": "Camera unchanged by tool select",
+          "changedFraction": 0
+        },
+        {
+          "name": "Two-finger navigation while routing changes camera without adding a draft",
+          "changedFraction": 0.2120774395628197
+        },
+        "Press-drag creates an unsaved2point3D draft; Finish explicitly saves",
+        {
+          "label": "3d-node-height",
+          "layout": {
+            "overflow": 0,
+            "clipped": [],
+            "canvasHeight": 243
+          }
+        },
+        {
+          "name": "3D endpoint drag preserves precise height",
+          "before": {
+            "x": 4,
+            "y": 3.6,
+            "elevationM": 2.5
+          },
+          "after": {
+            "x": 4.05,
+            "y": 1.6,
+            "elevationM": 2.5
+          }
+        },
+        {
+          "label": "3d-node-drag",
+          "layout": {
+            "overflow": 0,
+            "clipped": [],
+            "canvasHeight": 243
+          }
+        },
+        {
+          "label": "paired-plan",
+          "layout": {
+            "overflow": 0,
+            "clipped": [],
+            "canvasHeight": 243
+          }
+        },
+        "Plan↔3D canonical parity, precise node height, chain junction and Escape verified"
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "writes": [],
+      "failures": []
+    }
+  ]
+}

@@ -91,3 +91,6 @@ tools/_scratch/
 
 # Generated 3D bodies as delivered by the generator (4 MB each); the optimised ones next to them are served + committed
 models-raw/
+
+# Local Lighthouse reports are summarized in docs, not committed as cache.
+.lighthouseci/

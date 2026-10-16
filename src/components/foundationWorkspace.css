@@ -84,6 +84,24 @@
   margin: 0;
   font-size: 14px;
 }
+.foundation-start {
+  border: 1px solid #91ad92;
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 14px;
+  background: #dce8d6;
+}
+.foundation-start h2 {
+  margin: 0;
+  font-size: 15px;
+}
+.foundation-start .foundation-actions {
+  margin-top: 8px;
+}
+.foundation-tools > button:first-child {
+  background: #bdd0b5;
+  border-color: #769077;
+}
 .foundation-workspace .foundation-stage-action {
   background: #bdd0b5;
   border-color: #769077;
@@ -266,22 +284,41 @@
   }
   .foundation-body {
     flex-direction: column;
+    overflow-y: auto;
   }
   .foundation-drawing {
-    min-height: 190px;
-    flex: 1;
+    /* Reserve useful drawing space before the independently scrolling inspector.
+       Short/landscape viewports can scroll this body instead of crushing the plan. */
+    min-height: 350px;
+    flex: 1 0 auto;
+  }
+  .foundation-drawing > svg {
+    height: 240px;
+    min-height: 240px;
+    flex: 1 0 240px;
+  }
+  .foundation-instruction,
+  .foundation-totals,
+  .foundation-pending,
+  .foundation-error {
+    flex-shrink: 0;
   }
   .foundation-details {
     width: 100%;
     max-width: none;
-    max-height: 40dvh;
+    flex: 0 1 35dvh;
+    min-height: 140px;
+    max-height: 35dvh;
+    overscroll-behavior: contain;
     border-left: 0;
     border-top: 1px solid #aaba9f;
     padding: 12px 15px;
   }
   .foundation-totals {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     padding: 7px 10px;
-    gap: 15px;
+    gap: 6px 15px;
   }
   .foundation-totals strong {
     font-size: 15px;

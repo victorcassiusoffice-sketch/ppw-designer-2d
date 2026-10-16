@@ -1,0 +1,405 @@
+{
+  "at": "2026-10-15T07:04:05.538Z",
+  "bundle": "App-BLprWb7G.js",
+  "cases": [
+    {
+      "screen": "developers",
+      "device": "desktop",
+      "locale": "en",
+      "theme": "ivory",
+      "screenshots": [
+        "docs/qa-preferences-2026-10-15/developers-desktop-en-ivory.png"
+      ],
+      "checks": [
+        {
+          "lang": "en",
+          "theme": "ivory",
+          "viewport": 1280,
+          "width": 1280,
+          "logos": [
+            {
+              "src": "/brand/olb/olb-lockup.svg",
+              "width": 135.5625
+            }
+          ],
+          "clipped": [],
+          "companyLinks": [
+            "/demo?panel=project&company=developers"
+          ]
+        }
+      ],
+      "defects": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "writes": []
+    },
+    {
+      "screen": "merchants",
+      "device": "desktop",
+      "locale": "en",
+      "theme": "ivory",
+      "screenshots": [
+        "docs/qa-preferences-2026-10-15/merchants-desktop-en-ivory.png"
+      ],
+      "checks": [
+        {
+          "lang": "en",
+          "theme": "ivory",
+          "viewport": 1280,
+          "width": 1280,
+          "logos": [
+            {
+              "src": "/brand/olb/olb-lockup.svg",
+              "width": 135.5625
+            }
+          ],
+          "clipped": [],
+          "companyLinks": [
+            "/demo?panel=project&company=merchants"
+          ]
+        }
+      ],
+      "defects": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "writes": []
+    },
+    {
+      "screen": "construction",
+      "device": "desktop",
+      "locale": "en",
+      "theme": "ivory",
+      "screenshots": [
+        "docs/qa-preferences-2026-10-15/construction-desktop-en-ivory.png"
+      ],
+      "checks": [
+        {
+          "lang": "en",
+          "theme": "ivory",
+          "viewport": 1280,
+          "width": 1280,
+          "logos": [
+            {
+              "src": "/brand/olb/olb-lockup.svg",
+              "width": 135.5625
+            }
+          ],
+          "clipped": [],
+          "companyLinks": [
+            "/demo?panel=project&company=construction"
+          ]
+        }
+      ],
+      "defects": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "writes": []
+    },
+    {
+      "screen": "plumbing",
+      "device": "desktop",
+      "locale": "en",
+      "theme": "ivory",
+      "screenshots": [
+        "docs/qa-preferences-2026-10-15/plumbing-desktop-en-ivory.png"
+      ],
+      "checks": [
+        {
+          "lang": "en",
+          "theme": "ivory",
+          "viewport": 1280,
+          "width": 1280,
+          "logos": [
+            {
+              "src": "/brand/olb/olb-lockup.svg",
+              "width": 135.5625
+            }
+          ],
+          "clipped": [],
+          "companyLinks": [
+            "/demo?panel=project&company=plumbing"
+          ]
+        }
+      ],
+      "defects": [],
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_CLOSED"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://rsms.me/inter/inter.css",
+          "reason": "net::ERR_CONNECTION_CLOSED"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "screen": "studio",
+      "device": "desktop",
+      "locale": "en",
+      "theme": "ivory",
+      "screenshots": [
+        "docs/qa-preferences-2026-10-15/studio-desktop-en-ivory.png",
+        "docs/qa-preferences-2026-10-15/preferences-desktop-en-ivory.png",
+        "docs/qa-preferences-2026-10-15/studio-desktop-es-slate.png",
+        "docs/qa-preferences-2026-10-15/studio-desktop-zh-CN-ivory.png"
+      ],
+      "checks": [
+        {
+          "lang": "en",
+          "theme": "ivory",
+          "viewport": 1280,
+          "width": 1280,
+          "logos": [
+            {
+              "src": "/brand/olb/olb-lockup.svg",
+              "width": 135.5625
+            }
+          ],
+          "clipped": [],
+          "companyLinks": []
+        },
+        {
+          "locale": "es",
+          "theme": "slate",
+          "overflow": false
+        },
+        {
+          "locale": "zh-CN",
+          "theme": "ivory",
+          "overflow": false
+        }
+      ],
+      "defects": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "writes": []
+    },
+    {
+      "screen": "city",
+      "device": "desktop",
+      "locale": "en",
+      "theme": "ivory",
+      "screenshots": [
+        "docs/qa-preferences-2026-10-15/city-desktop-en-ivory.png"
+      ],
+      "checks": [
+        {
+          "lang": "en",
+          "theme": "ivory",
+          "viewport": 1280,
+          "width": 1280,
+          "logos": [],
+          "clipped": [],
+          "companyLinks": []
+        }
+      ],
+      "defects": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "writes": []
+    },
+    {
+      "screen": "developers",
+      "device": "phone",
+      "locale": "fr",
+      "theme": "ocean",
+      "screenshots": [
+        "docs/qa-preferences-2026-10-15/developers-phone-fr-ocean.png"
+      ],
+      "checks": [
+        {
+          "lang": "fr",
+          "theme": "ocean",
+          "viewport": 390,
+          "width": 390,
+          "logos": [
+            {
+              "src": "/brand/olb/olb-lockup-reverse.svg",
+              "width": 123.96875
+            }
+          ],
+          "clipped": [],
+          "companyLinks": [
+            "/demo?panel=project&company=developers"
+          ]
+        }
+      ],
+      "defects": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "writes": []
+    },
+    {
+      "screen": "merchants",
+      "device": "phone",
+      "locale": "fr",
+      "theme": "ocean",
+      "screenshots": [
+        "docs/qa-preferences-2026-10-15/merchants-phone-fr-ocean.png"
+      ],
+      "checks": [
+        {
+          "lang": "fr",
+          "theme": "ocean",
+          "viewport": 390,
+          "width": 390,
+          "logos": [
+            {
+              "src": "/brand/olb/olb-lockup-reverse.svg",
+              "width": 123.96875
+            }
+          ],
+          "clipped": [],
+          "companyLinks": [
+            "/demo?panel=project&company=merchants"
+          ]
+        }
+      ],
+      "defects": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "writes": []
+    },
+    {
+      "screen": "construction",
+      "device": "phone",
+      "locale": "fr",
+      "theme": "ocean",
+      "screenshots": [
+        "docs/qa-preferences-2026-10-15/construction-phone-fr-ocean.png"
+      ],
+      "checks": [
+        {
+          "lang": "fr",
+          "theme": "ocean",
+          "viewport": 390,
+          "width": 390,
+          "logos": [
+            {
+              "src": "/brand/olb/olb-lockup-reverse.svg",
+              "width": 123.96875
+            }
+          ],
+          "clipped": [],
+          "companyLinks": [
+            "/demo?panel=project&company=construction"
+          ]
+        }
+      ],
+      "defects": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "writes": []
+    },
+    {
+      "screen": "plumbing",
+      "device": "phone",
+      "locale": "fr",
+      "theme": "ocean",
+      "screenshots": [
+        "docs/qa-preferences-2026-10-15/plumbing-phone-fr-ocean.png"
+      ],
+      "checks": [
+        {
+          "lang": "fr",
+          "theme": "ocean",
+          "viewport": 390,
+          "width": 390,
+          "logos": [
+            {
+              "src": "/brand/olb/olb-lockup-reverse.svg",
+              "width": 123.96875
+            }
+          ],
+          "clipped": [],
+          "companyLinks": [
+            "/demo?panel=project&company=plumbing"
+          ]
+        }
+      ],
+      "defects": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "writes": []
+    },
+    {
+      "screen": "studio",
+      "device": "phone",
+      "locale": "fr",
+      "theme": "ocean",
+      "screenshots": [
+        "docs/qa-preferences-2026-10-15/studio-phone-fr-ocean.png",
+        "docs/qa-preferences-2026-10-15/preferences-phone-fr-ocean.png",
+        "docs/qa-preferences-2026-10-15/studio-phone-es-slate.png",
+        "docs/qa-preferences-2026-10-15/studio-phone-zh-CN-ivory.png"
+      ],
+      "checks": [
+        {
+          "lang": "fr",
+          "theme": "ocean",
+          "viewport": 390,
+          "width": 390,
+          "logos": [
+            {
+              "src": "/brand/olb/olb-lockup-reverse.svg",
+              "width": 123.96875
+            }
+          ],
+          "clipped": [],
+          "companyLinks": []
+        },
+        {
+          "locale": "es",
+          "theme": "slate",
+          "overflow": false
+        },
+        {
+          "locale": "zh-CN",
+          "theme": "ivory",
+          "overflow": false
+        }
+      ],
+      "defects": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "writes": []
+    },
+    {
+      "screen": "city",
+      "device": "phone",
+      "locale": "fr",
+      "theme": "ocean",
+      "screenshots": [
+        "docs/qa-preferences-2026-10-15/city-phone-fr-ocean.png"
+      ],
+      "checks": [
+        {
+          "lang": "fr",
+          "theme": "ocean",
+          "viewport": 390,
+          "width": 390,
+          "logos": [],
+          "clipped": [],
+          "companyLinks": []
+        }
+      ],
+      "defects": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "writes": []
+    }
+  ]
+}

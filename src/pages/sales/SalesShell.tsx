@@ -1,6 +1,7 @@
+import { useAppPreferences } from '../../i18n/AppPreferences';
+import { LocaleThemeControls } from '../../components/LocaleThemeControls';
 import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { MEETING } from './salesPack';
-import { currentBrand } from '../../brand/brand';
 import { OlbLockup } from '../../brand/OlbLockup';
 import './salesPack.css';
 import './salesPack.olb.generated.css';
@@ -19,15 +20,13 @@ export function SalesShell({
   select: (i: number) => void;
   children: ReactNode;
 }) {
+  const { t, tx } = useAppPreferences();
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
-  const olb = currentBrand() === 'olb';
-  const product = olb ? 'One Live Build' : 'PPW Room Designer';
+  const product = 'One Live Build';
   useEffect(() => {
     const old = document.title;
     document.title =
-      kind === 'team'
-        ? `Employee starter pack · ${product}`
-        : `Plumbing companies · ${product}`;
+      kind === 'team' ? `Employee starter pack · ${product}` : `Plumbing companies · ${product}`;
     return () => {
       document.title = old;
     };
@@ -47,31 +46,26 @@ export function SalesShell({
   return (
     <main className={`sales-pack sales-${kind}`}>
       <a className="sales-skip" href="#sales-content">
-        Skip to presentation
+        {t('Skip to presentation')}
       </a>
       <header className="sales-header">
-        {olb ? (
-          <a href="/" className="sales-brand" aria-label="One Live Build home">
-            <OlbLockup height={30} />
-          </a>
-        ) : (
-          <a href="/studio" className="sales-brand">
-            <span aria-hidden="true">P.</span>
-            <strong>
-              Room Designer<small>by PPW Studio</small>
-            </strong>
-          </a>
-        )}
+        <a href="/studio" className="sales-brand" aria-label="One Live Build home">
+          <OlbLockup height={30} />
+        </a>
         <span className="sales-edition">
-          {kind === 'team' ? 'Employee field guide' : 'For plumbing companies'}
+          {kind === 'team' ? t('Employee field guide') : t('For plumbing companies')}
         </span>
+        <a href={`/demo?panel=project&company=${kind === 'plumbing' ? 'plumbing' : 'merchants'}`}>
+          {t('projectHub')}
+        </a>
+        <LocaleThemeControls />
         <a className="sales-meeting" href={MEETING} target="_blank" rel="noreferrer">
-          Book 1 hour ↗
+          {t('Book 1 hour ↗')}
         </a>
       </header>
       <nav
         className="sales-tabs"
-        aria-label={kind === 'team' ? 'Starter pack sections' : 'Plumbing pitch chapters'}
+        aria-label={kind === 'team' ? t('Starter pack sections') : t('Plumbing pitch chapters')}
         role="tablist"
       >
         {names.map((n, i) => (
@@ -90,7 +84,7 @@ export function SalesShell({
             onClick={() => select(i)}
           >
             <span>{String(i + 1).padStart(2, '0')}</span>
-            {n}
+            {tx(n)}
           </button>
         ))}
       </nav>
@@ -105,15 +99,15 @@ export function SalesShell({
       </section>
       <footer className="sales-footer">
         <span>
-          {product} <span aria-hidden="true">/</span> {String(chapter + 1).padStart(2, '0')}{' '}
-          of {names.length}
+          {product} <span aria-hidden="true">/</span>{' '}
+          {t('chapterCount', { current: chapter + 1, total: names.length })}
         </span>
         <div>
           <a href={kind === 'team' ? '/pitch/plumbing' : '/pitch/merchants'}>
-            {kind === 'team' ? 'Customer plumbing pitch' : 'Other industries'} ↗
+            {kind === 'team' ? t('Customer plumbing pitch') : t('Other industries')} ↗
           </a>
           <button type="button" onClick={() => select((chapter + 1) % names.length)}>
-            {chapter === names.length - 1 ? 'Start again' : 'Next'} →
+            {chapter === names.length - 1 ? t('Start again') : t('Next')} →
           </button>
         </div>
       </footer>

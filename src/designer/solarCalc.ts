@@ -55,7 +55,8 @@ export function monthlyGenerationWh(
   return pshMonthly.map((psh) => dailyGenerationWh({ wp, pshHoursPerDay: psh, performanceRatio }));
 }
 
-/** Annual AC energy, kWh, from the monthly daily figures (365.25 days). */
+/** Annual AC energy from Jan–Dec daily figures, weighted by month length.
+ * February uses 28.25 days for the existing 365.25-day typical-year convention. */
 export function annualGenerationKwh(
   wp: number,
   pshMonthly: readonly number[],
@@ -63,8 +64,9 @@ export function annualGenerationKwh(
 ): number {
   const daily = monthlyGenerationWh(wp, pshMonthly, performanceRatio);
   if (daily.length === 0) return 0;
-  const avg = daily.reduce((a, b) => a + b, 0) / daily.length;
-  return round1((avg * 365.25) / 1000);
+  if (daily.length !== 12) throw new RangeError('Annual solar generation requires all twelve monthly values.');
+  const days = [31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  return round1(daily.reduce((sum, wh, month) => sum + wh * days[month], 0) / 1000);
 }
 
 /**
@@ -98,7 +100,7 @@ export function panelFootprintM2(dimensionsCm?: { length?: number; width?: numbe
   const l = finitePositive(dimensionsCm?.length ?? 0);
   const w = finitePositive(dimensionsCm?.width ?? 0);
   if (l <= 0 || w <= 0) return 0;
-  return Math.round((l / 100) * (w / 100) * 100) / 100;
+  return (l / 100) * (w / 100);
 }
 
 /**

@@ -1,0 +1,78 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "at": "2026-10-15T05:30:30.877Z",
+  "bundle": "App-CJFqqJkz.js",
+  "cases": [
+    {
+      "name": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "screenshots": [
+        "docs/qa-professional-views-2026-10-15/desktop-plan-trees.png",
+        "docs/qa-professional-views-2026-10-15/desktop-dollhouse.png",
+        "docs/qa-professional-views-2026-10-15/desktop-above.png",
+        "docs/qa-professional-views-2026-10-15/desktop-front.png",
+        "docs/qa-professional-views-2026-10-15/desktop-view-controls.png",
+        "docs/qa-professional-views-2026-10-15/desktop-axonometric.png",
+        "docs/qa-professional-views-2026-10-15/desktop-plan.png",
+        "docs/qa-professional-views-2026-10-15/desktop-north.png",
+        "docs/qa-professional-views-2026-10-15/desktop-east.png",
+        "docs/qa-professional-views-2026-10-15/desktop-south.png",
+        "docs/qa-professional-views-2026-10-15/desktop-west.png",
+        "docs/qa-professional-views-2026-10-15/desktop-elevation-zoom.png",
+        "docs/qa-professional-views-2026-10-15/desktop-perspective-pan.png"
+      ],
+      "checks": [
+        "Nine professional camera presets load; correct real projection type.",
+        "Elevation zoom preserves the selected preset.",
+        "Perspective pan remains usable.",
+        "Measured trees visible in plan and 3D.",
+        "All activity uses local project storage; no API writes."
+      ],
+      "failures": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "writes": []
+    },
+    {
+      "name": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "screenshots": [
+        "docs/qa-professional-views-2026-10-15/phone-plan-trees.png",
+        "docs/qa-professional-views-2026-10-15/phone-dollhouse.png",
+        "docs/qa-professional-views-2026-10-15/phone-above.png",
+        "docs/qa-professional-views-2026-10-15/phone-front.png",
+        "docs/qa-professional-views-2026-10-15/phone-view-controls.png",
+        "docs/qa-professional-views-2026-10-15/phone-axonometric.png",
+        "docs/qa-professional-views-2026-10-15/phone-plan.png",
+        "docs/qa-professional-views-2026-10-15/phone-north.png",
+        "docs/qa-professional-views-2026-10-15/phone-east.png",
+        "docs/qa-professional-views-2026-10-15/phone-south.png",
+        "docs/qa-professional-views-2026-10-15/phone-west.png",
+        "docs/qa-professional-views-2026-10-15/phone-elevation-zoom.png",
+        "docs/qa-professional-views-2026-10-15/phone-perspective-pan.png",
+        "docs/qa-professional-views-2026-10-15/phone-plan-french-ocean.png",
+        "docs/qa-professional-views-2026-10-15/phone-house-french-ocean.png",
+        "docs/qa-professional-views-2026-10-15/phone-controls-french-ocean.png"
+      ],
+      "checks": [
+        "Nine professional camera presets load; correct real projection type.",
+        "Elevation zoom preserves the selected preset.",
+        "Perspective pan remains usable.",
+        "Measured trees visible in plan and 3D.",
+        "All activity uses local project storage; no API writes."
+      ],
+      "failures": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "writes": []
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+One Live Build now lets house-design teams coordinate measured building-service routes in plan and 3D, including explicit junctions, editable bend heights and vertical segments. Plumbing, HVAC, fire and security equipment share the stored geometry, and the main house view can hide or isolate disciplines without changing quantities. The release adds circular excavation diameter/depth, a resumable 19-step house guide, and an updated plumbing pitch with actual app captures.
+
+The branch also preserves the preceding PR47 City work and this PR's Project hub, department registers, quantity fixes, tree/living-roof screening, orthographic architectural views, three themes and four-language core navigation. It includes main history through480c56e and does not change production.
+
+Implementation:
+- Validate connected route snapshots in browser and API/MCP; calculate actual spatial lengths, preserve legacy heights and keep nominal diameter distinct from verified OD.
+- Use compatible same-floor ports and explicit junctions; crossings alone do not connect. All13 equipment types have paired measured plan and3D envelopes, with source-backed versus schematic dimensions clearly separated.
+- Use individual cylinder volumes for circular excavation; withhold unsupported mixed/overlapping aggregate volumes. Bores are excavation-only, with no automatic concrete-pile or steel design.
+- Keep inspectors dismissible, floor return available and camera framing stable during node edits, layer changes and inspector resizing. Fix cold demo links closing during initialization, Layers clipping/Escape, service-only empty overlays and phone excavation totals clipping.
+
+Validation:360 test files /3,984 tests pass. Application, middleware and API typechecks, production build and scoped ESLint pass.70 local screenshots at1280px/390px were captured and inspected, covering drag/touch creation, junction editing, heights, camera retention, layer isolation, tutorials, foundation measurements and pitch navigation.16 live desktop/phone cases pass with zero console/page/network errors, attempted backend writes or horizontal overflow.30 inherited share URLs return200, distinguished as23 app shells and7 access gates. Cache-busted curl verifies application SHA97146b738e3a649edac8597aecc7d9caec38231d and env:preview.
+
+Pinned application preview: https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/demo?view=3d&panel=services&pitch=1
+Plumbing pitch: https://ppw-designer-2d-i3ojsz3qo-victor-ppw.vercel.app/pitch/plumbing
+Full demo/pitch/source directory: https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/blob/gpt/designer-2026-10-15/docs/CONNECTED-SERVICES-LINKS-2026-10-15.md
+Live evidence: docs/qa-services-live-2026-10-15 . Local editor, house and pitch evidence: docs/qa-services-spatial-2026-10-15, docs/services-qa-2026-10-15 and docs/qa-plumbing-pitch-2026-10-15.
+
+Scope limits: measured coordination and screening, not structural analysis or hydraulic/HVAC/fire/electrical approval. Equipment is schematic unless a verified envelope is explicitly applied; no manufacturer CAD or current stock claim. Powder extinguishers are standalone devices. Automatic cross-floor network solving, secure multi-user cloud collaboration and live ordering are not implemented. Some detailed legacy/pitch text remains English and initial bundles remain large. No migration, external message, order, invoice, main push or production deployment was performed.
+
+GitHub typecheck, Vitest, secret scan and Vercel pass. The existing Lighthouse workflow remains red because it audits hardcoded production URLs rather than this preview; its concrete audit failures are recorded in docs/qa-services-live-2026-10-15/CI-STATUS.md. Later documentation-only commits may deploy identical application previews; the application URL above is pinned.

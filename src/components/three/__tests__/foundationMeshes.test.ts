@@ -5,6 +5,38 @@ import { defaultFoundationRebar, type FoundationModel } from '../../../designer/
 import { foundationSoilFaces } from '../../../designer/foundationExcavation';
 import { foundationSceneFaces } from '../../../designer/foundationScene';
 describe('foundation shared render dimensions', () => {
+  it('renders bore-only inspection with real diameter and depth in bounded draw groups', () => {
+    const model: FoundationModel = {
+      version: 1,
+      enabled: true,
+      elements: [],
+      bores: [
+        {
+          id: 'bore',
+          name: 'Bore',
+          x: 3,
+          y: -1,
+          diameterM: 2,
+          depthM: 3,
+          topElevationM: -0.5,
+        },
+      ],
+    };
+    const meshes = foundationMeshes(model, 2, false, true);
+    const soil = meshes.getObjectByName('bore-soil')!;
+    const bounds = new THREE.Box3().setFromObject(soil);
+    expect(bounds.min.toArray()).toEqual([2, -1.5, -2]);
+    expect(bounds.max.toArray()).toEqual([4, 1.5, 0]);
+    expect(meshes.getObjectByName('excavation-depth-bore')?.userData.depthM).toBe(3);
+    expect(meshes.children.filter((child) => child instanceof THREE.Mesh)).toHaveLength(3);
+    const faces = foundationSceneFaces(model, 2, true);
+    expect(
+      faces
+        .filter((face) => face.key.startsWith('bore-bore-base'))
+        .every((face) => face.pts.every((point) => point.z === -1.5)),
+    ).toBe(true);
+    expect(foundationMeshes(model).children).toHaveLength(0);
+  });
   it('preserves exact footprint, thickness and datum in actual three.js geometry', () => {
     const model = {
       version: 1 as const,

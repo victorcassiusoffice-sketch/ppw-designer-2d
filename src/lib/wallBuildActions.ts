@@ -1,9 +1,10 @@
 /** Commit a wall segment and any rooms it closes against the floor's wall graph. */
 import { previewWallBuild, type WallBuildChain, type WallBuildFailure, type WallBuildPreview } from '../designer/wallBuildGesture';
 import { isOutdoorRoom, isRoofRoom, roomLevelId } from '../designer/levels';
-import { runToFreeWalls } from '../designer/freeWalls';
+import { runToFreeWalls, wallsWithMaterial } from '../designer/freeWalls';
 import { beginDrawTransaction, endDrawTransaction, isDrawTransactionActive } from '../store/historyStore';
 import { usePropertyStore } from '../store/propertyStore';
+import { useDesignerUIStore } from '../store/designerUIStore';
 
 export type WallBuildCommitResult = { ok: true; chain: WallBuildChain | null; roomId?: string; preview: WallBuildPreview }
   | WallBuildFailure | { ok: false; reason: 'drawing-in-progress'; message: string };
@@ -18,7 +19,7 @@ export function commitWallBuild(draft: WallBuildPreview, chain: WallBuildChain |
   if (isDrawTransactionActive()) return { ok: false, reason: 'drawing-in-progress', message: 'Finish the plan wall pen before drawing in 3D.' };
   beginDrawTransaction(preview.closesRoom ? 'close walls into room' : 'build wall');
   try {
-    const ids = store.addFreeWalls(runToFreeWalls([preview.a, preview.b], preview.levelId));
+    const ids = store.addFreeWalls(wallsWithMaterial(runToFreeWalls([preview.a, preview.b], preview.levelId), useDesignerUIStore.getState().wallPaintDraft));
     store.selectItem(null);
     const next = usePropertyStore.getState().property;
     const formed = next.rooms.find(room => roomLevelId(room) === preview.levelId && !isOutdoorRoom(room) && !isRoofRoom(room)

@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
+import { AppPreferencesProvider } from './i18n/AppPreferences';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { bootstrapFx } from './store/currencyStore';
 import RouteFallback from './components/RouteFallback';
@@ -121,6 +122,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
+    <AppPreferencesProvider>
     <BrowserRouter>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
@@ -270,5 +272,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </Routes>
       </Suspense>
     </BrowserRouter>
+    </AppPreferencesProvider>
   </React.StrictMode>,
 );
