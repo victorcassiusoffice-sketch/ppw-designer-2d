@@ -43,4 +43,13 @@ The coordination UI test starts with 16 city packages and three house packages. 
 - Combined road packages need explicit package splitting for independent procurement ownership. Building/data-centre envelopes are planning placeholders, not certified whole-building quantities. All engineering/environmental screening still needs qualified review.
 - Previous Lighthouse performance/PWA findings remain; this is not an all-green CI claim.
 
-Deployed proof and pinned application URL are recorded in `ECO-CITY-BUILD-LINKS-2026-10-19.md` after preview verification.
+## Deployed proof
+
+Pinned application: https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app. Application commit `6365821218e3a79fd9ff18ff1ba2bc40e6543d2b`. Cache-busted curl and Playwright health checks both return HTTP200, `env: preview` and that exact SHA. Normal DNS/TLS worked; no edge override was needed.
+
+- Deployed guided pitch: 22 desktop/phone captures; all chapters, products, customisation in all three themes, share/reload and JSON brief pass. Reports contain zero console/page errors, failed responses or attempted writes.
+- Deployed app: eight cases cover Shared project → Team & logistics, City, 2D and 3D on desktop and phone. Zero console/page errors, failed requests, attempted writes or horizontal overflow. Screenshots inspected.
+- All 37 pinned-origin URLs in the link directory answer HTTP200. Protected workspace routes retain their intentional access gate; a 200 is not a claim that authentication was bypassed.
+- GitHub Vitest, root/API typecheck, secret scan and Vercel pass. Lighthouse remains red, including payload, image sizing, unused CSS, robots and PWA assertions. Those failures were inspected and are not hidden by the successful functional checks.
+
+Full reports: `docs/qa-eco-city-pitch-live-2026-10-19/report.json`, `docs/qa-eco-city-live-2026-10-19/report.json` and `docs/qa-eco-city-live-2026-10-19/links.json`. The directory and source locations are in `ECO-CITY-BUILD-LINKS-2026-10-19.md`. Main and production remain unchanged. Later documentation-only deployments do not replace this pinned application origin.

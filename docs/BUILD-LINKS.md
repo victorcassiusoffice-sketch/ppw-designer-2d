@@ -1,3 +1,17 @@
+## 2026-10-19 — Eco-city pitch, role coordination and merchant furniture
+
+**LIVE-ON-PREVIEW.** Application 6365821218e3a79fd9ff18ff1ba2bc40e6543d2b, branch gpt/designer-2026-10-15, PR48. Main, production and live database unchanged.
+
+- [https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/pitch/eco-city](https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/pitch/eco-city) - One Live Build: guided eco-city/construction pitch for developers, municipalities, contractors and suppliers.
+- [https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?panel=shared&pitch=1](https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?panel=shared&pitch=1) - One Live Build: six role stations; Shared project → Team & logistics; local pilot.
+- [https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?view=3d&pitch=1](https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?view=3d&pitch=1) - One Live Build: main all-in-one build for every sector.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/ECO-CITY-BUILD-LINKS-2026-10-19.md](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/ECO-CITY-BUILD-LINKS-2026-10-19.md) - One Live Build: complete preview routes and absolute source directory.
+- [C:/Users/Victor/Documents/PPW-Second-Brain/06-Roadmap/agentix-os/inbox/designer-2026-10-19-eco-city-pitch/HANDOFF.md](C:/Users/Victor/Documents/PPW-Second-Brain/06-Roadmap/agentix-os/inbox/designer-2026-10-19-eco-city-pitch/HANDOFF.md) - One Live Build: one team handoff with links, presenter guide, continuation notes and screenshots.
+
+Added seven guided chapters, actual app captures, customisable public labels/themes/share brief, role-specific action and delivery queues, canonical city spec quantities and improved measured Courts/Espace furniture. 375 files / 4,188 tests, build/API types/lint pass. 50 compiled scripted captures plus five supplemental inspections; deployed pitch and app checks pass with zero console/page errors or attempted writes. Cloud sharing needs activation; no supplier/email dispatch, certification or exact manufacturer CAD claim. New narrative is English; existing Lighthouse performance/PWA issues remain.
+
+Older entries below are historical.
+
 ## 2026-10-16 — Measured authoring, glass, outdoor layers and tactile skins
 
 **LIVE-ON-PREVIEW.** Application commit a07178f260ea7eb767ea4042ef743f323a70c590. Branch gpt/designer-2026-10-15; PR48. Main, production and live database untouched. Later documentation commits may produce identical application deployments; this is the pinned verified origin.
