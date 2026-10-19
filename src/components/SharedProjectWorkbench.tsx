@@ -37,10 +37,24 @@ import { useAppPreferences } from '../i18n/AppPreferences';
 import { LocaleThemeControls } from './LocaleThemeControls';
 import { SharedComponentEditor } from './SharedComponentEditor';
 import { SharedSustainabilityPanel, SharedCarbonSummary } from './SharedSustainabilityPanel';
+import { SharedCoordinationPanel } from './SharedCoordinationPanel';
+import {
+  coordinationDate,
+  coordinationSnapshot,
+  STATION_LABELS,
+} from '../designer/sharedCoordination';
+import type { PilotStage } from '../designer/sharedSpecsContract';
 import './sharedProjectWorkspace.css';
 
 const Connection = lazy(() => import('./SharedProjectConnection'));
-type Tab = 'station' | 'components' | 'environment' | 'pilot' | 'history' | 'connection';
+type Tab =
+  | 'station'
+  | 'components'
+  | 'environment'
+  | 'pilot'
+  | 'history'
+  | 'coordination'
+  | 'connection';
 const tabNames: Record<string, string[]> = {
   en: [
     'My station',
@@ -48,6 +62,7 @@ const tabNames: Record<string, string[]> = {
     'Environment',
     'Pilot workflow',
     'Change history',
+    'Team & logistics',
     'Shared connection',
   ],
   fr: [
@@ -56,19 +71,29 @@ const tabNames: Record<string, string[]> = {
     'Environnement',
     'Projet pilote',
     'Historique',
+    'Équipe et logistique',
     'Connexion partagée',
   ],
-  'zh-CN': ['工作台', '构件', '环境', '试点流程', '变更历史', '共享连接'],
+  'zh-CN': ['工作台', '构件', '环境', '试点流程', '变更历史', '团队与物流', '共享连接'],
   es: [
     'Mi puesto',
     'Componentes',
     'Medioambiente',
     'Proyecto piloto',
     'Historial',
+    'Equipo y logística',
     'Conexión compartida',
   ],
 };
-const tabs: Tab[] = ['station', 'components', 'environment', 'pilot', 'history', 'connection'];
+const tabs: Tab[] = [
+  'station',
+  'components',
+  'environment',
+  'pilot',
+  'history',
+  'coordination',
+  'connection',
+];
 const roleBrief: Record<SharedSpecRole, string> = {
   owner:
     'Coordinate the team, assign responsibility and release only after current acknowledgements.',
@@ -184,16 +209,14 @@ export default function SharedProjectWorkbench({
     const p = useSharedPilotStore.getState().pilots[property.id];
     if (!p) return;
     try {
-      useSharedPilotStore
-        .getState()
-        .apply(
-          property.id,
-          {
-            type: 'sync-components',
-            components: measuredSyncPayload(p.record.project.components, source.components),
-          },
-          p.record.revision,
-        );
+      useSharedPilotStore.getState().apply(
+        property.id,
+        {
+          type: 'sync-components',
+          components: measuredSyncPayload(p.record.project.components, source.components),
+        },
+        p.record.revision,
+      );
     } catch (e) {
       setMessage(e instanceof Error ? e.message : 'Could not sync measured quantities.');
     }
@@ -211,6 +234,9 @@ export default function SharedProjectWorkbench({
   useEffect(() => {
     const content = host.current?.querySelector<HTMLElement>('.shared-content');
     if (content) content.scrollTop = 0;
+    host.current
+      ?.querySelector<HTMLElement>('.shared-nav [aria-current="page"]')
+      ?.scrollIntoView?.({ block: 'nearest', inline: 'center' });
   }, [tab, role, mode, record?.project.id]);
   current.current = record;
   const setConnection = useCallback((value: SharedSession | null) => {
@@ -535,6 +561,22 @@ export default function SharedProjectWorkbench({
     setMode(next);
     modeRef.current = next;
   };
+  const openReview = (stage: PilotStage) => {
+    if (!canNavigate()) return;
+    setTab('pilot');
+    requestAnimationFrame(() =>
+      host.current
+        ?.querySelector(`[data-review-stage="${stage}"]`)
+        ?.scrollIntoView?.({ block: 'start', behavior: 'smooth' }),
+    );
+  };
+  const exportCoordination = () => {
+    if (record)
+      download(
+        'one-live-build-team-handoff.json',
+        coordinationSnapshot(record.project, mode, coordinationDate()),
+      );
+  };
   const openEditor = (component: SharedSpecComponent) => {
     if (!canNavigate() || !record) return;
     setSelected(component.id);
@@ -579,7 +621,9 @@ export default function SharedProjectWorkbench({
               }}
             >
               {SHARED_SPEC_ROLES.map((r) => (
-                <option key={r}>{r}</option>
+                <option key={r} value={r}>
+                  {STATION_LABELS[r]}
+                </option>
               ))}
             </select>
           </label>
@@ -660,32 +704,31 @@ export default function SharedProjectWorkbench({
                 </section>
                 <SharedCarbonSummary components={components} />
               </div>
-              <section className="shared-card">
-                <h2>
-                  {role === 'supplier' ? 'Your assigned components' : 'Next coordination decisions'}
-                </h2>
-                {active
-                  .filter((c) => role !== 'supplier' || c.assigneeUserId === userId)
-                  .slice(0, 8)
-                  .map((c) => (
-                    <button className="shared-task" key={c.id} onClick={() => openEditor(c)}>
-                      <span>
-                        {c.name}
-                        <small>
-                          {c.responsibleParty || 'Responsible party not assigned'} ·{' '}
-                          {c.deliveryDate || 'No delivery date'}
-                        </small>
-                      </span>
-                      <b>
-                        {formatNumber(c.quantity, { maximumFractionDigits: 2 })} {c.unit}
-                      </b>
-                    </button>
-                  ))}
-                {role === 'supplier' && !active.some((c) => c.assigneeUserId === userId) && (
-                  <p>Ask the project owner to assign components to your project member account.</p>
-                )}
-              </section>
+              {record && (
+                <SharedCoordinationPanel
+                  project={record.project}
+                  role={role}
+                  userId={userId}
+                  scope={mode}
+                  onComponent={openEditor}
+                  onReview={openReview}
+                  onExport={exportCoordination}
+                  compact
+                />
+              )}
+              <button onClick={() => setTab('coordination')}>Open team & logistics</button>
             </>
+          )}
+          {tab === 'coordination' && record && (
+            <SharedCoordinationPanel
+              project={record.project}
+              role={role}
+              userId={userId}
+              scope={mode}
+              onComponent={openEditor}
+              onReview={openReview}
+              onExport={exportCoordination}
+            />
           )}
           {tab === 'components' && (
             <>
@@ -882,7 +925,7 @@ export default function SharedProjectWorkbench({
                       ? pilotStageBlockers(record.project, stage)
                       : ['Open a project'];
                   return (
-                    <article key={stage}>
+                    <article key={stage} data-review-stage={stage}>
                       <b>{String(i + 1).padStart(2, '0')}</b>
                       <div>
                         <h3>{stageNames[i]}</h3>
@@ -1150,7 +1193,9 @@ export default function SharedProjectWorkbench({
                         onChange={(e) => setMemberRole(e.target.value as typeof memberRole)}
                       >
                         {SHARED_SPEC_ROLES.filter((r) => r !== 'owner').map((r) => (
-                          <option key={r}>{r}</option>
+                          <option key={r} value={r}>
+                            {STATION_LABELS[r]}
+                          </option>
                         ))}
                       </select>
                     </label>

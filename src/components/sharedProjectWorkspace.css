@@ -408,6 +408,102 @@
 .shared-history span {
   font-size: 12px;
 }
+.shared-coordination-intro h2 {
+  margin-top: 16px;
+  font-size: 30px;
+}
+.shared-coordination-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: 12px;
+  justify-content: space-between;
+}
+.shared-handoff-flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+}
+.shared-handoff-flow button {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 8px;
+  padding: 16px;
+  min-width: 0;
+}
+.shared-handoff-flow button small {
+  color: inherit;
+  opacity: 0.82;
+}
+.shared-handoff-flow button > span:last-child {
+  font-size: 11px;
+}
+.shared-flow-step {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 12px;
+  opacity: 0.75;
+}
+.shared-handoff-detail {
+  background: var(--ui-raised);
+  border-radius: 16px;
+  padding: 18px;
+}
+.shared-handoff-detail blockquote {
+  margin: 12px 0;
+  padding-left: 14px;
+  border-left: 3px solid var(--ui-accent);
+  overflow-wrap: anywhere;
+}
+.shared-role-reviews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.shared-workspace .shared-action {
+  align-items: start;
+  padding: 16px;
+}
+.shared-action span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.shared-action small {
+  margin-top: 5px;
+}
+.shared-delivery-list details {
+  border-bottom: 1px solid var(--ui-line);
+  padding: 12px 0;
+}
+.shared-pilot [data-review-stage] {
+  scroll-margin-top: 20px;
+}
+@media (max-width: 1100px) {
+  .shared-handoff-flow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .shared-handoff-flow {
+    grid-template-columns: 1fr;
+  }
+  .shared-handoff-flow button {
+    gap: 4px;
+  }
+  .shared-coordination-intro h2 {
+    font-size: 25px;
+  }
+  .shared-workspace .shared-action {
+    flex-wrap: wrap;
+  }
+  .shared-action > b {
+    font-size: 13px;
+  }
+}
 .shared-loading {
   justify-content: center;
   align-items: center;
@@ -441,9 +537,9 @@
     overflow: visible;
   }
   .shared-nav > label {
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
   }
   .shared-nav select {
     flex: 1;

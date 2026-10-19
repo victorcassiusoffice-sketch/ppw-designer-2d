@@ -13,11 +13,11 @@ beforeEach(() => { container = document.createElement('div'); document.body.appe
 afterEach(() => { act(() => root.unmount()); container.remove(); delete document.documentElement.dataset.brand; });
 
 describe('onelivebuild.com front page', () => {
-  it('opens the designer, the demo, the shop and all four pitch decks, with the One Live Build logo', () => {
+  it('opens the designer, the demo, the shop and the audience pitches, with the One Live Build logo', () => {
     act(() => root.render(<MemoryRouter><OlbHomePage /></MemoryRouter>));
     const hrefs = [...container.querySelectorAll('a')].map((a) => a.getAttribute('href'));
     for (const href of ['/designer', '/demo', '/products', '/studio', ...OLB_DECKS.map((d) => d.href)]) expect(hrefs).toContain(href);
-    expect(OLB_DECKS.map((d) => d.href)).toEqual(['/pitch/developers', '/pitch/merchants', '/pitch/construction', '/pitch/plumbing']);
+    expect(OLB_DECKS.map((d) => d.href)).toEqual(['/pitch/developers', '/pitch/merchants', '/pitch/construction', '/pitch/eco-city', '/pitch/plumbing']);
     const logo = container.querySelector('img.olb-lockup')!;
     expect(logo.getAttribute('src')).toBe('/brand/olb/olb-lockup.svg');
     expect(logo.getAttribute('alt')).toBe('One Live Build');

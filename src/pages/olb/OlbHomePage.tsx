@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom';
 import { OlbLockup } from '../../brand/OlbLockup';
 import './olbHome.css';
 
-/** The four pitches, each with its own headline (no new claims here). */
+/** Audience entry points into the guided product pitches. */
 export const OLB_DECKS = [
   { href: '/pitch/developers', label: 'For developers', line: 'Every apartment. One plan.' },
   { href: '/pitch/merchants', label: 'For merchants', line: 'Your products. In their home.' },
-  { href: '/pitch/construction', label: 'Construction & materials', line: 'A floor plan becomes cement, sand and a layout for each floor.' },
+  { href: '/pitch/construction', label: 'Construction & materials', line: 'From measured design to a coordinated site.' },
+  { href: '/pitch/eco-city', label: 'Eco-city developments', line: 'Buildings, infrastructure and teams. One coordinated project.' },
   { href: '/pitch/plumbing', label: 'Plumbing companies', line: 'A bathroom planning session.' },
 ] as const;
 

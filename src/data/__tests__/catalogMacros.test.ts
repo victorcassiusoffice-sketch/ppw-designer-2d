@@ -122,7 +122,8 @@ describe('macroOf', () => {
 
 describe('visibleMacroCategories (2026-09-07)', () => {
   it('hides every product tab the seed cannot fill, keeps All + the two tool tabs', () => {
-    expect(visibleMacroCategories(getAllProducts())).toEqual(['all', 'cardio', 'flooring', 'walls', 'decor', 'lighting', 'outdoor', 'eco']);
+    expect(visibleMacroCategories(getAllProducts())).toEqual(['all', 'furniture', 'cardio', 'flooring', 'walls', 'decor', 'lighting', 'outdoor', 'eco']);
+    expect(getAllProducts().filter((p) => macroOf(p) === 'furniture').map((p) => p.id)).toEqual(['courts-comfy-3-seater-dove']);
   });
   it('shows Furniture and Appliances the moment a range maps to them', () => {
     const extra = [

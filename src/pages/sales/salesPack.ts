@@ -67,6 +67,16 @@ export const PACK_LINKS = [
     market: 'Builders and material suppliers',
   },
   {
+    path: '/pitch/eco-city',
+    name: 'Eco-city guided presentation',
+    market: 'District developers, infrastructure teams and multi-company projects',
+  },
+  {
+    path: '/demo?panel=shared&pitch=1',
+    name: 'Shared project coordination pilot',
+    market: 'Architects, engineers, suppliers, contractors and clients',
+  },
+  {
     path: '/pitch/developers?client=cap-tamarin',
     name: 'Cap Tamarin example',
     market: 'Residential developments',

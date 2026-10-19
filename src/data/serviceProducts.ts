@@ -113,7 +113,7 @@ export const SERVICE_PRODUCT_DEFINITIONS: readonly ServiceProductDefinition[] = 
     name: 'Seville acacia garden sofa · set component', supplier: 'Espace Maison', systems: [], category: 'furniture',
     shape: 'garden-sofa', dimensionsMm: { length: 1140, width: 670, height: 870 },
     dimensionsBasis: 'published-envelope', dimensionSourceUrl: 'https://www.espacemaison.mu/products/seville-acacia-wood-garden-sofa-set-4-pieces',
-    sourceCheckedAt: '2026-10-09', placement: 'floor', outdoor: true,
+    sourceCheckedAt: '2026-10-19', placement: 'floor', outdoor: true,
     notes: 'Measured sofa component from Seville set SKU 3700103115997. The supplier description explicitly gives the sofa as 114 × 67 × 87 cm. Its published price and weight are for a four-piece set (sofa, two chairs, table), not this sofa alone. Individual purchase and price require a quote; no invented split price or set weight is applied. The conflicting set-level specification table is not used. Acacia frame and polyester cushions are illustrated, not manufacturer CAD.',
   },
   {
@@ -192,7 +192,9 @@ export const SERVICE_PRODUCTS: Product[] = SERVICE_PRODUCT_DEFINITIONS.map(defin
   price_snapshot: definition.priceSnapshot,
   price_on_request: !definition.priceSnapshot, commission_pct: 0, shopify_ready: false,
   image_url: `data:image/svg+xml;utf8,${encodeURIComponent(serviceProductPlanSvg(definition))}`,
-  topdown_image_url: `data:image/svg+xml;utf8,${encodeURIComponent(serviceProductPlanSvg(definition))}`,
+  // The Seville plan uses the same measured textured body as 3D. Its SVG is
+  // retained as the no-WebGL fallback, not advertised as a supplier plan image.
+  ...(definition.shape !== 'garden-sofa' ? { topdown_image_url: `data:image/svg+xml;utf8,${encodeURIComponent(serviceProductPlanSvg(definition))}` } : {}),
   designer_status: 'Done', delivery_regions: ['MU'], placement: definition.placement,
   front_edge: ['toilet-bowl', 'bidet'].includes(definition.shape) ? 'left' : 'bottom',
   ...(definition.placement === 'wall' ? { mount_height_cm: definition.mountHeightCm ?? 120 } : {}),

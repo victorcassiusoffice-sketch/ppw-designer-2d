@@ -198,6 +198,9 @@ describe('the whole seed, row by row (2026-09-20)', () => {
     'jkalachand-1798-e': [null, 0],
     'jkalachand-1799-w': [null, 0],
     'jkalachand-gs1004-swing': [null, 0],
+    // "Comfy 3 Seater" has no name-table match; its explicit passive role
+    // still keeps this unpowered sofa out of the electrical demand total.
+    'courts-comfy-3-seater-dove': [null, 0],
   };
 
   it('every seed product lands on the expected row with the expected watts', () => {

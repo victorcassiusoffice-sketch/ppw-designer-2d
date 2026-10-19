@@ -44,7 +44,7 @@ export function examplePartnerShare(orderValue: number, ratePercent: number) {
   return Math.round(orderValue * ratePercent) / 100;
 }
 
-export const MEETING_URL = 'https://calendly.com/victorcassius-office/ppw-client-meeting-1-hour';
+export const MEETING_URL = 'https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour';
 
 /** Client overlays: the same page, with the hero, scene and a few blocks tuned for one prospect. */
 export type DeveloperClient = 'cap-tamarin';

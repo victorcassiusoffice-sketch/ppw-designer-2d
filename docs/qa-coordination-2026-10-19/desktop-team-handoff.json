@@ -1,0 +1,419 @@
+{
+  "format": "one-live-build-coordination-v1",
+  "projectId": "bec48582-ba69-45a3-babc-698c1f50d59a",
+  "sourceBuildId": "qa-coordination",
+  "name": "Eco district coordination",
+  "scope": "local",
+  "specRevision": 1,
+  "exportedOn": "2026-10-19",
+  "limitation": "Coordination snapshot, not a purchase order, invoice or construction approval. Local pilot data is not shared automatically.",
+  "reviews": [
+    {
+      "id": "brief",
+      "title": "Define the brief",
+      "output": "Agree scope, stakeholders and intended use.",
+      "roles": [
+        "owner",
+        "architect"
+      ],
+      "blockers": [],
+      "state": "awaiting"
+    },
+    {
+      "id": "geometry",
+      "title": "Coordinate the design",
+      "output": "Check scale, shared edges, service routes and city envelopes.",
+      "roles": [
+        "architect",
+        "engineer"
+      ],
+      "blockers": [],
+      "state": "awaiting"
+    },
+    {
+      "id": "materials",
+      "title": "Specify materials",
+      "output": "Attach product references and environmental evidence.",
+      "roles": [
+        "architect",
+        "engineer"
+      ],
+      "blockers": [
+        "19 component(s) need a material and a source URL: Ground floor · wall package, Ground floor · floor footprint, Roof · horizontal footprint."
+      ],
+      "state": "awaiting"
+    },
+    {
+      "id": "engineering",
+      "title": "Review the design",
+      "output": "Record engineering questions and professional checks.",
+      "roles": [
+        "engineer"
+      ],
+      "blockers": [],
+      "state": "awaiting"
+    },
+    {
+      "id": "supplier",
+      "title": "Confirm supply",
+      "output": "Assign suppliers to measured packages; confirm specification and availability.",
+      "roles": [
+        "supplier"
+      ],
+      "blockers": [
+        "19 component(s) need an active supplier assignment: Ground floor · wall package, Ground floor · floor footprint, Roof · horizontal footprint."
+      ],
+      "state": "awaiting"
+    },
+    {
+      "id": "logistics",
+      "title": "Plan delivery & site work",
+      "output": "Agree responsibility and dates for each current package.",
+      "roles": [
+        "contractor"
+      ],
+      "blockers": [
+        "19 component(s) need a responsible party and delivery date: Ground floor · wall package, Ground floor · floor footprint, Roof · horizontal footprint."
+      ],
+      "state": "awaiting"
+    },
+    {
+      "id": "client",
+      "title": "Record the decision",
+      "output": "Review changes and acknowledge the current specification.",
+      "roles": [
+        "client"
+      ],
+      "blockers": [],
+      "state": "awaiting"
+    },
+    {
+      "id": "release",
+      "title": "Coordinate release",
+      "output": "Check all current acknowledgements before external procurement.",
+      "roles": [
+        "owner"
+      ],
+      "blockers": [
+        "19 component(s) need a material and a source URL: Ground floor · wall package, Ground floor · floor footprint, Roof · horizontal footprint.",
+        "19 component(s) need an active supplier assignment: Ground floor · wall package, Ground floor · floor footprint, Roof · horizontal footprint.",
+        "19 component(s) need a responsible party and delivery date: Ground floor · wall package, Ground floor · floor footprint, Roof · horizontal footprint.",
+        "7 review stage(s) still need a current acknowledgement."
+      ],
+      "state": "awaiting"
+    }
+  ],
+  "components": [
+    {
+      "id": "walls:ground",
+      "sourceKey": "walls:ground",
+      "sourceFingerprint": "179f6af3",
+      "sourceRemoved": false,
+      "category": "wall",
+      "name": "Ground floor · wall package",
+      "material": "",
+      "quantity": 97.19999999999999,
+      "unit": "m2",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "floor:ground",
+      "sourceKey": "floor:ground",
+      "sourceFingerprint": "a76d2e8f",
+      "sourceRemoved": false,
+      "category": "floor",
+      "name": "Ground floor · floor footprint",
+      "material": "",
+      "quantity": 80,
+      "unit": "m2",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "roof:footprint",
+      "sourceKey": "roof:footprint",
+      "sourceFingerprint": "7cfe916c",
+      "sourceRemoved": false,
+      "category": "roof",
+      "name": "Roof · horizontal footprint",
+      "material": "",
+      "quantity": 80,
+      "unit": "m2",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:roads:surface",
+      "sourceKey": "city:roads:surface",
+      "sourceFingerprint": "be23a5f6",
+      "sourceRemoved": false,
+      "category": "landscape",
+      "name": "City roads · union surface material",
+      "material": "",
+      "quantity": 124.19999999999987,
+      "unit": "m3",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:roads:base",
+      "sourceKey": "city:roads:base",
+      "sourceFingerprint": "be23a5f6",
+      "sourceRemoved": false,
+      "category": "landscape",
+      "name": "City roads · union base material",
+      "material": "",
+      "quantity": 496.7999999999995,
+      "unit": "m3",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:networks:excavation",
+      "sourceKey": "city:networks:excavation",
+      "sourceFingerprint": "440189f2",
+      "sourceRemoved": false,
+      "category": "foundation",
+      "name": "City utilities · shared trench excavation",
+      "material": "",
+      "quantity": 629.9999999999941,
+      "unit": "m3",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:network:city-fibre",
+      "sourceKey": "city:network:city-fibre",
+      "sourceFingerprint": "8c9ff16e",
+      "sourceRemoved": false,
+      "category": "electrical",
+      "name": "Fibre duct — proposed corridor · 100 mm envelope",
+      "material": "",
+      "quantity": 210,
+      "unit": "m",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:network:city-power",
+      "sourceKey": "city:network:city-power",
+      "sourceFingerprint": "ca96ec25",
+      "sourceRemoved": false,
+      "category": "electrical",
+      "name": "Power duct — proposed corridor · 100 mm envelope",
+      "material": "",
+      "quantity": 210,
+      "unit": "m",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:network:city-sewer",
+      "sourceKey": "city:network:city-sewer",
+      "sourceFingerprint": "b72712e6",
+      "sourceRemoved": false,
+      "category": "plumbing",
+      "name": "Wastewater — proposed corridor · 200 mm envelope",
+      "material": "",
+      "quantity": 210,
+      "unit": "m",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:network:city-stormwater",
+      "sourceKey": "city:network:city-stormwater",
+      "sourceFingerprint": "41577cc5",
+      "sourceRemoved": false,
+      "category": "plumbing",
+      "name": "Stormwater — proposed corridor · 200 mm envelope",
+      "material": "",
+      "quantity": 210,
+      "unit": "m",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:network:city-water",
+      "sourceKey": "city:network:city-water",
+      "sourceFingerprint": "ab59deac",
+      "sourceRemoved": false,
+      "category": "plumbing",
+      "name": "Water main — proposed corridor · 100 mm envelope",
+      "material": "",
+      "quantity": 210,
+      "unit": "m",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:asset:city-current-building",
+      "sourceKey": "city:asset:city-current-building",
+      "sourceFingerprint": "cf3e2d84",
+      "sourceRemoved": false,
+      "category": "other",
+      "name": "Current building — open house tools · envelope coordination only",
+      "material": "",
+      "quantity": 1,
+      "unit": "each",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:asset:city-data-centre",
+      "sourceKey": "city:asset:city-data-centre",
+      "sourceFingerprint": "5fe512e",
+      "sourceRemoved": false,
+      "category": "other",
+      "name": "Data centre — planning envelope · envelope coordination only",
+      "material": "",
+      "quantity": 1,
+      "unit": "each",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:asset:city-light-0",
+      "sourceKey": "city:asset:city-light-0",
+      "sourceFingerprint": "626ca9a0",
+      "sourceRemoved": false,
+      "category": "solar",
+      "name": "Solar streetlight 1 — planning envelope",
+      "material": "",
+      "quantity": 1,
+      "unit": "each",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:asset:city-light-1",
+      "sourceKey": "city:asset:city-light-1",
+      "sourceFingerprint": "76affb63",
+      "sourceRemoved": false,
+      "category": "solar",
+      "name": "Solar streetlight 2 — planning envelope",
+      "material": "",
+      "quantity": 1,
+      "unit": "each",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:asset:city-light-2",
+      "sourceKey": "city:asset:city-light-2",
+      "sourceFingerprint": "7a5de4dd",
+      "sourceRemoved": false,
+      "category": "solar",
+      "name": "Solar streetlight 3 — planning envelope",
+      "material": "",
+      "quantity": 1,
+      "unit": "each",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:asset:city-light-3",
+      "sourceKey": "city:asset:city-light-3",
+      "sourceFingerprint": "529672d6",
+      "sourceRemoved": false,
+      "category": "solar",
+      "name": "Solar streetlight 4 — planning envelope",
+      "material": "",
+      "quantity": 1,
+      "unit": "each",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:asset:city-park",
+      "sourceKey": "city:asset:city-park",
+      "sourceFingerprint": "85dddc6e",
+      "sourceRemoved": false,
+      "category": "landscape",
+      "name": "Rain garden / green space",
+      "material": "",
+      "quantity": 2700,
+      "unit": "m2",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    },
+    {
+      "id": "city:asset:city-solar",
+      "sourceKey": "city:asset:city-solar",
+      "sourceFingerprint": "e653e8cd",
+      "sourceRemoved": false,
+      "category": "solar",
+      "name": "PV field — planning envelope",
+      "material": "",
+      "quantity": 1,
+      "unit": "each",
+      "status": "draft",
+      "sources": [],
+      "notes": "",
+      "origin": "unknown"
+    }
+  ],
+  "deliveries": [
+    {
+      "date": "unscheduled",
+      "componentIds": [
+        "walls:ground",
+        "floor:ground",
+        "roof:footprint",
+        "city:roads:surface",
+        "city:roads:base",
+        "city:networks:excavation",
+        "city:network:city-fibre",
+        "city:network:city-power",
+        "city:network:city-sewer",
+        "city:network:city-stormwater",
+        "city:network:city-water",
+        "city:asset:city-current-building",
+        "city:asset:city-data-centre",
+        "city:asset:city-light-0",
+        "city:asset:city-light-1",
+        "city:asset:city-light-2",
+        "city:asset:city-light-3",
+        "city:asset:city-park",
+        "city:asset:city-solar"
+      ]
+    }
+  ]
+}

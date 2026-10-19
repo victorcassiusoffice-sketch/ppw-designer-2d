@@ -135,6 +135,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/embed/designer" element={<DemoDesignerPage />} />
         <Route path="/pitch/developers" element={<DeveloperPitchPage />} />
         <Route path="/pitch/construction" element={<ConstructionPitchPage />} />
+        <Route path="/pitch/eco-city" element={<ConstructionPitchPage />} />
         <Route path="/pitch/merchants" element={<MerchantPitchPage />} />
         <Route path="/pitch/plumbing" element={<PlumbingPitchPage />} />
         <Route path="/studio/sales" element={<EmployeeStarterPage />} />

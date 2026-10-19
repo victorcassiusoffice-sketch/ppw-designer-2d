@@ -7,6 +7,7 @@ import { useDisciplineVisibilityStore } from '../../store/disciplineVisibilitySt
 import type { Property, Room } from '../../store/propertyStore';
 import type { ServiceRun } from '../buildingServices';
 import { DEFAULT_GARDEN_POOL, type GardenSurface } from '../garden';
+import { sampleCity, estimateCity } from '../city';
 
 const rectangle = (x = 0, y = 0, w = 4, h = 3) => [
   { x, y },
@@ -29,25 +30,142 @@ const property = (rooms: Room[] = [], extra: Partial<Property> = {}): Property =
   wallHeightM: 3,
   ...extra,
 });
+describe('city bridge shares the canonical quantity register', () => {
+  it('uses union road/trench quantities and does not duplicate house or energy scenarios', () => {
+    const city = sampleCity(),
+      estimate = estimateCity(city);
+    const specs = measuredBuildSpecs(property([room('house')], { city }));
+    expect(specs.find((c) => c.id === 'city:roads:surface')?.quantity).toBeCloseTo(
+      estimate.roadSurfaceM3!,
+    );
+    expect(specs.find((c) => c.id === 'city:roads:base')?.quantity).toBeCloseTo(
+      estimate.roadBaseM3!,
+    );
+    expect(specs.find((c) => c.id === 'city:networks:excavation')?.quantity).toBe(
+      estimate.trenchUniqueVolumeM3,
+    );
+    expect(specs.filter((c) => c.id.startsWith('city:roads:'))).toHaveLength(2);
+    expect(specs.find((c) => c.id === 'city:asset:city-current-building')).toBeUndefined();
+    expect(specs.find((c) => c.id === 'floor:ground')?.quantity).toBe(12);
+    expect(specs.filter((c) => c.id.includes('data-centre'))).toHaveLength(1);
+    expect(specs.find((c) => c.id === 'city:asset:city-data-centre')?.name).toContain(
+      'envelope coordination only',
+    );
+    expect(specs.find((c) => c.id === 'city:asset:city-park')).toMatchObject({
+      quantity: 2700,
+      unit: 'm2',
+    });
+    expect(specs.filter((c) => c.id.startsWith('city:network:'))).toHaveLength(5);
+  });
+  it('keeps road fingerprints stable on reordering and records removal when disabled', () => {
+    const city = sampleCity(),
+      first = measuredBuildSpecs(property([], { city }));
+    city.roads.reverse();
+    expect(
+      measuredBuildSpecs(property([], { city })).find((c) => c.id === 'city:roads:surface'),
+    ).toEqual(first.find((c) => c.id === 'city:roads:surface'));
+    city.enabled = false;
+    expect(
+      measuredSyncPayload(first, measuredBuildSpecs(property([], { city }))).every(
+        (c) => c.sourceRemoved,
+      ),
+    ).toBe(true);
+  });
+  it('rejects incomplete city takeoff rather than publishing partial quantities as complete', () => {
+    const city = sampleCity();
+    city.roads[0].surfaceDepthM = 0.12;
+    expect(() => measuredBuildSpecs(property([], { city }))).toThrow(
+      'City spec quantities unavailable',
+    );
+  });
+  it('measures a sloping utility in 3D and keeps linked source identity and supplier URL', () => {
+    const city = sampleCity();
+    city.roads = [];
+    city.assets = [];
+    city.networks = [
+      {
+        id: 'water-route',
+        name: 'Water',
+        system: 'water',
+        diameterMm: 20,
+        trenchWidthM: 0.5,
+        trenchDepthM: 6,
+        supplierRef: 'hpl-aquasafe-hdpe',
+        points: [
+          { x: 0, y: 0, z: -0.5 },
+          { x: 3, y: 0, z: -4.5 },
+        ],
+      },
+    ];
+    const route = measuredBuildSpecs(property([], { city })).find(
+      (c) => c.id === 'city:network:water-route',
+    );
+    expect(route).toMatchObject({
+      sourceKey: 'city:network:water-route',
+      quantity: 5,
+      unit: 'm',
+      category: 'plumbing',
+    });
+    expect(route?.sources[0]).toContain('hplpipes.mu');
+  });
+});
 describe('outdoor shared quantities', () => {
-  const gardenSurface: GardenSurface = { id: 'patio', kind: 'concrete', x: 0, y: 0, widthM: 8, depthM: 4, elevationM: 0, thicknessM: .1, subBaseDepthM: .15 };
+  const gardenSurface: GardenSurface = {
+    id: 'patio',
+    kind: 'concrete',
+    x: 0,
+    y: 0,
+    widthM: 8,
+    depthM: 4,
+    elevationM: 0,
+    thicknessM: 0.1,
+    subBaseDepthM: 0.15,
+  };
   it('emits one surface material package rather than charging area and volume twice', () => {
-    const specs = measuredBuildSpecs(property([], { garden: { surfaces: [gardenSurface], fences: [] } }));
+    const specs = measuredBuildSpecs(
+      property([], { garden: { surfaces: [gardenSurface], fences: [] } }),
+    );
     expect(specs).toHaveLength(2);
-    expect(specs.find(s => s.id === 'outdoor:patio:surface')).toMatchObject({ quantity: 3.2, unit: 'm3' });
-    expect(specs.find(s => s.id === 'outdoor:patio:sub-base')).toMatchObject({ quantity: 4.8, unit: 'm3' });
-    const noThickness = measuredBuildSpecs(property([], { garden: { surfaces: [{ ...gardenSurface, thicknessM: undefined }], fences: [] } }));
-    expect(noThickness.find(s => s.id === 'outdoor:patio:surface')).toMatchObject({ quantity: 32, unit: 'm2' });
+    expect(specs.find((s) => s.id === 'outdoor:patio:surface')).toMatchObject({
+      quantity: 3.2,
+      unit: 'm3',
+    });
+    expect(specs.find((s) => s.id === 'outdoor:patio:sub-base')).toMatchObject({
+      quantity: 4.8,
+      unit: 'm3',
+    });
+    const noThickness = measuredBuildSpecs(
+      property([], {
+        garden: { surfaces: [{ ...gardenSurface, thicknessM: undefined }], fences: [] },
+      }),
+    );
+    expect(noThickness.find((s) => s.id === 'outdoor:patio:surface')).toMatchObject({
+      quantity: 32,
+      unit: 'm2',
+    });
   });
   it('tracks pool source IDs and physical quantities without treating view changes as revisions', () => {
-    const pool: GardenSurface = { ...gardenSurface, kind: 'pool', pool: { ...DEFAULT_GARDEN_POOL } };
+    const pool: GardenSurface = {
+      ...gardenSurface,
+      kind: 'pool',
+      pool: { ...DEFAULT_GARDEN_POOL },
+    };
     const first = measuredBuildSpecs(property([], { garden: { surfaces: [pool], fences: [] } }));
-    const hiddenWater = measuredBuildSpecs(property([], { garden: { surfaces: [{ ...pool, pool: { ...pool.pool!, stage: 'shell' } }], fences: [] } }));
+    const hiddenWater = measuredBuildSpecs(
+      property([], {
+        garden: { surfaces: [{ ...pool, pool: { ...pool.pool!, stage: 'shell' } }], fences: [] },
+      }),
+    );
     expect(hiddenWater).toEqual(first);
-    expect(first.map(s => s.id)).toEqual(['outdoor:patio:excavation', 'outdoor:patio:shell', 'outdoor:patio:lining', 'outdoor:patio:water']);
-    expect(first.find(s => s.id.endsWith(':water'))?.quantity).toBeCloseTo(43.2);
+    expect(first.map((s) => s.id)).toEqual([
+      'outdoor:patio:excavation',
+      'outdoor:patio:shell',
+      'outdoor:patio:lining',
+      'outdoor:patio:water',
+    ]);
+    expect(first.find((s) => s.id.endsWith(':water'))?.quantity).toBeCloseTo(43.2);
     const removed = measuredSyncPayload(first, []);
-    expect(removed.every(s => s.sourceRemoved)).toBe(true);
+    expect(removed.every((s) => s.sourceRemoved)).toBe(true);
   });
 });
 const run = (extra: Partial<ServiceRun> = {}): ServiceRun => ({

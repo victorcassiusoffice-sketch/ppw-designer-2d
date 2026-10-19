@@ -17,6 +17,8 @@ import { GARDEN_SURFACES } from './garden';
 import { outdoorSurfaceTakeoff, poolTakeoff } from './outdoorTakeoff';
 import { findOutdoorPavingProduct } from '../data/outdoorPaving';
 import { findPoolReference } from '../data/mauritiusPools';
+import { estimateCity } from './city';
+import { CITY_SUPPLIER_REFERENCES } from '../data/citySuppliers';
 
 /** Change detector only; never an authentication or cryptographic integrity token. */
 export function specFingerprint(value: unknown): string {
@@ -116,24 +118,88 @@ export function measuredBuildSpecs(property: Property): SharedSpecComponent[] {
       property.foundation,
     );
   for (const surface of property.garden?.surfaces ?? []) {
-    const pool = poolTakeoff(surface), layers = outdoorSurfaceTakeoff(surface);
-    if (!pool && !layers) throw new Error(`Outdoor quantities unavailable for ${surface.id}: repair the saved dimensions first.`);
+    const pool = poolTakeoff(surface),
+      layers = outdoorSurfaceTakeoff(surface);
+    if (!pool && !layers)
+      throw new Error(
+        `Outdoor quantities unavailable for ${surface.id}: repair the saved dimensions first.`,
+      );
     // Display-only construction stage does not invalidate approvals/quantities.
-    const measured = { ...surface, ...(surface.pool ? { pool: { ...surface.pool, stage: undefined } } : {}) };
+    const measured = {
+      ...surface,
+      ...(surface.pool ? { pool: { ...surface.pool, stage: undefined } } : {}),
+    };
     if (pool) {
       const reference = findPoolReference(surface.pool?.productReferenceId);
       const sources = reference ? [reference.sourceUrl] : [];
-      add(`outdoor:${surface.id}:excavation`, 'Pool · rectangular excavation', 'landscape', pool.excavationVolumeM3, 'm3', '', sources, measured);
-      add(`outdoor:${surface.id}:shell`, 'Pool · planning shell material volume', 'landscape', pool.shellVolumeM3, 'm3', '', sources, measured);
-      add(`outdoor:${surface.id}:lining`, 'Pool · inside lining area', 'landscape', pool.liningAreaM2, 'm2', '', sources, measured);
-      add(`outdoor:${surface.id}:water`, 'Pool · designed water volume', 'plumbing', pool.waterVolumeM3, 'm3', '', [], measured);
+      add(
+        `outdoor:${surface.id}:excavation`,
+        'Pool · rectangular excavation',
+        'landscape',
+        pool.excavationVolumeM3,
+        'm3',
+        '',
+        sources,
+        measured,
+      );
+      add(
+        `outdoor:${surface.id}:shell`,
+        'Pool · planning shell material volume',
+        'landscape',
+        pool.shellVolumeM3,
+        'm3',
+        '',
+        sources,
+        measured,
+      );
+      add(
+        `outdoor:${surface.id}:lining`,
+        'Pool · inside lining area',
+        'landscape',
+        pool.liningAreaM2,
+        'm2',
+        '',
+        sources,
+        measured,
+      );
+      add(
+        `outdoor:${surface.id}:water`,
+        'Pool · designed water volume',
+        'plumbing',
+        pool.waterVolumeM3,
+        'm3',
+        '',
+        [],
+        measured,
+      );
     } else if (layers) {
-      const paving = surface.kind === 'path' ? findOutdoorPavingProduct(surface.pavingProductId) : undefined;
-      const sources = paving ? [paving.sourceUrl] : [], label = GARDEN_SURFACES[surface.kind].label;
+      const paving =
+        surface.kind === 'path' ? findOutdoorPavingProduct(surface.pavingProductId) : undefined;
+      const sources = paving ? [paving.sourceUrl] : [],
+        label = GARDEN_SURFACES[surface.kind].label;
       // One physical material package: emitting area AND volume as separate
       // purchasable components would double count its cost/embodied carbon.
-      add(`outdoor:${surface.id}:surface`, `${label} · ${layers.materialVolumeM3 === null ? 'surface area' : 'finished material volume'}`, 'landscape', layers.materialVolumeM3 ?? layers.areaM2, layers.materialVolumeM3 === null ? 'm2' : 'm3', paving?.name ?? '', sources, measured);
-      if (layers.subBaseVolumeM3 !== null) add(`outdoor:${surface.id}:sub-base`, `${label} · sub-base volume`, 'landscape', layers.subBaseVolumeM3, 'm3', '', [], measured);
+      add(
+        `outdoor:${surface.id}:surface`,
+        `${label} · ${layers.materialVolumeM3 === null ? 'surface area' : 'finished material volume'}`,
+        'landscape',
+        layers.materialVolumeM3 ?? layers.areaM2,
+        layers.materialVolumeM3 === null ? 'm2' : 'm3',
+        paving?.name ?? '',
+        sources,
+        measured,
+      );
+      if (layers.subBaseVolumeM3 !== null)
+        add(
+          `outdoor:${surface.id}:sub-base`,
+          `${label} · sub-base volume`,
+          'landscape',
+          layers.subBaseVolumeM3,
+          'm3',
+          '',
+          [],
+          measured,
+        );
     }
   }
   const services = resolveServiceConnections(
@@ -180,6 +246,104 @@ export function measuredBuildSpecs(property: Property): SharedSpecComponent[] {
         { room: room.id, item },
       );
     }
+  // City infrastructure shares this register. Use union takeoff once for overlapping
+  // road layers/trenches; per-route pipe length is a different physical material.
+  // A linked building already contributes its detailed house components above.
+  if (property.city?.enabled) {
+    const city = {
+        ...property.city,
+        roads: [...property.city.roads].sort((a, b) => a.id.localeCompare(b.id)),
+        networks: [...property.city.networks].sort((a, b) => a.id.localeCompare(b.id)),
+        assets: [...property.city.assets].sort((a, b) => a.id.localeCompare(b.id)),
+      },
+      estimate = estimateCity(city);
+    if (!estimate.quantitiesComplete)
+      throw new Error(
+        `City spec quantities unavailable: ${estimate.quantityIncompleteReasons.join(' ')}`,
+      );
+    const references = (ids: (string | undefined)[]) =>
+      [
+        ...new Set(
+          ids.flatMap((id) => {
+            const ref = CITY_SUPPLIER_REFERENCES.find((value) => value.id === id);
+            return ref ? [ref.sourceUrl] : [];
+          }),
+        ),
+      ].slice(0, 12);
+    const roads = [...city.roads].sort((a, b) => a.id.localeCompare(b.id));
+    if (estimate.roadSurfaceM3 && estimate.roadSurfaceM3 > 0)
+      add(
+        'city:roads:surface',
+        'City roads · union surface material',
+        'landscape',
+        estimate.roadSurfaceM3,
+        'm3',
+        '',
+        references(roads.map((r) => r.supplierRef)),
+        roads,
+      );
+    if (estimate.roadBaseM3 && estimate.roadBaseM3 > 0)
+      add(
+        'city:roads:base',
+        'City roads · union base material',
+        'landscape',
+        estimate.roadBaseM3,
+        'm3',
+        '',
+        references(roads.map((r) => r.supplierRef)),
+        roads,
+      );
+    if (estimate.trenchUniqueVolumeM3 && estimate.trenchUniqueVolumeM3 > 0)
+      add(
+        'city:networks:excavation',
+        'City utilities · shared trench excavation',
+        'foundation',
+        estimate.trenchUniqueVolumeM3,
+        'm3',
+        '',
+        [],
+        [...city.networks].sort((a, b) => a.id.localeCompare(b.id)),
+      );
+    for (const quantity of estimate.networks) {
+      const network = city.networks.find((n) => n.id === quantity.id)!;
+      add(
+        `city:network:${network.id}`,
+        `${network.name} · ${network.diameterMm} mm envelope`,
+        ['power', 'fibre'].includes(network.system) ? 'electrical' : 'plumbing',
+        quantity.lengthM,
+        'm',
+        '',
+        references([network.supplierRef]),
+        network,
+      );
+    }
+    for (const asset of city.assets) {
+      if (asset.kind === 'building' && asset.buildingLink === 'current') continue;
+      const category =
+        asset.kind === 'park'
+          ? 'landscape'
+          : asset.kind === 'water-tank'
+            ? 'plumbing'
+            : ['solar-light', 'pv-array'].includes(asset.kind)
+              ? 'solar'
+              : ['battery', 'transformer', 'ev-charger'].includes(asset.kind)
+                ? 'electrical'
+                : 'other';
+      const envelope = asset.kind === 'building' || asset.kind === 'data-centre';
+      add(
+        `city:asset:${asset.id}`,
+        `${asset.name}${envelope ? ' · envelope coordination only' : ''}`,
+        category,
+        asset.kind === 'park' ? asset.widthM * asset.lengthM : 1,
+        asset.kind === 'park' ? 'm2' : 'each',
+        '',
+        references([asset.supplierRef]),
+        asset,
+      );
+    }
+    // Data-centre energy/PUE/WUE is an operating scenario, not equipment stock.
+    // Do not create another purchasable asset or add its loads to city equipment.
+  }
   if (list.length > 500)
     throw new Error(
       'The shared register supports 500 components. Split this build into coordinated project packages; no components were silently omitted.',

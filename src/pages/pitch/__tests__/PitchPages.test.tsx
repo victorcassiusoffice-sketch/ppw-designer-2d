@@ -158,7 +158,7 @@ describe('interactive pitch chapters', () => {
     expect(host.querySelectorAll(`a[href="${MEETING_URL}"]`)).toHaveLength(2);
   });
   it('keeps public sales paths, the exact meeting link and the external name on both pitches', () => {
-    expect(MEETING_URL).toBe('https://calendly.com/victorcassius-office/ppw-client-meeting-1-hour');
+    expect(MEETING_URL).toBe('https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour');
     for (const render of [renderDeveloper, renderMerchant]) {
       render();
       expect(host.querySelector(`a[href="${MEETING_URL}"]`)?.textContent).toContain('Meet Victor');
