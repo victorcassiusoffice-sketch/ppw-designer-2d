@@ -29,6 +29,12 @@ export function serviceFixtureMesh(fixture: ServiceFixturePlacement): THREE.Grou
     roughness: 0.38,
     metalness: 0.65,
   });
+  const red = new THREE.MeshStandardMaterial({
+    color: '#a72f2a',
+    roughness: 0.36,
+    metalness: 0.15,
+  });
+  const black = new THREE.MeshStandardMaterial({ color: '#182c32', roughness: 0.28 });
   const add = (
     geometry: THREE.BufferGeometry,
     material: THREE.Material,
@@ -135,6 +141,80 @@ export function serviceFixtureMesh(fixture: ServiceFixturePlacement): THREE.Grou
     box(0, 0.45, 0, 1, 0.9, 1, inset);
     box(0, 0.95, 0, 1, 0.1, 1, dark);
     for (const x of [-0.28, 0, 0.28]) box(x, 1.005, 0, 0.055, 0.025, 0.8, metal);
+  } else if (fixture.kind === 'air-conditioner') {
+    box(0, 0.51, 0, 1, 0.92, 0.82);
+    sphere(0, 0.5, 0.23, 0.99, 0.93, 0.48);
+    box(0, 0.19, 0.48, 0.88, 0.16, 0.04, dark);
+    for (let i = 0; i < 4; i++) box(0, 0.14 + i * 0.04, 0.51, 0.86, 0.012, 0.035, ceramic);
+    box(0.36, 0.55, 0.48, 0.08, 0.025, 0.02, inset);
+  } else if (fixture.kind === 'outdoor-ac') {
+    box(0, 0.53, 0, 1, 0.9, 0.82);
+    const fan = add(new THREE.CylinderGeometry(0.34, 0.34, 0.04, 32), dark, -0.16, 0.54, 0.44);
+    fan.rotation.x = Math.PI / 2;
+    for (const radius of [0.14, 0.23, 0.31])
+      add(new THREE.TorusGeometry(radius, 0.008, 6, 32), metal, -0.16, 0.54, 0.47);
+    for (let i = 0; i < 8; i++) box(0.31, 0.2 + i * 0.08, 0.43, 0.19, 0.025, 0.025, inset);
+    for (const x of [-0.3, 0.3]) box(x, 0.04, 0, 0.16, 0.08, 1, metal);
+  } else if (fixture.kind === 'air-grille') {
+    box(0, 0.5, 0, 1, 1, 0.3);
+    box(0, 0.5, 0.18, 0.89, 0.87, 0.1, dark);
+    for (let i = 0; i < 9; i++) box(0, 0.14 + i * 0.09, 0.25, 0.87, 0.035, 0.3, ceramic);
+  } else if (fixture.kind === 'extractor-fan') {
+    box(0, 0.5, 0, 1, 1, 0.16);
+    const duct = add(new THREE.CylinderGeometry(0.38, 0.38, 0.75, 28), inset, 0, 0.5, -0.35);
+    duct.rotation.x = Math.PI / 2;
+    const opening = add(new THREE.CylinderGeometry(0.39, 0.39, 0.03, 28), dark, 0, 0.5, 0.11);
+    opening.rotation.x = Math.PI / 2;
+    for (let i = 0; i < 5; i++) {
+      const angle = (i * Math.PI * 2) / 5;
+      const blade = box(
+        Math.cos(angle) * 0.17,
+        0.5 + Math.sin(angle) * 0.17,
+        0.15,
+        0.33,
+        0.1,
+        0.025,
+        ceramic,
+      );
+      blade.rotation.z = angle + 0.5;
+    }
+    sphere(0, 0.5, 0.17, 0.2, 0.2, 0.1, metal);
+  } else if (fixture.kind === 'sprinkler') {
+    add(new THREE.CylinderGeometry(0.19, 0.19, 0.38, 12), brass, 0, 0.81, 0);
+    for (const x of [-0.23, 0.23]) box(x, 0.42, 0, 0.06, 0.53, 0.08, brass);
+    sphere(0, 0.39, 0, 0.11, 0.4, 0.11, red);
+    add(new THREE.CylinderGeometry(0.42, 0.42, 0.05, 20), brass, 0, 0.11, 0);
+    // A thermal bulb and deflector symbol: no spray radius or certified coverage.
+  } else if (fixture.kind === 'fire-extinguisher') {
+    add(new THREE.CylinderGeometry(0.31, 0.31, 0.65, 24), red, 0, 0.35, 0);
+    sphere(0, 0.68, 0, 0.61, 0.22, 0.61, red);
+    box(0, 0.85, 0, 0.15, 0.2, 0.16, brass);
+    box(0.1, 0.95, 0, 0.45, 0.07, 0.1, black);
+    box(0, 0.44, 0.315, 0.34, 0.3, 0.015, ceramic);
+    tube(
+      [
+        new THREE.Vector3(-0.07, 0.88, 0),
+        new THREE.Vector3(-0.42, 0.82, 0),
+        new THREE.Vector3(-0.39, 0.25, 0),
+      ],
+      0.04,
+      black,
+    );
+  } else if (fixture.kind === 'security-camera') {
+    const barrel = add(new THREE.CylinderGeometry(0.32, 0.32, 0.72, 24), ceramic, 0, 0.58, 0.03);
+    barrel.rotation.x = Math.PI / 2;
+    const lens = add(new THREE.CylinderGeometry(0.25, 0.25, 0.04, 24), black, 0, 0.58, 0.41);
+    lens.rotation.x = Math.PI / 2;
+    sphere(0, 0.58, 0.44, 0.16, 0.16, 0.04, inset);
+    box(0, 0.17, -0.25, 0.12, 0.3, 0.16, metal);
+    box(0, 0.025, -0.25, 0.58, 0.05, 0.42, ceramic);
+  } else if (fixture.kind === 'network-switch') {
+    box(0, 0.5, 0, 1, 1, 1, dark);
+    box(0, 0.5, 0.51, 0.96, 0.8, 0.03, metal);
+    for (let i = 0; i < 8; i++) {
+      box(-0.4 + i * 0.114, 0.45, 0.54, 0.085, 0.35, 0.025, black);
+      box(-0.4 + i * 0.114, 0.76, 0.54, 0.025, 0.07, 0.025, inset);
+    }
   } else {
     box(0, 0.5, 0, 1, 1, 1);
     box(0, 0.5, 0.51, 0.88, 0.9, 0.04, inset);
@@ -166,7 +246,7 @@ export function serviceFixtureMesh(fixture: ServiceFixturePlacement): THREE.Grou
   body.traverse((object) => {
     if (object instanceof THREE.Mesh) used.add(object.material as THREE.Material);
   });
-  for (const material of [ceramic, inset, metal, dark, brass])
+  for (const material of [ceramic, inset, metal, dark, brass, red, black])
     if (!used.has(material)) material.dispose();
   return root;
 }

@@ -52,6 +52,19 @@ function armResize() {
   click('[data-testid="garden-resize"]');
 }
 describe('3D garden drawing', () => {
+  it('Done closes the garden inspector without leaving an unrelated build panel open or changing the design', () => {
+    const before = usePropertyStore.getState().property;
+    click('[data-testid="house-mode-garden"]');
+    expect(host.querySelector('.house-inspector.is-open')).not.toBeNull();
+    act(() => [...host.querySelectorAll<HTMLButtonElement>('[data-testid="garden-panel"] button')].find(button => button.textContent === 'Done')!.click());
+    expect(host.querySelector('.house-inspector.is-open')).toBeNull();
+    expect(host.querySelector('[data-testid="garden-panel"]')).toBeNull();
+    expect(usePropertyStore.getState().property).toEqual(before);
+    expect(onClose).not.toHaveBeenCalled();
+    click('[data-testid="house-mode-garden"]');
+    expect(host.querySelector('.house-inspector.is-open')).not.toBeNull();
+    expect(host.querySelector('[data-testid="garden-panel"]')).not.toBeNull();
+  });
   it('opening Garden and arming or cancelling a surface keeps an active ground room and creates no undo entry', () => {
     act(() => usePropertyStore.getState().addRoom({ name: 'Second room' }));
     const before = usePropertyStore.getState().property;

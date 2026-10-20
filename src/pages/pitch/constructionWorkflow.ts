@@ -1,5 +1,6 @@
-/** Construction pitch only. The shared MEETING_URL stays the shorter client call. */
-export const CONSTRUCTION_MEETING_URL = 'https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour';
+import { MEETING_URL } from './workflowModel';
+/** Legacy construction asset references share the current team meeting destination. */
+export const CONSTRUCTION_MEETING_URL = MEETING_URL;
 
 export const MATERIALS_NOTE = 'Estimates exclude structural approval, labour, delivery and unmodelled details. Supplier quotes confirm sizes, suitability and availability.';
 

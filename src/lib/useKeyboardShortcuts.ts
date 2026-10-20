@@ -46,7 +46,8 @@ function isTypingTarget(target: EventTarget | null): boolean {
 export function useKeyboardShortcuts(): void {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (isTypingTarget(e.target)) return;
+      if (e.defaultPrevented || isTypingTarget(e.target)) return;
+      if ((e.target as HTMLElement | null)?.closest?.('.house-tutorial, .discipline-popover')) return;
       const hasSelection = !!useDesignStore.getState().selectedInstanceId;
       // Attached multi-room (2026-08-26) — while a draw transaction is open,
       // BOTH history and item mutations are inert here.

@@ -78,7 +78,7 @@ describe('interactive pitch chapters', () => {
     expect(host.querySelector('.pitch-hero-art figcaption')?.textContent).toContain('concept imagery');
     chapter(3);
     expect(host.querySelector('.pitch-app-capture img')?.getAttribute('src')).toBe('/showcase/designer-plan.webp');
-    expect(host.querySelector('svg')).toBeNull();
+    expect(host.querySelector('.pitch-app-capture svg')).toBeNull();
     expect(host.textContent).toContain('not data extracted from this screenshot');
     click(button('Try these tools'));
     expect(host.querySelector('iframe')?.getAttribute('src')).toBe('/embed/designer?scene=home&view=2d&pitch=1');
@@ -124,7 +124,7 @@ describe('interactive pitch chapters', () => {
     expect(host.textContent).toContain('Give every product a sense of scale');
     click(button('Try a storefront'));
     expect(host.querySelector('iframe')?.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d&pitch=1');
-    expect(host.querySelector<HTMLSelectElement>('select')?.value).toBe('furniture');
+    expect(host.querySelector<HTMLSelectElement>('.pitch-select-label select')?.value).toBe('furniture');
     click(button('Connected shop'));
     expect(host.querySelector('a[href="/products"]')?.textContent).toContain('Browse the product shop');
   });
@@ -134,7 +134,7 @@ describe('interactive pitch chapters', () => {
     expect(host.textContent).toContain('published envelope in 2D and 3D');
     click(button('Try a storefront'));
     expect(host.querySelector('iframe')?.getAttribute('src')).toBe('/embed/designer?scene=home&view=3d&panel=services&pitch=1');
-    expect(host.querySelector<HTMLSelectElement>('select')?.value).toBe('services');
+    expect(host.querySelector<HTMLSelectElement>('.pitch-select-label select')?.value).toBe('services');
   });
   it('keeps both pitches outer view pills in sync with controls inside the embedded designer', () => {
     for (const [render, index] of [[renderDeveloper, 1], [renderMerchant, 2]] as const) {
@@ -158,13 +158,13 @@ describe('interactive pitch chapters', () => {
     expect(host.querySelectorAll(`a[href="${MEETING_URL}"]`)).toHaveLength(2);
   });
   it('keeps public sales paths, the exact meeting link and the external name on both pitches', () => {
-    expect(MEETING_URL).toBe('https://calendly.com/victorcassius-office/ppw-client-meeting-1-hour');
+    expect(MEETING_URL).toBe('https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour');
     for (const render of [renderDeveloper, renderMerchant]) {
       render();
       expect(host.querySelector(`a[href="${MEETING_URL}"]`)?.textContent).toContain('Meet Victor');
       expect(host.querySelector('a[href="/studio"]')).not.toBeNull();
       expect(host.querySelector('a[href="/demo?pitch=1"]')).not.toBeNull();
-      expect(document.title).toContain('Experience | PPW Studio');
+      expect(document.title).toContain('Experience | One Live Build');
       expect(host.textContent).not.toMatch(/\bVic\b/);
       expect(host.textContent).not.toMatch(PRICE);
     }

@@ -55,6 +55,17 @@ function pointer(type: string, x: number, y: number, pointerId = 1): PointerEven
 }
 
 describe('useDragToPlace — anti-occlusion lift (M2)', () => {
+  it('never places a product when the browser cancels an active drag', () => {
+    const onDrop = vi.fn();
+    act(() => root.render(<Harness onDrop={onDrop} />));
+    const handle = container.querySelector('[data-testid="handle"]')!;
+    act(() => handle.dispatchEvent(pointer('pointerdown', 200, 300)));
+    act(() => window.dispatchEvent(pointer('pointermove', 220, 340)));
+    expect(container.querySelector('[data-testid="drag-ghost-dom"]')).not.toBeNull();
+    act(() => window.dispatchEvent(pointer('pointercancel', 220, 340)));
+    expect(onDrop).not.toHaveBeenCalled();
+    expect(container.querySelector('[data-testid="drag-ghost-dom"]')).toBeNull();
+  });
   it('exports a positive lift constant', () => {
     expect(DRAG_LIFT_PX).toBeGreaterThan(0);
   });

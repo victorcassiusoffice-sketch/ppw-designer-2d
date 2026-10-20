@@ -87,6 +87,15 @@ export function applyWallLook(
 ): void {
   const look = wallFinishLook(wall.finish);
   const painted = !!wall.finish;
+  // Every branch resets glass state: switching substrate must not leave an
+  // opaque wall transparent, or accidentally price a glass face as paint.
+  const glass = wall.construction === 'glass';
+  material.transparent = glass;
+  material.opacity = glass ? .25 : 1;
+  material.depthWrite = !glass;
+  material.side = glass ? THREE.DoubleSide : THREE.FrontSide;
+  material.transmission = 0;
+  material.ior = 1.5;
   material.color.set(wall.hex);
   material.roughness = look.roughness;
   material.metalness = 0;
@@ -104,7 +113,19 @@ export function applyWallLook(
   material.clearcoatRoughnessMap = painted && look.clearcoat > 0 ? textures.paintRoughness : null;
   material.envMap = look.useEnv ? environment : null;
   material.envMapIntensity = look.envMapIntensity;
-  if (wall.construction === 'brick') {
+  if (glass) {
+    material.map = null;
+    material.normalMap = null;
+    material.roughnessMap = null;
+    material.clearcoatNormalMap = null;
+    material.clearcoatRoughnessMap = null;
+    material.roughness = .08;
+    material.specularIntensity = 1;
+    material.clearcoat = .6;
+    material.envMap = environment;
+    material.envMapIntensity = .7;
+    material.side = THREE.DoubleSide;
+  } else if (wall.construction === 'brick') {
     if (!painted && textures.brickMap) { material.map = textures.brickMap; material.color.set('#FFFFFF'); }
     material.normalMap = textures.brickNormal ?? textures.plasterNormal;
     material.normalScale.set(0.8, 0.8);

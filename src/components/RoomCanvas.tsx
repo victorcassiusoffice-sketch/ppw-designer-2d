@@ -51,6 +51,10 @@ import { NATURAL_BARE_FLOOR_HEX } from '../designer/architecturalSurface';
 import { visibleServiceFixtures } from '../designer/serviceFixtures';
 import { FoundationPlanLayer } from './FoundationPlanLayer';
 import { ServiceFixturesPlanLayer } from './ServiceFixturesPlanLayer';
+import { ServiceRoutesPlanLayer } from './ServiceRoutesPlanLayer';
+import { visibleServiceRuns } from '../designer/serviceScene';
+import { useDisciplineVisibilityStore } from '../store/disciplineVisibilityStore';
+import { productVisible, serviceFixtureDiscipline } from '../designer/disciplineVisibility';
 import type Konva from 'konva';
 import { useDesignStore } from '../store/designStore';
 import { usePropertyStore, selectActiveRoom, roomOpenings } from '../store/propertyStore';
@@ -104,6 +108,12 @@ import { chooseGridTier } from '../designer/gridTier';
 // Sims drag-drop (2026-08-28, D-B3) - the transport seam between a catalog
 // drag gesture and this canvas.
 import { useDragPointerStore } from '../store/dragPointerStore';
+import { useOpeningSelectionStore } from '../store/openingSelectionStore';
+import { OpeningSelectionEditor } from './OpeningSelectionEditor';
+import { OpeningDimensions } from './OpeningDimensions';
+import { useBuildSkinStore, BUILD_SKIN_PALETTES } from '../store/buildSkinStore';
+import { useMeasuredPathToolStore, measuredToolPreview, type MeasuredPathTarget } from '../store/measuredPathToolStore';
+import { MeasuredPathOptions } from './MeasuredPathOptions';
 // Units brief (2026-08-28, D10) - retype the length of a wall that exists.
 import { resizeRoomEdge } from '../designer/edgeResize';
 import { formatLengthForUnit } from '../designer/unitFormat';
@@ -137,6 +147,7 @@ import {
 } from '../designer/levels';
 import { floorTargetRoom } from '../designer/floorTarget';
 import { gardenPoints } from '../designer/garden';
+import { EcoTreesLayer } from './EcoTreesLayer';
 import { GardenLayer } from './GardenLayer';
 import { GardenDrawLayer } from './GardenDrawLayer';
 import { useGardenEditorStore } from '../store/gardenEditorStore';
@@ -149,7 +160,7 @@ import { energyDotColour, useEnergyReport } from '../designer/useEnergyReport';
 import { EnergyMeterBar } from './EnergyMeterBar';
 import { meterFillPct } from '../designer/energyMeter';
 import { formatWh } from '../designer/solarCalc';
-import { freeWallLengthM, runToFreeWalls, wallsOnLevel } from '../designer/freeWalls';
+import { freeWallLengthM, runToFreeWalls, wallsOnLevel, wallsWithMaterial } from '../designer/freeWalls';
 import { emitsLight, lightRadiusM, planSymbolOf, lampSceneFactor, planLightGradientStops } from '../designer/lighting';
 // Sims flooring (2026-08-29): tiles snap to their own lattice, edge to edge.
 import { snapToTileLattice, tileLatticeFor, usesTileLattice } from '../designer/flooringLattice';
@@ -195,8 +206,6 @@ import {
   WALL_STROKE_PX,
   SELECT_STROKE,
   HANDLE_FILL,
-  SITE_FILL,
-  SITE_STROKE,
   DIM_LINE,
   GREENERY_FILL,
   GREENERY_STROKE,
@@ -448,6 +457,13 @@ export function RoomCanvas({
   const showGrid = useDesignStore((s) => s.showGrid);
   const placedItems = useDesignStore((s) => s.placedItems);
   const selectedInstanceId = useDesignStore((s) => s.selectedInstanceId);
+  const selectedOpeningId = useOpeningSelectionStore(s => s.selectedId);
+  const buildSkin = useBuildSkinStore(s => s.skin);
+  const buildPalette = BUILD_SKIN_PALETTES[buildSkin];
+  const measuredTool = useMeasuredPathToolStore();
+  const measuredPreview = measuredToolPreview(measuredTool);
+  const measuredPress = useRef<{ x: number; y: number; id: number } | null>(null);
+  useEffect(() => { if (selectedInstanceId) useOpeningSelectionStore.getState().select(null); }, [selectedInstanceId]);
   // NOTE: the designStore `addItem` facade is no longer subscribed here —
   // placement commits go through `usePropertyStore.getState().addItem(item,
   // roomId)` so the item lands in the ROUTED room, not the active one. The
@@ -529,6 +545,7 @@ export function RoomCanvas({
   const propertyActiveLevelId = usePropertyStore((s) => s.property.activeLevelId);
   const propertyWalls = usePropertyStore((s) => s.property.walls);
   const propertyGarden = usePropertyStore((s) => s.property.garden);
+  const ecoTrees = usePropertyStore((s) => s.property.eco?.trees);
   const gardenPlacement = useGardenEditorStore((s) => s.placement);
   const site = usePropertyStore((s) => s.property.site ?? null);
   const levels = useMemo(() => levelsOf({ levels: propertyLevels }), [propertyLevels]);
@@ -968,7 +985,11 @@ export function RoomCanvas({
           }
         : b;
     }
-    for (const point of gardenPoints(garden)) {
+    const crownPoints = activeLevelId === GROUND_LEVEL_ID ? (ecoTrees ?? []).flatMap(tree => [
+      { x: tree.x - tree.canopyRadiusM, y: tree.y - tree.canopyRadiusM },
+      { x: tree.x + tree.canopyRadiusM, y: tree.y + tree.canopyRadiusM },
+    ]) : [];
+    for (const point of [...gardenPoints(garden), ...crownPoints]) {
       u = u ? {
         minX: Math.min(u.minX, point.x), minY: Math.min(u.minY, point.y),
         maxX: Math.max(u.maxX, point.x), maxY: Math.max(u.maxY, point.y),
@@ -978,7 +999,7 @@ export function RoomCanvas({
     if (u && u.maxX - u.minX < 1) u = { ...u, maxX: u.minX + 1 };
     if (u && u.maxY - u.minY < 1) u = { ...u, maxY: u.minY + 1 };
     return u;
-  }, [sitePolygon, drawnRooms, freeWalls, garden]);
+  }, [sitePolygon, drawnRooms, freeWalls, garden, ecoTrees, activeLevelId]);
   const unionWpx = union ? (union.maxX - union.minX) * pxPerMetre : 0;
   const unionHpx = union ? (union.maxY - union.minY) * pxPerMetre : 0;
   // Area readout stays the ACTIVE room's — it pairs with the TopBar L/W
@@ -1775,9 +1796,9 @@ export function RoomCanvas({
     if (useDesignerUIStore.getState().viewMode === '3d' && isScreenTarget(placementIntent.target)) return;
     if (!isScreenTarget(placementIntent.target)) {
       const { roomX, roomY } = placementIntent.target;
-      const placed = placeAtRoomPoint(roomX, roomY, placementIntent.productId, null);
+      const placed = placeAtRoomPoint(roomX, roomY, placementIntent.productId, null, !placementIntent.strict);
       // A tap-to-place from the 3D floor disarms like a click on the plan does.
-      if (placed && pendingProductId === placementIntent.productId) setPendingProductId?.(null);
+      if (placed && !placementIntent.keepArmed && pendingProductId === placementIntent.productId) setPendingProductId?.(null);
       consumeIntent();
       return;
     }
@@ -1808,7 +1829,11 @@ export function RoomCanvas({
       }
       placeAtRoomPoint(cx, cy, placementIntent.productId, null);
     } else {
-      placeProductAt(placementIntent.target.clientX, placementIntent.target.clientY, placementIntent.productId, null);
+      const rect = containerRef.current?.getBoundingClientRect();
+      const { clientX, clientY } = placementIntent.target;
+      if (rect && clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+        placeProductAt(clientX, clientY, placementIntent.productId, null, !placementIntent.strict);
+      }
     }
     consumeIntent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -2246,7 +2271,7 @@ export function RoomCanvas({
     (vertices: Polygon) => {
       const ps = usePropertyStore.getState();
       const lvl = activeLevelIdOf(ps.property);
-      const walls = runToFreeWalls(vertices, lvl);
+      const walls = wallsWithMaterial(runToFreeWalls(vertices, lvl), useDesignerUIStore.getState().wallPaintDraft);
       if (walls.length === 0) {
         pushToast('Place at least 2 points for a wall.', 'warn');
         return;
@@ -2659,7 +2684,10 @@ export function RoomCanvas({
   // Wall paint (2026-09-02): live property-wide totals for the HUD/panel —
   // painted area, litres and the whole-tin cost, in the display currency.
   const propertyForPaint = usePropertyStore((st) => st.property);
-  const serviceFixtures = useMemo(() => visibleServiceFixtures(propertyForPaint, activeLevelId), [propertyForPaint, activeLevelId]);
+  const visible = useDisciplineVisibilityStore(s => s.visible);
+  const parts = useDisciplineVisibilityStore(s => s.parts);
+  const serviceFixtures = useMemo(() => visibleServiceFixtures(propertyForPaint, activeLevelId).filter(fixture => parts.equipment && visible[serviceFixtureDiscipline(fixture.kind)]), [propertyForPaint, activeLevelId, visible, parts]);
+  const serviceRuns = useMemo(() => parts.routes ? visibleServiceRuns(propertyForPaint, activeLevelId, 'floor', visible) : [], [propertyForPaint, activeLevelId, visible, parts]);
   const planWallHeight = levelHeightM(propertyForPaint, activeLevelId);
   const planSun = useMemo(() => planDaylight(sunHour, planWallHeight), [sunHour, planWallHeight]);
   const planSharedEdges = useMemo(() => sharedEdgeMap(drawnRooms), [drawnRooms]);
@@ -2957,6 +2985,7 @@ export function RoomCanvas({
   computeGhostRef.current = computeGhost;
   useEffect(() => {
     const unsub = useDragPointerStore.subscribe((st, prev) => {
+      if (useDesignerUIStore.getState().viewMode === '3d') return;
       if (st.drag === prev.drag) return;
       const d = st.drag;
       if (!d) return;
@@ -2984,6 +3013,9 @@ export function RoomCanvas({
     const st = useDragPointerStore.getState();
     const d = st.drop;
     if (!d) return;
+    // The 3D stage resolves its own screen ray; the hidden plan must never
+    // consume a drop through its unrelated screen transform.
+    if (useDesignerUIStore.getState().viewMode === '3d') return;
     st.consumeDrop();
 
     // Released outside the canvas: silently put the gesture back rather
@@ -3187,6 +3219,7 @@ export function RoomCanvas({
       }
       const draft = useDesignerUIStore.getState().doorDraft;
       const id = ps.addOpening(h.roomId, {
+        ...draft,
         edgeIndex: h.edge.index,
         offsetM: h.offsetM,
         widthM: draft.widthM,
@@ -3203,7 +3236,7 @@ export function RoomCanvas({
       // Shield the fresh opening from the remove scan (defect 1's second
       // half): a same-gesture re-scan must not net place + remove to zero.
       recentOpeningRef.current = { id, t: Date.now() };
-      const label = draft.kind === 'window' ? 'Window' : draft.kind === 'doorway' ? 'Doorway' : 'Door';
+      const label = draft.kind === 'window' ? 'Window' : draft.kind === 'doorway' ? 'Doorway' : draft.kind === 'hole' ? 'Opening' : 'Door';
       pushToast(`${label} added`, 'success');
     },
     [computeDoorHover, pushToast],
@@ -3257,8 +3290,22 @@ export function RoomCanvas({
     console.log('[multi-room]', `rendered=${mounted}`);
   }, [rooms]);
 
+  function beginMeasured(target: MeasuredPathTarget) {
+    handleDrawCancel();
+    useGardenEditorStore.getState().place(null);
+    useWallStore.getState().setDraw({ phase: 'idle' });
+    setTool('hand'); setPendingProductId?.(null);
+    useOpeningSelectionStore.getState().select(null);
+    measuredTool.startTool(target, propertyForPaint.id, activeLevelId);
+  }
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-col" data-testid="plan-workspace">
+      {viewMode !== '3d' && !measuredTool.target && (drawMode || wallDrawEnabled || isRoofLevel(levelsOf(propertyForPaint).find(l => l.id === activeLevelId)) || gardenPlacement) && <div className="measured-drawing-launchers">
+        {(drawMode || wallDrawEnabled) && <><button type="button" onClick={() => beginMeasured('wall')}>Curved wall</button><button type="button" onClick={() => window.dispatchEvent(new CustomEvent('ppw:open-wall-materials'))}>Wall material</button></>}
+        {isRoofLevel(levelsOf(propertyForPaint).find(l => l.id === activeLevelId)) && <button type="button" onClick={() => beginMeasured('roof')}>Draw roof outline</button>}
+        {gardenPlacement && <button type="button" onClick={() => beginMeasured('garden')}>Draw outdoor outline</button>}
+      </div>}
+      {viewMode !== '3d' && measuredTool.target && <MeasuredPathOptions />}
       {/* Normal-flow controls reserve space before the measured Stage.
           containerRef stays on the drawable element so pointer coordinates,
           fitting and pinch/pan all share its actual origin and dimensions. */}
@@ -3276,6 +3323,7 @@ export function RoomCanvas({
         onCancel={handleDrawCancel}
         onQuickRectangle={hasRoom ? undefined : handleQuickRectangle}
       />
+      {doorTool && viewMode !== '3d' && <OpeningDimensions />}
       {/* M6 (Customer-UI fix 2026-05-31) — top-right floating button column.
           Both top AND right offsets fold in env(safe-area-inset-*) so the
           controls never sit under the notch / rounded corner on a notched
@@ -3288,7 +3336,7 @@ export function RoomCanvas({
           type="button"
           data-testid="canvas-chrome-toggle"
           aria-expanded={canvasToolsOpen}
-          aria-label={`${area.toFixed(0)} square metres. ${canvasToolsOpen ? 'Hide plan tools' : 'Show plan tools'}`}
+          aria-label={`${area.toFixed(0)} m². ${canvasToolsOpen ? 'Hide plan tools' : 'Show plan tools'}`}
           aria-controls="canvas-plan-tools"
           onClick={() => setCanvasToolsOpen((v) => !v)}
           className="pointer-events-auto inline-flex h-11 min-w-11 items-center justify-center gap-1 rounded-l-2xl bg-white px-2.5 text-[12px] font-semibold tabular-nums text-[#37362f] shadow-[0_2px_10px_rgba(42,41,38,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ppw-inkDeep"
@@ -3502,12 +3550,14 @@ export function RoomCanvas({
     <div
       ref={containerRef}
       data-testid="plan-drawing-viewport"
+      data-view-transform={JSON.stringify({ viewport, pxPerMetre })}
       className={`relative min-h-0 w-full min-w-0 flex-1 overflow-hidden transition-colors ${
         pendingProductId && !drawMode ? 'ring-2 ring-inset' : ''
       } ${drawMode ? 'cursor-crosshair' : ''} ${pendingProductId && !drawMode ? 'cursor-crosshair' : ''}`}
       // Paper ground (2026-08-29): warm cream, the land outside the plot.
       style={{
-        background: CANVAS_GROUND,
+        background: buildPalette.ground,
+        ...({ '--build-ground': buildPalette.ground } as React.CSSProperties),
         ...(pendingProductId && !drawMode
           ? { '--tw-ring-color': `${SELECT_STROKE}66` } as React.CSSProperties
           : {}),
@@ -3856,6 +3906,7 @@ export function RoomCanvas({
                 ['door', 'Door'],
                 ['doorway', 'Doorway'],
                 ['window', 'Window'],
+                ['hole', 'Hole'],
               ] as const
             ).map(([k, label]) => (
               <button
@@ -3878,7 +3929,7 @@ export function RoomCanvas({
                     ? 'Door — a swinging leaf'
                     : k === 'doorway'
                       ? 'Doorway — an open gap, no leaf'
-                      : 'Window — keeps the wall line'
+                      : k === 'window' ? 'Window — keeps the wall line' : 'Hole — a measured wall opening'
                 }
               >
                 {label}
@@ -3895,7 +3946,7 @@ export function RoomCanvas({
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <button
+            {doorDraft.kind === 'door' && <><button
               type="button"
               data-testid="door-flip-facing-mobile"
               onClick={toggleDoorFacing}
@@ -3912,7 +3963,7 @@ export function RoomCanvas({
               title="Swap the hinge to the other end"
             >
               Flip hinge
-            </button>
+            </button></>}
             <button
               type="button"
               data-testid="door-done-mobile"
@@ -3927,7 +3978,7 @@ export function RoomCanvas({
             className="px-1 text-[11px] font-medium leading-snug"
             style={{ color: CHROME_TEXT_2 }}
           >
-            Tap a wall to place · tap a door to remove
+            Tap a wall to place · Done, then select an opening to edit or remove
           </p>
         </div>
       )}
@@ -4125,7 +4176,7 @@ export function RoomCanvas({
         // its headline gesture is a press-and-drag rectangle, and a
         // draggable Stage would swallow it as a canvas pan. Single clicks
         // would still work, so the failure would look like "mostly fine".
-        draggable={!drawMode && !pendingProductId && !wallDrawEnabled && !floorTool && !gardenPlacement}
+        draggable={!measuredTool.target && !drawMode && !pendingProductId && !wallDrawEnabled && !floorTool && !gardenPlacement}
         onDragMove={(e) => {
           if (e.target === e.target.getStage()) {
             if (suppressStageDragRef.current) {
@@ -4143,13 +4194,18 @@ export function RoomCanvas({
           // fires `pointerdown` from the native pointer event only (mouse
           // and touch compat events keep their own mouse*/touch* names), so
           // the stroke fires exactly once per gesture on every device.
-          if (drawMode || floorTool) return;
+          if (measuredTool.target || drawMode || floorTool) return;
           if (e.target === e.target.getStage() && e.evt.button === PAN_BTN) {
             selectItem(null);
             selectWall(null);
           }
         }}
         onPointerDown={(e) => {
+          if (measuredTool.target) {
+            const event = e.evt as PointerEvent;
+            if (event.isPrimary !== false && event.button === 0) measuredPress.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
+            return;
+          }
           // Floor + Door tools: ONE gesture path for mouse AND touch (Konva
           // fires `pointerdown` from the native pointer event only, so this
           // runs exactly once per gesture on every device). Non-primary
@@ -4192,8 +4248,15 @@ export function RoomCanvas({
           const room = floorRoomAt(w.xM, w.yM);
           floorAnchorRef.current = { x: w.xM, y: w.yM, roomId: room?.id ?? null };
         }}
+        onPointerCancel={() => { measuredPress.current = null; doorGestureRef.current = null; wallPaintGestureRef.current = null; floorAnchorRef.current = null; }}
         onPointerUp={(e) => {
           const evt = e.evt as PointerEvent;
+          if (measuredTool.target) {
+            const press = measuredPress.current; measuredPress.current = null;
+            const point = floorWorldPoint(evt.clientX, evt.clientY);
+            if (press && press.id === evt.pointerId && point && Math.hypot(evt.clientX - press.x, evt.clientY - press.y) < 10) measuredTool.tap({ x: point.xM, y: point.yM });
+            return;
+          }
           if (doorTool) {
             // Defect 1: the ONE door commit path — native pointerup only, so
             // a touch tap can never fan out into tap + click + browser
@@ -4226,6 +4289,11 @@ export function RoomCanvas({
           commitFloorAt(evt);
         }}
         onPointerMove={(e) => {
+          if (measuredTool.target) {
+            const event = e.evt as PointerEvent, point = floorWorldPoint(event.clientX, event.clientY);
+            measuredTool.setHover(point ? { x: point.xM, y: point.yM } : null);
+            return;
+          }
           // M1.5 pointer-FSM: while armed, track snapped pointer position
           // and update the ghost preview every frame.
           if (drawMode) return;
@@ -4327,6 +4395,7 @@ export function RoomCanvas({
           }
         }}
         onTap={(e) => {
+          if (measuredTool.target) return;
           if (drawMode) return;
           if (wallDrawEnabled) return; // M2: wall layer owns tap
           if (doorTool) return; // door commits live on pointerup (defect 1)
@@ -4344,13 +4413,16 @@ export function RoomCanvas({
           }
           selectItem(null);
           selectWall(null);
+          useOpeningSelectionStore.getState().select(null);
         }}
         onClick={(e) => {
+          if (measuredTool.target) return;
           if (drawMode) return;
           if (wallDrawEnabled) return; // M2: wall layer owns click
           if (doorTool) return; // door commits live on pointerup (defect 1)
           if (e.target !== e.target.getStage()) return;
           if (!gardenPlacement) useGardenEditorStore.getState().close();
+          useOpeningSelectionStore.getState().select(null);
           if (pendingProductId && setPendingProductId) {
             const placed = placeProductAt(e.evt.clientX, e.evt.clientY, pendingProductId);
             // D4 (desktop) — Shift+click STAMPS: keep the ghost on the
@@ -4373,13 +4445,13 @@ export function RoomCanvas({
               so everything else sits on it. A dashed boundary with the plot
               dimensions in the corner: this is the maximum the customer can
               build inside. */}
-          {sitePolygon && site && (
+          {visible.landscape && sitePolygon && site && (
             <Group name="site" listening={false}>
               <Line
                 points={sitePolygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre])}
                 closed
-                fill={SITE_FILL}
-                stroke={SITE_STROKE}
+                fill={buildPalette.site}
+                stroke={buildPalette.boundary}
                 strokeWidth={1.5}
                 dash={[10, 6]}
               />
@@ -4396,12 +4468,14 @@ export function RoomCanvas({
             </Group>
           )}
 
-          <GardenLayer garden={garden} pxPerMetre={pxPerMetre} scale={viewport.scale} interactive={tool === 'hand' && !drawMode && !wallDrawEnabled && !pendingProductId && !gardenPlacement} />
+          {visible.landscape && <GardenLayer garden={garden} pxPerMetre={pxPerMetre} scale={viewport.scale} interactive={tool === 'hand' && !drawMode && !wallDrawEnabled && !pendingProductId && !gardenPlacement} />}
+          {visible.landscape && activeLevelId === GROUND_LEVEL_ID && <EcoTreesLayer trees={ecoTrees} pxPerMetre={pxPerMetre} scale={viewport.scale} />}
+          <Group visible={visible.structure} listening={visible.structure}>
 
           {/* STOREY BELOW (Sims world) — the floor underneath as a faint
               outline, so an upper floor can be drawn to line up with the
               walls that carry it. Outline only, never fill, never listening. */}
-          {belowRooms.map((room) => (
+          {parts.walls && belowRooms.map((room) => (
             <Line
               key={`below-${room.id}`}
               name="room-below"
@@ -4425,7 +4499,7 @@ export function RoomCanvas({
             const pts = room.polygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre]);
             const isActive = room.id === activeRoomId;
             return (
-              <Group key={room.id} name="room-poly" listening={false}>
+              <Group key={room.id} name="room-poly" listening={false} visible={!isRoofRoom(room) || parts.roofs}>
                 {/* Architectural paper (2026-08-29): the walls ARE the drawing.
                     Paper-white floor, charcoal poche walls with a soft cast
                     shadow so the plan reads as a model on a desk.
@@ -4433,6 +4507,7 @@ export function RoomCanvas({
                     FLOOR — fill only, no stroke. Split from the wall so an
                     opening can cut the wall without cutting the floor away
                     underneath it. */}
+                <Group visible={isRoofRoom(room) ? parts.roofs : parts.floors} listening={false}>
                 <Line
                   points={pts}
                   closed
@@ -4549,7 +4624,8 @@ export function RoomCanvas({
                   </Group>
                 )}
 
-                {!isRoofRoom(room) && (
+                </Group>
+                {parts.walls && parts.floors && !isRoofRoom(room) && (
                   <Group listening={false} clipFunc={polygonClipFunc(room.polygon, pxPerMetre)} name="room-contact-depth">
                     {planSun.strength > 0 && roomEdges(room).flatMap(edge => splitEdgeSpans(edge.lengthM, wallGapsByEdge.get(edgeKey(room.id, edge.index)) ?? []).map((span, index) => {
                       const a = pointAlongEdge(edge, span.t0), b = pointAlongEdge(edge, span.t1);
@@ -4604,17 +4680,19 @@ export function RoomCanvas({
                     into the gap, so an opening-side end is pulled back by the
                     same half-stroke and the cap puts it back exactly on the
                     jamb — the gap ends up the true width of the door. */}
-                {!isRoofRoom(room) && roomEdges(room).map((edge) => {
+                {parts.walls && !isRoofRoom(room) && roomEdges(room).map((edge) => {
                   // The wall is a REAL thickness in world metres (0.1 m), so
                   // it scales with pxPerMetre like everything else; at the
                   // default 100 px/m that is the historic 10 px stroke.
-                  const wallPx = WALL_THICKNESS_M * pxPerMetre;
-                  const halfStrokeM = WALL_HALF_M;
+                  const material = room.wallConstruction?.find(surface => surface.edgeIndex === edge.index);
+                  const thicknessM = material?.kind === 'glass' ? (material.thicknessMm ?? 10) / 1000 : WALL_THICKNESS_M;
+                  const wallPx = thicknessM * pxPerMetre;
+                  const halfStrokeM = thicknessM / 2;
                   const gaps = wallGapsByEdge.get(edgeKey(room.id, edge.index)) ?? [];
                   const paint = room.wallPaint?.find((p) => p.edgeIndex === edge.index && paintSide(p) === (wallPaintDraft.side ?? 'interior'));
-                  const construction = room.wallConstruction?.find((surface) => surface.edgeIndex === edge.index)?.kind;
+                  const construction = material?.kind;
                   const paintWidth = Math.max(2.5 / viewport.scale, wallPx * 0.28);
-                  const showPaint = paint && !room.wallCladding?.some((c) => c.edgeIndex === edge.index);
+                  const showPaint = construction !== 'glass' && paint && !room.wallCladding?.some((c) => c.edgeIndex === edge.index);
                   return splitEdgeSpans(edge.lengthM, gaps).map((span, si) => {
                     const atStartCorner = span.t0 <= 0;
                     const atEndCorner = span.t1 >= edge.lengthM;
@@ -4673,7 +4751,7 @@ export function RoomCanvas({
 
                     Drawn per HOST room only: a door in a shared wall cuts both
                     rooms' strokes (see wallGapsByEdge) but draws ONE symbol. */}
-                {roomOpenings(room).map((o) => {
+                {parts.walls && roomOpenings(room).map((o) => {
                   // By the edge's OWN index, not array position (latent
                   // defect 9): roomEdges drops degenerate edges, and a
                   // positional lookup would then draw every later door one
@@ -4730,7 +4808,7 @@ export function RoomCanvas({
                     );
                   }
 
-                  if (o.kind === 'doorway') {
+                  if (o.kind === 'doorway' || o.kind === 'hole') {
                     // An open doorway is a gap and nothing else — no leaf, no
                     // arc. The ticks are what stop it reading as a mistake.
                     return <Fragment key={`op-${o.id}`}>{tickNodes}</Fragment>;
@@ -4773,7 +4851,7 @@ export function RoomCanvas({
               line set across rooms leaves every room but the active one
               blank, because the generator only spans the bounds it was
               given. */}
-          {showGrid
+          {showGrid && parts.floors
             && drawnRooms.map((room) => (
               <Group
                 key={`grid-${room.id}`}
@@ -4787,7 +4865,7 @@ export function RoomCanvas({
                   <Line
                     key={l.key}
                     points={l.points}
-                    stroke={GRID_LINE}
+                    stroke={buildPalette.grid}
                     strokeWidth={l.major ? GRID_MAJOR_WIDTH_PX : GRID_MINOR_WIDTH_PX}
                     opacity={(l.major ? GRID_MAJOR_OPACITY : GRID_MINOR_OPACITY) * 0.65}
                   />
@@ -4795,10 +4873,13 @@ export function RoomCanvas({
               </Group>
             ))}
 
-          <BuildingPlanLayer property={propertyForPaint} activeLevelId={activeLevelId} pxPerMetre={pxPerMetre} scale={viewport.scale} />
-          {activeLevelId === 'ground' && propertyForPaint.foundation?.enabled && <FoundationPlanLayer model={propertyForPaint.foundation} pxPerMetre={pxPerMetre} />}
+          {parts.stairs && <BuildingPlanLayer property={propertyForPaint} activeLevelId={activeLevelId} pxPerMetre={pxPerMetre} scale={viewport.scale} />}
+          </Group>
+          {visible.foundation && activeLevelId === 'ground' && propertyForPaint.foundation?.enabled && <FoundationPlanLayer model={propertyForPaint.foundation} pxPerMetre={pxPerMetre} />}
+          <ServiceRoutesPlanLayer runs={serviceRuns} pxPerMetre={pxPerMetre} scale={viewport.scale} onSelect={wallSelectArmed && !gardenPlacement ? fixtureId => window.dispatchEvent(new CustomEvent('ppw:open-services', { detail: { fixtureId } })) : undefined} />
           <ServiceFixturesPlanLayer fixtures={serviceFixtures} pxPerMetre={pxPerMetre}
             onSelect={wallSelectArmed && !gardenPlacement ? fixtureId => window.dispatchEvent(new CustomEvent('ppw:open-services', { detail: { fixtureId } })) : undefined} />
+          <Group visible={visible.structure && parts.walls} listening={visible.structure && parts.walls}>
 
           {/* FREE-STANDING WALLS (Sims world 2026-08-29) — open runs the
               customer drew without closing a room. Same poche as room walls,
@@ -5030,6 +5111,7 @@ export function RoomCanvas({
             );
           })()}
 
+          </Group>
           {/* M4 (Customer-UI fix 2026-05-31) — the on-canvas "0,0 - W x H m
               bbox" debug Text was removed; it was developer instrumentation
               that should never have shipped to the customer surface. */}
@@ -5061,7 +5143,7 @@ export function RoomCanvas({
           <Group name="light-pools" listening={false}>
             {levelItems.map((item) => {
               const product = getProductById(item.productId);
-              if (!product || !emitsLight(product) || item.lightOn === false) return null;
+              if (!product || !productVisible(product, visible, parts) || !emitsLight(product) || item.lightOn === false) return null;
               const fp = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
               const { w, h } = rotatedFootprint(fp, item.rotation);
               const r = lightRadiusM(product) * pxPerMetre;
@@ -5103,7 +5185,7 @@ export function RoomCanvas({
               // (a diffuser on top of its table) everywhere, not just active.
               return sortItemsForRender(room.placedItems).map((item) => {
                 const product = getProductById(item.productId);
-                if (!product) return null;
+                if (!product || !productVisible(product, visible, parts)) return null;
                 const fp = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
                 const { w, h } = rotatedFootprint(fp, item.rotation);
                 const wPx = w * pxPerMetre;
@@ -5192,7 +5274,7 @@ export function RoomCanvas({
             permanently-listening layer would swallow every armed
             placement click. */}
         {measureTool && (
-          <Layer name="measure-edges">
+          <Layer name="measure-edges" visible={visible.structure && parts.walls} listening={visible.structure && parts.walls}>
             {drawnRooms.map((room) =>
               roomEdges({ id: room.id, polygon: room.polygon }).map((e, i) => {
                 const sel =
@@ -5313,7 +5395,7 @@ export function RoomCanvas({
         )}
 
         <RoomDrawLayer
-          enabled={drawMode}
+          enabled={drawMode && !measuredTool.target}
           stageRef={stageRef}
           containerRef={containerRef}
           viewport={viewport}
@@ -5329,23 +5411,45 @@ export function RoomCanvas({
           tapSuppressRef={drawTapSuppressRef}
         />
 
+        {/* Opening targets are separate from the non-listening room artwork.
+            A generous screen hit width makes existing doors selectable on phones. */}
+        {visible.structure && parts.walls && !measuredTool.target && !drawMode && !wallDrawEnabled && !pendingProductId && !doorTool && !floorTool && !wallSurfaceTool && !gardenPlacement && <Layer>
+          {drawnRooms.flatMap(room => roomOpenings(room).map(opening => {
+            const edge = roomEdges(room).find(candidate => candidate.index === opening.edgeIndex);
+            if (!edge) return null;
+            const span = openingSpan(opening);
+            const a = pointAlongEdge(edge, span.t0), b = pointAlongEdge(edge, span.t1);
+            const choose = (event: Konva.KonvaEventObject<Event>) => {
+              event.cancelBubble = true;
+              selectItem(null); selectWall(null);
+              useOpeningSelectionStore.getState().select(opening.id);
+            };
+            return <Line key={opening.id} name={`opening-target-${opening.id}`} points={[a.x * pxPerMetre, a.y * pxPerMetre, b.x * pxPerMetre, b.y * pxPerMetre]}
+              stroke={selectedOpeningId === opening.id ? '#25866d' : 'rgba(0,0,0,0.001)'} strokeWidth={selectedOpeningId === opening.id ? 3 / viewport.scale : 1 / viewport.scale}
+              hitStrokeWidth={Math.max(20 / viewport.scale, WALL_THICKNESS_M * pxPerMetre)} onClick={choose} onTap={choose}
+              onMouseEnter={() => { if (stageRef.current) stageRef.current.container().style.cursor = 'pointer'; }}
+              onMouseLeave={() => { if (stageRef.current) stageRef.current.container().style.cursor = ''; }} />;
+          }))}
+        </Layer>}
         {/* Legacy interior walls (wallStore). Normally EMPTY — App migrates
             them onto the property on mount — but rendered if any remain so
             nothing a customer drew ever silently disappears. */}
-        <CommittedWallsLayer walls={committedWalls} pxPerMetre={pxPerMetre} />
+        <CommittedWallsLayer walls={visible.structure && parts.walls ? committedWalls : []} pxPerMetre={pxPerMetre} />
 
         {/* M2 — Sims-style wall tool. Visible whenever wallStore phase
             is not 'idle' (driven by the ModeStrip's Wall button). Mounts
             as a Stage child so it shares viewport + pxPerMetre. */}
         <WallDrawLayer
-          enabled={wallDrawEnabled && !drawMode}
+          enabled={visible.structure && parts.walls && wallDrawEnabled && !drawMode && !measuredTool.target}
           stageRef={stageRef}
           containerRef={containerRef}
           viewport={viewport}
           pxPerMetre={pxPerMetre}
         />
-        {activeLevelId === GROUND_LEVEL_ID && gardenPlacement && <GardenDrawLayer pxPerMetre={pxPerMetre} scale={viewport.scale} />}
+        {visible.landscape && activeLevelId === GROUND_LEVEL_ID && gardenPlacement && <GardenDrawLayer pxPerMetre={pxPerMetre} scale={viewport.scale} />}
+        {measuredTool.target && measuredPreview && <Layer listening={false}><Line points={measuredPreview.vertices.flatMap(p => [p.x * pxPerMetre, p.y * pxPerMetre])} stroke="#22836b" strokeWidth={2 / viewport.scale} dash={[6 / viewport.scale, 4 / viewport.scale]} />{measuredPreview.vertices.filter((_, i) => i === 0 || i === measuredPreview.vertices.length - 1).map((p, i) => <Circle key={i} x={p.x * pxPerMetre} y={p.y * pxPerMetre} radius={5 / viewport.scale} fill="#22836b" />)}</Layer>}
       </Stage>
+      {viewMode !== '3d' && <OpeningSelectionEditor />}
 
       {/* Measure popover (units brief D10). Says out loud what it does:
           in a polygon you cannot change one edge in isolation. */}
@@ -5410,7 +5514,7 @@ export function RoomCanvas({
         </div>
       )}
 
-      <WallDrawHUD enabled={wallDrawEnabled && !drawMode} />
+      <WallDrawHUD enabled={visible.structure && parts.walls && wallDrawEnabled && !drawMode} />
 
       {/* Sims feature-finish (flagship F1/M6) — on-canvas floating cluster
           for the selected object. Replaces the old mobile slide-up
@@ -5451,7 +5555,7 @@ export function RoomCanvas({
           quiet, non-blocking prompt for the case the pen is NOT armed (the
           customer stood it down on an empty plan) so the canvas is never
           mute. */}
-      {!drawMode && !wallDrawEnabled && !pendingProductId && !hasRoom && !garden && (
+      {!measuredTool.target && !drawMode && !wallDrawEnabled && !pendingProductId && !hasRoom && !garden && (
         <div
           className="pointer-events-none absolute inset-0 flex items-center justify-center px-4"
           data-testid="start-room-prompt"
@@ -5487,7 +5591,7 @@ export function RoomCanvas({
           used to sit centred over the very tile the customer had just laid. */}
       {/* …and hidden once ANY floor is laid: a floored room is not empty
           (check R3 — the card re-centred over freshly laid tiles). */}
-      {!drawMode && !wallDrawEnabled && !pendingProductId && !floorTool && !doorTool && hasRoom && allItems.length === 0 && !garden &&
+      {!measuredTool.target && !selectedOpeningId && !isRoofLevel(levelsOf(propertyForPaint).find(l => l.id === activeLevelId)) && !drawMode && !wallDrawEnabled && !pendingProductId && !floorTool && !doorTool && hasRoom && allItems.length === 0 && !garden && !propertyForPaint.services?.runs.length && !propertyForPaint.services?.fixtures.length && !propertyForPaint.foundation?.enabled &&
         !drawnRooms.some((r) => (r.floorTiles && r.floorTiles.length > 0) || r.floorFinish || r.wallPaint?.length || r.wallCladding?.length) && (
         <div
           className="pointer-events-none absolute inset-0 flex items-center justify-center"

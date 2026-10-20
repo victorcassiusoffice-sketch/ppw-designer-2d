@@ -1,5 +1,6 @@
 import { CONSTRUCTION_BLOCK_PRESETS, CONSTRUCTION_SHEET_PRESETS } from '../../data/constructionMaterials.js';
 import { normaliseMaterialsSettings } from './settings.js';
+import { glassTakeoff } from '../../data/mauritiusGlass.js';
 import type { MaterialGroup, MaterialQuantityLine, MaterialsGeometry, MaterialsReport, MaterialUnit, VolumeMix } from './types';
 
 const ceil = (value: number) => Math.ceil(Math.max(0, value) - 1e-9);
@@ -95,13 +96,15 @@ export function estimateMaterials(geometry: MaterialsGeometry, rawSettings?: unk
     return value;
   };
   const seen = new Map<string, MaterialsGeometry['walls'][number]>();
+  const glassGroups = new Map<string, { areaM2: number; thicknessMm: number; productId?: string }>();
+  let concreteWallAreaM2 = 0;
   if (!Array.isArray(geometry?.walls)) incomplete('Invalid wall list omitted.');
   for (const wall of Array.isArray(geometry?.walls) ? geometry.walls : []) {
     if (!wall || typeof wall.id !== 'string') { incomplete('An invalid wall was omitted.'); continue; }
     const wallKey = `${wall.levelId ?? ''}:${wall.id}`;
     const previous = seen.get(wallKey);
     if (previous) {
-      if (previous.lengthM !== wall.lengthM || previous.heightM !== wall.heightM || previous.openingAreaM2 !== wall.openingAreaM2) incomplete(`Conflicting measurements for duplicate wall ${wall.id}; review the omitted duplicate.`);
+      if (previous.lengthM !== wall.lengthM || previous.heightM !== wall.heightM || previous.openingAreaM2 !== wall.openingAreaM2 || previous.construction !== wall.construction || previous.thicknessM !== wall.thicknessM || previous.materialProductId !== wall.materialProductId) incomplete(`Conflicting measurements for duplicate wall ${wall.id}; review the omitted duplicate.`);
       else warnings.push(`Duplicate wall ${wall.id} was counted once.`);
       continue;
     }
@@ -110,24 +113,42 @@ export function estimateMaterials(geometry: MaterialsGeometry, rawSettings?: unk
     if (length <= 0 || height <= 0) incomplete(`Wall ${wall.id}: positive length and height are required.`);
     const gross = length * height, opening = safe(wall.openingAreaM2, `Wall ${wall.id} openings`);
     if (opening > gross) incomplete(`Wall ${wall.id}: opening area exceeded wall area and was capped.`);
+    if (wall.construction === 'glass') {
+      const thicknessMm = (wall.thicknessM ?? .01) * 1000;
+      if (!glassTakeoff(0, thicknessMm, wall.materialProductId)) { incomplete(`Glass ${wall.id}: thickness must be between 2 and 40 mm.`); continue; }
+      const key = `${wall.materialProductId ?? 'custom'}:${thicknessMm}`;
+      const group = glassGroups.get(key) ?? { areaM2: 0, thicknessMm, productId: wall.materialProductId };
+      group.areaM2 += Math.max(0, gross - opening);
+      glassGroups.set(key, group);
+      continue;
+    }
     totals.wallGrossAreaM2 += gross;
     totals.wallOpeningAreaM2 += Math.min(opening, gross);
     totals.wallNetAreaM2 += Math.max(0, gross - opening);
+    if (wall.construction === 'concrete') concreteWallAreaM2 += Math.max(0, gross - opening);
   }
+  for (const [key, glass] of glassGroups) {
+    const quantity = glassTakeoff(glass.areaM2, glass.thicknessMm, glass.productId)!;
+    line(`glass-${key}`, 'walls', `Glass panels · ${glass.thicknessMm} mm`, 'm²', quantity.areaM2, quantity.areaM2, 0, 'Unique wall length × height − actual opening profiles; net glass area only');
+    line(`glass-volume-${key}`, 'walls', `Glass envelope volume · ${glass.thicknessMm} mm`, 'm³', quantity.volumeM3, quantity.volumeM3, 0, 'Net glass area × specified thickness ÷ 1000', undefined, 'summary');
+    line(`glass-mass-${key}`, 'walls', `Glass mass${quantity.excludesInterlayerMass ? ' (excludes interlayer)' : ''} · ${glass.thicknessMm} mm`, 'kg', quantity.glassMassKg, quantity.glassMassKg, 0, 'Net area × solid glass thickness in metres × 2500 kg/m³; no frame/fittings', undefined, 'summary');
+  }
+  if (glassGroups.size) warnings.push('Glass is excluded from masonry, mortar and plaster. Net glass quantities exclude cutting waste, frames, seals and fixings; obtain a supplier glazing schedule. Thickness is not a structural or cyclone approval.');
   const area = totals.wallNetAreaM2, wall = settings.wall;
+  const blockArea = Math.max(0, area - concreteWallAreaM2);
   const blockPreset = CONSTRUCTION_BLOCK_PRESETS.find((candidate) => candidate.id === wall.presetId);
   line('wall-area', 'walls', 'Wall area after openings', 'm²', area, area, 0, 'Σ(length × height − unique openings), per physical wall', undefined, 'summary');
   let mortarNetM3 = 0;
-  if (wall.kind === 'block' && area > 0) {
+  if (wall.kind === 'block' && blockArea > 0) {
     const joint = wall.jointMm / 1000;
     const moduleL = wall.blockLengthM + (wall.dimensionBasis === 'actual' ? joint : 0);
     const moduleH = wall.blockHeightM + (wall.dimensionBasis === 'actual' ? joint : 0);
     const actualL = wall.blockLengthM - (wall.dimensionBasis === 'nominal' ? joint : 0);
     const actualH = wall.blockHeightM - (wall.dimensionBasis === 'nominal' ? joint : 0);
-    const blocksNet = area / (moduleL * moduleH);
+    const blocksNet = blockArea / (moduleL * moduleH);
     totals.blocks = ceil(allowance(blocksNet, wall.wastePct));
     line('blocks', 'walls', blockPreset?.label ?? 'Custom blocks / bricks', 'blocks', blocksNet, totals.blocks, wall.wastePct,
-      `ceil(${display(area)} m² ÷ (${display(moduleL)} × ${display(moduleH)}) × allowance)`, blockPreset?.sourceId);
+      `ceil(${display(blockArea)} m² ÷ (${display(moduleL)} × ${display(moduleH)}) × allowance)`, blockPreset?.sourceId);
     mortarNetM3 = blocksNet * Math.max(0, moduleL * moduleH - actualL * actualH) * wall.thicknessM * wall.beddingFraction;
     assumptions.push(`Block face dimensions are treated as ${wall.dimensionBasis}; ${wall.jointMm} mm joints ${wall.dimensionBasis === 'actual' ? 'are added once' : 'are already included in the module'}. Confirm this with the supplier.`);
     assumptions.push(`Mortar is the horizontal/vertical joint grid × ${wall.thicknessM} m wall thickness × ${wall.beddingFraction} bedding fraction. Hollow block cavities are not mortar. Core filling/grout and reinforced bond beams are excluded.`);
@@ -165,8 +186,8 @@ export function estimateMaterials(geometry: MaterialsGeometry, rawSettings?: unk
     totals.concreteNetM3 += volumeM3; totals.concreteOrderM3 += order;
     line(`${group}-concrete`, group, label, 'm³', volumeM3, order, settings.concrete.wastePct, formula, 'gamma-materials');
   };
-  if (wall.kind === 'concrete') {
-    addConcrete('walls', 'Poured wall concrete', area * wall.thicknessM, 'Net physical wall area × entered concrete thickness × allowance');
+  if (wall.kind === 'concrete' || concreteWallAreaM2 > 0) {
+    addConcrete('walls', 'Poured wall concrete', (wall.kind === 'concrete' ? area : concreteWallAreaM2) * wall.thicknessM, 'Net concrete wall area × entered concrete thickness × allowance');
     if (area > 0) warnings.push('Poured wall formwork, reinforcement, joints, foundations and temporary support are not designed or fully scheduled.');
   }
   if (geometry.foundationVolumeM3 !== undefined) {
@@ -226,19 +247,24 @@ export function estimateMaterials(geometry: MaterialsGeometry, rawSettings?: unk
   }
   if (roof.kind === 'sheet') {
     const sheet = roof.sheet, source = CONSTRUCTION_SHEET_PRESETS.find((p) => p.id === sheet.presetId)?.sourceId;
+    const drawnProfile = roof.lengthOverrideM === null && roof.widthOverrideM === null ? geometry?.roofProfile : undefined;
+    const pitchDeg = drawnProfile?.pitchDeg ?? sheet.pitchDeg;
+    const slopes = drawnProfile?.slopes ?? sheet.slopes;
+    const overhangM = drawnProfile?.overhangIncluded ? 0 : sheet.overhangM;
+    if (drawnProfile) assumptions.push('Live drawn roof dimensions already include overhang. Its visible pitch and number of slopes drive this estimate; no second eaves or pitch factor is added.');
     if (roofLength <= 0 || roofWidth <= 0) incomplete('Sheet roof needs positive length and width.');
     else if (sheet.endLapM >= sheet.sheetLengthM) incomplete('Sheet end lap must be shorter than sheet length. No sheet quantity calculated.');
     else {
-      const eaveLength = roofLength + 2 * sheet.overhangM;
-      const slopingRun = (roofWidth + 2 * sheet.overhangM) / sheet.slopes / Math.cos(sheet.pitchDeg * Math.PI / 180);
+      const eaveLength = roofLength + 2 * overhangM;
+      const slopingRun = (roofWidth + 2 * overhangM) / slopes / Math.cos(pitchDeg * Math.PI / 180);
       const columns = ceil(eaveLength / sheet.effectiveCoverM);
       const rows = Math.max(1, ceil((slopingRun - sheet.endLapM) / (sheet.sheetLengthM - sheet.endLapM)));
-      const netSheets = columns * rows * sheet.slopes;
+      const netSheets = columns * rows * slopes;
       totals.sheets = ceil(allowance(netSheets, sheet.wastePct));
-      const slopedArea = eaveLength * slopingRun * sheet.slopes;
+      const slopedArea = eaveLength * slopingRun * slopes;
       line('sheet-area', 'sheet', 'Roof rectangle slope area', 'm²', slopedArea, slopedArea, 0, '(Width + eaves) × (length + verges) ÷ cos(pitch)', undefined, 'summary');
       line('sheets', 'sheet', 'Roof sheets', 'sheets', netSheets, totals.sheets, sheet.wastePct,
-        `${columns} columns × ${rows} rows × ${sheet.slopes} slope(s); side lap already in effective cover`, source);
+        `${columns} columns × ${rows} rows × ${slopes} slope(s); side lap already in effective cover`, source);
       line('sheet-effective-stock-area', 'sheet', 'Sheet stock · effective-cover equivalent', 'm²', netSheets * sheet.sheetLengthM * sheet.effectiveCoverM,
         totals.sheets * sheet.sheetLengthM * sheet.effectiveCoverM, sheet.wastePct,
         'Sheets × stock length × effective cover; supplier billing may use the wider physical sheet', source, 'summary');
@@ -253,7 +279,7 @@ export function estimateMaterials(geometry: MaterialsGeometry, rawSettings?: unk
           'ceil((required length − one lap) ÷ (stock length − lap))', source, 'summary');
       }
       if (sheet.purlinSpacingM > 0) {
-        const purlins = (ceil(slopingRun / sheet.purlinSpacingM) + 1) * sheet.slopes;
+        const purlins = (ceil(slopingRun / sheet.purlinSpacingM) + 1) * slopes;
         line('purlin-length', 'sheet', 'Purlin rows · length allowance', 'm', purlins * eaveLength, allowance(purlins * eaveLength, sheet.wastePct), sheet.wastePct,
           `${purlins} support rows × ${display(eaveLength)} m + allowance; no section/span design`, 'profilage-purlins');
       }

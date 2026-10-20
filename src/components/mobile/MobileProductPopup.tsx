@@ -66,7 +66,7 @@ const DESC_LIMIT = 200;
 
 export interface MobileProductPopupProps {
   product: Product;
-  /** "+ Add to room" — place at the centre of the visible canvas. */
+  /** Arm the product so the next floor tap chooses its exact position. */
   onAdd: (productId: string) => void;
   /** Drag-release placement at an exact screen point. */
   onDragPlace: (productId: string, clientX: number, clientY: number) => void;
@@ -125,7 +125,7 @@ export function MobileProductPopup({
         <div><h3>{product.name}</h3><strong>{formatPrice(product)}</strong><p>{formatDims(product)}{isPitchEmbed() ? '' : ` · ${product.supplier}`}</p>
           {desc && <p>{shownDesc}{truncated && <button type="button" className="catalog-detail-more" onClick={() => setExpanded((value) => !value)}>{expanded ? 'less' : 'more'}</button>}</p>}
           <button type="button" data-testid={floorMat ? 'popup-lay-floor' : 'popup-add-to-room'} className="catalog-detail-place"
-            onClick={floorMat ? layFloor : () => onAdd(product.id)}>{floorMat ? 'Lay this floor' : '+ Add to room'}</button>
+            onClick={floorMat ? layFloor : () => onAdd(product.id)}>{floorMat ? 'Lay this floor' : 'Choose position'}</button>
         </div>
       </div>
     </section>
@@ -241,11 +241,11 @@ export function MobileProductPopup({
                   onClick={() => onAdd(product.id)}
                   className={`flex-1 ${CTRL_INK}`}
                 >
-                  + Add to room
+                  Choose position
                 </button>
               )}
               <button type="button" onClick={onClose} className={CTRL_REST}>
-                Cancel
+                Close
               </button>
             </div>
           </div>

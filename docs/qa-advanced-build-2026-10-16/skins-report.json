@@ -1,0 +1,41 @@
+{
+  "base": "http://127.0.0.1:5174",
+  "cases": [
+    {
+      "name": "desktop",
+      "shots": [
+        "docs/qa-advanced-build-2026-10-16/desktop-ivory-preferences.png",
+        "docs/qa-advanced-build-2026-10-16/desktop-ivory-plan.png",
+        "docs/qa-advanced-build-2026-10-16/desktop-ocean-preferences.png",
+        "docs/qa-advanced-build-2026-10-16/desktop-ocean-plan.png",
+        "docs/qa-advanced-build-2026-10-16/desktop-slate-preferences.png",
+        "docs/qa-advanced-build-2026-10-16/desktop-slate-plan.png",
+        "docs/qa-advanced-build-2026-10-16/desktop-ivory-house.png",
+        "docs/qa-advanced-build-2026-10-16/desktop-ocean-house.png",
+        "docs/qa-advanced-build-2026-10-16/desktop-slate-house.png"
+      ],
+      "failures": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "writes": []
+    },
+    {
+      "name": "phone",
+      "shots": [
+        "docs/qa-advanced-build-2026-10-16/phone-ivory-preferences.png",
+        "docs/qa-advanced-build-2026-10-16/phone-ivory-plan.png",
+        "docs/qa-advanced-build-2026-10-16/phone-ocean-preferences.png",
+        "docs/qa-advanced-build-2026-10-16/phone-ocean-plan.png",
+        "docs/qa-advanced-build-2026-10-16/phone-slate-preferences.png",
+        "docs/qa-advanced-build-2026-10-16/phone-slate-plan.png",
+        "docs/qa-advanced-build-2026-10-16/phone-ivory-house.png",
+        "docs/qa-advanced-build-2026-10-16/phone-ocean-house.png",
+        "docs/qa-advanced-build-2026-10-16/phone-slate-house.png"
+      ],
+      "failures": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "writes": []
+    }
+  ]
+}

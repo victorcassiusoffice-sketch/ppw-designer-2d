@@ -21,6 +21,7 @@ import { GROUND_HEX } from '../../designer/roomView3d';
 import { bareMineralSurface, cornerShadeTexture, floorSurface, groundTexture, skyTexture, softShadowTexture, type FloorKind } from './surfaces';
 import { doorRuns } from './joinery';
 import { ARCHITECTURAL_GROUND_HEX, type ScenePresentation } from './renderPresentation';
+import { BUILD_SKIN_PALETTES, type BuildSkin } from '../../store/buildSkinStore';
 
 export const SKY_RADIUS_M = 220;
 /** How dark the corner shading gets right at the junction (alpha). */
@@ -48,14 +49,28 @@ export function skyDome(day: number, presentation: ScenePresentation = 'studio')
 }
 
 /** Re-tint the dome for another hour (day 0..1). */
-export function updateSkyDome(dome: THREE.Mesh, day: number, presentation: ScenePresentation = 'studio'): void {
+export function updateSkyDome(dome: THREE.Mesh, day: number, presentation: ScenePresentation = 'studio', skin: BuildSkin = 'natural'): void {
   const mat = dome.material as THREE.MeshBasicMaterial;
   mat.map?.dispose();
   mat.map = skyTexture(day, presentation === 'natural' ? 'architectural' : presentation);
+  if (skin !== 'natural') {
+    mat.map.dispose();
+    const canvas = document.createElement('canvas'); canvas.width = 8; canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      const palette = BUILD_SKIN_PALETTES[skin];
+      const gradient = ctx.createLinearGradient(0, 0, 0, 128);
+      const shade = (hex: string) => `#${new THREE.Color(hex).multiplyScalar(.3 + .7 * day).getHexString()}`;
+      gradient.addColorStop(0, shade(palette.sky)); gradient.addColorStop(1, shade(palette.horizon));
+      ctx.fillStyle = gradient; ctx.fillRect(0, 0, 8, 128);
+    }
+    mat.map = new THREE.CanvasTexture(canvas); mat.map.colorSpace = THREE.SRGBColorSpace;
+  }
   mat.userData.dressingTextures = [mat.map];
   mat.needsUpdate = true;
   dome.userData.day = day;
   dome.userData.presentation = presentation;
+  dome.userData.buildSkin = skin;
 }
 
 /** The ground plane: the plot's neutral ground with a soft radial fall-off so distance reads. */
@@ -79,9 +94,9 @@ export function groundPlane(): THREE.Mesh {
 }
 
 /** Tint only the presentation ground. The plot, garden and floor finishes retain their materials. */
-export function updateGroundPresentation(ground: THREE.Mesh, presentation: ScenePresentation): void {
+export function updateGroundPresentation(ground: THREE.Mesh, presentation: ScenePresentation, skin: BuildSkin = 'natural'): void {
   const material = ground.material as THREE.MeshStandardMaterial;
-  material.color.set(presentation !== 'studio' ? ARCHITECTURAL_GROUND_HEX : GROUND_HEX);
+  material.color.set(skin !== 'natural' ? BUILD_SKIN_PALETTES[skin].sky : presentation !== 'studio' ? ARCHITECTURAL_GROUND_HEX : GROUND_HEX);
   material.roughness = presentation !== 'studio' ? 0.92 : 1;
 }
 
@@ -182,6 +197,7 @@ export function cornerShades(w: WallSolid, heightM: number, openings: readonly W
       [0, 1],
       [w.lengthM, -1],
     ] as const) {
+      if ((u === 0 && w.smoothStart) || (u === w.lengthM && w.smoothEnd)) continue;
       // Rotation turns the long x axis upright; starting with a tall narrow
       // plane instead produced a horizontal stripe across the wall centre.
       const strip = new THREE.Mesh(new THREE.PlaneGeometry(heightM, CORNER_SHADE_VERTICAL_M), shadeMaterial(true));

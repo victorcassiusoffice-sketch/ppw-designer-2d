@@ -1,5 +1,5 @@
-# OMS Wave 5.7 — Lighthouse CI for /products and /designer.
-# Runs against the latest preview deploy URL on every PR.
+# Audit this pull request's built public demo and plumbing pitch.
+# LHCI serves dist locally with SPA fallback; production and its access gate are never targets.
 
 name: Lighthouse CI
 
@@ -16,14 +16,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: npm
       - run: npm ci
       - run: npm run build
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v11
         with:
-          urls: |
-            https://designer.ppwellness.co/products
-            https://designer.ppwellness.co/designer
           uploadArtifacts: true
+          # Public URLs are defined once in the local-build LHCI config.
           temporaryPublicStorage: true
           configPath: ./.lighthouserc.json

@@ -5,7 +5,9 @@ import { usePropertyStore } from '../store/propertyStore';
 import { useDesignerUIStore } from '../store/designerUIStore';
 import { usePlacementIntentStore } from '../store/placementIntentStore';
 import { useHistoryStore } from '../store/historyStore';
+import { useDisciplineVisibilityStore } from '../store/disciplineVisibilityStore';
 import { useWorkspaceFocus } from '../hooks/useWorkspaceFocus';
+import { DEMO_PAGE_READY_EVENT, isDemoPagePending } from '../demo/useDemoMode';
 import { WorkspaceFloorNav } from './WorkspaceFloorNav';
 import {
   beginWorkspaceNavigation,
@@ -18,11 +20,15 @@ import {
   EMPTY_FOUNDATION,
   FOUNDATION_KINDS,
   FOUNDATION_ELEMENT_LIMIT,
+  FOUNDATION_BORE_LIMIT,
   defaultFoundationRebar,
   estimateFoundation,
   foundationElementBounds,
   foundationExcavationBounds,
   foundationIsFilled,
+  foundationBoreBounds,
+  foundationBoreVolumeM3,
+  type FoundationBore,
   type FoundationExcavation,
   type FoundationElement,
   type FoundationKind,
@@ -54,7 +60,9 @@ export function FoundationWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void
   const before = useRef(onBeforeOpen);
   before.current = onBeforeOpen;
   useEffect(() => {
+    let pendingRoute = new URLSearchParams(location.search).get('panel') === 'foundation';
     const show = () => {
+      pendingRoute = false;
       beginWorkspaceNavigation('foundation');
       before.current();
       const ui = useDesignerUIStore.getState();
@@ -67,22 +75,37 @@ export function FoundationWorkspace({ onBeforeOpen }: { onBeforeOpen: () => void
       setOpen(true);
     };
     const close = (event: Event) => {
-      if (event.type !== 'ppw:open-services') cancelWorkspaceNavigation('foundation');
+      pendingRoute = false;
+      if (event.type === 'olb:close-workspaces') finishWorkspaceNavigation('foundation');
+      else if (event.type !== 'ppw:open-services') cancelWorkspaceNavigation('foundation');
       setOpen(false);
     };
     const unsubscribe = usePropertyStore.subscribe((state, previous) => {
       if (state.property.id === previous.property.id) return;
+      if (!isDemoPagePending()) pendingRoute = false;
       cancelWorkspaceNavigation('foundation');
       setOpen(false);
     });
+    const ready = () => {
+      if (pendingRoute && !isDemoPagePending()) show();
+    };
     window.addEventListener('ppw:open-foundation', show);
-    const switches = ['ppw:open-services', 'ppw:open-plan-import', 'ppw:open-ai-design'];
+    window.addEventListener(DEMO_PAGE_READY_EVENT, ready);
+    const switches = [
+      'ppw:open-services',
+      'ppw:open-plan-import',
+      'ppw:open-ai-design',
+      'ppw:open-city',
+      'olb:open-project',
+      'olb:close-workspaces',
+    ];
     switches.forEach((name) => window.addEventListener(name, close));
-    if (new URLSearchParams(location.search).get('panel') === 'foundation') show();
+    ready();
     return () => {
       unsubscribe();
       finishWorkspaceNavigation('foundation');
       window.removeEventListener('ppw:open-foundation', show);
+      window.removeEventListener(DEMO_PAGE_READY_EVENT, ready);
       switches.forEach((name) => window.removeEventListener(name, close));
     };
   }, []);
@@ -147,9 +170,13 @@ function FoundationWorkbench({ onClose }: { onClose: () => void }) {
   const rooms = property.rooms.filter(
     (r) => roomLevelId(r) === 'ground' && !isOutdoorRoom(r) && !isRoofRoom(r),
   );
-  const [selectedId, setSelectedId] = useState<string | null>(model.elements[0]?.id ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(
+    model.elements[0]?.id ?? model.bores?.[0]?.id ?? null,
+  );
   const selected = model.elements.find((e) => e.id === selectedId);
-  const [tool, setTool] = useState<FoundationKind | 'select' | 'pan' | 'move'>('select');
+  const selectedBore = model.bores?.find((e) => e.id === selectedId);
+  const [tool, setTool] = useState<FoundationKind | 'bore' | 'select' | 'pan' | 'move'>('select');
+  const [holeDraft, setHoleDraft] = useState({ depthM: 1, diameterM: 1, marginM: 0 });
   const [firstCorner, setFirstCorner] = useState<{ x: number; y: number } | null>(null);
   const [error, setError] = useState('');
   const [detailsOpen, setDetailsOpen] = useState(true);
@@ -175,8 +202,15 @@ function FoundationWorkbench({ onClose }: { onClose: () => void }) {
           { x: b.maxX, y: b.maxY },
         ];
       }),
+      ...(model.bores ?? []).flatMap((bore) => {
+        const b = foundationBoreBounds(bore);
+        return [
+          { x: b.minX, y: b.minY },
+          { x: b.maxX, y: b.maxY },
+        ];
+      }),
     ],
-    [rooms, model.elements],
+    [rooms, model.elements, model.bores],
   );
   function fit() {
     if (!basePoints.length) {
@@ -215,6 +249,20 @@ function FoundationWorkbench({ onClose }: { onClose: () => void }) {
     setTool(next);
     setFirstCorner(null);
     setError('');
+    if (next === 'bore' || FOUNDATION_KINDS.some((kind) => kind.id === next)) {
+      setSelectedId(null);
+      setDetailsOpen(true);
+    }
+  }
+  function updateBore(patch: Partial<FoundationBore>) {
+    return selectedBore
+      ? save({
+          ...model,
+          bores: model.bores?.map((bore) =>
+            bore.id === selectedBore.id ? { ...bore, ...patch } : bore,
+          ),
+        })
+      : false;
   }
   function update(patch: Partial<FoundationElement>) {
     if (selected?.excavation && patch.depthM !== undefined && patch.topElevationM === undefined) {
@@ -267,7 +315,27 @@ function FoundationWorkbench({ onClose }: { onClose: () => void }) {
     }
     const p = world(x, y);
     if (tool === 'move') {
-      if (update(p)) chooseTool('select');
+      if (selectedBore ? updateBore(p) : update(p)) chooseTool('select');
+      return;
+    }
+    if (tool === 'bore') {
+      if ((model.bores?.length ?? 0) >= FOUNDATION_BORE_LIMIT) {
+        setError(`Maximum ${FOUNDATION_BORE_LIMIT} circular holes per project.`);
+        return;
+      }
+      const bore: FoundationBore = {
+        id: nanoid(10),
+        name: `Circular hole ${(model.bores?.length ?? 0) + 1}`,
+        ...p,
+        diameterM: holeDraft.diameterM,
+        depthM: holeDraft.depthM,
+        topElevationM: 0,
+      };
+      if (save({ ...model, enabled: true, bores: [...(model.bores ?? []), bore] })) {
+        setSelectedId(bore.id);
+        setDetailsOpen(true);
+        chooseTool('select');
+      }
       return;
     }
     if (!firstCorner) {
@@ -292,10 +360,15 @@ function FoundationWorkbench({ onClose }: { onClose: () => void }) {
       y: pointerMetres((p.y + firstCorner.y) / 2),
       lengthM,
       widthM,
-      depthM: 0.2,
-      topElevationM: -0.8,
+      depthM: Math.min(0.2, holeDraft.depthM),
+      topElevationM: -holeDraft.depthM + Math.min(0.2, holeDraft.depthM),
       rebar: defaultFoundationRebar(),
-      excavation: { depthM: 1, topElevationM: 0, marginM: 0, stage: 'excavated' },
+      excavation: {
+        depthM: holeDraft.depthM,
+        topElevationM: 0,
+        marginM: holeDraft.marginM,
+        stage: 'excavated',
+      },
     };
     if (save({ ...model, version: 1, enabled: true, elements: [...model.elements, e] })) {
       setSelectedId(e.id);
@@ -354,6 +427,7 @@ function FoundationWorkbench({ onClose }: { onClose: () => void }) {
         <button
           onClick={() => {
             onClose();
+            useDisciplineVisibilityStore.getState().setVisible('foundation', true);
             const ui = useDesignerUIStore.getState();
             ui.setFoundationView(true);
             ui.setViewMode('3d');
@@ -374,6 +448,10 @@ function FoundationWorkbench({ onClose }: { onClose: () => void }) {
         </button>
       </header>
       <nav className="foundation-tools" aria-label="Foundation tools">
+        <button onClick={() => chooseTool('slab')}>＋ Dig rectangular hole</button>
+        <button aria-pressed={tool === 'bore'} onClick={() => chooseTool('bore')}>
+          ＋ Circular hole
+        </button>
         <button aria-pressed={tool === 'select'} onClick={() => chooseTool('select')}>
           Select
         </button>
@@ -408,9 +486,11 @@ function FoundationWorkbench({ onClose }: { onClose: () => void }) {
                 ? 'Drag to move the plan'
                 : tool === 'move'
                   ? 'Tap the new centre of the selected foundation'
-                  : firstCorner
-                    ? 'Tap the opposite corner · 50 mm drawing snap · Esc cancels'
-                    : 'Draw the excavation: first corner, then opposite corner'}
+                  : tool === 'bore'
+                    ? `Circular hole: set diameter and depth in Dimensions, then tap its centre · Esc cancels`
+                    : firstCorner
+                      ? 'Tap the opposite corner · 50 mm drawing snap · Esc cancels'
+                      : 'Draw the excavation: first corner, then opposite corner'}
           </div>
           <svg
             ref={svg}
@@ -518,12 +598,39 @@ function FoundationWorkbench({ onClose }: { onClose: () => void }) {
                 </g>
               );
             })}
+            {(model.bores ?? []).map((bore) => (
+              <g key={bore.id} data-foundation-id={bore.id}>
+                <circle
+                  cx={bore.x}
+                  cy={bore.y}
+                  r={bore.diameterM / 2}
+                  fill="#897459"
+                  fillOpacity={model.enabled ? 0.55 : 0.2}
+                  stroke={selectedId === bore.id ? '#315f4f' : '#6d513a'}
+                  strokeWidth=".04"
+                />
+                <text
+                  x={bore.x}
+                  y={bore.y}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize=".2"
+                  fill="#293c30"
+                >
+                  Ø {fmt(bore.diameterM)} m · {fmt(bore.depthM)} m deep
+                </text>
+              </g>
+            ))}
             {firstCorner && <circle cx={firstCorner.x} cy={firstCorner.y} r="0.1" fill="#315f4f" />}
           </svg>
           <div className="foundation-totals">
             <div>
               <small>Excavation</small>
-              <strong>{fmt(estimate.excavationVolumeM3)} m³</strong>
+              <strong>
+                {estimate.totalExcavationVolumeM3 === null
+                  ? 'Review overlaps'
+                  : `${fmt(estimate.totalExcavationVolumeM3)} m³`}
+              </strong>
             </div>
             <div>
               <small>Concrete in design</small>
@@ -554,6 +661,122 @@ function FoundationWorkbench({ onClose }: { onClose: () => void }) {
         </main>
         {detailsOpen && (
           <aside className="foundation-details" aria-label="Foundation details">
+            <section className="foundation-start" aria-label="Hole dimensions">
+              <h2>Hole dimensions</h2>
+              <p>
+                {selectedBore
+                  ? 'Circular excavation · diameter × depth'
+                  : selected
+                    ? 'Selected rectangular excavation · length × width × depth'
+                    : 'Start with a hole. Set its depth, choose a shape, then place it on the plan.'}
+              </p>
+              {!selected && !selectedBore && (
+                <>
+                  <div className="foundation-grid-fields">
+                    <Dimension
+                      label="New hole depth m"
+                      value={holeDraft.depthM}
+                      min={0.01}
+                      max={30}
+                      onChange={(depthM) => {
+                        setHoleDraft((draft) => ({ ...draft, depthM }));
+                        return true;
+                      }}
+                    />
+                    <Dimension
+                      label="New circular hole diameter m"
+                      value={holeDraft.diameterM}
+                      min={0.1}
+                      max={100}
+                      onChange={(diameterM) => {
+                        setHoleDraft((draft) => ({ ...draft, diameterM }));
+                        return true;
+                      }}
+                    />
+                  </div>
+                  <div className="foundation-actions">
+                    <button aria-pressed={tool === 'slab'} onClick={() => chooseTool('slab')}>
+                      Draw rectangle
+                    </button>
+                    <button aria-pressed={tool === 'bore'} onClick={() => chooseTool('bore')}>
+                      Place circular hole
+                    </button>
+                  </div>
+                  <p>
+                    Rectangles: tap two opposite corners, then edit exact length and width. Circular
+                    holes: tap the centre. Starting values are editable examples.
+                  </p>
+                </>
+              )}
+              {selectedBore && (
+                <>
+                  <div className="foundation-grid-fields">
+                    {(['diameterM', 'depthM', 'topElevationM', 'x', 'y'] as const).map((key) => (
+                      <Dimension
+                        key={key}
+                        label={
+                          {
+                            diameterM: 'Hole diameter m',
+                            depthM: 'Hole depth m',
+                            topElevationM: 'Hole top elevation m',
+                            x: 'Hole centre X m',
+                            y: 'Hole centre Y m',
+                          }[key]
+                        }
+                        value={selectedBore[key]}
+                        min={
+                          key === 'diameterM'
+                            ? 0.1
+                            : key === 'depthM'
+                              ? 0.01
+                              : key === 'topElevationM'
+                                ? -30
+                                : -10000
+                        }
+                        max={
+                          key === 'diameterM'
+                            ? 100
+                            : key === 'depthM'
+                              ? 30
+                              : key === 'topElevationM'
+                                ? 10
+                                : 10000
+                        }
+                        onChange={(value) => updateBore({ [key]: value })}
+                      />
+                    ))}
+                  </div>
+                  <p>
+                    <strong>
+                      Individual measured volume: {fmt(foundationBoreVolumeM3(selectedBore))} m³
+                    </strong>
+                    <br />π × radius² × depth. Bottom:{' '}
+                    {fmt(selectedBore.topElevationM - selectedBore.depthM)} m.
+                  </p>
+                  <p>
+                    Excavation coordination only. No concrete pile, reinforcement or safe drilling
+                    method is designed. Intersecting-hole totals are withheld; individual volumes
+                    must not be added.
+                  </p>
+                  <div className="foundation-actions">
+                    <button onClick={() => chooseTool('move')}>Move circular hole</button>
+                    <button
+                      onClick={() => {
+                        if (
+                          save({
+                            ...model,
+                            bores: model.bores?.filter((bore) => bore.id !== selectedBore.id),
+                          })
+                        )
+                          setSelectedId(null);
+                      }}
+                    >
+                      Remove circular hole
+                    </button>
+                  </div>
+                </>
+              )}
+            </section>
             <label className="foundation-toggle">
               <input
                 type="checkbox"
@@ -580,6 +803,11 @@ function FoundationWorkbench({ onClose }: { onClose: () => void }) {
                 {model.elements.map((e) => (
                   <option key={e.id} value={e.id}>
                     {e.name}
+                  </option>
+                ))}
+                {(model.bores ?? []).map((bore) => (
+                  <option key={bore.id} value={bore.id}>
+                    {bore.name} · Ø {fmt(bore.diameterM)} m
                   </option>
                 ))}
               </select>
@@ -620,7 +848,8 @@ function FoundationWorkbench({ onClose }: { onClose: () => void }) {
                         />
                       </div>
                       <p>
-                        Hole bottom:{' '}
+                        Hole footprint: {fmt(selected.lengthM + 2 * selected.excavation.marginM)} ×{' '}
+                        {fmt(selected.widthM + 2 * selected.excavation.marginM)} m. Hole bottom:{' '}
                         {fmt(selected.excavation.topElevationM - selected.excavation.depthM)} m.
                         Vertical sides are a quantity envelope; ground conditions and safe support
                         need project review.
@@ -737,12 +966,12 @@ function FoundationWorkbench({ onClose }: { onClose: () => void }) {
                   </p>
                 </details>
               </>
-            ) : (
+            ) : !selectedBore ? (
               <p>
                 Choose Slab, Strip or Pad, then tap two corners. Numerical dimensions remain
                 editable.
               </p>
-            )}
+            ) : null}
             <details open>
               <summary>Concrete supply & ratio</summary>
               <label className="foundation-field">
@@ -870,9 +1099,12 @@ function FoundationWorkbench({ onClose }: { onClose: () => void }) {
                 sleeves and workmanship are separate schedules.
               </p>
               <p>
-                Remaining measured excavation void: {fmt(estimate.remainingExcavationM3)} m³. This
-                is not a backfill order: soil bulking, compaction, drainage and other layers are not
-                inferred.
+                Remaining measured excavation void:{' '}
+                {estimate.totalRemainingExcavationM3 === null
+                  ? 'withheld — review overlaps'
+                  : `${fmt(estimate.totalRemainingExcavationM3)} m³`}
+                . This is not a backfill order: soil bulking, compaction, drainage and other layers
+                are not inferred.
               </p>
               <p>
                 <a

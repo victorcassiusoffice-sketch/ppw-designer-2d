@@ -37,10 +37,24 @@ export interface FoundationModel {
   version: 1;
   enabled: boolean;
   elements: FoundationElement[];
+  /** Cylindrical excavation coordination only; no pile/concrete/steel design. */
+  bores?: FoundationBore[];
   concreteProductId?: 'premix-classics' | 'premix-pro';
+}
+export interface FoundationBore {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  diameterM: number;
+  depthM: number;
+  topElevationM: number;
 }
 export const EMPTY_FOUNDATION: FoundationModel = { version: 1, enabled: false, elements: [] };
 export const FOUNDATION_ELEMENT_LIMIT = 100;
+export const FOUNDATION_BORE_LIMIT = 100;
+export const hasFoundationGeometry = (model?: FoundationModel) =>
+  !!model?.enabled && (model.elements.length > 0 || (model.bores?.length ?? 0) > 0);
 export const FOUNDATION_KINDS: { id: FoundationKind; label: string }[] = [
   { id: 'slab', label: 'Slab / raft' },
   { id: 'strip', label: 'Strip footing' },
@@ -164,10 +178,40 @@ export function normaliseFoundation(value: unknown): FoundationModel | undefined
     });
     seen.add(e.id);
   }
+  const bores: FoundationBore[] = [];
+  if (raw.bores !== undefined) {
+    if (!Array.isArray(raw.bores) || raw.bores.length > FOUNDATION_BORE_LIMIT) return undefined;
+    for (const value of raw.bores) {
+      const bore = record(value);
+      if (
+        !bore ||
+        !key(bore.id) ||
+        seen.has(bore.id) ||
+        !key(bore.name) ||
+        !n(bore.x, -10000, 10000) ||
+        !n(bore.y, -10000, 10000) ||
+        !n(bore.diameterM, 0.1, 100) ||
+        !n(bore.depthM, 0.01, 30) ||
+        !n(bore.topElevationM, -30, 10)
+      )
+        return undefined;
+      bores.push({
+        id: bore.id,
+        name: bore.name.trim(),
+        x: bore.x,
+        y: bore.y,
+        diameterM: bore.diameterM,
+        depthM: bore.depthM,
+        topElevationM: bore.topElevationM,
+      });
+      seen.add(bore.id);
+    }
+  }
   return {
     version: 1,
     enabled: raw.enabled,
     elements,
+    ...(raw.bores !== undefined ? { bores } : {}),
     ...(raw.concreteProductId
       ? { concreteProductId: raw.concreteProductId as FoundationModel['concreteProductId'] }
       : {}),
@@ -185,6 +229,19 @@ export function foundationElementBounds(e: FoundationElement) {
   };
 }
 export type FoundationBox = ReturnType<typeof foundationElementBounds>;
+export function foundationBoreBounds(bore: FoundationBore): FoundationBox {
+  const radius = bore.diameterM / 2;
+  return {
+    minX: bore.x - radius,
+    maxX: bore.x + radius,
+    minY: bore.y - radius,
+    maxY: bore.y + radius,
+    minElevationM: bore.topElevationM - bore.depthM,
+    maxElevationM: bore.topElevationM,
+  };
+}
+export const foundationBoreVolumeM3 = (bore: FoundationBore) =>
+  Math.PI * (bore.diameterM / 2) ** 2 * bore.depthM;
 export const foundationIsFilled = (e: FoundationElement) =>
   !e.excavation || e.excavation.stage === 'filled';
 export function foundationExcavationBounds(e: FoundationElement): FoundationBox | null {
@@ -201,8 +258,11 @@ export function foundationExcavationBounds(e: FoundationElement): FoundationBox 
   };
 }
 export function foundationBounds(model?: FoundationModel) {
-  if (!model?.enabled || !model.elements.length) return null;
-  const b = model.elements.map((e) => foundationExcavationBounds(e) ?? foundationElementBounds(e));
+  if (!model || !hasFoundationGeometry(model)) return null;
+  const b = [
+    ...model.elements.map((e) => foundationExcavationBounds(e) ?? foundationElementBounds(e)),
+    ...(model.bores ?? []).map(foundationBoreBounds),
+  ];
   return {
     minX: Math.min(...b.map((e) => e.minX)),
     maxX: Math.max(...b.map((e) => e.maxX)),
@@ -210,6 +270,53 @@ export function foundationBounds(model?: FoundationModel) {
     maxY: Math.max(...b.map((e) => e.maxY)),
     minElevationM: Math.min(...b.map((e) => e.minElevationM)),
     maxElevationM: Math.max(...b.map((e) => e.maxElevationM)),
+  };
+}
+/** Exact disjoint-cylinder volume. We deliberately do not approximate a union
+ * when cylinders meet other excavation or concrete; aggregate quantities are
+ * withheld, while each measured cylinder remains available for coordination. */
+export function foundationBoreTakeoff(model: FoundationModel) {
+  const bores = model.enabled ? (model.bores ?? []) : [];
+  const elements = model.enabled ? model.elements : [];
+  const overlapsDepth = (a: FoundationBox, b: FoundationBox) =>
+    Math.min(a.maxElevationM, b.maxElevationM) > Math.max(a.minElevationM, b.minElevationM) + 1e-8;
+  const conflictingIds = new Set<string>();
+  bores.forEach((a, index) => {
+    const aBounds = foundationBoreBounds(a);
+    bores.slice(index + 1).forEach((b) => {
+      if (
+        overlapsDepth(aBounds, foundationBoreBounds(b)) &&
+        Math.hypot(a.x - b.x, a.y - b.y) < (a.diameterM + b.diameterM) / 2 - 1e-8
+      ) {
+        conflictingIds.add(a.id);
+        conflictingIds.add(b.id);
+      }
+    });
+    for (const element of elements) {
+      const boxes = [foundationElementBounds(element), foundationExcavationBounds(element)].filter(
+        (b): b is FoundationBox => !!b,
+      );
+      if (
+        boxes.some(
+          (box) =>
+            overlapsDepth(aBounds, box) &&
+            Math.hypot(
+              a.x - Math.max(box.minX, Math.min(a.x, box.maxX)),
+              a.y - Math.max(box.minY, Math.min(a.y, box.maxY)),
+            ) <
+              a.diameterM / 2 - 1e-8,
+        )
+      )
+        conflictingIds.add(a.id);
+    }
+  });
+  const individual = bores.map((bore) => ({ id: bore.id, volumeM3: foundationBoreVolumeM3(bore) }));
+  const complete = conflictingIds.size === 0;
+  return {
+    individual,
+    complete,
+    conflictingIds: [...conflictingIds],
+    volumeM3: complete ? individual.reduce((sum, bore) => sum + bore.volumeM3, 0) : null,
   };
 }
 /** Exact union of axis-aligned boxes. Z and X sweeps integrate merged Y spans.
@@ -277,6 +384,9 @@ export function estimateFoundation(
     return b ? [b] : [];
   });
   const excavationVolumeM3 = foundationBoxUnionVolumeM3(holes);
+  const boreExcavation = foundationBoreTakeoff(checked);
+  const totalExcavationVolumeM3 =
+    boreExcavation.volumeM3 === null ? null : excavationVolumeM3 + boreExcavation.volumeM3;
   const filledExcavationM3 = Math.max(
     0,
     excavationVolumeM3 +
@@ -285,8 +395,27 @@ export function estimateFoundation(
   );
   const remainingExcavationM3 = Math.max(0, excavationVolumeM3 - filledExcavationM3);
   const warnings: string[] = [];
+  if (boreExcavation.individual.length)
+    warnings.push(
+      'Circular holes are measured excavation coordination only. No piling design, concrete fill, reinforcement, drilling method or excavation support is inferred.',
+    );
+  if (boreExcavation.individual.length && !elements.length)
+    warnings.push('This foundation contains excavation only. Concrete quantities are zero; the enabled drawn-foundation model replaces the legacy ground-base allowance. Add separately reviewed concrete geometry if required.');
+  if (!boreExcavation.complete)
+    warnings.push(
+      'Circular holes intersect other holes or concrete. Combined excavation and remaining-void totals are withheld: exact cylinder unions are not supported. Review the individually measured volumes; do not add overlapping quantities.',
+    );
   const rebar: { elementId: string; takeoff: RebarTakeoff }[] = [];
   const reinforced = filled.filter((e) => e.rebar.enabled);
+  const missingLaps = reinforced.filter(
+    (e) =>
+      e.rebar.lapLengthM === 0 &&
+      Math.max(e.lengthM, e.widthM) - (2 * e.rebar.coverMm) / 1000 > e.rebar.stockLengthM + 1e-8,
+  );
+  if (missingLaps.length)
+    warnings.push(
+      'Steel runs exceed stock length but lap allowance is zero. Affected reinforcement quantities are withheld until an engineer-specified lap or cut-to-length supply is entered.',
+    );
   if (!concreteComplete)
     warnings.push(
       'Excavation preview: planned concrete and its reinforcement are not yet included in the filled-design takeoff. Use Add concrete when the design is ready. This is not a record of site completion.',
@@ -303,7 +432,7 @@ export function estimateFoundation(
       'Reinforced elements overlap. Reinforcement totals are withheld until the engineer separates the schedules; concrete overlap is still counted once.',
     );
   else
-    for (const element of reinforced)
+    for (const element of reinforced.filter((e) => !missingLaps.includes(e)))
       rebar.push({
         elementId: element.id,
         takeoff: estimateRebar(element.lengthM, element.widthM, element.rebar),
@@ -321,6 +450,10 @@ export function estimateFoundation(
     pendingConcreteM3,
     concreteComplete,
     excavationVolumeM3,
+    boreExcavation,
+    totalExcavationVolumeM3,
+    totalRemainingExcavationM3:
+      boreExcavation.volumeM3 === null ? null : remainingExcavationM3 + boreExcavation.volumeM3,
     filledExcavationM3,
     remainingExcavationM3,
     sumElementVolumeM3,
@@ -328,7 +461,7 @@ export function estimateFoundation(
     concreteOrderM3: mixed.wetM3,
     mix: concrete.supply === 'site-mix' ? mixed : null,
     rebar,
-    rebarComplete: !overlappingSteel,
+    rebarComplete: !overlappingSteel && missingLaps.length === 0,
     rebarMassKg: rebar.reduce((sum, r) => sum + r.takeoff.massKg, 0),
     rebarStockBars: rebar.reduce((sum, r) => sum + r.takeoff.bars, 0),
     warnings,

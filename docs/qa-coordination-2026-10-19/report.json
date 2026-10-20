@@ -1,0 +1,251 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "cases": [
+    {
+      "name": "desktop",
+      "shots": [
+        "docs/qa-coordination-2026-10-19/desktop-team-overview.png",
+        "docs/qa-coordination-2026-10-19/desktop-owner-actions.png",
+        "docs/qa-coordination-2026-10-19/desktop-architect-actions.png",
+        "docs/qa-coordination-2026-10-19/desktop-engineer-actions.png",
+        "docs/qa-coordination-2026-10-19/desktop-supplier-actions.png",
+        "docs/qa-coordination-2026-10-19/desktop-contractor-actions.png",
+        "docs/qa-coordination-2026-10-19/desktop-client-actions.png",
+        "docs/qa-coordination-2026-10-19/desktop-contextual-review.png",
+        "docs/qa-coordination-2026-10-19/desktop-delivery-coordination.png"
+      ],
+      "checks": [
+        {
+          "cityPackages": 16,
+          "houseCountedOnce": true,
+          "originalRoadVolume": 124.2,
+          "separateDataCentreEnvelope": true
+        },
+        {
+          "label": "team-overview",
+          "layout": {
+            "page": 1280,
+            "width": 1280,
+            "root": 1280,
+            "contentWidth": 1060,
+            "contentScroll": 1060
+          }
+        },
+        "Export parsed: canonical component IDs, revision, local scope, separate delivery references",
+        {
+          "label": "owner-actions",
+          "layout": {
+            "page": 1280,
+            "width": 1280,
+            "root": 1280,
+            "contentWidth": 1060,
+            "contentScroll": 1060
+          }
+        },
+        {
+          "label": "architect-actions",
+          "layout": {
+            "page": 1280,
+            "width": 1280,
+            "root": 1280,
+            "contentWidth": 1060,
+            "contentScroll": 1060
+          }
+        },
+        {
+          "label": "engineer-actions",
+          "layout": {
+            "page": 1280,
+            "width": 1280,
+            "root": 1280,
+            "contentWidth": 1060,
+            "contentScroll": 1060
+          }
+        },
+        {
+          "label": "supplier-actions",
+          "layout": {
+            "page": 1280,
+            "width": 1280,
+            "root": 1280,
+            "contentWidth": 1060,
+            "contentScroll": 1060
+          }
+        },
+        {
+          "label": "contractor-actions",
+          "layout": {
+            "page": 1280,
+            "width": 1280,
+            "root": 1280,
+            "contentWidth": 1060,
+            "contentScroll": 1060
+          }
+        },
+        {
+          "label": "client-actions",
+          "layout": {
+            "page": 1280,
+            "width": 1280,
+            "root": 1280,
+            "contentWidth": 1060,
+            "contentScroll": 1060
+          }
+        },
+        {
+          "label": "contextual-review",
+          "layout": {
+            "page": 1280,
+            "width": 1280,
+            "root": 1280,
+            "contentWidth": 1060,
+            "contentScroll": 1060
+          }
+        },
+        "All eight handoff nodes navigate to their existing review",
+        {
+          "changedRoadVolume": 146.1,
+          "noDuplicatePackages": true,
+          "metadataPreserved": true,
+          "reopenDoesNotCreateRevision": 4
+        },
+        {
+          "label": "delivery-coordination",
+          "layout": {
+            "page": 1280,
+            "width": 1280,
+            "root": 1280,
+            "contentWidth": 1060,
+            "contentScroll": 1060
+          }
+        }
+      ],
+      "errors": [],
+      "writes": [],
+      "failures": []
+    },
+    {
+      "name": "phone",
+      "shots": [
+        "docs/qa-coordination-2026-10-19/phone-team-overview.png",
+        "docs/qa-coordination-2026-10-19/phone-owner-actions.png",
+        "docs/qa-coordination-2026-10-19/phone-architect-actions.png",
+        "docs/qa-coordination-2026-10-19/phone-engineer-actions.png",
+        "docs/qa-coordination-2026-10-19/phone-supplier-actions.png",
+        "docs/qa-coordination-2026-10-19/phone-contractor-actions.png",
+        "docs/qa-coordination-2026-10-19/phone-client-actions.png",
+        "docs/qa-coordination-2026-10-19/phone-contextual-review.png",
+        "docs/qa-coordination-2026-10-19/phone-delivery-coordination.png"
+      ],
+      "checks": [
+        {
+          "cityPackages": 16,
+          "houseCountedOnce": true,
+          "originalRoadVolume": 124.2,
+          "separateDataCentreEnvelope": true
+        },
+        {
+          "label": "team-overview",
+          "layout": {
+            "page": 390,
+            "width": 390,
+            "root": 390,
+            "contentWidth": 390,
+            "contentScroll": 390
+          }
+        },
+        "Export parsed: canonical component IDs, revision, local scope, separate delivery references",
+        {
+          "label": "owner-actions",
+          "layout": {
+            "page": 390,
+            "width": 390,
+            "root": 390,
+            "contentWidth": 390,
+            "contentScroll": 390
+          }
+        },
+        {
+          "label": "architect-actions",
+          "layout": {
+            "page": 390,
+            "width": 390,
+            "root": 390,
+            "contentWidth": 390,
+            "contentScroll": 390
+          }
+        },
+        {
+          "label": "engineer-actions",
+          "layout": {
+            "page": 390,
+            "width": 390,
+            "root": 390,
+            "contentWidth": 390,
+            "contentScroll": 390
+          }
+        },
+        {
+          "label": "supplier-actions",
+          "layout": {
+            "page": 390,
+            "width": 390,
+            "root": 390,
+            "contentWidth": 390,
+            "contentScroll": 390
+          }
+        },
+        {
+          "label": "contractor-actions",
+          "layout": {
+            "page": 390,
+            "width": 390,
+            "root": 390,
+            "contentWidth": 390,
+            "contentScroll": 390
+          }
+        },
+        {
+          "label": "client-actions",
+          "layout": {
+            "page": 390,
+            "width": 390,
+            "root": 390,
+            "contentWidth": 390,
+            "contentScroll": 390
+          }
+        },
+        {
+          "label": "contextual-review",
+          "layout": {
+            "page": 390,
+            "width": 390,
+            "root": 390,
+            "contentWidth": 390,
+            "contentScroll": 390
+          }
+        },
+        "All eight handoff nodes navigate to their existing review",
+        {
+          "changedRoadVolume": 146.1,
+          "noDuplicatePackages": true,
+          "metadataPreserved": true,
+          "reopenDoesNotCreateRevision": 4
+        },
+        {
+          "label": "delivery-coordination",
+          "layout": {
+            "page": 390,
+            "width": 390,
+            "root": 390,
+            "contentWidth": 390,
+            "contentScroll": 390
+          }
+        }
+      ],
+      "errors": [],
+      "writes": [],
+      "failures": []
+    }
+  ]
+}

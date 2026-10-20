@@ -2,12 +2,24 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import type { ItemSolid } from '../../designer/roomSolids';
 import { serviceProductById, serviceProductSizeM, type ServiceProductDefinition } from '../../data/serviceProducts';
+import { furniturePreview } from './furniturePreview';
 
 /** Original, intentionally simplified bodies. Supplier dimensions describe the
  * envelope only; ribs, lid, ceramic rim and screw positions are illustrative.
  */
 export function createServiceProductBody(definition: ServiceProductDefinition): THREE.Group {
   const sizeM = serviceProductSizeM(definition);
+  if (definition.shape === 'garden-sofa') {
+    const model = furniturePreview({ key: definition.referenceProductId, instanceId: definition.referenceProductId,
+      productId: definition.referenceProductId, ...sizeM,
+      x0: -sizeM.lengthM / 2, x1: sizeM.lengthM / 2, y0: -sizeM.widthM / 2, y1: sizeM.widthM / 2,
+      z0: 0, z1: sizeM.heightM, rotationDeg: 0, hex: '#b18b60' });
+    if (model) {
+      model.userData = { ...model.userData, referenceProductId: definition.referenceProductId,
+        pairedServiceProduct: true, dimensionsBasis: definition.dimensionsBasis };
+      return model;
+    }
+  }
   const detail = new THREE.Group();
   const materials = new Map<string, THREE.MeshStandardMaterial>();
   const material = (colour: string) => {
@@ -80,25 +92,6 @@ export function createServiceProductBody(definition: ServiceProductDefinition): 
     rounded(0, .16, .035, .77, .09, .69, '#becfc5', .04);
     add(new THREE.CylinderGeometry(.025, .025, .008, 24), '#7d8b85', 0, .21, .035);
     add(new THREE.CylinderGeometry(.022, .022, .008, 24), '#697c72', 0, 1.004, -.415);
-  } else if (definition.shape === 'garden-sofa') {
-    // Original acacia-frame interpretation of the measured Seville sofa component.
-    // No set companions or whole-set weight are added to this one catalogue item.
-    for (const x of [-.455, .455]) {
-      for (const z of [-.385, .365]) rounded(x, .235, z, .06, .47, .07, '#876449', .008);
-      rounded(x, .55, 0, .09, .055, .88, '#a57b54', .014);
-      rounded(x, .45, -.405, .06, .9, .06, '#8e6846', .008);
-    }
-    rounded(0, .27, 0, .96, .075, .85, '#906b49', .012);
-    for (const x of [-.345, -.23, -.115, 0, .115, .23, .345]) {
-      rounded(x, .68, -.405, .075, .39, .05, '#b1875d', .006);
-    }
-    rounded(0, .945, -.405, .98, .06, .065, '#9b724e', .009);
-    for (const x of [-.222, .222]) {
-      rounded(x, .36, .015, .43, .13, .78, '#e1dfd2', .052);
-      const cushion = rounded(x, .675, -.295, .43, .48, .18, '#e5e2d6', .057);
-      cushion.rotation.x = -.09;
-      rounded(x, .425, .015, .398, .004, .735, '#c8c7ba', .001);
-    }
   } else if (definition.shape === 'pipe') {
     // Closed schematic ends intentionally avoid depicting a fabricated internal bore.
     const cylinder = add(new THREE.CylinderGeometry(.5, .5, 1, 40), definition.colour ?? '#717876', 0, .5, 0);

@@ -4,9 +4,12 @@ import type { Vertex } from '../lib/geometry';
 import type { MaterialsGeometry, MaterialsSettings, MaterialWallInput } from './materials';
 import { activeLevelIdOf, isOutdoorRoom, isRoofRoom, roomLevelId } from './levels';
 import { roofSourceRooms } from './roof';
-import { levelHeightM } from './building';
+import { roofOutline } from './roofSurface';
+import { levelHeightM, roofConfigOf } from './building';
 import { pointAlongEdge, roomEdges } from './wallEdges';
-import { OPENING_DOOR_HEIGHT_M, OPENING_WINDOW_HEIGHT_M } from '../data/wallPaints';
+import { openingProfileUnionAreaM2 } from './openingGeometry';
+import type { Opening } from './openings';
+import type { ConstructedEdge, WallMaterialSpec } from './wallConstruction';
 
 const EPS = 1e-7;
 type Interval = [number, number];
@@ -56,7 +59,7 @@ export function footprintUnionArea(polygons: readonly (readonly Vertex[])[]): nu
   return area;
 }
 
-type Wall = { a: Vertex; b: Vertex; level: string; height: number; openings: Array<{ a: Vertex; b: Vertex; sill: number; top: number }> };
+type Wall = { a: Vertex; b: Vertex; level: string; height: number; material?: Pick<ConstructedEdge, 'kind'> & WallMaterialSpec; openings: Array<{ centre: Vertex; opening: Opening }> };
 /** Measurement adapter: a shared wall and mirrored opening count only once per floor.
  * Bases use the ground footprint; the roof uses the top storey's union, excluding
  * courtyard gaps. Roof penetrations are not modelled yet: use the area override.
@@ -71,21 +74,20 @@ export function propertyMaterialsGeometry(property: Property, scope: MaterialsSe
     const height = levelHeightM(property, level);
     for (const edge of roomEdges(room)) {
       if (edge.lengthM < EPS) continue;
-      walls.push({ a: edge.a, b: edge.b, level, height, openings: (room.openings ?? []).filter(o => o.edgeIndex === edge.index).flatMap(o => {
+      walls.push({ a: edge.a, b: edge.b, level, height, material: room.wallConstruction?.find(e => e.edgeIndex === edge.index), openings: (room.openings ?? []).filter(o => o.edgeIndex === edge.index).flatMap(o => {
         if (!Number.isFinite(o.offsetM) || !Number.isFinite(o.widthM) || o.widthM <= 0) return [];
         const start = Math.max(0, Math.min(edge.lengthM, o.offsetM - o.widthM / 2));
         const end = Math.max(0, Math.min(edge.lengthM, o.offsetM + o.widthM / 2));
         if (end - start < EPS) return [];
-        const sill = o.kind === 'window' ? Math.min(height, Math.max(0, Number.isFinite(o.sillM) ? o.sillM! : 0.9)) : 0;
         // RoomEdge.dx/dy are unit vectors; pointAlongEdge takes metres.
         // Dividing by the edge length again shrank every opening deduction.
-        return [{ a: pointAlongEdge(edge, start), b: pointAlongEdge(edge, end), sill, top: Math.min(height, sill + (o.kind === 'window' ? OPENING_WINDOW_HEIGHT_M : OPENING_DOOR_HEIGHT_M)) }];
+        return [{ centre: pointAlongEdge(edge, o.offsetM), opening: o }];
       }) });
     }
   }
   for (const wall of property.walls ?? []) {
     const level = roomLevelId(wall);
-    if (scope !== 'active' || level === active) walls.push({ a: wall.a, b: wall.b, level, height: levelHeightM(property, level), openings: [] });
+    if (scope !== 'active' || level === active) walls.push({ a: wall.a, b: wall.b, level, height: levelHeightM(property, level), material: wall.construction ? { kind: wall.construction, thicknessMm: wall.thicknessM * 1000, materialProductId: wall.materialProductId } : undefined, openings: [] });
   }
   const groups: Array<{ origin: Vertex; ux: number; uy: number; level: string; walls: Wall[] }> = [];
   for (const wall of walls) {
@@ -99,22 +101,31 @@ export function propertyMaterialsGeometry(property: Property, scope: MaterialsSe
   const measured: MaterialWallInput[] = [];
   groups.forEach((group, gi) => {
     const project = (p: Vertex) => (p.x - group.origin.x) * group.ux + (p.y - group.origin.y) * group.uy;
-    const spans = group.walls.map(w => ({ lo: Math.min(project(w.a), project(w.b)), hi: Math.max(project(w.a), project(w.b)), height: w.height }));
-    const openings = group.walls.flatMap(w => w.openings.map(o => ({ lo: Math.min(project(o.a), project(o.b)), hi: Math.max(project(o.a), project(o.b)), sill: o.sill, top: o.top })));
-    const xs = [...new Set([...spans.flatMap(s => [s.lo, s.hi]), ...openings.flatMap(o => [o.lo, o.hi])])].sort((a, b) => a - b);
+    const spans = group.walls.map(w => ({ lo: Math.min(project(w.a), project(w.b)), hi: Math.max(project(w.a), project(w.b)), height: w.height, material: w.material }));
+    const openings = group.walls.flatMap(w => w.openings.map(o => ({ ...o.opening, offsetM: project(o.centre) })));
+    const xs = [...new Set([...spans.flatMap(s => [s.lo, s.hi]), ...openings.flatMap(o => [o.offsetM - o.widthM / 2, o.offsetM + o.widthM / 2])])].sort((a, b) => a - b);
     for (let i = 1; i < xs.length; i++) {
       const mid = (xs[i - 1] + xs[i]) / 2, lengthM = xs[i] - xs[i - 1];
       const covering = spans.filter(s => s.lo <= mid && s.hi >= mid);
       if (!covering.length || lengthM < EPS) continue;
       const heightM = Math.max(...covering.map(s => s.height));
-      const openingAreaM2 = lengthM * unionLength(openings.filter(o => o.lo <= mid && o.hi >= mid).map(o => [Math.max(0, o.sill), Math.min(heightM, o.top)]));
-      measured.push({ id: `wall-${gi}-${i}`, levelId: group.level, lengthM, heightM, openingAreaM2 });
+      const openingAreaM2 = openingProfileUnionAreaM2(openings, heightM, [{ t0: xs[i - 1], t1: xs[i] }]);
+      const material = covering.find(s => s.material?.kind === 'glass')?.material ?? covering.find(s => s.material)?.material;
+      measured.push({ id: `wall-${gi}-${i}`, levelId: group.level, lengthM, heightM, openingAreaM2,
+        ...(material ? { construction: material.kind, thicknessM: material.thicknessMm ? material.thicknessMm / 1000 : undefined, materialProductId: material.materialProductId } : {}) });
     }
   });
-  const roofPolygons = roofSourceRooms(property).map(r => r.polygon);
+  const roofConfig = property.roof ? roofConfigOf(property) : null;
+  const roofBasePolygons = roofConfig?.outline ? [roofConfig.outline] : roofSourceRooms(property).map(r => r.polygon);
+  const roofPolygons = roofConfig ? roofBasePolygons.map(polygon => roofOutline(polygon, roofConfig.overhangM)) : roofBasePolygons;
   const points = roofPolygons.flat();
-  const roofLengthM = points.length ? Math.max(...points.map(p => p.x)) - Math.min(...points.map(p => p.x)) : 0;
-  const roofWidthM = points.length ? Math.max(...points.map(p => p.y)) - Math.min(...points.map(p => p.y)) : 0;
+  const boundsX = points.length ? Math.max(...points.map(p => p.x)) - Math.min(...points.map(p => p.x)) : 0;
+  const boundsY = points.length ? Math.max(...points.map(p => p.y)) - Math.min(...points.map(p => p.y)) : 0;
   const roofAreaM2 = footprintUnionArea(roofPolygons);
-  return { ...(property.foundation?.enabled ? { foundationVolumeM3: foundationVolumeM3(property.foundation) } : {}), walls: measured, baseAreaM2: footprintUnionArea(rooms.filter(r => roomLevelId(r) === 'ground').map(r => r.polygon)), roofAreaM2, roofLengthM, roofWidthM, roofRectangular: Math.abs(roofAreaM2 - roofLengthM * roofWidthM) < 1e-5 };
+  // The rendered mono/gable slope runs across the shorter plan dimension.
+  const roofLengthM = roofConfig ? Math.max(boundsX, boundsY) : boundsX;
+  const roofWidthM = roofConfig ? Math.min(boundsX, boundsY) : boundsY;
+  const roofProfile = roofConfig ? { pitchDeg: roofConfig.style === 'flat' ? 0 : roofConfig.pitchDeg,
+    slopes: roofConfig.style === 'gable' ? 2 as const : 1 as const, overhangIncluded: true as const } : undefined;
+  return { ...(property.foundation?.enabled ? { foundationVolumeM3: foundationVolumeM3(property.foundation) } : {}), walls: measured, ...(roofProfile ? { roofProfile } : {}), baseAreaM2: footprintUnionArea(rooms.filter(r => roomLevelId(r) === 'ground').map(r => r.polygon)), roofAreaM2, roofLengthM, roofWidthM, roofRectangular: Math.abs(roofAreaM2 - roofLengthM * roofWidthM) < 1e-5 };
 }

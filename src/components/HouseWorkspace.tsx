@@ -1,6 +1,8 @@
 import { quoteAwareAmount } from '../lib/quotedProducts';
+import { OpeningDimensions } from './OpeningDimensions';
 import { ServicesLaunchButton } from './ServicesWorkspace';
 import { FoundationLaunchButton } from './FoundationWorkspace';
+import { CityLaunchButton } from './CityWorkspace';
 import { PlanImportButton } from './PlanImportWorkspace';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useCart } from '../store/cartStore';
@@ -10,6 +12,7 @@ import { isPitchEmbed } from '../demo/pitchEmbed';
 import { PRECISION_STEP_M, useDesignerUIStore } from '../store/designerUIStore';
 import { useHistoryStore } from '../store/historyStore';
 import { usePropertyStore } from '../store/propertyStore';
+import { useMeasuredPathToolStore } from '../store/measuredPathToolStore';
 import { activeLevelIdOf, isOutdoorRoom, isRoofRoom, levelsOf, isRoofLevel } from '../designer/levels';
 import { isDrawnPolygon } from '../designer/roomLayout';
 import type { BuildingControlsProps } from './BuildingControls';
@@ -20,6 +23,9 @@ import { isShowcaseReadOnly, DEMO_NOTICE } from '../lib/showcaseSafety';
 import { DOOR_WIDTHS_M } from '../designer/openings';
 import { StudioIcon, type StudioIconName } from './StudioIcon';
 import './houseWorkspace.css';
+import { useAppPreferences } from '../i18n/AppPreferences';
+import { LocaleThemeControls } from './LocaleThemeControls';
+import './professionalViews.css';
 
 export type HouseMode = 'build' | 'furnish' | 'paint' | 'floor' | 'garden' | 'energy' | 'materials';
 const MODES: Array<[HouseMode, string, StudioIconName]> = [
@@ -43,6 +49,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
   buildTool?: BuildingControlsProps['tool']; onBuildTool?: BuildingControlsProps['onToolChange']; onFloorAdded?: () => void;
 }) {
   const cart = useCart();
+  const { t, tx } = useAppPreferences();
   const readOnly = isShowcaseReadOnly();
   const currency = useCurrencyStore((s) => s.currency);
   const precision = useDesignerUIStore((s) => s.precision);
@@ -52,6 +59,8 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
   const [mobileInspector, setMobileInspector] = useState(false);
   const [costOpen, setCostOpen] = useState(false);
   const [buildPaletteOpen, setBuildPaletteOpen] = useState(false);
+  const measuredTarget = useMeasuredPathToolStore(s => s.target);
+  useEffect(() => { if (measuredTarget) setBuildPaletteOpen(false); }, [measuredTarget]);
   const panelOpen = mobileInspector || costOpen;
   const inspectorRef = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -123,9 +132,11 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
   }
   return <div className="house-workspace" data-build-open={buildPaletteOpen}>
     <header className="house-header">
-      <div className="house-brand" aria-label="PPW House Studio"><span className="house-mark"><StudioIcon name="room" /></span><div><strong>{readOnly ? 'DEMO' : 'HOUSE STUDIO'}</strong><span title={readOnly ? DEMO_NOTICE : name}>{readOnly ? 'Preview · no orders' : name}</span></div></div>
+      <div className="house-brand" aria-label="One Live Build"><span className="house-mark"><StudioIcon name="room" /></span><div><strong>{readOnly ? tx('Demo') : 'One Live Build'}</strong><span title={readOnly ? DEMO_NOTICE : name}>{readOnly ? tx('Preview · no orders') : name}</span></div></div>
       <div className="house-view-switch" aria-label="Design view"><button onClick={onPlan} aria-label="2D Plan"><StudioIcon name="box" size={18} /><span>2D <span className="studio-view-word">Plan</span></span></button><button aria-label="3D House" aria-pressed="true"><StudioIcon name="cube" size={18} /><span>3D <span className="studio-view-word">House</span></span></button></div>
       <div className="house-project-actions">
+        <button type="button" className="house-project-hub" aria-label={t('projectHub')} title={t('projectHub')} onClick={() => window.dispatchEvent(new Event('olb:open-project'))}><StudioIcon name="room" size={18} /><span className="studio-view-word">{t('projectHub')}</span></button>
+        <LocaleThemeControls compact />
         <AiDesignButton onBeforeOpen={onSelect} />
         <PlanImportButton onBeforeOpen={onSelect} />
         <ClearControls inline />
@@ -139,9 +150,10 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
     <div className="house-main">
       <nav className="house-rail" aria-label="House design tools">
         <FoundationLaunchButton onBeforeOpen={onSelect} />
+        <CityLaunchButton compact onBeforeOpen={onSelect} />
         {property.foundation?.enabled && <button type="button" aria-label="Foundation cutaway" aria-pressed={foundationView} onClick={() => useDesignerUIStore.getState().setFoundationView(!foundationView)}><StudioIcon name="storeys" /><span>{foundationView ? 'Restore ground' : 'Below ground'}</span></button>}
-        {MODES.map(([id, label, icon]) => <button key={id} type="button" aria-pressed={mode === id} title={label} onClick={() => { setCostOpen(false); const nextOpen = id === 'garden' || id === 'energy' || id === 'materials'; onMode(id); setBuildPaletteOpen(id === 'build' && !(buildPaletteOpen && mode === 'build')); setMobileInspector(nextOpen && !(mobileInspector && mode === id)); window.dispatchEvent(new CustomEvent('ppw:close-view-settings')); }} data-testid={`house-mode-${id}`}>
-          <StudioIcon name={icon} /><span>{label}</span>
+        {MODES.map(([id, label, icon]) => <button key={id} type="button" aria-pressed={mode === id} title={tx(label)} onClick={() => { setCostOpen(false); const nextOpen = id === 'garden' || id === 'energy' || id === 'materials'; onMode(id); setBuildPaletteOpen(id === 'build' && !(buildPaletteOpen && mode === 'build')); setMobileInspector(nextOpen && !(mobileInspector && mode === id)); window.dispatchEvent(new CustomEvent('ppw:close-view-settings')); }} data-testid={`house-mode-${id}`}>
+          <StudioIcon name={icon} /><span>{tx(label)}</span>
         </button>)}
       </nav>
       <div className="house-scene-column">
@@ -170,8 +182,9 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
           <label>Width <select aria-label="Opening width" value={doorDraft.widthM} onChange={event => useDesignerUIStore.getState().setDoorDraft({ widthM: Number(event.target.value) })}>
             {[...new Set([...(buildTool === 'window' ? [0.6, 0.9, 1.2, 1.5, 1.8, 2.4] : DOOR_WIDTHS_M), doorDraft.widthM])].sort((a, b) => a - b).map(width => <option key={width} value={width}>{width} m</option>)}
           </select></label>
-          {buildTool === 'door' && <><button type="button" aria-pressed={doorDraft.flipFacing} onClick={() => useDesignerUIStore.getState().toggleDoorFacing()} title="Flip swing side (F)">Flip side</button><button type="button" aria-pressed={doorDraft.flipHand} onClick={() => useDesignerUIStore.getState().toggleDoorHand()} title="Swap hinge (H)">Flip hinge</button></>}
+          {doorDraft.kind === 'door' && <><button type="button" aria-pressed={doorDraft.flipFacing} onClick={() => useDesignerUIStore.getState().toggleDoorFacing()} title="Flip swing side (F)">Flip side</button><button type="button" aria-pressed={doorDraft.flipHand} onClick={() => useDesignerUIStore.getState().toggleDoorHand()} title="Swap hinge (H)">Flip hinge</button></>}
           <small>Slide along a wall · release to place · repeat or Done. Esc cancels · right-drag or two fingers move the view</small>
+          <OpeningDimensions />
         </div>}
         {selection && <div className="house-selection-strip" data-testid="house-selection-strip">
           <span><small>SELECTED</small><strong>{selection.name}</strong></span>

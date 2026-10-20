@@ -1,0 +1,224 @@
+{
+  "at": "2026-10-15T07:08:45.839Z",
+  "base": "http://127.0.0.1:5173",
+  "bundle": "App-BLprWb7G.js",
+  "scope": "French/ocean contrast, translated camera controls, header overlap and price-free pitch captures",
+  "cases": [
+    {
+      "name": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "captures": [
+        "docs/qa-professional-views-2026-10-15/phone-final-plan-french-ocean-pitch.png",
+        "docs/qa-professional-views-2026-10-15/phone-final-house-french-ocean-pitch.png",
+        "docs/qa-professional-views-2026-10-15/phone-final-controls-french-ocean-pitch.png",
+        "docs/qa-professional-views-2026-10-15/phone-final-north-french-ocean-pitch.png"
+      ],
+      "failures": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "cameraOptions": [
+        "Vue personnalisée",
+        "Perspective",
+        "Dessus · perspective",
+        "Face · perspective",
+        "Axonométrique",
+        "Dessus · orthographique",
+        "Élévation nord",
+        "Élévation est",
+        "Élévation sud",
+        "Élévation ouest"
+      ],
+      "headerOverlaps": [],
+      "controlColours": [
+        {
+          "label": "Clear page",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "▱ Foundation",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "City Build",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Construire",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(35, 76, 90)"
+        },
+        {
+          "label": "Meubler",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Peinture",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Surfaces",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Jardin",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Matériaux",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Solaire",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Déplacer la vue",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Zoom avant",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Zoom arrière",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Cadrer",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "View",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        }
+      ]
+    },
+    {
+      "name": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "captures": [
+        "docs/qa-professional-views-2026-10-15/desktop-final-plan-french-ocean-pitch.png",
+        "docs/qa-professional-views-2026-10-15/desktop-final-house-french-ocean-pitch.png",
+        "docs/qa-professional-views-2026-10-15/desktop-final-controls-french-ocean-pitch.png",
+        "docs/qa-professional-views-2026-10-15/desktop-final-north-french-ocean-pitch.png"
+      ],
+      "failures": [],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "cameraOptions": [
+        "Vue personnalisée",
+        "Perspective",
+        "Dessus · perspective",
+        "Face · perspective",
+        "Axonométrique",
+        "Dessus · orthographique",
+        "Élévation nord",
+        "Élévation est",
+        "Élévation sud",
+        "Élévation ouest"
+      ],
+      "headerOverlaps": [],
+      "controlColours": [
+        {
+          "label": "Clear page",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "▱ Foundation",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "City Build",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Construire",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(35, 76, 90)"
+        },
+        {
+          "label": "Meubler",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Peinture",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Surfaces",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Jardin",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Matériaux",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Solaire",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Déplacer la vue",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Zoom avant",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Zoom arrière",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "Cadrer",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        },
+        {
+          "label": "View",
+          "foreground": "rgb(236, 246, 248)",
+          "background": "rgb(23, 45, 61)"
+        }
+      ]
+    }
+  ]
+}

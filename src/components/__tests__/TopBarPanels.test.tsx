@@ -49,6 +49,19 @@ function escape() {
 }
 
 describe('3D project sheet and panel dismissal', () => {
+  it.each(['door', 'window', 'hole', 'doorway'] as const)('shows only applicable desktop controls for %s openings', kind => {
+    useDesignerUIStore.setState({ viewMode: 'plan', tool: 'door' });
+    useDesignerUIStore.getState().setDoorDraft({ kind });
+    render();
+    const options = host.querySelector('[data-testid="door-options"]')!;
+    expect(options).not.toBeNull();
+    expect(options.querySelector('span')?.textContent).toBe(kind === 'door' ? 'Door' : kind === 'window' ? 'Window' : 'Opening');
+    expect(options.querySelector('[data-testid="door-flip-facing"]') !== null).toBe(kind === 'door');
+    expect(options.querySelector('[data-testid="door-flip-hand"]') !== null).toBe(kind === 'door');
+    expect(options.querySelector('[data-testid="door-kind-hole"]')).not.toBeNull();
+    click(button('Done adding openings', options));
+    expect(useDesignerUIStore.getState().tool).toBe('hand');
+  });
   function phonePaint() {
     Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 390 });
     vi.stubGlobal('matchMedia', (query: string) => ({
@@ -62,13 +75,14 @@ describe('3D project sheet and panel dismissal', () => {
     return materials;
   }
 
-  it('opens phone Wall type directly with three choices, separately from the Materials estimator', () => {
+  it('opens phone Wall type directly with glass and masonry choices, separately from the Materials estimator', () => {
     const materials = phonePaint();
     const sheet = document.querySelector('[aria-labelledby="wall-material-sheet-title"]')!;
     expect(sheet).not.toBeNull();
     expect(document.getElementById('ppw-sheet')).toBeNull();
-    expect(sheet.querySelectorAll('.wall-construction-cards button')).toHaveLength(3);
+    expect(sheet.querySelectorAll('.wall-construction-cards button')).toHaveLength(4);
     expect(sheet.textContent).toContain('Exposed brick');
+    expect(sheet.textContent).toContain('Glass');
     expect(sheet.textContent).not.toContain('Flooring');
     expect(document.activeElement).toBe(button('Close wall materials', sheet));
     click(button('Exposed brick', sheet));

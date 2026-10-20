@@ -40,6 +40,7 @@ import {
   boolean,
   numeric,
   uuid,
+  primaryKey,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
@@ -687,6 +688,24 @@ export type NewDesign = typeof designs.$inferInsert;
 export type Lead = typeof leads.$inferSelect;
 export type NewLead = typeof leads.$inferInsert;
 
+// City procurement recipients are private merchant data, separate from designs.
+export const cityProcurementPlans = pgTable('city_procurement_plans', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  merchantId: bigint('merchant_id', { mode: 'number' }).notNull().references(() => merchants.id, { onDelete: 'cascade' }),
+  publicId: uuid('public_id').notNull(),
+  projectId: varchar('project_id', { length: 100 }).notNull(),
+  revision: integer('revision').notNull().default(1),
+  document: jsonb('document').notNull(),
+  lastRequestId: uuid('last_request_id').notNull(),
+  lastRequestHash: varchar('last_request_hash', { length: 64 }).notNull(),
+  updatedBy: varchar('updated_by', { length: 320 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, table => ({
+  ownerId: uniqueIndex('city_procurement_owner_id_idx').on(table.merchantId, table.publicId),
+  ownerProject: index('city_procurement_owner_project_idx').on(table.merchantId, table.projectId),
+}));
+
 // M7 (RELENTLESS_GOAL 2026-05-19) — Pattern C attribution layer.
 // One row per outbound click from the designer to a merchant's
 // external storefront. The product_* + price_* columns are
@@ -739,4 +758,30 @@ export const studioAccessRecords = pgTable('studio_access_records', {
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
 }, (table) => ({
   expiryIdx: index('studio_access_records_expiry_idx').on(table.expiresAt),
+}));
+
+// Shared specifications: use migration 0032 and its atomic save function.
+// Do not replace it with db:push; triggers/function enforce history and CAS.
+export const olbSharedProjects = pgTable('olb_shared_projects', {
+  id: uuid('id').primaryKey(),
+  ownerUserId: varchar('owner_user_id', { length: 128 }).notNull(),
+  revision: integer('revision').notNull(),
+  document: jsonb('document').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({ owner: index('olb_shared_projects_owner_idx').on(table.ownerUserId) }));
+
+export const olbSharedSpecRevisions = pgTable('olb_shared_spec_revisions', {
+  projectId: uuid('project_id').notNull().references(() => olbSharedProjects.id),
+  revision: integer('revision').notNull(),
+  actorUserId: varchar('actor_user_id', { length: 128 }).notNull(),
+  requestId: uuid('request_id').notNull(),
+  requestHash: varchar('request_hash', { length: 64 }).notNull(),
+  operation: varchar('operation', { length: 32 }).notNull(),
+  componentId: varchar('component_id', { length: 180 }),
+  document: jsonb('document').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({
+  version: primaryKey({ columns: [table.projectId, table.revision] }),
+  retry: uniqueIndex('olb_shared_spec_revisions_project_id_request_id_key').on(table.projectId, table.requestId),
 }));

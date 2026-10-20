@@ -148,11 +148,11 @@ describe('direct Plan controls', () => {
   });
 
   // Capsule pass (2026-09-26). The first cut of planToolbar.css hid the
-  // phone Select and the Custom radio with display:none and dropped the pill
+  // phone Select and the Custom control with display:none and dropped the pill
   // labels from the DOM; 11 e2e click sites, wallpen-mobile.spec and
   // units.spec (`toHaveText('Snap 0.5 m')`) depend on all three. The real
   // stylesheet is attached so a hiding rule fails here, not in Playwright.
-  it('keeps the phone Select and the Custom radio rendered and un-hidden at 390px under the capsule stylesheet', () => {
+  it('keeps the phone Select and the Custom control rendered and un-hidden at 390px under the capsule stylesheet', () => {
     viewport(390); attachPlanToolbarCss(); render();
     const select = byId('select-tool-toggle-phone');
     const custom = byId('room-draw-toggle');
@@ -164,11 +164,12 @@ describe('direct Plan controls', () => {
       expect(getComputedStyle(node).display).not.toBe('none');
       expect(getComputedStyle(node).visibility).not.toBe('hidden');
     }
-    // Custom stays a radio inside the Room-shape radiogroup, folded into the
-    // construction rail; the testid lives on that one node only.
-    expect(custom.getAttribute('role')).toBe('radio');
-    expect(custom.hasAttribute('aria-checked')).toBe(true);
-    expect(custom.closest('[role="radiogroup"]')).not.toBeNull();
+    // Both room-shape controls use native buttons, so the Room control can
+    // expose its popover state without an incompatible radio role.
+    expect(custom.tagName).toBe('BUTTON');
+    expect(custom.getAttribute('role')).toBeNull();
+    expect(custom.hasAttribute('aria-pressed')).toBe(true);
+    expect(custom.closest('[role="group"]')).not.toBeNull();
     expect(custom.closest('[aria-label="Construction tools"]')).not.toBeNull();
     expect(document.querySelectorAll('[data-testid="room-draw-toggle"]')).toHaveLength(1);
     expect(document.querySelectorAll('[data-testid="select-tool-toggle-phone"]')).toHaveLength(1);

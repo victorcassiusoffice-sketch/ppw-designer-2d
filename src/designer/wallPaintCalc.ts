@@ -1,3 +1,5 @@
+import { openingProfileAreaM2, openingProfileUnionAreaM2 } from './openingGeometry.js';
+import type { ConstructedEdge, WallConstruction } from './wallConstruction.js';
 import { exteriorWallSpans } from './wallConstruction.js';
 /**
  * Wall-paint measurement algorithm (Vic 2026-09-02).
@@ -26,8 +28,6 @@ import {
   MAX_PAINT_WASTE_PCT,
   MIN_DEDUCTIBLE_OPENING_M2,
   MIN_PAINT_COATS,
-  OPENING_DOOR_HEIGHT_M,
-  OPENING_WINDOW_HEIGHT_M,
   TINTED_PAINT_WASTE_PCT,
   WALL_PAINTS,
   brandIdOfPaint,
@@ -57,9 +57,11 @@ interface PaintableRoomShape {
   polygon: Polygon;
   openings?: Opening[];
   wallPaint?: WallPaintedEdge[];
+  wallConstruction?: ConstructedEdge[];
 }
 
 interface PaintableFreeWall {
+  construction?: WallConstruction;
   exteriorPaint?: WallPaintedEdge;
   outside?: boolean;
   levelId?: string;
@@ -75,7 +77,7 @@ interface PaintableFreeWall {
 
 /** Explicit outside paint replaces the second legacy same-colour face. */
 function freePaintFaces(walls: PaintableFreeWall[]): PaintableFreeWall[] {
-  return walls.flatMap((wall) => [
+  return walls.filter(wall => wall.construction !== 'glass').flatMap((wall) => [
     { ...wall, paintFaces: wall.exteriorPaint ? 1 : wall.paintFaces },
     ...(wall.exteriorPaint ? [{ ...wall, paintId: wall.exteriorPaint.paintId, paintColourHex: wall.exteriorPaint.colourHex,
       paintColourName: wall.exteriorPaint.colourName, paintFaces: 1, outside: true }] : []),
@@ -84,6 +86,7 @@ function freePaintFaces(walls: PaintableFreeWall[]): PaintableFreeWall[] {
 
 /** Net exposed façade area, excluding adjoining rooms and opening gaps. */
 export function exteriorPaintAreaM2(room: PaintableRoomShape & { id: string }, edgeIndex: number, heightM: number, rooms: Array<PaintableRoomShape & { id: string }>): number {
+  if (room.wallConstruction?.some(edge => edge.edgeIndex === edgeIndex && edge.kind === 'glass')) return 0;
   const spans = exteriorWallSpans(room, edgeIndex, rooms);
   const gross = spans.reduce((total, span) => total + (span.t1 - span.t0) * heightM, 0);
   const cut = paintOpeningUnionAreaM2(room, edgeIndex, heightM, spans);
@@ -148,10 +151,7 @@ export function edgeLengthM(polygon: Polygon, edgeIndex: number): number {
 
 /** Area an opening removes from a wall face at the given wall height. */
 export function openingFaceAreaM2(opening: Opening, wallHeightM: number): number {
-  if (![opening.widthM, wallHeightM].every(Number.isFinite) || opening.widthM <= 0 || wallHeightM <= 0) return 0;
-  const sill = opening.kind === 'window' ? Math.max(0, Number.isFinite(opening.sillM) ? opening.sillM! : 0.9) : 0;
-  const h = Math.max(0, Math.min(opening.kind === 'window' ? OPENING_WINDOW_HEIGHT_M : OPENING_DOOR_HEIGHT_M, wallHeightM - sill));
-  return Math.max(0, opening.widthM * h);
+  return openingProfileAreaM2(opening, wallHeightM);
 }
 
 /** Union of deductible opening rectangles clipped to the painted face. Small
@@ -163,27 +163,7 @@ export function paintOpeningUnionAreaM2(
 ): number {
   const length = edgeLengthM(room.polygon, edgeIndex);
   if (!Number.isFinite(length) || !Number.isFinite(wallHeightM) || length <= 0 || wallHeightM <= 0) return 0;
-  const rectangles = (room.openings ?? []).filter(o => o.edgeIndex === edgeIndex).flatMap(o => {
-    if (![o.offsetM, o.widthM].every(Number.isFinite) || o.widthM <= 0) return [];
-    const lo = Math.max(0, o.offsetM - o.widthM / 2), hi = Math.min(length, o.offsetM + o.widthM / 2);
-    const sill = o.kind === 'window' ? Math.max(0, Number.isFinite(o.sillM) ? o.sillM! : 0.9) : 0;
-    const top = Math.min(wallHeightM, sill + (o.kind === 'window' ? OPENING_WINDOW_HEIGHT_M : OPENING_DOOR_HEIGHT_M));
-    if (hi <= lo || top <= sill || (hi - lo) * (top - sill) < MIN_DEDUCTIBLE_OPENING_M2 - 1e-9) return [];
-    return spans.flatMap(span => {
-      const a = Math.max(lo, span.t0), b = Math.min(hi, span.t1);
-      return b > a ? [{ lo: a, hi: b, sill, top }] : [];
-    });
-  });
-  const xs = [...new Set(rectangles.flatMap(r => [r.lo, r.hi]))].sort((a, b) => a - b);
-  let area = 0;
-  for (let i = 1; i < xs.length; i++) {
-    const mid = (xs[i - 1] + xs[i]) / 2;
-    const vertical = rectangles.filter(r => r.lo < mid && r.hi > mid).sort((a, b) => a.sill - b.sill);
-    let end = -Infinity, height = 0;
-    for (const r of vertical) { height += Math.max(0, r.top - Math.max(end, r.sill)); end = Math.max(end, r.top); }
-    area += (xs[i] - xs[i - 1]) * height;
-  }
-  return area;
+  return openingProfileUnionAreaM2((room.openings ?? []).filter(o => o.edgeIndex === edgeIndex), wallHeightM, spans, MIN_DEDUCTIBLE_OPENING_M2);
 }
 
 /**
@@ -205,6 +185,7 @@ export function paintableEdgeAreaM2(
   edgeIndex: number,
   wallHeightM: number,
 ): number {
+  if (room.wallConstruction?.some(edge => edge.edgeIndex === edgeIndex && edge.kind === 'glass')) return 0;
   const gross = edgeLengthM(room.polygon, edgeIndex) * wallHeightM;
   if (gross <= 0) return 0;
   const cut = paintOpeningUnionAreaM2(room, edgeIndex, wallHeightM);
@@ -511,7 +492,7 @@ export function wallPaintBreakdown(
   for (const room of property.rooms) {
     const h = wallFinishHeightM(property, room, wallHeightM);
     if (h <= 0) continue;
-    const painted = [...(room.wallPaint ?? [])].sort((a, b) => a.edgeIndex - b.edgeIndex);
+    const painted = [...(room.wallPaint ?? [])].filter(face => !room.wallConstruction?.some(edge => edge.edgeIndex === face.edgeIndex && edge.kind === 'glass')).sort((a, b) => a.edgeIndex - b.edgeIndex);
     for (const e of painted) {
       const paint = findWallPaintById(e.paintId);
       if (!paint) continue;

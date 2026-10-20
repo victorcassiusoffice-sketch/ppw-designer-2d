@@ -1,5 +1,6 @@
 /** Ground-level landscaping; optional sourced paving remains part of its surface. */
 import { pointInPolygon, type Polygon, type Vertex } from '../lib/geometry';
+import { isSimpleMeasuredPolygon } from './measuredPath';
 
 export const GARDEN_SURFACES = {
   lawn: { label: 'Lawn', hex: '#70934f' },
@@ -7,6 +8,8 @@ export const GARDEN_SURFACES = {
   gravel: { label: 'Gravel', hex: '#b5afa0' },
   path: { label: 'Paved path', hex: '#c5bca9' },
   concrete: { label: 'Concrete', hex: '#a7aaa8' },
+  tarmac: { label: 'Tarmac / asphalt', hex: '#42484b' },
+  pool: { label: 'Swimming pool', hex: '#5db6c3' },
 } as const;
 export type GardenSurfaceKind = keyof typeof GARDEN_SURFACES;
 export const FENCE_MATERIALS = {
@@ -28,7 +31,28 @@ export interface GardenSurface {
   elevationM: number;
   /** Dated outdoor paving reference; absent means a generic, unpriced surface. */
   pavingProductId?: string;
+  /** Sampled, closed plan outline in world metres. Absent means rectangle. */
+  outline?: Polygon;
+  /** Physical material depth, independent of the plan's depthM dimension. */
+  thicknessM?: number;
+  subBaseDepthM?: number;
+  pool?: GardenPool;
 }
+export interface GardenPool {
+  /** Inner floor-to-rim depth and water depth measured from the floor. */
+  shellDepthM: number;
+  waterDepthM: number;
+  wallThicknessM: number;
+  baseThicknessM: number;
+  excavationMarginM: number;
+  stage: 'excavation' | 'shell' | 'filled';
+  /** Reference only: custom geometry is never claimed to be the supplier's mould. */
+  productReferenceId?: string;
+}
+export const DEFAULT_GARDEN_POOL: GardenPool = {
+  shellDepthM: 1.5, waterDepthM: 1.35, wallThicknessM: 0.2, baseThicknessM: 0.2,
+  excavationMarginM: 0.3, stage: 'filled',
+};
 export interface GardenFence {
   id: string;
   a: Vertex;
@@ -81,10 +105,42 @@ export function normaliseGardenSurface(value: unknown): GardenSurface | null {
     || !finite(v.x, -10000, 10000) || !finite(v.y, -10000, 10000)
     || !finite(v.widthM, 0.2, 500) || !finite(v.depthM, 0.2, 500)
     || !finite(v.elevationM, 0, 2)) return null;
+  if (v.outline !== undefined && (!isSimpleMeasuredPolygon(v.outline) || !v.outline.every(pointValid)
+    || v.outline.some(p => p.x < v.x - 1e-6 || p.x > v.x + v.widthM + 1e-6 || p.y < v.y - 1e-6 || p.y > v.y + v.depthM + 1e-6))) return null;
+  if (v.thicknessM !== undefined && !finite(v.thicknessM, 0.001, 5)) return null;
+  if (v.subBaseDepthM !== undefined && !finite(v.subBaseDepthM, 0, 10)) return null;
+  const pool = v.kind === 'pool' ? normaliseGardenPool(v.pool ?? DEFAULT_GARDEN_POOL) : undefined;
+  // Pool takeoffs currently describe a rectangular, flat-bottom basin only.
+  if (v.kind === 'pool' && (!pool || v.outline)) return null;
   return {
     id: v.id, kind: v.kind, x: v.x, y: v.y, widthM: v.widthM, depthM: v.depthM, elevationM: v.elevationM,
     ...(typeof v.pavingProductId === 'string' && idValid(v.pavingProductId.trim()) ? { pavingProductId: v.pavingProductId.trim() } : {}),
+    ...(v.outline ? { outline: v.outline.map(p => ({ ...p })) } : {}),
+    ...(v.thicknessM !== undefined ? { thicknessM: v.thicknessM } : {}),
+    ...(v.subBaseDepthM !== undefined ? { subBaseDepthM: v.subBaseDepthM } : {}),
+    ...(pool ? { pool } : {}),
   };
+}
+
+export function normaliseGardenPool(value: unknown): GardenPool | null {
+  if (!value || typeof value !== 'object') return null;
+  const v = value as GardenPool;
+  if (!finite(v.shellDepthM, 0.2, 10) || !finite(v.waterDepthM, 0, v.shellDepthM)
+    || !finite(v.wallThicknessM, 0.01, 2) || !finite(v.baseThicknessM, 0.01, 2)
+    || !finite(v.excavationMarginM, 0, 5) || !['excavation', 'shell', 'filled'].includes(v.stage)) return null;
+  return { shellDepthM: v.shellDepthM, waterDepthM: v.waterDepthM, wallThicknessM: v.wallThicknessM,
+    baseThicknessM: v.baseThicknessM, excavationMarginM: v.excavationMarginM, stage: v.stage,
+    ...(idValid(v.productReferenceId) ? { productReferenceId: v.productReferenceId } : {}) };
+}
+
+/** Moving/resizing an outline uses the same affine mapping as its visible bounds. */
+export function gardenSurfacePatch(original: GardenSurface, patch: Partial<Omit<GardenSurface, 'id'>>): GardenSurface {
+  const next = { ...original, ...patch };
+  if (original.outline && !Object.prototype.hasOwnProperty.call(patch, 'outline')) next.outline = original.outline.map(p => ({
+    x: next.x + (p.x - original.x) * next.widthM / original.widthM,
+    y: next.y + (p.y - original.y) * next.depthM / original.depthM,
+  }));
+  return next;
 }
 
 export const fenceLengthM = (fence: Pick<GardenFence, 'a' | 'b'>): number =>
@@ -127,6 +183,7 @@ export function normaliseGardenMetadata<T extends { garden?: Garden }>(property:
 }
 
 export function gardenSurfacePolygon(surface: GardenSurface): Polygon {
+  if (surface.outline) return surface.outline;
   return [
     { x: surface.x, y: surface.y },
     { x: surface.x + surface.widthM, y: surface.y },

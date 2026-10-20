@@ -1,0 +1,33 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "cases": [
+    {
+      "name": "city",
+      "errors": [],
+      "writes": [],
+      "overflow": 0,
+      "screenshot": "docs/qa-eco-city-evidence-2026-10-19/city-desktop1280.png"
+    },
+    {
+      "name": "services",
+      "errors": [],
+      "writes": [],
+      "overflow": 0,
+      "screenshot": "docs/qa-eco-city-evidence-2026-10-19/services-desktop1280.png"
+    },
+    {
+      "name": "materials",
+      "errors": [],
+      "writes": [],
+      "overflow": 0,
+      "screenshot": "docs/qa-eco-city-evidence-2026-10-19/materials-desktop1280.png"
+    },
+    {
+      "name": "coordination",
+      "errors": [],
+      "writes": [],
+      "overflow": 0,
+      "screenshot": "docs/qa-eco-city-evidence-2026-10-19/coordination-desktop1280.png"
+    }
+  ]
+}

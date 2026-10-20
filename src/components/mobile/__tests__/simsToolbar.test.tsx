@@ -57,16 +57,19 @@ describe('SimsBottomToolbar', () => {
     expect(container.querySelector('[data-testid="sims-bottom-toolbar"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="sims-thumb-strip"]')).toBeNull();
     act(() => (container.querySelector('[data-testid="sims-catalog-open"]') as HTMLButtonElement).click());
-    // Empty tabs hide (2026-09-07): the seed fills these eight; Furniture,
-    // Recovery and Sauna stay out until a range brings them (Courts does).
-    for (const cat of ['all', 'cardio', 'flooring', 'walls', 'decor', 'lighting', 'outdoor', 'eco']) {
+    // Empty tabs hide. The source-linked Comfy sofa now fills Furniture;
+    // Recovery, Sauna and Appliances still have no ordinary seeded items.
+    for (const cat of ['all', 'furniture', 'cardio', 'flooring', 'walls', 'decor', 'lighting', 'outdoor', 'eco']) {
       expect(container.querySelector(`[data-testid="sims-cat-${cat}"]`), cat).not.toBeNull();
     }
-    for (const cat of ['furniture', 'recovery', 'sauna', 'appliances']) {
+    for (const cat of ['recovery', 'sauna', 'appliances']) {
       expect(container.querySelector(`[data-testid="sims-cat-${cat}"]`), cat).toBeNull();
     }
     // Bundled catalog (22 products) renders thumbnails in the "All" tab.
     expect(container.querySelectorAll('[data-testid="sims-thumb"]').length).toBeGreaterThan(0);
+    act(() => (container.querySelector('[data-testid="sims-cat-furniture"]') as HTMLButtonElement).click());
+    expect(container.querySelectorAll('[data-testid="sims-thumb"]').length).toBe(1);
+    expect(container.querySelector('[data-product-id="courts-comfy-3-seater-dove"]')).not.toBeNull();
   });
 
   it('minimize chevron collapses the thumbnail strip', async () => {

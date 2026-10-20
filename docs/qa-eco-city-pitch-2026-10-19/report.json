@@ -1,0 +1,49 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "cases": [
+    {
+      "device": "desktop",
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "shots": [
+        "docs/qa-eco-city-pitch-2026-10-19/desktop-chapter-1.png",
+        "docs/qa-eco-city-pitch-2026-10-19/desktop-chapter-2.png",
+        "docs/qa-eco-city-pitch-2026-10-19/desktop-chapter-3.png",
+        "docs/qa-eco-city-pitch-2026-10-19/desktop-chapter-4.png",
+        "docs/qa-eco-city-pitch-2026-10-19/desktop-chapter-5.png",
+        "docs/qa-eco-city-pitch-2026-10-19/desktop-chapter-6.png",
+        "docs/qa-eco-city-pitch-2026-10-19/desktop-chapter-7.png",
+        "docs/qa-eco-city-pitch-2026-10-19/desktop-role-station.png",
+        "docs/qa-eco-city-pitch-2026-10-19/desktop-customise-graphite.png",
+        "docs/qa-eco-city-pitch-2026-10-19/desktop-customise-ocean.png",
+        "docs/qa-eco-city-pitch-2026-10-19/desktop-developer-entry.png"
+      ],
+      "checks": [
+        "Seven chapters, workstreams and roles usable; no full editor; scripted AI explicit; customization/share/JSON export and keyboard tabs pass"
+      ]
+    },
+    {
+      "device": "phone",
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "shots": [
+        "docs/qa-eco-city-pitch-2026-10-19/phone-chapter-1.png",
+        "docs/qa-eco-city-pitch-2026-10-19/phone-chapter-2.png",
+        "docs/qa-eco-city-pitch-2026-10-19/phone-chapter-3.png",
+        "docs/qa-eco-city-pitch-2026-10-19/phone-chapter-4.png",
+        "docs/qa-eco-city-pitch-2026-10-19/phone-chapter-5.png",
+        "docs/qa-eco-city-pitch-2026-10-19/phone-chapter-6.png",
+        "docs/qa-eco-city-pitch-2026-10-19/phone-chapter-7.png",
+        "docs/qa-eco-city-pitch-2026-10-19/phone-role-station.png",
+        "docs/qa-eco-city-pitch-2026-10-19/phone-customise-graphite.png",
+        "docs/qa-eco-city-pitch-2026-10-19/phone-customise-ocean.png",
+        "docs/qa-eco-city-pitch-2026-10-19/phone-developer-entry.png"
+      ],
+      "checks": [
+        "Seven chapters, workstreams and roles usable; no full editor; scripted AI explicit; customization/share/JSON export and keyboard tabs pass"
+      ]
+    }
+  ]
+}

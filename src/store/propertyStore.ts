@@ -1,4 +1,6 @@
-import { normaliseBuildingServices, type BuildingServices } from '../designer/buildingServices';
+import { normaliseCity, type CityModel } from '../designer/city';
+import { normaliseEco, normaliseEngineeringInputs, type EcoModel, type EngineeringInputs } from '../designer/eco';
+import { normaliseBuildingServices, serviceRunLengthM, type BuildingServices } from '../designer/buildingServices';
 import { resolveServiceConnections } from '../designer/serviceConnections';
 import { inferConnectedRooms } from '../designer/connectedWallRooms';
 import { normaliseFoundation, type FoundationModel } from '../designer/foundation';
@@ -32,7 +34,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
 import type { Polygon, RoomDims, Vertex } from '../lib/geometry';
-import { rectToPolygon } from '../lib/geometry';
+import { rectToPolygon, pointInPolygon, isRectInsidePolygon, rotatedFootprint } from '../lib/geometry';
 // Attached multi-room (2026-08-26) — every room lives in ONE shared world
 // frame, so a new rectangle needs an anchor and a legacy all-at-origin
 // save needs un-stacking. Both are pure helpers.
@@ -41,7 +43,10 @@ import { translatePolygon, unstackLegacyRooms } from '../designer/roomLayout';
 // so history and persistence pick them up with no extra plumbing.
 import type { Opening } from '../designer/openings';
 import { canonicaliseRoomGeometry, openingSpan, validateOpening } from '../designer/openings';
-import { roomEdges } from '../designer/wallEdges';
+import { validOpeningDimensions } from '../designer/openingGeometry';
+import { sampleMeasuredPath, type MeasuredPath } from '../designer/measuredPath';
+import { roofMeasuredAreas } from '../designer/roofSurface';
+import { roomEdges, collinearOverlap } from '../designer/wallEdges';
 import { openingsOnPhysicalWall } from '../designer/openingPlacement';
 // Per-tile floor painting (floor-painting brief 2026-08-28).
 import {
@@ -83,7 +88,7 @@ import {
   normaliseLevelElevation,
   normaliseLevelHeight,
   normaliseRoofConfig,
-  stairRiseM,
+  stairRiseM, levelHeightM, roofConfigOf,
   type BuildingStair,
   type NewBuildingStair,
   type RoofConfig,
@@ -91,7 +96,7 @@ import {
 import {
   MIN_FREE_WALL_LENGTH_M,
   freeWallLengthM,
-  fromLegacyWallSegments,
+  fromLegacyWallSegments, runToFreeWalls,
   isFreeWallLike,
   wallsOnLevel,
   type FreeWall,
@@ -100,10 +105,12 @@ import {
 // normalisers and the UI, so a bad hex is rejected the same way everywhere.
 import { findWallPaintById, isPaintTintable, normalisePaintColourHex, normalisePaintColourName } from '../data/wallPaints';
 import { findCladdingProduct } from '../data/claddingCatalog';
-import { exteriorWallSpans, paintSide, sidePaint, isWallConstruction, remapConstruction, type WallSide, type WallConstruction, type ConstructedEdge } from '../designer/wallConstruction';
+import { getProductById } from '../data/products';
+import { WALL_THICKNESS_M } from '../designer/wallAwarePlacement';
+import { exteriorWallSpans, paintSide, sidePaint, isWallConstruction, remapConstruction, sanitizeWallMaterialSpec, type WallMaterialSpec, type WallSide, type WallConstruction, type ConstructedEdge } from '../designer/wallConstruction';
 import type { CladEdge } from '../designer/claddingCalc';
 import {
-  normaliseGarden, normaliseGardenFence, normaliseGardenMetadata, normaliseGardenSurface,
+  normaliseGarden, normaliseGardenFence, normaliseGardenMetadata, normaliseGardenSurface, gardenSurfacePatch,
   type Garden, type GardenFence, type GardenSurface,
 } from '../designer/garden';
 
@@ -306,7 +313,20 @@ export interface Room {
   kind?: 'room' | 'outdoor' | 'roof';
 }
 
+/** A roof outline edit must preserve the whole scaled object footprint. */
+function roofItemFits(item: PlacedItem, polygon: Polygon): boolean {
+  const product = getProductById(item.productId);
+  if (!product) return pointInPolygon(item, polygon);
+  const size = rotatedFootprint({ lengthM: product.dimensions_cm.length / 100, widthM: product.dimensions_cm.width / 100 }, item.rotation);
+  return isRectInsidePolygon({ x: item.x, y: item.y, w: size.w, h: size.h }, polygon);
+}
+
 export interface Property {
+  /** Measured planting and green-roof inputs; shares the house's world metres. */
+  eco?: EcoModel;
+  /** Project evidence references only; never proof of engineering approval. */
+  engineering?: EngineeringInputs;
+  city?: CityModel;
   foundation?: FoundationModel;
   services?: BuildingServices;
   /** Versioned estimating assumptions; persisted with every save and history snapshot. */
@@ -594,8 +614,8 @@ export interface PropertyState {
   setWallPaintPrimer: (on: boolean) => void;
   /** Paint one or both faces of a free-standing wall. */
   setFreeWallPaintFaces: (wallId: string, faces: 1 | 2) => void;
-  setWallConstruction: (roomId: string, edgeIndex: number | null, kind: WallConstruction) => void;
-  setFreeWallConstruction: (wallId: string, kind: WallConstruction) => void;
+  setWallConstruction: (roomId: string, edgeIndex: number | null, kind: WallConstruction, options?: WallMaterialSpec) => void;
+  setFreeWallConstruction: (wallId: string, kind: WallConstruction, options?: WallMaterialSpec) => void;
   /** Sample cladding on one room edge. `null` clears it. */
   setWallCladding: (roomId: string, edgeIndex: number, productId: string | null) => void;
   /** Clad (or clear) every edge of a room in one undo frame. */
@@ -654,8 +674,12 @@ export interface PropertyState {
   /** Roof shape and finish. Adds/synchronises the roof without changing floor focus. */
   setServices: (services: BuildingServices) => boolean;
   setFoundation: (foundation: FoundationModel) => boolean;
+  setCity: (city: CityModel) => boolean;
+  setEco: (eco: EcoModel) => boolean;
+  setEngineering: (engineering: EngineeringInputs) => boolean;
   setMaterialsSettings: (settings: MaterialsSettings) => void;
   setRoofConfig: (config: RoofConfig | null) => void;
+  setRoofOutline: (path: MeasuredPath | null) => boolean;
   /** Switch an electrical item on/off for the energy estimate (absent = on). */
   setItemPower: (instanceId: string, on: boolean) => void;
   /** Per-item hours-per-day for the energy estimate; null clears the override. */
@@ -680,6 +704,7 @@ export interface PropertyState {
    * order; ids consumed into room boundaries will no longer be in `walls`.
    */
   addFreeWalls: (walls: Omit<FreeWall, 'id'>[]) => string[];
+  addWallPath: (path: MeasuredPath, levelId?: string, thicknessM?: number, options?: WallMaterialSpec & { construction?: WallConstruction }) => string[];
   removeFreeWall: (id: string) => void;
   /** Remove every free wall, or only those on one level. */
   clearFreeWalls: (levelId?: string) => void;
@@ -1207,15 +1232,33 @@ export const usePropertyStore = create<PropertyState>()(
           },
         })),
 
-      setWallConstruction: (roomId, edgeIndex, kind) =>
-        set((s) => ({ property: { ...s.property, rooms: s.property.rooms.map((room) => {
-          if (room.id !== roomId || !isWallConstruction(kind)) return room;
-          const indices = edgeIndex === null ? room.polygon.map((_, index) => index) : [edgeIndex];
-          const valid = indices.filter((index) => Number.isInteger(index) && index >= 0 && index < room.polygon.length);
-          return { ...room, wallConstruction: [...(room.wallConstruction ?? []).filter((edge) => !valid.includes(edge.edgeIndex)), ...valid.map((index) => ({ edgeIndex: index, kind }))] };
+      setWallConstruction: (roomId, edgeIndex, kind, options) =>
+        set((s) => {
+          const source = s.property.rooms.find(room => room.id === roomId);
+          if (!source || !isWallConstruction(kind) || isRoofRoom(source) || isOutdoorRoom(source)) return s;
+          const targets = roomEdges(source).filter(edge => edgeIndex === null || edge.index === edgeIndex);
+          const spec = sanitizeWallMaterialSpec(kind, options);
+          return { property: { ...s.property, rooms: s.property.rooms.map(room => {
+            if (roomLevelId(room) !== roomLevelId(source) || isOutdoorRoom(room) || isRoofRoom(room)) return room;
+            // A material belongs to the physical wall: update both room faces.
+            const indices = roomEdges(room).filter(edge => targets.some(target => {
+              const overlap = collinearOverlap(edge, target);
+              return !!overlap && overlap.t1 - overlap.t0 >= edge.lengthM - .001;
+            })).map(edge => edge.index);
+            if (!indices.length) return room;
+            return { ...room, wallConstruction: [...(room.wallConstruction ?? []).filter(edge => !indices.includes(edge.edgeIndex)),
+              ...indices.map(index => ({ edgeIndex: index, kind, ...spec }))],
+              ...(kind === 'glass' ? { wallPaint: room.wallPaint?.filter(edge => !indices.includes(edge.edgeIndex)), wallCladding: room.wallCladding?.filter(edge => !indices.includes(edge.edgeIndex)) } : {}) };
+          }) } };
+        }),
+      setFreeWallConstruction: (wallId, kind, options) =>
+        set((s) => ({ property: { ...s.property, walls: (s.property.walls ?? []).map(wall => {
+          if (wall.id !== wallId || !isWallConstruction(kind)) return wall;
+          const spec = sanitizeWallMaterialSpec(kind, options);
+          const next = { ...wall, construction: kind, thicknessM: spec.thicknessMm !== undefined ? spec.thicknessMm / 1000 : wall.construction === 'glass' ? WALL_THICKNESS_M : wall.thicknessM, materialProductId: spec.materialProductId };
+          if (kind === 'glass') { delete next.paintId; delete next.exteriorPaint; delete next.claddingId; delete next.paintColourHex; delete next.paintColourName; delete next.paintFaces; delete next.claddingFaces; }
+          return next;
         }) } })),
-      setFreeWallConstruction: (wallId, kind) =>
-        set((s) => ({ property: { ...s.property, walls: (s.property.walls ?? []).map((wall) => wall.id === wallId && isWallConstruction(kind) ? { ...wall, construction: kind } : wall) } })),
 
       setWallCladding: (roomId, edgeIndex, productId) =>
         set((s) => ({
@@ -1352,7 +1395,7 @@ export const usePropertyStore = create<PropertyState>()(
         if (!edge) return null;
 
         const others = openingsOnPhysicalWall(s.property.rooms, room, edge);
-        if (!validateOpening(edge.lengthM, opening, others).ok) return null;
+        if (!validateOpening(edge.lengthM, opening, others).ok || !validOpeningDimensions(opening, levelHeightM(s.property, roomLevelId(room)))) return null;
 
         const id = opening.id ?? nanoid(10);
         const next: Opening = { ...opening, id };
@@ -1395,7 +1438,7 @@ export const usePropertyStore = create<PropertyState>()(
         // Re-validate against the (possibly new) host wall, excluding itself,
         // so a drag past the jamb margin is refused rather than committed.
         const others = openingsOnPhysicalWall(s.property.rooms, room, edge, openingId);
-        if (!validateOpening(edge.lengthM, merged, others).ok) return false;
+        if (!validateOpening(edge.lengthM, merged, others).ok || !validOpeningDimensions(merged, levelHeightM(s.property, roomLevelId(room)))) return false;
 
         set((st) => ({
           property: {
@@ -1635,25 +1678,81 @@ export const usePropertyStore = create<PropertyState>()(
         set(s => ({ property: { ...s.property, foundation: normalised } }));
         return true;
       },
+      setCity: (city) => {
+        const clean = normaliseCity(city);
+        if (!clean) return false;
+        set(s => ({ property: { ...s.property, city: clean } }));
+        return true;
+      },
+      setEco: (eco) => {
+        const clean = normaliseEco(eco);
+        if (!clean) return false;
+        set(s => ({ property: { ...s.property, eco: clean } }));
+        return true;
+      },
+      setEngineering: (engineering) => {
+        const clean = normaliseEngineeringInputs(engineering);
+        if (!clean) return false;
+        set(s => ({ property: { ...s.property, engineering: clean } }));
+        return true;
+      },
       setServices: (services) => {
         const property = get().property;
         const normalised = normaliseBuildingServices(services, new Set(levelsOf(property).map(l => l.id)));
-        if (!normalised || normalised.runs.length !== services.runs.length || normalised.fixtures.length !== services.fixtures.length) return false;
-        set({ property: { ...property, services: resolveServiceConnections(normalised) } });
+        if (!normalised || normalised.runs.length !== services.runs.length || normalised.fixtures.length !== services.fixtures.length || (normalised.junctions?.length ?? 0) !== (services.junctions?.length ?? 0)) return false;
+        const resolved = resolveServiceConnections(normalised);
+        if (resolved.runs.some(run => !Number.isFinite(serviceRunLengthM(run)) || serviceRunLengthM(run) < .01)) return false;
+        set({ property: { ...property, services: resolved } });
         return true;
       },
       setMaterialsSettings: (settings) => set(s => ({ property: { ...s.property, materials: normaliseMaterialsSettings(settings) } })),
+
+      setRoofOutline: (path) => {
+        const current = get().property;
+        const roofs = current.rooms.filter(isRoofRoom);
+        if (path === null) {
+          if (!current.roof?.outline) return true;
+          // A reset never discards customer finishes. Keep the custom outline
+          // until its floor finish has been removed, or use Undo instead.
+          if (roofs.some(room => room.floorFinish || room.floorTiles?.length)) return false;
+          const roof = { ...current.roof }; delete roof.outline;
+          let next = syncRoofRooms({ ...current, roof, rooms: current.rooms.filter(room => !isRoofRoom(room)) });
+          const items = roofs.flatMap(room => room.placedItems);
+          const targets = new Map<string, string>();
+          for (const item of items) {
+            const target = next.rooms.find(room => isRoofRoom(room) && roofItemFits(item, room.polygon));
+            if (!target) return false;
+            targets.set(item.instanceId, target.id);
+          }
+          next = { ...next, rooms: next.rooms.map(room => isRoofRoom(room) ? { ...room, placedItems: items.filter(item => targets.get(item.instanceId) === room.id) } : room) };
+          set({ property: next }); return true;
+        }
+        const sample = sampleMeasuredPath({ ...path, closed: true });
+        if (!sample) return false;
+        const config = normaliseRoofConfig({ ...roofConfigOf(current), outline: sample.vertices })!;
+        if (!roofMeasuredAreas(sample.vertices, config)) return false;
+        if (roofs.length > 1 && roofs.some(room => room.floorFinish || room.floorTiles?.length)) return false;
+        if (roofs.some(room => room.placedItems.some(item => !roofItemFits(item, sample.vertices)))) return false;
+        const levels = levelsOf(current);
+        const next = syncRoofRooms({ ...current, roof: config,
+          levels: levels.some(isRoofLevel) ? levels : sortLevels([...levels, roofLevel(levels)]),
+          activeLevelId: ROOF_LEVEL_ID });
+        set({ property: { ...next, activeRoomId: 'roof-custom-outline' } });
+        return true;
+      },
 
       setRoofConfig: (config) =>
         set((s) => {
           if (config === null) {
             if (!s.property.roof) return s;
             const property = { ...s.property };
-            delete property.roof;
+            if (property.roof?.outline) property.roof = { ...roofConfigOf({ roof: undefined }), outline: property.roof.outline };
+            else delete property.roof;
             return { property };
           }
           const roof = normaliseRoofConfig(config);
           if (!roof) return s;
+          if (roof.outline && !roofMeasuredAreas(roof.outline, roof)) return s;
           const levels = levelsOf(s.property);
           return { property: syncRoofRooms({
             ...s.property, roof,
@@ -1774,7 +1873,7 @@ export const usePropertyStore = create<PropertyState>()(
       updateGardenSurface: (id, patch) => {
         const original = get().property.garden?.surfaces.find((surface) => surface.id === id);
         if (!original) return false;
-        const clean = normaliseGardenSurface({ ...original, ...patch, id });
+        const clean = normaliseGardenSurface(gardenSurfacePatch(original, patch));
         if (!clean) return false;
         set((s) => ({ property: { ...s.property, garden: {
           surfaces: s.property.garden!.surfaces.map((surface) => surface.id === id ? clean : surface),
@@ -1816,6 +1915,20 @@ export const usePropertyStore = create<PropertyState>()(
       }),
 
       // ---- free walls --------------------------------------------------------
+
+      addWallPath: (path, requestedLevelId, thicknessM = 0.12, options) => {
+        const property = get().property, levelId = requestedLevelId ?? activeLevelIdOf(property);
+        const level = levelsOf(property).find(entry => entry.id === levelId);
+        const sample = sampleMeasuredPath(path);
+        if (!sample || !level || isRoofLevel(level) || !Number.isFinite(thicknessM) || thicknessM < .002 || thicknessM > 2) return [];
+        const site = property.site;
+        if (site && sample.vertices.some(point => point.x < site.originM.x || point.y < site.originM.y || point.x > site.originM.x + site.widthM || point.y > site.originM.y + site.depthM)) return [];
+        const points = path.closed ? [...sample.vertices, sample.vertices[0]] : sample.vertices;
+        const construction = options?.construction;
+        const spec = construction && isWallConstruction(construction) ? sanitizeWallMaterialSpec(construction, options) : {};
+        return get().addFreeWalls(runToFreeWalls(points, levelId, spec.thicknessMm !== undefined ? spec.thicknessMm / 1000 : thicknessM)
+          .map(wall => ({ ...wall, ...(construction && isWallConstruction(construction) ? { construction } : {}), ...(spec.materialProductId ? { materialProductId: spec.materialProductId } : {}) })));
+      },
 
       addFreeWalls: (walls) => {
         const ids: string[] = [];
@@ -1959,6 +2072,9 @@ export const usePropertyStore = create<PropertyState>()(
         const merged = { ...current, ...((persisted ?? {}) as Partial<PropertyState>) };
         if (merged.property) merged.property = normaliseGardenMetadata(normaliseBuildingMetadata(canonicalisePropertyWinding(merged.property)));
         if (merged.property?.materials !== undefined) merged.property = { ...merged.property, materials: normaliseMaterialsSettings(merged.property.materials) };
+        if (merged.property?.city !== undefined) merged.property = { ...merged.property, city: normaliseCity(merged.property.city) };
+        if (merged.property?.eco !== undefined) merged.property = { ...merged.property, eco: normaliseEco(merged.property.eco) };
+        if (merged.property?.engineering !== undefined) merged.property = { ...merged.property, engineering: normaliseEngineeringInputs(merged.property.engineering) };
         if (merged.property?.foundation !== undefined) merged.property = { ...merged.property, foundation: normaliseFoundation(merged.property.foundation) };
         if (merged.property?.services !== undefined) {
           const services = normaliseBuildingServices(merged.property.services, new Set(levelsOf(merged.property).map(l => l.id)));
@@ -2009,6 +2125,9 @@ export function normaliseLoadedProperty(property: Property | RawProperty): Prope
     out.services = services ? resolveServiceConnections(services) : undefined;
   }
   if (property.foundation !== undefined) out.foundation = normaliseFoundation(property.foundation);
+  if (property.city !== undefined) out.city = normaliseCity(property.city);
+  if (property.eco !== undefined) out.eco = normaliseEco(property.eco);
+  if (property.engineering !== undefined) out.engineering = normaliseEngineeringInputs(property.engineering);
   if (property.materials !== undefined) out.materials = normaliseMaterialsSettings(property.materials);
   if (levels) out.levels = levels;
   const activeRoom = rooms.find((r) => r.id === activeRoomId)!;
@@ -2126,7 +2245,12 @@ export function normaliseFreeWalls(walls: unknown): FreeWall[] {
       // Both faces painted (2026-09-14) — only the value 2 is stored.
       if ((w as { paintFaces?: unknown }).paintFaces === 2) clean.paintFaces = 2;
     }
-    if (isWallConstruction(w.construction)) clean.construction = w.construction;
+    if (isWallConstruction(w.construction)) {
+      clean.construction = w.construction;
+      const spec = sanitizeWallMaterialSpec(w.construction, { thicknessMm: w.thicknessM * 1000, materialProductId: w.materialProductId });
+      if (spec.materialProductId) clean.materialProductId = spec.materialProductId;
+      if (w.construction === 'glass' && spec.thicknessMm) clean.thicknessM = spec.thicknessMm / 1000;
+    }
     if (w.exteriorPaint && typeof w.exteriorPaint.paintId === 'string') clean.exteriorPaint = sidePaint(paintedEdge(0, w.exteriorPaint.paintId, w.exteriorPaint.colourHex ? { hex: w.exteriorPaint.colourHex, name: w.exteriorPaint.colourName } : null), 'exterior');
     const claddingId = (w as { claddingId?: unknown }).claddingId;
     if (typeof claddingId === 'string' && findCladdingProduct(claddingId)) {
@@ -2162,8 +2286,11 @@ interface RawRoom {
 }
 
 interface RawProperty {
+  eco?: unknown;
+  engineering?: unknown;
   services?: unknown;
   foundation?: unknown;
+  city?: unknown;
   wallHeightM?: unknown;
   id?: string;
   name?: string;
@@ -2384,7 +2511,7 @@ export function pruneOpenings(
   if (!Array.isArray(openings) || openings.length === 0) return [];
   const edges = roomEdges({ id: '_', polygon });
   return openings.filter((o) => {
-    if (!o || typeof o.edgeIndex !== 'number' || typeof o.offsetM !== 'number') return false;
+    if (!o || !Number.isInteger(o.edgeIndex) || !Number.isFinite(o.offsetM) || !validOpeningDimensions(o, 200)) return false;
     // By e.index, not array position — `roomEdges` skips degenerate edges,
     // so a stray duplicate vertex would shift every later opening one wall
     // around under positional indexing (doors defect 9).

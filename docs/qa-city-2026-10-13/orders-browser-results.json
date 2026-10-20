@@ -1,0 +1,205 @@
+{
+  "date": "2026-10-13",
+  "base": "http://127.0.0.1:5173",
+  "appBundle": "App-BpEkIZbf.js",
+  "cases": [
+    {
+      "viewport": "desktop",
+      "dimensions": {
+        "width": 1280,
+        "height": 900
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "httpErrors": [],
+      "captures": [
+        "docs/qa-city-2026-10-13/orders-desktop-empty.png",
+        "docs/qa-city-2026-10-13/orders-desktop-equipment.png",
+        "docs/qa-city-2026-10-13/orders-desktop-dates-recipients.png",
+        "docs/qa-city-2026-10-13/orders-desktop-timeline.png",
+        "docs/qa-city-2026-10-13/orders-desktop-connection.png",
+        "docs/qa-city-2026-10-13/orders-desktop-supplier-fields.png",
+        "docs/qa-city-2026-10-13/orders-desktop-merchant-connection.png"
+      ],
+      "checks": [
+        {
+          "action": "City deep link survives demo bootstrap",
+          "passed": true
+        },
+        {
+          "screen": "empty",
+          "viewport": 1280,
+          "pageWidth": 1280,
+          "panelWidth": 1280,
+          "panelScrollWidth": 1280
+        },
+        {
+          "screen": "equipment",
+          "viewport": 1280,
+          "pageWidth": 1280,
+          "panelWidth": 1280,
+          "panelScrollWidth": 1280
+        },
+        {
+          "action": "Unsaved edits survive parent section, Back and Escape attempts",
+          "passed": true
+        },
+        {
+          "screen": "dates-recipients",
+          "viewport": 1280,
+          "pageWidth": 1280,
+          "panelWidth": 1280,
+          "panelScrollWidth": 1280
+        },
+        {
+          "action": "Package persisted locally",
+          "quantity": 12,
+          "state": "reviewed",
+          "dateTimezone": "Indian/Mauritius"
+        },
+        {
+          "screen": "timeline",
+          "viewport": 1280,
+          "pageWidth": 1280,
+          "panelWidth": 1280,
+          "panelScrollWidth": 1280
+        },
+        {
+          "action": "CSV downloaded without recipients",
+          "file": "docs/qa-city-2026-10-13/orders-desktop-draft.csv"
+        },
+        {
+          "screen": "connection",
+          "viewport": 1280,
+          "pageWidth": 1280,
+          "panelWidth": 1280,
+          "panelScrollWidth": 1280
+        },
+        {
+          "screen": "supplier-fields",
+          "viewport": 1280,
+          "pageWidth": 1280,
+          "panelWidth": 1280,
+          "panelScrollWidth": 1280
+        },
+        {
+          "screen": "merchant-connection",
+          "viewport": 1280,
+          "pageWidth": 1280,
+          "panelWidth": 1280,
+          "panelScrollWidth": 1280
+        },
+        {
+          "action": "Main Designer supplier fields and unauthenticated cloud actions",
+          "passed": true
+        },
+        {
+          "action": "No API write requests",
+          "passed": true
+        }
+      ],
+      "defects": [],
+      "writeRequests": []
+    },
+    {
+      "viewport": "phone",
+      "dimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "httpErrors": [],
+      "captures": [
+        "docs/qa-city-2026-10-13/orders-phone-empty.png",
+        "docs/qa-city-2026-10-13/orders-phone-equipment.png",
+        "docs/qa-city-2026-10-13/orders-phone-dates-recipients.png",
+        "docs/qa-city-2026-10-13/orders-phone-timeline.png",
+        "docs/qa-city-2026-10-13/orders-phone-connection.png",
+        "docs/qa-city-2026-10-13/orders-phone-supplier-fields.png",
+        "docs/qa-city-2026-10-13/orders-phone-merchant-connection.png"
+      ],
+      "checks": [
+        {
+          "action": "City deep link survives demo bootstrap",
+          "passed": true
+        },
+        {
+          "screen": "empty",
+          "viewport": 390,
+          "pageWidth": 390,
+          "panelWidth": 390,
+          "panelScrollWidth": 390
+        },
+        {
+          "screen": "equipment",
+          "viewport": 390,
+          "pageWidth": 390,
+          "panelWidth": 390,
+          "panelScrollWidth": 390
+        },
+        {
+          "action": "Unsaved edits survive parent section, Back and Escape attempts",
+          "passed": true
+        },
+        {
+          "screen": "dates-recipients",
+          "viewport": 390,
+          "pageWidth": 390,
+          "panelWidth": 390,
+          "panelScrollWidth": 390
+        },
+        {
+          "action": "Package persisted locally",
+          "quantity": 12,
+          "state": "reviewed",
+          "dateTimezone": "Indian/Mauritius"
+        },
+        {
+          "screen": "timeline",
+          "viewport": 390,
+          "pageWidth": 390,
+          "panelWidth": 390,
+          "panelScrollWidth": 390
+        },
+        {
+          "action": "CSV downloaded without recipients",
+          "file": "docs/qa-city-2026-10-13/orders-phone-draft.csv"
+        },
+        {
+          "screen": "connection",
+          "viewport": 390,
+          "pageWidth": 390,
+          "panelWidth": 390,
+          "panelScrollWidth": 390
+        },
+        {
+          "screen": "supplier-fields",
+          "viewport": 390,
+          "pageWidth": 390,
+          "panelWidth": 390,
+          "panelScrollWidth": 390
+        },
+        {
+          "screen": "merchant-connection",
+          "viewport": 390,
+          "pageWidth": 390,
+          "panelWidth": 390,
+          "panelScrollWidth": 390
+        },
+        {
+          "action": "Main Designer supplier fields and unauthenticated cloud actions",
+          "passed": true
+        },
+        {
+          "action": "No API write requests",
+          "passed": true
+        }
+      ],
+      "defects": [],
+      "writeRequests": []
+    }
+  ]
+}

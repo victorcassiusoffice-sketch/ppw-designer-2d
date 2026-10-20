@@ -7,6 +7,11 @@ import {
 } from '../designer/garden';
 import { OUTDOOR_PAVING_PRODUCTS, findOutdoorPavingProduct, pavingSizeLabel, type OutdoorPavingProduct } from '../data/outdoorPaving';
 import { estimateGardenPaving } from '../designer/gardenPaving';
+import { OutdoorBuildDetails } from './OutdoorBuildDetails';
+import { gardenSurfacePolygon } from '../designer/garden';
+import { polygonArea } from '../lib/geometry';
+import { useMeasuredPathToolStore } from '../store/measuredPathToolStore';
+import { activeLevelIdOf } from '../designer/levels';
 import { isPitchEmbed } from '../demo/pitchEmbed';
 import './GardenPanel.css';
 
@@ -58,11 +63,12 @@ export function GardenPanel({ onRequestPlacement, onClose, architectural = false
   const setSelectedId = useGardenEditorStore((s) => s.select);
   const [fenceMaterial, setFenceMaterial] = useState<FenceMaterial>('timber');
   const [pavingId, setPavingId] = useState(OUTDOOR_PAVING_PRODUCTS[0].id);
+  const [outlineKind, setOutlineKind] = useState<GardenSurfaceKind>('concrete');
   const surfaces = property.garden?.surfaces ?? [];
   const fences = property.garden?.fences ?? [];
   const surface = surfaces.find((entry) => entry.id === selectedId);
   const fence = fences.find((entry) => entry.id === selectedId);
-  const totalArea = surfaces.reduce((sum, entry) => sum + entry.widthM * entry.depthM, 0);
+  const totalArea = surfaces.reduce((sum, entry) => sum + polygonArea(gardenSurfacePolygon(entry)), 0);
   const totalFence = fences.reduce((sum, entry) => sum + fenceLengthM(entry), 0);
   const newPaving = findOutdoorPavingProduct(pavingId) ?? OUTDOOR_PAVING_PRODUCTS[0];
   const pavingEstimate = surface ? estimateGardenPaving(surface) : null;
@@ -111,11 +117,24 @@ export function GardenPanel({ onRequestPlacement, onClose, architectural = false
       <div className="min-w-0"><h2 className="text-sm font-semibold">Garden & outdoors</h2><p className="garden-muted text-[11px] text-[#5b5852]">Ground level · saved with your design</p></div>
       {onClose && <button type="button" className={BUTTON} onClick={onClose}>Done</button>}
     </div>
+    <details open={!surface && !fence} className="garden-create-tools">
+    <summary className="cursor-pointer py-2 text-[12px] font-semibold">Add an outdoor surface or pool</summary>
     <div className="grid grid-cols-2 gap-2">
       {(Object.keys(GARDEN_SURFACES) as GardenSurfaceKind[]).map((kind) => <button
         key={kind} type="button" className={BUTTON} onClick={() => addSurface(kind)} data-testid={`garden-add-${kind}`}
       ><span className="garden-swatch h-4 w-4 shrink-0 rounded" style={{ background: GARDEN_SURFACES[kind].hex }} aria-hidden />+ {GARDEN_SURFACES[kind].label}</button>)}
     </div>
+    <details className="garden-product-card rounded-lg border border-ppw-rim p-2.5">
+      <summary className="cursor-pointer text-[12px] font-semibold">Custom outdoor outline</summary>
+      <select aria-label="Outdoor outline material" className={`${FIELD} mt-2 w-full`} value={outlineKind} onChange={e => setOutlineKind(e.target.value as GardenSurfaceKind)}>
+        {(Object.keys(GARDEN_SURFACES) as GardenSurfaceKind[]).filter(kind => kind !== 'pool').map(kind => <option key={kind} value={kind}>{GARDEN_SURFACES[kind].label}</option>)}
+      </select>
+      <div className="mt-2 flex gap-2">{(['line', 'quadratic'] as const).map(segmentKind => <button key={segmentKind} type="button" className={`${BUTTON} flex-1`} data-testid={`garden-outline-${segmentKind}`} onClick={() => {
+        useGardenEditorStore.getState().place(null);
+        useMeasuredPathToolStore.getState().startTool('garden', property.id, activeLevelIdOf(property), { surfaceKind: outlineKind, segmentKind });
+      }}>{segmentKind === 'line' ? 'Polygon' : 'Curved outline'}</button>)}</div>
+      <p className="garden-muted mt-2 text-[11px]">Tap points, then Finish in the drawing strip. Curves use a start, end and bend. The same measured outline appears in Plan and 3D.</p>
+    </details>
     <fieldset className="garden-product-card min-w-0 rounded-lg border border-ppw-rim p-2.5" data-testid="garden-paving-range">
       <legend className="px-1 text-[12px] font-semibold">Espace Maison paving</legend>
       <label className="flex min-w-0 flex-col gap-1 text-[11px]">Pedestrian cement slabs
@@ -133,12 +152,13 @@ export function GardenPanel({ onRequestPlacement, onClose, architectural = false
       <button type="button" className={BUTTON} onClick={addFence} data-testid="garden-add-fence">+ Boundary</button>
     </div>
     <p className="garden-muted text-[11px] leading-relaxed text-[#5b5852]">Choose a surface, then drag an area on the ground. Select an existing patch to change its material, move it, or resize its corners in Plan and 3D. Cancel or Escape leaves an unfinished area unchanged.</p>
+    </details>
 
     {(surfaces.length > 0 || fences.length > 0) && <>
       <label className="flex min-w-0 flex-col gap-1 text-[11px] font-medium">Edit landscape
         <select aria-label="Landscape element" data-testid="garden-element-select" className="garden-field h-11 min-w-0 rounded-lg border border-ppw-rim bg-white px-2 text-[13px]" value={selectedId ?? ''} onChange={(event) => setSelectedId(event.target.value)}>
           <option value="" disabled>Choose an element</option>
-          {surfaces.map((entry, index) => <option key={entry.id} value={entry.id}>{findOutdoorPavingProduct(entry.pavingProductId)?.name ?? GARDEN_SURFACES[entry.kind].label} {index + 1} · {(entry.widthM * entry.depthM).toFixed(1)} m²</option>)}
+          {surfaces.map((entry, index) => <option key={entry.id} value={entry.id}>{findOutdoorPavingProduct(entry.pavingProductId)?.name ?? GARDEN_SURFACES[entry.kind].label} {index + 1} · {polygonArea(gardenSurfacePolygon(entry)).toFixed(1)} m²</option>)}
           {fences.map((entry, index) => <option key={entry.id} value={entry.id}>{FENCE_MATERIALS[entry.material].label} {index + 1} · {fenceLengthM(entry).toFixed(1)} m</option>)}
         </select>
       </label>
@@ -151,9 +171,9 @@ export function GardenPanel({ onRequestPlacement, onClose, architectural = false
         <Metres label="X" value={surface.x} onCommit={(x) => usePropertyStore.getState().updateGardenSurface(surface.id, { x })} />
         <Metres label="Y" value={surface.y} onCommit={(y) => usePropertyStore.getState().updateGardenSurface(surface.id, { y })} />
         <Metres label="Width" min={0.2} max={500} value={surface.widthM} onCommit={(widthM) => usePropertyStore.getState().updateGardenSurface(surface.id, { widthM })} />
-        <Metres label="Depth" min={0.2} max={500} value={surface.depthM} onCommit={(depthM) => usePropertyStore.getState().updateGardenSurface(surface.id, { depthM })} />
+        <Metres label="Length" min={0.2} max={500} value={surface.depthM} onCommit={(depthM) => usePropertyStore.getState().updateGardenSurface(surface.id, { depthM })} />
         <Metres label="Raise terrain" min={0} max={2} value={surface.elevationM} onCommit={(elevationM) => usePropertyStore.getState().updateGardenSurface(surface.id, { elevationM })} />
-        <label className="garden-muted flex min-w-0 flex-col gap-1 text-[11px]">Surface<select aria-label="Surface material" className="garden-field h-11 min-w-0 rounded-lg border border-ppw-rim bg-white px-2 text-[13px]" value={surface.kind} onChange={(event) => usePropertyStore.getState().updateGardenSurface(surface.id, { kind: event.target.value as GardenSurfaceKind, pavingProductId: undefined })}>
+        <label className="garden-muted flex min-w-0 flex-col gap-1 text-[11px]">Surface<select aria-label="Surface material" className="garden-field h-11 min-w-0 rounded-lg border border-ppw-rim bg-white px-2 text-[13px]" value={surface.kind} onChange={(event) => usePropertyStore.getState().updateGardenSurface(surface.id, { kind: event.target.value as GardenSurfaceKind, pavingProductId: undefined, ...(event.target.value === 'pool' ? { outline: undefined } : {}) })}>
           {(Object.keys(GARDEN_SURFACES) as GardenSurfaceKind[]).map((kind) => <option key={kind} value={kind}>{GARDEN_SURFACES[kind].label}</option>)}
         </select></label>
         {surface.kind === 'path' && <label className="col-span-2 flex min-w-0 flex-col gap-1 text-[11px]">Paving product
@@ -170,6 +190,7 @@ export function GardenPanel({ onRequestPlacement, onClose, architectural = false
           <p className="garden-muted mt-2 text-[11px] leading-relaxed">{pavingEstimate.columns} × {pavingEstimate.rows} straight rows. Edge cuts use whole pieces; offcuts are not reused. No joint gap, breakage allowance, delivery or laying cost included. Colour preview is illustrative.</p>
         </div>}
       </div>}
+      {surface && <OutdoorBuildDetails key={surface.id} surface={surface} />}
       {fence && <div className="grid grid-cols-2 gap-2" data-testid="garden-fence-edit">
         <Metres label="Start X" value={fence.a.x} onCommit={(x) => usePropertyStore.getState().updateGardenFence(fence.id, { a: { ...fence.a, x } })} />
         <Metres label="Start Y" value={fence.a.y} onCommit={(y) => usePropertyStore.getState().updateGardenFence(fence.id, { a: { ...fence.a, y } })} />

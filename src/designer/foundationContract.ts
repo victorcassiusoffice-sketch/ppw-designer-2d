@@ -4,6 +4,7 @@ import {
   defaultFoundationRebar,
   normaliseFoundation,
   FOUNDATION_ELEMENT_LIMIT,
+  FOUNDATION_BORE_LIMIT,
 } from './foundation.js';
 
 const finite = (min: number, max: number) => z.number().finite().min(min).max(max);
@@ -25,6 +26,22 @@ export const FoundationSchema = z
     version: z.literal(1),
     enabled: z.boolean(),
     concreteProductId: z.enum(['premix-classics', 'premix-pro']).optional(),
+    bores: z
+      .array(
+        z
+          .object({
+            id: key,
+            name: key,
+            x: finite(-10000, 10000),
+            y: finite(-10000, 10000),
+            diameterM: finite(0.1, 100),
+            depthM: finite(0.01, 30),
+            topElevationM: finite(-30, 10),
+          })
+          .strict(),
+      )
+      .max(FOUNDATION_BORE_LIMIT)
+      .optional(),
     elements: z
       .array(
         z
@@ -70,6 +87,15 @@ export const FOUNDATION_SCHEMA_DESCRIPTION = {
   coordinateSystem:
     'x right, y down; x/y are each rectangle centre. topElevationM is relative to ground finished-floor datum; bottom = topElevationM − depthM.',
   kinds: ['slab', 'strip', 'pad'],
+  bores: {
+    optional: true,
+    maximum: FOUNDATION_BORE_LIMIT,
+    fields: ['id', 'name', 'x', 'y', 'diameterM', 'depthM', 'topElevationM'],
+    diameterM: [0.1, 100],
+    depthM: [0.01, 30],
+    meaning:
+      'Measured cylindrical excavation only, volume = pi × (diameterM / 2)^2 × depthM. No pile, fill or steel design. IDs must be unique across elements and bores. Aggregate bore and combined excavation quantities are null if any cylinder overlaps another hole or concrete in 3D; individual volumes remain gross and must not be summed.',
+  },
   excavation: {
     optional: true,
     depthM: [0.01, 30],
@@ -96,6 +122,7 @@ export const FOUNDATION_SCHEMA_DESCRIPTION = {
   rules: [
     'Complete version, enabled, elements and all element/rebar fields are required. Unknown fields and any invalid entity reject the complete estimate.',
     'Rectangles are axis-aligned. Intersecting concrete boxes count once in three dimensions.',
+    'Optional bores are cylinders with separate excavation quantities and no concrete allocation. Legacy excavationVolumeM3/remainingExcavationM3 fields cover rectangular elements only; totalExcavationVolumeM3/totalRemainingExcavationM3 include disjoint bores, or null if their exact union is unsupported.',
     'Legacy elements without excavation remain filled. Excavated-only elements are planned concrete, excluded from filled concrete and steel quantities until their stage is filled. Excavation unions and remaining void are reported separately.',
     'Enabled drawn foundations replace the legacy base in the materials estimate, including an empty foundation. Do not add both totals.',
     'Rebar remains disabled until a project schedule is supplied. Overlapping reinforced elements withhold steel totals rather than double-counting.',

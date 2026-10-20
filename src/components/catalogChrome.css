@@ -192,6 +192,8 @@
 .catalog-detail-place { background: var(--catalog-selected); margin-top: 3px; color: var(--catalog-selected-text); }
 .catalog-tile-details { display: block; width: 100%; min-height: 28px; font-size: 11px; color: var(--catalog-muted); }
 .catalog-tile-details:hover { color: var(--catalog-accent); text-decoration: underline; }
+.sims-catalog .catalog-product-tile { position: relative; }
+.sims-catalog .catalog-product-tile > .catalog-tile-details { position: absolute; right: 3px; top: 3px; z-index: 1; width: 32px; height: 32px; min-height: 32px; border-radius: 50%; background: var(--catalog-raised, #f5f3ed); border: 1px solid var(--catalog-border, #aebcb3); color: var(--catalog-text, #263c35); font-size: 18px; }
 @media (min-width: 1024px) {
   .catalog-product-detail { max-width: 700px; }
   .catalog-detail-content { grid-template-columns: 104px minmax(0, 1fr); }

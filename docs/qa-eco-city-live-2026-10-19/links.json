@@ -1,0 +1,154 @@
+{
+  "base": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app",
+  "at": "2026-10-19T12:25:49.994Z",
+  "rows": [
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?panel=project&company=city&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?panel=project&company=construction&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?panel=project&company=developers&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?panel=project&company=landscape&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?panel=project&company=merchants&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?panel=project&company=plumbing&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?panel=shared&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?scene=paint&view=3d&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?view=2d&panel=city&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?view=2d&panel=foundation&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?view=2d&panel=import&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?view=2d&panel=services&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?view=2d&panel=shared&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?view=2d&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?view=3d&panel=ai&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?view=3d&panel=materials&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?view=3d&panel=services&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?view=3d&panel=shared&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/demo?view=3d&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/designer",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/designer?demo=tintex",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/embed/designer?view=2d&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/embed/designer?view=3d&pitch=1",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/pitch/construction",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/pitch/developers",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/pitch/developers?client=cap-tamarin",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/pitch/eco-city",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/pitch/eco-city?company=Example%20Development&project=Coastal%20District&audience=Developer&scenario=Mixed-use%20district&theme=ocean",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/pitch/merchants",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/pitch/merchants?client=spa-concept",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/pitch/plumbing",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/studio",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/studio/designer",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/studio/merchants/connect",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/studio/sales",
+      "status": 200
+    },
+    {
+      "url": "https://ppw-designer-2d-iw6m8r3s7-victor-ppw.vercel.app/studio/shop",
+      "status": 200
+    }
+  ]
+}

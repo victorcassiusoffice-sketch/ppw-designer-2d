@@ -82,8 +82,11 @@ class Parts {
     return mesh;
   }
 
-  cushion(name: string, size: [number, number, number], position: [number, number, number], material: THREE.Material): THREE.Mesh {
-    const geometry = cushionGeometry(...size);
+  cushion(name: string, size: [number, number, number], position: [number, number, number], material: THREE.Material, face: 'top' | 'front' = 'top'): THREE.Mesh {
+    // Back cushions need their compression/folds across the front face,
+    // rather than stretching a seat cushion vertically into a smooth slab.
+    const geometry = face === 'front' ? cushionGeometry(size[0], size[2], size[1]) : cushionGeometry(...size);
+    if (face === 'front') geometry.rotateX(Math.PI / 2);
     physicalFurnitureUVs(geometry);
     const mesh = new THREE.Mesh(geometry, material);
     mesh.name = name;
@@ -194,10 +197,10 @@ function sofa(p: Parts, w: number, d: number, h: number, corner: boolean): void 
   const legs = p.material('dark timber legs', '#302923');
   p.legs(w, d, h * 0.14, legs);
   p.box('upholstered frame', [w * 0.97, h * 0.24, d * 0.95], [0, h * 0.24, 0], upholstery, h * 0.05);
-  p.cushion('sofa back', [w * 0.98, h * 0.68, d * 0.18], [0, h * 0.66, -d * 0.41], upholstery);
+  p.box('sofa back', [w * 0.98, h * 0.68, d * 0.18], [0, h * 0.66, -d * 0.41], upholstery, 0.035);
   const armWidth = Math.min(w * 0.12, d * 0.18);
   for (const side of [-1, 1]) {
-    p.cushion('rounded arm', [armWidth, h * 0.51, d], [side * (w - armWidth) / 2, h * 0.415, 0], upholstery);
+    p.box('rounded arm', [armWidth, h * 0.51, d], [side * (w - armWidth) / 2, h * 0.415, 0], upholstery, 0.035);
     p.piping('arm tailored welt', armWidth * 0.98, d * 0.99, [side * (w - armWidth) / 2, h * 0.415, 0], cushion, 0.0018);
   }
   const count = corner ? 1 : 3;
@@ -206,11 +209,69 @@ function sofa(p: Parts, w: number, d: number, h: number, corner: boolean): void 
     const x = (i - (count - 1) / 2) * seatWidth;
     p.cushion('individual seat cushion', [seatWidth * 0.97, h * 0.16, d * 0.74], [x, h * 0.42, d * 0.065], cushion);
     p.piping('tailored seat seam', seatWidth * 0.973, d * 0.743, [x, h * 0.42, d * 0.065], upholstery);
-    const back = p.cushion('back cushion', [seatWidth * 0.97, h * 0.39, d * 0.15], [x, h * 0.73, -d * 0.235], cushion);
+    const back = p.cushion('back cushion', [seatWidth * 0.97, h * 0.39, d * 0.15], [x, h * 0.73, -d * 0.235], cushion, 'front');
     back.rotation.x = -0.12;
-    const pillow = p.cushion('scatter pillow', [Math.min(seatWidth * 0.6, h * 0.31), h * 0.29, d * 0.12], [x + seatWidth * 0.13, h * 0.62, -d * 0.085], accent);
+    const pillow = p.cushion('scatter pillow', [Math.min(seatWidth * 0.6, h * 0.31), h * 0.29, d * 0.12], [x + seatWidth * 0.13, h * 0.62, -d * 0.085], accent, 'front');
     pillow.rotation.z = i % 2 ? 0.13 : -0.13;
     pillow.rotation.x = -0.18;
+  }
+}
+
+/** Courts Comfy: its sourced envelope/material, with original tailored detail.
+ * Internal construction dimensions are illustrative, never installation CAD. */
+function comfySofa(p: Parts, w: number, d: number, h: number): void {
+  const upholstery = p.material('dove woven upholstery', '#918b83', 'fabric');
+  const cushions = p.material('dove seat and back cushions', '#a6a097', 'fabric');
+  const seams = p.material('dove tailored seams', '#787169', 'fabric');
+  const timber = p.material('dark hardwood feet', '#423930', 'wood');
+  const footH = h * .13;
+  p.legs(w, d, footH, timber, .065);
+  p.box('upholstered base', [w * .99, h * .205, d * .95], [0, footH + h * .1025, 0], upholstery, .026);
+  p.box('tailored back frame', [w * .99, h * .67, d * .17], [0, h * .665, -d * .405], upholstery, .035);
+  const arm = w * .103;
+  for (const side of [-1, 1]) {
+    p.box('tailored arm', [arm, h * .51, d], [side * (w - arm) / 2, h * .39, 0], upholstery, .036);
+    p.box('soft arm cap', [arm * .94, h * .06, d * .95], [side * (w - arm) / 2, h * .647, d * .007], cushions, .024);
+  }
+  const seatW = (w - arm * 2 - .025) / 3;
+  for (let i = -1; i <= 1; i++) {
+    const x = i * seatW;
+    p.cushion('individual seat cushion', [seatW * .97, h * .15, d * .735], [x, h * .406, d * .065], cushions);
+    p.piping('tailored seat seam', seatW * .95, d * .718, [x, h * .402, d * .065], seams, .0018);
+    const back = p.cushion('soft back cushion', [seatW * .98, h * .47, d * .205], [x, h * .735, -d * .265], cushions, 'front');
+    back.rotation.x = -.11;
+    const welt = p.piping('back cushion seam', seatW * .96, h * .45, [x, h * .735, -d * .265], seams, .0015);
+    welt.rotation.x = Math.PI / 2 - .11;
+  }
+}
+
+/** Seville sofa only: visible acacia slats, open frame and polyester cushions.
+ * The table and two chairs sold with the set are not silently placed or priced. */
+function sevilleSofa(p: Parts, w: number, d: number, h: number): void {
+  const timber = p.material('Seville acacia frame', '#9b754e', 'wood');
+  const endGrain = p.material('Seville acacia rails', '#b18b60', 'wood');
+  const textile = p.material('Seville polyester cushions', '#dfdbcd', 'fabric');
+  const seams = p.material('Seville stitched edges', '#bab5a7', 'fabric');
+  const rail = Math.min(w, d) * .065;
+  for (const side of [-1, 1]) {
+    p.box('front timber leg', [rail, h * .57, rail], [side * (w / 2 - rail / 2), h * .285, d * .405], timber, .006);
+    p.box('back timber post', [rail, h, rail], [side * (w / 2 - rail / 2), h / 2, -d * .425], timber, .006);
+    p.box('acacia armrest', [rail * 1.5, h * .05, d], [side * (w / 2 - rail * .75), h * .59, 0], endGrain, .008);
+    p.box('seat side rail', [rail, h * .085, d * .87], [side * (w / 2 - rail / 2), h * .31, 0], timber, .005);
+  }
+  for (const z of [-d * .42, d * .42]) p.box('seat cross rail', [w * .93, h * .075, rail], [0, h * .31, z], timber, .005);
+  for (let slat = 0; slat < 8; slat++) p.box('seat timber slat', [w * .106, h * .025, d * .83], [(slat - 3.5) * w * .114, h * .358, 0], endGrain, .003);
+  for (let slat = 0; slat < 9; slat++) p.box('open back timber slat', [w * .073, h * .55, rail * .55], [(slat - 4) * w * .1, h * .68, -d * .424], endGrain, .004);
+  p.box('acacia upper back rail', [w, h * .05, rail * 1.1], [0, h * .975, -d * .424], timber, .006);
+  const seatW = w * .435;
+  for (const side of [-1, 1]) {
+    const x = side * w * .223;
+    p.cushion('Seville seat cushion', [seatW, h * .12, d * .82], [x, h * .423, d * .025], textile);
+    p.piping('Seville seat welt', seatW * .98, d * .80, [x, h * .42, d * .025], seams, .0015);
+    const back = p.cushion('Seville back cushion', [seatW, h * .44, d * .155], [x, h * .725, -d * .315], textile, 'front');
+    back.rotation.x = -.075;
+    const welt = p.piping('Seville back welt', seatW * .98, h * .425, [x, h * .725, -d * .315], seams, .0014);
+    welt.rotation.x = Math.PI / 2 - .075;
   }
 }
 
@@ -662,7 +723,11 @@ export function furniturePreview(it: ItemSolid): THREE.Group | null {
   const p = new Parts();
   const [w, d, h] = [it.lengthM, it.widthM, it.heightM];
   switch (kind) {
-    case 'sofa': case 'corner': sofa(p, w, d, h, kind === 'corner'); break;
+    case 'sofa': case 'corner':
+      if (it.productId === 'courts-comfy-3-seater-dove') comfySofa(p, w, d, h);
+      else sofa(p, w, d, h, kind === 'corner');
+      break;
+    case 'garden-sofa': sevilleSofa(p, w, d, h); break;
     case 'bed': bed(p, w, d, h); break;
     case 'coffee': case 'desk': table(p, w, d, h, kind); break;
     case 'dining': dining(p, w, d, h); break;

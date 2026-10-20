@@ -23,11 +23,26 @@ import { usePropertyStore } from '../store/propertyStore';
 import { useHistoryStore } from '../store/historyStore';
 import { useToastStore } from '../store/toastStore';
 import { useCurrencyStore } from '../store/currencyStore';
-import { applyPage, currentPageId, flushCurrentPage, promoteDraftToPage, switchToPage } from '../lib/pages';
+import {
+  applyPage,
+  currentPageId,
+  flushCurrentPage,
+  promoteDraftToPage,
+  switchToPage,
+} from '../lib/pages';
 import { useDesignerUIStore } from '../store/designerUIStore';
 import { brandIdOfPaint, findWallPaintById, paintsForBrand } from '../data/wallPaints';
 import { demoRoute } from './demoRoute';
 import { isShowcaseReadOnly } from '../lib/showcaseSafety';
+
+// Child workspace effects run before this hook's page-loading effect. Route
+// entry points wait for the initial demo page instead of opening on the draft
+// that it is about to replace. This is startup state, not a project-change hook.
+export const DEMO_PAGE_READY_EVENT = 'ppw:demo-page-ready';
+let demoPagePending = false;
+export function isDemoPagePending(): boolean {
+  return demoPagePending;
+}
 
 /**
  * A paint company's pitch opens with ITS first line on the brush (TintEX,
@@ -41,7 +56,13 @@ export function ensureDemoPaintBrush(demo: DemoDefinition): void {
   const current = findWallPaintById(ui.wallPaintDraft.paintId);
   if (current && brands.includes(brandIdOfPaint(current))) return;
   const first = brands.map((b) => paintsForBrand(b)[0]).find(Boolean);
-  if (first) ui.setWallPaintDraft({ paintId: first.id, colourHex: undefined, colourName: undefined, erase: false });
+  if (first)
+    ui.setWallPaintDraft({
+      paintId: first.id,
+      colourHex: undefined,
+      colourName: undefined,
+      erase: false,
+    });
 }
 
 /** The `demo` query value, lower-cased, or null. `'off'` is meaningful. */
@@ -62,7 +83,10 @@ export function readDemoParam(search: string): string | null {
 export function activateDemoFromUrl(search: string, pathname = '/designer'): DemoDefinition | null {
   registerAllDemos();
   const route = demoRoute(pathname, search);
-  if (route) { setActiveDemo(`demo-${route.scene}`); return activeDemo(); }
+  if (route) {
+    setActiveDemo(`demo-${route.scene}`);
+    return activeDemo();
+  }
   const slug = readDemoParam(search);
   if (slug === 'off') setActiveDemo(null);
   else if (slug) setActiveDemo(slug); // an unknown slug is ignored, not an error
@@ -78,12 +102,19 @@ export function ensureDemoPage(demo: DemoDefinition): DemoPageOutcome {
   ensureDemoPaintBrush(demo);
   const designs = useDesignsStore.getState();
   const existing = Object.values(designs.designs).find(
-    (d) => d.id !== DRAFT_ID && (demo.propertyId ? d.property.id === demo.propertyId : d.name === demo.pageName),
+    (d) =>
+      d.id !== DRAFT_ID &&
+      (demo.propertyId ? d.property.id === demo.propertyId : d.name === demo.pageName),
   );
   if (existing) {
     const isCurrent = currentPageId() === existing.id;
-    const existingName = isCurrent ? usePropertyStore.getState().property.name : existing.property.name;
-    if (demo.legacyPageNames?.includes(existing.name) && demo.legacyPageNames.includes(existingName)) {
+    const existingName = isCurrent
+      ? usePropertyStore.getState().property.name
+      : existing.property.name;
+    if (
+      demo.legacyPageNames?.includes(existing.name) &&
+      demo.legacyPageNames.includes(existingName)
+    ) {
       if (isCurrent) flushCurrentPage();
       designs.rename(existing.id, demo.pageName);
       if (isCurrent) usePropertyStore.getState().renameProperty(demo.pageName);
@@ -121,14 +152,23 @@ export function demoViewFor(pathname: string, search: string): 'plan' | '3d' {
 export function useDemoMode(): DemoDefinition | null {
   // useState's initialiser runs synchronously in the FIRST render, before any
   // child mounts — the one moment early enough for the catalogs (see header).
-  const [demo] = useState<DemoDefinition | null>(() =>
-    typeof window === 'undefined' ? null : activateDemoFromUrl(window.location.search, window.location.pathname),
-  );
+  const [demo] = useState<DemoDefinition | null>(() => {
+    const initialDemo =
+      typeof window === 'undefined'
+        ? null
+        : activateDemoFromUrl(window.location.search, window.location.pathname);
+    demoPagePending = initialDemo != null;
+    return initialDemo;
+  });
   const pushToast = useToastStore((s) => s.push);
   useEffect(() => {
     if (!demo) return;
     const outcome = ensureDemoPage(demo);
-    useDesignerUIStore.getState().setViewMode(demoViewFor(window.location.pathname, window.location.search));
+    useDesignerUIStore
+      .getState()
+      .setViewMode(demoViewFor(window.location.pathname, window.location.search));
+    demoPagePending = false;
+    window.dispatchEvent(new Event(DEMO_PAGE_READY_EVENT));
     if (outcome !== 'current') {
       // "No orders" is only true on the read-only routes (/demo, the embed, a
       // preview build). The legacy /designer?demo=<slug> URL still takes a

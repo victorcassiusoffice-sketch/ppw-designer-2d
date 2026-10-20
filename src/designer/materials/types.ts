@@ -58,6 +58,8 @@ export interface VolumeMix {
 }
 
 export interface MaterialWallInput {
+  construction?: import('../wallConstruction').WallConstruction;
+  materialProductId?: string;
   id: string; levelId?: string; lengthM: number; heightM: number; thicknessM?: number;
   openingAreaM2: number;
   /** Optional adapter diagnostics; the engine recomputes area from length and height. */
@@ -76,6 +78,9 @@ export interface MaterialsGeometry {
   roofLengthM: number;
   roofWidthM: number;
   roofRectangular: boolean;
+  /** When set, dimensions already include rendered eaves. Manual rectangle
+   * overrides deliberately return to the separate purchasing-sheet settings. */
+  roofProfile?: { pitchDeg: number; slopes: 1 | 2; overhangIncluded: true };
 }
 
 export type MaterialGroup = 'walls' | 'mortar' | 'plaster' | 'base' | 'pillars' | 'roof' | 'rebar' | 'sheet' | 'totals';

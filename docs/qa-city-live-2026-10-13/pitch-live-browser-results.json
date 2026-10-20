@@ -1,0 +1,896 @@
+{
+  "origin": "https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app",
+  "checkedAt": "2026-10-13T17:23:17.146Z",
+  "scope": "Read-only live pitch overview smoke checks. No forms, submissions or API writes.",
+  "cases": [
+    {
+      "name": "developers",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "url": "https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/pitch/developers",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "defects": [],
+      "status": 200,
+      "layout": {
+        "width": 1280,
+        "pageWidth": 1280,
+        "bodyWidth": 1280,
+        "title": "Property Developer Experience | One Live Build",
+        "h1": "A home they can make their own.",
+        "brokenImages": [],
+        "visibleControls": [
+          {
+            "text": "One Live Build home",
+            "left": 28,
+            "right": 163.5625,
+            "top": 20,
+            "bottom": 48
+          },
+          {
+            "text": "For merchants",
+            "left": 1032.671875,
+            "right": 1110.234375,
+            "top": 25,
+            "bottom": 43
+          },
+          {
+            "text": "Meet Victor ↗",
+            "left": 1132.234375,
+            "right": 1252,
+            "top": 15,
+            "bottom": 53
+          },
+          {
+            "text": "01The vision",
+            "left": 18,
+            "right": 174,
+            "top": 263.5,
+            "bottom": 317.5
+          },
+          {
+            "text": "02Make it yours",
+            "left": 18,
+            "right": 174,
+            "top": 327.5,
+            "bottom": 381.5
+          },
+          {
+            "text": "03Plan delivery",
+            "left": 18,
+            "right": 174,
+            "top": 391.5,
+            "bottom": 445.5
+          },
+          {
+            "text": "04One shared brief",
+            "left": 18,
+            "right": 174,
+            "top": 455.5,
+            "bottom": 509.5
+          },
+          {
+            "text": "05Build together",
+            "left": 18,
+            "right": 174,
+            "top": 519.5,
+            "bottom": 573.5
+          },
+          {
+            "text": "06AI & connect",
+            "left": 18,
+            "right": 174,
+            "top": 583.5,
+            "bottom": 637.5
+          },
+          {
+            "text": "Shape an apartment ↗",
+            "left": 199,
+            "right": 351.875,
+            "top": 554.109375,
+            "bottom": 598.109375
+          },
+          {
+            "text": "Explore AI automation ↗",
+            "left": 361.875,
+            "right": 514.875,
+            "top": 554.109375,
+            "bottom": 598.109375
+          },
+          {
+            "text": "Feedback & meetings",
+            "left": 806.203125,
+            "right": 920.125,
+            "top": 845.5,
+            "bottom": 881.5
+          },
+          {
+            "text": "Materials",
+            "left": 942.125,
+            "right": 987.9375,
+            "top": 855.25,
+            "bottom": 871.75
+          },
+          {
+            "text": "Studio",
+            "left": 1009.9375,
+            "right": 1040.859375,
+            "top": 855.25,
+            "bottom": 871.75
+          },
+          {
+            "text": "Demo ↗",
+            "left": 1062.859375,
+            "right": 1102.875,
+            "top": 855.25,
+            "bottom": 871.75
+          },
+          {
+            "text": "Next chapter",
+            "left": 1124.875,
+            "right": 1252,
+            "top": 844,
+            "bottom": 883
+          }
+        ]
+      },
+      "screenshot": "docs/qa-city-live-2026-10-13/pitch-developers-desktop.png"
+    },
+    {
+      "name": "merchants",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "url": "https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/pitch/merchants",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "defects": [],
+      "status": 200,
+      "layout": {
+        "width": 1280,
+        "pageWidth": 1280,
+        "bodyWidth": 1280,
+        "title": "Merchant Experience | One Live Build",
+        "h1": "From browsingto “that’s my home.”",
+        "brokenImages": [],
+        "visibleControls": [
+          {
+            "text": "One Live Build home",
+            "left": 28,
+            "right": 163.5625,
+            "top": 20,
+            "bottom": 48
+          },
+          {
+            "text": "For developers",
+            "left": 1031,
+            "right": 1110.234375,
+            "top": 25,
+            "bottom": 43
+          },
+          {
+            "text": "Meet Victor ↗",
+            "left": 1132.234375,
+            "right": 1252,
+            "top": 15,
+            "bottom": 53
+          },
+          {
+            "text": "01The opportunity",
+            "left": 18,
+            "right": 174,
+            "top": 263.5,
+            "bottom": 317.5
+          },
+          {
+            "text": "02Your categories",
+            "left": 18,
+            "right": 174,
+            "top": 327.5,
+            "bottom": 381.5
+          },
+          {
+            "text": "03Your storefront",
+            "left": 18,
+            "right": 174,
+            "top": 391.5,
+            "bottom": 445.5
+          },
+          {
+            "text": "04Partner together",
+            "left": 18,
+            "right": 174,
+            "top": 455.5,
+            "bottom": 509.5
+          },
+          {
+            "text": "05Grow with care",
+            "left": 18,
+            "right": 174,
+            "top": 519.5,
+            "bottom": 573.5
+          },
+          {
+            "text": "06AI & connect",
+            "left": 18,
+            "right": 174,
+            "top": 583.5,
+            "bottom": 637.5
+          },
+          {
+            "text": "Explore your possibilities ↗",
+            "left": 199,
+            "right": 370.125,
+            "top": 554.109375,
+            "bottom": 598.109375
+          },
+          {
+            "text": "Explore AI automation ↗",
+            "left": 380.125,
+            "right": 533.125,
+            "top": 554.109375,
+            "bottom": 598.109375
+          },
+          {
+            "text": "Feedback & meetings",
+            "left": 806.203125,
+            "right": 920.125,
+            "top": 845.5,
+            "bottom": 881.5
+          },
+          {
+            "text": "Materials",
+            "left": 942.125,
+            "right": 987.9375,
+            "top": 855.25,
+            "bottom": 871.75
+          },
+          {
+            "text": "Studio",
+            "left": 1009.9375,
+            "right": 1040.859375,
+            "top": 855.25,
+            "bottom": 871.75
+          },
+          {
+            "text": "Demo ↗",
+            "left": 1062.859375,
+            "right": 1102.875,
+            "top": 855.25,
+            "bottom": 871.75
+          },
+          {
+            "text": "Next chapter",
+            "left": 1124.875,
+            "right": 1252,
+            "top": 844,
+            "bottom": 883
+          }
+        ]
+      },
+      "screenshot": "docs/qa-city-live-2026-10-13/pitch-merchants-desktop.png"
+    },
+    {
+      "name": "construction",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "url": "https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/pitch/construction",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "defects": [],
+      "status": 200,
+      "layout": {
+        "width": 1280,
+        "pageWidth": 1280,
+        "bodyWidth": 1280,
+        "title": "Construction | One Live Build",
+        "h1": "A floor plan becomes cement, sand and a layout for each floor.",
+        "brokenImages": [],
+        "visibleControls": [
+          {
+            "text": "One Live Build home",
+            "left": 24,
+            "right": 149.875,
+            "top": 15,
+            "bottom": 41
+          },
+          {
+            "text": "For developers",
+            "left": 1057.078125,
+            "right": 1149.515625,
+            "top": 17.5,
+            "bottom": 38.5
+          },
+          {
+            "text": "For merchants",
+            "left": 1165.515625,
+            "right": 1256,
+            "top": 17.5,
+            "bottom": 38.5
+          },
+          {
+            "text": "The plan comes in.",
+            "left": 41,
+            "right": 172.09375,
+            "top": 719.109375,
+            "bottom": 739.109375
+          },
+          {
+            "text": "The house, in 2D and in 3D.",
+            "left": 289.796875,
+            "right": 480.6875,
+            "top": 719.109375,
+            "bottom": 739.109375
+          },
+          {
+            "text": "Blocks, cement and sand.",
+            "left": 538.609375,
+            "right": 717.078125,
+            "top": 719.109375,
+            "bottom": 739.109375
+          },
+          {
+            "text": "Foundation dimensions and depth.",
+            "left": 787.40625,
+            "right": 981.171875,
+            "top": 719.109375,
+            "bottom": 763.109375
+          },
+          {
+            "text": "Plumbing and electric floors.",
+            "left": 1036.203125,
+            "right": 1236.84375,
+            "top": 719.109375,
+            "bottom": 739.109375
+          }
+        ]
+      },
+      "screenshot": "docs/qa-city-live-2026-10-13/pitch-construction-desktop.png"
+    },
+    {
+      "name": "plumbing",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "url": "https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/pitch/plumbing",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "defects": [],
+      "status": 200,
+      "layout": {
+        "width": 1280,
+        "pageWidth": 1280,
+        "bodyWidth": 1280,
+        "title": "Plumbing companies · One Live Build",
+        "h1": "A clearer picture.Before the quote.",
+        "brokenImages": [],
+        "visibleControls": [
+          {
+            "text": "One Live Build home",
+            "left": 30,
+            "right": 175.25,
+            "top": 31.75,
+            "bottom": 61.75
+          },
+          {
+            "text": "Book 1 hour ↗",
+            "left": 1137.921875,
+            "right": 1250,
+            "top": 24,
+            "bottom": 69.5
+          },
+          {
+            "text": "01The opportunity",
+            "left": 28,
+            "right": 166.453125,
+            "top": 112.5,
+            "bottom": 156.5
+          },
+          {
+            "text": "02Try the tools",
+            "left": 172.453125,
+            "right": 289.9375,
+            "top": 112.5,
+            "bottom": 156.5
+          },
+          {
+            "text": "03Your catalogue",
+            "left": 295.9375,
+            "right": 427.859375,
+            "top": 112.5,
+            "bottom": 156.5
+          },
+          {
+            "text": "04Your website",
+            "left": 433.859375,
+            "right": 553.78125,
+            "top": 112.5,
+            "bottom": 156.5
+          },
+          {
+            "text": "05Work together",
+            "left": 559.78125,
+            "right": 689.96875,
+            "top": 112.5,
+            "bottom": 156.5
+          },
+          {
+            "text": "06Next step",
+            "left": 695.96875,
+            "right": 798.34375,
+            "top": 112.5,
+            "bottom": 156.5
+          },
+          {
+            "text": "Explore the working demo →",
+            "left": 32,
+            "right": 236.59375,
+            "top": 503.359375,
+            "bottom": 547.359375
+          },
+          {
+            "text": "Discuss your business ↗",
+            "left": 248.59375,
+            "right": 423.09375,
+            "top": 503.359375,
+            "bottom": 547.359375
+          },
+          {
+            "text": "Other industries ↗",
+            "left": 1052.65625,
+            "right": 1149.46875,
+            "top": 865.140625,
+            "bottom": 883.140625
+          },
+          {
+            "text": "Next →",
+            "left": 1171.46875,
+            "right": 1248,
+            "top": 852.140625,
+            "bottom": 896.140625
+          }
+        ]
+      },
+      "screenshot": "docs/qa-city-live-2026-10-13/pitch-plumbing-desktop.png"
+    },
+    {
+      "name": "developers",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "url": "https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/pitch/developers",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "defects": [],
+      "status": 200,
+      "layout": {
+        "width": 390,
+        "pageWidth": 390,
+        "bodyWidth": 390,
+        "title": "Property Developer Experience | One Live Build",
+        "h1": "A home they can make their own.",
+        "brokenImages": [],
+        "visibleControls": [
+          {
+            "text": "One Live Build home",
+            "left": 15,
+            "right": 121.515625,
+            "top": 18.5,
+            "bottom": 40.5
+          },
+          {
+            "text": "For merchants",
+            "left": 216.359375,
+            "right": 274.53125,
+            "top": 22.75,
+            "bottom": 36.25
+          },
+          {
+            "text": "Meet Victor ↗",
+            "left": 285.53125,
+            "right": 375,
+            "top": 12,
+            "bottom": 47
+          },
+          {
+            "text": "01The vision",
+            "left": 12,
+            "right": 130.65625,
+            "top": 70,
+            "bottom": 109
+          },
+          {
+            "text": "02Make it yours",
+            "left": 135.65625,
+            "right": 254.328125,
+            "top": 70,
+            "bottom": 109
+          },
+          {
+            "text": "03Plan delivery",
+            "left": 259.328125,
+            "right": 377.984375,
+            "top": 70,
+            "bottom": 109
+          },
+          {
+            "text": "04One shared brief",
+            "left": 12,
+            "right": 130.65625,
+            "top": 114,
+            "bottom": 153
+          },
+          {
+            "text": "05Build together",
+            "left": 135.65625,
+            "right": 254.328125,
+            "top": 114,
+            "bottom": 153
+          },
+          {
+            "text": "06AI & connect",
+            "left": 259.328125,
+            "right": 377.984375,
+            "top": 114,
+            "bottom": 153
+          },
+          {
+            "text": "Shape an apartment ↗",
+            "left": 22,
+            "right": 174.875,
+            "top": 510.875,
+            "bottom": 554.875
+          },
+          {
+            "text": "Explore AI automation ↗",
+            "left": 184.875,
+            "right": 337.875,
+            "top": 510.875,
+            "bottom": 554.875
+          },
+          {
+            "text": "Feedback & meetings",
+            "left": 13,
+            "right": 108.03125,
+            "top": 797,
+            "bottom": 833
+          },
+          {
+            "text": "Studio",
+            "left": 142.03125,
+            "right": 170.15625,
+            "top": 807.5,
+            "bottom": 822.5
+          },
+          {
+            "text": "Demo ↗",
+            "left": 204.140625,
+            "right": 240.515625,
+            "top": 807.5,
+            "bottom": 822.5
+          },
+          {
+            "text": "Next chapter",
+            "left": 274.515625,
+            "right": 377,
+            "top": 796,
+            "bottom": 834
+          }
+        ]
+      },
+      "screenshot": "docs/qa-city-live-2026-10-13/pitch-developers-phone.png"
+    },
+    {
+      "name": "merchants",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "url": "https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/pitch/merchants",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "defects": [],
+      "status": 200,
+      "layout": {
+        "width": 390,
+        "pageWidth": 390,
+        "bodyWidth": 390,
+        "title": "Merchant Experience | One Live Build",
+        "h1": "From browsingto “that’s my home.”",
+        "brokenImages": [],
+        "visibleControls": [
+          {
+            "text": "One Live Build home",
+            "left": 15,
+            "right": 121.515625,
+            "top": 18.5,
+            "bottom": 40.5
+          },
+          {
+            "text": "For developers",
+            "left": 215.09375,
+            "right": 274.53125,
+            "top": 22.75,
+            "bottom": 36.25
+          },
+          {
+            "text": "Meet Victor ↗",
+            "left": 285.53125,
+            "right": 375,
+            "top": 12,
+            "bottom": 47
+          },
+          {
+            "text": "01The opportunity",
+            "left": 12,
+            "right": 130.65625,
+            "top": 70,
+            "bottom": 109
+          },
+          {
+            "text": "02Your categories",
+            "left": 135.65625,
+            "right": 254.328125,
+            "top": 70,
+            "bottom": 109
+          },
+          {
+            "text": "03Your storefront",
+            "left": 259.328125,
+            "right": 377.984375,
+            "top": 70,
+            "bottom": 109
+          },
+          {
+            "text": "04Partner together",
+            "left": 12,
+            "right": 130.65625,
+            "top": 114,
+            "bottom": 153
+          },
+          {
+            "text": "05Grow with care",
+            "left": 135.65625,
+            "right": 254.328125,
+            "top": 114,
+            "bottom": 153
+          },
+          {
+            "text": "06AI & connect",
+            "left": 259.328125,
+            "right": 377.984375,
+            "top": 114,
+            "bottom": 153
+          },
+          {
+            "text": "Explore your possibilities ↗",
+            "left": 22,
+            "right": 193.125,
+            "top": 510.875,
+            "bottom": 554.875
+          },
+          {
+            "text": "Explore AI automation ↗",
+            "left": 203.125,
+            "right": 356.125,
+            "top": 510.875,
+            "bottom": 554.875
+          },
+          {
+            "text": "Feedback & meetings",
+            "left": 13,
+            "right": 108.03125,
+            "top": 797,
+            "bottom": 833
+          },
+          {
+            "text": "Studio",
+            "left": 142.03125,
+            "right": 170.15625,
+            "top": 807.5,
+            "bottom": 822.5
+          },
+          {
+            "text": "Demo ↗",
+            "left": 204.140625,
+            "right": 240.515625,
+            "top": 807.5,
+            "bottom": 822.5
+          },
+          {
+            "text": "Next chapter",
+            "left": 274.515625,
+            "right": 377,
+            "top": 796,
+            "bottom": 834
+          }
+        ]
+      },
+      "screenshot": "docs/qa-city-live-2026-10-13/pitch-merchants-phone.png"
+    },
+    {
+      "name": "construction",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "url": "https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/pitch/construction",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "defects": [],
+      "status": 200,
+      "layout": {
+        "width": 390,
+        "pageWidth": 390,
+        "bodyWidth": 390,
+        "title": "Construction | One Live Build",
+        "h1": "A floor plan becomes cement, sand and a layout for each floor.",
+        "brokenImages": [],
+        "visibleControls": [
+          {
+            "text": "One Live Build home",
+            "left": 16,
+            "right": 141.875,
+            "top": 15,
+            "bottom": 41
+          },
+          {
+            "text": "For developers",
+            "left": 194.140625,
+            "right": 279.984375,
+            "top": 18.25,
+            "bottom": 37.75
+          },
+          {
+            "text": "For merchants",
+            "left": 289.984375,
+            "right": 374,
+            "top": 18.25,
+            "bottom": 37.75
+          }
+        ]
+      },
+      "screenshot": "docs/qa-city-live-2026-10-13/pitch-construction-phone.png"
+    },
+    {
+      "name": "plumbing",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "url": "https://ppw-designer-2d-21ijghs0m-victor-ppw.vercel.app/pitch/plumbing",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "defects": [],
+      "status": 200,
+      "layout": {
+        "width": 390,
+        "pageWidth": 390,
+        "bodyWidth": 390,
+        "title": "Plumbing companies · One Live Build",
+        "h1": "A clearer picture.Before the quote.",
+        "brokenImages": [],
+        "visibleControls": [
+          {
+            "text": "One Live Build home",
+            "left": 14,
+            "right": 130.203125,
+            "top": 25.25,
+            "bottom": 49.25
+          },
+          {
+            "text": "Book 1 hour ↗",
+            "left": 285.9375,
+            "right": 376,
+            "top": 17,
+            "bottom": 57.5
+          },
+          {
+            "text": "01The opportunity",
+            "left": 14,
+            "right": 131.328125,
+            "top": 89.5,
+            "bottom": 141.5
+          },
+          {
+            "text": "02Try the tools",
+            "left": 136.328125,
+            "right": 253.65625,
+            "top": 89.5,
+            "bottom": 141.5
+          },
+          {
+            "text": "03Your catalogue",
+            "left": 258.65625,
+            "right": 376,
+            "top": 89.5,
+            "bottom": 141.5
+          },
+          {
+            "text": "04Your website",
+            "left": 14,
+            "right": 131.328125,
+            "top": 146.5,
+            "bottom": 198.5
+          },
+          {
+            "text": "05Work together",
+            "left": 136.328125,
+            "right": 253.65625,
+            "top": 146.5,
+            "bottom": 198.5
+          },
+          {
+            "text": "06Next step",
+            "left": 258.65625,
+            "right": 376,
+            "top": 146.5,
+            "bottom": 198.5
+          },
+          {
+            "text": "Explore the working demo →",
+            "left": 14,
+            "right": 205.78125,
+            "top": 534.65625,
+            "bottom": 578.65625
+          },
+          {
+            "text": "Discuss your business ↗",
+            "left": 14,
+            "right": 178,
+            "top": 588.65625,
+            "bottom": 632.65625
+          }
+        ]
+      },
+      "screenshot": "docs/qa-city-live-2026-10-13/pitch-plumbing-phone.png"
+    }
+  ],
+  "visualReview": {
+    "inspectedScreenshots": 8,
+    "blockingDefects": [],
+    "nonblockingObservations": [
+      "Construction phone begins with two tall app screenshots; its headline and first section are below the initial viewport. This is a scrolling-presentation composition issue, not a loading or overflow failure."
+    ],
+    "scope": "Opening screens only; no form submission or complete chapter walkthrough."
+  }
+}

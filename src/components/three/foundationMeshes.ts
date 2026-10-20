@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {
   foundationExcavationBounds,
+  foundationBoreBounds,
   foundationIsFilled,
   normaliseFoundation,
   type FoundationModel,
@@ -45,7 +46,7 @@ export function foundationMeshes(
     group.add(mesh);
   }
   if (!checked.elements.some(foundationIsFilled)) material.dispose();
-  if (inspection && checked.elements.some((e) => e.excavation)) {
+  if (inspection && (checked.elements.some((e) => e.excavation) || checked.bores?.length)) {
     const soil = new THREE.MeshStandardMaterial({
       color: '#947655',
       roughness: 1,
@@ -61,11 +62,18 @@ export function foundationMeshes(
       roughness: 1,
       side: THREE.DoubleSide,
     });
-    for (const face of foundationSoilFaces(checked, groundElevationM)) {
+    const faces = foundationSoilFaces(checked, groundElevationM);
+    const boreVertices: Record<'soil' | 'base' | 'rim', number[]> = { soil: [], base: [], rim: [] };
+    for (const face of faces) {
       const vertices = face.points.flatMap((p) => [p.x, p.z, p.y]);
+      if (face.key.startsWith('bore-')) {
+        for (const index of face.points.length === 3 ? [0, 1, 2] : [0, 1, 2, 0, 2, 3])
+          boreVertices[face.kind].push(...vertices.slice(index * 3, index * 3 + 3));
+        continue;
+      }
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-      geometry.setIndex([0, 1, 2, 0, 2, 3]);
+      geometry.setIndex(face.points.length === 3 ? [0, 1, 2] : [0, 1, 2, 0, 2, 3]);
       geometry.computeVertexNormals();
       const mesh = new THREE.Mesh(
         geometry,
@@ -76,9 +84,32 @@ export function foundationMeshes(
       mesh.userData = { buildingPart: 'excavation', quantitySurface: face.kind !== 'rim' };
       group.add(mesh);
     }
-    for (const element of checked.elements) {
-      const b = foundationExcavationBounds(element);
-      if (!b || !element.excavation) continue;
+    for (const kind of ['soil', 'base', 'rim'] as const) {
+      if (!boreVertices[kind].length) continue;
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(boreVertices[kind], 3));
+      geometry.computeVertexNormals();
+      const mesh = new THREE.Mesh(geometry, kind === 'rim' ? rim : kind === 'base' ? base : soil);
+      mesh.name = `bore-${kind}`;
+      mesh.receiveShadow = true;
+      mesh.userData = { buildingPart: 'excavation', quantitySurface: kind !== 'rim' };
+      group.add(mesh);
+    }
+    const dimensionedHoles = [
+      ...checked.elements.flatMap((element) => {
+        const bounds = foundationExcavationBounds(element);
+        return bounds && element.excavation
+          ? [{ id: element.id, depthM: element.excavation.depthM, bounds }]
+          : [];
+      }),
+      ...(checked.bores ?? []).map((bore) => ({
+        id: bore.id,
+        depthM: bore.depthM,
+        bounds: foundationBoreBounds(bore),
+      })),
+    ];
+    for (const element of dimensionedHoles) {
+      const b = element.bounds;
       const a = new THREE.Vector3(b.minX, groundElevationM + b.minElevationM, b.minY);
       const c = new THREE.Vector3(b.minX, groundElevationM + b.maxElevationM, b.minY);
       const line = new THREE.LineSegments(
@@ -94,8 +125,8 @@ export function foundationMeshes(
       );
       line.name = `excavation-depth-${element.id}`;
       line.userData = {
-        depthM: element.excavation.depthM,
-        label: `${element.excavation.depthM} m deep`,
+        depthM: element.depthM,
+        label: `${element.depthM} m deep`,
       };
       line.renderOrder = 8;
       group.add(line);
@@ -112,7 +143,7 @@ export function foundationMeshes(
           ctx.textBaseline = 'middle';
           ctx.fillStyle = '#f8ecd4';
           ctx.fillText(
-            `${element.excavation.depthM.toLocaleString('en-GB', { maximumFractionDigits: 3 })} m deep`,
+            `${element.depthM.toLocaleString('en-GB', { maximumFractionDigits: 3 })} m deep`,
             canvas.width / 2,
             canvas.height / 2,
           );

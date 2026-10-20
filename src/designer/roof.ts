@@ -81,6 +81,18 @@ export function syncRoofRooms(property: Property): Property {
   const levels = levelsOf(property);
   if (!levels.some((l) => isRoofLevel(l))) return property;
 
+  if (property.roof?.outline) {
+    const previous = property.rooms.filter(isRoofRoom);
+    const first = previous.find(room => room.id === 'roof-custom-outline') ?? previous[0];
+    const outline = property.roof.outline;
+    if (previous.length === 1 && first.id === 'roof-custom-outline' && samePolygon(first.polygon, outline)) return property;
+    const custom: Room = {
+      ...first, id: 'roof-custom-outline', name: 'Custom roof', kind: 'roof', levelId: ROOF_LEVEL_ID,
+      polygon: outline.map(vertex => ({ ...vertex })), placedItems: previous.flatMap(room => room.placedItems),
+    };
+    return { ...property, rooms: [...property.rooms.filter(room => !isRoofRoom(room)), custom] };
+  }
+
   const sources = roofSourceRooms(property);
   const sourceSlabIds = new Set(sources.map((source) => roofRoomIdFor(source.id)));
   const existing = new Map<string, Room>();

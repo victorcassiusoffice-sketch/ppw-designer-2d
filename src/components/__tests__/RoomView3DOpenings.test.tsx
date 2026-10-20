@@ -6,12 +6,16 @@ import { RoomView3D } from '../RoomView3D';
 import { usePropertyStore } from '../../store/propertyStore';
 import { useDesignerUIStore } from '../../store/designerUIStore';
 import { usePlacementIntentStore } from '../../store/placementIntentStore';
+import { useOpeningSelectionStore } from '../../store/openingSelectionStore';
+import { useDragPointerStore } from '../../store/dragPointerStore';
 import type { ThreeStageHandle, ThreeStageProps } from '../three/ThreeStage';
+const hit = vi.hoisted(() => ({ openingId: null as string | null, camera: null as unknown }));
 
 vi.mock('../three/ThreeStage', async () => {
   const React = await import('react');
-  return { default: React.forwardRef<Pick<ThreeStageHandle, 'wallPoint' | 'floorPoint' | 'projectPoint' | 'hitItem'>, ThreeStageProps>(function TestOpeningStage(_props, ref) {
-    React.useImperativeHandle(ref, () => ({ wallPoint: () => null, floorPoint: (x, y) => ({ x: x / 100, y: y / 100 }), projectPoint: (x, y) => ({ x: x * 100, y: y * 100 }), hitItem: () => null }));
+  return { default: React.forwardRef<Pick<ThreeStageHandle, 'wallPoint' | 'floorPoint' | 'projectPoint' | 'hitItem' | 'hitOpening'>, ThreeStageProps>(function TestOpeningStage(props, ref) {
+    hit.camera = props.camera;
+    React.useImperativeHandle(ref, () => ({ wallPoint: () => null, floorPoint: (x, y) => ({ x: x / 100, y: y / 100 }), projectPoint: (x, y) => ({ x: x * 100, y: y * 100 }), hitItem: () => null, hitOpening: () => hit.openingId }));
     return <div data-testid="test-opening-stage" />;
   }) };
 });
@@ -20,6 +24,9 @@ let host: HTMLDivElement;
 let root: Root;
 const onClose = vi.fn();
 beforeEach(async () => {
+  hit.openingId = null;
+  useOpeningSelectionStore.setState({ selectedId: null });
+  useDragPointerStore.getState().cancel();
   onClose.mockReset();
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ x: 0, y: 0, left: 0, top: 0, right: 640, bottom: 400, width: 640, height: 400, toJSON: () => ({}) });
@@ -43,6 +50,31 @@ function pointer(type: string, x: number, y: number, pointerId = 1, pointerType 
 }
 const openings = () => usePropertyStore.getState().property.rooms.flatMap(room => room.openings ?? []);
 describe('3D wall-hosted opening gestures', () => {
+  it('selects an existing door, edits dimensions and hinge, and removes it without changing the camera', () => {
+    let id: string | null = null;
+    act(() => { const store = usePropertyStore.getState(); id = store.addOpening(store.property.activeRoomId, { kind: 'door', edgeIndex: 0, offsetM: 2, widthM: .8, flipFacing: false, flipHand: false }); });
+    const before = structuredClone(hit.camera);
+    hit.openingId = id;
+    pointer('pointerdown', 200, 10); pointer('pointerup', 200, 10);
+    expect(host.querySelector('[data-testid="opening-selection-editor"]')).not.toBeNull();
+    const input = host.querySelector<HTMLInputElement>('input[aria-label="Opening width"]')!;
+    act(() => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, '1.1'); input.dispatchEvent(new Event('input', { bubbles: true })); });
+    act(() => input.dispatchEvent(new FocusEvent('focusout', { bubbles: true })));
+    expect(openings()[0].widthM).toBe(1.1);
+    act(() => [...host.querySelectorAll<HTMLButtonElement>('.opening-selection-editor button')].find(b => b.textContent === 'Swap hinge')!.click());
+    expect(openings()[0].flipHand).toBe(true);
+    expect(hit.camera).toEqual(before);
+    act(() => [...host.querySelectorAll<HTMLButtonElement>('.opening-selection-editor button')].find(b => b.textContent === 'Remove door')!.click());
+    expect(openings()).toHaveLength(0);
+    expect(hit.camera).toEqual(before);
+  });
+  it('routes a desktop catalogue drop through the 3D floor without a confirmation or camera change', () => {
+    const before = structuredClone(hit.camera);
+    act(() => { const drag = useDragPointerStore.getState(); drag.begin('test-product', 250, 170); drag.release(false); });
+    expect(useDragPointerStore.getState().drop).toBeNull();
+    expect(usePlacementIntentStore.getState().intent).toMatchObject({ productId: 'test-product', target: { roomX: 2.5, roomY: 1.7 }, strict: true });
+    expect(hit.camera).toEqual(before);
+  });
   it('slides a snapped preview, commits only on release, and remains armed for another door', () => {
     click('Door');
     pointer('pointerdown', 200, 10); pointer('pointermove', 320, 10);

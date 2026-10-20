@@ -1,0 +1,251 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "date": "2026-10-16",
+  "bundle": "App-t4bdqfGj.js",
+  "cases": [
+    {
+      "name": "desktop",
+      "shots": [
+        "docs/qa-working-views-2026-10-16/desktop-plan-layers.png",
+        "docs/qa-working-views-2026-10-16/desktop-plan-pipes.png",
+        "docs/qa-working-views-2026-10-16/desktop-plan-plumbing-electrical-walls.png",
+        "docs/qa-working-views-2026-10-16/desktop-house-layers.png",
+        "docs/qa-working-views-2026-10-16/desktop-house-pipes.png",
+        "docs/qa-working-views-2026-10-16/desktop-house-plumbing-electrical-walls.png",
+        "docs/qa-working-views-2026-10-16/desktop-services-plan-layers.png",
+        "docs/qa-working-views-2026-10-16/desktop-services-plan-pipes.png",
+        "docs/qa-working-views-2026-10-16/desktop-services-plan-combined.png",
+        "docs/qa-working-views-2026-10-16/desktop-services-plan-routes-walls.png",
+        "docs/qa-working-views-2026-10-16/desktop-services-3d-pipes.png",
+        "docs/qa-working-views-2026-10-16/desktop-services-3d-combined.png",
+        "docs/qa-working-views-2026-10-16/desktop-services-3d-hidden.png"
+      ],
+      "checks": [
+        {
+          "label": "plan-layers",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "plan-pipes",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "plan-plumbing-electrical-walls",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "house-layers",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "house-pipes",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "house-plumbing-electrical-walls",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "name": "Main house camera unchanged after filtering",
+          "pixelDelta": 0
+        },
+        {
+          "label": "services-plan-layers",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "services-plan-pipes",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "services-plan-combined",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "services-plan-routes-walls",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "services-3d-pipes",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "services-3d-combined",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "name": "Services camera unchanged after filtering",
+          "pixelDelta": 0
+        },
+        {
+          "label": "services-3d-hidden",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        }
+      ],
+      "errors": [],
+      "writes": [],
+      "failures": []
+    },
+    {
+      "name": "phone",
+      "shots": [
+        "docs/qa-working-views-2026-10-16/phone-plan-layers.png",
+        "docs/qa-working-views-2026-10-16/phone-plan-pipes.png",
+        "docs/qa-working-views-2026-10-16/phone-plan-plumbing-electrical-walls.png",
+        "docs/qa-working-views-2026-10-16/phone-house-layers.png",
+        "docs/qa-working-views-2026-10-16/phone-house-pipes.png",
+        "docs/qa-working-views-2026-10-16/phone-house-plumbing-electrical-walls.png",
+        "docs/qa-working-views-2026-10-16/phone-services-plan-layers.png",
+        "docs/qa-working-views-2026-10-16/phone-services-plan-pipes.png",
+        "docs/qa-working-views-2026-10-16/phone-services-plan-combined.png",
+        "docs/qa-working-views-2026-10-16/phone-services-plan-routes-walls.png",
+        "docs/qa-working-views-2026-10-16/phone-services-3d-pipes.png",
+        "docs/qa-working-views-2026-10-16/phone-services-3d-combined.png",
+        "docs/qa-working-views-2026-10-16/phone-services-3d-hidden.png"
+      ],
+      "checks": [
+        {
+          "label": "plan-layers",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "plan-pipes",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "plan-plumbing-electrical-walls",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "house-layers",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "house-pipes",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "house-plumbing-electrical-walls",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "name": "Main house camera unchanged after filtering",
+          "pixelDelta": 0
+        },
+        {
+          "label": "services-plan-layers",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "services-plan-pipes",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "services-plan-combined",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "services-plan-routes-walls",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "services-3d-pipes",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "label": "services-3d-combined",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        },
+        {
+          "name": "Services camera unchanged after filtering",
+          "pixelDelta": 0
+        },
+        {
+          "label": "services-3d-hidden",
+          "layout": {
+            "overflow": 0,
+            "clipped": []
+          }
+        }
+      ],
+      "errors": [],
+      "writes": [],
+      "failures": []
+    }
+  ]
+}

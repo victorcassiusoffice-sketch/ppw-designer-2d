@@ -98,6 +98,8 @@ export interface CladdingDraft {
 }
 
 export interface WallPaintDraft {
+  thicknessMm?: number;
+  materialProductId?: string;
   side?: import('../designer/wallConstruction').WallSide;
   construction?: import('../designer/wallConstruction').WallConstruction;
   /** Surface mode changes the wall substrate without buying paint. */
@@ -130,6 +132,9 @@ export type ViewMode = 'plan' | '3d';
 export type WallView = 'up' | 'cutaway' | 'down';
 
 export interface DoorDraft {
+  heightM?: number;
+  sillM?: number;
+  shape?: import('../designer/openings').OpeningShape;
   kind: OpeningKind;
   widthM: number;
   flipFacing: boolean;
@@ -354,6 +359,12 @@ export const useDesignerUIStore = create<DesignerUIState>()(
       setDoorDraft: (patch) =>
         set((s) => {
           const next = { ...s.doorDraft, ...patch };
+          if (patch.kind !== undefined && patch.kind !== s.doorDraft.kind) {
+            if (patch.heightM === undefined) delete next.heightM;
+            if (patch.sillM === undefined) delete next.sillM;
+            if (patch.shape === undefined) delete next.shape;
+          }
+          if (next.shape === 'circle') next.heightM = next.widthM;
           if (
             patch.kind !== undefined
             && patch.kind !== s.doorDraft.kind
@@ -364,6 +375,7 @@ export const useDesignerUIStore = create<DesignerUIState>()(
             next.widthM =
               patch.kind === 'window' ? DEFAULT_WINDOW_WIDTH_M : DEFAULT_DOOR_WIDTH_M;
           }
+          if (next.shape === 'circle') next.heightM = next.widthM;
           return { doorDraft: next };
         }),
       setFloorDraft: (patch) => set((s) => ({ floorDraft: { ...s.floorDraft, ...patch } })),

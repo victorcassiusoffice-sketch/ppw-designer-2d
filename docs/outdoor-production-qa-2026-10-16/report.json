@@ -1,0 +1,58 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "bundle": "production preview",
+  "cases": [
+    {
+      "width": 1280,
+      "shots": [
+        "C:\\Users\\Victor\\Documents\\Codex\\2026-09-23\\c\\work\\ppw-designer\\docs\\outdoor-production-qa-2026-10-16\\outdoor-filled-3d-1280.png",
+        "C:\\Users\\Victor\\Documents\\Codex\\2026-09-23\\c\\work\\ppw-designer\\docs\\outdoor-production-qa-2026-10-16\\outdoor-excavation-3d-1280.png",
+        "C:\\Users\\Victor\\Documents\\Codex\\2026-09-23\\c\\work\\ppw-designer\\docs\\outdoor-production-qa-2026-10-16\\outdoor-tools-2d-1280.png",
+        "C:\\Users\\Victor\\Documents\\Codex\\2026-09-23\\c\\work\\ppw-designer\\docs\\outdoor-production-qa-2026-10-16\\outdoor-pool-details-1280.png",
+        "C:\\Users\\Victor\\Documents\\Codex\\2026-09-23\\c\\work\\ppw-designer\\docs\\outdoor-production-qa-2026-10-16\\outdoor-layer-details-1280.png"
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "blockedWrites": [],
+      "failures": [],
+      "checks": [
+        "Construction-stage control persists and leaves planned quantities unchanged",
+        "Garden Done fully closes the inspector without opening Build details",
+        "Water-depth input recalculates 18 m² × 1.2 m = 21.60 m³ and persists",
+        "Tarmac layer quantities remain 21 m² × 0.07 m and 21 m² × 0.2 m"
+      ]
+    },
+    {
+      "width": 390,
+      "shots": [
+        "C:\\Users\\Victor\\Documents\\Codex\\2026-09-23\\c\\work\\ppw-designer\\docs\\outdoor-production-qa-2026-10-16\\outdoor-filled-3d-390.png",
+        "C:\\Users\\Victor\\Documents\\Codex\\2026-09-23\\c\\work\\ppw-designer\\docs\\outdoor-production-qa-2026-10-16\\outdoor-excavation-3d-390.png",
+        "C:\\Users\\Victor\\Documents\\Codex\\2026-09-23\\c\\work\\ppw-designer\\docs\\outdoor-production-qa-2026-10-16\\outdoor-tools-2d-390.png",
+        "C:\\Users\\Victor\\Documents\\Codex\\2026-09-23\\c\\work\\ppw-designer\\docs\\outdoor-production-qa-2026-10-16\\outdoor-pool-details-390.png",
+        "C:\\Users\\Victor\\Documents\\Codex\\2026-09-23\\c\\work\\ppw-designer\\docs\\outdoor-production-qa-2026-10-16\\outdoor-layer-details-390.png"
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "blockedWrites": [],
+      "failures": [],
+      "checks": [
+        "Construction-stage control persists and leaves planned quantities unchanged",
+        "Garden Done fully closes the inspector without opening Build details",
+        "Water-depth input recalculates 18 m² × 1.2 m = 21.60 m³ and persists",
+        "Tarmac layer quantities remain 21 m² × 0.07 m and 21 m² × 0.2 m"
+      ]
+    }
+  ],
+  "verifiedMainBundle": "/assets/main-BZP_4LCK.js",
+  "visualInspection": {
+    "screenshotsReviewed": 10,
+    "blockingDefects": [],
+    "observations": [
+      "Pool water and below-grade excavation render visibly in 3D at both widths.",
+      "Garden Done leaves the scene free of an unrelated inspector.",
+      "Phone Garden quantities and source links clear the Furnish capsule; no horizontal overflow.",
+      "Non-blocking: Fit crops the outer lawn at phone width while keeping pool, paving and tarmac visible.",
+      "Non-blocking: the compact phone ground-floor selector truncates its visible label; it remains accessible."
+    ]
+  }
+}

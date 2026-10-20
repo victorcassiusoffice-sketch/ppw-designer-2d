@@ -3,6 +3,7 @@ import type { Polygon } from '../lib/geometry';
 import type { Property } from '../store/propertyStore';
 import { DEFAULT_WALL_HEIGHT_M } from '../data/wallPaints.js';
 import { isRoofLevel, levelsOf, roofSourceLevelId, type Level } from './levels.js';
+import { isSimpleMeasuredPolygon } from './measuredPath.js';
 
 export const FLOOR_SLAB_THICKNESS_M = 0.18;
 export const MIN_LEVEL_HEIGHT_M = 2;
@@ -29,6 +30,8 @@ export interface RoofConfig {
   material: 'felt' | 'tile' | 'metal';
   pitchDeg: number;
   overhangM: number;
+  /** Optional authored footprint, shared by the plan, mesh and takeoff. */
+  outline?: Polygon;
 }
 
 export const DEFAULT_ROOF_CONFIG: Readonly<RoofConfig> = Object.freeze({
@@ -95,6 +98,8 @@ export function roofConfigOf(property: Pick<Property, 'roof'>): RoofConfig {
 export function normaliseRoofConfig(value: unknown): RoofConfig | undefined {
   if (!value || typeof value !== 'object') return undefined;
   const raw = value as Record<string, unknown>;
+  const outline = isSimpleMeasuredPolygon(raw.outline) ? raw.outline.map(v => ({ ...v })) : undefined;
+  if (outline && outline.reduce((sum, a, i) => { const b = outline[(i + 1) % outline.length]; return sum + a.x * b.y - b.x * a.y; }, 0) < 0) outline.reverse();
   if (!['flat', 'gable', 'shed'].includes(raw.style as string)
     || !['felt', 'tile', 'metal'].includes(raw.material as string)) return undefined;
   return {
@@ -103,6 +108,7 @@ export function normaliseRoofConfig(value: unknown): RoofConfig | undefined {
       ? Math.max(5, Math.min(60, raw.pitchDeg)) : DEFAULT_ROOF_CONFIG.pitchDeg,
     overhangM: typeof raw.overhangM === 'number' && Number.isFinite(raw.overhangM)
       ? Math.max(0, Math.min(1.5, raw.overhangM)) : DEFAULT_ROOF_CONFIG.overhangM,
+    ...(outline ? { outline } : {}),
   };
 }
 

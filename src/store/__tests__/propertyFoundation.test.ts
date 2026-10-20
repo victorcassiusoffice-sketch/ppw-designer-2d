@@ -12,6 +12,24 @@ const model = (): FoundationModel => ({ version: 1, enabled: true, elements: [{ 
 beforeEach(() => { __test.resetSubscriptions(); localStorage.clear(); sessionStorage.clear(); usePropertyStore.getState().resetToDefault(); useHistoryStore.getState().reset(); });
 afterEach(() => { stop?.(); stop = undefined; __test.resetSubscriptions(); });
 
+it('preserves bore-only edits through page save, storage reload and Clear Undo', async () => {
+  const data: FoundationModel = { version: 1, enabled: true, elements: [], bores: [{ id: 'bore', name: 'Measured bore', x: 4, y: -3, diameterM: 1.2345, depthM: 3.4567, topElevationM: -.4 }] };
+  usePropertyStore.setState(state => ({ property: { ...state.property, rooms: state.property.rooms.map(room => ({ ...room, polygon: [], placedItems: [] })) } }));
+  expect(propertyHasContent(usePropertyStore.getState().property)).toBe(false);
+  expect(usePropertyStore.getState().setFoundation(data)).toBe(true);
+  expect(propertyHasContent(usePropertyStore.getState().property)).toBe(true);
+  const page = captureCurrentPage();
+  const saved = localStorage.getItem('ppw_property_v2')!;
+  usePropertyStore.getState().resetToDefault(); applyPage(page);
+  expect(usePropertyStore.getState().property.foundation).toEqual(data);
+  localStorage.setItem('ppw_property_v2', saved); await usePropertyStore.persist.rehydrate();
+  expect(usePropertyStore.getState().property.foundation).toEqual(data);
+  stop = installHistorySubscriptions(); clearEntireDesign();
+  expect(usePropertyStore.getState().property.foundation).toBeUndefined();
+  useHistoryStore.getState().undo();
+  expect(usePropertyStore.getState().property.foundation).toEqual(data);
+});
+
 it('counts foundation-only work as content and preserves metres/depth through page and disk reload', async () => {
   const data = model();
   expect(usePropertyStore.getState().setFoundation(data)).toBe(true);

@@ -189,3 +189,6 @@
   background: #EEE7D9
 }
 }
+:root[data-brand='olb'] .sales-pack .sales-tabs button[aria-selected='true'] span {
+  color: inherit
+}

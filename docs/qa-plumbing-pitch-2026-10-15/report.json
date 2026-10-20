@@ -1,0 +1,103 @@
+{
+  "date": "2026-10-15",
+  "base": "http://127.0.0.1:5173",
+  "bundle": "App-CDZDraaG.js",
+  "cases": [
+    {
+      "viewport": "desktop",
+      "shots": [
+        "docs/qa-plumbing-pitch-2026-10-15/desktop-opportunity.png",
+        "docs/qa-plumbing-pitch-2026-10-15/desktop-tools.png",
+        "docs/qa-plumbing-pitch-2026-10-15/desktop-catalogue.png",
+        "docs/qa-plumbing-pitch-2026-10-15/desktop-installation.png",
+        "docs/qa-plumbing-pitch-2026-10-15/desktop-coordination.png",
+        "docs/qa-plumbing-pitch-2026-10-15/desktop-foundation-deep-link.png"
+      ],
+      "checks": [
+        "Actual pitch route renders; interactive embed stays unloaded until requested.",
+        "The opportunity: selected chapter, no horizontal overflow, images loaded.",
+        "Try the tools: selected chapter, no horizontal overflow, images loaded.",
+        "Your catalogue: selected chapter, no horizontal overflow, images loaded.",
+        "Your website: selected chapter, no horizontal overflow, images loaded.",
+        "Work together: selected chapter, no horizontal overflow, images loaded.",
+        {
+          "name": "Cold foundation demo link opens after initial demo load; totals are not clipped",
+          "foundation": {
+            "drawing": {
+              "top": 133.5,
+              "bottom": 900,
+              "height": 766.5
+            },
+            "svg": {
+              "top": 167.5,
+              "bottom": 830,
+              "height": 662.5
+            },
+            "totals": {
+              "top": 830,
+              "bottom": 900,
+              "height": 70
+            },
+            "details": {
+              "top": 133.5,
+              "bottom": 900,
+              "height": 766.5
+            }
+          }
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "writes": [],
+      "failures": []
+    },
+    {
+      "viewport": "phone",
+      "shots": [
+        "docs/qa-plumbing-pitch-2026-10-15/phone-opportunity.png",
+        "docs/qa-plumbing-pitch-2026-10-15/phone-tools.png",
+        "docs/qa-plumbing-pitch-2026-10-15/phone-catalogue.png",
+        "docs/qa-plumbing-pitch-2026-10-15/phone-installation.png",
+        "docs/qa-plumbing-pitch-2026-10-15/phone-coordination.png",
+        "docs/qa-plumbing-pitch-2026-10-15/phone-foundation-deep-link.png"
+      ],
+      "checks": [
+        "Actual pitch route renders; interactive embed stays unloaded until requested.",
+        "The opportunity: selected chapter, no horizontal overflow, images loaded.",
+        "Try the tools: selected chapter, no horizontal overflow, images loaded.",
+        "Your catalogue: selected chapter, no horizontal overflow, images loaded.",
+        "Your website: selected chapter, no horizontal overflow, images loaded.",
+        "Work together: selected chapter, no horizontal overflow, images loaded.",
+        {
+          "name": "Cold foundation demo link opens after initial demo load; totals are not clipped",
+          "foundation": {
+            "drawing": {
+              "top": 270.5,
+              "bottom": 639.5,
+              "height": 369
+            },
+            "svg": {
+              "top": 297.5,
+              "bottom": 537.5,
+              "height": 240
+            },
+            "totals": {
+              "top": 537.5,
+              "bottom": 639.5,
+              "height": 102
+            },
+            "details": {
+              "top": 639.5,
+              "bottom": 844,
+              "height": 204.5
+            }
+          }
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "writes": [],
+      "failures": []
+    }
+  ]
+}

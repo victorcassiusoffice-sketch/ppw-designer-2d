@@ -5,6 +5,7 @@ import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { FoundationWorkspace } from '../FoundationWorkspace';
 import { usePropertyStore } from '../../store/propertyStore';
 import { useHistoryStore } from '../../store/historyStore';
+import { useDisciplineVisibilityStore } from '../../store/disciplineVisibilityStore';
 import { foundationVolumeM3 } from '../../designer/foundation';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let root: Root, host: HTMLDivElement;
@@ -68,6 +69,56 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 describe('foundation editing preserves shared geometry and escape paths', () => {
+  it('reveals the foundation discipline when explicitly inspecting its 3D geometry', () => {
+    useDisciplineVisibilityStore.getState().setVisible('foundation', false);
+    click('3D foundation');
+    expect(useDisciplineVisibilityStore.getState().visible.foundation).toBe(true);
+    expect(document.querySelector('[aria-label="Foundation design"]')).toBeNull();
+  });
+  it('closes its workbench for a tutorial tool handover', () => {
+    expect(document.querySelector('[aria-label="Foundation design"]')).not.toBeNull();
+    act(() => window.dispatchEvent(new Event('olb:close-workspaces')));
+    expect(document.querySelector('[aria-label="Foundation design"]')).toBeNull();
+  });
+  it('offers excavation depth before drawing and places a measured circular hole with editable diameter', () => {
+    expect(document.querySelector('[aria-label="Hole dimensions"]')).not.toBeNull();
+    number('New hole depth m', '3.25');
+    number('New circular hole diameter m', '1.2');
+    click('Place circular hole');
+    point(2, -1);
+    expect(usePropertyStore.getState().property.foundation).toMatchObject({
+      enabled: true,
+      elements: [],
+      bores: [{ x: 2, y: -1, diameterM: 1.2, depthM: 3.25 }],
+    });
+    const view = plan().getAttribute('viewBox');
+    number('Hole diameter m', '1.5');
+    number('Hole depth m', '4');
+    expect(document.querySelector('.foundation-totals')?.textContent).toContain('7.069 m³');
+    expect(plan().getAttribute('viewBox')).toBe(view);
+    click('Move circular hole');
+    point(8, 4);
+    expect(usePropertyStore.getState().property.foundation?.bores?.[0]).toMatchObject({
+      x: 8,
+      y: 4,
+      diameterM: 1.5,
+      depthM: 4,
+    });
+    click('Remove circular hole');
+    expect(usePropertyStore.getState().property.foundation?.bores).toEqual([]);
+  });
+  it('starts a rectangular excavation using the entered depth and keeps its concrete pending', () => {
+    number('New hole depth m', '1.75');
+    click('＋ Dig rectangular hole');
+    point(0, 0);
+    point(4, 3);
+    expect(usePropertyStore.getState().property.foundation?.elements[0]).toMatchObject({
+      topElevationM: -1.55,
+      excavation: { depthM: 1.75, stage: 'excavated' },
+    });
+    expect(foundationVolumeM3(usePropertyStore.getState().property.foundation)).toBe(0);
+    expect(document.querySelector('.foundation-totals')?.textContent).toContain('21 m³');
+  });
   it('draws one measured slab and edits depth without resetting the camera', () => {
     click('Zoom foundation in');
     const view = plan().getAttribute('viewBox');

@@ -25,13 +25,15 @@ export const propertyPaintQuoteSchema = z.object({
     levels: z.array(z.object({ id: text, name: text, index: z.number().int().min(0).max(100), kind: z.literal('roof').optional(), heightM: height.optional() })).max(100).optional(),
     rooms: z.array(z.object({
       id: text, name: text, levelId: text.optional(), kind: z.enum(['room', 'outdoor', 'roof']).optional(),
-      polygon: z.array(point).min(3).max(100),
+      polygon: z.array(point).min(3).max(512),
       openings: z.array(z.object({
         id: text, edgeIndex: z.number().int().nonnegative(), offsetM: z.number().finite().min(-10000).max(10000),
-        widthM: z.number().finite().positive().max(100), kind: z.enum(['door', 'doorway', 'window']),
+        widthM: z.number().finite().positive().max(100), kind: z.enum(['door', 'doorway', 'window', 'hole']),
+        heightM: z.number().finite().min(.05).max(100).optional(), shape: z.enum(['rectangle', 'arch', 'circle']).optional(),
         sillM: z.number().finite().min(0).max(100).optional(), flipFacing: z.boolean().default(false), flipHand: z.boolean().default(false),
       })).max(200).optional(),
-      wallPaint: z.array(paintedFace).max(200).optional(),
+      wallPaint: z.array(paintedFace).max(1024).optional(),
+      wallConstruction: z.array(z.object({ edgeIndex: z.number().int().nonnegative(), kind: z.enum(['plastered-brick', 'brick', 'concrete', 'glass']), thicknessMm: z.number().finite().positive().max(2000).optional(), materialProductId: text.optional() })).max(512).optional(),
     }).superRefine((room, ctx) => {
       const faces = new Set<string>();
       for (const face of room.wallPaint ?? []) {
@@ -42,7 +44,7 @@ export const propertyPaintQuoteSchema = z.object({
       if (room.openings?.some(o => o.edgeIndex >= room.polygon.length)) ctx.addIssue({ code: 'custom', message: 'Opening edge is outside the room polygon' });
     })).max(100),
     walls: z.array(z.object({
-      id: text, levelId: text.optional(), a: point, b: point, paintId: paintId.optional(),
+      id: text, levelId: text.optional(), construction: z.enum(['plastered-brick', 'brick', 'concrete', 'glass']).optional(), a: point, b: point, paintId: paintId.optional(),
       paintColourHex: z.string().regex(/^#[0-9a-f]{6}$/i).optional(), paintColourName: z.string().max(200).optional(),
       paintFaces: z.union([z.literal(1), z.literal(2)]).optional(), exteriorPaint: paintedFace.optional(),
     })).max(500).optional(),

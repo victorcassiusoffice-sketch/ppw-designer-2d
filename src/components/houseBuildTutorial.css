@@ -1,0 +1,151 @@
+.house-tutorial,
+.house-tutorial-resume {
+  position: fixed;
+  z-index: 10040;
+  right: 16px;
+  bottom: 18px;
+  box-sizing: border-box;
+  color: var(--ui-ink, #253e36);
+  background: var(--ui-surface, #e8eee3);
+  border: 1px solid var(--ui-line, #b5c6b7);
+  border-radius: 20px;
+  box-shadow: 0 12px 35px #10221c33;
+  font: inherit;
+}
+.house-tutorial {
+  display: flex;
+  flex-direction: column;
+  width: min(370px, calc(100vw - 24px));
+  max-height: min(700px, calc(100dvh - 32px));
+}
+.house-tutorial * {
+  box-sizing: border-box;
+}
+.house-tutorial header,
+.house-tutorial footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  flex-shrink: 0;
+}
+.house-tutorial header {
+  border-bottom: 1px solid var(--ui-line, #b5c6b7);
+}
+.house-tutorial h2 {
+  font-size: 16px;
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+.house-tutorial h3 {
+  font-size: 19px;
+  margin: 16px 0 8px;
+}
+.house-tutorial-body {
+  overflow: auto;
+  min-height: 0;
+  padding: 4px 16px 8px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.house-tutorial-note {
+  font-size: 11px;
+  opacity: 0.85;
+}
+.house-tutorial button,
+.house-tutorial-resume button {
+  font: inherit;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--ui-line, #b5c6b7);
+  border-radius: 12px;
+  color: inherit;
+  background: var(--ui-raised, #f4f6ee);
+  cursor: pointer;
+}
+.house-tutorial button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.house-tutorial button:focus-visible,
+.house-tutorial select:focus-visible,
+.house-tutorial input:focus-visible,
+.house-tutorial-resume button:focus-visible {
+  outline: 3px solid #59bdb5;
+  outline-offset: 2px;
+}
+.house-tutorial header button {
+  flex: 0 0 40px;
+  font-size: 20px;
+  padding: 4px;
+}
+.house-tutorial footer {
+  justify-content: space-between;
+  border-top: 1px solid var(--ui-line, #b5c6b7);
+}
+.house-tutorial-step {
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+}
+.house-tutorial select {
+  width: 100%;
+  min-height: 42px;
+  color: inherit;
+  background: var(--ui-raised, #f4f6ee);
+  border: 1px solid var(--ui-line, #b5c6b7);
+  border-radius: 10px;
+  padding: 8px;
+  font: inherit;
+}
+.house-tutorial-count {
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+.house-tutorial progress {
+  width: 100%;
+  height: 7px;
+  accent-color: #3a927d;
+}
+.house-tutorial .house-tutorial-launch {
+  width: 100%;
+  background: #b9ddcc;
+  color: #193d32;
+  font-weight: 650;
+}
+.house-tutorial-review {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--ui-line, #b5c6b7);
+  border-radius: 12px;
+}
+.house-tutorial-review input {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: #3a927d;
+}
+.house-tutorial-resume {
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  max-width: calc(100vw - 24px);
+}
+.house-tutorial-resume button {
+  font-size: 12px;
+}
+@media (max-width: 700px) {
+  .house-tutorial,
+  .house-tutorial-resume {
+    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .house-tutorial {
+    max-height: calc(100dvh - 24px);
+  }
+}
