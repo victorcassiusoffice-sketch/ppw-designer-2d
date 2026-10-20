@@ -63,4 +63,13 @@ describe('productModelFor', () => {
     expect(e?.url).toBe('https://cdn/x.glb');
     expect(e?.preferMesh).toBe(true);
   });
+
+  it('a TS service product resolves its reviewed body for namespaced API rows', () => {
+    const seed = getProductById('espace-durastyle-washbasin-800')!;
+    expect(seed.sku).toBe('ESPACE-4021534850721');
+    const entry = productModelFor({ id: 'm-merchant-basin', sku: seed.sku });
+    expect(entry).toBe(productModelFor(seed));
+    expect(entry?.source?.sku).toBe(seed.sku);
+    expect(entry?.preferMesh).toBe(true);
+  });
 });

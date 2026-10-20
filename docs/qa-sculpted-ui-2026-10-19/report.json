@@ -1,0 +1,87 @@
+{
+  "base": "http://127.0.0.1:5174",
+  "cases": [
+    {
+      "device": "desktop",
+      "name": "plan",
+      "layout": {
+        "theme": "ocean",
+        "width": 1280,
+        "scroll": 1280
+      }
+    },
+    {
+      "device": "desktop",
+      "name": "house",
+      "layout": {
+        "theme": "ocean",
+        "width": 1280,
+        "scroll": 1280
+      }
+    },
+    {
+      "device": "desktop",
+      "name": "project",
+      "layout": {
+        "theme": "ocean",
+        "width": 1280,
+        "scroll": 1280
+      }
+    },
+    {
+      "device": "desktop",
+      "name": "shared",
+      "layout": {
+        "theme": "ocean",
+        "width": 1280,
+        "scroll": 1280
+      }
+    },
+    {
+      "device": "desktop",
+      "errors": [],
+      "writes": []
+    },
+    {
+      "device": "phone",
+      "name": "plan",
+      "layout": {
+        "theme": "ocean",
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    {
+      "device": "phone",
+      "name": "house",
+      "layout": {
+        "theme": "ocean",
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    {
+      "device": "phone",
+      "name": "project",
+      "layout": {
+        "theme": "ocean",
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    {
+      "device": "phone",
+      "name": "shared",
+      "layout": {
+        "theme": "ocean",
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    {
+      "device": "phone",
+      "errors": [],
+      "writes": []
+    }
+  ]
+}

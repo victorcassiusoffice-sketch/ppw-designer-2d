@@ -89,13 +89,15 @@ function captureKeys(event: KeyboardEvent): void {
 export function useWorkspaceFocus(
   host: RefObject<HTMLElement>,
   onEscape: () => void,
-  options: { fallbackFocusSelector?: string } = {},
+  options: { fallbackFocusSelector?: string; enabled?: boolean } = {},
 ): void {
+  const enabled = options.enabled ?? true;
   const action = useRef(onEscape);
   action.current = onEscape;
   const fallback = useRef(options.fallbackFocusSelector);
   fallback.current = options.fallbackFocusSelector;
   useLayoutEffect(() => {
+    if (!enabled) return;
     const node = host.current;
     if (!node) return;
     const top = active[active.length - 1];
@@ -136,5 +138,5 @@ export function useWorkspaceFocus(
             ?.focus({ preventScroll: true });
       }
     };
-  }, [host]);
+  }, [host, enabled]);
 }

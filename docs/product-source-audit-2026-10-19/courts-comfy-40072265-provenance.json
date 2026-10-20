@@ -1,0 +1,36 @@
+{
+  "checkedAt": "2026-10-20",
+  "productId": "courts-comfy-3-seater-dove",
+  "merchantReference": "40072265",
+  "catalogueSku": "CM-40072265",
+  "merchant": "Courts Mammouth",
+  "sourceUrl": "https://www.courtsmammouth.mu/product/comfy-3-seater-in-dove-fabric.html",
+  "name": "Comfy 3 Seater in Dove Fabric",
+  "publishedDimensionsCm": {
+    "width": 230,
+    "depth": 94,
+    "height": 94
+  },
+  "evidence": "The indexed official product page matches reference40072265, W230xD94xH94cm, grey fabric upholstery and hardwood frame. Search snapshot was labelled crawled two months ago; current page could not be fetched.",
+  "status": "blocked-photo-source",
+  "attempts": [
+    {
+      "method": "web open official product page",
+      "result": "HTTP403 Forbidden"
+    },
+    {
+      "method": "ordinary HTTPS request to the official product page with browser User-Agent",
+      "result": "HTTP403 Forbidden"
+    },
+    {
+      "method": "primary-domain exact product/reference search and image search",
+      "result": "Exact product text found; no verifiable original image URL was returned."
+    }
+  ],
+  "photoUrl": null,
+  "photoFile": null,
+  "visualMatchVerified": false,
+  "nextStep": "Obtain an original merchant photo or merchant-approved accessible media URL for reference40072265 before image generation. Do not substitute the green Comfy variant, a one-seater, or a similar grey sofa.",
+  "changedLiveAssets": false,
+  "generationRequests": 0
+}

@@ -60,6 +60,11 @@ afterEach(() => {
 });
 
 describe('Explicit four-language preferences', () => {
+  it('starts fresh devices with sculpted ocean without replacing a saved theme', () => {
+    expect(parsePreferences(null).theme).toBe('ocean');
+    expect(parsePreferences(JSON.stringify({ locale: 'fr', theme: 'ivory' }))).toEqual({ locale: 'fr', theme: 'ivory' });
+    expect(parsePreferences(JSON.stringify({ locale: 'es', theme: 'slate' }))).toEqual({ locale: 'es', theme: 'slate' });
+  });
   it('has a complete nonempty four-language row and matching interpolation keys for every translation', () => {
     for (const [key, values] of Object.entries(messageRows)) {
       expect(values, key).toHaveLength(LOCALES.length);
@@ -145,6 +150,7 @@ describe('Explicit four-language preferences', () => {
 
 describe('Theme contrast contract', () => {
   const css = readFileSync('src/i18n/preferences.css', 'utf8');
+  const skins = readFileSync('src/styles/tactileSkins.css', 'utf8');
   const luminance = (hex: string) => {
     const channels = [1, 3, 5]
       .map((start) => parseInt(hex.slice(start, start + 2), 16) / 255)
@@ -174,5 +180,15 @@ describe('Theme contrast contract', () => {
       }
       expect(contrast(colour('on-accent'), colour('accent'))).toBeGreaterThanOrEqual(4.5);
       expect(contrast(colour('focus'), colour('surface'))).toBeGreaterThanOrEqual(3);
+      const skin = skins.match(
+        new RegExp(":root\\[data-ui-theme='" + theme + "'\\] \\{([^}]+)"),
+      )![1];
+      const skinColour = (name: string) => skin.match(new RegExp('--skin-' + name + ':\\s*(#[0-9a-f]{6})'))![1];
+      for (const metric of ['one', 'two', 'three', 'four']) {
+        expect(contrast(colour('muted'), skinColour('stat-' + metric)), `${theme} metric ${metric}`).toBeGreaterThanOrEqual(4.5);
+      }
+      for (const rail of ['rail', 'rail-end']) {
+        expect(contrast(skinColour('rail-muted'), skinColour(rail)), `${theme} ${rail}`).toBeGreaterThanOrEqual(4.5);
+      }
     });
 });

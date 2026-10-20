@@ -19,7 +19,7 @@ export function usePlanModelImage(product: Product): HTMLCanvasElement | null {
     // The key contains every product field consumed by the renderer.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, key]);
-  return result?.key === key ? result.image : null;
+  return enabled && result?.key === key ? result.image : null;
 }
 
 /** One reusable, transparent cast-shadow photograph per shape, orientation and

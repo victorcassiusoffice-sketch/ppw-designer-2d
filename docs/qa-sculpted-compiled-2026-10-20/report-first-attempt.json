@@ -1,0 +1,150 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "at": "2026-10-20T18:08:58.569Z",
+  "cases": [
+    {
+      "device": "desktop",
+      "name": "plan",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-compiled-2026-10-20/desktop-plan.png"
+    },
+    {
+      "device": "desktop",
+      "name": "house",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-compiled-2026-10-20/desktop-house.png"
+    },
+    {
+      "device": "desktop",
+      "name": "project",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-compiled-2026-10-20/desktop-project.png"
+    },
+    {
+      "device": "desktop",
+      "name": "shared",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [
+        "Error: expect(locator).toBeHidden() failed\n\nLocator:  locator('.shared-workspace')\nExpected: hidden\nReceived: visible\nTimeout:  60000ms\n\nCall log:\n  - Expect \"to.be.hidden\" with timeout 60000ms\n  - waiting for locator('.shared-workspace')\n    109 × locator resolved to <section role=\"dialog\" aria-modal=\"true\" class=\"shared-workspace\" data-testid=\"shared-project-workspace\" aria-label=\"Shared sustainable project\">…</section>\n        - unexpected value \"visible\"\n"
+      ],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-compiled-2026-10-20/desktop-shared.png"
+    },
+    {
+      "device": "desktop",
+      "name": "catalogue",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-compiled-2026-10-20/desktop-catalogue.png"
+    },
+    {
+      "device": "phone",
+      "name": "plan",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-compiled-2026-10-20/phone-plan.png"
+    },
+    {
+      "device": "phone",
+      "name": "house",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-compiled-2026-10-20/phone-house.png"
+    },
+    {
+      "device": "phone",
+      "name": "project",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-compiled-2026-10-20/phone-project.png"
+    },
+    {
+      "device": "phone",
+      "name": "shared",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [
+        "Error: expect(locator).toBeHidden() failed\n\nLocator:  locator('.shared-workspace')\nExpected: hidden\nReceived: visible\nTimeout:  60000ms\n\nCall log:\n  - Expect \"to.be.hidden\" with timeout 60000ms\n  - waiting for locator('.shared-workspace')\n    111 × locator resolved to <section role=\"dialog\" aria-modal=\"true\" class=\"shared-workspace\" data-testid=\"shared-project-workspace\" aria-label=\"Shared sustainable project\">…</section>\n        - unexpected value \"visible\"\n"
+      ],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-compiled-2026-10-20/phone-shared.png"
+    },
+    {
+      "device": "phone",
+      "name": "catalogue",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-compiled-2026-10-20/phone-catalogue.png"
+    }
+  ]
+}

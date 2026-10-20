@@ -13,7 +13,7 @@ export function OlbLockup({
 }) {
   const { theme } = useAppPreferences();
   const [src, ratio] =
-    (reverse ?? theme !== 'ivory')
+    (reverse ?? theme === 'slate')
       ? ['/brand/olb/olb-lockup-reverse.svg', 2267 / 512]
       : ['/brand/olb/olb-lockup.svg', 2479 / 512];
   return (

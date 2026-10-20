@@ -1,0 +1,37 @@
+{
+  "base": "http://127.0.0.1:5174",
+  "cases": [
+    {
+      "name": "desktop",
+      "errors": [],
+      "writes": [],
+      "screenshots": [
+        "docs/qa-architectural-plan-2026-10-19/desktop-house-2d.png",
+        "docs/qa-architectural-plan-2026-10-19/desktop-house-3d.png",
+        "docs/qa-architectural-plan-2026-10-19/desktop-products.png",
+        "docs/qa-architectural-plan-2026-10-19/desktop-whole-home-2d.png",
+        "docs/qa-architectural-plan-2026-10-19/desktop-whole-home-detail-2d.png"
+      ],
+      "modelReadyMs": [
+        28,
+        34322
+      ]
+    },
+    {
+      "name": "phone",
+      "errors": [],
+      "writes": [],
+      "screenshots": [
+        "docs/qa-architectural-plan-2026-10-19/phone-house-2d.png",
+        "docs/qa-architectural-plan-2026-10-19/phone-house-3d.png",
+        "docs/qa-architectural-plan-2026-10-19/phone-products.png",
+        "docs/qa-architectural-plan-2026-10-19/phone-whole-home-2d.png",
+        "docs/qa-architectural-plan-2026-10-19/phone-whole-home-detail-2d.png"
+      ],
+      "modelReadyMs": [
+        11,
+        18293
+      ]
+    }
+  ]
+}

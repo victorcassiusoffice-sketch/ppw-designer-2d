@@ -14,9 +14,8 @@ vi.mock('../SharedProjectConnection', async () => {
   const { useEffect } = await import('react');
   return { default: function TestConnection({ onSession }: { onSession: (value: unknown) => void }) { useEffect(() => { connection.callback = onSession; onSession(connection.session); return () => { connection.callback = null; onSession(null); }; }, [onSession]); return <p>Test verified account connection</p>; } };
 });
-vi.mock('../../hooks/useWorkspaceFocus', () => ({ useWorkspaceFocus: () => undefined }));
 vi.mock('../../i18n/AppPreferences', () => ({ useAppPreferences: () => ({ locale: 'en', formatNumber: (n: number) => String(n) }) }));
-vi.mock('../LocaleThemeControls', () => ({ LocaleThemeControls: () => null }));
+vi.mock('../LocaleThemeControls', () => ({ LocaleThemeControls: () => <details className="locale-theme-controls"><summary>Preferences</summary><button>Close preferences</button></details> }));
 vi.mock('../SharedSustainabilityPanel', () => ({ SharedSustainabilityPanel: () => <form aria-label="Environmental test inputs"><input name="airTempC" defaultValue="" /></form>, SharedCarbonSummary: () => null }));
 vi.mock('../../designer/sharedBuildAdapter', async () => {
   const { mergeMeasuredSpecs, SharedSpecComponentSchema: Schema } = await import('../../designer/sharedSpecsContract');
@@ -28,7 +27,7 @@ vi.mock('../../designer/sharedBuildAdapter', async () => {
 });
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-let root: Root; let host: HTMLDivElement; let session: SharedSession;
+let root: Root; let host: HTMLDivElement; let session: SharedSession; let onClose: ReturnType<typeof vi.fn>;
 const userId = 'user_cloudowner';
 const fixture = () => SharedSpecComponentSchema.parse({ id: 'wall:ground', sourceKey: 'walls:ground', sourceFingerprint: 'fixture', category: 'wall', name: 'Ground walls', material: 'Server block', quantity: 12, unit: 'm2' });
 function record(role: SharedSpecRole = 'owner', revision = 1): SharedSpecRecord {
@@ -59,11 +58,37 @@ beforeEach(async () => {
   session = { userId, api: { list: vi.fn(async () => []), read: vi.fn(async () => record()), create: vi.fn(async () => record()), write: vi.fn(async () => record('owner', 2)), changes: vi.fn(async () => ({ changes: [], latestRevision: 1, nextAfter: 1, hasMore: false })), revision: vi.fn(async () => record()) } };
   connection.session = session; connection.callback = null;
   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
-  await act(async () => { root.render(<SharedProjectWorkbench open onClose={vi.fn()} />); });
+  onClose = vi.fn();
+  await act(async () => { root.render(<SharedProjectWorkbench open onClose={onClose} />); });
 });
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.useRealTimers(); vi.clearAllMocks(); });
 
 describe('shared project station isolation and conflict handling', () => {
+  it('owns keyboard focus on a fresh direct open and Escape returns to the build', () => {
+    const workspace = host.querySelector<HTMLElement>('.shared-workspace')!;
+    expect(workspace.getAttribute('tabindex')).toBe('-1');
+    expect(workspace.contains(document.activeElement)).toBe(true);
+    act(() => document.activeElement!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+  it('closes preferences first, then the shared workspace on a second Escape', () => {
+    const preferences = host.querySelector<HTMLDetailsElement>('.locale-theme-controls')!;
+    preferences.open = true;
+    act(() => preferences.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
+    expect(preferences.open).toBe(false);
+    expect(document.activeElement).toBe(preferences.querySelector('summary'));
+    expect(onClose).not.toHaveBeenCalled();
+    act(() => document.activeElement!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+  it('releases keyboard ownership while hidden and reacquires it when reopened', async () => {
+    await act(async () => root.render(<SharedProjectWorkbench open={false} onClose={onClose} />));
+    act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
+    expect(onClose).not.toHaveBeenCalled();
+    await act(async () => root.render(<SharedProjectWorkbench open onClose={onClose} />));
+    act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
+    expect(onClose).toHaveBeenCalledOnce();
+  });
   it('keeps role rehearsal local and limits client editing to notes', async () => {
     selectRole('client'); await openComponent();
     expect(host.querySelector<HTMLInputElement>('[name="material"]')?.disabled).toBe(true);

@@ -9,6 +9,10 @@ import { solarPanelPreview } from '../../components/three/solarPanelPreview';
 import { waterTankPreview } from '../../components/three/waterTankPreview';
 import { applyProductSurfaceLighting } from '../../components/three/productSurfaceLighting';
 import { presentationProfile } from '../../components/three/renderPresentation';
+import { loadProductBody } from '../../components/three/productBodyLoader';
+import { bodyObject } from '../../components/three/productBody';
+import { serviceProductPreview } from '../../components/three/serviceProductPreview';
+import type { ItemSolid } from '../../designer/roomSolids';
 
 const cache = new Map<string, Promise<HTMLCanvasElement | null>>();
 export interface PlanModelShadow extends PlanShadowFrame { image: HTMLCanvasElement }
@@ -44,15 +48,23 @@ function disposeBody(root: THREE.Object3D): void {
   root.traverse(object => {
     if (!(object as THREE.Mesh).isMesh) return;
     const mesh = object as THREE.Mesh;
-    mesh.geometry.dispose();
+    if (!mesh.geometry.userData.cachedProductBody) mesh.geometry.dispose();
     for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) materials.add(material);
   });
   materials.forEach(material => material.dispose());
 }
 
-function photograph(product: Product): HTMLCanvasElement | null {
+async function snapshotBody(item: ItemSolid): Promise<THREE.Group | null> {
+  if (item.meshUrl) {
+    try { return bodyObject(item, await loadProductBody(item.meshUrl)); }
+    catch { /* Keep the dimensional fallback when a merchant model cannot load. */ }
+  }
+  return solarPanelPreview(item) ?? waterTankPreview(item) ?? furniturePreview(item) ?? serviceProductPreview(item);
+}
+
+async function photograph(product: Product): Promise<HTMLCanvasElement | null> {
   const item = planModelSolid(product);
-  const body = solarPanelPreview(item) ?? waterTankPreview(item) ?? furniturePreview(item);
+  const body = await snapshotBody(item);
   if (!body) return null;
   let sun: THREE.DirectionalLight | null = null;
   try {
@@ -105,9 +117,9 @@ function photograph(product: Product): HTMLCanvasElement | null {
 /** Photograph the actual model's cast shadow on a transparent receiver. The
  * receiver is display-only, never returned as an item, and is clipped to the
  * owning room by Konva. Rotating a product rotates its body but not the sun. */
-function photographShadow(product: Product, rotationDeg: number, direction: PlanShadowDirection): PlanModelShadow | null {
+async function photographShadow(product: Product, rotationDeg: number, direction: PlanShadowDirection): Promise<PlanModelShadow | null> {
   const item = planModelSolid(product);
-  const body = solarPanelPreview(item) ?? waterTankPreview(item) ?? furniturePreview(item);
+  const body = await snapshotBody(item);
   if (!body) return null;
   const frame = planModelShadowFrame(product, rotationDeg, direction);
   const scene = new THREE.Scene();
@@ -151,10 +163,10 @@ function photographShadow(product: Product, rotationDeg: number, direction: Plan
   }
 }
 
-function enqueuePhotograph<T>(render: () => T): Promise<T | null> {
+function enqueuePhotograph<T>(render: () => Promise<T>): Promise<T | null> {
   clearTimeout(disposeTimer);
-  const pending = queue.then(() => new Promise<void>(resolve => setTimeout(resolve, 0))).then(() => {
-    try { return render(); } catch { return null; }
+  const pending = queue.then(() => new Promise<void>(resolve => setTimeout(resolve, 0))).then(async () => {
+    try { return await render(); } catch { return null; }
     finally { clearTimeout(disposeTimer); disposeTimer = setTimeout(releaseStudio, 5000); }
   });
   queue = pending;
