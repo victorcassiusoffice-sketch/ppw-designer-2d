@@ -1,0 +1,49 @@
+{
+  "base": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app",
+  "cases": [
+    {
+      "device": "desktop",
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "shots": [
+        "docs/qa-sculpted-pitch-live-2026-10-20/desktop-chapter-1.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/desktop-chapter-2.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/desktop-chapter-3.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/desktop-chapter-4.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/desktop-chapter-5.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/desktop-chapter-6.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/desktop-chapter-7.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/desktop-role-station.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/desktop-customise-graphite.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/desktop-customise-ocean.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/desktop-developer-entry.png"
+      ],
+      "checks": [
+        "Seven chapters, workstreams and roles usable; no full editor; scripted AI explicit; customization/share/JSON export and keyboard tabs pass"
+      ]
+    },
+    {
+      "device": "phone",
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "shots": [
+        "docs/qa-sculpted-pitch-live-2026-10-20/phone-chapter-1.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/phone-chapter-2.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/phone-chapter-3.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/phone-chapter-4.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/phone-chapter-5.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/phone-chapter-6.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/phone-chapter-7.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/phone-role-station.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/phone-customise-graphite.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/phone-customise-ocean.png",
+        "docs/qa-sculpted-pitch-live-2026-10-20/phone-developer-entry.png"
+      ],
+      "checks": [
+        "Seven chapters, workstreams and roles usable; no full editor; scripted AI explicit; customization/share/JSON export and keyboard tabs pass"
+      ]
+    }
+  ]
+}

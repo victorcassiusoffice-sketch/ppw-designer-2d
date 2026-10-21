@@ -1,0 +1,232 @@
+{
+  "base": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app",
+  "commit": "03efb763edd2868a0b798f27c3253f92f95aeed0",
+  "at": "2026-10-21T19:01:30.599Z",
+  "cases": [
+    {
+      "device": "desktop",
+      "name": "plan",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-live-2026-10-20/desktop-plan.png"
+    },
+    {
+      "device": "desktop",
+      "name": "house",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-live-2026-10-20/desktop-house.png"
+    },
+    {
+      "device": "desktop",
+      "name": "project",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-live-2026-10-20/desktop-project.png"
+    },
+    {
+      "device": "desktop",
+      "name": "shared",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-live-2026-10-20/desktop-shared.png"
+    },
+    {
+      "device": "desktop",
+      "name": "catalogue",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-live-2026-10-20/desktop-catalogue.png"
+    },
+    {
+      "device": "desktop",
+      "name": "city",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "writes": [],
+      "defects": [],
+      "status": 200,
+      "theme": "ocean",
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-live-2026-10-20/desktop-city.png"
+    },
+    {
+      "device": "desktop",
+      "name": "services",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=services&pitch=1",
+          "error": "net::ERR_CONNECTION_TIMED_OUT"
+        }
+      ],
+      "writes": [],
+      "defects": [
+        "Error: page.goto: net::ERR_CONNECTION_TIMED_OUT at https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=services&pitch=1\nCall log:\n\u001b[2m  - navigating to \"https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=services&pitch=1\", waiting until \"networkidle\"\u001b[22m\n"
+      ]
+    },
+    {
+      "device": "desktop",
+      "name": "materials",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=materials&pitch=1",
+          "error": "net::ERR_CONNECTION_TIMED_OUT"
+        }
+      ],
+      "writes": [],
+      "defects": [
+        "Error: page.goto: net::ERR_CONNECTION_TIMED_OUT at https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=materials&pitch=1\nCall log:\n\u001b[2m  - navigating to \"https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=materials&pitch=1\", waiting until \"networkidle\"\u001b[22m\n"
+      ]
+    },
+    {
+      "device": "desktop",
+      "name": "coordination",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=shared&pitch=1",
+          "error": "net::ERR_CONNECTION_TIMED_OUT"
+        }
+      ],
+      "writes": [],
+      "defects": [
+        "Error: page.goto: net::ERR_CONNECTION_TIMED_OUT at https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=shared&pitch=1\nCall log:\n\u001b[2m  - navigating to \"https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=shared&pitch=1\", waiting until \"networkidle\"\u001b[22m\n"
+      ]
+    },
+    {
+      "device": "phone",
+      "name": "plan",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&pitch=1",
+          "error": "net::ERR_CONNECTION_TIMED_OUT"
+        }
+      ],
+      "writes": [],
+      "defects": [
+        "Error: page.goto: net::ERR_CONNECTION_TIMED_OUT at https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&pitch=1\nCall log:\n\u001b[2m  - navigating to \"https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&pitch=1\", waiting until \"networkidle\"\u001b[22m\n"
+      ]
+    },
+    {
+      "device": "phone",
+      "name": "house",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&pitch=1",
+          "error": "net::ERR_CONNECTION_TIMED_OUT"
+        }
+      ],
+      "writes": [],
+      "defects": [
+        "Error: page.goto: net::ERR_CONNECTION_TIMED_OUT at https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&pitch=1\nCall log:\n\u001b[2m  - navigating to \"https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&pitch=1\", waiting until \"networkidle\"\u001b[22m\n"
+      ]
+    },
+    {
+      "device": "phone",
+      "name": "project",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&pitch=1",
+          "error": "net::ERR_CONNECTION_TIMED_OUT"
+        }
+      ],
+      "writes": [],
+      "defects": [
+        "Error: page.goto: net::ERR_CONNECTION_TIMED_OUT at https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&pitch=1\nCall log:\n\u001b[2m  - navigating to \"https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&pitch=1\", waiting until \"networkidle\"\u001b[22m\n"
+      ]
+    },
+    {
+      "device": "phone",
+      "name": "shared",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=shared&pitch=1",
+          "error": "net::ERR_CONNECTION_TIMED_OUT"
+        }
+      ],
+      "writes": [],
+      "defects": [
+        "Error: page.goto: net::ERR_CONNECTION_TIMED_OUT at https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=shared&pitch=1\nCall log:\n\u001b[2m  - navigating to \"https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=shared&pitch=1\", waiting until \"networkidle\"\u001b[22m\n"
+      ]
+    },
+    {
+      "device": "phone",
+      "name": "catalogue",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&pitch=1",
+          "error": "net::ERR_CONNECTION_TIMED_OUT"
+        }
+      ],
+      "writes": [],
+      "defects": [
+        "Error: page.goto: net::ERR_CONNECTION_TIMED_OUT at https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&pitch=1\nCall log:\n\u001b[2m  - navigating to \"https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&pitch=1\", waiting until \"networkidle\"\u001b[22m\n"
+      ]
+    }
+  ],
+  "health": {
+    "status": 200,
+    "env": "preview",
+    "commit": "03efb763edd2868a0b798f27c3253f92f95aeed0"
+  }
+}

@@ -12,7 +12,7 @@ mkdirSync(out, { recursive: true });
 const productId = 'espace-durastyle-washbasin-800';
 const entry = JSON.parse(readFileSync('src/data/productModels.json', 'utf8'))[productId];
 const source = JSON.parse(readFileSync('src/data/merchantProductAssets.json', 'utf8')).find(asset => asset.id === productId);
-const property = { id: 'basin-model-evidence', name: 'Measured basin · product verification', activeRoomId: 'bath', wallHeightM: 2.7,
+const property = { id: live ? 'generic-demo-home' : 'basin-model-evidence', name: 'Measured basin · product verification', activeRoomId: 'bath', wallHeightM: 2.7,
   activeLevelId: 'ground', site: { widthM: 5, depthM: 4, originM: { x: -1, y: -1 } },
   rooms: [{ id: 'bath', name: 'Bathroom · 6 m²', polygon: [{ x: 0, y: 0 }, { x: 3, y: 0 }, { x: 3, y: 2 }, { x: 0, y: 2 }],
     placedItems: [{ instanceId: 'review-basin', productId, x: 1.1, y: .1, rotation: 0 }],
@@ -26,12 +26,20 @@ const report = { base, routePath, productId, mappedEdge: live && process.argv.in
 try {
   for (const [name, viewport] of [['desktop', { width: 1280, height: 900 }], ['phone', { width: 390, height: 844 }]]) {
     const context = await browser.newContext({ viewport, isMobile: name === 'phone', hasTouch: name === 'phone', deviceScaleFactor: 1 });
-    await context.addInitScript(p => {
+    await context.addInitScript(({ p, isDemo }) => {
       if (sessionStorage.getItem('merchant-basin-fixture')) return;
       localStorage.clear(); localStorage.setItem('ppw_designer_coach_v1', '1');
       localStorage.setItem('ppw_property_v2', JSON.stringify({ version: 2, state: { property: p, pxPerMetre: 140, showGrid: false } }));
+      // /demo restores its named page, not the current draft. Seed that normal
+      // saved-page contract too, so startup cannot replace the basin with Home.
+      if (isDemo) localStorage.setItem('ppw_properties_v2', JSON.stringify({ version: 2, state: {
+        currentId: 'basin-review-page', designs: { 'basin-review-page': {
+          id: 'basin-review-page', name: p.name, savedAt: new Date().toISOString(), property: p,
+          walls: [], floorZones: [], wallTreatments: {}, roomDimensions: { lengthM: 3, widthM: 2 }, placedItems: p.rooms[0].placedItems,
+        } },
+      } }));
       sessionStorage.setItem('merchant-basin-fixture', '1');
-    }, property);
+    }, { p: property, isDemo: live });
     const page = await context.newPage(); page.setDefaultTimeout(90000);
     const row = { name, errors: [], writes: [], screenshots: [] }; report.cases.push(row);
     page.on('pageerror', error => row.errors.push(error.message));
@@ -48,6 +56,21 @@ try {
     };
     await page.goto(`${base}${routePath}?view=2d&pitch=1`, { waitUntil: 'networkidle' });
     await page.getByTestId('plan-drawing-viewport').waitFor();
+    const assertFixture = async rotation => {
+      const actual = await page.evaluate(() => {
+        const p = JSON.parse(localStorage.getItem('ppw_property_v2')).state.property;
+        return { id: p.id, name: p.name, rooms: p.rooms.length, items: p.rooms.flatMap(room => room.placedItems) };
+      });
+      expect(actual.id).toBe(property.id);
+      expect(actual.name).toBe(property.name);
+      expect(actual.rooms).toBe(1);
+      expect(actual.items).toHaveLength(1);
+      expect(actual.items[0].productId).toBe(productId);
+      expect(actual.items[0].instanceId).toBe('review-basin');
+      expect(actual.items[0].rotation).toBe(rotation);
+      return actual;
+    };
+    row.initialFixture = await assertFixture(0);
     if (compiled) {
       // Browser fetch shares Chromium's optional DNS mapping; APIRequestContext
       // resolves separately and cannot validate a mapped preview reliably.
@@ -109,6 +132,8 @@ try {
       await page.mouse.click(screenPoint.x, screenPoint.y);
     }
     await expect(page.getByTestId('house-selection-strip')).toBeVisible();
+    await expect(page.getByTestId('house-selection-strip')).toContainText('DuraStyle cabinet washbasin · 800 mm');
+    row.selectedProductName = await page.getByTestId('house-selection-strip').innerText();
     await shot('basin-selected');
     await page.getByRole('button', { name: 'Product details', exact: true }).click();
     await shot('basin-product-details');
@@ -116,15 +141,22 @@ try {
     await expect(page.getByTestId('house-selection-strip')).toHaveCount(0);
     // Load a quarter-turn saved fixture. Wall-attached products intentionally
     // do not expose free rotation handles in normal editing.
-    await page.evaluate(p => {
+    await page.evaluate(({ p, isDemo }) => {
       p.rooms[0].placedItems[0] = { ...p.rooms[0].placedItems[0], rotation: 90, x: 1.1, y: .3 };
       localStorage.setItem('ppw_property_v2', JSON.stringify({ version: 2, state: { property: p, pxPerMetre: 140, showGrid: false } }));
-    }, property);
+      if (isDemo) {
+        const saved = JSON.parse(localStorage.getItem('ppw_properties_v2'));
+        saved.state.designs['basin-review-page'].property = p;
+        saved.state.designs['basin-review-page'].placedItems = p.rooms[0].placedItems;
+        localStorage.setItem('ppw_properties_v2', JSON.stringify(saved));
+      }
+    }, { p: property, isDemo: live });
     await page.goto(`${base}${routePath}?view=3d&pitch=1`, { waitUntil: 'networkidle' });
     if (await page.getByTestId('wallpaint-3d-gl').count() === 0) await page.getByRole('button', { name: '3D House', exact: true }).click();
     await page.getByTestId('wallpaint-3d-gl').waitFor();
     await page.getByTestId('loading-3d').waitFor({ state: 'hidden' });
     await page.waitForTimeout(1500);
+    row.rotatedFixture = await assertFixture(90);
     await shot('basin-quarter-turn-fixture');
     expect(row.errors).toEqual([]); expect(row.writes).toEqual([]);
     await context.close(); console.log(JSON.stringify(row));

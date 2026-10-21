@@ -1,6 +1,6 @@
 /** Compiled/live read-only checks for the sculpted UI and generated product release. */
 import { chromium, expect as baseExpect } from '@playwright/test';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 const expect = baseExpect.configure({ timeout: 60000 });
 const base = process.argv[2] ?? 'http://127.0.0.1:5173';
 const live = new URL(base).protocol === 'https:';
@@ -13,6 +13,16 @@ const args = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
 if (live && process.argv.includes('--map-edge')) args.push(`--host-resolver-rules=MAP ${new URL(base).hostname} 216.198.79.3`);
 const browser = await chromium.launch({ headless: true, args });
 const report = { base, commit, at: new Date().toISOString(), cases: [] };
+const failed = row => ['consoleErrors', 'pageErrors', 'httpErrors', 'failedRequests', 'writes', 'defects'].some(key => row[key]?.length);
+let retryKeys;
+if (process.argv.includes('--retry-failures')) {
+  const previous = JSON.parse(readFileSync(`${out}/report.json`, 'utf8'));
+  if (previous.base !== base || previous.commit !== commit) throw new Error('Retry requires a report for this exact release.');
+  writeFileSync(`${out}/report-network-attempt.json`, JSON.stringify(previous, null, 2));
+  retryKeys = new Set(previous.cases.filter(row => !failed(row)).map(row => `${row.device}/${row.name}`));
+  report.cases = previous.cases.filter(row => !failed(row));
+  report.retryScope = [];
+}
 try {
   if (live) {
     const page = await browser.newPage();
@@ -34,6 +44,8 @@ try {
       ['materials', '/demo?view=2d&panel=materials&pitch=1', '[data-testid=materials-panel]'],
       ['coordination', '/demo?panel=shared&pitch=1', '.shared-workspace'],
     ]) {
+      if (retryKeys?.has(`${device}/${name}`)) continue;
+      if (retryKeys) report.retryScope.push(`${device}/${name}`);
       const context = await browser.newContext({ viewport, isMobile: device === 'phone', hasTouch: device === 'phone', deviceScaleFactor: 1 });
       await context.addInitScript(() => localStorage.setItem('ppw_designer_coach_v1', '1'));
       const page = await context.newPage(); page.setDefaultTimeout(60000);

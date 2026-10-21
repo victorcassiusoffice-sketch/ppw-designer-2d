@@ -1,3 +1,21 @@
+## 2026-10-21 — Sculpted Ocean and reviewed merchant model
+
+**LIVE-ON-PREVIEW.** Application 03efb763edd2868a0b798f27c3253f92f95aeed0, branch gpt/designer-2026-10-20, PR49. Main and production were not modified by this release. The older PR48 was already merged externally before this branch began.
+
+- [https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&pitch=1](https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&pitch=1) - One Live Build MAIN BUILD: design, engineering, development, merchant and installation teams.
+- [https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&pitch=1](https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&pitch=1) - One Live Build measured plan: designers, construction teams and product merchants.
+- [https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=shared&pitch=1](https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=shared&pitch=1) - One Live Build shared project: six stakeholder stations; local pilot.
+- [https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/eco-city](https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/eco-city) - One Live Build city/construction pitch: developers, municipalities and sustainable suppliers.
+- [https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/49](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/49) - One Live Build feature review: sculpted UI and measured merchant asset.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/SCULPTED-BUILD-LINKS-2026-10-20.md](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/SCULPTED-BUILD-LINKS-2026-10-20.md) - One Live Build: complete app/pitch/embed links and absolute source locations.
+- [C:/Users/Victor/Documents/PPW-Second-Brain/06-Roadmap/agentix-os/inbox/designer-2026-10-20-sculpted-ui-product-models/HANDOFF.md](C:/Users/Victor/Documents/PPW-Second-Brain/06-Roadmap/agentix-os/inbox/designer-2026-10-20-sculpted-ui-product-models/HANDOFF.md) - One Live Build: single Obsidian handoff with continuation notes and screenshots.
+
+Landed: mineral-blue tactile controls and dashboards, warm architectural plans, repaired dashboard Escape/focus and phone floor selector, exact-SKU source imagery, and one photo-derived Espace Maison/Duravit basin with a matching 2D projection. Existing dimensions and estimating geometry remain authoritative. Choose Preferences → Sculpted ocean if an older saved theme is active; Furnish → search DuraStyle for the new basin.
+
+Full suite: 4,205 tests / 378 files pass; app/API types, build, scoped lint and generator guards pass. Desktop/390px checks and deployment evidence are recorded in docs/SCULPTED-RELEASE-QA-2026-10-20.md. Lighthouse still reports broader performance/PWA/image/header issues; contrast and label findings were repaired. No manufacturer-CAD, universal photorealism, live stock-feed or activated cloud-collaboration claim. No supplier orders or database changes.
+
+Older entries below are historical.
+
 ## 2026-10-19 — Eco-city pitch, role coordination and merchant furniture
 
 **LIVE-ON-PREVIEW.** Application 6365821218e3a79fd9ff18ff1ba2bc40e6543d2b, branch gpt/designer-2026-10-15, PR48. Main, production and live database unchanged.
