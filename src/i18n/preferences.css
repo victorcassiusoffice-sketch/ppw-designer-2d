@@ -203,6 +203,14 @@
   border-color: var(--ui-line) !important;
   color-scheme: inherit;
 }
+/* Pitch chapter numbers follow the selected theme instead of legacy sage. */
+:root[data-ui-theme] body .sales-pack :is(.sales-tabs button:not([aria-selected='true']) span,.sales-number) {
+  color: var(--ui-muted);
+}
+:root[data-ui-theme] body .sales-pack h1 em { color: var(--ui-accent); }
+:root[data-ui-theme] body .sales-pack .sales-footer button {
+  color: var(--ui-ink); background: var(--ui-surface); border-color: var(--ui-line);
+}
 :root[data-ui-theme]
   body
   :is(

@@ -12,7 +12,7 @@ Release batch: 20 October 2026. Review continues into 21 October Mauritius time.
 | Focus regression | 20 Shared workbench/focus tests passed, including fresh direct opening, Preferences-first Escape, and hidden/reopened ownership. |
 | Compiled desktop/phone routes | **Final 18 cases passed** after the services/materials skin bridge and final product calibration: zero console/page/network errors, attempted writes or horizontal overflow. See `qa-sculpted-compiled-2026-10-20/report.json`. |
 | Product placement | Compiled basin checks at 1280px and 390px passed with zero recorded errors or writes. 2D, 3D, selection, product details and quarter-turn captures: `qa-merchant-basin-2026-10-19-compiled/`. Served GLB, overhead PNG and source photo returned HTTP 200. |
-| Live feature preview | **Pending release-runner confirmation.** Local captures do not establish that a new deployment is live. No production claim is made here. |
+| Live feature preview | Initial feature deployment passed all 18 app cases, 10 basin captures and 22 pitch captures with zero recorded errors or writes. A small follow-up repairs the Lighthouse-identified pitch contrast and room-label issues; final commit proof is recorded below. |
 
 The route harness uses a new browser context per route, blocks mutation requests, records console/page/network errors, checks horizontal overflow, and exercises dashboard dismissal. Screenshots are real Playwright captures at 1280 × 900 and 390 × 844. The last services/materials change is CSS only; it preserves layouts and drawing colours.
 
@@ -31,6 +31,7 @@ The route harness uses a new browser context per route, blocks mutation requests
 - Token tests require at least **4.5:1** for normal text and **3:1** for focus against their specified flat surfaces. All three skins, four metric backgrounds and navigation colours are covered.
 - Axe reported **zero definite contrast violations**, but **36 incomplete gradient/texture contrast nodes per skin** in the Shared workspace. Those require visual review; this is not a claim that every rendered pixel or every application screen passes a complete accessibility audit. See `qa-sculpted-ui-2026-10-19/theme-contrast.json`.
 - Ocean now uses dark logo lettering on light surfaces. Shared direct-route focus ownership was repaired; Preferences closes before the workbench, and inactive workbenches release keyboard control. The phone floor selector retains readable space.
+- CI's separate plumbing-pitch audit found legacy sage text on Ocean backgrounds. Chapter numbers now use semantic muted text; dark Slate heading emphasis and footer buttons were also corrected. Targeted axe checks pass at desktop and phone widths for all three themes, with one gradient/image incomplete per case. The room trigger's literal text separators now agree with its accessible label; both width checks and 16 TopBar tests pass. See `qa-pitch-contrast-2026-10-21/report.json`.
 
 ## Scale, calculation and scope preservation
 
@@ -47,4 +48,10 @@ Merchant descriptions and exact product identity remain authoritative. Product A
 - Additional product replacements need exact isolated source photos, verified dimensions and reviewed generation. The matching Courts Comfy source image remains blocked by merchant access; no generic replacement was substituted.
 - A failed asynchronous plan snapshot currently retains its fallback until reload or cache eviction. A future retry policy is still useful. Future solar/tank onboarding should also align model precedence between plan and 3D; no conflicting current manifest entry was found.
 
-Live confirmation requires the deployed commit and unique feature-preview URL below before this report can be used as publication evidence.
+## Pitch media and deployment scope
+
+Existing presentation WebP assets were refreshed from actual compiled app screenshots: plan, house, material estimates, services, coordination, city and merchant furniture. The 22-case desktop/phone pitch capture covers all seven chapters, role stations, personalisation, sharing and presentation export. The existing procedural sofa rendering is not presented as the newly generated basin model.
+
+Initial CI typecheck, Vitest, secret scan and Vercel deployment pass. Lighthouse reports separate payload, image, PWA, metadata and header concerns; the first report's contrast/name issues were addressed in the follow-up. A green functional release does not mean a clean Lighthouse/performance certification.
+
+No database migration, product seeding, order, invoice or external message was performed. No main or production changes were made by this release. Source and handoff links are in `SCULPTED-BUILD-LINKS-2026-10-20.md`.

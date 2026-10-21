@@ -1,0 +1,247 @@
+{
+  "base": "http://127.0.0.1:5174",
+  "at": "2026-10-21T18:52:40.807Z",
+  "checks": [
+    {
+      "width": 1280,
+      "theme": "ocean",
+      "route": "pitch/plumbing",
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ],
+      "labels": [
+        {
+          "text": "02",
+          "color": "rgb(48, 77, 92)"
+        },
+        {
+          "text": "03",
+          "color": "rgb(48, 77, 92)"
+        },
+        {
+          "text": "04",
+          "color": "rgb(48, 77, 92)"
+        },
+        {
+          "text": "05",
+          "color": "rgb(48, 77, 92)"
+        },
+        {
+          "text": "06",
+          "color": "rgb(48, 77, 92)"
+        },
+        {
+          "text": "01",
+          "color": "rgb(48, 77, 92)"
+        },
+        {
+          "text": "02",
+          "color": "rgb(48, 77, 92)"
+        },
+        {
+          "text": "03",
+          "color": "rgb(48, 77, 92)"
+        }
+      ],
+      "overflow": 0,
+      "screenshot": "docs/qa-pitch-contrast-2026-10-21/1280-ocean-plumbing.png"
+    },
+    {
+      "width": 1280,
+      "theme": "ivory",
+      "route": "pitch/plumbing",
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ],
+      "labels": [
+        {
+          "text": "02",
+          "color": "rgb(83, 99, 90)"
+        },
+        {
+          "text": "03",
+          "color": "rgb(83, 99, 90)"
+        },
+        {
+          "text": "04",
+          "color": "rgb(83, 99, 90)"
+        },
+        {
+          "text": "05",
+          "color": "rgb(83, 99, 90)"
+        },
+        {
+          "text": "06",
+          "color": "rgb(83, 99, 90)"
+        },
+        {
+          "text": "01",
+          "color": "rgb(83, 99, 90)"
+        },
+        {
+          "text": "02",
+          "color": "rgb(83, 99, 90)"
+        },
+        {
+          "text": "03",
+          "color": "rgb(83, 99, 90)"
+        }
+      ],
+      "overflow": 0,
+      "screenshot": "docs/qa-pitch-contrast-2026-10-21/1280-ivory-plumbing.png"
+    },
+    {
+      "width": 1280,
+      "theme": "slate",
+      "route": "pitch/plumbing",
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ],
+      "overflow": 0,
+      "screenshot": "docs/qa-pitch-contrast-2026-10-21/1280-slate-plumbing.png"
+    },
+    {
+      "width": 1280,
+      "route": "demo?view=2d&pitch=1",
+      "rule": "label-content-name-mismatch",
+      "violations": [],
+      "incomplete": 1
+    },
+    {
+      "width": 390,
+      "theme": "ocean",
+      "route": "pitch/plumbing",
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ],
+      "labels": [
+        {
+          "text": "02",
+          "color": "rgb(48, 77, 92)"
+        },
+        {
+          "text": "03",
+          "color": "rgb(48, 77, 92)"
+        },
+        {
+          "text": "04",
+          "color": "rgb(48, 77, 92)"
+        },
+        {
+          "text": "05",
+          "color": "rgb(48, 77, 92)"
+        },
+        {
+          "text": "06",
+          "color": "rgb(48, 77, 92)"
+        },
+        {
+          "text": "01",
+          "color": "rgb(48, 77, 92)"
+        },
+        {
+          "text": "02",
+          "color": "rgb(48, 77, 92)"
+        },
+        {
+          "text": "03",
+          "color": "rgb(48, 77, 92)"
+        }
+      ],
+      "overflow": 0,
+      "screenshot": "docs/qa-pitch-contrast-2026-10-21/390-ocean-plumbing.png"
+    },
+    {
+      "width": 390,
+      "theme": "ivory",
+      "route": "pitch/plumbing",
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ],
+      "labels": [
+        {
+          "text": "02",
+          "color": "rgb(83, 99, 90)"
+        },
+        {
+          "text": "03",
+          "color": "rgb(83, 99, 90)"
+        },
+        {
+          "text": "04",
+          "color": "rgb(83, 99, 90)"
+        },
+        {
+          "text": "05",
+          "color": "rgb(83, 99, 90)"
+        },
+        {
+          "text": "06",
+          "color": "rgb(83, 99, 90)"
+        },
+        {
+          "text": "01",
+          "color": "rgb(83, 99, 90)"
+        },
+        {
+          "text": "02",
+          "color": "rgb(83, 99, 90)"
+        },
+        {
+          "text": "03",
+          "color": "rgb(83, 99, 90)"
+        }
+      ],
+      "overflow": 0,
+      "screenshot": "docs/qa-pitch-contrast-2026-10-21/390-ivory-plumbing.png"
+    },
+    {
+      "width": 390,
+      "theme": "slate",
+      "route": "pitch/plumbing",
+      "errors": [],
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ],
+      "overflow": 0,
+      "screenshot": "docs/qa-pitch-contrast-2026-10-21/390-slate-plumbing.png"
+    },
+    {
+      "width": 390,
+      "route": "demo?view=2d&pitch=1",
+      "rule": "label-content-name-mismatch",
+      "violations": [],
+      "incomplete": 1
+    }
+  ],
+  "note": "Slate hero emphasis and footer action now use semantic colours; Slate-only recheck supersedes initial failures."
+}
