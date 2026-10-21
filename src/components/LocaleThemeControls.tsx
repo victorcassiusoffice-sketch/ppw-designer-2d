@@ -35,7 +35,7 @@ export function LocaleThemeControls({
   }, []);
   const themeNames = {
     ivory: t('Ivory & sage'),
-    ocean: t('Midnight & ocean'),
+    ocean: t('Sculpted ocean'),
     slate: t('Slate & sand'),
   };
   return (

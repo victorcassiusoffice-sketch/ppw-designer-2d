@@ -136,6 +136,12 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopImmediatePropagation();
+        const preferences = root.current?.querySelector<HTMLDetailsElement>('.locale-theme-controls[open]');
+        if (preferences) {
+          preferences.open = false;
+          preferences.querySelector('summary')?.focus();
+          return;
+        }
         onClose();
       }
       if (event.key === 'Tab' && root.current) {
@@ -170,6 +176,7 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
   };
   const statistic = (label: ProjectCopyKey, value: number | null, unit = '') => (
     <div className="project-stat">
+      <span className="workspace-stat-icon" aria-hidden="true"><StudioIcon name={label === 'unresolved' ? 'check' : label === 'area' ? 'ruler' : label === 'wallArea' ? 'materials' : 'cube'} size={24} /></span>
       <span>{c(label)}</span>
       <strong>
         {value === null ? '—' : formatNumber(value, { maximumFractionDigits: 2 })}{' '}
@@ -262,6 +269,7 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
       </header>
       <div className="project-layout">
         <aside className="project-nav">
+          <div className="workspace-nav-emblem" aria-hidden="true"><StudioIcon name="city" size={42} /></div>
           <label>
             {c('company')}
             <select value={company} onChange={(e) => selectCompany(e.target.value as CompanyType)}>
@@ -299,7 +307,8 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
                   setMessage('');
                 }}
               >
-                {c(value)}
+                <StudioIcon name={value === 'overview' ? 'room' : value === 'departments' ? 'tiles' : value === 'engineeringReview' ? 'ruler' : value === 'ecology' ? 'garden' : 'send'} size={20} />
+                <b>{c(value)}</b>
                 {value === 'engineeringReview' && <span>{report.findings.length}</span>}
               </button>
             ))}
@@ -311,6 +320,7 @@ function ProjectWorkbench({ onClose, initialSection = 'overview' }: { onClose: (
             <div>
               <p className="project-eyebrow">{c(company)}</p>
               <h1>{c(section)}</h1>
+              <p className="workspace-project-name">{property.name}</p>
             </div>
             <span className="project-status">{c('unverified')}</span>
           </div>

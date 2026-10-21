@@ -1,0 +1,39 @@
+❌ `color-contrast` failure for `minScore` assertion (Background and foreground colors do not have a sufficient contrast ratio.: https://dequeuniversity.com/rules/axe/4.8/color-contrast )
+❌ `csp-xss` failure for `minScore` assertion (Ensure CSP is effective against XSS attacks: https://developer.chrome.com/docs/lighthouse/best-practices/csp-xss/ )
+❌ `installable-manifest` failure for `minScore` assertion (Web app manifest or service worker do not meet the installability requirements: https://developer.chrome.com/docs/lighthouse/pwa/installable-manifest/ )
+❌ `label-content-name-mismatch` failure for `minScore` assertion (Elements with visible text labels do not have matching accessible names.: https://dequeuniversity.com/rules/axe/4.8/label-content-name-mismatch )
+❌ `maskable-icon` failure for `minScore` assertion (Manifest doesn't have a maskable icon: https://developer.chrome.com/docs/lighthouse/pwa/maskable-icon-audit/ )
+❌ `prioritize-lcp-image` failure for `minScore` assertion (Preload Largest Contentful Paint image: https://web.dev/articles/optimize-lcp#optimize_when_the_resource_is_discovered )
+❌ `robots-txt` failure for `minScore` assertion (robots.txt is not valid: https://developer.chrome.com/docs/lighthouse/seo/invalid-robots-txt/ )
+❌ `splash-screen` failure for `minScore` assertion (Is not configured for a custom splash screen: https://developer.chrome.com/docs/lighthouse/pwa/splash-screen/ )
+❌ `themed-omnibox` failure for `minScore` assertion (Does not set a theme color for the address bar.: https://developer.chrome.com/docs/lighthouse/pwa/themed-omnibox/ )
+❌ `total-byte-weight` failure for `minScore` assertion (Avoids enormous network payloads: https://developer.chrome.com/docs/lighthouse/performance/total-byte-weight/ )
+❌ `unsized-images` failure for `minScore` assertion (Image elements do not have explicit `width` and `height`: https://web.dev/articles/optimize-cls#images_without_dimensions )
+❌ `unused-css-rules` failure for `maxLength` assertion (Reduce unused CSS: https://developer.chrome.com/docs/lighthouse/performance/unused-css-rules/ )
+❌ `uses-rel-preconnect` failure for `maxLength` assertion (Preconnect to required origins: https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/ )
+❌ `uses-responsive-images` failure for `maxLength` assertion (Properly size images: https://developer.chrome.com/docs/lighthouse/performance/uses-responsive-images/ )
+❌ `valid-source-maps` failure for `minScore` assertion (Missing source maps for large first-party JavaScript: https://developer.chrome.com/docs/devtools/javascript/source-maps/ )
+2026-10-20T20:38:40.5210673Z   [31m✘[0m  [1mcsp-xss[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5216321Z   [31m✘[0m  [1minstallable-manifest[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5220888Z   [31m✘[0m  [1mlabel-content-name-mismatch[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5225745Z   [31m✘[0m  [1mmaskable-icon[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5228917Z   [31m✘[0m  [1mrobots-txt[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5231258Z   [31m✘[0m  [1msplash-screen[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5234000Z   [31m✘[0m  [1mthemed-omnibox[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5236371Z   [31m✘[0m  [1mtotal-byte-weight[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5239852Z   [31m✘[0m  [1munused-css-rules[0m failure for [1mmaxLength[0m assertion
+2026-10-20T20:38:40.5244222Z   [31m✘[0m  [1muses-rel-preconnect[0m failure for [1mmaxLength[0m assertion
+2026-10-20T20:38:40.5248468Z   [31m✘[0m  [1mvalid-source-maps[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5303453Z   [31m✘[0m  [1mcolor-contrast[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5307594Z   [31m✘[0m  [1mcsp-xss[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5311587Z   [31m✘[0m  [1minstallable-manifest[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5316568Z   [31m✘[0m  [1mmaskable-icon[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5320661Z   [31m✘[0m  [1mprioritize-lcp-image[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5324913Z   [31m✘[0m  [1mrobots-txt[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5328846Z   [31m✘[0m  [1msplash-screen[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5334280Z   [31m✘[0m  [1mthemed-omnibox[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5338455Z   [31m✘[0m  [1mtotal-byte-weight[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5357886Z   [31m✘[0m  [1munsized-images[0m failure for [1mminScore[0m assertion
+2026-10-20T20:38:40.5361075Z   [31m✘[0m  [1munused-css-rules[0m failure for [1mmaxLength[0m assertion
+2026-10-20T20:38:40.5365036Z   [31m✘[0m  [1muses-rel-preconnect[0m failure for [1mmaxLength[0m assertion
+2026-10-20T20:38:40.5367980Z   [31m✘[0m  [1muses-responsive-images[0m failure for [1mmaxLength[0m assertion

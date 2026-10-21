@@ -1,4 +1,5 @@
 import type { Product, ProductPriceSnapshot } from './products.schema';
+import merchantAssets from './merchantProductAssets.json' with { type: 'json' };
 
 export type ServiceProductShape = 'tank-horizontal' | 'tank-round' | 'toilet-bowl' | 'surface-box' | 'earth-pit'
   | 'washbasin' | 'bidet' | 'garden-sofa' | 'pipe';
@@ -192,13 +193,16 @@ export const SERVICE_PRODUCTS: Product[] = SERVICE_PRODUCT_DEFINITIONS.map(defin
   price_snapshot: definition.priceSnapshot,
   price_on_request: !definition.priceSnapshot, commission_pct: 0, shopify_ready: false,
   image_url: `data:image/svg+xml;utf8,${encodeURIComponent(serviceProductPlanSvg(definition))}`,
+  photo_image_url: merchantAssets.find(asset => asset.id === definition.referenceProductId && asset.sku === definition.sku)?.photo_image_url,
   // The Seville plan uses the same measured textured body as 3D. Its SVG is
   // retained as the no-WebGL fallback, not advertised as a supplier plan image.
   ...(definition.shape !== 'garden-sofa' ? { topdown_image_url: `data:image/svg+xml;utf8,${encodeURIComponent(serviceProductPlanSvg(definition))}` } : {}),
+  ...(merchantAssets.find(asset => asset.id === definition.referenceProductId && asset.sku === definition.sku)?.topdown_image_url
+    ? { topdown_image_url: merchantAssets.find(asset => asset.id === definition.referenceProductId && asset.sku === definition.sku)!.topdown_image_url } : {}),
   designer_status: 'Done', delivery_regions: ['MU'], placement: definition.placement,
   front_edge: ['toilet-bowl', 'bidet'].includes(definition.shape) ? 'left' : 'bottom',
   ...(definition.placement === 'wall' ? { mount_height_cm: definition.mountHeightCm ?? 120 } : {}),
   outdoor: definition.outdoor, energy_role: 'none',
   source_url: definition.sourceUrl ?? definition.priceSnapshot?.sourceUrl ?? definition.dimensionSourceUrl,
-  notes: `${definition.notes} Source checked ${definition.sourceCheckedAt ?? SERVICE_PRODUCT_CHECKED_AT}. ${definition.priceSnapshot ? 'Published reference price per piece, VAT included. ' : 'Request a supplier quote; this item is excluded from the cost total until priced. '}${definition.weightKg === undefined ? 'Confirm product weight with the supplier before planning structural loads. ' : ''}${disclosure}`,
+  notes: `${definition.notes} ${merchantAssets.find(asset => asset.id === definition.referenceProductId && asset.sku === definition.sku)?.notes ?? ''} Source checked ${definition.sourceCheckedAt ?? SERVICE_PRODUCT_CHECKED_AT}. ${definition.priceSnapshot ? 'Published reference price per piece, VAT included. ' : 'Request a supplier quote; this item is excluded from the cost total until priced. '}${definition.weightKg === undefined ? 'Confirm product weight with the supplier before planning structural loads. ' : ''}${disclosure}`,
 }));

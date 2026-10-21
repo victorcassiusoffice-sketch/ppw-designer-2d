@@ -4,6 +4,7 @@ import { getProductById, productTopDownUrl } from '../products';
 import { SERVICE_PRODUCT_DEFINITIONS, SERVICE_PRODUCTS, serviceProductById, serviceProductPlanSvg, serviceProductSizeM } from '../serviceProducts';
 import { createServiceProductBody, serviceProductPreview } from '../../components/three/serviceProductPreview';
 import type { ItemSolid } from '../../designer/roomSolids';
+import merchantAssets from '../merchantProductAssets.json';
 
 describe('paired Mauritian services products', () => {
   it('publishes individually sourced SKUs without a second plan dimension table', () => {
@@ -26,8 +27,10 @@ describe('paired Mauritian services products', () => {
       expect(product.shopify_ready).toBe(false);
       expect(product.dimensions_cm).toEqual({ length: definition.dimensionsMm.length / 10,
         width: definition.dimensionsMm.width / 10, height: definition.dimensionsMm.height / 10 });
-      const svg = decodeURIComponent(productTopDownUrl(product).split(',').slice(1).join(','));
-      expect(svg).toBe(serviceProductPlanSvg(definition));
+      const reviewed = merchantAssets.find(asset => asset.sku === product.sku);
+      const svg = serviceProductPlanSvg(definition);
+      if (reviewed?.topdown_image_url) expect(productTopDownUrl(product)).toBe(reviewed.topdown_image_url);
+      else expect(decodeURIComponent(productTopDownUrl(product).split(',').slice(1).join(','))).toBe(svg);
       expect(svg).toContain(`viewBox="0 0 ${definition.dimensionsMm.length} ${definition.dimensionsMm.width}"`);
     }
   });

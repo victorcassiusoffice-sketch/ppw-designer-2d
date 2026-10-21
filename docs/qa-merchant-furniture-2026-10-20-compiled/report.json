@@ -1,0 +1,25 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "cases": [
+    {
+      "name": "desktop",
+      "errors": [],
+      "writes": [],
+      "screenshots": [
+        "docs/qa-merchant-furniture-2026-10-20-compiled/desktop-house-2d.png",
+        "docs/qa-merchant-furniture-2026-10-20-compiled/desktop-house-3d.png",
+        "docs/qa-merchant-furniture-2026-10-20-compiled/desktop-products.png"
+      ]
+    },
+    {
+      "name": "phone",
+      "errors": [],
+      "writes": [],
+      "screenshots": [
+        "docs/qa-merchant-furniture-2026-10-20-compiled/phone-house-2d.png",
+        "docs/qa-merchant-furniture-2026-10-20-compiled/phone-house-3d.png",
+        "docs/qa-merchant-furniture-2026-10-20-compiled/phone-products.png"
+      ]
+    }
+  ]
+}

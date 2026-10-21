@@ -22,7 +22,7 @@ export default function OlbHomePage() {
     <main className="olb-home">
       <header className="olb-home-header">
         <Link to="/" aria-label="One Live Build home">
-          <OlbLockup height={32} />
+          <OlbLockup height={32} reverse={false} />
         </Link>
         <nav aria-label="One Live Build">
           <Link to="/designer">Designer</Link>

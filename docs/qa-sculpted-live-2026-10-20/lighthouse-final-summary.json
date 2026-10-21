@@ -1,0 +1,55 @@
+[
+  {
+    "url": "http://localhost:41533/demo?view=2d&pitch=1",
+    "scores": {
+      "performance": 0.39,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 0.91,
+      "pwa": 0.29
+    },
+    "contrast": 1,
+    "accessibleName": 1,
+    "failedAuditIds": [
+      "total-blocking-time",
+      "max-potential-fid",
+      "interactive",
+      "installable-manifest",
+      "splash-screen",
+      "themed-omnibox",
+      "maskable-icon",
+      "mainthread-work-breakdown",
+      "bootup-time",
+      "uses-rel-preconnect",
+      "largest-contentful-paint-element",
+      "valid-source-maps",
+      "render-blocking-resources",
+      "unused-javascript",
+      "robots-txt"
+    ]
+  },
+  {
+    "url": "http://localhost:41533/pitch/plumbing",
+    "scores": {
+      "performance": 0.91,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 0.91,
+      "pwa": 0.29
+    },
+    "contrast": 1,
+    "accessibleName": 1,
+    "failedAuditIds": [
+      "installable-manifest",
+      "splash-screen",
+      "themed-omnibox",
+      "maskable-icon",
+      "layout-shift-elements",
+      "prioritize-lcp-image",
+      "render-blocking-resources",
+      "modern-image-formats",
+      "uses-responsive-images",
+      "robots-txt"
+    ]
+  }
+]

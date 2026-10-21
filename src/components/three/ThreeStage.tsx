@@ -42,14 +42,13 @@
  */
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { ecoTreeMeshes } from './ecoTrees';
 import type { EcoTree } from '../../designer/eco';
 import { cameraPosition, GLASS_HEX, type OrbitCamera, type WallHit } from '../../designer/roomView3d';
 import { cutawayState, wallAnchor, type ItemSolid, type SceneSolids, type WallShow, type WallSolid } from '../../designer/roomSolids';
-import { bodyObject, bodyTemplate, productEnvelope, type BodyTemplate } from './productBody';
+import { bodyObject, productEnvelope } from './productBody';
+import { loadProductBody as loadBody } from './productBodyLoader';
 import { dayOfYear, sunAt, sunColourHex } from '../../designer/sunPosition';
 import { BARE_PLASTER_HEX } from '../../data/wallPaints';
 import type { WallView } from '../../store/designerUIStore';
@@ -88,36 +87,6 @@ import type { ServiceFixturePlacement } from '../../designer/serviceFixtures';
 // `fitToSize`. Until it arrives (or if it cannot), a supported dimensional
 // preview or the product's art box stands in.
 // ---------------------------------------------------------------------------
-const gltfLoader = new GLTFLoader();
-const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath('/draco/');
-gltfLoader.setDRACOLoader(dracoLoader);
-
-const bodyCache = new Map<string, Promise<BodyTemplate>>();
-
-function loadBody(url: string): Promise<BodyTemplate> {
-  let p = bodyCache.get(url);
-  if (!p) {
-    p = gltfLoader.loadAsync(url).then((gltf) => {
-      const scene = gltf.scene;
-      scene.updateMatrixWorld(true);
-      scene.traverse((o) => {
-        const m = o as THREE.Mesh;
-        if (m.isMesh) {
-          // Cached GLTF geometry belongs to the template, not its item clone.
-          m.geometry.userData.cachedProductBody = true;
-          m.castShadow = true;
-          m.receiveShadow = true;
-        }
-      });
-      return bodyTemplate(scene);
-    });
-    p.catch(() => bodyCache.delete(url));
-    bodyCache.set(url, p);
-  }
-  return p;
-}
-
 // ---------------------------------------------------------------------------
 // A product without a body or an explicitly supported dimensional preview:
 // the box wears the product's OWN art —

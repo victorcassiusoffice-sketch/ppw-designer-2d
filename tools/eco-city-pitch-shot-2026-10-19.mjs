@@ -4,7 +4,7 @@ const base = process.argv[2] ?? 'http://127.0.0.1:5174';
 const host = new URL(base).hostname;
 if (!['localhost', '127.0.0.1'].includes(host) && !/^ppw-designer-2d-[\w-]+\.vercel\.app$/.test(host)) throw new Error('Local or feature preview only');
 const live = host.endsWith('.vercel.app');
-const out = `docs/qa-eco-city-pitch${live ? '-live' : ''}-2026-10-19`; mkdirSync(out, {recursive:true});
+const out = process.argv.find(arg => arg.startsWith('--out='))?.slice(6) ?? `docs/qa-eco-city-pitch${live ? '-live' : ''}-2026-10-19`; mkdirSync(out, {recursive:true});
 const args = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
 if (process.argv.includes('--map-edge')) args.push(`--host-resolver-rules=MAP ${host} 216.198.79.3`);
 const browser = await chromium.launch({headless:true,args}); const report = {base,cases:[]};

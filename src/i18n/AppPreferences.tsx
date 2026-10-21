@@ -24,7 +24,7 @@ export const UI_THEMES = ['ivory', 'ocean', 'slate'] as const;
 export type UiTheme = (typeof UI_THEMES)[number];
 export const PREFERENCES_KEY = 'olb.ui-preferences.v1';
 export type AppPreferences = { locale: AppLocale; theme: UiTheme };
-export const DEFAULT_PREFERENCES: AppPreferences = { locale: 'en', theme: 'ivory' };
+export const DEFAULT_PREFERENCES: AppPreferences = { locale: 'en', theme: 'ocean' };
 export function parsePreferences(raw: string | null): AppPreferences {
   try {
     const value: unknown = JSON.parse(raw ?? 'null');
@@ -32,7 +32,7 @@ export function parsePreferences(raw: string | null): AppPreferences {
     const data = value as Record<string, unknown>;
     return {
       locale: LOCALES.includes(data.locale as AppLocale) ? (data.locale as AppLocale) : 'en',
-      theme: UI_THEMES.includes(data.theme as UiTheme) ? (data.theme as UiTheme) : 'ivory',
+      theme: UI_THEMES.includes(data.theme as UiTheme) ? (data.theme as UiTheme) : DEFAULT_PREFERENCES.theme,
     };
   } catch {
     return DEFAULT_PREFERENCES;

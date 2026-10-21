@@ -3,7 +3,7 @@ import { chromium, expect } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
 const base = process.argv[2] ?? 'http://127.0.0.1:5174';
 if (!['127.0.0.1', 'localhost'].includes(new URL(base).hostname)) throw new Error('Local capture only');
-const out = 'docs/qa-merchant-furniture-2026-10-19'; mkdirSync(out, { recursive: true });
+const out = process.argv[3] ?? 'docs/qa-merchant-furniture-2026-10-19'; mkdirSync(out, { recursive: true });
 const property = { id: 'merchant-furniture-evidence', name: 'Living room + garden lounge', activeRoomId: 'living', wallHeightM: 2.7,
   activeLevelId: 'ground', site: { widthM: 10, depthM: 8, originM: { x: -2, y: -2 } },
   rooms: [{ id: 'living', name: 'Living room · 24 m²', polygon: [{ x: 0, y: 0 }, { x: 6, y: 0 }, { x: 6, y: 4 }, { x: 0, y: 4 }],

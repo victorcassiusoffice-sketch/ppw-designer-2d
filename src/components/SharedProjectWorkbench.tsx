@@ -6,7 +6,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type RefObject,
 } from 'react';
 import { usePropertyStore } from '../store/propertyStore';
 import { useSharedPilotStore, pilotActor } from '../store/sharedPilotStore';
@@ -35,6 +34,7 @@ import { SharedSpecApiError } from '../lib/sharedSpecsApi';
 import { useWorkspaceFocus } from '../hooks/useWorkspaceFocus';
 import { useAppPreferences } from '../i18n/AppPreferences';
 import { LocaleThemeControls } from './LocaleThemeControls';
+import { StudioIcon, type StudioIconName } from './StudioIcon';
 import { SharedComponentEditor } from './SharedComponentEditor';
 import { SharedSustainabilityPanel, SharedCarbonSummary } from './SharedSustainabilityPanel';
 import { SharedCoordinationPanel } from './SharedCoordinationPanel';
@@ -94,6 +94,10 @@ const tabs: Tab[] = [
   'coordination',
   'connection',
 ];
+const tabIcons: Record<Tab, StudioIconName> = {
+  station: 'room', components: 'materials', environment: 'garden', pilot: 'check',
+  history: 'list', coordination: 'send', connection: 'settings',
+};
 const roleBrief: Record<SharedSpecRole, string> = {
   owner:
     'Coordinate the team, assign responsibility and release only after current acknowledgements.',
@@ -114,10 +118,6 @@ const stageNames = [
   'Client decision',
   'Coordinated release',
 ];
-function Focus({ host, close }: { host: RefObject<HTMLElement>; close: () => void }) {
-  useWorkspaceFocus(host, close);
-  return null;
-}
 function download(name: string, value: unknown) {
   const url = URL.createObjectURL(
     new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' }),
@@ -494,6 +494,17 @@ export default function SharedProjectWorkbench({
     }
     onClose();
   };
+  // Own the host ref here: a child layout effect can run before this section's
+  // ref attaches on a fresh direct-route mount, leaving Escape and focus unbound.
+  useWorkspaceFocus(host, () => {
+    const preferences = host.current?.querySelector<HTMLDetailsElement>('.locale-theme-controls[open]');
+    if (preferences) {
+      preferences.open = false;
+      preferences.querySelector('summary')?.focus();
+      return;
+    }
+    close();
+  }, { enabled: open });
   const components = record?.project.components ?? [],
     active = components.filter((c) => !c.sourceRemoved),
     selectedComponent = components.find((c) => c.id === selected) ?? active[0];
@@ -593,7 +604,6 @@ export default function SharedProjectWorkbench({
       aria-label="Shared sustainable project"
       data-testid="shared-project-workspace"
     >
-      {open && <Focus host={host} close={close} />}
       <header className="shared-header">
         <div>
           <small>ONE LIVE BUILD</small>
@@ -611,6 +621,7 @@ export default function SharedProjectWorkbench({
       </header>
       <div className="shared-layout">
         <aside className="shared-nav">
+          <div className="workspace-nav-emblem" aria-hidden="true"><StudioIcon name="city" size={42} /></div>
           <label>
             {mode === 'local' ? 'Rehearse a stakeholder role' : 'Authenticated project role'}
             <select
@@ -636,6 +647,7 @@ export default function SharedProjectWorkbench({
                   if (canNavigate()) setTab(value);
                 }}
               >
+                <StudioIcon name={tabIcons[value]} size={20} />
                 {tabNames[locale][i]}
               </button>
             ))}
@@ -673,18 +685,22 @@ export default function SharedProjectWorkbench({
               <p className="shared-lead">{roleBrief[role]}</p>
               <div className="shared-metrics">
                 <div>
+                  <span className="workspace-stat-icon" aria-hidden="true"><StudioIcon name="cube" size={24} /></span>
                   <small>Current components</small>
                   <strong>{active.length}</strong>
                 </div>
                 <div>
+                  <span className="workspace-stat-icon" aria-hidden="true"><StudioIcon name="materials" size={24} /></span>
                   <small>Need a material spec</small>
                   <strong>{active.filter((c) => !c.material).length}</strong>
                 </div>
                 <div>
+                  <span className="workspace-stat-icon" aria-hidden="true"><StudioIcon name="tiles" size={24} /></span>
                   <small>Await responsibility</small>
                   <strong>{active.filter((c) => !c.responsibleParty).length}</strong>
                 </div>
                 <div>
+                  <span className="workspace-stat-icon" aria-hidden="true"><StudioIcon name="send" size={24} /></span>
                   <small>Need delivery dates</small>
                   <strong>{active.filter((c) => !c.deliveryDate).length}</strong>
                 </div>

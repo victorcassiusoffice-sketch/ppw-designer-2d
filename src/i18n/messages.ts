@@ -24,6 +24,7 @@ export const messageRows = {
   'Midnight blueprint': ['Midnight blueprint', 'Plan de minuit', '午夜蓝图', 'Plano de medianoche'],
   'Changes the workspace only. Product finishes and measurements stay true.': ['Changes the workspace only. Product finishes and measurements stay true.', 'Modifie uniquement l’espace de travail. Les finitions et les mesures restent inchangées.', '仅更改工作区外观。产品饰面和尺寸保持不变。', 'Solo cambia el espacio de trabajo. Los acabados y las medidas se conservan.'],
   'Ivory & sage': ['Ivory & sage', 'Ivoire et sauge', '象牙白与鼠尾草绿', 'Marfil y salvia'],
+  'Sculpted ocean': ['Sculpted ocean', 'Océan sculpté', '立体海洋蓝', 'Océano esculpido'],
   'Midnight & ocean': [
     'Midnight & ocean',
     'Minuit et océan',

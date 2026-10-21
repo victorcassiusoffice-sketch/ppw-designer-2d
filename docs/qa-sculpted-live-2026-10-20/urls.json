@@ -1,0 +1,747 @@
+{
+  "base": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app",
+  "commit": "03efb763edd2868a0b798f27c3253f92f95aeed0",
+  "at": "2026-10-21T19:10:45.907Z",
+  "scope": "Document HTTP and route-render smoke; four protected-entry gate screenshots. No authentication or form submissions.",
+  "transport": "Chromium process-only DNS mapping; original HTTPS hostname/TLS retained",
+  "urls": [
+    {
+      "path": "/pitch/eco-city",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/eco-city",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/eco-city",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/eco-city",
+      "heading": "One place.Every part of the build.",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/pitch/construction",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/construction",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/construction",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/construction",
+      "heading": "One place.Every part of the build.",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/pitch/developers",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/developers",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/developers",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/developers",
+      "heading": "A home they can make their own.",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?panel=shared&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=shared&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=shared&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=shared&pitch=1",
+      "heading": "Build your home",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?view=2d&panel=city&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=city&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=city&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=city&pitch=1",
+      "heading": "Your site",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?view=3d&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&pitch=1",
+      "heading": "Build your home",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?view=2d&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&pitch=1",
+      "heading": null,
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?view=2d&panel=shared&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=shared&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=shared&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=shared&pitch=1",
+      "heading": "Shared project",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?view=3d&panel=shared&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&panel=shared&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&panel=shared&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&panel=shared&pitch=1",
+      "heading": "Build your home",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?view=3d&panel=services&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&panel=services&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&panel=services&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&panel=services&pitch=1",
+      "heading": "Build your home",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?view=2d&panel=services&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=services&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=services&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=services&pitch=1",
+      "heading": "Building services",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?view=2d&panel=foundation&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=foundation&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=foundation&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=foundation&pitch=1",
+      "heading": "Foundation",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/pitch/plumbing",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/plumbing",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/plumbing",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/plumbing",
+      "heading": "A clearer picture.Before the quote.",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?panel=project&company=developers&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=developers&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=developers&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=developers&pitch=1",
+      "heading": "Build your home",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?panel=project&company=merchants&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=merchants&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=merchants&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=merchants&pitch=1",
+      "heading": "Build your home",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?panel=project&company=construction&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=construction&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=construction&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=construction&pitch=1",
+      "heading": "Build your home",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?panel=project&company=plumbing&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=plumbing&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=plumbing&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=plumbing&pitch=1",
+      "heading": "Build your home",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?panel=project&company=landscape&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=landscape&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=landscape&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=landscape&pitch=1",
+      "heading": "Build your home",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?panel=project&company=city&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=city&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=city&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?panel=project&company=city&pitch=1",
+      "heading": "Build your home",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?view=3d&panel=materials&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&panel=materials&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&panel=materials&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&panel=materials&pitch=1",
+      "heading": "Materials",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?scene=paint&view=3d&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?scene=paint&view=3d&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?scene=paint&view=3d&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?scene=paint&view=3d&pitch=1",
+      "heading": "Build your home",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?view=2d&panel=import&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=import&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=import&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=2d&panel=import&pitch=1",
+      "heading": "From drawing to editable space.",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/demo?view=3d&panel=ai&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&panel=ai&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&panel=ai&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/demo?view=3d&panel=ai&pitch=1",
+      "heading": "Build your home",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/embed/designer?view=2d&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/embed/designer?view=2d&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/embed/designer?view=2d&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/embed/designer?view=2d&pitch=1",
+      "heading": null,
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/embed/designer?view=3d&pitch=1",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/embed/designer?view=3d&pitch=1",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/embed/designer?view=3d&pitch=1",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/embed/designer?view=3d&pitch=1",
+      "heading": "Build your home",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/pitch/merchants",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/merchants",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/merchants",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/merchants",
+      "heading": "From browsingto “that’s my home.”",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/pitch/developers?client=cap-tamarin",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/developers?client=cap-tamarin",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/developers?client=cap-tamarin",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/developers?client=cap-tamarin",
+      "heading": "Let your buyers make their Cap Tamarin home their own, before it is built.",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/pitch/merchants?client=spa-concept",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/merchants?client=spa-concept",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/merchants?client=spa-concept",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/merchants?client=spa-concept",
+      "heading": "Design a hammam or sauna in 3D, and know the wood the moment you do.",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/designer",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/designer",
+      "expectedAccessGate": true,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/designer",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": true,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/designer",
+      "heading": "Every build,one live plan.",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/designer?demo=tintex",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/designer?demo=tintex",
+      "expectedAccessGate": true,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/designer?demo=tintex",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": true,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/designer?demo=tintex",
+      "heading": "Every build,one live plan.",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/studio",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/studio",
+      "expectedAccessGate": true,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/studio",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": true,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/studio",
+      "heading": "Every build,one live plan.",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/studio/designer",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/studio/designer",
+      "expectedAccessGate": true,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/studio/designer",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": true,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/studio/designer",
+      "heading": "Every build,one live plan.",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/studio/shop",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/studio/shop",
+      "expectedAccessGate": true,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/studio/shop",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": true,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/studio/shop",
+      "heading": "Every build,one live plan.",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/studio/sales",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/studio/sales",
+      "expectedAccessGate": true,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/studio/sales",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": true,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/studio/sales",
+      "heading": "Every build,one live plan.",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/studio/merchants/connect",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/studio/merchants/connect",
+      "expectedAccessGate": true,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/studio/merchants/connect",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": true,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/studio/merchants/connect",
+      "heading": "Every build,one live plan.",
+      "rendered": true,
+      "passed": true
+    },
+    {
+      "path": "/pitch/eco-city?company=Example%20Development&project=Coastal%20District&audience=Developer&scenario=Mixed-use%20district&theme=ocean",
+      "requestedUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/eco-city?company=Example%20Development&project=Coastal%20District&audience=Developer&scenario=Mixed-use%20district&theme=ocean",
+      "expectedAccessGate": false,
+      "documents": [
+        {
+          "url": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/eco-city?company=Example%20Development&project=Coastal%20District&audience=Developer&scenario=Mixed-use%20district&theme=ocean",
+          "status": 200
+        }
+      ],
+      "errors": [],
+      "blockedWrites": [],
+      "finalHttpStatus": 200,
+      "accessGateVisible": false,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/pitch/eco-city?company=Example%20Development&project=Coastal%20District&audience=Developer&scenario=Mixed-use%20district&theme=ocean",
+      "heading": "One place.Every part of the build.",
+      "rendered": true,
+      "passed": true
+    }
+  ],
+  "gates": [
+    {
+      "device": "desktop",
+      "name": "designer",
+      "path": "/designer",
+      "blockedWrites": [],
+      "errors": [],
+      "status": 200,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/designer",
+      "accessGateVisible": true,
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-live-2026-10-20/desktop-designer-access-gate.png",
+      "passed": true
+    },
+    {
+      "device": "desktop",
+      "name": "tintex",
+      "path": "/designer?demo=tintex",
+      "blockedWrites": [],
+      "errors": [],
+      "status": 200,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/designer?demo=tintex",
+      "accessGateVisible": true,
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-live-2026-10-20/desktop-tintex-access-gate.png",
+      "passed": true
+    },
+    {
+      "device": "phone",
+      "name": "designer",
+      "path": "/designer",
+      "blockedWrites": [],
+      "errors": [],
+      "status": 200,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/designer",
+      "accessGateVisible": true,
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-live-2026-10-20/phone-designer-access-gate.png",
+      "passed": true
+    },
+    {
+      "device": "phone",
+      "name": "tintex",
+      "path": "/designer?demo=tintex",
+      "blockedWrites": [],
+      "errors": [],
+      "status": 200,
+      "finalUrl": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app/designer?demo=tintex",
+      "accessGateVisible": true,
+      "overflow": 0,
+      "screenshot": "docs/qa-sculpted-live-2026-10-20/phone-tintex-access-gate.png",
+      "passed": true
+    }
+  ]
+}

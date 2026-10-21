@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "productId": "espace-durastyle-washbasin-800",
+  "sku": "ESPACE-4021534850721",
+  "name": "DuraStyle cabinet washbasin · 800 mm",
+  "dimensions_cm": {
+    "length": 80,
+    "width": 48,
+    "height": 17
+  },
+  "photo": "https://wgassets.duravit.cloud/dimg/992657837_web2_prod_normal_2.jpg",
+  "sourcePage": "https://www.espacemaison.mu/products/washbasin-for-cabinet",
+  "photoReferencePage": "https://la.pro.duravit.com/pro/content/homepage/productos/categorias/resumen/productos~402880943a1b6e1b013a1bd2494e0047.la-es.html?product=781167&nser=2105&ncat=washbasins",
+  "referenceReview": "Exact ceramic basin without tap, trap or cabinet. Manufacturer product page identifies 2320800000; Espace Maison lists EAN 4021534850721 and 800 x 480 x 170 mm. One product on a white background; no accessory model or placeholder.",
+  "sourceCheckedAt": "2026-10-19",
+  "model": "fal-ai/hunyuan-3d/v3.1/pro/image-to-3d",
+  "inputOptions": {
+    "generate_type": "Normal",
+    "enable_pbr": true
+  },
+  "estimatedUsd": 0.525,
+  "pricingCheckedAt": "2026-10-19",
+  "pricingSource": "https://fal.ai/models/fal-ai/hunyuan-3d/v3.1/pro/image-to-3d"
+}

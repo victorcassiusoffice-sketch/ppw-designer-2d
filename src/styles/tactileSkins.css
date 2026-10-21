@@ -1,83 +1,286 @@
-/* The three reference families share physical cues, not only a colour swap.
- * Narrow perimeter controls leave the build unobstructed. */
+/* One physical surface system for the build and its working dashboards.
+   Semantic colours live in preferences.css; measured geometry stays independent.
+   The small legacy-chrome bridge below wins over existing app inline/Tailwind colours. */
 :root[data-ui-theme='ivory'] {
-  --skin-highlight: #ffffffd9; --skin-shadow: #8e9a8960;
-  --skin-gradient: linear-gradient(145deg,#fbfcf4,#e0e7d9);
-  --skin-active: linear-gradient(145deg,#d7e9dc,#b8d1c1);
-  --skin-inner: #9cafa144;
+  --skin-highlight: #ffffffdb; --skin-shadow: #66776b45;
+  --skin-gradient: linear-gradient(145deg,#fffdf5,#e5e6da);
+  --skin-active: linear-gradient(145deg,#d6e9da,#a9c8b6);
+  --skin-active-ink: #153d30; --skin-inner: #62796b38;
+  --skin-rail: #2c493f; --skin-rail-end: #1d352d; --skin-rail-ink: #eef7ed; --skin-rail-muted: #c2d4c5;
+  --skin-stat-one: #cae0cc; --skin-stat-two: #d9e4cf; --skin-stat-three: #e4dfca; --skin-stat-four: #dadddf; --skin-stat-shine: #ffffff;
 }
 :root[data-ui-theme='ocean'] {
-  --skin-highlight: #88bacb36; --skin-shadow: #020b17c9;
-  --skin-gradient: linear-gradient(145deg,#284653,#152d3c);
-  --skin-active: linear-gradient(145deg,#8acbd0,#5dabb4);
-  --skin-inner: #000a1166;
+  --skin-highlight: #eaf8fbbd; --skin-shadow: #35596f52;
+  --skin-gradient: linear-gradient(145deg,#d1e5e9 0%,#bcd3dc 48%,#a6c0cb 100%);
+  --skin-active: linear-gradient(145deg,#b7e0df,#82b9c2);
+  --skin-active-ink: #163d49; --skin-inner: #466c8142;
+  --skin-rail: #2e5067; --skin-rail-end: #19354b; --skin-rail-ink: #edf7fa; --skin-rail-muted: #c1dce6;
+  --skin-stat-one: #98c8cb; --skin-stat-two: #b3cfdb; --skin-stat-three: #b9d7de; --skin-stat-four: #b4c0d8; --skin-stat-shine: #ffffff;
 }
 :root[data-ui-theme='slate'] {
-  --skin-highlight: #d3d7d63b; --skin-shadow: #070b10a1;
-  --skin-gradient: linear-gradient(145deg,#4a545b,#2d363e);
-  --skin-active: linear-gradient(145deg,#e7bc8b,#cb8b55);
-  --skin-inner: #02050977;
+  --skin-highlight: #bfcbd43d; --skin-shadow: #02070f9e;
+  --skin-gradient: linear-gradient(145deg,#4c5b66,#303d49);
+  --skin-active: linear-gradient(145deg,#e9c496,#c79665);
+  --skin-active-ink: #30271c; --skin-inner: #09121d66;
+  --skin-rail: #293b4d; --skin-rail-end: #182838; --skin-rail-ink: #f3f4ed; --skin-rail-muted: #c6d0d8;
+  --skin-stat-one: #304d55; --skin-stat-two: #374d60; --skin-stat-three: #394e59; --skin-stat-four: #4c485e; --skin-stat-shine: #121e2a;
 }
-:root[data-ui-theme] body .designer-app :is(.house-header,.house-rail,.house-camera-row,.house-view-dock,.plan-catalog-launcher,.workspace-mode-dock,.house-project-actions,.house-level-control) {
+:root[data-ui-theme] {
+  --skin-lift: 7px 9px 18px var(--skin-shadow),-3px -3px 9px var(--skin-highlight),inset 1px 1px 1px var(--skin-highlight),inset -1px -1px 1px #26445b1c;
+  --skin-small-lift: 3px 4px 7px var(--skin-shadow),-2px -2px 5px var(--skin-highlight),inset 0 1px 1px var(--skin-highlight);
+  --skin-inset: inset 3px 4px 7px var(--skin-inner),inset -2px -2px 5px var(--skin-highlight);
+  --skin-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.065'/%3E%3C/svg%3E");
+}
+:root[data-ui-theme] body .designer-app {
+  background-image: var(--skin-grain);
+}
+:root[data-ui-theme] body .designer-app :is(.house-header,.plan-topbar,.plan-project-bar,.plan-view-toolbar,.house-scene-bar,.house-view-dock,.house-scene-caption) {
+  background: var(--skin-grain),linear-gradient(125deg,var(--ui-surface),var(--ui-bg)) !important;
+  color: var(--ui-ink);
+  border-color: color-mix(in srgb,var(--ui-line),transparent 55%) !important;
+}
+:root[data-ui-theme] body .designer-app :is(.house-rail,.plan-topbar .plan-build-tools) {
+  background: var(--skin-grain),linear-gradient(155deg,var(--skin-rail),var(--skin-rail-end)) !important;
+  border: 1px solid #cbe8f43d !important;
+  box-shadow: 5px 7px 14px var(--skin-shadow),inset 1px 1px 2px #c8e8f34f !important;
+  border-radius: 28px;
+  padding: 7px;
+  gap: 8px;
+}
+:root[data-ui-theme] body .designer-app :is(.house-rail button,.plan-topbar .plan-build-tools button) {
+  background: transparent !important;
+  color: var(--skin-rail-ink) !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  border-radius: 18px;
+  text-shadow: 0 1px 1px #0c263a66;
+}
+:root[data-ui-theme] body .designer-app :is(.house-rail button,.plan-topbar .plan-build-tools button):hover:not(:disabled) {
+  background: #c4e5ef19 !important;
+}
+:root[data-ui-theme] body .designer-app :is(.house-rail button,.plan-topbar .plan-build-tools button) svg {
+  filter: drop-shadow(1px 2px 1px #071f2d7a) drop-shadow(-1px -1px 0 #e0fbff3d);
+  width: 23px; height: 23px;
+}
+:root[data-ui-theme] body .designer-app :is(.house-camera-row,.workspace-mode-dock,.house-level-control,.studio-view-switch,.house-view-switch,.house-project-actions,.plan-navigation,.plan-catalog-launcher,.house-view-options) {
   background: var(--skin-gradient) !important;
-  border: 1px solid var(--ui-line) !important;
-  border-top-color: var(--skin-highlight) !important;
-  box-shadow: 5px 7px 16px var(--skin-shadow),-3px -3px 9px var(--skin-highlight),inset 0 1px 0 var(--skin-highlight) !important;
+  color: var(--ui-ink);
+  border: 1px solid var(--skin-highlight) !important;
+  box-shadow: var(--skin-small-lift) !important;
+  border-radius: 22px;
 }
-:root[data-ui-theme] body .designer-app :is(.house-rail,.house-camera-row,.house-view-dock,.workspace-mode-dock) { border-radius: 24px; padding: 5px; gap: 5px; }
-:root[data-ui-theme] body :is(.designer-app,.locale-theme-controls__panel) :is(.house-rail button,.house-camera-row button,.house-view-dock button,.workspace-mode-dock button,.house-project-actions button,.theme-skin-card) {
+:root[data-ui-theme] body .designer-app :is(.house-camera-row button,.workspace-mode-dock button,.house-project-actions button,.house-view-options button,.studio-view-switch button,.house-view-switch button,.plan-topbar .plan-project-bar button,.plan-navigation>button,.house-scene-actions button,.house-opening-tools button,.house-selection-strip button) {
   background: var(--skin-gradient) !important;
-  border-radius: 17px;
-  box-shadow: 3px 3px 7px var(--skin-shadow),-2px -2px 6px var(--skin-highlight) !important;
-  transition: background 140ms,box-shadow 140ms,transform 140ms;
+  color: var(--ui-ink) !important;
+  border: 1px solid var(--skin-highlight) !important;
+  box-shadow: var(--skin-small-lift) !important;
+  border-radius: 15px;
+  transition: transform 140ms,box-shadow 140ms;
 }
-:root[data-ui-theme] body :is(.designer-app,.locale-theme-controls__panel) :is(.house-rail button,.house-camera-row button,.house-view-dock button,.workspace-mode-dock button,.theme-skin-card):is([aria-pressed='true'],[aria-selected='true'],.is-active) {
+:root[data-ui-theme] body .designer-app :is(.house-rail button,.plan-topbar .plan-build-tools button,.house-camera-row button,.workspace-mode-dock button,.house-view-options button,.studio-view-switch button,.house-view-switch button,.house-project-actions button,.house-scene-actions button):is([aria-pressed='true'],[aria-checked='true'],[aria-selected='true'],.is-active) {
   background: var(--skin-active) !important;
-  color: #153c36 !important;
-  box-shadow: inset 3px 3px 6px var(--skin-inner),inset -2px -2px 5px #ffffff55 !important;
-  border-color: var(--ui-accent) !important;
+  color: var(--skin-active-ink) !important;
+  border-color: var(--skin-highlight) !important;
+  box-shadow: 3px 4px 7px #071f2d38,inset 1px 1px 2px #efffffbd !important;
+  text-shadow: 0 1px 0 #efffff66;
 }
-:root[data-ui-theme='slate'] body :is(.designer-app,.locale-theme-controls__panel) :is(.house-rail button,.house-camera-row button,.house-view-dock button,.workspace-mode-dock button,.theme-skin-card):is([aria-pressed='true'],[aria-selected='true'],.is-active) { color: #33271c !important; }
-:root[data-ui-theme] body .designer-app :is(.house-tool-panel,.house-view-options,.wall-material-sheet,.opening-selection-editor,.measured-path-options) {
-  border-radius: 20px;
-  box-shadow: 7px 10px 24px var(--skin-shadow),inset 0 1px 0 var(--skin-highlight) !important;
+:root[data-ui-theme] body .designer-app :is(.house-rail button,.plan-build-tools button,.house-camera-row button,.workspace-mode-dock button):active { transform: translateY(1px); }
+:root[data-ui-theme] body .designer-app :is(.house-brand strong,.house-mark,.house-scene-label,.workspace-floor-caption,.house-cost-pill strong,.house-summary h2,.house-product-heading,.house-selection-heading,.house-cost-total strong,.house-scene-caption,[data-testid='wallpaint-3d-caption']) { color: var(--ui-ink) !important; }
+:root[data-ui-theme] body .designer-app :is(.house-tool-panel,.house-view-options,.wall-material-sheet,.opening-selection-editor,.measured-path-options,.house-inspector,.house-inspector-content,.house-summary,.house-inspector-foot,.house-product-detail,.house-cost-panel,.plan-analysis-workspace,.materials-panel) {
+  background: var(--ui-surface);
+  color: var(--ui-ink);
+  border-color: var(--ui-line);
+  box-shadow: var(--skin-lift);
 }
+:root[data-ui-theme] body .designer-app :is(.house-tool-panel,.wall-material-sheet,.opening-selection-editor,.measured-path-options) { border-radius: 22px; }
+:root[data-ui-theme] body .designer-app :is(.house-summary p,.house-eyebrow,.house-inspector-foot,.house-product-dimensions,.house-cost-note,.house-cost-lines,.house-opening-tools>span,.house-opening-options small,.house-cost-pill>span,.house-selection-strip small) { color: var(--ui-muted); }
 :root[data-ui-theme] body .designer-app :is(input:not([type='range']):not([type='checkbox']):not([type='color']),select,textarea) {
-  box-shadow: inset 2px 3px 5px var(--skin-inner),inset -1px -1px 3px var(--skin-highlight);
+  color: var(--ui-ink); background: var(--ui-raised); border-color: var(--ui-line); box-shadow: var(--skin-inset);
 }
-:root[data-ui-theme] body .designer-app :is(.house-rail,.house-camera-row,.house-view-dock,.workspace-mode-dock) button:active { transform: translateY(1px); }
-.skin-select-accessible { position: absolute !important; width: 1px !important; height: 1px !important; clip-path: inset(50%); overflow: hidden; }
+:root[data-ui-theme] body .designer-app :is(.house-mark,.house-cost-pill,.house-floor-picker select,.house-close-details,.house-review-cart,[data-testid='cart-pill']) {
+  background: var(--skin-gradient); color: var(--ui-ink); border-color: var(--skin-highlight); box-shadow: var(--skin-small-lift);
+}
+:root[data-ui-theme] body .designer-app [data-testid='cart-pill'] :is(svg,span) { color: inherit; }
+:root[data-ui-theme] body .designer-app .sims-catalog {
+  --catalog-bg: var(--ui-bg); --catalog-raised: var(--ui-surface); --catalog-field: var(--ui-raised);
+  --catalog-border: var(--ui-line); --catalog-text: var(--ui-ink); --catalog-muted: var(--ui-muted);
+  --catalog-selected: var(--ui-soft); --catalog-card-shadow: var(--skin-shadow);
+  background-image: var(--skin-grain);
+}
+:root[data-ui-theme] body .designer-app .sims-catalog [data-product-id] { background: var(--skin-gradient); border-color: var(--skin-highlight); box-shadow: var(--skin-small-lift); }
+:root[data-ui-theme] body .designer-app .sims-catalog [aria-pressed='true'] { background: var(--skin-active); color: var(--skin-active-ink); }
+:root[data-ui-theme] body .designer-app .sims-catalog[data-catalog-mode='plan'][data-catalog-open='false'] { background: var(--skin-gradient); }
+:root[data-ui-theme] body .designer-app .plan-catalog-launcher { box-shadow: none !important; background: transparent !important; border: 0 !important; }
+:root[data-ui-theme] body :is(.plan-garden-workspace,.garden-panel.garden-panel--architectural,.garden-draw-instruction,.plan-garden-instruction) { background: var(--ui-surface); color: var(--ui-ink); border-color: var(--ui-line); color-scheme: inherit; }
+:root[data-ui-theme] body .garden-panel--architectural :is(.garden-field,.garden-field option,.garden-button,.garden-product-card) { color: var(--ui-ink); background-color: var(--ui-raised); border-color: var(--ui-line); }
+:root[data-ui-theme] body .garden-panel--architectural :is(.garden-muted,.garden-quantities,.garden-source-link) { color: var(--ui-muted); }
+:root[data-ui-theme] body .garden-panel--architectural .garden-button--remove { color: var(--ui-danger); }
+:root[data-ui-theme] body :is(.wall-material-sheet,.opening-selection-editor,.measured-path-options) { background: var(--ui-surface); color: var(--ui-ink); border-color: var(--ui-line); }
+:root[data-ui-theme] body :is(.wall-material-sheet,.opening-selection-editor,.measured-path-options) :is(button,input,select) { background: var(--ui-raised); color: var(--ui-ink); border-color: var(--ui-line); }
+:root[data-ui-theme] body .measured-path-options button[aria-pressed='true'] { background: var(--skin-active); color: var(--skin-active-ink); }
+.skin-select-accessible { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
 .theme-skin-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
-.locale-theme-controls__panel .theme-skin-card { display: grid; gap: 8px; padding: 8px 5px; text-align: center; min-height: 90px; min-width: 0; font-size: 10px; line-height: 1.3; }
+.locale-theme-controls__panel .theme-skin-card { display: grid; gap: 8px; padding: 8px 5px; text-align: center; min-height: 90px; min-width: 0; font-size: 10px; line-height: 1.3; border: 1px solid var(--skin-highlight); border-radius: 15px; background: var(--skin-gradient); color: var(--ui-ink); box-shadow: var(--skin-small-lift); }
+.locale-theme-controls__panel .theme-skin-card[aria-pressed='true'] { border-color: var(--ui-accent); box-shadow: var(--skin-inset); }
 .theme-skin-card__sample { display: flex; align-items: center; justify-content: center; gap: 4px; height: 32px; border-radius: 11px; box-shadow: inset 2px 2px 5px #0003,inset -2px -2px 4px #fff5; }
 .theme-skin-card--ivory .theme-skin-card__sample { background: #d8e0d3; }
 .theme-skin-card--ocean .theme-skin-card__sample { background: #264958; }
 .theme-skin-card--slate .theme-skin-card__sample { background: #43494e; }
 .theme-skin-card__sample i { width: 13px; height: 13px; border-radius: 5px; background: #c9ddcb; box-shadow: 2px 2px 3px #0005,-1px -1px 3px #fff8; }
-.theme-skin-card--ocean .theme-skin-card__sample i { background: #7bbcc8; }
+.theme-skin-card--ocean .theme-skin-card__sample i { background: #bcd8e2; }
 .theme-skin-card--slate .theme-skin-card__sample i { background: #d6a16e; }
-:root[data-ui-theme] .locale-theme-controls__panel { width: min(310px,calc(100vw - 24px)); max-height: calc(100dvh - 90px); overflow-y: auto; overscroll-behavior: contain; }
-@media (prefers-reduced-motion: reduce) { :root[data-ui-theme] body .designer-app button { transition: none !important; } }
+:root[data-ui-theme] .locale-theme-controls__panel { width: min(310px,calc(100vw - 24px)); max-height: calc(100dvh - 90px); overflow-y: auto; overscroll-behavior: contain; background: var(--skin-gradient); border-color: var(--skin-highlight); box-shadow: var(--skin-lift); }
+:root[data-ui-theme] .locale-theme-controls>summary { background: var(--skin-gradient); border-color: var(--skin-highlight); box-shadow: var(--skin-small-lift); }
+@media (max-width: 767px) {
+  .measured-path-options button,.opening-dimensions input,.opening-dimensions select,.measured-drawing-launchers button { min-height: 44px; }
+  :root[data-ui-theme] body .designer-app :is(.house-rail,.plan-topbar .plan-build-tools) { border-radius: 22px; gap: 5px; }
+  :root[data-ui-theme] body .designer-app .plan-project-bar { flex-wrap: nowrap; gap: 5px; }
+  :root[data-ui-theme] body .designer-app .plan-project-bar .workspace-floor-nav { flex: 1 1 110px; min-width: 108px; }
+  :root[data-ui-theme] body .designer-app .plan-project-bar>.city-launch { flex: none; width: 40px; }
+  :root[data-ui-theme] body .designer-app .plan-project-bar>button { flex: none; width: 40px; min-width: 40px; padding: 7px; justify-content: center; }
+  :root[data-ui-theme] body .designer-app .plan-project-bar>button>span { display: none; }
+  :root[data-ui-theme] body .designer-app .plan-project-bar .workspace-floor-nav select { width: 100%; min-height: 40px; padding: 7px; font-size: 11px; }
+  :root[data-ui-theme] body .designer-app .plan-project-bar .locale-theme-controls>summary { min-width: 40px; padding: 7px 5px; gap: 3px; }
+}
+@media (prefers-reduced-motion: reduce) { :root[data-ui-theme] body .designer-app button { transition: none; } }
 
-:root[data-ui-theme] body .designer-app .plan-topbar :is(.plan-build-tools,.studio-view-switch) {
-  background: var(--skin-gradient) !important; border: 1px solid var(--ui-line) !important;
-  box-shadow: 4px 5px 12px var(--skin-shadow),-2px -2px 7px var(--skin-highlight),inset 0 1px 0 var(--skin-highlight) !important;
+/* Services and estimation chrome share the selected skin. Drawing fills,
+   system/pipe colours and product material appearances remain untouched. */
+:root[data-ui-theme] body .services-workspace {
+  background: var(--ui-bg); color: var(--ui-ink); color-scheme: inherit;
 }
-:root[data-ui-theme] body .designer-app .plan-topbar :is(.plan-build-tools button,.plan-project-bar button,.plan-navigation>button,.studio-view-switch button) {
-  background: var(--skin-gradient) !important; color: var(--ui-ink) !important;
-  border: 1px solid color-mix(in srgb,var(--ui-line),transparent 55%) !important;
-  box-shadow: 2px 3px 6px var(--skin-shadow),-1px -1px 4px var(--skin-highlight) !important;
+:root[data-ui-theme] body :is(.services-header,.services-inspector) {
+  background: var(--skin-grain),var(--skin-gradient); color: var(--ui-ink); border-color: var(--ui-line); box-shadow: var(--skin-small-lift);
 }
-:root[data-ui-theme] body .designer-app .plan-topbar :is(.plan-build-tools button,.plan-project-bar button,.plan-navigation>button,.studio-view-switch button):is([aria-pressed='true'],[aria-expanded='true']) {
-  background: var(--skin-active) !important; color: #153c36 !important;
-  box-shadow: inset 2px 2px 5px var(--skin-inner),inset -2px -2px 4px #ffffff55 !important;
+:root[data-ui-theme] body :is(.services-tools,.services-view-tools,.services-instruction,.services-inspector-title) {
+  background: var(--ui-surface); color: var(--ui-ink); border-color: var(--ui-line); box-shadow: none;
 }
-:root[data-ui-theme] body .designer-app .plan-project-bar select { background: var(--ui-raised) !important; color: var(--ui-ink) !important; border-color: var(--ui-line) !important; }
-:root[data-ui-theme] body :is(.plan-garden-workspace,.garden-panel.garden-panel--architectural,.garden-draw-instruction,.plan-garden-instruction) { background: var(--ui-surface) !important; color: var(--ui-ink) !important; border-color: var(--ui-line) !important; color-scheme: inherit; }
-:root[data-ui-theme] body .garden-panel--architectural :is(.garden-field,.garden-field option,.garden-button,.garden-product-card) { color: var(--ui-ink) !important; background-color: var(--ui-raised) !important; border-color: var(--ui-line) !important; }
-:root[data-ui-theme] body .garden-panel--architectural :is(.garden-muted,.garden-quantities,.garden-source-link) { color: var(--ui-muted) !important; }
-:root[data-ui-theme] body .garden-panel--architectural .garden-button--remove { color: var(--ui-danger) !important; }
-:root[data-ui-theme] body :is(.wall-material-sheet,.opening-selection-editor,.measured-path-options) { background: var(--ui-surface) !important; color: var(--ui-ink) !important; border-color: var(--ui-line) !important; }
-:root[data-ui-theme] body :is(.wall-material-sheet,.opening-selection-editor,.measured-path-options) :is(button,input,select) { background: var(--ui-raised); color: var(--ui-ink); border-color: var(--ui-line); }
-:root[data-ui-theme] body .measured-path-options button[aria-pressed='true'] { background: var(--skin-active); color: #153c36; }
-@media (max-width: 767px) { .measured-path-options button,.opening-dimensions input,.opening-dimensions select,.measured-drawing-launchers button { min-height: 44px; } }
+:root[data-ui-theme] body :is(.services-workspace button,.services-launch,.materials-export,.analysis-cart-summary button,.plan-analysis-header button) {
+  background: var(--skin-gradient); color: var(--ui-ink); border-color: var(--skin-highlight); box-shadow: var(--skin-small-lift);
+}
+:root[data-ui-theme] body .services-workspace button:is([aria-pressed='true'],:active:not(:disabled)),
+:root[data-ui-theme] body .materials-tabs button[aria-pressed='true'] {
+  background: var(--skin-active); color: var(--skin-active-ink); border-color: var(--skin-highlight); box-shadow: var(--skin-inset);
+}
+:root[data-ui-theme] body .services-tools button:not([aria-pressed='true']) { color: var(--ui-ink); }
+:root[data-ui-theme] body .services-tools button:not([aria-pressed='true']):hover { background: var(--ui-soft); border-color: var(--skin-highlight); }
+:root[data-ui-theme] body .services-workspace :is(input:not([type='checkbox']),select) {
+  background: var(--ui-raised); color: var(--ui-ink); border-color: var(--ui-line); box-shadow: var(--skin-inset);
+}
+:root[data-ui-theme] body :is(.services-header p,.services-inspector p,.services-workspace .product-source-note,.materials-intro p,.materials-note,.materials-field span,.materials-metrics span) { color: var(--ui-muted); }
+:root[data-ui-theme] body :is(.services-inspector dl,.services-connections,.services-ports-inspector) { background: var(--ui-raised); color: var(--ui-ink); box-shadow: var(--skin-inset); }
+:root[data-ui-theme] body :is(.services-inspector details,.services-products article,.materials-panel details) { border-color: var(--ui-line); }
+:root[data-ui-theme] body :is(.services-inspector a,.materials-panel a,.materials-link) { color: var(--ui-accent); }
+:root[data-ui-theme] body :is(.services-options input,.materials-check input) { accent-color: var(--ui-accent); }
+:root[data-ui-theme] body :is(.services-workspace,.materials-panel) :focus-visible { outline-color: var(--ui-focus); }
+:root[data-ui-theme] body :is(.materials-metrics>div,.analysis-cart-summary) {
+  background: var(--skin-gradient); color: var(--ui-muted); border-color: var(--skin-highlight); box-shadow: var(--skin-small-lift);
+}
+:root[data-ui-theme] body :is(.materials-metrics strong,.materials-panel summary,.materials-result summary strong,.analysis-cart-summary strong) { color: var(--ui-ink); }
+:root[data-ui-theme] body .materials-tabs { background: var(--ui-raised); border-color: var(--ui-line); box-shadow: var(--skin-inset); }
+:root[data-ui-theme] body .materials-tabs button { color: var(--ui-ink); }
+
+/* Working stations use the same raised surfaces, with a navy navigation spine.
+   Cards contain real build quantities; decorative depth never implies progress. */
+:root[data-ui-theme] body :is(.project-workspace,.shared-workspace,.city-workspace) {
+  background: var(--skin-grain),linear-gradient(125deg,var(--ui-surface),var(--ui-bg));
+}
+:root[data-ui-theme] body :is(.project-header,.shared-header) {
+  background: transparent;
+  padding: 18px 28px;
+  border-bottom-color: color-mix(in srgb,var(--ui-line),transparent 65%);
+}
+:root[data-ui-theme] body :is(.project-brand>svg,.workspace-nav-emblem) {
+  color: var(--skin-rail-ink);
+  background: linear-gradient(145deg,var(--skin-rail),var(--skin-rail-end));
+  padding: 13px;
+  border-radius: 23px;
+  box-shadow: 5px 6px 10px var(--skin-shadow),inset 1px 1px 2px #d3eaf066;
+}
+:root[data-ui-theme] body .project-brand>svg { width: 56px; height: 56px; }
+.workspace-nav-emblem { width: 76px; height: 76px; display: grid; place-items: center; margin: 0 auto 26px; }
+:root[data-ui-theme] body :is(.project-nav,.shared-nav) {
+  background: var(--skin-grain),linear-gradient(150deg,var(--skin-rail),var(--skin-rail-end));
+  color: var(--skin-rail-ink);
+  border: 1px solid #e4f5ff30;
+  border-radius: 28px;
+  margin: 12px 0 20px 18px;
+  padding: 22px 14px;
+  box-shadow: 5px 8px 14px var(--skin-shadow),inset 1px 1px 2px #d6eefc55;
+  scrollbar-width: thin;
+}
+:root[data-ui-theme] body :is(.project-nav,.shared-nav) :is(label,p,.shared-muted) { color: var(--skin-rail-muted); }
+:root[data-ui-theme] body :is(.project-nav,.shared-nav) select {
+  background: var(--skin-rail-end); color: var(--skin-rail-ink); border-color: #bdd5e252; box-shadow: inset 2px 3px 6px #091e2c66,inset -1px -1px 2px #8baeb033;
+}
+:root[data-ui-theme] body :is(.project-nav,.shared-nav) nav button {
+  display: flex; align-items: center; gap: 10px; justify-content: flex-start;
+  padding: 12px 10px; background: transparent; color: var(--skin-rail-ink); border: 1px solid transparent; border-radius: 17px; box-shadow: none;
+}
+:root[data-ui-theme] body :is(.project-nav,.shared-nav) nav button>svg { flex: none; filter: drop-shadow(1px 2px 1px #071c2a80) drop-shadow(-1px -1px 0 #d4f1f33b); }
+:root[data-ui-theme] body .project-nav nav button>b { font-size: 12px; font-weight: 500; flex: 1; }
+:root[data-ui-theme] body :is(.project-nav,.shared-nav) nav button:hover { background: #bfdbe91c; }
+:root[data-ui-theme] body :is(.project-nav,.shared-nav) nav button[aria-current='page'] {
+  background: var(--skin-gradient); color: var(--ui-ink); border-color: var(--skin-highlight); box-shadow: 3px 5px 8px #071c2a55,inset 1px 1px 1px #eefcffaa;
+}
+:root[data-ui-theme] body .project-nav nav button>span { color: var(--ui-ink); }
+:root[data-ui-theme] body :is(.project-content,.shared-content) { padding: 24px clamp(18px,3vw,40px) 52px; }
+:root[data-ui-theme] body :is(.project-section-heading,.shared-context) {
+  min-height: 134px; padding: 24px 28px; border-radius: 24px;
+  background: var(--skin-grain),linear-gradient(120deg,var(--skin-rail),var(--skin-rail-end));
+  color: var(--skin-rail-ink); border: 1px solid #cfe8f03d;
+  box-shadow: 5px 8px 16px var(--skin-shadow),inset 1px 1px 2px #d0ecf24a;
+}
+:root[data-ui-theme] body :is(.project-section-heading,.shared-context) :is(h1,h2,p,small) { color: inherit; }
+:root[data-ui-theme] body :is(.project-section-heading,.shared-context) :is(.project-eyebrow,small) { color: var(--skin-rail-muted); letter-spacing: .04em; }
+:root[data-ui-theme] body .workspace-project-name { margin: 8px 0 0; font-size: 12px; opacity: .86; }
+:root[data-ui-theme] body .shared-context>span { background: #c9e7ec1c; border: 1px solid #d0eff34d; border-radius: 16px; padding: 8px 12px; }
+:root[data-ui-theme] body :is(.project-workspace,.shared-workspace) button,
+:root[data-ui-theme] body .project-import {
+  background: var(--skin-gradient); color: var(--ui-ink); border-color: var(--skin-highlight); border-radius: 16px; box-shadow: var(--skin-small-lift);
+}
+:root[data-ui-theme] body :is(.project-workspace,.shared-workspace) button:hover:not(:disabled) { filter: brightness(1.04); }
+:root[data-ui-theme] body :is(.project-workspace,.shared-workspace) button:active:not(:disabled) { box-shadow: var(--skin-inset); transform: translateY(1px); }
+:root[data-ui-theme] body :is(.project-workspace,.shared-workspace) :is(.project-primary,.shared-primary,[aria-pressed='true']) {
+  background: linear-gradient(145deg,color-mix(in srgb,var(--ui-accent),white 9%),var(--ui-accent)); color: var(--ui-on-accent); border-color: #def9fc44;
+}
+:root[data-ui-theme] body :is(.project-workspace,.shared-workspace) :is(input:not([type='checkbox']),select,textarea) { box-shadow: var(--skin-inset); border-color: color-mix(in srgb,var(--ui-line),transparent 30%); }
+:root[data-ui-theme] body :is(.project-card,.shared-card,.shared-editor,.shared-source-grid>article,.shared-handoff-detail) {
+  background: var(--skin-grain),var(--skin-gradient); border: 1px solid var(--skin-highlight); border-radius: 24px; box-shadow: var(--skin-lift);
+}
+:root[data-ui-theme] body :is(.project-stat,.shared-metrics>div) {
+  background: linear-gradient(145deg,color-mix(in srgb,var(--skin-stat-one),var(--skin-stat-shine) 14%),var(--skin-stat-one));
+  border: 1px solid var(--skin-highlight); border-radius: 24px; box-shadow: var(--skin-lift); padding: 20px;
+}
+:root[data-ui-theme] body :is(.project-stat,.shared-metrics>div):nth-child(2) { background: linear-gradient(145deg,color-mix(in srgb,var(--skin-stat-two),var(--skin-stat-shine) 10%),var(--skin-stat-two)); }
+:root[data-ui-theme] body :is(.project-stat,.shared-metrics>div):nth-child(3) { background: linear-gradient(145deg,color-mix(in srgb,var(--skin-stat-three),var(--skin-stat-shine) 10%),var(--skin-stat-three)); }
+:root[data-ui-theme] body :is(.project-stat,.shared-metrics>div):nth-child(4) { background: linear-gradient(145deg,color-mix(in srgb,var(--skin-stat-four),var(--skin-stat-shine) 10%),var(--skin-stat-four)); }
+:root[data-ui-theme] body .workspace-stat-icon {
+  display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 15px;
+  margin-bottom: 15px; color: var(--ui-ink); background: linear-gradient(145deg,#e8fcff52,#21425b0a);
+  border: 1px solid var(--skin-highlight); box-shadow: 3px 4px 7px var(--skin-shadow),inset 1px 1px 2px var(--skin-highlight);
+}
+:root[data-ui-theme] body .workspace-stat-icon svg { filter: drop-shadow(1px 2px 1px #25435544) drop-shadow(-1px -1px 0 #f0ffffb3); }
+:root[data-ui-theme] body :is(.project-stat,.shared-metrics>div) strong { font-size: 31px; letter-spacing: -.05em; font-weight: 650; }
+:root[data-ui-theme] body :is(.shared-badge,.project-status) { border-color: #ffffff66; background: var(--ui-soft); box-shadow: inset 1px 1px 2px #ecffff77; color: var(--ui-ink); }
+:root[data-ui-theme] body :is(.shared-component-list>button,.shared-handoff-flow>button) { background: var(--skin-gradient); border-color: var(--skin-highlight); box-shadow: var(--skin-small-lift); }
+:root[data-ui-theme] body .shared-handoff-flow>button[aria-pressed='true'] { background: var(--skin-active); color: var(--skin-active-ink); box-shadow: var(--skin-inset); }
+:root[data-ui-theme] body .shared-notice { background: var(--ui-soft); box-shadow: var(--skin-small-lift); }
+@media (max-width: 760px) {
+  :root[data-ui-theme] body :is(.project-header,.shared-header) { padding: 10px 12px; }
+  :root[data-ui-theme] body :is(.project-nav,.shared-nav) { margin: 0 10px 8px; padding: 12px; border-radius: 22px; }
+  :root[data-ui-theme] body .workspace-nav-emblem { display: none; }
+  :root[data-ui-theme] body :is(.project-content,.shared-content) { padding: 14px 14px 40px; }
+  :root[data-ui-theme] body :is(.project-section-heading,.shared-context) { min-height: 114px; padding: 18px; border-radius: 21px; gap: 10px; }
+  :root[data-ui-theme] body :is(.project-stat,.shared-metrics>div) { padding: 15px; border-radius: 20px; }
+  :root[data-ui-theme] body :is(.project-stat,.shared-metrics>div) strong { font-size: 25px; }
+  :root[data-ui-theme] body .workspace-stat-icon { width: 36px; height: 36px; margin-bottom: 10px; border-radius: 12px; }
+  :root[data-ui-theme] body :is(.project-nav,.shared-nav) nav button { padding: 9px 12px; gap: 7px; }
+  :root[data-ui-theme] body .shared-nav nav button>svg { width: 17px; height: 17px; }
+  :root[data-ui-theme] body .shared-context>span { font-size: 11px; padding: 6px 8px; }
+}
+@media (max-width: 600px) {
+  :root[data-ui-theme] body .project-header>.project-brand { flex-basis: calc(100% - 70px); }
+  :root[data-ui-theme] body .project-header>button { width: auto; flex: 1; }
+  :root[data-ui-theme] body .project-brand>svg { width: 42px; height: 42px; padding: 9px; border-radius: 15px; }
+}

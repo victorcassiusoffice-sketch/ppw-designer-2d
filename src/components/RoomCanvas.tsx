@@ -42,12 +42,14 @@ import {
 } from 'react-konva';
 import { useImageCache, useImageCacheStatus } from '../hooks/useImageCache';
 import { usePlanModelImage, usePlanModelShadow } from '../hooks/usePlanModelImage';
+import { hasRasterPlanAsset } from '../designer/planModel';
 import { planSurfaceTexture, planSurfacePatternScale } from '../designer/planSurfaceTexture';
 import { floorKindOf } from '../designer/floorKind';
 import { planDaylight, planShadowPoints, planWindowLight, type PlanDaylight } from '../designer/planDaylight';
 import { planRoomLabelLayout } from '../designer/planRoomLabel';
 import { levelHeightM } from '../designer/building';
 import { NATURAL_BARE_FLOOR_HEX } from '../designer/architecturalSurface';
+import { architecturalPlanStyle, architecturalWallCap, architecturalWallShadow } from '../designer/architecturalPlan';
 import { visibleServiceFixtures } from '../designer/serviceFixtures';
 import { FoundationPlanLayer } from './FoundationPlanLayer';
 import { ServiceFixturesPlanLayer } from './ServiceFixturesPlanLayer';
@@ -199,10 +201,6 @@ import {
   WALL_INK,
   WALL_INK_GHOST,
   WALL_SHADOW,
-  WALL_SHADOW_BLUR_PX,
-  WALL_SHADOW_OFFSET,
-  WALL_INNER_STROKE,
-  WALL_INNER_STROKE_PX,
   WALL_STROKE_PX,
   SELECT_STROKE,
   HANDLE_FILL,
@@ -460,6 +458,7 @@ export function RoomCanvas({
   const selectedOpeningId = useOpeningSelectionStore(s => s.selectedId);
   const buildSkin = useBuildSkinStore(s => s.skin);
   const buildPalette = BUILD_SKIN_PALETTES[buildSkin];
+  const planStyle = architecturalPlanStyle(buildSkin);
   const measuredTool = useMeasuredPathToolStore();
   const measuredPreview = measuredToolPreview(measuredTool);
   const measuredPress = useRef<{ x: number; y: number; id: number } | null>(null);
@@ -4463,7 +4462,7 @@ export function RoomCanvas({
                 fontStyle="bold"
                 fontFamily="Inter, sans-serif"
                 letterSpacing={1.5 / viewport.scale}
-                fill={DIM_LINE}
+                fill={planStyle.dimensionText}
               />
             </Group>
           )}
@@ -4497,6 +4496,7 @@ export function RoomCanvas({
               Activation lives on the RoomList dropdown + item selection. */}
           {drawnRooms.map((room) => {
             const pts = room.polygon.flatMap((v) => [v.x * pxPerMetre, v.y * pxPerMetre]);
+            const floorBounds = polygonBounds(room.polygon);
             const isActive = room.id === activeRoomId;
             return (
               <Group key={room.id} name="room-poly" listening={false} visible={!isRoofRoom(room) || parts.roofs}>
@@ -4524,6 +4524,15 @@ export function RoomCanvas({
                   fillPatternScaleY={planSurfacePatternScale(pxPerMetre)}
                   listening={false}
                 />
+                {/* A quiet studio wash gives the editable mineral surface
+                    depth. This is clipped by the actual polygon, has no hit
+                    area and never assigns a purchasable floor finish. */}
+                {!isRoofRoom(room) && !roomFloorMaterial(room) && <Line
+                  name="plan-mineral-light" points={pts} closed listening={false}
+                  fillLinearGradientStartPoint={{ x: floorBounds.minX * pxPerMetre, y: floorBounds.minY * pxPerMetre }}
+                  fillLinearGradientEndPoint={{ x: floorBounds.maxX * pxPerMetre, y: floorBounds.maxY * pxPerMetre }}
+                  fillLinearGradientColorStops={[0, 'rgba(255,252,241,0.17)', 0.52, 'rgba(255,252,241,0)', 1, 'rgba(86,64,40,0.045)']}
+                />}
                 {/* ROOF SLAB (eco / solar 2026-09-04): concrete, no walls —
                     a dashed parapet line marks the edge panels must stay
                     inside. */}
@@ -4633,7 +4642,7 @@ export function RoomCanvas({
                         points={planShadowPoints(a, b, planSun.offset, pxPerMetre)} closed
                         fillLinearGradientStartPoint={{ x: (a.x + b.x) / 2 * pxPerMetre, y: (a.y + b.y) / 2 * pxPerMetre }}
                         fillLinearGradientEndPoint={{ x: ((a.x + b.x) / 2 + planSun.offset.x) * pxPerMetre, y: ((a.y + b.y) / 2 + planSun.offset.y) * pxPerMetre }}
-                        fillLinearGradientColorStops={[0, `rgba(37,43,39,${planSun.strength})`, 0.7, `rgba(37,43,39,${planSun.strength * 0.55})`, 1, 'rgba(37,43,39,0)']}
+                        fillLinearGradientColorStops={[0, `rgba(${planStyle.cast},${planSun.strength * planStyle.castOpacity})`, 0.7, `rgba(${planStyle.cast},${planSun.strength * planStyle.castOpacity * 0.42})`, 1, `rgba(${planStyle.cast},0)`]}
                         listening={false} />;
                     }))}
                     {planSun.daylight > 0 && roomOpenings(room).filter(opening => opening.kind === 'window' && !(planSharedEdges.get(edgeKey(room.id, opening.edgeIndex))?.length)).map(opening => {
@@ -4663,8 +4672,8 @@ export function RoomCanvas({
                     {roomEdges(room).flatMap(edge => splitEdgeSpans(edge.lengthM, wallGapsByEdge.get(edgeKey(room.id, edge.index)) ?? []).map((span, index) => {
                       const a = pointAlongEdge(edge, span.t0), b = pointAlongEdge(edge, span.t1);
                       return <Line key={`${edge.index}-${index}`} points={[a.x * pxPerMetre, a.y * pxPerMetre, b.x * pxPerMetre, b.y * pxPerMetre]}
-                        stroke="rgba(38,43,35,0.15)" strokeWidth={pxPerMetre * 0.24}
-                        shadowColor="rgba(38,43,35,0.30)" shadowBlur={pxPerMetre * 0.18} shadowOffsetY={pxPerMetre * 0.04} />;
+                        stroke={planStyle.contact} strokeWidth={pxPerMetre * 0.15}
+                        shadowColor={planStyle.contactShadow} shadowBlur={pxPerMetre * 0.12} shadowOffsetY={pxPerMetre * 0.025} />;
                     }))}
                   </Group>
                 )}
@@ -4691,6 +4700,7 @@ export function RoomCanvas({
                   const gaps = wallGapsByEdge.get(edgeKey(room.id, edge.index)) ?? [];
                   const paint = room.wallPaint?.find((p) => p.edgeIndex === edge.index && paintSide(p) === (wallPaintDraft.side ?? 'interior'));
                   const construction = material?.kind;
+                  const wallShadow = architecturalWallShadow(pxPerMetre, construction === 'glass');
                   const paintWidth = Math.max(2.5 / viewport.scale, wallPx * 0.28);
                   const showPaint = construction !== 'glass' && paint && !room.wallCladding?.some((c) => c.edgeIndex === edge.index);
                   return splitEdgeSpans(edge.lengthM, gaps).map((span, si) => {
@@ -4715,19 +4725,19 @@ export function RoomCanvas({
                           strokeWidth={wallPx}
                           lineCap="square"
                           shadowColor={WALL_SHADOW}
-                          shadowBlur={WALL_SHADOW_BLUR_PX}
-                          shadowOffsetX={WALL_SHADOW_OFFSET.x}
-                          shadowOffsetY={WALL_SHADOW_OFFSET.y}
-                          shadowOpacity={1}
+                          shadowBlur={wallShadow.blur}
+                          shadowOffsetX={wallShadow.offsetX}
+                          shadowOffsetY={wallShadow.offsetY}
+                          shadowOpacity={wallShadow.opacity}
                         />
                         <Line
                           points={seg}
-                          stroke={construction ? constructionHex(construction) : '#64645b'}
-                          strokeWidth={wallPx * 0.66}
+                          stroke={architecturalWallCap(construction, buildSkin)}
+                          strokeWidth={wallPx * 0.78}
                           lineCap="square"
                         />
                         <Line points={[seg[0] - edge.dy * wallPx * 0.3, seg[1] + edge.dx * wallPx * 0.3, seg[2] - edge.dy * wallPx * 0.3, seg[3] + edge.dx * wallPx * 0.3]}
-                          stroke="rgba(255,250,234,0.48)" strokeWidth={Math.min(1.3, wallPx * 0.16)} lineCap="butt" listening={false} />
+                          stroke={planStyle.cutHighlight} strokeWidth={wallPx * 0.10} lineCap="butt" listening={false} />
                         {showPaint && (
                           <PlanWallPaint
                             a={{ x: seg[0], y: seg[1] }}
@@ -4931,6 +4941,7 @@ export function RoomCanvas({
           {freeWalls.map((w) => {
             const pts = [w.a.x * pxPerMetre, w.a.y * pxPerMetre, w.b.x * pxPerMetre, w.b.y * pxPerMetre];
             const wallPx = (w.thicknessM || WALL_THICKNESS_M) * pxPerMetre;
+            const wallShadow = architecturalWallShadow(pxPerMetre, w.construction === 'glass');
             const demolish = tool === 'sledgehammer' && !drawMode && !pendingProductId;
             // Vic 2026-09-05: "when I pressed select tool i could not select
             // the walls to delete". A free wall is now pickable with the
@@ -4968,10 +4979,10 @@ export function RoomCanvas({
                   strokeWidth={wallPx}
                   lineCap="square"
                   shadowColor={WALL_SHADOW}
-                  shadowBlur={WALL_SHADOW_BLUR_PX}
-                  shadowOffsetX={WALL_SHADOW_OFFSET.x}
-                  shadowOffsetY={WALL_SHADOW_OFFSET.y}
-                  shadowOpacity={1}
+                  shadowBlur={wallShadow.blur}
+                  shadowOffsetX={wallShadow.offsetX}
+                  shadowOffsetY={wallShadow.offsetY}
+                  shadowOpacity={wallShadow.opacity}
                   listening={demolish || pickable}
                   hitStrokeWidth={Math.max(wallPx, 22)}
                   onClick={pickWall}
@@ -4979,8 +4990,8 @@ export function RoomCanvas({
                 />
                 <Line
                   points={pts}
-                  stroke={WALL_INNER_STROKE}
-                  strokeWidth={WALL_INNER_STROKE_PX}
+                  stroke={architecturalWallCap(w.construction, buildSkin)}
+                  strokeWidth={wallPx * 0.78}
                   lineCap="square"
                   listening={false}
                 />
@@ -5052,8 +5063,8 @@ export function RoomCanvas({
                 fill={roomLabelFill(room)}
                 opacity={
                   room.id === activeRoomId
-                    ? ROOM_LABEL_ACTIVE_OPACITY * 0.72
-                    : ROOM_LABEL_INACTIVE_OPACITY * 0.64
+                    ? ROOM_LABEL_ACTIVE_OPACITY
+                    : ROOM_LABEL_INACTIVE_OPACITY * 1.4
                 }
               />
             );
@@ -5091,7 +5102,7 @@ export function RoomCanvas({
                   text={formatLengthForUnit(wM, snapStep)}
                   fontSize={font}
                   fontFamily="Inter, sans-serif"
-                  fill={DIM_LINE}
+                  fill={planStyle.dimensionText}
                 />
                 <Line points={[x0 - off, y0, x0 - off, y1]} stroke={DIM_LINE} strokeWidth={1 / s} />
                 <Line points={[x0 - off - tick, y0, x0 - off + tick, y0]} stroke={DIM_LINE} strokeWidth={1 / s} />
@@ -5105,7 +5116,7 @@ export function RoomCanvas({
                   text={formatLengthForUnit(hM, snapStep)}
                   fontSize={font}
                   fontFamily="Inter, sans-serif"
-                  fill={DIM_LINE}
+                  fill={planStyle.dimensionText}
                 />
               </Group>
             );
@@ -5784,7 +5795,10 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
   const unrotatedHPx = cmToM(product.dimensions_cm.width) * pxPerMetre;
   // Sims world (2026-08-29): what to DRAW for this product in plan view.
   const symbol = planSymbolOf(product);
-  const wallBar = !symbol && placementKind(product) === 'wall';
+  // A reviewed overhead basin image has a genuine measured footprint; do
+  // not replace it with the legacy wall-mirror bar. Keep that bar while a
+  // wall fixture has only a perspective photo, or its overhead fails to load.
+  const wallBar = !symbol && placementKind(product) === 'wall' && !(hasRasterPlanAsset(product) && image);
   return (
     <Group
       ref={groupRef}
@@ -6108,7 +6122,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         <KonvaImage name="item-cast-shadow" image={shadowImage.image}
           x={shadowImage.xM * pxPerMetre} y={shadowImage.yM * pxPerMetre}
           width={shadowImage.widthM * pxPerMetre} height={shadowImage.depthM * pxPerMetre}
-          opacity={planSun.daylight} listening={false} />
+          opacity={planSun.daylight * 0.58} listening={false} />
       </Group>}
       {/* Inner Group rotates the art around the AABB centre. Konva
           applies rotation around offsetX/offsetY relative to the inner

@@ -1,0 +1,154 @@
+{
+  "base": "http://127.0.0.1:5174",
+  "productId": "espace-durastyle-washbasin-800",
+  "cases": [
+    {
+      "name": "desktop",
+      "errors": [],
+      "writes": [],
+      "screenshots": [
+        "docs/qa-merchant-basin-2026-10-19/desktop-basin-2d.png",
+        "docs/qa-merchant-basin-2026-10-19/desktop-basin-3d.png",
+        "docs/qa-merchant-basin-2026-10-19/desktop-basin-selected.png",
+        "docs/qa-merchant-basin-2026-10-19/desktop-basin-product-details.png",
+        "docs/qa-merchant-basin-2026-10-19/desktop-basin-quarter-turn-fixture.png"
+      ],
+      "model": {
+        "sku": "ESPACE-4021534850721",
+        "dimensions_cm": {
+          "length": 80,
+          "width": 48,
+          "height": 17
+        },
+        "source_url": "https://www.espacemaison.mu/products/washbasin-for-cabinet",
+        "photo": "/products/photos/espace-durastyle-washbasin-800.jpg",
+        "model": {
+          "url": "/models/espace-durastyle-washbasin-800-cb879ab4a23409c3.glb",
+          "modelFront": "+z",
+          "modelUp": "+y",
+          "lengthAxis": "auto",
+          "preferMesh": true,
+          "source": {
+            "model": "fal-ai/hunyuan-3d/v3.1/pro/image-to-3d",
+            "photo": "https://wgassets.duravit.cloud/dimg/992657837_web2_prod_normal_2.jpg",
+            "reference": "https://www.espacemaison.mu/products/washbasin-for-cabinet",
+            "photoReference": "https://la.pro.duravit.com/pro/content/homepage/productos/categorias/resumen/productos~402880943a1b6e1b013a1bd2494e0047.la-es.html?product=781167&nser=2105&ncat=washbasins",
+            "sku": "ESPACE-4021534850721",
+            "generated_at": "2026-10-20T17:15:47.923Z",
+            "request_id": "01a15a50-01d3-7082-bdb8-77f81be0e33f",
+            "bytes": 132928,
+            "raw_bytes": 31797136,
+            "triangles": 20000,
+            "review": "Reviewed 2026-10-20: upright +y, back tap edge -z, front +z; fitted footprint 0.80 x 0.48 m and height 0.17 m, quarter-turn 0.48 x 0.80 m. Reference-photo approximation; underside and small details inferred, not manufacturer CAD. Same GLB supplies the baked 2D projection.",
+            "material_review": {
+              "linearBaseColorFactor": [
+                0.8,
+                0.8,
+                0.8,
+                1
+              ],
+              "reason": "Preserve white ceramic form under unchanged architectural light rig; comparison against exact supplier photo.",
+              "geometryAndTexturesUnchanged": true,
+              "originalGeneratedAsset": "/models/espace-durastyle-washbasin-800-8e99d45ca2e1d244.glb",
+              "checked_at": "2026-10-20"
+            }
+          }
+        },
+        "rawBounds": [
+          1.0145080089569092,
+          0.1491760119076782,
+          0.6401129068782319
+        ],
+        "fittedMetres": [
+          0.8,
+          0.16999999999999998,
+          0.48000000000000004
+        ],
+        "rotated90Metres": [
+          0.4799999999999999,
+          0.16999999999999998,
+          0.8
+        ],
+        "raster": {
+          "width": 512,
+          "height": 307
+        },
+        "apiSkuResolves": true
+      }
+    },
+    {
+      "name": "phone",
+      "errors": [],
+      "writes": [],
+      "screenshots": [
+        "docs/qa-merchant-basin-2026-10-19/phone-basin-2d.png",
+        "docs/qa-merchant-basin-2026-10-19/phone-basin-3d.png",
+        "docs/qa-merchant-basin-2026-10-19/phone-basin-selected.png",
+        "docs/qa-merchant-basin-2026-10-19/phone-basin-product-details.png",
+        "docs/qa-merchant-basin-2026-10-19/phone-basin-quarter-turn-fixture.png"
+      ],
+      "model": {
+        "sku": "ESPACE-4021534850721",
+        "dimensions_cm": {
+          "length": 80,
+          "width": 48,
+          "height": 17
+        },
+        "source_url": "https://www.espacemaison.mu/products/washbasin-for-cabinet",
+        "photo": "/products/photos/espace-durastyle-washbasin-800.jpg",
+        "model": {
+          "url": "/models/espace-durastyle-washbasin-800-cb879ab4a23409c3.glb",
+          "modelFront": "+z",
+          "modelUp": "+y",
+          "lengthAxis": "auto",
+          "preferMesh": true,
+          "source": {
+            "model": "fal-ai/hunyuan-3d/v3.1/pro/image-to-3d",
+            "photo": "https://wgassets.duravit.cloud/dimg/992657837_web2_prod_normal_2.jpg",
+            "reference": "https://www.espacemaison.mu/products/washbasin-for-cabinet",
+            "photoReference": "https://la.pro.duravit.com/pro/content/homepage/productos/categorias/resumen/productos~402880943a1b6e1b013a1bd2494e0047.la-es.html?product=781167&nser=2105&ncat=washbasins",
+            "sku": "ESPACE-4021534850721",
+            "generated_at": "2026-10-20T17:15:47.923Z",
+            "request_id": "01a15a50-01d3-7082-bdb8-77f81be0e33f",
+            "bytes": 132928,
+            "raw_bytes": 31797136,
+            "triangles": 20000,
+            "review": "Reviewed 2026-10-20: upright +y, back tap edge -z, front +z; fitted footprint 0.80 x 0.48 m and height 0.17 m, quarter-turn 0.48 x 0.80 m. Reference-photo approximation; underside and small details inferred, not manufacturer CAD. Same GLB supplies the baked 2D projection.",
+            "material_review": {
+              "linearBaseColorFactor": [
+                0.8,
+                0.8,
+                0.8,
+                1
+              ],
+              "reason": "Preserve white ceramic form under unchanged architectural light rig; comparison against exact supplier photo.",
+              "geometryAndTexturesUnchanged": true,
+              "originalGeneratedAsset": "/models/espace-durastyle-washbasin-800-8e99d45ca2e1d244.glb",
+              "checked_at": "2026-10-20"
+            }
+          }
+        },
+        "rawBounds": [
+          1.0145080089569092,
+          0.1491760119076782,
+          0.6401129068782319
+        ],
+        "fittedMetres": [
+          0.8,
+          0.16999999999999998,
+          0.48000000000000004
+        ],
+        "rotated90Metres": [
+          0.4799999999999999,
+          0.16999999999999998,
+          0.8
+        ],
+        "raster": {
+          "width": 512,
+          "height": 307
+        },
+        "apiSkuResolves": true
+      }
+    }
+  ]
+}

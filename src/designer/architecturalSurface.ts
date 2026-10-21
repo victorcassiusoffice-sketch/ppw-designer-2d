@@ -1,6 +1,6 @@
 /** Unpriced presentation of an unfinished mineral slab. These values are not
  * catalog material IDs, specifications, measurements or ordering inputs. */
-export const NATURAL_BARE_FLOOR_HEX = '#b7b8ae';
+export const NATURAL_BARE_FLOOR_HEX = '#d8cbb8';
 export const ARCHITECTURAL_MINERAL_REPEAT_M = 4;
 
 function periodicNoise(u: number, v: number, cells: number): number {

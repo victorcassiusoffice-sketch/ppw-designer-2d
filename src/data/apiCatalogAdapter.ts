@@ -18,6 +18,8 @@ import type {
   Region,
 } from './products.schema';
 import catalogJson from './products.json';
+import { SERVICE_PRODUCTS } from './serviceProducts';
+import { MERCHANT_FURNITURE_PRODUCTS } from './merchantFurniture';
 import { useCatalogStore } from '../store/catalogStore';
 
 /**
@@ -30,7 +32,7 @@ import { useCatalogStore } from '../store/catalogStore';
  * cycle.
  */
 const _bundledBySku: Map<string, Product> = new Map(
-  (catalogJson as unknown as ProductCatalog).products.map((p) => [p.sku, p]),
+  [...(catalogJson as unknown as ProductCatalog).products, ...SERVICE_PRODUCTS, ...MERCHANT_FURNITURE_PRODUCTS].map((p) => [p.sku, p]),
 );
 
 /** Wire shape from `/api/products`. Mirror of `ProductSummary`. */
@@ -185,11 +187,11 @@ function normaliseRegion(raw: string | null): Region[] {
  * to keep the Sims-Parity DT-09 width/depth/height contract consistent.
  */
 export function apiProductToProduct(api: ApiProductSummary): Product {
-  const widthCm = (api.widthMm ?? 600) / 10;
-  const depthCm = (api.depthMm ?? 400) / 10;
-  const heightCm = (api.heightMm ?? 800) / 10;
   // Real-image + description enrichment by SKU (see _bundledBySku above).
   const seed = _bundledBySku.get(api.sku);
+  const widthCm = (api.widthMm ?? (seed ? seed.dimensions_cm.length * 10 : 600)) / 10;
+  const depthCm = (api.depthMm ?? (seed ? seed.dimensions_cm.width * 10 : 400)) / 10;
+  const heightCm = (api.heightMm ?? (seed ? seed.dimensions_cm.height * 10 : 800)) / 10;
   return {
     id: `m-${api.id}`, // namespace API ids so they never collide with seed ids
     sku: api.sku,
@@ -197,9 +199,9 @@ export function apiProductToProduct(api: ApiProductSummary): Product {
     category: normaliseCategory(api.category),
     supplier: seed?.supplier ?? 'Merchant via M9.B.1',
     dimensions_cm: {
-      length: Math.max(1, Math.round(widthCm)),
-      width: Math.max(1, Math.round(depthCm)),
-      height: Math.max(1, Math.round(heightCm)),
+      length: Math.max(1, widthCm),
+      width: Math.max(1, depthCm),
+      height: Math.max(1, heightCm),
     },
     weight_kg: (api.weightG ?? 0) / 1000,
     price: {
@@ -215,6 +217,7 @@ export function apiProductToProduct(api: ApiProductSummary): Product {
     // (catalog/detail); `productTopDownUrl` prefers the top-down (canvas).
     photo_image_url: seed?.photo_image_url,
     topdown_image_url: seed?.topdown_image_url ?? api.topdownImageUrl ?? undefined,
+    source_url: seed?.source_url,
     designer_status: 'Done',
     delivery_regions: normaliseRegion(api.region),
     // Prefer the live DB description; fall back to the curated bundled notes

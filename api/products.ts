@@ -59,11 +59,12 @@ import { drizzleAuditWriter } from './_lib/auditLog.js';
 import { authoriseMerchantSession } from './_lib/merchantSession.js';
 import { buildSeedImageryMap, enrichImagery } from './_lib/products/seedImagery.js';
 import productsSeed from '../src/data/products.json' with { type: 'json' };
+import merchantAssets from '../src/data/merchantProductAssets.json' with { type: 'json' };
 
 // P0-2: SKU → real top-down asset + description, built once from the bundled
 // seed catalog. Used to enrich live rows whose image is still a placeholder.
 const SEED_IMAGERY = buildSeedImageryMap(
-  (productsSeed as { products: Array<{ sku?: string; topdown_image_url?: string | null; notes?: string | null }> }).products,
+  [...(productsSeed as { products: Array<{ sku?: string; topdown_image_url?: string | null; notes?: string | null }> }).products, ...merchantAssets],
 );
 
 type ProductsReq = MinReq & { query?: Record<string, string | string[] | undefined> };

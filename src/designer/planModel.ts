@@ -1,17 +1,31 @@
 import type { Product } from '../data/products.schema';
 import { hasFurniturePreview } from '../data/dimensionalPreview';
 import { hasSolarPanelPreview } from '../data/solarPreview';
+import { productModelFor } from '../data/productModels';
 import type { ItemSolid } from './roomSolids';
 
+/** The catalogue's dedicated overhead image, never its perspective photo.
+ * Extensionless merchant/CDN URLs are retained; legacy SVG silhouettes are
+ * only a fallback when a measured body or reviewed raster is available. */
+export function hasRasterPlanAsset(product: Pick<Product, 'topdown_image_url'>): boolean {
+  const topdown = product.topdown_image_url?.trim();
+  return !!topdown && !/^data:image\/svg\+xml[;,]/i.test(topdown) && !/\.svg(?:[?#]|$)/i.test(topdown);
+}
+
 /** A true supplier top-down asset remains authoritative. Otherwise the same
- * measured planning body used by 3D can be photographed from above in 2D. */
+ * measured planning body used by 3D can be photographed from above in 2D.
+ * Legacy vector silhouettes stay available as the asynchronous loading and
+ * WebGL-unavailable fallback, but no longer mask a measured 3D body. */
 export function canRenderPlanModel(product: Product): boolean {
-  return !product.topdown_image_url && (hasFurniturePreview(product.id) || hasSolarPanelPreview(product) || product.sku === 'DURACO-WATER-CYL-1000')
+  return !hasRasterPlanAsset(product) && (!!productModelFor(product) || hasFurniturePreview(product.id) || hasSolarPanelPreview(product) || product.sku === 'DURACO-WATER-CYL-1000')
     && Object.values(product.dimensions_cm).every(value => Number.isFinite(value) && value > 0);
 }
 
 export function planModelKey(product: Product): string {
-  return [product.id, product.dimensions_cm.length, product.dimensions_cm.width, product.dimensions_cm.height, product.front_edge ?? 'bottom'].join(':');
+  const model = productModelFor(product);
+  return [product.id, product.dimensions_cm.length, product.dimensions_cm.width, product.dimensions_cm.height, product.front_edge ?? 'bottom',
+    product.topdown_image_url ?? '', model?.url ?? '', model?.modelFront ?? '+z', model?.lengthAxis ?? 'auto',
+    model?.modelUp ?? '+y', model?.preferMesh ? 'mesh' : 'preview'].join(':');
 }
 
 /** No current room coordinates, rotation, camera or price enter this model.
@@ -20,9 +34,12 @@ export function planModelSolid(product: Product): ItemSolid {
   const lengthM = product.dimensions_cm.length / 100;
   const widthM = product.dimensions_cm.width / 100;
   const heightM = product.dimensions_cm.height / 100;
+  const model = productModelFor(product);
   return { key: `plan-${product.id}`, instanceId: `plan-${product.id}`, productId: product.id,
     x0: 0, y0: 0, x1: lengthM, y1: widthM, z0: 0, z1: heightM,
-    rotationDeg: 0, lengthM, widthM, heightM, frontEdge: product.front_edge, hex: '#c5bfb3' };
+    rotationDeg: 0, lengthM, widthM, heightM, frontEdge: product.front_edge, hex: '#c5bfb3',
+    ...(model && { meshUrl: model.url, modelFront: model.modelFront, lengthAxis: model.lengthAxis,
+      modelUp: model.modelUp, preferMesh: model.preferMesh }) };
 }
 
 /** Resolution varies, the world-space projection and footprint never do. */

@@ -1786,13 +1786,13 @@ export function TopBar({
             <span className="hidden min-w-0 items-baseline xl:flex">
               <span className="min-w-0 truncate font-semibold">{property.name}</span>
               {activeRoom && (
-                <span className="ml-1 max-w-[55%] shrink-0 truncate opacity-80">· {activeRoom.name}</span>
+                <span className="ml-1 max-w-[55%] shrink-0 truncate opacity-80"> · {activeRoom.name}</span>
               )}
-              <span className="ml-1 hidden shrink-0 tabular-nums opacity-80 2xl:inline">· {drawnRoomCount}</span>
+              <span className="ml-1 hidden shrink-0 tabular-nums opacity-80 2xl:inline"> · {drawnRoomCount}</span>
             </span>
             <span className="min-w-0 truncate xl:hidden">
               <span className="font-semibold">{activeRoom?.name ?? property.name}</span>
-              <span className="ml-1 hidden tabular-nums opacity-80 lg:inline">· {drawnRoomCount}</span>
+              <span className="ml-1 hidden tabular-nums opacity-80 lg:inline"> · {drawnRoomCount}</span>
             </span>
           </button>
 

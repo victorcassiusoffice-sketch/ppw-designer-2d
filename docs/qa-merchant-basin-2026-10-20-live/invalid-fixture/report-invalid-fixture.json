@@ -1,0 +1,66 @@
+{
+  "base": "https://ppw-designer-2d-2620pr8sw-victor-ppw.vercel.app",
+  "routePath": "/demo",
+  "productId": "espace-durastyle-washbasin-800",
+  "mappedEdge": true,
+  "cases": [
+    {
+      "name": "desktop",
+      "errors": [],
+      "writes": [],
+      "screenshots": [
+        "docs/qa-merchant-basin-2026-10-20-live/desktop-basin-2d.png",
+        "docs/qa-merchant-basin-2026-10-20-live/desktop-basin-3d.png",
+        "docs/qa-merchant-basin-2026-10-20-live/desktop-basin-selected.png",
+        "docs/qa-merchant-basin-2026-10-20-live/desktop-basin-product-details.png",
+        "docs/qa-merchant-basin-2026-10-20-live/desktop-basin-quarter-turn-fixture.png"
+      ],
+      "assets": [
+        {
+          "path": "/models/espace-durastyle-washbasin-800-cb879ab4a23409c3.glb",
+          "status": 200,
+          "bytes": 132928
+        },
+        {
+          "path": "/products/topdown/espace-durastyle-washbasin-800-cb879ab4a23409c3.png",
+          "status": 200,
+          "bytes": 95962
+        },
+        {
+          "path": "/products/photos/espace-durastyle-washbasin-800.jpg",
+          "status": 200,
+          "bytes": 4614
+        }
+      ]
+    },
+    {
+      "name": "phone",
+      "errors": [],
+      "writes": [],
+      "screenshots": [
+        "docs/qa-merchant-basin-2026-10-20-live/phone-basin-2d.png",
+        "docs/qa-merchant-basin-2026-10-20-live/phone-basin-3d.png",
+        "docs/qa-merchant-basin-2026-10-20-live/phone-basin-selected.png",
+        "docs/qa-merchant-basin-2026-10-20-live/phone-basin-product-details.png",
+        "docs/qa-merchant-basin-2026-10-20-live/phone-basin-quarter-turn-fixture.png"
+      ],
+      "assets": [
+        {
+          "path": "/models/espace-durastyle-washbasin-800-cb879ab4a23409c3.glb",
+          "status": 200,
+          "bytes": 132928
+        },
+        {
+          "path": "/products/topdown/espace-durastyle-washbasin-800-cb879ab4a23409c3.png",
+          "status": 200,
+          "bytes": 95962
+        },
+        {
+          "path": "/products/photos/espace-durastyle-washbasin-800.jpg",
+          "status": 200,
+          "bytes": 4614
+        }
+      ]
+    }
+  ]
+}
