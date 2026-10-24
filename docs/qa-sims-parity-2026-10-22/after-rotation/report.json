@@ -1,0 +1,616 @@
+{
+  "base": "http://127.0.0.1:5176",
+  "fixture": "real bundled demo-console-table (120×40×75cm), demo-wall-shelf; no fabricated bench SKU",
+  "cases": [
+    {
+      "device": "desktop",
+      "checks": [
+        {
+          "name": "eight-ring-stops-and-one-undo-each",
+          "pass": true
+        },
+        {
+          "name": "free-one-degree-and-cancel",
+          "pass": true
+        },
+        {
+          "name": "keyboard-and-undo-redo",
+          "pass": true
+        },
+        {
+          "name": "wall-fixture-has-no-rotation-ring",
+          "pass": true
+        },
+        {
+          "name": "2d-handle-preview-commit-and-cancel",
+          "pass": true
+        }
+      ],
+      "shots": [
+        {
+          "name": "3d-rotation-before",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/desktop-3d-rotation-before.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 3,
+              "y": 2.6,
+              "rotation": 0
+            },
+            "history": 0,
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 0.315
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 15.650280434405463,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "3d-rotation-preview",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/desktop-3d-rotation-preview.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 3,
+              "y": 2.6,
+              "rotation": 0
+            },
+            "history": 0,
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 0.315
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 15.650280434405463,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "3d-rotation-release",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/desktop-3d-rotation-release.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 3.034314575050762,
+              "y": 2.234314575050762,
+              "rotation": 45
+            },
+            "history": 1,
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 0.315
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 15.650280434405463,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "3d-eight-stops",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/desktop-3d-eight-stops.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 2.9999999999999996,
+              "y": 2.5999999999999996,
+              "rotation": 0
+            },
+            "history": 8,
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 0.315
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 15.650280434405463,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "3d-free-17-degrees",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/desktop-3d-free-17-degrees.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 2.967742805477631,
+              "y": 2.4333160259737507,
+              "rotation": 17
+            },
+            "history": 9,
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 0.315
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 15.650280434405463,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "3d-wall-safe",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/desktop-3d-wall-safe.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 2.967742805477631,
+              "y": 2.4333160259737507,
+              "rotation": 17
+            },
+            "history": 10,
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 0.315
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 15.650280434405463,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "2d-rotation-before",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/desktop-2d-rotation-before.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 2.967742805477631,
+              "y": 2.4333160259737507,
+              "rotation": 17
+            },
+            "history": 10,
+            "camera": null
+          }
+        },
+        {
+          "name": "2d-rotation-preview",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/desktop-2d-rotation-preview.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 2.967742805477631,
+              "y": 2.4333160259737507,
+              "rotation": 17
+            },
+            "history": 10,
+            "camera": null
+          }
+        },
+        {
+          "name": "2d-rotation-release",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/desktop-2d-rotation-release.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 3.034314575050762,
+              "y": 2.234314575050762,
+              "rotation": 45
+            },
+            "history": 10,
+            "camera": null
+          }
+        },
+        {
+          "name": "2d-rotation-preview",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/desktop-2d-rotation-preview.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 3.034314575050762,
+              "y": 2.234314575050762,
+              "rotation": 45
+            },
+            "history": 10,
+            "camera": null
+          }
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedResponses": [],
+      "overflow": 0
+    },
+    {
+      "device": "phone",
+      "checks": [
+        {
+          "name": "eight-ring-stops-and-one-undo-each",
+          "pass": true
+        },
+        {
+          "name": "free-one-degree-and-cancel",
+          "pass": true
+        },
+        {
+          "name": "keyboard-and-undo-redo",
+          "pass": true
+        },
+        {
+          "name": "two-finger-twist-and-touchcancel",
+          "pass": true
+        },
+        {
+          "name": "wall-fixture-has-no-rotation-ring",
+          "pass": true
+        },
+        {
+          "name": "2d-handle-preview-commit-and-cancel",
+          "pass": true
+        },
+        {
+          "name": "2d-real-touch-handle-and-cancel",
+          "pass": true
+        }
+      ],
+      "shots": [
+        {
+          "name": "3d-rotation-before",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-3d-rotation-before.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 3,
+              "y": 2.6,
+              "rotation": 0
+            },
+            "history": 0,
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "3d-rotation-preview",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-3d-rotation-preview.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 3,
+              "y": 2.6,
+              "rotation": 0
+            },
+            "history": 0,
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "3d-rotation-release",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-3d-rotation-release.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 3.034314575050762,
+              "y": 2.234314575050762,
+              "rotation": 45
+            },
+            "history": 1,
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "3d-eight-stops",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-3d-eight-stops.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 2.9999999999999996,
+              "y": 2.5999999999999996,
+              "rotation": 0
+            },
+            "history": 8,
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "3d-free-17-degrees",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-3d-free-17-degrees.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 2.967742805477631,
+              "y": 2.4333160259737507,
+              "rotation": 17
+            },
+            "history": 9,
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "3d-twist-start",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-3d-twist-start.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 2.967742805477631,
+              "y": 2.4333160259737507,
+              "rotation": 17
+            },
+            "history": 10,
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "3d-twist-preview",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-3d-twist-preview.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 2.967742805477631,
+              "y": 2.4333160259737507,
+              "rotation": 17
+            },
+            "history": 10,
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "3d-twist-release",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-3d-twist-release.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 3.3999999999999995,
+              "y": 2.1999999999999997,
+              "rotation": 90
+            },
+            "history": 10,
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "3d-wall-safe",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-3d-wall-safe.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 3.3999999999999995,
+              "y": 2.1999999999999997,
+              "rotation": 90
+            },
+            "history": 10,
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "2d-rotation-before",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-2d-rotation-before.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 3.3999999999999995,
+              "y": 2.1999999999999997,
+              "rotation": 90
+            },
+            "history": 10,
+            "camera": null
+          }
+        },
+        {
+          "name": "2d-rotation-preview",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-2d-rotation-preview.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 3.3999999999999995,
+              "y": 2.1999999999999997,
+              "rotation": 90
+            },
+            "history": 10,
+            "camera": null
+          }
+        },
+        {
+          "name": "2d-rotation-release",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-2d-rotation-release.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 3.034314575050762,
+              "y": 2.234314575050762,
+              "rotation": 135
+            },
+            "history": 10,
+            "camera": null
+          }
+        },
+        {
+          "name": "2d-rotation-preview",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-2d-rotation-preview.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 3.034314575050762,
+              "y": 2.234314575050762,
+              "rotation": 135
+            },
+            "history": 10,
+            "camera": null
+          }
+        },
+        {
+          "name": "2d-touch-preview",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-2d-touch-preview.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 3.034314575050762,
+              "y": 2.234314575050762,
+              "rotation": 135
+            },
+            "history": 10,
+            "camera": null
+          }
+        },
+        {
+          "name": "2d-touch-release",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-2d-touch-release.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 2.9999999999999996,
+              "y": 2.5999999999999996,
+              "rotation": 180
+            },
+            "history": 10,
+            "camera": null
+          }
+        },
+        {
+          "name": "2d-touch-cancel-preview",
+          "path": "docs/qa-sims-parity-2026-10-22/after-rotation/phone-2d-touch-cancel-preview.png",
+          "state": {
+            "item": {
+              "instanceId": "table",
+              "productId": "demo-console-table",
+              "x": 2.9999999999999996,
+              "y": 2.5999999999999996,
+              "rotation": 180
+            },
+            "history": 10,
+            "camera": null
+          }
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedResponses": [],
+      "overflow": 0
+    }
+  ]
+}

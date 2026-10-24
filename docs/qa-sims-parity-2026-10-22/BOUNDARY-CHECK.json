@@ -1,0 +1,35 @@
+{
+  "base": "fcefc73",
+  "protectedFilesChecked": 244,
+  "changedProtectedFiles": [],
+  "apiFunctionsBefore": [
+    "api/admin-router.ts",
+    "api/agent-chat.ts",
+    "api/cart-quote.ts",
+    "api/create-checkout-session.ts",
+    "api/cron-router.ts",
+    "api/healthcheck.ts",
+    "api/merchants-router.ts",
+    "api/orders.ts",
+    "api/paypal-router.ts",
+    "api/products.ts",
+    "api/stripe-connect/webhook.ts",
+    "api/stripe-webhook.ts"
+  ],
+  "apiFunctionsAfter": [
+    "api/admin-router.ts",
+    "api/agent-chat.ts",
+    "api/cart-quote.ts",
+    "api/create-checkout-session.ts",
+    "api/cron-router.ts",
+    "api/healthcheck.ts",
+    "api/merchants-router.ts",
+    "api/orders.ts",
+    "api/paypal-router.ts",
+    "api/products.ts",
+    "api/stripe-webhook.ts",
+    "api/stripe-connect/webhook.ts"
+  ],
+  "dependencyFilesChanged": [],
+  "newApiFiles": []
+}

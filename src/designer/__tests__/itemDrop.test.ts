@@ -266,6 +266,7 @@ describe('Sims object placement modes', () => {
     ctx.wallRects = [{ x: 2, y: 2, w: 1, h: .3, instanceId: 'wall:solid' }];
     expect(resolveItemDrop(ctx, item, LAMP, 2.123, 2.123, true).ok).toBe(false);
     expect(resolveItemDrop(ctx, item, LAMP, 20, 20, true).ok).toBe(false);
+    expect(resolveItemDrop(ctx, item, LAMP, .001, 1, true).ok).toBe(false);
   });
   it('twenty standard-grid objects have no overlapping footprints', () => {
     const items: PlacedItem[] = [];

@@ -44,6 +44,8 @@ function apiRow(overrides: Partial<ApiProductSummary> = {}): ApiProductSummary {
 describe('normaliseCategory', () => {
   it('preserves explicit supplier metadata but never invents status from quantity', () => {
     expect(apiProductToProduct(apiRow({ inStockQty: 0 })).availability).toBeUndefined();
+    expect(apiProductToProduct(apiRow({ inStockQty: 0 })).stock_qty).toBeUndefined();
+    expect(apiProductToProduct(apiRow({ last_checked: '2026-02-30' })).last_checked).toBeUndefined();
     const product = apiProductToProduct(apiRow({ availability: 'on-order', lead_time_days: 12, stock_qty: 0, last_checked: '2026-10-22' }));
     expect(product).toMatchObject({ availability: 'on-order', lead_time_days: 12, stock_qty: 0, last_checked: '2026-10-22' });
   });

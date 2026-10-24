@@ -7,6 +7,7 @@ import { chromium } from '@playwright/test';
 import { mkdirSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 
 const phase = process.argv[2] ?? 'before';
 const base = process.argv[3] ?? 'http://127.0.0.1:5175';
@@ -28,6 +29,7 @@ const fixtures = [
 ];
 const vendor = readdirSync('dist/assets').find(name=>/^vendor-three-.*\.js$/.test(name));
 const report = { phase, base, capturedAt:new Date().toISOString(), sourceHead:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),
+  sourceWorkingTreeDirty:Boolean(execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim()),compiledIndexSha256:createHash('sha256').update(readFileSync('dist/index.html')).digest('hex'),
   rendererAttempt:'Native D3D11 on Windows (default headless fell back to SwiftShader; initial probe preserved separately). Explicit SwiftShader only if native attempt has no WebGL2.', vendorThree:{file:vendor,bytes:readFileSync(`dist/assets/${vendor}`).length,gzipBytes:gzipSync(readFileSync(`dist/assets/${vendor}`)).length},
   methodology:'Cold browser contexts, network cache disabled. First paint is first existing ThreeStage data-shading mutation after render. FPS counts those mutations while continuous real pointer orbit is active, including event dispatch overhead. This is observed app rendering throughput, not idle RAF or certified physical-device performance.',
   fixtures, cases:[] };
@@ -41,7 +43,7 @@ const save = () => writeFileSync(`${out}/report.json`,JSON.stringify(report,null
 try {
   for (const fixture of fixtures) for (const [device, viewport] of [['desktop',{width:1280,height:900}],['phone',{width:390,height:844}]]) {
     const context = await browser.newContext({viewport,isMobile:device==='phone',hasTouch:device==='phone',deviceScaleFactor:1});
-    const row = {scene:fixture.name,device,viewport,cpuThrottle:device==='phone'?4:1,consoleErrors:[],pageErrors:[],failedResponses:[],blockedWrites:[],screenshots:[]};report.cases.push(row);save();
+    const row = {scene:fixture.name,device,viewport,cpuThrottle:device==='phone'?4:1,consoleErrors:[],pageErrors:[],failedResponses:[],blockedWrites:[],apiRequests:[],screenshots:[]};report.cases.push(row);save();
     try {
       await context.addInitScript(property=>{
         localStorage.clear();localStorage.setItem('ppw_designer_coach_v1','1');localStorage.setItem('ppw_room_lighting_v1','natural');
@@ -52,6 +54,7 @@ try {
       const page=await context.newPage();page.setDefaultTimeout(60000);
       const cdp=await context.newCDPSession(page);await cdp.send('Network.enable');await cdp.send('Network.setCacheDisabled',{cacheDisabled:true});await cdp.send('Emulation.setCPUThrottlingRate',{rate:row.cpuThrottle});
       page.on('console',msg=>{if(msg.type()==='error')row.consoleErrors.push(msg.text());});page.on('pageerror',e=>row.pageErrors.push(e.message));
+      page.on('request',request=>{const url=new URL(request.url());if(url.pathname.startsWith('/api/')||url.hostname.startsWith('api.'))row.apiRequests.push({method:request.method(),url:`${url.origin}${url.pathname}`});});
       page.on('response',response=>{if(response.status()>=400)row.failedResponses.push({url:response.url(),status:response.status()});});
       await page.route('**/*',async route=>{if(!['GET','HEAD','OPTIONS'].includes(route.request().method())){row.blockedWrites.push({url:route.request().url(),method:route.request().method()});await route.abort();}else await route.continue();});
       await page.goto(`${base}/designer?view=3d&pitch=1`,{waitUntil:'domcontentloaded'});

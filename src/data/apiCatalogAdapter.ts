@@ -240,9 +240,9 @@ function apiAvailabilityFields(api: ApiProductSummary): Partial<Product> {
     const value = api[key];
     if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) output[key] = value;
   }
-  if (output.stock_qty === undefined && typeof api.inStockQty === 'number' && Number.isSafeInteger(api.inStockQty) && api.inStockQty >= 0) output.stock_qty = api.inStockQty;
-  if (api.last_checked && Number.isFinite(Date.parse(api.last_checked))) output.last_checked = api.last_checked;
-  // Quantity (including the database's historical default 0) never implies status.
+  if (api.last_checked && /^\d{4}-\d{2}-\d{2}$/.test(api.last_checked) && Number.isFinite(Date.parse(api.last_checked)) && new Date(api.last_checked).toISOString().slice(0, 10) === api.last_checked) output.last_checked = api.last_checked;
+  // Legacy inStockQty defaults to 0 in the DB. It is not evidence of a supplier
+  // report, so only the explicit nullable stock_qty contract is displayed here.
   return output;
 }
 

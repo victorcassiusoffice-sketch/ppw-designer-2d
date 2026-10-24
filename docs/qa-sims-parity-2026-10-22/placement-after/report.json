@@ -1,0 +1,63 @@
+{
+  "base": "http://127.0.0.1:5176",
+  "cases": [
+    {
+      "device": "desktop",
+      "errors": [],
+      "checks": [
+        "3D pointer move carries table child; Undo and Redo preserve offsets",
+        "Wall item height persisted at 170cm",
+        "Copy type arms exact product; half/free controls and ghost rotation; cancel makes no item",
+        "19 pointer placements plus seeded lamp: 20 exact catalogue objects, no overlaps",
+        "Invalid first outdoor drop creates neither object nor outdoor room",
+        "Selected item delete and undo restore exact count"
+      ],
+      "shots": [
+        "docs/qa-sims-parity-2026-10-22/placement-after/desktop-plan-attachments.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/desktop-house.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/desktop-selected-table.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/desktop-moving-table.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/desktop-moved-table-child.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/desktop-undo-move.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/desktop-wall-item-raised.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/desktop-carried-half-step.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/desktop-carried-free.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/desktop-twenty-no-overlap.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/desktop-invalid-plot-edge.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/desktop-delete.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/desktop-undo-delete.png"
+      ],
+      "failures": [],
+      "ghostPreview": "{\"productId\":\"demo-console-table\",\"x\":4.5,\"y\":2.5,\"rotation\":45,\"z\":0,\"valid\":true}"
+    },
+    {
+      "device": "phone",
+      "errors": [],
+      "checks": [
+        "3D pointer move carries table child; Undo and Redo preserve offsets",
+        "Wall item height persisted at 170cm",
+        "Copy type arms exact product; half/free controls and ghost rotation; cancel makes no item",
+        "19 pointer placements plus seeded lamp: 20 exact catalogue objects, no overlaps",
+        "Invalid first outdoor drop creates neither object nor outdoor room",
+        "Selected item delete and undo restore exact count"
+      ],
+      "shots": [
+        "docs/qa-sims-parity-2026-10-22/placement-after/phone-plan-attachments.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/phone-house.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/phone-selected-table.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/phone-moving-table.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/phone-moved-table-child.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/phone-undo-move.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/phone-wall-item-raised.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/phone-carried-half-step.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/phone-carried-free.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/phone-twenty-no-overlap.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/phone-invalid-plot-edge.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/phone-delete.png",
+        "docs/qa-sims-parity-2026-10-22/placement-after/phone-undo-delete.png"
+      ],
+      "failures": [],
+      "ghostPreview": "{\"productId\":\"demo-console-table\",\"x\":4.5,\"y\":2.5,\"rotation\":45,\"z\":0,\"valid\":true}"
+    }
+  ]
+}

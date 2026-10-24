@@ -60,6 +60,7 @@ describe('3D ring and twist preserve the edit transaction', () => {
     pointer('pointerdown', 1, 100, 100); pointer('pointerdown', 2, 200, 100); pointer('pointermove', 2, 100, 200);
     act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
     pointer('pointerup', 2, 100, 200); expect(saved().rotation).toBe(0); expect(useHistoryStore.getState().past).toHaveLength(0);
+    expect(usePropertyStore.getState().selectedInstanceId).toBe('bench');
   });
   it('ring captures pointer drag, previews a snap, and commits the same angle', () => {
     const ring = '[data-testid="view3d-rotation-ring"]';

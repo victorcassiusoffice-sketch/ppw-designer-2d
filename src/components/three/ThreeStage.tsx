@@ -1313,6 +1313,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
           material.transparent = true; material.opacity = .48; material.depthWrite = false;
           const standard = material as THREE.MeshStandardMaterial;
+          if (standard.color) standard.color.set(allowed ? '#39c8c2' : '#df554f');
           if (standard.emissive) { standard.emissive.set(allowed ? '#39c8c2' : '#df554f'); standard.emissiveIntensity = .35; }
         }
       });

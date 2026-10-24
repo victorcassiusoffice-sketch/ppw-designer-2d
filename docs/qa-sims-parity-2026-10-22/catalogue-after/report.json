@@ -19,6 +19,7 @@
         "docs/qa-sims-parity-2026-10-22/catalogue-after/desktop-2d-fitness.png",
         "docs/qa-sims-parity-2026-10-22/catalogue-after/desktop-2d-details.png",
         "docs/qa-sims-parity-2026-10-22/catalogue-after/desktop-2d-bathroom.png",
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/desktop-2d-floor-details.png",
         "docs/qa-sims-parity-2026-10-22/catalogue-after/desktop-3d-fitness.png",
         "docs/qa-sims-parity-2026-10-22/catalogue-after/desktop-3d-details.png",
         "docs/qa-sims-parity-2026-10-22/catalogue-after/desktop-designer-price-sort.png"
@@ -26,6 +27,7 @@
       "checks": [
         "Function filter, search, name sort, baked model image and price-free demo",
         "Room filter and explicit details/back, dimensions and honest stock",
+        "Floor product details remain separate from laying the floor",
         "3D uses the same catalogue and closes details without placing",
         "Price sort is available only on the normal Designer route"
       ]
@@ -48,6 +50,7 @@
         "docs/qa-sims-parity-2026-10-22/catalogue-after/phone-2d-fitness.png",
         "docs/qa-sims-parity-2026-10-22/catalogue-after/phone-2d-details.png",
         "docs/qa-sims-parity-2026-10-22/catalogue-after/phone-2d-bathroom.png",
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/phone-2d-floor-details.png",
         "docs/qa-sims-parity-2026-10-22/catalogue-after/phone-3d-fitness.png",
         "docs/qa-sims-parity-2026-10-22/catalogue-after/phone-3d-details.png",
         "docs/qa-sims-parity-2026-10-22/catalogue-after/phone-designer-price-sort.png"
@@ -55,6 +58,7 @@
       "checks": [
         "Function filter, search, name sort, baked model image and price-free demo",
         "Room filter and explicit details/back, dimensions and honest stock",
+        "Floor product details remain separate from laying the floor",
         "3D uses the same catalogue and closes details without placing",
         "Price sort is available only on the normal Designer route"
       ]

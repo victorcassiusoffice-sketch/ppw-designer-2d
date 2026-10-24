@@ -88,6 +88,15 @@ describe('useKeyboardShortcuts — new keys', () => {
     key('f', { ctrlKey: true });
     expect(useDesignerUIStore.getState().precision).toBe('full');
   });
+  it('Shift/Alt give one-degree object turns and command modifiers do not rotate', () => {
+    const id = placeAndSelect();
+    const angle = () => useDesignStore.getState().placedItems.find(item => item.instanceId === id)?.rotation;
+    key('.', { shiftKey: true }); expect(angle()).toBe(1);
+    key('r', { altKey: true }); expect(angle()).toBe(2);
+    key(',', { altKey: true }); expect(angle()).toBe(1);
+    key('.', { ctrlKey: true }); expect(angle()).toBe(1);
+    key('r', { metaKey: true }); expect(angle()).toBe(1);
+  });
 
   it('E arms eyedropper, J arms sledgehammer, H/Esc return to hand', () => {
     key('e');

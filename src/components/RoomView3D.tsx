@@ -43,6 +43,7 @@ import { usePropertyStore, type Property, type Room } from '../store/propertySto
 import { PRECISION_STEP_M, currentSnapStepM, useDesignerUIStore } from '../store/designerUIStore';
 import { usePlacementIntentStore, isScreenTarget } from '../store/placementIntentStore';
 import { useDragPointerStore } from '../store/dragPointerStore';
+import { useObjectPlacementStore } from '../store/objectPlacementStore';
 import { useOpeningSelectionStore } from '../store/openingSelectionStore';
 import { OpeningSelectionEditor } from './OpeningSelectionEditor';
 import { useMeasuredPathToolStore, measuredToolPreview, type MeasuredPathTarget } from '../store/measuredPathToolStore';
@@ -60,7 +61,7 @@ import { brushPaintId, type BrushModifiers } from '../designer/wallPaintBrush';
 import { isPaintableFloorPoint, previewFloorDrag } from '../designer/floorPaintBrush';
 import { activeLevelIdOf, isOutdoorRoom, isRoofLevel, isRoofRoom, roomsOnLevel } from '../designer/levels';
 import { buildingLevels, levelElevationM, levelHeightM, roofConfigOf, type BuildingStair } from '../designer/building';
-import { createRoofSurface, roofHeightAt, roofMaximumHeight } from '../designer/roofSurface';
+import { createRoofSurface, roofHeightAt, roofMaximumHeight, roofItemMount } from '../designer/roofSurface';
 import { roofPlacementPoint } from '../designer/roofPlacement';
 import { isRoofProduct } from '../designer/energy';
 import { pointInPolygon } from '../lib/geometry';
@@ -119,7 +120,7 @@ import {
   type SceneRoomInput,
   type WallHit,
 } from '../designer/roomView3d';
-import type { SceneSolids } from '../designer/roomSolids';
+import type { SceneSolids, ItemSolid } from '../designer/roomSolids';
 import type { ThreeStageHandle } from './three/ThreeStage';
 import type { ScenePresentation } from './three/renderPresentation';
 import { fitArchitecturalCamera } from '../designer/architecturalCamera';
@@ -452,6 +453,12 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     if (flashTimer.current) clearTimeout(flashTimer.current);
   }, []);
   const armedProductId = usePlacementIntentStore((s) => s.armedProductId);
+  const armedRotation = usePlacementIntentStore(s => s.armedRotation);
+  const catalogDrag = useDragPointerStore(s => s.drag);
+  const objectPlacementMode = useObjectPlacementStore(s => s.mode);
+  const [armedPointer, setArmedPointer] = useState<{ clientX: number; clientY: number } | null>(null);
+  const armedPress = useRef<{ id: number; productId: string } | null>(null);
+  useEffect(() => { setArmedPointer(null); armedPress.current = null; }, [armedProductId, tool, property.activeLevelId]);
   const selectedOpeningId = useOpeningSelectionStore(s => s.selectedId);
   const measuredTool = useMeasuredPathToolStore();
   const measuredPreview = measuredToolPreview(measuredTool);
@@ -465,11 +472,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const rotationSession = useRef<ItemRotationSession | null>(null);
   const twistRotation = useRef<{ start: number; rotation: number } | null>(null);
   const [rotationPreview, setRotationPreview] = useState<ItemRotationPreview | null>(null);
-  function cancelObjectTurn() {
+  const cancelObjectTurn = useCallback(() => {
     const session = rotationSession.current;
     if (session) { cancelItemRotation(session); stageRef.current?.resetItemPreview(session.original.instanceId); }
     rotationSession.current = null; twistRotation.current = null; setRotationPreview(null);
-  }
+  }, []);
   function startObjectTurn(instanceId = selectedInstanceId): boolean {
     cancelObjectTurn();
     const session = instanceId ? beginItemRotation(instanceId) : null;
@@ -507,15 +514,11 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  });
+  }, [cancelObjectTurn]);
   useEffect(() => {
     setRotationPreview(null);
-    return () => {
-      const session = rotationSession.current;
-      if (session) { cancelItemRotation(session); stageRef.current?.resetItemPreview(session.original.instanceId); }
-      rotationSession.current = null; twistRotation.current = null;
-    };
-  }, [selectedInstanceId, property.id, property.activeLevelId, tool, armedProductId]);
+    return cancelObjectTurn;
+  }, [selectedInstanceId, property.id, property.activeLevelId, tool, armedProductId, cancelObjectTurn]);
   const [stageReady, setStageReady] = useState(false);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const cameraViewportHeightRef = useRef(0);
@@ -773,6 +776,38 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       items: all.items.filter(item => productVisible(getProductById(item.productId ?? ''), visible, parts)),
       gardenVisible: visible.landscape && all.gardenVisible !== false };
   }, [property, catalogVersion, buildingView, showRoof, visible, parts]);
+
+  // The shared placement resolver supplies exactly the pose committed by 2D.
+  // A separate transient body gives visual feedback without touching the plan.
+  const catalogPreview = useMemo<{ item: ItemSolid; valid: boolean } | null>(() => {
+    void armedRotation; void objectPlacementMode; void stageReady;
+    if (!itemsInteractive || !stageRef.current) return null;
+    const pointer = catalogDrag ?? (armedProductId && armedPointer ? { ...armedPointer, productId: armedProductId } : null);
+    const box = containerRef.current?.getBoundingClientRect();
+    if (!pointer || !box || pointer.clientX < box.left || pointer.clientX > box.right || pointer.clientY < box.top || pointer.clientY > box.bottom) return null;
+    const product = getProductById(pointer.productId);
+    const point = stageRef.current.floorPoint(pointer.clientX - box.left, pointer.clientY - box.top);
+    const pose = product && point && usePlacementIntentStore.getState().previewPlacement(product.id, point.x, point.y);
+    if (!product || !pose) return null;
+    const model = productModelFor(product), heightM = Math.max(0.05, Math.min(product.dimensions_cm.height / 100, activeHeight));
+    const elevationM = levelElevationM(property, level);
+    const placement = isRoofProduct(product) ? 'roof' : product.placement;
+    let mountM = placement === 'ceiling' ? Math.max(0, activeHeight - heightM)
+      : placement === 'wall' || placement === 'surface' ? Math.min(Math.max(0, (pose.mountHeightCm ?? product.mount_height_cm ?? 0) / 100), Math.max(0, activeHeight - heightM)) : 0;
+    const item: ItemSolid = { key: 'catalog-preview', instanceId: 'catalog-preview', productId: product.id,
+      parentInstanceId: pose.parentInstanceId, levelId: level, floorElevationM: elevationM,
+      x0: pose.xM, y0: pose.yM, x1: pose.xM + pose.w, y1: pose.yM + pose.h,
+      z0: elevationM + mountM, z1: elevationM + mountM + heightM,
+      rotationDeg: pose.rotation, lengthM: product.dimensions_cm.length / 100, widthM: product.dimensions_cm.width / 100, heightM,
+      hex: itemFillForCategory(product.category), placement, frontEdge: product.front_edge,
+      meshUrl: model?.url, preferMesh: model?.preferMesh, modelFront: model?.modelFront, modelUp: model?.modelUp, lengthAxis: model?.lengthAxis };
+    if (placement === 'roof' && showRoof) {
+      const owner = property.rooms.find(room => isRoofRoom(room) && room.levelId === level && pointInPolygon({ x: pose.xM + pose.w / 2, y: pose.yM + pose.h / 2 }, room.polygon));
+      const surface = owner && createRoofSurface(owner.polygon, elevationM, roofConfigOf(property));
+      if (surface) { item.roofMount = roofItemMount(surface, item); mountM = item.roofMount.elevationM; item.floorElevationM = mountM; item.z0 = mountM; item.z1 = mountM + heightM; }
+    }
+    return { item, valid: pose.valid };
+  }, [armedPointer, armedProductId, armedRotation, catalogDrag, objectPlacementMode, stageReady, property, level, activeHeight, showRoof, itemsInteractive]);
 
   // Painter fallback: only computed while it is the one drawing.
   const projected: ProjectedFace[] = useMemo(() => {
@@ -1043,6 +1078,12 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         drag.current = { x: e.clientX, y: e.clientY, moved: false, pinchDist: 0 };
         return;
       }
+      if (armedProductId && itemsInteractive) {
+        armedPress.current = { id: e.pointerId, productId: armedProductId };
+        setArmedPointer({ clientX: e.clientX, clientY: e.clientY });
+        drag.current = null;
+        return;
+      }
       if (openingTool && stageRef.current) {
         const p = localPoint(e);
         const point = openingPointAt(p.x, p.y);
@@ -1145,6 +1186,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       }
       drag.current = { x: e.clientX, y: e.clientY, moved: false, pinchDist: 0 };
     } else if (pointers.current.size === 2) {
+      armedPress.current = null;
+      setArmedPointer(null);
       // Two fingers on a selected item turn that item. Two fingers beginning
       // on the empty floor retain the existing camera pinch/pan behaviour.
       const picked = itemDrag.current;
@@ -1183,6 +1226,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   };
 
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (armedProductId && itemsInteractive && !drag.current && !pinchGesture.current) {
+      setArmedPointer({ clientX: e.clientX, clientY: e.clientY });
+      if (armedPress.current?.id === e.pointerId) return;
+    }
     if (measuredTool.target && (measuredPress.current || pointers.current.size === 0)) {
       const p = localPoint(e), point = stageRef.current?.constructionPoint?.(p.x, p.y) ?? stageRef.current?.floorPoint(p.x, p.y);
       measuredTool.setHover(point ?? null);
@@ -1327,6 +1374,15 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
 
   const endPointer = (e: React.PointerEvent<HTMLDivElement>, cancelled: boolean) => {
     const had = pointers.current.delete(e.pointerId);
+    if (armedPress.current?.id === e.pointerId) {
+      const press = armedPress.current; armedPress.current = null;
+      if (had && !cancelled) {
+        const local = localPoint(e), point = stageRef.current?.floorPoint(local.x, local.y);
+        if (point) placeAtPoint(press.productId, point.x, point.y, { strict: true, keepArmed: e.shiftKey });
+      }
+      setArmedPointer(null);
+      return;
+    }
     if (twistRotation.current && had) {
       if (cancelled) cancelObjectTurn();
       else finishObjectTurn(rotationPreview?.rotation ?? rotationSession.current?.original.rotation ?? 0);
@@ -1642,6 +1698,9 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   useEffect(() => {
     if (variant !== 'overlay' || !onClose) return;
     const onKey = (e: KeyboardEvent) => {
+      if (rotationSession.current && (e.key === 'Escape' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z'))) {
+        e.preventDefault(); e.stopImmediatePropagation(); cancelObjectTurn(); return;
+      }
       if (e.defaultPrevented || [...document.querySelectorAll('.sims-catalog[data-catalog-mode="3d"][data-catalog-open="true"]')].some(element => element.getBoundingClientRect().height > 0)) return;
       // Foreground dialogs and finish/energy panels own their keyboard events.
       // Let their own Close/Escape handlers run without changing the scene behind them.
@@ -1731,7 +1790,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [variant, onClose, gardenOpen, gardenPlacement, panMode, constructionTool, openingTool, finishWallRun, cancelWallSegment, showFlash, belowMd, onPaintWall, onPaintFloor, energyOpen, selectedInstanceId, selectItem, armedProductId]);
+  }, [variant, onClose, gardenOpen, gardenPlacement, panMode, constructionTool, openingTool, finishWallRun, cancelWallSegment, showFlash, belowMd, onPaintWall, onPaintFloor, energyOpen, selectedInstanceId, selectItem, armedProductId, cancelObjectTurn]);
 
   const hoverText = describeHit(property, hover, onPaintWall && hoverTag && hover ? hoverTag(hover) : null);
   const empty = !sceneBounds;
@@ -1892,6 +1951,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       data-variant={variant}
       data-backend={backend}
       data-presentation={presentation}
+      data-catalog-preview-valid={catalogPreview ? String(catalogPreview.valid) : undefined}
+      data-catalog-preview={catalogPreview ? JSON.stringify({ productId: catalogPreview.item.productId, x: catalogPreview.item.x0, y: catalogPreview.item.y0, rotation: catalogPreview.item.rotationDeg, z: catalogPreview.item.z0, valid: catalogPreview.valid }) : undefined}
     >
       {/* The picture: three when it can, the painter when it cannot. */}
       <div className="absolute inset-0">
@@ -1900,6 +1961,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
             <ThreeStage
               ref={stageRef}
               solids={solids}
+              catalogPreview={catalogPreview}
               serviceFixtures={serviceFixtures}
               serviceRuns={serviceRuns}
               groundVisible={visible.landscape}
@@ -1944,6 +2006,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         onPointerUp={(e) => endPointer(e, false)}
         onPointerCancel={(e) => endPointer(e, true)}
         onPointerLeave={() => {
+          if (!armedPress.current) setArmedPointer(null);
           setHover(null);
           setHoverItem(null);
           if (!wallDrag.current) setWallPreview(null);
@@ -1952,7 +2015,8 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         onContextMenu={(e) => e.preventDefault()}
       />
       {rotationPoint && rotationPoint.x >= 0 && rotationPoint.x <= size.width && rotationPoint.y >= 0 && rotationPoint.y <= size.height && <ItemRotationRing
-        x={Math.max(67, Math.min(size.width - 67, rotationPoint.x))} y={Math.max(82, Math.min(size.height - 85, rotationPoint.y - 30))}
+        x={Math.max(67, Math.min(size.width - 67, rotationPoint.x + (rotationPoint.x > size.width - 165 ? -96 : 96)))}
+        y={Math.max(82, Math.min(size.height - 85, rotationPoint.y - 85))}
         rotation={rotationPreview?.rotation ?? selectedItem!.rotation} valid={rotationPreview?.ok ?? true}
         onStart={() => startObjectTurn()} onPreview={previewObjectTurn} onCommit={finishObjectTurn} onCancel={cancelObjectTurn} onStep={delta => rotateSelected(delta)} />}
       {openingPreview && <OpeningPlacementPreview preview={openingPreview} baseElevation={baseElevation} projectPoint={(x, y, z) => stageRef.current?.projectPoint(x, y, z) ?? null} />}

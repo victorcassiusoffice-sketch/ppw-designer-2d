@@ -51,6 +51,7 @@ try {
       await expect(catalog.getByTestId('mobile-product-popup')).toBeVisible();
       await expect(catalog.getByTestId('catalog-availability')).toHaveText('Ask supplier');
       await expect(catalog.getByTestId('mobile-product-popup')).toContainText('cm');
+      await expect(catalog.getByTestId('mobile-product-popup')).toContainText('Supplier:');
       await expect(catalog.getByTestId('mobile-product-popup')).toContainText('supplier last told us');
       await shot('2d-details');
       await catalog.getByRole('button', { name: '← Products', exact: true }).click();
@@ -58,6 +59,13 @@ try {
       await catalog.getByRole('tab', { name: 'Bathroom', exact: true }).click();
       expect(await cards().count()).toBeGreaterThan(0);
       await shot('2d-bathroom'); row.checks.push('Room filter and explicit details/back, dimensions and honest stock');
+      await catalog.getByRole('tab', { name: 'By function', exact: true }).click();
+      await catalog.getByRole('tab', { name: 'Surfaces', exact: true }).click();
+      const floorCard = catalog.locator('[data-floor-material]').first();
+      await floorCard.locator('..').getByRole('button', { name: /^Details for / }).click();
+      await expect(catalog.getByTestId('popup-lay-floor')).toBeVisible();
+      await shot('2d-floor-details');
+      row.checks.push('Floor product details remain separate from laying the floor');
       await page.keyboard.press('Escape');
       await page.getByRole('button', { name: '3D House', exact: true }).click();
       await page.getByTestId('wallpaint-3d-gl').waitFor(); await page.getByTestId('loading-3d').waitFor({ state: 'hidden', timeout: 60000 });

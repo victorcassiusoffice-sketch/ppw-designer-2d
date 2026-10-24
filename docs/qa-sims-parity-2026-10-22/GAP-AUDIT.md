@@ -12,8 +12,8 @@ Desktop and 390 px touch-emulated Chromium are scored below. Physical iPhone/And
 
 ## Top defects (ranked by user impact)
 
-1. [Both][C1 rotation · 1][P0] Selected 3D objects offer quarter-turn buttons. There is no ring; a second touch becomes a camera pinch. The keyboard uses 90 degrees and the 2D handle uses 15 degrees. The requested 45-degree stops/1-degree modifier are absent. Evidence: `shots/before-interaction/desktop-selection-at-centre.png`, `desktop-key-turn.png`; `RoomView3D.tsx`, `useKeyboardShortcuts.ts`, `RoomCanvas.tsx`. Fix: one validated rotation transaction shared by ring, twist and keys.
-2. [Both][C1 rotation safety · 1][P0] The 2D handle persists an angle before validation and can mutate a wall-mounted item despite the later wall rejection. Preview changes the bounding box around its top-left. Source evidence: `RoomCanvas.tsx` handle FSM, `placementActions.ts`. Fix: non-persisted preview, centre-preserving commit, cancellation and wall guard.
+1. [Both][C1 rotation · 1 → 3][Resolved for single objects] Baseline quarter-turn controls and inconsistent 90°/15° input are replaced by shared 45° stops, 1° fine input, an on-object 3D ring and selected-object touch twist. Five desktop and seven phone rotation harness groups pass. Evidence: `PHASE-B-C-ROTATION.md`, `shots/after-rotation/desktop-3d-eight-stops.png`, `phone-3d-twist-preview.png` and matching `report.json`. Not done: parent/child assembly rotation is disabled deliberately; physical iOS/Android were not tested.
+2. [Both][C1 rotation safety · 1 → 3][Resolved] The 2D handle and 3D ring now preview without saved writes, preserve the measured centre, validate before one-frame commit and cancel without changing the saved pose. Wall-mounted fixtures expose no free-rotation ring. Evidence: `shots/after-rotation/*-2d-rotation-before.png`, `*-2d-rotation-preview.png`, `*-2d-rotation-release.png`, `phone-3d-wall-safe.png`; matching saved-pose/history records in `report.json` and seven rotation transaction tests.
 3. [Both][A2/A5 placement · 1][P0] The 3D view lacks a full in-hand new-product body with green/red validation. Existing move feedback is a footprint. Evidence: `shots/before-actions/phone-moving-table.png`; `RoomView3D.tsx` and placement intent bridge. Fix: expose the same read-only resolver to new placement and preview the body without a saved mutation.
 4. [Both][A4 placement choice · 1][P0] Many grid sizes exist, but there is no clear 50/25 cm/free-object placement selector or explicit overlap override. Source: `designerUIStore.ts`, `itemDrop.ts`; `shots/before-interaction/phone-plan.png`. Fix: an object-placement control, separate from measured wall/grid units.
 5. [Both][C4 surfaces · 2][P1] Table movement carries the child's saved position correctly and undo restores both, but the child does not visually stay with the moving body during preview. Evidence: `shots/before-actions/*-moving-table.png`, `*-moved-table-child.png`, `*-undo-move.png`; state snapshots in repo `before-actions/report.json`. Fix: move the temporary assembly with the parent.
@@ -24,9 +24,9 @@ Desktop and 390 px touch-emulated Chromium are scored below. Physical iPhone/And
 
 ## Cross-platform divergences
 
-- Desktop keyboard rotation has no equivalent precise touch gesture; touch currently pans/zooms when a second finger is introduced.
+- Rotation after Phase B: desktop comma/period/R use 45° and Shift/Alt use 1°; phone has a 45°/1° ring toggle and selected-object two-finger twist. The twist preserves the camera. Empty-floor two-finger input remains camera navigation.
 - Phone catalogue has a visible information button; desktop plan catalogue relies more on hover.
-- All local action captures used real mouse pointer events at both widths. They prove responsive layouts and pointer actions, not touch rotation; real CDP multi-touch is required in Phase B.
+- Baseline action captures used mouse input at both widths. Final Phase B additionally uses native CDP multi-touch for 3D twist/cancellation and the 2D handle/cancellation. This is touch-emulated Chromium evidence, not a physical-device certification.
 - `/designer` is passcode-protected on production. Both gate pages were recorded, but no code/login was entered. Public `/demo` and local `/designer?pitch=1` were inspected. Baseline reports record a 401 console resource error; its source must be identified rather than called a clean run.
 
 ## Aesthetic findings (Section G)
@@ -51,36 +51,36 @@ This is a new baseline from production main, not the PR49 preview. No applicatio
 
 | Criterion | Desktop before | Phone before | After | Evidence / user expectation |
 |---|---:|---:|---|---|
-| A1 Inline no-new-window | 2 | 2 | Pending | Catalogue/selection captures: editing should stay in the house. |
-| A2 Ghost/in-hand preview | 1 | 1 | Pending | Move captures/source: see the real carried object before release. |
-| A3 Grid snapping | 2 | 2 | Pending | Move state logs snap to 0.5 m; preserve measured size. |
-| A4 Half-step/free precision | 1 | 1 | Pending | Plan chrome/source: choose 50 cm, 25 cm or free without hunting. |
-| A5 Valid/invalid feedback | 1 | 1 | Pending | Movement footprint exists; new-product 3D body/colour feedback missing. |
-| B1 Repeat-place/stamp | 2 | 1 | Pending | Existing keepArmed/Shift path; touch route needs explicit proof. |
-| B2 Duplicate selected | 2 | 2 | Pending | Existing action; new run must verify history and attachment. |
-| B3 Eyedropper/copy type | 1 | 1 | Pending | Existing 2D tool; 3D and variant propagation need proof. |
-| C1 Rotate | 1 | 1 | Pending | Selected/key captures; ring/twist missing and steps differ. |
-| C2 Reposition placed | 2 | 2 | Pending | Real-pointer table drag changed x/y and child offsets. |
-| C3 Delete | 2 | 2 | Pending | Existing action; acceptance must cover undo/redo. |
-| C4 Move-to-slot | 2 | 2 | Pending | Surface child follows committed parent, preview incomplete. |
-| D1 Pan | 2 | 2 | Pending | Existing damped camera; active pointer/performance proof needed. |
-| D2 Zoom | 2 | 2 | Pending | Existing pinch regression tests; 4x slowdown remains to measure. |
-| D3 Move-vs-pan | 2 | 1 | Pending | Second touch always camera, not selected-item twist. |
-| E1 Undo/Redo | 2 | 2 | Pending | Table-move undo restored both items; complete action chain still needed. |
-| E2 Cancel placement | 2 | 2 | Pending | Existing Escape/cancel paths; test ring and ghost cancellation. |
+| A1 Inline no-new-window | 2 | 2 | 2 desktop / 2 phone | Catalogue details and rotation stay in the canvas workspace; before-interaction/*-catalogue.png versus catalogue-after/*-3d-details.png. No full-app navigation audit claimed. |
+| A2 Ghost/in-hand preview | 1 | 1 | 2 desktop / 2 phone | Phase C: measured 3D carried proxy and 45-degree preview verified; refreshed half-step/free frames show valid teal-green on both sizes. PHASE-C-PLACEMENT.md. |
+| A3 Grid snapping | 2 | 2 | 2 desktop / 2 phone | Phase C: 19 real pointer placements plus one seeded lamp produce 20 non-overlapping 40 cm footprints. Grid step verified by itemDrop tests; placement-after/*-twenty-no-overlap.png. |
+| A4 Half-step/free precision | 1 | 1 | 2 desktop / 2 phone | Phase C: 50 cm, 25 cm and Free controls exercised; half/free position and solid-wall bounds covered by unit tests. Carried-half-step/free pictures; phone is pointer-emulated. |
+| A5 Valid/invalid feedback | 1 | 1 | 2 desktop / 2 phone | Phase C: valid ghost record and invalid plot-edge picture; invalid Free drop leaves the complete property unchanged. Refreshed half-step/free frames visually confirm valid teal-green on both sizes. |
+| B1 Repeat-place/stamp | 2 | 1 | 2 desktop / 2 phone | Phase C: Shift-held pointer stamping places 19 objects in both viewport sizes. Touch-only repeat placement remains unverified; twenty-no-overlap pictures. |
+| B2 Duplicate selected | 2 | 2 | Not done | Existing action retained; no dedicated new pointer/history/attachment acceptance run. Copy type has separate evidence under B3. |
+| B3 Eyedropper/copy type | 1 | 1 | 2 desktop / 2 phone | Phase C: Copy type arms the selected exact console-table SKU in House, including carried rotation. Merchant variant cloning remains unverified; carried-half-step pictures. |
+| C1 Rotate | 1 | 1 | 3 desktop / 3 phone | Phase B: eight 45° stops, 1° fine input, 2D/3D preview/commit/cancel and native touch twist; PHASE-B-C-ROTATION.md and shots/after-rotation/report.json. Parent/child assembly rotation is intentionally disabled; physical phones untested. |
+| C2 Reposition placed | 2 | 2 | 2 desktop / 2 phone | Phase C: actual 3D pointer drag changes table position and retains child offsets; moving-table/moved-table-child before and after. Cross-room assembly move not exercised. |
+| C3 Delete | 2 | 2 | 2 desktop / 2 phone | Phase C: Delete reduces 20 objects to 19; Undo restores 20. Delete redo not exercised; placement-after/*-delete.png and *-undo-delete.png. |
+| C4 Move-to-slot | 2 | 2 | 2 desktop / 2 phone | Phase C: attached child follows parent preview and committed movement; wall shelf height stored at 170 cm. Slot reparenting and wall slide have unit coverage but no dedicated pointer pictures. |
+| D1 Pan | 2 | 2 | 2 desktop / 2 phone | Phase E: continuous pointer orbit renders 56.7–59.9 desktop / 55.2–59.3 phone FPS (390 px, CPU ×4); geometry unchanged. This measures orbit, not a dedicated pan trace. Strict desktop 60 FPS remains unmet; PHASE-E-GRAPHICS.md and after-graphics/report.json. |
+| D2 Zoom | 2 | 2 | 2 desktop / 2 phone | Phase E: all four quality choices retain the same camera/property/canvas; all eight before/after logical and render-camera bookmarks match. Existing pinch regression tests remain; no dedicated physical-phone pinch/zoom benchmark was added. quality-controls/report.json and graphics-comparison.json. |
+| D3 Move-vs-pan | 2 | 1 | 2 desktop / 2 phone | Phase B: selected-body twist changes the item while recorded camera stays fixed; phone-3d-twist-start/preview/release.png. Empty-floor camera path is retained. All gesture origins at extreme zoom and physical devices were not exercised. |
+| E1 Undo/Redo | 2 | 2 | 2 desktop / 2 phone | Phase C: move Undo/Redo and delete Undo verified. Full place/move/rotate/delete chain remains unverified; undo-move and undo-delete pictures. |
+| E2 Cancel placement | 2 | 2 | 2 desktop / 2 phone | Phase C: Cancel after half/free ghost rotation adds no item. No post-cancel picture; ring cancellation belongs to Phase B. |
 | E3 Live cost | N/A | N/A | Untouched | Public demo is price-free; estimates must not change. |
-| F1 Finger occlusion | 1 | 1 | Pending | Phone object preview/handle needs reachable offset. |
-| F2 touch-action discipline | 2 | 2 | Pending | Existing pointer surface; new gestures must retain cancellation. |
-| F3 Tap-target size | 2 | 2 | Pending | Phone controls visible; new ring targets require measurement. |
-| F4 On-object controls reachable | 1 | 1 | Pending | Quarter-turn-only controls; no height/twist/continuous handle. |
-| F5 Haptics | N/A | Not verified | Pending | Browser emulation cannot prove physical vibration. |
-| F6 Safe areas | 2 | 2 | Pending | 390 captures show bottom chrome within viewport. |
-| G1 Visual cleanliness | 2 | 1 | Pending | Phone clipped floor label; keep inspectors outside house. |
-| G2 Empty state | Not exercised | Not exercised | Pending | Fixed audit fixture is furnished; do not claim a pass. |
-| G3 Catalog legibility | 1 | 1 | Pending | Catalogue screenshots; grouping and angle inconsistent. |
-| G4 Visual consistency | 2 | 2 | Pending | Existing calibrated finish/lighting paths; no quality tiers. |
-| G5 Motion | 2 | 2 | Pending | Damped camera source/tests; actual GPU budget pending. |
-| G6 First-run comprehension | 1 | 1 | Pending | New controls need short labels and visible cancel. |
+| F1 Finger occlusion | 1 | 1 | 3 desktop / 2 phone | Phase B: 3D ring moved beside/above the selected body; phone-3d-twist-preview.png. Existing 2D action row still covers small products in a fitted plan; phone-2d-rotation-release.png. |
+| F2 touch-action discipline | 2 | 2 | 3 desktop / 3 phone (rotation) | Phase B: Escape and native touchCancel preserve saved pose/history; 2D/3D phone cancellation checks pass, camera is unchanged by twist. Scope is rotation in Chromium; physical Safari/Android are not verified. |
+| F3 Tap-target size | 2 | 2 | 2 desktop / 2 phone | Phase B: screen-sized 124 px 3D ring is reachable in 390 px captures. The 2D handle remains canvas-scaled and can be small far out; native touch passes the fixture, but zoom-extreme physical ergonomics are not verified. |
+| F4 On-object controls reachable | 1 | 1 | 3 desktop / 2 phone | Phase B: 3D ring and 2D handle reached with actual pointer/touch input, including free turn and cancel. Existing narrow 2D action-row overlap remains; see PHASE-B-C-ROTATION.md and phone-2d-touch-preview.png. |
+| F5 Haptics | N/A | Not verified | Not done | No physical phone available in this run; Chromium emulation cannot verify vibration. |
+| F6 Safe areas | 2 | 2 | 2 desktop / 2 phone | Final rotation/catalogue captures stay within viewport with zero horizontal overflow. Physical device notches and browser bars remain unverified. |
+| G1 Visual cleanliness | 2 | 1 | 2 desktop / 1 phone | Not fully done: phone Plan floor label and small-object action-row overlap remain. Evidence after-rotation/phone-2d-rotation-before.png and -release.png. PR49 UI excluded as instructed. |
+| G2 Empty state | Not exercised | Not exercised | Not done | Furnished acceptance fixtures do not verify a first-time empty build. No baseline pair or new-user test available. |
+| G3 Catalog legibility | 1 | 1 | 2 desktop / 2 phone | Phase D: fixed-angle existing-model PNGs, room/function tabs, explicit details and honest unknown stock. Real variants/stock absent; missing meshes keep source photos. See PHASE-D-CATALOGUE.md and catalogue-after/report.json. |
+| G4 Visual consistency | 2 | 2 | 2 desktop / 2 phone | Phase E: compiled Auto/Low/Medium/High controls pass at both widths; ACES Natural, preserved Colour check, 1024 phone / 2048 desktop shadows, AO desktop High only. Four paired scene sheets retain geometry/scales. Procedural products and generated PMREM remain; exact reference realism / photographic HDRI not achieved. PHASE-E-GRAPHICS.md. |
+| G5 Motion | 2 | 2 | 2 desktop / 2 phone | Phase E: native Iris Xe/D3D11 render submissions, eight matched scenes; desktop 56.7–59.9 FPS (strict 60: 0/4 pass), CPU-throttled phone 55.2–59.3 (30: 4/4 pass). 3D activation <3 s: 8/8; full cold navigation <3 s: 1/8. Auto/Medium now disables AO; High and physical phones not benchmarked. Bundle −4 gzip bytes; graphics-comparison.json. |
+| G6 First-run comprehension | 1 | 1 | 2 desktop / 2 phone | Explicit Copy type, 50 cm, 25 cm, Free and Cancel labels shown in placement-after/*-carried-half-step.png. Novice-user comprehension study not done; score covers labelled controls only. |
 
 ## Scripted harness matrix result (18 rows)
 

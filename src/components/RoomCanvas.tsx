@@ -79,7 +79,7 @@ import { ClearControls } from './ClearControls';
 import { AiDesignButton } from './AiDesignWorkspace';
 import { WallDrawLayer, WallDrawHUD, CommittedWallsLayer } from '../designer/WallDrawMode';
 import { useWallStore } from '../store/wallStore';
-import { useHistoryStore, endDrawTransaction } from '../store/historyStore';
+import { endDrawTransaction } from '../store/historyStore';
 // Toolbar pass (2026-08-29): the phone's undo/redo buttons route through the
 // SAME ladder as Ctrl+Z / the TopBar buttons (vertex → wall segment → history),
 // instead of hitting the history store directly and disagreeing mid-draw.
@@ -126,6 +126,7 @@ import {
   freeWallObstacleRects,
   resolveWallAwarePlacement,
   WALL_HALF_M,
+  insideInnerFaces,
   WALL_THICKNESS_M,
   type FreeWallLike,
 } from '../designer/wallAwarePlacement';
@@ -167,7 +168,7 @@ import { snapToTileLattice, tileLatticeFor, usesTileLattice } from '../designer/
 import { beginItemRotation, previewItemRotation, commitItemRotation, cancelItemRotation, type ItemRotationSession, type ItemRotationPreview } from '../lib/placementActions';
 import { gestureRotation, pointerAngle } from '../designer/rotationGesture';
 import { ObjectPlacementControls } from './ObjectPlacementControls';
-import { objectPlacementStepM, objectOverlapAllowed } from '../store/objectPlacementStore';
+import { useObjectPlacementStore, objectPlacementStepM, objectOverlapAllowed } from '../store/objectPlacementStore';
 import { pointInPolygon, isRectInsidePolygon } from '../lib/geometry';
 // Architectural paper theme (2026-08-29): cream paper, charcoal poche walls
 // with a soft shadow, quiet grid. Every colour comes from ONE module.
@@ -749,6 +750,8 @@ export function RoomCanvas({
     | { xM: number; yM: number; rotation: number; valid: boolean }
     | null
   >(null);
+  const lastGhostPointer = useRef<{ clientX: number; clientY: number } | null>(null);
+  const objectPlacementMode = useObjectPlacementStore(s => s.mode);
   const ghostRotation = usePlacementIntentStore(s => s.armedRotation);
   // Sims wall-aware placement (2026-08-23) — auto-orientation only runs
   // until the user rotates the armed ghost manually (R / Shift+R); after
@@ -1444,7 +1447,7 @@ export function RoomCanvas({
       // captured `rooms` would go stale the moment a room is added.
       // Sims world (2026-08-29): a point outside every room is OUTDOORS, not
       // an error — gardens, terraces and second buildings all live there.
-      const container = resolveContainer({ x: centreXm, y: centreYm }, { create: true });
+      const container = resolveContainer({ x: centreXm, y: centreYm }, { create: false });
       if (!container.ok) {
         haptic('invalid');
         pushToast(
@@ -1456,6 +1459,16 @@ export function RoomCanvas({
         return false;
       }
       const target = container.room;
+      // Only a valid commit may materialise an outdoor container.
+      const commitRoomId = () => {
+        const committed = resolveContainer({ x: centreXm, y: centreYm }, { create: true });
+        return committed.ok ? committed.room.id : target.id;
+      };
+      const notifyPlaced = (id: string) => {
+        const toasts = useToastStore.getState();
+        for (const toast of toasts.toasts) if (toast.message.startsWith('Added "') && toast.message.endsWith('to cart')) toasts.dismiss(toast.id);
+        pushToast(`Added "${product.name}" to cart`, 'success', { ttlMs: 1800, action: { label: 'Undo', onClick: () => removeItem(id) } });
+      };
       // A roof-placed product (PV panel) dropped on a storey: take the
       // customer to the roof instead of refusing in silence.
       if (isRoofProduct(product) && !isRoofRoom(target)) {
@@ -1475,7 +1488,7 @@ export function RoomCanvas({
         : freeWallRects;
       /** Bounds test for the container: polygon indoors, plot/buildings outdoors. */
       const inBounds = (rect: PlacedRect): boolean =>
-        outdoor ? fitsOutdoors(rect) : isRectInsidePolygon(rect, targetPolygon);
+        outdoor ? fitsOutdoors(rect) : isRectInsidePolygon(rect, targetPolygon) && (!allowOverlap || placementKind(product) !== 'floor' || isRoofRoom(target) || insideInnerFaces(rect, targetPolygon));
 
       const kind = placementKind(product);
 
@@ -1509,13 +1522,10 @@ export function RoomCanvas({
         // Commit into the ROUTED room, not the active one (same as the floor path).
         const wallId = usePropertyStore
           .getState()
-          .addItem({ productId: product.id, x: r.x, y: r.y, rotation: r.rotationDeg }, target.id);
+          .addItem({ productId: product.id, x: r.x, y: r.y, rotation: r.rotationDeg }, commitRoomId());
         setJustPlacedId(wallId);
         selectItemAcrossRooms(wallId);
-        pushToast(`Added "${product.name}" to cart`, 'success', {
-          ttlMs: 5000,
-          action: { label: 'Undo', onClick: () => removeItem(wallId) },
-        });
+        notifyPlaced(wallId);
         return true;
       }
 
@@ -1557,14 +1567,11 @@ export function RoomCanvas({
             rotation: rot,
             parentInstanceId: res.parentInstanceId,
           },
-          target.id,
+          commitRoomId(),
         );
         setJustPlacedId(surfId);
         selectItemAcrossRooms(surfId);
-        pushToast(`Added "${product.name}" to cart`, 'success', {
-          ttlMs: 5000,
-          action: { label: 'Undo', onClick: () => removeItem(surfId) },
-        });
+        notifyPlaced(surfId);
         return true;
       }
 
@@ -1701,7 +1708,7 @@ export function RoomCanvas({
           y: Number(slot.y.toFixed(4)),
           rotation: resolved.rotationDeg,
         },
-        target.id,
+        commitRoomId(),
       );
       // Polish (2026-05-29) — flag this fresh instance for the settle tween.
       setJustPlacedId(instanceId);
@@ -1718,13 +1725,7 @@ export function RoomCanvas({
         y: slot.y,
         rotation: resolved.rotationDeg,
       });
-      pushToast(`Added "${product.name}" to cart`, 'success', {
-        ttlMs: 5000,
-        action: {
-          label: 'Undo',
-          onClick: () => removeItem(instanceId),
-        },
-      });
+      notifyPlaced(instanceId);
       return true;
     },
     // `rooms` is deliberately NOT a dep — it is read via getState() inside
@@ -1890,7 +1891,8 @@ export function RoomCanvas({
   useEffect(() => {
     if (!moveIntent) return;
     const ps = usePropertyStore.getState();
-    const result = resolveMove(moveIntent.instanceId, moveIntent.roomX, moveIntent.roomY, moveIntent.shiftKey, true);
+    const preview = resolveMove(moveIntent.instanceId, moveIntent.roomX, moveIntent.roomY, moveIntent.shiftKey, false);
+    const result = preview?.ok ? resolveMove(moveIntent.instanceId, moveIntent.roomX, moveIntent.roomY, moveIntent.shiftKey, true) : preview;
     if (!result) {
       consumeMove();
       return;
@@ -2001,6 +2003,7 @@ export function RoomCanvas({
   // path so both branches see the same snap + validity result.
   const computeGhost = useCallback(
     (clientX: number, clientY: number, productId: string, roomPoint?: { xM: number; yM: number }) => {
+      if (!roomPoint) lastGhostPointer.current = { clientX, clientY };
       const product = getProductById(productId);
       const container = containerRef.current;
       if (!product || !container) return null;
@@ -2042,7 +2045,7 @@ export function RoomCanvas({
         ? [...freeWallRects, ...freeWallObstacleRects(buildingWallsAsFree)]
         : freeWallRects;
       const inBounds = (rect: PlacedRect): boolean =>
-        outdoor ? fitsOutdoors(rect) : isRectInsidePolygon(rect, target.polygon);
+        outdoor ? fitsOutdoors(rect) : isRectInsidePolygon(rect, target.polygon) && (!allowOverlap || placementKind(product) !== 'floor' || isRoofRoom(target) || insideInnerFaces(rect, target.polygon));
 
       const kind = placementKind(product);
 
@@ -2174,6 +2177,14 @@ export function RoomCanvas({
   useEffect(() => usePlacementIntentStore.getState().registerPlacementPreviewResolver(
     (productId, xM, yM) => previewPlacementRef.current(0, 0, productId, { xM, yM }),
   ), []);
+
+  // Keyboard turns and snap toggles must update a stationary ghost too.
+  useEffect(() => {
+    const point = lastGhostPointer.current;
+    if (!pendingProductId || !point) { setDragGhost(null); return; }
+    const next = computeGhost(point.clientX, point.clientY, pendingProductId);
+    setDragGhost(next ? { xM: next.xM, yM: next.yM, rotation: next.rotation, valid: next.valid } : null);
+  }, [pendingProductId, computeGhost, objectPlacementMode]);
 
   const handleDrawCommit = useCallback(
     (newPolygon: Polygon, name: string) => {
@@ -4420,10 +4431,11 @@ export function RoomCanvas({
           if (pendingProductId && setPendingProductId) {
             const touch = (e.evt as TouchEvent).changedTouches?.[0];
             if (touch) {
-              placeProductAt(touch.clientX, touch.clientY, pendingProductId);
+              const placed = placeProductAt(touch.clientX, touch.clientY, pendingProductId, undefined, false);
+              if (!placed) return;
               setPendingProductId(null);
               setDragGhost(null);
-                      return;
+              return;
             }
           }
           selectItem(null);
@@ -4439,16 +4451,16 @@ export function RoomCanvas({
           if (!gardenPlacement) useGardenEditorStore.getState().close();
           useOpeningSelectionStore.getState().select(null);
           if (pendingProductId && setPendingProductId) {
-            const placed = placeProductAt(e.evt.clientX, e.evt.clientY, pendingProductId);
+            const placed = placeProductAt(e.evt.clientX, e.evt.clientY, pendingProductId, undefined, false);
             // D4 (desktop) — Shift+click STAMPS: keep the ghost on the
             // cursor to rapid-place duplicates. Sims core duplication
             // mechanic. Bare click commits and exits placing as before.
-            if (placed && (e.evt as MouseEvent).shiftKey) {
+            if (!placed || (e.evt as MouseEvent).shiftKey) {
               return;
             }
             setPendingProductId(null);
             setDragGhost(null);
-                }
+          }
         }}
         // V-RENDER-4 — touch-none stops iOS Safari native pan/zoom from
         // fighting item-drag + the custom pinch handler on this Stage.

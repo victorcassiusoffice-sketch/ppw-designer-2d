@@ -15,7 +15,7 @@
  */
 import { cmToM, rotatedFootprint, collidesWithAny, isRectInsidePolygon, type PlacedRect, type Polygon } from '../lib/geometry';
 import { placementKind, resolveWallItemPlacement, resolveSurfaceItemPlacement, findSurfaceUnder, type PlacementKind, type SurfaceRect } from './attachmentPlacement';
-import { resolveWallAwarePlacement, isCardinalRotation, WALL_HALF_M, type FreeWallLike } from './wallAwarePlacement';
+import { resolveWallAwarePlacement, insideInnerFaces, isCardinalRotation, WALL_HALF_M, type FreeWallLike } from './wallAwarePlacement';
 import { snapToTileLattice, tileLatticeFor, usesTileLattice } from './flooringLattice';
 import { obstaclesFor } from './layerBands';
 import { getProductById } from '../data/products';
@@ -102,7 +102,7 @@ export function resolveItemDrop(
         ? ctx.wallRects
         : ctx.wallRects.filter((r) => !r.instanceId.startsWith('wall:'))
       : ctx.wallRects;
-  const inBounds = (rect: PlacedRect): boolean => (targetOutdoor ? ctx.fitsOutdoors(rect) : isRectInsidePolygon(rect, targetPolygon));
+  const inBounds = (rect: PlacedRect): boolean => (targetOutdoor ? ctx.fitsOutdoors(rect) : isRectInsidePolygon(rect, targetPolygon) && (!ctx.allowOverlap || placementKind(product) !== 'floor' || dropRoom.kind === 'roof' || insideInnerFaces(rect, targetPolygon)));
 
   const itemKind = placementKind(product);
   const sameKindItems = targetItems.filter((it) => {

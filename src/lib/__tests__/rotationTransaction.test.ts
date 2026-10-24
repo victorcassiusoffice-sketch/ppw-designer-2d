@@ -5,10 +5,12 @@ import { usePropertyStore } from '../../store/propertyStore';
 import { useHistoryStore, installHistorySubscriptions, __test } from '../../store/historyStore';
 import { getAllProducts, getProductById } from '../../data/products';
 import { rotatedFootprint } from '../geometry';
+import { useObjectPlacementStore } from '../../store/objectPlacementStore';
 
 let cleanup: () => void;
 let id: string;
 beforeEach(() => {
+  useObjectPlacementStore.setState({ mode: 'grid' });
   __test.resetSubscriptions();
   usePropertyStore.getState().resetToDefault(); const store = usePropertyStore.getState();
   store.setRoomPolygon(store.property.activeRoomId, [{ x: 0, y: 0 }, { x: 12, y: 0 }, { x: 12, y: 12 }, { x: 0, y: 12 }]);
@@ -66,5 +68,25 @@ describe('pointer rotation transaction', () => {
     const before = { ...item() };
     expect(previewItemRotation(session, 45).ok).toBe(false);
     expect(commitItemRotation(session, 45)).toBe(false); expect(item()).toEqual(before);
+  });
+  it('free placement permits product overlap but never a room boundary or solid wall', () => {
+    usePropertyStore.getState().addItem({ productId: item().productId, x: 4, y: 4, rotation: 0 });
+    expect(previewItemRotation(beginItemRotation(id)!, 45).ok).toBe(false);
+    useObjectPlacementStore.setState({ mode: 'free' });
+    expect(previewItemRotation(beginItemRotation(id)!, 45).ok).toBe(true);
+    usePropertyStore.getState().updateItem(id, { x: 0.05, y: 0.05 });
+    expect(previewItemRotation(beginItemRotation(id)!, 45).ok).toBe(false);
+  });
+  it('outdoor rotation remains inside its plot and outside the building', () => {
+    const property = usePropertyStore.getState().property;
+    usePropertyStore.setState({ property: { ...property, site: { widthM: 14, depthM: 14, originM: { x: 0, y: 0 } }, rooms: [
+      { ...property.rooms[0], polygon: [{ x: 0, y: 0 }, { x: 5, y: 0 }, { x: 5, y: 5 }, { x: 0, y: 5 }], placedItems: [] },
+      { id: 'garden', name: 'Garden', kind: 'outdoor', polygon: [], placedItems: [{ ...item(), x: 13, y: 13 }] },
+    ] } });
+    expect(previewItemRotation(beginItemRotation(id)!, 45).ok).toBe(false);
+    usePropertyStore.getState().updateItem(id, { x: 2, y: 2 });
+    expect(previewItemRotation(beginItemRotation(id)!, 45).ok).toBe(false);
+    usePropertyStore.getState().updateItem(id, { x: 8, y: 8 });
+    expect(previewItemRotation(beginItemRotation(id)!, 45).ok).toBe(true);
   });
 });

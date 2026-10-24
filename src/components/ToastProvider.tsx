@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react';
 import { useToastStore } from '../store/toastStore';
 import type { ToastKind } from '../store/toastStore';
 import { useDrawProgressStore } from '../store/drawProgressStore';
+import { usePlacementIntentStore } from '../store/placementIntentStore';
 import { CHROME_DANGER } from '../designer/blueprintTheme';
 
 /** Popover shadow from the contract (12 px blur, ink at 18 %). */
@@ -85,6 +86,8 @@ function useBelowMd(): boolean {
 
 export function ToastProvider() {
   const toasts = useToastStore((s) => s.toasts);
+  const armed = usePlacementIntentStore(s => s.armedProductId);
+  const visibleToasts = toasts.filter(t => !armed || !t.message.startsWith('Added "'));
   const dismiss = useToastStore((s) => s.dismiss);
   // Sims world (2026-08-29): while the wall pen is live its HUD owns the
   // bottom-centre band. A toast there sat right on top of the HUD's buttons
@@ -100,7 +103,7 @@ export function ToastProvider() {
     };
   }, [toasts, dismiss]);
 
-  if (toasts.length === 0) return null;
+  if (visibleToasts.length === 0) return null;
 
   return (
     <div
@@ -126,7 +129,7 @@ export function ToastProvider() {
       role="status"
       aria-live="polite"
     >
-      {toasts.map((t) => (
+      {visibleToasts.map((t) => (
         <div key={t.id} className={KIND_CLASSES[t.kind]} data-testid="toast">
           {t.kind === 'error' && <ErrorIcon />}
           <span className="flex-1 cursor-pointer" onClick={() => dismiss(t.id)}>
