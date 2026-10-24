@@ -73,10 +73,10 @@ function placeAndSelect(): string {
 }
 
 describe('useKeyboardShortcuts — new keys', () => {
-  it('`>` rotates +90°, `<` rotates -90°', () => {
+  it('`>` rotates +45°, `<` rotates -45°', () => {
     const id = placeAndSelect();
     key('>');
-    expect(useDesignStore.getState().placedItems.find((i) => i.instanceId === id)?.rotation).toBe(90);
+    expect(useDesignStore.getState().placedItems.find((i) => i.instanceId === id)?.rotation).toBe(45);
     key('<');
     expect(useDesignStore.getState().placedItems.find((i) => i.instanceId === id)?.rotation).toBe(0);
   });
@@ -104,11 +104,11 @@ describe('useKeyboardShortcuts — new keys', () => {
   it('Ctrl+Y redoes a previously undone rotation', () => {
     const id = placeAndSelect();
     key('>'); // rotate to 90
-    expect(useDesignStore.getState().placedItems.find((i) => i.instanceId === id)?.rotation).toBe(90);
+    expect(useDesignStore.getState().placedItems.find((i) => i.instanceId === id)?.rotation).toBe(45);
     key('z', { ctrlKey: true }); // undo → 0
     expect(useDesignStore.getState().placedItems.find((i) => i.instanceId === id)?.rotation).toBe(0);
     key('y', { ctrlKey: true }); // redo → 90
-    expect(useDesignStore.getState().placedItems.find((i) => i.instanceId === id)?.rotation).toBe(90);
+    expect(useDesignStore.getState().placedItems.find((i) => i.instanceId === id)?.rotation).toBe(45);
   });
 });
 
@@ -152,6 +152,6 @@ describe('rotate-key collision between the armed canvas handler and the global h
     key('r');
     expect(
       useDesignStore.getState().placedItems.find((i) => i.instanceId === id)?.rotation,
-    ).toBe(90);
+    ).toBe(45);
   });
 });

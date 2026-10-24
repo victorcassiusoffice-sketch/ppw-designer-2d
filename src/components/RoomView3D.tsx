@@ -49,9 +49,12 @@ import { useMeasuredPathToolStore, measuredToolPreview, type MeasuredPathTarget 
 import { MeasuredPathOptions } from './MeasuredPathOptions';
 import { useToastStore } from '../store/toastStore';
 import { useCatalogStore } from '../store/catalogStore';
-import { rotateSelected, deleteSelected, duplicateSelected } from '../lib/placementActions';
+import { rotateSelected, deleteSelected, duplicateSelected, beginItemRotation, previewItemRotation, commitItemRotation, cancelItemRotation, type ItemRotationSession, type ItemRotationPreview } from '../lib/placementActions';
+import { gestureRotation, pointerAngle } from '../designer/rotationGesture';
+import { ItemRotationRing } from './three/ItemRotationRing';
 import { placementKind } from '../designer/attachmentPlacement';
-import { StudioIcon } from './StudioIcon';
+import { ObjectPlacementControls } from './ObjectPlacementControls';
+import { placedItemElevationCm } from '../designer/placedItemElevation';
 import { haptic } from '../lib/haptics';
 import { brushPaintId, type BrushModifiers } from '../designer/wallPaintBrush';
 import { isPaintableFloorPoint, previewFloorDrag } from '../designer/floorPaintBrush';
@@ -308,9 +311,10 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
       const body = productModelFor(p);
       const lamp = emitsLight(p);
       const hM = p.dimensions_cm.height / 100;
+      const placementElevationCm = placedItemElevationCm(it, p, room.placedItems, getProductById, H);
       // Where a lamp's light comes from: a pendant hangs from the ceiling, a
       // sconce sits at its mount height, a floor or table lamp near its top.
-      const lightMountM = !lamp ? undefined : p.placement === 'ceiling' ? Math.max(0.5, H - 0.35) : p.placement === 'wall' ? (p.mount_height_cm ?? 170) / 100 + hM * 0.5 : Math.max(0.3, hM * 0.85);
+      const lightMountM = !lamp ? undefined : p.placement === 'ceiling' ? Math.max(0.5, H - 0.35) : p.placement === 'wall' ? placementElevationCm / 100 + hM * 0.5 : placementElevationCm / 100 + Math.max(0.3, hM * 0.85);
       // No body → the box wears the product's own art (a data: SVG thumbnail
       // is the catalog's "no image" — the box stays a shaded box then).
       const artTop = body ? undefined : productTopDownUrl(p);
@@ -321,6 +325,7 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
         artTopUrl: artTop && !artTop.startsWith('data:') ? artTop : undefined,
         artSideUrl: artSide && !artSide.startsWith('data:') ? artSide : undefined,
         instanceId: it.instanceId,
+        parentInstanceId: it.parentInstanceId,
         x: it.x,
         y: it.y,
         rotation: it.rotation,
@@ -328,7 +333,8 @@ function sceneFromProperty(property: Property, hover: WallHit | null, cam: Orbit
         widthCm: p.dimensions_cm.width,
         heightCm: p.dimensions_cm.height,
         placement: isRoofProduct(p) ? 'roof' : p.placement,
-        mountHeightCm: p.mount_height_cm,
+        mountHeightCm: p.placement === 'wall' ? placementElevationCm : p.mount_height_cm,
+        baseHeightCm: p.placement === 'surface' ? placementElevationCm : undefined,
         fill: itemFillForCategory(p.category),
         productId: p.id,
         frontEdge: p.front_edge,
@@ -456,6 +462,60 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   const containerRef = useRef<HTMLDivElement | null>(null);
   const painterRef = useRef<HTMLCanvasElement | null>(null);
   const stageRef = useRef<ThreeStageHandle | null>(null);
+  const rotationSession = useRef<ItemRotationSession | null>(null);
+  const twistRotation = useRef<{ start: number; rotation: number } | null>(null);
+  const [rotationPreview, setRotationPreview] = useState<ItemRotationPreview | null>(null);
+  function cancelObjectTurn() {
+    const session = rotationSession.current;
+    if (session) { cancelItemRotation(session); stageRef.current?.resetItemPreview(session.original.instanceId); }
+    rotationSession.current = null; twistRotation.current = null; setRotationPreview(null);
+  }
+  function startObjectTurn(instanceId = selectedInstanceId): boolean {
+    cancelObjectTurn();
+    const session = instanceId ? beginItemRotation(instanceId) : null;
+    if (!session) return false;
+    rotationSession.current = session;
+    setRotationPreview({ ok: true, x: session.original.x, y: session.original.y, rotation: session.original.rotation });
+    return true;
+  }
+  function previewObjectTurn(angle: number) {
+    const session = rotationSession.current;
+    if (!session) return;
+    const preview = previewItemRotation(session, angle);
+    setRotationPreview(preview);
+    stageRef.current?.moveItemPreview(session.original.instanceId, preview.x - session.original.x, preview.y - session.original.y, preview.rotation);
+  }
+  function finishObjectTurn(angle: number) {
+    const session = rotationSession.current;
+    if (!session) return;
+    const preview = previewItemRotation(session, angle);
+    stageRef.current?.resetItemPreview(session.original.instanceId);
+    const ok = commitItemRotation(session, angle);
+    rotationSession.current = null; twistRotation.current = null; setRotationPreview(null);
+    if (!ok) showFlash(preview.message ?? 'Turn cancelled.');
+  }
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (!rotationSession.current) return;
+      if (event.key === 'Escape' || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z')) {
+        event.preventDefault(); event.stopImmediatePropagation(); cancelObjectTurn();
+      } else if (['r', 'R', ',', '.', '<', '>'].includes(event.key)) {
+        // A gesture owns its transaction until release; a global shortcut
+        // must not change the saved item underneath the temporary preview.
+        event.preventDefault(); event.stopImmediatePropagation();
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  });
+  useEffect(() => {
+    setRotationPreview(null);
+    return () => {
+      const session = rotationSession.current;
+      if (session) { cancelItemRotation(session); stageRef.current?.resetItemPreview(session.original.instanceId); }
+      rotationSession.current = null; twistRotation.current = null;
+    };
+  }, [selectedInstanceId, property.id, property.activeLevelId, tool, armedProductId]);
   const [stageReady, setStageReady] = useState(false);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const cameraViewportHeightRef = useRef(0);
@@ -1085,6 +1145,16 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       }
       drag.current = { x: e.clientX, y: e.clientY, moved: false, pinchDist: 0 };
     } else if (pointers.current.size === 2) {
+      // Two fingers on a selected item turn that item. Two fingers beginning
+      // on the empty floor retain the existing camera pinch/pan behaviour.
+      const picked = itemDrag.current;
+      if (picked && picked.instanceId === selectedInstanceId && startObjectTurn(picked.instanceId)) {
+        stageRef.current?.resetItemPreview(picked.instanceId);
+        itemDrag.current = null; drag.current = null; pinchGesture.current = null;
+        const [a, b] = [...pointers.current.values()];
+        twistRotation.current = { start: pointerAngle(b, a), rotation: rotationSession.current!.original.rotation };
+        return;
+      }
       openingDrag.current = null;
       setOpeningPoint(null);
       gardenDrag.current = null;
@@ -1107,6 +1177,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       seedPinchGesture();
     } else {
       // Pause for a third finger; removing it establishes a fresh baseline.
+      if (twistRotation.current) cancelObjectTurn();
       pinchGesture.current = null;
     }
   };
@@ -1135,6 +1206,12 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
       return;
     }
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (twistRotation.current && pointers.current.size === 2) {
+      const [a, b] = [...pointers.current.values()];
+      const turn = twistRotation.current;
+      previewObjectTurn(gestureRotation(turn.rotation, turn.start, pointerAngle(b, a), e.shiftKey || e.altKey));
+      return;
+    }
     if (openingDrag.current === e.pointerId && pointers.current.size === 1) {
       const p = localPoint(e);
       setOpeningPoint(openingPointAt(p.x, p.y));
@@ -1250,6 +1327,13 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
 
   const endPointer = (e: React.PointerEvent<HTMLDivElement>, cancelled: boolean) => {
     const had = pointers.current.delete(e.pointerId);
+    if (twistRotation.current && had) {
+      if (cancelled) cancelObjectTurn();
+      else finishObjectTurn(rotationPreview?.rotation ?? rotationSession.current?.original.rotation ?? 0);
+      // The remaining finger must lift before a camera gesture can begin.
+      pointers.current.clear(); drag.current = null; pinchGesture.current = null;
+      return;
+    }
     if (measuredPress.current?.id === e.pointerId) {
       const press = measuredPress.current; measuredPress.current = null;
       if (!cancelled && had && Math.hypot(e.clientX - press.x, e.clientY - press.y) < 10) {
@@ -1501,6 +1585,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
   };
 
   function clearLocalTools() {
+    cancelObjectTurn();
     useMeasuredPathToolStore.getState().cancel();
     useOpeningSelectionStore.getState().select(null);
     finishWallRun();
@@ -1866,13 +1951,10 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
         }}
         onContextMenu={(e) => e.preventDefault()}
       />
-      {rotationPoint && rotationPoint.x >= 0 && rotationPoint.x <= size.width && rotationPoint.y >= 0 && rotationPoint.y <= size.height && <div
-        className="house-object-turn" role="group" aria-label="Rotate selected object" data-testid="view3d-object-turn"
-        style={{ left: Math.max(75, Math.min(size.width - 75, rotationPoint.x)), top: Math.max(30, Math.min(size.height - 32, rotationPoint.y - 35)) }}>
-        <button type="button" aria-label="Turn object counter-clockwise" title="Turn object 90° counter-clockwise" data-testid="view3d-rotate-ccw" onClick={() => rotateSelected(-90)}><StudioIcon name="rotateLeft" size={18}/></button>
-        <span>{Math.round(((selectedItem!.rotation % 360) + 360) % 360)}°</span>
-        <button type="button" aria-label="Turn object clockwise" title="Turn object 90° clockwise" data-testid="view3d-rotate" onClick={() => rotateSelected(90)}><StudioIcon name="rotateRight" size={18}/></button>
-      </div>}
+      {rotationPoint && rotationPoint.x >= 0 && rotationPoint.x <= size.width && rotationPoint.y >= 0 && rotationPoint.y <= size.height && <ItemRotationRing
+        x={Math.max(67, Math.min(size.width - 67, rotationPoint.x))} y={Math.max(82, Math.min(size.height - 85, rotationPoint.y - 30))}
+        rotation={rotationPreview?.rotation ?? selectedItem!.rotation} valid={rotationPreview?.ok ?? true}
+        onStart={() => startObjectTurn()} onPreview={previewObjectTurn} onCommit={finishObjectTurn} onCancel={cancelObjectTurn} onStep={delta => rotateSelected(delta)} />}
       {openingPreview && <OpeningPlacementPreview preview={openingPreview} baseElevation={baseElevation} projectPoint={(x, y, z) => stageRef.current?.projectPoint(x, y, z) ?? null} />}
       {variant === 'overlay' && selectedOpeningId && <OpeningSelectionEditor />}
       {selectedGardenSurface && !gardenPlacement && !gardenPreview && <svg className="house-room-preview house-garden-selection" data-testid="garden-corner-handles" aria-hidden="true">
@@ -1951,6 +2033,7 @@ export function RoomView3D({ variant, onPaintWall, onPaintFloor, brushHex, hover
           {gardenOpen && <button type="button" onClick={() => beginMeasured('garden')}>Draw outdoor outline</button>}
         </div>}
         {measuredTool.target && <MeasuredPathOptions />}
+        <ObjectPlacementControls />
         {box}
         {viewControls}
         <p className="house-scene-caption" data-testid="wallpaint-3d-caption" data-active-feedback={!!(moveFeedback || flash || liveFloorCaption || hoverText || caption)} aria-live="polite">{statusCaption}</p>

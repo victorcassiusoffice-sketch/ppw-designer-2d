@@ -247,3 +247,37 @@ describe('resolveItemDrop — ceiling items', () => {
     expect(r.y).toBeCloseTo(1.0, 6);
   });
 });
+
+
+describe('Sims object placement modes', () => {
+  it('25 cm half-step and 50 cm standard step agree with explicit grid', () => {
+    for (const step of [.5, .25]) {
+      const item = lamp(1, 1);
+      const result = resolveItemDrop(ctxFor([item], { snapStep: step }), item, LAMP, 2.37, 2.12, true);
+      expect(result).toMatchObject({ ok: true, x: Math.round(2.37 / step) * step, y: Math.round(2.12 / step) * step });
+    }
+  });
+  it('free mode allows furniture overlap but still rejects solid walls and off plot', () => {
+    const item = lamp(1, 1), other = lamp(2, 2, 'other');
+    const ctx = ctxFor([item, other], { snapStep: .001 });
+    expect(resolveItemDrop(ctx, item, LAMP, 2.123, 2.123, true).ok).toBe(false);
+    ctx.allowOverlap = true;
+    expect(resolveItemDrop(ctx, item, LAMP, 2.123, 2.123, true)).toMatchObject({ ok: true, x: 2.123, y: 2.123 });
+    ctx.wallRects = [{ x: 2, y: 2, w: 1, h: .3, instanceId: 'wall:solid' }];
+    expect(resolveItemDrop(ctx, item, LAMP, 2.123, 2.123, true).ok).toBe(false);
+    expect(resolveItemDrop(ctx, item, LAMP, 20, 20, true).ok).toBe(false);
+  });
+  it('twenty standard-grid objects have no overlapping footprints', () => {
+    const items: PlacedItem[] = [];
+    for (let i = 0; i < 20; i++) {
+      const item = lamp(.5, .5, `twenty-${i}`);
+      const r = resolveItemDrop(ctxFor(items), item, LAMP, .5 + (i % 5) * .75, .5 + Math.floor(i / 5) * .75, true);
+      expect(r.ok).toBe(true);
+      if (r.ok) items.push({ ...item, x: r.x, y: r.y, rotation: r.rotation });
+    }
+    expect(items).toHaveLength(20);
+    for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
+      expect(Math.abs(items[i].x - items[j].x) >= .4 || Math.abs(items[i].y - items[j].y) >= .4).toBe(true);
+    }
+  });
+});

@@ -110,6 +110,16 @@ export interface Price {
   currency: Currency;
 }
 
+/** Optional supplier reports. Absence means unknown, never zero stock. */
+export type ProductAvailability = 'in-stock' | 'on-order' | 'made-to-order' | 'unknown';
+export interface CatalogVariant {
+  /** Another real catalogue SKU; choosing it selects that product, not a tint. */
+  sku: string;
+  label: string;
+  colour_hex?: string;
+  finish?: string;
+}
+
 /** A dated public listing, not a live quotation or a reserved stock position. */
 export interface ProductPriceSnapshot extends Price {
   unit: 'piece' | 'metre' | 'pack';
@@ -126,6 +136,12 @@ export interface Product {
   name: string;
   category: ProductCategory;
   supplier: string;
+  availability?: ProductAvailability;
+  lead_time_days?: number;
+  stock_qty?: number;
+  last_checked?: string;
+  /** Optional supplier-declared variants. Do not infer saleable variants from an image. */
+  variants?: CatalogVariant[];
   /** All footprint measurements in centimetres. */
   dimensions_cm: Dimensions;
   weight_kg: number;

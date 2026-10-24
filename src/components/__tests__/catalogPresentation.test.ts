@@ -1,10 +1,22 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { getAllProducts } from '../../data/products';
 import { filterCatalog } from '../catalogPresentation';
 import { macroOf } from '../mobile/catalogMacros';
+import { isPitchEmbed } from '../../demo/pitchEmbed';
+vi.mock('../../demo/pitchEmbed', () => ({ isPitchEmbed: vi.fn(() => false) }));
 
 describe('catalog browsing', () => {
   const products = getAllProducts();
+  it('sorts actual prices within their own currency and never ranks prices in the public demo', () => {
+    const cheap = { ...products[0], id: 'cheap', price: { value: 10, currency: 'MUR' as const } };
+    const dear = { ...cheap, id: 'dear', price: { value: 90, currency: 'MUR' as const } };
+    const quote = { ...cheap, id: 'quote', price_on_request: true };
+    expect(filterCatalog([dear, quote, cheap], 'all', '', 'price-asc').map(p => p.id)).toEqual(['cheap', 'dear', 'quote']);
+    expect(filterCatalog([cheap, dear], 'all', '', 'price-desc').map(p => p.id)).toEqual(['dear', 'cheap']);
+    vi.mocked(isPitchEmbed).mockReturnValue(true);
+    expect(filterCatalog([dear, cheap], 'all', '', 'price-asc').map(p => p.id)).toEqual(['dear', 'cheap']);
+    vi.mocked(isPitchEmbed).mockReturnValue(false);
+  });
 
   it('keeps the existing catalog and its order when search and sorting are untouched', () => {
     expect(filterCatalog(products, 'all', '   ').map((product) => product.id)).toEqual(products.map((product) => product.id));

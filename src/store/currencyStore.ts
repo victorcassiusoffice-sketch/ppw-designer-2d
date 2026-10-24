@@ -8,6 +8,7 @@
  */
 
 import { create } from 'zustand';
+import { isPitchEmbed } from '../demo/pitchEmbed';
 import type { Currency } from '../data/products.schema';
 import {
   resolveInitialCurrency,
@@ -58,6 +59,9 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
  * will hit the network.
  */
 export function bootstrapFx(): void {
+  // Public pitches show no prices. They do not need a currency network request
+  // (or its auth failure) just to draw a room. Shop/normal designer unchanged.
+  if (isPitchEmbed()) return;
   const { refreshFx } = useCurrencyStore.getState();
   // Fire-and-forget; promise rejections are swallowed inside refreshFx.
   void refreshFx();

@@ -1,0 +1,723 @@
+{
+  "phase": "before",
+  "base": "http://127.0.0.1:5175",
+  "capturedAt": "2026-10-22T19:14:59.553Z",
+  "sourceHead": "fcefc73bd75abe995b379e825ff715d439da2ca8",
+  "rendererAttempt": "Chromium defaults first; explicit SwiftShader only if native attempt has no WebGL2",
+  "vendorThree": {
+    "file": "vendor-three-D24QvjIs.js",
+    "bytes": 744955,
+    "gzipBytes": 191295
+  },
+  "methodology": "Cold browser contexts, network cache disabled. First paint is first existing ThreeStage data-shading mutation after render. FPS counts those mutations while continuous real pointer orbit is active, including event dispatch overhead. This is observed app rendering throughput, not idle RAF or certified physical-device performance.",
+  "fixtures": [
+    {
+      "name": "furnished-room",
+      "property": {
+        "id": "qa-sims-furnished",
+        "name": "QA furnished",
+        "activeRoomId": "living",
+        "wallHeightM": 2.7,
+        "activeLevelId": "ground",
+        "rooms": [
+          {
+            "id": "living",
+            "name": "living",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 6,
+                "y": 0
+              },
+              {
+                "x": 6,
+                "y": 4
+              },
+              {
+                "x": 0,
+                "y": 4
+              }
+            ],
+            "placedItems": [
+              {
+                "instanceId": "sofa",
+                "productId": "courts-comfy-3-seater-dove",
+                "x": 0.45,
+                "y": 0.25,
+                "rotation": 0
+              },
+              {
+                "instanceId": "coffee",
+                "productId": "courts-perera-coffee-table",
+                "x": 1,
+                "y": 1.7,
+                "rotation": 0
+              },
+              {
+                "instanceId": "sideboard",
+                "productId": "courts-lavis-sideboard",
+                "x": 4.35,
+                "y": 0.2,
+                "rotation": 0
+              }
+            ],
+            "wallPaint": [
+              {
+                "edgeIndex": 0,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 1,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 2,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 3,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              }
+            ],
+            "openings": [
+              {
+                "id": "living-window",
+                "kind": "window",
+                "edgeIndex": 0,
+                "offsetM": 4.4,
+                "widthM": 1.2,
+                "heightM": 1.5,
+                "sillM": 0.8,
+                "flipHand": false,
+                "flipFacing": false
+              },
+              {
+                "id": "living-door",
+                "kind": "door",
+                "edgeIndex": 3,
+                "offsetM": 0.5,
+                "widthM": 0.9,
+                "flipHand": false,
+                "flipFacing": false
+              }
+            ]
+          }
+        ]
+      },
+      "dimensions": "6 × 4 m; Comfy 2.30 × 0.94 × 0.94 m; Perera 1.20 × 0.60 × 0.43 m"
+    },
+    {
+      "name": "kitchen-dining",
+      "property": {
+        "id": "qa-sims-kitchen",
+        "name": "QA kitchen",
+        "activeRoomId": "dining",
+        "wallHeightM": 2.7,
+        "activeLevelId": "ground",
+        "rooms": [
+          {
+            "id": "dining",
+            "name": "dining",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 5,
+                "y": 0
+              },
+              {
+                "x": 5,
+                "y": 4
+              },
+              {
+                "x": 0,
+                "y": 4
+              }
+            ],
+            "placedItems": [
+              {
+                "instanceId": "dining",
+                "productId": "courts-gessica-dining-6",
+                "x": 1.1,
+                "y": 1.3,
+                "rotation": 0
+              },
+              {
+                "instanceId": "fridge",
+                "productId": "courts-samsung-rb33-fridge",
+                "x": 4.2,
+                "y": 0.15,
+                "rotation": 0
+              },
+              {
+                "instanceId": "sideboard",
+                "productId": "courts-lavis-sideboard",
+                "x": 0.2,
+                "y": 0.15,
+                "rotation": 0
+              }
+            ],
+            "wallPaint": [
+              {
+                "edgeIndex": 0,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 1,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 2,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 3,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              }
+            ],
+            "openings": [
+              {
+                "id": "dining-window",
+                "kind": "window",
+                "edgeIndex": 0,
+                "offsetM": 3.4,
+                "widthM": 1.2,
+                "heightM": 1.5,
+                "sillM": 0.8,
+                "flipHand": false,
+                "flipFacing": false
+              },
+              {
+                "id": "dining-door",
+                "kind": "door",
+                "edgeIndex": 3,
+                "offsetM": 0.5,
+                "widthM": 0.9,
+                "flipHand": false,
+                "flipFacing": false
+              }
+            ]
+          }
+        ]
+      },
+      "dimensions": "5 × 4 m; Gessica chairs-included planning footprint 2.40 × 1.80 × 0.74 m; fridge 0.60 × 0.67 × 1.78 m"
+    },
+    {
+      "name": "bathroom",
+      "property": {
+        "id": "qa-sims-bathroom",
+        "name": "QA bathroom",
+        "activeRoomId": "bath",
+        "wallHeightM": 2.7,
+        "activeLevelId": "ground",
+        "rooms": [
+          {
+            "id": "bath",
+            "name": "bath",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 3,
+                "y": 0
+              },
+              {
+                "x": 3,
+                "y": 3
+              },
+              {
+                "x": 0,
+                "y": 3
+              }
+            ],
+            "placedItems": [
+              {
+                "instanceId": "toilet",
+                "productId": "espace-emilia-toilet-bowl",
+                "x": 0.3,
+                "y": 0.3,
+                "rotation": 0
+              },
+              {
+                "instanceId": "basin",
+                "productId": "espace-durastyle-washbasin-800",
+                "x": 1.7,
+                "y": 0.08,
+                "rotation": 0
+              },
+              {
+                "instanceId": "bidet",
+                "productId": "espace-duravit-dcode-bidet-224110",
+                "x": 0.3,
+                "y": 1.4,
+                "rotation": 0
+              }
+            ],
+            "wallPaint": [
+              {
+                "edgeIndex": 0,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 1,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 2,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 3,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              }
+            ],
+            "openings": [
+              {
+                "id": "bath-window",
+                "kind": "window",
+                "edgeIndex": 0,
+                "offsetM": 1.4,
+                "widthM": 1.2,
+                "heightM": 1.5,
+                "sillM": 0.8,
+                "flipHand": false,
+                "flipFacing": false
+              },
+              {
+                "id": "bath-door",
+                "kind": "door",
+                "edgeIndex": 3,
+                "offsetM": 0.5,
+                "widthM": 0.9,
+                "flipHand": false,
+                "flipFacing": false
+              }
+            ]
+          }
+        ]
+      },
+      "dimensions": "3 × 3 m; bowl 0.650 × 0.395 × 0.400 m; basin 0.800 × 0.480 × 0.170 m; bidet 0.560 × 0.360 × 0.385 m"
+    },
+    {
+      "name": "outside",
+      "property": {
+        "id": "qa-sims-outside",
+        "name": "QA outside",
+        "activeRoomId": "garden-room",
+        "wallHeightM": 2.7,
+        "activeLevelId": "ground",
+        "rooms": [
+          {
+            "id": "garden-room",
+            "name": "garden-room",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 4,
+                "y": 0
+              },
+              {
+                "x": 4,
+                "y": 3
+              },
+              {
+                "x": 0,
+                "y": 3
+              }
+            ],
+            "placedItems": [
+              {
+                "instanceId": "garden-sofa",
+                "productId": "espace-seville-garden-sofa",
+                "x": 0.5,
+                "y": 0.3,
+                "rotation": 0
+              },
+              {
+                "instanceId": "tank",
+                "productId": "resiglas-water-tank-1000-c",
+                "x": 5,
+                "y": 0.4,
+                "rotation": 0
+              }
+            ],
+            "wallPaint": [
+              {
+                "edgeIndex": 0,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 1,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 2,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 3,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              }
+            ],
+            "openings": [
+              {
+                "id": "garden-room-window",
+                "kind": "window",
+                "edgeIndex": 0,
+                "offsetM": 2.4,
+                "widthM": 1.2,
+                "heightM": 1.5,
+                "sillM": 0.8,
+                "flipHand": false,
+                "flipFacing": false
+              },
+              {
+                "id": "garden-room-door",
+                "kind": "door",
+                "edgeIndex": 3,
+                "offsetM": 0.5,
+                "widthM": 0.9,
+                "flipHand": false,
+                "flipFacing": false
+              }
+            ]
+          }
+        ],
+        "site": {
+          "widthM": 9,
+          "depthM": 7,
+          "originM": {
+            "x": -1.5,
+            "y": -1.5
+          }
+        },
+        "garden": {
+          "surfaces": [
+            {
+              "id": "lawn",
+              "kind": "lawn",
+              "x": -1.5,
+              "y": -1.5,
+              "widthM": 9,
+              "depthM": 7,
+              "elevationM": 0
+            },
+            {
+              "id": "path",
+              "kind": "concrete",
+              "x": -0.5,
+              "y": 3,
+              "widthM": 6.5,
+              "depthM": 1,
+              "elevationM": 0.04
+            }
+          ],
+          "fences": []
+        }
+      },
+      "dimensions": "4 × 3 m room on 9 × 7 m site; Seville sofa 1.140 × 0.670 × 0.870 m; Resiglas tank 1.320 × 1.320 × 1.055 m"
+    }
+  ],
+  "cases": [
+    {
+      "scene": "furnished-room",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "cpuThrottle": 1,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 ()"
+      ],
+      "pageErrors": [],
+      "failedResponses": [
+        {
+          "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+          "status": 401
+        }
+      ],
+      "blockedWrites": [],
+      "screenshots": [
+        "docs/qa-sims-parity-2026-10-22/before-graphics/furnished-room-desktop.png"
+      ],
+      "activationMs": 5774.299999982119,
+      "firstFrameFromNavigationMs": 8766.90000000596,
+      "firstPaintMs": 2992.600000023842,
+      "settledCaptureMs": 14147.299999982119,
+      "renderer": {
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "vendor": "Google Inc. (Google)",
+        "shading": "natural-depth",
+        "pixelWidth": 1167,
+        "pixelHeight": 693
+      },
+      "softwareRenderer": true,
+      "camera": {
+        "target": {
+          "x": 3,
+          "y": 2,
+          "z": 0.7087499999999999
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 12.09386075754216,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 3,
+          "y": 2,
+          "z": 0.7087499999999999
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 12.09386075754216,
+        "fovRad": 0.7127336648555606
+      },
+      "horizontalOverflowPx": 0,
+      "motion": {
+        "durationMs": 120036.5,
+        "renderedFrames": 180,
+        "fps": 1.4995438887338435,
+        "medianFrameMs": 666.9000000059605,
+        "p95FrameMs": 750.9000000059605,
+        "inputSteps": 180
+      },
+      "cameraAfterOrbit": {
+        "target": {
+          "x": 3,
+          "y": 2,
+          "z": 0.7087499999999999
+        },
+        "azimuthRad": -0.619798329388186,
+        "elevationRad": 0.5826453895652027,
+        "distanceM": 12.09386075754216,
+        "fovRad": 0.6632251157578452
+      },
+      "geometryUnchanged": true,
+      "hardwareTargetAssessment": "Not established: software renderer is not physical laptop/phone hardware",
+      "firstPaintTargetMet": true
+    },
+    {
+      "scene": "furnished-room",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "cpuThrottle": 4,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 ()"
+      ],
+      "pageErrors": [],
+      "failedResponses": [
+        {
+          "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+          "status": 401
+        }
+      ],
+      "blockedWrites": [],
+      "screenshots": [
+        "docs/qa-sims-parity-2026-10-22/before-graphics/furnished-room-phone.png"
+      ],
+      "activationMs": 8114.4000000059605,
+      "firstFrameFromNavigationMs": 13511.199999988079,
+      "firstPaintMs": 5396.799999982119,
+      "settledCaptureMs": 17066.29999998212,
+      "renderer": {
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "vendor": "Google Inc. (Google)",
+        "shading": "natural-depth",
+        "pixelWidth": 390,
+        "pixelHeight": 603
+      },
+      "softwareRenderer": true,
+      "camera": {
+        "target": {
+          "x": 3,
+          "y": 2,
+          "z": 1.89
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 18.744826616149428,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 3,
+          "y": 2,
+          "z": 1.89
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 18.744826616149428,
+        "fovRad": 0.7255576420055392
+      },
+      "horizontalOverflowPx": 0,
+      "motion": {
+        "durationMs": 37539.59999999404,
+        "renderedFrames": 179,
+        "fps": 4.768298010634861,
+        "medianFrameMs": 210.2999999821186,
+        "p95FrameMs": 244.2999999821186,
+        "inputSteps": 180
+      },
+      "cameraAfterOrbit": {
+        "target": {
+          "x": 3,
+          "y": 2,
+          "z": 1.89
+        },
+        "azimuthRad": -0.6165587053647483,
+        "elevationRad": 0.5826453895652027,
+        "distanceM": 18.744826616149428,
+        "fovRad": 0.6632251157578452
+      },
+      "geometryUnchanged": true,
+      "hardwareTargetAssessment": "Not established: software renderer is not physical laptop/phone hardware",
+      "firstPaintTargetMet": false
+    },
+    {
+      "scene": "kitchen-dining",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "cpuThrottle": 1,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 ()"
+      ],
+      "pageErrors": [],
+      "failedResponses": [
+        {
+          "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+          "status": 401
+        }
+      ],
+      "blockedWrites": [],
+      "screenshots": [
+        "docs/qa-sims-parity-2026-10-22/before-graphics/kitchen-dining-desktop.png"
+      ],
+      "activationMs": 5036.200000017881,
+      "firstFrameFromNavigationMs": 8080.700000017881,
+      "firstPaintMs": 3044.5,
+      "settledCaptureMs": 13702.200000017881,
+      "renderer": {
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "vendor": "Google Inc. (Google)",
+        "shading": "natural-depth",
+        "pixelWidth": 1167,
+        "pixelHeight": 693
+      },
+      "softwareRenderer": true,
+      "camera": {
+        "target": {
+          "x": 2.5,
+          "y": 2,
+          "z": 0.7875
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 11.414647384737181,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 2.5,
+          "y": 2,
+          "z": 0.7875
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 11.414647384737181,
+        "fovRad": 0.7127336648555606
+      },
+      "horizontalOverflowPx": 0,
+      "motion": {
+        "durationMs": 126189.89999997616,
+        "renderedFrames": 180,
+        "fps": 1.4264216074347789,
+        "medianFrameMs": 699.2000000178814,
+        "p95FrameMs": 848,
+        "inputSteps": 180
+      },
+      "cameraAfterOrbit": {
+        "target": {
+          "x": 2.5,
+          "y": 2,
+          "z": 0.7875
+        },
+        "azimuthRad": -0.619798329388186,
+        "elevationRad": 0.5826453895652027,
+        "distanceM": 11.414647384737181,
+        "fovRad": 0.6632251157578452
+      },
+      "geometryUnchanged": true,
+      "hardwareTargetAssessment": "Not established: software renderer is not physical laptop/phone hardware",
+      "firstPaintTargetMet": false
+    },
+    {
+      "scene": "kitchen-dining",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "cpuThrottle": 4,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedResponses": [],
+      "blockedWrites": [],
+      "screenshots": []
+    }
+  ],
+  "nativeProbe": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)"
+  }
+}

@@ -13,6 +13,10 @@ export const ImportProductSchema = z.object({
   description: z.string().trim().max(5000).optional(),
   imageUrl: z.string().url().max(500).refine(value => new URL(value).protocol === 'https:', 'Use an HTTPS image URL').optional(),
   inStockQty: z.number().int().min(0).max(1_000_000).optional(),
+  availability: z.enum(['in-stock', 'on-order', 'made-to-order', 'unknown']).optional(),
+  lead_time_days: z.number().int().min(0).max(3650).optional(),
+  stock_qty: z.number().int().min(0).max(1_000_000).optional(),
+  last_checked: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(value => Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value, 'Use a real YYYY-MM-DD date').optional(),
   powerW: z.number().int().min(0).max(100_000).optional(),
   pvWp: z.number().int().min(0).max(5000).optional(),
   batteryWh: z.number().int().min(0).max(1_000_000).optional(),
@@ -20,7 +24,19 @@ export const ImportProductSchema = z.object({
 }).strict();
 export type ImportProduct = z.infer<typeof ImportProductSchema>;
 export const CATALOG_TEMPLATE: ImportProduct[] = [{ sku: 'YOUR-CHAIR-001', name: 'Your garden chair', category: 'outdoor', priceMinor: 450000, currency: 'MUR', widthMm: 600, depthMm: 650, heightMm: 850, inStockQty: 0, description: 'Replace this example with your verified product data.' }];
-const NUMBER_FIELDS = new Set(['priceMinor', 'widthMm', 'depthMm', 'heightMm', 'inStockQty', 'powerW', 'pvWp', 'batteryWh', 'inverterW']);
+const NUMBER_FIELDS = new Set(['priceMinor', 'widthMm', 'depthMm', 'heightMm', 'inStockQty', 'powerW', 'pvWp', 'batteryWh', 'inverterW', 'lead_time_days', 'stock_qty']);
+
+/** Current server can store quantity, but not the other supplier metadata yet. */
+export function catalogPublishPayload(product: ImportProduct) {
+  const payload = { ...product };
+  delete payload.availability; delete payload.lead_time_days; delete payload.last_checked;
+  if (payload.stock_qty !== undefined) payload.inStockQty = payload.stock_qty;
+  delete payload.stock_qty;
+  return payload;
+}
+export function hasCatalogAvailabilityMetadata(product: ImportProduct): boolean {
+  return product.availability !== undefined || product.lead_time_days !== undefined || product.last_checked !== undefined;
+}
 
 /** Quoted CSV fields, doubled quotes, CRLF and embedded newlines are supported. */
 export function parseCatalogCsv(text: string): Record<string, unknown>[] {
@@ -53,6 +69,9 @@ export function validateCatalogImport(text: string): { products: ImportProduct[]
     raw.forEach((value, index) => {
       const parsed = ImportProductSchema.safeParse(value);
       if (!parsed.success) { errors.push(...parsed.error.issues.map(issue => `Row ${index + 1} · ${issue.path.join('.')}: ${issue.message}`)); return; }
+      const product = parsed.data;
+      if (product.stock_qty !== undefined && product.inStockQty !== undefined && product.stock_qty !== product.inStockQty) errors.push(`Row ${index + 1} · stock_qty and inStockQty must agree when both are supplied.`);
+      if (product.availability === 'in-stock' && (product.stock_qty ?? product.inStockQty) === 0) errors.push(`Row ${index + 1} · Zero quantity cannot be marked in stock. Use unknown and ask the supplier.`);
       if (skus.has(parsed.data.sku)) errors.push(`Row ${index + 1} · duplicate SKU ${parsed.data.sku}`);
       skus.add(parsed.data.sku); products.push(parsed.data);
     });

@@ -42,6 +42,11 @@ function apiRow(overrides: Partial<ApiProductSummary> = {}): ApiProductSummary {
 }
 
 describe('normaliseCategory', () => {
+  it('preserves explicit supplier metadata but never invents status from quantity', () => {
+    expect(apiProductToProduct(apiRow({ inStockQty: 0 })).availability).toBeUndefined();
+    const product = apiProductToProduct(apiRow({ availability: 'on-order', lead_time_days: 12, stock_qty: 0, last_checked: '2026-10-22' }));
+    expect(product).toMatchObject({ availability: 'on-order', lead_time_days: 12, stock_qty: 0, last_checked: '2026-10-22' });
+  });
   it('keeps every accepted merchant import category in its intended catalogue tab', () => {
     for (const category of ImportProductSchema.shape.category.options) {
       const product = apiProductToProduct(apiRow({ category }));

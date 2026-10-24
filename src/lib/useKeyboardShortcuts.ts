@@ -1,8 +1,7 @@
 /**
  * useKeyboardShortcuts — global keys for placed-item manipulation.
- *   R                rotate 90° CW (Sims build-mode parity)
- *   Shift+R          rotate 15° CW (Tweak 01 — fine step on the 15° snap)
- *   Alt+R            rotate 90° CCW (mirror of R)
+ *   R / . / ,        rotate in 45° steps (comma turns counter-clockwise)
+ *   Shift / Alt      held with a rotation key: 1° precision
  *   D                duplicate
  *   Ctrl/Cmd+D       duplicate (OMS Wave 2.3 — override the browser
  *                    bookmark default)
@@ -175,7 +174,7 @@ export function useKeyboardShortcuts(): void {
       switch (e.key) {
         case 'r':
         case 'R': {
-          if (inDraw || !hasSelection) return;
+          if (inDraw || !hasSelection || e.ctrlKey || e.metaKey) return;
           e.preventDefault();
           // Tweak 01 (Phase B): R = 90° CW, Shift+R = 15° CW (fine
           // step matching the brief's 15° snap default), Alt+R = 90°
@@ -183,9 +182,7 @@ export function useKeyboardShortcuts(): void {
           // historyStore.undo() is the inverse, and the Konva
           // Transformer rotate-handle drag (RoomCanvas follow-up)
           // takes free-rotate gestures.
-          if (e.altKey) {
-            rotateSelected(-ROTATION_STEP_COARSE_DEG);
-          } else if (e.shiftKey) {
+          if (e.altKey || e.shiftKey) {
             rotateSelected(ROTATION_STEP_FINE_DEG);
           } else {
             rotateSelected(ROTATION_STEP_COARSE_DEG);
@@ -197,16 +194,16 @@ export function useKeyboardShortcuts(): void {
         // shifted glyph or the bare comma/period so it works regardless.
         case '<':
         case ',': {
-          if (inDraw || !hasSelection) return;
+          if (inDraw || !hasSelection || e.ctrlKey || e.metaKey) return;
           e.preventDefault();
-          rotateSelected(-ROTATION_STEP_COARSE_DEG);
+          rotateSelected(-(e.altKey || e.shiftKey ? ROTATION_STEP_FINE_DEG : ROTATION_STEP_COARSE_DEG));
           break;
         }
         case '>':
         case '.': {
-          if (inDraw || !hasSelection) return;
+          if (inDraw || !hasSelection || e.ctrlKey || e.metaKey) return;
           e.preventDefault();
-          rotateSelected(ROTATION_STEP_COARSE_DEG);
+          rotateSelected(e.altKey || e.shiftKey ? ROTATION_STEP_FINE_DEG : ROTATION_STEP_COARSE_DEG);
           break;
         }
         case 'd':

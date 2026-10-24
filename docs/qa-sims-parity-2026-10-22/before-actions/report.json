@@ -1,0 +1,2045 @@
+{
+  "base": "http://127.0.0.1:5176",
+  "cases": [
+    {
+      "device": "desktop",
+      "errors": [
+        "Failed to load resource: the server responded with a status of 401 ()"
+      ],
+      "steps": [
+        {
+          "name": "plan-attachments",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/desktop-plan-attachments.png",
+          "state": {
+            "property": {
+              "version": 2,
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 2,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 2.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "pxPerMetre": 90,
+                "showGrid": true
+              }
+            },
+            "text": "Sims interaction audit\n· Measured room\nBuild\nFinish\nArrange\nSelect\nWalls\nOpenings\nGarden\nRoom\nCustom\nQuote\n2D Plan\n3D House\nLayers\nSite & tools\nFloors\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nProject hub\nEN\nMaterials\nUndo\n48 m²\n+\nFit\nShare\nCapture\n✧\nAI\nClear\nFurnish\nProducts\n⌃\nProducts\n?\nbuild dev-2026-10-22 19:03"
+          }
+        },
+        {
+          "name": "house",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/desktop-house.png",
+          "state": {
+            "property": {
+              "version": 2,
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 2,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 2.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "pxPerMetre": 90,
+                "showGrid": true
+              }
+            },
+            "text": "Sims interaction audit\n· Measured room\nBuild\nFinish\nArrange\nSelect\nWalls\nOpenings\nGarden\nRoom\nCustom\nQuote\n2D Plan\n3D House\nLayers\nSite & tools\nFloors\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nProject hub\nEN\nMaterials\nUndo\n48 m²\n+\nFit\nShare\nCapture\n48.0 m² · 48% · 0.5 m\nPlot 120 m² · built 48.0 m² (40%)\n4\n☀ 0 Wh · ⚡ 30 Wh\n−30 Wh\nbuild dev-2026-10-22 19:03\nOne Live Build\nSims interaction audit\n2D Plan\n3D House\nProject hub\nEN\n✧\nAI\nImport plan\nClear\nSave\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\n48.0 m²\nSelect\nWalls\nDraw room\nDoor\nWindow\nStairs\nDetails\nLayers\nMove view\nView\n\nDrag to orbit · two fingers or Shift-drag to pan · pinch to zoom · drag items to move",
+            "bridge": {
+              "frames": 3,
+              "children": 10,
+              "camera": [
+                -2.793543352878575,
+                9.291632079460786,
+                13.871942002148893
+              ],
+              "target": [
+                4,
+                0.315,
+                3
+              ],
+              "renderer": "1167x693 calls=1 tris=1",
+              "hour": null,
+              "sun": null,
+              "presentation": "natural",
+              "toneMapping": 7,
+              "exposure": 1,
+              "fog": {
+                "near": 23.52205987263711,
+                "far": 83.52205987263712
+              },
+              "cameraDistance": 15.124618974880068
+            },
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 0.315
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 15.650280434405463,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "selected-table",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/desktop-selected-table.png",
+          "state": {
+            "property": {
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 2,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 2.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "showGrid": true,
+                "pxPerMetre": 90
+              },
+              "version": 2
+            },
+            "text": "Sims interaction audit\n· Measured room\nBuild\nFinish\nArrange\nSelect\nWalls\nOpenings\nGarden\nRoom\nCustom\nQuote\n2D Plan\n3D House\nLayers\nSite & tools\nFloors\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nProject hub\nEN\nMaterials\nUndo\n48 m²\n+\nFit\nShare\nCapture\n48.0 m² · 48% · 0.5 m\nPlot 120 m² · built 48.0 m² (40%)\n4\n☀ 0 Wh · ⚡ 30 Wh\n−30 Wh\nDETAILS\n\nSELECTED ITEM\n\nWellness Console Table\n\nDecor · SKU PPW-DEMO-TABLE\n\nFOOTPRINT\n\n120 × 40 cm\n\nHEIGHT\n\n75 cm\n\nWEIGHT\n\n18 kg\n\nPOSITION\n\n2.00 m, 2.00 m · 0°\n\nShared 2D and 3D dimensions are documented; visual details are illustrative.\n\nSHIPS TO\n\nMU\n\nNOTES\n\nSlim console table for oils, diffusers and small decor. DEMO seed for surface-slot placement.\n\nCONTROLS\n\n↺ 90° CCW\n↻ 90° CW\nDuplicate (+0.5 m offset)\nDelete\n\nKeys: R rotate 90° · Shift+R 15° · Alt+R CCW · D duplicate · L light · Del delete · Esc deselect\n\nbuild dev-2026-10-22 19:03\nOne Live Build\nSims interaction audit\n2D Plan\n3D House\nProject hub\nEN\n✧\nAI\nImport plan\nClear\nSave\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\n48.0 m²\nSelect\nWalls\nDraw room\nDoor\nWindow\nStairs\nDetails\nSELECTED\nWellness Console Table\nProduct details\nEdit item\n×\nLayers\nMove view\nView\n\nDrag to orbit · two fingers or Shift-drag to pan · pinch to zoom · drag items to move",
+            "bridge": {
+              "frames": 6,
+              "children": 12,
+              "camera": [
+                -2.793543352878575,
+                9.291632079460786,
+                13.871942002148893
+              ],
+              "target": [
+                4,
+                0.315,
+                3
+              ],
+              "renderer": "1167x647 calls=1 tris=1",
+              "hour": null,
+              "sun": null,
+              "presentation": "natural",
+              "toneMapping": 7,
+              "exposure": 1,
+              "fog": {
+                "near": 23.52205987263711,
+                "far": 83.52205987263712
+              },
+              "cameraDistance": 15.124618974880068
+            },
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 0.315
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 15.650280434405463,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "key-turn-table-with-child",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/desktop-key-turn-table-with-child.png",
+          "state": {
+            "property": {
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 2,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 2.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "showGrid": true,
+                "pxPerMetre": 90
+              },
+              "version": 2
+            },
+            "text": "Sims interaction audit\n· Measured room\nBuild\nFinish\nArrange\nSelect\nWalls\nOpenings\nGarden\nRoom\nCustom\nQuote\n2D Plan\n3D House\nLayers\nSite & tools\nFloors\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nProject hub\nEN\nMaterials\nUndo\n48 m²\n+\nFit\nShare\nCapture\n48.0 m² · 48% · 0.5 m\nPlot 120 m² · built 48.0 m² (40%)\n4\n☀ 0 Wh · ⚡ 30 Wh\n−30 Wh\nDETAILS\n\nSELECTED ITEM\n\nWellness Console Table\n\nDecor · SKU PPW-DEMO-TABLE\n\nFOOTPRINT\n\n120 × 40 cm\n\nHEIGHT\n\n75 cm\n\nWEIGHT\n\n18 kg\n\nPOSITION\n\n2.00 m, 2.00 m · 0°\n\nShared 2D and 3D dimensions are documented; visual details are illustrative.\n\nSHIPS TO\n\nMU\n\nNOTES\n\nSlim console table for oils, diffusers and small decor. DEMO seed for surface-slot placement.\n\nCONTROLS\n\n↺ 90° CCW\n↻ 90° CW\nDuplicate (+0.5 m offset)\nDelete\n\nKeys: R rotate 90° · Shift+R 15° · Alt+R CCW · D duplicate · L light · Del delete · Esc deselect\n\nClear the surface before rotating it.\nbuild dev-2026-10-22 19:03\nOne Live Build\nSims interaction audit\n2D Plan\n3D House\nProject hub\nEN\n✧\nAI\nImport plan\nClear\nSave\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\n48.0 m²\nSelect\nWalls\nDraw room\nDoor\nWindow\nStairs\nDetails\nSELECTED\nWellness Console Table\nProduct details\nEdit item\n×\nLayers\nMove view\nView\n\nDrag to orbit · two fingers or Shift-drag to pan · pinch to zoom · drag items to move",
+            "bridge": {
+              "frames": 6,
+              "children": 12,
+              "camera": [
+                -2.793543352878575,
+                9.291632079460786,
+                13.871942002148893
+              ],
+              "target": [
+                4,
+                0.315,
+                3
+              ],
+              "renderer": "1167x647 calls=1 tris=1",
+              "hour": null,
+              "sun": null,
+              "presentation": "natural",
+              "toneMapping": 7,
+              "exposure": 1,
+              "fog": {
+                "near": 23.52205987263711,
+                "far": 83.52205987263712
+              },
+              "cameraDistance": 15.124618974880068
+            },
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 0.315
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 15.650280434405463,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "moving-table",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/desktop-moving-table.png",
+          "state": {
+            "property": {
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 2,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 2.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "showGrid": true,
+                "pxPerMetre": 90
+              },
+              "version": 2
+            },
+            "text": "Sims interaction audit\n· Measured room\nBuild\nFinish\nArrange\nSelect\nWalls\nOpenings\nGarden\nRoom\nCustom\nQuote\n2D Plan\n3D House\nLayers\nSite & tools\nFloors\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nProject hub\nEN\nMaterials\nUndo\n48 m²\n+\nFit\nShare\nCapture\n48.0 m² · 48% · 0.5 m\nPlot 120 m² · built 48.0 m² (40%)\n4\n☀ 0 Wh · ⚡ 30 Wh\n−30 Wh\nDETAILS\n\nSELECTED ITEM\n\nWellness Console Table\n\nDecor · SKU PPW-DEMO-TABLE\n\nFOOTPRINT\n\n120 × 40 cm\n\nHEIGHT\n\n75 cm\n\nWEIGHT\n\n18 kg\n\nPOSITION\n\n2.00 m, 2.00 m · 0°\n\nShared 2D and 3D dimensions are documented; visual details are illustrative.\n\nSHIPS TO\n\nMU\n\nNOTES\n\nSlim console table for oils, diffusers and small decor. DEMO seed for surface-slot placement.\n\nCONTROLS\n\n↺ 90° CCW\n↻ 90° CW\nDuplicate (+0.5 m offset)\nDelete\n\nKeys: R rotate 90° · Shift+R 15° · Alt+R CCW · D duplicate · L light · Del delete · Esc deselect\n\nbuild dev-2026-10-22 19:03\nOne Live Build\nSims interaction audit\n2D Plan\n3D House\nProject hub\nEN\n✧\nAI\nImport plan\nClear\nSave\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\n48.0 m²\nSelect\nWalls\nDraw room\nDoor\nWindow\nStairs\nDetails\nSELECTED\nWellness Console Table\nProduct details\nEdit item\n×\nLayers\nMove view\nView\n\nRelease to place · Shift holds the current rotation",
+            "bridge": {
+              "frames": 19,
+              "children": 12,
+              "camera": [
+                -2.793543352878575,
+                9.291632079460786,
+                13.871942002148893
+              ],
+              "target": [
+                4,
+                0.315,
+                3
+              ],
+              "renderer": "1167x647 calls=1 tris=1",
+              "hour": null,
+              "sun": null,
+              "presentation": "natural",
+              "toneMapping": 7,
+              "exposure": 1,
+              "fog": {
+                "near": 23.52205987263711,
+                "far": 83.52205987263712
+              },
+              "cameraDistance": 15.124618974880068
+            },
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 0.315
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 15.650280434405463,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "moved-table-child",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/desktop-moved-table-child.png",
+          "state": {
+            "property": {
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 3,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 3.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "showGrid": true,
+                "pxPerMetre": 90
+              },
+              "version": 2
+            },
+            "text": "Sims interaction audit\n· Measured room\nBuild\nFinish\nArrange\nSelect\nWalls\nOpenings\nGarden\nRoom\nCustom\nQuote\n2D Plan\n3D House\nLayers\nSite & tools\nFloors\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nProject hub\nEN\nMaterials\nUndo\n48 m²\n+\nFit\nShare\nCapture\n48.0 m² · 48% · 0.5 m\nPlot 120 m² · built 48.0 m² (40%)\n4\n☀ 0 Wh · ⚡ 30 Wh\n−30 Wh\nDETAILS\n\nSELECTED ITEM\n\nWellness Console Table\n\nDecor · SKU PPW-DEMO-TABLE\n\nFOOTPRINT\n\n120 × 40 cm\n\nHEIGHT\n\n75 cm\n\nWEIGHT\n\n18 kg\n\nPOSITION\n\n2.00 m, 3.00 m · 0°\n\nShared 2D and 3D dimensions are documented; visual details are illustrative.\n\nSHIPS TO\n\nMU\n\nNOTES\n\nSlim console table for oils, diffusers and small decor. DEMO seed for surface-slot placement.\n\nCONTROLS\n\n↺ 90° CCW\n↻ 90° CW\nDuplicate (+0.5 m offset)\nDelete\n\nKeys: R rotate 90° · Shift+R 15° · Alt+R CCW · D duplicate · L light · Del delete · Esc deselect\n\nbuild dev-2026-10-22 19:03\nOne Live Build\nSims interaction audit\n2D Plan\n3D House\nProject hub\nEN\n✧\nAI\nImport plan\nClear\nSave\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\n48.0 m²\nSelect\nWalls\nDraw room\nDoor\nWindow\nStairs\nDetails\nSELECTED\nWellness Console Table\nProduct details\nEdit item\n×\nLayers\nMove view\nView\n\nDrag to orbit · two fingers or Shift-drag to pan · pinch to zoom · drag items to move",
+            "bridge": {
+              "frames": 21,
+              "children": 12,
+              "camera": [
+                -2.793543352878575,
+                9.291632079460786,
+                13.871942002148893
+              ],
+              "target": [
+                4,
+                0.315,
+                3
+              ],
+              "renderer": "1167x647 calls=1 tris=1",
+              "hour": null,
+              "sun": null,
+              "presentation": "natural",
+              "toneMapping": 7,
+              "exposure": 1,
+              "fog": {
+                "near": 23.52205987263711,
+                "far": 83.52205987263712
+              },
+              "cameraDistance": 15.124618974880068
+            },
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 0.315
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 15.650280434405463,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "undo-move",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/desktop-undo-move.png",
+          "state": {
+            "property": {
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 2,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 2.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "showGrid": true,
+                "pxPerMetre": 90
+              },
+              "version": 2
+            },
+            "text": "Sims interaction audit\n· Measured room\nBuild\nFinish\nArrange\nSelect\nWalls\nOpenings\nGarden\nRoom\nCustom\nQuote\n2D Plan\n3D House\nLayers\nSite & tools\nFloors\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nProject hub\nEN\nMaterials\nUndo\n48 m²\n+\nFit\nShare\nCapture\n48.0 m² · 48% · 0.5 m\nPlot 120 m² · built 48.0 m² (40%)\n4\n☀ 0 Wh · ⚡ 30 Wh\n−30 Wh\nbuild dev-2026-10-22 19:03\nOne Live Build\nSims interaction audit\n2D Plan\n3D House\nProject hub\nEN\n✧\nAI\nImport plan\nClear\nSave\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\n48.0 m²\nSelect\nWalls\nDraw room\nDoor\nWindow\nStairs\nDetails\nLayers\nMove view\nView\n\nDrag to orbit · two fingers or Shift-drag to pan · pinch to zoom · drag items to move",
+            "bridge": {
+              "frames": 23,
+              "children": 10,
+              "camera": [
+                -2.793543352878575,
+                9.291632079460786,
+                13.871942002148893
+              ],
+              "target": [
+                4,
+                0.315,
+                3
+              ],
+              "renderer": "1167x693 calls=1 tris=1",
+              "hour": null,
+              "sun": null,
+              "presentation": "natural",
+              "toneMapping": 7,
+              "exposure": 1,
+              "fog": {
+                "near": 23.52205987263711,
+                "far": 83.52205987263712
+              },
+              "cameraDistance": 15.124618974880068
+            },
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 0.315
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 15.650280434405463,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "wall-item-selection",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/desktop-wall-item-selection.png",
+          "state": {
+            "property": {
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 2,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 2.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "showGrid": true,
+                "pxPerMetre": 90
+              },
+              "version": 2
+            },
+            "text": "Sims interaction audit\n· Measured room\nBuild\nFinish\nArrange\nSelect\nWalls\nOpenings\nGarden\nRoom\nCustom\nQuote\n2D Plan\n3D House\nLayers\nSite & tools\nFloors\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nProject hub\nEN\nMaterials\nUndo\n48 m²\n+\nFit\nShare\nCapture\n48.0 m² · 48% · 0.5 m\nPlot 120 m² · built 48.0 m² (40%)\n4\n☀ 0 Wh · ⚡ 30 Wh\n−30 Wh\nDETAILS\n\nSELECTED ITEM\n\nFloating Wall Shelf\n\nDecor · SKU PPW-DEMO-SHELF\n\nFOOTPRINT\n\n80 × 20 cm\n\nHEIGHT\n\n18 cm\n\nWEIGHT\n\n6 kg\n\nPOSITION\n\n1.00 m, 0.05 m · 0°\n\nShared 2D and 3D dimensions are documented; visual details are illustrative.\n\nSHIPS TO\n\nMU\n\nNOTES\n\nWall-mounted floating shelf. DEMO seed for wall-mounted placement.\n\nCONTROLS\n\nDuplicate (+0.5 m offset)\nDelete\n\nKeys: R rotate 90° · Shift+R 15° · Alt+R CCW · D duplicate · L light · Del delete · Esc deselect\n\nbuild dev-2026-10-22 19:03\nOne Live Build\nSims interaction audit\n2D Plan\n3D House\nProject hub\nEN\n✧\nAI\nImport plan\nClear\nSave\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\n48.0 m²\nSelect\nWalls\nDraw room\nDoor\nWindow\nStairs\nDetails\nSELECTED\nFloating Wall Shelf\nProduct details\nEdit item\n×\nLayers\nMove view\nView\n\nDrag to orbit · two fingers or Shift-drag to pan · pinch to zoom · drag items to move",
+            "bridge": {
+              "frames": 26,
+              "children": 12,
+              "camera": [
+                -2.793543352878575,
+                9.291632079460786,
+                13.871942002148893
+              ],
+              "target": [
+                4,
+                0.315,
+                3
+              ],
+              "renderer": "1167x647 calls=1 tris=1",
+              "hour": null,
+              "sun": null,
+              "presentation": "natural",
+              "toneMapping": 7,
+              "exposure": 1,
+              "fog": {
+                "near": 23.52205987263711,
+                "far": 83.52205987263712
+              },
+              "cameraDistance": 15.124618974880068
+            },
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 0.315
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 15.650280434405463,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        }
+      ]
+    },
+    {
+      "device": "phone",
+      "errors": [
+        "Failed to load resource: the server responded with a status of 401 ()"
+      ],
+      "steps": [
+        {
+          "name": "plan-attachments",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/phone-plan-attachments.png",
+          "state": {
+            "property": {
+              "version": 2,
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 2,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 2.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "pxPerMetre": 90,
+                "showGrid": true
+              }
+            },
+            "text": "Build\nFinish\nArrange\nSelect\n2D\n3D\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nEN\nMaterials\nUndo\n48 m²\n+\n✧\nAI\nClear\nProducts\nFurnish\nProducts\n⌃\n?"
+          }
+        },
+        {
+          "name": "house",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/phone-house.png",
+          "state": {
+            "property": {
+              "version": 2,
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 2,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 2.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "pxPerMetre": 90,
+                "showGrid": true
+              }
+            },
+            "text": "Build\nFinish\nArrange\nSelect\n2D\n3D\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nEN\nMaterials\nUndo\n48 m²\n+\n2D\n3D\n✧\nAI\nImport plan\nClear\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\nBuild\nView",
+            "bridge": {
+              "frames": 3,
+              "children": 10,
+              "camera": [
+                -7.001501177585537,
+                16.426806974389095,
+                20.606082205775913
+              ],
+              "target": [
+                4,
+                1.89,
+                3
+              ],
+              "renderer": "390x603 calls=1 tris=1",
+              "hour": null,
+              "sun": null,
+              "presentation": "natural",
+              "toneMapping": 7,
+              "exposure": 1,
+              "fog": {
+                "near": 34.10428952730147,
+                "far": 94.10428952730146
+              },
+              "cameraDistance": 25.706848629544425
+            },
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "selected-table",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/phone-selected-table.png",
+          "state": {
+            "property": {
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 2,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 2.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "showGrid": true,
+                "pxPerMetre": 90
+              },
+              "version": 2
+            },
+            "text": "Build\nFinish\nArrange\nSelect\n2D\n3D\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nEN\nMaterials\nUndo\n48 m²\n+\n2D\n3D\n✧\nAI\nImport plan\nClear\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\nBuild\nSELECTED\nWellness Console Table\nProduct details\nEdit item\n×\nView",
+            "bridge": {
+              "frames": 6,
+              "children": 12,
+              "camera": [
+                -7.001501177585537,
+                16.426806974389095,
+                20.606082205775913
+              ],
+              "target": [
+                4,
+                1.89,
+                3
+              ],
+              "renderer": "390x555 calls=1 tris=1",
+              "hour": null,
+              "sun": null,
+              "presentation": "natural",
+              "toneMapping": 7,
+              "exposure": 1,
+              "fog": {
+                "near": 34.10428952730147,
+                "far": 94.10428952730146
+              },
+              "cameraDistance": 25.706848629544425
+            },
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "key-turn-table-with-child",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/phone-key-turn-table-with-child.png",
+          "state": {
+            "property": {
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 2,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 2.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "showGrid": true,
+                "pxPerMetre": 90
+              },
+              "version": 2
+            },
+            "text": "Build\nFinish\nArrange\nSelect\n2D\n3D\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nEN\nMaterials\nUndo\n48 m²\n+\nClear the surface before rotating it.\n2D\n3D\n✧\nAI\nImport plan\nClear\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\nBuild\nSELECTED\nWellness Console Table\nProduct details\nEdit item\n×\nView",
+            "bridge": {
+              "frames": 6,
+              "children": 12,
+              "camera": [
+                -7.001501177585537,
+                16.426806974389095,
+                20.606082205775913
+              ],
+              "target": [
+                4,
+                1.89,
+                3
+              ],
+              "renderer": "390x555 calls=1 tris=1",
+              "hour": null,
+              "sun": null,
+              "presentation": "natural",
+              "toneMapping": 7,
+              "exposure": 1,
+              "fog": {
+                "near": 34.10428952730147,
+                "far": 94.10428952730146
+              },
+              "cameraDistance": 25.706848629544425
+            },
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "moving-table",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/phone-moving-table.png",
+          "state": {
+            "property": {
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 2,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 2.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "showGrid": true,
+                "pxPerMetre": 90
+              },
+              "version": 2
+            },
+            "text": "Build\nFinish\nArrange\nSelect\n2D\n3D\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nEN\nMaterials\nUndo\n48 m²\n+\n2D\n3D\n✧\nAI\nImport plan\nClear\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\nBuild\nSELECTED\nWellness Console Table\nProduct details\nEdit item\n×\nView\n\nRelease to place · Shift holds the current rotation",
+            "bridge": {
+              "frames": 19,
+              "children": 12,
+              "camera": [
+                -7.001501177585537,
+                16.426806974389095,
+                20.606082205775913
+              ],
+              "target": [
+                4,
+                1.89,
+                3
+              ],
+              "renderer": "390x536 calls=1 tris=1",
+              "hour": null,
+              "sun": null,
+              "presentation": "natural",
+              "toneMapping": 7,
+              "exposure": 1,
+              "fog": {
+                "near": 34.10428952730147,
+                "far": 94.10428952730146
+              },
+              "cameraDistance": 25.706848629544425
+            },
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "moved-table-child",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/phone-moved-table-child.png",
+          "state": {
+            "property": {
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 4,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 4.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "showGrid": true,
+                "pxPerMetre": 90
+              },
+              "version": 2
+            },
+            "text": "Build\nFinish\nArrange\nSelect\n2D\n3D\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nEN\nMaterials\nUndo\n48 m²\n+\n2D\n3D\n✧\nAI\nImport plan\nClear\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\nBuild\nSELECTED\nWellness Console Table\nProduct details\nEdit item\n×\nView",
+            "bridge": {
+              "frames": 22,
+              "children": 12,
+              "camera": [
+                -7.001501177585537,
+                16.426806974389095,
+                20.606082205775913
+              ],
+              "target": [
+                4,
+                1.89,
+                3
+              ],
+              "renderer": "390x555 calls=1 tris=1",
+              "hour": null,
+              "sun": null,
+              "presentation": "natural",
+              "toneMapping": 7,
+              "exposure": 1,
+              "fog": {
+                "near": 34.10428952730147,
+                "far": 94.10428952730146
+              },
+              "cameraDistance": 25.706848629544425
+            },
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "undo-move",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/phone-undo-move.png",
+          "state": {
+            "property": {
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 2,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 2.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "showGrid": true,
+                "pxPerMetre": 90
+              },
+              "version": 2
+            },
+            "text": "Build\nFinish\nArrange\nSelect\n2D\n3D\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nEN\nMaterials\nUndo\n48 m²\n+\n2D\n3D\n✧\nAI\nImport plan\nClear\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\nBuild\nView",
+            "bridge": {
+              "frames": 24,
+              "children": 10,
+              "camera": [
+                -7.001501177585537,
+                16.426806974389095,
+                20.606082205775913
+              ],
+              "target": [
+                4,
+                1.89,
+                3
+              ],
+              "renderer": "390x603 calls=1 tris=1",
+              "hour": null,
+              "sun": null,
+              "presentation": "natural",
+              "toneMapping": 7,
+              "exposure": 1,
+              "fog": {
+                "near": 34.10428952730147,
+                "far": 94.10428952730146
+              },
+              "cameraDistance": 25.706848629544425
+            },
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        },
+        {
+          "name": "wall-item-selection",
+          "path": "docs/qa-sims-parity-2026-10-22/before-actions/phone-wall-item-selection.png",
+          "state": {
+            "property": {
+              "state": {
+                "property": {
+                  "id": "sims-audit",
+                  "name": "Sims interaction audit",
+                  "activeRoomId": "room",
+                  "activeLevelId": "ground",
+                  "wallHeightM": 2.7,
+                  "site": {
+                    "widthM": 12,
+                    "depthM": 10,
+                    "originM": {
+                      "x": -2,
+                      "y": -2
+                    }
+                  },
+                  "rooms": [
+                    {
+                      "id": "room",
+                      "name": "Measured room",
+                      "polygon": [
+                        {
+                          "x": 0,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 0
+                        },
+                        {
+                          "x": 8,
+                          "y": 6
+                        },
+                        {
+                          "x": 0,
+                          "y": 6
+                        }
+                      ],
+                      "placedItems": [
+                        {
+                          "instanceId": "table",
+                          "productId": "demo-console-table",
+                          "x": 2,
+                          "y": 2,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "child",
+                          "productId": "demo-aroma-diffuser",
+                          "x": 2.2,
+                          "y": 2.1,
+                          "rotation": 0,
+                          "parentInstanceId": "table"
+                        },
+                        {
+                          "instanceId": "shelf",
+                          "productId": "demo-wall-shelf",
+                          "x": 1,
+                          "y": 0.05,
+                          "rotation": 0
+                        },
+                        {
+                          "instanceId": "chair",
+                          "productId": "demo-garden-bench",
+                          "x": 4,
+                          "y": 3,
+                          "rotation": 0
+                        }
+                      ],
+                      "openings": [
+                        {
+                          "id": "door",
+                          "kind": "door",
+                          "edgeIndex": 2,
+                          "offsetM": 3,
+                          "widthM": 0.9,
+                          "flipHand": false,
+                          "flipFacing": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "showGrid": true,
+                "pxPerMetre": 90
+              },
+              "version": 2
+            },
+            "text": "Build\nFinish\nArrange\nSelect\n2D\n3D\nGround floor\nRoof\n＋ Add floor\nCity Build · site infrastructure\nFoundation · excavate & concrete\nPlumbing & Electric\nCity\nEN\nMaterials\nUndo\n48 m²\n+\n2D\n3D\n✧\nAI\nImport plan\nClear\n▱\nFoundation\nCity\nBuild\nFurnish\nPaint\nSurfaces\nGarden\nMaterials\nSolar\nGround\nGround floor\nRoof\n＋ Add floor\nFoundation\nBuild\nSELECTED\nFloating Wall Shelf\nProduct details\nEdit item\n×\nView",
+            "bridge": {
+              "frames": 27,
+              "children": 12,
+              "camera": [
+                -7.001501177585537,
+                16.426806974389095,
+                20.606082205775913
+              ],
+              "target": [
+                4,
+                1.89,
+                3
+              ],
+              "renderer": "390x555 calls=1 tris=1",
+              "hour": null,
+              "sun": null,
+              "presentation": "natural",
+              "toneMapping": 7,
+              "exposure": 1,
+              "fog": {
+                "near": 34.10428952730147,
+                "far": 94.10428952730146
+              },
+              "cameraDistance": 25.706848629544425
+            },
+            "camera": {
+              "target": {
+                "x": 4,
+                "y": 3,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 25.3441495380611,
+              "fovRad": 0.6632251157578452
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

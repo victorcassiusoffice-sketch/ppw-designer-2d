@@ -10,7 +10,8 @@
 import { useDesignStore } from '../store/designStore';
 import { usePropertyStore } from '../store/propertyStore';
 import { useToastStore } from '../store/toastStore';
-import { useHistoryStore } from '../store/historyStore';
+import { useHistoryStore, isDrawTransactionActive, beginDrawTransaction, endDrawTransaction } from '../store/historyStore';
+import { normaliseRotation, ROTATION_SNAP_DEG, ROTATION_FINE_DEG } from '../designer/rotationGesture';
 import { getProductById } from '../data/products';
 import {
   cmToM,
@@ -24,6 +25,7 @@ import type { PlacedRect } from './geometry';
 import type { PlacedItem } from '../store/designStore';
 import { haptic } from './haptics';
 import { currentSnapStepM } from '../store/designerUIStore';
+import { objectOverlapAllowed } from '../store/objectPlacementStore';
 import { emitsLight } from '../designer/lighting';
 import { energyRoleOf, isRoofProduct } from '../designer/energy';
 import { activeLevelIdOf, isOutdoorRoom, isRoofRoom } from '../designer/levels';
@@ -32,6 +34,7 @@ import {
   WALL_HALF_M,
   insideInnerFaces,
   resolveWallAwarePlacement,
+  freeWallObstacleRects,
 } from '../designer/wallAwarePlacement';
 import {
   adjacentTileSlots,
@@ -50,14 +53,11 @@ import {
 } from '../designer/attachmentPlacement';
 
 /**
- * Tweak 01 (Phase B) — rotation step in degrees. R-key cycles at 90°
- * (matches Sims build-mode); Shift+R steps at 15° (per Tweak 01 §2
- * "snaps to 15° increments, with Shift held → free rotate"). The
- * brief's "free rotate" via Konva Transformer drag-handle is a
- * separate add on top of this discrete step.
+ * All object controls share eight 45° stops, with 1° precision when
+ * Shift/Alt or the touch precision control is held.
  */
-export const ROTATION_STEP_COARSE_DEG = 90;
-export const ROTATION_STEP_FINE_DEG = 15;
+export const ROTATION_STEP_COARSE_DEG = ROTATION_SNAP_DEG;
+export const ROTATION_STEP_FINE_DEG = ROTATION_FINE_DEG;
 
 function buildOthers(
   items: PlacedItem[],
@@ -89,6 +89,82 @@ function parentSurfaceRect(items: PlacedItem[], parentInstanceId?: string) {
   const r = rotatedFootprint(fp, parent.rotation);
   return { instanceId: parent.instanceId, x: parent.x, y: parent.y, w: r.w, h: r.h };
 }
+
+export interface ItemRotationSession {
+  propertyId: string;
+  roomId: string;
+  original: PlacedItem;
+  centre: { x: number; y: number };
+  cancelled: boolean;
+}
+export interface ItemRotationPreview {
+  ok: boolean;
+  x: number;
+  y: number;
+  rotation: number;
+  message?: string;
+}
+
+/** Capture once at pointer-down. No history or saved geometry changes until
+ * release: Escape, pointercancel and a second tool can discard this freely. */
+export function beginItemRotation(instanceId = useDesignStore.getState().selectedInstanceId): ItemRotationSession | null {
+  if (!instanceId || isDrawTransactionActive()) return null;
+  const property = usePropertyStore.getState().property;
+  const room = property.rooms.find(candidate => candidate.placedItems.some(item => item.instanceId === instanceId));
+  const original = room?.placedItems.find(item => item.instanceId === instanceId);
+  const product = original && getProductById(original.productId);
+  if (!room || !original || !product || placementKind(product) === 'wall'
+    || room.placedItems.some(item => item.parentInstanceId === instanceId)) return null;
+  const fp = rotatedFootprint({ lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) }, original.rotation);
+  return { propertyId: property.id, roomId: room.id, original: { ...original },
+    centre: { x: original.x + fp.w / 2, y: original.y + fp.h / 2 }, cancelled: false };
+}
+
+/** Read-only strict-centre preview. The ring never pushes an object elsewhere
+ * to make room: an invalid angle stays red and releasing leaves the old pose. */
+export function previewItemRotation(session: ItemRotationSession, angle: number): ItemRotationPreview {
+  const rotation = normaliseRotation(angle);
+  const fallback = { x: session.original.x, y: session.original.y, rotation };
+  const fail = (message: string): ItemRotationPreview => ({ ...fallback, ok: false, message });
+  const property = usePropertyStore.getState().property;
+  const room = property.rooms.find(candidate => candidate.id === session.roomId);
+  const current = room?.placedItems.find(item => item.instanceId === session.original.instanceId);
+  const product = current && getProductById(current.productId);
+  if (session.cancelled || !Number.isFinite(angle) || isDrawTransactionActive() || property.id !== session.propertyId || !room || !current || !product
+    || current.productId !== session.original.productId || current.x !== session.original.x || current.y !== session.original.y
+    || current.rotation !== session.original.rotation || current.parentInstanceId !== session.original.parentInstanceId) return fail('Selection changed. Start the turn again.');
+  const kind = placementKind(product);
+  if (kind === 'wall') return fail('Wall items follow their wall.');
+  if (room.placedItems.some(item => item.parentInstanceId === current.instanceId)) return fail('Clear the surface before rotating it.');
+  const size = rotatedFootprint({ lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) }, rotation);
+  const x = session.centre.x - size.w / 2, y = session.centre.y - size.h / 2;
+  const rect = { x, y, w: size.w, h: size.h };
+  const others = objectOverlapAllowed() ? [] : buildOthers(room.placedItems, current.instanceId, kind, current.parentInstanceId);
+  if (kind === 'floor') others.push(...freeWallObstacleRects(wallsOnLevel(property.walls ?? [], room.levelId ?? 'ground')));
+  let fits = !collidesWithAny(rect, others);
+  if (kind === 'surface') {
+    const surface = parentSurfaceRect(room.placedItems, current.parentInstanceId);
+    fits = fits && !!surface && x >= surface.x - 1e-8 && y >= surface.y - 1e-8
+      && x + size.w <= surface.x + surface.w + 1e-8 && y + size.h <= surface.y + surface.h + 1e-8;
+  } else if (!(isOutdoorRoom(room) && room.polygon.length < 3)) {
+    fits = fits && validatePlacement(rect, [], room.polygon).ok
+      && ((isRoofRoom(room) && isRoofProduct(product)) || insideInnerFaces(rect, room.polygon));
+  }
+  return { ok: fits, x, y, rotation, ...(!fits && { message: 'Not enough space to turn here.' }) };
+}
+
+export function commitItemRotation(session: ItemRotationSession, angle: number): boolean {
+  const preview = previewItemRotation(session, angle);
+  if (!preview.ok) { cancelItemRotation(session); return false; }
+  session.cancelled = true;
+  if (Math.abs(preview.rotation - normaliseRotation(session.original.rotation)) < 1e-8) return true;
+  beginDrawTransaction('rotate');
+  try { usePropertyStore.getState().updateItem(session.original.instanceId, { x: preview.x, y: preview.y, rotation: preview.rotation }); }
+  finally { endDrawTransaction(); }
+  haptic('rotate');
+  return true;
+}
+export function cancelItemRotation(session: ItemRotationSession): void { session.cancelled = true; }
 
 /**
  * Rotate the currently-selected item by `deltaDeg` if validation passes.
