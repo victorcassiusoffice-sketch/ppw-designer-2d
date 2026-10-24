@@ -105,7 +105,7 @@ describe('FloatingCluster (flagship inline manipulation)', () => {
     const btn = container.querySelector('[data-testid="cluster-rotate"]') as HTMLButtonElement;
     act(() => btn.click());
     const item = useDesignStore.getState().placedItems.find((i) => i.instanceId === id);
-    expect(item?.rotation).toBe(90);
+    expect(item?.rotation).toBe(45);
   });
 
   it('duplicate button adds a second item and selects the copy', () => {

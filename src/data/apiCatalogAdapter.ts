@@ -50,6 +50,11 @@ export interface ApiProductSummary {
   /** Designer-canvas plan asset (photo/top-down split, 2026-07-26). */
   topdownImageUrl?: string | null;
   region: string | null;
+  availability?: Product['availability'];
+  lead_time_days?: number | null;
+  stock_qty?: number | null;
+  last_checked?: string | null;
+  inStockQty?: number | null;
   /** Eco / solar (2026-09-04, migration 0029) — on the wire only when ENERGY_DB_COLUMNS=1. */
   powerW?: number | null;
   dutyHoursPerDay?: number | string | null;
@@ -141,6 +146,7 @@ const SEED_BEHAVIOUR_FIELDS = [
   'outdoor',
   'plan_symbol',
   'thumbnail_svg',
+  'availability', 'lead_time_days', 'stock_qty', 'last_checked', 'variants',
   // Eco / solar (2026-09-04): a seeded panel / inverter / battery served by
   // the API keeps its ratings; a merchant row's own DB values win below.
   'power_w',
@@ -222,8 +228,22 @@ export function apiProductToProduct(api: ApiProductSummary): Product {
     notes: api.description?.trim() || seed?.notes || '',
     ...(api.category.trim().toLowerCase() === 'outdoor' ? { outdoor: true } : {}),
     ...seedBehaviour(seed),
+    ...apiAvailabilityFields(api),
     ...apiEnergyFields(api),
   };
+}
+
+function apiAvailabilityFields(api: ApiProductSummary): Partial<Product> {
+  const output: Partial<Product> = {};
+  if (['in-stock', 'on-order', 'made-to-order', 'unknown'].includes(api.availability ?? '')) output.availability = api.availability;
+  for (const key of ['lead_time_days', 'stock_qty'] as const) {
+    const value = api[key];
+    if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) output[key] = value;
+  }
+  if (api.last_checked && /^\d{4}-\d{2}-\d{2}$/.test(api.last_checked) && Number.isFinite(Date.parse(api.last_checked)) && new Date(api.last_checked).toISOString().slice(0, 10) === api.last_checked) output.last_checked = api.last_checked;
+  // Legacy inStockQty defaults to 0 in the DB. It is not evidence of a supplier
+  // report, so only the explicit nullable stock_qty contract is displayed here.
+  return output;
 }
 
 /** Positive finite number or undefined (the wire carries null / numeric strings). */

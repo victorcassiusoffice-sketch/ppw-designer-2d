@@ -6,6 +6,7 @@ import { WallHeightControl } from './WallHeightControl';
 import { StudioIcon } from './StudioIcon';
 import { DisciplineVisibilityControls } from './DisciplineVisibilityControls';
 import { PROFESSIONAL_VIEWS, type ProfessionalView } from '../designer/professionalViews';
+import { RenderQualityControl } from './RenderQualityControl';
 
 export type CameraView = ProfessionalView;
 interface Props {
@@ -194,6 +195,7 @@ export function RoomViewControls({
                 <option value="architectural">{t('Colour check')}</option>
               </select>
             </label>
+            <RenderQualityControl />
             <div
               role="group"
               aria-label={t('Wall view')}

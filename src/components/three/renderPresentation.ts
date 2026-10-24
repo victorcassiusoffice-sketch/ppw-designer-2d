@@ -43,14 +43,14 @@ const ARCHITECTURAL = {
   reveal: '#aaa99d', cap: '#ddd9cc',
 };
 
-/** Explicit natural-light preview, not a calibrated colour card. The neutral
+/** Explicit natural-light preview, not a calibrated colour card. The filmic
  * highlight shoulder avoids clipped white walls; a stronger directional key
  * and quieter uniform fill let shape and recesses read at house scale. The
  * saved paint/floor albedo, product finish and physical light calculations are
  * unchanged. Colour check uses STUDIO/ARCHITECTURAL exactly as before. */
 const NATURAL = {
   ...ARCHITECTURAL,
-  toneMapping: THREE.NeutralToneMapping,
+  toneMapping: THREE.ACESFilmicToneMapping,
   day: { hemi: 0.40, sun: 0.55, fill: 0.10, rim: 0 },
   cap: '#7c8076',
   cornerAlpha: 0.23,

@@ -5,7 +5,7 @@ import * as THREE from 'three';
  * dimensional preview and its eventual supplier model, so loading a GLB cannot
  * suddenly make an otherwise identical material glossy. */
 export function applyProductSurfaceLighting(root: THREE.Object3D, environment: THREE.Texture | null, maxAnisotropy = 1): void {
-  const anisotropy = Math.max(1, Math.min(4, Number.isFinite(maxAnisotropy) ? maxAnisotropy : 1));
+  const anisotropy = Math.max(1, Math.min(8, Number.isFinite(maxAnisotropy) ? maxAnisotropy : 1));
   const seen = new Set<THREE.Material>();
   root.traverse((object) => {
     if (!(object as THREE.Mesh).isMesh) return;
@@ -24,6 +24,25 @@ export function applyProductSurfaceLighting(root: THREE.Object3D, environment: T
         }
       }
       standard.needsUpdate = true;
+    }
+  });
+}
+
+/** Filter quality applies to the existing PBR maps, never their repeat/scale,
+ * albedo or material quantities. Shared textures are updated once per scene. */
+export function applySceneTextureSampling(root: THREE.Object3D, maxAnisotropy: number): void {
+  const anisotropy = Math.max(1, Math.min(8, Number.isFinite(maxAnisotropy) ? maxAnisotropy : 1));
+  const seen = new Set<THREE.Texture>();
+  root.traverse(object => {
+    const mesh = object as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+      const standard = material as THREE.MeshStandardMaterial;
+      for (const texture of [standard.map, standard.normalMap, standard.bumpMap, standard.roughnessMap, standard.metalnessMap, standard.aoMap, standard.emissiveMap]) {
+        if (!texture || seen.has(texture)) continue;
+        seen.add(texture);
+        if (texture.anisotropy !== anisotropy) { texture.anisotropy = anisotropy; texture.needsUpdate = true; }
+      }
     }
   });
 }

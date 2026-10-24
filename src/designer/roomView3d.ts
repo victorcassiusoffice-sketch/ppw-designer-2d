@@ -155,6 +155,7 @@ export interface SceneFreeWallInput {
 }
 
 export interface SceneItemInput {
+  parentInstanceId?: string;
   /** A lamp: the 3D stage lights it after dark (P3). */
   emitsLight?: boolean;
   /** Height of the lamp's light source above the floor, metres. */
@@ -170,6 +171,8 @@ export interface SceneItemInput {
   /** 'floor' | 'wall' | 'surface' | 'ceiling' | 'roof' */
   placement?: string;
   mountHeightCm?: number;
+  /** Tabletop elevation from the actual parent product, centimetres. */
+  baseHeightCm?: number;
   fill?: string;
   /**
    * The product's own art for a product with NO body (Vic 2026-09-20: no
@@ -584,7 +587,7 @@ export function buildScene(input: SceneInput): SceneFace[] {
       const d = fp.h;
       if (w <= 0 || d <= 0) continue;
       const hItem = Math.max(0.05, Math.min(cmToM(it.heightCm), H));
-      let z0 = 0;
+      let z0 = it.placement === 'surface' ? Math.min(Math.max(0, cmToM(it.baseHeightCm ?? 0)), Math.max(0, H - hItem)) : 0;
       if (it.placement === 'ceiling') z0 = Math.max(0, H - hItem);
       else if (it.placement === 'wall') z0 = Math.min(Math.max(0, cmToM(it.mountHeightCm ?? 120)), Math.max(0, H - hItem));
       const z1 = Math.min(H, z0 + hItem);

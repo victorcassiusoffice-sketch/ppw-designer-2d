@@ -79,7 +79,7 @@ import { ClearControls } from './ClearControls';
 import { AiDesignButton } from './AiDesignWorkspace';
 import { WallDrawLayer, WallDrawHUD, CommittedWallsLayer } from '../designer/WallDrawMode';
 import { useWallStore } from '../store/wallStore';
-import { useHistoryStore, endDrawTransaction } from '../store/historyStore';
+import { endDrawTransaction } from '../store/historyStore';
 // Toolbar pass (2026-08-29): the phone's undo/redo buttons route through the
 // SAME ladder as Ctrl+Z / the TopBar buttons (vertex → wall segment → history),
 // instead of hitting the history store directly and disagreeing mid-draw.
@@ -124,9 +124,9 @@ import { haptic } from '../lib/haptics';
 import {
   findFreeSlotAlongWall,
   freeWallObstacleRects,
-  isCardinalRotation,
   resolveWallAwarePlacement,
   WALL_HALF_M,
+  insideInnerFaces,
   WALL_THICKNESS_M,
   type FreeWallLike,
 } from '../designer/wallAwarePlacement';
@@ -165,7 +165,10 @@ import { emitsLight, lightRadiusM, planSymbolOf, lampSceneFactor, planLightGradi
 // Sims flooring (2026-08-29): tiles snap to their own lattice, edge to edge.
 import { snapToTileLattice, tileLatticeFor, usesTileLattice } from '../designer/flooringLattice';
 // Rotate-handle re-seat (2026-08-29): same wall-aware path as the R key.
-import { rotateSelected } from '../lib/placementActions';
+import { beginItemRotation, previewItemRotation, commitItemRotation, cancelItemRotation, type ItemRotationSession, type ItemRotationPreview } from '../lib/placementActions';
+import { gestureRotation, pointerAngle } from '../designer/rotationGesture';
+import { ObjectPlacementControls } from './ObjectPlacementControls';
+import { useObjectPlacementStore, objectPlacementStepM, objectOverlapAllowed } from '../store/objectPlacementStore';
 import { pointInPolygon, isRectInsidePolygon } from '../lib/geometry';
 // Architectural paper theme (2026-08-29): cream paper, charcoal poche walls
 // with a soft shadow, quiet grid. Every colour comes from ONE module.
@@ -747,11 +750,13 @@ export function RoomCanvas({
     | { xM: number; yM: number; rotation: number; valid: boolean }
     | null
   >(null);
-  const [ghostRotation, setGhostRotation] = useState(0);
+  const lastGhostPointer = useRef<{ clientX: number; clientY: number } | null>(null);
+  const objectPlacementMode = useObjectPlacementStore(s => s.mode);
+  const ghostRotation = usePlacementIntentStore(s => s.armedRotation);
   // Sims wall-aware placement (2026-08-23) — auto-orientation only runs
   // until the user rotates the armed ghost manually (R / Shift+R); after
   // that their chosen facing wins, exactly like Sims build mode.
-  const [ghostManuallyRotated, setGhostManuallyRotated] = useState(false);
+  const ghostManuallyRotated = usePlacementIntentStore(s => s.armedRotationExplicit);
   // Phone canvas chrome (2026-09-22): zoom, share, area and the price chip
   // stay in the DOM (specs read them) but fold behind one flush pill so the
   // plan is the screen. Desktop always shows the row.
@@ -813,8 +818,6 @@ export function RoomCanvas({
   useEffect(() => {
     if (!pendingProductId) {
       setDragGhost(null);
-      setGhostRotation(0);
-      setGhostManuallyRotated(false);
     }
   }, [pendingProductId]);
 
@@ -865,9 +868,8 @@ export function RoomCanvas({
         // stopping immediate propagation here wins regardless of which
         // listener was registered first.
         e.stopImmediatePropagation();
-        const delta = e.key === ',' ? -90 : e.shiftKey ? -90 : 90;
-        setGhostManuallyRotated(true);
-        setGhostRotation((r) => (((r + delta) % 360) + 360) % 360);
+        const delta = (e.key === ',' ? -1 : 1) * (e.shiftKey || e.altKey ? 1 : 45);
+        usePlacementIntentStore.getState().rotateArmed(delta);
         console.log('[drag-place]', { reason: 'rotate' });
       }
     }
@@ -1433,6 +1435,8 @@ export function RoomCanvas({
         pushToast(`Unknown product: ${productId}`, 'error');
         return false;
       }
+      const snapStep = usesTileLattice(product) ? PRECISION_STEP_M[precision] : objectPlacementStepM();
+      const allowOverlap = objectOverlapAllowed() && !usesTileLattice(product);
       const fp = {
         lengthM: cmToM(product.dimensions_cm.length),
         widthM: cmToM(product.dimensions_cm.width),
@@ -1443,7 +1447,7 @@ export function RoomCanvas({
       // captured `rooms` would go stale the moment a room is added.
       // Sims world (2026-08-29): a point outside every room is OUTDOORS, not
       // an error — gardens, terraces and second buildings all live there.
-      const container = resolveContainer({ x: centreXm, y: centreYm }, { create: true });
+      const container = resolveContainer({ x: centreXm, y: centreYm }, { create: false });
       if (!container.ok) {
         haptic('invalid');
         pushToast(
@@ -1455,6 +1459,16 @@ export function RoomCanvas({
         return false;
       }
       const target = container.room;
+      // Only a valid commit may materialise an outdoor container.
+      const commitRoomId = () => {
+        const committed = resolveContainer({ x: centreXm, y: centreYm }, { create: true });
+        return committed.ok ? committed.room.id : target.id;
+      };
+      const notifyPlaced = (id: string) => {
+        const toasts = useToastStore.getState();
+        for (const toast of toasts.toasts) if (toast.message.startsWith('Added "') && toast.message.endsWith('to cart')) toasts.dismiss(toast.id);
+        pushToast(`Added "${product.name}" to cart`, 'success', { ttlMs: 1800, action: { label: 'Undo', onClick: () => removeItem(id) } });
+      };
       // A roof-placed product (PV panel) dropped on a storey: take the
       // customer to the roof instead of refusing in silence.
       if (isRoofProduct(product) && !isRoofRoom(target)) {
@@ -1474,7 +1488,7 @@ export function RoomCanvas({
         : freeWallRects;
       /** Bounds test for the container: polygon indoors, plot/buildings outdoors. */
       const inBounds = (rect: PlacedRect): boolean =>
-        outdoor ? fitsOutdoors(rect) : isRectInsidePolygon(rect, targetPolygon);
+        outdoor ? fitsOutdoors(rect) : isRectInsidePolygon(rect, targetPolygon) && (!allowOverlap || placementKind(product) !== 'floor' || isRoofRoom(target) || insideInnerFaces(rect, targetPolygon));
 
       const kind = placementKind(product);
 
@@ -1497,7 +1511,7 @@ export function RoomCanvas({
           return false;
         }
         const wf = rotatedFootprint(fp, r.rotationDeg);
-        const wallOthers = layerRects(targetItems, 'wall');
+        const wallOthers = allowOverlap ? [] : layerRects(targetItems, 'wall');
         const wallRect = { x: r.x, y: r.y, w: wf.w, h: wf.h };
         if (!inBounds(wallRect) || collidesWithAny(wallRect, wallOthers)) {
           haptic('invalid');
@@ -1508,13 +1522,10 @@ export function RoomCanvas({
         // Commit into the ROUTED room, not the active one (same as the floor path).
         const wallId = usePropertyStore
           .getState()
-          .addItem({ productId: product.id, x: r.x, y: r.y, rotation: r.rotationDeg }, target.id);
+          .addItem({ productId: product.id, x: r.x, y: r.y, rotation: r.rotationDeg }, commitRoomId());
         setJustPlacedId(wallId);
         selectItemAcrossRooms(wallId);
-        pushToast(`Added "${product.name}" to cart`, 'success', {
-          ttlMs: 5000,
-          action: { label: 'Undo', onClick: () => removeItem(wallId) },
-        });
+        notifyPlaced(wallId);
         return true;
       }
 
@@ -1540,7 +1551,7 @@ export function RoomCanvas({
           return false;
         }
         const sf = rotatedFootprint(fp, rot);
-        const sibs = layerRects(targetItems, 'surface', { parentId: under.instanceId });
+        const sibs = allowOverlap ? [] : layerRects(targetItems, 'surface', { parentId: under.instanceId });
         if (collidesWithAny({ x: res.x, y: res.y, w: sf.w, h: sf.h }, sibs)) {
           haptic('invalid');
           pushToast('No space left on that surface.', 'warn');
@@ -1556,14 +1567,11 @@ export function RoomCanvas({
             rotation: rot,
             parentInstanceId: res.parentInstanceId,
           },
-          target.id,
+          commitRoomId(),
         );
         setJustPlacedId(surfId);
         selectItemAcrossRooms(surfId);
-        pushToast(`Added "${product.name}" to cart`, 'success', {
-          ttlMs: 5000,
-          action: { label: 'Undo', onClick: () => removeItem(surfId) },
-        });
+        notifyPlaced(surfId);
         return true;
       }
 
@@ -1615,12 +1623,12 @@ export function RoomCanvas({
             centreXm,
             centreYm,
             fp,
-            polygon: outdoor ? [] : targetPolygon,
+            polygon: outdoor || allowOverlap ? [] : targetPolygon,
             snapStep,
             userRotationDeg,
             frontEdge: product.front_edge,
             wallInsetM: WALL_HALF_M,
-            freeWalls: snapWalls,
+            freeWalls: allowOverlap ? [] : snapWalls,
           });
       const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
       // Floor items collide with floor items only (wall items hang above,
@@ -1631,7 +1639,7 @@ export function RoomCanvas({
         const p = getProductById(it.productId);
         return p ? placementKind(p) === kind : true;
       });
-      const others: Array<PlacedRect & { instanceId: string }> = obstaclesFor(product.id, sameKindItems)
+      const others: Array<PlacedRect & { instanceId: string }> = obstaclesFor(product.id, allowOverlap ? [] : sameKindItems)
         .map((it) => {
           const p = getProductById(it.productId);
           if (!p) return null;
@@ -1700,7 +1708,7 @@ export function RoomCanvas({
           y: Number(slot.y.toFixed(4)),
           rotation: resolved.rotationDeg,
         },
-        target.id,
+        commitRoomId(),
       );
       // Polish (2026-05-29) — flag this fresh instance for the settle tween.
       setJustPlacedId(instanceId);
@@ -1717,13 +1725,7 @@ export function RoomCanvas({
         y: slot.y,
         rotation: resolved.rotationDeg,
       });
-      pushToast(`Added "${product.name}" to cart`, 'success', {
-        ttlMs: 5000,
-        action: {
-          label: 'Undo',
-          onClick: () => removeItem(instanceId),
-        },
-      });
+      notifyPlaced(instanceId);
       return true;
     },
     // `rooms` is deliberately NOT a dep — it is read via getState() inside
@@ -1732,7 +1734,7 @@ export function RoomCanvas({
     [
       removeItem,
       pushToast,
-      snapStep,
+      precision,
       selectItemAcrossRooms,
       resolveContainer,
       fitsOutdoors,
@@ -1796,7 +1798,7 @@ export function RoomCanvas({
     if (useDesignerUIStore.getState().viewMode === '3d' && isScreenTarget(placementIntent.target)) return;
     if (!isScreenTarget(placementIntent.target)) {
       const { roomX, roomY } = placementIntent.target;
-      const placed = placeAtRoomPoint(roomX, roomY, placementIntent.productId, null, !placementIntent.strict);
+      const placed = placeAtRoomPoint(roomX, roomY, placementIntent.productId, ghostManuallyRotated ? ghostRotation : null, !placementIntent.strict);
       // A tap-to-place from the 3D floor disarms like a click on the plan does.
       if (placed && !placementIntent.keepArmed && pendingProductId === placementIntent.productId) setPendingProductId?.(null);
       consumeIntent();
@@ -1832,7 +1834,7 @@ export function RoomCanvas({
       const rect = containerRef.current?.getBoundingClientRect();
       const { clientX, clientY } = placementIntent.target;
       if (rect && clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
-        placeProductAt(clientX, clientY, placementIntent.productId, null, !placementIntent.strict);
+        placeProductAt(clientX, clientY, placementIntent.productId, undefined, !placementIntent.strict);
       }
     }
     consumeIntent();
@@ -1855,7 +1857,8 @@ export function RoomCanvas({
     const outdoorOwner = isOutdoorRoom(owner);
     return resolveItemDrop(
       {
-        snapStep,
+        snapStep: usesTileLattice(product) ? snapStep : objectPlacementStepM(),
+        allowOverlap: objectOverlapAllowed() && !usesTileLattice(product),
         polygon: owner.polygon,
         placedItems: owner.placedItems,
         outdoor: outdoorOwner,
@@ -1888,13 +1891,17 @@ export function RoomCanvas({
   useEffect(() => {
     if (!moveIntent) return;
     const ps = usePropertyStore.getState();
-    const result = resolveMove(moveIntent.instanceId, moveIntent.roomX, moveIntent.roomY, moveIntent.shiftKey, true);
+    const preview = resolveMove(moveIntent.instanceId, moveIntent.roomX, moveIntent.roomY, moveIntent.shiftKey, false);
+    const result = preview?.ok ? resolveMove(moveIntent.instanceId, moveIntent.roomX, moveIntent.roomY, moveIntent.shiftKey, true) : preview;
     if (!result) {
       consumeMove();
       return;
     }
     if (result.ok) {
-      if (result.crossRoom) ps.moveItemToRoom(moveIntent.instanceId, result.roomId, result.x, result.y, result.rotation);
+      if (result.crossRoom) {
+        ps.moveItemToRoom(moveIntent.instanceId, result.roomId, result.x, result.y, result.rotation);
+        if (result.parentInstanceId) ps.updateItem(moveIntent.instanceId, { parentInstanceId: result.parentInstanceId });
+      }
       else updateItem(moveIntent.instanceId, { x: result.x, y: result.y, rotation: result.rotation, ...(result.parentInstanceId ? { parentInstanceId: result.parentInstanceId } : {}) });
       console.log('[drag-move]', { reason: result.crossRoom ? 'cross-room' : 'same-room', via: '3d', rule: result.reason });
     } else {
@@ -1995,12 +2002,15 @@ export function RoomCanvas({
   // from closure). Used by onPointerMove and the onClick/onTap commit
   // path so both branches see the same snap + validity result.
   const computeGhost = useCallback(
-    (clientX: number, clientY: number, productId: string) => {
+    (clientX: number, clientY: number, productId: string, roomPoint?: { xM: number; yM: number }) => {
+      if (!roomPoint) lastGhostPointer.current = { clientX, clientY };
       const product = getProductById(productId);
       const container = containerRef.current;
       if (!product || !container) return null;
       const rect = container.getBoundingClientRect();
-      const { xM, yM } = screenToRoom(
+      const snapStep = usesTileLattice(product) ? PRECISION_STEP_M[precision] : objectPlacementStepM();
+      const allowOverlap = objectOverlapAllowed() && !usesTileLattice(product);
+      const { xM, yM } = roomPoint ?? screenToRoom(
         clientX,
         clientY,
         { left: rect.left, top: rect.top },
@@ -2035,7 +2045,7 @@ export function RoomCanvas({
         ? [...freeWallRects, ...freeWallObstacleRects(buildingWallsAsFree)]
         : freeWallRects;
       const inBounds = (rect: PlacedRect): boolean =>
-        outdoor ? fitsOutdoors(rect) : isRectInsidePolygon(rect, target.polygon);
+        outdoor ? fitsOutdoors(rect) : isRectInsidePolygon(rect, target.polygon) && (!allowOverlap || placementKind(product) !== 'floor' || isRoofRoom(target) || insideInnerFaces(rect, target.polygon));
 
       const kind = placementKind(product);
 
@@ -2056,8 +2066,8 @@ export function RoomCanvas({
           return { xM: xM - w / 2, yM: yM - h / 2, rotation: 0, valid: false, w, h };
         }
         const rect = { x: r.x, y: r.y, w, h };
-        const ok = inBounds(rect) && !collidesWithAny(rect, layerRects(target.placedItems, 'wall'));
-        return { xM: r.x, yM: r.y, rotation: r.rotationDeg, valid: ok, w, h };
+        const ok = inBounds(rect) && (allowOverlap || !collidesWithAny(rect, layerRects(target.placedItems, 'wall')));
+        return { xM: r.x, yM: r.y, rotation: r.rotationDeg, valid: ok, w, h, mountHeightCm: product.mount_height_cm ?? 120 };
       }
 
       // Surface-item ghost: green only over a table with room for it.
@@ -2079,8 +2089,10 @@ export function RoomCanvas({
           return { xM: xM - w / 2, yM: yM - h / 2, rotation: rot, valid: false, w, h };
         }
         const sibs = layerRects(target.placedItems, 'surface', { parentId: under.instanceId });
-        const ok = !collidesWithAny({ x: res.x, y: res.y, w, h }, sibs);
-        return { xM: res.x, yM: res.y, rotation: rot, valid: ok, w, h };
+        const ok = allowOverlap || !collidesWithAny({ x: res.x, y: res.y, w, h }, sibs);
+        const parent = target.placedItems.find(i => i.instanceId === under.instanceId);
+        const parentProduct = parent && getProductById(parent.productId);
+        return { xM: res.x, yM: res.y, rotation: rot, valid: ok, w, h, parentInstanceId: under.instanceId, mountHeightCm: parentProduct?.dimensions_cm.height ?? 0 };
       }
 
       // Same wall-aware resolver as the commit path, so the ghost shows
@@ -2116,12 +2128,12 @@ export function RoomCanvas({
             centreXm: xM,
             centreYm: yM,
             fp,
-            polygon: outdoor ? [] : target.polygon,
+            polygon: outdoor || allowOverlap ? [] : target.polygon,
             snapStep,
             userRotationDeg: userRot,
             frontEdge: product.front_edge,
             wallInsetM: WALL_HALF_M,
-            freeWalls: snapWalls,
+            freeWalls: allowOverlap ? [] : snapWalls,
           });
       const { w, h } = rotatedFootprint(fp, resolved.rotationDeg);
       const candidate: PlacedRect = { x: resolved.x, y: resolved.y, w, h };
@@ -2132,7 +2144,7 @@ export function RoomCanvas({
         const p = getProductById(it.productId);
         return p ? placementKind(p) === kind : true;
       });
-      const others: PlacedRect[] = obstaclesFor(product.id, sameKind)
+      const others: PlacedRect[] = obstaclesFor(product.id, allowOverlap ? [] : sameKind)
         .map((it) => {
           const p = getProductById(it.productId);
           if (!p) return null;
@@ -2151,7 +2163,7 @@ export function RoomCanvas({
       pxPerMetre,
       ghostRotation,
       ghostManuallyRotated,
-      snapStep,
+      precision,
       resolveContainer,
       fitsOutdoors,
       freeWalls,
@@ -2159,6 +2171,20 @@ export function RoomCanvas({
       buildingWallsAsFree,
     ],
   );
+
+  const previewPlacementRef = useRef(computeGhost);
+  previewPlacementRef.current = computeGhost;
+  useEffect(() => usePlacementIntentStore.getState().registerPlacementPreviewResolver(
+    (productId, xM, yM) => previewPlacementRef.current(0, 0, productId, { xM, yM }),
+  ), []);
+
+  // Keyboard turns and snap toggles must update a stationary ghost too.
+  useEffect(() => {
+    const point = lastGhostPointer.current;
+    if (!pendingProductId || !point) { setDragGhost(null); return; }
+    const next = computeGhost(point.clientX, point.clientY, pendingProductId);
+    setDragGhost(next ? { xM: next.xM, yM: next.yM, rotation: next.rotation, valid: next.valid } : null);
+  }, [pendingProductId, computeGhost, objectPlacementMode]);
 
   const handleDrawCommit = useCallback(
     (newPolygon: Polygon, name: string) => {
@@ -3547,6 +3573,7 @@ export function RoomCanvas({
         </div>}
       </div>
 
+    {viewMode === 'plan' && <ObjectPlacementControls />}
     <div
       ref={containerRef}
       data-testid="plan-drawing-viewport"
@@ -4404,10 +4431,10 @@ export function RoomCanvas({
           if (pendingProductId && setPendingProductId) {
             const touch = (e.evt as TouchEvent).changedTouches?.[0];
             if (touch) {
-              placeProductAt(touch.clientX, touch.clientY, pendingProductId);
+              const placed = placeProductAt(touch.clientX, touch.clientY, pendingProductId, undefined, false);
+              if (!placed) return;
               setPendingProductId(null);
               setDragGhost(null);
-              setGhostRotation(0);
               return;
             }
           }
@@ -4424,16 +4451,15 @@ export function RoomCanvas({
           if (!gardenPlacement) useGardenEditorStore.getState().close();
           useOpeningSelectionStore.getState().select(null);
           if (pendingProductId && setPendingProductId) {
-            const placed = placeProductAt(e.evt.clientX, e.evt.clientY, pendingProductId);
+            const placed = placeProductAt(e.evt.clientX, e.evt.clientY, pendingProductId, undefined, false);
             // D4 (desktop) — Shift+click STAMPS: keep the ghost on the
             // cursor to rapid-place duplicates. Sims core duplication
             // mechanic. Bare click commits and exits placing as before.
-            if (placed && (e.evt as MouseEvent).shiftKey) {
+            if (!placed || (e.evt as MouseEvent).shiftKey) {
               return;
             }
             setPendingProductId(null);
             setDragGhost(null);
-            setGhostRotation(0);
           }
         }}
         // V-RENDER-4 — touch-none stops iOS Safari native pan/zoom from
@@ -5692,13 +5718,8 @@ interface PlacedItemGroupProps {
 
 function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
   const {
-    item,
-    snapStep,
+    item: savedItem,
     product,
-    wPx,
-    hPx,
-    w,
-    h,
     colors,
     isSelected,
     justPlaced,
@@ -5706,18 +5727,47 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
     planSun,
     wallHeightM,
     polygon,
-    placedItems,
-    outdoor,
-    fitsOutdoors,
-    snapWalls,
-    wallRects,
-    resolveContainer,
     selectItem,
-    updateItem,
     pushToast,
     itemDragRef,
     activatePlacedItem,
   } = props;
+  const rotationRun = useRef<{ session: ItemRotationSession; centre: { x: number; y: number }; start: number; preview: ItemRotationPreview; node: Konva.Node } | null>(null);
+  const [rotationPreview, setRotationPreview] = useState<ItemRotationPreview | null>(null);
+  const item = rotationPreview ? { ...savedItem, x: rotationPreview.x, y: rotationPreview.y, rotation: rotationPreview.rotation } : savedItem;
+  const footprint = rotatedFootprint({ lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) }, item.rotation);
+  const wPx = footprint.w * pxPerMetre, hPx = footprint.h * pxPerMetre;
+  const hasSurfaceChildren = usePropertyStore(state => state.property.rooms.some(room => room.placedItems.some(child => child.parentInstanceId === savedItem.instanceId)));
+  const canTurn = placementKind(product) !== 'wall' && !hasSurfaceChildren;
+  const cancelTurn = useCallback(() => {
+    const run = rotationRun.current;
+    rotationRun.current = null;
+    if (run) { cancelItemRotation(run.session); run.node.stopDrag(); }
+    setRotationPreview(null);
+  }, []);
+  useEffect(() => {
+    const key = (event: KeyboardEvent) => {
+      if (!rotationRun.current) return;
+      if (event.key === 'Escape' || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z')) {
+        event.preventDefault(); event.stopImmediatePropagation(); cancelTurn();
+      } else if (['r', ',', '.', '<', '>'].includes(event.key.toLowerCase())) {
+        event.preventDefault(); event.stopImmediatePropagation();
+      }
+    };
+    window.addEventListener('keydown', key, true);
+    window.addEventListener('pointercancel', cancelTurn);
+    window.addEventListener('touchcancel', cancelTurn);
+    window.addEventListener('blur', cancelTurn);
+    return () => {
+      window.removeEventListener('keydown', key, true);
+      window.removeEventListener('pointercancel', cancelTurn);
+      window.removeEventListener('touchcancel', cancelTurn);
+      window.removeEventListener('blur', cancelTurn);
+      const run = rotationRun.current;
+      if (run) cancelItemRotation(run.session);
+    };
+  }, [cancelTurn]);
+  useEffect(() => { if (!isSelected) cancelTurn(); }, [isSelected, cancelTurn]);
   // Polish (2026-05-29) — placement settle tween. On the render where
   // `justPlaced` is true, the group node fades + scales in from 0.9 → 1
   // over ~180ms then settles at exactly scale 1 / opacity 1. Konva scales
@@ -5833,248 +5883,17 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
         e.cancelBubble = true;
         const stage = e.target.getStage();
         if (stage) stage.container().style.cursor = 'grab';
-        const newXm = e.target.x() / pxPerMetre;
-        const newYm = e.target.y() / pxPerMetre;
-        /**
-         * Sims drag-drop (2026-08-28, D-B15) — where did it actually land?
-         *
-         * PlacedItemGroup is handed its OWNING room polygon, so before this
-         * a release over an attached neighbour failed isRectInsidePolygon
-         * and bounced back with a toast, while a FRESH placement at the same
-         * point routed correctly. That asymmetry was the bug.
-         *
-         * Rooms are read via getState() INSIDE the handler: this component
-         * memoises and must not gain store subscriptions.
-         */
-        const allRoomsNow = usePropertyStore.getState().property.rooms;
-        const ownerRoom = allRoomsNow.find((r) =>
-          r.placedItems.some((i) => i.instanceId === item.instanceId),
-        );
-        // Sims world (2026-08-29): the SAME routing as a fresh drop — a room
-        // on this level, else the outdoors (created on demand), else off
-        // the plot. So dragging out of a room into the garden works, and
-        // dragging from the garden into a room works.
-        const routed = resolveContainer({ x: newXm + w / 2, y: newYm + h / 2 }, { create: true });
-        if (!routed.ok) {
-          e.target.position({ x: item.x * pxPerMetre, y: item.y * pxPerMetre });
-          pushToast(routed.reason === 'off-roof' ? 'Nothing floats off the roof.' : 'That is off the plot.', 'warn');
-          return;
-        }
-        const dropRoom = routed.room;
-        const dropOutdoor = routed.outdoor;
-        const crossRoom = !!(ownerRoom && dropRoom.id !== ownerRoom.id);
-        // Resolve against whichever container it was dropped in.
-        const targetPolygon = crossRoom ? dropRoom.polygon : polygon;
-        const targetItems = crossRoom ? dropRoom.placedItems : placedItems;
-        const targetOutdoor = crossRoom ? dropOutdoor : outdoor;
-        const targetWallRects = crossRoom && dropOutdoor !== outdoor
-          ? (dropOutdoor ? wallRects : wallRects.filter((r) => !r.instanceId.startsWith('wall:')))
-          : wallRects;
-        const inBounds = (rect: PlacedRect): boolean =>
-          targetOutdoor ? fitsOutdoors(rect) : isRectInsidePolygon(rect, targetPolygon);
-
-        // Band + placement-kind filter, matching the placement paths: a floor
-        // item dragged ONTO a mat must land (band), and must ignore the
-        // wall/surface items that live above it (kind). Wall + surface drags
-        // return early below, so this only governs the floor drag path.
-        const itemKind = placementKind(product);
-        const sameKindItems = targetItems.filter((it) => {
-          const p = getProductById(it.productId);
-          return p ? placementKind(p) === itemKind : true;
-        });
-        const others: Array<PlacedRect & { instanceId: string }> = obstaclesFor(item.productId, sameKindItems)
-          .map((it) => {
-            const p = getProductById(it.productId);
-            if (!p) return null;
-            const ofp = {
-              lengthM: cmToM(p.dimensions_cm.length),
-              widthM: cmToM(p.dimensions_cm.width),
-            };
-            const r = rotatedFootprint(ofp, it.rotation);
-            return { x: it.x, y: it.y, w: r.w, h: r.h, instanceId: it.instanceId };
-          })
-          .filter((r): r is PlacedRect & { instanceId: string } => r !== null);
-        if (itemKind !== 'ceiling') others.push(...targetWallRects);
-        // Sims wall-aware drag (2026-08-23): released near a wall, the
-        // item snaps flush and turns to face into the room. Hold Shift
-        // to keep the current facing. Mid-room drags keep facing and
-        // grid-snap exactly as before (wallAware falls through to the
-        // plain grid path with userRotationDeg = current rotation).
-        const shiftHeld = 'shiftKey' in e.evt && (e.evt as MouseEvent).shiftKey;
-        const fpUnrotated = {
-          lengthM: cmToM(product.dimensions_cm.length),
-          widthM: cmToM(product.dimensions_cm.width),
-        };
-        const revert = (msg: string) => {
-          e.target.position({ x: item.x * pxPerMetre, y: item.y * pxPerMetre });
-          pushToast(msg, 'warn');
-        };
-        const kind = placementKind(product);
-
-        // Wall item drag: re-snap to the nearest wall (it may be a
-        // different wall — re-orient with it) or bounce back.
-        if (kind === 'wall') {
-          const cur = rotatedFootprint(fpUnrotated, item.rotation);
-          // Live unit + the routed container (a shelf can cross into the
-          // next room, or hang on a free wall) — no more hardcoded 0.5 m.
-          const r = resolveWallItemPlacement({
-            centreXm: newXm + cur.w / 2,
-            centreYm: newYm + cur.h / 2,
-            fp: fpUnrotated,
-            polygon: targetPolygon,
-            snapStep,
-            frontEdge: product.front_edge,
-            freeWalls: snapWalls,
-          });
-          const wfW = rotatedFootprint(fpUnrotated, r.rotationDeg);
-          const rect = { x: r.x, y: r.y, w: wfW.w, h: wfW.h };
-          const ok =
-            r.ok &&
-            inBounds(rect) &&
-            !collidesWithAny(rect, layerRects(targetItems, 'wall', { ignoreId: item.instanceId }));
-          if (ok) {
-            if (crossRoom) {
-              usePropertyStore
-                .getState()
-                .moveItemToRoom(item.instanceId, dropRoom.id, r.x, r.y, r.rotationDeg);
-            } else {
-              updateItem(item.instanceId, { x: r.x, y: r.y, rotation: r.rotationDeg });
-            }
-            e.target.position({ x: r.x * pxPerMetre, y: r.y * pxPerMetre });
-          } else {
-            revert('Wall items need a free bit of wall.');
-          }
-          return;
-        }
-
-        // Surface item drag: must land on a surface (same or another —
-        // it reparents) with room for it, else bounce back.
-        if (kind === 'surface') {
-          const cur = rotatedFootprint(fpUnrotated, item.rotation);
-          const centre = { x: newXm + cur.w / 2, y: newYm + cur.h / 2 };
-          const under = findSurfaceUnder(centre, surfaceRects(placedItems));
-          if (!under) {
-            revert('This item sits on a surface — drop it onto a table.');
-            return;
-          }
-          const res = resolveSurfaceItemPlacement({
-            centreXm: centre.x,
-            centreYm: centre.y,
-            fp: fpUnrotated,
-            rotationDeg: item.rotation,
-            surface: under,
-          });
-          const sibs = layerRects(placedItems, 'surface', {
-            parentId: under.instanceId,
-            ignoreId: item.instanceId,
-          });
-          if (!res.ok || collidesWithAny({ x: res.x, y: res.y, w: cur.w, h: cur.h }, sibs)) {
-            revert('No space on that surface.');
-            return;
-          }
-          updateItem(item.instanceId, {
-            x: res.x,
-            y: res.y,
-            parentInstanceId: res.parentInstanceId,
-          });
-          e.target.position({ x: res.x * pxPerMetre, y: res.y * pxPerMetre });
-          return;
-        }
-
-        // Sims wall-aware drag (2026-08-23): released near a wall, the
-        // item snaps flush and turns to face into the room. Hold Shift
-        // to keep the current facing. Mid-room drags keep facing and
-        // grid-snap exactly as before (wallAware falls through to the
-        // plain grid path with userRotationDeg = current rotation).
-        const ceilingItem = kind === 'ceiling';
-        const flooringItem = usesTileLattice(product);
-        const wallAware = ceilingItem
-          ? {
-              x: Math.round(newXm / snapStep) * snapStep,
-              y: Math.round(newYm / snapStep) * snapStep,
-              rotationDeg: item.rotation,
-              wallSnapped: false,
-            }
-          : flooringItem
-            ? (() => {
-                // Drag a tile and it lands on its lattice next to its
-                // siblings — never a half-tile gap.
-                const lat = tileLatticeFor({
-                  productId: item.productId,
-                  fp: fpUnrotated,
-                  rotationDeg: item.rotation,
-                  polygon: targetOutdoor ? [] : targetPolygon,
-                  items: targetItems.filter((it) => it.instanceId !== item.instanceId),
-                });
-                const s = snapToTileLattice(newXm, newYm, lat);
-                return { x: s.x, y: s.y, rotationDeg: item.rotation, wallSnapped: false };
-              })()
-          : resolveWallAwarePlacement({
-              centreXm: newXm + w / 2,
-              centreYm: newYm + h / 2,
-              fp: fpUnrotated,
-              polygon: targetOutdoor ? [] : targetPolygon,
-              snapStep,
-              userRotationDeg: shiftHeld || !isCardinalRotation(item.rotation) ? item.rotation : null,
-              // Mid-room the item KEEPS its facing (the 2026-08-29 fix for the
-              // rotation-reset-on-drag defect).
-              currentRotationDeg: item.rotation,
-              frontEdge: product.front_edge,
-              wallInsetM: WALL_HALF_M,
-              freeWalls: snapWalls,
-            });
-        const wf = rotatedFootprint(fpUnrotated, wallAware.rotationDeg);
-        const ownOthers = others.filter((o) => o.instanceId !== item.instanceId);
-        const wallRect = { x: wallAware.x, y: wallAware.y, w: wf.w, h: wf.h };
-        const wallOk = inBounds(wallRect) && !collidesWithAny(wallRect, ownOthers);
-        // Plain grid fallback at the CURRENT rotation, bounded by the container.
-        const gridX = Math.round(newXm / snapStep) * snapStep;
-        const gridY = Math.round(newYm / snapStep) * snapStep;
-        const gridRect = { x: gridX, y: gridY, w, h };
-        const resolved = wallOk
-          ? { ok: true as const, x: wallAware.x, y: wallAware.y }
-          : inBounds(gridRect)
-            ? collidesWithAny(gridRect, ownOthers)
-              ? { ok: false as const, reason: 'collision' as const }
-              : { ok: true as const, x: gridX, y: gridY }
-            : { ok: false as const, reason: 'out-of-bounds' as const };
-        if (resolved.ok) {
-          const rotation = wallOk ? wallAware.rotationDeg : item.rotation;
-          if (crossRoom) {
-            // One atomic action, preserving the instanceId. A remove+add
-            // would mint a fresh id and orphan the selection, the history
-            // reference and the cart line item.
-            usePropertyStore
-              .getState()
-              .moveItemToRoom(item.instanceId, dropRoom.id, resolved.x, resolved.y, rotation);
-            console.log('[drag-move]', {
-              reason: 'cross-room',
-              from: ownerRoom?.id,
-              to: dropRoom.id,
-              instanceId: item.instanceId,
-            });
-          } else {
-            updateItem(item.instanceId, { x: resolved.x, y: resolved.y, rotation });
-            console.log('[drag-move]', { reason: 'same-room' });
-          }
-          e.target.position({
-            x: resolved.x * pxPerMetre,
-            y: resolved.y * pxPerMetre,
-          });
+        const x = e.target.x() / pxPerMetre;
+        const y = e.target.y() / pxPerMetre;
+        const bridge = usePlacementIntentStore.getState();
+        const shift = !!(e.evt as MouseEvent).shiftKey;
+        const result = bridge.previewMove(item.instanceId, x, y, shift);
+        if (result?.ok) {
+          e.target.position({ x: result.x * pxPerMetre, y: result.y * pxPerMetre });
+          bridge.moveTo(item.instanceId, x, y, shift);
         } else {
-          e.target.position({
-            x: item.x * pxPerMetre,
-            y: item.y * pxPerMetre,
-          });
-          console.log('[drag-move]', { reason: 'rejected', cause: resolved.reason });
-          pushToast(
-            resolved.reason === 'collision'
-              ? "Item won't fit there."
-              : targetOutdoor
-                ? 'That would sit on a building or off the plot.'
-                : 'Out of room bounds.',
-            'warn',
-          );
+          e.target.position({ x: item.x * pxPerMetre, y: item.y * pxPerMetre });
+          pushToast(result?.message ?? 'That spot is unavailable.', 'warn');
         }
       }}
     >
@@ -6291,116 +6110,55 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
           <Circle x={wPx} y={0} radius={4} fill={HANDLE_FILL} />
           <Circle x={0} y={hPx} radius={4} fill={HANDLE_FILL} />
           <Circle x={wPx} y={hPx} radius={4} fill={HANDLE_FILL} />
-          {/* Tweak 01 / Phase B — rotate handle. A draggable Circle
-              floating ~18 px above the AABB centre; the user drags it
-              around the item centre to rotate. Cursor angle (relative
-              to item centre) snaps to 15° increments by default; hold
-              Shift to free-rotate. Konva passes touch events through
-              the same interaction, so this also covers a single-finger
-              mobile rotate gesture (the brief's "2-finger twist" is a
-              Stage-level multi-touch handler added below). */}
+          {canTurn && <>
+          {/* The handle is a read-only pose preview until release. Its pivot
+              stays in absolute screen coordinates at every canvas zoom. */}
           <Circle
-            x={wPx / 2}
-            y={-18}
-            radius={9}
-            fill={HANDLE_FILL}
-            stroke={LABEL_HALO}
-            strokeWidth={2}
-            draggable
-            data-testid="rotate-handle"
-            onMouseEnter={(e) => {
-              const stage = e.target.getStage();
-              if (stage) stage.container().style.cursor = 'grab';
-            }}
-            onMouseLeave={(e) => {
-              const stage = e.target.getStage();
-              if (stage) stage.container().style.cursor = '';
-            }}
-            onDragStart={(e) => {
+            name="item-rotate-handle"
+            x={wPx / 2} y={-18} radius={10}
+            fill={rotationPreview?.ok === false ? '#de6868' : HANDLE_FILL}
+            stroke={LABEL_HALO} strokeWidth={2} hitStrokeWidth={24}
+            draggable data-testid="rotate-handle"
+            onMouseDown={e => { e.cancelBubble = true; }}
+            onTouchStart={e => { e.cancelBubble = true; }}
+            onMouseEnter={e => { const stage = e.target.getStage(); if (stage) stage.container().style.cursor = 'grab'; }}
+            onMouseLeave={e => { const stage = e.target.getStage(); if (stage) stage.container().style.cursor = ''; }}
+            onDragStart={e => {
               e.cancelBubble = true;
-              // Mark history with a 'rotate' label so the undo toast
-              // reads cleanly; the subscriber records the prior state.
-              useHistoryStore.getState().recordSnapshot('rotate');
+              const session = beginItemRotation(savedItem.instanceId);
+              const parent = e.target.getParent();
+              if (!session || !parent) { e.target.stopDrag(); return; }
+              const transform = parent.getAbsoluteTransform();
+              const centre = transform.point({ x: wPx / 2, y: hPx / 2 });
+              const anchor = transform.point({ x: wPx / 2, y: -18 });
+              rotationRun.current = { session, centre, start: pointerAngle(anchor, centre),
+                preview: { ok: true, x: savedItem.x, y: savedItem.y, rotation: savedItem.rotation }, node: e.target };
             }}
-            onDragMove={(e) => {
+            onDragMove={e => {
               e.cancelBubble = true;
-              const node = e.target;
-              const layer = node.getLayer();
-              if (!layer) return;
-              // Centre of the AABB in ABSOLUTE (stage-scaled) pixels. The
-              // old code added unscaled layer px (wPx / 2) to a scaled
-              // absolute position, so at any zoom other than 100 % the
-              // pivot was off and the first drag tick gave a wrong angle.
-              // Mapping the layer-space centre through the parent's own
-              // absolute transform keeps every term in the same space.
-              const parent = node.getParent();
-              const centreAbs = parent
-                ? parent.getAbsoluteTransform().point({ x: wPx / 2, y: hPx / 2 })
-                : { x: wPx / 2, y: hPx / 2 };
-              const centreX = centreAbs.x;
-              const centreY = centreAbs.y;
-              const handleAbs = node.getAbsolutePosition();
-              const dx = handleAbs.x - centreX;
-              const dy = handleAbs.y - centreY;
-              // Angle in degrees, 0° pointing up (which is where the
-              // handle sits at rest). Konva y-axis grows downward, so
-              // negate before atan2 for natural CW=positive semantics.
-              const rad = Math.atan2(dx, -dy);
-              let deg = (rad * 180) / Math.PI;
-              // "More angles" (Vic 2026-08-28): the drag handle snaps to 15°
-              // detents by default — 24 orientations, and because 0/90/180/270
-              // are all multiples of 15 the cardinal facings still snap cleanly
-              // for square-to-wall alignment. Hold Shift or Alt for a fully
-              // free angle. (90° quarter-turns stay available on the ⟳ cluster
-              // button + the R key.)
-              const HANDLE_DETENT_DEG = 15;
-              const free = e.evt.shiftKey || e.evt.altKey;
-              if (!free) {
-                deg = Math.round(deg / HANDLE_DETENT_DEG) * HANDLE_DETENT_DEG;
-              }
-              // Normalise to [0, 360).
-              deg = ((deg % 360) + 360) % 360;
-              if (Math.abs(deg - item.rotation) < 0.5) return;
-              // Haptic tick on each detent crossing (free-rotate is silent
-              // so it doesn't buzz continuously through the drag).
-              if (!free) haptic('rotate');
-              // Pin the handle back to its rest position so subsequent
-              // drag deltas resolve from the same anchor (Sims build
-              // mode behaviour).
-              node.position({ x: wPx / 2, y: -18 });
-              // Apply rotation through the same validation FSM as
-              // rotateSelected so we don't slam into a wall or another
-              // item. Use a delta (newRotation - currentRotation) so
-              // the helper's logic stays correct.
-              const delta = deg - item.rotation;
-              // Apply via direct updateItem (validation lives in the
-              // wrapper helper; we replicate the minimum here to avoid
-              // a circular import). For now just persist; the next
-              // dragend snaps back if it overlaps another item.
-              void delta;
-              updateItem(item.instanceId, { rotation: deg });
+              const run = rotationRun.current;
+              const pointer = e.target.getStage()?.getPointerPosition();
+              if (!run || !pointer) return;
+              const angle = gestureRotation(run.session.original.rotation, run.start, pointerAngle(pointer, run.centre), !!(e.evt.shiftKey || e.evt.altKey));
+              run.preview = previewItemRotation(run.session, angle);
+              setRotationPreview(run.preview);
+              e.target.position({ x: wPx / 2, y: -18 });
             }}
-            onDragEnd={(e) => {
+            onDragEnd={e => {
               e.cancelBubble = true;
-              // Always return the handle to its rest position so the
-              // next drag picks up cleanly.
+              const run = rotationRun.current;
+              rotationRun.current = null;
+              if (run && !commitItemRotation(run.session, run.preview.rotation)) pushToast(run.preview.message ?? 'Not enough space to turn here.', 'warn');
+              setRotationPreview(null);
               e.target.position({ x: wPx / 2, y: -18 });
               e.target.getLayer()?.batchDraw();
-              // Vic 2026-08-29: the live rotation above only wrote the
-              // angle — the AABB re-shaped around its top-left, so a
-              // flush item ended up in the wall or past it with no check.
-              // Re-seat about the centre through the wall-aware resolver
-              // (snapshot:false — the frame was recorded at drag start).
-              rotateSelected(0, { snapshot: false });
             }}
           />
-          <Circle
-            x={wPx / 2}
-            y={-18}
-            radius={2}
-            fill="#fff"
-            listening={false}
-          />
+          <Circle x={wPx / 2} y={-18} radius={2} fill="#fff" listening={false} />
+          {rotationPreview && <Text x={wPx / 2 + 16} y={-25} text={`${Math.round(rotationPreview.rotation)}°`}
+            fontSize={12} fill={rotationPreview.ok ? SELECT_STROKE : '#de6868'} stroke={LABEL_HALO} strokeWidth={3}
+            fillAfterStrokeEnabled listening={false} />}
+          </>}
         </>
       )}
     </Group>

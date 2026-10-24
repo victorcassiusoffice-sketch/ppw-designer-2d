@@ -5,8 +5,8 @@
  *
  * Covers:
  *   - rotateSelected accepts any signed delta (was `90 | -90`).
- *   - 15° fine step (Shift+R) lands on the 15° snap grid.
- *   - 90° + 15° rotations compose normally (mod 360).
+ *   - 1° fine step (Shift+R) lands on the 1° snap grid.
+ *   - 45° + 1° rotations compose normally (mod 360).
  *   - A 'rotate' label appears on the resulting history frame so the
  *     undo toast reads cleanly.
  *   - rotateSelected returns silently when nothing is selected.
@@ -69,32 +69,32 @@ describe('rotateSelected — Phase B rotation API', () => {
     useDesignStore.getState().selectItem(id);
     rotateSelected(ROTATION_STEP_COARSE_DEG);
     const item = useDesignStore.getState().placedItems.find((i) => i.instanceId === id);
-    expect(item?.rotation).toBe(90);
+    expect(item?.rotation).toBe(45);
   });
 
-  it('rotates by ROTATION_STEP_FINE_DEG (Shift+R 15° step)', () => {
+  it('rotates by ROTATION_STEP_FINE_DEG (Shift+R 1° step)', () => {
     const id = placeOne();
     useDesignStore.getState().selectItem(id);
     rotateSelected(ROTATION_STEP_FINE_DEG);
     const item = useDesignStore.getState().placedItems.find((i) => i.instanceId === id);
-    expect(item?.rotation).toBe(15);
+    expect(item?.rotation).toBe(1);
   });
 
-  it('coarse + fine compose (105° after 90° + 15°)', () => {
+  it('coarse + fine compose (46° after 45° + 1°)', () => {
     const id = placeOne();
     useDesignStore.getState().selectItem(id);
     rotateSelected(ROTATION_STEP_COARSE_DEG);
     rotateSelected(ROTATION_STEP_FINE_DEG);
     const item = useDesignStore.getState().placedItems.find((i) => i.instanceId === id);
-    expect(item?.rotation).toBe(105);
+    expect(item?.rotation).toBe(46);
   });
 
-  it('wraps negatives correctly (-15° from 0° lands on 345°)', () => {
+  it('wraps negatives correctly (-1° from 0° lands on 359°)', () => {
     const id = placeOne();
     useDesignStore.getState().selectItem(id);
     rotateSelected(-ROTATION_STEP_FINE_DEG);
     const item = useDesignStore.getState().placedItems.find((i) => i.instanceId === id);
-    expect(item?.rotation).toBe(345);
+    expect(item?.rotation).toBe(359);
   });
 
   it('no-ops silently when nothing is selected', () => {

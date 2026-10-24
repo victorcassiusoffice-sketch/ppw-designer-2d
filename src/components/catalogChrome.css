@@ -192,6 +192,39 @@
 .catalog-detail-place { background: var(--catalog-selected); margin-top: 3px; color: var(--catalog-selected-text); }
 .catalog-tile-details { display: block; width: 100%; min-height: 28px; font-size: 11px; color: var(--catalog-muted); }
 .catalog-tile-details:hover { color: var(--catalog-accent); text-decoration: underline; }
+
+/* Catalogue-only build/buy controls. Static imagery never creates a WebGL
+   renderer here; sizes reserve the tile before the lazy PNG arrives. */
+.catalog-browse { flex: 0 0 auto; min-width: 0; padding: 0 4px; }
+.catalog-browse-top { display: flex; align-items: center; gap: 4px; }
+.catalog-browse-top > [role="tablist"] { flex: 1; min-width: 0; }
+.catalog-browse .catalog-browse-close { min-width: 44px; min-height: 44px; padding: 0; font-size: 24px; }
+.catalog-browse [role="tablist"] { display: flex; gap: 5px; overflow-x: auto; padding: 3px 0; scrollbar-width: thin; }
+.catalog-browse button { flex-shrink: 0; min-height: 36px; padding: 5px 12px; border-radius: 10px; color: var(--catalog-text); border: 1px solid var(--catalog-border); background: var(--catalog-field); font-size: 12px; }
+.catalog-browse button[aria-selected="true"] { background: var(--catalog-selected); color: var(--catalog-selected-text); border-color: var(--catalog-accent); }
+.catalog-browse button:focus-visible, .catalog-swatches button:focus-visible { outline: 3px solid var(--catalog-focus); outline-offset: -2px; }
+.sims-catalog .catalog-model-thumbnail { display: flex; align-items: center; justify-content: center; width: 100%; height: 76px; object-fit: contain; flex-shrink: 0; background: #f5f3ed; border-radius: 8px; padding: 3px; }
+.sims-catalog .catalog-model-thumbnail svg { max-width: 60%; max-height: 70%; }
+.sims-catalog [data-product-id] { width: 138px !important; height: 135px !important; }
+.sims-catalog [data-product-id] > span.relative { height: 76px !important; }
+.sims-catalog .catalog-availability { font-size: 10px; line-height: 18px; color: var(--catalog-muted); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.catalog-availability-detail { margin: 7px 0; }
+.catalog-availability-detail > span { display: inline-flex; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--catalog-border); color: var(--catalog-text); font-size: 12px; }
+.catalog-swatches { display: flex; gap: 4px; max-width: 138px; overflow-x: auto; }
+.catalog-swatches button { display: flex; align-items: center; gap: 5px; min-height: 44px; flex-shrink: 0; font-size: 11px; color: var(--catalog-text); }
+.catalog-swatches button span { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--catalog-border); background: var(--catalog-field); }
+.sims-catalog[data-catalog-mode="3d"] { max-height: min(46dvh, 380px) !important; }
+.sims-catalog .catalog-tile-details { min-height: 40px; }
+.sims-catalog .catalog-product-detail { max-height: min(36dvh, 320px); }
+@media (max-width: 1023px) {
+  .sims-catalog[data-catalog-open="true"] { overflow-y: auto; max-height: min(48dvh, 390px) !important; }
+  .sims-catalog .catalog-browse { padding: 0 8px; }
+  .catalog-browse button { min-height: 40px; }
+  .sims-catalog [data-testid="sims-thumb-strip"] { flex: 0 0 auto; }
+  .sims-catalog [data-testid="sims-thumb-strip"] > .grid { grid-template-rows: auto !important; grid-auto-columns: 138px !important; align-items: start; }
+  .sims-catalog .catalog-product-tile > .catalog-tile-details { min-width: 44px; min-height: 44px; }
+  .sims-catalog .catalog-product-detail { max-height: 330px; flex: 0 0 auto; }
+}
 .sims-catalog .catalog-product-tile { position: relative; }
 .sims-catalog .catalog-product-tile > .catalog-tile-details { position: absolute; right: 3px; top: 3px; z-index: 1; width: 32px; height: 32px; min-height: 32px; border-radius: 50%; background: var(--catalog-raised, #f5f3ed); border: 1px solid var(--catalog-border, #aebcb3); color: var(--catalog-text, #263c35); font-size: 18px; }
 @media (min-width: 1024px) {
@@ -199,7 +232,7 @@
   .catalog-detail-content { grid-template-columns: 104px minmax(0, 1fr); }
 }
 @media (max-width: 1023px) {
-  .sims-catalog[data-catalog-mode="3d"] { max-height: min(34dvh, 248px) !important; gap: 0; }
+  .sims-catalog[data-catalog-mode="3d"] { max-height: min(48dvh, 390px) !important; gap: 0; }
   .catalog-browser-header { min-height: 48px; gap: 8px; padding: 4px 8px; }
   .catalog-browser-header > div > span { display: none; }
   .catalog-browser-header button { min-height: 40px; padding: 6px 9px; }

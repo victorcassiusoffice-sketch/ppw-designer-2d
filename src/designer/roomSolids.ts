@@ -100,6 +100,7 @@ export interface FloorSolid {
 }
 
 export interface ItemSolid {
+  parentInstanceId?: string;
   roofRoomId?: string;
   roofMount?: import('./roofSurface').RoofItemMount;
   levelId?: string;
@@ -235,12 +236,13 @@ export function buildSolids(input: SceneInput): SceneSolids {
       const fp = rotatedFootprint({ lengthM: cmToM(it.lengthCm), widthM: cmToM(it.widthCm) }, it.rotation);
       if (fp.w <= 0 || fp.h <= 0) continue;
       const hItem = Math.max(0.05, Math.min(cmToM(it.heightCm), H));
-      let z0 = 0;
+      let z0 = it.placement === 'surface' ? Math.min(Math.max(0, cmToM(it.baseHeightCm ?? 0)), Math.max(0, H - hItem)) : 0;
       if (it.placement === 'ceiling') z0 = Math.max(0, H - hItem);
       else if (it.placement === 'wall') z0 = Math.min(Math.max(0, cmToM(it.mountHeightCm ?? 120)), Math.max(0, H - hItem));
       items.push({
         key: `item-${it.instanceId}`,
         instanceId: it.instanceId,
+        parentInstanceId: it.parentInstanceId,
         x0: it.x,
         y0: it.y,
         x1: it.x + fp.w,

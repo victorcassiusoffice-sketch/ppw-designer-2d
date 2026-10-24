@@ -1,0 +1,42 @@
+{
+  "rig": {
+    "version": 1,
+    "camera": [
+      1.25,
+      0.9,
+      1.6
+    ],
+    "size": 384,
+    "exposure": 1,
+    "background": "transparent",
+    "key": 2.7,
+    "fill": 1.5,
+    "hemi": 1.1
+  },
+  "rendered": [],
+  "cached": [
+    "k1-nordictrack-gx10",
+    "k1-nordictrack-2450",
+    "k1-nordictrack-tour-de-france",
+    "k1-schwinn-700ic",
+    "k1-proform-carbon-tl",
+    "k1-nordictrack-rw900",
+    "k1-nordictrack-x16",
+    "k1-vision-t600-03",
+    "k1-matrix-mg-glute",
+    "k1-vision-t600e-02",
+    "k1-matrix-versa-adabd",
+    "k1-vision-smith",
+    "emcar-victron-175",
+    "emcar-jinko-475",
+    "k1-bowflex-xtreme-2se",
+    "emcar-sunpower-flex-100",
+    "emcar-victron-superpack-12-100",
+    "emcar-victron-multiplus-12-3000",
+    "emcar-victron-phoenix-12-1200",
+    "emcar-victron-agm-200",
+    "emcar-victron-mppt-100-30"
+  ],
+  "failures": [],
+  "source": "Existing GLB photography; no generated models or remote services"
+}

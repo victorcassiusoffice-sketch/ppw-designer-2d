@@ -194,6 +194,8 @@ export interface PlacedItem {
    * (see removeItem). Optional → absent on every pre-existing save.
    */
   parentInstanceId?: string;
+  /** Wall fixture bottom above its storey, centimetres; absent uses supplier default. */
+  mountHeightCm?: number;
   /**
    * Lighting (2026-08-29) — whether a light-emitting product is switched on.
    * Absent reads as ON (a lamp you just bought is lit), so only an explicit
@@ -1058,6 +1060,9 @@ export const usePropertyStore = create<PropertyState>()(
             y,
             rotation: rotation ?? moving.rotation,
           };
+          const children = owner.placedItems.filter(i => i.parentInstanceId === instanceId)
+            .map(i => ({ ...i, x: i.x + x - moving.x, y: i.y + y - moving.y }));
+          const carried = new Set([instanceId, ...children.map(i => i.instanceId)]);
           return {
             property: {
               // The item follows the pointer into the room it was dropped in,
@@ -1068,11 +1073,11 @@ export const usePropertyStore = create<PropertyState>()(
                 if (r.id === owner.id) {
                   return {
                     ...r,
-                    placedItems: r.placedItems.filter((i) => i.instanceId !== instanceId),
+                    placedItems: r.placedItems.filter((i) => !carried.has(i.instanceId)),
                   };
                 }
                 if (r.id === toRoomId) {
-                  return { ...r, placedItems: [...r.placedItems, moved] };
+                  return { ...r, placedItems: [...r.placedItems, moved, ...children] };
                 }
                 return r;
               }),
