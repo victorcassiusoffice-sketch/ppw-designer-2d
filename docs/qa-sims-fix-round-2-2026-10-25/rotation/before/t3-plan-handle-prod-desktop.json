@@ -1,0 +1,75 @@
+{
+ "startedAt": "2026-10-25T17:55:14.570Z",
+ "which": [
+  "prod"
+ ],
+ "devices": [
+  "desktop"
+ ],
+ "dest": [
+  5,
+  -2.9
+ ],
+ "rows": [
+  {
+   "target": "prod",
+   "device": "desktop",
+   "checks": [
+    {
+     "name": "drag-chair-near-top",
+     "pass": true,
+     "ms": 7122,
+     "detail": {
+      "before": {
+       "x": 6.15,
+       "y": 5.9,
+       "rot": 90,
+       "room": "Home office"
+      },
+      "after": {
+       "x": 4.5,
+       "y": -3,
+       "rot": 90,
+       "room": "Outdoors"
+      },
+      "from": {
+       "x": 671.8882352941176,
+       "y": 588.1588235294117
+      },
+      "dest": {
+       "x": 605.5882352941177,
+       "y": 169.94117647058823
+      }
+     }
+    },
+    {
+     "name": "select-and-handle-free",
+     "pass": false,
+     "ms": 845,
+     "error": "Error: handle covered by BUTTON.project-hub-launch"
+    },
+    {
+     "name": "four-45-turns",
+     "pass": false,
+     "ms": 3381,
+     "error": "Error: 0/4 turns gave +45: [{\"n\":1,\"before\":90,\"after\":90,\"delta\":0,\"elementUnderHandle\":\"BUTTON.project-hub-launch\",\"handle\":{\"x\":647.7176470588236,\"y\":179.80588235294118,\"r\":12,\"ownerIsThis\":true},\"toast\":[]},{\"n\":2,\"before\":90,\"after\":90,\"delta\":0,\"elementUnderHandle\":\"BUTTON.project-hub-launch\",\"handle\":{\"x\":647.7176470588236,\"y\":179.80588235294118,\"r\":12,\"ownerIsThis\":true},\"toast\":[]},{\"n\":3,\"before\":90,\"after\":90,\"delta\":0,\"elementUnderHandle\":\"BUTTON.project-hub-launch\",\"handle\":{\"x\":647.7176470588236,\"y\":179.80588235294118,\"r\":12,\"ownerIsThis\":true},\"toast\":[]},{\"n\":4,\"before\":90,\"aft"
+    }
+   ],
+   "consoleErrors": [],
+   "pageErrors": [],
+   "httpErrors": [],
+   "failedRequests": [],
+   "shots": [
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/before/t3-prod-desktop-1-chair-moved.png",
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/before/t3-prod-desktop-2-selected.png",
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/before/t3-prod-desktop-3-turn-1.png",
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/before/t3-prod-desktop-3-turn-2.png",
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/before/t3-prod-desktop-3-turn-3.png",
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/before/t3-prod-desktop-3-turn-4.png"
+   ],
+   "overflowPx": 0,
+   "blockedWrites": []
+  }
+ ],
+ "endedAt": "2026-10-25T17:55:30.368Z"
+}

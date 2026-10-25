@@ -1,0 +1,271 @@
+{
+  "at": "2026-10-25T19:27:40.635Z",
+  "method": "Read-only current captures of old fcefc73, production fc0b111, branch. Actual Fit after fixed 1168×592 stage; logical and render cameras asserted equal. Reviewer original included separately, not asserted equal to this Fit projection. No performance claims from capture.",
+  "cases": [
+    {
+      "site": "old",
+      "choice": "auto",
+      "errors": [
+        "Failed to load resource: the server responded with a status of 401 ()"
+      ],
+      "failed": [
+        {
+          "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+          "status": 401
+        }
+      ],
+      "writes": [],
+      "camera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "canvas": {
+        "x": 99,
+        "y": 120,
+        "width": 1168,
+        "height": 592
+      },
+      "attrs": {
+        "data-testid": "wallpaint-3d-gl",
+        "data-engine": "three.js r186",
+        "data-projection": "perspective",
+        "data-shading": "natural-depth"
+      },
+      "geometryUnchanged": true
+    },
+    {
+      "site": "production",
+      "choice": "auto",
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "camera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "canvas": {
+        "x": 99,
+        "y": 120,
+        "width": 1168,
+        "height": 592
+      },
+      "attrs": {
+        "data-testid": "wallpaint-3d-gl",
+        "data-engine": "three.js r186",
+        "data-hover-cutaway": "",
+        "data-erase-target": "",
+        "data-projection": "perspective",
+        "data-shading": "natural-basic",
+        "data-quality": "medium",
+        "data-shadow-size": "2048",
+        "data-auto-ao": "disabled",
+        "data-auto-ao-fps": "27.9"
+      },
+      "geometryUnchanged": true,
+      "sameCamera": true,
+      "sameRenderCamera": true,
+      "sameCanvasDimensions": true
+    },
+    {
+      "site": "production",
+      "choice": "high",
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "camera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "canvas": {
+        "x": 99,
+        "y": 120,
+        "width": 1168,
+        "height": 592
+      },
+      "attrs": {
+        "data-testid": "wallpaint-3d-gl",
+        "data-engine": "three.js r186",
+        "data-hover-cutaway": "",
+        "data-erase-target": "",
+        "data-projection": "perspective",
+        "data-shading": "natural-depth",
+        "data-quality": "high",
+        "data-shadow-size": "2048",
+        "data-auto-ao": "manual",
+        "data-auto-ao-fps": ""
+      },
+      "geometryUnchanged": true,
+      "sameCamera": true,
+      "sameRenderCamera": true,
+      "sameCanvasDimensions": true
+    },
+    {
+      "site": "branch",
+      "choice": "auto",
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "camera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "canvas": {
+        "x": 99,
+        "y": 120,
+        "width": 1168,
+        "height": 592
+      },
+      "attrs": {
+        "data-testid": "wallpaint-3d-gl",
+        "data-engine": "three.js r186",
+        "data-hover-cutaway": "",
+        "data-erase-target": "",
+        "data-projection": "perspective",
+        "data-detail": "full",
+        "data-shading": "natural-basic",
+        "data-quality": "medium",
+        "data-shadow-size": "2048",
+        "data-auto-ao": "disabled",
+        "data-auto-ao-fps": "42.3",
+        "data-first-picture-ms": "3140.100000023842",
+        "data-full-picture-ms": "4017.600000023842",
+        "data-ao-prepare-start-ms": "4529.199999988079",
+        "data-shading-prepared-ms": "4750.100000023842",
+        "data-first-ao-ms": "4981.899999976158"
+      },
+      "geometryUnchanged": true,
+      "sameCamera": true,
+      "sameRenderCamera": true,
+      "sameCanvasDimensions": true
+    },
+    {
+      "site": "branch",
+      "choice": "high",
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "camera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "canvas": {
+        "x": 99,
+        "y": 120,
+        "width": 1168,
+        "height": 592
+      },
+      "attrs": {
+        "data-testid": "wallpaint-3d-gl",
+        "data-engine": "three.js r186",
+        "data-hover-cutaway": "",
+        "data-erase-target": "",
+        "data-projection": "perspective",
+        "data-detail": "full",
+        "data-shading": "natural-depth",
+        "data-quality": "high",
+        "data-shadow-size": "2048",
+        "data-auto-ao": "manual",
+        "data-auto-ao-fps": "",
+        "data-first-picture-ms": "1370.2000000476837",
+        "data-full-picture-ms": "2234.300000011921",
+        "data-ao-prepare-start-ms": "2850.7000000476837",
+        "data-shading-prepared-ms": "2931.300000011921",
+        "data-first-ao-ms": "3207.7000000476837"
+      },
+      "geometryUnchanged": true,
+      "sameCamera": true,
+      "sameRenderCamera": true,
+      "sameCanvasDimensions": true
+    }
+  ]
+}

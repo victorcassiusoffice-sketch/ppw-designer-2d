@@ -4,6 +4,7 @@ import { AppPreferencesProvider } from './i18n/AppPreferences';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { bootstrapFx } from './store/currencyStore';
 import RouteFallback from './components/RouteFallback';
+import { loadThreeStage } from './components/threeStageLoader';
 import { currentBrand, isShopHost } from './brand/brand';
 import './index.css';
 import './brand/olb.css';
@@ -11,6 +12,11 @@ import './brand/olb.css';
 // Pitch and Studio visitors load the designer only when they open it.
 // Keep Clerk (admin-only) and jsPDF (order-success only) route-scoped too.
 const App = lazy(() => import('./App'));
+// Fetch explicit 3D visits in parallel with the app, not after its route,
+// designer and viewport have each loaded. React.lazy shares this promise.
+if (new URLSearchParams(window.location.search).get('view') === '3d') {
+  void loadThreeStage().catch(() => { /* React.lazy exposes a retryable failure. */ });
+}
 const CartPage = lazy(() => import('./pages/CartPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const OrderSuccessPage = lazy(() => import('./pages/OrderSuccessPage'));

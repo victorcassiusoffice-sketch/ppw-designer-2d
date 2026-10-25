@@ -9,6 +9,7 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
  * contact to wall intersections, furniture feet and cabinet recesses instead
  * of adding another decorative image or changing a saved material. */
 export interface NaturalSceneRenderer {
+  prepare(): Promise<void>;
   setSize(width: number, height: number, pixelRatio: number): void;
   render(): void;
   dispose(): void;
@@ -54,6 +55,8 @@ export function withOpaqueOccluders<T>(scene: THREE.Scene, draw: () => T): T {
 }
 
 class OpaqueGTAOPass extends GTAOPass {
+  // Present in pinned Three r186's constructor, omitted from its typings.
+  declare normalRenderTarget: THREE.WebGLRenderTarget;
   override render(renderer: THREE.WebGLRenderer, writeBuffer: THREE.WebGLRenderTarget, readBuffer: THREE.WebGLRenderTarget): void {
     const shadowUpdate = renderer.shadowMap.autoUpdate;
     // The beauty pass has already rendered the light's shadow map. A normal
@@ -61,6 +64,26 @@ class OpaqueGTAOPass extends GTAOPass {
     renderer.shadowMap.autoUpdate = false;
     try { withOpaqueOccluders(this.scene, () => super.render(renderer, writeBuffer, readBuffer, 0, false)); }
     finally { renderer.shadowMap.autoUpdate = shadowUpdate; }
+  }
+}
+
+/** Three.compileAsync traverses object.material, not scene.overrideMaterial.
+ * Swap only for its synchronous compile setup, then restore before yielding. */
+export function prepareNormalMaterials(renderer: Pick<THREE.WebGLRenderer, 'compileAsync' | 'getRenderTarget' | 'setRenderTarget'>,
+  scene: THREE.Scene, camera: THREE.Camera, normal: THREE.Material, target: THREE.WebGLRenderTarget): Promise<unknown> {
+  const previousTarget = renderer.getRenderTarget();
+  const originals: [THREE.Mesh, THREE.Material | THREE.Material[]][] = [];
+  try {
+    renderer.setRenderTarget(target);
+    scene.traverse(object => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      originals.push([mesh, mesh.material]); mesh.material = normal;
+    });
+    return renderer.compileAsync(scene, camera);
+  } finally {
+    for (const [mesh, material] of originals) mesh.material = material;
+    renderer.setRenderTarget(previousTarget);
   }
 }
 
@@ -86,7 +109,36 @@ export function createNaturalSceneRenderer(renderer: THREE.WebGLRenderer, scene:
   composer.addPass(output);
   let disposed = false;
   let sizeKey = '';
+  let preparing: Promise<void> | undefined;
   return {
+    prepare() {
+      // Start the expensive AO/denoise shader links asynchronously after the
+      // direct picture is visible. No off-screen render or GPU finish/readback
+      // is required to warm these programs, so orbit remains available.
+      preparing ??= (async () => {
+        if (typeof renderer.compileAsync !== 'function') return;
+        const previousTarget = renderer.getRenderTarget();
+        const quadScene = new THREE.Scene();
+        const quadGeometry = new THREE.PlaneGeometry(2, 2);
+        for (const material of [ao.gtaoMaterial, ao.pdMaterial, ao.copyMaterial, ao.blendMaterial]) {
+          quadScene.add(new THREE.Mesh(quadGeometry, material));
+        }
+        try {
+          let shaders: Promise<unknown>[];
+          try {
+            renderer.setRenderTarget(composer.readBuffer);
+            shaders = [renderer.compileAsync(quadScene, new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1))];
+            // Public at runtime in pinned Three r186; missing from its typings.
+            const normalTarget = ao.normalRenderTarget;
+            shaders.push(prepareNormalMaterials(renderer, scene, camera, ao.normalMaterial, normalTarget));
+          } finally { renderer.setRenderTarget(previousTarget); }
+          await Promise.all(shaders);
+        } finally {
+          quadGeometry.dispose();
+        }
+      })();
+      return preparing;
+    },
     setSize(width, height, pixelRatio) {
       const size = naturalRenderResolution(width, height, pixelRatio, balanced);
       const key = `${size.beautyWidth}:${size.beautyHeight}`;

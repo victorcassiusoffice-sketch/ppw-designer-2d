@@ -18,6 +18,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { getAllProducts as getStaticProducts } from '../data/products';
+import { usableProductImage } from '../data/productImageSafety';
 import type { Product } from '../data/products.schema';
 
 interface ApiProduct {
@@ -85,7 +86,7 @@ function apiToStaticShape(api: ApiProduct): { product: Product; raw: ApiProduct 
     },
     commission_pct: 0.05,
     shopify_ready: false,
-    image_url: api.imageUrl ?? '',
+    image_url: usableProductImage(api.imageUrl) ?? '',
     designer_status: 'Done',
     delivery_regions: [region],
     notes: api.description ?? '',

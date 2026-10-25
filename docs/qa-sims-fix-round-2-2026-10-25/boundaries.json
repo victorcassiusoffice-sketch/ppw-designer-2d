@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-10-25T18:53:30.519Z",
+  "base": "fc0b1118390813444d6bf45d7c452e3677ec16eb",
+  "branch": "gpt/olb-fix-round-2-2026-10-25",
+  "protectedTests": {
+    "count": 26,
+    "changed": []
+  },
+  "forbiddenApi": [],
+  "envOrMigrations": [],
+  "checkoutOrGate": [],
+  "overlapWithPR49": [
+    "src/components/RoomCanvas.tsx",
+    "src/components/three/ThreeStage.tsx",
+    "src/data/apiCatalogAdapter.ts"
+  ]
+}

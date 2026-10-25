@@ -1,0 +1,213 @@
+{
+  "sourceFiles": [
+    "src/designer/planModel.ts",
+    "src/lib/topdown/modelSnapshot.ts",
+    "src/components/three/furniturePreview.ts",
+    "src/components/three/furnitureSurface.ts",
+    "src/components/three/furnitureOcclusion.ts"
+  ],
+  "sourceHash": "450b90693873624a6e3fbcab18f7250fbc6b0a18dc0772b08e2c959ce96207ed",
+  "rendered": [
+    {
+      "id": "courts-marco-sofa-corner",
+      "url": "/products/catalog-plans/courts-marco-sofa-corner-04e6c71b304b5da7.png",
+      "width": 512,
+      "height": 201
+    },
+    {
+      "id": "courts-perera-coffee-table",
+      "url": "/products/catalog-plans/courts-perera-coffee-table-2cd331ce780386ed.png",
+      "width": 512,
+      "height": 256
+    },
+    {
+      "id": "courts-aurum-tv-cabinet",
+      "url": "/products/catalog-plans/courts-aurum-tv-cabinet-fbafb658cd35c9bf.png",
+      "width": 512,
+      "height": 115
+    },
+    {
+      "id": "courts-hisense-65a6h-tv",
+      "url": "/products/catalog-plans/courts-hisense-65a6h-tv-4f8a1470dc8d2bd2.png",
+      "width": 512,
+      "height": 26
+    },
+    {
+      "id": "courts-samsung-ar18-ac",
+      "url": "/products/catalog-plans/courts-samsung-ar18-ac-9b964506d8ff28e4.png",
+      "width": 512,
+      "height": 106
+    },
+    {
+      "id": "courts-elit-rug",
+      "url": "/products/catalog-plans/courts-elit-rug-eea8227823e8f7a6.png",
+      "width": 512,
+      "height": 324
+    },
+    {
+      "id": "courts-marble-table-lamp",
+      "url": "/products/catalog-plans/courts-marble-table-lamp-a82fb4511bb9a7b1.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "courts-pendant-lamp-7254",
+      "url": "/products/catalog-plans/courts-pendant-lamp-7254-7d98da46258929ff.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "courts-campus-sideboard",
+      "url": "/products/catalog-plans/courts-campus-sideboard-5f17a417195c7848.png",
+      "width": 512,
+      "height": 114
+    },
+    {
+      "id": "courts-blind-white-180",
+      "url": "/products/catalog-plans/courts-blind-white-180-84d04d22c42ea47a.png",
+      "width": 512,
+      "height": 14
+    },
+    {
+      "id": "courts-gessica-dining-6",
+      "url": "/products/catalog-plans/courts-gessica-dining-6-faf99dd3d99823bd.png",
+      "width": 512,
+      "height": 384
+    },
+    {
+      "id": "courts-samsung-rb33-fridge",
+      "url": "/products/catalog-plans/courts-samsung-rb33-fridge-f450d4060457c433.png",
+      "width": 459,
+      "height": 512
+    },
+    {
+      "id": "courts-lavis-sideboard",
+      "url": "/products/catalog-plans/courts-lavis-sideboard-34e4641e1f2b81d2.png",
+      "width": 512,
+      "height": 146
+    },
+    {
+      "id": "courts-pendant-black-canopy",
+      "url": "/products/catalog-plans/courts-pendant-black-canopy-94644355a0ce08f1.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "courts-ceramic-table-lamp",
+      "url": "/products/catalog-plans/courts-ceramic-table-lamp-59f94256310a1b44.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "courts-mika-bed-160",
+      "url": "/products/catalog-plans/courts-mika-bed-160-1f5b9959f8dfdc1e.png",
+      "width": 434,
+      "height": 512
+    },
+    {
+      "id": "courts-beluga-wardrobe-4",
+      "url": "/products/catalog-plans/courts-beluga-wardrobe-4-51f9388d2e4b431b.png",
+      "width": 512,
+      "height": 170
+    },
+    {
+      "id": "courts-arte-bedside",
+      "url": "/products/catalog-plans/courts-arte-bedside-0a9cfb546632e332.png",
+      "width": 512,
+      "height": 432
+    },
+    {
+      "id": "courts-hisense-40a4n-tv",
+      "url": "/products/catalog-plans/courts-hisense-40a4n-tv-444ec4e7a525c0b0.png",
+      "width": 512,
+      "height": 48
+    },
+    {
+      "id": "courts-samsung-ar09-ac",
+      "url": "/products/catalog-plans/courts-samsung-ar09-ac-eed5aef4380a079b.png",
+      "width": 512,
+      "height": 125
+    },
+    {
+      "id": "courts-table-lamp-wood-d25",
+      "url": "/products/catalog-plans/courts-table-lamp-wood-d25-f5c0e7c2d1b37735.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "courts-blind-beige-120",
+      "url": "/products/catalog-plans/courts-blind-beige-120-c0b220a9d7fde49e.png",
+      "width": 512,
+      "height": 21
+    },
+    {
+      "id": "courts-touran-desk",
+      "url": "/products/catalog-plans/courts-touran-desk-92ee109c6bd0e05f.png",
+      "width": 512,
+      "height": 256
+    },
+    {
+      "id": "courts-stellar-celosia-chair",
+      "url": "/products/catalog-plans/courts-stellar-celosia-chair-3a54f65f1a0a8fe9.png",
+      "width": 512,
+      "height": 479
+    },
+    {
+      "id": "courts-malden-bookshelf",
+      "url": "/products/catalog-plans/courts-malden-bookshelf-947725504caa96c9.png",
+      "width": 512,
+      "height": 199
+    },
+    {
+      "id": "courts-nexus-shelving-white",
+      "url": "/products/catalog-plans/courts-nexus-shelving-white-8798112df15abba5.png",
+      "width": 512,
+      "height": 355
+    },
+    {
+      "id": "courts-bamboo-desk-lamp",
+      "url": "/products/catalog-plans/courts-bamboo-desk-lamp-babf0d81c739a28d.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "courts-hisense-as12-ac",
+      "url": "/products/catalog-plans/courts-hisense-as12-ac-5bfdf2fd9314f654.png",
+      "width": 512,
+      "height": 114
+    },
+    {
+      "id": "courts-horizon-tr50-treadmill",
+      "url": "/products/catalog-plans/courts-horizon-tr50-treadmill-aefe9057c0823f4f.png",
+      "width": 512,
+      "height": 243
+    },
+    {
+      "id": "courts-horizon-gr7-cycle",
+      "url": "/products/catalog-plans/courts-horizon-gr7-cycle-ff2128bdc3c417ce.png",
+      "width": 512,
+      "height": 215
+    },
+    {
+      "id": "courts-jdm-home-gym",
+      "url": "/products/catalog-plans/courts-jdm-home-gym-6f34fab3a92b662e.png",
+      "width": 512,
+      "height": 465
+    },
+    {
+      "id": "courts-homedics-footspa",
+      "url": "/products/catalog-plans/courts-homedics-footspa-16186355ac805bf9.png",
+      "width": 512,
+      "height": 494
+    },
+    {
+      "id": "courts-tamarin-corner",
+      "url": "/products/catalog-plans/courts-tamarin-corner-894b2fcebc841a1e.png",
+      "width": 512,
+      "height": 512
+    }
+  ],
+  "skipped": [],
+  "errors": [],
+  "blocked": []
+}

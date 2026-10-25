@@ -1,0 +1,9 @@
+/* Pictures stay in the list column; their labels never cover the product name. */
+.basket-product-picture.catalog-product-visual{display:flex;position:relative;flex:0 0 64px;width:64px;height:72px;min-width:64px;align-items:flex-start;justify-content:center;overflow:hidden;border:1px solid var(--studio-border,#c7ccc7);border-radius:9px;background:#f4f2eb}
+.basket-product-picture .catalog-model-thumbnail{display:block;width:100%;height:54px;object-fit:contain;padding:3px}
+.basket-product-picture .catalog-image-label{position:absolute;bottom:1px;left:0;right:0;width:100%;padding:1px 2px;text-align:center;background:#f4f2eb;color:#404b47;font-size:10px;line-height:13px;border-radius:0}
+.basket-picture-cell{width:76px;padding:7px 12px 7px 0;vertical-align:middle}
+.house-cost-lines .basket-product-name{flex:1;align-self:center;min-width:0}
+.house-product-heading .basket-product-picture{height:78px}
+.house-product-heading .basket-product-picture img{width:100%;height:60px}
+.house-product-heading .basket-product-picture .catalog-image-label{color:#404b47}

@@ -1,0 +1,90 @@
+{
+  "method": "Mean Rec.709-weighted encoded sRGB values (0\u2013255), descriptive screenshot comparison, not physical luminance. Identical pixel regions and actual render camera; scene includes minor existing product-detail differences between old and production.",
+  "regions": {
+    "canvas": null,
+    "backdrop": [
+      40,
+      30,
+      200,
+      90
+    ],
+    "house": [
+      300,
+      160,
+      880,
+      460
+    ]
+  },
+  "images": {
+    "old-auto": {
+      "canvas": {
+        "mean": 144.6518239526842,
+        "relativeToOldPercent": 0.0
+      },
+      "backdrop": {
+        "mean": 162.90689577083333,
+        "relativeToOldPercent": 0.0
+      },
+      "house": {
+        "mean": 124.97881591609195,
+        "relativeToOldPercent": 0.0
+      }
+    },
+    "production-auto": {
+      "canvas": {
+        "mean": 164.3013413464801,
+        "relativeToOldPercent": 13.584009421286858
+      },
+      "backdrop": {
+        "mean": 184.40306722916668,
+        "relativeToOldPercent": 13.195372336216348
+      },
+      "house": {
+        "mean": 142.95514828045975,
+        "relativeToOldPercent": 14.383503502254925
+      }
+    },
+    "production-high": {
+      "canvas": {
+        "mean": 164.53715557213758,
+        "relativeToOldPercent": 13.74703137235096
+      },
+      "backdrop": {
+        "mean": 184.5337723333333,
+        "relativeToOldPercent": 13.27560534510659
+      },
+      "house": {
+        "mean": 143.44710354367814,
+        "relativeToOldPercent": 14.77713442251316
+      }
+    },
+    "branch-auto": {
+      "canvas": {
+        "mean": 144.4737573388428,
+        "relativeToOldPercent": -0.12310015109082695
+      },
+      "backdrop": {
+        "mean": 162.96386318749998,
+        "relativeToOldPercent": 0.03496930955384503
+      },
+      "house": {
+        "mean": 125.20227935402299,
+        "relativeToOldPercent": 0.17880105223677667
+      }
+    },
+    "branch-high": {
+      "canvas": {
+        "mean": 144.5272041139732,
+        "relativeToOldPercent": -0.08615158475413498
+      },
+      "backdrop": {
+        "mean": 162.9183725,
+        "relativeToOldPercent": 0.007044962162194857
+      },
+      "house": {
+        "mean": 125.33643220114944,
+        "relativeToOldPercent": 0.2861415212139562
+      }
+    }
+  }
+}

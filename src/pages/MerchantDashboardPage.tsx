@@ -23,6 +23,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { usableProductImage } from '../data/productImageSafety';
 import type { ApiProductsResponse, ApiProductSummary } from '../data/apiCatalogAdapter';
 import { SESSION_STORAGE_KEY } from '../components/RequireMerchant';
 
@@ -456,11 +457,11 @@ function ProductCard({
         minHeight: 180,
       }}
     >
-      {product.imageUrl ? (
+      {usableProductImage(product.imageUrl) ? (
         // Show the product's own image (top-down render or uploaded photo).
         // White fill so transparent top-down PNGs read on the navy card.
         <img
-          src={product.imageUrl}
+          src={usableProductImage(product.imageUrl)}
           alt={product.name}
           loading="lazy"
           data-testid="merchant-product-image"

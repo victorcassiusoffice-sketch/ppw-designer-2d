@@ -42,6 +42,8 @@
  */
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { createAutoAoState, sampleAutoAo } from './adaptiveAmbientOcclusion';
+import { optionalShadingReady } from './firstPicture';
+import { createFirstPictureMaterials } from './firstPictureMaterials';
 import { applyWallHoverVisibility, removalHighlight, clipRemovalHighlightToPlanBounds, disposeRemovalHighlight } from './viewOnlyFeedback';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -656,6 +658,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const naturalRendererRef = useRef<NaturalSceneRenderer | null>(null);
+  const naturalPreparedRef = useRef<NaturalSceneRenderer | null>(null);
   const naturalBalancedRef = useRef(false);
   const naturalEnabledRef = useRef(presentation === 'natural');
   const naturalUnavailableRef = useRef(false);
@@ -696,6 +699,15 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const viewCameraKeyRef = useRef('');
   const eraseHighlightRef = useRef<{key:string;root:THREE.Group}|null>(null);
   const framesRef = useRef(0);
+  const firstPictureAtRef = useRef<number | null>(null);
+  const firstFullPictureAtRef = useRef<number | null>(null);
+  const detailReadyRef = useRef(presentation !== 'natural');
+  const firstMaterialsRef = useRef<ReturnType<typeof createFirstPictureMaterials> | null>(null);
+  const prepareDetailsRef = useRef<(() => void) | null>(null);
+  const detailTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const firstRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingBodiesRef = useRef(0);
+  const shadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
   const targetRef = useRef<number[]>([0, 0, 0]);
@@ -740,6 +752,17 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     // frame. Geometry, previews and lighting still invalidate it explicitly.
     if (shadowsDirty && rendererRef.current) rendererRef.current.shadowMap.needsUpdate = true;
     if (rafRef.current !== null || failedRef.current) return;
+    const firstAt = firstPictureAtRef.current;
+    const presentationGap = firstAt === null || detailReadyRef.current ? 0 : Math.max(0, 600 - (performance.now() - firstAt));
+    if (shadowsDirty && presentationGap > 0) {
+      // Let the completed first picture and loading-state removal actually
+      // present before asset-driven texture/shader refinements. Camera input
+      // calls requestRender(false), so orbit/zoom never waits on this gap.
+      if (firstRefreshTimerRef.current === null) firstRefreshTimerRef.current = setTimeout(() => {
+        firstRefreshTimerRef.current = null; requestRender();
+      }, presentationGap);
+      return;
+    }
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null;
       const r = rendererRef.current;
@@ -753,22 +776,39 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         updateFog();
         let rendered = false;
         const automatic = qualityChoiceRef.current === 'auto' && !qualityRef.current.phone;
-        const wantsAo = qualityRef.current.ambientOcclusion || (automatic && autoAoRef.current.mode !== 'disabled');
+        const shadingReady = optionalShadingReady(firstFullPictureAtRef.current, performance.now(), pendingBodiesRef.current);
+        const requestedAo = qualityRef.current.ambientOcclusion || (automatic && autoAoRef.current.mode !== 'disabled');
+        const wantsAo = shadingReady && requestedAo;
         if (naturalEnabledRef.current && wantsAo && !naturalUnavailableRef.current) {
           try {
             if (naturalRendererRef.current && naturalBalancedRef.current !== automatic) {
               naturalRendererRef.current.dispose(); naturalRendererRef.current = null;
             }
             if (!naturalRendererRef.current) {
+              r.domElement.dataset.aoPrepareStartMs = String(performance.now());
               naturalRendererRef.current = createNaturalSceneRenderer(r, s, c, automatic);
               naturalBalancedRef.current = automatic;
               if (!naturalRendererRef.current) naturalUnavailableRef.current = true;
+              const preparing = naturalRendererRef.current;
+              if (preparing) {
+                preparing.prepare().then(() => {
+                  if (naturalRendererRef.current !== preparing) return;
+                  naturalPreparedRef.current = preparing;
+                  r.domElement.dataset.shadingPreparedMs = String(performance.now());
+                  requestRender(false);
+                }).catch(() => {
+                  if (naturalRendererRef.current !== preparing) return;
+                  preparing.dispose(); naturalRendererRef.current = null;
+                  naturalUnavailableRef.current = true; requestRender(false);
+                });
+              }
             }
             const natural = naturalRendererRef.current;
-            if (natural) {
+            if (natural && naturalPreparedRef.current === natural) {
               const size = r.getSize(drawingSizeRef.current);
               natural.setSize(size.x, size.y, r.getPixelRatio());
               natural.render();
+              if (!r.domElement.dataset.firstAoMs) r.domElement.dataset.firstAoMs = String(performance.now());
               rendered = true;
             }
           } catch {
@@ -780,7 +820,17 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
             r.setRenderTarget(null);
           }
         }
-        if (!rendered) r.render(s, c);
+        if (!rendered) {
+          if (!detailReadyRef.current) {
+            firstMaterialsRef.current ??= createFirstPictureMaterials();
+            firstMaterialsRef.current.draw(s, () => r.render(s, c));
+          } else r.render(s, c);
+        }
+        r.domElement.dataset.detail = detailReadyRef.current ? 'full' : 'first-picture';
+        if (detailReadyRef.current && firstFullPictureAtRef.current === null) {
+          firstFullPictureAtRef.current = performance.now();
+          r.domElement.dataset.fullPictureMs = String(firstFullPictureAtRef.current);
+        }
         if (automatic && rendered) {
           autoAoRef.current = sampleAutoAo(autoAoRef.current, performance.now());
           if (autoAoRef.current.mode === 'disabled') {
@@ -793,10 +843,25 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         r.domElement.dataset.shading = rendered ? 'natural-depth' : naturalEnabledRef.current ? 'natural-basic' : 'colour-check';
         r.domElement.dataset.quality = qualityRef.current.level;
         r.domElement.dataset.shadowSize = String(qualityRef.current.shadowSize);
-        r.domElement.dataset.autoAo = qualityRef.current.phone ? 'phone-off' : automatic ? naturalUnavailableRef.current ? 'unavailable' : autoAoRef.current.mode : 'manual';
+        r.domElement.dataset.autoAo = qualityRef.current.phone ? 'phone-off' : automatic ? !shadingReady ? 'waiting-for-picture' : naturalUnavailableRef.current ? 'unavailable' : autoAoRef.current.mode : 'manual';
         r.domElement.dataset.autoAoFps = autoAoRef.current.fps?.toFixed(1) ?? '';
         framesRef.current += 1;
-        if (framesRef.current === 1) onReadyRef.current?.();
+        if (framesRef.current === 1) {
+          firstPictureAtRef.current = performance.now();
+          r.domElement.dataset.firstPictureMs = String(firstPictureAtRef.current);
+          onReadyRef.current?.();
+          if (!detailReadyRef.current && detailTimerRef.current === null) {
+            detailTimerRef.current = setTimeout(() => {
+              detailTimerRef.current = null;
+              prepareDetailsRef.current?.();
+            }, 600);
+          }
+        }
+        if (firstFullPictureAtRef.current !== null && !shadingReady && requestedAo && naturalEnabledRef.current && shadingTimerRef.current === null) {
+          // A macrotask after the first real frame lets the browser present it
+          // and dismiss Loading 3D before optional shader compilation begins.
+          shadingTimerRef.current = setTimeout(() => { shadingTimerRef.current = null; requestRender(false); }, 100);
+        }
         // A short bounded real-AO trial establishes GPU throughput even before
         // the first orbit. Once decided, static scenes stop rendering again.
         if (automatic && rendered && autoAoRef.current.mode === 'probing') requestRender(false);
@@ -982,16 +1047,45 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     // Something for a sheen to reflect: a neutral room environment, handed
     // to the materials that have a sheen (silk / satin / gloss, the product
     // bodies) — never set on the scene, see applyWallLook.
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    const environment = new RoomEnvironment();
-    try {
-      envTargetRef.current = pmrem.fromScene(environment, 0.04);
-      envRef.current = envTargetRef.current.texture;
-    } catch {
-      envRef.current = null; /* no environment: finishes read flat, colours unaffected */
-    }
-    pmrem.dispose();
-    environment.dispose();
+    const prepareEnvironment = () => {
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      const environment = new RoomEnvironment();
+      try {
+        envTargetRef.current = pmrem.fromScene(environment, 0.04);
+        envRef.current = envTargetRef.current.texture;
+      } catch {
+        envRef.current = null; /* no environment: finishes read flat, colours unaffected */
+      }
+      pmrem.dispose(); environment.dispose();
+    };
+    // Natural gets its real diffuse scene on screen before reflections and
+    // physical shader detail. Calibrated colour-check views keep their rig.
+    detailReadyRef.current = presentation !== 'natural';
+    if (detailReadyRef.current) prepareEnvironment();
+    prepareDetailsRef.current = () => {
+      if (rendererRef.current !== renderer) return;
+      prepareEnvironment();
+      for (const entry of wallsRef.current) {
+        applyWallLook(entry.paint, entry.solid, envRef.current);
+        applyWallLook(entry.exterior, exteriorLook(entry.solid), envRef.current);
+      }
+      for (const floor of floorsRef.current) {
+        const material = floor.material as THREE.MeshPhysicalMaterial;
+        if (material.envMapIntensity > 0) { material.envMap = envRef.current; material.needsUpdate = true; }
+      }
+      for (const item of itemsRef.current) applyProductSurfaceLighting(item, envRef.current,
+        Math.min(qualityRef.current.anisotropy, renderer.capabilities.getMaxAnisotropy()));
+      const ready = () => {
+        if (rendererRef.current !== renderer) return;
+        detailReadyRef.current = true;
+        firstMaterialsRef.current?.dispose(); firstMaterialsRef.current = null;
+        requestRender();
+      };
+      // compileAsync starts shader work without a blocking first full draw.
+      if (cameraRef.current && typeof renderer.compileAsync === 'function') {
+        void renderer.compileAsync(scene, cameraRef.current).then(ready, ready);
+      } else ready();
+    };
 
     const ground = groundPlane();
     scene.add(ground);
@@ -1025,6 +1119,18 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       // renders after StrictMode's dev remount (the "blank 3D" bug).
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
+      if (shadingTimerRef.current !== null) clearTimeout(shadingTimerRef.current);
+      shadingTimerRef.current = null;
+      if (detailTimerRef.current !== null) clearTimeout(detailTimerRef.current);
+      detailTimerRef.current = null;
+      if (firstRefreshTimerRef.current !== null) clearTimeout(firstRefreshTimerRef.current);
+      firstRefreshTimerRef.current = null;
+      prepareDetailsRef.current = null;
+      firstMaterialsRef.current?.dispose(); firstMaterialsRef.current = null;
+      firstPictureAtRef.current = null;
+      firstFullPictureAtRef.current = null;
+      pendingBodiesRef.current = 0;
+      framesRef.current = 0;
       failedRef.current = false;
       naturalRendererRef.current?.dispose();
       naturalRendererRef.current = null;
@@ -1141,6 +1247,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     }
 
     const buildId = ++buildRef.current;
+    pendingBodiesRef.current = 0;
     for (const it of solids.items) {
       // Known furniture has a shaped, explicitly approximate planning body.
       // Other products retain their own art; an exact GLTF always replaces it.
@@ -1171,6 +1278,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       // Swap the preview for the product's body once it has loaded — unless the
       // plan has been rebuilt since (a stale load must not resurrect).
       if (it.meshUrl && (it.preferMesh || (!solarPreview && !tankPreview))) {
+        pendingBodiesRef.current += 1;
         loadBody(it.meshUrl)
           .then((tpl) => {
             if (buildRef.current !== buildId || !contentRef.current) return;
@@ -1212,7 +1320,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
           })
           .catch(() => {
             /* the dimensional preview or art box stays */
-          });
+          }).finally(() => { if (buildRef.current === buildId) pendingBodiesRef.current = Math.max(0, pendingBodiesRef.current - 1); });
       }
     }
 
@@ -1254,7 +1362,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     const r = rendererRef.current;
     const s = sceneRef.current;
     const c = cameraRef.current;
-    if (r && s && c && typeof r.compileAsync === 'function') {
+    if (detailReadyRef.current && r && s && c && typeof r.compileAsync === 'function') {
       r.compileAsync(s, c).then(() => requestRender()).catch(() => requestRender());
     } else {
       requestRender();

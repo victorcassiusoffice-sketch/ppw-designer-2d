@@ -1,0 +1,164 @@
+{
+ "startedAt": "2026-10-25T17:56:24.013Z",
+ "which": [
+  "prod"
+ ],
+ "devices": [
+  "phone"
+ ],
+ "dest": [
+  5.5,
+  -5
+ ],
+ "rows": [
+  {
+   "target": "prod",
+   "device": "phone",
+   "checks": [
+    {
+     "name": "drag-chair-near-top",
+     "pass": true,
+     "ms": 8361,
+     "detail": {
+      "before": {
+       "x": 6.15,
+       "y": 5.9,
+       "rot": 90,
+       "room": "Home office"
+      },
+      "after": {
+       "x": 5,
+       "y": -5.5,
+       "rot": 90,
+       "room": "Outdoors"
+      },
+      "from": {
+       "x": 213.73478260869567,
+       "y": 563.9695652173914
+      },
+      "dest": {
+       "x": 188.26086956521738,
+       "y": 261.6521739130435
+      }
+     }
+    },
+    {
+     "name": "select-and-handle-free",
+     "pass": true,
+     "ms": 130,
+     "detail": {
+      "item": {
+       "centre": {
+        "x": 182.73478260869567,
+        "y": 256.6652173913044
+       },
+       "rect": {
+        "x": 174.7826086956522,
+        "y": 248.17391304347828,
+        "w": 15.904347826086962,
+        "h": 16.982608695652175
+       },
+       "d": 0
+      },
+      "handle": {
+       "x": 228.68695652173915,
+       "y": 256.6652173913044,
+       "r": 12,
+       "ownerIsThis": true
+      },
+      "elementUnderHandle": "CANVAS",
+      "handleSide": "right",
+      "placementControls": {
+       "x": 59.9375,
+       "y": 684,
+       "width": 270.125,
+       "height": 50
+      },
+      "handleToCentrePx": 46
+     }
+    },
+    {
+     "name": "four-45-turns",
+     "pass": true,
+     "ms": 5762,
+     "detail": {
+      "turns": [
+       {
+        "n": 1,
+        "before": 90,
+        "after": 135,
+        "delta": 45,
+        "elementUnderHandle": "CANVAS",
+        "handle": {
+         "x": 228.68695652173915,
+         "y": 256.6652173913044,
+         "r": 12,
+         "ownerIsThis": true
+        },
+        "toast": []
+       },
+       {
+        "n": 2,
+        "before": 135,
+        "after": 180,
+        "delta": 45,
+        "elementUnderHandle": "CANVAS",
+        "handle": {
+         "x": 232.3620775932501,
+         "y": 256.6652173913044,
+         "r": 12,
+         "ownerIsThis": true
+        },
+        "toast": []
+       },
+       {
+        "n": 3,
+        "before": 180,
+        "after": 225,
+        "delta": 45,
+        "elementUnderHandle": "CANVAS",
+        "handle": {
+         "x": 229.22608695652173,
+         "y": 256.66521739130434,
+         "r": 12,
+         "ownerIsThis": true
+        },
+        "toast": []
+       },
+       {
+        "n": 4,
+        "before": 225,
+        "after": 270,
+        "delta": 45,
+        "elementUnderHandle": "CANVAS",
+        "handle": {
+         "x": 232.3620775932501,
+         "y": 256.6652173913044,
+         "r": 12,
+         "ownerIsThis": true
+        },
+        "toast": []
+       }
+      ],
+      "okTurns": 4
+     }
+    }
+   ],
+   "consoleErrors": [],
+   "pageErrors": [],
+   "httpErrors": [],
+   "failedRequests": [],
+   "shots": [
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/before/t3-prod-phone-1-chair-moved.png",
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/before/t3-prod-phone-2-selected.png",
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/before/t3-prod-phone-3-turn-1.png",
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/before/t3-prod-phone-3-turn-2.png",
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/before/t3-prod-phone-3-turn-3.png",
+    "docs/qa-sims-fix-round-2-2026-10-25/rotation/before/t3-prod-phone-3-turn-4.png"
+   ],
+   "overflowPx": 0,
+   "blockedWrites": []
+  }
+ ],
+ "endedAt": "2026-10-25T17:56:47.511Z"
+}

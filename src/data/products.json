@@ -21,7 +21,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0A2450",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -50,7 +50,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0ATour+de+France",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -79,7 +79,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0AGX10",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -108,7 +108,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Schwinn%0A700IC",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -137,7 +137,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=ProForm%0ACarbon+TL",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -166,7 +166,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0AX16",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -195,7 +195,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=NordicTrack%0ARW900",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -224,7 +224,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Vision%0AT600-03",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -253,7 +253,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Vision%0AT600E-02",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -282,7 +282,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Matrix%0AMG+Glute",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -311,7 +311,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Matrix%0AVersa+Ad%2FAbd",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -340,7 +340,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Vision%0ASmith+Machine",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -369,7 +369,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Bowflex%0AXtreme+2+SE",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -398,7 +398,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Adjustable%0AFID+Bench",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -426,7 +426,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EVA%0ACombat+Mat",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -455,7 +455,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EVA%0AKids+Mat",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -484,7 +484,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=PVC%0AGym+Interlock",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -513,7 +513,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=iFIT%0AVinyl+Mat",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -542,7 +542,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Rubber%0AInterlock",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -571,7 +571,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+1m",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -600,7 +600,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=Outdoor%0ARubber+50",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -629,7 +629,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400/D7C3A0/7C5E3C?text=EPDM%0ARubber+Roll",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -664,7 +664,7 @@
     "currency": "MUR"
    },
    "is_surface": true,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Console%0ATable",
+   "image_url": "",
    "topdown_image_url": "/products/topdown/demo-console-table.webp",
    "notes": "Slim console table for oils, diffusers and small decor. DEMO seed for surface-slot placement."
   },
@@ -693,7 +693,7 @@
    },
    "placement": "wall",
    "mount_height_cm": 150,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Wall%0AShelf",
+   "image_url": "",
    "topdown_image_url": "/products/topdown/demo-wall-shelf.webp",
    "notes": "Wall-mounted floating shelf. DEMO seed for wall-mounted placement."
   },
@@ -722,7 +722,7 @@
    },
    "placement": "wall",
    "mount_height_cm": 20,
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Wall%0AMirror",
+   "image_url": "",
    "topdown_image_url": "/products/topdown/demo-wall-mirror.webp",
    "notes": "Full-length studio mirror, wall-mounted. DEMO seed for wall-mounted placement."
   },
@@ -750,7 +750,7 @@
     "currency": "MUR"
    },
    "placement": "surface",
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Aroma%0ADiffuser",
+   "image_url": "",
    "topdown_image_url": "/products/topdown/demo-aroma-diffuser.webp",
    "notes": "Ultrasonic aroma diffuser. Sits on a table. DEMO seed for surface-slot placement."
   },
@@ -778,7 +778,7 @@
     "currency": "MUR"
    },
    "placement": "surface",
-   "image_url": "https://placehold.co/400x400/F5EBD7/232C3B?text=Potted%0APlant",
+   "image_url": "",
    "topdown_image_url": "/products/topdown/demo-potted-plant.webp",
    "notes": "Small potted plant for tabletops. DEMO seed for surface-slot placement."
   },
@@ -800,7 +800,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400?text=Floor+Lamp",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -831,7 +831,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400?text=Pendant+Light",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -862,7 +862,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400?text=Wall+Sconce",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -894,7 +894,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400?text=Garden+Tree",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -923,7 +923,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400?text=Hedge",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"
@@ -952,7 +952,7 @@
    },
    "commission_pct": 0.05,
    "shopify_ready": false,
-   "image_url": "https://placehold.co/400x400?text=Garden+Bench",
+   "image_url": "",
    "designer_status": "Done",
    "delivery_regions": [
     "MU"

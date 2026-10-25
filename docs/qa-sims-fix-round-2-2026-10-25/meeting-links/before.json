@@ -1,0 +1,77 @@
+{
+  "origin": "https://onelivebuild.com",
+  "label": "before",
+  "at": "2026-10-25T17:58:39.563Z",
+  "cases": [
+    {
+      "device": "desktop",
+      "links": [
+        {
+          "text": "Book 1 hour ↗",
+          "canonical": false,
+          "href": "Retired target (production baseline)"
+        },
+        {
+          "text": "Book a 1-hour meeting ↗",
+          "canonical": false,
+          "href": "Retired target (production baseline)"
+        },
+        {
+          "text": "Choose a 1-hour meeting ↗",
+          "canonical": true,
+          "href": "https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour"
+        }
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 ()"
+      ],
+      "pageErrors": [],
+      "httpErrors": [
+        {
+          "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+          "status": 401
+        }
+      ],
+      "blockedWrites": [],
+      "screenshots": [
+        "docs\\qa-sims-fix-round-2-2026-10-25\\meeting-links\\before-desktop-plumbing-meeting.png"
+      ],
+      "overflowPx": 0
+    },
+    {
+      "device": "phone",
+      "links": [
+        {
+          "text": "Book 1 hour ↗",
+          "canonical": false,
+          "href": "Retired target (production baseline)"
+        },
+        {
+          "text": "Book a 1-hour meeting ↗",
+          "canonical": false,
+          "href": "Retired target (production baseline)"
+        },
+        {
+          "text": "Choose a 1-hour meeting ↗",
+          "canonical": true,
+          "href": "https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour"
+        }
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 ()"
+      ],
+      "pageErrors": [],
+      "httpErrors": [
+        {
+          "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+          "status": 401
+        }
+      ],
+      "blockedWrites": [],
+      "screenshots": [
+        "docs\\qa-sims-fix-round-2-2026-10-25\\meeting-links\\before-phone-plumbing-meeting.png"
+      ],
+      "overflowPx": 0
+    }
+  ]
+}

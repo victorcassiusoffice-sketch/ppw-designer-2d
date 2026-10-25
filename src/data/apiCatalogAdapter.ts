@@ -19,6 +19,7 @@ import type {
 } from './products.schema';
 import catalogJson from './products.json';
 import { useCatalogStore } from '../store/catalogStore';
+import { usableProductImage } from './productImageSafety';
 
 /**
  * Real-image enrichment. Since 2026-07-26 (WD directive 2) the live
@@ -214,13 +215,13 @@ export function apiProductToProduct(api: ApiProductSummary): Product {
     },
     commission_pct: seed?.commission_pct ?? 0,
     shopify_ready: false,
-    image_url: api.imageUrl ?? '',
+    image_url: usableProductImage(api.imageUrl) ?? '',
     // Real product photo + generated top-down. Bundled seed wins (exact
     // committed assets); the API's topdownImageUrl covers non-seed merchant
     // products once generated. `productImageUrl` prefers the photo
     // (catalog/detail); `productTopDownUrl` prefers the top-down (canvas).
-    photo_image_url: seed?.photo_image_url,
-    topdown_image_url: seed?.topdown_image_url ?? api.topdownImageUrl ?? undefined,
+    photo_image_url: usableProductImage(seed?.photo_image_url),
+    topdown_image_url: usableProductImage(seed?.topdown_image_url) ?? usableProductImage(api.topdownImageUrl),
     designer_status: 'Done',
     delivery_regions: normaliseRegion(api.region),
     // Prefer the live DB description; fall back to the curated bundled notes

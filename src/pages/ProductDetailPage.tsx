@@ -9,6 +9,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useMarketplaceCart } from '../store/marketplaceCartStore';
+import { usableProductImage } from '../data/productImageSafety';
 import '../styles/soft-shop.css';
 
 interface PublicProduct {
@@ -101,8 +102,8 @@ export default function ProductDetailPage(): JSX.Element {
       {product && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 28 }}>
           <div className="soft-card" style={{ overflow: 'hidden', alignSelf: 'start' }}>
-            {product.imageUrl ? (
-              <img src={product.imageUrl} alt={product.name} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'contain', background: '#fff', display: 'block', borderRadius: 19 }} />
+            {usableProductImage(product.imageUrl) ? (
+              <img src={usableProductImage(product.imageUrl)} alt={product.name} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'contain', background: '#fff', display: 'block', borderRadius: 19 }} />
             ) : (
               <div className="soft-product-img soft-product-img--empty">No image</div>
             )}

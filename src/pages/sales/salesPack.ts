@@ -1,5 +1,5 @@
 export const PACK_DATE = '9 October 2026';
-export const MEETING = 'https://calendly.com/victorcassius-office/ppw-client-meeting-1-hour';
+export const MEETING = 'https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour';
 export const PACK_LINKS = [
   {
     path: '/pitch/plumbing',

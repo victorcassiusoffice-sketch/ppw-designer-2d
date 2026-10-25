@@ -12,7 +12,7 @@ Shot on the branch's own dev server (`127.0.0.1:5186`) by `tools/shoot-pitch-pag
 | `/pitch/merchants?client=spa-concept` | Spa Concept | Same page, thin overlay: internal-tool-first framing, Build preselected, honest "in build" labels (wood/cladding quantity, staff dashboard, permission locks, hold-for-review ordering), customer access = later, locked phase |
 | `/studio` | Hub | 2D / Premium 3D entry, Shop, both pitches |
 
-No prices anywhere on these pages. "Meet Victor" links to `https://calendly.com/victorcassius-office/ppw-client-meeting-1-hour`. The name outside is Victor Cassius Bhatoolaul / Victor.
+No prices anywhere on these pages. "Meet Victor" links to `https://calendly.com/victorcassius-office/ppw-online-face-to-face-meeting-1-hour`. The name outside is Victor Cassius Bhatoolaul / Victor.
 
 ## App captures
 

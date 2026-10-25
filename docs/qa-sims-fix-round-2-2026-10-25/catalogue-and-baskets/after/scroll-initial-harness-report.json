@@ -1,0 +1,73 @@
+{
+  "base": "http://127.0.0.1:5176",
+  "cases": [
+    {
+      "device": "desktop",
+      "view": "2d",
+      "errors": [],
+      "writes": [],
+      "placeholders": [],
+      "failures": [],
+      "geometry": {
+        "top": 456.5,
+        "bottom": 543.5,
+        "height": 800,
+        "pictureNotCovered": true,
+        "name": "DrawingPendant Lamp Black Metal Canopy ACSLG2157005LightingLighting"
+      },
+      "shot": "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/after/desktop-2d-basket-last.png"
+    },
+    {
+      "device": "desktop",
+      "view": "3d",
+      "errors": [],
+      "writes": [],
+      "placeholders": [],
+      "failures": [],
+      "geometry": {
+        "top": 352.6875,
+        "bottom": 443.6875,
+        "height": 800,
+        "pictureNotCovered": true,
+        "bottomToolsTop": 79,
+        "name": "DrawingPendant Lamp Black Metal Canopy ACSLG2157005"
+      },
+      "shot": "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/after/desktop-3d-basket-last.png"
+    },
+    {
+      "device": "phone",
+      "view": "2d",
+      "errors": [],
+      "writes": [],
+      "placeholders": [],
+      "failures": [
+        "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+      ],
+      "geometry": {
+        "top": 368.40625,
+        "bottom": 455.40625,
+        "height": 844,
+        "pictureNotCovered": false,
+        "name": "DrawingPendant Lamp Black Metal Canopy ACSLG2157005LightingLighting"
+      }
+    },
+    {
+      "device": "phone",
+      "view": "3d",
+      "errors": [],
+      "writes": [],
+      "placeholders": [],
+      "failures": [
+        "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+      ],
+      "geometry": {
+        "top": 332,
+        "bottom": 423,
+        "height": 844,
+        "pictureNotCovered": false,
+        "bottomToolsTop": 782,
+        "name": "DrawingPendant Lamp Black Metal Canopy ACSLG2157005"
+      }
+    }
+  ]
+}

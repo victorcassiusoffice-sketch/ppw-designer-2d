@@ -1,4 +1,6 @@
-import { getProductById, productImageUrl } from '../data/products';
+import { getProductById } from '../data/products';
+import { CatalogProductImage } from './CatalogProductExtras';
+import './basketPictures.css';
 import { ProductSourceNote } from './ProductSourceNote';
 import { hasSolarPanelPreview, SOLAR_PANEL_PREVIEW_NOTE } from '../data/solarPreview';
 import { formatCurrency } from '../lib/currency';
@@ -18,7 +20,7 @@ export function HouseCostPanel({ productId, onEdit, onCart }: {
   const money = (amount: number) => pitch ? '' : formatCurrency(amount, cart.currency);
   return <div className="house-cost-panel">
     {product && <section className="house-product-detail" aria-label="Selected product description">
-      <div className="house-product-heading"><img src={productImageUrl(product)} alt="" /><div><h3>{product.name}</h3>{!pitch && <span>{product.supplier}</span>}{!pitch && <strong>{product.price_on_request ? 'Price on request' : formatCurrency(product.price.value, product.price.currency)}</strong>}</div></div>
+      <div className="house-product-heading"><CatalogProductImage product={product} className="basket-product-picture" /><div><h3>{product.name}</h3>{!pitch && <span>{product.supplier}</span>}{!pitch && <strong>{product.price_on_request ? 'Price on request' : formatCurrency(product.price.value, product.price.currency)}</strong>}</div></div>
       <p className="house-product-dimensions">{product.dimensions_cm.length} × {product.dimensions_cm.width} × {product.dimensions_cm.height} cm · L × W × H</p>
       {product.notes && <p>{product.notes}</p>}
       <ProductSourceNote product={product} />
@@ -30,9 +32,9 @@ export function HouseCostPanel({ productId, onEdit, onCart }: {
       {cart.lines.length + cart.floorLines.length + cart.wallPaintLines.length + cart.claddingLines.length === 0
         ? <p>Add products or finishes to see their quantities and cost here.</p>
         : <ul className="house-cost-lines">
-          {cart.lines.map(line => <li key={line.productId}><span>{line.quantity} × {line.product.name}</span><strong>{line.product.price_on_request ? 'Price on request' : money(line.lineTotalDisplay)}</strong></li>)}
-          {cart.floorLines.map(line => <li key={line.lineId}><span>{line.unitsToOrder} {line.unit}{line.unitsToOrder === 1 ? '' : 's'} · {line.materialName}</span><strong>{money(line.lineTotalDisplay)}</strong></li>)}
-          {cart.wallPaintLines.map(line => <li key={line.lineId}><span>{line.paintName}{line.colourName ? ` · ${line.colourName}` : ''}<small>{line.boughtLitres.toFixed(1)} L in whole tins</small></span><strong>{money(line.totalDisplay)}</strong></li>)}
+          {cart.lines.map(line => <li key={line.productId} data-testid="basket-product-line"><CatalogProductImage product={line.product} className="basket-product-picture" /><span className="basket-product-name">{!pitch && `${line.quantity} × `}{line.product.name}</span>{!pitch && <strong>{line.product.price_on_request ? 'Price on request' : money(line.lineTotalDisplay)}</strong>}</li>)}
+          {cart.floorLines.map(line => <li key={line.lineId}><span>{!pitch && `${line.unitsToOrder} ${line.unit}${line.unitsToOrder === 1 ? '' : 's'} · `}{line.materialName}</span>{!pitch && <strong>{money(line.lineTotalDisplay)}</strong>}</li>)}
+          {cart.wallPaintLines.map(line => <li key={line.lineId}><span>{line.paintName}{line.colourName ? ` · ${line.colourName}` : ''}{!pitch && <small>{line.boughtLitres.toFixed(1)} L in whole tins</small>}</span>{!pitch && <strong>{money(line.totalDisplay)}</strong>}</li>)}
           {cart.claddingLines.map(line => <li key={line.lineId}><span>{line.name}<small>Sample cladding estimate</small></span><strong>{money(line.totalDisplay)}</strong></li>)}
         </ul>}
     </section>
