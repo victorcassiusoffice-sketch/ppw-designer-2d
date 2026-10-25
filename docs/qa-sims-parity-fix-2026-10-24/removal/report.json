@@ -1,0 +1,5659 @@
+{
+  "base": "http://127.0.0.1:5176",
+  "cases": [
+    {
+      "device": "desktop",
+      "checks": [
+        {
+          "name": "P2-parent-refusal-and-height-cap",
+          "pass": true
+        },
+        {
+          "name": "P2-tight-rotation-reason",
+          "pass": true
+        },
+        {
+          "name": "P2-indoor-blind-rejects-exterior",
+          "pass": true
+        },
+        {
+          "name": "remove-3d-targets-and-undo",
+          "pass": true
+        },
+        {
+          "name": "remove-3d-cancel-and-perimeter-refusal",
+          "pass": true
+        },
+        {
+          "name": "remove-2d-targets-and-undo",
+          "pass": true
+        },
+        {
+          "name": "remove-2d-cancel-and-perimeter-refusal",
+          "pass": true
+        }
+      ],
+      "shots": [
+        {
+          "name": "parent-refusal",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-parent-refusal.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "height-cap-message",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-height-cap-message.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0,
+                    "mountHeightCm": 70
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "tight-rotation-refused",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-tight-rotation-refused.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 0.1,
+                    "y": 0.1,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "exterior-blind-refused",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-exterior-blind-refused.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-item-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-3d-item-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-item-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-3d-item-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-item-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-3d-item-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-opening-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-3d-opening-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-opening-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-3d-opening-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-opening-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-3d-opening-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-wall-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-3d-wall-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-wall-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-3d-wall-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": []
+          }
+        },
+        {
+          "name": "3d-wall-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-3d-wall-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-floor-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-3d-floor-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-floor-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-3d-floor-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": null,
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-floor-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-3d-floor-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-boundary-refused",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-3d-boundary-refused.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-item-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-2d-item-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-item-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-2d-item-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-item-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-2d-item-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-opening-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-2d-opening-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-opening-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-2d-opening-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-opening-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-2d-opening-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-wall-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-2d-wall-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-wall-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-2d-wall-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": []
+          }
+        },
+        {
+          "name": "2d-wall-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-2d-wall-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-floor-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-2d-floor-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-floor-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-2d-floor-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": null,
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-floor-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-2d-floor-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-boundary-refused",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/desktop-2d-boundary-refused.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "overflow": 0
+    },
+    {
+      "device": "phone",
+      "checks": [
+        {
+          "name": "P2-parent-refusal-and-height-cap",
+          "pass": true
+        },
+        {
+          "name": "P2-tight-rotation-reason",
+          "pass": true
+        },
+        {
+          "name": "P2-indoor-blind-rejects-exterior",
+          "pass": true
+        },
+        {
+          "name": "remove-3d-targets-and-undo",
+          "pass": true
+        },
+        {
+          "name": "remove-3d-cancel-and-perimeter-refusal",
+          "pass": true
+        },
+        {
+          "name": "remove-2d-targets-and-undo",
+          "pass": true
+        },
+        {
+          "name": "remove-2d-cancel-and-perimeter-refusal",
+          "pass": true
+        }
+      ],
+      "shots": [
+        {
+          "name": "parent-refusal",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-parent-refusal.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "height-cap-message",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-height-cap-message.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0,
+                    "mountHeightCm": 70
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "tight-rotation-refused",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-tight-rotation-refused.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 0.1,
+                    "y": 0.1,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "exterior-blind-refused",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-exterior-blind-refused.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-item-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-3d-item-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-item-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-3d-item-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-item-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-3d-item-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-opening-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-3d-opening-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-opening-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-3d-opening-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": null,
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-opening-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-3d-opening-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-wall-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-3d-wall-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-wall-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-3d-wall-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": []
+          }
+        },
+        {
+          "name": "3d-wall-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-3d-wall-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-floor-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-3d-floor-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-floor-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-3d-floor-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": null,
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-floor-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-3d-floor-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "3d-boundary-refused",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-3d-boundary-refused.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-item-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-2d-item-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-item-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-2d-item-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-item-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-2d-item-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-opening-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-2d-opening-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-opening-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-2d-opening-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-opening-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-2d-opening-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-wall-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-2d-wall-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-wall-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-2d-wall-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": []
+          }
+        },
+        {
+          "name": "2d-wall-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-2d-wall-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-floor-highlight",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-2d-floor-highlight.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-floor-removed",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-2d-floor-removed.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": null,
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-floor-undo",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-2d-floor-undo.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        },
+        {
+          "name": "2d-boundary-refused",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/removal/phone-2d-boundary-refused.png",
+          "property": {
+            "id": "remove-acceptance",
+            "name": "Measured removal fixture",
+            "activeRoomId": "room",
+            "activeLevelId": "ground",
+            "wallHeightM": 2.7,
+            "rooms": [
+              {
+                "id": "room",
+                "name": "Room",
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 0
+                  },
+                  {
+                    "x": 8,
+                    "y": 6
+                  },
+                  {
+                    "x": 0,
+                    "y": 6
+                  }
+                ],
+                "floorFinish": {
+                  "materialId": "rubber-composite"
+                },
+                "openings": [
+                  {
+                    "id": "door",
+                    "kind": "door",
+                    "edgeIndex": 2,
+                    "offsetM": 2,
+                    "widthM": 0.9,
+                    "flipFacing": false,
+                    "flipHand": false
+                  }
+                ],
+                "placedItems": [
+                  {
+                    "instanceId": "chair",
+                    "productId": "courts-stellar-celosia-chair",
+                    "x": 4,
+                    "y": 3,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "table",
+                    "productId": "demo-console-table",
+                    "x": 2,
+                    "y": 4,
+                    "rotation": 0
+                  },
+                  {
+                    "instanceId": "child",
+                    "productId": "demo-aroma-diffuser",
+                    "x": 2.25,
+                    "y": 4.1,
+                    "rotation": 0,
+                    "parentInstanceId": "table"
+                  },
+                  {
+                    "instanceId": "blind",
+                    "productId": "courts-blind-white-180",
+                    "x": 2,
+                    "y": 0.05,
+                    "rotation": 0
+                  }
+                ]
+              }
+            ],
+            "walls": [
+              {
+                "id": "free",
+                "a": {
+                  "x": 6,
+                  "y": 3.5
+                },
+                "b": {
+                  "x": 6,
+                  "y": 5.5
+                },
+                "levelId": "ground",
+                "thicknessM": 0.15
+              }
+            ]
+          }
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "overflow": 0
+    }
+  ]
+}

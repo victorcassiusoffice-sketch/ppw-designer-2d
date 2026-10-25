@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { cushionGeometry, curvedBackGeometry, drapedClothGeometry, furnitureAlbedo, furnitureSurface, physicalFurnitureUVs } from '../furnitureSurface';
 import { furnitureOcclusion } from '../furnitureOcclusion';
-import { applyProductSurfaceLighting } from '../productSurfaceLighting';
+import { applyProductSurfaceLighting, applySceneTextureSampling } from '../productSurfaceLighting';
 import { architecturalBackdrop } from '../renderPresentation';
 
 describe('product surface realism without changing dimensions or colour', () => {
@@ -144,7 +144,7 @@ describe('product surface realism without changing dimensions or colour', () => 
     expect(material.roughness).toBe(0.88);
     expect(material.metalness).toBe(0.65);
     expect(material.bumpMap).toBe(texture);
-    expect(texture.anisotropy).toBe(4);
+    expect(texture.anisotropy).toBe(8);
     expect(new THREE.Box3().setFromObject(root).equals(originalBounds)).toBe(true);
     applyProductSurfaceLighting(root, null, NaN);
     expect(material.envMap).toBeNull();
@@ -160,5 +160,21 @@ describe('product surface realism without changing dimensions or colour', () => 
     expect(architecturalBackdrop(NaN)).toEqual(day);
     expect(architecturalBackdrop(2)).toEqual(day);
     expect(architecturalBackdrop(-1)).toEqual(night);
+  });
+
+  it('changes texture filtering without altering metre repeats, PBR channels or shared map identity', () => {
+    const texture = new THREE.Texture(); texture.repeat.set(4, 6); texture.offset.set(.2, .3);
+    const material = new THREE.MeshStandardMaterial({map:texture,roughnessMap:texture,color:'#786d60',roughness:.7});
+    const root = new THREE.Group(); root.add(new THREE.Mesh(new THREE.BoxGeometry(3,2,1),material));
+    const bounds = new THREE.Box3().setFromObject(root);
+    applySceneTextureSampling(root, 8);
+    expect(texture.anisotropy).toBe(8);
+    applySceneTextureSampling(root, 2);
+    expect(texture.anisotropy).toBe(2);
+    expect(texture.repeat.toArray()).toEqual([4,6]);
+    expect(texture.offset.toArray()).toEqual([.2,.3]);
+    expect(material.map).toBe(texture); expect(material.roughnessMap).toBe(texture);
+    expect(material.color.getHexString()).toBe('786d60'); expect(material.roughness).toBe(.7);
+    expect(new THREE.Box3().setFromObject(root).equals(bounds)).toBe(true);
   });
 });

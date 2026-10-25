@@ -1,0 +1,35 @@
+{
+  "base": "http://127.0.0.1:5176",
+  "cases": [
+    {
+      "device": "desktop",
+      "errors": [
+        "The requested module '/src/designer/openings.ts' does not provide an export named 'roomOpenings'",
+        "The requested module '/src/designer/openings.ts' does not provide an export named 'roomOpenings'",
+        "The above error occurred in one of your React components:\n\n    at Lazy\n    at RenderedRoute (http://127.0.0.1:5176/node_modules/.vite/deps/react-router-dom.js?v=f0415167:4132:5)\n    at Routes (http://127.0.0.1:5176/node_modules/.vite/deps/react-router-dom.js?v=f0415167:4602:5)\n    at Suspense\n    at Router (http://127.0.0.1:5176/node_modules/.vite/deps/react-router-dom.js?v=f0415167:4545:15)\n    at BrowserRouter (http://127.0.0.1:5176/node_modules/.vite/deps/react-router-dom.js?v=f0415167:5291:5)\n    at AppPreferencesProvider (http://127.0.0.1:5176/src/i18n/AppPreferences.tsx:84:42)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries.",
+        "The requested module '/src/designer/openings.ts' does not provide an export named 'roomOpenings'"
+      ],
+      "failures": [
+        "Error: expect(locator).toBeVisible() failed\n\nLocator: getByTestId('estimate-evidence')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 5000ms\n  - waiting for getByTestId('estimate-evidence')\n"
+      ],
+      "writes": [],
+      "checks": [],
+      "shots": []
+    },
+    {
+      "device": "phone",
+      "errors": [
+        "The requested module '/src/designer/openings.ts' does not provide an export named 'roomOpenings'",
+        "The requested module '/src/designer/openings.ts' does not provide an export named 'roomOpenings'",
+        "The above error occurred in one of your React components:\n\n    at Lazy\n    at RenderedRoute (http://127.0.0.1:5176/node_modules/.vite/deps/react-router-dom.js?v=f0415167:4132:5)\n    at Routes (http://127.0.0.1:5176/node_modules/.vite/deps/react-router-dom.js?v=f0415167:4602:5)\n    at Suspense\n    at Router (http://127.0.0.1:5176/node_modules/.vite/deps/react-router-dom.js?v=f0415167:4545:15)\n    at BrowserRouter (http://127.0.0.1:5176/node_modules/.vite/deps/react-router-dom.js?v=f0415167:5291:5)\n    at AppPreferencesProvider (http://127.0.0.1:5176/src/i18n/AppPreferences.tsx:84:42)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries.",
+        "The requested module '/src/designer/openings.ts' does not provide an export named 'roomOpenings'"
+      ],
+      "failures": [
+        "Error: expect(locator).toBeVisible() failed\n\nLocator: getByTestId('estimate-evidence')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 5000ms\n  - waiting for getByTestId('estimate-evidence')\n"
+      ],
+      "writes": [],
+      "checks": [],
+      "shots": []
+    }
+  ]
+}

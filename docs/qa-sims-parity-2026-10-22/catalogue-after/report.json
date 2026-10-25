@@ -1,0 +1,67 @@
+{
+  "base": "http://127.0.0.1:5176",
+  "cases": [
+    {
+      "name": "desktop",
+      "errors": [],
+      "normalDesignerFxErrors": [
+        "Failed to load resource: the server responded with a status of 401 () https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "failures": [],
+      "httpFailures": [
+        {
+          "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+          "status": 401
+        }
+      ],
+      "writes": [],
+      "screenshots": [
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/desktop-2d-fitness.png",
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/desktop-2d-details.png",
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/desktop-2d-bathroom.png",
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/desktop-2d-floor-details.png",
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/desktop-3d-fitness.png",
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/desktop-3d-details.png",
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/desktop-designer-price-sort.png"
+      ],
+      "checks": [
+        "Function filter, search, name sort, baked model image and price-free demo",
+        "Room filter and explicit details/back, dimensions and honest stock",
+        "Floor product details remain separate from laying the floor",
+        "3D uses the same catalogue and closes details without placing",
+        "Price sort is available only on the normal Designer route"
+      ]
+    },
+    {
+      "name": "phone",
+      "errors": [],
+      "normalDesignerFxErrors": [
+        "Failed to load resource: the server responded with a status of 401 () https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP"
+      ],
+      "failures": [],
+      "httpFailures": [
+        {
+          "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+          "status": 401
+        }
+      ],
+      "writes": [],
+      "screenshots": [
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/phone-2d-fitness.png",
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/phone-2d-details.png",
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/phone-2d-bathroom.png",
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/phone-2d-floor-details.png",
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/phone-3d-fitness.png",
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/phone-3d-details.png",
+        "docs/qa-sims-parity-2026-10-22/catalogue-after/phone-designer-price-sort.png"
+      ],
+      "checks": [
+        "Function filter, search, name sort, baked model image and price-free demo",
+        "Room filter and explicit details/back, dimensions and honest stock",
+        "Floor product details remain separate from laying the floor",
+        "3D uses the same catalogue and closes details without placing",
+        "Price sort is available only on the normal Designer route"
+      ]
+    }
+  ]
+}

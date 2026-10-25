@@ -1,0 +1,131 @@
+{
+  "target": "https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/showcase/sims-parity-fix-2026-10-24/index.html",
+  "checkedAt": "2026-10-25T00:09:58.451Z",
+  "cases": [
+    {
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "images": [
+        {
+          "src": "https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/showcase/sims-parity-fix-2026-10-24/matched-camera/live-auto.png",
+          "alt": "Actual fixed-camera Live · Auto capture",
+          "width": 1280,
+          "height": 800,
+          "loaded": true
+        },
+        {
+          "src": "https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/showcase/sims-parity-fix-2026-10-24/matched-camera/preview-auto.png",
+          "alt": "Actual fixed-camera After · adaptive Auto capture",
+          "width": 1280,
+          "height": 800,
+          "loaded": true
+        },
+        {
+          "src": "https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/showcase/sims-parity-fix-2026-10-24/matched-camera/preview-high.png",
+          "alt": "Actual fixed-camera After · manual High capture",
+          "width": 1280,
+          "height": 800,
+          "loaded": true
+        }
+      ],
+      "reports": [
+        {
+          "url": "https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/showcase/sims-parity-fix-2026-10-24/graphics-before/report.json",
+          "label": "Before/live orbit data",
+          "status": 200,
+          "jsonParsed": true
+        },
+        {
+          "url": "https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/showcase/sims-parity-fix-2026-10-24/graphics-after/report.json",
+          "label": "After orbit data",
+          "status": 200,
+          "jsonParsed": true
+        },
+        {
+          "url": "https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/showcase/sims-parity-fix-2026-10-24/matched-camera/report.json",
+          "label": "Exact matched-camera evidence",
+          "status": 200,
+          "jsonParsed": true
+        }
+      ],
+      "shots": [
+        "docs/qa-sims-parity-fix-2026-10-24/preview-sheet/desktop-viewport.png",
+        "docs/qa-sims-parity-fix-2026-10-24/preview-sheet/desktop-full-page.png"
+      ],
+      "status": 200,
+      "overflowPx": 0,
+      "pass": true
+    },
+    {
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "images": [
+        {
+          "src": "https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/showcase/sims-parity-fix-2026-10-24/matched-camera/live-auto.png",
+          "alt": "Actual fixed-camera Live · Auto capture",
+          "width": 1280,
+          "height": 800,
+          "loaded": true
+        },
+        {
+          "src": "https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/showcase/sims-parity-fix-2026-10-24/matched-camera/preview-auto.png",
+          "alt": "Actual fixed-camera After · adaptive Auto capture",
+          "width": 1280,
+          "height": 800,
+          "loaded": true
+        },
+        {
+          "src": "https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/showcase/sims-parity-fix-2026-10-24/matched-camera/preview-high.png",
+          "alt": "Actual fixed-camera After · manual High capture",
+          "width": 1280,
+          "height": 800,
+          "loaded": true
+        }
+      ],
+      "reports": [
+        {
+          "url": "https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/showcase/sims-parity-fix-2026-10-24/graphics-before/report.json",
+          "label": "Before/live orbit data",
+          "status": 200,
+          "jsonParsed": true
+        },
+        {
+          "url": "https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/showcase/sims-parity-fix-2026-10-24/graphics-after/report.json",
+          "label": "After orbit data",
+          "status": 200,
+          "jsonParsed": true
+        },
+        {
+          "url": "https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/showcase/sims-parity-fix-2026-10-24/matched-camera/report.json",
+          "label": "Exact matched-camera evidence",
+          "status": 200,
+          "jsonParsed": true
+        }
+      ],
+      "shots": [
+        "docs/qa-sims-parity-fix-2026-10-24/preview-sheet/phone-viewport.png",
+        "docs/qa-sims-parity-fix-2026-10-24/preview-sheet/phone-full-page.png"
+      ],
+      "status": 200,
+      "overflowPx": 0,
+      "pass": true
+    }
+  ],
+  "failures": []
+}

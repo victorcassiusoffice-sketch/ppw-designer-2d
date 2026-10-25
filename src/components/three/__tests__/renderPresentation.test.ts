@@ -84,7 +84,7 @@ describe('architectural presentation without changing the saved finishes', () =>
     const renderer = { toneMapping: THREE.NoToneMapping as THREE.ToneMapping, toneMappingExposure: 1 };
     const natural = presentationProfile('natural');
     applyRendererPresentation(renderer, 'natural');
-    expect(renderer.toneMapping).toBe(THREE.NeutralToneMapping);
+    expect(renderer.toneMapping).toBe(THREE.ACESFilmicToneMapping);
     expect(renderer.toneMappingExposure).toBe(1);
     // A stronger key and substantially quieter fill create readable volume;
     // this cannot silently replace the colour-card calibration.

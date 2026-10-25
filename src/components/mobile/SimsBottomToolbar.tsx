@@ -11,15 +11,16 @@
  *   • a close control that returns to the small launcher
  *
  * Interactions:
- *   • tap a thumbnail        → MobileProductPopup (bigger image + desc + "+")
+ *   • tap a thumbnail        → choose a position on the floor
+ *   • tap its info button    → docked product details
  *   • long-press + drag      → drag ghost; release on the floor places it
- *   • popup "+ Add to room"  → auto-place at the centre of the canvas
+ *   • details Choose position → arm exact placement on the next floor tap
  *
  * Placement is published to placementIntentStore; RoomCanvas runs the
  * validated placement. No engine change — Konva stable-lock untouched.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { productImageUrl, thumbnailFor } from '../../data/products';
+import { productImageUrl } from '../../data/products';
 import { useMerchantCatalog } from '../../lib/useMerchantCatalog';
 import { CatalogConnectionNotice } from '../CatalogConnectionNotice';
 import type { Product } from '../../data/products.schema';
@@ -53,11 +54,13 @@ import '../catalogChrome.css';
 import { CatalogHeader, CatalogHome } from '../CatalogHome';
 import { useCatalogDismissal } from '../useCatalogDismissal';
 import { PlanCatalogLauncher } from '../PlanCatalogLauncher';
+import { CatalogAvailability, CatalogBrowseTabs, CatalogProductImage, CatalogSwatches } from '../CatalogProductExtras';
+import { type CatalogBrowse } from '../catalogMetadata';
+import { isPitchEmbed } from '../../demo/pitchEmbed';
 
 const { DOCK_ACCENT, DOCK_BG, DOCK_BG_RAISED, DOCK_BORDER, DOCK_TEXT } = CATALOG_CHROME;
 
 /** Cream photo plate behind every thumbnail — unchanged (product art is shot on it). */
-const THUMB_PLATE = '#F5EBD7';
 
 /**
  * Shared control chrome: 120 ms colour transition (none under
@@ -73,6 +76,8 @@ export function SimsBottomToolbar() {
   const [categoryHome, setCategoryHome] = useState(true);
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<CatalogSort>('catalog');
+  const [browse, setBrowse] = useState<CatalogBrowse>({ mode: 'category', value: 'all' });
+  const [variants, setVariants] = useState<Record<string, Product>>({});
   const [selected, setSelected] = useState<Product | null>(null);
   const apiProducts = useMerchantCatalog();
 
@@ -88,6 +93,7 @@ export function SimsBottomToolbar() {
       if (window.innerWidth >= 1024) return;
       const category = catalogRequestCategory(event);
       setActiveCategory(category ?? 'all');
+      setBrowse({ mode: 'category', value: 'all' });
       setCategoryHome(category === undefined);
       setQuery('');
       setMinimized(false);
@@ -175,7 +181,7 @@ export function SimsBottomToolbar() {
   // API and the bundled seed, and this strip used to show each twice.
   const allProducts = useMemo(() => mergeCatalog(apiProducts), [apiProducts]);
 
-  const filtered = useMemo(() => filterCatalog(allProducts, activeCategory, query, sort), [allProducts, activeCategory, query, sort]);
+  const filtered = useMemo(() => filterCatalog(allProducts, activeCategory, query, sort, browse), [allProducts, activeCategory, query, sort, browse]);
   useEffect(() => { if (stripRef.current) stripRef.current.scrollLeft = 0; }, [activeCategory, query, sort]);
 
   // Floor tool state for the floor cards (scalar selectors — the strip must
@@ -205,7 +211,7 @@ export function SimsBottomToolbar() {
   const closeCatalog = useCallback(() => { setMinimized(true); setSelected(null); }, []);
   useCatalogDismissal({ viewMode, open: !minimized, desktop: false, close: closeCatalog, placing: dragging });
 
-  const productDetails = selected && <MobileProductPopup product={selected} embedded={viewMode === '3d'}
+  const productDetails = selected && <MobileProductPopup product={selected} embedded
     onAdd={choosePosition}
     onDragPlace={(productId, x, y) => placeAt(productId, x, y)} onClose={() => setSelected(null)} />;
 
@@ -231,16 +237,17 @@ export function SimsBottomToolbar() {
         {viewMode === 'plan' && minimized && <PlanCatalogLauncher prefix="sims"
           onOpen={() => { setMinimized(false); requestAnimationFrame(() => sectionRef.current?.querySelector<HTMLButtonElement>('[data-testid="sims-cat-all"]')?.focus()); }}
           onSearch={() => { setMinimized(false); requestAnimationFrame(() => searchRef.current?.focus()); }} />}
-        {viewMode === '3d' && <CatalogHeader home={categoryHome} category={activeCategory} onBack={() => { setCategoryHome(true); setQuery(''); setSelected(null); }} onClose={closeCatalog} />}
-        {viewMode === '3d' && categoryHome && !minimized && <CatalogHome prefix="sims" products={allProducts} onCategory={(category) => { setActiveCategory(category); setCategoryHome(false); setQuery(''); }} />}
+        {viewMode === '3d' && (browse.mode === 'category' || selected) && <CatalogHeader home={categoryHome} category={activeCategory} onBack={() => { setCategoryHome(true); setBrowse({ mode: 'category', value: 'all' }); setQuery(''); setSelected(null); }} onClose={closeCatalog} />}
+        {!minimized && !selected && <CatalogBrowseTabs value={browse} onClose={closeCatalog} closeLabel={viewMode === '3d' ? 'Close home store' : 'Close product catalog'} onChange={value => { setBrowse(value); setCategoryHome(value.mode === 'category'); setQuery(''); }} />}
+        {viewMode === '3d' && browse.mode === 'category' && categoryHome && !minimized && <CatalogHome prefix="sims" products={allProducts} onCategory={(category) => { setActiveCategory(category); setCategoryHome(false); setQuery(''); }} />}
         {/* Plan keeps its compact category bar. 3D shows one home-store page at a time. */}
-        {viewMode !== '3d' && !minimized && <div className="plan-catalog-categories flex shrink-0 items-center gap-1 px-2 py-1" style={{ borderBottom: `1px solid ${DOCK_BORDER}` }}>
+        {viewMode !== '3d' && browse.mode === 'category' && !minimized && !selected && <div className="plan-catalog-categories flex shrink-0 items-center gap-1 px-2 py-1" style={{ borderBottom: `1px solid ${DOCK_BORDER}` }}>
           <div
             role="tablist"
             aria-label="Product category"
             className="flex flex-1 gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {visibleMacroCategories(allProducts).map((mc) => {
+            {browse.mode === 'category' && visibleMacroCategories(allProducts).map((mc) => {
               const active = activeCategory === mc;
               return (
                 <button
@@ -314,7 +321,7 @@ export function SimsBottomToolbar() {
           </button>
         </div>}
 
-        {!minimized && (viewMode !== '3d' || (!categoryHome && !selected)) && <div className="catalog-browser-search flex shrink-0 items-center gap-2 px-2 pt-2">
+        {!minimized && !selected && (viewMode !== '3d' || !categoryHome) && <div className="catalog-browser-search flex shrink-0 items-center gap-2 px-2 pt-2">
           <label className="catalog-field flex h-11 min-w-0 flex-1 items-center rounded-lg border px-2.5 focus-within:ring-2 focus-within:ring-[var(--catalog-focus)]" style={{ borderColor: DOCK_BORDER }}>
             <input ref={searchRef} type="search" value={query} data-testid="sims-search" aria-label="Search product catalog"
               placeholder={activeCategory === 'all' ? 'Search products or brands' : `Search ${MACRO_CATEGORY_LABEL[activeCategory].toLowerCase()}`}
@@ -323,11 +330,12 @@ export function SimsBottomToolbar() {
           <select value={sort} data-testid="sims-sort" aria-label="Sort products" onChange={(event) => setSort(event.target.value as CatalogSort)}
             className={`catalog-field h-11 w-[116px] shrink-0 rounded-lg border px-2 text-[12px] ${DOCK_CONTROL}`} style={{ borderColor: DOCK_BORDER, color: DOCK_TEXT }}>
             <option value="catalog">Catalog order</option><option value="name">Name A–Z</option><option value="footprint">Smallest first</option>
+            {!isPitchEmbed() && <><option value="price-asc">Price low–high</option><option value="price-desc">Price high–low</option></>}
           </select>
         </div>}
 
         {/* One named row keeps products recognizable and leaves the plan visible. */}
-        {!minimized && (viewMode !== '3d' || (!categoryHome && !selected)) && (
+        {!minimized && !selected && (viewMode !== '3d' || !categoryHome) && (
           <div
             ref={stripRef}
             id="mobile-catalog-products"
@@ -350,20 +358,21 @@ export function SimsBottomToolbar() {
                   gap: 8,
                 }}
               >
-                {filtered.map((p) => {
+                {filtered.map((original) => {
+                  const p = variants[original.id] ?? original;
                   const floorMat = floorMaterialForProduct(p);
                   if (floorMat) {
                     // FLOOR card: a tap arms the Floor tool on this material
-                    // (the HUD card in RoomCanvas takes over); no long-press
-                    // drag, no popup — the tile is laid by the tool, never
-                    // dropped as a loose item.
+                    // (the HUD card in RoomCanvas takes over). Details are
+                    // separate; floor products are never dropped as loose items.
                     const isOn = tool === 'floor' && floorMaterialId === floorMat.id;
                     return (
-                      <button
-                        key={p.id}
+                      <div key={p.id} className="catalog-product-tile"><button
                         type="button"
                         data-testid="sims-thumb"
                         data-product-id={p.id}
+                        data-category={p.category}
+                        data-macro={macroOf(p)}
                         data-floor-material={floorMat.id}
                         title="Laid with the Floor tool"
                         aria-label={`${p.name} — tap to lay this floor`}
@@ -392,7 +401,11 @@ export function SimsBottomToolbar() {
                         </span>
                         <span aria-hidden="true" className="mt-1 block w-full truncate text-[11px] font-medium" style={{ color: DOCK_TEXT }}>{p.name}</span>
                         <span aria-hidden="true" className="catalog-muted block w-full truncate text-[11px] tabular-nums">{catalogPrice(p)}</span>
+                        <CatalogAvailability product={p} />
                       </button>
+                      <button type="button" className="catalog-tile-details" title={`Details for ${p.name}`} aria-label={`Details for ${p.name}`} onClick={() => setSelected(p)}><span aria-hidden="true">ⓘ</span></button>
+                      <CatalogSwatches product={original} selectedSku={p.sku} products={allProducts} onSelect={value => setVariants(current => ({ ...current, [original.id]: value }))} />
+                      </div>
                     );
                   }
                   return (
@@ -419,8 +432,10 @@ export function SimsBottomToolbar() {
                     <span className="relative block h-[52px] w-full shrink-0"><ThumbImage product={p} /></span>
                     <span aria-hidden="true" className="mt-1 block w-full truncate text-[11px] font-medium" style={{ color: DOCK_TEXT }}>{p.name}</span>
                     <span aria-hidden="true" className="catalog-muted block w-full truncate text-[11px] tabular-nums">{catalogPrice(p)}</span>
+                    <CatalogAvailability product={p} />
                   </button>
                   <button type="button" className="catalog-tile-details" title={`Details for ${p.name}`} aria-label={`Details for ${p.name}`} onClick={() => setSelected(p)}><span aria-hidden="true">ⓘ</span></button>
+                  <CatalogSwatches product={original} selectedSku={p.sku} products={allProducts} onSelect={value => setVariants(current => ({ ...current, [original.id]: value }))} />
                   </div>
                   );
                 })}
@@ -428,66 +443,19 @@ export function SimsBottomToolbar() {
             )}
           </div>
         )}
-        {!minimized && (viewMode !== '3d' || (!categoryHome && !selected)) && <div className="catalog-muted flex shrink-0 items-center justify-between gap-2 px-3 pb-1 text-[11px]">
+        {!minimized && !selected && (viewMode !== '3d' || !categoryHome) && <div className="catalog-muted flex shrink-0 items-center justify-between gap-2 px-3 pb-1 text-[11px]">
           <span role="status" aria-live="polite">{filtered.length} {filtered.length === 1 ? 'product' : 'products'}</span>
           <span>Tap then place · hold to drag</span>
         </div>}
-        {viewMode === '3d' && !minimized && productDetails}
+        {!minimized && productDetails}
       </section>
 
-      {viewMode !== '3d' && productDetails}
       {ghost}
     </>
   );
 }
 
-/**
- * Polish (2026-05-29) — catalog thumbnail with a brand-styled loading
- * skeleton. While the <img> is hydrating, a cream→mint→cream shimmer fills
- * the tile so it reads as "loading" rather than an empty cream square;
- * the shimmer fades the moment the image loads. On error the shimmer is
- * removed and the cream tile (set on the parent button) shows through,
- * preserving the existing graceful fallback. Reduced-motion users get a
- * static brand tint with no pulse (CSS `motion-reduce` variant). No deps,
- * no teal, no layout/geometry change.
- */
+/** Existing-model PNG, real source photo, then category symbol. */
 function ThumbImage({ product }: { product: Product }) {
-  const src = productImageUrl(product);
-  const [loaded, setLoaded] = useState(false);
-  const [errored, setErrored] = useState(false);
-  const showSkeleton = !loaded && !errored;
-  if (errored || !src) return <span className="flex h-full w-full items-center justify-center rounded-md [&>svg]:h-11 [&>svg]:w-11" style={{ background: THUMB_PLATE }} dangerouslySetInnerHTML={{ __html: thumbnailFor(product.category) }} />;
-  return (
-    <>
-      {showSkeleton && (
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 animate-pulse motion-reduce:animate-none"
-          style={{
-            // Cream plate with a soft mint sheen (the dock accent). Subtle
-            // (low-contrast) so it never looks like an error.
-            background: `linear-gradient(110deg, ${THUMB_PLATE} 0%, #79c7ad55 45%, ${THUMB_PLATE} 90%)`,
-          }}
-        />
-      )}
-      <img
-        src={src}
-        alt=""
-        draggable={false}
-        onLoad={() => setLoaded(true)}
-        onError={() => setErrored(true)}
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-          background: THUMB_PLATE,
-          borderRadius: 6,
-          padding: 4,
-          position: 'relative',
-          opacity: loaded ? 1 : 0,
-          transition: 'opacity 200ms ease',
-        }}
-      />
-    </>
-  );
+  return <CatalogProductImage product={product} />;
 }

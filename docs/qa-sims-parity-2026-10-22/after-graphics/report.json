@@ -1,0 +1,1103 @@
+{
+  "phase": "after",
+  "base": "http://127.0.0.1:5175",
+  "capturedAt": "2026-10-24T11:36:54.530Z",
+  "sourceHead": "ad39c5fd7e49c588814b2304c8f23eca68f5307f",
+  "sourceWorkingTreeDirty": true,
+  "compiledIndexSha256": "f817232268b349b3abf72348189eb4b9a3e96d1d997658f286cf78a08db84328",
+  "rendererAttempt": "Native D3D11 on Windows (default headless fell back to SwiftShader; initial probe preserved separately). Explicit SwiftShader only if native attempt has no WebGL2.",
+  "vendorThree": {
+    "file": "vendor-three-ENCmSulQ.js",
+    "bytes": 744946,
+    "gzipBytes": 191291
+  },
+  "methodology": "Cold browser contexts, network cache disabled. First paint is first existing ThreeStage data-shading mutation after render. FPS counts those mutations while continuous real pointer orbit is active, including event dispatch overhead. This is observed app rendering throughput, not idle RAF or certified physical-device performance.",
+  "fixtures": [
+    {
+      "name": "furnished-room",
+      "property": {
+        "id": "qa-sims-furnished",
+        "name": "QA furnished",
+        "activeRoomId": "living",
+        "wallHeightM": 2.7,
+        "activeLevelId": "ground",
+        "rooms": [
+          {
+            "id": "living",
+            "name": "living",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 6,
+                "y": 0
+              },
+              {
+                "x": 6,
+                "y": 4
+              },
+              {
+                "x": 0,
+                "y": 4
+              }
+            ],
+            "placedItems": [
+              {
+                "instanceId": "sofa",
+                "productId": "courts-comfy-3-seater-dove",
+                "x": 0.45,
+                "y": 0.25,
+                "rotation": 0
+              },
+              {
+                "instanceId": "coffee",
+                "productId": "courts-perera-coffee-table",
+                "x": 1,
+                "y": 1.7,
+                "rotation": 0
+              },
+              {
+                "instanceId": "sideboard",
+                "productId": "courts-lavis-sideboard",
+                "x": 4.35,
+                "y": 0.2,
+                "rotation": 0
+              }
+            ],
+            "wallPaint": [
+              {
+                "edgeIndex": 0,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 1,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 2,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 3,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              }
+            ],
+            "openings": [
+              {
+                "id": "living-window",
+                "kind": "window",
+                "edgeIndex": 0,
+                "offsetM": 4.4,
+                "widthM": 1.2,
+                "heightM": 1.5,
+                "sillM": 0.8,
+                "flipHand": false,
+                "flipFacing": false
+              },
+              {
+                "id": "living-door",
+                "kind": "door",
+                "edgeIndex": 3,
+                "offsetM": 0.5,
+                "widthM": 0.9,
+                "flipHand": false,
+                "flipFacing": false
+              }
+            ]
+          }
+        ]
+      },
+      "dimensions": "6 × 4 m; Comfy 2.30 × 0.94 × 0.94 m; Perera 1.20 × 0.60 × 0.43 m"
+    },
+    {
+      "name": "kitchen-dining",
+      "property": {
+        "id": "qa-sims-kitchen",
+        "name": "QA kitchen",
+        "activeRoomId": "dining",
+        "wallHeightM": 2.7,
+        "activeLevelId": "ground",
+        "rooms": [
+          {
+            "id": "dining",
+            "name": "dining",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 5,
+                "y": 0
+              },
+              {
+                "x": 5,
+                "y": 4
+              },
+              {
+                "x": 0,
+                "y": 4
+              }
+            ],
+            "placedItems": [
+              {
+                "instanceId": "dining",
+                "productId": "courts-gessica-dining-6",
+                "x": 1.1,
+                "y": 1.3,
+                "rotation": 0
+              },
+              {
+                "instanceId": "fridge",
+                "productId": "courts-samsung-rb33-fridge",
+                "x": 4.2,
+                "y": 0.15,
+                "rotation": 0
+              },
+              {
+                "instanceId": "sideboard",
+                "productId": "courts-lavis-sideboard",
+                "x": 0.2,
+                "y": 0.15,
+                "rotation": 0
+              }
+            ],
+            "wallPaint": [
+              {
+                "edgeIndex": 0,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 1,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 2,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 3,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              }
+            ],
+            "openings": [
+              {
+                "id": "dining-window",
+                "kind": "window",
+                "edgeIndex": 0,
+                "offsetM": 3.4,
+                "widthM": 1.2,
+                "heightM": 1.5,
+                "sillM": 0.8,
+                "flipHand": false,
+                "flipFacing": false
+              },
+              {
+                "id": "dining-door",
+                "kind": "door",
+                "edgeIndex": 3,
+                "offsetM": 0.5,
+                "widthM": 0.9,
+                "flipHand": false,
+                "flipFacing": false
+              }
+            ]
+          }
+        ]
+      },
+      "dimensions": "5 × 4 m; Gessica chairs-included planning footprint 2.40 × 1.80 × 0.74 m; fridge 0.60 × 0.67 × 1.78 m"
+    },
+    {
+      "name": "bathroom",
+      "property": {
+        "id": "qa-sims-bathroom",
+        "name": "QA bathroom",
+        "activeRoomId": "bath",
+        "wallHeightM": 2.7,
+        "activeLevelId": "ground",
+        "rooms": [
+          {
+            "id": "bath",
+            "name": "bath",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 3,
+                "y": 0
+              },
+              {
+                "x": 3,
+                "y": 3
+              },
+              {
+                "x": 0,
+                "y": 3
+              }
+            ],
+            "placedItems": [
+              {
+                "instanceId": "toilet",
+                "productId": "espace-emilia-toilet-bowl",
+                "x": 0.3,
+                "y": 0.3,
+                "rotation": 0
+              },
+              {
+                "instanceId": "basin",
+                "productId": "espace-durastyle-washbasin-800",
+                "x": 1.7,
+                "y": 0.08,
+                "rotation": 0
+              },
+              {
+                "instanceId": "bidet",
+                "productId": "espace-duravit-dcode-bidet-224110",
+                "x": 0.3,
+                "y": 1.4,
+                "rotation": 0
+              }
+            ],
+            "wallPaint": [
+              {
+                "edgeIndex": 0,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 1,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 2,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 3,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              }
+            ],
+            "openings": [
+              {
+                "id": "bath-window",
+                "kind": "window",
+                "edgeIndex": 0,
+                "offsetM": 1.4,
+                "widthM": 1.2,
+                "heightM": 1.5,
+                "sillM": 0.8,
+                "flipHand": false,
+                "flipFacing": false
+              },
+              {
+                "id": "bath-door",
+                "kind": "door",
+                "edgeIndex": 3,
+                "offsetM": 0.5,
+                "widthM": 0.9,
+                "flipHand": false,
+                "flipFacing": false
+              }
+            ]
+          }
+        ]
+      },
+      "dimensions": "3 × 3 m; bowl 0.650 × 0.395 × 0.400 m; basin 0.800 × 0.480 × 0.170 m; bidet 0.560 × 0.360 × 0.385 m"
+    },
+    {
+      "name": "outside",
+      "property": {
+        "id": "qa-sims-outside",
+        "name": "QA outside",
+        "activeRoomId": "garden-room",
+        "wallHeightM": 2.7,
+        "activeLevelId": "ground",
+        "rooms": [
+          {
+            "id": "garden-room",
+            "name": "garden-room",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 4,
+                "y": 0
+              },
+              {
+                "x": 4,
+                "y": 3
+              },
+              {
+                "x": 0,
+                "y": 3
+              }
+            ],
+            "placedItems": [
+              {
+                "instanceId": "garden-sofa",
+                "productId": "espace-seville-garden-sofa",
+                "x": 0.5,
+                "y": 0.3,
+                "rotation": 0
+              },
+              {
+                "instanceId": "tank",
+                "productId": "resiglas-water-tank-1000-c",
+                "x": 5,
+                "y": 0.4,
+                "rotation": 0
+              }
+            ],
+            "wallPaint": [
+              {
+                "edgeIndex": 0,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 1,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 2,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              },
+              {
+                "edgeIndex": 3,
+                "paintId": "permoglaze-soft-feel",
+                "colourHex": "#D9D5C5",
+                "colourName": "Warm ivory"
+              }
+            ],
+            "openings": [
+              {
+                "id": "garden-room-window",
+                "kind": "window",
+                "edgeIndex": 0,
+                "offsetM": 2.4,
+                "widthM": 1.2,
+                "heightM": 1.5,
+                "sillM": 0.8,
+                "flipHand": false,
+                "flipFacing": false
+              },
+              {
+                "id": "garden-room-door",
+                "kind": "door",
+                "edgeIndex": 3,
+                "offsetM": 0.5,
+                "widthM": 0.9,
+                "flipHand": false,
+                "flipFacing": false
+              }
+            ]
+          }
+        ],
+        "site": {
+          "widthM": 9,
+          "depthM": 7,
+          "originM": {
+            "x": -1.5,
+            "y": -1.5
+          }
+        },
+        "garden": {
+          "surfaces": [
+            {
+              "id": "lawn",
+              "kind": "lawn",
+              "x": -1.5,
+              "y": -1.5,
+              "widthM": 9,
+              "depthM": 7,
+              "elevationM": 0
+            },
+            {
+              "id": "path",
+              "kind": "concrete",
+              "x": -0.5,
+              "y": 3,
+              "widthM": 6.5,
+              "depthM": 1,
+              "elevationM": 0.04
+            }
+          ],
+          "fences": []
+        }
+      },
+      "dimensions": "4 × 3 m room on 9 × 7 m site; Seville sofa 1.140 × 0.670 × 0.870 m; Resiglas tank 1.320 × 1.320 × 1.055 m"
+    }
+  ],
+  "cases": [
+    {
+      "scene": "furnished-room",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "cpuThrottle": 1,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedResponses": [],
+      "blockedWrites": [],
+      "apiRequests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:5175/api/products"
+        }
+      ],
+      "screenshots": [
+        "docs/qa-sims-parity-2026-10-22/after-graphics/furnished-room-desktop.png"
+      ],
+      "activationMs": 9122.700000047684,
+      "firstFrameFromNavigationMs": 10505.100000023842,
+      "firstPaintMs": 1382.3999999761581,
+      "settledCaptureMs": 17653.700000047684,
+      "renderer": {
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "vendor": "Google Inc. (Intel)",
+        "shading": "natural-basic",
+        "pixelWidth": 1167,
+        "pixelHeight": 693
+      },
+      "softwareRenderer": false,
+      "camera": {
+        "target": {
+          "x": 3,
+          "y": 2,
+          "z": 0.7087499999999999
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 12.09386075754216,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 3,
+          "y": 2,
+          "z": 0.7087499999999999
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 12.09386075754216,
+        "fovRad": 0.7127336648555606
+      },
+      "horizontalOverflowPx": 0,
+      "motion": {
+        "durationMs": 10005.5,
+        "renderedFrames": 567,
+        "fps": 56.668832142321726,
+        "medianFrameMs": 16.69999998807907,
+        "p95FrameMs": 18.400000035762787,
+        "inputSteps": 568
+      },
+      "cameraAfterOrbit": {
+        "target": {
+          "x": 3,
+          "y": 2,
+          "z": 0.7087499999999999
+        },
+        "azimuthRad": -0.9302646379819355,
+        "elevationRad": 0.5094004554831718,
+        "distanceM": 12.09386075754216,
+        "fovRad": 0.6632251157578452
+      },
+      "geometryUnchanged": true,
+      "hardwareTargetAssessment": "Observed target not met in this controlled browser run",
+      "firstPaintTargetMet": true
+    },
+    {
+      "scene": "furnished-room",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "cpuThrottle": 4,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedResponses": [],
+      "blockedWrites": [],
+      "apiRequests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:5175/api/products"
+        }
+      ],
+      "screenshots": [
+        "docs/qa-sims-parity-2026-10-22/after-graphics/furnished-room-phone.png"
+      ],
+      "activationMs": 5665.300000011921,
+      "firstFrameFromNavigationMs": 8462.300000011921,
+      "firstPaintMs": 2797,
+      "settledCaptureMs": 14221.800000011921,
+      "renderer": {
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "vendor": "Google Inc. (Intel)",
+        "shading": "natural-basic",
+        "pixelWidth": 390,
+        "pixelHeight": 603
+      },
+      "softwareRenderer": false,
+      "camera": {
+        "target": {
+          "x": 3,
+          "y": 2,
+          "z": 1.89
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 18.744826616149428,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 3,
+          "y": 2,
+          "z": 1.89
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 18.744826616149428,
+        "fovRad": 0.7255576420055392
+      },
+      "horizontalOverflowPx": 0,
+      "motion": {
+        "durationMs": 10016,
+        "renderedFrames": 553,
+        "fps": 55.21166134185304,
+        "medianFrameMs": 16.799999952316284,
+        "p95FrameMs": 21,
+        "inputSteps": 564
+      },
+      "cameraAfterOrbit": {
+        "target": {
+          "x": 3,
+          "y": 2,
+          "z": 1.89
+        },
+        "azimuthRad": -0.9100192766538102,
+        "elevationRad": 0.5094647255027045,
+        "distanceM": 18.744826616149428,
+        "fovRad": 0.6632251157578452
+      },
+      "geometryUnchanged": true,
+      "hardwareTargetAssessment": "Observed target met in this controlled browser run",
+      "firstPaintTargetMet": true
+    },
+    {
+      "scene": "kitchen-dining",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "cpuThrottle": 1,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedResponses": [],
+      "blockedWrites": [],
+      "apiRequests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:5175/api/products"
+        }
+      ],
+      "screenshots": [
+        "docs/qa-sims-parity-2026-10-22/after-graphics/kitchen-dining-desktop.png"
+      ],
+      "activationMs": 2860,
+      "firstFrameFromNavigationMs": 4022,
+      "firstPaintMs": 1162,
+      "settledCaptureMs": 9460.199999988079,
+      "renderer": {
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "vendor": "Google Inc. (Intel)",
+        "shading": "natural-basic",
+        "pixelWidth": 1167,
+        "pixelHeight": 693
+      },
+      "softwareRenderer": false,
+      "camera": {
+        "target": {
+          "x": 2.5,
+          "y": 2,
+          "z": 0.7875
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 11.414647384737181,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 2.5,
+          "y": 2,
+          "z": 0.7875
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 11.414647384737181,
+        "fovRad": 0.7127336648555606
+      },
+      "horizontalOverflowPx": 0,
+      "motion": {
+        "durationMs": 10011.300000011921,
+        "renderedFrames": 593,
+        "fps": 59.23306663463225,
+        "medianFrameMs": 16.69999998807907,
+        "p95FrameMs": 18.200000047683716,
+        "inputSteps": 593
+      },
+      "cameraAfterOrbit": {
+        "target": {
+          "x": 2.5,
+          "y": 2,
+          "z": 0.7875
+        },
+        "azimuthRad": -0.9271132707944341,
+        "elevationRad": 0.5097221717917654,
+        "distanceM": 11.414647384737181,
+        "fovRad": 0.6632251157578452
+      },
+      "geometryUnchanged": true,
+      "hardwareTargetAssessment": "Observed target not met in this controlled browser run",
+      "firstPaintTargetMet": true
+    },
+    {
+      "scene": "kitchen-dining",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "cpuThrottle": 4,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedResponses": [],
+      "blockedWrites": [],
+      "apiRequests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:5175/api/products"
+        }
+      ],
+      "screenshots": [
+        "docs/qa-sims-parity-2026-10-22/after-graphics/kitchen-dining-phone.png"
+      ],
+      "activationMs": 4414.399999976158,
+      "firstFrameFromNavigationMs": 6820.300000011921,
+      "firstPaintMs": 2405.900000035763,
+      "settledCaptureMs": 13033,
+      "renderer": {
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "vendor": "Google Inc. (Intel)",
+        "shading": "natural-basic",
+        "pixelWidth": 390,
+        "pixelHeight": 603
+      },
+      "softwareRenderer": false,
+      "camera": {
+        "target": {
+          "x": 2.5,
+          "y": 2,
+          "z": 1.89
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 16.96616152933503,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 2.5,
+          "y": 2,
+          "z": 1.89
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 16.96616152933503,
+        "fovRad": 0.7255576420055392
+      },
+      "horizontalOverflowPx": 0,
+      "motion": {
+        "durationMs": 10022.300000011921,
+        "renderedFrames": 594,
+        "fps": 59.267832732934906,
+        "medianFrameMs": 16.69999998807907,
+        "p95FrameMs": 19.599999964237213,
+        "inputSteps": 600
+      },
+      "cameraAfterOrbit": {
+        "target": {
+          "x": 2.5,
+          "y": 2,
+          "z": 1.89
+        },
+        "azimuthRad": -0.9064302873959974,
+        "elevationRad": 0.5098514442527038,
+        "distanceM": 16.96616152933503,
+        "fovRad": 0.6632251157578452
+      },
+      "geometryUnchanged": true,
+      "hardwareTargetAssessment": "Observed target met in this controlled browser run",
+      "firstPaintTargetMet": true
+    },
+    {
+      "scene": "bathroom",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "cpuThrottle": 1,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedResponses": [],
+      "blockedWrites": [],
+      "apiRequests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:5175/api/products"
+        }
+      ],
+      "screenshots": [
+        "docs/qa-sims-parity-2026-10-22/after-graphics/bathroom-desktop.png"
+      ],
+      "activationMs": 1702.8999999761581,
+      "firstFrameFromNavigationMs": 2138.800000011921,
+      "firstPaintMs": 435.9000000357628,
+      "settledCaptureMs": 7421.699999988079,
+      "renderer": {
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "vendor": "Google Inc. (Intel)",
+        "shading": "natural-basic",
+        "pixelWidth": 1167,
+        "pixelHeight": 693
+      },
+      "softwareRenderer": false,
+      "camera": {
+        "target": {
+          "x": 1.5,
+          "y": 1.5,
+          "z": 1.1024999999999998
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 9.017162923676523,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 1.5,
+          "y": 1.5,
+          "z": 1.1024999999999998
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 9.017162923676523,
+        "fovRad": 0.7127336648555606
+      },
+      "horizontalOverflowPx": 0,
+      "motion": {
+        "durationMs": 10012.399999976158,
+        "renderedFrames": 585,
+        "fps": 58.42754983833976,
+        "medianFrameMs": 16.600000023841858,
+        "p95FrameMs": 18.400000035762787,
+        "inputSteps": 586
+      },
+      "cameraAfterOrbit": {
+        "target": {
+          "x": 1.5,
+          "y": 1.5,
+          "z": 1.1024999999999998
+        },
+        "azimuthRad": -0.9264804582944349,
+        "elevationRad": 0.5097868080222343,
+        "distanceM": 9.017162923676523,
+        "fovRad": 0.6632251157578452
+      },
+      "geometryUnchanged": true,
+      "hardwareTargetAssessment": "Observed target not met in this controlled browser run",
+      "firstPaintTargetMet": true
+    },
+    {
+      "scene": "bathroom",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "cpuThrottle": 4,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedResponses": [],
+      "blockedWrites": [],
+      "apiRequests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:5175/api/products"
+        }
+      ],
+      "screenshots": [
+        "docs/qa-sims-parity-2026-10-22/after-graphics/bathroom-phone.png"
+      ],
+      "activationMs": 4738.5,
+      "firstFrameFromNavigationMs": 7427.599999964237,
+      "firstPaintMs": 2689.099999964237,
+      "settledCaptureMs": 12410.899999976158,
+      "renderer": {
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "vendor": "Google Inc. (Intel)",
+        "shading": "natural-basic",
+        "pixelWidth": 390,
+        "pixelHeight": 603
+      },
+      "softwareRenderer": false,
+      "camera": {
+        "target": {
+          "x": 1.5,
+          "y": 1.5,
+          "z": 1.89
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 11.887834981564795,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 1.5,
+          "y": 1.5,
+          "z": 1.89
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 11.887834981564795,
+        "fovRad": 0.7255576420055392
+      },
+      "horizontalOverflowPx": 0,
+      "motion": {
+        "durationMs": 10019.5,
+        "renderedFrames": 588,
+        "fps": 58.685563151853884,
+        "medianFrameMs": 16.69999998807907,
+        "p95FrameMs": 21.399999976158142,
+        "inputSteps": 600
+      },
+      "cameraAfterOrbit": {
+        "target": {
+          "x": 1.5,
+          "y": 1.5,
+          "z": 1.89
+        },
+        "azimuthRad": -0.9064302873959983,
+        "elevationRad": 0.5098514442527028,
+        "distanceM": 11.887834981564795,
+        "fovRad": 0.6632251157578452
+      },
+      "geometryUnchanged": true,
+      "hardwareTargetAssessment": "Observed target met in this controlled browser run",
+      "firstPaintTargetMet": true
+    },
+    {
+      "scene": "outside",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "cpuThrottle": 1,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedResponses": [],
+      "blockedWrites": [],
+      "apiRequests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:5175/api/products"
+        }
+      ],
+      "screenshots": [
+        "docs/qa-sims-parity-2026-10-22/after-graphics/outside-desktop.png"
+      ],
+      "activationMs": 2544.399999976158,
+      "firstFrameFromNavigationMs": 3005.099999964237,
+      "firstPaintMs": 460.69999998807907,
+      "settledCaptureMs": 5149.699999988079,
+      "renderer": {
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "vendor": "Google Inc. (Intel)",
+        "shading": "natural-basic",
+        "pixelWidth": 1167,
+        "pixelHeight": 693
+      },
+      "softwareRenderer": false,
+      "camera": {
+        "target": {
+          "x": 2,
+          "y": 1.5,
+          "z": 1.02375
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 9.696376296481503,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 2,
+          "y": 1.5,
+          "z": 1.02375
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 9.696376296481503,
+        "fovRad": 0.7127336648555606
+      },
+      "horizontalOverflowPx": 0,
+      "motion": {
+        "durationMs": 10018.199999988079,
+        "renderedFrames": 600,
+        "fps": 59.890998383014306,
+        "medianFrameMs": 16.69999998807907,
+        "p95FrameMs": 18.19999998807907,
+        "inputSteps": 601
+      },
+      "cameraAfterOrbit": {
+        "target": {
+          "x": 2,
+          "y": 1.5,
+          "z": 1.02375
+        },
+        "azimuthRad": -0.9239413957944361,
+        "elevationRad": 0.5100462684714535,
+        "distanceM": 9.696376296481503,
+        "fovRad": 0.6632251157578452
+      },
+      "geometryUnchanged": true,
+      "hardwareTargetAssessment": "Observed target not met in this controlled browser run",
+      "firstPaintTargetMet": true
+    },
+    {
+      "scene": "outside",
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "cpuThrottle": 4,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedResponses": [],
+      "blockedWrites": [],
+      "apiRequests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:5175/api/products"
+        }
+      ],
+      "screenshots": [
+        "docs/qa-sims-parity-2026-10-22/after-graphics/outside-phone.png"
+      ],
+      "activationMs": 5561.5,
+      "firstFrameFromNavigationMs": 7347,
+      "firstPaintMs": 1785.5,
+      "settledCaptureMs": 13653,
+      "renderer": {
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "vendor": "Google Inc. (Intel)",
+        "shading": "natural-basic",
+        "pixelWidth": 390,
+        "pixelHeight": 603
+      },
+      "softwareRenderer": false,
+      "camera": {
+        "target": {
+          "x": 2,
+          "y": 1.5,
+          "z": 1.89
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 13.666500068379191,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 2,
+          "y": 1.5,
+          "z": 1.89
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 13.666500068379191,
+        "fovRad": 0.7255576420055392
+      },
+      "horizontalOverflowPx": 0,
+      "motion": {
+        "durationMs": 10012.699999988079,
+        "renderedFrames": 566,
+        "fps": 56.52820917441588,
+        "medianFrameMs": 16.69999998807907,
+        "p95FrameMs": 21.600000023841858,
+        "inputSteps": 580
+      },
+      "cameraAfterOrbit": {
+        "target": {
+          "x": 2,
+          "y": 1.5,
+          "z": 1.89
+        },
+        "azimuthRad": -0.911803090130374,
+        "elevationRad": 0.5092726478659839,
+        "distanceM": 13.666500068379191,
+        "fovRad": 0.6632251157578452
+      },
+      "geometryUnchanged": true,
+      "hardwareTargetAssessment": "Observed target met in this controlled browser run",
+      "firstPaintTargetMet": true
+    }
+  ],
+  "nativeProbe": {
+    "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "vendor": "Google Inc. (Intel)"
+  }
+}

@@ -1,12 +1,9 @@
 /**
  * MobileProductPopup — Phase 3 of the mobile Sims rebuild.
  *
- * Opens when a thumbnail in SimsBottomToolbar is tapped. Shows a bigger
- * product image, name, price, dimensions, eco badge and description, with
- * two CTAs:
- *   • "+ Add to room" — primary; auto-places the product at the centre of
- *     the visible canvas (via placementIntentStore) then closes.
- *   • "Cancel"        — closes without placing.
+ * Opens from a product's information button. The docked version reserves
+ * catalogue space and shows the source photo, dimensions, supplier report
+ * and description. Choose position arms placement; Back closes details.
  *
  * The image is also draggable straight onto the canvas (Phase 3.2): a
  * drag releases at the drop point and closes the popup. While dragging,
@@ -28,6 +25,7 @@ import { useDragToPlace } from './useDragToPlace';
 import { floorMaterialForProduct } from '../../data/floorMaterials';
 import { useDesignerUIStore } from '../../store/designerUIStore';
 import { isPitchEmbed } from '../../demo/pitchEmbed';
+import { CatalogAvailability } from '../CatalogProductExtras';
 
 // ---------------------------------------------------------------------------
 // Chrome recipe (toolbar contract 2026-08-29) — same strings as CartStrip /
@@ -122,7 +120,8 @@ export function MobileProductPopup({
           onPointerDown={floorMat ? undefined : (event) => start(event, product.id, imgUrl)} onContextMenu={(event) => event.preventDefault()}>
           <img src={imgUrl} alt={product.name} draggable={false} />
         </div>
-        <div><h3>{product.name}</h3><strong>{formatPrice(product)}</strong><p>{formatDims(product)}{isPitchEmbed() ? '' : ` · ${product.supplier}`}</p>
+        <div><h3>{product.name}</h3><strong>{formatPrice(product)}</strong><p>{formatDims(product)}</p><p>Supplier: {product.supplier || 'Ask supplier'}</p>
+          <CatalogAvailability product={product} detail />
           {desc && <p>{shownDesc}{truncated && <button type="button" className="catalog-detail-more" onClick={() => setExpanded((value) => !value)}>{expanded ? 'less' : 'more'}</button>}</p>}
           <button type="button" data-testid={floorMat ? 'popup-lay-floor' : 'popup-add-to-room'} className="catalog-detail-place"
             onClick={floorMat ? layFloor : () => onAdd(product.id)}>{floorMat ? 'Lay this floor' : 'Choose position'}</button>
@@ -208,6 +207,7 @@ export function MobileProductPopup({
             <p className={CAPTION}>
               {formatDims(product)} · {product.supplier}
             </p>
+            <CatalogAvailability product={product} detail />
             {desc && (
               <p className="text-xs leading-snug text-ppw-charcoal">
                 {shownDesc}

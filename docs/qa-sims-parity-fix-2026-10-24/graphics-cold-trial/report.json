@@ -1,0 +1,129 @@
+{
+  "phase": "after",
+  "at": "2026-10-24T23:39:35.872Z",
+  "method": "Native D3D11, real pointer orbit, actual completed ThreeStage render calls via data-shading mutations; cache-disabled contexts; no live writes.",
+  "cases": [
+    {
+      "site": "preview",
+      "choice": "auto",
+      "origin": "http://127.0.0.1:5173",
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "first3dMs": 9316.599999964237,
+      "camera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.7214683613129115
+      },
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "bundleScripts": [
+        "/assets/vendor-react-CS4MHxMm.js",
+        "/assets/vendor-router-YSxUxVSZ.js",
+        "/assets/main-CLUovaHF.js"
+      ],
+      "beforeShading": "natural-basic",
+      "initialAutoAo": "disabled",
+      "adaptation": {
+        "shading": "natural-basic",
+        "autoAo": "disabled",
+        "autoFps": "16.5"
+      },
+      "motion": {
+        "fps": 60.038760464040394,
+        "frames": 601,
+        "durationMs": 10010.200000047684,
+        "p95Ms": 18.799999952316284,
+        "steps": 601
+      },
+      "shading": "natural-basic",
+      "autoAo": "disabled",
+      "autoAoFps": "16.5",
+      "quality": "medium",
+      "shadowSize": "2048",
+      "autoAoThresholdRespected": true,
+      "geometryUnchanged": true,
+      "overflow": 0,
+      "sameCamera": true,
+      "sameRenderCamera": false
+    },
+    {
+      "site": "preview",
+      "choice": "high",
+      "origin": "http://127.0.0.1:5173",
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "first3dMs": 3394.800000011921,
+      "camera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.7214683613129115
+      },
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "bundleScripts": [
+        "/assets/vendor-react-CS4MHxMm.js",
+        "/assets/vendor-router-YSxUxVSZ.js",
+        "/assets/main-CLUovaHF.js"
+      ],
+      "beforeShading": "natural-depth",
+      "initialAutoAo": "manual",
+      "adaptation": {
+        "shading": "natural-depth",
+        "autoAo": "manual",
+        "autoFps": ""
+      },
+      "motion": {
+        "fps": 38.87259531739325,
+        "frames": 391,
+        "durationMs": 10058.5,
+        "p95Ms": 114.60000002384186,
+        "steps": 408
+      },
+      "shading": "natural-depth",
+      "autoAo": "manual",
+      "autoAoFps": "",
+      "quality": "high",
+      "shadowSize": "2048",
+      "autoAoThresholdRespected": true,
+      "geometryUnchanged": true,
+      "overflow": 0,
+      "sameCamera": true,
+      "sameRenderCamera": false
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "base": "http://127.0.0.1:5175",
+  "capturedAt": "2026-10-24T11:43:49.108Z",
+  "cases": [
+    {
+      "device": "desktop",
+      "errors": [],
+      "blockedWrites": [],
+      "apiRequests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:5175/api/products"
+        }
+      ],
+      "checks": [
+        "high: same camera/property/canvas; expected shading/shadow resolution",
+        "low: same camera/property/canvas; expected shading/shadow resolution",
+        "medium: same camera/property/canvas; expected shading/shadow resolution",
+        "auto: same camera/property/canvas; expected shading/shadow resolution",
+        "Colour check remains direct/calibrated even at High"
+      ],
+      "horizontalOverflowPx": 0,
+      "passed": true
+    },
+    {
+      "device": "phone",
+      "errors": [],
+      "blockedWrites": [],
+      "apiRequests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:5175/api/products"
+        }
+      ],
+      "checks": [
+        "high: same camera/property/canvas; expected shading/shadow resolution",
+        "low: same camera/property/canvas; expected shading/shadow resolution",
+        "medium: same camera/property/canvas; expected shading/shadow resolution",
+        "auto: same camera/property/canvas; expected shading/shadow resolution",
+        "Colour check remains direct/calibrated even at High"
+      ],
+      "horizontalOverflowPx": 0,
+      "passed": true
+    }
+  ]
+}

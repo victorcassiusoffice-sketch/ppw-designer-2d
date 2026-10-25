@@ -1,0 +1,81 @@
+{
+  "base": "http://127.0.0.1:5176",
+  "cases": [
+    {
+      "device": "desktop",
+      "view": "2d",
+      "errors": [],
+      "writes": [],
+      "checks": [
+        "Real pointer wall click saves brick and removes covering paint",
+        "Thickness control writes 250mm to shared Materials and wall geometry"
+      ],
+      "shots": [
+        "docs/qa-sims-parity-fix-2026-10-24/wall-material/desktop-2d-painted-before.png",
+        "docs/qa-sims-parity-fix-2026-10-24/wall-material/desktop-2d-brick-after-click.png",
+        "docs/qa-sims-parity-fix-2026-10-24/wall-material/desktop-2d-height-thickness.png"
+      ],
+      "clickPoint": {
+        "x": 504,
+        "y": 303
+      }
+    },
+    {
+      "device": "desktop",
+      "view": "3d",
+      "errors": [],
+      "writes": [],
+      "checks": [
+        "Real pointer wall click saves brick and removes covering paint",
+        "Thickness control writes 250mm to shared Materials and wall geometry"
+      ],
+      "shots": [
+        "docs/qa-sims-parity-fix-2026-10-24/wall-material/desktop-3d-painted-before.png",
+        "docs/qa-sims-parity-fix-2026-10-24/wall-material/desktop-3d-brick-after-click.png",
+        "docs/qa-sims-parity-fix-2026-10-24/wall-material/desktop-3d-height-thickness.png"
+      ],
+      "clickPoint": {
+        "x": 477.18426958776735,
+        "y": 304.26493989452433
+      }
+    },
+    {
+      "device": "phone",
+      "view": "2d",
+      "errors": [],
+      "writes": [],
+      "checks": [
+        "Real pointer wall click saves brick and removes covering paint",
+        "Thickness control writes 250mm to shared Materials and wall geometry"
+      ],
+      "shots": [
+        "docs/qa-sims-parity-fix-2026-10-24/wall-material/phone-2d-painted-before.png",
+        "docs/qa-sims-parity-fix-2026-10-24/wall-material/phone-2d-brick-after-click.png",
+        "docs/qa-sims-parity-fix-2026-10-24/wall-material/phone-2d-height-thickness.png"
+      ],
+      "clickPoint": {
+        "x": 195,
+        "y": 274
+      }
+    },
+    {
+      "device": "phone",
+      "view": "3d",
+      "errors": [],
+      "writes": [],
+      "checks": [
+        "Real pointer wall click saves brick and removes covering paint",
+        "Thickness control writes 250mm to shared Materials and wall geometry"
+      ],
+      "shots": [
+        "docs/qa-sims-parity-fix-2026-10-24/wall-material/phone-3d-painted-before.png",
+        "docs/qa-sims-parity-fix-2026-10-24/wall-material/phone-3d-brick-after-click.png",
+        "docs/qa-sims-parity-fix-2026-10-24/wall-material/phone-3d-height-thickness.png"
+      ],
+      "clickPoint": {
+        "x": 151.32008283178098,
+        "y": 346.9900453305618
+      }
+    }
+  ]
+}

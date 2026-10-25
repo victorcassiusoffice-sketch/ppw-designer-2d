@@ -35,6 +35,12 @@ import { create } from 'zustand';
 import type { DropResult } from '../designer/itemDrop';
 
 export type MovePreviewResolver = (instanceId: string, roomX: number, roomY: number, shiftKey: boolean) => DropResult | null;
+export interface PlacementPreview {
+  xM: number; yM: number; rotation: number; valid: boolean; w: number; h: number;
+  parentInstanceId?: string;
+  mountHeightCm?: number;
+}
+export type PlacementPreviewResolver = (productId: string, roomX: number, roomY: number) => PlacementPreview | null;
 
 export type PlacementTarget = 'center' | { clientX: number; clientY: number } | { roomX: number; roomY: number };
 
@@ -73,7 +79,12 @@ interface PlacementIntentState {
    * and catalog; 3D reads it directly. Disarming a tool updates every view.
    */
   armedProductId: string | null;
+  armedRotation: number;
+  armedRotationExplicit: boolean;
+  rotateArmed: (deltaDeg: number) => void;
   setArmed: (productId: string | null) => void;
+  previewPlacement: PlacementPreviewResolver;
+  registerPlacementPreviewResolver: (resolver: PlacementPreviewResolver) => () => void;
   moveIntent: MoveIntent | null;
   moveTo: (instanceId: string, roomX: number, roomY: number, shiftKey?: boolean) => void;
   consumeMove: () => void;
@@ -87,6 +98,7 @@ let nonceSeq = 0;
 // A callback, not persisted/editor state. Pointermove preview must not notify
 // every subscribed UI component or add a new design/history mutation.
 let movePreviewResolver: MovePreviewResolver | null = null;
+let placementPreviewResolver: PlacementPreviewResolver | null = null;
 
 export const usePlacementIntentStore = create<PlacementIntentState>((set) => ({
   intent: null,
@@ -95,7 +107,17 @@ export const usePlacementIntentStore = create<PlacementIntentState>((set) => ({
   placeAtPoint: (productId, roomX, roomY, options) => set({ intent: { productId, target: { roomX, roomY }, ...options, nonce: ++nonceSeq } }),
   consume: () => set({ intent: null }),
   armedProductId: null,
-  setArmed: (productId) => set((s) => (s.armedProductId === productId ? s : { armedProductId: productId })),
+  armedRotation: 0,
+  armedRotationExplicit: false,
+  rotateArmed: deltaDeg => set(s => !s.armedProductId || !Number.isFinite(deltaDeg) ? s : ({ armedRotation: ((s.armedRotation + deltaDeg) % 360 + 360) % 360, armedRotationExplicit: true })),
+  // The carried angle is explicit from pickup. Auto-facing must not render a
+  // different pose than the angle shown in the control row.
+  setArmed: (productId) => set((s) => (s.armedProductId === productId ? s : { armedProductId: productId, armedRotation: 0, armedRotationExplicit: !!productId })),
+  previewPlacement: (productId, x, y) => Number.isFinite(x) && Number.isFinite(y) ? placementPreviewResolver?.(productId, x, y) ?? null : null,
+  registerPlacementPreviewResolver: resolver => {
+    placementPreviewResolver = resolver;
+    return () => { if (placementPreviewResolver === resolver) placementPreviewResolver = null; };
+  },
   moveIntent: null,
   moveTo: (instanceId, roomX, roomY, shiftKey = false) => set({ moveIntent: { instanceId, roomX, roomY, shiftKey, nonce: ++nonceSeq } }),
   consumeMove: () => set({ moveIntent: null }),

@@ -40,10 +40,11 @@ function area(points: { x: number; y: number }[]) {
 }
 
 /** The architectural workspace uses the same property, catalog and history as Plan. */
-export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children, inspector, externalPanel, drawing, onDraw, onSelect, wallDrawing = false, onWalls, selection, buildTool = 'select', onBuildTool, onFloorAdded }: {
+export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children, inspector, externalPanel, drawing, onDraw, onSelect, wallDrawing = false, onWalls, selection, buildTool = 'select', onBuildTool, onFloorAdded, onRemove, removeActive }: {
   mode: HouseMode; onMode: (mode: HouseMode) => void; onPlan?: () => void; onSave?: () => void; onCart?: () => void;
   children: ReactNode; inspector: ReactNode; externalPanel: boolean; drawing: boolean;
   onDraw: () => void; onSelect: () => void;
+  onRemove?: () => void; removeActive?: boolean;
   wallDrawing?: boolean; onWalls?: () => void;
   selection?: { id: string; name: string; productId?: string; onDeselect: () => void };
   buildTool?: BuildingControlsProps['tool']; onBuildTool?: BuildingControlsProps['onToolChange']; onFloorAdded?: () => void;
@@ -167,6 +168,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
           {!isPitchEmbed() && <button type="button" className="house-cost-pill house-checkout-toggle" onClick={toggleCost} aria-label={`Product estimate ${quoteAwareAmount(cart, cart.subtotal, formatCurrency(cart.subtotal, currency))}. Open products and cost`} aria-expanded={costOpen}><span>Estimate</span><strong>{quoteAwareAmount(cart, cart.subtotal, formatCurrency(cart.subtotal, currency))}</strong></button>}
           <div className="house-quick-tools"><button type="button" aria-label="Select and move objects" aria-pressed={!drawing && !wallDrawing && buildTool === 'select'} onClick={() => { onSelect(); setBuildPaletteOpen(false); }}><StudioIcon name="cursor" size={18} /></button><button type="button" aria-label="Build tools" aria-controls="house-build-palette" aria-expanded={buildPaletteOpen} onClick={() => { onMode('build'); setBuildPaletteOpen(!buildPaletteOpen); setMobileInspector(false); }}><StudioIcon name="room" size={18} /><span>Build</span></button></div>
           <div id="house-build-palette" className="house-scene-actions">
+            {onRemove && <button type="button" data-testid="remove-tool-3d" aria-pressed={!!removeActive} onClick={onRemove}><StudioIcon name="hammer" size={18}/><span>Remove</span></button>}
             <button aria-pressed={!drawing && !wallDrawing && buildTool === 'select'} onClick={onSelect}><StudioIcon name="cursor" size={18} /><span>Select</span></button>
             {onWalls && <button disabled={onRoof} aria-pressed={wallDrawing} onClick={() => { setMobileInspector(false); onWalls(); }} data-testid="house-draw-walls"><StudioIcon name="pen" size={18} /><span>Walls</span></button>}
             <button disabled={onRoof} aria-pressed={drawing} onClick={() => { setMobileInspector(false); onDraw(); }} data-testid="house-draw-room"><StudioIcon name="box" size={18} /><span>Draw room</span></button>
@@ -186,6 +188,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
           <small>Slide along a wall · release to place · repeat or Done. Esc cancels · right-drag or two fingers move the view</small>
           <OpeningDimensions />
         </div>}
+        <div className="house-scene-surface">
         {selection && <div className="house-selection-strip" data-testid="house-selection-strip">
           <span><small>SELECTED</small><strong>{selection.name}</strong></span>
           {selection.productId && <button type="button" onClick={toggleCost} aria-expanded={costOpen}>Product details</button>}
@@ -193,6 +196,7 @@ export function HouseWorkspace({ mode, onMode, onPlan, onSave, onCart, children,
           <button type="button" aria-label="Clear selected item" title="Deselect item" onClick={() => { setMobileInspector(false); setCostOpen(false); selection.onDeselect(); }}>×</button>
         </div>}
         {children}
+        </div>
       </div>
       {(!externalPanel || costOpen) && <aside ref={inspectorRef} className={`house-inspector ${panelOpen ? 'is-open' : ''}`} aria-label="House details">
         <div className="house-summary">

@@ -1,0 +1,2159 @@
+{
+  "base": "http://127.0.0.1:5176",
+  "cases": [
+    {
+      "device": "desktop",
+      "checks": [
+        {
+          "name": "P1-1-selection-keeps-canvas-and-immediate-drag",
+          "pass": true
+        },
+        {
+          "name": "P1-3-carried-angle-and-saved-pose",
+          "pass": true
+        },
+        {
+          "name": "P1-2-high-plan-handle-four-turns",
+          "pass": true
+        }
+      ],
+      "shots": [
+        {
+          "name": "selection-before",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-selection-before.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 0
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 23.482384790243724,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": null
+          }
+        },
+        {
+          "name": "selection-after",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-selection-after.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 0
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 23.482384790243724,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": null
+          }
+        },
+        {
+          "name": "selection-immediate-drag",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-selection-immediate-drag.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 6,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 0
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 23.482384790243724,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": null
+          }
+        },
+        {
+          "name": "dining-carried-0",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-dining-carried-0.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 0
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 23.482384790243724,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": "{\"productId\":\"courts-gessica-dining-6\",\"x\":7,\"y\":6,\"rotation\":0,\"z\":0,\"valid\":true}"
+          }
+        },
+        {
+          "name": "dining-carried-45",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-dining-carried-45.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 0
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 23.482384790243724,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": "{\"productId\":\"courts-gessica-dining-6\",\"x\":6.5,\"y\":5.5,\"rotation\":45,\"z\":0,\"valid\":true}"
+          }
+        },
+        {
+          "name": "dining-carried-90",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-dining-carried-90.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 0
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 23.482384790243724,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": "{\"productId\":\"courts-gessica-dining-6\",\"x\":7,\"y\":6,\"rotation\":90,\"z\":0,\"valid\":true}"
+          }
+        },
+        {
+          "name": "dining-saved-90",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-dining-saved-90.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    },
+                    {
+                      "productId": "courts-gessica-dining-6",
+                      "x": 7,
+                      "y": 6,
+                      "rotation": 90,
+                      "instanceId": "o0fCeWWsjE"
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 0
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 23.482384790243724,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": null
+          }
+        },
+        {
+          "name": "chair-carried-0",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-chair-carried-0.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 0
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 23.482384790243724,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": "{\"productId\":\"courts-stellar-celosia-chair\",\"x\":7.5,\"y\":6.5,\"rotation\":0,\"z\":0,\"valid\":true}"
+          }
+        },
+        {
+          "name": "chair-carried-45",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-chair-carried-45.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 0
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 23.482384790243724,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": "{\"productId\":\"courts-stellar-celosia-chair\",\"x\":7.5,\"y\":6.5,\"rotation\":45,\"z\":0,\"valid\":true}"
+          }
+        },
+        {
+          "name": "chair-carried-90",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-chair-carried-90.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 0
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 23.482384790243724,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": "{\"productId\":\"courts-stellar-celosia-chair\",\"x\":7.5,\"y\":6.5,\"rotation\":90,\"z\":0,\"valid\":true}"
+          }
+        },
+        {
+          "name": "chair-saved-90",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-chair-saved-90.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    },
+                    {
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 7.5,
+                      "y": 6.5,
+                      "rotation": 90,
+                      "instanceId": "-1dHHBRGDh"
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 0
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 23.482384790243724,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": null
+          }
+        },
+        {
+          "name": "high-plan-selected",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-high-plan-selected.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 0.25,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": null
+          }
+        },
+        {
+          "name": "high-plan-turn-1",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-high-plan-turn-1.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 4.8836648634762065,
+                      "y": 0.11366486347620597,
+                      "rotation": 45
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": null
+          }
+        },
+        {
+          "name": "high-plan-turn-2",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-high-plan-turn-2.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5.0200000000000005,
+                      "y": 0.22999999999999993,
+                      "rotation": 90
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": null
+          }
+        },
+        {
+          "name": "high-plan-turn-3",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-high-plan-turn-3.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 4.8836648634762065,
+                      "y": 0.11366486347620597,
+                      "rotation": 135
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": null
+          }
+        },
+        {
+          "name": "high-plan-turn-4",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/desktop-high-plan-turn-4.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 0.24999999999999994,
+                      "rotation": 180
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": null
+          }
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "selectionBoxes": {
+        "before": {
+          "x": 99,
+          "y": 120,
+          "width": 1167,
+          "height": 596
+        },
+        "after": {
+          "x": 99,
+          "y": 120,
+          "width": 1167,
+          "height": 596
+        }
+      },
+      "planAnchors": [
+        {
+          "centre": {
+            "x": 613.285,
+            "y": 324.255
+          },
+          "anchor": {
+            "x": 663.5699999999999,
+            "y": 324.255
+          }
+        },
+        {
+          "centre": {
+            "x": 613.285,
+            "y": 324.255
+          },
+          "anchor": {
+            "x": 668.1070703244279,
+            "y": 324.255
+          }
+        },
+        {
+          "centre": {
+            "x": 613.285,
+            "y": 324.255
+          },
+          "anchor": {
+            "x": 662.79,
+            "y": 324.255
+          }
+        },
+        {
+          "centre": {
+            "x": 613.285,
+            "y": 324.255
+          },
+          "anchor": {
+            "x": 668.1070703244279,
+            "y": 324.255
+          }
+        }
+      ],
+      "overflow": 0
+    },
+    {
+      "device": "phone",
+      "checks": [
+        {
+          "name": "P1-1-selection-keeps-canvas-and-immediate-drag",
+          "pass": true
+        },
+        {
+          "name": "P1-3-carried-angle-and-saved-pose",
+          "pass": true
+        },
+        {
+          "name": "P1-2-high-plan-handle-four-turns",
+          "pass": true
+        }
+      ],
+      "shots": [
+        {
+          "name": "selection-before",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-selection-before.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 38.54279538188445,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": null
+          }
+        },
+        {
+          "name": "selection-after",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-selection-after.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 38.54279538188445,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": null
+          }
+        },
+        {
+          "name": "selection-immediate-drag",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-selection-immediate-drag.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 8,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 38.54279538188445,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": null
+          }
+        },
+        {
+          "name": "dining-carried-0",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-dining-carried-0.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 38.54279538188445,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": "{\"productId\":\"courts-gessica-dining-6\",\"x\":7,\"y\":6,\"rotation\":0,\"z\":0,\"valid\":true}"
+          }
+        },
+        {
+          "name": "dining-carried-45",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-dining-carried-45.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 38.54279538188445,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": "{\"productId\":\"courts-gessica-dining-6\",\"x\":6.5,\"y\":5.5,\"rotation\":45,\"z\":0,\"valid\":true}"
+          }
+        },
+        {
+          "name": "dining-carried-90",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-dining-carried-90.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 38.54279538188445,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": "{\"productId\":\"courts-gessica-dining-6\",\"x\":7,\"y\":6,\"rotation\":90,\"z\":0,\"valid\":true}"
+          }
+        },
+        {
+          "name": "dining-saved-90",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-dining-saved-90.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    },
+                    {
+                      "productId": "courts-gessica-dining-6",
+                      "x": 7,
+                      "y": 6,
+                      "rotation": 90,
+                      "instanceId": "gARfBDrPMC"
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 38.54279538188445,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": null
+          }
+        },
+        {
+          "name": "chair-carried-0",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-chair-carried-0.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 38.54279538188445,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": "{\"productId\":\"courts-stellar-celosia-chair\",\"x\":7.5,\"y\":6.5,\"rotation\":0,\"z\":0,\"valid\":true}"
+          }
+        },
+        {
+          "name": "chair-carried-45",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-chair-carried-45.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 38.54279538188445,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": "{\"productId\":\"courts-stellar-celosia-chair\",\"x\":7.5,\"y\":6.5,\"rotation\":45,\"z\":0,\"valid\":true}"
+          }
+        },
+        {
+          "name": "chair-carried-90",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-chair-carried-90.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 38.54279538188445,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": "{\"productId\":\"courts-stellar-celosia-chair\",\"x\":7.5,\"y\":6.5,\"rotation\":90,\"z\":0,\"valid\":true}"
+          }
+        },
+        {
+          "name": "chair-saved-90",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-chair-saved-90.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 4,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    },
+                    {
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 7.5,
+                      "y": 6.5,
+                      "rotation": 90,
+                      "instanceId": "b3W8o6VnTw"
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": {
+              "target": {
+                "x": 6,
+                "y": 5,
+                "z": 1.89
+              },
+              "azimuthRad": -0.5585053606381855,
+              "elevationRad": 0.6108652381980153,
+              "distanceM": 38.54279538188445,
+              "fovRad": 0.6632251157578452
+            },
+            "ghost": null
+          }
+        },
+        {
+          "name": "high-plan-selected",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-high-plan-selected.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 0.25,
+                      "rotation": 0
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": null
+          }
+        },
+        {
+          "name": "high-plan-turn-1",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-high-plan-turn-1.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 4.8836648634762065,
+                      "y": 0.11366486347620597,
+                      "rotation": 45
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": null
+          }
+        },
+        {
+          "name": "high-plan-turn-2",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-high-plan-turn-2.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5.0200000000000005,
+                      "y": 0.22999999999999993,
+                      "rotation": 90
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": null
+          }
+        },
+        {
+          "name": "high-plan-turn-3",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-high-plan-turn-3.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 4.8836648634762065,
+                      "y": 0.11366486347620597,
+                      "rotation": 135
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": null
+          }
+        },
+        {
+          "name": "high-plan-turn-4",
+          "path": "docs/qa-sims-parity-fix-2026-10-24/interaction/phone-high-plan-turn-4.png",
+          "state": {
+            "property": {
+              "id": "fix-acceptance",
+              "name": "Interaction acceptance",
+              "activeRoomId": "room",
+              "activeLevelId": "ground",
+              "wallHeightM": 2.7,
+              "rooms": [
+                {
+                  "id": "room",
+                  "name": "Measured room",
+                  "polygon": [
+                    {
+                      "x": 0,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 0
+                    },
+                    {
+                      "x": 12,
+                      "y": 10
+                    },
+                    {
+                      "x": 0,
+                      "y": 10
+                    }
+                  ],
+                  "placedItems": [
+                    {
+                      "instanceId": "chair",
+                      "productId": "courts-stellar-celosia-chair",
+                      "x": 5,
+                      "y": 0.24999999999999994,
+                      "rotation": 180
+                    },
+                    {
+                      "instanceId": "table",
+                      "productId": "demo-console-table",
+                      "x": 2,
+                      "y": 6,
+                      "rotation": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "camera": null
+          }
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "selectionBoxes": {
+        "before": {
+          "x": 0,
+          "y": 110,
+          "width": 390,
+          "height": 603
+        },
+        "after": {
+          "x": 0,
+          "y": 110,
+          "width": 390,
+          "height": 603
+        }
+      },
+      "planAnchors": [
+        {
+          "centre": {
+            "x": 177.30416666666665,
+            "y": 395.91249999999997
+          },
+          "anchor": {
+            "x": 177.30416666666665,
+            "y": 350.29166666666663
+          }
+        },
+        {
+          "centre": {
+            "x": 177.30416666666665,
+            "y": 395.91249999999997
+          },
+          "anchor": {
+            "x": 177.30416666666665,
+            "y": 346.76967563980196
+          }
+        },
+        {
+          "centre": {
+            "x": 177.30416666666665,
+            "y": 395.91249999999997
+          },
+          "anchor": {
+            "x": 177.30416666666665,
+            "y": 349.775
+          }
+        },
+        {
+          "centre": {
+            "x": 177.30416666666665,
+            "y": 395.91249999999997
+          },
+          "anchor": {
+            "x": 177.30416666666665,
+            "y": 346.76967563980196
+          }
+        }
+      ],
+      "overflow": 0
+    }
+  ]
+}

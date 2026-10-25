@@ -1,0 +1,191 @@
+{
+  "k1-nordictrack-gx10": {
+    "url": "/products/catalog-models/k1-nordictrack-gx10-27fca5f37a13430c.png",
+    "sku": "K1-CDIO-NTGX10",
+    "hash": "27fca5f37a13430c",
+    "modelUrl": "/models/k1-nordictrack-gx10.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "k1-nordictrack-2450": {
+    "url": "/products/catalog-models/k1-nordictrack-2450-3fb7e50791535f03.png",
+    "sku": "K1-CDIO-NT2450",
+    "hash": "3fb7e50791535f03",
+    "modelUrl": "/models/k1-nordictrack-2450.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "k1-nordictrack-tour-de-france": {
+    "url": "/products/catalog-models/k1-nordictrack-tour-de-france-5d41407a1b73cfc6.png",
+    "sku": "K1-CDIO-NTTDF",
+    "hash": "5d41407a1b73cfc6",
+    "modelUrl": "/models/k1-nordictrack-tour-de-france.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "k1-schwinn-700ic": {
+    "url": "/products/catalog-models/k1-schwinn-700ic-506534e5c912a433.png",
+    "sku": "K1-CDIO-SCH700IC",
+    "hash": "506534e5c912a433",
+    "modelUrl": "/models/k1-schwinn-700ic.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "k1-proform-carbon-tl": {
+    "url": "/products/catalog-models/k1-proform-carbon-tl-d3c5b20375988fad.png",
+    "sku": "K1-CDIO-PROFCTL",
+    "hash": "d3c5b20375988fad",
+    "modelUrl": "/models/k1-proform-carbon-tl.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "k1-nordictrack-rw900": {
+    "url": "/products/catalog-models/k1-nordictrack-rw900-f313992b1e9bbd10.png",
+    "sku": "K1-CDIO-NTRW900",
+    "hash": "f313992b1e9bbd10",
+    "modelUrl": "/models/k1-nordictrack-rw900.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "k1-nordictrack-x16": {
+    "url": "/products/catalog-models/k1-nordictrack-x16-2a2b50706566f124.png",
+    "sku": "K1-CDIO-NTX16",
+    "hash": "2a2b50706566f124",
+    "modelUrl": "/models/k1-nordictrack-x16.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "k1-vision-t600-03": {
+    "url": "/products/catalog-models/k1-vision-t600-03-b3d7ae0ce533e879.png",
+    "sku": "K1-CDIO-VST60003",
+    "hash": "b3d7ae0ce533e879",
+    "modelUrl": "/models/k1-vision-t600-03.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "k1-matrix-mg-glute": {
+    "url": "/products/catalog-models/k1-matrix-mg-glute-3b462304075d5df7.png",
+    "sku": "K1-STRG-MXMGGT",
+    "hash": "3b462304075d5df7",
+    "modelUrl": "/models/k1-matrix-mg-glute.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "k1-vision-t600e-02": {
+    "url": "/products/catalog-models/k1-vision-t600e-02-ca825dddfbe80247.png",
+    "sku": "K1-CDIO-VST600E02",
+    "hash": "ca825dddfbe80247",
+    "modelUrl": "/models/k1-vision-t600e-02.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "k1-matrix-versa-adabd": {
+    "url": "/products/catalog-models/k1-matrix-versa-adabd-cb1034bd1048161b.png",
+    "sku": "K1-STRG-MXVSAD",
+    "hash": "cb1034bd1048161b",
+    "modelUrl": "/models/k1-matrix-versa-adabd.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "k1-vision-smith": {
+    "url": "/products/catalog-models/k1-vision-smith-878eaec79873f376.png",
+    "sku": "K1-STRG-VSSMITH",
+    "hash": "878eaec79873f376",
+    "modelUrl": "/models/k1-vision-smith.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "emcar-victron-175": {
+    "url": "/products/catalog-models/emcar-victron-175-aa3269a83d7c5f9a.png",
+    "sku": "EMCAR-SOLAR-VIC-175",
+    "hash": "aa3269a83d7c5f9a",
+    "modelUrl": "/models/emcar-victron-175.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "emcar-jinko-475": {
+    "url": "/products/catalog-models/emcar-jinko-475-973ae6c7ef4fd75a.png",
+    "sku": "EMCAR-SOLAR-JINKO-475",
+    "hash": "973ae6c7ef4fd75a",
+    "modelUrl": "/models/emcar-jinko-475.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "k1-bowflex-xtreme-2se": {
+    "url": "/products/catalog-models/k1-bowflex-xtreme-2se-69a4e9016c1e1e21.png",
+    "sku": "K1-STRG-BFXT2SE",
+    "hash": "69a4e9016c1e1e21",
+    "modelUrl": "/models/k1-bowflex-xtreme-2se.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "emcar-sunpower-flex-100": {
+    "url": "/products/catalog-models/emcar-sunpower-flex-100-e3d386db71227d9c.png",
+    "sku": "EMCAR-SOLAR-SPR-FLEX-100",
+    "hash": "e3d386db71227d9c",
+    "modelUrl": "/models/emcar-sunpower-flex-100.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "emcar-victron-superpack-12-100": {
+    "url": "/products/catalog-models/emcar-victron-superpack-12-100-d84e0cc2f2f075ef.png",
+    "sku": "EMCAR-SOLAR-VIC-SP-12-100",
+    "hash": "d84e0cc2f2f075ef",
+    "modelUrl": "/models/emcar-victron-superpack-12-100.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "emcar-victron-multiplus-12-3000": {
+    "url": "/products/catalog-models/emcar-victron-multiplus-12-3000-9ed3b2594e823313.png",
+    "sku": "EMCAR-SOLAR-VIC-MP-12-3000",
+    "hash": "9ed3b2594e823313",
+    "modelUrl": "/models/emcar-victron-multiplus-12-3000.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "emcar-victron-phoenix-12-1200": {
+    "url": "/products/catalog-models/emcar-victron-phoenix-12-1200-965ce6087ade6888.png",
+    "sku": "EMCAR-SOLAR-VIC-PHX-12-1200",
+    "hash": "965ce6087ade6888",
+    "modelUrl": "/models/emcar-victron-phoenix-12-1200.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "emcar-victron-agm-200": {
+    "url": "/products/catalog-models/emcar-victron-agm-200-5ee7f037524f93e1.png",
+    "sku": "EMCAR-SOLAR-VIC-AGM-200",
+    "hash": "5ee7f037524f93e1",
+    "modelUrl": "/models/emcar-victron-agm-200.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  },
+  "emcar-victron-mppt-100-30": {
+    "url": "/products/catalog-models/emcar-victron-mppt-100-30-6b850a6b567d25d1.png",
+    "sku": "EMCAR-SOLAR-VIC-MPPT-100-30",
+    "hash": "6b850a6b567d25d1",
+    "modelUrl": "/models/emcar-victron-mppt-100-30.glb",
+    "width": 384,
+    "height": 384,
+    "rigVersion": 1
+  }
+}

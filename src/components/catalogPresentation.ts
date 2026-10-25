@@ -2,8 +2,9 @@ import type { Product } from '../data/products.schema';
 import type { KeyboardEvent } from 'react';
 import { MACRO_CATEGORY_LABEL, macroOf, type MacroCategory } from './mobile/catalogMacros';
 import { isPitchEmbed } from '../demo/pitchEmbed';
+import { catalogRoomRelevance, matchesCatalogBrowse, type CatalogBrowse } from './catalogMetadata';
 
-export type CatalogSort = 'catalog' | 'name' | 'footprint';
+export type CatalogSort = 'catalog' | 'name' | 'footprint' | 'price-asc' | 'price-desc';
 
 /** Scoped CSS variables retain the shop palette in plan and follow the 3D workspace. */
 export const CATALOG_CHROME = {
@@ -25,10 +26,11 @@ export function catalogRequestCategory(event: Event): MacroCategory | undefined 
 const normaliseSearch = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
 /** Search the existing range, retaining its original order unless the user chooses a sort. */
-export function filterCatalog(products: readonly Product[], category: MacroCategory, query: string, sort: CatalogSort = 'catalog'): Product[] {
+export function filterCatalog(products: readonly Product[], category: MacroCategory, query: string, sort: CatalogSort = 'catalog', browse: CatalogBrowse = { mode: 'category', value: 'all' }): Product[] {
   const terms = normaliseSearch(query).split(/\s+/).filter(Boolean);
   const filtered = products.filter((product) => {
-    if (category !== 'all' && macroOf(product) !== category) return false;
+    if (browse.mode === 'category' && category !== 'all' && macroOf(product) !== category) return false;
+    if (!matchesCatalogBrowse(product, browse)) return false;
     if (!terms.length) return true;
     const text = normaliseSearch([
       product.name, product.sku, product.supplier, product.category,
@@ -36,9 +38,15 @@ export function filterCatalog(products: readonly Product[], category: MacroCateg
     ].join(' '));
     return terms.every((term) => text.includes(term));
   });
+  if (sort === 'catalog' && browse.mode === 'room') filtered.sort((a, b) => catalogRoomRelevance(a, browse.value) - catalogRoomRelevance(b, browse.value));
   if (sort === 'name') filtered.sort((a, b) => a.name.localeCompare(b.name));
   if (sort === 'footprint') filtered.sort((a, b) =>
     a.dimensions_cm.length * a.dimensions_cm.width - b.dimensions_cm.length * b.dimensions_cm.width);
+  if (!isPitchEmbed() && (sort === 'price-asc' || sort === 'price-desc')) filtered.sort((a, b) => {
+    if (Boolean(a.price_on_request) !== Boolean(b.price_on_request)) return a.price_on_request ? 1 : -1;
+    // Different currencies are grouped, never silently converted or compared.
+    return a.price.currency.localeCompare(b.price.currency) || (a.price.value - b.price.value) * (sort === 'price-asc' ? 1 : -1) || a.name.localeCompare(b.name);
+  });
   return filtered;
 }
 

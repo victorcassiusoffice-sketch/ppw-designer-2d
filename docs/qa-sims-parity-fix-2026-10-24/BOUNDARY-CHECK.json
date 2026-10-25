@@ -1,0 +1,32 @@
+{
+  "base": "6d34d05ef06887bdf13ae9c73fb264b063726f3e",
+  "protectedTestFiles": [
+    "src/components/__tests__/FoundationWorkspace.test.tsx",
+    "src/components/__tests__/FoundationWorkspaceRoute.test.tsx",
+    "src/components/__tests__/MaterialsPanel.test.tsx",
+    "src/components/three/__tests__/foundationInspection.test.ts",
+    "src/components/three/__tests__/foundationMeshes.test.ts",
+    "src/designer/__tests__/buildingServices.test.ts",
+    "src/designer/__tests__/canonicaliseRoomGeometry.test.ts",
+    "src/designer/__tests__/foundation.test.ts",
+    "src/designer/__tests__/foundationBores.test.ts",
+    "src/designer/__tests__/freeWalls.test.ts",
+    "src/designer/__tests__/glassMaterials.test.ts",
+    "src/designer/__tests__/openingGeometry.test.ts",
+    "src/designer/__tests__/propertyMaterials.test.ts",
+    "src/designer/__tests__/roomSolids.test.ts",
+    "src/designer/__tests__/sharedGlassSolids.test.ts",
+    "src/designer/__tests__/wallPaintCalc.test.ts",
+    "src/designer/materials/__tests__/costs.test.ts",
+    "src/designer/materials/__tests__/estimate.test.ts",
+    "src/lib/__tests__/floorCalculator.test.ts",
+    "src/lib/__tests__/geometry.test.ts",
+    "src/store/__tests__/propertyFoundation.test.ts"
+  ],
+  "changedProtectedTests": [],
+  "apiChanges": [],
+  "dependencyChanges": [],
+  "note": "Existing committed test content unchanged. New interaction regressions were added separately. No estimator formula changed.",
+  "protectedPatternFilesChecked": 26,
+  "changedProtectedPatternFiles": []
+}

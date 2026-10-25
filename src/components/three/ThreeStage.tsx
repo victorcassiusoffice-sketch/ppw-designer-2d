@@ -41,6 +41,8 @@
  * pixel matching with a colour card. Switching looks never moves the camera.
  */
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { createAutoAoState, sampleAutoAo } from './adaptiveAmbientOcclusion';
+import { applyWallHoverVisibility, removalHighlight, clipRemovalHighlightToPlanBounds, disposeRemovalHighlight } from './viewOnlyFeedback';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
@@ -75,7 +77,10 @@ import { waterTankPreview } from './waterTankPreview';
 import { carryItemPreviewPose } from './itemPreviewPose';
 import { createRoofSurface, roofItemMount } from '../../designer/roofSurface';
 import { pointInPolygon } from '../../lib/geometry';
-import { applyProductSurfaceLighting } from './productSurfaceLighting';
+import { applyProductSurfaceLighting, applySceneTextureSampling } from './productSurfaceLighting';
+import { browserRenderDevice, renderQualityProfile } from '../../designer/renderQuality';
+import { useRenderQualityStore } from '../../store/renderQualityStore';
+import { attachedDescendantIds, attachedPreviewPosition } from './attachedItemPreview';
 import { serviceFixtureMesh } from './serviceFixtureMeshes';
 import { serviceRouteMesh } from './serviceRouteMeshes';
 import type { ServiceRunPlacement } from '../../designer/serviceScene';
@@ -224,6 +229,9 @@ function artBox(it: ItemSolid, requestRender: () => void): THREE.Group {
 }
 
 export interface ThreeStageHandle {
+  viewHover(x:number|null,y?:number):void;
+  hitErase(x:number,y:number):ThreeEraseTarget|null;
+  setEraseHover(target:ThreeEraseTarget|null,floorOutline?:readonly {x:number;y:number}[]):void;
   /** Wall under a canvas-local point, or null. */
   hitTest(x: number, y: number): WallHit | null;
   wallPoint(x: number, y: number): { x: number; y: number } | null;
@@ -270,7 +278,13 @@ export interface ThreeStageHandle {
   dressing(): { joinery: number; shades: number; lamps: number; contactShadows: number; floors: Array<{ key: string; kind: string }>; bodies: number; artBoxes: number; previews: number; bareBoxes: number };
 }
 
+export type ThreeEraseTarget = {kind:'item';instanceId:string}|{kind:'opening';openingId:string}|{kind:'wall';hit:WallHit}|{kind:'floor';roomId:string;point:{x:number;y:number}};
+
 export interface ThreeStageProps {
+  /** Idle selection only; paint, structural tools and removal keep walls pickable. */
+  viewHoverEnabled?: boolean;
+  /** Transient catalogue drag body; never part of the saved model or raycast. */
+  catalogPreview?: { item: ItemSolid; valid: boolean } | null;
   /** Architectural lighting/backdrop for exploring; studio preserves the measured paint preview. */
   presentation?: ScenePresentation;
   solids: SceneSolids;
@@ -627,13 +641,22 @@ function tintItem(root: THREE.Object3D, hex: string | null, intensity: number): 
 
 
 export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function ThreeStage(
-  { solids, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, foundation, foundationView = false, foundationBaseElevationM = 0, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed, onReady },
+  { solids, catalogPreview, viewHoverEnabled = false, serviceFixtures, serviceRuns, groundVisible = true, ecoTrees, foundation, foundationView = false, foundationBaseElevationM = 0, camera, projection = 'perspective', width, height, hover, selectedInstanceId, brushHex, brushFinish, brushSide, brushConstruction, wallView = 'cutaway', hour = null, dayOfYear: doy, presentation = 'studio', onFailed, onReady },
   ref,
 ): JSX.Element {
   const buildSkin = useBuildSkinStore(s => s.skin);
+  const qualityChoice = useRenderQualityStore(s => s.choice);
+  const qualityChoiceRef = useRef(qualityChoice);
+  qualityChoiceRef.current = qualityChoice;
+  const autoAoRef = useRef(createAutoAoState());
+  const autoSceneKeyRef = useRef('');
+  const quality = renderQualityProfile(qualityChoice, browserRenderDevice(width));
+  const qualityRef = useRef(quality);
+  qualityRef.current = quality;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const naturalRendererRef = useRef<NaturalSceneRenderer | null>(null);
+  const naturalBalancedRef = useRef(false);
   const naturalEnabledRef = useRef(presentation === 'natural');
   const naturalUnavailableRef = useRef(false);
   const drawingSizeRef = useRef(new THREE.Vector2());
@@ -669,6 +692,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const rafRef = useRef<number | null>(null);
   const failedRef = useRef(false);
   const hoveredRef = useRef<WallEntry | null>(null);
+  const viewLoweredRef = useRef<WallEntry | null>(null);
+  const viewCameraKeyRef = useRef('');
+  const eraseHighlightRef = useRef<{key:string;root:THREE.Group}|null>(null);
   const framesRef = useRef(0);
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
@@ -679,6 +705,18 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
   const selectedRootRef = useRef<THREE.Object3D | null>(null);
   const padRef = useRef<THREE.Mesh | null>(null);
   const hullRef = useRef<THREE.Object3D | null>(null);
+  const catalogGhostRef = useRef<{key:string;root:THREE.Object3D;item:ItemSolid;valid:boolean} | null>(null);
+  const clearViewHover = () => {
+    const previous=viewLoweredRef.current;
+    if(previous) applyWallHoverVisibility(previous,false);
+    viewLoweredRef.current=null;
+    if(rendererRef.current) rendererRef.current.domElement.dataset.hoverCutaway='';
+  };
+  const clearEraseHover = () => {
+    if(eraseHighlightRef.current) disposeRemovalHighlight(eraseHighlightRef.current.root);
+    eraseHighlightRef.current=null;
+    if(rendererRef.current) rendererRef.current.domElement.dataset.eraseTarget='';
+  };
 
   /**
    * The architectural fog is a horizon fade on the ground plane and nothing
@@ -714,10 +752,16 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         if (c.far !== far) { c.far = far; c.updateProjectionMatrix(); }
         updateFog();
         let rendered = false;
-        if (naturalEnabledRef.current && !naturalUnavailableRef.current) {
+        const automatic = qualityChoiceRef.current === 'auto' && !qualityRef.current.phone;
+        const wantsAo = qualityRef.current.ambientOcclusion || (automatic && autoAoRef.current.mode !== 'disabled');
+        if (naturalEnabledRef.current && wantsAo && !naturalUnavailableRef.current) {
           try {
+            if (naturalRendererRef.current && naturalBalancedRef.current !== automatic) {
+              naturalRendererRef.current.dispose(); naturalRendererRef.current = null;
+            }
             if (!naturalRendererRef.current) {
-              naturalRendererRef.current = createNaturalSceneRenderer(r, s, c);
+              naturalRendererRef.current = createNaturalSceneRenderer(r, s, c, automatic);
+              naturalBalancedRef.current = automatic;
               if (!naturalRendererRef.current) naturalUnavailableRef.current = true;
             }
             const natural = naturalRendererRef.current;
@@ -737,11 +781,25 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
           }
         }
         if (!rendered) r.render(s, c);
+        if (automatic && rendered) {
+          autoAoRef.current = sampleAutoAo(autoAoRef.current, performance.now());
+          if (autoAoRef.current.mode === 'disabled') {
+            naturalRendererRef.current?.dispose(); naturalRendererRef.current = null;
+            requestRender(false);
+          }
+        }
         // Read-only diagnostic for browser QA; no scene/store access is needed
         // to confirm an optional GPU effect really ran on this device.
         r.domElement.dataset.shading = rendered ? 'natural-depth' : naturalEnabledRef.current ? 'natural-basic' : 'colour-check';
+        r.domElement.dataset.quality = qualityRef.current.level;
+        r.domElement.dataset.shadowSize = String(qualityRef.current.shadowSize);
+        r.domElement.dataset.autoAo = qualityRef.current.phone ? 'phone-off' : automatic ? naturalUnavailableRef.current ? 'unavailable' : autoAoRef.current.mode : 'manual';
+        r.domElement.dataset.autoAoFps = autoAoRef.current.fps?.toFixed(1) ?? '';
         framesRef.current += 1;
         if (framesRef.current === 1) onReadyRef.current?.();
+        // A short bounded real-AO trial establishes GPU throughput even before
+        // the first orbit. Once decided, static scenes stop rendering again.
+        if (automatic && rendered && autoAoRef.current.mode === 'probing') requestRender(false);
       }
     });
   };
@@ -867,7 +925,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       onFailed?.();
       return;
     }
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    renderer.setPixelRatio(qualityRef.current.pixelRatio);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     // Colour truth (Vic 2026-09-17): the wall must be the SAME hex as the
     // 2D chip and the merchant's colour card. Filmic tone mapping remaps
@@ -905,7 +963,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     hemiRef.current = hemi;
     const sun = new THREE.DirectionalLight(0xfff6ea, Math.PI * STUDIO.sun);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.mapSize.set(qualityRef.current.shadowSize, qualityRef.current.shadowSize);
     renderer.shadowMap.autoUpdate = false;
     renderer.shadowMap.needsUpdate = true;
     sun.shadow.bias = -0.0004;
@@ -959,6 +1017,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     canvas.addEventListener('webglcontextlost', onLost);
 
     return () => {
+      clearViewHover(); clearEraseHover();
+      if (catalogGhostRef.current) { disposeObject(catalogGhostRef.current.root); catalogGhostRef.current = null; }
       canvas.removeEventListener('webglcontextlost', onLost);
       // Clear the handle too: a cancelled frame left in the ref would make
       // every later requestRender() think a frame is already pending — zero
@@ -1007,6 +1067,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     const content = contentRef.current;
     const sun = sunRef.current;
     if (!content || !sun) return;
+    clearViewHover(); clearEraseHover();
 
     // Same room, new paint: repaint in place (see structureSignature).
     const signature = structureSignature(solids);
@@ -1090,7 +1151,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       // loaded body and from a bare box (`dressing().bareBoxes`).
       if (preview) preview.userData.preview = true;
       const mesh = mountRoofItem(preview ?? artBox(it, requestRender), it);
-      applyProductSurfaceLighting(mesh, envRef.current, rendererRef.current?.capabilities.getMaxAnisotropy() ?? 1);
+      applyProductSurfaceLighting(mesh, envRef.current, Math.min(qualityRef.current.anisotropy, rendererRef.current?.capabilities.getMaxAnisotropy() ?? 1));
       content.add(mesh);
       itemsRef.current.push(mesh);
       bounds.expandByObject(mesh);
@@ -1129,7 +1190,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
               if (home) previewRef.current.set(it.instanceId, baseline.home);
               if (rotation !== undefined) previewRotationRef.current.set(it.instanceId, baseline.rotation);
             }
-            applyProductSurfaceLighting(body, envRef.current, rendererRef.current?.capabilities.getMaxAnisotropy() ?? 1);
+            applyProductSurfaceLighting(body, envRef.current, Math.min(qualityRef.current.anisotropy, rendererRef.current?.capabilities.getMaxAnisotropy() ?? 1));
             contentRef.current.remove(mesh);
             disposeObject(mesh);
             contentRef.current.add(body);
@@ -1185,6 +1246,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     };
     applyPresentation();
     applyHour(hour);
+    applySceneTextureSampling(content, Math.min(qualityRef.current.anisotropy, rendererRef.current?.capabilities.getMaxAnisotropy() ?? 1));
     // Compile every shader variant OFF the main thread's critical path before
     // the first frame (a room with several finishes used to block the page
     // while it compiled on that frame); a renderer without the async path
@@ -1260,7 +1322,94 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presentation, buildSkin]);
 
+  // View quality never rebuilds room/product solids or changes the camera.
+  useEffect(() => {
+    const key=JSON.stringify([qualityChoice,signatureRef.current,width,height,presentation]);
+    if(autoSceneKeyRef.current===key)return;
+    autoSceneKeyRef.current=key;
+    autoAoRef.current = createAutoAoState();
+    if (qualityChoice === 'auto') requestRender(false);
+    // Re-test after a different scene/viewport, not every camera or pointer move.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qualityChoice, solids, width, height, presentation]);
+  // Drop the optional GPU buffers when they are not needed (including phones).
+  useEffect(() => {
+    const r = rendererRef.current, sun = sunRef.current;
+    if (!r || !sun) return;
+    if (!quality.ambientOcclusion) {
+      naturalRendererRef.current?.dispose();
+      naturalRendererRef.current = null;
+    }
+    r.setPixelRatio(quality.pixelRatio);
+    if (sun.shadow.mapSize.x !== quality.shadowSize) {
+      sun.shadow.map?.dispose();
+      sun.shadow.map = null;
+      sun.shadow.mapSize.set(quality.shadowSize, quality.shadowSize);
+    }
+    if (sceneRef.current) applySceneTextureSampling(sceneRef.current, Math.min(quality.anisotropy, r.capabilities.getMaxAnisotropy()));
+    requestRender();
+    // All captured settings are listed; renderer/camera refs stay mounted.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quality.ambientOcclusion, quality.pixelRatio, quality.shadowSize, quality.anisotropy]);
+
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+    const clear = () => {
+      const old = catalogGhostRef.current;
+      if (old) { scene.remove(old.root); disposeObject(old.root); catalogGhostRef.current = null; }
+    };
+    if (!catalogPreview) { clear(); requestRender(false); return; }
+    const { item, valid } = catalogPreview;
+    const key = JSON.stringify([item.productId,item.meshUrl,item.lengthM,item.widthM,item.heightM]);
+    const decorate = (root:THREE.Object3D, allowed:boolean) => {
+      root.traverse(object => {
+        const mesh = object as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        mesh.castShadow = false; mesh.receiveShadow = false;
+        for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+          material.transparent = true; material.opacity = .48; material.depthWrite = false;
+          const standard = material as THREE.MeshStandardMaterial;
+          if (standard.color) standard.color.set(allowed ? '#39c8c2' : '#df554f');
+          if (standard.emissive) { standard.emissive.set(allowed ? '#39c8c2' : '#df554f'); standard.emissiveIntensity = .35; }
+        }
+      });
+    };
+    let ghost = catalogGhostRef.current;
+    if (!ghost || ghost.key !== key) {
+      clear();
+      const body = serviceProductPreview(item) ?? solarPanelPreview(item) ?? waterTankPreview(item) ?? furniturePreview(item);
+      const root = body ?? new THREE.Mesh(new THREE.BoxGeometry(item.lengthM,item.heightM,item.widthM),new THREE.MeshStandardMaterial({color:valid?'#39c8c2':'#df554f'}));
+      if (!body) { const envelope=productEnvelope(item);root.position.copy(envelope.position);root.rotation.y=envelope.yawRad; }
+      decorate(root,valid);scene.add(root);ghost={key,root,item,valid};catalogGhostRef.current=ghost;
+      if (item.meshUrl) loadBody(item.meshUrl).then(template => {
+        const current = catalogGhostRef.current;
+        if (!current || current.key !== key || current.root !== root || !sceneRef.current) return;
+        const exact = bodyObject(current.item,template);decorate(exact,current.valid);
+        sceneRef.current.remove(current.root);disposeObject(current.root);sceneRef.current.add(exact);
+        current.root=exact;requestRender(false);
+      }).catch(()=>{ /* Keep the catalog-sized fallback if the model is unavailable. */ });
+    } else {
+      const previous = ghost.item;
+      ghost.root.position.x += (item.x0+item.x1-previous.x0-previous.x1)/2;
+      ghost.root.position.z += (item.y0+item.y1-previous.y0-previous.y1)/2;
+      ghost.root.position.y += item.z0-previous.z0;
+      ghost.root.rotation.y -= (item.rotationDeg-previous.rotationDeg)*Math.PI/180;
+      if (valid !== ghost.valid) decorate(ghost.root,valid);
+      ghost.item=item;ghost.valid=valid;
+    }
+    requestRender(false);
+    // A pointer pose only updates this private object, not scene bounds/solids.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [catalogPreview]);
+
   // ---- camera + cutaway, on orbit / resize -------------------------------------
+  useEffect(() => {
+    if (!viewHoverEnabled || brushHex !== undefined || brushConstruction) {
+      clearViewHover(); requestRender();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewHoverEnabled, brushHex, brushConstruction]);
   useEffect(() => {
     const r = rendererRef.current;
     let c = cameraRef.current;
@@ -1272,7 +1421,11 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       c = projection === 'orthographic' ? new THREE.OrthographicCamera(-1, 1, 1, -1, 0.05, c.far) : new THREE.PerspectiveCamera(50, 1, 0.05, c.far);
       cameraRef.current = c;
     }
-    r.setSize(width, height, false);
+    // WebGLRenderer.setSize writes canvas.width/height even when unchanged,
+    // reallocating/clearing the drawing buffer. Orbit changes the camera,
+    // not the viewport: resize only when the actual layout dimensions change.
+    const viewport = r.getSize(drawingSizeRef.current);
+    if (viewport.x !== width || viewport.y !== height) r.setSize(width, height, false);
     if (c instanceof THREE.PerspectiveCamera) {
       c.aspect = width / height;
       c.fov = (camera.fovRad * 180) / Math.PI;
@@ -1308,6 +1461,9 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
     if (skyRef.current) skyRef.current.position.set(c.position.x, 0, c.position.z);
 
     // Walls Up / Cutaway / Down: the same slabs, only visibility flips.
+    const viewCameraKey=JSON.stringify([camera,projection,width,height,wallView]);
+    if(viewCameraKeyRef.current!==viewCameraKey)clearViewHover();
+    viewCameraKeyRef.current=viewCameraKey;
     const state = wallView === 'cutaway' ? cutawayState(solids, pos, camera.target) : null;
     let shadowsChanged = false;
     for (const e of wallsRef.current) {
@@ -1317,6 +1473,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
       if (e.ghost && show !== 'stub') setGhost(e, false);
       e.full.visible = show === 'full' || e.ghost;
       e.stub.visible = show === 'stub';
+      if(viewLoweredRef.current===e)applyWallHoverVisibility(e,true);
       const target = hoveredRef.current === e;
       e.outlineFull.visible = target && (show === 'full' || e.ghost);
       e.outlineStub.visible = target && show === 'stub' && !e.ghost;
@@ -1410,7 +1567,77 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
 
   useImperativeHandle(
     ref,
-    () => ({
+    () => {
+      const api:ThreeStageHandle = {
+      viewHover(x,y) {
+        if(x===null||y===undefined||!viewHoverEnabled||brushHex!==undefined||brushConstruction||catalogPreview||solids.activeRoof){
+          if(viewLoweredRef.current){clearViewHover();requestRender();}return;
+        }
+        const c=cameraRef.current;if(!c||width<8||height<8)return;
+        const ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(x/width*2-1,-y/height*2+1),c);
+        // Full geometry remains the hover boundary even after the visible wall
+        // is lowered, preventing hide/show flicker while the cursor stays there.
+        const candidates=wallsRef.current.filter(e=>e.show==='full'&&!e.solid.renderDuplicateOf&&(!solids.activeLevelId||e.solid.levelId===solids.activeLevelId));
+        const meshes:THREE.Object3D[]=[];
+        for(const e of candidates)e.full.traverse(o=>{if(o.userData.wall)meshes.push(o);});
+        const hit=ray.intersectObjects(meshes,false)[0];
+        let next=hit?candidates.find(e=>e.solid.key===hit.object.userData.key)??null:null;
+        if(hit){
+          const item=ray.intersectObjects(itemsRef.current,true)[0],floor=ray.intersectObjects(floorsRef.current,false)[0];
+          if((item&&item.distance<hit.distance)||(floor&&floor.distance<hit.distance))next=null;
+        }
+        if(next===viewLoweredRef.current)return;
+        clearViewHover();viewLoweredRef.current=next;
+        if(next)applyWallHoverVisibility(next,true);
+        if(rendererRef.current)rendererRef.current.domElement.dataset.hoverCutaway=next?.solid.key??'';
+        requestRender();
+      },
+      hitErase(x,y) {
+        // The existing picking methods already apply active-level and front
+        // obstruction rules; removal must not reach through a wall or item.
+        const item=api.hitItem(x,y);if(item)return {kind:'item',instanceId:item.instanceId};
+        if(solids.activeRoof)return null;
+        const opening=api.hitOpening?.(x,y);if(opening)return {kind:'opening',openingId:opening};
+        const wall=api.hitTest(x,y);if(wall)return {kind:'wall',hit:wall};
+        const c=cameraRef.current;if(!c||width<8||height<8)return null;
+        const ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(x/width*2-1,-y/height*2+1),c);
+        const floorHit=ray.intersectObjects(floorsRef.current,false)[0];if(!floorHit)return null;
+        const floor=solids.floors.find(f=>f.key===floorHit.object.userData.key);
+        if(!floor||solids.activeLevelId&&floor.levelId&&floor.levelId!==solids.activeLevelId)return null;
+        return {kind:'floor',roomId:floor.roomId,point:{x:floorHit.point.x,y:floorHit.point.z}};
+      },
+      setEraseHover(target,floorOutline) {
+        const key=target?.kind==='floor'?`floor:${target.roomId}:${JSON.stringify(floorOutline)}`:JSON.stringify(target);
+        if(eraseHighlightRef.current?.key===key)return;
+        clearEraseHover();clearViewHover();
+        if(!target||!sceneRef.current){requestRender(false);return;}
+        let objects:THREE.Object3D[]=[];let temporary:THREE.Mesh|null=null;
+        if(target.kind==='item')objects=itemsRef.current.filter(o=>o.userData.instanceId===target.instanceId);
+        if(target.kind==='wall'){
+          const entry=wallsRef.current.find(e=>sameHit(e.solid.hit,target.hit)&&!e.solid.renderDuplicateOf);
+          const node=entry?.show==='full'?entry.full:entry?.show==='stub'?entry.stub:null;
+          node?.traverse(o=>{if(o.userData.wall)objects.push(o);});
+        }
+        if(target.kind==='floor'){
+          const keys=new Set(solids.floors.filter(f=>f.roomId===target.roomId).map(f=>f.key));
+          objects=floorsRef.current.filter(f=>keys.has(f.userData.key));
+        }
+        if(target.kind==='opening')for(const entry of wallsRef.current){
+          const opening=entry.solid.openings.find(o=>o.id===target.openingId);
+          if(!opening||entry.show==='hidden'||entry.solid.renderDuplicateOf)continue;
+          const top=Math.min(opening.topM,entry.show==='full'?entry.solid.heightM:entry.solid.stubHeightM+.02);
+          const bottom=Math.min(opening.bottomM,top-.025);
+          temporary=new THREE.Mesh(new THREE.BoxGeometry(opening.t1M-opening.t0M,top-bottom,entry.solid.thicknessM+.04),new THREE.MeshBasicMaterial());
+          const transform=new THREE.Matrix4().makeTranslation((opening.t0M+opening.t1M)/2,(top+bottom)/2,entry.solid.thicknessM/2);
+          entry.full.updateWorldMatrix(true,false);temporary.applyMatrix4(transform.premultiply(entry.full.matrixWorld));objects=[temporary];break;
+        }
+        const root=removalHighlight(objects);
+        if(target.kind==='floor'&&floorOutline)clipRemovalHighlightToPlanBounds(root,floorOutline);
+        if(temporary){temporary.geometry.dispose();(temporary.material as THREE.Material).dispose();}
+        sceneRef.current.add(root);eraseHighlightRef.current={key,root};
+        if(rendererRef.current)rendererRef.current.domElement.dataset.eraseTarget=target.kind;
+        requestRender(false);
+      },
       hitOpening(x, y) {
         const c = cameraRef.current;
         if (!c || width < 8 || height < 8) return null;
@@ -1419,7 +1646,8 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         let closest: { id: string; distance: number } | null = null;
         const blockers: THREE.Object3D[] = [...floorsRef.current];
         for (const entry of wallsRef.current) {
-          const node = entry.show === 'full' ? entry.full : entry.show === 'stub' ? entry.stub : null;
+          const shown=viewLoweredRef.current===entry?'stub':entry.show;
+          const node = shown === 'full' ? entry.full : shown === 'stub' ? entry.stub : null;
           if (!node) continue;
           node.traverse(object => { if (object.userData.wall) blockers.push(object); });
           if (solids.activeLevelId && entry.solid.levelId && entry.solid.levelId !== solids.activeLevelId) continue;
@@ -1428,7 +1656,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
           // A cutaway door is represented by a low threshold. Its vertical
           // midpoint can be below the finished floor, so also pick the visible
           // cap plane instead of asking users to click through the floor.
-          if (entry.show === 'stub') {
+          if (shown === 'stub') {
             const capPoint = localRay.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -entry.solid.stubHeightM - .015), new THREE.Vector3());
             if (capPoint && capPoint.z >= -.08 && capPoint.z <= entry.solid.thicknessM + .08) {
               for (const opening of entry.solid.openings) {
@@ -1439,7 +1667,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
             }
           }
           const point = localRay.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 0, 1), -entry.solid.thicknessM / 2), new THREE.Vector3());
-          const shownHeight = entry.show === 'full' ? entry.solid.heightM : entry.solid.stubHeightM;
+          const shownHeight = shown === 'full' ? entry.solid.heightM : entry.solid.stubHeightM;
           if (!point || point.y < 0 || point.y > shownHeight) continue;
           for (const opening of entry.solid.openings) {
             if (!opening.id || point.x < opening.t0M || point.x > opening.t1M || point.y < opening.bottomM || point.y > opening.topM) continue;
@@ -1623,7 +1851,7 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         // Visible slabs, walls and roof must block objects on another storey.
         const blockers: THREE.Object3D[] = [...floorsRef.current];
         for (const entry of wallsRef.current) {
-          if (entry.show !== 'hidden') blockers.push(entry.show === 'full' ? entry.full : entry.stub);
+          if (entry.show !== 'hidden') blockers.push(entry.show === 'full' && viewLoweredRef.current!==entry ? entry.full : entry.stub);
         }
         for (const child of contentRef.current?.children ?? []) {
           if (child.userData.buildingPart) blockers.push(child);
@@ -1701,6 +1929,31 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
           previewRef.current.set(instanceId, home);
         }
         root.position.set(home.x + dxM, home.y, home.z + dyM);
+        // A lamp on a table follows its parent while the drag is still only a
+        // preview. Saved child coordinates remain untouched until commit.
+        for (const childId of attachedDescendantIds(solids.items, instanceId)) {
+          const child = itemsRef.current.find(object => object.userData.instanceId === childId);
+          if (!child) continue;
+          let childHome = previewRef.current.get(childId);
+          if (!childHome) { childHome=child.position.clone();previewRef.current.set(childId,childHome); }
+          if (!previewRotationRef.current.has(childId)) previewRotationRef.current.set(childId,child.rotation.y);
+          const angle = rotation-(solid?.rotationDeg??rotation);
+          const position = attachedPreviewPosition({x:childHome.x,y:childHome.z},{x:home.x,y:home.z},{x:dxM,y:dyM},angle);
+          child.position.set(position.x,childHome.y,position.y);
+          child.rotation.y=previewRotationRef.current.get(childId)!-angle*Math.PI/180;
+        }
+        for (const itemId of [instanceId, ...attachedDescendantIds(solids.items, instanceId)]) {
+          const item = solids.items.find(entry => entry.instanceId === itemId);
+          const lamp = item && lampsRef.current.find(entry => entry.light.userData.key === `light-${item.key}`);
+          if (!lamp) continue;
+          for (const [part, object] of [['light',lamp.light],['glow',lamp.glow]] as const) {
+            const key=`${part}:${itemId}`;
+            let origin=previewRef.current.get(key);
+            if (!origin) { origin=object.position.clone();previewRef.current.set(key,origin); }
+            const position=attachedPreviewPosition({x:origin.x,y:origin.z},{x:home.x,y:home.z},{x:dxM,y:dyM},rotation-(solid?.rotationDeg??rotation));
+            object.position.set(position.x,origin.y,position.y);
+          }
+        }
         // The pad and the contact shadow ride with the body they mark.
         const pad = padRef.current;
         if (pad && selectedRootRef.current === root) {
@@ -1723,6 +1976,23 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
         requestRender();
       },
       resetItemPreview(instanceId) {
+        for (const itemId of [instanceId, ...attachedDescendantIds(solids.items, instanceId)]) {
+          const item=solids.items.find(entry=>entry.instanceId===itemId);
+          const lamp=item&&lampsRef.current.find(entry=>entry.light.userData.key===`light-${item.key}`);
+          if (!lamp) continue;
+          for (const [part,object] of [['light',lamp.light],['glow',lamp.glow]] as const) {
+            const key=`${part}:${itemId}`, origin=previewRef.current.get(key);
+            if (origin) object.position.copy(origin);
+            previewRef.current.delete(key);
+          }
+        }
+        for (const childId of attachedDescendantIds(solids.items, instanceId)) {
+          const child=itemsRef.current.find(object=>object.userData.instanceId===childId);
+          const childHome=previewRef.current.get(childId), childRotation=previewRotationRef.current.get(childId);
+          if (child && childHome) child.position.copy(childHome);
+          if (child && childRotation!==undefined) child.rotation.y=childRotation;
+          previewRef.current.delete(childId);previewRotationRef.current.delete(childId);
+        }
         const root = itemsRef.current.find((o) => o.userData.instanceId === instanceId);
         const solid = solids.items.find((it) => it.instanceId === instanceId);
         if (root && solid?.roofMount) {
@@ -1798,10 +2068,12 @@ export const ThreeStage = forwardRef<ThreeStageHandle, ThreeStageProps>(function
           cameraDistance: c ? c.position.distanceTo(boundsRef.current.centre) : null,
         };
       },
-    }),
+      };
+      return api;
+    },
     // requestRender is a per-render closure over refs only — a stale copy renders the same scene.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [width, height, hour, solids, presentation],
+    [width, height, hour, solids, presentation, viewHoverEnabled, brushHex, brushConstruction, catalogPreview],
   );
 
   return <canvas ref={canvasRef} data-testid="wallpaint-3d-gl" style={{ display: 'block', width: '100%', height: '100%' }} />;

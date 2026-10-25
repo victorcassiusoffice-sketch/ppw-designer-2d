@@ -32,7 +32,7 @@ export function WallPaintHudColourStrip(): JSX.Element | null {
   const tint = brushColour(draft);
   const colours = coloursForPaint(paint).slice(0, HUD_COLOUR_CHIPS);
   const pick = (hex: string | undefined, name: string | undefined) =>
-    setWallPaintDraft({ colourHex: hex, colourName: name, erase: false });
+    setWallPaintDraft({ colourHex: hex, colourName: name, erase: false, operation: 'paint' });
 
   return (
     <div

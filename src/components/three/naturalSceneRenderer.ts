@@ -17,19 +17,19 @@ export interface NaturalSceneRenderer {
 /** Keep the expensive AO buffer below half a megapixel even on a 4K monitor.
  * Beauty rendering is independent, so the denoised AO never makes models
  * pixelated. Both retain the viewport aspect; no camera or object is resized. */
-export function naturalRenderResolution(width: number, height: number, pixelRatio: number) {
+export function naturalRenderResolution(width: number, height: number, pixelRatio: number, balanced = false) {
   const w = Math.max(1, Number.isFinite(width) ? width : 1);
   const h = Math.max(1, Number.isFinite(height) ? height : 1);
   // A DPR=1 desktop needs modest supersampling for thin diagonal wall caps.
   // Phone sampling and both pixel ceilings stay unchanged.
-  const density = Math.min(1.5, Math.max(w >= 768 ? 1.25 : 1, Number.isFinite(pixelRatio) ? pixelRatio : 1));
+  const density = balanced ? 1 : Math.min(1.5, Math.max(w >= 768 ? 1.25 : 1, Number.isFinite(pixelRatio) ? pixelRatio : 1));
   const scale = Math.min(density, Math.sqrt(2_000_000 / (w * h)));
   const beautyWidth = Math.max(1, Math.floor(w * scale));
   const beautyHeight = Math.max(1, Math.floor(h * scale));
   return {
     beautyWidth, beautyHeight,
-    aoWidth: Math.max(1, Math.floor(beautyWidth / 2)),
-    aoHeight: Math.max(1, Math.floor(beautyHeight / 2)),
+    aoWidth: Math.max(1, Math.floor(beautyWidth * (balanced ? .4 : .5))),
+    aoHeight: Math.max(1, Math.floor(beautyHeight * (balanced ? .4 : .5))),
   };
 }
 
@@ -64,7 +64,7 @@ class OpaqueGTAOPass extends GTAOPass {
   }
 }
 
-export function createNaturalSceneRenderer(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera | THREE.OrthographicCamera): NaturalSceneRenderer | null {
+export function createNaturalSceneRenderer(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera | THREE.OrthographicCamera, balanced = false): NaturalSceneRenderer | null {
   // A fully working direct renderer is preferable to a broken optional effect.
   if (!renderer.extensions.has('EXT_color_buffer_float')) return null;
   const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: Math.min(2, renderer.capabilities.maxSamples) });
@@ -88,7 +88,7 @@ export function createNaturalSceneRenderer(renderer: THREE.WebGLRenderer, scene:
   let sizeKey = '';
   return {
     setSize(width, height, pixelRatio) {
-      const size = naturalRenderResolution(width, height, pixelRatio);
+      const size = naturalRenderResolution(width, height, pixelRatio, balanced);
       const key = `${size.beautyWidth}:${size.beautyHeight}`;
       if (key === sizeKey || disposed) return;
       sizeKey = key;

@@ -8,9 +8,11 @@ import { findGlassMaterial } from '../data/mauritiusGlass.js';
 export type WallSide = 'interior' | 'exterior';
 export type WallConstruction = 'plastered-brick' | 'brick' | 'concrete' | 'glass';
 export interface WallMaterialSpec { thicknessMm?: number; materialProductId?: string }
+export interface WallMaterialApplyOptions extends WallMaterialSpec { exposeMaterial?: boolean }
 export interface ConstructedEdge extends WallMaterialSpec { edgeIndex: number; kind: WallConstruction }
 export function sanitizeWallMaterialSpec(kind: WallConstruction, options?: WallMaterialSpec): WallMaterialSpec {
-  if (kind !== 'glass') return {};
+  if (kind !== 'glass') return typeof options?.thicknessMm === 'number' && Number.isFinite(options.thicknessMm)
+    && options.thicknessMm >= 25 && options.thicknessMm <= 2000 ? { thicknessMm: options.thicknessMm } : {};
   const thicknessMm = typeof options?.thicknessMm === 'number' && Number.isFinite(options.thicknessMm)
     && options.thicknessMm >= 2 && options.thicknessMm <= 40 ? options.thicknessMm : 10;
   const reference = findGlassMaterial(options?.materialProductId);
@@ -59,7 +61,8 @@ export function resolvedWallSurfaces(room: Pick<Room, 'polygon' | 'wallPaint' | 
   const wallThicknessByEdge = new Map<number, number>();
   for (const edge of room.wallConstruction ?? []) {
     wallConstructionByEdge.set(edge.edgeIndex, edge.kind);
-    if (edge.kind === 'glass') wallThicknessByEdge.set(edge.edgeIndex, (sanitizeWallMaterialSpec(edge.kind, edge).thicknessMm ?? 10) / 1000);
+    const thicknessMm = sanitizeWallMaterialSpec(edge.kind, edge).thicknessMm;
+    if (thicknessMm !== undefined) wallThicknessByEdge.set(edge.edgeIndex, thicknessMm / 1000);
     wallColourByEdge.set(edge.edgeIndex, constructionHex(edge.kind));
     exteriorColourByEdge.set(edge.edgeIndex, constructionHex(edge.kind));
   }

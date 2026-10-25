@@ -1,3 +1,12 @@
+## 2026-10-25 — PR50 build controls, removal and wall-material fixes
+
+**LIVE-ON-PREVIEW only.** Verified deployment `a71ac23c830347efed8d1f9499cb4ff56308b863`, branch `gpt/olb-sims-parity-2026-10-22`, draft PR50. Production unchanged; release requires Victor's “merge 50”.
+
+- [https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/demo?view=3d&pitch=1](https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/demo?view=3d&pitch=1) - One Live Build: main interactive preview for developers, designers, construction teams and merchants.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/SIMS-FIX-BUILD-LINKS-2026-10-25.md](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/SIMS-FIX-BUILD-LINKS-2026-10-25.md) - One Live Build: full 2D/3D/Materials links, source locations, screenshots and handoff for reviewers and the next AI.
+
+4,279 tests pass; deployed desktop/phone checks pass. Remaining graphics-parity, perimeter-demolition and Lighthouse limitations are explicit in the linked report. Older entries below describe earlier builds.
+
 ## 2026-10-19 — Eco-city pitch, role coordination and merchant furniture
 
 **LIVE-ON-PREVIEW.** Application 6365821218e3a79fd9ff18ff1ba2bc40e6543d2b, branch gpt/designer-2026-10-15, PR48. Main, production and live database unchanged.

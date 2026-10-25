@@ -5,6 +5,7 @@ import { resolveServiceConnections } from '../designer/serviceConnections';
 import { inferConnectedRooms } from '../designer/connectedWallRooms';
 import { normaliseFoundation, type FoundationModel } from '../designer/foundation';
 import { normaliseMaterialsSettings, type MaterialsSettings } from '../designer/materials';
+import { withMasonryThickness, inheritMasonryRoom } from '../designer/masonryDimensions';
 /**
  * propertyStore — Week 2.5 multi-room model (Model A — separate
  * canvases per room, RoomSketcher-style). One Property contains many
@@ -107,7 +108,7 @@ import { findWallPaintById, isPaintTintable, normalisePaintColourHex, normaliseP
 import { findCladdingProduct } from '../data/claddingCatalog';
 import { getProductById } from '../data/products';
 import { WALL_THICKNESS_M } from '../designer/wallAwarePlacement';
-import { exteriorWallSpans, paintSide, sidePaint, isWallConstruction, remapConstruction, sanitizeWallMaterialSpec, type WallMaterialSpec, type WallSide, type WallConstruction, type ConstructedEdge } from '../designer/wallConstruction';
+import { exteriorWallSpans, paintSide, sidePaint, isWallConstruction, remapConstruction, sanitizeWallMaterialSpec, type WallMaterialSpec, type WallMaterialApplyOptions, type WallSide, type WallConstruction, type ConstructedEdge } from '../designer/wallConstruction';
 import type { CladEdge } from '../designer/claddingCalc';
 import {
   normaliseGarden, normaliseGardenFence, normaliseGardenMetadata, normaliseGardenSurface, gardenSurfacePatch,
@@ -194,6 +195,8 @@ export interface PlacedItem {
    * (see removeItem). Optional → absent on every pre-existing save.
    */
   parentInstanceId?: string;
+  /** Wall fixture bottom above its storey, centimetres; absent uses supplier default. */
+  mountHeightCm?: number;
   /**
    * Lighting (2026-08-29) — whether a light-emitting product is switched on.
    * Absent reads as ON (a lamp you just bought is lit), so only an explicit
@@ -614,8 +617,8 @@ export interface PropertyState {
   setWallPaintPrimer: (on: boolean) => void;
   /** Paint one or both faces of a free-standing wall. */
   setFreeWallPaintFaces: (wallId: string, faces: 1 | 2) => void;
-  setWallConstruction: (roomId: string, edgeIndex: number | null, kind: WallConstruction, options?: WallMaterialSpec) => void;
-  setFreeWallConstruction: (wallId: string, kind: WallConstruction, options?: WallMaterialSpec) => void;
+  setWallConstruction: (roomId: string, edgeIndex: number | null, kind: WallConstruction, options?: WallMaterialApplyOptions) => void;
+  setFreeWallConstruction: (wallId: string, kind: WallConstruction, options?: WallMaterialApplyOptions) => void;
   /** Sample cladding on one room edge. `null` clears it. */
   setWallCladding: (roomId: string, edgeIndex: number, productId: string | null) => void;
   /** Clad (or clear) every edge of a room in one undo frame. */
@@ -678,6 +681,7 @@ export interface PropertyState {
   setEco: (eco: EcoModel) => boolean;
   setEngineering: (engineering: EngineeringInputs) => boolean;
   setMaterialsSettings: (settings: MaterialsSettings) => void;
+  setMasonryWallThickness: (thicknessM: number) => void;
   setRoofConfig: (config: RoofConfig | null) => void;
   setRoofOutline: (path: MeasuredPath | null) => boolean;
   /** Switch an electrical item on/off for the energy estimate (absent = on). */
@@ -777,7 +781,7 @@ export const usePropertyStore = create<PropertyState>()(
         set((s) => ({ property: { ...s.property, name: name.trim() || 'Untitled Property' } })),
 
       addRoom: (partial) => {
-        const newRoom: Room = {
+        const newRoom: Room = inheritMasonryRoom({
           id: nanoid(8),
           name: partial?.name ?? nextRoomName(get().property.rooms),
           // Free-draw commits land here (RoomCanvas addRoom({name, polygon}))
@@ -787,7 +791,7 @@ export const usePropertyStore = create<PropertyState>()(
           placedItems: [],
           // A new room is drawn on the storey the user is looking at.
           ...levelStamp(activeLevelIdOf(get().property)),
-        };
+        }, get().property.materials);
         set((s) => ({
           property: {
             ...s.property,
@@ -811,13 +815,13 @@ export const usePropertyStore = create<PropertyState>()(
             ...s.property,
             rooms: [
               ...s.property.rooms,
-              {
+              inheritMasonryRoom({
                 id,
                 name: name.trim() || nextRoomName(s.property.rooms),
                 polygon,
                 placedItems: [],
                 ...levelStamp(activeLevelIdOf(s.property)),
-              },
+              }, s.property.materials),
             ],
             activeRoomId: id,
           },
@@ -897,7 +901,7 @@ export const usePropertyStore = create<PropertyState>()(
               const wallPaint = remapPaintedEdges(r.wallPaint, canon.edgeMap, canon.polygon);
               const wallConstruction = remapConstruction(r.wallConstruction, canon.edgeMap, canon.polygon);
               const wallCladding = remapCladEdges(r.wallCladding, canon.edgeMap, canon.polygon);
-              return {
+              return inheritMasonryRoom({
                 ...r,
                 polygon: canon.polygon,
                 openings: pruneOpenings(canon.openings, canon.polygon),
@@ -905,7 +909,7 @@ export const usePropertyStore = create<PropertyState>()(
                 ...(wallPaint ? { wallPaint } : { wallPaint: undefined }),
                 wallConstruction,
                 ...(wallCladding ? { wallCladding } : { wallCladding: undefined }),
-              };
+              }, s.property.materials);
             }),
           },
         })),
@@ -1058,6 +1062,9 @@ export const usePropertyStore = create<PropertyState>()(
             y,
             rotation: rotation ?? moving.rotation,
           };
+          const children = owner.placedItems.filter(i => i.parentInstanceId === instanceId)
+            .map(i => ({ ...i, x: i.x + x - moving.x, y: i.y + y - moving.y }));
+          const carried = new Set([instanceId, ...children.map(i => i.instanceId)]);
           return {
             property: {
               // The item follows the pointer into the room it was dropped in,
@@ -1068,11 +1075,11 @@ export const usePropertyStore = create<PropertyState>()(
                 if (r.id === owner.id) {
                   return {
                     ...r,
-                    placedItems: r.placedItems.filter((i) => i.instanceId !== instanceId),
+                    placedItems: r.placedItems.filter((i) => !carried.has(i.instanceId)),
                   };
                 }
                 if (r.id === toRoomId) {
-                  return { ...r, placedItems: [...r.placedItems, moved] };
+                  return { ...r, placedItems: [...r.placedItems, moved, ...children] };
                 }
                 return r;
               }),
@@ -1248,7 +1255,7 @@ export const usePropertyStore = create<PropertyState>()(
             if (!indices.length) return room;
             return { ...room, wallConstruction: [...(room.wallConstruction ?? []).filter(edge => !indices.includes(edge.edgeIndex)),
               ...indices.map(index => ({ edgeIndex: index, kind, ...spec }))],
-              ...(kind === 'glass' ? { wallPaint: room.wallPaint?.filter(edge => !indices.includes(edge.edgeIndex)), wallCladding: room.wallCladding?.filter(edge => !indices.includes(edge.edgeIndex)) } : {}) };
+              ...(kind === 'glass' || options?.exposeMaterial ? { wallPaint: room.wallPaint?.filter(edge => !indices.includes(edge.edgeIndex)), wallCladding: room.wallCladding?.filter(edge => !indices.includes(edge.edgeIndex)) } : {}) };
           }) } };
         }),
       setFreeWallConstruction: (wallId, kind, options) =>
@@ -1256,7 +1263,7 @@ export const usePropertyStore = create<PropertyState>()(
           if (wall.id !== wallId || !isWallConstruction(kind)) return wall;
           const spec = sanitizeWallMaterialSpec(kind, options);
           const next = { ...wall, construction: kind, thicknessM: spec.thicknessMm !== undefined ? spec.thicknessMm / 1000 : wall.construction === 'glass' ? WALL_THICKNESS_M : wall.thicknessM, materialProductId: spec.materialProductId };
-          if (kind === 'glass') { delete next.paintId; delete next.exteriorPaint; delete next.claddingId; delete next.paintColourHex; delete next.paintColourName; delete next.paintFaces; delete next.claddingFaces; }
+          if (kind === 'glass' || options?.exposeMaterial) { delete next.paintId; delete next.exteriorPaint; delete next.claddingId; delete next.paintColourHex; delete next.paintColourName; delete next.paintFaces; delete next.claddingFaces; }
           return next;
         }) } })),
 
@@ -1705,7 +1712,18 @@ export const usePropertyStore = create<PropertyState>()(
         set({ property: { ...property, services: resolved } });
         return true;
       },
-      setMaterialsSettings: (settings) => set(s => ({ property: { ...s.property, materials: normaliseMaterialsSettings(settings) } })),
+      setMaterialsSettings: (settings) => set(s => {
+        const next = normaliseMaterialsSettings(settings);
+        const previous = normaliseMaterialsSettings(s.property.materials);
+        return { property: next.wall.thicknessM !== previous.wall.thicknessM
+          ? withMasonryThickness(s.property, next) : { ...s.property, materials: next } };
+      }),
+      setMasonryWallThickness: (thicknessM) => set(s => {
+        if (!Number.isFinite(thicknessM) || thicknessM < .025 || thicknessM > 2) return s;
+        const settings = normaliseMaterialsSettings(s.property.materials);
+        if (Math.abs(settings.wall.thicknessM - thicknessM) < 1e-9) return s;
+        return { property: withMasonryThickness(s.property, { ...settings, wall: { ...settings.wall, thicknessM, presetId: 'custom' } }) };
+      }),
 
       setRoofOutline: (path) => {
         const current = get().property;
@@ -1945,13 +1963,14 @@ export const usePropertyStore = create<PropertyState>()(
               id,
               a: { x: w.a.x, y: w.a.y },
               b: { x: w.b.x, y: w.b.y },
-              thicknessM: w.thicknessM,
+              thicknessM: w.construction === 'glass' ? w.thicknessM : s.property.materials?.wall.thicknessM ?? w.thicknessM,
               levelId: w.levelId || level,
             });
           }
           if (added.length === 0) return s;
           let property: Property = { ...s.property, walls: [...(s.property.walls ?? []), ...added] };
           for (const levelId of new Set(added.map(roomLevelId))) property = inferConnectedRooms(property, levelId, () => nanoid(10));
+          if (property.materials) property = { ...property, rooms: property.rooms.map(room => inheritMasonryRoom(room, property.materials)) };
           return { property: property.rooms === s.property.rooms ? property : syncRoofRooms(property) };
         });
         return ids;

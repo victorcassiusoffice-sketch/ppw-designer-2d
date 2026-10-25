@@ -15,12 +15,13 @@
  */
 import { cmToM, rotatedFootprint, collidesWithAny, isRectInsidePolygon, type PlacedRect, type Polygon } from '../lib/geometry';
 import { placementKind, resolveWallItemPlacement, resolveSurfaceItemPlacement, findSurfaceUnder, type PlacementKind, type SurfaceRect } from './attachmentPlacement';
-import { resolveWallAwarePlacement, isCardinalRotation, WALL_HALF_M, type FreeWallLike } from './wallAwarePlacement';
+import { resolveWallAwarePlacement, insideInnerFaces, isCardinalRotation, WALL_HALF_M, type FreeWallLike } from './wallAwarePlacement';
 import { snapToTileLattice, tileLatticeFor, usesTileLattice } from './flooringLattice';
 import { obstaclesFor } from './layerBands';
 import { getProductById } from '../data/products';
 import type { Product } from '../data/products.schema';
 import type { PlacedItem } from '../store/propertyStore';
+import { requiresInteriorWall, INTERIOR_WALL_MESSAGE } from './indoorWallPlacement';
 
 export interface DropRoom {
   id: string;
@@ -32,6 +33,8 @@ export interface DropRoom {
 export interface DropContext {
   /** Live snap step, metres. */
   snapStep: number;
+  /** Explicit object overlap mode; solid walls and plot bounds remain enforced. */
+  allowOverlap?: boolean;
   /** The OWNER room of the item (its polygon and items). */
   polygon: Polygon;
   placedItems: PlacedItem[];
@@ -81,6 +84,10 @@ export function resolveItemDrop(
   const fpUnrotated = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
   const { w, h } = rotatedFootprint(fpUnrotated, item.rotation);
   const ownerRoom = ctx.allRooms.find((r) => r.placedItems.some((i) => i.instanceId === item.instanceId));
+  if (requiresInteriorWall(product)) {
+    const location = ctx.resolveContainer({ x: newXm + w / 2, y: newYm + h / 2 }, { create: false });
+    if (location.ok && location.outdoor) return { ok: false, reason: 'wall', message: INTERIOR_WALL_MESSAGE };
+  }
 
   // Preview shares every snap/collision rule but must not create an outdoor
   // room (or an undo frame) merely because the pointer crosses a wall.
@@ -100,14 +107,14 @@ export function resolveItemDrop(
         ? ctx.wallRects
         : ctx.wallRects.filter((r) => !r.instanceId.startsWith('wall:'))
       : ctx.wallRects;
-  const inBounds = (rect: PlacedRect): boolean => (targetOutdoor ? ctx.fitsOutdoors(rect) : isRectInsidePolygon(rect, targetPolygon));
+  const inBounds = (rect: PlacedRect): boolean => (targetOutdoor ? ctx.fitsOutdoors(rect) : isRectInsidePolygon(rect, targetPolygon) && (!ctx.allowOverlap || placementKind(product) !== 'floor' || dropRoom.kind === 'roof' || insideInnerFaces(rect, targetPolygon)));
 
   const itemKind = placementKind(product);
   const sameKindItems = targetItems.filter((it) => {
     const p = getProductById(it.productId);
     return p ? placementKind(p) === itemKind : true;
   });
-  const others: Array<PlacedRect & { instanceId: string }> = obstaclesFor(item.productId, sameKindItems)
+  const others: Array<PlacedRect & { instanceId: string }> = obstaclesFor(item.productId, ctx.allowOverlap ? [] : sameKindItems)
     .map((it) => {
       const p = getProductById(it.productId);
       if (!p) return null;
@@ -134,7 +141,7 @@ export function resolveItemDrop(
     });
     const wfW = rotatedFootprint(fpUnrotated, r.rotationDeg);
     const rect = { x: r.x, y: r.y, w: wfW.w, h: wfW.h };
-    const ok = r.ok && inBounds(rect) && !collidesWithAny(rect, ctx.layerRects(targetItems, 'wall', { ignoreId: item.instanceId }));
+    const ok = r.ok && inBounds(rect) && (ctx.allowOverlap || !collidesWithAny(rect, ctx.layerRects(targetItems, 'wall', { ignoreId: item.instanceId })));
     if (!ok) return { ok: false, reason: 'wall', message: 'Wall items need a free bit of wall.' };
     return { ok: true, x: r.x, y: r.y, rotation: r.rotationDeg, roomId: dropRoom.id, crossRoom, reason: 'wall' };
   }
@@ -144,14 +151,14 @@ export function resolveItemDrop(
   if (kind === 'surface') {
     const cur = rotatedFootprint(fpUnrotated, item.rotation);
     const centre = { x: newXm + cur.w / 2, y: newYm + cur.h / 2 };
-    const under = findSurfaceUnder(centre, ctx.surfaceRects(ctx.placedItems));
+    const under = findSurfaceUnder(centre, ctx.surfaceRects(targetItems));
     if (!under) return { ok: false, reason: 'surface', message: 'This item sits on a surface — drop it onto a table.' };
     const res = resolveSurfaceItemPlacement({ centreXm: centre.x, centreYm: centre.y, fp: fpUnrotated, rotationDeg: item.rotation, surface: under });
-    const sibs = ctx.layerRects(ctx.placedItems, 'surface', { parentId: under.instanceId, ignoreId: item.instanceId });
-    if (!res.ok || collidesWithAny({ x: res.x, y: res.y, w: cur.w, h: cur.h }, sibs)) {
+    const sibs = ctx.layerRects(targetItems, 'surface', { parentId: under.instanceId, ignoreId: item.instanceId });
+    if (!res.ok || (!ctx.allowOverlap && collidesWithAny({ x: res.x, y: res.y, w: cur.w, h: cur.h }, sibs))) {
       return { ok: false, reason: 'surface', message: 'No space on that surface.' };
     }
-    return { ok: true, x: res.x, y: res.y, rotation: item.rotation, roomId: ownerRoom?.id ?? dropRoom.id, crossRoom: false, parentInstanceId: res.parentInstanceId, reason: 'surface' };
+    return { ok: true, x: res.x, y: res.y, rotation: item.rotation, roomId: dropRoom.id, crossRoom, parentInstanceId: res.parentInstanceId, reason: 'surface' };
   }
 
   // Floor / ceiling: wall-aware snap (released near a wall: flush + facing
@@ -176,13 +183,13 @@ export function resolveItemDrop(
           centreXm: newXm + w / 2,
           centreYm: newYm + h / 2,
           fp: fpUnrotated,
-          polygon: targetOutdoor ? [] : targetPolygon,
+          polygon: targetOutdoor || ctx.allowOverlap ? [] : targetPolygon,
           snapStep: ctx.snapStep,
-          userRotationDeg: shiftHeld || !isCardinalRotation(item.rotation) ? item.rotation : null,
+          userRotationDeg: shiftHeld || ctx.placedItems.some(child => child.parentInstanceId === item.instanceId) || !isCardinalRotation(item.rotation) ? item.rotation : null,
           currentRotationDeg: item.rotation,
           frontEdge: product.front_edge,
           wallInsetM: WALL_HALF_M,
-          freeWalls: ctx.snapWalls,
+          freeWalls: ctx.allowOverlap ? [] : ctx.snapWalls,
         });
   const wf = rotatedFootprint(fpUnrotated, wallAware.rotationDeg);
   const ownOthers = others.filter((o) => o.instanceId !== item.instanceId);

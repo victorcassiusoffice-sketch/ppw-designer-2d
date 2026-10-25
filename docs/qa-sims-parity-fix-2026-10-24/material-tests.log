@@ -1,0 +1,28 @@
+
+ RUN  v2.1.9 C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer
+
+ ✓ src/designer/__tests__/wallMaterialInteractionFix.test.ts (6 tests) 17ms
+stderr | src/components/__tests__/WallMaterialControlsFix.test.tsx > wall surface controls keep application and quantities connected > arms the shared brush and dismisses masonry choice, but leaves glass specification editable
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+ ✓ src/components/__tests__/WallMaterialControlsFix.test.tsx (2 tests) 69ms
+
+stderr | src/components/__tests__/WallMaterialControlsFix.test.tsx > wall surface controls keep application and quantities connected > writes accepted thickness to Materials and rejects invalid input without losing the old value
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+Warning: The current testing environment is not configured to support act(...)
+
+
+ Test Files  2 passed (2)
+      Tests  8 passed (8)
+   Start at  03:19:28
+   Duration  3.10s (transform 761ms, setup 0ms, collect 1.46s, tests 86ms, environment 2.89s, prepare 247ms)
+

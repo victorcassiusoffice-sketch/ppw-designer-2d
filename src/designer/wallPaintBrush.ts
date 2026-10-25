@@ -14,6 +14,8 @@ import { usePropertyStore, type PaintColourChoice } from '../store/propertyStore
 import { WALL_PAINTS, findWallPaintById, isPaintTintable, normalisePaintColourHex } from '../data/wallPaints';
 import type { WallHit } from './roomView3d';
 import { exteriorWallSpans, WALL_CONSTRUCTIONS } from './wallConstruction';
+import { normaliseMaterialsSettings } from './materials';
+import { isOutdoorRoom, isRoofRoom } from './levels';
 
 export interface BrushResult {
   /** What happened, for a toast. `null` when nothing changed. */
@@ -62,10 +64,17 @@ export function applyWallPaintBrush(hit: WallHit | null, mods: BrushModifiers = 
   const ps = usePropertyStore.getState();
   if (!hit) return { message: 'Tap a wall to paint it.', kind: 'warn' };
   if (draft.operation === 'construction') {
+    const room = hit.kind === 'edge' ? ps.property.rooms.find(candidate => candidate.id === hit.roomId) : undefined;
+    const validEdge = room && !isOutdoorRoom(room) && !isRoofRoom(room) && Number.isInteger(hit.edgeIndex)
+      && hit.edgeIndex! >= 0 && hit.edgeIndex! < room.polygon.length;
+    const validFree = hit.kind === 'free' && ps.property.walls?.some(wall => wall.id === hit.wallId);
+    if (!validEdge && !validFree) return { message: 'Choose a built wall to change its material.', kind: 'warn' };
     const kind = draft.construction ?? 'plastered-brick';
-    if (hit.kind === 'edge' && hit.roomId && typeof hit.edgeIndex === 'number') ps.setWallConstruction(hit.roomId, draft.scope === 'room' || mods.shift ? null : hit.edgeIndex, kind);
-    else if (hit.kind === 'free' && hit.wallId) ps.setFreeWallConstruction(hit.wallId, kind);
-    return { message: 'Wall surface updated.', kind: 'success', detail: WALL_CONSTRUCTIONS.find((entry) => entry.id === kind)?.name };
+    const options = { ...(kind === 'glass' ? draft : { thicknessMm: normaliseMaterialsSettings(ps.property.materials).wall.thicknessM * 1000 }), exposeMaterial: true };
+    if (hit.kind === 'edge' && hit.roomId && typeof hit.edgeIndex === 'number') ps.setWallConstruction(hit.roomId, draft.scope === 'room' || mods.shift ? null : hit.edgeIndex, kind, options);
+    else if (hit.kind === 'free' && hit.wallId) ps.setFreeWallConstruction(hit.wallId, kind, options);
+    else return { message: 'Choose a built wall to change its material.', kind: 'warn' };
+    return { message: 'Wall material applied; previous surface finish removed.', kind: 'success', detail: WALL_CONSTRUCTIONS.find((entry) => entry.id === kind)?.name };
   }
   const side = draft.side ?? 'interior';
   if (side === 'exterior' && !draft.erase && !mods.ctrl && findWallPaintById(brushPaintId(draft))?.use === 'interior') return { message: 'Choose an exterior paint line for the outside face.', kind: 'warn' };

@@ -1,0 +1,158 @@
+{
+  "base": "http://127.0.0.1:5176",
+  "phase": "before",
+  "cases": [
+    {
+      "device": "desktop",
+      "errors": [],
+      "failures": [],
+      "writes": [],
+      "checks": [
+        "2d: photo selection, Bathroom ordering, price-free unnamed-supplier demo and no horizontal overflow",
+        "3d: photo selection, Bathroom ordering, price-free unnamed-supplier demo and no horizontal overflow"
+      ],
+      "shots": [
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-before/desktop-2d-supplier-photo.png",
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-before/desktop-2d-bathroom.png",
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-before/desktop-3d-supplier-photo.png",
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-before/desktop-3d-bathroom.png"
+      ],
+      "observations": [
+        {
+          "view": "2d",
+          "firstFitnessImage": "/products/catalog-models/k1-nordictrack-2450-3fb7e50791535f03.png"
+        },
+        {
+          "view": "2d",
+          "leadingBathroom": [
+            {
+              "id": "courts-marble-table-lamp",
+              "name": "Marble Table Lamp With Brass Post · "
+            },
+            {
+              "id": "courts-pendant-lamp-7254",
+              "name": "Pendant Lamp 7254/1 · "
+            },
+            {
+              "id": "courts-pendant-black-canopy",
+              "name": "Pendant Lamp Black Metal Canopy ACSLG2157005 · "
+            },
+            {
+              "id": "courts-ceramic-table-lamp",
+              "name": "Ceramic Table Lamp In Biege and Brown Glaze Finish · "
+            },
+            {
+              "id": "courts-table-lamp-wood-d25",
+              "name": "Table Lamp: 1xE27xMax.60W, Wood D25xH50 cm · "
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "firstFitnessImage": "/products/catalog-models/k1-nordictrack-2450-3fb7e50791535f03.png"
+        },
+        {
+          "view": "3d",
+          "leadingBathroom": [
+            {
+              "id": "courts-marble-table-lamp",
+              "name": "Marble Table Lamp With Brass Post · "
+            },
+            {
+              "id": "courts-pendant-lamp-7254",
+              "name": "Pendant Lamp 7254/1 · "
+            },
+            {
+              "id": "courts-pendant-black-canopy",
+              "name": "Pendant Lamp Black Metal Canopy ACSLG2157005 · "
+            },
+            {
+              "id": "courts-ceramic-table-lamp",
+              "name": "Ceramic Table Lamp In Biege and Brown Glaze Finish · "
+            },
+            {
+              "id": "courts-table-lamp-wood-d25",
+              "name": "Table Lamp: 1xE27xMax.60W, Wood D25xH50 cm · "
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "device": "phone",
+      "errors": [],
+      "failures": [],
+      "writes": [],
+      "checks": [
+        "2d: photo selection, Bathroom ordering, price-free unnamed-supplier demo and no horizontal overflow",
+        "3d: photo selection, Bathroom ordering, price-free unnamed-supplier demo and no horizontal overflow"
+      ],
+      "shots": [
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-before/phone-2d-supplier-photo.png",
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-before/phone-2d-bathroom.png",
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-before/phone-3d-supplier-photo.png",
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-before/phone-3d-bathroom.png"
+      ],
+      "observations": [
+        {
+          "view": "2d",
+          "firstFitnessImage": "/products/catalog-models/k1-nordictrack-2450-3fb7e50791535f03.png"
+        },
+        {
+          "view": "2d",
+          "leadingBathroom": [
+            {
+              "id": "courts-marble-table-lamp",
+              "name": "Marble Table Lamp With Brass Post"
+            },
+            {
+              "id": "courts-pendant-lamp-7254",
+              "name": "Pendant Lamp 7254/1"
+            },
+            {
+              "id": "courts-pendant-black-canopy",
+              "name": "Pendant Lamp Black Metal Canopy ACSLG2157005"
+            },
+            {
+              "id": "courts-ceramic-table-lamp",
+              "name": "Ceramic Table Lamp In Biege and Brown Glaze Finish"
+            },
+            {
+              "id": "courts-table-lamp-wood-d25",
+              "name": "Table Lamp: 1xE27xMax.60W, Wood D25xH50 cm"
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "firstFitnessImage": "/products/catalog-models/k1-nordictrack-2450-3fb7e50791535f03.png"
+        },
+        {
+          "view": "3d",
+          "leadingBathroom": [
+            {
+              "id": "courts-marble-table-lamp",
+              "name": "Marble Table Lamp With Brass Post"
+            },
+            {
+              "id": "courts-pendant-lamp-7254",
+              "name": "Pendant Lamp 7254/1"
+            },
+            {
+              "id": "courts-pendant-black-canopy",
+              "name": "Pendant Lamp Black Metal Canopy ACSLG2157005"
+            },
+            {
+              "id": "courts-ceramic-table-lamp",
+              "name": "Ceramic Table Lamp In Biege and Brown Glaze Finish"
+            },
+            {
+              "id": "courts-table-lamp-wood-d25",
+              "name": "Table Lamp: 1xE27xMax.60W, Wood D25xH50 cm"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
