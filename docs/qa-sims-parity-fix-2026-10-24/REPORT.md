@@ -56,4 +56,14 @@ The user's latest dimension request intentionally changes saved measurement inpu
 
 ## Release record
 
-Commit, automatic Vercel preview, remote-head equality and final deployed smoke evidence are recorded in the existing vault handoff after the branch push. Release remains Victor's explicit **“merge 50”**.
+Application commit `43b3e3a`; automatic Vercel deployment commit `a71ac23c830347efed8d1f9499cb4ff56308b863` (verification logs only after the application commit). Pushed remote feature HEAD equalled that exact SHA. Later documentation-only commits retain the same app; final remote equality is recorded in the existing vault handoff.
+
+[https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/demo?view=3d&pitch=1](https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app/demo?view=3d&pitch=1) - One Live Build: verified immutable preview for construction, design and merchant teams.
+
+Cache-busted `/api/healthcheck` returned `env: preview`, commit `a71ac23c830347efed8d1f9499cb4ff56308b863`. Both production domains returned `env: production`, commit `fcefc73bd75abe995b379e825ff715d439da2ca8` at 00:03 UTC on 25 October. Production is unchanged.
+
+The deployed headless check passed at 1280×800 and 390×844 using the actual bundled app, ordinary controls and fresh browser storage: Plan/House, Remove/Done, 11-module Materials evidence, the cart SVG, public price/name/count guards, and both protected Designer entry routes. Zero console/page/HTTP/network errors, writes or document overflow. [Deployed report](preview-smoke/report.json), [desktop](preview-smoke/desktop-3d.png), [phone](preview-smoke/phone-3d.png), [phone Remove](preview-smoke/phone-2d-remove-ready.png), [phone Materials](preview-smoke/phone-materials-input-evidence.png). Phone Plan floor-name truncation is visible and remains a limitation.
+
+GitHub typecheck, full suite, secrets scan and Vercel passed on the deployment commit. [Lighthouse CI](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/actions/runs/40145092986) remains failed: demo manifest/CSP/robots/payload/source-map/accessible-label findings and plumbing-pitch image/console findings. Those are separately recorded and are not hidden by the successful demo smoke checks. No thresholds were weakened. Draft PR50 is **not all-checks-green**.
+
+Release remains Victor's explicit **“merge 50”**. PR49 is not included. The current task ends at the preview and handoff for Claude to retest.

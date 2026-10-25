@@ -1,0 +1,424 @@
+{
+  "base": "https://ppw-designer-2d-88jw8km36-victor-ppw.vercel.app",
+  "checkedAt": "2026-10-25T00:05:30.175Z",
+  "fixtureInjection": false,
+  "routes": [
+    {
+      "device": "desktop",
+      "path": "/demo?view=2d&pitch=1",
+      "status": 200
+    },
+    {
+      "device": "desktop",
+      "path": "/demo?view=3d&pitch=1",
+      "status": 200
+    },
+    {
+      "device": "desktop",
+      "path": "/demo?view=2d&panel=materials&pitch=1",
+      "status": 200
+    },
+    {
+      "device": "phone",
+      "path": "/demo?view=2d&pitch=1",
+      "status": 200
+    },
+    {
+      "device": "phone",
+      "path": "/demo?view=3d&pitch=1",
+      "status": 200
+    },
+    {
+      "device": "phone",
+      "path": "/demo?view=2d&panel=materials&pitch=1",
+      "status": 200
+    },
+    {
+      "path": "/designer",
+      "status": 200,
+      "gatePresent": true
+    },
+    {
+      "path": "/designer?demo=tintex",
+      "status": 200,
+      "gatePresent": true
+    }
+  ],
+  "cases": [
+    {
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "boundaries": [
+        {
+          "label": "2d-render",
+          "currencyMatch": null,
+          "privateNameMatch": null,
+          "productControls": [
+            {
+              "text": "Furnish\nProducts\n⌃",
+              "label": null,
+              "title": "Browse catalogue"
+            },
+            {
+              "text": "",
+              "label": "Search product catalog",
+              "title": "Search products"
+            },
+            {
+              "text": "Products",
+              "label": "Open products in this design",
+              "title": null
+            }
+          ],
+          "countLabels": [],
+          "badges": 0,
+          "overflowPx": 0
+        },
+        {
+          "label": "2d-remove-closed",
+          "currencyMatch": null,
+          "privateNameMatch": null,
+          "productControls": [
+            {
+              "text": "Furnish\nProducts\n⌃",
+              "label": null,
+              "title": "Browse catalogue"
+            },
+            {
+              "text": "",
+              "label": "Search product catalog",
+              "title": "Search products"
+            },
+            {
+              "text": "Products",
+              "label": "Open products in this design",
+              "title": null
+            }
+          ],
+          "countLabels": [],
+          "badges": 0,
+          "overflowPx": 0
+        },
+        {
+          "label": "3d-render",
+          "currencyMatch": null,
+          "privateNameMatch": null,
+          "productControls": [
+            {
+              "text": "",
+              "label": "Products in this design",
+              "title": "Products in this design"
+            }
+          ],
+          "countLabels": [],
+          "badges": 0,
+          "overflowPx": 0
+        },
+        {
+          "label": "3d-remove-closed",
+          "currencyMatch": null,
+          "privateNameMatch": null,
+          "productControls": [
+            {
+              "text": "",
+              "label": "Products in this design",
+              "title": "Products in this design"
+            }
+          ],
+          "countLabels": [],
+          "badges": 0,
+          "overflowPx": 0
+        },
+        {
+          "label": "materials-collapsed",
+          "currencyMatch": null,
+          "privateNameMatch": null,
+          "productControls": [
+            {
+              "text": "Products",
+              "label": "Open products",
+              "title": null
+            },
+            {
+              "text": "Furnish\nProducts\n⌃",
+              "label": null,
+              "title": "Browse catalogue"
+            },
+            {
+              "text": "",
+              "label": "Search product catalog",
+              "title": "Search products"
+            }
+          ],
+          "countLabels": [],
+          "badges": 0,
+          "overflowPx": 0
+        },
+        {
+          "label": "materials-expanded",
+          "currencyMatch": null,
+          "privateNameMatch": null,
+          "productControls": [
+            {
+              "text": "Products",
+              "label": "Open products",
+              "title": null
+            },
+            {
+              "text": "Furnish\nProducts\n⌃",
+              "label": null,
+              "title": "Browse catalogue"
+            },
+            {
+              "text": "",
+              "label": "Search product catalog",
+              "title": "Search products"
+            }
+          ],
+          "countLabels": [],
+          "badges": 0,
+          "overflowPx": 0
+        }
+      ],
+      "checks": [
+        {
+          "name": "2d-render-remove-boundary",
+          "pass": true
+        },
+        {
+          "name": "3d-render-remove-boundary",
+          "pass": true
+        },
+        {
+          "name": "materials-evidence-11-modules-and-cart-icon",
+          "pass": true
+        },
+        {
+          "name": "no-runtime-http-or-write-errors",
+          "pass": true
+        }
+      ],
+      "shots": [
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\desktop-2d.png",
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\desktop-2d-remove-ready.png",
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\desktop-3d.png",
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\desktop-3d-remove-ready.png",
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\desktop-materials-collapsed-products-icon.png",
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\desktop-materials-input-evidence.png",
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\desktop-materials-engine-scope.png"
+      ],
+      "first3DReadyMs": 11237,
+      "productsIconPaths": [
+        "M8 9h12l-1.5 6h-9L8 9Z",
+        "M3 4h3l3 12h10l2-8H7M10 20h.01M18 20h.01"
+      ]
+    },
+    {
+      "device": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "boundaries": [
+        {
+          "label": "2d-render",
+          "currencyMatch": null,
+          "privateNameMatch": null,
+          "productControls": [
+            {
+              "text": "Products",
+              "label": "Open products in this design",
+              "title": null
+            },
+            {
+              "text": "Furnish\nProducts\n⌃",
+              "label": null,
+              "title": "Browse catalogue"
+            },
+            {
+              "text": "",
+              "label": "Search product catalog",
+              "title": "Search products"
+            }
+          ],
+          "countLabels": [],
+          "badges": 0,
+          "overflowPx": 0
+        },
+        {
+          "label": "2d-remove-closed",
+          "currencyMatch": null,
+          "privateNameMatch": null,
+          "productControls": [
+            {
+              "text": "Products",
+              "label": "Open products in this design",
+              "title": null
+            },
+            {
+              "text": "Furnish\nProducts\n⌃",
+              "label": null,
+              "title": "Browse catalogue"
+            },
+            {
+              "text": "",
+              "label": "Search product catalog",
+              "title": "Search products"
+            }
+          ],
+          "countLabels": [],
+          "badges": 0,
+          "overflowPx": 0
+        },
+        {
+          "label": "3d-render",
+          "currencyMatch": null,
+          "privateNameMatch": null,
+          "productControls": [
+            {
+              "text": "",
+              "label": "Products in this design",
+              "title": "Products in this design"
+            }
+          ],
+          "countLabels": [],
+          "badges": 0,
+          "overflowPx": 0
+        },
+        {
+          "label": "3d-remove-closed",
+          "currencyMatch": null,
+          "privateNameMatch": null,
+          "productControls": [
+            {
+              "text": "",
+              "label": "Products in this design",
+              "title": "Products in this design"
+            }
+          ],
+          "countLabels": [],
+          "badges": 0,
+          "overflowPx": 0
+        },
+        {
+          "label": "materials-collapsed",
+          "currencyMatch": null,
+          "privateNameMatch": null,
+          "productControls": [
+            {
+              "text": "Products",
+              "label": "Open products",
+              "title": null
+            },
+            {
+              "text": "Furnish\nProducts\n⌃",
+              "label": null,
+              "title": "Browse catalogue"
+            },
+            {
+              "text": "",
+              "label": "Search product catalog",
+              "title": "Search products"
+            }
+          ],
+          "countLabels": [],
+          "badges": 0,
+          "overflowPx": 0
+        },
+        {
+          "label": "materials-expanded",
+          "currencyMatch": null,
+          "privateNameMatch": null,
+          "productControls": [
+            {
+              "text": "Products",
+              "label": "Open products",
+              "title": null
+            },
+            {
+              "text": "Furnish\nProducts\n⌃",
+              "label": null,
+              "title": "Browse catalogue"
+            },
+            {
+              "text": "",
+              "label": "Search product catalog",
+              "title": "Search products"
+            }
+          ],
+          "countLabels": [],
+          "badges": 0,
+          "overflowPx": 0
+        }
+      ],
+      "checks": [
+        {
+          "name": "2d-render-remove-boundary",
+          "pass": true
+        },
+        {
+          "name": "3d-render-remove-boundary",
+          "pass": true
+        },
+        {
+          "name": "materials-evidence-11-modules-and-cart-icon",
+          "pass": true
+        },
+        {
+          "name": "no-runtime-http-or-write-errors",
+          "pass": true
+        }
+      ],
+      "shots": [
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\phone-2d.png",
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\phone-2d-remove-ready.png",
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\phone-3d.png",
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\phone-3d-remove-ready.png",
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\phone-materials-collapsed-products-icon.png",
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\phone-materials-input-evidence.png",
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\phone-materials-engine-scope.png"
+      ],
+      "first3DReadyMs": 5297,
+      "productsIconPaths": [
+        "M8 9h12l-1.5 6h-9L8 9Z",
+        "M3 4h3l3 12h10l2-8H7M10 20h.01M18 20h.01"
+      ]
+    },
+    {
+      "device": "protected-routes",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "httpErrors": [],
+      "failedRequests": [],
+      "blockedWrites": [],
+      "checks": [
+        {
+          "name": "designer-gated",
+          "pass": true
+        },
+        {
+          "name": "legacy-tintex-gated",
+          "pass": true
+        }
+      ],
+      "shots": [
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\gate-designer.png",
+        "docs\\qa-sims-parity-fix-2026-10-24\\preview-smoke\\gate-legacy-tintex.png"
+      ]
+    }
+  ],
+  "failures": []
+}
