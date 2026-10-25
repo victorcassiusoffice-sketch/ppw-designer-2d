@@ -9,6 +9,7 @@ import { FoundationLaunchButton } from './FoundationWorkspace';
 import { MaterialsCostPanel } from './MaterialsCostPanel';
 import { applyMixScenario, MIX_SCENARIOS, mixScenarioKey } from '../designer/materials/mixPresets';
 import { estimateMaterialCosts, foundationProcurement } from '../designer/materials/costs';
+import { EstimateEvidencePanel } from './EstimateEvidencePanel';
 
 const fmt = (n: number) => n > 0 && n < 0.001 ? '< 0.001' : n.toLocaleString('en-GB', { maximumFractionDigits: 3 });
 function QuantityInput({ label, value, onChange, step = 0.01, min = 0 }: { label: string; value: number; onChange: (n: number) => number; step?: number; min?: number }) {
@@ -70,6 +71,7 @@ export function MaterialsPanel() {
   }
   return <section className="materials-panel" data-testid="materials-panel" aria-label="Materials estimate">
     <div className="materials-intro"><strong>From your drawing</strong><p>Quantities for planning and supplier quotes. Open the details only when you need them.</p></div>
+    <EstimateEvidencePanel property={property} />
     <label className="materials-field"><span>Walls measured</span><select aria-label="Materials scope" value={settings.scope} onChange={e => change('scope', e.target.value)}><option value="all">Whole building</option><option value="active">Selected floor</option></select></label>
     <div className="materials-metrics"><div><strong>{fmt(report.totals.wallNetAreaM2)}</strong><span>m² net wall</span></div><div><strong>{fmt(report.totals.blocks)}</strong><span>blocks incl. waste</span></div><div><strong>{fmt(report.totals.concreteOrderM3)}</strong><span>m³ concrete</span></div><div><strong>{fmt(report.totals.cementBags)}</strong><span>cement bags · all site mixes</span></div></div>
     <nav className="materials-tabs" aria-label="Materials sections">{(['walls', 'concrete', 'roof', 'costs', 'report'] as const).filter(id => !pitch || id !== 'costs').map(id => <button key={id} aria-pressed={tab === id} onClick={() => setTab(id)}>{id[0].toUpperCase() + id.slice(1)}</button>)}</nav>

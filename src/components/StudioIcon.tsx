@@ -19,7 +19,7 @@ const PATHS = {
   cube: 'm12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Zm0 9 8-4.5M12 12v9M4 7.5l8 4.5',
   undo: 'M9 5 4 10l5 5M4 10h10a6 6 0 0 1 0 12',
   redo: 'm15 5 5 5-5 5m5-5H10a6 6 0 0 0 0 12',
-  cart: 'm4 7 8-4 8 4v11l-8 4-8-4V7Zm0 0 8 4 8-4M12 11v11M8 5l8 4v5',
+  cart: 'M3 4h3l3 12h10l2-8H7M10 20h.01M18 20h.01',
   more: 'M5 12h.01M12 12h.01M19 12h.01',
   menu: 'M4 7h16M4 12h11M4 17h16',
   close: 'm6 6 12 12M18 6 6 18',
@@ -53,7 +53,7 @@ const ACCENTS: Partial<Record<StudioIconName, string>> = {
   furnish: 'M5 7h14v10H5Z', roller: 'M3 4h16v5H3Z',
   tiles: 'M4 4h6v6H4Z M14 14h6v6h-6Z', window: 'M4 3h8v9H4Z M12 12h8v9h-8Z',
   door: 'M9 4h9v17H9Z', garden: 'M12 15c0-7 4-10 9-11 0 7-3 11-9 11Z',
-  cursor: 'M5 3.5 19 12l-6 1.5-3 6.5Z', cart: 'm12 11 8-4v11l-8 4Z',
+  cursor: 'M5 3.5 19 12l-6 1.5-3 6.5Z', cart: 'M8 9h12l-1.5 6h-9L8 9Z',
   materials: 'M3 4h6v5H3Z M15 9h6v6h-6Z M3 15h6v5H3Z',
   roof: 'm5 10 7-6 7 6v11H5Z', swatch: 'M4 4h6v14a3 3 0 0 1-6 0Z',
 };

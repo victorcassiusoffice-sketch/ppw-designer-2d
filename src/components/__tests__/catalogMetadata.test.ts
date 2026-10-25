@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { getAllProducts } from '../../data/products';
-import { availabilityInfo, catalogFunction, catalogRooms, catalogThumbnailUrls, catalogVariants, matchesCatalogBrowse } from '../catalogMetadata';
+import { availabilityInfo, catalogFunction, catalogRooms, catalogThumbnailImages, catalogThumbnailUrls, catalogVariants, matchesCatalogBrowse } from '../catalogMetadata';
 import manifest from '../../data/catalogModelThumbnails.json';
 import models from '../../data/productModels.json';
 
@@ -50,8 +50,20 @@ describe('baked model catalogue images', () => {
   });
   it('resolves API aliases by SKU and refuses a mismatched model override', () => {
     const p = getAllProducts().find(row => row.id === Object.keys(manifest)[0])!;
-    expect(catalogThumbnailUrls(p)[0]).toMatch(/^\/products\/catalog-models\//);
-    expect(catalogThumbnailUrls({ ...p, id: 'm-123' })[0]).toBe(catalogThumbnailUrls(p)[0]);
-    expect(catalogThumbnailUrls({ ...p, mesh_url: '/different.glb' })[0]).not.toMatch(/^\/products\/catalog-models\//);
+    expect(catalogThumbnailUrls(p)[0]).toBe(p.photo_image_url);
+    expect(catalogThumbnailImages({ ...p, id: 'm-123' }).find(image => image.kind === 'model')?.url).toBe(manifest[p.id as keyof typeof manifest].url);
+    expect(catalogThumbnailImages({ ...p, mesh_url: '/different.glb' }).some(image => image.kind === 'model')).toBe(false);
+  });
+  it('uses the actual merchant photo before cached models and labels every generated fallback', () => {
+    const p = getAllProducts().find(row => row.id === Object.keys(manifest)[0])!;
+    const images = catalogThumbnailImages({ ...p, photo_image_url: '/actual-product.jpg', image_url: '/drawing.svg', topdown_image_url: '/overhead.png' });
+    expect(images.map(image => image.kind)).toEqual(['photo', 'model', 'plan', 'illustration']);
+    expect(images[0].url).toBe('/actual-product.jpg');
+    expect(images.slice(1).every(image => image.label.length > 0)).toBe(true);
+    expect(catalogThumbnailImages({ ...p, photo_image_url: undefined, image_url: '', topdown_image_url: undefined })[0].kind).toBe('model');
+  });
+  it('does not call legacy SVG schematics a supplier photo', () => {
+    const images = catalogThumbnailImages({ ...product, id: 'no-model', sku: 'no-model', photo_image_url: undefined, image_url: '/symbol.svg', topdown_image_url: undefined });
+    expect(images).toEqual([{ url: '/symbol.svg', kind: 'illustration', label: 'Illustration' }]);
   });
 });

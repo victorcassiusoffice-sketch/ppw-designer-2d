@@ -21,6 +21,7 @@ import { obstaclesFor } from './layerBands';
 import { getProductById } from '../data/products';
 import type { Product } from '../data/products.schema';
 import type { PlacedItem } from '../store/propertyStore';
+import { requiresInteriorWall, INTERIOR_WALL_MESSAGE } from './indoorWallPlacement';
 
 export interface DropRoom {
   id: string;
@@ -83,6 +84,10 @@ export function resolveItemDrop(
   const fpUnrotated = { lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) };
   const { w, h } = rotatedFootprint(fpUnrotated, item.rotation);
   const ownerRoom = ctx.allRooms.find((r) => r.placedItems.some((i) => i.instanceId === item.instanceId));
+  if (requiresInteriorWall(product)) {
+    const location = ctx.resolveContainer({ x: newXm + w / 2, y: newYm + h / 2 }, { create: false });
+    if (location.ok && location.outdoor) return { ok: false, reason: 'wall', message: INTERIOR_WALL_MESSAGE };
+  }
 
   // Preview shares every snap/collision rule but must not create an outdoor
   // room (or an undo frame) merely because the pointer crosses a wall.

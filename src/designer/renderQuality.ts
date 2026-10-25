@@ -25,8 +25,9 @@ export function renderQualityProfile(choice: RenderQualityChoice, device: Render
   const phone = width < 600 || (device.coarsePointer === true && width < 1024);
   const limited = (device.memoryGb !== undefined && device.memoryGb > 0 && device.memoryGb <= 2)
     || (device.logicalCores !== undefined && device.logicalCores > 0 && device.logicalCores <= 2);
-  // GPU capability cannot be inferred from CPU core count. Auto favours fluid
-  // editing; High is an explicit desktop presentation choice, never a phone AO pass.
+  // GPU capability cannot be inferred from CPU core count. Auto starts with
+  // bounded buffers; ThreeStage separately measures whether desktop AO can
+  // sustain 45 FPS. High is explicit, and phones never run an AO pass.
   const level = choice === 'auto' ? limited ? 'low' : 'medium' : choice;
   const density = Number.isFinite(device.pixelRatio) ? Math.max(1, device.pixelRatio) : 1;
   return {

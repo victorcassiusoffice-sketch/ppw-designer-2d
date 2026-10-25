@@ -12,16 +12,21 @@ beforeEach(() => { host = document.createElement('div'); document.body.append(ho
 afterEach(() => { act(() => root.unmount()); host.remove(); });
 
 describe('catalogue controls', () => {
-  it('loads a cached baked image lazily, then falls back to its actual source photo and symbol', () => {
-    const product = getAllProducts().find(row => catalogThumbnailUrls(row)[0]?.includes('/catalog-models/'))!;
+  it('loads the actual photo lazily and labels model, plan and symbol fallbacks when photos fail', () => {
+    const product = getAllProducts().find(row => catalogThumbnailUrls(row).some(url => url.includes('/catalog-models/')))!;
     act(() => root.render(<CatalogProductImage product={product} />));
     const urls = catalogThumbnailUrls(product);
     expect(host.querySelector('img')?.getAttribute('src')).toBe(urls[0]);
     expect(host.querySelector('img')?.getAttribute('loading')).toBe('lazy');
-    act(() => host.querySelector('img')!.dispatchEvent(new Event('error')));
-    expect(host.querySelector('img')?.getAttribute('src')).toBe(urls[1]);
+    expect(host.querySelector('[data-image-kind]')?.getAttribute('data-image-kind')).toBe('photo');
+    expect(host.querySelector('.catalog-image-label')).toBeNull();
+    for (let i = 1; i < urls.length; i++) {
+      act(() => host.querySelector('img')!.dispatchEvent(new Event('error')));
+      expect(host.querySelector('img')?.getAttribute('src')).toBe(urls[i]);
+    }
     act(() => host.querySelector('img')!.dispatchEvent(new Event('error')));
     expect(host.querySelector('img')).toBeNull(); expect(host.querySelector('svg')).not.toBeNull();
+    expect(host.textContent).toContain('Illustration');
   });
   it('changes to the declared SKU and dimensions, without inventing a material variant or starting placement', () => {
     const product = getAllProducts()[0];

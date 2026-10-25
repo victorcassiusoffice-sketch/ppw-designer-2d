@@ -110,7 +110,9 @@ export const usePlacementIntentStore = create<PlacementIntentState>((set) => ({
   armedRotation: 0,
   armedRotationExplicit: false,
   rotateArmed: deltaDeg => set(s => !s.armedProductId || !Number.isFinite(deltaDeg) ? s : ({ armedRotation: ((s.armedRotation + deltaDeg) % 360 + 360) % 360, armedRotationExplicit: true })),
-  setArmed: (productId) => set((s) => (s.armedProductId === productId ? s : { armedProductId: productId, armedRotation: 0, armedRotationExplicit: false })),
+  // The carried angle is explicit from pickup. Auto-facing must not render a
+  // different pose than the angle shown in the control row.
+  setArmed: (productId) => set((s) => (s.armedProductId === productId ? s : { armedProductId: productId, armedRotation: 0, armedRotationExplicit: !!productId })),
   previewPlacement: (productId, x, y) => Number.isFinite(x) && Number.isFinite(y) ? placementPreviewResolver?.(productId, x, y) ?? null : null,
   registerPlacementPreviewResolver: resolver => {
     placementPreviewResolver = resolver;

@@ -1,0 +1,158 @@
+{
+  "base": "http://127.0.0.1:5176",
+  "phase": "after",
+  "cases": [
+    {
+      "device": "desktop",
+      "errors": [],
+      "failures": [],
+      "writes": [],
+      "checks": [
+        "2d: photo selection, Bathroom ordering, price-free unnamed-supplier demo and no horizontal overflow",
+        "3d: photo selection, Bathroom ordering, price-free unnamed-supplier demo and no horizontal overflow"
+      ],
+      "shots": [
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-after/desktop-2d-supplier-photo.png",
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-after/desktop-2d-bathroom.png",
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-after/desktop-3d-supplier-photo.png",
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-after/desktop-3d-bathroom.png"
+      ],
+      "observations": [
+        {
+          "view": "2d",
+          "firstFitnessImage": "/products/photos/k1-nordictrack-2450.webp"
+        },
+        {
+          "view": "2d",
+          "leadingBathroom": [
+            {
+              "id": "espace-emilia-toilet-bowl",
+              "name": "Emilia toilet bowl · 650 mm · "
+            },
+            {
+              "id": "espace-durastyle-washbasin-800",
+              "name": "DuraStyle cabinet washbasin · 800 mm · "
+            },
+            {
+              "id": "espace-duravit-dcode-bidet-224110",
+              "name": "Duravit D-Code floorstanding bidet · quote required · "
+            },
+            {
+              "id": "espace-era-pvc-pn16-110-6m",
+              "name": "ERA PVC PN16 pipe · 6 m × 110 mm · "
+            },
+            {
+              "id": "courts-marble-table-lamp",
+              "name": "Marble Table Lamp With Brass Post · "
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "firstFitnessImage": "/products/photos/k1-nordictrack-2450.webp"
+        },
+        {
+          "view": "3d",
+          "leadingBathroom": [
+            {
+              "id": "espace-emilia-toilet-bowl",
+              "name": "Emilia toilet bowl · 650 mm · "
+            },
+            {
+              "id": "espace-durastyle-washbasin-800",
+              "name": "DuraStyle cabinet washbasin · 800 mm · "
+            },
+            {
+              "id": "espace-duravit-dcode-bidet-224110",
+              "name": "Duravit D-Code floorstanding bidet · quote required · "
+            },
+            {
+              "id": "espace-era-pvc-pn16-110-6m",
+              "name": "ERA PVC PN16 pipe · 6 m × 110 mm · "
+            },
+            {
+              "id": "courts-marble-table-lamp",
+              "name": "Marble Table Lamp With Brass Post · "
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "device": "phone",
+      "errors": [],
+      "failures": [],
+      "writes": [],
+      "checks": [
+        "2d: photo selection, Bathroom ordering, price-free unnamed-supplier demo and no horizontal overflow",
+        "3d: photo selection, Bathroom ordering, price-free unnamed-supplier demo and no horizontal overflow"
+      ],
+      "shots": [
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-after/phone-2d-supplier-photo.png",
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-after/phone-2d-bathroom.png",
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-after/phone-3d-supplier-photo.png",
+        "docs/qa-sims-parity-fix-2026-10-24/catalogue-after/phone-3d-bathroom.png"
+      ],
+      "observations": [
+        {
+          "view": "2d",
+          "firstFitnessImage": "/products/photos/k1-nordictrack-2450.webp"
+        },
+        {
+          "view": "2d",
+          "leadingBathroom": [
+            {
+              "id": "espace-emilia-toilet-bowl",
+              "name": "Emilia toilet bowl · 650 mm"
+            },
+            {
+              "id": "espace-durastyle-washbasin-800",
+              "name": "DuraStyle cabinet washbasin · 800 mm"
+            },
+            {
+              "id": "espace-duravit-dcode-bidet-224110",
+              "name": "Duravit D-Code floorstanding bidet · quote required"
+            },
+            {
+              "id": "espace-era-pvc-pn16-110-6m",
+              "name": "ERA PVC PN16 pipe · 6 m × 110 mm"
+            },
+            {
+              "id": "courts-marble-table-lamp",
+              "name": "Marble Table Lamp With Brass Post"
+            }
+          ]
+        },
+        {
+          "view": "3d",
+          "firstFitnessImage": "/products/photos/k1-nordictrack-2450.webp"
+        },
+        {
+          "view": "3d",
+          "leadingBathroom": [
+            {
+              "id": "espace-emilia-toilet-bowl",
+              "name": "Emilia toilet bowl · 650 mm"
+            },
+            {
+              "id": "espace-durastyle-washbasin-800",
+              "name": "DuraStyle cabinet washbasin · 800 mm"
+            },
+            {
+              "id": "espace-duravit-dcode-bidet-224110",
+              "name": "Duravit D-Code floorstanding bidet · quote required"
+            },
+            {
+              "id": "espace-era-pvc-pn16-110-6m",
+              "name": "ERA PVC PN16 pipe · 6 m × 110 mm"
+            },
+            {
+              "id": "courts-marble-table-lamp",
+              "name": "Marble Table Lamp With Brass Post"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

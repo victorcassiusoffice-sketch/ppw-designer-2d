@@ -1,6 +1,5 @@
 import type { Product } from '../data/products.schema';
 import bakedJson from '../data/catalogModelThumbnails.json';
-import { productImageUrl } from '../data/products';
 
 export type CatalogBrowseMode = 'category' | 'function' | 'room';
 export interface CatalogBrowse { mode: CatalogBrowseMode; value: string }
@@ -43,6 +42,14 @@ export function matchesCatalogBrowse(product: Product, browse: CatalogBrowse): b
   return browse.mode === 'category' || browse.value === 'all' || (browse.mode === 'function' ? catalogFunction(product) === browse.value : catalogRooms(product).includes(browse.value));
 }
 
+/** Default room relevance only; an explicit user sort still takes precedence. */
+export function catalogRoomRelevance(product: Product, room: string): number {
+  if (room !== 'bath') return 0;
+  if (/\b(washbasin|basin|toilet|bidet|shower|bathtub|bath|sink|tap|faucet|urinal)\b/i.test(product.name)) return 0;
+  if (catalogFunction(product) === 'bath') return 1;
+  return 2;
+}
+
 const whole = (value: unknown): value is number => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
 export function availabilityInfo(product: Pick<Product, 'availability' | 'lead_time_days' | 'stock_qty' | 'last_checked'>) {
   const date = product.last_checked && /^\d{4}-\d{2}-\d{2}(?:T.*)?$/.test(product.last_checked) && Number.isFinite(Date.parse(product.last_checked)) ? product.last_checked.slice(0, 10) : undefined;
@@ -57,10 +64,26 @@ export function availabilityInfo(product: Pick<Product, 'availability' | 'lead_t
 interface BakedThumbnail { url: string; sku: string; hash: string; modelUrl: string }
 const baked = bakedJson as Record<string, BakedThumbnail>;
 const bakedBySku = new Map(Object.values(baked).map(entry => [entry.sku, entry]));
-export function catalogThumbnailUrls(product: Product): string[] {
+export interface CatalogThumbnailImage { url: string; kind: 'photo' | 'model' | 'plan' | 'illustration'; label: string }
+const vectorImage = (url: string) => /^data:image\/svg\+xml/i.test(url) || /\.svg(?:[?#]|$)/i.test(url);
+export function catalogThumbnailImages(product: Product): CatalogThumbnailImage[] {
   const entry = baked[product.id] ?? bakedBySku.get(product.sku);
   const compatible = !product.mesh_url || product.mesh_url === entry?.modelUrl;
-  return [...new Set([compatible ? entry?.url : undefined, productImageUrl(product)].filter((url): url is string => Boolean(url)))];
+  const candidates: CatalogThumbnailImage[] = [];
+  const add = (url: string | undefined, kind: CatalogThumbnailImage['kind'], label: string) => {
+    if (url && !candidates.some(image => image.url === url)) candidates.push({ url, kind, label });
+  };
+  // Explicit merchant photography is authoritative. Old schematic SVGs are not photos.
+  if (product.photo_image_url && !vectorImage(product.photo_image_url)) add(product.photo_image_url, 'photo', '');
+  if (product.image_url && !vectorImage(product.image_url) && product.image_url !== product.topdown_image_url) add(product.image_url, 'photo', '');
+  if (compatible) add(entry?.url, 'model', 'Model preview');
+  add(product.topdown_image_url, 'plan', 'Plan illustration');
+  add(product.photo_image_url, 'illustration', 'Illustration');
+  add(product.image_url, 'illustration', 'Illustration');
+  return candidates;
+}
+export function catalogThumbnailUrls(product: Product): string[] {
+  return catalogThumbnailImages(product).map(image => image.url);
 }
 
 /** Only declared variants that resolve to an actual catalogue SKU are offered. */

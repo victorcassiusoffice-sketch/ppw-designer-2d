@@ -101,6 +101,7 @@ export interface FloatingClusterProps {
   itemLeftPx: number;
   itemTopPx: number;
   itemWidthPx: number;
+  itemHeightPx?: number;
   /** Canvas container size (for edge-flip + clamp). */
   containerW: number;
   containerH: number;
@@ -144,6 +145,7 @@ export function FloatingCluster({
   itemLeftPx,
   itemTopPx,
   itemWidthPx,
+  itemHeightPx = 0,
   containerW,
   containerH,
 }: FloatingClusterProps) {
@@ -161,7 +163,7 @@ export function FloatingCluster({
   const buttons: ClusterBtn[] = [
     ...(placementKind(product) === 'wall' || placedItems.some(item => item.parentInstanceId === selected.instanceId) ? [] : [{
       key: 'rotate',
-      label: 'Rotate 90°',
+      label: 'Rotate 45°',
       glyph: '⟳',
       testid: 'cluster-rotate',
       // rotateSelected / duplicateSelected / deleteSelected fire their own
@@ -242,9 +244,9 @@ export function FloatingCluster({
   let left = centreX - clusterW / 2;
   left = Math.max(8, Math.min(left, containerW - clusterW - 8));
 
-  const aboveTop = itemTopPx - GAP - clusterH;
+  const aboveTop = itemTopPx - 64 - GAP - clusterH;
   const flipBelow = aboveTop < flipThreshold();
-  const top = flipBelow ? itemTopPx - GAP + GAP * 2 : aboveTop;
+  const top = flipBelow ? itemTopPx + itemHeightPx + GAP : aboveTop;
   // When flipping below, sit just under the AABB top + a little (we don't
   // have the precise height here, so a fixed offset keeps it clear of the
   // finger which is on the body). Clamp to container bottom safe-area.

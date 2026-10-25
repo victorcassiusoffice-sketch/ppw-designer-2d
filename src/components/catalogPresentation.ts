@@ -2,7 +2,7 @@ import type { Product } from '../data/products.schema';
 import type { KeyboardEvent } from 'react';
 import { MACRO_CATEGORY_LABEL, macroOf, type MacroCategory } from './mobile/catalogMacros';
 import { isPitchEmbed } from '../demo/pitchEmbed';
-import { matchesCatalogBrowse, type CatalogBrowse } from './catalogMetadata';
+import { catalogRoomRelevance, matchesCatalogBrowse, type CatalogBrowse } from './catalogMetadata';
 
 export type CatalogSort = 'catalog' | 'name' | 'footprint' | 'price-asc' | 'price-desc';
 
@@ -38,6 +38,7 @@ export function filterCatalog(products: readonly Product[], category: MacroCateg
     ].join(' '));
     return terms.every((term) => text.includes(term));
   });
+  if (sort === 'catalog' && browse.mode === 'room') filtered.sort((a, b) => catalogRoomRelevance(a, browse.value) - catalogRoomRelevance(b, browse.value));
   if (sort === 'name') filtered.sort((a, b) => a.name.localeCompare(b.name));
   if (sort === 'footprint') filtered.sort((a, b) =>
     a.dimensions_cm.length * a.dimensions_cm.width - b.dimensions_cm.length * b.dimensions_cm.width);

@@ -46,4 +46,18 @@ describe('catalog browsing', () => {
     const names = filterCatalog(products, 'all', '', 'name').map((product) => product.name);
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
   });
+
+  it('puts sanitary fixtures before broad bathroom accessories without changing an explicit name sort', () => {
+    const base = { ...products[0], category: 'decor' as const, outdoor: false };
+    const lamp = { ...base, id: 'lamp', name: 'A Table Lamp', category: 'lighting' as const };
+    const tile = { ...base, id: 'tile', name: 'B Tile', category: 'flooring' as const };
+    const toilet = { ...base, id: 'toilet', name: 'C Toilet' };
+    const basin = { ...base, id: 'basin', name: 'D Washbasin' };
+    const pipe = { ...base, id: 'pipe', name: 'E Pipe' };
+    const range = [lamp, tile, pipe, toilet, basin];
+    const browse = { mode: 'room' as const, value: 'bath' };
+    expect(filterCatalog(range, 'all', '', 'catalog', browse).map(p => p.id)).toEqual(['toilet', 'basin', 'pipe', 'lamp', 'tile']);
+    expect(filterCatalog(range, 'all', '', 'name', browse).map(p => p.id)).toEqual(['lamp', 'tile', 'toilet', 'basin', 'pipe']);
+    expect(range.map(p => p.id)).toEqual(['lamp', 'tile', 'pipe', 'toilet', 'basin']);
+  });
 });

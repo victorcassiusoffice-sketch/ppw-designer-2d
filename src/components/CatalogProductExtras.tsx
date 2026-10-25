@@ -1,18 +1,22 @@
 import { useState } from 'react';
 import type { Product } from '../data/products.schema';
 import { thumbnailFor } from '../data/products';
-import { availabilityInfo, catalogThumbnailUrls, catalogVariants, CATALOG_FUNCTIONS, CATALOG_ROOMS, CATALOG_GROUP_LABELS, type CatalogBrowse } from './catalogMetadata';
+import { availabilityInfo, catalogThumbnailImages, catalogVariants, CATALOG_FUNCTIONS, CATALOG_ROOMS, CATALOG_GROUP_LABELS, type CatalogBrowse, type CatalogThumbnailImage } from './catalogMetadata';
 import { handleCatalogCategoryKey } from './catalogPresentation';
 
-/** Static baked PNG → source photo → existing symbol. Never starts WebGL. */
+/** Actual photo first, then clearly labelled static fallbacks. Never starts WebGL. */
 export function CatalogProductImage({ product, className = '' }: { product: Product; className?: string }) {
-  const urls = catalogThumbnailUrls(product);
-  return <CatalogImage key={urls.join('|')} urls={urls} product={product} className={className} />;
+  const images = catalogThumbnailImages(product);
+  return <CatalogImage key={images.map(image => image.url).join('|')} images={images} product={product} className={className} />;
 }
-function CatalogImage({ urls, product, className }: { urls: string[]; product: Product; className: string }) {
+function CatalogImage({ images, product, className }: { images: CatalogThumbnailImage[]; product: Product; className: string }) {
   const [index, setIndex] = useState(0);
-  return urls[index] ? <img className={`catalog-model-thumbnail ${className}`} src={urls[index]} alt="" loading="lazy" decoding="async" draggable={false} onError={() => setIndex(value => value + 1)} />
-    : <span className={`catalog-model-thumbnail ${className}`} aria-hidden="true" dangerouslySetInnerHTML={{ __html: thumbnailFor(product.category) }} />;
+  const image = images[index], label = image?.label ?? 'Illustration';
+  return <span className={`catalog-product-visual ${className}`} data-image-kind={image?.kind ?? 'illustration'}>
+    {image ? <img className="catalog-model-thumbnail" src={image.url} alt="" loading="lazy" decoding="async" draggable={false} onError={() => setIndex(value => value + 1)} />
+      : <span className="catalog-model-thumbnail" aria-hidden="true" dangerouslySetInnerHTML={{ __html: thumbnailFor(product.category) }} />}
+    {label && <span className="catalog-image-label">{label}</span>}
+  </span>;
 }
 export function CatalogAvailability({ product, detail = false }: { product: Product; detail?: boolean }) {
   const info = availabilityInfo(product);

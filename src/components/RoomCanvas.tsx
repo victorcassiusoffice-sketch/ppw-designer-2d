@@ -168,6 +168,9 @@ import { snapToTileLattice, tileLatticeFor, usesTileLattice } from '../designer/
 import { beginItemRotation, previewItemRotation, commitItemRotation, cancelItemRotation, type ItemRotationSession, type ItemRotationPreview } from '../lib/placementActions';
 import { gestureRotation, pointerAngle } from '../designer/rotationGesture';
 import { ObjectPlacementControls } from './ObjectPlacementControls';
+import { planHandleLayout } from '../designer/planHandleLayout';
+import { requiresInteriorWall, INTERIOR_WALL_MESSAGE } from '../designer/indoorWallPlacement';
+import { pickPlanRemoveTarget, removeBuildTarget, removeTargetMessage, removeTargetOutline, removeCursor, type RemoveBuildTarget } from '../designer/removeBuildTarget';
 import { useObjectPlacementStore, objectPlacementStepM, objectOverlapAllowed } from '../store/objectPlacementStore';
 import { pointInPolygon, isRectInsidePolygon } from '../lib/geometry';
 // Architectural paper theme (2026-08-29): cream paper, charcoal poche walls
@@ -279,7 +282,7 @@ import { WallPaintHudColourStrip } from './mobile/WallPaintHudColourStrip';
 import { deriveWallPaintOrders } from '../designer/wallPaintCalc';
 // Wall paint tints + the 3D room view (2026-09-14): the brush is applied
 // through ONE helper so the plan and the 3D view paint identically.
-import { applyWallPaintBrush, brushColour, brushPaintId } from '../designer/wallPaintBrush';
+import { applyWallPaintBrush, brushColour, brushPaintId, brushLabel } from '../designer/wallPaintBrush';
 import { applyCladdingBrush } from '../designer/claddingBrush';
 import { findCladdingProduct } from '../data/claddingCatalog';
 // Floor tool (2026-08-30): the phone HUD card's live "n tiles · £x" line
@@ -751,6 +754,15 @@ export function RoomCanvas({
     | null
   >(null);
   const lastGhostPointer = useRef<{ clientX: number; clientY: number } | null>(null);
+  const eraseActive = tool === 'sledgehammer' && !drawMode && !pendingProductId;
+  const [removeFeedback,setRemoveFeedback] = useState<string|null>(null);
+  const [removeHover, setRemoveHover] = useState<RemoveBuildTarget | null>(null);
+  const removePress = useRef<{id:number;x:number;y:number;target:RemoveBuildTarget|null}|null>(null);
+  useEffect(() => { removePress.current=null;setRemoveHover(null);setRemoveFeedback(null); },[eraseActive]);
+  const removeAtPointer = (clientX:number,clientY:number) => {
+    const point=floorWorldPoint(clientX,clientY);
+    return point?pickPlanRemoveTarget(usePropertyStore.getState().property,activeLevelId,{x:point.xM,y:point.yM},10/(pxPerMetre*viewport.scale)):null;
+  };
   const objectPlacementMode = useObjectPlacementStore(s => s.mode);
   const ghostRotation = usePlacementIntentStore(s => s.armedRotation);
   // Sims wall-aware placement (2026-08-23) — auto-orientation only runs
@@ -1496,6 +1508,9 @@ export function RoomCanvas({
       // Routed into the dropped-in room (targetPolygon/targetItems) like
       // every other kind, per the attached multi-room model.
       if (kind === 'wall') {
+        if (outdoor && requiresInteriorWall(product)) {
+          haptic('invalid'); pushToast(INTERIOR_WALL_MESSAGE, 'warn'); return false;
+        }
         const r = resolveWallItemPlacement({
           centreXm,
           centreYm,
@@ -2052,6 +2067,10 @@ export function RoomCanvas({
       // Wall-mounted ghost: snaps to the nearest wall in range; out of
       // range it follows the cursor in red so the user sees "not here".
       if (kind === 'wall') {
+        if (outdoor && requiresInteriorWall(product)) {
+          const { w, h } = rotatedFootprint(fp, ghostRotation);
+          return { xM: xM - w / 2, yM: yM - h / 2, rotation: ghostRotation, valid: false, w, h };
+        }
         const r = resolveWallItemPlacement({
           centreXm: xM,
           centreYm: yM,
@@ -3573,7 +3592,6 @@ export function RoomCanvas({
         </div>}
       </div>
 
-    {viewMode === 'plan' && <ObjectPlacementControls />}
     <div
       ref={containerRef}
       data-testid="plan-drawing-viewport"
@@ -3584,6 +3602,7 @@ export function RoomCanvas({
       // Paper ground (2026-08-29): warm cream, the land outside the plot.
       style={{
         background: buildPalette.ground,
+        ...(eraseActive ? { cursor:removeCursor(removeHover) } : {}),
         ...({ '--build-ground': buildPalette.ground } as React.CSSProperties),
         ...(pendingProductId && !drawMode
           ? { '--tw-ring-color': `${SELECT_STROKE}66` } as React.CSSProperties
@@ -3596,7 +3615,24 @@ export function RoomCanvas({
       // (index.css) kills the iOS callout; this handler kills the Android
       // long-press contextmenu over the whole canvas surface.
       onContextMenu={(e) => e.preventDefault()}
+      onPointerDownCapture={e=>{
+        if(!eraseActive||(e.target as HTMLElement).tagName!=='CANVAS')return;
+        e.stopPropagation();e.preventDefault();
+        if(e.isPrimary===false){removePress.current=null;return;}
+        if(e.button!==0)return;
+        const target=removeAtPointer(e.clientX,e.clientY);removePress.current={id:e.pointerId,x:e.clientX,y:e.clientY,target};setRemoveHover(target);e.currentTarget.setPointerCapture(e.pointerId);
+      }}
+      onPointerMoveCapture={e=>{if(!eraseActive)return;if((e.target as HTMLElement).tagName!=='CANVAS'&&!removePress.current)return;e.stopPropagation();setRemoveFeedback(null);setRemoveHover(removeAtPointer(e.clientX,e.clientY));}}
+      onPointerUpCapture={e=>{
+        if(!eraseActive||!removePress.current)return;e.stopPropagation();e.preventDefault();const press=removePress.current;removePress.current=null;
+        if(press.id===e.pointerId&&press.target&&Math.hypot(e.clientX-press.x,e.clientY-press.y)<8){const result=removeBuildTarget(press.target);setRemoveFeedback(result.message);}
+        setRemoveHover(null);
+      }}
+      onPointerCancelCapture={()=>{removePress.current=null;setRemoveHover(null);}}
+      onPointerLeave={()=>{if(!removePress.current)setRemoveHover(null);}}
+      onClickCapture={e=>{if(eraseActive&&(e.target as HTMLElement).tagName==='CANVAS')e.stopPropagation();}}
     >
+      {viewMode === 'plan' && <div className="object-placement-dock"><ObjectPlacementControls /></div>}
       {/* Floor tool HUD card (PHONE, 2026-08-30). Replaces the old
           "Paint on · Done" chip. md:hidden — from md up the docked Floor
           panel (TopBar) is the tool's indicator. Bottom-anchored exactly
@@ -3816,7 +3852,7 @@ export function RoomCanvas({
               <span className="truncate text-[12px] font-semibold text-[#37362f]">
                 {/* Phone pass (2026-09-16): the line's own name — the brand
                     prefix left "P…" at 390 px next to the live figures. */}
-                {(findWallPaintById(brushPaintId(wallPaintDraft))?.name ?? 'Wall paint').replace(/^Permoglaze |^Mauvilac |^Polytol /, '')}
+                {wallPaintDraft.operation === 'construction' ? brushLabel(wallPaintDraft) : (findWallPaintById(brushPaintId(wallPaintDraft))?.name ?? 'Wall paint').replace(/^Permoglaze |^Mauvilac |^Polytol /, '')}
               </span>
               {brushColour(wallPaintDraft) && (
                 <span className="truncate text-[11px] font-medium" style={{ color: CHROME_TEXT_2 }} data-testid="wallpaint-hud-colour">
@@ -3850,6 +3886,10 @@ export function RoomCanvas({
               one scrolling row of 40 px chips. Nothing for a white-only line. */}
           <WallPaintHudColourStrip />
           <div className="flex items-center gap-1.5">
+            <button type="button" className={`${OVL_CTRL} ${OVL_REST} h-10 flex-1 px-2`} onClick={() => window.dispatchEvent(new CustomEvent('ppw:open-wall-materials'))}>Wall type</button>
+            <button type="button" className={`${OVL_CTRL} ${OVL_REST} h-10 flex-1 px-2`} onClick={() => window.dispatchEvent(new CustomEvent('ppw:open-wall-materials', { detail: { section: 'dimensions' } }))}>Height & thickness</button>
+          </div>
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               data-testid="wallpaint-scope-mobile-wall"
@@ -3874,7 +3914,7 @@ export function RoomCanvas({
               type="button"
               data-testid="wallpaint-erase-mobile"
               aria-pressed={wallPaintDraft.erase}
-              onClick={() => setWallPaintDraft({ erase: !wallPaintDraft.erase })}
+              onClick={() => setWallPaintDraft({ erase: !wallPaintDraft.erase, operation: 'paint' })}
               className={`${OVL_CTRL} h-11 flex-1 px-2 ${
                 wallPaintDraft.erase ? 'border-ppw-clay bg-ppw-chrome text-ppw-charcoal shadow-sm' : OVL_REST
               }`}
@@ -3906,7 +3946,7 @@ export function RoomCanvas({
                 : 'No walls painted yet'}
             </span>
             {' · '}
-            {wallPaintDraft.erase
+            {wallPaintDraft.operation === 'construction' ? 'Tap a wall to apply its material' : wallPaintDraft.erase
               ? 'Tap a wall to remove its paint'
               : wallPaintDraft.scope === 'room'
                 ? 'Tap a wall to paint the whole room'
@@ -4077,8 +4117,8 @@ export function RoomCanvas({
           data-testid="remove-hud"
           style={{ background: CHROME_BG, border: `1px solid ${CHROME_DANGER}`, boxShadow: '0 12px 32px rgba(42,41,38,0.18)', color: CHROME_TEXT }}
         >
-          <span className="min-w-0 flex-1 truncate font-semibold" style={{ color: CHROME_DANGER }}>
-            Remove — tap a wall or object to delete it
+          <span className="min-w-0 flex-1 font-semibold" style={{ color: CHROME_DANGER }} data-target-kind={removeHover?.kind??'none'}>
+            {removeFeedback??removeTargetMessage(removeHover)}
           </span>
           <button
             type="button"
@@ -4188,6 +4228,7 @@ export function RoomCanvas({
           testids still exist exactly once at any width. */}
 
       <Stage
+        listening={!eraseActive}
         ref={stageRef}
         width={stageSize.width}
         height={stageSize.height}
@@ -4711,7 +4752,7 @@ export function RoomCanvas({
                   // it scales with pxPerMetre like everything else; at the
                   // default 100 px/m that is the historic 10 px stroke.
                   const material = room.wallConstruction?.find(surface => surface.edgeIndex === edge.index);
-                  const thicknessM = material?.kind === 'glass' ? (material.thicknessMm ?? 10) / 1000 : WALL_THICKNESS_M;
+                  const thicknessM = material?.thicknessMm !== undefined ? material.thicknessMm / 1000 : WALL_THICKNESS_M;
                   const wallPx = thicknessM * pxPerMetre;
                   const halfStrokeM = thicknessM / 2;
                   const gaps = wallGapsByEdge.get(edgeKey(room.id, edge.index)) ?? [];
@@ -5232,6 +5273,8 @@ export function RoomCanvas({
                     isSelected={isSelected}
                     justPlaced={item.instanceId === justPlacedId}
                     pxPerMetre={pxPerMetre}
+                    viewport={viewport}
+                    viewportWidth={stageSize.width}
                     planSun={planSun}
                     wallHeightM={planWallHeight}
                     // THAT room's polygon and items — the drag/validate math
@@ -5474,6 +5517,11 @@ export function RoomCanvas({
         />
         {visible.landscape && activeLevelId === GROUND_LEVEL_ID && gardenPlacement && <GardenDrawLayer pxPerMetre={pxPerMetre} scale={viewport.scale} />}
         {measuredTool.target && measuredPreview && <Layer listening={false}><Line points={measuredPreview.vertices.flatMap(p => [p.x * pxPerMetre, p.y * pxPerMetre])} stroke="#22836b" strokeWidth={2 / viewport.scale} dash={[6 / viewport.scale, 4 / viewport.scale]} />{measuredPreview.vertices.filter((_, i) => i === 0 || i === measuredPreview.vertices.length - 1).map((p, i) => <Circle key={i} x={p.x * pxPerMetre} y={p.y * pxPerMetre} radius={5 / viewport.scale} fill="#22836b" />)}</Layer>}
+        {eraseActive && removeHover && <Layer listening={false}><Line
+          points={removeTargetOutline(usePropertyStore.getState().property,removeHover).flatMap(point=>[point.x*pxPerMetre,point.y*pxPerMetre])}
+          closed={removeHover.kind==='item'||removeHover.kind==='floor'}
+          fill={removeHover.kind==='item'||removeHover.kind==='floor'?'rgba(208,100,65,0.22)':undefined}
+          stroke="#c66441" strokeWidth={4/viewport.scale} dash={[8/viewport.scale,5/viewport.scale]} /></Layer>}
       </Stage>
       {viewMode !== '3d' && <OpeningSelectionEditor />}
 
@@ -5554,7 +5602,7 @@ export function RoomCanvas({
         const p = getProductById(sel.productId);
         if (!p) return null;
         const fp = { lengthM: cmToM(p.dimensions_cm.length), widthM: cmToM(p.dimensions_cm.width) };
-        const { w } = rotatedFootprint(fp, sel.rotation);
+        const { w, h } = rotatedFootprint(fp, sel.rotation);
         const itemLeftPx = viewport.x + sel.x * pxPerMetre * viewport.scale;
         const itemTopPx = viewport.y + sel.y * pxPerMetre * viewport.scale;
         const itemWidthPx = w * pxPerMetre * viewport.scale;
@@ -5564,6 +5612,7 @@ export function RoomCanvas({
               itemLeftPx={itemLeftPx}
               itemTopPx={itemTopPx}
               itemWidthPx={itemWidthPx}
+              itemHeightPx={h * pxPerMetre * viewport.scale}
               containerW={stageSize.width}
               containerH={stageSize.height}
             />
@@ -5670,6 +5719,8 @@ export function RoomCanvas({
  * module-level so concurrent placements share asset loads.
  */
 interface PlacedItemGroupProps {
+  viewport: Viewport;
+  viewportWidth: number;
   item: PlacedItem;
   /**
    * Live snap step in metres (units brief 2026-08-28, D14). Threaded in so
@@ -5737,6 +5788,9 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
   const item = rotationPreview ? { ...savedItem, x: rotationPreview.x, y: rotationPreview.y, rotation: rotationPreview.rotation } : savedItem;
   const footprint = rotatedFootprint({ lengthM: cmToM(product.dimensions_cm.length), widthM: cmToM(product.dimensions_cm.width) }, item.rotation);
   const wPx = footprint.w * pxPerMetre, hPx = footprint.h * pxPerMetre;
+  const handle = planHandleLayout({ w: wPx, h: hPx, scale: props.viewport.scale,
+    left: props.viewport.x + item.x * pxPerMetre * props.viewport.scale,
+    top: props.viewport.y + item.y * pxPerMetre * props.viewport.scale, width: props.viewportWidth });
   const hasSurfaceChildren = usePropertyStore(state => state.property.rooms.some(room => room.placedItems.some(child => child.parentInstanceId === savedItem.instanceId)));
   const canTurn = placementKind(product) !== 'wall' && !hasSurfaceChildren;
   const cancelTurn = useCallback(() => {
@@ -6115,9 +6169,9 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
               stays in absolute screen coordinates at every canvas zoom. */}
           <Circle
             name="item-rotate-handle"
-            x={wPx / 2} y={-18} radius={10}
+            x={handle.x} y={handle.y} radius={handle.radius}
             fill={rotationPreview?.ok === false ? '#de6868' : HANDLE_FILL}
-            stroke={LABEL_HALO} strokeWidth={2} hitStrokeWidth={24}
+            stroke={LABEL_HALO} strokeWidth={2 / props.viewport.scale} hitStrokeWidth={handle.hitStrokeWidth}
             draggable data-testid="rotate-handle"
             onMouseDown={e => { e.cancelBubble = true; }}
             onTouchStart={e => { e.cancelBubble = true; }}
@@ -6130,7 +6184,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
               if (!session || !parent) { e.target.stopDrag(); return; }
               const transform = parent.getAbsoluteTransform();
               const centre = transform.point({ x: wPx / 2, y: hPx / 2 });
-              const anchor = transform.point({ x: wPx / 2, y: -18 });
+              const anchor = transform.point({ x: handle.x, y: handle.y });
               rotationRun.current = { session, centre, start: pointerAngle(anchor, centre),
                 preview: { ok: true, x: savedItem.x, y: savedItem.y, rotation: savedItem.rotation }, node: e.target };
             }}
@@ -6142,7 +6196,7 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
               const angle = gestureRotation(run.session.original.rotation, run.start, pointerAngle(pointer, run.centre), !!(e.evt.shiftKey || e.evt.altKey));
               run.preview = previewItemRotation(run.session, angle);
               setRotationPreview(run.preview);
-              e.target.position({ x: wPx / 2, y: -18 });
+              e.target.position({ x: handle.x, y: handle.y });
             }}
             onDragEnd={e => {
               e.cancelBubble = true;
@@ -6150,12 +6204,12 @@ function PlacedItemGroup(props: PlacedItemGroupProps): JSX.Element {
               rotationRun.current = null;
               if (run && !commitItemRotation(run.session, run.preview.rotation)) pushToast(run.preview.message ?? 'Not enough space to turn here.', 'warn');
               setRotationPreview(null);
-              e.target.position({ x: wPx / 2, y: -18 });
+              e.target.position({ x: handle.x, y: handle.y });
               e.target.getLayer()?.batchDraw();
             }}
           />
-          <Circle x={wPx / 2} y={-18} radius={2} fill="#fff" listening={false} />
-          {rotationPreview && <Text x={wPx / 2 + 16} y={-25} text={`${Math.round(rotationPreview.rotation)}°`}
+          <Circle x={handle.x} y={handle.y} radius={2 / props.viewport.scale} fill="#fff" listening={false} />
+          {rotationPreview && <Text x={handle.x + 16 / props.viewport.scale} y={handle.y - 8 / props.viewport.scale} text={`${Math.round(rotationPreview.rotation)}°`}
             fontSize={12} fill={rotationPreview.ok ? SELECT_STROKE : '#de6868'} stroke={LABEL_HALO} strokeWidth={3}
             fillAfterStrokeEnabled listening={false} />}
           </>}

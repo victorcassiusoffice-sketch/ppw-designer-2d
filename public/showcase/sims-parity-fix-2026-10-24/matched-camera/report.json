@@ -1,0 +1,136 @@
+{
+  "at": "2026-10-24T23:48:30.479Z",
+  "method": "Actual Fit control after initial load. Fixed 1168 × 592 canvas for projection comparison; same 1280 × 800 browser viewport. No source scene or camera values injected. No performance claims from this capture.",
+  "cases": [
+    {
+      "site": "live",
+      "choice": "auto",
+      "errors": [
+        "Failed to load resource: the server responded with a status of 401 ()"
+      ],
+      "failed": [
+        {
+          "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+          "status": 401
+        }
+      ],
+      "writes": [],
+      "camera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "canvas": {
+        "x": 99,
+        "y": 120,
+        "width": 1168,
+        "height": 592
+      },
+      "shading": "natural-depth",
+      "autoAo": null,
+      "autoFps": null,
+      "geometryUnchanged": true
+    },
+    {
+      "site": "preview",
+      "choice": "auto",
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "camera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "canvas": {
+        "x": 99,
+        "y": 120,
+        "width": 1168,
+        "height": 592
+      },
+      "shading": "natural-basic",
+      "autoAo": "disabled",
+      "autoFps": "18.2",
+      "geometryUnchanged": true,
+      "sameCamera": true,
+      "sameRenderCamera": true,
+      "sameCanvasDimensions": true
+    },
+    {
+      "site": "preview",
+      "choice": "high",
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "camera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "canvas": {
+        "x": 99,
+        "y": 120,
+        "width": 1168,
+        "height": 592
+      },
+      "shading": "natural-depth",
+      "autoAo": "manual",
+      "autoFps": "",
+      "geometryUnchanged": true,
+      "sameCamera": true,
+      "sameRenderCamera": true,
+      "sameCanvasDimensions": true
+    }
+  ]
+}

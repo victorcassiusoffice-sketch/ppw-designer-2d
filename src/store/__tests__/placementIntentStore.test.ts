@@ -12,6 +12,16 @@ beforeEach(() => {
 });
 
 describe('placementIntentStore', () => {
+  it('carries an explicit 0 then 45 then 90 degrees rather than an unlabelled auto-facing pose', () => {
+    const store = usePlacementIntentStore.getState();
+    store.setArmed(null); store.setArmed('courts-gessica-dining-6');
+    expect(usePlacementIntentStore.getState()).toMatchObject({ armedRotation: 0, armedRotationExplicit: true });
+    store.rotateArmed(45); expect(usePlacementIntentStore.getState().armedRotation).toBe(45);
+    store.rotateArmed(45); expect(usePlacementIntentStore.getState().armedRotation).toBe(90);
+    store.setArmed('courts-stellar-celosia-chair');
+    expect(usePlacementIntentStore.getState()).toMatchObject({ armedRotation: 0, armedRotationExplicit: true });
+    store.setArmed(null);
+  });
   it('placeAtCenter publishes a centre-target intent', () => {
     usePlacementIntentStore.getState().placeAtCenter('p1');
     const { intent } = usePlacementIntentStore.getState();

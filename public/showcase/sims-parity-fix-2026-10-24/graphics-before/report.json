@@ -1,0 +1,158 @@
+{
+  "phase": "before",
+  "at": "2026-10-24T21:48:16.384Z",
+  "method": "Native D3D11, real pointer orbit, actual completed ThreeStage render calls via data-shading mutations; cache-disabled contexts; no live writes.",
+  "cases": [
+    {
+      "site": "live",
+      "choice": "auto",
+      "origin": "https://onelivebuild.com",
+      "errors": [
+        "Failed to load resource: the server responded with a status of 401 ()"
+      ],
+      "failed": [
+        {
+          "url": "https://api.exchangerate.host/latest?base=USD&symbols=MUR,EUR,GBP",
+          "status": 401
+        }
+      ],
+      "writes": [],
+      "first3dMs": 12966.300000011921,
+      "camera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.7217878972791235
+      },
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "beforeShading": "natural-depth",
+      "adaptation": {
+        "shading": "natural-depth"
+      },
+      "motion": {
+        "fps": 37.148434387654085,
+        "frames": 373,
+        "durationMs": 10040.800000011921,
+        "p95Ms": 123,
+        "steps": 392
+      },
+      "shading": "natural-depth",
+      "autoAo": null,
+      "autoAoFps": null,
+      "geometryUnchanged": true,
+      "overflow": 0
+    },
+    {
+      "site": "preview",
+      "choice": "auto",
+      "origin": "http://127.0.0.1:5175",
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "first3dMs": 5946,
+      "camera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.7217878972791235
+      },
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "beforeShading": "natural-basic",
+      "adaptation": {
+        "shading": "natural-basic"
+      },
+      "motion": {
+        "fps": 60.02916558489606,
+        "frames": 601,
+        "durationMs": 10011.799999952316,
+        "p95Ms": 18.80000001192093,
+        "steps": 601
+      },
+      "shading": "natural-basic",
+      "autoAo": null,
+      "autoAoFps": null,
+      "geometryUnchanged": true,
+      "overflow": 0
+    },
+    {
+      "site": "preview",
+      "choice": "high",
+      "origin": "http://127.0.0.1:5175",
+      "errors": [],
+      "failed": [],
+      "writes": [],
+      "first3dMs": 5004.699999988079,
+      "camera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.6632251157578452
+      },
+      "renderCamera": {
+        "target": {
+          "x": 5.75,
+          "y": 4.25,
+          "z": 0
+        },
+        "azimuthRad": -0.5585053606381855,
+        "elevationRad": 0.6108652381980153,
+        "distanceM": 21.16462027943338,
+        "fovRad": 0.7217878972791235
+      },
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x0000A7A1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "beforeShading": "natural-depth",
+      "adaptation": {
+        "shading": "natural-depth"
+      },
+      "motion": {
+        "fps": 41.92788403950204,
+        "frames": 420,
+        "durationMs": 10017.199999988079,
+        "p95Ms": 109.80000001192093,
+        "steps": 435
+      },
+      "shading": "natural-depth",
+      "autoAo": null,
+      "autoAoFps": null,
+      "geometryUnchanged": true,
+      "overflow": 0
+    }
+  ]
+}

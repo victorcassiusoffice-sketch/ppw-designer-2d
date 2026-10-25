@@ -37,3 +37,10 @@
 .wall-material-sheet .wall-construction-cards button { min-height: 88px; }
 .wall-material-sheet footer { padding: 8px 12px; flex-shrink: 0; }
 .wall-material-sheet footer button { width: 100%; border-color: #6dc4cf; background: #347382; font-weight: 600; }
+.wall-dimensions { min-width:0; }
+.wall-dimensions-fields { display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding:10px;margin-top:8px;border:1px solid var(--chrome-border,#b9c8bf);border-radius:12px;background:var(--chrome-surface,#f4f5ef);font-size:12px;color:#244b43;white-space:normal;min-width:0; }
+.wall-dimensions-fields label { display:grid;gap:5px; }
+.wall-dimensions-fields input { width:100%;min-height:40px;border:1px solid #91aaa0;border-radius:9px;padding:6px 9px;background:#fff;color:#183b32; }
+.wall-dimensions-fields p { margin:0;line-height:1.45; }
+.wall-surface-compact:has(.wall-dimensions-fields) { flex-wrap:wrap;width:calc(100vw - 20px);max-width:440px; }
+.wall-surface-compact .wall-dimensions:has(.wall-dimensions-fields) { flex:1 0 100%; }

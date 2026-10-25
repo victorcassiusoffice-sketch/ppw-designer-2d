@@ -105,6 +105,18 @@ export interface ItemRotationPreview {
 
 /** Capture once at pointer-down. No history or saved geometry changes until
  * release: Escape, pointercancel and a second tool can discard this freely. */
+export function rotationRefusalReason(instanceId: string | null): string | null {
+  if (!instanceId) return 'Select an object first.';
+  const rooms = usePropertyStore.getState().property.rooms;
+  const room = rooms.find(candidate => candidate.placedItems.some(item => item.instanceId === instanceId));
+  const item = room?.placedItems.find(candidate => candidate.instanceId === instanceId);
+  const product = item && getProductById(item.productId);
+  if (!room || !product) return 'This object is no longer in the design.';
+  if (placementKind(product) === 'wall') return 'Wall items follow their wall. Move them along the wall to change position.';
+  if (room.placedItems.some(child => child.parentInstanceId === instanceId)) return 'Move the objects on this surface before turning it.';
+  return null;
+}
+
 export function beginItemRotation(instanceId = useDesignStore.getState().selectedInstanceId): ItemRotationSession | null {
   if (!instanceId || isDrawTransactionActive()) return null;
   const property = usePropertyStore.getState().property;
@@ -181,7 +193,11 @@ export function cancelItemRotation(session: ItemRotationSession): void { session
  * gesture. A failed turn leaves the saved pose and history untouched. */
 export function rotateSelected(deltaDeg: number, _opts: { snapshot?: boolean } = {}): void {
   const session = beginItemRotation();
-  if (!session) return;
+  if (!session) {
+    const reason = rotationRefusalReason(useDesignStore.getState().selectedInstanceId);
+    if (reason) useToastStore.getState().push(reason, 'warn');
+    return;
+  }
   const angle = session.original.rotation + deltaDeg;
   const preview = previewItemRotation(session, angle);
   if (!commitItemRotation(session, angle)) {

@@ -8,6 +8,7 @@ import { WorkspaceFloorNav } from './WorkspaceFloorNav';
 import { PlanImportButton } from './PlanImportWorkspace';
 import { StudioIcon as Icon } from './StudioIcon';
 import { WallSurfaceOptions } from './WallSurfaceOptions';
+import { WallDimensionsControl } from './WallDimensionsControl';
 import { constructionHex } from '../designer/wallConstruction';
 /** Compact Plan header, construction rail and in-flow options.
  * The rail occupies a reserved canvas gutter; secondary controls expand only
@@ -699,6 +700,7 @@ export function TopBar({
   const [confirmingNew, setConfirmingNew] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showWallMaterials, setShowWallMaterials] = useState(false);
+  const [wallMaterialsDimensions, setWallMaterialsDimensions] = useState(false);
   const wallMaterialsRef = useRef<HTMLDivElement>(null);
   const wallMaterialsCloseRef = useRef<HTMLButtonElement>(null);
   const activeRoom = property.rooms.find((r) => r.id === property.activeRoomId);
@@ -1176,9 +1178,11 @@ export function TopBar({
   // Mobile sheet: Esc closes, body scroll locked while open. Focus moves to
   // the sheet's Close button on open and returns to the hamburger on close.
   useEffect(() => {
-    const open = () => {
+    const open = (event: Event) => {
       setShowMobileMenu(false);
-      setWallPaintDraft({ operation: 'construction', erase: false });
+      const dimensions = (event as CustomEvent<{ section?: string }>).detail?.section === 'dimensions';
+      setWallMaterialsDimensions(dimensions);
+      if (!dimensions) setWallPaintDraft({ operation: 'construction', erase: false });
       setShowWallMaterials(true);
     };
     window.addEventListener('ppw:open-wall-materials', open);
@@ -1195,7 +1199,7 @@ export function TopBar({
       if (event.key === 'Escape') {
         event.preventDefault(); event.stopPropagation(); setShowWallMaterials(false);
       } else if (event.key === 'Tab') {
-        const buttons = [...(wallMaterialsRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? [])];
+        const buttons = [...(wallMaterialsRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),a[href]') ?? [])];
         const first = buttons[0]; const last = buttons[buttons.length - 1];
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
@@ -2920,7 +2924,7 @@ export function TopBar({
               <div className="mt-2 flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setWallPaintDraft({ erase: !wallPaintDraft.erase })}
+                  onClick={() => setWallPaintDraft({ erase: !wallPaintDraft.erase, operation: 'paint' })}
                   data-testid="wallpaint-erase"
                   aria-pressed={wallPaintDraft.erase}
                   className={`${CHIP} flex-1 ${wallPaintDraft.erase ? CHIP_DANGER_ON : CHIP_REST}`}
@@ -3294,7 +3298,7 @@ export function TopBar({
                   <button
                     type="button"
                     aria-pressed={wallPaintDraft.erase}
-                    onClick={() => setWallPaintDraft({ erase: !wallPaintDraft.erase })}
+                    onClick={() => setWallPaintDraft({ erase: !wallPaintDraft.erase, operation: 'paint' })}
                     className={`${CHIP} h-10 shrink-0 px-2 text-[11px] ${wallPaintDraft.erase ? CHIP_DANGER_ON : CHIP_REST}`}
                     data-testid="wallpaint-3d-erase"
                   >
@@ -3371,11 +3375,11 @@ export function TopBar({
           <button className="wall-material-sheet-backdrop" type="button" tabIndex={-1} aria-label="Dismiss wall materials" onClick={() => setShowWallMaterials(false)} />
           <div className="wall-material-sheet" ref={wallMaterialsRef} role="dialog" aria-modal="true" aria-labelledby="wall-material-sheet-title">
             <header className="wall-material-sheet-header">
-              <h2 id="wall-material-sheet-title">Wall materials</h2>
+              <h2 id="wall-material-sheet-title">{wallMaterialsDimensions ? 'Wall dimensions' : 'Wall materials'}</h2>
               <button ref={wallMaterialsCloseRef} type="button" aria-label="Close wall materials" onClick={() => setShowWallMaterials(false)}>{t("Close")}<span aria-hidden="true">×</span></button>
             </header>
-            <div className="wall-material-sheet-body"><WallSurfaceOptions materialsOnly /></div>
-            <footer><button type="button" onClick={() => setShowWallMaterials(false)}>Use on walls</button></footer>
+            <div className="wall-material-sheet-body">{wallMaterialsDimensions ? <WallDimensionsControl initialOpen /> : <WallSurfaceOptions materialsOnly onChooseMaterial={() => setShowWallMaterials(false)} />}</div>
+            <footer><button type="button" onClick={() => { useDesignerUIStore.getState().setTool('wallpaint'); setShowWallMaterials(false); }}>{wallMaterialsDimensions ? 'Done' : 'Use on walls'}</button></footer>
           </div>
         </div>, document.body,
       )}

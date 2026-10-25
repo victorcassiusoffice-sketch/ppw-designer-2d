@@ -1,0 +1,35 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "at": "2026-10-24T23:47:16.242Z",
+  "cases": [
+    {
+      "device": "desktop",
+      "errors": [],
+      "writes": [],
+      "checks": [
+        "Full wall lowers under cursor without flicker, saved mutation or camera change",
+        "Pointer leave restores wall",
+        "Wall drawing suppresses view-only hover",
+        "Paint mode suppresses view-only hover; source wall remains targetable"
+      ],
+      "hover": {
+        "x": 682.5,
+        "y": 251.12,
+        "wall": "wall-living-0"
+      },
+      "overflow": 0,
+      "passed": true
+    },
+    {
+      "device": "phone",
+      "errors": [],
+      "writes": [],
+      "checks": [
+        "Phone Auto stays direct, with AO off",
+        "Real touch tap does not trigger cursor hover cutaway"
+      ],
+      "overflow": 0,
+      "passed": true
+    }
+  ]
+}

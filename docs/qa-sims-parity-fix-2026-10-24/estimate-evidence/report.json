@@ -1,0 +1,35 @@
+{
+  "base": "http://127.0.0.1:5176",
+  "cases": [
+    {
+      "device": "desktop",
+      "errors": [],
+      "failures": [],
+      "writes": [],
+      "checks": [
+        "Collapsed panel expands through real pointer clicks; 11 distinct module entries",
+        "Presence count clearly separated from unavailable invoice validation and engineering approval",
+        "No prices, currency, retailer names, fabricated percentages or horizontal overflow"
+      ],
+      "shots": [
+        "docs/qa-sims-parity-fix-2026-10-24/estimate-evidence/desktop-input-presence.png",
+        "docs/qa-sims-parity-fix-2026-10-24/estimate-evidence/desktop-engine-scope.png"
+      ]
+    },
+    {
+      "device": "phone",
+      "errors": [],
+      "failures": [],
+      "writes": [],
+      "checks": [
+        "Collapsed panel expands through real pointer clicks; 11 distinct module entries",
+        "Presence count clearly separated from unavailable invoice validation and engineering approval",
+        "No prices, currency, retailer names, fabricated percentages or horizontal overflow"
+      ],
+      "shots": [
+        "docs/qa-sims-parity-fix-2026-10-24/estimate-evidence/phone-input-presence.png",
+        "docs/qa-sims-parity-fix-2026-10-24/estimate-evidence/phone-engine-scope.png"
+      ]
+    }
+  ]
+}

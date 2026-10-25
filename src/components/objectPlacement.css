@@ -8,3 +8,13 @@
 .object-placement-note { font-size:11px; }
 @media(max-width:600px) { .object-placement-controls { padding:4px 8px; gap:4px; } .object-placement-controls button { min-height:40px; } .object-placement-note { flex-basis:100%; order:2; } }
 .object-placement-warning { color: var(--warning-text, #80510c); font-size: 12px; }
+.house-scene-surface { position:relative; display:flex; flex-direction:column; flex:1; min-height:0; }
+.remove-build-status { position:absolute; top:8px; left:8px; right:8px; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 12px; border:1px solid #a36347; border-radius:12px; background:var(--surface,#f5f3eb); color:var(--ink,#203e38); font-size:12px; }
+.remove-build-status button { padding:6px 12px; min-height:40px; border:1px solid #647c6d55; border-radius:8px; }
+.designer-app .house-scene-surface > .house-selection-strip { position:absolute; top:8px; left:8px; right:8px; z-index:12; border-radius:12px; box-shadow:0 4px 16px #203e3820; }
+.object-placement-dock { position:absolute; bottom:8px; left:8px; right:8px; z-index:15; pointer-events:none; display:flex; justify-content:center; }
+.object-placement-dock > .object-placement-controls { pointer-events:auto; border:1px solid #647c6d44; border-radius:14px; box-shadow:0 4px 16px #203e3820; max-width:100%; }
+.designer-app .house-scene-caption { min-height:20px; height:20px; flex-shrink:0; }
+@media(max-width:767px) { .designer-app .house-scene-caption[data-active-feedback="false"] { display:block; visibility:hidden; } }
+/* Leave the phone Products launcher reachable below the object dock. */
+@media(max-width:767px) { [data-testid="plan-drawing-viewport"] > .object-placement-dock { bottom:54px; } }

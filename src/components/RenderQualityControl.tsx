@@ -9,7 +9,7 @@ export function RenderQualityControl() {
   return <label className="house-render-quality">
     <span>3D quality</span>
     <select aria-label="3D rendering quality" value={choice}
-      title="Auto balances device performance. High adds desktop contact occlusion. All options preserve measurements."
+      title="Auto tests desktop corner shading and keeps it at 45 FPS or faster. Phones keep it off. High always uses desktop corner shading. Measurements stay unchanged."
       onChange={event => setChoice(normaliseRenderQuality(event.target.value))}>
       <option value="auto">Auto · device</option>
       <option value="low">Low · fastest</option>

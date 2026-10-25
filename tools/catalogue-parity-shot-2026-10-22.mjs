@@ -43,9 +43,9 @@ try {
       await page.getByTestId(`${prefix}-search`).fill('NordicTrack');
       await page.getByTestId(`${prefix}-sort`).selectOption('name');
       expect(await cards().count()).toBeGreaterThan(0);
-      await expect(cards().first().locator('img')).toHaveAttribute('src', /^\/products\/catalog-models\//);
+      await expect(cards().first().locator('img')).toHaveAttribute('src', /^\/products\/photos\//);
       await expect.poll(() => cards().first().locator('img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
-      row.checks.push('Function filter, search, name sort, baked model image and price-free demo');
+      row.checks.push('Function filter, search, name sort, supplier photo first and price-free demo');
       await shot('2d-fitness');
       await catalog.getByRole('button', { name: /^Details for / }).first().click();
       await expect(catalog.getByTestId('mobile-product-popup')).toBeVisible();
