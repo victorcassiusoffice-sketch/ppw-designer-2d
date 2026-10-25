@@ -1,0 +1,76 @@
+{
+  "base": "https://ppw-designer-2d-7kvcso5sa-victor-ppw.vercel.app",
+  "phase": "preview",
+  "cases": [
+    {
+      "device": "desktop",
+      "view": "2d",
+      "errors": [],
+      "writes": [],
+      "placeholders": [],
+      "failures": [],
+      "endShot": "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/desktop-2d-basket-end.png",
+      "geometry": {
+        "top": 555.5,
+        "bottom": 642.5,
+        "height": 800,
+        "pictureNotCovered": true,
+        "name": "DrawingPendant Lamp Black Metal Canopy ACSLG2157005LightingLighting"
+      },
+      "shot": "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/desktop-2d-basket-last.png"
+    },
+    {
+      "device": "desktop",
+      "view": "3d",
+      "errors": [],
+      "writes": [],
+      "placeholders": [],
+      "failures": [],
+      "endShot": "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/desktop-3d-basket-end.png",
+      "geometry": {
+        "top": 443.6875,
+        "bottom": 534.6875,
+        "height": 800,
+        "pictureNotCovered": true,
+        "bottomToolsTop": 79,
+        "name": "DrawingPendant Lamp Black Metal Canopy ACSLG2157005"
+      },
+      "shot": "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/desktop-3d-basket-last.png"
+    },
+    {
+      "device": "phone",
+      "view": "2d",
+      "errors": [],
+      "writes": [],
+      "placeholders": [],
+      "failures": [],
+      "endShot": "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-2d-basket-end.png",
+      "geometry": {
+        "top": 574.40625,
+        "bottom": 661.40625,
+        "height": 844,
+        "pictureNotCovered": true,
+        "name": "DrawingPendant Lamp Black Metal Canopy ACSLG2157005LightingLighting"
+      },
+      "shot": "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-2d-basket-last.png"
+    },
+    {
+      "device": "phone",
+      "view": "3d",
+      "errors": [],
+      "writes": [],
+      "placeholders": [],
+      "failures": [],
+      "endShot": "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-3d-basket-end.png",
+      "geometry": {
+        "top": 598,
+        "bottom": 689,
+        "height": 844,
+        "pictureNotCovered": true,
+        "bottomToolsTop": 782,
+        "name": "DrawingPendant Lamp Black Metal Canopy ACSLG2157005"
+      },
+      "shot": "docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-3d-basket-last.png"
+    }
+  ]
+}

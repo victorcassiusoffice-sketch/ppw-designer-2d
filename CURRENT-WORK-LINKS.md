@@ -1,3 +1,13 @@
+## 2026-10-25 — Fix round 2, draft PR51
+
+**LIVE-ON-PREVIEW only.** Application `b68deddaf2dca8d3334175c964adf5310edcfcd6`, branch `gpt/olb-fix-round-2-2026-10-25`. Production remains the merged PR50 release `fc0b111`; PR49 is separate.
+
+- [https://ppw-designer-2d-7kvcso5sa-victor-ppw.vercel.app/demo?view=3d&pitch=1](https://ppw-designer-2d-7kvcso5sa-victor-ppw.vercel.app/demo?view=3d&pitch=1) - One Live Build: main feature preview for developers, designers, construction teams and merchants.
+- [C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/SIMS-FIX-ROUND-2-BUILD-LINKS-2026-10-25.md](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/SIMS-FIX-ROUND-2-BUILD-LINKS-2026-10-25.md) - One Live Build: full 2D/3D, pitch, protected-workspace, repo and evidence links for reviewers and the next AI.
+- [https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/51](https://github.com/victorcassiusoffice-sketch/ppw-designer-2d/pull/51) - One Live Build: draft review; no merge in this task.
+
+Restores Natural colour, adds basket pictures and labelled local drawings, removes runtime placeholders, corrects meeting links and keeps Plan turn handles reachable. 4,298 tests/types/lint/build pass. Loading targets remain unmet; all measured limits and deployed evidence are linked above. Older entries below are historical, including PR50's pre-merge status.
+
 ## 2026-10-25 — PR50 build controls, removal and wall-material fixes
 
 **LIVE-ON-PREVIEW only.** Verified deployment `a71ac23c830347efed8d1f9499cb4ff56308b863`, branch `gpt/olb-sims-parity-2026-10-22`, draft PR50. Production unchanged; release requires Victor's “merge 50”.

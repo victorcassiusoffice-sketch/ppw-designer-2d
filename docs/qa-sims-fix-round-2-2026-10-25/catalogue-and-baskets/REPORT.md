@@ -1,6 +1,6 @@
 # Catalogue and basket pictures — fix round 2
 
-One Live Build · `gpt/olb-fix-round-2-2026-10-25` · 25 October 2026. Scope: brief items 3 and 4. These results describe the local branch; publication belongs to the parent task.
+One Live Build · `gpt/olb-fix-round-2-2026-10-25` · 25 October 2026, preview verification completed 26 October 2026. Scope: brief items 3 and 4. Production publication belongs to the parent task.
 
 ## Changes
 
@@ -28,6 +28,12 @@ Final compiled scroll check: `node tools/baskets-scroll-shot-2026-10-25.mjs http
 
 The initial supplementary scroll harness is segregated as `after/scroll-initial-harness-report.json`: desktop checks passed, but phone hit-tests were invalid because wheel-to-bottom showed the finish rows following the final product, leaving that product above the panel. The phone screenshots show final finish rows and the demo footer reachable above the bottom tools. This initial harness result is neither an application failure nor the final product-visibility pass; the corrected harness scrolls the final product back into view before hit-testing it.
 
+## Deployed preview verification
+
+Verified [the unique preview](https://ppw-designer-2d-7kvcso5sa-victor-ppw.vercel.app/demo?view=2d&pitch=1) with the same desktop/phone assertions. The final catalogue/basket run passed **8/8 checks** and saved **16 screenshots**; deployed last-product scrolling passed **4/4 checks** and saved **8 screenshots**. Both runs recorded **0 console/page errors, 0 attempted API writes and 0 placeholder requests**; the catalogue/basket screenshots also passed the horizontal-overflow and demo text guards. The live API's `m-*` product aliases retained supplier photos. The final product remains fully visible above the phone tools, matching the compiled local geometry. Reports are `preview/report.json` and `preview/scroll-report.json`.
+
+The first preview attempt passed desktop and phone 2D plus the phone 3D basket, then exceeded the harness's default **5-second** image-readiness wait for the phone 3D Console card. That attempt and screenshot are preserved in `preview/first-attempt-report.json` and `preview/first-attempt-phone-image-timeout.png`. No console/page error or placeholder request accompanied it. The same source had loaded earlier; a rerun with a bounded **20-second** image-readiness wait passed, and the final Console screenshot visibly contains its drawing. Only the QA wait changed, not application code. These checks establish eventual image rendering; they do not assert a five-second remote image-loading guarantee. Off-screen images can remain lazy/unloaded and are not claimed as visible-image failures.
+
 ## Before / after evidence
 
 Root directory: `C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/`.
@@ -38,6 +44,7 @@ Root directory: `C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/
 - [Phone 3D basket before](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/phone-3d-basket.png) / [after](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/after/phone-3d-basket.png).
 - [Console card before](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/before/desktop-2d-console.png) / [after](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/after/desktop-2d-console.png).
 - [Phone 3D final product](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/after/phone-3d-basket-last.png) / [final finishes](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/after/phone-3d-basket-end.png).
+- [Preview phone 3D Console drawing](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-3d-console.png) / [preview final basket product](C:/Users/Victor/Documents/Codex/2026-09-23/c/work/ppw-designer/docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/preview/phone-3d-basket-last.png).
 
 The same directories include Rubber and NordicTrack cards at both viewport sizes in both views. The former demonstrates the drawing fallback, the latter retained supplier photography.
 

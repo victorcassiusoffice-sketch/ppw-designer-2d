@@ -1,0 +1,554 @@
+Run Lighthouse audits	Run Lighthouse CI	﻿2026-10-25T19:50:58.2310376Z ##[group]Run treosh/lighthouse-ci-action@v11
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.2310697Z with:
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.2310896Z   uploadArtifacts: true
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.2311132Z   temporaryPublicStorage: true
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.2311383Z   configPath: ./.lighthouserc.json
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.2311645Z   artifactName: lighthouse-results
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.2311886Z ##[endgroup]
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7150576Z /home/runner/work/_actions/treosh/lighthouse-ci-action/v11/node_modules/@lhci/cli/src/cli.js
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7156096Z ##[group]Action config
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7163119Z Input args: {
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7163591Z   "urls": [],
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7163965Z   "runs": 1,
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7164351Z   "staticDistDir": "./dist",
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7164805Z   "budgetPath": "",
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7165859Z   "configPath": "/home/runner/work/ppw-designer-2d/ppw-designer-2d/.lighthouserc.json",
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7166680Z   "serverBaseUrl": "",
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7167096Z   "serverToken": "",
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7168200Z   "temporaryPublicStorage": true,
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7168741Z   "uploadArtifacts": true,
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7169194Z   "uploadExtraArgs": "",
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7169704Z   "basicAuthUsername": "lighthouse",
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7170206Z   "basicAuthPassword": "",
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7170711Z   "artifactName": "lighthouse-results"
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7171198Z }
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7171783Z ##[endgroup]
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:58.7172343Z ##[group]Collecting
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:59.0577573Z Started a web server on port 46413...
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:50:59.0582421Z Running Lighthouse 1 time(s) on http://localhost:46413/demo?view=2d&pitch=1
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:03.5059371Z Run #1...done.
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:03.5060524Z Running Lighthouse 1 time(s) on http://localhost:46413/pitch/plumbing
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:14.8754175Z Run #1...done.
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:14.8757793Z Done running Lighthouse!
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:14.8887667Z ##[endgroup]
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:14.8895630Z ##[group]Asserting
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1747428Z Checking assertions against 2 URL(s), 2 total run(s)
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1748022Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1822171Z 22 result(s) for [1mhttp://localhost:46413/demo?view=2d&pitch=1[0m :
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1822927Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1823661Z   [31m✘[0m  [1mcsp-xss[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1825188Z        Ensure CSP is effective against XSS attacks
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1826373Z        https://developer.chrome.com/docs/lighthouse/best-practices/csp-xss/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1827029Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1827412Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1828063Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1828714Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1829083Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1829099Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1829942Z   [31m✘[0m  [1minstallable-manifest[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1831325Z        Web app manifest or service worker do not meet the installability requirements
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1832430Z        https://developer.chrome.com/docs/lighthouse/pwa/installable-manifest/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1833074Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1833398Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1833965Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1834445Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1834739Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1834752Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1835829Z   [31m✘[0m  [1mlabel-content-name-mismatch[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1837168Z        Elements with visible text labels do not have matching accessible names.
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1838194Z        https://dequeuniversity.com/rules/axe/4.8/label-content-name-mismatch
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1838734Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1839037Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1839526Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1839998Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1840248Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1840257Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1840763Z   [31m✘[0m  [1mmaskable-icon[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1841871Z        Manifest doesn't have a maskable icon
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1842456Z        https://developer.chrome.com/docs/lighthouse/pwa/maskable-icon-audit/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1842788Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1842966Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1843254Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1843533Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1843743Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1843750Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1844036Z   [31m✘[0m  [1mrobots-txt[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1844419Z        robots.txt is not valid
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1844835Z        https://developer.chrome.com/docs/lighthouse/seo/invalid-robots-txt/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1845496Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1845696Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1845983Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1846452Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1846611Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1846617Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1847155Z   [31m✘[0m  [1msplash-screen[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1847604Z        Is not configured for a custom splash screen
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1848048Z        https://developer.chrome.com/docs/lighthouse/pwa/splash-screen/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1848339Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1848488Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1848766Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1849027Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1849179Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1849185Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1849466Z   [31m✘[0m  [1mthemed-omnibox[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1849903Z        Does not set a theme color for the address bar.
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1850339Z        https://developer.chrome.com/docs/lighthouse/pwa/themed-omnibox/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1850627Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1850767Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1851040Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1851298Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1851451Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1851463Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1851752Z   [31m✘[0m  [1mtotal-byte-weight[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1852173Z        Avoids enormous network payloads
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1852620Z        https://developer.chrome.com/docs/lighthouse/performance/total-byte-weight/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1852952Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1853091Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1853365Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1853623Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1853767Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1853772Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1854056Z   [31m✘[0m  [1munused-css-rules[0m failure for [1mmaxLength[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1854430Z        Reduce unused CSS
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1855088Z        https://developer.chrome.com/docs/lighthouse/performance/unused-css-rules/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1855448Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1855608Z         expected: <=[32m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1855880Z            found: [31m2[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1856165Z       [2mall values: 2[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1856312Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1856318Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1856624Z   [31m✘[0m  [1mvalid-source-maps[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1857093Z        Missing source maps for large first-party JavaScript
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1857578Z        https://developer.chrome.com/docs/devtools/javascript/source-maps/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1858059Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1858305Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1858798Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1859254Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1859499Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1859507Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1859950Z   ⚠️  [1mbootup-time[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1860649Z        Reduce JavaScript execution time
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1861410Z        https://developer.chrome.com/docs/lighthouse/performance/bootup-time/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1861944Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1862212Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1862894Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1863349Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1863594Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1863609Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1864117Z   ⚠️  [1mcategories[0m.performance warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1865071Z         expected: >=[32m0.75[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1865608Z            found: [31m0.41[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1866112Z       [2mall values: 0.41[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1866376Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1866385Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1866782Z   ⚠️  [1mdom-size[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1867384Z        Avoids an excessive DOM size
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1868606Z        https://developers.google.com/web/fundamentals/performance/rendering/reduce-the-scope-and-complexity-of-style-calculations
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1869555Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1869829Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1870297Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1870940Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1871203Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1871211Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1871723Z   ⚠️  [1mfirst-contentful-paint[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1872335Z        First Contentful Paint
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1873031Z        https://developer.chrome.com/docs/lighthouse/performance/first-contentful-paint/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1873582Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1873826Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1874308Z            found: [31m0.23[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1874753Z       [2mall values: 0.23[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1875184Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1875194Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1875673Z   ⚠️  [1mfirst-meaningful-paint[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1876277Z        First Meaningful Paint
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1876996Z        https://developer.chrome.com/docs/lighthouse/performance/first-meaningful-paint/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1877540Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1877774Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1878245Z            found: [31m0.23[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1878704Z       [2mall values: 0.23[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1878932Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1878940Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1879317Z   ⚠️  [1minteractive[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1879848Z        Time to Interactive
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1880472Z        https://developer.chrome.com/docs/lighthouse/performance/interactive/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1880944Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1881176Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1881609Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1882040Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1882267Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1882275Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1882771Z   ⚠️  [1mlargest-contentful-paint[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1883451Z        Largest Contentful Paint
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1884265Z        https://developer.chrome.com/docs/lighthouse/performance/lighthouse-largest-contentful-paint/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1885081Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1885338Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1885807Z            found: [31m0.47[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1886275Z       [2mall values: 0.47[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1886517Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1886526Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1887043Z   ⚠️  [1mmainthread-work-breakdown[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1887693Z        Minimize main-thread work
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1888533Z        https://developer.chrome.com/docs/lighthouse/performance/mainthread-work-breakdown/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1889178Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1889437Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1889908Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1890356Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1890609Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1890617Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1891092Z   ⚠️  [1mmax-potential-fid[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1891753Z        Max Potential First Input Delay
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1892559Z        https://developer.chrome.com/docs/lighthouse/performance/lighthouse-max-potential-fid/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1893350Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1893593Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1894060Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1894510Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1894762Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1894770Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1895512Z   ⚠️  [1mrender-blocking-resources[0m warning for [1mmaxLength[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1896298Z        Eliminate render-blocking resources
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1897151Z        https://developer.chrome.com/docs/lighthouse/performance/render-blocking-resources/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1897733Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1897963Z         expected: <=[32m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1898396Z            found: [31m1[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1898810Z       [2mall values: 1[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1899039Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1899048Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1899510Z   ⚠️  [1mserver-response-time[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1900417Z        Initial server response time was short
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1901235Z        https://developer.chrome.com/docs/lighthouse/performance/time-to-first-byte/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1901812Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1902076Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1902546Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1903096Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1903345Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1903354Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1903764Z   ⚠️  [1mspeed-index[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1904290Z        Speed Index
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1905050Z        https://developer.chrome.com/docs/lighthouse/performance/speed-index/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1905542Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1905793Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1906268Z            found: [31m0.17[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1906805Z       [2mall values: 0.17[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1907069Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1907597Z 20 result(s) for [1mhttp://localhost:46413/pitch/plumbing[0m :
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1908066Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1908514Z   [31m✘[0m  [1mcsp-xss[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1909201Z        Ensure CSP is effective against XSS attacks
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1909987Z        https://developer.chrome.com/docs/lighthouse/best-practices/csp-xss/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1910508Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1910749Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1911189Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1911598Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1911819Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1911828Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1912319Z   [31m✘[0m  [1merrors-in-console[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1913053Z        Browser errors were logged to the console
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1913852Z        https://developer.chrome.com/docs/lighthouse/best-practices/errors-in-console/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1914392Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1914647Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1915290Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1915731Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1915976Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1915984Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1916522Z   [31m✘[0m  [1minstallable-manifest[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1917585Z        Web app manifest or service worker do not meet the installability requirements
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1918520Z        https://developer.chrome.com/docs/lighthouse/pwa/installable-manifest/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1919034Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1919285Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1919742Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1920197Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1920446Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1920454Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1920905Z   [31m✘[0m  [1mmaskable-icon[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1921606Z        Manifest doesn't have a maskable icon
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1922339Z        https://developer.chrome.com/docs/lighthouse/pwa/maskable-icon-audit/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1922852Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1923287Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1923748Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1924189Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1924429Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1924439Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1925338Z   [31m✘[0m  [1mprioritize-lcp-image[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1926118Z        Preload Largest Contentful Paint image
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1926943Z        https://web.dev/articles/optimize-lcp#optimize_when_the_resource_is_discovered
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1927503Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1927774Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1928241Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1928673Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1928902Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1928911Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1929326Z   [31m✘[0m  [1mrobots-txt[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1929888Z        robots.txt is not valid
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1930725Z        https://developer.chrome.com/docs/lighthouse/seo/invalid-robots-txt/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1931266Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1931519Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1931985Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1932433Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1932678Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1932692Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1933165Z   [31m✘[0m  [1msplash-screen[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1933891Z        Is not configured for a custom splash screen
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1934633Z        https://developer.chrome.com/docs/lighthouse/pwa/splash-screen/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1935310Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1935566Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1936039Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1936483Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1936734Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1936742Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1937220Z   [31m✘[0m  [1mthemed-omnibox[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1937971Z        Does not set a theme color for the address bar.
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1938439Z        https://developer.chrome.com/docs/lighthouse/pwa/themed-omnibox/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1938778Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1938940Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1939221Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1939479Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1939624Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1939630Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1940068Z   [31m✘[0m  [1mtotal-byte-weight[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1940732Z        Avoids enormous network payloads
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1941554Z        https://developer.chrome.com/docs/lighthouse/performance/total-byte-weight/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1942135Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1942415Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1942900Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1943357Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1943608Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1943617Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1944124Z   [31m✘[0m  [1munsized-images[0m failure for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1945158Z        Image elements do not have explicit `width` and `height`
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1945967Z        https://web.dev/articles/optimize-cls#images_without_dimensions
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1946440Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1946711Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1947224Z            found: [31m0.5[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1947657Z       [2mall values: 0.5[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1947820Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1947826Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1948129Z   [31m✘[0m  [1munused-css-rules[0m failure for [1mmaxLength[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1948513Z        Reduce unused CSS
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1948924Z        https://developer.chrome.com/docs/lighthouse/performance/unused-css-rules/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1949247Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1949391Z         expected: <=[32m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1949657Z            found: [31m2[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1949910Z       [2mall values: 2[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1950065Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1950256Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1950598Z   [31m✘[0m  [1muses-responsive-images[0m failure for [1mmaxLength[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1951012Z        Properly size images
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1951455Z        https://developer.chrome.com/docs/lighthouse/performance/uses-responsive-images/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1951811Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1951956Z         expected: <=[32m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1952225Z            found: [31m1[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1952485Z       [2mall values: 1[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1952634Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1952639Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1952896Z   ⚠️  [1mbootup-time[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1953284Z        JavaScript execution time
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1953705Z        https://developer.chrome.com/docs/lighthouse/performance/bootup-time/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1954019Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1954166Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1954442Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1955361Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1955639Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1955649Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1956072Z   ⚠️  [1mdom-size[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1956493Z        Avoids an excessive DOM size
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1957664Z        https://developers.google.com/web/fundamentals/performance/rendering/reduce-the-scope-and-complexity-of-style-calculations
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1958230Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1958396Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1958674Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1959032Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1959290Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1959299Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1959884Z   ⚠️  [1mfirst-contentful-paint[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1960370Z        First Contentful Paint
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1960880Z        https://developer.chrome.com/docs/lighthouse/performance/first-contentful-paint/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1961237Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1961415Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1961717Z            found: [31m0.87[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1962010Z       [2mall values: 0.87[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1962159Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1962164Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1962469Z   ⚠️  [1mfirst-meaningful-paint[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1962860Z        First Meaningful Paint
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1963304Z        https://developer.chrome.com/docs/lighthouse/performance/first-meaningful-paint/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1963653Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1963794Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1964092Z            found: [31m0.87[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1964471Z       [2mall values: 0.87[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1964728Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1964739Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1965499Z   ⚠️  [1mmainthread-work-breakdown[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1966226Z        Minimizes main-thread work
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1967083Z        https://developer.chrome.com/docs/lighthouse/performance/mainthread-work-breakdown/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1967767Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1968058Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1968547Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1969024Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1969267Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1969279Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1969807Z   ⚠️  [1mmodern-image-formats[0m warning for [1mmaxLength[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1970552Z        Serve images in next-gen formats
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1971363Z        https://developer.chrome.com/docs/lighthouse/performance/uses-webp-images/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1971712Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1971889Z         expected: <=[32m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1972171Z            found: [31m1[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1972442Z       [2mall values: 1[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1972593Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1972599Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1972921Z   ⚠️  [1mrender-blocking-resources[0m warning for [1mmaxLength[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1973373Z        Eliminate render-blocking resources
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1974092Z        https://developer.chrome.com/docs/lighthouse/performance/render-blocking-resources/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1974784Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1975344Z         expected: <=[32m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1975866Z            found: [31m1[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1976331Z       [2mall values: 1[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1976570Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1976579Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1976899Z   ⚠️  [1mserver-response-time[0m warning for [1mminScore[0m assertion
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1977340Z        Initial server response time was short
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1977814Z        https://developer.chrome.com/docs/lighthouse/performance/time-to-first-byte/
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1978151Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1978304Z         expected: >=[32m0.9[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1978582Z            found: [31m0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1978846Z       [2mall values: 0[0m
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1978993Z
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1979172Z Assertion failed. Exiting with status code 1.
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1979958Z ##[endgroup]
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1980310Z ##[group]Uploading
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1980583Z Artifact name is valid!
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.1980850Z Root directory input is valid!
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:15.5773432Z Beginning upload of artifact content to blob storage
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:16.2669238Z Uploaded bytes 676713
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:16.3462840Z Finished uploading artifact content to blob storage!
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:16.3464465Z SHA256 hash of uploaded artifact zip is d976893c1ad4b041d06c78f12ad294d03aece4a540a1caa06aed2bd33f0f617f
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:16.3466189Z Finalizing artifact upload
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:16.9289341Z Artifact lighthouse-results.zip successfully finalized. Artifact ID 12611831537
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:18.3635336Z Uploading median LHR of http://localhost:46413/demo?view=2d&pitch=1...success!
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:18.3638057Z Open the report at https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/1792957938099-39846.report.html
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:18.6526469Z Uploading median LHR of http://localhost:46413/pitch/plumbing...success!
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:18.6528032Z Open the report at https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/1792957938454-38882.report.html
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:18.6580897Z No GitHub token set, skipping GitHub status check.
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:18.9464429Z Dumping 2 reports to disk at /home/runner/work/ppw-designer-2d/ppw-designer-2d/.lighthouseci...
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:19.3541008Z Done writing reports to disk.
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:19.3679828Z ##[endgroup]
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:19.3776618Z ##[error]22 results for http://localhost:46413/demo?view=2d&pitch=1
+Run Lighthouse audits	Run Lighthouse CI	Report: https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/1792957938099-39846.report.html
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `csp-xss` failure for `minScore` assertion (Ensure CSP is effective against XSS attacks: https://developer.chrome.com/docs/lighthouse/best-practices/csp-xss/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `installable-manifest` failure for `minScore` assertion (Web app manifest or service worker do not meet the installability requirements: https://developer.chrome.com/docs/lighthouse/pwa/installable-manifest/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `label-content-name-mismatch` failure for `minScore` assertion (Elements with visible text labels do not have matching accessible names.: https://dequeuniversity.com/rules/axe/4.8/label-content-name-mismatch )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `maskable-icon` failure for `minScore` assertion (Manifest doesn't have a maskable icon: https://developer.chrome.com/docs/lighthouse/pwa/maskable-icon-audit/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `robots-txt` failure for `minScore` assertion (robots.txt is not valid: https://developer.chrome.com/docs/lighthouse/seo/invalid-robots-txt/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `splash-screen` failure for `minScore` assertion (Is not configured for a custom splash screen: https://developer.chrome.com/docs/lighthouse/pwa/splash-screen/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `themed-omnibox` failure for `minScore` assertion (Does not set a theme color for the address bar.: https://developer.chrome.com/docs/lighthouse/pwa/themed-omnibox/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `total-byte-weight` failure for `minScore` assertion (Avoids enormous network payloads: https://developer.chrome.com/docs/lighthouse/performance/total-byte-weight/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `unused-css-rules` failure for `maxLength` assertion (Reduce unused CSS: https://developer.chrome.com/docs/lighthouse/performance/unused-css-rules/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected <= 0, but found 2
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `valid-source-maps` failure for `minScore` assertion (Missing source maps for large first-party JavaScript: https://developer.chrome.com/docs/devtools/javascript/source-maps/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `bootup-time` warning for `minScore` assertion (Reduce JavaScript execution time: https://developer.chrome.com/docs/lighthouse/performance/bootup-time/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `categories.performance` warning for `minScore` assertion
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.75, but found 0.41
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `dom-size` warning for `minScore` assertion (Avoids an excessive DOM size: https://developers.google.com/web/fundamentals/performance/rendering/reduce-the-scope-and-complexity-of-style-calculations )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `first-contentful-paint` warning for `minScore` assertion (First Contentful Paint: https://developer.chrome.com/docs/lighthouse/performance/first-contentful-paint/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0.23
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `first-meaningful-paint` warning for `minScore` assertion (First Meaningful Paint: https://developer.chrome.com/docs/lighthouse/performance/first-meaningful-paint/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0.23
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `interactive` warning for `minScore` assertion (Time to Interactive: https://developer.chrome.com/docs/lighthouse/performance/interactive/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `largest-contentful-paint` warning for `minScore` assertion (Largest Contentful Paint: https://developer.chrome.com/docs/lighthouse/performance/lighthouse-largest-contentful-paint/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0.47
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `mainthread-work-breakdown` warning for `minScore` assertion (Minimize main-thread work: https://developer.chrome.com/docs/lighthouse/performance/mainthread-work-breakdown/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `max-potential-fid` warning for `minScore` assertion (Max Potential First Input Delay: https://developer.chrome.com/docs/lighthouse/performance/lighthouse-max-potential-fid/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `render-blocking-resources` warning for `maxLength` assertion (Eliminate render-blocking resources: https://developer.chrome.com/docs/lighthouse/performance/render
+Run Lighthouse audits	Run Lighthouse CI	2026-10-25T19:52:19.3832846Z ##[error]20 results for http://localhost:46413/pitch/plumbing
+Run Lighthouse audits	Run Lighthouse CI	Report: https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/1792957938454-38882.report.html
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `csp-xss` failure for `minScore` assertion (Ensure CSP is effective against XSS attacks: https://developer.chrome.com/docs/lighthouse/best-practices/csp-xss/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `errors-in-console` failure for `minScore` assertion (Browser errors were logged to the console: https://developer.chrome.com/docs/lighthouse/best-practices/errors-in-console/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `installable-manifest` failure for `minScore` assertion (Web app manifest or service worker do not meet the installability requirements: https://developer.chrome.com/docs/lighthouse/pwa/installable-manifest/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `maskable-icon` failure for `minScore` assertion (Manifest doesn't have a maskable icon: https://developer.chrome.com/docs/lighthouse/pwa/maskable-icon-audit/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `prioritize-lcp-image` failure for `minScore` assertion (Preload Largest Contentful Paint image: https://web.dev/articles/optimize-lcp#optimize_when_the_resource_is_discovered )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `robots-txt` failure for `minScore` assertion (robots.txt is not valid: https://developer.chrome.com/docs/lighthouse/seo/invalid-robots-txt/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `splash-screen` failure for `minScore` assertion (Is not configured for a custom splash screen: https://developer.chrome.com/docs/lighthouse/pwa/splash-screen/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `themed-omnibox` failure for `minScore` assertion (Does not set a theme color for the address bar.: https://developer.chrome.com/docs/lighthouse/pwa/themed-omnibox/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `total-byte-weight` failure for `minScore` assertion (Avoids enormous network payloads: https://developer.chrome.com/docs/lighthouse/performance/total-byte-weight/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `unsized-images` failure for `minScore` assertion (Image elements do not have explicit `width` and `height`: https://web.dev/articles/optimize-cls#images_without_dimensions )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0.5
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `unused-css-rules` failure for `maxLength` assertion (Reduce unused CSS: https://developer.chrome.com/docs/lighthouse/performance/unused-css-rules/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected <= 0, but found 2
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	❌ `uses-responsive-images` failure for `maxLength` assertion (Properly size images: https://developer.chrome.com/docs/lighthouse/performance/uses-responsive-images/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected <= 0, but found 1
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `bootup-time` warning for `minScore` assertion (JavaScript execution time: https://developer.chrome.com/docs/lighthouse/performance/bootup-time/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `dom-size` warning for `minScore` assertion (Avoids an excessive DOM size: https://developers.google.com/web/fundamentals/performance/rendering/reduce-the-scope-and-complexity-of-style-calculations )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `first-contentful-paint` warning for `minScore` assertion (First Contentful Paint: https://developer.chrome.com/docs/lighthouse/performance/first-contentful-paint/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0.87
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `first-meaningful-paint` warning for `minScore` assertion (First Meaningful Paint: https://developer.chrome.com/docs/lighthouse/performance/first-meaningful-paint/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0.87
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `mainthread-work-breakdown` warning for `minScore` assertion (Minimizes main-thread work: https://developer.chrome.com/docs/lighthouse/performance/mainthread-work-breakdown/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected >= 0.9, but found 0
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `modern-image-formats` warning for `maxLength` assertion (Serve images in next-gen formats: https://developer.chrome.com/docs/lighthouse/performance/uses-webp-images/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected <= 0, but found 1
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `render-blocking-resources` warning for `maxLength` assertion (Eliminate render-blocking resources: https://developer.chrome.com/docs/lighthouse/performance/render-blocking-resources/ )
+Run Lighthouse audits	Run Lighthouse CI	Expected <= 0, but found 1
+Run Lighthouse audits	Run Lighthouse CI
+Run Lighthouse audits	Run Lighthouse CI	⚠️ `server-response-time` warning for `minScore` assertion (Initial server response t

@@ -2,7 +2,9 @@ import { chromium, expect } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
 const base = process.argv[2] ?? 'http://127.0.0.1:5176';
 const phase = process.argv[3] ?? 'after';
-if (!['127.0.0.1', 'localhost', 'onelivebuild.com', 'designer.ppwellness.co'].includes(new URL(base).hostname) || !['before', 'after'].includes(phase)) throw new Error('Expected approved local or production read-only target');
+const previewOrigin = 'https://ppw-designer-2d-7kvcso5sa-victor-ppw.vercel.app';
+if ((!['127.0.0.1', 'localhost', 'onelivebuild.com', 'designer.ppwellness.co'].includes(new URL(base).hostname) && new URL(base).origin !== previewOrigin) || !['before', 'after', 'preview'].includes(phase)) throw new Error('Expected approved local, production or exact preview read-only target');
+const verifyFix = phase !== 'before';
 const out = `docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/${phase}`;
 mkdirSync(out, { recursive: true });
 const report = { base, phase, cases: [] };
@@ -28,14 +30,14 @@ try {
         else await page.locator('button[aria-label="Products in this design"]:visible').first().click();
         const basket = view === '2d' ? page.getByTestId('cart-sheet') : page.locator('section[aria-label="Products and finishes in your design"]');
         await basket.waitFor(); await guard(basket);
-        if (phase === 'after') {
+        if (verifyFix) {
           await expect.poll(() => basket.locator('.basket-product-picture img').count()).toBeGreaterThan(0);
           await expect.poll(() => basket.locator('.basket-product-picture img').evaluateAll(images => images.filter(image => image.getBoundingClientRect().bottom > 0 && image.getBoundingClientRect().top < innerHeight).every(image => image.complete && image.naturalWidth > 0))).toBe(true);
           expect(await basket.innerText()).not.toMatch(/\bQty\b|\d+ unique|\d+ placed|\b\d+ × /);
           expect(await basket.locator('[data-image-kind="plan"]').count()).toBeGreaterThan(0);
         }
         row.observations.push({ view, images: await basket.locator('img').count(), drawings: await basket.locator('[data-image-kind="plan"]').count() });
-        await shot(`${view}-basket`); row.checks.push(phase === 'after' ? `${view} basket: image column, demo text guard, no horizontal overflow` : `${view} baseline basket image count recorded; demo text guard and no horizontal overflow`);
+        await shot(`${view}-basket`); row.checks.push(verifyFix ? `${view} basket: image column, demo text guard, no horizontal overflow` : `${view} baseline basket image count recorded; demo text guard and no horizontal overflow`);
         if (view === '2d') await basket.getByRole('button', { name: 'Close', exact: true }).click();
         else await page.locator('button[aria-label="Products in this design"]:visible').first().click();
         if (view === '2d') await page.getByTestId(device === 'phone' ? 'sims-catalog-open' : 'dock-catalog-open').click();
@@ -48,19 +50,19 @@ try {
           const cards = catalog.locator('[data-product-id]');
           await expect.poll(() => cards.count()).toBeGreaterThan(0);
           await page.waitForTimeout(500);
-          if (phase === 'after') await expect.poll(() => cards.locator('img').evaluateAll(images => images.filter(image => { const r = image.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth; }).every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+          if (verifyFix) await expect.poll(() => cards.locator('img').evaluateAll(images => images.filter(image => { const r = image.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth; }).every(image => image.complete && image.naturalWidth > 0)), { timeout: 20000 }).toBe(true);
           const images = await cards.evaluateAll(nodes => nodes.map(node => ({ id: node.getAttribute('data-product-id'), kind: node.querySelector('[data-image-kind]')?.getAttribute('data-image-kind'), source: node.querySelector('img')?.getAttribute('src'), loaded: Boolean(node.querySelector('img')?.complete && node.querySelector('img')?.naturalWidth) })));
-          if (phase === 'after') {
+          if (verifyFix) {
             expect(images.every(image => !/placehold\.co/i.test(image.source ?? ''))).toBe(true);
             if (search === 'NordicTrack') expect(images.some(image => image.kind === 'photo' && image.source.includes('/products/photos/'))).toBe(true);
             else expect(images.some(image => image.kind === 'plan')).toBe(true);
           }
           row.observations.push({ view, search, images }); await guard(catalog); await shot(`${view}-${search.toLowerCase()}`);
         }
-        row.checks.push(phase === 'after' ? `${view} catalogue: existing photos and labelled drawings, no placeholder URLs` : `${view} baseline catalogue image sources and network requests recorded`);
+        row.checks.push(verifyFix ? `${view} catalogue: existing photos and labelled drawings, no placeholder URLs` : `${view} baseline catalogue image sources and network requests recorded`);
       }
       expect(row.errors).toEqual([]); expect(row.writes).toEqual([]);
-      if (phase === 'after') expect(row.placeholders).toEqual([]);
+      if (verifyFix) expect(row.placeholders).toEqual([]);
     } catch (error) { row.failures.push(String(error)); await page.screenshot({ path: `${out}/${device}-failure.png` }); }
     await context.close(); writeFileSync(`${out}/report.json`, JSON.stringify(report, null, 2));
   }

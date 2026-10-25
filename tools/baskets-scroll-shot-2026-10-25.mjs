@@ -1,10 +1,12 @@
 import { chromium, expect } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
 const base = process.argv[2] ?? 'http://127.0.0.1:5176';
-if (!['127.0.0.1', 'localhost', 'onelivebuild.com'].includes(new URL(base).hostname)) throw new Error('Expected approved local or production read-only target');
-const out = 'docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/after';
+const phase = process.argv[3] ?? 'after';
+const previewOrigin = 'https://ppw-designer-2d-7kvcso5sa-victor-ppw.vercel.app';
+if ((!['127.0.0.1', 'localhost', 'onelivebuild.com'].includes(new URL(base).hostname) && new URL(base).origin !== previewOrigin) || !['after', 'preview'].includes(phase)) throw new Error('Expected approved local, production or exact preview read-only target');
+const out = `docs/qa-sims-fix-round-2-2026-10-25/catalogue-and-baskets/${phase}`;
 mkdirSync(out, { recursive: true });
-const report = { base, cases: [] };
+const report = { base, phase, cases: [] };
 const browser = await chromium.launch({ headless: true, args: ['--use-angle=d3d11'] });
 try {
   for (const [device, viewport] of [['desktop', { width: 1280, height: 800 }], ['phone', { width: 390, height: 844 }]]) {

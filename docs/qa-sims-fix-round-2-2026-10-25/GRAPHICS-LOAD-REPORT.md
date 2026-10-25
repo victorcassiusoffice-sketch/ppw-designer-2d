@@ -4,7 +4,7 @@
 
 ## Result
 
-**Paleness fixed. First-picture targets NOT MET.** Auto follows the existing measured 45 fps rule; this laptop falls back to direct rendering. Phones keep AO off. This report does not call the result Sims or photorealistic parity.
+**Paleness fixed. First-picture targets NOT MET locally or on the deployed preview.** Auto follows the existing measured 45 fps rule; this laptop falls back to direct rendering. Phones keep AO off. This report does not call the result Sims or photorealistic parity.
 
 ### Exact-camera colour comparison
 
@@ -31,10 +31,12 @@ Native Intel Iris Xe / ANGLE D3D11, fresh Chromium **process and profile for eac
 |---|---:|---:|---:|---|
 | Production desktop, before | 29.530s | 15.198s | 15.287s | Fail <3s |
 | Local compiled desktop, after | 6.433s | 6.578s | 5.397s | **Fail <3s** |
+| Deployed preview desktop, after | 16.768s | 7.290s | 7.805s | **Fail <3s** |
 | Production phone, before | 10.840s | 9.556s | 15.077s | Fail <5s |
 | Local compiled phone, after | 6.257s | 5.508s | 5.578s | **Fail <5s** |
+| Deployed preview phone, after | 9.954s | 12.117s | 11.653s | **Fail <5s** |
 
-The first production run includes an external-font/network outlier and is not discarded. Production-before versus localhost-after has a network confound: the table demonstrates local behavior, not a verified deployed speed-up. The same six-run harness must be run against the immutable preview after push.
+The first production run includes an external-font/network outlier and is not discarded. Production-before versus localhost-after has a network confound. The same six-run harness was then completed against [immutable preview 7kvcso5sa](https://ppw-designer-2d-7kvcso5sa-victor-ppw.vercel.app/demo?view=3d&pitch=1), application commit `b68deddaf2dca8d3334175c964adf5310edcfcd6`. None of the six deployed runs meets its target. Network/CDN variation remains visible; the results do not support a guaranteed speed-up or a phone improvement claim.
 
 | Diagnostic after | Desktop runs | Phone runs |
 |---|---|---|
@@ -42,14 +44,22 @@ The first production run includes an external-font/network outlier and is not di
 | Actual Loading 3D DOM removal | 4.037 / 3.408 / 2.589s | 2.559 / 2.632 / 3.006s |
 | First original-PBR full picture | 7.131 / 6.772 / 5.601s | 6.511 / 5.635 / 6.973s |
 
+| Diagnostic deployed preview | Desktop runs | Phone runs |
+|---|---|---|
+| First actual real-scene render | 15.485 / 5.981 / 6.700s | 8.578 / 12.060 / 10.586s |
+| Actual Loading 3D DOM removal | 15.506 / 5.996 / 6.714s | 8.589 / 12.074 / 10.599s |
+| First original-PBR full picture | 19.061 / 9.513 / 10.017s | 11.822 / 15.084 / 13.780s |
+
 | Completed-frame orbit, 1280px | Production before | Local after |
 |---|---:|---:|
 | Auto | 59.88 fps, AO off | 60.00 fps, AO off |
 | High | 33.61 fps | 37.17 fps |
 
+Deployed preview orbit: **Auto 60.02fps (AO off), High 36.54fps**. All deployed phones report `phone-off`. In every deployed desktop run, optional AO preparation starts after the full original-PBR picture; it no longer runs while Loading 3D covers the building. Long cold-start frames remain and are not counted as resolved.
+
 Auto's cold trial stayed below 45fps and correctly declined AO. The separate warmed matched-camera context measured 42.3fps and also declined it. No threshold was lowered or successful AO activation claimed. All six after runs: zero console/page/HTTP errors, zero attempted writes, zero document horizontal overflow. The old reference deployment alone retains an existing exchange-rate HTTP401; it was recorded, not hidden.
 
-Evidence: [production baseline](before/report.json), [compiled after](after/report.json). Intermediate `diagnostic` and `diagnostic-progressive` folders are investigation records, not final acceptance results.
+Evidence: [production baseline](before/report.json), [compiled after](after/report.json), [deployed preview](preview/report.json). All six deployed runs also have zero console/page/HTTP errors, attempted writes and horizontal overflow. Inspected [desktop first observation](preview/desktop-1-first.png), [desktop refined picture](preview/desktop-1-settled.png) and [phone refined picture](preview/phone-3-settled.png): actual house remains visible with no blank scene or abrupt camera movement. Intermediate `diagnostic` and `diagnostic-progressive` folders are investigation records, not final acceptance results.
 
 ## Implementation
 
@@ -76,4 +86,4 @@ node tools/sims-round2-matched-camera.mjs http://127.0.0.1:5173
 python tools/sims-round2-visual-metrics.py
 ```
 
-Run load/orbit measurements without other browser, build or test workloads. `meetsLoadTarget` records the budget separately from error-free harness completion. Remote preview verification is pending at the time of this report.
+Run load/orbit measurements without other browser, build or test workloads. `meetsLoadTarget` records the budget separately from error-free harness completion. Remote preview verification is complete; both performance budgets remain open.
