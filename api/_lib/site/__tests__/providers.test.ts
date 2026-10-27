@@ -76,7 +76,7 @@ describe('bounded public providers', () => {
     await expect(fetchBounded('https://photon.komoot.io/api', {}, 5)).rejects.toThrow('timed out');
   });
   it('refuses redirects, provider failure and oversized response', async () => {
-    const mock = vi.fn(async () => new Response('not ready', { status: 429 }));
+    const mock = vi.fn<typeof fetch>(async () => new Response('not ready', { status: 429 }));
     vi.stubGlobal('fetch', mock);
     await expect(fetchBounded('https://photon.komoot.io/api')).rejects.toThrow('429');
     expect(mock.mock.calls[0][1]).toMatchObject({
