@@ -4,6 +4,7 @@ import { ServicesLaunchButton } from './ServicesWorkspace';
 import { isPitchEmbed } from '../demo/pitchEmbed';
 import { FoundationLaunchButton } from './FoundationWorkspace';
 import { CityLaunchButton } from './CityWorkspace';
+import { SiteLaunchButton } from '../site/SiteLaunchButton';
 import { WorkspaceFloorNav } from './WorkspaceFloorNav';
 import { PlanImportButton } from './PlanImportWorkspace';
 import { StudioIcon as Icon } from './StudioIcon';
@@ -2204,6 +2205,7 @@ export function TopBar({
       <div className="plan-project-bar" role="group" aria-label={t("Floors and materials")}>
         <WorkspaceFloorNav mode="plan" onExit={() => { setDrawMode(false); setWorkspaceSettingsOpen(false); }} />
         <CityLaunchButton compact />
+          <SiteLaunchButton />
         <button type="button" className="project-hub-launch" title={t('projectHub')} aria-label={t('projectHub')} onClick={() => { setDrawMode(false); setTool('hand'); window.dispatchEvent(new Event('olb:open-project')); }}><Icon name="list" size={17} /><span>{t('projectHub')}</span></button>
         <LocaleThemeControls />
         <button type="button" aria-label={t("Open Materials")} aria-pressed={materialsPanelOpen} onClick={() => { setDrawMode(false); setTool('hand'); useDesignerUIStore.getState().setMaterialsPanelOpen(!materialsPanelOpen); }}><Icon name="materials" size={17} /><span>{t("Materials")}</span></button>

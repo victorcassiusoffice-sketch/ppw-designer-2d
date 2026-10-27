@@ -579,6 +579,7 @@ export function RoomCanvas({
   /** The land plot as a polygon in world metres, or null = unlimited land. */
   const sitePolygon = useMemo<Polygon | null>(() => {
     if (!site) return null;
+    if (site.world) return site.world.polygon;
     const ox = site.originM?.x ?? 0;
     const oy = site.originM?.y ?? 0;
     return [
@@ -4525,13 +4526,14 @@ export function RoomCanvas({
               <Text
                 x={sitePolygon[0].x * pxPerMetre + 10 / viewport.scale}
                 y={sitePolygon[0].y * pxPerMetre + 8 / viewport.scale}
-                text={`PLOT ${site.widthM} × ${site.depthM} m · ${(site.widthM * site.depthM).toFixed(0)} m²`}
+                text={site.world ? `${site.world.name} · N ↑ · boundary drawn / typed by you` : `PLOT ${site.widthM} × ${site.depthM} m · ${(site.widthM * site.depthM).toFixed(0)} m²`}
                 fontSize={measureFontSize(viewport.scale, 11)}
                 fontStyle="bold"
                 fontFamily="Inter, sans-serif"
                 letterSpacing={1.5 / viewport.scale}
                 fill={DIM_LINE}
               />
+              {site.world && <Line points={[sitePolygon[0].x * pxPerMetre, sitePolygon[0].y * pxPerMetre - 12 / viewport.scale, sitePolygon[0].x * pxPerMetre, sitePolygon[0].y * pxPerMetre - 42 / viewport.scale, sitePolygon[0].x * pxPerMetre - 5 / viewport.scale, sitePolygon[0].y * pxPerMetre - 34 / viewport.scale, sitePolygon[0].x * pxPerMetre, sitePolygon[0].y * pxPerMetre - 42 / viewport.scale, sitePolygon[0].x * pxPerMetre + 5 / viewport.scale, sitePolygon[0].y * pxPerMetre - 34 / viewport.scale]} stroke={DIM_LINE} strokeWidth={1.5 / viewport.scale} />}
             </Group>
           )}
 

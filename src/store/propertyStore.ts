@@ -1,4 +1,5 @@
 import { normaliseCity, type CityModel } from '../designer/city';
+import { normaliseGeoSite, type GeoSite } from '../site/types';
 import { normaliseEco, normaliseEngineeringInputs, type EcoModel, type EngineeringInputs } from '../designer/eco';
 import { normaliseBuildingServices, serviceRunLengthM, type BuildingServices } from '../designer/buildingServices';
 import { resolveServiceConnections } from '../designer/serviceConnections';
@@ -229,6 +230,8 @@ export interface Site {
   widthM: number;
   depthM: number;
   originM: Vertex;
+  /** Optional georeferenced planning data; legacy saves omit it entirely. */
+  world?: GeoSite;
 }
 
 /** Plot side lengths are clamped to this range by `setSite`. */
@@ -466,7 +469,9 @@ export function normaliseSite(site: unknown): Site | undefined {
       && typeof o.y === 'number' && Number.isFinite(o.y)
       ? { x: o.x, y: o.y }
       : { x: 0, y: 0 };
-  return { widthM, depthM, originM };
+  const world = s.world === undefined ? undefined : normaliseGeoSite(s.world);
+  if (s.world !== undefined && !world) return undefined;
+  return { widthM, depthM, originM, ...(world ? { world } : {}) };
 }
 
 /** Whether a light-emitting item is lit. Absent = on (see `PlacedItem.lightOn`). */
